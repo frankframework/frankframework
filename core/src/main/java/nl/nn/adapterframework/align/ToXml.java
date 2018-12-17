@@ -101,8 +101,8 @@ public abstract class ToXml<C,N> extends XmlAligner {
 
 	/**
 	 * return namespace of node, if known. If not, it will be determined from the schema.
-	 * @param node
-	 * @return
+	 * @param node - the node from which we retrieve the namespace
+	 * @return the namespace of the node
 	 */
 	public String getNodeNamespaceURI(N node) {
 		return null; 
@@ -122,6 +122,8 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	
 	/**
 	 * Obtain a the XmlAligner as a {@link Source} that can be used as input of a {@link Transformer}.
+	 * @param root - the root where we obtain the XmlAligner from
+	 * @return either null if the root is null, or the source of the XmlAligner
 	 */
 	public Source asSource(C root) {
 		return new SAXSource(this,root==null?null:new XmlAlignerInputSource(root));
@@ -142,7 +144,10 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	}
 
 	/**
-	 * Align the XML according to the schema. 
+	 * Align the XML according to the schema.
+	 * @param root - the schema.
+	 * @throws SAXException - an XML parser error
+	 *
 	 */
 	public void startParse(C root) throws SAXException {
 		//if (DEBUG) log.debug("startParse() rootNode ["+node.toString()+"]"); // result of node.toString() is confusing. Do not log this.
@@ -173,8 +178,10 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	 * 
 	 * Must push all nodes through validatorhandler, recursively, respecting the alignment request.
 	 * Must set current=node before calling validatorHandler.startElement(), in order to get the right argument for the onStartElement / performAlignment callbacks.
-	 * @param node 
-	 * @throws SAXException 
+	 * @param container - the container node
+	 * @param name - name of the node
+	 * @param nodeNamespace - namespace of the node
+	 * @throws SAXException - an XML exception parser error
 	 */
 	public void handleNode(C container, String name, String nodeNamespace) throws SAXException {
 		if (DEBUG) log.debug("handleNode() name ["+name+"] namespace ["+nodeNamespace+"]");
@@ -447,12 +454,12 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	/**
 	 * 
 	 * @param baseElementDeclaration TODO
-	 * @param particle
+	 * @param particle - best matching element path
 	 * @param failureReasons returns the reasons why no match was found
-	 * @param availableElements
+	 * @param baseNode - the base node
 	 * @param path: in this list the longest list of child elements, that matches the available, is maintained. Null if no matching.
 	 * @return true when a matching path is found. if false, failureReasons will contain reasons why.
-	 * @throws SAXException 
+	 * @throws SAXException - an XML parser/writer exception
  	 */
 	public boolean getBestMatchingElementPath(XSElementDeclaration baseElementDeclaration, N baseNode, XSParticle particle, List<XSParticle> path, List<String> failureReasons) throws SAXException {
 		if (particle==null) {

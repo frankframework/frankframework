@@ -28,6 +28,10 @@ public interface IBulkDataListener extends IListener {
 	/**
 	 * Retrieves the bulk data associated with the message, stores it in a file or something similar.
 	 * It returns the handle to the file as a result, and uses that as the message for the pipeline.
+	 * @param rawMessage the data
+	 * @param message the message it is associated with
+	 * @param context the context in which the data is retrieved
+	 * @throws ListenerException thrown when no data is retrieved
 	 * @return input message for adapter.
 	 */
 	String retrieveBulkData(Object rawMessage, String message, Map<String,Object> context) throws ListenerException;

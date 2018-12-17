@@ -27,8 +27,8 @@ public class FileListener {
 	 * this methods waits a specified time before it attempts to read the file.
 	 * 
 	 * @return The message read from the specified file
-	 * @throws TimeOutException
-	 * @throws ListenerException
+	 * @throws TimeOutException - thrown when too much time has passed searching the file
+	 * @throws ListenerException - thrown when something goes wrong reading the file
 	 */
 	public String getMessage() throws TimeOutException, ListenerException {
 		String result = null;
@@ -114,7 +114,7 @@ public class FileListener {
 	/**
 	 * Set the filename of the file to read the message from.
 	 * 
-	 * @param filename
+	 * @param filename - the file the message will be read from
 	 */
 	public void setFilename(String filename) {
 		this.filename = filename;
@@ -124,7 +124,7 @@ public class FileListener {
 	 * When used, filename and filename2 are binary compared (returns 'true' or
 	 * 'false' instead of the file content).
 	 * 
-	 * @param filename2
+	 * @param filename2 - another file to compare
 	 */
 	public void setFilename2(String filename2) {
 		this.filename2 = filename2;
@@ -137,7 +137,7 @@ public class FileListener {
 	/**
 	 * Set the directory to read the file from.
 	 * 
-	 * @param directory
+	 * @param directory - the directory in which the file resides
 	 */
 	public void setDirectory(String directory) {
 		this.directory = directory;
@@ -156,7 +156,7 @@ public class FileListener {
 	 * Set the time to wait in milliseconds before starting to read the file.
 	 * Set to -1 (default) to start reading the file directly.  
 	 *  
-	 * @param waitBeforeRead
+	 * @param waitBeforeRead - time to wait in ms
 	 */
 	public void setWaitBeforeRead(long waitBeforeRead) {
 		this.waitBeforeRead = waitBeforeRead;
@@ -165,7 +165,7 @@ public class FileListener {
 	/**
 	 * Set the time out in milliseconds waiting for creation of the file.
 	 *  
-	 * @param timeOut
+	 * @param timeOut - time to wait in ms
 	 */
 	public void setTimeOut(long timeOut) {
 		this.timeOut = timeOut;
@@ -183,7 +183,7 @@ public class FileListener {
 	 * Set the interval time in milliseconds between checks for creation of the
 	 * file.
 	 * 
-	 * @param interval
+	 * @param interval - time for an interval in ms
 	 */
 	public void setInterval(long interval) {
 		this.interval = interval;

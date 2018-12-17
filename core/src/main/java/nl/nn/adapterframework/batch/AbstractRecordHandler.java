@@ -278,6 +278,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 
 	/**
 	 * @deprecated typo has been fixed: please use 'inputSeparator' instead of 'inputSeperator'
+	 * @param string - the input that needs to be separated
 	 */
 	@Deprecated
 	public void setInputSeperator(String string) {

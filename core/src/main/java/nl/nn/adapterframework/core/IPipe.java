@@ -31,12 +31,17 @@ public interface IPipe extends INamedObject {
  * creating connections to databases etc. in the {@link #doPipe(Object, IPipeLineSession) doPipe()} method.
  * As much as possible class-instantiating should take place in the
  * <code>configure()</code> method, to improve performance.
+ * @throws ConfigurationException thrown when configuration fails
  */ 
 void configure() throws ConfigurationException;
 
 /**
  * This is where the action takes place. Pipes may only throw a PipeRunException,
  * to be handled by the caller of this object.
+ * @param input the input
+ * @param session the current session
+ * @throws PipeRunException will be thrown to then in turn be handled by the caller of this object
+ * @return the result of running the pipe
  */
 PipeRunResult doPipe (Object input, IPipeLineSession session) throws PipeRunException;
 
@@ -45,23 +50,26 @@ PipeRunResult doPipe (Object input, IPipeLineSession session) throws PipeRunExce
  * A value of 0 indicates an unlimited number of threads.
  * Pipe implementations that are not thread-safe, i.e. where <code>doPipe()</code> may only be
  * called by one thread at a time, should make sure getMaxThreads always returns a value of 1.
+ * @return the maximum number of threads
  */
 int getMaxThreads();
 
 /**
  * Get pipe forwards.
+ * @return the pipe forwards
  */
 Map<String, PipeForward> getForwards();
 
 /**
  * Get pipe type.
+ * @return the pipe type
  */
 String getType();
 
 /**
   * Register a PipeForward object to this Pipe. Global Forwards are added
   * by the PipeLine. If a forward is already registered, it logs a warning.
-  * @param forward
+  * @param forward the PipeForward object that will be registered to this pipe
   * @see PipeLine
   * @see PipeForward
    */
@@ -71,6 +79,7 @@ void registerForward(PipeForward forward);
  * Perform necessary action to start the pipe. This method is executed
  * after the {@link #configure()} method, for eacht start and stop command of the
  * adapter.
+ * @throws PipeStartException thrown when starting the pipe fails
  */
 void start() throws PipeStartException;
 

@@ -29,7 +29,9 @@ public interface IPullingListener extends IListener {
 	 * Prepares a thread for receiving messages.
 	 * Called once for each thread that will listen for messages.
 	 * @return the threadContext for this thread. The threadContext is a Map in which
-	 * thread-specific data can be stored. 
+	 * thread-specific data can be stored.
+	 *
+	 * @throws ListenerException thrown when opening thread fails
 	 */
 	Map<String,Object> openThread() throws ListenerException;
 	
@@ -37,6 +39,9 @@ public interface IPullingListener extends IListener {
 	 * Finalizes a message receiving thread.
 	 * Called once for each thread that listens for messages, just before
 	 * {@link #close()} is called.
+	 *
+	 * @param threadContext the context of the thread to be closed
+	 * @throws ListenerException thrown when closing thread fails
 	 */
 	void closeThread(Map<String,Object> threadContext) throws ListenerException;
 	
@@ -45,6 +50,10 @@ public interface IPullingListener extends IListener {
 	 * Multiple objects may try to call this method at the same time, from different threads. 
 	 * Implementations of this method should therefore be thread-safe, or <code>synchronized</code>.
 	 * <p>Any thread-specific properties should be stored in and retrieved from the threadContext.
+	 *
+	 * @param threadContext the context of the thread from which the raw message is retrieved
+	 * @throws ListenerException thrown when retrieving raw message fails
+	 * @return the raw message from queue or other channel
 	 */
 	Object getRawMessage(Map<String,Object> threadContext) throws ListenerException;
 

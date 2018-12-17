@@ -40,6 +40,8 @@ public interface IResultHandler extends INamedObject {
 	 * Called once, before the first record of a stream is presented to handleResult.
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message
+	 * @param prc the ParameterResolutionContext
+	 * @throws Exception an Exception
 	 */
 	void openDocument(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception;
 	void closeDocument(IPipeLineSession session, String streamId, ParameterResolutionContext prc);
@@ -50,6 +52,8 @@ public interface IResultHandler extends INamedObject {
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 * @param recordKey key of the record (describes the record type)
 	 * @param result transformed record
+	 * @param prc the ParameterResolutionContext
+	 * @throws Exception an Exception
 	 */
 	void handleResult(IPipeLineSession session, String streamId, String recordKey, Object result, ParameterResolutionContext prc) throws Exception;
 	
@@ -57,6 +61,9 @@ public interface IResultHandler extends INamedObject {
 	 * Called when all records in the original file are handled.
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
+	 * @param prc the ParameterResolutionContext
+	 * @param error check if called from an exception
+	 * @throws Exception an Exception
 	 * @return the name or names of the output files
 	 */
 	Object finalizeResult(IPipeLineSession session, String streamId, boolean error, ParameterResolutionContext prc) throws Exception;
@@ -64,13 +71,16 @@ public interface IResultHandler extends INamedObject {
 	/**
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
-	 * @throws Exception
+	 * @param prc the ParameterResolutionContext
+	 * @throws Exception an Exception
 	 */
 	void openRecordType(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception;
 	
 	/**
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
+	 * @param prc the ParameterResolutionContext
+	 * @throws Exception an Exception
 	 */
 	void closeRecordType(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception;
 	

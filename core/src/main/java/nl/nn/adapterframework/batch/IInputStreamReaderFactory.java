@@ -24,7 +24,6 @@ import nl.nn.adapterframework.core.SenderException;
 
 /**
  * @author  Gerrit van Brakel
- * @since  
  */
 public interface IInputStreamReaderFactory {
 
@@ -32,6 +31,12 @@ public interface IInputStreamReaderFactory {
 	
 	/**
 	 * Obtain a Reader that reads lines in the given characterset.
+	 * @param inputstream the input stream
+	 * @param charset the charset used to read
+	 * @param streamId the streamId the charset will be read from
+	 * @param session the current session
+	 * @throws SenderException thrown when charset cannot be used to read the stream
+	 * @return a reader
 	 */
 	Reader getReader(InputStream inputstream, String charset, String streamId, IPipeLineSession session) throws SenderException;
 }

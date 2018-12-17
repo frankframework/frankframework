@@ -26,6 +26,7 @@ public interface IManagable extends INamedObject {
     /**
      * returns the runstate of the object.
      * Possible values are defined by {@link RunStateEnum}.
+     * @return the run state
      */
     RunStateEnum getRunState();
     /**

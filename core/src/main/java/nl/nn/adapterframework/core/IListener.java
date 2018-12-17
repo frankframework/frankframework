@@ -33,18 +33,24 @@ public interface IListener extends INamedObject {
 	 * Purpose of this method is to reduce creating connections to databases etc. in the {@link nl.nn.adapterframework.core.IPullingListener#getRawMessage(Map)} method.
 	 * As much as possible class-instantiating should take place in the
 	 * <code>configure()</code> or <code>open()</code> method, to improve performance.
+	 *
+	 * @throws ConfigurationException thrown when the configuration fails
 	 */ 
 	public void configure() throws ConfigurationException;
 	
 	/**
 	 * Prepares the listener for receiving messages.
 	 * <code>open()</code> is called once each time the listener is started.
+	 *
+	 * @throws ListenerException thrown when listening to messages fails
 	 */
 	void open() throws ListenerException;
 	
 	/**
 	 * Close all resources used for listening.
 	 * Called once once each time the listener is stopped.
+	 *
+	 * @throws ListenerException thrown when listening to messages fails
 	 */
 	void close() throws ListenerException;
 	
@@ -59,7 +65,10 @@ public interface IListener extends INamedObject {
 	 * 	<li>tsReceived: timestamp of reception of the message, formatted as yyyy-MM-dd HH:mm:ss.SSS</li>
 	 * 	<li>tsSent: timestamp of sending of the message (only when available), formatted as yyyy-MM-dd HH:mm:ss.SSS</li>
 	 * </ul>
-	 * 
+	 *
+	 * @param rawMessage the raw message
+	 * @param context the context of the message
+	 * @throws ListenerException thrown when listening to messages fails
 	 * @return Correlation ID string.
 	 */
 	String getIdFromRawMessage(Object rawMessage, Map<String,Object> context) throws ListenerException;
@@ -68,12 +77,20 @@ public interface IListener extends INamedObject {
 	 * Extracts string from message obtained from {@link nl.nn.adapterframework.core.IPullingListener#getRawMessage(Map)}. May also extract
 	 * other parameters from the message and put those in the threadContext.
 	 * @return input message for adapter.
+	 * @param rawMessage the raw message
+	 * @param context the context of the message
+	 * @throws ListenerException thrown when listening to messages fails
+	 * @return string from message obtained
 	 */
 	String getStringFromRawMessage(Object rawMessage, Map<String,Object> context) throws ListenerException;
 	
 	/**
 	 * Called to perform actions (like committing or sending a reply) after a message has been processed by the 
-	 * Pipeline. 
+	 * Pipeline.
+	 * @param processResult the result of the process
+	 * @param rawMessage the raw message
+	 * @param context the context of the message
+	 * @throws ListenerException thrown when listening to messages fails
 	 */
 	void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map<String,Object> context) throws ListenerException;
 

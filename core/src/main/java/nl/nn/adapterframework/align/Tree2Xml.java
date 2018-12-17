@@ -33,7 +33,7 @@ import org.xml.sax.SAXException;
  * 
  * @author Gerrit van Brakel
  *
- * @param <N>
+ * @param <N> -
  */
 public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 

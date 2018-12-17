@@ -25,7 +25,9 @@ package nl.nn.adapterframework.core;
 public interface IbisExceptionListener {
 
 	/**
-	 * Inform the implementing class that the exception <code>t</code> occured in <code>object</code>.
+	 * Inform the implementing class that the exception <code>t</code> occurred in <code>object</code>.
+	 * @param object the object in which the exception is thrown
+	 * @param t the exception
 	 */
 	void exceptionThrown(INamedObject object, Throwable t);
 }

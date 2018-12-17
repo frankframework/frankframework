@@ -83,6 +83,8 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
      * the factory, then a bean is selected from those with this
      * given suggestedBeanName. If no such bean exists, an error is thrown
      * because the factory can not select between multiple beans.
+	 *
+	 * @return the suggested bean name
      */
     abstract public String getSuggestedBeanName();
 
@@ -145,8 +147,9 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
      * can override this method and change attributes in the map
      * before creating the object from the Spring factory.
      *
-     * @param attrs
-     * @throws Exception
+     * @param attrs the attributes from the XML
+     * @throws Exception and Exception
+	 * @return the object from Sping factory
      */
     protected Object createObject(Map<String, String> attrs) throws Exception {
         String className = attrs.get("className");
@@ -258,11 +261,12 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
      * bean-name returned by <code>getSuggestedBeanName()</code>, that is often
      * implemented by prefixing the element name with 'proto-'
      *
-     * @param className
-     * @throws ClassNotFoundException
-     * @throws InstantiationException
-     * @throws IllegalAccessException
-     * @throws ConfigurationException
+     * @param className the class name from which a bean will be created
+     * @throws ClassNotFoundException thrown when the class can not be found
+     * @throws InstantiationException thrown when class can not be instantiated
+     * @throws IllegalAccessException thrown when no access is given
+     * @throws ConfigurationException thrown when configuration fails
+	 * @return the created bean
      */
     protected Object createBeanFromClassName(String className)
     	throws ClassNotFoundException, InstantiationException, IllegalAccessException, ConfigurationException {

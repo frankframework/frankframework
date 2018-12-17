@@ -36,7 +36,7 @@ import nl.nn.adapterframework.util.Misc;
 
 /**
  * Pipe that performs base64 encoding and decoding.
- * 
+ *
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
@@ -48,7 +48,7 @@ import nl.nn.adapterframework.util.Misc;
  * <tr><td>{@link #setOutputType(String) outputType}</td><td>either <code>string</code>, <code>bytes</code>, <code>stream</code> or <code>base64</code></td><td>"string"</td></tr>
  * </table>
  * </p>
- * 
+ *
  * @since   4.4
  * @author  Niels Meijer
  * @version 2.0

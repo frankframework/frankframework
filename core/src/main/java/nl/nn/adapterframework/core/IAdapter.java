@@ -35,6 +35,7 @@ public interface IAdapter extends IManagable {
   	 * Instruct the adapter to configure itself. The adapter will call the
   	 * pipeline to configure itself, the pipeline will call the individual
   	 * pipes to configure themselves.
+	 * @throws ConfigurationException thrown when configuration fails
   	 * @see nl.nn.adapterframework.pipes.AbstractPipe#configure()
   	 * @see PipeLine#configure()
   	 */
@@ -43,6 +44,7 @@ public interface IAdapter extends IManagable {
  	/**
  	 * The messagekeeper is used to keep the last x messages, relevant to
  	 * display in the web-functions.
+	 * @return the message keeper
  	 */
 	MessageKeeper getMessageKeeper();
 	IReceiver getReceiverByName(String receiverName);
@@ -61,6 +63,7 @@ public interface IAdapter extends IManagable {
 
     /**
      * state to put in PipeLineResult when a PipeRunException occurs.
+	 * @return the error state
      */
 	String getErrorState();
 

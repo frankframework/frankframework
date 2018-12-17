@@ -44,18 +44,22 @@ public interface IbisManager {
 
     /**
      * Issue a command/action on the named adapter/receiver.
-     * @param action
-     * @param adapterName
-     * @param receiverName
-     * @param commandIssuedBy
+     * @param action the action to be issued
+     * @param adapterName the name of the adapter
+     * @param receiverName the name of the receiver
+     * @param configurationName the name of the configuration
+     * @param commandIssuedBy the user who issues the action
+     * @param isAdmin whether the user is an admin
      */
     void handleAdapter(String action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin);
     /**
      * Start an already configured Configuration
+     * @param configuration the configured Configuration to be started
      */
     void startConfiguration(Configuration configuration);
     /**
      * Unload specified configuration.
+     * @param configurationName the name of the configuration to be unloaded
      */
     void unload(String configurationName);
     /**

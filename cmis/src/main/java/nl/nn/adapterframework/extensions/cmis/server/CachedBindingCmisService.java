@@ -37,6 +37,7 @@ public abstract class CachedBindingCmisService extends FilterCmisService {
 	/**
 	 * Returns a cached {@link CmisBinding} object or <code>null</code> if no
 	 * appropriate object can be found in the cache.
+	 * @return a cached CmisBinding link
 	 */
 	public abstract CmisBinding getCmisBindingFromCache();
 
@@ -47,6 +48,7 @@ public abstract class CachedBindingCmisService extends FilterCmisService {
 	 * The implementation may return another {@link CmisBinding} object if
 	 * another thread has already added an object for the current
 	 * {@link CallContext}.
+	 * @param binding -
 	 */
 	public abstract CmisBinding putCmisBindingIntoCache(CmisBinding binding);
 

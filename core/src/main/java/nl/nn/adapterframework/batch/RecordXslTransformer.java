@@ -52,7 +52,8 @@ public class RecordXslTransformer extends RecordXmlTransformer {
 	}
 
 	/**
-	 * @deprecated configuration using attribute 'xslFile' is deprecated. Please use attribute 'styleSheetName' 
+	 * @deprecated configuration using attribute 'xslFile' is deprecated. Please use attribute 'styleSheetName'
+	 * @param xslFile the xsl file
 	 */
 	public void setXslFile(String xslFile) {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();

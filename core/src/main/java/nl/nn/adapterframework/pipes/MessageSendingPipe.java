@@ -910,6 +910,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 	/**
 	 * Register a {@link ICorrelatedPullingListener} at this Pipe
+	 * @param listener the ICorrelatedPullingListener that will be registered
 	 */
 	protected void setListener(ICorrelatedPullingListener listener) {
 		this.listener = listener;
@@ -926,6 +927,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 	/**
 	 * Sets the messageLog.
+	 * @param messageLog the message log that will be registered
 	 */
 	public void setMessageLog(ITransactionalStorage messageLog) {
 		if (messageLog.isActive()) {
@@ -947,6 +949,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 	/**
 	 * Register a ISender at this Pipe
+	 * @param sender the sender that will be registered
 	 * @see ISender
 	 */
 	protected void setSender(ISender sender) {
@@ -967,6 +970,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	/**
 	 * The message that is returned when the time listening for a reply message
 	 * exceeds the timeout, or in other situations no reply message is received.
+	 * @param newResultOnTimeOut the message
 	 */
 	public void setResultOnTimeOut(String newResultOnTimeOut) {
 		resultOnTimeOut = newResultOnTimeOut;

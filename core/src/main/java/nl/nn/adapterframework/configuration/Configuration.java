@@ -132,7 +132,8 @@ public class Configuration {
 
 
     /**
-     *	initializes the log and the AppConstants
+     * initializes the log and the AppConstants
+	 * @param adapterService the adapter service to be set
      * @see nl.nn.adapterframework.util.AppConstants
      */
     public Configuration(AdapterService adapterService) {
@@ -250,8 +251,8 @@ public class Configuration {
 
 	/**
 	 * Register an adapter with the configuration.
-	 * @param adapter
-	 * @throws ConfigurationException
+	 * @param adapter the adapter to be registered
+	 * @throws ConfigurationException thrown when configuration fails
 	 */
 	public void registerAdapter(IAdapter adapter) throws ConfigurationException {
 		if (adapter instanceof Adapter && !((Adapter)adapter).isActive()) {
@@ -271,6 +272,7 @@ public class Configuration {
      * receiver are registered.
      * <p>See the <a href="http://quartz.sourceforge.net">Quartz scheduler</a> documentation</p>
      * @param jobdef a JobDef object
+	 * @throws ConfigurationException thrown when configuration fails
      * @see nl.nn.adapterframework.scheduler.JobDef for a description of Cron triggers
      * @since 4.0
      */
@@ -304,7 +306,7 @@ public class Configuration {
 
 	/**
 	 * @deprecated replaced by setName(String)
-	 * @param name
+	 * @param name name to be set
 	 */
 	public void setConfigurationName(String name) {
 		this.name = name;
@@ -312,7 +314,7 @@ public class Configuration {
 
 	/**
 	 * @deprecated replaced by getName()
-	 * @param name
+	 * @return the name
 	 */
 	public String getConfigurationName() {
 		return name;

@@ -1113,6 +1113,8 @@ public class TestTool {
 	 *  
 	 * @param parent  the parent pathname to use
 	 * @param child   the child pathname to convert to a absolute pathname
+	 * @param addFileSeparator check if file separator needs to be used
+	 * @return the absolute path for the child pathname
 	 */
 	public static String getAbsolutePath(String parent, String child,
 			boolean addFileSeparator) {

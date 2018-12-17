@@ -23,6 +23,7 @@ package nl.nn.adapterframework.core;
 public interface INamedObject {
 	/**
 	 * The functional name of the object implementing this interface
+	 * @return the functional name
 	 */
 	public String getName();
 	public void setName(String name);

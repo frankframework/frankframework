@@ -235,6 +235,7 @@ public class Adapter implements IAdapter, NamedBean {
 
 	/** 
 	 * sends a warning to the log and to the messagekeeper of the adapter
+	 * @param msg the warning message
 	 */
 	protected void warn(String msg) {
 		log.warn("Adapter [" + getName() + "] "+msg);
@@ -243,6 +244,9 @@ public class Adapter implements IAdapter, NamedBean {
 
 	/** 
 	 * sends a warning to the log and to the messagekeeper of the adapter
+	 * @param critical whether the error is critical
+	 * @param msg the error message
+	 * @param t the Exception
 	 */
 	protected void error(boolean critical, String msg, Throwable t) {
 		log.error("Adapter [" + getName() + "] " + msg, t);
@@ -255,6 +259,7 @@ public class Adapter implements IAdapter, NamedBean {
 
 	/**
 	 * Increase the number of messages in process
+	 * @param startTime the start time
 	 */
 	private void incNumOfMessagesInProcess(long startTime) {
 		synchronized (statsMessageProcessingDuration) {
@@ -268,6 +273,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 	/**
 	 * Decrease the number of messages in process
+	 * @param duration duration of the message process
 	 */
 	private synchronized void decNumOfMessagesInProcess(long duration) {
 		synchronized (statsMessageProcessingDuration) {
@@ -345,6 +351,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 	/**
 	 * retrieve the date and time of the last message.
+	 * @return the date of the last message
 	 */
 	public String getLastMessageDate() {
 		return getLastMessageDate(DateUtils.FORMAT_FULL_GENERIC);
@@ -459,6 +466,7 @@ public class Adapter implements IAdapter, NamedBean {
 
 	/**
 	 * The number of messages for which processing ended unsuccessfully.
+	 * @return the number of messages in the error
 	 */
 	public long getNumOfMessagesInError() {
 		synchronized (statsMessageProcessingDuration) {
@@ -709,8 +717,8 @@ public class Adapter implements IAdapter, NamedBean {
 	/**
 	 * Register a PipeLine at this adapter. On registering, the adapter performs
 	 * a <code>Pipeline.configurePipes()</code>, as to configure the individual pipes.
-	  * @param pipeline
-	 * @throws ConfigurationException
+	  * @param pipeline the pipeline to be registered to this adapter
+	 * @throws ConfigurationException thrown when configuration fails
 	 * @see PipeLine
 	 */
 	public void registerPipeLine(PipeLine pipeline) throws ConfigurationException {
@@ -721,7 +729,7 @@ public class Adapter implements IAdapter, NamedBean {
 
 	/**
 	 * Register a receiver for this Adapter
-	 * @param receiver
+	 * @param receiver the receiver for this adapter
 	 * @see IReceiver
 	 */
 	public void registerReceiver(IReceiver receiver) {
@@ -739,6 +747,7 @@ public class Adapter implements IAdapter, NamedBean {
 	
 	/**
 	 *  some functional description of the <code>Adapter</code>/
+	 *  @param description the description to be set
 	 */
 	public void setDescription(String description) {
 		this.description = description;
@@ -749,7 +758,7 @@ public class Adapter implements IAdapter, NamedBean {
 	/**
 	 * Register a <code>ErrorMessageFormatter</code> as the formatter
 	 * for this <code>adapter</code>
-	 * @param errorMessageFormatter
+	 * @param errorMessageFormatter the formatter for the error message
 	 * @see IErrorMessageFormatter
 	 */
 	public void setErrorMessageFormatter(IErrorMessageFormatter errorMessageFormatter) {
@@ -771,7 +780,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 	/**
 	 * Set the number of messages that are kept on the screen.
-	 * @param size
+	 * @param size the number of messages that are kept on the screen
 	 * @see nl.nn.adapterframework.util.MessageKeeper
 	 */
 	public void setMessageKeeperSize(int size) {
@@ -799,7 +808,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * extends the <code>Runnable</code> interface. The actual starting is done
 	 * in the <code>run</code> method.
 	 * @see IReceiver#startRunning()
-	 * @see Adapter#run
+	 * @see Adapter#startRunning()
 	 */
 	public void startRunning() {
 		Runnable runnable = new Runnable() {
@@ -1007,6 +1016,7 @@ public class Adapter implements IAdapter, NamedBean {
 	/**
 	 * AutoStart indicates that the adapter should be started when the configuration
 	 * is started. AutoStart defaults to <code>true</code>
+	 * @param autoStart set whether the adapter should be started when the configuration is
 	 * @since 4.1.1
 	 */
 	public void setAutoStart(boolean autoStart) {

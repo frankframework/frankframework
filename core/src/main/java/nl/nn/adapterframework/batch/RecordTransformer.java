@@ -181,7 +181,9 @@ public class RecordTransformer extends AbstractRecordHandler {
 	}
 	
 	/**
-	 * translates a functiondeclaration to an function instance
+	 * translates a functiondeclaration to a function instance
+	 * @param fieldDef the function declaration
+	 * @throws ConfigurationException thrown when invalid fieldDef is given
 	 */
 	public void addOutputField(String fieldDef) throws ConfigurationException {
 		StringTokenizer st = new StringTokenizer(fieldDef, "(),");
@@ -279,7 +281,9 @@ public class RecordTransformer extends AbstractRecordHandler {
 	
 	/**
 	 * Added to allow usage from Configuration file without the need to modify the 
-	 * digester-rules 
+	 * digester-rules
+	 * @param part the OutputfieldsPart
+	 * @throws ConfigurationException thrown when configuration fails
 	 */
 	public void registerChild(OutputfieldsPart part) throws ConfigurationException {
 		setOutputFields(part.getValue());
@@ -287,8 +291,8 @@ public class RecordTransformer extends AbstractRecordHandler {
 
 	/**
 	 * Translate a declaration string with functions to a list of function instances 
-	 * @param outputfieldsDef
-	 * @throws ConfigurationException
+	 * @param outputfieldsDef the declaration string
+	 * @throws ConfigurationException thrown when configuration fails
 	 */
 	public void setOutputFields(String outputfieldsDef) throws ConfigurationException {
 		StringTokenizer st = new StringTokenizer(outputfieldsDef, ";");

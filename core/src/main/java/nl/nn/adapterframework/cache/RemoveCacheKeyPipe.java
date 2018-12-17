@@ -38,7 +38,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setKeyXPath(String) keyXPath}</td><td>xpath expression to extract cache key from request message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeyXPathOutputType(String) keyXPathOutputType}</td><td>output type of xpath expression to extract cache key from request message, must be 'xml' or 'text'</td><td>text</td></tr>
  * <tr><td>{@link #setKeyNamespaceDefs(String) keyNamespaceDefs}</td><td>namespace defintions for keyXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setKeyStyleSheet(String) keyStyleSheet}</td><td>stylesheet to extract cache key from request message. Use in combination with {@link #setCacheEmptyKeys(boolean) cacheEmptyKeys} to inhibit caching for certain groups of request messages</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setKeyStyleSheet(String) keyStyleSheet}</td><td>stylesheet to extract cache key from request message. Use in combination with {@link CacheAdapterBase#setCacheEmptyKeys(boolean) cacheEmptyKeys} to inhibit caching for certain groups of request messages</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeyInputSessionKey(String) keyInputSessionKey}</td><td>session key to use as input for transformation of request message to key by keyXPath or keyStyleSheet</td><td>&nbsp;</td></tr>
  * </table>
  * </p>

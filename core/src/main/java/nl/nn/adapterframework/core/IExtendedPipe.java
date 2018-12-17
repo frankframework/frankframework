@@ -60,17 +60,21 @@ public interface IExtendedPipe extends IPipe {
 	/**
 	 * Extension, allowing Pipes to register things with the PipeLine at Configuration time.
 	 * For IExtendedPipes, PileLine will call this method rather then the no-args configure().
+	 * @param pipeline the pipeline that will be configured.
+	 * @throws ConfigurationException an Exception thrown when configuration fails.
 	 */
 	void configure(PipeLine pipeline) throws ConfigurationException;
 
 	/**
 	 * controls whether pipe is used in configuration. Can be used for debug-only pipes.
+	 * @return whether pipe is used in configuration.
 	 */
 	public boolean isActive();
 
 	/**
 	 * Sets a threshold for the duration of message execution; 
 	 * If the threshold is exceeded, the message is logged to be analyzed.
+	 * @param maxDuration duration of the message execution.
 	 */
 	public void setDurationThreshold(long maxDuration) ;
 	public long getDurationThreshold();
@@ -121,12 +125,12 @@ public interface IExtendedPipe extends IPipe {
 
 	/**
 	 * Register an event for flexible monitoring.
-	 * @param description
+	 * @param description the description of the event
 	 */
 	public void registerEvent(String description);
 	/**
 	 * Throw an event for flexible monitoring.
-	 * @param event
+	 * @param event the event that is thrown
 	 */
 	public void throwEvent(String event);
 

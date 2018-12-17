@@ -29,22 +29,30 @@ public interface ISender extends INamedObject {
  * Purpose of this method is to reduce creating connections to databases etc. in the {@link #sendMessage(String,String) sendMessage()} method.
  * As much as possible class-instantiating should take place in the
  * <code>configure()</code> or <code>open()</code> method, to improve performance.
+ *
+ * @throws ConfigurationException thrown when configuration fails
  */ 
 public void configure() throws ConfigurationException;
 
 /**
  * This method will be called to start the sender. After this
  * method is called the sendMessage method may be called
+ *
+ * @throws SenderException thrown when starting the sender fails
  */ 
 public void open() throws SenderException;
 
 /**
  * Stop/close the sender and deallocate resources.
+ *
+ * @throws SenderException thrown when stopping/closing the sender fails
  */ 
 public void close() throws SenderException;
 
 /**
  * When <code>true</code>, the result of sendMessage is the reply of the request.
+ *
+ * @return whether the sendMessage is the reply of the request
  */
 boolean isSynchronous();
 
@@ -66,6 +74,12 @@ boolean isSynchronous();
  * <p>
  * Multiple objects may try to call this method at the same time, from different threads. 
  * Implementations of this method should therefore be thread-safe, or <code>synchronized</code>.
+ *
+ * @param correlationID the correlation id
+ * @param message message to send
+ * @throws SenderException thrown when sending fails
+ * @throws TimeOutException thrown if sending takes too long
+ * @return the result of sending the message
  */ 
 public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException;
 }

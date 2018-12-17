@@ -366,7 +366,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 
 	/**
 	 * At the time of writing, NetStorage only supports version 1
-	 * @param actionVersion
+	 * @param actionVersion - the version it supports
 	 * @IbisDoc.default 1
 	 */
 	public void setActionVersion(int actionVersion) {
@@ -454,7 +454,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	}
 	/**
 	 * rootDirectory on top of the url + cpCode
-	 * @param rootDir
+	 * @param rootDir - the root directory
 	 * @IbisDoc.optional
 	 */
 	public void setRootDir(String rootDir) {

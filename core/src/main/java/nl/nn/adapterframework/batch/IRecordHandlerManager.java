@@ -23,12 +23,12 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 
 /**
  * Interface for handling a transformed record.
- * 
+ *
  * A RecordHandlerManager decides, based on some implementation dependent algorithm, which record handler
- * is to be used to process a record. 
- * A record manager keeps a table of flow-elements, that each define a recordhandler, resulthandler and, 
+ * is to be used to process a record.
+ * A record manager keeps a table of flow-elements, that each define a recordhandler, resulthandler and,
  * optionally, a next-manager.
- * 
+ *
  * @author John Dekker
  */
 public interface IRecordHandlerManager extends INamedObject {
@@ -39,20 +39,22 @@ public interface IRecordHandlerManager extends INamedObject {
 	 * @param flow New flow to be added to the managed flow elements
 	 */
 	void addHandler(RecordHandlingFlow flow);
-	
+
 	/**
-	 * @param record 
+	 * @param session the current session
+	 * @param record the record from which we need the handler
+	 * @throws Exception an Exception
 	 * @return the RecordHandlingFlow element to be used to handle the record
-	 * @throws Exception
 	 */
 	RecordHandlingFlow getRecordHandler(IPipeLineSession session, String record) throws Exception;
-	
+
 	/**
-	 * @param filename
-	 * @return the IRecordHandlingManager to be used initially based on the name of the input file 
+     * @param session the current session
+	 * @param filename name that indicates which IRecordHandlingManager to be used initially
+	 * @return the IRecordHandlingManager to be used initially based on the name of the input file
 	 */
 	IRecordHandlerManager getRecordFactoryUsingFilename(IPipeLineSession session, String filename);
-	
+
 	/**
 	 * @param initialFactory inidicates if this manager is the initial manager
 	 */

@@ -56,6 +56,10 @@ public class PipeDescriptionProvider {
 	/**
 	 * Get a PipeDescription object for the specified pipe. The returned object
 	 * is cached.
+	 *
+	 * @param pipeLine - the pipeline the pipe resides in
+	 * @param pipe - the pipe from which the description will be cached
+	 * @return the description object
 	 */
 	public PipeDescription getPipeDescription(PipeLine pipeLine, IPipe pipe) {
 		PipeDescription pipeDescription;
@@ -200,6 +204,10 @@ public class PipeDescriptionProvider {
 
 	/**
 	 * Return the content of the specified resource.
+	 *
+	 * @param pipeLine - the pipeline in which the resource resides
+	 * @param resourceName - the name of the resource
+	 * @return the resource that is requested
 	 */
 	public String getResource(PipeLine pipeLine, String resourceName) {
 		String resource;

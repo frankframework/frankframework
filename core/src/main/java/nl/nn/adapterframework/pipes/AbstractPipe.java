@@ -242,6 +242,9 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	/**
 	 * This is where the action takes place. Pipes may only throw a PipeRunException,
 	 * to be handled by the caller of this object.
+	 * @param input the input
+	 * @throws PipeRunException thrown since the method is deprecated
+	 * @return an Exception since this method is deprecated
 	 * @deprecated use {@link #doPipe(Object,IPipeLineSession)} instead
 	 */
 	@Deprecated
@@ -301,6 +304,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * This method may be called from within the <code>doPipe()</code> method with the current <code>PipeLineSession</code>
 	 * as a parameter. Then it will use this parameter to retrieve the messageId. The method can be called with a <code>null</code> parameter
 	 * from the <code>configure()</code>, <code>start()</code> and <code>stop()</code> methods.
+	 * @param session the current session
 	 * @return String with the name of the pipe and the message id of the current message.
 	 */
 	protected String getLogPrefix(IPipeLineSession session) {
@@ -315,7 +319,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	/**
 	 * Register a PipeForward object to this Pipe. Global Forwards are added
 	 * by the PipeLine. If a forward is already registered, it logs a warning.
-	 * @param forward
+	 * @param forward the pipe that will be registered
 	 * @see nl.nn.adapterframework.core.PipeLine
 	 * @see PipeForward
 	 */
@@ -394,7 +398,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 
 	/**
 	 * Add a parameter to the list of parameters
-	 * @param rhs the PipeParameter.
+	 * @param param the PipeParameter.
 	 */
 	public void addParameter(Parameter param) {
 		log.debug("Pipe ["+getName()+"] added parameter ["+param.toString()+"]");
@@ -403,6 +407,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 
 	/**
 	 * return the Parameters
+	 * @return the parameters
 	 */
 	public ParameterList getParameterList() {
 		return parameterList;
@@ -445,6 +450,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	/**
 	 * Indicates the maximum number of treads ;that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously in case
 	 *  A value of 0 indicates an unlimited number of threads.
+	 *  @param newMaxThreads the maximum number of threads
 	 */
 	public void setMaxThreads(int newMaxThreads) {
 		maxThreads = newMaxThreads;

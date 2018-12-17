@@ -71,6 +71,7 @@ public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 
 	/** 
 	 * @deprecated typo has been fixed: please use 'separator' instead of 'seperator'
+	 * @param string the string that will be separated on
 	 */
 	public void setSeperator(String string) {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
