@@ -51,7 +51,7 @@ $(document).ready(function () {
 			fix_height(500);
 		}
 	});
-	
+
 	function fix_height(time) {
 		if(!time) time = 50;
 		setTimeout(function(){
