@@ -167,8 +167,12 @@ h5 {
   border-top: 1px solid #19aa8d;
   background: #293846;
 }
+.nav > li.active.parent {
+  border-left: none;
+}
 .nav.nav-second-level > li.active {
-  border: none;
+  border-left: 4px solid #19aa8d;
+  border-top: none;
 }
 .nav.nav-second-level.collapse[style] {
   height: auto !important;

@@ -27,28 +27,28 @@
 			<li ui-sref-active="active">
 				<a ui-sref="pages.logging"><i class="fa fa-life-ring"></i> <span class="nav-label">Logging</span></a>
 			</li>
-			<li ng-class="{active: $state.includes('testing')}">
+			<li ng-class="{active: $state.includes('testing')}" class="parent" >
 				<a href=""><i class="fa fa-bug"></i> <span class="nav-label">Testing</span> <span class="fa arrow"></span></a>
 				<ul class="nav nav-second-level" ng-class="{in: $state.includes('testing')}">
-					<li><a ui-sref="pages.larva">Larva</a></li>
-					<li><a ui-sref="pages.ladybug">Ladybug</a></li>
-					<li><a ui-sref="pages.test_pipeline">Test Pipeline</a></li>
-					<li><a ui-sref="pages.test_servicelistener">Test serviceListener</a></li>
+					<li ui-sref-active="active"><a ui-sref="pages.larva">Larva</a></li>
+					<li ui-sref-active="active"><a ui-sref="pages.ladybug">Ladybug</a></li>
+					<li ui-sref-active="active"><a ui-sref="pages.test_pipeline">Test Pipeline</a></li>
+					<li ui-sref-active="active"><a ui-sref="pages.test_servicelistener">Test serviceListener</a></li>
 				</ul>
 			</li>
-			<li ng-class="{active: $state.includes('jdbc')}">
+			<li ng-class="{active: $state.includes('jdbc')}" class="parent">
 				<a href=""><i class="fa fa-cubes"></i> <span class="nav-label">JDBC</span> <span class="fa arrow"></span></a>
 				<ul class="nav nav-second-level" ng-class="{in: $state.includes('jdbc')}">
-					<li><a ui-sref="pages.execute_query">Execute Query</a></li>
-					<li><a ui-sref="pages.browse_tables">Browse Tables</a></li>
-					<li><a ui-sref="pages.ibisstore_summary">IBISstore Summary</a></li>
+					<li ui-sref-active="active"><a ui-sref="pages.execute_query">Execute Query</a></li>
+					<li ui-sref-active="active"><a ui-sref="pages.browse_tables">Browse Tables</a></li>
+					<li ui-sref-active="active"><a ui-sref="pages.ibisstore_summary">IBISstore Summary</a></li>
 				</ul>
 			</li>
-			<li ng-class="{active: $state.includes('jms')}">
+			<li ng-class="{active: $state.includes('jms')}" class="parent">
 				<a href=""><i class="fa fa-th-large"></i> <span class="nav-label">JMS</span> <span class="fa arrow"></span></a>
 				<ul class="nav nav-second-level" ng-class="{in: $state.includes('jms')}">
-					<li><a ui-sref="pages.send_message">Send Message</a></li>
-					<li><a ui-sref="pages.browse_queue">Browse Queue</a></li>
+					<li ui-sref-active="active"><a ui-sref="pages.send_message">Send Message</a></li>
+					<li ui-sref-active="active"><a ui-sref="pages.browse_queue">Browse Queue</a></li>
 				</ul>
 			</li>
 			<li ui-sref-active="active">
