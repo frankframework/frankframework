@@ -28,7 +28,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * General Cache provider.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Cache, will be set from owner</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxElementsInMemory(int) maxElementsInMemory}</td><td>the maximum number of elements in memory, before they are evicted</td><td>100</td></tr>
@@ -51,9 +51,8 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>{@link #setValueInputSessionKey(String) valueInputSessionKey}</td><td>session key to use as input for transformation of response message to cached value by valueXPath or valueStyleSheet</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCacheEmptyValues(boolean) cacheEmptyValues}</td><td>controls whether empty values will be cached. When set true, empty cache entries can exist for any key.</td><td>false</td></tr>
  * </table>
- * </p>
+ * <br>
  * N.B. the default values shown can be overridden using properties in appConstants. The property names are found by prefixing the attribute name with <code>cache.default.</code>.
- * </p>
  * 
  * 
  * @author  Gerrit van Brakel

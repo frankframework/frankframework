@@ -35,7 +35,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * Pipe that compares lexicographically two strings.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.CompareIntegerPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
@@ -43,11 +43,11 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setSessionKey2(String) sessionKey2} <i>deprecated</i></td><td>reference to the other session variables to be compared</td><td></td></tr>
  * <tr><td>{@link #setXml(boolean) xml}</td><td>when set <code>true</code> the string values to compare are considered to be xml strings and before the actual compare both xml strings are transformed to a canonical form</td><td>false</td></tr>
  * </table>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>the parameters <code>operand1</code> and <code>operand2</code> are compared. If one of these parameters doesn't exist the input message is taken.
  * If parameter <code>ignorepatterns</code> exists it contains a xml table with references to substrings which have to be ignored during the comparison. This xml table has the following layout:
- * <br/><code><pre>
+ * <br><code><pre>
  *	&lt;ignores&gt;
  *		&lt;ignore&gt;
  *			&lt;after&gt;...&lt;/after&gt;
@@ -58,17 +58,17 @@ import nl.nn.adapterframework.util.XmlUtils;
  *			&lt;before&gt;...&lt;/before&gt;
  *		&lt;/ignore&gt;
  *	&lt;/ignores&gt;
- * </pre></code><br/>Substrings between "after" and "before" are ignored</td></tr>
+ * </pre></code><br>Substrings between "after" and "before" are ignored</td></tr>
  * </table>
- * </p>
+
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>lessthan</td><td>when v1 &lt; v2</td></tr>
  * <tr><td>greaterthan</td><td>when v1 &gt; v2</td></tr>
  * <tr><td>equals</td><td>when v1 = v1</td></tr>
  * </table>
- * </p>
+
  * @author  Peter Leeuwenburgh
  */
 public class CompareStringPipe extends AbstractPipe {

@@ -20,14 +20,13 @@ package nl.nn.adapterframework.core;
  * for a path (corresponding to a pipeforward) and a state (that is returned to the receiver).
  * 
  * <p>An exit consists out of two mandatory and two optional parameters:
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setPath(String) path}</td><td>name of the pipeline exit</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setState(String) state}</td><td>The exit state defines possible exists to the pipeline. The state can be one of the following: <code>success, error</code></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCode(String) code}</td><td>http statuscode e.g. <code>500</code></td><td>200</td></tr>
  * <tr><td>{@link #setEmpty(String) empty}</td><td>when using RestListener and set to <code>true</code>, this removes the output and shows a blank page, the output is still logged in the ladybug testtool</td><td>false</td></tr>
  * </table>
- * </p>
  * 
  * <p>
  * <b>example:</b> <code><pre>
@@ -42,7 +41,6 @@ package nl.nn.adapterframework.core;
  *      &lt;exit path="ServerError" state="error" code="500" /&gt;
  *   &lt;/exits&gt;
  * </pre></code>
- * </p>
  * 
  * @author Johan Verrips
  * @author Niels Meijer

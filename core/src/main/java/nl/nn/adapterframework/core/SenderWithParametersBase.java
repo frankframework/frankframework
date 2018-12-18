@@ -24,7 +24,7 @@ import nl.nn.adapterframework.senders.SenderBase;
  * Provides a base class for senders with parameters.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Sender</td><td>&nbsp;</td></tr>
  * </table>

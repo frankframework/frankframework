@@ -22,7 +22,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * Sends a message using a {@link nl.nn.adapterframework.core.ISender sender} and optionally receives a reply from the same sender, or from a {@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
@@ -30,18 +30,18 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * <tr><td>{@link #addParameter(Parameter) parameterList}</td><td>Parameters of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td><code>sender.*</td><td>any attribute of the sender instantiated by descendant classes</td><td>&nbsp;</td></tr>
  * </table>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.IPostboxSender sender}</td><td>specification of postbox sender to send messages with</td></tr>
  * </table>
- * </p>
+
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default when the message was successfully sent</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, and otherwise under same condition as "success"</td></tr>
  * </table>
- * </p>
+
   * 
  * @author John Dekker
  * @deprecated please use plain GenericMessageSendingPipe, that has same functionality (since 4.2d)

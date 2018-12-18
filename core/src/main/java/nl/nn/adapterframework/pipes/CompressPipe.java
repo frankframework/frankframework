@@ -43,7 +43,7 @@ import org.apache.commons.lang.StringUtils;
  * Pipe to zip or unzip a message or file.  
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.ibis4fundation.BatchFileTransformerPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageIsContent(boolean) messageIsContent}</td><td>Flag indicates whether the message is the content or the path to a file with the contents. For multiple files use ';' as delimiter</td><td>false</td></tr>
@@ -55,14 +55,14 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setConvert2String(boolean) convert2String}</td><td>If <code>true</code> result is returned as a string, otherwise as a byte array</td><td>false</td></tr>
  * <tr><td>{@link #setFileFormat(String) fileFormat}</td><td>When set to gz, the GZIP format is used. When set to another value, the ZIP format is used. If not set and direction is compress, the resultIsContent specifies the output format used (resultIsContent="true" -> GZIP format, resultIsContent="false" -> ZIP format) If not set and direction is decompress, the messageIsContent specifies the output format used (messageIsContent="true" -> GZIP format, messageIsContent="false" -> ZIP format)</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
+
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>When no problems encountered</td></tr>
  * <tr><td>"exception"</td><td>When problems encountered. The result passed to the next pipe is the exception that was caught formatted by the ErrorMessageFormatter class.</td></tr>
  * </table>
- * </p>
+
  * 
  * @author John Dekker
  * @author Jaco de Groot (***@dynasol.nl)

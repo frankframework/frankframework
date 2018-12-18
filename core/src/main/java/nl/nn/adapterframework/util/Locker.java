@@ -36,7 +36,7 @@ import org.apache.commons.lang.StringUtils;
  * Tries to set a lock (by inserting a record in the database table IbisLock) and only if this is done
  * successfully the job is executed.
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.scheduler.Locker</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setObjectId(String) objectId}</td><td>identifier for this lock</td><td>&nbsp;</td></tr>
@@ -48,7 +48,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setFirstDelay(int) firstDelay}</td><td>the time in ms to wait before the first attempt to acquire a lock is made, this may be 0 but keep in mind that the other thread or Ibis instance will propably not get much change to acquire a lock when another message is already waiting for the thread having the current lock in which case it will probably acquire a new lock soon after releasing the current lock</td><td>10000</td></tr>
  * <tr><td>{@link #setRetryDelay(int) retryDelay}</td><td>the time in ms to wait before another attempt to acquire a lock is made</td><td>10000</td></tr>
  * </table>
- * </p>
+
  * 
  * For an Oracle database the following objects are used:
  *  <pre>

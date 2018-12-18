@@ -51,10 +51,10 @@ import org.apache.log4j.Logger;
  * Application Servers.
  *
  * <p><b>Properties to set:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>name</th><th>description</th><th>default</th></tr>
  * <tr><td>ldap.auth.mode</td><td>Defines security contraints behaviour. Possible values are:
- *   <table border="1">
+ *   <table border="1" summary="">
  *   <tr><td>None</td><td>no security constraints, all pages are accessible</td></tr>
  *   <tr><td>Simple</td><td>all IbisObserver pages are accessible</td></tr>
  *   <tr><td>Basic</td><td>all IbisObserver pages are accessible, but only when the user has been authenticated</td></tr>
@@ -66,7 +66,7 @@ import org.apache.log4j.Logger;
  * <tr><td>ldap.auth.dataadmin.base</td><td>LDAP DN to authorize user for IbisDataAdmin</td><td>&nbsp;</td></tr>
  * <tr><td>ldap.auth.tester.base</td><td>LDAP DN to authorize user for IbisTester</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
+
  * 
  * @author Peter Leeuwenburgh
  */

@@ -49,7 +49,7 @@ import com.tibco.tibjms.admin.TibjmsAdminException;
  * 
  * <p>
  * <b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUrl(String) url}</td><td>URL or base of URL to be used</td><td>&nbsp;</td></tr>
@@ -59,16 +59,16 @@ import com.tibco.tibjms.admin.TibjmsAdminException;
  * <tr><td>{@link #setQueueName(String) queueName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of Tibco service to be called. Possible values
  * <ul>
- *   <li>"FF": Fire & Forget protocol</li>
- *   <li>"RR": Request-Reply protocol</li>
+ *   <li>"FF": Fire &amp; Forget protocol
+ *   <li>"RR": Request-Reply protocol
  * </ul></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReplyTimeout(int) replyTimeout}</td><td>maximum time in ms to wait for a reply. 0 means no timeout. (Only for messageProtocol=RR)</td><td>5000</td></tr>
  * <tr><td>{@link #setQueueName(String) queueName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>&nbsp;</td><td>if empty then derived from queueName (if $messagingLayer='P2P' then '$applicationFunction' else '$operationName_$operationVersion)</td></tr>
  * </table>
- * </p>
+
  * <p>
- * <table border="1">
+ * <table border="1" summary="">
  * <b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
  * <tr><td>url</td><td>string</td><td>When a parameter with name serviceId is present, it is used instead of the serviceId specified by the attribute</td></tr>
@@ -80,7 +80,7 @@ import com.tibco.tibjms.admin.TibjmsAdminException;
  * <tr><td>replyTimeout</td><td>string</td><td>When a parameter with name replyTimeout is present, it is used instead of the replyTimeout specified by the attribute</td></tr>
  * <tr><td>soapAction</td><td>string</td><td>When a parameter with name soapAction is present, it is used instead of the soapAction specified by the attribute</td></tr>
  * </table>
- * </p>
+
  * 
  * @author Peter Leeuwenburgh
  * @version $Id: SendTibcoMessage.java,v 1.13 2016/12/22 13:59:24 m99f706 Exp $

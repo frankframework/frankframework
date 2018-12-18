@@ -24,8 +24,8 @@ import nl.nn.adapterframework.util.ClassUtils;
  * position in a record. The fields in the record are separated by a separator.
  * The value of the specified field is taken as key in the flow-table.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
+ * <b>Configuration:</b>
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.batch.FieldPositionRecordHandlerManager</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>Name of the manager</td><td>&nbsp;</td></tr>
@@ -33,7 +33,6 @@ import nl.nn.adapterframework.util.ClassUtils;
  * <tr><td>{@link #setSeparator(String) separator}</td><td>Separator that separates the fields in the record</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFieldNr(int) fieldNr}</td><td>Position of field that identifies the recordtype (position of first field is 1)</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
  * 
  * @author John Dekker
  */

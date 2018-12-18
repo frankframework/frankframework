@@ -29,24 +29,24 @@ import org.apache.commons.lang.StringUtils;
  * <p>
  * If the role is not specified by the role attribute, the input of
  * the pipe is used as role.
- * </p>
+
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned if user has role</td><td>"success"</td></tr>
  * <tr><td>{@link #setNotInRoleForwardName(String) notInRoleForwardName}</td><td>name of forward returned if user is not allowed to assume the specified role</td><td>"notInRole"</td></tr>
  * <tr><td>{@link #setRole(String) role}</td><td>the J2EE role to check. </td><td>&nbsp;</td></tr>
  * </table>
- * </p>
+
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success" or value set by {@link #setForwardName(String) forwardName}</td><td>user may assume role</td></tr>
  * <tr><td>"notInRole" or value set by {@link #setNotInRoleForwardName(String) notInRoleForwardName}</td><td>user may not assume role</td></tr>
  * <tr><td><i></i></td><td>if specified</td></tr>
  * </table>
- * </p>
+
  * 
  * N.B. The role itself must be specified by hand in the deployement descriptors web.xml and application.xml.
  * 

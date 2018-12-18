@@ -254,13 +254,13 @@ public class PullingListenerContainer implements IThreadCountControllable {
 
     
 	/**
-	 * Starts the receiver. This method is called by the startRunning method.<br/>
+	 * Starts the receiver. This method is called by the startRunning method.<br>
 	 * Basically:
 	 * <ul>
 	 * <li>it calls the getRawMessage method to get a message<li>
-	 * <li> it performs the onMessage method, resulting a PipeLineResult</li>
+	 * <li> it performs the onMessage method, resulting a PipeLineResult
 	 * <li>it calls the afterMessageProcessed() method of the listener<li>
-	 * <li> it optionally sends the result using the sender</li>
+	 * <li> it optionally sends the result using the sender
 	 * </ul>
 	 */
 //    public void run() {

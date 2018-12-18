@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
  * Provides key transformation functionality.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Cache, will be set from owner</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeyXPath(String) keyXPath}</td><td>xpath expression to extract cache key from request message</td><td>&nbsp;</td></tr>
@@ -46,7 +46,6 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setValueInputSessionKey(String) valueInputSessionKey}</td><td>session key to use as input for transformation of response message to cached value by valueXPath or valueStyleSheet</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCacheEmptyValues(boolean) cacheEmptyValues}</td><td>controls whether empty values will be cached. When set true, empty cache entries can exist for any key.</td><td>false</td></tr>
  * </table>
- * </p>
  * 
  * @author  Gerrit van Brakel
  * @since   4.11

@@ -42,7 +42,7 @@ import org.apache.commons.lang.StringUtils;
  * of a XSLT-stylesheet, the content of a session variable or, by default, by returning the name of the root-element.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.XmlSwitch</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
@@ -59,14 +59,14 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setNotFoundForwardName(String) notFoundForwardName}</td><td>Forward returned when the pipename derived from the stylesheet could not be found.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setXslt2(boolean) xslt2}</td><td>when set <code>true</code> XSLT processor 2.0 (net.sf.saxon) will be used, otherwise XSLT processor 1.0 (org.apache.xalan)</td><td>false</td></tr>
  * </table>
- * </p>
+
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>&lt;name of the root-element&gt;</td><td>default</td></tr>
  * <tr><td>&lt;result of transformation&gt</td><td>when {@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename} or {@link #setXpathExpression(String) xpathExpression} is specified</td></tr>
  * </table>
- * </p>
+
  * @author Johan Verrips
  */
 public class XmlSwitch extends AbstractPipe {
@@ -162,7 +162,7 @@ public class XmlSwitch extends AbstractPipe {
 
 	/**
 	 * This is where the action takes place, the switching is done. Pipes may only throw a PipeRunException,
-	 * to be handled by the caller of this object.<br/>
+	 * to be handled by the caller of this object.<br>
 	 * As WebLogic has the problem that when an non-well formed XML stream is given to
 	 * weblogic.xerces the transformer gets corrupt, on an exception the configuration is done again, so that the
 	 * transformer is re-initialized.

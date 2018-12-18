@@ -83,7 +83,7 @@ import org.xml.sax.ext.LexicalHandler;
 
 /**
  * <p>Implementation of ValidatorHandler for W3C XML Schemas and
- * also a validator helper for <code>SAXSource</code>s.</p>
+ * also a validator helper for <code>SAXSource</code>s.
  * 
  * Class copied from Xerces 2.11.0, to support creating ValidatorHandler from GrammarPool in Xerces 2.9.1.
  *

@@ -32,7 +32,7 @@ import org.apache.commons.lang.StringUtils;
  * Pipe for deleting files.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.batch.CleanupOldFilesPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
@@ -46,7 +46,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setExcludeWildcard(String) excludeWildcard}</td><td>Filter of files to be excluded for deletion</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMinStableTime(long) minStableTime}</td><td>minimal age of file in milliseconds, to avoid deleting a file while it is still being written (only used when wildcard is set) (set to 0 or negative value to disable)</td><td>1000 [ms]</td></tr>
  * </table>
- * </p>
+
  * 
  * @author John Dekker
  * @since  4.2

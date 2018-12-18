@@ -41,11 +41,11 @@ import org.xml.sax.helpers.DefaultHandler;
  * Sends a message to a Sender for each element in the XML file that the input message refers to.
  *
  * <p><b>Configuration </b><i>(where deviating from IteratingPipe)</i><b>:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setElementName(String) elementName}</td><td>the name of the element to iterate over (alternatively: <code>elementChain</code>)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setElementChain(String) elementChain}</td><td>the name of the element to iterate over, preceded with all ancestor elements and separated by semicolons (e.g. "adapter;pipeline;pipe")</td><td>&nbsp;</td></tr>
- * </table></p>
+ * </table>
  * 
  * @author  Peter Leeuwenburgh
  */

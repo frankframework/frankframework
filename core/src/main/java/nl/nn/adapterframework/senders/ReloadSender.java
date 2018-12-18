@@ -29,21 +29,21 @@ import nl.nn.adapterframework.util.XmlUtils;
  * Performs a reload on database config .
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setForceReload(String) forceReload}</td><td>reload the configuration regardless of the version</td><td>false</td></tr>
  * </table>
- * </p>
+
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
- * </p>
- * <p>It is possible to set the name of the configuration with the parameter 'name'.</p>
- * <p>You can dynamically set 'forceReload' attribute with the parameter 'forceReload'.</p>
+
+ * <p>It is possible to set the name of the configuration with the parameter 'name'.
+ * <p>You can dynamically set 'forceReload' attribute with the parameter 'forceReload'.
  * @author	Lars Sinke
  * @author	Niels Meijer
  */

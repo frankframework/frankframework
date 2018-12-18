@@ -42,15 +42,15 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Sends a message to a Sender for each entry of its input, that must be an ZipInputStream. The input of the pipe must be one of:
  * <ul>
- * 	<li>String refering to a filename</li>
- *  <li>File</li>
- *  <li>InputStream</li> 
+ * 	<li>String refering to a filename
+ *  <li>File
+ *  <li>InputStream 
  * </ul>
  * The message sent each time to the sender is the filename of the entry found in the archive. 
  * The contents of the archive is available as a Stream or a String in a session variable. 
  *
  * <p><b>Configuration </b><i>(where deviating from IteratingPipe)</i><b>:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.StreamLineIteratorPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setContentsSessionKey(String) contentsSessionKey}</td><td>session key used to store contents of each zip entry</td><td>zipdata</td></tr>
@@ -59,16 +59,15 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setCharset(String) charset}</td><td>charset used when reading the contents of the entry (only used if streamingContens=false></td><td>UTF-8</td></tr>
  * <tr><td>{@link #setSkipBOM(boolean) skipBOM}</td><td>when set to <code>true</code>, a possible Bytes Order Mark (BOM) at the start of the file is skipped (only used for encoding UFT-8)</td><td>false</td></tr>
  * </table>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.ISender sender}</td><td>specification of sender to send messages with</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}</td><td>specification of listener to listen to for replies</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be handed to the sender, if this is a {@link nl.nn.adapterframework.core.ISenderWithParameters ISenderWithParameters}</td></tr>
  * </table>
- * </p>
+ * <br>
  * 
  * For more configuration options, see {@link MessageSendingPipe}.
- * <br>
  * 
  * @author  Gerrit van Brakel
  * @since   4.9.10

@@ -35,7 +35,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * Output bytes as specified by the input XML. 
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.BytesOutputPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
@@ -46,7 +46,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * <tr><td>{@link #setPreserveInput(boolean) preserveInput}</td><td>when set <code>true</code>, the input of a pipe is restored before processing the next one</td><td>false</td></tr>
  * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of possible XML parsing in descender-classes</td><td>application default</td></tr>
  * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are: 
- *   <table border="1">
+ *   <table border="1" summary="">
  *   <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipe excecuted in Transaction</th></tr>
  *   <tr><td colspan="1" rowspan="2">Required</td>    <td>none</td><td>T2</td></tr>
  * 											      <tr><td>T1</td>  <td>T1</td></tr>
@@ -63,14 +63,14 @@ import org.xml.sax.helpers.XMLReaderFactory;
  *  </table></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * </table>
- * </p>
+
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
- * </p>
+
  *
  * Actions are taken on every field
  * tag found in the input XML. Every field tag should have a type attribute
@@ -79,8 +79,8 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * for every field tag. Currently two types of conversion are supported:
  * 
  * <ul>
- *   <li><code>GetBytesFromString</code>, a conversion from string to bytes as specified by java.lang.String.getBytes(String charsetName)</li>
- *   <li><code>PackedDecimal</code>, a conversion from string to Packed-decimal</li>
+ *   <li><code>GetBytesFromString</code>, a conversion from string to bytes as specified by java.lang.String.getBytes(String charsetName)
+ *   <li><code>PackedDecimal</code>, a conversion from string to Packed-decimal
  * </ul>
  *  
  * An additional charset attribute is needed for a GetBytesFromString
@@ -97,18 +97,18 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * found in the following resources:
  * 
  * <ul>
- *   <li>A description as found at <a href="http://www.simotime.com/datapk01.htm">http://www.simotime.com/datapk01.htm</a></li>
- *   <li>AS400PackedDecimal.java from jtopen_6_1_source.zip downloaded at <a href="http://jt400.sourceforge.net/">http://jt400.sourceforge.net/</a></li>
- *   <li>The WebSphere Studio COBOL for Windows Programming Guide from <a href="http://www-1.ibm.com/support/docview.wss?uid=swg27005151">http://www-1.ibm.com/support/docview.wss?uid=swg27005151</a></li>
+ *   <li>A description as found at <a href="http://www.simotime.com/datapk01.htm">http://www.simotime.com/datapk01.htm</a>
+ *   <li>AS400PackedDecimal.java from jtopen_6_1_source.zip downloaded at <a href="http://jt400.sourceforge.net/">http://jt400.sourceforge.net/</a>
+ *   <li>The WebSphere Studio COBOL for Windows Programming Guide from <a href="http://www-1.ibm.com/support/docview.wss?uid=swg27005151">http://www-1.ibm.com/support/docview.wss?uid=swg27005151</a>
  * </ul>
  * 
  * Some examples:
  * 
  * <ul>
- *   <li>The string +12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5C</li>
- *   <li>The string -12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5D</li>
- *   <li>The string 12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5F</li>
- *   <li>The string 1234 will be translated to three bytes with the following hexadecimal representation: 01 23 4F</li>
+ *   <li>The string +12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5C
+ *   <li>The string -12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5D
+ *   <li>The string 12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5F
+ *   <li>The string 1234 will be translated to three bytes with the following hexadecimal representation: 01 23 4F
  * </ul>
  *
  * The Packed-decimal is prefixed with zero's when the specified size is bigger

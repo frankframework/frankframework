@@ -27,7 +27,7 @@ import org.apache.commons.lang.StringUtils;
  * QuerySender that assumes a fixed query, possibly with attributes.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.jdbc.FixedQuerySender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
@@ -42,9 +42,9 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setQueryType(String) queryType}</td><td>one of:
- * <ul><li>"select" for queries that return data</li>
- *     <li>"updateBlob" for queries that update a BLOB</li>
- *     <li>anything else for queries that return no data.</li>
+ * <ul><li>"select" for queries that return data
+ *     <li>"updateBlob" for queries that update a BLOB
+ *     <li>anything else for queries that return no data.
  * </ul></td><td>"other"</td></tr>
  * <tr><td>{@link #setMaxRows(int) maxRows}</td><td>maximum number of rows returned</td><td>-1 (unlimited)</td></tr>
  * <tr><td>{@link #setStartRow(int) startRow}</td><td>the number of the first row returned from the output</td><td>1</td></tr>
@@ -61,15 +61,15 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setIncludeFieldDefinition(boolean) includeFieldDefinition}</td><td>when <code>true</code>, the result contains besides the returned rows also a header with information about the fetched fields</td><td>true</td></tr>
  * <tr><td>{@link #setCloseInputstreamOnExit(boolean) closeInputstreamOnExit}</td><td>when set to <code>false</code>, the inputstream is not closed after it has been used</td><td>true</td></tr>
  * </table>
- * </p>
- * <table border="1">
+
+ * <table border="1" summary="">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
  * <tr><td>&nbsp;</td><td>all parameters present are applied to the statement to be executed</td></tr>
  * </table>
- * </p>
+
  * 
- * <p><b>NOTE:</b> See {@link nl.nn.adapterframework.util.DB2XMLWriter DB2XMLWriter} for Resultset!</p>
+ * <p><b>NOTE:</b> See {@link nl.nn.adapterframework.util.DB2XMLWriter DB2XMLWriter} for Resultset!
  * 
  * @author  Gerrit van Brakel
  * @since 	4.1

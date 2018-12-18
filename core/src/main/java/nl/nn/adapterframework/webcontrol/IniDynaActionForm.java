@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author  Johan Verrips
  * @since 4.0
  * <p>Date: Nov 15, 2003
- * Time: 3:39:06 PM</p>
+ * Time: 3:39:06 PM
  * 
  */
 public class IniDynaActionForm extends DynaActionForm {

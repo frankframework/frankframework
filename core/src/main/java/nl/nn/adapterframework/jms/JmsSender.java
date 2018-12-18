@@ -52,7 +52,7 @@ import nl.nn.adapterframework.util.DomBuilderException;
  * This class sends messages with JMS.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.jms.JmsSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
@@ -77,14 +77,14 @@ import nl.nn.adapterframework.util.DomBuilderException;
  * <tr><td>{@link #setReplySoapHeaderSessionKey(String) replySoapHeaderSessionKey}</td><td>session key to store SOAP header of reply</td><td>soapHeader</td></tr>
  * <tr><td>{@link #setResponseHeadersToSessionKeys(String) responseHeaders}</td><td>a list with JMS Headers to add to the IPipeLineSession</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
- * <table border="1">
+
+ * <table border="1" summary="">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
  * <tr><td></td>SoapAction<td><i>String</i></td><td>SoapAction. Automatically filled from attribute <code>soapAction</code></td></tr>
  * <tr><td><i>any</i></td><td><i>any</i></td><td>all parameters present are set as messageproperties</td></tr>
  * </table>
- * </p>
+
  * 
  * @author Gerrit van Brakel
  */

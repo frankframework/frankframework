@@ -48,7 +48,7 @@ import org.apache.struts.util.MessageResources;
 
 
 /**
- * Implementation of <strong>Action</strong><br/>.
+ * Implementation of <strong>Action</strong><br>.
  * 
  * This action is ment to be extended by individual actions in the project.
  * 
@@ -147,7 +147,7 @@ public abstract class ActionBase extends Action {
 	}
 
     /**
-     * Gets the full request Uri, that is, the reference suitable for ActionForwards.<br/>
+     * Gets the full request Uri, that is, the reference suitable for ActionForwards.<br>
      * Queryparameters of the request are added to it.
      */
     public String getFullRequestUri (HttpServletRequest request) {
@@ -205,7 +205,7 @@ public abstract class ActionBase extends Action {
     }
 
     /**
-     * removes formbean <br/>
+     * removes formbean <br>
      * removes what is defined under the Attribute of a mapping from either the
      * request or the session
      */

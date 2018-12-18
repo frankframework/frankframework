@@ -52,17 +52,15 @@ import org.xml.sax.SAXParseException;
  * The configurationDigester reads the configuration.xml and the digester rules
  * in XML format and factors a Configuration.
  *
- * Default JNDI properties may be specified on the commandline, e.g. <br/>
+ * Default JNDI properties may be specified on the commandline, e.g. <br>
  * <p>
- * -Djava.naming.factory.initial=org.exolab.jms.jndi.mipc.IpcJndiInitialContextFactory<br/>
- * -Djava.naming.provider.url=tcp://localhost:3035/<br/>
- * </p>
+ * -Djava.naming.factory.initial=org.exolab.jms.jndi.mipc.IpcJndiInitialContextFactory<br>
+ * -Djava.naming.provider.url=tcp://localhost:3035/<br>
  * <p>Since 4.0.1, the configuration.xml is first resolved using the {@link nl.nn.adapterframework.util.StringResolver resolver},
  * with tries to resolve ${variable} with the {@link nl.nn.adapterframework.util.AppConstants AppConstants}, so that
  * both the values from the property files as the environment setting are available.<p>
  * <p>Since 4.1.1 the configuration.xml is parsed with a entityresolver that uses the classpath, which
  * means that you may specify entities that will be resolved during parsing.
- * </p>
  * Example:
  * <code><pre>
 &lt;?xml version="1.0"?&gt;

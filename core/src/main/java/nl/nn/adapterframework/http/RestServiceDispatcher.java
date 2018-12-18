@@ -56,9 +56,9 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 /**
  * Singleton class that knows about the RestListeners that are active.
- * <br/>
+ * <br>
  * This class is to be used as a facade for different services that implement
- * the <code>ServiceClient</code> interface.<br/>
+ * the <code>ServiceClient</code> interface.<br>
  * This class is exposed as a webservice, to be able to provide a single point
  * of entry to all adapters that have a ServiceListener as a IReceiver.
  */

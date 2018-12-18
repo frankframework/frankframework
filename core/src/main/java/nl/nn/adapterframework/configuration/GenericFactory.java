@@ -24,7 +24,6 @@ package nl.nn.adapterframework.configuration;
  * with the string "proto-", to prevent unwanted auto-wiring cascaded of
  * other prototype beans defined in the Spring Factory which are supposed to
  * be defined in the IBIS Configuration File.
- * </p>
  * <p>
  * If a className attribute is specified in the configuration file, then
  * this is used together with the bean-name to find the bean to be
@@ -33,18 +32,15 @@ package nl.nn.adapterframework.configuration;
  * In particular, the bean-name is ignored when the class-name is specified
  * and the Spring Factory contains exactly 1 bean-definition for that
  * class.
- * </p>
  * <p>
  * This is useful for those kinds of rules in the digester-rules.xml where
  * the className was always mandatory in older versions, but also for those rules
  * where className is never specified and only 1 possible implementation
  * exists.
- * </p>
  * <p>
  * NB: The Apache Digester cannot read a factory-create-rule from XML and supply
  * parameters to the factory created from the XML digester-rules, so there is
  * no way to configure a factory instance with a bean-name from the digester-rules.
- * </p>
  *
  * @author  Tim van der Leeuw
  * @since   4.8

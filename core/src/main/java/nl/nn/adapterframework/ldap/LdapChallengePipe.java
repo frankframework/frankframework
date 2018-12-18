@@ -33,29 +33,29 @@ import org.apache.commons.lang.StringUtils;
  * Pipe to check if a username and password are valid in LDAP.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.ldap.LdapChallengePipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLdapProviderURL(String) ldapProviderURL}</td><td>URL to the LDAP server. <br/>Example: ldap://su05b9.itc.intranet</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setLdapProviderURL(String) ldapProviderURL}</td><td>URL to the LDAP server. <br>Example: ldap://su05b9.itc.intranet</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setInitialContextFactoryName(String) initialContextFactoryName}</td><td>class to use as initial context factory</td><td>com.sun.jndi.ldap.LdapCtxFactory</td></tr>
  * <tr><td>{@link #setErrorSessionKey(String) errorSessionKey}</td><td>key of session variable used to store cause of errors</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
- * <table border="1">
+
+ * <table border="1" summary="">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>ldapProviderURL</td><td>URL to the LDAP server. <br/>Example: ldap://su05b9.itc.intranet</td><td>Required only if attribute ldapProviderURL is not set</td></tr>
- * <tr><td>principal</td><td>The LDAP DN for the username. <br/>Example: UID=SRP,OU=DI-IUF-EP,OU=SERVICES,O=ING</td><td>Required and must be filled</td></tr>
- * <tr><td>credentials</td><td>The LDAP password. <br/> Example: welkom01</td><td>Required and must be filled</td></tr>
+ * <tr><td>ldapProviderURL</td><td>URL to the LDAP server. <br>Example: ldap://su05b9.itc.intranet</td><td>Required only if attribute ldapProviderURL is not set</td></tr>
+ * <tr><td>principal</td><td>The LDAP DN for the username. <br>Example: UID=SRP,OU=DI-IUF-EP,OU=SERVICES,O=ING</td><td>Required and must be filled</td></tr>
+ * <tr><td>credentials</td><td>The LDAP password. <br> Example: welkom01</td><td>Required and must be filled</td></tr>
  * </table>
- * </p>
+
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th><th>remarks</th></tr>
  * <tr><td>success</td><td>Successful login to LDAP</td><td>should be defined in configuration</td></tr>
  * <tr><td>invalid</td><td>Unsuccessful login to LDAP</td><td>should be defined in configuration</td></tr>
  * </table>
- * </p>
+
  * 
  * @deprecated
  * @author  Milan Tomc

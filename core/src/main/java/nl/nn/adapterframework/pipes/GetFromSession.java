@@ -31,7 +31,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * <code>{@link #setSessionKey(String) sessionKey}</code>.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
@@ -39,19 +39,19 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> to retrieve the output message from</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setType(String) type}</td><td>
  * <ul>
- * 	<li><code>string</code>: renders the contents</li>
- * 	<li><code>map</code>: converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name="..."&gt;...&lt;/item&gt;&lt;item name="..."&gt;...&lt;/item&gt;&lt;/items&gt;)</li>
+ * 	<li><code>string</code>: renders the contents
+ * 	<li><code>map</code>: converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name="..."&gt;...&lt;/item&gt;&lt;item name="..."&gt;...&lt;/item&gt;&lt;/items&gt;)
  * </ul>
  * </td><td>string</td></tr>
  * </table>
- * </p>
+
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
- * </p>
+
  * @author Johan Verrips
  *
  * @see IPipeLineSession

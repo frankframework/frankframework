@@ -31,7 +31,7 @@ import org.apache.commons.lang.SystemUtils;
  * ErrorMessageFormatter that returns a fixed message with replacements.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setFileName(String) fileName}</td><td>name of the file containing the resultmessage</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReturnString(String) returnString}</td><td>returned message</td><td>&nbsp;</td></tr>

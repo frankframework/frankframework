@@ -33,7 +33,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * Base class for building JDBC-senders.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.jdbc.JdbcSenderBase</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
@@ -48,7 +48,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>the number of seconds the driver will wait for a Statement object to execute. If the limit is exceeded, a TimeOutException is thrown. 0 means no timeout</td><td>0</td></tr>
  * </table>
 
- *  * </p>
+
  * @author  Gerrit van Brakel
  * @since 	4.2.h
  */

@@ -37,7 +37,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * Baseclass for batch {@link nl.nn.adapterframework.batch.IResultHandler resultHandler} that writes the transformed record to a LOB.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.jdbc.Result2LobWriterBase</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>Name of the resulthandler</td><td>&nbsp;</td></tr>
@@ -53,7 +53,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * <tr><td>{@link #setBlockNamePattern(String) blockNamePattern}</td><td>String that is replaced by name of block or name of stream in above strings</td><td>#name#</td></tr>
  * </table>
  * <p/>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the resultHandler will be applied to the SQL statement</td></tr>
  * </table>

@@ -91,11 +91,11 @@ import org.apache.log4j.Logger;
  *      &lt;dateTimeReceived&gt;2015-11-18T11:41:04.000+0100&lt;/dateTimeReceived&gt;
  *   &lt;/email&gt;
  * </pre></code>
- * </p>
+
  * 
  * <p>
  * <b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr>
  * <th>attributes</th>
  * <th>description</th>
@@ -163,7 +163,7 @@ import org.apache.log4j.Logger;
  * <td>false</td>
  * </tr>
  * </table>
- * </p>
+
  * 
  * @author Peter Leeuwenburgh
  */

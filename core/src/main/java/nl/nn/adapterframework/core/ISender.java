@@ -56,7 +56,7 @@ boolean isSynchronous();
  * For synchronous senders ({@link #isSynchronous()} returns <code>true</code>:
  * 
  * The following table shows the difference between synchronous and a-synchronous senders:
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>@nbsp;</th><th>synchronous</th><th>a-synchronous</th></tr>
  * <tr><td>{@link #isSynchronous()} returns</td><td><code>true</code></td><td><code>false</code></td></tr>
  * <tr><td>return value of <code>sendMessage()</code> is</td><td>the reply-message</td><td>the messageId of the message sent</td></tr>

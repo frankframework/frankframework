@@ -185,7 +185,7 @@ public class EjbListenerPortConnector implements IListenerConnector {
      * Construct the name of the WebSphere listenerport according to the
      * following logic:
      * <ol>
-     * <li>If the property 'listenerPort' is set in the configuration, then use that</li>
+     * <li>If the property 'listenerPort' is set in the configuration, then use that
      * <li>Otherwise, concatenate the configuration-name with the receiver-name, replaces all spaces with minus-signs, and append 'ListenerPort'
      * </ol>
      * 

@@ -25,7 +25,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.FileHandler;
 
 /**
- * <p>See {@link FileHandler}</p>
+ * <p>See {@link FileHandler}
  *
  * @author Jaco de Groot
  */

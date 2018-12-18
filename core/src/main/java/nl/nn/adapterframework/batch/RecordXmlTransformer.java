@@ -35,7 +35,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * Encapsulates a record in XML, optionally translates it using XSLT or XPath.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.batch.RecordXmlTransformer</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the RecordHandler</td><td>&nbsp;</td></tr>
@@ -52,7 +52,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * <tr><td>{@link #setOmitXmlDeclaration(boolean) omitXmlDeclaration}</td><td>force the transformer generated from the XPath-expression to omit the xml declaration</td><td>true</td></tr>
  * <tr><td>{@link #setEndOfRecord(String) endOfRecord}</td><td>string which ends the record and must be ignored</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
  * 
  * @author  John Dekker / Gerrit van Brakel
  */

@@ -47,7 +47,7 @@ import org.apache.commons.lang.SystemUtils;
  * input of <code>returnString</code> is returned.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.FixedResult</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
@@ -63,8 +63,8 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setLookupAtRuntime(boolean) lookupAtRuntime}</td><td>when set <code>true</code>, the lookup of the file will be done at runtime instead of at configuration time</td><td>false</td></tr>
  * <tr><td>{@link #setReplaceFixedParams(boolean) replaceFixedParams}</td><td>when set <code>true</code>, any parameter is used for replacements but with <code>name-of-parameter</code> and not <code>${name-of-parameter}</code></td><td>false</td></tr>
  * </table>
- * </p>
- * <table border="1">
+
+ * <table border="1" summary="">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
  * <tr>
@@ -75,15 +75,15 @@ import org.apache.commons.lang.SystemUtils;
  *       This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}</td>
  * </tr>
  * </table>
- * </p>
+
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td>"filenotfound"</td><td>file not found (when this forward isn't specified an exception will be thrown)</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
- * </p>
+
  * @author Johan Verrips
  */
 public class FixedResult extends FixedForwardPipe {

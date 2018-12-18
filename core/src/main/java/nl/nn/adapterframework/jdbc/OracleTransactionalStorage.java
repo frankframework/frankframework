@@ -22,7 +22,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * Oracle implementation of {@link ITransactionalStorage}.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.jdbc.JdbcTransactionalStorage</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSlotId(String) slotId}</td><td>optional identifier for this storage, to be able to share the physical table between a number of receivers</td><td>&nbsp;</td></tr>
@@ -44,7 +44,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * <tr><td>{@link #setMessageFieldType(String) messageFieldType}</td><td>the type of the column message themselves are stored in</td><td>BLOB</td></tr>
  * <tr><td>{@link #setSequenceName(String) sequenceName}</td><td>the name of the sequence used to generate the primary key</td><td>ibisstore_seq</td></tr>
  * </table>
- * </p>
+
  * 
  * The default uses the following objects:
  *  <pre>

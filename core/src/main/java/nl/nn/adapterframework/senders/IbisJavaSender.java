@@ -40,7 +40,7 @@ import org.apache.commons.lang.StringUtils;
  * or any other application in the same JVM that has registered a <code>RequestProcessor</code> with the IbisServiceDispatcher.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.senders.IbisJavaSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
@@ -52,18 +52,18 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setMultipartResponseCharset(String) multipartResponseCharset}</td><td></td><td>UTF-8</td></tr>
  * <tr><td>{@link #setDispatchType(String) type}</td><td>set to 'DLL' to make the dispatcher communicate with a DLL set on the classpath</td><td></td></tr>
  * </table>
- * </p>
+
  * Any parameters are copied to the PipeLineSession of the service called.
  * 
  * <h4>configuring IbisJavaSender and JavaListener</h4>
  * <ul>
- *   <li>Define a GenericMessageSendingPipe with an IbisJavaSender</li>
- *   <li>Set the attribute <code>serviceName</code> to <i>yourExternalServiceName</i></li>
+ *   <li>Define a GenericMessageSendingPipe with an IbisJavaSender
+ *   <li>Set the attribute <code>serviceName</code> to <i>yourExternalServiceName</i>
  * </ul>
  * In the Adapter to be called:
  * <ul>
- *   <li>Define a Receiver with a JavaListener</li>
- *   <li>Set the attribute <code>serviceName</code> to <i>yourExternalServiceName</i></li>
+ *   <li>Define a Receiver with a JavaListener
+ *   <li>Set the attribute <code>serviceName</code> to <i>yourExternalServiceName</i>
  * </ul>
  * N.B. Please make sure that the IbisServiceDispatcher-1.1.jar is present on the class path of the server.
  *

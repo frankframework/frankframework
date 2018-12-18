@@ -22,7 +22,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * Translate a record using XSL.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.batch.RecordXslTransformer</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRootTag(String) rootTag}</td><td>Roottag for the generated XML document</td><td>&nbsp;</td></tr>
@@ -37,7 +37,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * <tr><td>{@link #setOutputType(String) outputType}</td><td>either 'text' or 'xml'. Only valid for xpathExpression</td><td>text</td></tr>
  * <tr><td>{@link #setOmitXmlDeclaration(boolean) omitXmlDeclaration}</td><td>force the transformer generated from the XPath-expression to omit the xml declaration</td><td>true</td></tr>
  * </table>
- * </p>
  * 
  * @author  John Dekker
  * @deprecated Please replace by RecordXmlTransformer.

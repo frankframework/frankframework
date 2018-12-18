@@ -21,7 +21,7 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 
 /**
- * <p>Implementation of Schema for W3C XML Schemas.</p>
+ * <p>Implementation of Schema for W3C XML Schemas.
  * 
  * Class copied from Xerces 2.11.0, to support creating ValidatorHandler from GrammarPool in Xerces 2.9.1.
  * 
@@ -51,7 +51,7 @@ final class XMLSchema extends AbstractXMLSchema {
      */
     
     /**
-     * <p>Returns the grammar pool contained inside the container.</p>
+     * <p>Returns the grammar pool contained inside the container.
      * 
      * @return the grammar pool contained inside the container
      */
@@ -63,7 +63,7 @@ final class XMLSchema extends AbstractXMLSchema {
      * <p>Returns whether the schema components contained in this object
      * can be considered to be a fully composed schema and should be
      * used to exclusion of other schema components which may be
-     * present elsewhere.</p>
+     * present elsewhere.
      * 
      * @return whether the schema components contained in this object
      * can be considered to be a fully composed schema

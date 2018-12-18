@@ -26,7 +26,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /**
- * <p>Static utility methods for the Validation API implementation.</p>
+ * <p>Static utility methods for the Validation API implementation.
  *
  * @author Kohsuke Kawaguchi (kohsuke.kawaguchi@sun.com)
  * @version $Id: Util.java 447235 2006-09-18 05:01:44Z mrglavas $

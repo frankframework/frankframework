@@ -59,7 +59,7 @@ public abstract class DestinationFactoryUtils {
 	/**
 	 * Obtain a TID String that is synchronized with the current transaction, if any.
 	 * @param sapSystem the SapSystem to obtain a TID for
-	 * @param existingCon the existing JCoDestination to obtain a String for
+	 * @param existingDestination the existing JCoDestination to obtain a String for
 	 * (may be <code>null</code>)
 	 * @param synchedLocalTransactionAllowed whether to allow for a local JMS transaction
 	 * that is synchronized with a Spring-managed transaction (where the main transaction
@@ -67,8 +67,8 @@ public abstract class DestinationFactoryUtils {
 	 * transaction committing right after the main transaction. If not allowed, the given
 	 * SapSystem needs to handle transaction enlistment underneath the covers.
 	 * @return the TID, or <code>null</code> if none found
-	 * @throws SapException in case of JCo failure
-	 * @throws JCoException 
+	 * @throws SapException in case of SAP failure
+	 * @throws JCoException in case of JCo failure
 	 */
 	public static String getTransactionalTid(
 			final SapSystem sapSystem, final JCoDestination existingDestination, final boolean synchedLocalTransactionAllowed)
@@ -122,9 +122,6 @@ public abstract class DestinationFactoryUtils {
 	 * (used as TransactionSynchronizationManager key)
 	 * @param resourceFactory the ResourceFactory to use for extracting or creating
 	 * JMS resources
-	 * @param startDestination whether the underlying JMS JCoDestination approach should be
-	 * started in order to allow for receiving messages. Note that a reused JCoDestination
-	 * may already have been started before, even if this flag is <code>false</code>.
 	 * @return the transactional String, or <code>null</code> if none found
 	 * @throws JCoException in case of failure
 	 */

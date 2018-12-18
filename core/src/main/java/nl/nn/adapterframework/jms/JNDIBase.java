@@ -38,7 +38,7 @@ import org.apache.log4j.Logger;
  * Provides all JNDI functions and is meant to act as a base class.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.jms.JNDIBase</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProviderURL(String) providerURL}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
@@ -50,8 +50,8 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setUrlPkgPrefixes(String) urlPkgPrefixes}</td><td>maps to the field Context.URL_PKG_PREFIXES</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSecurityProtocol(String) securityProtocol}</td><td>maps to the field Context.SECURITY_PROTOCOL</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
- * <br/>
+
+ * <br>
  * @author Johan Verrips IOS
  */
 public class JNDIBase {
@@ -129,13 +129,13 @@ public class JNDIBase {
 	}
 	
     /**
-     *  Gets the Context<br/>
+     *  Gets the Context<br>
      *  When InitialContextFactory and ProviderURL are set, these are used
      *  to get the <code>Context</code>. Otherwise the the InitialContext is
-     *  retrieved without parameters.<br/>
-     *  <b>Notice:</b> you can set the parameters on the commandline with <br/>
+     *  retrieved without parameters.<br>
+     *  <b>Notice:</b> you can set the parameters on the commandline with <br>
      *  java -Djava.naming.factory.initial= xxx -Djava.naming.provider.url=xxx
-     * <br/><br/>
+     * <br><br>
      *
      * @return                                   The context value
      * @exception  javax.naming.NamingException  Description of the Exception
@@ -206,7 +206,7 @@ public class JNDIBase {
         this.securityProtocol = securityProtocol;
     }
     /**
-     * Setter for <code>Context.URL_PKG_PREFIXES</code><br/>
+     * Setter for <code>Context.URL_PKG_PREFIXES</code><br>
      * Creation date: (03-04-2003 8:50:36)
      * @param newUrlPkgPrefixes java.lang.String
      */

@@ -45,18 +45,18 @@ import org.apache.commons.lang.StringUtils;
  * Perform an XQuery.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.XsltPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setXqueryName(String) xqueryName}</td><td>name of the file (resource) on the classpath to read the xquery from</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setXqueryFile(String) xqueryFile}</td><td>name of the file on the file system to read the xquery from</td><td>&nbsp;</td></tr>
  * </table>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be passed as external variable to the XQuery</td></tr>
  * </table>
- * </p>
+
  * 
  * @author Jaco de Groot
  */

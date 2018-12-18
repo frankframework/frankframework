@@ -39,7 +39,7 @@ import com.ibm.mq.jms.MQDestination;
  * receiver otherwise format errors occur (e.g. dots are added after every
  * character in the message).
  *
- * <p>See {@link JmsSender} for configuration</p>
+ * <p>See {@link JmsSender} for configuration
  *
  * @author Jaco de Groot
  */

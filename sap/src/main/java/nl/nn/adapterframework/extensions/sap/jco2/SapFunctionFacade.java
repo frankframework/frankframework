@@ -36,7 +36,7 @@ import com.sap.mw.jco.JCO;
 /**
  * Wrapper round SAP-functions, either SAP calling Ibis, or Ibis calling SAP.
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>Name of the Ibis-object</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSapSystemName(String) sapSystemName}</td><td>name of the {@link SapSystem} used by this object</td><td>&nbsp;</td></tr>
@@ -48,8 +48,7 @@ import com.sap.mw.jco.JCO;
  * <tr><td>{@link #setReplyFieldName(String) replyFieldName}</td><td>Name of the field in the ExportParameterList of the RFC function that contains the whole reply message contents</td><td>&nbsp;</td></tr>
  * </table>
  * N.B. If no requestFieldIndex or requestFieldName is specified, input is converted from/to xml;
- * If no replyFieldIndex or replyFieldName is specified, output is converted from/to xml. 
- * </p>
+ * If no replyFieldIndex or replyFieldName is specified, output is converted from/to xml.
  * @author  Gerrit van Brakel
  * @since   4.2
  */
@@ -218,11 +217,11 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 			
 
 	/**
-	 * Calculate the index of the field that correspondes with the message as a whole.
+	 * Calculate the index of the field that corresponds with the message as a whole.
 	 * 
 	 * return values
-	 *  >0 : the required index
-	 *  0  : no index found, convert all fields to/from xml.
+	 *  &gt;0 : the required index
+	 *  0  : no index found, convert all fields to/from XML.
 	 */
 	protected int findFieldIndex(JCO.ParameterList params, int index, String name) {
 		if (index!=0 || StringUtils.isEmpty(name)) {

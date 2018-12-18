@@ -48,22 +48,22 @@ import org.springframework.transaction.TransactionDefinition;
 
 /**
  * Processor and keeper of a line of {@link IPipe Pipes}.
- * <br/>
+ * <br>
  * Pipelines also generate statics information per Pipe and keep forwards, that are registered
  * at individual pipes during the configure fase.
- * <br/>
+ * <br>
  * In the AppConstants there may be a property named "log.logIntermediaryResults" (true/false)
  * which indicates wether the intermediary results (between calling pipes) have to be logged.
  *
  * * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>name of the class, mostly a class that extends this class</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFirstPipe(String) firstPipe}</td><td>name of the first pipe to execute when a message is to be processed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted} <i>deprecated</i></td><td>if set to <code>true, messages will be processed under transaction control. (see below)</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setCommitOnState(String) commitOnState}</td><td>If the pipelineResult.getState() equals this value, the transaction is committed, otherwise it is rolled back.</td><td><code>success</code></td></tr>
  * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are:
- *   <table border="1">
+ *   <table border="1" summary="">
  *   <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>
  *   <tr><td colspan="1" rowspan="2">Required</td>    <td>none</td><td>T2</td></tr>
  * 											      <tr><td>T1</td>  <td>T1</td></tr>
@@ -85,8 +85,7 @@ import org.springframework.transaction.TransactionDefinition;
  * <tr><td>{@link #setTransformNullMessage(String) transformNullMessage}</td><td>when specified and <code>null</code> is received as a message the message is changed to the specified value</td><td></td></tr>
  * <tr><td>{@link #setAdapterToRunBeforeOnEmptyInput(String) adapterToRunBeforeOnEmptyInput}</td><td>when specified and an empty message is received the specified adapter is run before passing the message (response from specified adapter) to the pipeline</td><td></td></tr>
  * </table>
- * </p>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>&lt;exits&gt; one or more {@link nl.nn.adapterframework.core.PipeLineExit exits}&lt;/exits&gt;</td><td>specifications of exit-paths, in the form &lt;exit path="<i>forwardname</i>" state="<i>statename</i>"/&gt;</td></tr>
  * <tr><td>&lt;inputValidator&gt;</td><td>specification of Pipe to validate input messages</td></tr>
@@ -95,16 +94,15 @@ import org.springframework.transaction.TransactionDefinition;
  * <tr><td>&lt;outputWrapper&gt;</td><td>specification of Pipe to wrap output messages (before validating)</td></tr>
  * <tr><td>&lt;cache ... /&gt;</td><td>optional {@link nl.nn.adapterframework.cache.EhCache cache} definition</td></tr>
  * </table>
- * </p>
  *
  * <p><b>Transaction control</b><br>
  * THE FOLLOWING TO BE UPDATED, attribute 'transacted' replaced by 'transactionAttribute'
- *
+ * <p>
  * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be processed
  * under transaction control. Processing by XA-compliant pipes (i.e. Pipes that implement the
  * IXAEnabled-interface, set their transacted-attribute to <code>true</code> and use XA-compliant
  * resources) will then either be commited or rolled back in one transaction.
- *
+ * <p>
  * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, either an existing transaction
  * (started by a transactional receiver) is joined, or new one is created (if the messsage processing request
  * is not initated by a receiver under transaction control.
@@ -112,15 +110,13 @@ import org.springframework.transaction.TransactionDefinition;
  * the pipeline joined an exisiting transaction, the commit or rollback is left to the object that started
  * the transaction, i.e. the receiver. In the latter case the pipeline can indicate to the receiver that the
  * transaction should be rolled back (by calling UserTransaction.setRollBackOnly()).
- *
+ * <p>
  * The choice whether to either commit (by Pipeline or Receiver) or rollback (by Pipeline or Receiver)
  * is made as follows:
- *
+ * <p>
  * If the processing of the message concluded without exceptions and the status of the transaction is
  * STATUS_ACTIVE (i.e. normal) the transaction will be committed. Otherwise it will be rolled back,
  * or marked for roll back by the calling party.
-
- * </p>
  * 
  * @author  Johan Verrips
  */
@@ -542,7 +538,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 
 
 	/**
-	 * The <code>process</code> method does the processing of a message.<br/>
+	 * The <code>process</code> method does the processing of a message.<br>
 	 * It retrieves the first pipe to execute from the <code>firstPipe</code field,
 	 * the call results in a PipRunResult, containing the next pipe to activate.
 	 * While processing the process method keeps statistics.

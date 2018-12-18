@@ -29,9 +29,9 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
 /**
- * Singleton that has the different jmsRealms.   <br/>
+ * Singleton that has the different jmsRealms.   <br>
  * Typical use: JmsRealmFactory.getInstance().&lt;method to execute&gt;
- * <br/>
+ * <br>
  * @author Johan Verrips IOS
  * @see JmsRealm
  */

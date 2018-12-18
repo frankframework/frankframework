@@ -44,7 +44,7 @@ import java.net.URL;
  * Perform the call to a CoolGen proxy with pre- and post transformations.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setProxyClassName(String) proxyClassName}</td><td>classname of proxy-class to be used</td><td>&nbsp;</td></tr>
@@ -54,14 +54,13 @@ import java.net.URL;
  * <tr><td>{@link #setPostProcStylesheetName(String) postProcStylesheetName}</td><td>optional URL of XSLT-stylesheet to apply to result of proxy </td><td>no transformation</td></tr>
  * <tr><td>{@link #setProxyInputSchema(String) proxyInputSchema}</td><td>optional URL of XML-Schema of proxy input message. If specified it is used to validate the input message</td><td>no validation</td></tr>
  * </table>
- * </p>
- * <p><b>Exits:</b>
- * <table border="1">
+ * <br>
+ * <b>Exits:</b>
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
- * </p>
  * @author Johan Verrips
  */
 public class CoolGenWrapperPipe extends FixedForwardPipe {
@@ -117,10 +116,10 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
      *
      * <p>Transformers are created using the URIs supplied in:
      * <ul>
-     * <li>{@link #setPreProcStylesheetName(String) preProcStylesheetName}</li>
-     * <li>{@link #setPostProcStylesheetName(String) postProcStylesheetName}</li>
-     * <li>{@link #setProxyInputSchema(String) proxyInputSchema}</li>
-     * <ul>
+     * <li>{@link #setPreProcStylesheetName(String) preProcStylesheetName}
+     * <li>{@link #setPostProcStylesheetName(String) postProcStylesheetName}
+     * <li>{@link #setProxyInputSchema(String) proxyInputSchema}
+     * </ul>
      * For the proxyInputSchema a transformer is created to check the conformance to the schema
      * the URI supplieds points to.
      *

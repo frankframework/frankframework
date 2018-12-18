@@ -42,7 +42,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * Pipe to wrap or unwrap a message from/into a SOAP Envelope.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDirection(String) direction}</td><td>either <code>wrap</code> or <code>unwrap</code></td><td>wrap</td></tr>
@@ -71,18 +71,18 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setWssPassword(String) wssPassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setWssPasswordDigest(boolean) wssPasswordDigest}</td><td>when true, the password is sent digested. Otherwise it is sent in clear text</td><td>true</td></tr>
  * <table>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be applied to the created transformer</td></tr>
  * </table>
- * </p>
+
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
- * </p>
+
  * @author Peter Leeuwenburgh
  */
 public class SoapWrapperPipe extends FixedForwardPipe {

@@ -46,7 +46,7 @@ import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.ErrorHandler;
 
 /**
- * <p>An implementation of XMLComponentManager for a schema validator.</p>
+ * <p>An implementation of XMLComponentManager for a schema validator.
  * 
  * Class copied from Xerces 2.11.0, to support creating ValidatorHandler from GrammarPool in Xerces 2.9.1.
  * 

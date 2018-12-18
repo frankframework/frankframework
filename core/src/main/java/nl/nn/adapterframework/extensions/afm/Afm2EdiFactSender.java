@@ -34,7 +34,7 @@ import org.w3c.dom.NodeList;
  * Domparser om AFM-XML berichten om te zetten in edifactberichten (voor de backoffice).
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.afm.Afm2EdiFactSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
@@ -42,7 +42,6 @@ import org.w3c.dom.NodeList;
  * <tr><td>{@link #setPostbus(String) postbus}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTpnummer(String) tpnummer}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
  *  
  * @author Erik van de Wetering, fine tuned and wrapped for Ibis by Gerrit van Brakel
  */

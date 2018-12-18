@@ -31,7 +31,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * Configuration(s) to load are stored in separate projects, the
  * DummyClassLoader can be used in the head IBIS application to prevent a
  * "could not find config" exception.
- * </p>
  * 
  * @author Peter Leeuwenburgh
  */

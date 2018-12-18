@@ -62,7 +62,7 @@ import com.sap.conn.jco.server.JCoServerTIDHandler;
  * 
  * In SAP the function to be called is a RFC-function to the destination that is registered using <code>progid</code>.
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.extensions.sap.SapListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>Name of the Listener</td><td>&nbsp;</td></tr>
@@ -77,8 +77,7 @@ import com.sap.conn.jco.server.JCoServerTIDHandler;
  * <tr><td>{@link #setReplyFieldName(String) replyFieldName}</td><td>Name of the field in the ExportParameterList of the RFC function that contains the whole reply message contents</td><td>&nbsp;</td></tr>
  * </table>
  * N.B. If no requestFieldIndex or requestFieldName is specified, input is converted to xml;
- * If no replyFieldIndex or replyFieldName is specified, output is converted from xml. 
- * </p>
+ * If no replyFieldIndex or replyFieldName is specified, output is converted from xml.
  * @author Gerrit van Brakel
  * @author Jaco de Groot
  * @since 5.0
@@ -295,7 +294,8 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 	 *  SAP R/3 system. The function has to store the TID in permanent storage and return <code>true</code>.
 	 *  The method has to return <code>false</code> if the a transaction with this ID has already
 	 *  been process. Throw an exception if anything goes wrong. The transaction processing will be
-	 *  aborted thereafter.<b>
+	 *  aborted thereafter.
+	 *  <br>
 	 *  Derived servers must override this method to actually implement the transaction ID management.
 	 *  @param tid the transaction ID
 	 *  @return <code>true</code> if the ID is valid and not in use otherwise, <code>false</code> otherwise
@@ -310,7 +310,8 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 	/**
 	 *  SAP JCo.Server javadoc says:
 	 *  This function will be called after the <em>local</em> transaction has been completed.
-	 *  All resources assiciated with this TID can be released.<b>
+	 *  All resources assiciated with this TID can be released.
+	 *  <br>
 	 *  Derived servers must override this method to actually implement the transaction ID management.
 	 *  @param tid the transaction ID
 	 */
@@ -323,7 +324,8 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 	/**
 	 *  SAP JCo.Server javadoc says:
 	 *  This function will be called after <em>all</em> RFC functions belonging to a certain transaction
-	 *  have been successfully completed. <b>
+	 *  have been successfully completed.
+	 *  <br>
 	 *  Derived servers can override this method to locally commit the transaction.
 	 *  @param tid the transaction ID
 	 */
@@ -336,7 +338,8 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 	/**
 	 *  SAP JCo.Server javadoc says:
 	 *  This function will be called if an error in one of the RFC functions belonging to
-	 *  a certain transaction has occurred.<b>
+	 *  a certain transaction has occurred.
+	 *  <br>
 	 *  Derived servers can override this method to locally rollback the transaction.
 	 *  @param tid the transaction ID
 	 */

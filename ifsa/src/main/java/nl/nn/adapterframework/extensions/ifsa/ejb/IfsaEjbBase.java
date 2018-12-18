@@ -114,8 +114,8 @@ abstract public class IfsaEjbBase {
     /**
          * Method logs a warning when the newMessageProtocol is not <code>FF</code>
          * or <code>RR</code>.
-         * <p>When the messageProtocol equals to FF, transacted is set to true</p>
-         * <p>Creation date: (08-05-2003 9:03:53)</p>
+         * <p>When the messageProtocol equals to FF, transacted is set to true
+         * <p>Creation date: (08-05-2003 9:03:53)
          * @see IfsaMessageProtocolEnum
          * @param newMessageProtocol String
          */

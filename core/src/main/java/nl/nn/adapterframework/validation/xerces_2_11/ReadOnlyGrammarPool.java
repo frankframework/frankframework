@@ -23,7 +23,7 @@ import org.apache.xerces.xni.grammars.XMLGrammarPool;
 
 /**
  * <p>Filter {@link XMLGrammarPool} that exposes a 
- * read-only view of the underlying pool.</p>
+ * read-only view of the underlying pool.
  * 
  * Class copied from Xerces 2.11.0, to support creating ValidatorHandler from GrammarPool in Xerces 2.9.1.
  * 

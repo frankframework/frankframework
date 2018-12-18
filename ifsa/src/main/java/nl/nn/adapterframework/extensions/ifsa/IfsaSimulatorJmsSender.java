@@ -30,30 +30,30 @@ import javax.naming.NamingException;
  * Extension of JmsSender which only adds parameters to simulate IFSA.
  *
  * <p><b>Configuration </b><i>(where deviating from JmsSender)</i><b>:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setMessageType(String) messageType}</td><td>type of messages. Possible values:
  * <ul>
- *   <li>rr_request</li>
- *   <li>rr_reply</li>
- *   <li>ff_request</li>
+ *   <li>rr_request
+ *   <li>rr_reply
+ *   <li>ff_request
  * </ul> When messageType=rr_reply, the destination is retrieved from session key <code>replyTo</code></td><td>&nbsp;</td></tr>
- * </table></p>
+ * </table>
  * <p><b>added parameters:</b>
- * <table border="1">
- * <tr><th>name</th><th>type</th><th>sessionKey</th><th>defaultValue</th><th>pattern</th><th>value</th><th>minLength</th><th/></tr>
+ * <table border="1" summary="">
+ * <tr><th>name</th><th>type</th><th>sessionKey</th><th>defaultValue</th><th>pattern</th><th>value</th><th>minLength</th></tr>
  * <tr><td>ifsa</td><td></td><td></td><td></td><td></td><td>_IFSA_HEADER_</td><td></td><td></td></tr>
  * <tr><td>ifsa_api</td><td></td><td></td><td></td><td></td><td>jms_wrapper</td><td></td><td></td></tr>
  * <tr><td>ifsa_api_version</td><td></td><td></td><td></td><td></td><td>22.30.020</td><td></td><td></td></tr>
  * <tr><td>ifsa_auth_flag</td><td></td><td></td><td></td><td></td><td>1</td><td></td><td></td></tr>
  * <tr><td>ifsa_bif_id</td><td></td><td><code>rr_reply: </code>ifsa_bif_id</td><td></td><td><code>rr_request/ff_request: </code>${IFSAApplicationID}#{ifsa_destination}#{uid}</td><td></td><td></td><td></td></tr>
- * <tr><td>ifsa_bif_type</td><td></td><td></td><td></td><td></td><td><code>rr_request/rr_reply: </code>0<br/><code>ff_request: </code>2</td><td></td><td></td></tr>
+ * <tr><td>ifsa_bif_type</td><td></td><td></td><td></td><td></td><td><code>rr_request/rr_reply: </code>0<br><code>ff_request: </code>2</td><td></td><td></td></tr>
  * <tr><td>ifsa_bulk</td><td></td><td></td><td></td><td></td><td>0</td><td></td><td></td></tr>
  * <tr><td>ifsa_bulk_auth_flag</td><td></td><td></td><td></td><td></td><td>0</td><td></td><td></td></tr>
  * <tr><td>ifsa_cil_version</td><td></td><td></td><td></td><td></td><td>22.30.009</td><td></td><td></td></tr>
  * <tr><td>ifsa_comp_algo</td><td></td><td>null</td><td>""</td><td></td><td></td><td></td><td></td></tr>
  * <tr><td>ifsa_destination</td><td></td><td><code>rr_reply: </code>ifsa_source</td><td></td><td></td><td></td><td></td><td><code>rr_request/ff_request: </code>to be set in IBIS configuration</td></tr>
- * <tr><td>ifsa_expiry</td><td></td><td></td><td></td><td></td><td><code>rr_request/rr_reply: </code>${timeOutIFSARR}<br/><code>ff_request: </code>0</td><td></td><td></td></tr>
+ * <tr><td>ifsa_expiry</td><td></td><td></td><td></td><td></td><td><code>rr_request/rr_reply: </code>${timeOutIFSARR}<br><code>ff_request: </code>0</td><td></td><td></td></tr>
  * <tr><td>ifsa_header_version</td><td></td><td></td><td></td><td></td><td>02.02.000</td><td></td><td></td></tr>
  * <tr><td>ifsa_hop_count</td><td></td><td></td><td></td><td></td><td>000</td><td></td><td></td></tr>
  * <tr><td>ifsa_node_id</td><td></td><td></td><td></td><td></td><td>${ifsa_node_id}</td><td></td><td></td></tr>
@@ -62,12 +62,12 @@ import javax.naming.NamingException;
  * <tr><td>ifsa_ori_length</td><td></td><td>null</td><td>""</td><td></td><td></td><td></td><td></td></tr>
  * <tr><td>ifsa_ori_rtq</td><td></td><td><code>rr_reply/ff_request: </code>null</td><td><code>rr_reply/ff_request: </code>""</td><td></td><td><code>rr_request: </code>${ifsa_ori_rtq}</td><td>48</td><td></td></tr>
  * <tr><td>ifsa_ori_rtqm</td><td></td><td><code>rr_reply/ff_request: </code>null</td><td><code>rr_reply/ff_request: </code>""</td><td></td><td><code>rr_request: </code>${ifsa_ori_rtqm}</td><td>48</td><td></td></tr>
- * <tr><td>ifsa_priority</td><td></td><td></td><td></td><td></td><td><code>rr_request/rr_reply: </code>3<br/><code>ff_request: </code>2</td><td></td><td></td></tr>
+ * <tr><td>ifsa_priority</td><td></td><td></td><td></td><td></td><td><code>rr_request/rr_reply: </code>3<br><code>ff_request: </code>2</td><td></td><td></td></tr>
  * <tr><td>ifsa_source</td><td></td><td></td><td></td><td><code>rr_reply: </code>${IFSAApplicationID}#{ifsa_destination}</td><td><code>rr_request/ff_request: </code>${IFSAApplicationID}</td><td></td><td></td></tr>
  * <tr><td>ifsa_unique_id</td><td></td><td></td><td></td><td>{uid}</td><td></td><td></td><td></td></tr>
- * <tr><td>JMS_IBM_MsgType</td><td>integer</td><td></td><td></td><td></td><td><code>rr_request: </code>1<br/><code>rr_reply: </code>2<br/><code>ff_request: </code>8</td><td></td><td></td></tr>
+ * <tr><td>JMS_IBM_MsgType</td><td>integer</td><td></td><td></td><td></td><td><code>rr_request: </code>1<br><code>rr_reply: </code>2<br><code>ff_request: </code>8</td><td></td><td></td></tr>
  * </table>
- * </p>
+
  *
  * @author  Peter Leeuwenburgh
  * @version $Id$

@@ -37,7 +37,7 @@ import nl.nn.adapterframework.pipes.JsonPipe;
  * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
  * to receive REST messages.
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.http.RestListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the listener as known to the adapter</td><td>&nbsp;</td></tr>
@@ -60,12 +60,12 @@ import nl.nn.adapterframework.pipes.JsonPipe;
  * <tr><td>{@link #setGenerateEtag(boolean) generateEtag}</td><td>when set to true the IBIS will automatically create an Etag</td><td>false</td></tr>
  * <tr><td>{@link #setValidateEtag(boolean) validateEtag}</td><td>when set to true the IBIS will automatically validate and process Etags</td><td>false</td></tr>
  * </table>
- * </p>
+
  * <p>
  * Note:
  * Servlets' multipart configuration expects a Content-Type of <code>multipart/form-data</code> (see http://docs.oracle.com/javaee/6/api/javax/servlet/annotation/MultipartConfig.html).
  * So do not use other multipart content types like <code>multipart/related</code>
- * </p>
+
  * @author  Niels Meijer
  * @author  Gerrit van Brakel
  */

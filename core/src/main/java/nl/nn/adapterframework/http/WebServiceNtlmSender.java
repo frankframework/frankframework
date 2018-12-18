@@ -63,7 +63,7 @@ import nl.nn.adapterframework.util.Misc;
  * Sender that sends a message via a WebService based on NTLM authentication.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setUrl(String) url}</td><td>URL or base of URL to be used </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setContentType(String) contentType}</td><td>content-type of the request</td><td>text/html; charset=UTF-8</td></tr>
@@ -75,7 +75,7 @@ import nl.nn.adapterframework.util.Misc;
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProxyHost(String) proxyHost}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProxyPort(int) proxyPort}</td><td>&nbsp;</td><td>80</td></tr>
- * </table></p>
+ * </table>
  * 
  * @author  Peter Leeuwenburgh
  */

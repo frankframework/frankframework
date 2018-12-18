@@ -29,7 +29,7 @@ import org.apache.commons.lang.StringUtils;
  * Pipe for moving files to another directory.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.ibis4fundation.FtpSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
@@ -51,7 +51,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setSuffix(String) suffix}</td><td>string which is inserted at the end of the destination file (and replaces the extension if present)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>when <code>true</code>, <code>numberOfBackups</code> is set to 0 and the destination file already exists a PipeRunException is thrown (instead of adding a counter to the destination filename)</td><td>false</td></tr>
  * </table>
- * </p>
+
  * 
  * @author  John Dekker
  * @author  Jaco de Groot (***@dynasol.nl)

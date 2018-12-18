@@ -39,7 +39,7 @@ import com.sap.conn.jco.JCoStructure;
 /**
  * Wrapper round SAP-functions, either SAP calling Ibis, or Ibis calling SAP.
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>Name of the Ibis-object</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSapSystemName(String) sapSystemName}</td><td>name of the {@link SapSystem} used by this object</td><td>&nbsp;</td></tr>
@@ -52,7 +52,6 @@ import com.sap.conn.jco.JCoStructure;
  * </table>
  * N.B. If no requestFieldIndex or requestFieldName is specified, input is converted from/to xml;
  * If no replyFieldIndex or replyFieldName is specified, output is converted from/to xml. 
- * </p>
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
  * @since   5.0
@@ -194,7 +193,7 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 	 * Calculate the index of the field that correspondes with the message as a whole.
 	 * 
 	 * return values
-	 *  >0 : the required index
+	 *  &gt;0 : the required index
 	 *  0  : no index found, convert all fields to/from xml.
 	 */
 	protected int findFieldIndex(JCoParameterList params, int index, String name) {

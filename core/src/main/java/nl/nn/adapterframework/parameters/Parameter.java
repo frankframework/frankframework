@@ -61,27 +61,27 @@ import nl.nn.adapterframework.util.XmlUtils;
  * a fixed value, or from the pipelineSession. If this does not result in a value (or if neither of these is specified), a default value 
  * can be specified. If an XPathExpression or stylesheet is specified, it will be applied to the message, the value retrieved
  * from the pipelineSession or the fixed value specified.
- * <br/>
+ * <br>
  * * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the parameter</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setType(String) type}</td><td>
  * <ul>
- * 	<li><code>string</code>: renders the contents of the first node (in combination with xslt or xpath)</li>
- * 	<li><code>xml</code>:  renders a xml-nodeset as an xml-string (in combination with xslt or xpath)</li>
- * 	<li><code>node</code>: renders the CONTENTS of the first node as a nodeset that can be used as such when passed as xslt-parameter (only for XSLT 1.0). Please note that the nodeset may contain multiple nodes, without a common root node. N.B. The result is the set of children of what you might expect it to be...</li>
- * 	<li><code>domdoc</code>: renders xml as a DOM document; similar to <code>node</code> with the distinction that there is always a common root node (required for XSLT 2.0)</li>
- * 	<li><code>date</code>: converts the result to a Date, by default using formatString <code>yyyy-MM-dd</code>. When applied as a JDBC parameter, the method setDate() is used</li>
- * 	<li><code>time</code>: converts the result to a Date, by default using formatString <code>HH:mm:ss</code>. When applied as a JDBC parameter, the method setTime() is used</li>
- * 	<li><code>datetime</code>: converts the result to a Date, by default using formatString <code>yyyy-MM-dd HH:mm:ss</code>. When applied as a JDBC parameter, the method setTimestamp() is used</li>
- * 	<li><code>timestamp</code>: similar to datetime, except for the formatString that is <code>yyyy-MM-dd HH:mm:ss.SSS</code> by default</li>
- * 	<li><code>xmldatetime</code>: converts the result from a XML dateTime to a Date. When applied as a JDBC parameter, the method setTimestamp() is used</li>
- * 	<li><code>number</code>: converts the result to a Number, using decimalSeparator and groupingSeparator. When applied as a JDBC parameter, the method setDouble() is used</li>
- * 	<li><code>integer</code>: converts the result to an Integer</li>
- * 	<li><code>inputstream</code>: only applicable as a JDBC parameter, the method setBinaryStream() is used</li>
- * 	<li><code>list</code>: converts a List&lt;String&gt; object to a xml-string (&lt;items&gt;&lt;item&gt;...&lt;/item&gt;&lt;item&gt;...&lt;/item&gt;&lt;/items&gt;)</li>
- * 	<li><code>map</code>: converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name="..."&gt;...&lt;/item&gt;&lt;item name="..."&gt;...&lt;/item&gt;&lt;/items&gt;)</li>
+ * 	<li><code>string</code>: renders the contents of the first node (in combination with xslt or xpath)
+ * 	<li><code>xml</code>:  renders a xml-nodeset as an xml-string (in combination with xslt or xpath)
+ * 	<li><code>node</code>: renders the CONTENTS of the first node as a nodeset that can be used as such when passed as xslt-parameter (only for XSLT 1.0). Please note that the nodeset may contain multiple nodes, without a common root node. N.B. The result is the set of children of what you might expect it to be...
+ * 	<li><code>domdoc</code>: renders xml as a DOM document; similar to <code>node</code> with the distinction that there is always a common root node (required for XSLT 2.0)
+ * 	<li><code>date</code>: converts the result to a Date, by default using formatString <code>yyyy-MM-dd</code>. When applied as a JDBC parameter, the method setDate() is used
+ * 	<li><code>time</code>: converts the result to a Date, by default using formatString <code>HH:mm:ss</code>. When applied as a JDBC parameter, the method setTime() is used
+ * 	<li><code>datetime</code>: converts the result to a Date, by default using formatString <code>yyyy-MM-dd HH:mm:ss</code>. When applied as a JDBC parameter, the method setTimestamp() is used
+ * 	<li><code>timestamp</code>: similar to datetime, except for the formatString that is <code>yyyy-MM-dd HH:mm:ss.SSS</code> by default
+ * 	<li><code>xmldatetime</code>: converts the result from a XML dateTime to a Date. When applied as a JDBC parameter, the method setTimestamp() is used
+ * 	<li><code>number</code>: converts the result to a Number, using decimalSeparator and groupingSeparator. When applied as a JDBC parameter, the method setDouble() is used
+ * 	<li><code>integer</code>: converts the result to an Integer
+ * 	<li><code>inputstream</code>: only applicable as a JDBC parameter, the method setBinaryStream() is used
+ * 	<li><code>list</code>: converts a List&lt;String&gt; object to a xml-string (&lt;items&gt;&lt;item&gt;...&lt;/item&gt;&lt;item&gt;...&lt;/item&gt;&lt;/items&gt;)
+ * 	<li><code>map</code>: converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name="..."&gt;...&lt;/item&gt;&lt;item name="..."&gt;...&lt;/item&gt;&lt;/items&gt;)
  * </ul>
  * </td><td>string</td></tr>
  * <tr><td>{@link #setFormatString(String) formatString}</td><td>used in combination with types <code>date</code>, <code>time</code> and <code>datetime</code></td><td>depends on type</td></tr>
@@ -104,7 +104,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setMaxInclusive(String) maxInclusive}</td><td>used in combination with type <code>number</code>; if set and the value of the parameter exceeds this maximum value, this maximum value is taken</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setXslt2(boolean) xslt2}</td><td>(applicable for xpathExpression and styleSheetName) when set <code>true</code> XSLT processor 2.0 (net.sf.saxon) will be used, otherwise XSLT processor 1.0 (org.apache.xalan)</td><td>false</td></tr>
  * </table>
- * </p>
+
  * Examples:
  * <pre>
  * 

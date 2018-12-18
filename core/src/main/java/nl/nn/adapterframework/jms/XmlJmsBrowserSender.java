@@ -33,10 +33,10 @@ import org.w3c.dom.Element;
  *
  * <p>
  * When input root element is <code>browse</code> all queue messages are returned.
- * </p>
+
  * <p>
  * When input root element is <code>remove</code> all queue messages are removed.
- * </p>
+
  * <p>
  * <b>example (input):</b>
  * <code>
@@ -48,17 +48,17 @@ import org.w3c.dom.Element;
  *   &lt;/browse>
  * </pre>
  * </code>
- * </p>
+
  * 
  * <p>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th></tr>
  * <tr><td>jmsRealm</td><td>when present will set jmsRealm from which to retrieve the JMS properties</td></tr>
  * <tr><td>queueConnectionFactoryName</td><td>when present will set queueConnectionFactoryName (when queueConnectionFactoryName was set by jmsRealm it will be overwritten)</td></tr>
  * <tr><td>destinationName</td><td>name of the JMS destination (queue or topic) to use</td></tr>
  * <tr><td>destinationType</td><td>either QUEUE or TOPIC</td></tr>
  * </table>
- * </p>
+
  * 
  * <p>
  * <b>example (browse output):</b>
@@ -82,7 +82,7 @@ import org.w3c.dom.Element;
  *   &lt;/result&gt;
  * </pre>
  * </code>
- * </p>
+
  * 
  * <p>
  * <b>example (remove output):</b>
@@ -93,7 +93,7 @@ import org.w3c.dom.Element;
  *   &lt;/result&gt;
  * </pre>
  * </code>
- * </p>
+
  * 
  * @author  Peter Leeuwenburgh
  */

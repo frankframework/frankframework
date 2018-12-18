@@ -51,7 +51,7 @@ import org.apache.commons.lang.StringUtils;
  *   &lt;/page&gt;
  * </pre>
  * </code>
- * </p>
+
  * <p>
  * <b>example:</b>
  * <code>
@@ -91,7 +91,7 @@ import org.apache.commons.lang.StringUtils;
  *   &lt;/page&gt;
  * </pre>
  * </code>
- * </p>
+
  * <p>
  * <b>example:</b>
  * <code>
@@ -129,15 +129,15 @@ import org.apache.commons.lang.StringUtils;
  *   &lt;/page&gt;
  * </pre>
  * </code>
- * </p>
+
  * <p>
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setContentType(String) contentType}</td><td>content type of the servlet response</td><td>"text/html"</td></tr>
  * </table>
- * </p>
+
  * 
  * @author Peter Leeuwenburgh
  */

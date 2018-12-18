@@ -24,8 +24,8 @@ import java.util.*;
 * Its ideal for name-value pairs and name-value pairs with multivalues.
 * It also provides support for quoted values, and recognizes values that are 'function' calls with
 * their own parameter list (allowing to ignore any tokens within these lists when parsing).
-* <br/><br/>
-* Example:<br/>
+* <br><br>
+* Example:<br>
 * <pre> <code>
 *       StringTagger tag=new StringTagger("cmd=lookup names='Daniel Ockeloen, Rico Jansen'",' ','=',',','\'','(',')');
 *       System.out.println("toString:"+tag.toString());

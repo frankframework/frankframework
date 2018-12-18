@@ -34,11 +34,11 @@ import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 /**
- * Singleton class that has the constant values for this application. <br/>
+ * Singleton class that has the constant values for this application. <br>
  * <p>When an instance is created, it tries to load the properties file specified
- * by the <code>propertiesFileName</code> field</p>
+ * by the <code>propertiesFileName</code> field
  * <p>If a property exits with the name <code>ADDITIONAL.PROPERTIES.FILE</code>
- * that file is loaded also</p>
+ * that file is loaded also
 
  * @author Johan Verrips
  *
@@ -207,7 +207,7 @@ public final class AppConstants extends Properties implements Serializable{
 	 * <code><pre>log4j.properties,deploymentspecifics.properties</pre></code>
 	 * which will cause both files to be loaded. Trimming of the filename will take place,
 	 * so you may also specify <code><pre>log4j.properties, deploymentspecifics.properties</pre></code>
-	 * </p>
+	
 	 */
 	private synchronized void load(ClassLoader classLoader, String directory,
 			String filename, boolean loadAdditionalPropertiesFiles) {

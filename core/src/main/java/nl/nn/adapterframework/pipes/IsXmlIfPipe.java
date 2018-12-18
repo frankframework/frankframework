@@ -28,7 +28,7 @@ import org.apache.commons.lang.StringUtils;
  * The input is a XML string if it, after removing leading white-space characters, starts with '<'.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.IsXmlIfPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
@@ -36,7 +36,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setElseForwardName(String) elseForwardName}</td><td>forward returned when 'false'</td><td>else</td></tr>
  * <tr><td>{@link #setElseForwardOnEmptyInput(boolean) elseForwardOnEmptyInput}</td><td>return elseForward when input is empty (or thenForward)</td><td>true</td></tr>
  * </table>
- * </p>
+
  *
  * @author  Peter Leeuwenburgh
  * @since   4.3

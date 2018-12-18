@@ -30,16 +30,16 @@ import org.quartz.JobExecutionException;
  * <p>
  * Expects a JobDetail with a datamap with the following fields:
  * <ul>
- * <li>function: the function to do, possible values:  "startreceiver","stopadapter",  "stopreceiver" and "stopadapter"</li>
- * <li>config: the Configuration object</li>
+ * <li>function: the function to do, possible values:  "startreceiver","stopadapter",  "stopreceiver" and "stopadapter"
+ * <li>config: the Configuration object
  * <li>adapterName: the name of the adapter<li>
  * <li>receiverName: the name of the receiver<li>
  * </ul>
- *<p><b>Design consideration</b></p>
+ *<p><b>Design consideration</b>
  * <p>Currently, the {@link nl.nn.adapterframework.configuration.Configuration configuration}
  * is stored in the job data map. As the configuration is not serializable, due to the nature of the
  * adapters, the quartz database support cannot be used.
- * </p>
+
  *
  * @author  Johan Verrips
  * @see nl.nn.adapterframework.core.IAdapter

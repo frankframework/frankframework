@@ -33,7 +33,7 @@ import org.apache.commons.lang.StringUtils;
  * Puts the system date/time under a key in the {@link nl.nn.adapterframework.core.IPipeLineSession pipeLineSession}.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>key of session variable to store result in</td><td>systemDate</td></tr>
@@ -44,7 +44,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * </table>
- * </p>
+
  * @author  Johan Verrips
  * @author  Jaco de Groot (***@dynasol.nl)
  * @since   4.2c

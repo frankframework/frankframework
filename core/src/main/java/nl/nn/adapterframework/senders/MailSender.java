@@ -95,16 +95,16 @@ import org.w3c.dom.Node;
  * <p>
  * The attribute order for attachments is as follows:
  * <ol>
- *    <li>sessionKey</li>
- *    <li>url</li>
- *    <li><i>value of the attachment element</i></li>
+ *    <li>sessionKey
+ *    <li>url
+ *    <li><i>value of the attachment element</i>
  * </ol>
  * <p>
  * The <code>base64</code> attribute is only used when the value of the PipeLineSession variable <code>sessionKey</code> is a String object
  * or when the value of the attachment element is used. If <code>base64=true</code> then the value will be decoded before it's used.
  * <p>
  * <b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setSmtpHost(String) smtpHost}</td><td>name of the host by which the messages are to be send</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSmtpAuthAlias(String) smtpAuthAlias}</td><td>alias used to obtain credentials for authentication to smtpHost</td><td>&nbsp;</td></tr>
@@ -116,7 +116,7 @@ import org.w3c.dom.Node;
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>timeout (in milliseconds). Used for socket connection timeout and socket I/O timeout</td><td>20000</td></tr>
  * </table>
  * <p>
- * <table border="1">
+ * <table border="1" summary="">
  * <b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
  * <tr><td>from</td><td>string</td><td>email address of the sender</td></tr>

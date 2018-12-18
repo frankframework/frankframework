@@ -27,12 +27,12 @@ import nl.nn.adapterframework.validation.AbstractXmlValidator;
  * If <code>root</code> is given then this is also checked.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setRoot(String) root}</td><td>name of the root element</td><td>&nbsp;</td></tr>
  * </table>
- * </p><b>Exits:</b>
- * <table border="1">
+<b>Exits:</b>
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, the value for "success"</td></tr>

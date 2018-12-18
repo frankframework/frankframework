@@ -40,7 +40,7 @@ import org.apache.commons.lang.SystemUtils;
  * Afterward the results are evaluated.
  * <p>
  * <b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr>
  * <th>attributes</th>
  * <th>description</th>
@@ -93,8 +93,8 @@ import org.apache.commons.lang.SystemUtils;
  * <td>false</td>
  * </tr>
  * </table>
- * </p>
- * <table border="1">
+
+ * <table border="1" summary="">
  * <p>
  * <b>Parameters:</b>
  * <tr>
@@ -108,10 +108,10 @@ import org.apache.commons.lang.SystemUtils;
  * <td>Any parameters defined on the pipe will be Concatenated into one string and added to input</td>
  * </tr>
  * </table>
- * </p>
+
  * <p>
  * <b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr>
  * <th>state</th>
  * <th>condition</th>
@@ -125,7 +125,7 @@ import org.apache.commons.lang.SystemUtils;
  * <td>if specified</td>
  * </tr>
  * </table>
- * </p>
+
  * 
  * @author Barry Jacobs
  */

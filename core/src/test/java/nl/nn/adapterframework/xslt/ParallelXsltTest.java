@@ -50,7 +50,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 			
 			Parameter param1 = new Parameter();
 			param1.setName("header");
-			param1.setValue("header"+i);			
+			param1.setValue("header"+i);
 			sender.addParameter(param1);
 			
 			Parameter param2 = new Parameter();

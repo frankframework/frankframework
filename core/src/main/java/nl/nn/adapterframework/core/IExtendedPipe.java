@@ -19,10 +19,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.Locker;
 
 /**
- * extra attributes to do logging and use sessionvariables.
+ * Extra attributes to do logging and use sessionvariables.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified the message is logged informatory</td><td>-1</td></tr>
  * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
@@ -39,14 +39,11 @@ import nl.nn.adapterframework.util.Locker;
  * <tr><td>{@link #setWriteToSecLog (boolean) writeToSecLog}</td><td>when set to <code>true</code> a record is written to the security log when the pipe has finished successfully</td><td>false</td></tr>
  * <tr><td>{@link #setSecLogSessionKeys(String) secLogSessionKeys}</td><td>(only used when <code>writeToSecLog=true</code>) comma separated list of keys of session variables that is appended to the security log record</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
- * 
  * <p>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.util.Locker locker}</td><td>optional: the pipe will only be executed if a lock could be set successfully</td></tr>
  * </table>
- * </p>
  * 
  * @author  Gerrit van Brakel
  * @since   4.3

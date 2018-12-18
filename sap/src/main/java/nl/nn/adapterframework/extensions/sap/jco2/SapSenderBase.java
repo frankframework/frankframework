@@ -32,8 +32,8 @@ import com.sap.mw.jco.JCO;
 
 /**
  * Base class for functions that call SAP.
- * <p><b>Configuration:</b>
- * <table border="1">
+ * <strong>Configuration:</strong>
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSapSystemName(String) sapSystemName}</td><td>name of the {@link SapSystem} used by this object</td><td>&nbsp;</td></tr>
@@ -41,13 +41,12 @@ import com.sap.mw.jco.JCO;
  * <tr><td>{@link #setLuwHandleSessionKey(String) luwHandleSessionKey}</td><td>session key in which LUW information is stored. When set, actions that share a LUW-handle will be executed using the same client. Can only be used for synchronous functions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>when <code>false</code>, the sender operates in RR mode: the a reply is expected from SAP, and the sender does not participate in a transaction. When <code>false</code>, the sender operates in FF mode: no reply is expected from SAP, and the sender joins the transaction, that must be present. The SAP transaction is committed right after the XA transaction is completed.</td><td>false</td></tr>
  * </table>
- * </p>
- * <table border="1">
- * <p><b>Parameters:</b>
+ * <br>
+ * <b>Parameters:</b>
+ * <table border="1" summary="">
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
  * <tr><td>sapSystemName</td><td>String</td><td>points to {@link SapSystem} to use; required when attribute <code>sapSystemName</code> is empty</td></tr>
  * </table>
- * </p>
  * 
  * @author  Gerrit van Brakel
  * @since   4.8

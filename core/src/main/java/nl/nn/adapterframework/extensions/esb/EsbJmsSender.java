@@ -25,12 +25,12 @@ import org.apache.commons.lang.StringUtils;
  * ESB (Enterprise Service Bus) extension of JmsSender.
  *
  * <p><b>Configuration </b><i>(where deviating from JmsSender)</i><b>:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of ESB service to be called. Possible values 
  * <ul>
- *   <li>"FF": Fire & Forget protocol</li>
- *   <li>"RR": Request-Reply protocol</li>
+ *   <li>"FF": Fire &amp; Forget protocol
+ *   <li>"RR": Request-Reply protocol
  * </ul></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>20000 (20s)</td></tr>
  * <tr><td>{@link #setMessageTimeToLive(long) messageTimeToLive}</td><td>if messageProtocol=<code>RR</code>: </td><td>{@link #setTimeOut(long) timeOut}</td></tr>
@@ -38,7 +38,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setReplyTimeout(int) replyTimeout}</td><td>if messageProtocol=<code>RR</code>: </td><td>{@link #setTimeOut(long) timeOut}</td></tr>
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>if messageProtocol=<code>RR</code>: </td><td><code>true</code></td></tr>
  * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>&nbsp;</td><td>if empty then derived from the element MessageHeader/To/Location in the SOAP header of the input message (if $messagingLayer='P2P' then '$applicationFunction' else '$operationName_$operationVersion)</td></tr>
- * </table></p>
+ * </table>
  * 
  * @author  Peter Leeuwenburgh
  */

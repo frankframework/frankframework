@@ -29,15 +29,15 @@ import org.xml.sax.helpers.DefaultHandler;
 import com.sap.mw.jco.JCO;
 
 /**
- * Class to parse table xml and store it into SAP table.
+ * Class to parse table XML and store it into SAP table.
  * XML structure is like:
- * <TABLES>
- *		<INSOBJECTPARTNER> <!-- tabel -->
- *			<item> <!-- rij -->
- *				<BANK_ID_OUT>123</BANK_ID_OUT> <!-- kolom -->
- *			</item>
- *		</INSOBJECTPARTNER>
- * </TABLES>
+ * &lt;TABLES&gt;
+ *		&lt;INSOBJECTPARTNER&gt; <!-- tabel -->
+ *			&lt;item&gt; <!-- rij -->
+ *				&lt;BANK_ID_OUT&gt;123&lt;/BANK_ID_OUT&gt; <!-- kolom -->
+ *			&lt;/item&gt;
+ *		&lt;/INSOBJECTPARTNER&gt;
+ * &lt;/TABLES&gt;
  * 
  * 
  * @author  Gerrit van Brakel

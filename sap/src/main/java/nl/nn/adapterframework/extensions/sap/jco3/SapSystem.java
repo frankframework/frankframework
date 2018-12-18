@@ -32,8 +32,8 @@ import com.sap.conn.jco.JCoException;
 import com.sap.conn.jco.JCoRepository;
 /**
  * A SapSystem is a provider of repository information and connections to a SAP-system.
- * <p><b>Configuration:</b>
- * <table border="1">
+ * <b>Configuration:</b>
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the System. SAP-related Ibis objects refer to SapSystems by setting their SystemName-attribute to this value</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setHost(String) host}</td><td>default value for ashost, gwhost and mshost (i.e. when ashost, gwhost and mshost are all the same, only host needs to be specified)</td><td>&nbsp;</td></tr>
@@ -63,7 +63,6 @@ import com.sap.conn.jco.JCoRepository;
  * <tr><td>{@link #setSncSSO2(String) sncSSO2}</td><td>Use SAP Cookie Version 2 as logon ticket for SSO based authentication</td><td>1</td></tr>
  * 
  * </table>
- * </p>	
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
  * @author  Niels Meijer

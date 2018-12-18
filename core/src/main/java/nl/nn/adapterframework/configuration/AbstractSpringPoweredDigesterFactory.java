@@ -32,20 +32,21 @@ import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 
 /**
+ * <p>
  * This is a factory for objects to be used with the 'factory-create-rule'
  * of the Apache Digester framework as a replacement for the 'object-create-rule'.
- *
+ * <p>
  * The intention is to have objects created by the Apache Digester be created
  * via the Spring Factory thus allowing for dependency injection; and if not
  * possible then create them ourselves but inject at least a reference to the
  * Spring Factory when supported by the object. When the object is created
  * directly by this factory, the Spring Factory is used for auto-wiring
  * and initialization.
- *
+ * <p>
  * The factory is abstract; subclasses will need to implement method
  * 'getSuggestedBeanName()' to return the name of the default Bean to load from
  * the Spring Context.
- *
+ * <p>
  * All Beans defined in the Spring Context that can be loaded via this
  * Factory must be defined as Prototype beans (scope="prototype") because
  * the expected behaviour from an ObjectCreationFactory is to create new
@@ -108,27 +109,27 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
      * <ol>
      * <li>If <em>no</em> attribute 'className' is given in the configuration file,
      * then the bean named with method getSuggestedBeanName() is created from the
-     * Spring context.</li>
+     * Spring context.
      * <li>If exactly 1 bean of type given by 'className' attribute can be
      * found in the Spring context, an instance of that bean is created
-     * from the Spring factory.<br/>
+     * from the Spring factory.<br>
      * The value returned by method getSuggestedBeanName() is, in this case,
-     * not relevant.</li>
+     * not relevant.
      * <li>If multiple beans of type given by 'className' attribute are
      * defined in the Spring context, then an instance is created whose
-     * bean-name is the same as that returned by the method getSuggestedBeanName().</li>
+     * bean-name is the same as that returned by the method getSuggestedBeanName().
      * <li>If the Spring context contains no beans of type 'className', then
      * a new instance of this class is created without accessing the
-     * Spring factory.<br/>
+     * Spring factory.<br>
      * The Spring BeanFactory will then be invoked to attempt auto-wiring
      * beans by name and initialization via any BeanFactory - callback methods.
      * If the created class implements interface
      * {@link org.springframework.beans.factory.BeanFactoryAware},
      * the Spring factory will be made available as a property so that it can
-     * be accessed directly from the bean.<br/>
+     * be accessed directly from the bean.<br>
      * (NB:Objects created by the Spring Factory will also have a pointer to
-     * the creating BeanFactory when they implement this interface.)</li>
-     * <li></li>
+     * the creating BeanFactory when they implement this interface.)
+     * <li>
      * </ol>
      *
      * @see org.apache.commons.digester.ObjectCreationFactory#createObject(org.xml.sax.Attributes)

@@ -24,8 +24,8 @@ import nl.nn.adapterframework.core.SenderException;
 
 /**
  * {@link IInputStreamReaderFactory} that provides a reader that reads Delphi records containing Strings.
- * <p><b>Configuration:</b>
- * <table border="1">
+ * <b>Configuration:</b>
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.batch.DelphiRecordReaderFactory</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStringLength(int) stringLength}</td><td>the maximum length of each string. Each string is preceded by a one byte length indication.</td><td>50</td></tr>
@@ -33,8 +33,6 @@ import nl.nn.adapterframework.core.SenderException;
  * <tr><td>{@link #setSeparator(String) separator}</td><td>separator placed between each string read</td><td>|</td></tr>
  * <tr><td>{@link #setSeparatorReplacement(String) separatorReplacement}</td><td>Replacement character, used when separator is found in string read</td><td>_</td></tr>
  * </table>
- * </p>
- * 
  * @author  Gerrit van Brakel
  * @since   4.10  
  */
@@ -49,7 +47,7 @@ public class DelphiStringRecordReaderFactory implements IInputStreamReaderFactor
 	}
 
 	public Reader getReader(InputStream in, String charset, String streamId, IPipeLineSession session) throws SenderException {
-		return new DelphiStringRecordReader(in,charset,getStringLength(),getStringsPerRecord(),getSeparator(),getSeparatorReplacement()); 
+		return new DelphiStringRecordReader(in,charset,getStringLength(),getStringsPerRecord(),getSeparator(),getSeparatorReplacement());
 	}
 
 	public void setSeparator(String string) {

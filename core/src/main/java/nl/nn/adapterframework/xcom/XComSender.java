@@ -36,7 +36,7 @@ import org.apache.commons.lang.StringUtils;
  * XCom client voor het versturen van files via XCom.
 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.ibis4fundation.XComSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
@@ -58,7 +58,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setUserid(String) userid}</td><td>Loginname of user on remote system</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>Password of user on remote system</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
+
  *
  * @author John Dekker
  */

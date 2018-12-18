@@ -23,9 +23,9 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Pipe that performs translations between special characters and their xml equivalents.
- * <p>When direction=cdata2text all cdata nodes are converted to text nodes without any other translations.</p>
+ * <p>When direction=cdata2text all cdata nodes are converted to text nodes without any other translations.
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDirection(String) direction}</td><td>either <code>encode</code>, <code>decode</code> or <code>cdata2text</code></td><td>encode</td></tr>
@@ -33,14 +33,14 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setSubstringEnd(String) substringEnd}</td><td>substring to end translation</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setEncodeSubstring(boolean) decodeSubstring}</td><td>when set <code>true</code> special characters in <code>substringStart</code> and <code>substringEnd</code> are first translated to their xml equivalents</td><td>false</td></tr>
  * </table>
- * </p>
+
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
- * </p>
+
  * @author Peter Leeuwenburgh
  */
 public class EscapePipe extends FixedForwardPipe {

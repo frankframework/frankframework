@@ -30,7 +30,7 @@ import org.apache.commons.lang.StringUtils;
  * Selects an exitState, based on the content of a sessionkey.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.XmlIf</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
@@ -46,7 +46,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setElseForwardName(String) elseForwardName}</td><td>forward returned when 'false'</td><td>else</td></tr>
  * <tr><td>{@link #setRegex(String) regex}</td><td>regular expression to be applied to the input-message (ignored if xpathExpression is specified). The input-message matching the given regular expression leads to the 'then'-forward</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
+
  *
  * @author  Peter Leeuwenburgh
  * @since   4.3

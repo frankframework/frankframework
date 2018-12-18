@@ -130,7 +130,7 @@ public final class XMLSchemaFactory extends SchemaFactory {
     }
     
     /**
-     * <p>Is specified schema supported by this <code>SchemaFactory</code>?</p>
+     * <p>Is specified schema supported by this <code>SchemaFactory</code>?
      *
      * @param schemaLanguage Specifies the schema language which the returned <code>SchemaFactory</code> will understand.
      *    <code>schemaLanguage</code> must specify a <a href="#schemaLanguage">valid</a> schema language.

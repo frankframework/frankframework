@@ -48,7 +48,7 @@ import nl.nn.adapterframework.util.XmlExternalEntityResolver;
  * baseclass for validating input message against a XML-Schema.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.XmlValidator</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFullSchemaChecking(boolean) fullSchemaChecking}</td><td>Perform addional memory intensive checks</td><td><code>false</code></td></tr>
@@ -126,10 +126,10 @@ public abstract class AbstractXmlValidator {
     /**
      * Configure the XmlValidator
      * @throws ConfigurationException when:
-     * <ul><li>the schema cannot be found</li>
+     * <ul><li>the schema cannot be found
      * <ul><li><{@link #isThrowException()} is false and there is no forward defined
-     * for "failure"</li>
-     * <li>when the parser does not accept setting the properties for validating</li>
+     * for "failure"
+     * <li>when the parser does not accept setting the properties for validating
      * </ul>
      */
     public void configure(String logPrefix) throws ConfigurationException {
@@ -268,7 +268,7 @@ public abstract class AbstractXmlValidator {
      * checking which may be time-consuming or memory intensive.
      *  Currently, particle unique attribution constraint checking and particle
      * derivation resriction checking are controlled by this option.
-     * <p> see property http://apache.org/xml/features/validation/schema-full-checking</p>
+     * <p> see property http://apache.org/xml/features/validation/schema-full-checking
      * Defaults to <code>false</code>;
      */
     public void setFullSchemaChecking(boolean fullSchemaChecking) {

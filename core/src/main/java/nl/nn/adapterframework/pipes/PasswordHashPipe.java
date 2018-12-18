@@ -34,16 +34,16 @@ import org.apache.commons.lang.StringUtils;
  * the forward to be used (success or failure).
  *  
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.PasswordHashPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setHashSessionKey(String) hashSessionKey}</td><td>name of sessionKey that holds the hash which will be used to validate the password (input of the pipe)</td><td></td></tr>
  * </table>
- * </p>
+
  * 
  * <b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td>"failure"</td><td>when hashSessionKey is used and password doesn't validate against the hash</td></tr>

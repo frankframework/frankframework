@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
  * Sender for transferring files using the XFB protocol. Assumes sender input is local filename.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.extensions.xfb.XfbSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setScript(String) script}</td><td>full pathname to the XFB script to be executed to transfer the file</td><td></td></tr>
@@ -44,39 +44,38 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setCopy(boolean) copy}</td><td>when set <code>true</code>, the file is copied before calling the XFB script. Reasons to copy the file: - XFB will rename the file (prefix it with FXB_) and delete it. - On Linux the sticky bit (drwxrws--- wasadmin xfbgw) isn't honoured with a move (only with a copy) (on AIX the sticky bit works for both move and copy)</td><td>true</td></tr>
  * <tr><td>{@link #setCopyPrefix(String) copyPrefix}</td><td>prefix for the name of the copied or original filename. When the name of the original file starts with this prefix this prefix is removed otherwise this prefix is added to the filename of the copied file </td><td>IBIS_</td></tr>
  * </table>
- * </p>
  *
- * <br/>
+ * <br>
  * Some comments from Richard Maddox (FTO) about UNIX File permissions:
- * <br/>
- * <br/>
+ * <br>
+ * <br>
  * In case of AIX or SUN systems we advise the following user and directory permissions:
- * <br/>
- * <br/>
+ * <br>
+ * <br>
  * SENDING CFT:
- * <br/>
+ * <br>
  * - App_user must have secondary group: xfbgw
- * <br/>
+ * <br>
  * - Folder should have ownership: app_user:xfbgw   (owner:group)
- * <br/>
+ * <br>
  * - Folder should have access rights: 770  (rwx.rwx.---)  so nobody other then app_user and group xfbgw can do something in this folder
- * <br/>
+ * <br>
  * - Folder should have SGID bit set so that all files what is copied to this folder get group ownership xfbgw
- * <br/>
+ * <br>
  * - send file must have rights 660 after putting the file in the send directory. 
- * <br/>
- * <br/>
+ * <br>
+ * <br>
  * RECEIVING CFT:
- * <br/>
+ * <br>
  * - App_user (the application user of customer) should have secondary group: xfbgw
- * <br/>
+ * <br>
  * - Folder should have ownership:  app_user:xfbgw   (owner:group)
- * <br/>
+ * <br>
  * - Folder should have access rights: 770  (rwx.rwx.---)  so nobody other then app_user and group xfbgw can do something in this folder
- * <br/>
+ * <br>
  * - Folder should have SGID bit set, so that all files what is copied to this folder get group ownership xfbgw
- * <br/>
- * <br/>
+ * <br>
+ * <br>
  * There are of course more solutions to get the job done, but this is the solution we can guarantee.
  *
  * @author  Jaco de Groot

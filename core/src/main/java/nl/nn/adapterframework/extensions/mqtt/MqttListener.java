@@ -41,7 +41,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
  * MQTT listener which will connect to a broker and subscribe to a topic.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.extensions.mqtt.MqttListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the listener</td><td>&nbsp;</td></tr>

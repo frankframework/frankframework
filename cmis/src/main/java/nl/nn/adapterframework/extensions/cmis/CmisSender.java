@@ -84,7 +84,7 @@ import org.w3c.dom.Node;
  * Sender to obtain information from and write to a CMIS application.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.extensions.cmis.CmisSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
@@ -92,11 +92,11 @@ import org.w3c.dom.Node;
  * <tr><td>{@link #setRepository(String) repository}</td><td>Repository id</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAction(String) action}</td><td>specifies action to perform. Must be one of 
  * <ul>
- * <li><code>get</code>: get the content of a document (and optional the properties)</li>
- * <li><code>create</code>: create a document</li>
- * <li><code>find</code>: perform a query that returns properties</li>
- * <li><code>update</code>: update the properties of an existing document</li>
- * <li><code>fetch</code>: get the (meta)data of a folder or document</li>
+ * <li><code>get</code>: get the content of a document (and optional the properties)
+ * <li><code>create</code>: create a document
+ * <li><code>find</code>: perform a query that returns properties
+ * <li><code>update</code>: update the properties of an existing document
+ * <li><code>fetch</code>: get the (meta)data of a folder or document
  * </ul></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
@@ -135,47 +135,40 @@ import org.w3c.dom.Node;
  * <tr><td>{@link #setBridgeSender(boolean) isBridgeSender}</td><td>when a cmisListener is used, this specifies where non-bypassed requests should be send to</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOverrideEntryPointWSDL(String) overrideEntryPointWSDL}</td><td>override entrypoint wsdl by reading it from the classpath, overrides url attribute</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
- * <p><b>NOTE:</b></p>
- * <p>Only one CmisSender can act as the default 'bridged' sender!</p>
- * <p>When used to proxy requests, you should use the fetch action!</p>
- * <p></p>
- * 
- * <p>
- * <table border="1">
+ * <br>
+ * <b>NOTE:</b>
+ * <p>Only one CmisSender can act as the default 'bridged' sender!
+ * <p>When used to proxy requests, you should use the fetch action!
+ * <br>
  * <b>Parameters:</b>
+ * <table border="1" summary="">
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
  * <tr><td>authAlias</td><td>string</td><td>When a parameter with name authAlias is present, it is used instead of the authAlias specified by the attribute</td></tr>
  * <tr><td>userName</td><td>string</td><td>When a parameter with name userName is present, it is used instead of the userName specified by the attribute</td></tr>
  * <tr><td>password</td><td>string</td><td>When a parameter with name password is present, it is used instead of the password specified by the attribute</td></tr>
  * </table>
- * </p>
- * <p><b>NOTE:</b></p>
- * <p>These parameters are incompatible when the sender is configured as a BridgeSender!</p>
- * <p></p>
- * 
- * <p>
+ * <br>
+ * <p><b>NOTE:</b>
+ * <p>These parameters are incompatible when the sender is configured as a BridgeSender!
+ * <br>
  * When <code>action=get</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
- * </p>
- * <p>
- * <b>example:</b>
+ * <br>
+ * <b>Example:</b>
  * <code>
- * <pre>
+ * &lt;pre&gt;
  *   &lt;cmis&gt;
  *      &lt;id&gt;
  *         documentId
  *      &lt;/id&gt;
  *   &lt;/cmis&gt;
- * </pre>
+ * &lt;/pre&gt;
  * </code>
- * </p>
- * <p>
+ * <br>
  * When <code>action=create</code> the input (xml string) indicates document properties to set. This input is optional.
- * </p>
- * <p>
+ * <br>
  * <b>example:</b>
  * <code>
- * <pre>
+ * &lt;pre&gt;
  *   &lt;cmis&gt;
  *      &lt;name&gt;Offerte&lt;/name&gt;
  *      &lt;objectTypeId&gt;NNB_Geldlening&lt;/objectTypeId&gt;
@@ -186,36 +179,32 @@ import org.w3c.dom.Node;
  *         &lt;property name="DocumentType"&gt;Geldlening&lt;/property&gt;
  *      &lt;/properties&gt;
  *   &lt;/cmis&gt;
- * </pre>
+ * &lt;/pre&gt;
  * </code>
- * </p>
- * 
- * <p>
- * <table border="1">
+ * <br>
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>name</td><td>mandatory property "cmis:name". If not set the sender attribute fileNameSessionKey is used</td><td>"[unknown]"</td></tr>
  * <tr><td>objectTypeId</td><td>mandatory property "cmis:objectTypeId"</td><td>"cmis:document"</td></tr>
  * <tr><td>mediaType</td><td>the MIME type of the document to store</td><td>"application/octet-stream"</td></tr>
  * <tr><td>property</td><td>custom document property to set. Possible attributes:
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>name</th><th>description</th><th>default</th></tr>
  * <tr><td>type</td><td>
  * <ul>
- * <li><code>string</code>: renders the value</li>
- * <li><code>datetime</code>: converts the value to a Date, by default using formatString <code>yyyy-MM-dd HH:mm:ss</code></li>
+ * <li><code>string</code>: renders the value
+ * <li><code>datetime</code>: converts the value to a Date, by default using formatString <code>yyyy-MM-dd HH:mm:ss</code>
  * </ul>
  * </td><td>string</td></tr>
  * <tr><td>formatString</td><td>used in combination with <code>datetime</code></td><td>yyyy-MM-dd HH:mm:ss</td></tr>
  * </table></td><td>&nbsp;</td></tr>
  * </table>
- * </p>
- * <p>
+ * <br>
  * When <code>action=find</code> the input (xml string) indicates the query to perform.
- * </p>
- * <p>
+ * <br>
  * <b>example:</b>
  * <code>
- * <pre>
+ * &lt;pre&gt;
  *   &lt;query&gt;
  *      &lt;statement&gt;select * from cmis:document&lt;/statement&gt;
  *      &lt;maxItems&gt;10&lt;/maxItems&gt;
@@ -223,16 +212,14 @@ import org.w3c.dom.Node;
  *      &lt;searchAllVersions&gt;true&lt;/searchAllVersions&gt;
  *      &lt;includeAllowableActions&gt;true&lt;/includeAllowableActions&gt;
  *   &lt;/query&gt;
- * </pre>
+ * &lt;/pre&gt;
  * </code>
- * </p>
- * <p>
+ * <br>
  * When <code>action=update</code> the input (xml string) indicates document properties to update.
- * </p>
- * <p>
+ * <br>
  * <b>example:</b>
  * <code>
- * <pre>
+ * &lt;pre&gt;
  *   &lt;cmis&gt;
  *      &lt;id&gt;123456789&lt;/id&gt;
  *      &lt;properties&gt;
@@ -241,17 +228,14 @@ import org.w3c.dom.Node;
  *         &lt;property name="DocumentType"&gt;Geldlening&lt;/property&gt;
  *      &lt;/properties&gt;
  *   &lt;/cmis&gt;
- * </pre>
+ * &lt;/pre&gt;
  * </code>
- * </p>
- * 
- * <p>
- * <table border="1">
+ * <br>
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>id</td><td>mandatory property "cmis:objectId" which indicates the document to update</td><td>&nbsp;</td></tr>
  * <tr><td>property</td><td>custom document property to update. See <code>action=create</code> for possible attributes</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
  *
  * @author	Peter Leeuwenburgh
  * @author	Niels Meijer

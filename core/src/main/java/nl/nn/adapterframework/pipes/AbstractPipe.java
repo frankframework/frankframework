@@ -54,28 +54,28 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Base class for {@link nl.nn.adapterframework.core.IPipe Pipe}.
  * A Pipe represents an action to take in a {@link nl.nn.adapterframework.core.PipeLine Pipeline}. This class is ment to be extended
- * for defining steps or actions to take to complete a request. <br/>
+ * for defining steps or actions to take to complete a request. <br>
  * The contract is that a pipe is created (by the digester), {@link #setName(String)} is called and
  * other setters are called, and then {@link nl.nn.adapterframework.core.IPipe#configure()} is called, optionally
- * throwing a {@link nl.nn.adapterframework.configuration.ConfigurationException}. <br/>
+ * throwing a {@link nl.nn.adapterframework.configuration.ConfigurationException}. <br>
  * As much as possible, class instantiating should take place in the
  * {@link nl.nn.adapterframework.core.IPipe#configure()} method.
  * The object remains alive while the framework is running. When the pipe is to be run,
  * the {@link nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession) doPipe} method is activated.
  * <p>
  * For the duration of the processing of a message by the {@link nl.nn.adapterframework.core.PipeLine pipeline} has a {@link nl.nn.adapterframework.core.IPipeLineSession pipeLineSession}.
- * <br/>
- * By this mechanism, pipes may communicate with one another.<br/>
+ * <br>
+ * By this mechanism, pipes may communicate with one another.<br>
  * However, use this functionality with caution, as it is not desirable to make pipes dependend
  * on each other. If a pipe expects something in a session, it is recommended that
  * the key under which the information is stored is configurable (has a setter for this keyname).
  * Also, the setting of something in the <code>PipeLineSession</code> should be done using
  * this technique (specifying the key under which to store the value by a parameter).
- * </p>
+
  * <p>Since 4.1 this class also has parameters, so that decendants of this class automatically are parameter-enabled.
  * However, your documentation should say if and how parameters are used!<p>
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.AbstractPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
@@ -95,7 +95,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setRemoveCompactMsgNamespaces (boolean) removeCompactMsgNamespaces}</td><td>when set <code>true</code> namespaces (and prefixes) in the compacted message are removed</td><td>true</td></tr>
  * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of possible XML parsing in descender-classes</td><td>application default</td></tr>
  * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are:
- *   <table border="1">
+ *   <table border="1" summary="">
  *   <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipe excecuted in Transaction</th></tr>
  *   <tr><td colspan="1" rowspan="2">Required</td>    <td>none</td><td>T2</td></tr>
  * 											      <tr><td>T1</td>  <td>T1</td></tr>
@@ -116,14 +116,14 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setLogIntermediaryResults (boolean) logIntermediaryResults}</td><td>when set, the value in AppConstants is overwritten (for this pipe only)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setHideRegex(String) hideRegex}</td><td>Regular expression to mask strings in the log. For example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code> will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>Note:</b> this feature is used at adapter level, so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
+
  * 
  * <p>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.util.Locker locker}</td><td>optional: the pipe will only be executed if a lock could be set successfully</td></tr>
  * </table>
- * </p>
+
  * 
  * @author     Johan Verrips / Gerrit van Brakel
  *
@@ -259,19 +259,19 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	}
 
 	/**
-	 * looks up a key in the pipeForward hashtable. <br/>
-	 * A typical use would be on return from a Pipe: <br/>
-	 * <code><pre>
+	 * looks up a key in the pipeForward hashtable. <br>
+	 * A typical use would be on return from a Pipe: <br>
+	 * <code>&lt;pre&gt;
 	 * return new PipeRunResult(findForward("success"), result);
-	 * </pre></code>
+	 * &lt;/pre&gt;</code>
 	 * In the pipeForward hashtable are available:
-	 * <ul><li>All forwards defined in xml under the pipe element of this pipe</li>
-	 * <li> All global forwards defined in xml under the PipeLine element</li>
-	 * <li> All pipenames with their (identical) path</li>
+	 * <ul><li>All forwards defined in xml under the pipe element of this pipe
+	 * <li> All global forwards defined in xml under the PipeLine element
+	 * <li> All pipenames with their (identical) path
 	 * </ul>
 	 * Therefore, you can directly jump to another pipe, although this is not recommended
 	 * as the pipe should not know the existence of other pipes. Nevertheless, this feature
-	 * may come in handy for switcher-pipes.<br/><br/>
+	 * may come in handy for switcher-pipes.<br><br>
 	 * @param forward   Name of the forward
 	 * @return PipeForward
 	 */
@@ -369,7 +369,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	}
 
 	/**
-	 * Perform necessary actions to stop the <code>Pipe</code>.<br/>
+	 * Perform necessary actions to stop the <code>Pipe</code>.<br>
 	 * For instance, closing JMS connections, dbms connections etc.
 	 */
 	@Override
@@ -394,7 +394,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 
 	/**
 	 * Add a parameter to the list of parameters
-	 * @param rhs the PipeParameter.
+	 * @param param the PipeParameter.
 	 */
 	public void addParameter(Parameter param) {
 		log.debug("Pipe ["+getName()+"] added parameter ["+param.toString()+"]");

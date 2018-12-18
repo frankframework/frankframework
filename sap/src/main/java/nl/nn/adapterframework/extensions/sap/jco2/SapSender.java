@@ -29,7 +29,7 @@ import com.sap.mw.jco.JCO;
 /**
  * Implementation of {@link nl.nn.adapterframework.core.ISender sender} that calls a SAP RFC-function.
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.extensions.sap.SapSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Sender</td><td>&nbsp;</td></tr>
@@ -46,19 +46,16 @@ import com.sap.mw.jco.JCO;
  * <tr><td>{@link #setReplyFieldIndex(int) replyFieldIndex}</td><td>Index of the field in the ExportParameterList of the RFC function that contains the whole reply message contents</td><td>0</td></tr>
  * <tr><td>{@link #setReplyFieldName(String) replyFieldName}</td><td>Name of the field in the ExportParameterList of the RFC function that contains the whole reply message contents</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
- * <table border="1">
  * <p><b>Parameters:</b>
+ * <table border="1" summary="">
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
  * <tr><td>sapSystemName</td><td>String</td><td>points to {@link SapSystem} to use; required when attribute <code>sapSystemName</code> is empty</td></tr>
  * <tr><td>functionName</td><td>String</td><td>defines functionName; required when attribute <code>functionName</code> is empty</td></tr>
  * <tr><td><i>inputfieldname</i></td><td><i>any</i></td><td>The value of the parameter is set to the (simple) input field</td></tr>
  * <tr><td><i>structurename</i>/<i>inputfieldname</i></td><td><i>any</i></td><td>The value of the parameter is set to the named field of the named structure</td></tr>
  * </table>
- * </p>
  * N.B. If no requestFieldIndex or requestFieldName is specified, input is converted from xml;
  * If no replyFieldIndex or replyFieldName is specified, output is converted to xml. 
- * </p>
  * @author  Gerrit van Brakel
  * @since   4.2
  */

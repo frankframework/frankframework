@@ -38,17 +38,17 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
  * ESB (Enterprise Service Bus) extension of JmsListener.
  *
  * <p><b>Configuration </b><i>(where deviating from JmsListener)</i><b>:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of ESB service to be called. Possible values 
  * <ul>
- *   <li>"FF": Fire & Forget protocol</li>
- *   <li>"RR": Request-Reply protocol</li>
+ *   <li>"FF": Fire &amp; Forget protocol
+ *   <li>"RR": Request-Reply protocol
  * </ul></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUseReplyTo(boolean) useReplyTo}</td><td>if messageProtocol=<code>FF</code>: </td><td><code>false</code></td></tr>
  * <tr><td>{@link #setForceMessageIdAsCorrelationId(boolean) forceMessageIdAsCorrelationId}</td><td>if messageProtocol=<code>RR</code>: </td><td><code>true</code></td></tr>
  * <tr><td>{@link #setCopyAEProperties(boolean) copyAEProperties}</td><td>if <code>true</code>, all JMS properties in the request starting with "ae_" are copied to the reply</td><td><code>false</code></td></tr>
- * </table></p>
+ * </table>
  * 
  * @author  Peter Leeuwenburgh
  */

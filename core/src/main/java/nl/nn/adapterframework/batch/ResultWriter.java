@@ -33,7 +33,7 @@ import org.apache.commons.lang.StringUtils;
  * Baseclass for resulthandlers that write the transformed record to a writer.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.batch.ResultWriter</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>Name of the resulthandler</td><td>&nbsp;</td></tr>
@@ -47,7 +47,6 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setBlockNamePattern(String) blockNamePattern}</td><td>String that is replaced by name of block or name of stream in above strings</td><td>#name#</td></tr>
  * <tr><td>{@link #setBlockByRecordType(boolean) blockByRecordType}</td><td>when set <code>true</code>(default), every group of records, as indicated by {@link IRecordHandler#isNewRecordType(IPipeLineSession, boolean, List, List) RecordHandler.newRecordType} is handled as a block.</td><td>true</td></tr>
  * </table>
- * </p>
  * 
  * @author  Gerrit van Brakel
  * @since   4.7

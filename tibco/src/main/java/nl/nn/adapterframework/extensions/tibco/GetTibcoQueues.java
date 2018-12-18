@@ -69,12 +69,12 @@ import com.tibco.tibjms.admin.UserInfo;
  * Returns information about Tibco queues in a XML string.
  * <p>
  * If the parameter <code>queueName</code> is empty then
- * <ul><li>all Tibco queues including information about these queues are returned</li></ul>
+ * <ul><li>all Tibco queues including information about these queues are returned</ul>
  * else
- * <ul><li>one message on a specific Tibco queue including information about this message is returned (without removing it)</li></ul>
- * </p>
+ * <ul><li>one message on a specific Tibco queue including information about this message is returned (without removing it)</ul>
+
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUrl(String) url}</td><td>URL or base of URL to be used. When multiple URLs are defined (comma separated list), the first URL is used of which the server has an active state</td><td>&nbsp;</td></tr>
@@ -84,9 +84,9 @@ import com.tibco.tibjms.admin.UserInfo;
  * <tr><td>{@link #setSkipTemporaryQueues(boolean) skipTemporaryQueues}</td><td>when set to <code>true</code>, temporary queues are skipped</td><td>false</td></tr>
  * <tr><td>{@link #setHideMessage(boolean) hideMessage}</td><td>when set to <code>true</code>, the length of the queue message is returned instead of the queue message self (when parameter <code>queueName</code> is not empty)</td><td>false</td></tr>
  * </table>
- * </p>
+
  * <p>
- * <table border="1">
+ * <table border="1" summary="">
  * <b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
  * <tr><td>url</td><td>string</td><td>When a parameter with name url is present, it is used instead of the url specified by the attribute</td></tr>
@@ -99,7 +99,7 @@ import com.tibco.tibjms.admin.UserInfo;
  * <tr><td>countOnly</td><td>boolean</td><td>when set to <code>true</code> and <code>queueName</code> is filled, only the number of pending messages is returned (default is false)</td></tr>
  * <tr><td>ldapUrl</td><td>string</td><td>When present, principal descriptions are retrieved from this LDAP server</td></tr>
  * </table>
- * </p>
+
  * 
  * @author Peter Leeuwenburgh
  * @version $Id$
