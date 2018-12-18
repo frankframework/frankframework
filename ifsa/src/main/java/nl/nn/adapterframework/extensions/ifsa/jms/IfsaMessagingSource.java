@@ -110,10 +110,10 @@ public class IfsaMessagingSource extends MessagingSource {
 	}
 
 	/**
-	 * Gets the queueReceiver, by utilizing the <code>getInputQueue()</code> method.<br/>
+	 * Gets the queueReceiver, by utilizing the <code>getInputQueue()</code> method.<br>
 	 * For serverside getQueueReceiver() the creating of the QueueReceiver is done
 	 * without the <code>selector</code> information, as this is not allowed
-	 * by IFSA.<br/>
+	 * by IFSA.<br>
 	 * For a clientconnection, the receiver is done with the <code>getClientReplyQueue</code>
 	 */
 	public QueueReceiver getReplyReceiver(QueueSession session, Message sentMessage)

@@ -39,12 +39,12 @@ import org.w3c.dom.Element;
  * and <code>logging.wildcard</code> to perform a directory listing
  * that will be shown in the jsp. These values should be stored 
  * in the deployment specific properties file, as the container
- * may override the output of logging.</p>
+ * may override the output of logging.
  * <p>the logging.path variable may be a system variable, e.g.
  * <code><pre>
  * logging.path=${log.dir}
  * <pre></code>
- * </p>
+
  * Creation date: (26-02-2003 12:42:00)
  * @author Johan Verrips IOS
  */

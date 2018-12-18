@@ -43,7 +43,7 @@ import org.w3c.dom.Node;
 /**
  * Pipe to wrap or unwrap a message conformable to the BIS (Business Integration Services) standard.
  * <p>
- * Example request in case of bis provider:<br/><code><pre>
+ * Example request in case of bis provider:<br><code><pre>
  *	&lt;soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"&gt;
  *		&lt;soap:Header&gt;
  *			&lt;bis:MessageHeader xmlns:bis="http://www.ing.com/CSP/XSD/General/Message_2"&gt;
@@ -67,10 +67,10 @@ import org.w3c.dom.Node;
  *			&lt;/pcr:GetRequest&gt;</i>
  *		&lt;/soap:Body&gt;
  *	&lt;/soap:Envelope&gt;
- * </pre></code><br/>
+ * </pre></code><br>
  * The element MessageHeader in the soap header is mandatory.
- * </p><p>
- * Example response in case of bis requester:<br/><code><pre>
+ * <p>
+ * Example response in case of bis requester:<br><code><pre>
  *	&lt;soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"&gt;
  *		&lt;soap:Header&gt;
  *			&lt;bis:MessageHeader xmlns:bis="http://www.ing.com/CSP/XSD/General/Message_2"&gt;
@@ -94,10 +94,10 @@ import org.w3c.dom.Node;
  *			<i>&lt;/GetResponse&gt;</i>
  *		&lt;/soap:Body&gt;
  *	&lt;/soap:Envelope&gt;
- * </pre></code><br/>
+ * </pre></code><br>
  * The elements MessageHeader in the soap header and Result in the soap body are mandatory.
- * </p><p>
- * Example element Result in case of an error response:<br/><code><pre>
+ * <p>
+ * Example element Result in case of an error response:<br><code><pre>
  *	&lt;bis:Result xmlns:bis="http://www.ing.com/CSP/XSD/General/Message_2"&gt;
  *		&lt;bis:Status&gt;ERROR&lt;/bis:Status&gt;
  *		&lt;bis:ErrorList&gt;
@@ -122,13 +122,12 @@ import org.w3c.dom.Node;
  *		&lt;/bis:ErrorList&gt;
  *	&lt;/bis:Result&gt;
  * </pre></code>
- * </p><p>
+ * <p>
  * If direction=unwrap and one of the following conditions is true a PipeRunException is thrown:
- * <ul><li>Result/Status in the response soap body equals 'ERROR'</li>
- * <li>faultcode in the response soap fault is not empty</li></ul>
- * </p>
+ * <ul><li>Result/Status in the response soap body equals 'ERROR'
+ * <li>faultcode in the response soap fault is not empty</ul>
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDirection(String) direction}</td><td>either <code>wrap</code> or <code>unwrap</code></td><td>wrap</td></tr>
@@ -146,7 +145,7 @@ import org.w3c.dom.Node;
  * <tr><td>{@link #setBisExternalRefToMessageIdSessionKey(String) bisExternalRefToMessageIdSessionKey}</td><td>(only used when direction=wrap and the original bis message header from the request doesn't exist) key of session variable to retrieve ExternalRefToMessageId for the bis message header from</td><td>bisExternalRefToMessageId</td></tr>
  * <tr><td>{@link #setBisErrorCodeSessionKey(String) bisErrorCodeSessionKey}</td><td>(only used when direction=wrap) key of session variable to store bis error code in (if an error occurs)</td><td>bisErrorCode</td></tr>
  * <tr><td>{@link #setBisErrorTextSessionKey(String) bisErrorTextSessionKey}</td><td>(only used when direction=wrap) key of session variable to store bis error text in (if an error occurs). If not specified or no value retrieved, the following error text is derived from the error code: 
- *   <table border="1">
+ *   <table border="1" summary="">
  *   <tr><th>errorCode</th><th>errorText</th></tr>
  *   <tr><td>ERR6002</td><td>Service Interface Request Time Out</td></tr>
  *   <tr><td>ERR6003</td><td>Invalid Request Message</td></tr>
@@ -159,21 +158,20 @@ import org.w3c.dom.Node;
  * <tr><td>{@link #setOutputNamespace(String) outputNamespace}</td><td>(only used when direction=wrap and an error occurs) namespace of the output root element in the SOAP body</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBisServiceName(String) bisServiceName}</td><td>(only used when direction=wrap) name of the bis service; used in the bis error response</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBisActionName(String) bisActionName}</td><td>(only used when direction=wrap) name of the bis operation; used in the bis error response</td><td>&nbsp;</td></tr>
- * </table></p>
+ * </table>
  * <p><b>The following attributes are created for the purpose of the migration from IFSA to TIBCO (and will be removed afterwards):</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setRemoveOutputNamespaces(boolean) removeOutputNamespaces}</td><td>(only used when direction=unwrap) when set <code>true</code> namespaces (and prefixes) in the output are removed</td><td>false</td></tr>
  * <tr><td>{@link #setOmitResult(boolean) omitResult}</td><td>(only used when direction=wrap) when <code>true</code>, the Result is omitted and instead of Result/Status 'ERROR' a PipeRunException is thrown</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setAddOutputNamespace(boolean) addOutputNamespace}</td><td>(only used when direction=unwrap) when set <code>true</code> the <code>outputNamespace</code> is added to the output root element in the SOAP body</td><td>false</td></tr>
- * </table></p>
+ * </table>
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
- * </p>
  * @author Peter Leeuwenburgh
  * @deprecated Please replace with nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe (not 1:1)
  */

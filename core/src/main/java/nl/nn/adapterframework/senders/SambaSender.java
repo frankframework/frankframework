@@ -47,7 +47,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * Samba Sender: The standard Windows interoperability suite for Linux and Unix.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setAction(String) action}</td><td>possible values: delete, download, list, mkdir, rename, rmdir, upload</td><td>&nbsp;</td></tr>
  * 
@@ -60,24 +60,24 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for the smb share</td><td>&nbsp;</td></tr>
  * 
  * </table>
- * </p>
+
  * 
- * <p><b>Parameters:</b></p>
- * <p>The <code>upload</code> action requires the file parameter to be set which should contain the fileContent to upload in either Stream, Bytes or String format</p>
- * <p>The <code>rename</code> action requires the destination parameter to be set which should contain the full path relative to the share + filename</p>
+ * <p><b>Parameters:</b>
+ * <p>The <code>upload</code> action requires the file parameter to be set which should contain the fileContent to upload in either Stream, Bytes or String format
+ * <p>The <code>rename</code> action requires the destination parameter to be set which should contain the full path relative to the share + filename
  * 
- * <p><b>AuthAlias: (WebSphere based application servers)</b></p>
- * <p>If you do not want to specify the username/password used to authenticate with the Samba Share, you can use the authalias property.</p>
+ * <p><b>AuthAlias: (WebSphere based application servers)</b>
+ * <p>If you do not want to specify the username/password used to authenticate with the Samba Share, you can use the authalias property.
  * 
- * <p><b>NOTES:</b></p>
- * <p>Folders must always end with a slash.</p>
- * <p>It is possible to move files with the <code>rename</code> action. When doing so, make sure that the target folder exists!</p>
- * <p>It is possible to create multiple directories at once, when the <code>force</code> argument is set to <code>true</code>.</p>
- * <p>The <code>download</code> action returns a base64 encoded string containing the file content.</p>
+ * <p><b>NOTES:</b>
+ * <p>Folders must always end with a slash.
+ * <p>It is possible to move files with the <code>rename</code> action. When doing so, make sure that the target folder exists!
+ * <p>It is possible to create multiple directories at once, when the <code>force</code> argument is set to <code>true</code>.
+ * <p>The <code>download</code> action returns a base64 encoded string containing the file content.
  * 
- * <br/>
- * <br/>
- * <br/>
+ * <br>
+ * <br>
+ * <br>
  * 
  * @author	Niels Meijer
  * @since	7.1-B4

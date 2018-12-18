@@ -41,12 +41,12 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * The field <code>type</code>, which is optional, indicates the format of <code>valueIn</code>. Currently the following types are supported:
  * 
  * <ul>
- *   <li><code>string</code> (default): the methode setString() is used</li>
- *   <li><code>number</code>: the method setDouble() is used </li>
+ *   <li><code>string</code> (default): the methode setString() is used
+ *   <li><code>number</code>: the method setDouble() is used 
  * </ul>
  *  
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
@@ -55,7 +55,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * <tr><td>{@link #setValueInField(String) valueInField}</td><td>the name of the column source values are stored in</td><td>valueIn</td></tr>
  * <tr><td>{@link #setValueOutField(String) valueOutField}</td><td>the name of the column destination values are stored in</td><td>valueOut</td></tr>
  * </table>
- * </p>
+
  * 
  * @author  Peter Leeuwenburgh
  * @since   4.9

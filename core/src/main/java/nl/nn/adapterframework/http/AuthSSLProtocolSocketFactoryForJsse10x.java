@@ -219,7 +219,6 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
 	 * JREs a controller thread is executed. The controller thread attempts to create a new socket
 	 * within the given limit of time. If socket constructor does not return until the timeout 
 	 * expires, the controller terminates and throws an {@link ConnectTimeoutException}
-	 * </p>
 	 *  
 	 * @param host the host name/IP
 	 * @param port the port on the host

@@ -36,7 +36,7 @@ import org.apache.commons.lang.StringUtils;
  * the pipeLineSession.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setRekenBoxName(String) rekenBoxName}</td><td>fixed name of the rekenbox (or wrapper) to be called. If empty, the name is determined from the request</td><td>&nbsp;</td></tr>
@@ -45,9 +45,9 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setInputOutputDirectory(String) inputOutputDirectory}</td><td>directory on server where input and output files are (temporarily) stored</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCommandLineType(String) commandLineType}</td><td>Format of commandline of rekenbox. Possible values 
  * <ul>
- *   <li>"straight": rekenbox is called like: rekenbox.exe inputFileName outputFileName templateDir</li>
- *   <li>"switches": rekenbox is called like: rekenbox.exe /IinputFileName /UoutputFileName /PtemplateDir</li>
- *   <li>"redirected": rekenbox is called like: rekenbox.exe inputFileName templateDir > outputFileName; (This method has not been fully tested)</li>
+ *   <li>"straight": rekenbox is called like: rekenbox.exe inputFileName outputFileName templateDir
+ *   <li>"switches": rekenbox is called like: rekenbox.exe /IinputFileName /UoutputFileName /PtemplateDir
+ *   <li>"redirected": rekenbox is called like: rekenbox.exe inputFileName templateDir > outputFileName; (This method has not been fully tested)
  * </ul></td><td>"straigth"</td></tr>
  * <tr><td>{@link #setExecutableExtension(String) executableExtension}</td><td>extension of rekenbox-executable</td><td>exe</td></tr>
  * <tr><td>{@link #setCleanup(boolean) cleanup}</td><td>if true, input and output files are removed after the call to the rekenbox is finished</td><td>true</td></tr>
@@ -55,14 +55,12 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setDataFilenamePrefix(String) dataFilenamePrefix}</td><td>first part of filenames that communicate requests and replies to rekenbox</td><td>rb</td></tr>
  * <tr><td>{@link #setMaxRequestNumber(long) maxRequestNumber}</td><td>maximal number that will be concatenated to dataFilenamePrefix</td><td>1000</td></tr>
  * </table>
- * </p>
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
- * </p>
  *
  * <p><b>Note:</b><br>
  * The rekenbox-name is currently determined from the first 8 characters of the file, or up
@@ -70,7 +68,6 @@ import org.apache.commons.lang.StringUtils;
  * file is a newline character or something similar, less characters are available to pass the
  * rekenbox-name on. Especially if the inputmessages are constructed by means of an XSLT-stylesheet,
  * messages often start with a newline character.
- * </p>
  * @author Gerrit van Brakel
  */
 public class RekenBoxCaller extends FixedForwardPipe {

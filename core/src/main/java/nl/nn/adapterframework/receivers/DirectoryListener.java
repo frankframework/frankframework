@@ -50,7 +50,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * The name of the moved file is passed to the pipeline.  
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.batch.DirectoryListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the listener</td><td>&nbsp;</td></tr>
@@ -74,7 +74,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * <tr><td>{@link #setWaitBeforeRetry(long) waitBeforeRetry}</td><td>time waited after unsuccesful try. N.B. not used anymore.</td><td>1000 [ms]</td></tr>
  * <tr><td>{@link #setRandom(boolean) random}</td><td>when set to <code>true</code>, every file in the directory is passed in a random order</td><td>false</td></tr>
  * </table>
- * </p>
+
  *
  * @author  John Dekker
  */

@@ -54,10 +54,10 @@ public interface IListener extends INamedObject {
 	 * <br>
 	 * Common entries in the session context are:
 	 * <ul>
-	 * 	<li>id: messageId, identifies the current transportation of the message</li>
-	 * 	<li>cid: correlationId, identifies the processing of the message in the global chain</li>
-	 * 	<li>tsReceived: timestamp of reception of the message, formatted as yyyy-MM-dd HH:mm:ss.SSS</li>
-	 * 	<li>tsSent: timestamp of sending of the message (only when available), formatted as yyyy-MM-dd HH:mm:ss.SSS</li>
+	 * 	<li>id: messageId, identifies the current transportation of the message
+	 * 	<li>cid: correlationId, identifies the processing of the message in the global chain
+	 * 	<li>tsReceived: timestamp of reception of the message, formatted as yyyy-MM-dd HH:mm:ss.SSS
+	 * 	<li>tsSent: timestamp of sending of the message (only when available), formatted as yyyy-MM-dd HH:mm:ss.SSS
 	 * </ul>
 	 * 
 	 * @return Correlation ID string.

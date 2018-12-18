@@ -28,7 +28,7 @@ import org.apache.xerces.jaxp.validation.XSGrammarPoolContainer;
 import org.hibernate.validator.internal.engine.ValidatorImpl;
 
 /**
- * <p>Abstract implementation of Schema for W3C XML Schemas.</p>
+ * <p>Abstract implementation of Schema for W3C XML Schemas.
  * 
  * Class copied from Xerces 2.11.0, to support creating ValidatorHandler from GrammarPool in Xerces 2.9.1.
  * 

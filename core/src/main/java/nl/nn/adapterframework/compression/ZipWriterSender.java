@@ -36,7 +36,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  * is used for either filename or contents.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.compression.ZipWriterSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
@@ -44,9 +44,9 @@ import nl.nn.adapterframework.util.StreamUtil;
  * <tr><td>{@link #setCloseInputstreamOnExit(boolean) closeInputstreamOnExit}</td><td>when set to <code>false</code>, the inputstream is not closed after it has been used</td><td>true</td></tr>
  * <tr><td>{@link #setCharset(String) charset}</td><td>characterset used for writing zip entry</td><td>UTF-8</td></tr>
  * </table>
- * </p>
- * <table border="1">
+ * <br>
  * <p><b>Parameters:</b>
+ * <table border="1" summary="">
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
  * <tr><td>filename</td><td>string</td><td>filename of the zipentry</td></tr>
  * <tr><td>contents</td><td>string</td><td>contents of the zipentry</td></tr>

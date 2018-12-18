@@ -48,7 +48,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * Transforms between ascii-ADIOS and an XML representation of ADIOS.
  *
  * <p>
- * Sample xml:<br/><code><pre>
+ * Sample xml:<br><code><pre>
  *	&lt;adios rekenbox="L76HB150"&gt;
  *	    &lt;rubriek naam="BER_VERZ_CD" waarde="COMBIFLEX_BELEGGING" /&gt;
  *	    &lt;rubriek naam="INBR_CD" waarde="NIEUWE_VERZEKERING" /&gt;
@@ -57,15 +57,14 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  *          ...
  *	&lt;/adios&gt;
- * </pre></code> <br/>
+ * </pre></code> <br>
  * For input, a 'naam' or a 'nummer'-attribute must be specified. If both are specified, their match is checked.
  * On output, 'nummer', 'naam' and 'waarde'-attributes are always present in each rubriek-element. 
  * Where applicable 'index', 'recordnr', 'record' and 'recordindex' are present, too.
  * If sub-records exist, they are present with a 'sub' prefix to all attributes.
- * </p>
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setNoConversionForwardName(String) noConversionForwardName}</td><td>name of forward returned upon completion if no conversion was performed</td><td>"noconversion"</td></tr>
@@ -74,19 +73,17 @@ import org.xml.sax.helpers.DefaultHandler;
  * <tr><td>{@link #setRekenboxSessionKey(String) rekenboxSessionKey}</td><td>key in {@link nl.nn.adapterframework.core.IPipeLineSession pipeLineSession} to retrieve rekenbox name from</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDirection(String) direction}</td><td>transformation direction. Possible values 
  * <ul>
- *   <li>"Xml2Adios": transform an Adios-XML file to ascii-Adios</li>
- *   <li>"Adios2Xml": transform an ascii-Adios file to Adios-XML</li>
+ *   <li>"Xml2Adios": transform an Adios-XML file to ascii-Adios
+ *   <li>"Adios2Xml": transform an ascii-Adios file to Adios-XML
  * </ul></td><td>Adios2Xml</td></tr>
  * </table>
- * </p>
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>default, when specified</td></tr>
  * <tr><td><i>{@link #setNoConversionForwardName(String) noConversionForwardName}</i></td><td>succes, but no conversion took place</td></tr>
  * </table>
- * </p>
  * @author Gerrit van Brakel
  */
 public class Adios2XmlPipe extends FixedForwardPipe {
@@ -451,8 +448,8 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 	/**
 	 * sets transformation direction. Possible values 
 	 * <ul>
-	 *   <li>"Xml2Adios": transform an Adios-XML file to ascii-Adios</li>
-	 *   <li>"Adios2Xml": transform an ascii-Adios file to Adios-XML</li>
+	 *   <li>"Xml2Adios": transform an Adios-XML file to ascii-Adios
+	 *   <li>"Adios2Xml": transform an ascii-Adios file to Adios-XML
 	 * </ul>
 	 * default: Adios2Xml
 	 */

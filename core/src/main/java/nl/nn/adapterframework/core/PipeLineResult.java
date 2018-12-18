@@ -19,11 +19,11 @@ package nl.nn.adapterframework.core;
 /**
  * The PipeLineResult is a type to store both the
  * result of the PipeLine processing as well as an exit state.
- * <br/>
+ * <br>
  * The exit state is returned to the Adapter that hands it to the <code>Receiver</code>,
  * so that the receiver knows whether or not the request was successfully
  * processed, and might -for instance- not commit a received message.
- * <br/>
+ * <br>
  * @author Johan Verrips
  */
 public class PipeLineResult {

@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.Misc;
  * or a {@link nl.nn.adapterframework.receivers.JavaListener JavaListener}. 
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.senders.IbisLocalSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
@@ -53,11 +53,11 @@ import nl.nn.adapterframework.util.Misc;
  * <tr><td>{@link #setDependencyTimeOut(int) dependencyTimeOut}</td><td>maximum time (in seconds) the sender waits for the listener to start. A value of -1 indicates to wait indefinitely</td><td>60 s</td></tr>
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td> when set <code>false</code>, the call is made asynchronously. This implies <code>isolated=true</code></td><td>true</td></tr>
  * <tr><td>{@link #setReturnedSessionKeys(String) returnedSessionKeys}</td><td>comma separated list of keys of session variables that should be returned to caller, 
- *         for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)<br/>
+ *         for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)<br>
  *         N.B. To get this working, the attribute returnedSessionKeys must also be set on the corresponding Receiver</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setThrowJavaListenerNotFoundException(boolean) throwJavaListenerNotFoundException}</td><td>when set <code>false</code>, the xml-string "&lt;error&gt;could not find JavaListener [...]&lt;/error&gt;" is returned instead of throwing a SenderException</td><td>true</td></tr>
  * </table>
- * </p>
+
  * Any parameters are copied to the PipeLineSession of the service called.
  * 
  * <h3>Configuration of the Adapter to be called</h3>
@@ -67,29 +67,29 @@ import nl.nn.adapterframework.util.Misc;
  *  
  * <h4>configuring IbisLocalSender and JavaListener</h4>
  * <ul>
- *   <li>Define a GenericMessageSendingPipe with an IbisLocalSender</li>
- *   <li>Set the attribute <code>javaListener</code> to <i>yourServiceName</i></li>
- *   <li>Do not set the attribute <code>serviceName</code></li>
+ *   <li>Define a GenericMessageSendingPipe with an IbisLocalSender
+ *   <li>Set the attribute <code>javaListener</code> to <i>yourServiceName</i>
+ *   <li>Do not set the attribute <code>serviceName</code>
  * </ul>
  * In the Adapter to be called:
  * <ul>
- *   <li>Define a Receiver with a JavaListener</li>
- *   <li>Set the attribute <code>name</code> to <i>yourServiceName</i></li>
+ *   <li>Define a Receiver with a JavaListener
+ *   <li>Set the attribute <code>name</code> to <i>yourServiceName</i>
  *   <li>Do not set the attribute <code>serviceName</code>, except if the service is to be called also
- *       from applications other than this IBIS-instance</li>
+ *       from applications other than this IBIS-instance
  * </ul>
  * 
  * <h4>configuring IbisLocalSender and WebServiceListener</h4>
  * 
  * <ul>
- *   <li>Define a GenericMessageSendingPipe with an IbisLocalSender</li>
- *   <li>Set the attribute <code>serviceName</code> to <i>yourIbisWebServiceName</i></li>
- *   <li>Do not set the attribute <code>javaListener</code></li>
+ *   <li>Define a GenericMessageSendingPipe with an IbisLocalSender
+ *   <li>Set the attribute <code>serviceName</code> to <i>yourIbisWebServiceName</i>
+ *   <li>Do not set the attribute <code>javaListener</code>
  * </ul>
  * In the Adapter to be called:
  * <ul>
- *   <li>Define a Receiver with a WebServiceListener</li>
- *   <li>Set the attribute <code>name</code> to <i>yourIbisWebServiceName</i></li>
+ *   <li>Define a Receiver with a WebServiceListener
+ *   <li>Set the attribute <code>name</code> to <i>yourIbisWebServiceName</i>
  * </ul>
  *
  * @author Gerrit van Brakel

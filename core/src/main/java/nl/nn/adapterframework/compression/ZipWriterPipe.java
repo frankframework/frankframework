@@ -42,14 +42,14 @@ import org.apache.commons.lang.StringUtils;
  * Pipe that creates a ZipStream.
  * 
  * For action=open, the Pipe will create a new zip, that will be written to a file or stream specified by the input message, that must be a:<ul>
- * <li>String specifying a filename</li>
- * <li>OutputStream</li>
- * <li>HttpResponse</li>
+ * <li>String specifying a filename
+ * <li>OutputStream
+ * <li>HttpResponse
  * </ul>
  * The parameter 'filename' is used to specify the filename if the input is a HttpResponse.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.compression.ZipWriterPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
@@ -60,10 +60,10 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setPreserveInput(boolean) preserveInput}</td><td>when set <code>true</code>, the input of a pipe is restored before processing the next one</td><td>false</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setAction(String) action}</td>  <td>one of <ul>
- *   <li>open: to open a new zip file or stream</li> 
- *   <li>close: to close the zip file or stream</li> 
- *   <li>write: write the input to the zip as a new entry</li> 
- *   <li>stream: create a new zip entry, and provide an outputstream that another pipe can use to write the contents</li> 
+ *   <li>open: to open a new zip file or stream 
+ *   <li>close: to close the zip file or stream 
+ *   <li>write: write the input to the zip as a new entry 
+ *   <li>stream: create a new zip entry, and provide an outputstream that another pipe can use to write the contents 
  * </ul></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setZipWriterHandle(String) zipWriterHandle}</td>  <td>session key used to refer to zip session. Must be used if ZipWriterPipes are nested</td><td>"zipwriterhandle"</td></tr>
  * <tr><td>{@link #setCloseOutputstreamOnExit(boolean) closeOutputstreamOnExit}</td>  <td>only for action="open": when set to <code>false</code>, the outputstream is not closed after the zip creation is finished</td><td>true</td></tr>
@@ -71,19 +71,18 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setCharset(String) charset}</td><td>only for action="write": charset used to write strings to zip entries</td><td>UTF-8</td></tr>
  * <tr><td>{@link #setCompleteFileHeader(boolean) completeFileHeader}</td><td>only for action="write": when set to <code>true</code>, the fields 'crc-32', 'compressed size' and 'uncompressed size' in the zip entry file header are set explicitly (note: compression ratio is zero)</td><td>false</td></tr>
  * </table>
- * </p>
- * <table border="1">
+ * <br>
  * <p><b>Parameters:</b>
+ * <table border="1" summary="">
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
  * <tr><td>filename</td><td>string</td><td>filename of the zip or zipentry.</td></tr>
  * </table>
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
- * </p>
  * 
  * @author  Gerrit van Brakel
  * @since   4.9.10

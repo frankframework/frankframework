@@ -31,9 +31,9 @@ import org.apache.commons.digester.xmlrules.DigesterLoader;
  * Converts an XML string (input) to a set of java objects using the
  * <a href="http://jakarta.apache.org/commons/digester">digester</a>.
  * <p>The result is an anonymous object. Your digester-rules file should specify
- * how the xml file is parsed, and what the root object will be.</p>
+ * how the xml file is parsed, and what the root object will be.
   * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
@@ -42,10 +42,10 @@ import org.apache.commons.digester.xmlrules.DigesterLoader;
  * </table>
 
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
- * </table></p>
+ * </table>
  * @author Richard Punt
  * @since 4.0.1 : adjustments to support multi-threading
  */

@@ -28,7 +28,7 @@ import nl.nn.adapterframework.core.SenderException;
  * Each row is send passed to the sender in the same format a row is usually returned from a query.
  *
  * <p><b>Configuration </b><i>(where deviating from IteratingPipe)</i><b>:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.jdbc.JdbcIteratingPipeBase</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setQuery(String) query}</td><td>the SQL query text to be excecuted each time sendMessage() is called</td><td>&nbsp;</td></tr>
@@ -36,7 +36,7 @@ import nl.nn.adapterframework.core.SenderException;
  * <tr><td>{@link #setLockWait(int) lockWait}</td><td>when set and >=0, ' FOR UPDATE WAIT #' is used instead of ' FOR UPDATE NOWAIT SKIP LOCKED'</td><td>-1</td></tr>
  * <tr><td>{@link #setDatasourceName(String) datasourceName}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
+
  * @author  Gerrit van Brakel
  * @since   4.7
  */

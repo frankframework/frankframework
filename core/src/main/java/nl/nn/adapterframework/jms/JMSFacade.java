@@ -58,13 +58,13 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Provides functions for jms connections, queues and topics and acts as a facade
  * to hide for clients whether a <code>Queue</code> or <code>Topic</code> is used.
- * <br/>
+ * <br>
  * The <code>destinationType</code> field specifies which
- * type should be used.<br/>
+ * type should be used.<br>
  * This class sends messages with JMS.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.jms.JMSFacade</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
@@ -84,7 +84,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLookupDestination(boolean) lookupDestination}</td><td>when set <code>false</code>, the destinationName is used directly instead of performing a JNDI lookup</td><td>true</td></tr>
  * </table>
- * </p>
+
  *
  * @author 	Gerrit van Brakel
  */
@@ -801,7 +801,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 
 	/**
-	 * should be <code>QUEUE</code> or <code>TOPIC</code><br/>
+	 * should be <code>QUEUE</code> or <code>TOPIC</code><br>
 	 * This function also sets the <code>useTopicFunctions</code> field,
 	 * that controls wether Topic functions are used or Queue functions.
 	 */
@@ -890,7 +890,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 	/**
 	 * SubscriberType should <b>DURABLE</b> or <b>TRANSIENT</b>
-	 * Only applicable for topics <br/>
+	 * Only applicable for topics <br>
 	 */
 	public void setSubscriberType(String subscriberType) {
 		if ((!subscriberType.equalsIgnoreCase("DURABLE"))

@@ -26,7 +26,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Base class for XML Schema guided Map to XML conversion;
- * ToXml Container C: Map M<K,V>
+ * ToXml Container C: Map M&lt;K,V&gt;
  * ToXml Node N: V
  * @author Gerrit van Brakel
  */

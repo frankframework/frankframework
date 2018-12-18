@@ -47,22 +47,21 @@ import nl.nn.adapterframework.util.TransformerPool;
  * one of the following messages is sent:
  * <ul>
  * <li><code>errorStore</code>:
- * ESB.Infrastructure.US.Log.BusinessLog.2.ExceptionLog.1.Action</li>
+ * ESB.Infrastructure.US.Log.BusinessLog.2.ExceptionLog.1.Action
  * <li><code>messageLog</code>:
- * ESB.Infrastructure.US.Log.BusinessLog.2.AuditLog.1.Action</li>
+ * ESB.Infrastructure.US.Log.BusinessLog.2.AuditLog.1.Action
  * </ul>
  * 
  * <p>
  * <b>Configuration </b><i>(where deviating from
  * JmsTransactionalStorage)</i><b>:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr>
  * <th>attributes</th>
  * <th>description</th>
  * <th>default</th>
  * </tr>
  * </table>
- * </p>
  * 
  * @author Peter Leeuwenburgh
  */

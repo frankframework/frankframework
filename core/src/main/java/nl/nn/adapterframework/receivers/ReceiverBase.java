@@ -102,7 +102,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * This {@link IReceiver Receiver} may be used as a base-class for developing receivers.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>name of the class, mostly a class that extends this class</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the receiver as known to the adapter</td><td>&nbsp;</td></tr>
@@ -113,7 +113,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setReturnedSessionKeys(String) returnedSessionKeys}</td><td>comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted} <i>deprecated</i></td><td>if set to <code>true</code>, messages will be received and processed under transaction control. If processing fails, messages will be sent to the error-sender. (see below)</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are: 
- *   <table border="1">
+ *   <table border="1" summary="">
  *   <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>
  *   <tr><td colspan="1" rowspan="2">Required</td>    <td>none</td><td>T2</td></tr>
  * 											      <tr><td>T1</td>  <td>T1</td></tr>
@@ -149,19 +149,19 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setElementToMoveChain(String) elementToMoveChain}</td><td>like <code>elementToMove</code> but element is preceded with all ancestor elements and separated by semicolons (e.g. "adapter;pipeline;pipe")</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoveCompactMsgNamespaces (boolean) removeCompactMsgNamespaces}</td><td>when set <code>true</code> namespaces (and prefixes) in the compacted message are removed</td><td>true</td></tr>
  * </table>
- * </p>
+
  * <p>
  * THE FOLLOWING TO BE UPDATED, attribute 'transacted' replaced by 'transactionAttribute'. 
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>{@link #setTransactionAttribute(String) transactionAttribute}</th><th>{@link #setTransacted(boolean) transacted}</th></tr>
  * <tr><td>Required</td><td>true</td></tr>
  * <tr><td>RequiresNew</td><td>true</td></tr>
  * <tr><td>Mandatory</td><td>true</td></tr>
  * <tr><td>otherwise</td><td>false</td></tr>
  * </table>
- * </p>
+
  * <p>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>nested elements (accessible in descender-classes)</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.IPullingListener listener}</td><td>the listener used to receive messages from</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.ITransactionalStorage inProcessStorage}</td><td>mandatory for {@link #setTransacted(boolean) transacted} receivers: place to store messages during processing.</td></tr>
@@ -169,12 +169,12 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link nl.nn.adapterframework.core.ISender errorSender}</td><td>optional for {@link #setTransacted(boolean) transacted} receviers: 
  * will be called to store messages that failed to process. If no errorSender is specified, failed messages will remain in inProcessStorage</td></tr>
  * </table>
- * </p>
+
  * <p><b>Transaction control</b><br>
  * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be received and processed under transaction control.
  * This means that after a message has been read and processed and the transaction has ended, one of the following apply:
  * <ul>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>situation</th><th>input listener</th><th>Pipeline</th><th>inProcess storage</th><th>errorSender</th><th>summary of effect</th></tr>
  * <tr><td>successful</td><td>message read and committed</td><td>message processed</td><td>unchanged</td><td>unchanged</td><td>message processed</td></tr>
  * <tr><td>procesing failed</td><td>message read and committed</td><td>message processing failed and rolled back</td><td>unchanged</td><td>message sent</td><td>message only transferred from listener to errroSender</td></tr>
@@ -187,21 +187,21 @@ import nl.nn.adapterframework.util.XmlUtils;
  * the following applies for any message touched at any time by Ibis by a transacted receiver:
  * <ul>
  * <li>It is processed correctly by the pipeline and removed from the input-queue, 
- *     not present in inProcess storage and not send to the errorSender</li> 
+ *     not present in inProcess storage and not send to the errorSender 
  * <li>It is not processed at all by the pipeline, or processing by the pipeline has been rolled back; 
- *     the message is removed from the input queue and either (one of) still in inProcess storage <i>or</i> sent to the errorSender</li>
+ *     the message is removed from the input queue and either (one of) still in inProcess storage <i>or</i> sent to the errorSender
  * </ul>
- * </p>
+
  *
  * <p><b>commit or rollback</b><br>
  * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be either committed or rolled back.
  * All message-processing transactions are committed, unless one or more of the following apply:
  * <ul>
- * <li>The PipeLine is transacted and the exitState of the pipeline is not equal to {@link nl.nn.adapterframework.core.PipeLine#setCommitOnState(String) commitOnState} (that defaults to 'success')</li>
- * <li>a PipeRunException or another runtime-exception has been thrown by any Pipe or by the PipeLine</li>
- * <li>the setRollBackOnly() method has been called on the userTransaction (not accessible by Pipes)</li>
+ * <li>The PipeLine is transacted and the exitState of the pipeline is not equal to {@link nl.nn.adapterframework.core.PipeLine#setCommitOnState(String) commitOnState} (that defaults to 'success')
+ * <li>a PipeRunException or another runtime-exception has been thrown by any Pipe or by the PipeLine
+ * <li>the setRollBackOnly() method has been called on the userTransaction (not accessible by Pipes)
  * </ul>
- * </p>
+
  *
  * @author     Gerrit van Brakel
  * @since 4.2
@@ -972,7 +972,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 	/**
 	 * All messages that for this receiver are pumped down to this method, so it actually
-	 * calls the {@link nl.nn.adapterframework.core.Adapter adapter} to process the message.<br/>
+	 * calls the {@link nl.nn.adapterframework.core.Adapter adapter} to process the message.<br>
 
 	 * Assumes that a transation has been started where necessary.
 	 */

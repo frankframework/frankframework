@@ -26,13 +26,13 @@ import nl.nn.adapterframework.jms.JmsSender;
  *
  * If a {@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener} is specified it waits for a reply with
  * the correct correlationID.
- * </p>
+
  * <p>The receiving of messages is done with a selector on the JMSCorrelationId
  * on the queue or topic specified. Therefore there no objection to define this
- * receiver on a queue already in use.</p>
+ * receiver on a queue already in use.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
@@ -46,19 +46,19 @@ import nl.nn.adapterframework.jms.JmsSender;
  * <tr><td>{@link JmsSender#setPersistent(boolean) sender.persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link JmsSender#setJmsRealm(String) sender.jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}</td><td>specification of queue to listen to for a reply</td></tr>
  * </table>
- * </p>
+
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default when a good message was retrieved, or the message was successfully sent and no receiver was specified</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, and otherwise under same condition as "success"</td></tr>
  * <tr><td>"timeout"</td><td>no data was received (timeout on listening), while a receiver was specified.</td></tr>
  * </table>
- * </p>
+
  * @author Johan Verrips
  * @deprecated please use GenericMessageSendingPipe with JmsSender (and if necessary JmsListener), that has same functionality
  */

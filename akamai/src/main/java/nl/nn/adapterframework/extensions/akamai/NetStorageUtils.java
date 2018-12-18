@@ -225,14 +225,14 @@ public class NetStorageUtils {
 	}
 
 	/**
-	 * Convert Map<String, String> into a name=value query params string.
-	 * <p/>
+	 * Convert Map&lt;String, String&gt; into a name=value query params string.
+	 * <br>
 	 * NB: This uses URLEncoding - not URI Encoding for escaping name and values. This
 	 * shouldn't be an issue for most uses of this function for the Netstorage API, but
 	 * could impact non-ascii usernames in the future.
 	 *
 	 * @param data a Key-Value map
-	 * @return a query params encoded string in the form of name=value&name2=value2...
+	 * @return a query params encoded string in the form of name=value&amp;name2=value2...
 	 */
 	public static String convertMapAsQueryParams(Map<String, String> data) {
 		final StringBuilder result = new StringBuilder();

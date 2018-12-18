@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
  * A JmsRealm is a definition of a JMS provider, and is kind of a utility
  * class to prevent the tedeous work of repeatedly defining all parameters
  * to connect to a queue or topic.
- * <br/>
+ * <br>
  * This class is not an extension of JNDIBase, which would be logical, because
  * in the JMSBase class the function PropertyUtils.copyProperties is used, which cannot
  * handle this.
@@ -147,13 +147,13 @@ public class JmsRealm {
     	return null;
     }
 	/**
-	 * The name of the QueueConnectionFactory <br/>
+	 * The name of the QueueConnectionFactory <br>
 	 */
 	public java.lang.String getQueueConnectionFactoryName() {
 		return queueConnectionFactoryName;
 	}
 	/**
-	 * The name of this realm<br/>
+	 * The name of this realm<br>
 	 */
 	public java.lang.String getRealmName() {
 		return realmName;
@@ -162,7 +162,7 @@ public class JmsRealm {
         return securityProtocol;
     }
 	/**
-	 * The name of the TopicConnectionFactory <br/>
+	 * The name of the TopicConnectionFactory <br>
 	 */
 	public java.lang.String getTopicConnectionFactoryName() {
 		return topicConnectionFactoryName;
@@ -183,14 +183,14 @@ public class JmsRealm {
         this.providerURL = providerURL;
     }
 	/**
-	 * Set the name of the QueueConnectionFactory<br/>
+	 * Set the name of the QueueConnectionFactory<br>
 	 * @param newQueueConnectionFactoryName java.lang.String
 	 */
 	public void setQueueConnectionFactoryName(java.lang.String newQueueConnectionFactoryName) {
 		queueConnectionFactoryName = newQueueConnectionFactoryName;
 	}
 	/**
-	 * Set the name of this realm<br/>.
+	 * Set the name of this realm<br>.
 	 * @param newName java.lang.String
 	 */
 	public void setRealmName(java.lang.String newName) {
@@ -200,7 +200,7 @@ public class JmsRealm {
 	        this.securityProtocol = securityProtocol;
 	    }
 	/**
-	 * Set the name of the TopicConnectionFactory<br/>
+	 * Set the name of the TopicConnectionFactory<br>
 	 * @param newTopicConnectionFactoryName java.lang.String
 	 */
 	public void setTopicConnectionFactoryName(java.lang.String newTopicConnectionFactoryName) {

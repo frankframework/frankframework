@@ -78,7 +78,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </pre>
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.FixedResult</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
@@ -93,14 +93,14 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setKeepOriginalFileName(boolean) keepOriginalFileName}</td><td>if set <code>false</code>, a suffix is added to the original filename to be sure it is unique</td><td>false</td></tr>
  * <tr><td>{@link #setCreateSubdirectories(boolean) createSubdirectories}</td><td>if set <code>true</code>, subdirectories in the zip file are created in the directory to extract the archive to</td><td>false</td></tr>
  * </table>
- * </p>
+
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
- * </p>
+
  * 
  * @since   4.9
  * @author  Gerrit van Brakel

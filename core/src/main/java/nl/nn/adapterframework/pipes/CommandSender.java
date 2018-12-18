@@ -21,17 +21,17 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 /**
  * Sender that executes either its input or a fixed line, with all parametervalues appended, as a command.
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.CommandSender</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
- * <table border="1">
+
+ * <table border="1" summary="">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
  * <tr><td>&nbsp;</td><td>the values of all parameters present are concatenated to the command line</td></tr>
  * </table>
- * </p>
+
  * 
  * @since   4.8
  * @author  Gerrit van Brakel

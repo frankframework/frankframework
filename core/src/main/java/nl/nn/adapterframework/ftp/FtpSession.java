@@ -63,7 +63,7 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
  * 
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.ftp.FtpSession</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setHost(String) host}</td><td>name or ip adres of remote host</td><td>&nbsp;</td></tr>
@@ -104,7 +104,6 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
  * <tr><td>{@link #setProtP(boolean) protP}</td><td>(FTPS) if true, the server returns data via another socket</td><td>false</td></tr>
  * <tr><td>{@link #setKeyboardInteractive(boolean) keyboardInteractive}</td><td>when true, KeyboardInteractive is used to login</td><td>false</td></tr>
  * </table>
- * </p>
  * 
  * @author John Dekker
  */

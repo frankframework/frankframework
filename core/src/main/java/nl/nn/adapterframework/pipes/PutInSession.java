@@ -25,20 +25,20 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * <code>{@link #setSessionKey(String) sessionKey}</code>.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> to store the input in</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setValue(String) value}</td><td>The value to store the in the <code>PipeLineSession</code>. If not set, the input of the pipe is stored</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
+
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
- * </p>
+
  * @author Johan Verrips
  *
  * @see IPipeLineSession

@@ -77,7 +77,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * from a {@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.MessageSendingPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
@@ -91,7 +91,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setPreserveInput(boolean) preserveInput}</td><td>when set <code>true</code>, the input of a pipe is restored before processing the next one</td><td>false</td></tr>
  * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespaceAwareness for parameters</td><td>application default</td></tr>
  * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are: 
- *   <table border="1">
+ *   <table border="1" summary="">
  *   <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipe excecuted in Transaction</th></tr>
  *   <tr><td colspan="1" rowspan="2">Required</td>    <td>none</td><td>T2</td></tr>
  * 											      <tr><td>T1</td>  <td>T1</td></tr>
@@ -133,7 +133,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setPresumedTimeOutInterval(int) presumedTimeOutInterval}</td><td>when the previous call was a timeout, the maximum time (in seconds) after this timeout to presume the current call is also a timeout. A value of -1 indicates to never presume timeouts</td><td>10 s</td></tr> 
  * <tr><td><code>sender.*</td><td>any attribute of the sender instantiated by descendant classes</td><td>&nbsp;</td></tr>
  * </table>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.ISender sender}</td><td>specification of sender to send messages with</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}</td><td>specification of listener to listen to for replies</td></tr>
@@ -149,9 +149,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td><code>outputWrapper</code></td><td>specification of Pipe to wrap output messages (after validating)</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.ITransactionalStorage messageLog}</td><td>log of all messages sent</td></tr>
  * </table>
- * </p>
+
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default when a good message was retrieved (synchronous sender), or the message was successfully sent and no listener was specified and the sender was not synchronous</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, and otherwise under same condition as "success"</td></tr>
@@ -159,7 +159,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>"exception"</td><td>an exception was thrown by the Sender or its reply-Listener. The result passed to the next pipe is the exception that was caught.</td></tr>
  * <tr><td>"illegalResult"</td><td>the received data does not comply with <code>checkXmlWellFormed</code> or <code>checkRootTag</code>.</td></tr>
  * </table>
- * </p>
+
  * @author  Gerrit van Brakel
  */
 
@@ -980,9 +980,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	 * in the correlationID field of the reply message. Use this property to set the behaviour of the reply-listener.
 	 * <ul>
 	 * <li>Use <code>MESSAGEID</code> to let the listener wait for a message with the messageID of the
-	 * sent message in the correlation ID field</li>
+	 * sent message in the correlation ID field
 	 * <li>Use <code>CORRELATIONID</code> to let the listener wait for a message with the correlationID of the
-	 * sent message in the correlation ID field</li>
+	 * sent message in the correlation ID field
 	 * </ul>
 	 * When you use the method CORRELATIONID you have the advantage that you can trace your request
 	 * as the messageID as it is known in the Adapter is used as the correlationID. In the logging you should be able

@@ -50,10 +50,10 @@ import com.ing.ifsa.IFSATextMessage;
 
 /**
  * Base class for IFSA 2.0/2.2 functions.
- * <br/>
- * <p>Descenderclasses must set either Requester or Provider behaviour in their constructor.</p>
+ * <br>
+ * <p>Descenderclasses must set either Requester or Provider behaviour in their constructor.
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.extensions.ifsa.IfsaFacade</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the object</td><td>&nbsp;</td></tr>
@@ -61,17 +61,16 @@ import com.ing.ifsa.IFSATextMessage;
  * <tr><td>{@link #setServiceId(String) serviceId}</td><td>only for Requesters: the ServiceID, in the form of "IFSA://<i>ServiceID</i>"</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of IFSA-Service to be called. Possible values 
  * <ul>
- *   <li>"FF": Fire & Forget protocol</li>
- *   <li>"RR": Request-Reply protocol</li>
+ *   <li>"FF": Fire &amp; Forget protocol
+ *   <li>"RR": Request-Reply protocol
  * </ul></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>must be set <code>true</true> for FF senders/listeners in transacted mode</td><td>false</td></tr>
  * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds. To use the timeout defined as IFSA expiry, set this value to -1</td><td>20000 (20s)</td></tr>
  * </table>
  * 
  * N.B. 
  * Starting from IFSA-jms version 2.2.10.055(beta) a feature was created to have separate service-queues for Request/Reply
- * and for Fire & Forget services. This allows applications to provide both types of services, each in its own transaction
- * mode. This options is not compatible with earlier versions of IFSA-jms. If an earlier version of IFSA-jms is deployed on 
+ * and for Fire &amp; Forget services. This allows applications to provide both types of services, each in its own transaction
+ * mode. This option is not compatible with earlier versions of IFSA-jms. If an earlier version of IFSA-jms is deployed on 
  * the server, this behaviour must be disabled by the following setting in DeploymentSpecifics.properties:
  * 
  * <code>    ifsa.provider.useSelectors=false</code>
@@ -236,7 +235,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	
 
 	/**
-	 * Looks up the <code>serviceId</code> in the <code>IFSAContext</code>.<br/>
+	 * Looks up the <code>serviceId</code> in the <code>IFSAContext</code>.<br>
 	 * <p>The method is knowledgable of Provider versus Requester processing.
 	 * When the request concerns a Provider <code>lookupProviderInput</code> is used,
 	 * when it concerns a Requester <code>lookupService(serviceId)</code> is used.
@@ -342,10 +341,10 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	}
 
 	/**
-	 * Gets the queueReceiver, by utilizing the <code>getInputQueue()</code> method.<br/>
+	 * Gets the queueReceiver, by utilizing the <code>getInputQueue()</code> method.<br>
 	 * For serverside getQueueReceiver() the creating of the QueueReceiver is done
 	 * without the <code>selector</code> information, as this is not allowed
-	 * by IFSA.<br/>
+	 * by IFSA.<br>
 	 * For a clientconnection, the receiver is done with the <code>getClientReplyQueue</code>
 	 * @see javax.jms.QueueReceiver
 	 */
@@ -411,10 +410,10 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
     }
     
 	/**
-	 * Gets the queueReceiver, by utilizing the <code>getInputQueue()</code> method.<br/>
+	 * Gets the queueReceiver, by utilizing the <code>getInputQueue()</code> method.<br>
 	 * For serverside getQueueReceiver() the creating of the QueueReceiver is done
 	 * without the <code>selector</code> information, as this is not allowed
-	 * by IFSA.<br/>
+	 * by IFSA.<br>
 	 * For a clientconnection, the receiver is done with the <code>getClientReplyQueue</code>
 	 */
 	public QueueReceiver getReplyReceiver(QueueSession session, Message sentMessage)
@@ -559,8 +558,8 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 
     /**
      * Method logs a warning when the newMessageProtocol is not FF or RR.
-     * <p>When the messageProtocol equals to FF, transacted is set to true</p>
-     * <p>Creation date: (08-05-2003 9:03:53)</p>
+     * <p>When the messageProtocol equals to FF, transacted is set to true
+     * <p>Creation date: (08-05-2003 9:03:53)
      * @see IfsaMessageProtocolEnum
      * @param newMessageProtocol String
      */

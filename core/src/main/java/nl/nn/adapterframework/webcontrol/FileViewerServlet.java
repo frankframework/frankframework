@@ -55,19 +55,19 @@ import org.apache.log4j.Logger;
 
 /**
  * Shows a textfile either as HTML or as Text.
- * <br/>
+ * <br>
  * This is a servlet because in JSP you cannot give the
- * content-type depending on a condition.<br/>
- * <p>Parameters:<br/>
+ * content-type depending on a condition.<br>
+ * <p>Parameters:<br>
  * <ul>
- * <li>fileName: the filename to retrieve</li>
- * <li>returnType: either HTML or TEXT</li>
+ * <li>fileName: the filename to retrieve
+ * <li>returnType: either HTML or TEXT
  * </ul>
- * </p>
+
  * <p>When the <code>resultType</code> is HTML, the
  * <code>FileViewerServlet.signal</code> properties are looked
  * up from the <code>AppConstants</code> and additional styling is
- * done.</p>
+ * done.
  * <p>
  * <code><pre>
  	FileViewerServlet.signal=ERROR WARN
@@ -157,7 +157,7 @@ public class FileViewerServlet extends HttpServlet  {
 			LineNumberReader lnr = new LineNumberReader(reader);
 			String line;
 			while ((line=lnr.readLine())!=null) {
-				out.println(makeConfiguredReplacements(XmlUtils.encodeChars(line))+"<br/>");
+				out.println(makeConfiguredReplacements(XmlUtils.encodeChars(line))+"<br>");
 			}
 	             
 			out.println("</body>");

@@ -26,7 +26,7 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
  * Pipe for retreiving files via (s)ftp. The path of the created local file is returned.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.ftp.FtpFileRetrieverPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the pipe</td><td>&nbsp;</td></tr>
@@ -73,15 +73,13 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
  * <tr><td>{@link #setProtP(boolean) protP}</td><td>(FTPS) if true, the server returns data via another socket</td><td>false</td></tr>
  * <tr><td>{@link #setKeyboardInteractive(boolean) keyboardInteractive}</td><td>when true, KeyboardInteractive is used to login</td><td>false</td></tr>
  * </table>
- * </p>
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default when a file has been retrieved</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, and otherwise under same condition as "success"</td></tr>
  * <tr><td>"exception"</td><td>an exception was thrown retrieving the file. The result passed to the next pipe is the input of the pipe</td></tr>
  * </table>
- * </p>
  * 
  * @author John Dekker
  * @since   4.4

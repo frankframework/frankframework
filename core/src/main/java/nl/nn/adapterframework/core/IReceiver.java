@@ -20,17 +20,17 @@ import nl.nn.adapterframework.statistics.HasStatistics;
 
 /**
  * The receiver is the trigger and central communicator for the framework.
- * <br/>
+ * <br>
  * The main responsibilities are:
  * <ul>
- *    <li>receiving messages</li>
- *    <li>for asynchronous receivers (which have a separate sender):<br/>
- *            <ul><li>initializing ISender objects</li>
- *                <li>stopping ISender objects</li>
- *                <li>sending the message with the ISender object</li>
+ *    <li>receiving messages
+ *    <li>for asynchronous receivers (which have a separate sender):<br>
+ *            <ul><li>initializing ISender objects
+ *                <li>stopping ISender objects
+ *                <li>sending the message with the ISender object
  *            </ul>
- *    <li>synchronous receivers give the result directly</li>
- *    <li>take care of connection, sessions etc. to startup and shutdown</li>
+ *    <li>synchronous receivers give the result directly
+ *    <li>take care of connection, sessions etc. to startup and shutdown
  * </ul>
  * Listeners call the IAdapter.processMessage(String correlationID,String message)
  * to do the actual work, which returns a <code>{@link PipeLineResult}</code>. The receiver

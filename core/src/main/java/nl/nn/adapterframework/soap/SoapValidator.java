@@ -34,7 +34,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * XSD's used for validation.
  * <p>
  * <b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>*</td><td>all attributes available on {@link XmlValidator} can be used except the root attribute</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRoot(String) root}</td><td>always Envelope (not allowed to change)</td><td>Envelope</td></tr>

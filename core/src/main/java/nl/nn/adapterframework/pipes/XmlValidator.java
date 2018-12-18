@@ -58,7 +58,7 @@ import org.apache.commons.lang.StringUtils;
 *<code>Pipe</code> that validates the input message against a XML-Schema.
 *
 * <p><b>Configuration:</b>
-* <table border="1">
+* <table border="1" summary="">
 * <tr><th>attributes</th><th>description</th><th>default</th></tr>
 * <tr><td>className</td><td>nl.nn.adapterframework.pipes.XmlValidator</td><td>&nbsp;</td></tr>
 * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
@@ -89,7 +89,7 @@ import org.apache.commons.lang.StringUtils;
 * <tr><td>{@link #setLazyInit(boolean) lazyInit}</td><td>when set, the value in AppConstants is overwritten (for this validator only)</td><td><code>application default (false)</code></td></tr>
 * </table>
 * <p><b>Exits:</b>
-* <table border="1">
+* <table border="1" summary="">
 * <tr><th>state</th><th>condition</th></tr>
 * <tr><td>"success"</td><td>default</td></tr>
 * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, the value for "success"</td></tr>
@@ -128,10 +128,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	/**
 	 * Configure the XmlValidator
 	 * @throws ConfigurationException when:
-	 * <ul><li>the schema cannot be found</li>
+	 * <ul><li>the schema cannot be found
 	 * <ul><li><{@link #isThrowException()} is false and there is no forward defined
-	 * for "failure"</li>
-	 * <li>when the parser does not accept setting the properties for validating</li>
+	 * for "failure"
+	 * <li>when the parser does not accept setting the properties for validating
 	 * </ul>
 	 */
 	@Override
@@ -341,7 +341,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
      * checking which may be time-consuming or memory intensive.
      *  Currently, particle unique attribution constraint checking and particle
      * derivation resriction checking are controlled by this option.
-     * <p> see property http://apache.org/xml/features/validation/schema-full-checking</p>
+     * <p> see property http://apache.org/xml/features/validation/schema-full-checking
      * Defaults to <code>false</code>;
      */
     public void setFullSchemaChecking(boolean fullSchemaChecking) {
@@ -354,9 +354,9 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
     /**
      * <p>The filename of the schema on the classpath.
      * It is not possible to specify a namespace using this attribute.
-     * <p>An example value would be "xml/xsd/GetPartyDetail.xsd"</p>
+     * <p>An example value would be "xml/xsd/GetPartyDetail.xsd"
      * <p>The value of the schema attribute is only used if the schemaLocation
-     * attribute and the noNamespaceSchemaLocation are not set</p>
+     * attribute and the noNamespaceSchemaLocation are not set
      * @see nl.nn.adapterframework.util.ClassUtils#getResourceURL
      */
     public void setSchema(String schema) {
@@ -370,13 +370,13 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	/**
 	 * <p>Pairs of URI references (one for the namespace name, and one for a
 	 * hint as to the location of a schema document defining names for that
-	 * namespace name).</p>
+	 * namespace name).
 	 * <p> The syntax is the same as for schemaLocation attributes
-	 * in instance documents: e.g, "http://www.example.com file%20name.xsd".</p>
-	 * <p>The user can specify more than one XML Schema in the list.</p>
+	 * in instance documents: e.g, "http://www.example.com file%20name.xsd".
+	 * <p>The user can specify more than one XML Schema in the list.
 	 * <p><b>Note</b> that spaces are considered separators for this attributed.
 	 * This means that, for example, spaces in filenames should be escaped to %20.
-	 * </p>
+	
 	 *
 	 * N.B. since 4.3.0 schema locations are resolved automatically, without the need for ${baseResourceURL}
 	 */
@@ -391,7 +391,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	/**
 	 * <p>A URI reference as a hint as to the location of a schema document with
-	 * no target namespace.</p>
+	 * no target namespace.
 	 */
 	public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
 		this.noNamespaceSchemaLocation = noNamespaceSchemaLocation;
@@ -402,7 +402,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	/**
-	 * <p>The sessionkey to a value that is the uri to the schema definition.</P>
+	 * <p>The sessionkey to a value that is the uri to the schema definition.
 	 */
 	public void setSchemaSessionKey(String schemaSessionKey) {
 		this.schemaSessionKey = schemaSessionKey;

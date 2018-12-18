@@ -20,11 +20,11 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 /**
  * The PipeRunResult is a type to store both the result of the processing of a message
  * in {@link IPipe#doPipe(Object, IPipeLineSession) doPipe()} as well as the exitState.
- * <br/>
- * <b>Responsibility:</b><br/>
- * <ul><li>keeper of the result of the execution of a <code>Pipe</code></li>
- *     <li>keeper of the forward to be returned to the <code>PipeLine</code></li>
- * </ul><br/>
+ * <br>
+ * <b>Responsibility:</b><br>
+ * <ul><li>keeper of the result of the execution of a <code>Pipe</code>
+ *     <li>keeper of the forward to be returned to the <code>PipeLine</code>
+ * </ul><br>
  * <code>Pipe</code>s return a <code>PipeRunResult</code> with the information
  * as above.
  * 

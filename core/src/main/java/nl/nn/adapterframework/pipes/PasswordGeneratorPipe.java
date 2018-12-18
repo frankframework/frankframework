@@ -32,7 +32,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * Returns random password.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
@@ -47,14 +47,14 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * <tr><td>{@link #setNumOfDigits(int) numOfDigits}</td><td>The number of digits in the generated password</td><td>2</td></tr>
  * <tr><td>{@link #setNumOfSigns(int) numOfSigns}</td><td>The number of sign characters in the generated password</td><td>2</td></tr>
  * </table>
- * </p>
+
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
- * </p>
+
  * @author  Milan Tomc
  * @since   4.5
  */

@@ -36,7 +36,7 @@ import com.sap.mw.jco.JCO;
  * 
  * In SAP the function to be called is a RFC-function to the destination that is registered using <code>progid</code>.
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.extensions.sap.SapListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>Name of the Listener</td><td>&nbsp;</td></tr>
@@ -50,8 +50,7 @@ import com.sap.mw.jco.JCO;
  * <tr><td>{@link #setReplyFieldName(String) replyFieldName}</td><td>Name of the field in the ExportParameterList of the RFC function that contains the whole reply message contents</td><td>&nbsp;</td></tr>
  * </table>
  * N.B. If no requestFieldIndex or requestFieldName is specified, input is converted to xml;
- * If no replyFieldIndex or replyFieldName is specified, output is converted from xml. 
- * </p>
+ * If no replyFieldIndex or replyFieldName is specified, output is converted from xml.
  * @author  Gerrit van Brakel
  * @since   4.2
  * @see   "http://help.sap.com/saphelp_nw04/helpdata/en/09/c88442a07b0e53e10000000a155106/frameset.htm"

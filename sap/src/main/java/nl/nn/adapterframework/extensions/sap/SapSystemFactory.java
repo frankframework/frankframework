@@ -30,7 +30,8 @@ import org.apache.log4j.Logger;
 import com.sap.conn.jco.JCoException;
 
 /**
- * Singleton that has the different sapSystems. <br/>
+ * Singleton that has the different sapSystems.
+ * <br>
  * Typical use: SapSystemFactory.getInstance().&lt;method to execute&gt;
  */
 public class SapSystemFactory {

@@ -46,7 +46,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * QuerySender that transforms the input message to a query.
- * <br/><code><pre>
+ * <br><code><pre>
  *  select
  *  delete
  *  insert
@@ -59,16 +59,16 @@ import nl.nn.adapterframework.util.XmlUtils;
  *                                          - formatString [0..1] only applicable for type=datetime, yyyy-MM-dd HH:mm:ss.SSS by default 
  *         - where [0..1]
  *         - order [0..1]
- * <br/>
+ * <br>
  *  alter - sequenceName
  *        - startWith
- * <br/>
+ * <br>
  *  sql   - type [0..1] one of {select;ddl;other}, other by default
  *        - query
- * <br/>
- * </pre></code><br/>
+ * <br>
+ * </pre></code><br>
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.jdbc.XmlQuerySender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
@@ -89,7 +89,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>the number of seconds the driver will wait for a Statement object to execute. If the limit is exceeded, a TimeOutException is thrown. 0 means no timeout</td><td>0</td></tr>
  * <tr><td>{@link #setIncludeFieldDefinition(boolean) includeFieldDefinition}</td><td>when <code>true</code>, the result contains besides the returned rows also a header with information about the fetched fields</td><td>true</td></tr>
  * </table>
- * </p>
+
  * 
  * @author  Peter Leeuwenburgh
  */

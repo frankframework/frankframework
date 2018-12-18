@@ -35,7 +35,7 @@ import org.apache.commons.lang.StringUtils;
  * Pipe to calculate checksum on input.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.FixedForwardPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
@@ -47,7 +47,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setCharset(String) charset}</td>  <td>character encoding to be used to encode message before calculating checksum</td><td>UTF-8</td></tr>
  * <tr><td>{@link #setInputIsFile(boolean) inputIsFile}</td><td>when set <code>true</code>, the input is assumed to be a filename; otherwise the input itself is used in the calculations</td><td>false</td></tr>
  * </table>
- * </p>
+
  * 
  * @author  Gerrit van Brakel
  * @since   4.9  

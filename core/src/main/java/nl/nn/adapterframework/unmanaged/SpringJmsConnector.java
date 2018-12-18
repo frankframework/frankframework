@@ -64,10 +64,10 @@ import nl.nn.adapterframework.util.RunStateEnum;
  * from the Spring BeanFactory. If another type of MessageListenerContainer
  * is created by the BeanFactory, then another implementation of IListenerConnector
  * should be provided as well.
- * </p>
+
  * <p>
  * This implementation works only with a PushingJmsListener, and not with other types PortConnectedListeners.
- * </p>
+
  * @author  Tim van der Leeuw
  * @since   4.8
  */

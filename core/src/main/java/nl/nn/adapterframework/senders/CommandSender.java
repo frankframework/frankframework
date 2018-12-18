@@ -32,20 +32,20 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Sender that executes either its input or a fixed line, with all parametervalues appended, as a command.
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.CommandSender</td><td>&nbsp;</td></tr>
  * <tr><td>command</td><td>the command to execute. When not specified the input message is supposed to be the command</td><td>&nbsp;</td></tr>
  * <tr><td>commandWithArguments</td><td>whether the command is supposed to contain arguments or not. When the command contains arguments but is executed as a command without arguments you probably get an error=123</td><td>false</td></tr>
  * <tr><td>timeOut</td><td>timeout in seconds. To disable the timeout and keep waiting until the process in completely finished, set this value to 0</td><td>0</td></tr>
  * </table>
- * </p>
- * <table border="1">
+
+ * <table border="1" summary="">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
  * <tr><td>&nbsp;</td><td>the values of all parameters present are appended as arguments to the command</td></tr>
  * </table>
- * </p>
+
  * 
  * @since   4.8
  * @author  Gerrit van Brakel

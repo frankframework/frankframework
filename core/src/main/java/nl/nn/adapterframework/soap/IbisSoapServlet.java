@@ -201,7 +201,7 @@ public class IbisSoapServlet extends HttpServlet {
                     w.write(e.toString());
                 }
             }
-            w.write("</li>");
+            w.write("");
         }
         w.write("</ol>");
         if (count == 0) {
@@ -228,7 +228,7 @@ public class IbisSoapServlet extends HttpServlet {
 				        	count++;
 				            w.write("<li>");
 			                w.write("<a href=../" + rl.getRestUriPattern() + ">" + rb.getName() + "</a>");
-				            w.write("</li>");
+				            w.write("");
 						}
 					}
 				}

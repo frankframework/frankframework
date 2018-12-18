@@ -42,10 +42,10 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * A true multi-threaded {@link nl.nn.adapterframework.core.IPullingListener Listener}-class.
- * <br/>
+ * <br>
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.jms.JmsListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
@@ -68,13 +68,13 @@ import org.apache.commons.lang.StringUtils;
  * forces that the CorrelationId that is received is ignored and replaced by the messageId that is received. Use this to create a new, globally unique correlationId to be used downstream. It also
  * forces that not the Correlation ID of the received message is used in a reply as CorrelationId, but the MessageId.</td><td>false</td></tr>
  * </table>
- *</p><p><b>Using transactions</b><br/>
+ *<p><b>Using transactions</b><br>
  * Since version 4.1, Ibis supports distributed transactions using the XA-protocol. This feature is controlled by the 
  * {@link #setTransacted(boolean) transacted} attribute. If this is set to <code>true</code>, received messages are 
  * committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
  * In case of a failure, all actions within the transaction are rolled back.
  * 
- *</p><p><b>Using jmsTransacted and acknowledgement</b><br/>
+ *<p><b>Using jmsTransacted and acknowledgement</b><br>
  * If jmsTransacted is set <code>true</code>: it should ensure that a message is received and processed on a both or nothing basis. 
  * IBIS will commit the the message, otherwise perform rollback. However using jmsTransacted, IBIS does not bring transactions within
  * the adapters under transaction control, compromising the idea of atomic transactions. In the roll-back situation messages sent to 
@@ -90,20 +90,20 @@ import org.apache.commons.lang.StringUtils;
  * delivery of duplicate messages if JMS fails. It should be used by consumers who are tolerant in processing duplicate messages. 
  * In cases where the client is tolerant of duplicate messages, some enhancement in performance can be achieved using this mode, 
  * since a session has lower overhead in trying to prevent duplicate messages.
- * </p>
+
  * <p>The setting for {@link #setAcknowledgeMode(String) listener.acknowledgeMode} will only be processed if 
  * the setting for {@link #setTransacted(boolean) listener.transacted} as well as for 
- * {@link #setJmsTransacted(boolean) listener.jmsTransacted} is false.</p>
+ * {@link #setJmsTransacted(boolean) listener.jmsTransacted} is false.
  * 
  * <p>If {@link #setUseReplyTo(boolean) useReplyTo} is set and a replyTo-destination is
  * specified in the message, the JmsListener sends the result of the processing
  * in the pipeline to this destination. Otherwise the result is sent using the (optionally)
  * specified {@link #setSender(ISender) Sender}, that in turn sends the message to
- * whatever it is configured to.</p>
+ * whatever it is configured to.
  * 
  * <p><b>Notice:</b> the JmsListener is ONLY capable of processing
- * <code>javax.jms.TextMessage</code>s <br/><br/>
- * </p>
+ * <code>javax.jms.TextMessage</code>s <br><br>
+
  * @author Gerrit van Brakel
  * @since 4.0.1
  */

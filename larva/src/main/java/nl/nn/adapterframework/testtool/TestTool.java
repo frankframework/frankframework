@@ -280,8 +280,8 @@ public class TestTool {
 
 					if (writers!=null) {
 						if (LOG_LEVEL_ORDER.indexOf("[" + (String)writers.get("loglevel") + "]") < LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
-							writeHtml("<br/>", writers, false);
-							writeHtml("<br/>", writers, false);
+							writeHtml("<br>", writers, false);
+							writeHtml("<br>", writers, false);
 							writeHtml("<div class='scenario'>", writers, false);
 						}
 					}
@@ -386,8 +386,8 @@ public class TestTool {
 				} else {
 					if (writers!=null) {
 						if (LOG_LEVEL_ORDER.indexOf("[" + (String)writers.get("loglevel") + "]") <= LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
-							writeHtml("<br/>", writers, false);
-							writeHtml("<br/>", writers, false);
+							writeHtml("<br>", writers, false);
+							writeHtml("<br>", writers, false);
 						}
 					}
 					debugMessage("Print statistics information", writers);
@@ -432,8 +432,8 @@ public class TestTool {
 				if (writers!=null) {
 					writers.put("usehtmlbuffer", "start");
 				}
-				writeHtml("<br/>", writers, false);
-				writeHtml("<br/>", writers, false);
+				writeHtml("<br>", writers, false);
+				writeHtml("<br>", writers, false);
 				printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, paramExecute, autoScroll, writers);
 				debugMessage("Stop logging to htmlbuffer", writers);
 				if (writers!=null) {
@@ -651,7 +651,7 @@ public class TestTool {
 	public static void debugMessage(String message, Map writers) {
 		String method = "debug";
 		logger.debug(message);
-		writeLog(XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters(message)) + "<br/>", method, writers, false);
+		writeLog(XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters(message)) + "<br>", method, writers, false);
 	}
 
 	public static void debugPipelineMessage(String stepDisplayName, String message, String pipelineMessage, Map writers) {
@@ -752,13 +752,13 @@ public class TestTool {
 						scenario_passed_failed, writers, false);
 				writeLog(
 						"<p class='diffMessage' hidden='true'>"
-								+ XmlUtils.encodeChars(message) + "</p>",
+								+ XmlUtils.encodeChars(message) + "",
 						scenario_passed_failed, writers, true);
 			} else {
 				writeLog("<h5>Difference description:</h5>", method, writers,
 						false);
 				writeLog("<p class='diffMessage'>" + XmlUtils.encodeChars(message)
-						+ "</p>", method, writers, true);
+						+ "", method, writers, true);
 				writeLog("</form>", method, writers, false);
 				writeLog("</div>", method, writers, false);
 			}

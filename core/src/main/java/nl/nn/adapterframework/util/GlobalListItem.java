@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
  * The list itself is contained as a static field.
  * New items are registerd using registerItem().
  * Typical use: SapSystem.getSystem(name).&lt;method to execute&gt;
- * <br/>
+ * <br>
  * @author Gerrit van Brakel
  */
 public class GlobalListItem implements INamedObject {

@@ -48,7 +48,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * Input can be a String containing XML, a filename (set processFile true), an InputStream or a Reader.
  * 
  * <p><b>Configuration </b><i>(where deviating from IteratingPipe)</i><b>:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.ForEachChildElementPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setElementXPathExpression(String) elementXPathExpression}</td><td>expression used to determine the set of elements iterated over, i.e. the set of child elements</td><td>&nbsp;</td></tr>
@@ -56,7 +56,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * <tr><td>{@link #setCharset(String) charset}</td><td>characterset used for reading file or inputstream, only used when {@link #setProcessFile(boolean) processFile} is <code>true</code>, or the input is of type InputStream</td><td>UTF-8</td></tr>
  * <tr><td>{@link #setXslt2(boolean) xslt2}</td><td>when set <code>true</code> XSLT processor 2.0 (net.sf.saxon) will be used for <code>elementXPathExpression</code>, otherwise XSLT processor 1.0 (org.apache.xalan)</td><td>false</td></tr>
  * </table>
- * </p>
+
  * 
  * @author Gerrit van Brakel
  * @since 4.6.1

@@ -309,9 +309,9 @@ public class IbisDocPipe extends FixedForwardPipe {
 			contentType = "application/xml";
 		} else if ("/ibisdoc".equals(uri)) {
 			result = "<html>\n"
-					+ "  <a href=\"ibisdoc/ibisdoc.html\">ibisdoc.html</a><br/>\n"
-					+ "  <a href=\"ibisdoc/ibisdoc.xsd\">ibisdoc.xsd</a><br/>\n"
-					+ "  <a href=\"ibisdoc/uglify_lookup.xml\">uglify_lookup.xml</a><br/>\n"
+					+ "  <a href=\"ibisdoc/ibisdoc.html\">ibisdoc.html</a><br>\n"
+					+ "  <a href=\"ibisdoc/ibisdoc.xsd\">ibisdoc.xsd</a><br>\n"
+					+ "  <a href=\"ibisdoc/uglify_lookup.xml\">uglify_lookup.xml</a><br>\n"
 					+ "</html>";
 		} else if ("/ibisdoc/ibisdoc.html".equals(uri)) {
 			result = "<html>\n"
@@ -343,13 +343,13 @@ public class IbisDocPipe extends FixedForwardPipe {
 			} else if ("/ibisdoc/excludes.html".equals(uri)) {
 				StringBuffer excludesHtml = new StringBuffer();
 				for (String exclude : excludeFilters) {
-					excludesHtml.append("<p> " + exclude + "</p>\n");
+					excludesHtml.append("<p> " + exclude + "\n");
 				}
 				result = excludesHtml.toString();
 			} else if ("/ibisdoc/errors.html".equals(uri)) {
 				StringBuffer errorsHtml = new StringBuffer();
 				for (String key : errors.keySet()) {
-					errorsHtml.append("<p> " + key + ": " + errors.get(key) + "</p>\n");
+					errorsHtml.append("<p> " + key + ": " + errors.get(key) + "\n");
 				}
 				result = errorsHtml.toString();
 			} else {
@@ -708,7 +708,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 		if (groupsHtml == null) groupsHtml = new HashMap<String, String>();
 		Map<String, TreeSet<IbisBean>> groups = getGroups();
 		for (String group : groups.keySet()) {
-			topmenuHtml.append("<a href='" + group + ".html' target='submenuFrame'>" + group + "</a><br/>\n");
+			topmenuHtml.append("<a href='" + group + ".html' target='submenuFrame'>" + group + "</a><br>\n");
 			StringBuffer submenuHtml = new StringBuffer();
 			for (IbisBean ibisBean : groups.get(group)) {
 				submenuHtml.append("<a href='" + ibisBean.getName()
@@ -717,16 +717,16 @@ public class IbisDocPipe extends FixedForwardPipe {
 				submenuHtml.append("<a href='https://javadoc.ibissource.org/latest/"
 						+ ibisBean.getClazz().getName().replaceAll("\\.", "/") + ".html' target='contentFrame'>"
 						+ "javadoc</a>");
-				submenuHtml.append("]<br/>\n");
+				submenuHtml.append("]<br>\n");
 			}
 			groupsHtml.put(group, submenuHtml.toString());
 			allHtml.append(submenuHtml.toString());
 		}
-		topmenuHtml.append("<a href='all.html' target='submenuFrame'>All</a><br/>\n");
-		topmenuHtml.append("<br/>\n");
-		topmenuHtml.append("<a href='excludes.html' target='contentFrame'>Excludes</a><br/>\n");
+		topmenuHtml.append("<a href='all.html' target='submenuFrame'>All</a><br>\n");
+		topmenuHtml.append("<br>\n");
+		topmenuHtml.append("<a href='excludes.html' target='contentFrame'>Excludes</a><br>\n");
 		if (errors.size() > 0) {
-			topmenuHtml.append("<a href='errors.html' target='contentFrame'>Errors</a><br/>\n");
+			topmenuHtml.append("<a href='errors.html' target='contentFrame'>Errors</a><br>\n");
 		}
 	}
 

@@ -111,9 +111,10 @@ public class SapServer extends JCoIDoc.Server implements JCO.ServerExceptionList
 	 *  SAP JCo.Server javadoc says:
 	 *  This function will be invoked when a transactional RFC is being called from a
 	 *  SAP R/3 system. The function has to store the TID in permanent storage and return <code>true</code>.
-	 *  The method has to return <code>false</code> if the a transaction with this ID has already
-	 *  been process. Throw an exception if anything goes wrong. The transaction processing will be
-	 *  aborted thereafter.<b>
+	 *  The method has to return <code>false</code> if a transaction with this ID has already
+	 *  been processed. Throws an exception if anything goes wrong. The transaction processing will be
+	 *  aborted afterwards.
+	 *  <br>
 	 *  Derived servers must override this method to actually implement the transaction ID management.
 	 *  @param tid the transaction ID
 	 *  @return <code>true</code> if the ID is valid and not in use otherwise, <code>false</code> otherwise
@@ -129,7 +130,8 @@ public class SapServer extends JCoIDoc.Server implements JCO.ServerExceptionList
 	/**
 	 *  SAP JCo.Server javadoc says:
 	 *  This function will be called after the <em>local</em> transaction has been completed.
-	 *  All resources assiciated with this TID can be released.<b>
+	 *  All resources assiciated with this TID can be released.
+	 *  <br>
 	 *  Derived servers must override this method to actually implement the transaction ID management.
 	 *  @param tid the transaction ID
 	 */
@@ -143,7 +145,8 @@ public class SapServer extends JCoIDoc.Server implements JCO.ServerExceptionList
 	/**
 	 *  SAP JCo.Server javadoc says:
 	 *  This function will be called after <em>all</em> RFC functions belonging to a certain transaction
-	 *  have been successfully completed. <b>
+	 *  have been successfully completed.
+	 *  <br>
 	 *  Derived servers can override this method to locally commit the transaction.
 	 *  @param tid the transaction ID
 	 */
@@ -157,7 +160,8 @@ public class SapServer extends JCoIDoc.Server implements JCO.ServerExceptionList
 	/**
 	 *  SAP JCo.Server javadoc says:
 	 *  This function will be called if an error in one of the RFC functions belonging to
-	 *  a certain transaction has occurred.<b>
+	 *  a certain transaction has occurred.
+	 *  <br>
 	 *  Derived servers can override this method to locally rollback the transaction.
 	 *  @param tid the transaction ID
 	 */

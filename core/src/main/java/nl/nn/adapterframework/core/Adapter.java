@@ -55,22 +55,22 @@ import org.springframework.core.task.TaskExecutor;
  * The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
  * and uses {@link IReceiver IReceivers} and a {@link PipeLine}.
  *
- * <b>responsibility</b><br/>
+ * <b>responsibility</b><br>
  * <ul>
- *   <li>keeping and gathering statistics</li>
- *   <li>processing messages, retrieved from IReceivers</li>
- *   <li>starting and stoppping IReceivers</li>
- *   <li>delivering error messages in a specified format</li>
+ *   <li>keeping and gathering statistics
+ *   <li>processing messages, retrieved from IReceivers
+ *   <li>starting and stoppping IReceivers
+ *   <li>delivering error messages in a specified format
  * </ul>
  * All messages from IReceivers pass through the adapter (multi threaded).
- * Multiple receivers may be attached to one adapter.<br/>
- * <br/>
+ * Multiple receivers may be attached to one adapter.<br>
+ * <br>
  * The actual processing of messages is delegated to the {@link PipeLine}
  * object, which returns a {@link PipeLineResult}. If an error occurs during
  * the pipeline execution, the state in the <code>PipeLineResult</code> is set
  * to the state specified by <code>setErrorState</code>, which defaults to "ERROR".
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.AbstractPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Adapter</td><td>&nbsp;</td></tr>
@@ -82,7 +82,7 @@ import org.springframework.core.task.TaskExecutor;
  * the pipeline execution, the state in the <code>PipeLineResult</code> is set to this state</td><td>ERROR</td></tr>
  * <tr><td>{@link #setMessageKeeperSize(int) messageKeeperSize}</td><td>number of message displayed in IbisConsole</td><td>10</td></tr>
  * <tr><td>{@link #setMsgLogLevel(String) msgLogLevel}</td><td>defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties. Possible values are: 
- *   <table border="1">
+ *   <table border="1" summary="">
  *   <tr><th>msgLogLevel</th><th>messages which are logged</th></tr>
  *   <tr><td colspan="1">None</td> <td>none</td></tr>
  *   <tr><td colspan="1">Terse</td><td>at adapter level</td></tr>
@@ -167,7 +167,7 @@ public class Adapter implements IAdapter, NamedBean {
 	
 	/*
 	 * This function is called by Configuration.registerAdapter,
-	 * to make configuration information available to the Adapter. <br/><br/>
+	 * to make configuration information available to the Adapter. <br><br>
 	 * This method also performs
 	 * a <code>Pipeline.configurePipes()</code>, as to configure the individual pipes.
 	 * @see nl.nn.adapterframework.core.Pipeline#configurePipes
@@ -879,7 +879,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * The adapter
 	 * will call the <code>IReceiver</code> to <code>stopListening</code>
 	 * <p>Also the <code>PipeLine.close()</code> method will be called,
-	 * closing alle registered pipes. </p>
+	 * closing alle registered pipes.
 	 * @see IReceiver#stopRunning
 	 * @see PipeLine#stop
 	 */

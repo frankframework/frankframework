@@ -37,16 +37,16 @@ import org.w3c.dom.Element;
 
 /**
  * Bis (Business Integration Services) extension of JmsSender.
- * <br/>
+ * <br>
  * For example request and reply, see {@link BisJmsListener}.
- * <br/>
+ * <br>
  * If synchronous=true and one of the following conditions is true a SenderException is thrown:
  * - Result/Status in the reply soap body equals 'ERROR'
  * - faultcode in the reply soap fault is not empty
- * <br/>
+ * <br>
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.extensions.bis.BisSoapJmsSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>true</code></td></tr>
@@ -59,7 +59,6 @@ import org.w3c.dom.Element;
  * <tr><td>{@link #setExternalRefToMessageIdSessionKey(String) externalRefToMessageIdSessionKey}</td><td>key of session variable in which ExternalRefToMessageId is stored; used in the MessageHeader of the request</td><td>bisExternalRefToMessageId</td></tr>
  * <tr><td>{@link #setRequestNamespace(String) requestNamespace}</td><td>if not empty, this namespace is added to the request (this functionality will be used during migration from IFSA to TIBCO)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoveResponseNamespaces(boolean) removeResponseNamespaces}</td><td>when set <code>true</code> namespaces (and prefixes) in the response are removed (this functionality will be used during migration from IFSA to TIBCO)</td><td>false</td></tr>
- * </p>
  * 
  * @author  Peter Leeuwenburgh
  * @deprecated Please use JmsSender combined with BisWrapperPipe

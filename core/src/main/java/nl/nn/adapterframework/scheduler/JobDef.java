@@ -81,7 +81,7 @@ import static org.quartz.SimpleScheduleBuilder.*;
  * Specified in the Configuration.xml by a &lt;job&gt; inside a &lt;scheduler&gt;. The scheduler element must
  * be a direct child of configuration, not of adapter.
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Job</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDescription(String) description}</td><td>optional description of the job</td><td>&nbsp;</td></tr>
@@ -95,7 +95,7 @@ import static org.quartz.SimpleScheduleBuilder.*;
  * <tr><td>{@link #setQueryTimeout(int) queryTimeout}</td><td>the number of seconds the driver will wait for a Statement object to execute. If the limit is exceeded, a TimeOutException is thrown. 0 means no timeout</td><td>0</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are: 
- *   <table border="1">
+ *   <table border="1" summary="">
  *   <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>
  *   <tr><td colspan="1" rowspan="2">Required</td>    <td>none</td><td>T2</td></tr>
  * 											      <tr><td>T1</td>  <td>T1</td></tr>
@@ -114,30 +114,30 @@ import static org.quartz.SimpleScheduleBuilder.*;
  * <tr><td>{@link #setNumThreads(int) numThreads}</td><td>the number of threads that may execute concurrently</td><td>1</td></tr>
  * <tr><td>{@link #setMessageKeeperSize(int) messageKeeperSize}</td><td>number of message displayed in IbisConsole</td><td>10</td></tr>
  * </table>
- * </p>
+
  * <p>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>nested elements (accessible in descender-classes)</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.util.Locker locker}</td><td>optional: the job will only be executed if a lock could be set successfully</td></tr>
  * </table>
- * </p>
+
  * <p> 
  * <br>
  * Operation of scheduling:
  * <ul>
- *   <li>at configuration time {@link nl.nn.adapterframework.configuration.Configuration#registerScheduledJob(JobDef) Configuration.registerScheduledJob()} is called; </li>
- *   <li>this calls {@link nl.nn.adapterframework.scheduler.SchedulerHelper#scheduleJob(IbisManager, JobDef) SchedulerHelper.scheduleJob()};</li>
- *   <li>this creates a Quartz JobDetail object, and copies adaptername, receivername, function and a reference to the configuration to jobdetail's datamap;</li>
- *   <li>it sets the class to execute to AdapterJob</li>
- *   <li>this job is scheduled using the cron expression</li> 
+ *   <li>at configuration time {@link nl.nn.adapterframework.configuration.Configuration#registerScheduledJob(JobDef) Configuration.registerScheduledJob()} is called; 
+ *   <li>this calls {@link nl.nn.adapterframework.scheduler.SchedulerHelper#scheduleJob(IbisManager, JobDef) SchedulerHelper.scheduleJob()};
+ *   <li>this creates a Quartz JobDetail object, and copies adaptername, receivername, function and a reference to the configuration to jobdetail's datamap;
+ *   <li>it sets the class to execute to AdapterJob
+ *   <li>this job is scheduled using the cron expression 
  * </ul>
  * 
  * Operation the job is triggered:
  * <ul>
- *   <li>AdapterJob.execute is called</li>
- *   <li>AdapterJob.execute calls config.handleAdapter()</li>
- *   <li>Depending on the value of <code>function</code> the Adapter or Receiver is stopped or started, or an empty message is sent</li>
- *   <li>If function=sendMessage, an IbisLocalSender is used to call a JavaListener that has to have an attribute <code>name</code> that is equal to receiverName!!</li>
+ *   <li>AdapterJob.execute is called
+ *   <li>AdapterJob.execute calls config.handleAdapter()
+ *   <li>Depending on the value of <code>function</code> the Adapter or Receiver is stopped or started, or an empty message is sent
+ *   <li>If function=sendMessage, an IbisLocalSender is used to call a JavaListener that has to have an attribute <code>name</code> that is equal to receiverName!!
  * </ul>
  *
  * All registered jobs are displayed in the IbisConsole under 'Show Scheduler Status'.
@@ -206,28 +206,28 @@ import static org.quartz.SimpleScheduleBuilder.*;
  *     <td align="left"><code>, - * /</code></td>
  *   </tr>
  * </table>
- * </p>
+
  *
  * <p>The '*' character is used to specify all values. For example, "*" in
- * the minute field means "every minute".</p>
+ * the minute field means "every minute".
  *
  * <p>The '?' character is allowed for the day-of-month and day-of-week fields.
  * It is used to specify 'no specific value'. This is useful when you need
  * to specify something in one of the two fileds, but not the other. See the
- * examples below for clarification.</p>
+ * examples below for clarification.
  *
  * <p>The '-' character is used to specify ranges For example "10-12" in the
- * hour field means "the hours 10, 11 and 12".</p>
+ * hour field means "the hours 10, 11 and 12".
  *
  * <p>The ',' character is used to specify additional values. For example
  * "MON,WED,FRI" in the day-of-week field means "the days Monday,
- * Wednesday, and Friday".</p>
+ * Wednesday, and Friday".
  *
  * <p>The '/' character is used to specify increments. For example "0/15" in
  * the seconds field means "the seconds 0, 15, 30, and 45".  And "5/15" in
  * the seconds field means "the seconds 5, 20, 35, and 50".  You can also
  * specify '/' after the '*' character - in this case '*' is equivalent to
- * having '0' before the '/'.</p>
+ * having '0' before the '/'.
  *
  * <p>The 'L' character is allowed for the day-of-month and day-of-week fields.
  * This character is short-hand for "last", but it has different meaning in each of
@@ -238,7 +238,7 @@ import static org.quartz.SimpleScheduleBuilder.*;
  * it means "the last xxx day of the month" - for example "6L" means
  * "the last friday of the month".  When using the 'L' option, it is
  * important not to specify lists, or ranges of values, as you'll get confusing
- * results.</p>
+ * results.
  *
  * <p>The '#' character is allowed for the day-of-week field.  This character
  * is used to specify "the nth" XXX day of the month.  For example, the value
@@ -246,7 +246,7 @@ import static org.quartz.SimpleScheduleBuilder.*;
  * (day 6 = Friday and "#3" = the 3rd one in the month). Other
  * examples: "2#1" = the first Monday of the month and  "4#5" = the fifth
  * Wednesday of the month.  Note that if you specify "#5" and there is not 5 of
- * the given day-of-week in the month, then no firing will occur that month.</p>
+ * the given day-of-week in the month, then no firing will occur that month.
  *
  * <p>The 'C' character is allowed for the day-of-month and day-of-week fields.
  * This character is short-hand for "calendar".  This means values are
@@ -254,10 +254,10 @@ import static org.quartz.SimpleScheduleBuilder.*;
  * associated, then it is equivalent to having an all-inclusive calendar.
  * A value of "5C" in the day-of-month field means "the first day included by
  * the calendar on or after the 5th".  A value of "1C" in the day-of-week field
- * means "the first day included by the calendar on or after sunday".</p>
+ * means "the first day included by the calendar on or after sunday".
  *
  * <p>The legal characters and the names of months and days of the week are not
- * case sensitive.</p>
+ * case sensitive.
  *
  * <p>Here are some full examples:<br>
  * <table cellspacing="8">
@@ -352,28 +352,28 @@ import static org.quartz.SimpleScheduleBuilder.*;
  *     <td align="left"><code>Fire at 10:15am on the third Friday of every month</code></td>
  *   </tr>
  * </table>
- * </p>
+
  *
  * <p>Pay attention to the effects of '?' and '*' in the day-of-week and
- * day-of-month fields!</p>
+ * day-of-month fields!
  *
  * <p><b>NOTES:</b>
  * <ul>
  *   <li>
  *      Support for the features described for the 'C' character is
  *      not complete.
- *   </li>
+ *   
  *   <li>
  *      Support for specifying both a day-of-week and a day-of-month
  *      value is not complete (you'll need to use the '?' character in on of these
  *      fields).
- *   </li>
+ *   
  *   <li>Be careful when setting fire times between mid-night and 1:00 AM -
  *       "daylight savings" can cause a skip or a repeat depending on whether
  *       the time moves back or jumps forward.
- *   </li>
+ *   
  * </ul>
- * </p>
+
  * 
  * @author  Johan  Verrips
  */

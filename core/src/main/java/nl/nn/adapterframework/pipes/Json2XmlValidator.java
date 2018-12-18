@@ -45,7 +45,7 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
 *<code>Pipe</code> that validates the XML or JSON input message against a XML-Schema and returns either XML or JSON.
 *
 * <p><b>Configuration:</b>
-* <table border="1">
+* <table border="1" summary="">
 * <tr><th>attributes</th><th>description</th><th>default</th></tr>
 * <tr><td>className</td><td>nl.nn.adapterframework.pipes.XmlValidator</td><td>&nbsp;</td></tr>
 * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
@@ -86,7 +86,7 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
 * <tr><td>{@link #setProduceNamespaceLessXml(boolean) produceNamespaceLessXml}</td><td>when true, all XML that is generated is without a namespace set</td><td>false</td></tr>
 * </table>
 * <p><b>Exits:</b>
-* <table border="1">
+* <table border="1" summary="">
 * <tr><th>state</th><th>condition</th></tr>
 * <tr><td>"success"</td><td>default</td></tr>
 * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, the value for "success"</td></tr>

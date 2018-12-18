@@ -20,7 +20,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 
 /**
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>Expression to evaluate</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>If specified, the result is put 
@@ -28,14 +28,14 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * the same as the input (the xml). If NOT specified, the result of the xpath expression 
  * will be the result of this pipe</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
+
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
- * </p>
+
  * 
  * @author J. Dekker
  * @deprecated Please use XsltPipe, that has the same functionality

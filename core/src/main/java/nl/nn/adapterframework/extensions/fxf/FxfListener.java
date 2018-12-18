@@ -34,20 +34,20 @@ import org.apache.commons.lang.StringUtils;
  * FxF extension of EsbJmsListener.
  * 
  * <p><b>Configuration </b><i>(where deviating from EsbJmsListener)</i><b>:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>name of the JMS destination (queue or topic) to use</td><td>"jms/FileTransferAction"</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>"qcf_tibco_p2p_ff"</td></tr>
  * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of ESB service to be called. Possible values 
  * <ul>
- *   <li>"FF": Fire & Forget protocol</li>
- *   <li>"RR": Request-Reply protocol</li>
+ *   <li>"FF": Fire &amp; Forget protocol
+ *   <li>"RR": Request-Reply protocol
  * </ul></td><td>"FF"</td></tr>
  * <tr><td>{@link #setFxfFileSessionKey(String) fxfFileSessionKey}</td><td>name of the session key to store the name of the received file in</td><td>fxfFile</td></tr>
  * <tr><td>{@link #setMoveProcessedFile(boolean) moveProcessedFile}</td><td>when set to <code>true</code>, the received file if moved after being processed</td><td>true</td></tr>
  * <tr><td>{@link #setProcessedSiblingDirectory(String) processedSiblingDirectory}</td><td>(only used when <code>moveProcessedFile=true</code>) <b>sibling</b> directory (related to the parent directory of the file to process) where files are stored after being processed</td><td>"processed"</td></tr>
  * <tr><td>{@link #setCreateProcessedDirectory(boolean) createProcessedDirectory}</td><td>(only used when <code>moveProcessedFile=true</code>) when set to <code>true</code>, the directory to move processed files in is created if it does not exist</td><td>false</td></tr>
- * </table></p>
+ * </table>
  * 
  * @author Peter Leeuwenburgh
  */

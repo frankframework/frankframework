@@ -59,8 +59,8 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Sender for Akamai NetStorage (HTTP based).
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
+ * <b>Configuration:</b>
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setAction(String) action}</td><td>possible values: delete, dir, download, du, mkdir, mtime, rename, rmdir, upload</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setActionVersion(int) actionVersion}</td><td>Akamai currently only supports action version 1!</td><td>1</td></tr>
@@ -69,25 +69,24 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setRootDir(String) rootDir}</td><td><i>optional</i> root directory</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUrl(String) url}</td><td>The destination, aka Akamai host. Only the hostname is allowed; eq. xyz-nsu.akamaihd.net</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSignVersion(int) signVersion}</td><td>the version used to sign the authentication headers. Possible values: 3 (MD5), 4 (SHA1), 5 (SHA256)</td><td>5</td></tr>
- * <tr><td>{@link #setHashAlgorithm(String) hashAlgorithm}</td><td>only works in combination with the <code>upload</code> action. If set, and not specified as parameter, the sender will sign the file to be uploaded. Possible values: md5, sha1, sha256. <br/>NOTE: if the file input is a Stream this will put the file in memory!</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setHashAlgorithm(String) hashAlgorithm}</td><td>only works in combination with the <code>upload</code> action. If set, and not specified as parameter, the sender will sign the file to be uploaded. Possible values: md5, sha1, sha256. <br>NOTE: if the file input is a Stream this will put the file in memory!</td><td>&nbsp;</td></tr>
  * 
  * <tr><td>{@link #setNonce(String) nonce}</td><td>the nonce or api username</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAccessToken(String) accessToken}</td><td>the api accesstoken</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for nonce (username) and accesstoken (password)</td><td>&nbsp;</td></tr>
  * 
  * </table>
- * </p>
- * <p>See {@link nl.nn.adapterframework.http.HttpSenderBase} for more arguments and parameters!</p>
+ * <p>See {@link nl.nn.adapterframework.http.HttpSenderBase} for more arguments and parameters!
  * 
- * <p><b>Parameters:</b></p>
- * <p>Some actions require specific parameters to be set. Optional parameters for the <code>upload</code> action are: md5, sha1, sha256 and mtime.</p>
+ * <p><b>Parameters:</b>
+ * <p>Some actions require specific parameters to be set. Optional parameters for the <code>upload</code> action are: md5, sha1, sha256 and mtime.
  * 
- * <p><b>AuthAlias: (WebSphere based application servers)</b></p>
- * <p>If you do not want to specify the nonce and the accesstoken used to authenticate with Akamai, you can use the authalias property. The username represents the nonce and the password the accesstoken.</p>
+ * <p><b>AuthAlias: (WebSphere based application servers)</b>
+ * <p>If you do not want to specify the nonce and the accesstoken used to authenticate with Akamai, you can use the authalias property. The username represents the nonce and the password the accesstoken.
  * 
- * <br/>
- * <br/>
- * <br/>
+ * <br>
+ * <br>
+ * <br>
  *  
  * 
  * @author	Niels Meijer

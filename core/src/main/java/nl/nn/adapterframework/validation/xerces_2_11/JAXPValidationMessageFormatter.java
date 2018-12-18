@@ -22,7 +22,7 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 /**
- * <p>Used to format JAXP Validation API error messages using a specified locale.</p>
+ * <p>Used to format JAXP Validation API error messages using a specified locale.
  * 
  * @author Michael Glavassevich, IBM
  * @version $Id: JAXPValidationMessageFormatter.java 813087 2009-09-09 19:35:27Z mrglavas $

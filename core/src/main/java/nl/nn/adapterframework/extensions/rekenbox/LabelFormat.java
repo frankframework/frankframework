@@ -37,7 +37,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * Transforms between ascii and an XML representation.
  *
  * <p>
- * Sample xml:<br/><code><pre>
+ * Sample xml:<br><code><pre>
  * 	&lt;CALCBOXMESSAGE&gt;
 		&lt;OPDRACHT&gt;
 			&lt;OPDRACHTSOORT&gt;ONTTREK_RISICO_EN_KOSTEN&lt;/OPDRACHTSOORT&gt;
@@ -47,9 +47,9 @@ import org.xml.sax.helpers.XMLReaderFactory;
  *
  *          ...
  * 	&lt;/CALCBOXMESSAGE&gt;
- * </pre></code> <br/>
+ * </pre></code> <br>
  *
- * Sample ascii:<br/><code><pre>
+ * Sample ascii:<br><code><pre>
  * 	OPDRACHT : #SAMENGESTELD
  * 	OPDRACHT.OPDRACHTSOORT :ONTTREK_RISICO_EN_KOSTEN
  * 	OPDRACHT.BASISRENDEMENTSOORT :NVT
@@ -58,25 +58,22 @@ import org.xml.sax.helpers.XMLReaderFactory;
  *
  *          ...
  * 	EINDEREKENVERZOEK :EINDE
- * </p>
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setDirection(String) direction}</td><td>transformation direction. Possible values 
  * <ul>
- *   <li>"Xml2Label": transform an XML file to ascii</li>
- *   <li>"Label2Xml": transform an ascii file to XML</li>
+ *   <li>"Xml2Label": transform an XML file to ascii
+ *   <li>"Label2Xml": transform an ascii file to XML
  * </ul></td><td>Xml2Label</td></tr>
  * </table>
- * </p>
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>default, when specified</td></tr>
  * </table>
- * </p>
  * @author Gerrit van Brakel
  */
 public class LabelFormat extends FixedForwardPipe {
@@ -118,8 +115,8 @@ public class LabelFormat extends FixedForwardPipe {
 	/**
 	 * sets transformation direction. Possible values 
 	 * <ul>
-	 *   <li>"Xml2Label": transform an XML file to ascii</li>
-	 *   <li>"Label2Xml": transform an ascii file to XML</li>
+	 *   <li>"Xml2Label": transform an XML file to ascii
+	 *   <li>"Label2Xml": transform an ascii file to XML
 	 * </ul>
 	 * default: None
 	 */

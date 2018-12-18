@@ -29,7 +29,7 @@ import nl.nn.adapterframework.soap.SoapValidator;
  * XSD (e.g. CommonMessageHeader.xsd) to the set of XSD's used for validation.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>*</td><td>all attributes available on {@link SoapValidator} can be used</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMode(String) mode}</td><td>TODO</td><td>TODO</td></tr>

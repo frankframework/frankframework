@@ -161,7 +161,6 @@ public class MultipartForm {
 	 * This method buffers only a small amount of data in order to determine the
 	 * total length of the entire entity. The content of individual parts is not
 	 * buffered.
-	 * </p>
 	 *
 	 * @return total length of the multipart entity if known, {@code -1} otherwise.
 	 */

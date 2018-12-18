@@ -33,7 +33,7 @@ import org.apache.commons.lang.StringUtils;
  * Pipe for converting text to or from xml. 
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setXmlTag(String) xmlTag}</td><td>the xml tag to encapsulate the text in</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setIncludeXmlDeclaration(boolean) includeXmlDeclaration}</td><td>controls whether a declation is included above the Xml text</td><td>true</td></tr>
@@ -41,14 +41,14 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setReplaceNonXmlChars(boolean) replaceNonXmlChars}</td><td>Replace all non XML chars (not in the <a href="http://www.w3.org/TR/2006/REC-xml-20060816/#NT-Char">character range as specified by the XML specification</a>) with the inverted question mark (0x00BF)</td><td>true</td></tr>
  * <tr><td>{@link #setUseCdataSection(boolean) useCdataSection}</td><td>controls whether the text to encapsulate should be put in a CDATA section</td><td>true</td></tr>
  * </table>
- * </p>
+
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
- * </p>
+
  * 
  * @author J. Dekker
  */

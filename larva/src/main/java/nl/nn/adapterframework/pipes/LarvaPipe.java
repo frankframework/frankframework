@@ -36,7 +36,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * Call Larva Test Tool
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.FixedForwardPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
@@ -46,9 +46,9 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>{@link #setWriteToSystemOut(boolean) writeToSystemOut}</td><td></td><td>false</td></tr>
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>the larva timeout</td>30000</tr>
  * </table>
- * </p>
+
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>no errors and all scenarios passed</td></tr>
  * <tr><td>"fail"</td><td>errors or failed scenarios</td></tr>

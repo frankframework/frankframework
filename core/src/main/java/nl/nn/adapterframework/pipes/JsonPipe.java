@@ -34,7 +34,7 @@ import org.json.XML;
  * 
  * <p>
  * <b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr>
  * <th>attributes</th>
  * <th>description</th>
@@ -57,10 +57,10 @@ import org.json.XML;
  * </tr>
  * <tr><td>{@link #setAddXmlRootElement(boolean) addXmlRootElement}</td><td>when true, and direction is json2xml, it wraps a root element around the converted message</td><td>true</td></tr>
  * </table>
- * </p>
+
  * <p>
  * <b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr>
  * <th>state</th>
  * <th>condition</th>
@@ -76,7 +76,7 @@ import org.json.XML;
  * <td>if specified</td>
  * </tr>
  * </table>
- * </p>
+
  * @author Martijn Onstwedder
  * @author Tom van der Heijden
  */

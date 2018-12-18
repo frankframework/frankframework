@@ -269,7 +269,7 @@ public class Configuration {
      * information from the parameters, after checking the
      * parameters of the job. (basically, it checks wether the adapter and the
      * receiver are registered.
-     * <p>See the <a href="http://quartz.sourceforge.net">Quartz scheduler</a> documentation</p>
+     * <p>See the <a href="http://quartz.sourceforge.net">Quartz scheduler</a> documentation
      * @param jobdef a JobDef object
      * @see nl.nn.adapterframework.scheduler.JobDef for a description of Cron triggers
      * @since 4.0

@@ -27,11 +27,11 @@ import nl.nn.adapterframework.core.PipeRunResult;
  *<code>Pipe</code> that checks the well-formedness of the input message.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * </table>
- * </p><b>Exits:</b>
- * <table border="1">
+<b>Exits:</b>
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, the value for "success"</td></tr>

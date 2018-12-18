@@ -39,19 +39,19 @@ import nl.nn.adapterframework.util.XmlUtils;
  * Collection of Senders, that are executed all at the same time. Once the results are processed, all results will be sent to the resultSender, while the original sender will return it's result to the pipeline.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.senders.ShadowSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOriginalSender(String) sender}</td><td>the default or original sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setResultSender(String) sender}</td><td>the sender which will process all results</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
- * <table border="1">
+
+ * <table border="1" summary="">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.ISender sender}</td><td>one or more specifications of senders. Each will receive the same input message, to be processed in parallel</td></tr>
  * </table>
- * </p>
- * <p>Multiple sub-senders can be configured within the ShadowSender, the minimum amount of senders is 2 (originalSender + resultSender)</p>
+
+ * <p>Multiple sub-senders can be configured within the ShadowSender, the minimum amount of senders is 2 (originalSender + resultSender)
 
  * @author  Niels Meijer
  * @since   7.0

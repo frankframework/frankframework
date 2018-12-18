@@ -19,7 +19,7 @@ import java.util.Date;
 
 /**
  * Keeps a list of <code>MessageKeeperMessage</code>s.
- * <br/>
+ * <br>
  * @author  Johan Verrips IOS
  * @see MessageKeeperMessage
  */

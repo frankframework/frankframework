@@ -76,7 +76,7 @@ import org.w3c.dom.Node;
  * Sender for the HTTP protocol using GET, POST, PUT or DELETE.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.http.HttpSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
@@ -128,16 +128,15 @@ import org.w3c.dom.Node;
  * <tr><td>{@link #setResultStatusCodeSessionKey(String) resultStatusCodeSessionKey}</td><td>if set, the status code of the HTTP response is put in specified in the sessionKey and the (error or okay) response message is returned</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMultipartXmlSessionKey(String) multipartXmlSessionKey}</td><td>if set and <code>methodeType=POST</code> and <code>paramsInUrl=false</code>, a multipart/form-data entity is created instead of a request body. For each part element in the session key a part in the multipart entity is created</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
- * <p><b>Parameters:</b></p>
- * <p>Any parameters present are appended to the request as request-parameters except the headersParams list which are added as http headers</p>
+ * <p><b>Parameters:</b>
+ * <p>Any parameters present are appended to the request as request-parameters except the headersParams list which are added as http headers
  * 
- * <p><b>Expected message format:</b></p>
- * <p>GET methods expect a message looking like this</p>
+ * <p><b>Expected message format:</b>
+ * <p>GET methods expect a message looking like this
  * <pre>
  *   param_name=param_value&another_param_name=another_param_value
  * </pre>
- * <p>POST AND PUT methods expect a message similar as GET, or looking like this</p>
+ * <p>POST AND PUT methods expect a message similar as GET, or looking like this
  * <pre>
  *   param_name=param_value
  *   another_param_name=another_param_value
@@ -148,55 +147,51 @@ import org.w3c.dom.Node;
  * Some certificates require the &lt;java_home&gt;/jre/lib/security/xxx_policy.jar files to be upgraded to unlimited strength. Typically, in such a case, an error message like 
  * <code>Error in loading the keystore: Private key decryption error: (java.lang.SecurityException: Unsupported keysize or algorithm parameters</code> is observed.
  * For IBM JDKs these files can be downloaded from http://www.ibm.com/developerworks/java/jdk/security/50/ (scroll down to 'IBM SDK Policy files')
- * </p>
  * Replace in the directory java\jre\lib\security the following files:
  * <ul>
- * <li>local_policy.jar</li>
- * <li>US_export_policy.jar</li>
+ * <li>local_policy.jar
+ * <li>US_export_policy.jar
  * </ul>
  * <p>
  * Note 2:
  * To debug ssl-related problems, set the following system property:
  * <ul>
- * <li>IBM / WebSphere: <code>-Djavax.net.debug=true</code></li>
- * <li>SUN: <code>-Djavax.net.debug=all</code></li>
+ * <li>IBM / WebSphere: <code>-Djavax.net.debug=true</code>
+ * <li>SUN: <code>-Djavax.net.debug=all</code>
  * </ul>
- * </p>
  * <p>
  * Note 3:
  * In case <code>javax.net.ssl.SSLHandshakeException: unknown certificate</code>-exceptions are thrown, 
  * probably the certificate of the other party is not trusted. Try to use one of the certificates in the path as your truststore by doing the following:
  * <ul>
- *   <li>open the URL you are trying to reach in InternetExplorer</li>
- *   <li>click on the yellow padlock on the right in the bottom-bar. This opens the certificate information window</li>
- *   <li>click on tab 'Certificeringspad'</li>
- *   <li>double click on root certificate in the tree displayed. This opens the certificate information window for the root certificate</li>
- *   <li>click on tab 'Details'</li>
- *   <li>click on 'Kopieren naar bestand'</li>
- *   <li>click 'next', choose 'DER Encoded Binary X.509 (.CER)'</li>
- *   <li>click 'next', choose a filename</li>
- *   <li>click 'next' and 'finish'</li>
- * 	 <li>Start IBM key management tool ikeyman.bat, located in Program Files/IBM/WebSphere Studio/Application Developer/v5.1.2/runtimes/base_v51/bin (or similar)</li>
- *   <li>create a new key-database (Sleuteldatabase -> Nieuw...), or open the default key.jks (default password="changeit")</li>
- *   <li>add the generated certificate (Toevoegen...)</li>
- *   <li>store the key-database in JKS format</li>
- *   <li>if you didn't use the standard keydatabase, then reference the file in the truststore-attribute in Configuration.xml (include the file as a resource)</li>
- *   <li>use jks for the truststoreType-attribute</li>
- *   <li>restart your application</li>
+ *   <li>open the URL you are trying to reach in InternetExplorer
+ *   <li>click on the yellow padlock on the right in the bottom-bar. This opens the certificate information window
+ *   <li>click on tab 'Certificeringspad'
+ *   <li>double click on root certificate in the tree displayed. This opens the certificate information window for the root certificate
+ *   <li>click on tab 'Details'
+ *   <li>click on 'Kopieren naar bestand'
+ *   <li>click 'next', choose 'DER Encoded Binary X.509 (.CER)'
+ *   <li>click 'next', choose a filename
+ *   <li>click 'next' and 'finish'
+ * 	 <li>Start IBM key management tool ikeyman.bat, located in Program Files/IBM/WebSphere Studio/Application Developer/v5.1.2/runtimes/base_v51/bin (or similar)
+ *   <li>create a new key-database (Sleuteldatabase -> Nieuw...), or open the default key.jks (default password="changeit")
+ *   <li>add the generated certificate (Toevoegen...)
+ *   <li>store the key-database in JKS format
+ *   <li>if you didn't use the standard keydatabase, then reference the file in the truststore-attribute in Configuration.xml (include the file as a resource)
+ *   <li>use jks for the truststoreType-attribute
+ *   <li>restart your application
  *   <li>instead of IBM ikeyman you can use the standard java tool <code>keytool</code> as follows: 
- *      <code>keytool -import -alias <i>yourAlias</i> -file <i>pathToSavedCertificate</i></code></li>
+ *      <code>keytool -import -alias <i>yourAlias</i> -file <i>pathToSavedCertificate</i></code>
  * </ul>
  * <p>
  * Note 4:
  * In case <code>cannot create or initialize SocketFactory: (IOException) Unable to verify MAC</code>-exceptions are thrown,
- * please check password or authAlias configuration of the correspondig certificate. 
- * </p>
+ * please check password or authAlias configuration of the correspondig certificate.
  * 
  * <p>
  * Note 5:
  * When used as MTOM sender and MTOM receiver doesn't support Content-Transfer-Encoding "base64", messages without line feeds will give an error.
  * This can be fixed by setting the Content-Transfer-Encoding in the MTOM sender.
- * </p>
  * 
  * @author Niels Meijer
  * @since 7.0

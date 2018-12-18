@@ -28,7 +28,7 @@ import org.apache.log4j.Logger;
  * Each flow is registered to a manager using the recordHandlerManagerRef.
  *  
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.batch.RecordHandlingFlow</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRecordHandlerManagerRef(String) recordHandlerManagerRef}</td><td>Name of the manager to which this RecordHandlingFlow must be added</td><td>&nbsp;</td></tr>
@@ -43,7 +43,6 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setCloseBlockAfterLine(String) closeBlockAfterLine}</td><td>instructs the resultHandler to end the specified block after the parsed line is processed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAutoCloseBlock(boolean) autoCloseBlock}</td><td>when <code>true</code>, any open block of this type (and other nested open 'autoclose' block) is closed before a new one of the same type is opened. At a forced close, nested blocks are closed too (since 4.9)</td><td><code>true</code></td></tr>
  * </table>
- * </p>
  * 
  * @author  John Dekker
  */

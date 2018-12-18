@@ -29,9 +29,9 @@ import org.apache.log4j.Logger;
 /**
  * This <code>ErrorMessageFormatter</code> wraps an error in an XML string.
  *
- * <br/>
+ * <br>
  * Sample xml:
- * <br/>
+ * <br>
  * <code><pre>
  * &lt;errorMessage&gt;
  *    &lt;message timestamp="Mon Oct 13 12:01:57 CEST 2003" 

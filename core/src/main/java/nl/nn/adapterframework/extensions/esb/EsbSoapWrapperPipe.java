@@ -34,7 +34,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * Extension to SoapWrapperPipe for separate modes.
  *
  * <p><b>Configuration </b><i>(where deviating from SoapWrapperPipe)</i><b>:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setMode(String) mode}</td><td>either <code>i2t</code> (ifsa2tibco), <code>reg</code> (regular) or <code>bis</code> (Business Integration Services)</td><td>reg</td></tr>
  * <tr><td>{@link #setCmhVersion(int) cmhVersion}</td><td>(only used when <code>mode=reg</code>) Common Message Header version (1 or 2)</td><td>1 when <code>mode=reg</code>, 0 otherwise</td></tr>
@@ -50,17 +50,17 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>{@link #setFixResultNamespace(boolean) fixResultNamespace}</td><td>(only used when <code>direction=wrap</code>) when <code>true</code> and the Result tag already exists, the namespace is changed</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setP2pAlias(String) p2pAlias}</td><td>When the messagingLayer part of the destination has this value interpret it as P2P</td><td><code></code></td></tr>
  * <tr><td>{@link #setEsbAlias(String) esbAlias}</td><td>When the messagingLayer part of the destination has this value interpret it as ESB</td><td><code></code></td></tr>
- * </table></p>
+ * </table>
  * <p>
  * <b>/xml/xsl/esb/soapHeader.xsl:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>element</th><th>level</th><th>value</th></tr>
  * <tr><td>MessageHeader</td><td>0</td><td>&nbsp;</td></tr>
  * <tr><td>&nbsp;</td><td>&nbsp;</td><td>xmlns=$namespace</td></tr>
  * <tr><td>From</td><td>1</td><td>&nbsp;</td></tr>
  * <tr><td>Id</td><td>2</td><td>$fromId</td></tr>
  * <tr><td>To</td><td>1</td><td>&nbsp;</td></tr>
- * <tr><td>Location</td><td>2</td><td>if $messagingLayer='P2P' then<br/>&nbsp;$messagingLayer.$businessDomain.$applicationName.$applicationFunction.$paradigm<br/>else if $serviceContext is not empty then<br/>&nbsp;$messagingLayer.$businessDomain.$serviceLayer.$serviceName.$serviceContext.$serviceContextVersion.$operationName.$operationVersion.$paradigm<br/>else<br/>&nbsp;$messagingLayer.$businessDomain.$serviceLayer.$serviceName.$serviceVersion.$operationName.$operationVersion.$paradigm</td></tr>
+ * <tr><td>Location</td><td>2</td><td>if $messagingLayer='P2P' then<br>&nbsp;$messagingLayer.$businessDomain.$applicationName.$applicationFunction.$paradigm<br>else if $serviceContext is not empty then<br>&nbsp;$messagingLayer.$businessDomain.$serviceLayer.$serviceName.$serviceContext.$serviceContextVersion.$operationName.$operationVersion.$paradigm<br>else<br>&nbsp;$messagingLayer.$businessDomain.$serviceLayer.$serviceName.$serviceVersion.$operationName.$operationVersion.$paradigm</td></tr>
  * <tr><td>HeaderFields</td><td>1</td><td>&nbsp;</td></tr>
  * <tr><td>CPAId</td><td>2</td><td>$cpaId</td></tr>
  * <tr><td>ConversationId</td><td>2</td><td>$conversationId</td></tr>
@@ -78,7 +78,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>Version</td><td>3</td><td>$operationVersion</td></tr>
  * </table>
  * <b>Parameters:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>name</th><th>default</th></tr>
  * <tr><td>mode</td><td>copied from <code>mode</code></td></tr>
  * <tr><td>cmhVersion</td><td>copied from <code>cmhVersion</code></td></tr>
@@ -104,10 +104,9 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>timestamp</td><td>parameter pattern '{now,date,yyyy-MM-dd'T'HH:mm:ss}'</td></tr>
  * <tr><td>transactionId</td><td>if applicable, copied from the original (received) SOAP Header</td></tr>
  * </table>
- * </p>
  * <p>
  * <b>/xml/xsl/esb/bisSoapHeader.xsl:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>element</th><th>level</th><th>value</th></tr>
  * <tr><td>MessageHeader</td><td>0</td><td>&nbsp;</td></tr>
  * <tr><td>&nbsp;</td><td>&nbsp;</td><td>xmlns=$namespace</td></tr>
@@ -120,7 +119,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>Timestamp</td><td>2</td><td>$timestamp</td></tr>
  * </table>
  * <b>Parameters:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>name</th><th>default</th></tr>
  * <tr><td>namespace</td><td>"http://www.ing.com/CSP/XSD/General/Message_2"</td></tr>
  * <tr><td>fromId</td><td>property 'instance.name'</td></tr>
@@ -129,12 +128,11 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>externalRefToMessageId</td><td>if applicable, copied from MessageId in the original (received) SOAP Header</td></tr>
  * <tr><td>timestamp</td><td>parameter pattern '{now,date,yyyy-MM-dd'T'HH:mm:ss}'</td></tr>
  * </table>
- * </p>
  * <p>
  * <b>/xml/xsl/esb/soapBody.xsl:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>element</th><th>level</th><th>value</th></tr>
- * <tr><td>[Payload]</td><td>0</td><td>if $errorCode is empty then the complete payload will be copied and if not already existing a Result tag will be added<br/>else only the root tag will be copied</td></tr>
+ * <tr><td>[Payload]</td><td>0</td><td>if $errorCode is empty then the complete payload will be copied and if not already existing a Result tag will be added<br>else only the root tag will be copied</td></tr>
  * <tr><td>Result</td><td>1</td><td>this element will be the last child in the copied root tag (only applicable for $paradigm 'Response'); if $errorCode is empty and a Result tag already exists then skip this element including its child elements</td></tr>
  * <tr><td>&nbsp;</td><td>&nbsp;</td><td>xmlns=$namespace</td></tr>
  * <tr><td>Status</td><td>2</td><td>if $errorCode is empty then 'OK'</br>else 'ERROR'</td></tr>
@@ -142,7 +140,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>Error</td><td>3</td><td>&nbsp;</td></tr>
  * <tr><td>Code</td><td>4</td><td>$errorCode</td></tr>
  * <tr><td>Reason</td><td>4</td><td>if $errorReason is not empty then $errorReason</br>else it will be derived from $errorCode:
- *   <table border="1">
+ *   <table border="1" summary="">
  *   <tr><th>errorCode</th><th>errorText</th></tr>
  *   <tr><td>ERR6002</td><td>Service Interface Request Time Out</td></tr>
  *   <tr><td>ERR6003</td><td>Invalid Request Message</td></tr>
@@ -164,7 +162,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>Text</td><td>6</td><td>$errorDetailText (if empty then skip this element)</td></tr>
  * </table>
  * <b>Parameters:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>name</th><th>default</th></tr>
  * <tr><td>mode</td><td>copied from <code>mode</code></td></tr>
  * <tr><td>cmhVersion</td><td>copied from <code>cmhVersion</code></td></tr>
@@ -180,12 +178,11 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>paradigm</td><td>&nbsp;</td></tr>
  * <tr><td>fixResultNamespace</td><td>false</td></tr>
  * </table>
- * </p>
  * <p>
  * <b>/xml/xsl/esb/bisSoapBody.xsl:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>element</th><th>level</th><th>value</th></tr>
- * <tr><td>[Payload]</td><td>0</td><td>if $errorCode is empty then the complete payload will be copied and if not already existing a Result tag will be added<br/>else only the root tag will be copied</td></tr>
+ * <tr><td>[Payload]</td><td>0</td><td>if $errorCode is empty then the complete payload will be copied and if not already existing a Result tag will be added<br>else only the root tag will be copied</td></tr>
  * <tr><td>Result</td><td>1</td><td>this element will be the last child in the copied root tag (only applicable for $paradigm 'Response' and 'Reply'); if $errorCode is empty and a Result tag already exists then skip this element including its child elements</td></tr>
  * <tr><td>&nbsp;</td><td>&nbsp;</td><td>xmlns=$namespace</td></tr>
  * <tr><td>Status</td><td>2</td><td>if $errorCode is empty then 'OK'</br>else 'ERROR'</td></tr>
@@ -193,7 +190,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>Error</td><td>3</td><td>&nbsp;</td></tr>
  * <tr><td>Code</td><td>4</td><td>$errorCode</td></tr>
  * <tr><td>Reason</td><td>4</td><td>if $errorReason is not empty then $errorReason</br>else it will be derived from $errorCode:
- *   <table border="1">
+ *   <table border="1" summary="">
  *   <tr><th>errorCode</th><th>errorText</th></tr>
  *   <tr><td>ERR6002</td><td>Service Interface Request Time Out</td></tr>
  *   <tr><td>ERR6003</td><td>Invalid Request Message</td></tr>
@@ -214,7 +211,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>Text</td><td>6</td><td>$errorDetailText (if empty then skip this element)</td></tr>
  * </table>
  * <b>Parameters:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>name</th><th>default</th></tr>
  * <tr><td>namespace</td><td>"http://www.ing.com/CSP/XSD/General/Message_2"</td></tr>
  * <tr><td>errorCode</td><td>&nbsp;</td></tr>
@@ -227,7 +224,6 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>operationVersion</td><td>1</td></tr>
  * <tr><td>paradigm</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
  * @author Peter Leeuwenburgh
  */
 public class EsbSoapWrapperPipe extends SoapWrapperPipe {

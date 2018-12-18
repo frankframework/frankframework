@@ -27,7 +27,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * Selects an exitState, based on the last (filename) part of the path that is the input.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.FilenameSwitch</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
@@ -36,13 +36,13 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * <tr><td>{@link #setNotFoundForwardName(String) notFoundForwardName}</td><td>Forward returned when the forward or pipename derived from the filename that was the input could not be found.</i></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setToLowercase(boolean) toLowercase}</td><td>convert the result to lowercase, before searching for a corresponding forward</td><td>true</td></tr>
  * </table>
- * </p>
+
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>&lt;filenname part of the path&gt;</td><td>default</td></tr>
  * </table>
- * </p>
+
  * @author  Gerrit van Brakel
  * @since   4.8
  */

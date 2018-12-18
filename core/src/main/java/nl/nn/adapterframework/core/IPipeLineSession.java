@@ -28,7 +28,6 @@ import java.util.Map;
  * and the original message (as it arrived on the <code>PipeLine</code>
  * is stored in the key identified by <code>originalMessageKey</code>.
  * The messageId is stored under the key identified by <code>messageId</code>.
- * </p>
  * 
  * @author  Johan Verrips IOS
  * @since   version 3.2.2

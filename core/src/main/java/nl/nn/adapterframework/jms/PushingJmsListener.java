@@ -45,7 +45,7 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
  * message container.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.jms.JmsListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
@@ -72,11 +72,11 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
  * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receive timeout in milliseconds as specified by the JMS API, see https://docs.oracle.com/javaee/7/api/javax/jms/MessageConsumer.html#receive-long-</td><td>1000 [ms]</td></tr>
  * <tr><td>{@link #setPollGuardInterval(long) pollGuardInterval}</td><td>interval in milliseconds for the poll guard to check whether a successful poll was done by the receive (https://docs.oracle.com/javaee/7/api/javax/jms/MessageConsumer.html#receive-long-) since last check. When polling has stopped this will be logged and the listener will be stopped and started in an attempt to workaround problems with polling. Polling might stop due to bugs in the JMS driver/implementation which should be fixed by the supplier. As the poll time includes reading and processing of the message no successful poll might be registered since the last check when message processing takes a long time, hence while messages are being processed the check on last successful poll will be skipped. Set to -1 to disable</td><td>ten times the specified timeOut</td></tr>
  * </table>
- *</p><p><b>Using transactions</b><br/>
+ *<p><b>Using transactions</b><br>
  * This version of the <code>JmsListener</code> supports distributed transactions using the XA-protocol.
  * No special action is required to have the listener join the transaction.
  *
- *</p><p><b>Using jmsTransacted and acknowledgement</b><br/>
+ *<p><b>Using jmsTransacted and acknowledgement</b><br>
  * If jmsTransacted is set <code>true</code>, it should ensure that a message is received and processed on
  * a both or nothing basis. IBIS will commit the the message, otherwise perform rollback. However, using
  * jmsTransacted, IBIS does not bring transactions within the adapters under transaction control,
@@ -94,20 +94,20 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
  * delivery of duplicate messages if JMS fails. It should be used by consumers who are tolerant in processing duplicate messages.
  * In cases where the client is tolerant of duplicate messages, some enhancement in performance can be achieved using this mode,
  * since a session has lower overhead in trying to prevent duplicate messages.
- * </p>
+
  * <p>The setting for {@link #setAcknowledgeMode(String) listener.acknowledgeMode} will only be processed if
  * the setting for {@link #setTransacted(boolean) listener.transacted} as well as for
- * {@link #setJmsTransacted(boolean) listener.jmsTransacted} is false.</p>
+ * {@link #setJmsTransacted(boolean) listener.jmsTransacted} is false.
  *
  * <p>If {@link #setUseReplyTo(boolean) useReplyTo} is set and a replyTo-destination is
  * specified in the message, the JmsListener sends the result of the processing
  * in the pipeline to this destination. Otherwise the result is sent using the (optionally)
  * specified {@link #setSender(ISender) Sender}, that in turn sends the message to
- * whatever it is configured to.</p>
+ * whatever it is configured to.
  *
  * <p><b>Notice:</b> the JmsListener is ONLY capable of processing
- * <code>javax.jms.TextMessage</code>s <br/><br/>
- * </p>
+ * <code>javax.jms.TextMessage</code>s <br><br>
+
  *
  * @author  Tim van der Leeuw
  * @since   4.8

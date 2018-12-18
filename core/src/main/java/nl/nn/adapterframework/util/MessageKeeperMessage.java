@@ -22,7 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 /**
- * A message for the MessageKeeper. <br/>
+ * A message for the MessageKeeper. <br>
  * Although this could be an inner class of the MessageKeeper,
  * it's made "standalone" to provide the use of iterators and
  * enumerators with the MessageKeeper.

@@ -22,7 +22,7 @@ import nl.nn.adapterframework.pipes.WsdlXmlValidator;
  * Extension to WsdlXmlValidator for API Management.
  * <p>
  * The SOAP header can only contain the following schema (or it's empty):
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>element</th><th>level</th><th>mandatory</th></tr>
  * <tr><td>MessageHeader</td><td>0</td><td>yes</td></tr>
  * <tr><td>xmlns="http://api.nn.nl/MessageHeader"</td><td>&nbsp;</td><td>yes</td></tr>

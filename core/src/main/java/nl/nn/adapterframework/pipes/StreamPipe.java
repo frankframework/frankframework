@@ -48,7 +48,7 @@ import nl.nn.adapterframework.util.Misc;
  * Stream an input stream to an output stream.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
@@ -61,9 +61,9 @@ import nl.nn.adapterframework.util.Misc;
  * <tr><td>{@link #setAntiVirusFailureAsSoapFault(boolean) antiVirusFailureAsSoapFault}</td><td>(only used for parameter <code>httpRequest</code> and when <code>checkAntiVirus=true</code>) when true and the antiVirusFailed forward is specified and the antivirus scan did not pass, a SOAP Fault is returned instead of only a plain error message</td><td>false</td></tr>
  * <tr><td>{@link #setAntiVirusFailureReasonSessionKey(String) antiVirusFailureReasonSessionKey}</td><td>(only used for parameter <code>httpRequest</code> and when <code>checkAntiVirus=true</code>) if not empty and the antiVirusFailed forward is specified and the antivirus scan did not pass, the error message (or SOAP Fault) is stored in this session key and the first string part is returned to the pipeline</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
- * <p><b>Parameters:</b></p>
- * <table border="1">
+
+ * <p><b>Parameters:</b>
+ * <table border="1" summary="">
  * <tr><th>name</th><th>default</th></tr>
  * <tr><td>inputStream</td><td>the input stream object to use instead of an input stream object taken from pipe input</td></tr>
  * <tr><td>outputStream</td><td>the output stream object to use unless httpResponse parameter is specified</td></tr>
@@ -73,15 +73,15 @@ import nl.nn.adapterframework.util.Misc;
  * <tr><td>contentDisposition</td><td>the Content-Disposition header to set in case httpResponse was specified</td></tr>
  * <tr><td>redirectLocation</td><td>the redirect location to set in case httpResponse was specified</td></tr>
  * </table>
- * </p>
+
  * <p><b>Exits:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * <tr><td>"antiVirusFailed"</td><td>if <code>checkAntiVirus=true</code> and an antivirus part is present of which the value differs from <code>antiVirusPassedMessage</code>. If not specified, a PipeRunException is thrown in that situation</td></tr>
  * </table>
- * </p>
+
  * @author Jaco de Groot
  */
 public class StreamPipe extends FixedForwardPipe {

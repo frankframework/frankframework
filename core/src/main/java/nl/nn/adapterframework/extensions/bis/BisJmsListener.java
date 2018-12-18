@@ -34,8 +34,8 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * Bis (Business Integration Services) extension of JmsListener.
- * <br/>
- * Example request:<br/><code><pre>
+ * <br>
+ * Example request:<br><code><pre>
  *	&lt;soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"&gt;
  *		&lt;soap:Header&gt;
  *			&lt;bis:MessageHeader xmlns:bis="http://www.ing.com/CSP/XSD/General/Message_2"&gt;
@@ -59,10 +59,10 @@ import org.apache.commons.lang.StringUtils;
  *			&lt;/pcr:GetRequest&gt;</i>
  *		&lt;/soap:Body&gt;
  *	&lt;/soap:Envelope&gt;
- * </pre></code><br/>
+ * </pre></code><br>
  * The element MessageHeader in the soap header is mandatory.
- * <br/>
- * Example reply:<br/><code><pre>
+ * <br>
+ * Example reply:<br><code><pre>
  *	&lt;soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"&gt;
  *		&lt;soap:Header&gt;
  *			&lt;bis:MessageHeader xmlns:bis="http://www.ing.com/CSP/XSD/General/Message_2"&gt;
@@ -86,10 +86,10 @@ import org.apache.commons.lang.StringUtils;
  *			<i>&lt;/GetResponse&gt;</i>
  *		&lt;/soap:Body&gt;
  *	&lt;/soap:Envelope&gt;
- * </pre></code><br/>
+ * </pre></code><br>
  * The elements MessageHeader in the soap header and Result in the soap body are mandatory.
- * <br/>
- * Example element Result in case of an error reply:<br/><code><pre>
+ * <br>
+ * Example element Result in case of an error reply:<br><code><pre>
  *	&lt;bis:Result xmlns:bis="http://www.ing.com/CSP/XSD/General/Message_2"&gt;
  *		&lt;bis:Status&gt;ERROR&lt;/bis:Status&gt;
  *		&lt;bis:ErrorList&gt;
@@ -113,9 +113,9 @@ import org.apache.commons.lang.StringUtils;
  *			&lt;/bis:Error&gt;
  *		&lt;/bis:ErrorList&gt;
  *	&lt;/bis:Result&gt;
- * </pre></code><br/>
+ * </pre></code><br>
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.extensions.bis.BisSoapJmsListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>true</code></td></tr>
@@ -128,7 +128,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setLayByNamespace(boolean) layByNamespace}</td><td>when <code>true</code>, the namespace of the request is laid by and afterwards added to the reply (this functionality will be used during migration from IFSA to TIBCO)</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setErrorCodeSessionKey(String) errorCodeSessionKey}</td><td>key of session variable to store error code in (if an error occurs)</td><td>bisErrorCode</td></tr>
  * <tr><td>{@link #setErrorTextSessionKey(String) errorTextSessionKey}</td><td>key of session variable to store error text in (if an error occurs). If not specified, the following error text is derived from the error code: 
- *   <table border="1">
+ *   <table border="1" summary="">
  *   <tr><th>errorCode</th><th>errorText</th></tr>
  *   <tr><td>ERR6002</td><td>Service Interface Request Time Out</td></tr>
  *   <tr><td>ERR6003</td><td>Invalid Request Message</td></tr>
@@ -139,7 +139,6 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setErrorReasonSessionKey(String) errorReasonSessionKey}</td><td>key of session variable to store error reason in (if an error occurs)</td><td>bisErrorReason</td></tr>
  * <tr><td>{@link #setServiceName(String) serviceName}</td><td>name of the service; used in the error reply</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setActionName(String) actionName}</td><td>name of the operation; used in the error reply</td><td>&nbsp;</td></tr>
- * </p>
  * 
  * @author  Peter Leeuwenburgh
  * @deprecated Please use JmsListener combined with BisWrapperPipe

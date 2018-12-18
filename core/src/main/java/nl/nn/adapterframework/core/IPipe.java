@@ -75,7 +75,7 @@ void registerForward(PipeForward forward);
 void start() throws PipeStartException;
 
 /**
-  * Perform necessary actions to stop the <code>Pipe</code>.<br/>
+  * Perform necessary actions to stop the <code>Pipe</code>.<br>
   * For instance, closing JMS connections, dbms connections etc.
   */
 void stop();

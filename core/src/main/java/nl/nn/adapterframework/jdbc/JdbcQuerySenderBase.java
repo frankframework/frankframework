@@ -65,7 +65,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * in order: The n-th questionmark is replaced by the value of the n-th parameter.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.jdbc.JdbcQuerySenderBase</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
@@ -79,11 +79,11 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
 
  * <tr><td>{@link #setQueryType(String) queryType}</td><td>one of:
- * <ul><li>"select" for queries that return data</li>
- *     <li>"updateBlob" for queries that update a BLOB</li>
- *     <li>"updateClob" for queries that update a CLOB</li>
- *     <li>"package" to execute Oracle PL/SQL package</li>
- *     <li>anything else for queries that return no data.</li>
+ * <ul><li>"select" for queries that return data
+ *     <li>"updateBlob" for queries that update a BLOB
+ *     <li>"updateClob" for queries that update a CLOB
+ *     <li>"package" to execute Oracle PL/SQL package
+ *     <li>anything else for queries that return no data.
  * </ul></td><td>"other"</td></tr>
  * <tr><td>{@link #setBlobColumn(int) blobColumn}</td><td>only for queryType 'updateBlob': column that contains the blob to be updated</td><td>1</td></tr>
  * <tr><td>{@link #setClobColumn(int) clobColumn}</td><td>only for queryType 'updateClob': column that contains the clob to be updated</td><td>1</td></tr>
@@ -93,9 +93,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setStartRow(int) startRow}</td><td>the number of the first row returned from the output</td><td>1</td></tr>
  * <tr><td>{@link #setScalar(boolean) scalar}</td><td>when true, the value of the first column of the first row (or the StartRow) is returned as the only result, as a simple non-XML value</td><td>false</td></tr>
  * <tr><td>{@link #setScalarExtended(boolean) scalarExtended}</td><td>when <code>true</code> and <code>scalar</code> is also <code>true</code>, but returns no value, one of the following is returned:
- * <ul><li>"[absent]" no row is found</li>
- *     <li>"[null]" a row is found, but the value is a SQL-NULL</li>
- *     <li>"[empty]" a row is found, but the value is a empty string</li>
+ * <ul><li>"[absent]" no row is found
+ *     <li>"[null]" a row is found, but the value is a SQL-NULL
+ *     <li>"[empty]" a row is found, but the value is a empty string
  * </ul></td><td>false</td></tr>
  * <tr><td>{@link #setNullValue(String) nullValue}</td><td>value used in result as contents of fields that contain no value (SQL-NULL)</td><td><i>empty string</></td></tr>
  * <tr><td>{@link #setResultQuery(String) resultQuery}</td><td>query that can be used to obtain result of side-effecto of update-query, like generated value of sequence. Example: SELECT mysequence.currval FROM DUAL</td><td>&nbsp;</td></tr>
@@ -115,22 +115,22 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setRowIdSessionKey(boolean) rowIdSessionKey}</td><td>If specified, the ROWID of the processed row is put in the PipeLineSession under the specified key (only applicable for <code>queryType=other</code>). <b>Note:</b> If multiple rows are processed a SQLException is thrown.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>if set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as a String)</td><td>false</td></tr>
  * </table>
- * </p>
- * <table border="1">
+
+ * <table border="1" summary="">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
  * <tr><td>&nbsp;</td><td>all parameters present are applied to the statement to be executed</td></tr>
  * </table>
- * <br/>
+ * <br>
  * <h3>Note on using packages</h3>
  * The package processor makes some assumptions about the datatypes:
  * <ul>
- *   <li>elements that start with a single quote are assumed to be Strings</li>
- *   <li>elements thta contain a dash ('-') are assumed to be dates (yyyy-MM-dd) or timestamps (yyyy-MM-dd HH:mm:ss)</li>
- *   <li>elements containing a dot ('.') are assumed to be floats</li>
- *   <li>all other elements are assumed to be integers</li>
+ *   <li>elements that start with a single quote are assumed to be Strings
+ *   <li>elements thta contain a dash ('-') are assumed to be dates (yyyy-MM-dd) or timestamps (yyyy-MM-dd HH:mm:ss)
+ *   <li>elements containing a dot ('.') are assumed to be floats
+ *   <li>all other elements are assumed to be integers
  * </ul>
- * </p>
+
  * 
  * Queries that return no data (queryType 'other') return a message indicating the number of rows processed
  * 
@@ -868,8 +868,8 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		 * Controls wheter the returned package content is db2 format or xml format. 
 		 * Possible values: 
 		 * <ul>
-		 * <li>select:</li> xml content s expected
-		 * <li><i>anything else</i>:</li> db2 content is expected
+		 * <li>select: xml content s expected
+		 * <li><i>anything else</i>: db2 content is expected
 		 * </ul>
 		 */
 		public void setPackageContent(String packageContent) {
@@ -884,8 +884,8 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	 * Controls wheter output is expected from the query. 
 	 * Possible values: 
 	 * <ul>
-	 * <li>select:</li> output is expected
-	 * <li><i>anything else</i>:</li> no output is expected, the number of rows affected is returned
+	 * <li>select: output is expected
+	 * <li><i>anything else</i>: no output is expected, the number of rows affected is returned
 	 * </ul>
 	 */
 	public void setQueryType(String queryType) {

@@ -47,7 +47,7 @@ import org.apache.log4j.Logger;
  * After reading the file, the file is renamed and moved to a directory.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.receivers.FileRecordListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the listener as known to the adapter.</td><td>&nbsp;</td></tr>

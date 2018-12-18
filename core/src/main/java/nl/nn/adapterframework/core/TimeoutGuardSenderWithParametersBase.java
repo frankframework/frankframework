@@ -32,13 +32,12 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * timeout is exceeded.
  * 
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>when <code>true</code>, a SenderException (or TimeOutException) is thrown. Otherwise the output is only logged as an error (and returned in a XML string with 'error' tags)</td><td>true</td></tr>
  * <tr><td>{@link #setXmlTag(String) xmlTag}</td><td>when not empty, the xml tag to encapsulate the result in</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
  * 
  * @author Peter Leeuwenburgh
  */

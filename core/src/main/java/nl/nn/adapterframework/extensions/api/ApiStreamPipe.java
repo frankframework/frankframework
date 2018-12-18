@@ -45,8 +45,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * and one or more filestreams in the next (file) parts. Instead of one multipart call, two calls are performed:
  * <ol>
  *    <li>text/xml call with the business request. The API Management application returns on this call an unique messageId (which is
- *     saved in the MessageStore together with the business request)</li>
- *    <li>multipart call with in the first (string) part the unique messageId and in the following (file) parts the filestreams</li>
+ *     saved in the MessageStore together with the business request)
+ *    <li>multipart call with in the first (string) part the unique messageId and in the following (file) parts the filestreams
  * </ol>
  * <p>
  * @author Peter Leeuwenburgh

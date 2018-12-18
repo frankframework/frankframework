@@ -31,14 +31,14 @@ import org.apache.commons.lang.StringUtils;
  * Uploads a zip file (inputstream in a sessionKey) and unzips it to a directory.
  *
  * <p><b>Configuration:</b>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> which contains the inputstream</td><td>file</td></tr>
  * <tr><td>{@link #setDirectory(String) directory}</td><td>base directory where files are unzipped to</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDirectorySessionKey(String) directorySessionKey}</td><td>the session key that contains the base directory where files are unzipped to</td><td>destination</td></tr>
  * </table>
- * </p>
+
  * 
  * @author Peter Leeuwenburgh
  */
