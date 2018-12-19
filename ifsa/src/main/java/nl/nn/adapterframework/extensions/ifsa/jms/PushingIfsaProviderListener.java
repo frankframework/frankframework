@@ -254,7 +254,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 
 	
 	/**
-	 * Extracts ID-string from message obtained from {@link #getRawMessage(Map)}. 
+	 * Extracts ID-string from message obtained from the {@code Object rawMessage} parameter. 
 	 * Puts also the following parameters  in the threadContext:
 	 * <ul>
 	 *   <li>id
@@ -461,7 +461,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	
 	
 	/**
-	 * Extracts string from message obtained from {@link #getRawMessage(Map)}. May also extract
+	 * Extracts string from the {@code Object rawMessage} parameter. May also extract
 	 * other parameters from the message and put those in the threadContext.
 	 * @return input message for adapter.
 	 */
@@ -476,7 +476,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 			try {
 				source = header.getIFSA_Source();
 			} catch (Exception e) {
-				source = "unknown due to exeption:"+e.getMessage();
+				source = "unknown due to exception: "+e.getMessage();
 			}
 			return  "<poisonmessage>"+
 					"  <source>"+source+"</source>"+
@@ -534,7 +534,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	 * 
 	 * This property is only used in EJB Deployment mode and has no effect otherwise. 
 	 * If it is not set in EJB Deployment Mode, then the listener port name is
-	 * constructed by the {@link nl.nn.adapterframework.ejb.EjbListenerPortConnector} from
+	 * constructed by the {@link nl.nn.adapterframework.core.IPortConnectedListener} from
 	 * the Listener name, Adapter name and the Receiver name.
 	 * 
 	 * @param listenerPort Name of the listener port, as configured in the application
@@ -548,7 +548,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	 * 
 	 * This property is only used in EJB Deployment mode and has no effect otherwise. 
 	 * If it is not set in EJB Deployment Mode, then the listener port name is
-	 * constructed by the {@link nl.nn.adapterframework.ejb.EjbListenerPortConnector} from
+	 * constructed by the {@link nl.nn.adapterframework.core.IPortConnectedListener} from
 	 * the Listener name, Adapter name and the Receiver name.
 	 * 
 	 * @return The name of the WebSphere Listener Port, as configured in the
