@@ -1473,4 +1473,25 @@ angular.module('iaf.beheerconsole')
 			$scope.processingMessage = false;
 		});
 	};
-}]);
+}])
+
+.filter('orderObjectBy', function(){
+	return function(input, attribute) {
+		if (!angular.isObject(input)) return input;
+		var array = [];
+		for(var objectKey in input) {
+			array.push(input[objectKey]);
+		};
+		array.sort(function(a, b){
+			
+			var charIndexA = a[attribute].toLowerCase();
+			var charIndexB = b[attribute].toLowerCase();
+			
+			if(charIndexA < charIndexB) return -1;
+			if(charIndexA > charIndexB) return 1;
+			return 0;
+		});
+		
+		return array;
+	};
+});
