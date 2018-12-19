@@ -190,6 +190,52 @@ angular.module('iaf.beheerconsole')
 	};
 })
 
+.directive('generalDataProtectionRegulation', ['$uibModal', 'GDPR', function($uibModal, GDPR) {
+	return {
+		restrict: 'A',
+		require: 'icheck',
+		templateUrl: 'views/common/cookie.html',
+		controller: function ($scope) {
+			$scope.bottomNotification = GDPR.showCookie();
+			$scope.cookies = {
+					necessary: true,
+					personalization: true,
+					analytical: true,
+					functional: true
+			};
+
+			$scope.savePreferences = function(cookies) {
+				GDPR.setSettings(cookies);
+				$scope.bottomNotification = false;
+			};
+			$scope.consentAllCookies = function() {
+				$scope.savePreferences({
+					necessary: true,
+					personalization: true,
+					analytical: true,
+					functional: true
+				});
+			};
+
+			$scope.openModal = function() {
+				$scope.bottomNotification = false;
+
+				$uibModal.open({
+					templateUrl: 'views/common/cookieModal.html',
+					size: 'lg',
+					backdrop: 'static',
+					controller: function($uibModalInstance) {
+						$scope.savePreferences = function(cookies) {
+							GDPR.setSettings(cookies);
+							$uibModalInstance.close();
+						};
+					}
+				});
+			};
+		}
+	};
+}])
+
 .directive('icheck', ['$timeout', function($timeout) {
 	return {
 		restrict: 'A',

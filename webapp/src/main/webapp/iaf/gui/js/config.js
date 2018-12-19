@@ -331,7 +331,11 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 
 	$locationProvider.html5Mode(false);
 
-}]).run(['$rootScope', '$state', 'Debug', function($rootScope, $state, Debug) {
+}]).run(['$rootScope', '$state', 'Debug', 'gTag', function($rootScope, $state, Debug, gTag) {
+	// Set this asap on localhost to capture all debug data
+	if(location.hostname == "localhost")
+		Debug.setLevel(3);
+
 	$rootScope.$state = $state;
 
 	$rootScope.foist = function(callback) {
@@ -346,19 +350,6 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 			$rootScope.$apply();
 		}
 	};
-	$rootScope.$on("$stateChangeStart", function(_, state) {
-		Debug.log("Triggered state change");
-		var url = state.url;
-		if(url.indexOf("?") > 0)
-			url = url.substring(0, url.indexOf("?"));
 
-		gtag('config', 'UA-111373008-1', {
-			'page_path': url,
-			'page_title': state.data.pageTitle
-		});
-	});
-
-	// Set this asap on localhost to capture all debug data
-	if(location.hostname == "localhost")
-		Debug.setLevel(3);
+	gTag.setTrackingId("UA-111373008-1");
 }]);

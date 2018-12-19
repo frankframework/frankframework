@@ -14,6 +14,7 @@
 		server = path;
 	}
 	angular.module('iaf.beheerconsole', [
+		'ngCookies',                    // Angular Cookies
 		'ui.router',                    // Routing
 		'oc.lazyLoad',                  // ocLazyLoad
 		'ui.bootstrap',                 // Ui Bootstrap

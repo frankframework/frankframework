@@ -2,24 +2,6 @@ if(location.hostname != "localhost") {
 	window.console.log("%cThis is a browser feature intended for developers. Do not paste any code here given to you by someone else. It may compromise your account or have other negative side effects.","font-weight: bold; font-size: 14px;");
 }
 
-window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-
-gtag('config', 'UA-111373008-1', {
-	'send_page_view': false,
-	'custom_map': {
-		'dimension1': 'application.version'
-	}
-});
-function dimension(name, label, value, non_interaction) {
-	gtag('event', name, {
-		'event_label': label,
-		'value': (value == undefined || value < 0) ? 1 : value,
-		'non_interaction': (non_interaction == undefined || non_interaction == false) ? false : true
-	});
-}
-
 console.time("startup");
 console.time("documentReady");
 
