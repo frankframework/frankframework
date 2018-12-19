@@ -47,10 +47,10 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to JMS server</td><td>&nbsp;</td></tr>
  * </table>
 
- * <table border="1" summary="">
  * <p><b>Parameters:</b>
+ * <table border="1" summary="">
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td></td>SoapAction<td><i>String</i></td><td>SoapAction. Automatically filled from attribute <code>soapAction</code></td></tr>
+ * <tr><td>SoapAction</td><td><i>String</i></td><td>SoapAction. Automatically filled from attribute <code>soapAction</code></td></tr>
  * <tr><td><i>any</i></td><td><i>any</i></td><td>all parameters present are set as messageproperties</td></tr>
  * </table>
 

@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.extensions.ifsa;
 
 /**
- * Implementation of {@link IPullingListener} that acts as an IFSA-service.
+ * Implementation of {@link IfsaProviderListener} that acts as an IFSA-service.
  * 
  * There is no need or possibility to set the ServiceId as the Provider will receive all messages
  * for this Application on the same serviceQueue.
