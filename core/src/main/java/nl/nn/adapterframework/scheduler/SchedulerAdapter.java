@@ -17,7 +17,6 @@ package nl.nn.adapterframework.scheduler;
 
 import java.text.DecimalFormat;
 import java.util.Date;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -40,7 +39,6 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SchedulerMetaData;
 import org.quartz.SimpleTrigger;
-import org.quartz.StatefulJob;
 import org.quartz.Trigger;
 import org.quartz.TriggerKey;
 import org.quartz.impl.matchers.GroupMatcher;
@@ -239,7 +237,7 @@ public class SchedulerAdapter {
 				XmlBuilder tgg = new XmlBuilder("triggers");
 				List<? extends Trigger> triggers = theScheduler.getTriggersOfJob(JobKey.jobKey(tgnames.get(i)));
 				
-				for (int j = 0; j < triggers.size(); i++) {
+				for (int j = 0; j < triggers.size(); j++) {
 					XmlBuilder tn = new XmlBuilder("trigger");
 					
 					tn.addAttribute("name", triggers.get(j).getKey().getName());
