@@ -2,7 +2,6 @@ package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.*;
 
-import java.io.FileNotFoundException;
 import java.security.NoSuchAlgorithmException;
 
 import org.junit.Test;
@@ -11,23 +10,22 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.ChecksumPipe.ChecksumGenerator;
-import nl.nn.adapterframework.pipes.ChecksumPipe.MessageDigestChecksumGenerator;
-import sun.security.krb5.Checksum;
+
+
 
 public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 
-	@Override
-	public ChecksumPipe createPipe() {
-		return new ChecksumPipe();
-	}
-	
 	public static final String CHECKSUM_MD5="MD5";
 	public static final String CHECKSUM_SHA="SHA";
 	public static final String CHECKSUM_CRC32="CRC32";
 	public static final String CHECKSUM_ADLER32="Adler32";
 	private IPipeLineSession session = new PipeLineSessionBase();
+
+	@Override
+	public ChecksumPipe createPipe() {
+		return new ChecksumPipe();
+	}
 	
 	
 	@Test(expected = ConfigurationException.class)
@@ -39,8 +37,7 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 	
 	@Test(expected = ConfigurationException.class)
 	public void checkNullType() throws ConfigurationException {
-		String type = null;
-		pipe.setType(type);
+		pipe.setType(null);
 		pipe.configure();
 	}
 	
@@ -147,7 +144,7 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 	public void emptyCharset() throws PipeRunException {
 		pipe.setInputIsFile(false);
 		pipe.setCharset("");
-		pipe.doPipe("anotherDummy", session);
+		assertNotNull(pipe.doPipe("anotherDummy", session));
 	}
 
 }

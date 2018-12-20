@@ -127,7 +127,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe>{
         pipe.setMessageIsContent(true);
         pipe.setResultIsContent(true);
         pipe.setCompress(true);
-        pipe.doPipe(input, session);
+        assertNotNull(pipe.doPipe(input, session));
     }
 
     @Test

@@ -35,12 +35,6 @@ public class DigesterPipeTest extends PipeTestBase<DigesterPipe> {
         pipe.configure();
     }
 
-    @Test
-    public void testRightDigesterRulesFile() throws ConfigurationException {
-        pipe.setDigesterRulesFile("digester-rules.xml");
-        pipe.configure();
-    }
-
     @Test(expected = PipeRunException.class)
     public void testWrongInputForDigester() throws ConfigurationException, PipeRunException {
         Object input = "dummyInput";

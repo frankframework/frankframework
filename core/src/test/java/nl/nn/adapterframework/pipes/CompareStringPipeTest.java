@@ -9,8 +9,6 @@ import static org.junit.Assert.*;
 
 public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 
-    private IPipeLineSession session = new PipeLineSessionBase();
-
     @Override
     public CompareStringPipe createPipe() {
         return new CompareStringPipe();

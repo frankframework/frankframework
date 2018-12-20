@@ -1,7 +1,5 @@
 package nl.nn.adapterframework.pipes;
 
-import net.sf.saxon.event.PipelineConfiguration;
-import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.*;
 import org.junit.Test;

@@ -4,6 +4,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.util.XmlUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -75,17 +76,21 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 
     @Test
     public void testNoSubstringAtAll() throws ConfigurationException {
-        pipe.configure();
-
         pipe.setSubstringEnd("Substring");
         pipe.setSubstringStart("Substring");
+        pipe.setEncodeSubstring(true);
         pipe.configure();
+        assertEquals(pipe.getSubstringStart(), "Substring");
+        assertEquals(pipe.getSubstringEnd(), "Substring");
+
     }
 
     @Test
     public void testNoSubstringWithEncode() throws ConfigurationException {
         pipe.setEncodeSubstring(true);
         pipe.configure();
+        assertNull(pipe.getSubstringStart());
+        assertNull(pipe.getSubstringEnd());
     }
 
     @Test
@@ -94,6 +99,8 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
         pipe.setSubstringStart("Substring");
         pipe.setSubstringEnd("Substring");
         pipe.configure();
+        assertEquals(pipe.getSubstringStart(), XmlUtils.encodeChars("Substring"));
+        assertEquals(pipe.getSubstringEnd(), XmlUtils.encodeChars("Substring"));
     }
 
     @Test

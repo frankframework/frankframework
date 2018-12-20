@@ -59,13 +59,6 @@ public class EtagHandlerPipeTest extends PipeTestBase<EtagHandlerPipe> {
         pipe.configure();
     }
 
-    @Test
-    public void testUriPatternGiven() throws ConfigurationException {
-        pipe.setAction("generate");
-        pipe.setUriPattern("dummyPattern");
-        pipe.configure();
-    }
-
     @Test(expected = ConfigurationException.class)
     public void testNoUriPatternGiven() throws ConfigurationException {
         pipe.setAction("generate");

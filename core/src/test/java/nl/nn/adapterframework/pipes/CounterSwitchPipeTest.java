@@ -1,6 +1,5 @@
 package nl.nn.adapterframework.pipes;
 
-import com.sun.xml.internal.ws.api.pipe.Pipe;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
