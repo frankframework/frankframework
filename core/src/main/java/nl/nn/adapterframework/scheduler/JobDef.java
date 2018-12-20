@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.scheduler;
 
 import java.sql.Connection;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -63,17 +62,11 @@ import nl.nn.adapterframework.util.SpringTxManagerProxy;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
-import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
-
-import static org.quartz.TriggerBuilder.*;
-import static org.quartz.JobBuilder.*;
-import static org.quartz.DateBuilder.*;
-import static org.quartz.SimpleScheduleBuilder.*;
 
 /**
  * Definition / configuration of scheduler jobs.
@@ -562,17 +555,12 @@ public class JobDef {
 	}
 
 	public JobDetail getJobDetail(IbisManager ibisManager) {
-		
-		JobDataMap jobDataMap = new JobDataMap();
-		jobDataMap.put("manager", ibisManager);
-		jobDataMap.put("jobdef", this);
-		
-		JobDetail jobDetail = newJob(ConfiguredJob.class)
-				.withIdentity(getName(), getJobGroup())
-				.setJobData(jobDataMap)
-				.withDescription(StringUtils.isNotEmpty(getDescription()) ? getDescription() : null)
-				.build();
-		
+		JobDetail jobDetail = new JobDetail(getName(), getJobGroup(), ConfiguredJob.class);
+		jobDetail.getJobDataMap().put("manager", ibisManager); // reference to manager.
+		jobDetail.getJobDataMap().put("jobdef", this);
+		if (StringUtils.isNotEmpty(getDescription())) {
+			jobDetail.setDescription(getDescription());
+		}
 		return jobDetail;
 	}
 

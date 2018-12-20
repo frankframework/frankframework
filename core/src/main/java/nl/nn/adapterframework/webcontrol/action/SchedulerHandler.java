@@ -30,7 +30,6 @@ import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 
@@ -84,13 +83,13 @@ public class SchedulerHandler extends ActionBase {
                 msg = "delete job jobName [" + jobName + "] groupName [" + groupName + "] " + HttpUtils.getCommandIssuedBy(request);
     	        log.info(msg);
     	        secLog.info(msg);
-                scheduler.deleteJob(JobKey.jobKey(jobName, groupName));
+                scheduler.deleteJob(jobName, groupName);
             } else
             if (action.equalsIgnoreCase("triggerJob")) {
                 msg = "trigger job jobName [" + jobName + "] groupName [" + groupName + "] " + HttpUtils.getCommandIssuedBy(request);
     	        log.info(msg);
     	        secLog.info(msg);
-                scheduler.triggerJob(JobKey.jobKey(jobName, groupName));
+                scheduler.triggerJob(jobName, groupName);
             } else {
                 log.error("no valid argument for SchedulerHandler:" + action);
             }

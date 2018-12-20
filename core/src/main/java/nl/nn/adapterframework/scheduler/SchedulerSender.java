@@ -23,11 +23,9 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 
 import org.apache.commons.lang.StringUtils;
-import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
-import static org.quartz.JobBuilder.*;
 
 /**
  * Registers a trigger in the scheduler so that the message is send to a javalistener
@@ -118,17 +116,10 @@ public class SchedulerSender extends SenderWithParametersBase {
 	 * Schedule the job
 	 */
 	private void schedule(String jobName, String cronExpression, String correlationId, String message) throws Exception {
-		
-		JobDataMap jobDataMap = new JobDataMap();
-		jobDataMap.put(JAVALISTENER, javaListener);
-		jobDataMap.put(MESSAGE, message);
-		jobDataMap.put(CORRELATIONID, correlationId);
-		
-		JobDetail jobDetail = newJob(ServiceJob.class)
-				.withIdentity(jobName, jobGroup)
-				.usingJobData(jobDataMap)
-				.build();
-		
+		JobDetail jobDetail = new JobDetail(jobName, jobGroup, ServiceJob.class);
+		jobDetail.getJobDataMap().put(JAVALISTENER, javaListener);
+		jobDetail.getJobDataMap().put(MESSAGE, message);
+		jobDetail.getJobDataMap().put(CORRELATIONID, correlationId);
 		schedulerHelper.scheduleJob(jobDetail, cronExpression, -1, false);
 		if (log.isDebugEnabled()) {
 			log.debug("SchedulerSender ["+ getName() +"] has send job [" + jobName + "] to the scheduler");
