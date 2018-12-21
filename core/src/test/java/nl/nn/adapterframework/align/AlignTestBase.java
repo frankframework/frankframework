@@ -1,23 +1,12 @@
 package nl.nn.adapterframework.align;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.concurrent.TimeoutException;
 
-import javax.json.Json;
-import javax.json.JsonStructure;
-
 import org.junit.Test;
+
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public abstract class AlignTestBase {
 
@@ -39,65 +28,10 @@ public abstract class AlignTestBase {
 		 return AlignTestBase.class.getResource(BASEDIR+schemaFile);
 	}
 	
-    protected String getTestFile(String file) throws IOException, TimeoutException {
-		URL url=AlignTestBase.class.getResource(BASEDIR+file);
-		if (url==null) {
-			return null;
-		}
-        BufferedReader buf = new BufferedReader(new InputStreamReader(url.openStream()));
-        StringBuilder string = new StringBuilder();
-        String line = buf.readLine();
-        while (line != null) {
-            string.append(line);
-            line = buf.readLine();
-            if (line!=null) {
-            	string.append("\n");
-            }
-        }
-        return string.toString();
-    }
-
-    public Map<String,Object> stringToMap(String mapInStr) throws IOException {
-		Properties inProps=new Properties();
-		inProps.load(new StringReader(mapInStr));
-		Map<String,Object> mapIn=new HashMap<String,Object>();
-		for (Object key:inProps.keySet()) {
-			mapIn.put((String)key, inProps.getProperty((String)key));
-		}
-		return mapIn;
-    }
-    
-	public String mapToString(Map<String,String> map) {
-		StringBuffer buf=new StringBuffer();
-		for (String key:map.keySet()) {
-			buf.append(key).append('=');
-			if (map.containsKey(key)) {
-				buf.append(map.get(key));
-			}
-			buf.append("\n");
-		}
-		return buf.toString();
-	}
-	
-	public void assertMapEquals(Map<String,String> exp, Map<String,String> act) {
-		SortedMap<String,String> exps=new TreeMap<String,String>(exp);
-		String expStr=mapToString(exps);
-		SortedMap<String,String> acts=new TreeMap<String,String>(act);
-		String actStr=mapToString(acts);
-		assertEquals(expStr,actStr);
-	}
- 
-	public static JsonStructure string2Json(String json) {
-		JsonStructure jsonStructure = Json.createReader(new StringReader(json)).read();
-		return jsonStructure;
+	protected String getTestFile(String file) throws IOException, TimeoutException {
+		return TestFileUtils.getTestFile(BASEDIR+file);
 	}
 
-	public void assertJsonEqual(String description, String jsonExp, String jsonAct) {
-		JsonStructure jExp=string2Json(jsonExp);
-		JsonStructure jAct=string2Json(jsonAct);
-		assertEquals(description,jExp.toString(),jAct.toString());
-		//assertEquals(description,inputJson,jsonOut);
-	}
 
 	
 	@Test

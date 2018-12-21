@@ -15,17 +15,18 @@
 */
 package nl.nn.adapterframework.http;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.http.HttpHost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
 import org.mockito.Mockito;
+
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public abstract class BaseHttpSender<S extends HttpSenderBase> extends Mockito {
 
@@ -54,11 +55,12 @@ public abstract class BaseHttpSender<S extends HttpSenderBase> extends Mockito {
 	}
 
 	private final String BASEDIR = "/nl/nn/adapterframework/http/response/";
-	protected InputStream getFile(String file) throws IOException {
-		URL url = this.getClass().getResource(BASEDIR+file);
-		if (url == null) {
-			throw new IOException("file not found");
-		}
-		return url.openStream();
+	protected String getFile(String file) throws IOException, TimeoutException {
+		return TestFileUtils.getTestFile(BASEDIR+file);
+//		URL url = this.getClass().getResource(BASEDIR+file);
+//		if (url == null) {
+//			throw new IOException("file ["+BASEDIR+file+"] not found");
+//		}
+//		return Misc.streamToString(url.openStream());
 	}
 }

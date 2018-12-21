@@ -49,7 +49,7 @@ public class HttpSenderTest extends BaseHttpSender<HttpSender> {
 			sender.open();
 
 			String result = sender.sendMessage(null, input, prc);
-			assertEquals(Misc.streamToString(getFile("simpleMockedHttpGet.txt")), result);
+			assertEquals(getFile("simpleMockedHttpGet.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {
@@ -84,7 +84,7 @@ public class HttpSenderTest extends BaseHttpSender<HttpSender> {
 			sender.open();
 
 			String result = sender.sendMessage(null, input, prc);
-			assertEquals(Misc.streamToString(getFile("simpleMockedHttpGetWithParams.txt")), result);
+			assertEquals(getFile("simpleMockedHttpGetWithParams.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {
@@ -121,7 +121,7 @@ public class HttpSenderTest extends BaseHttpSender<HttpSender> {
 			sender.open();
 
 			String result = sender.sendMessage(null, input, prc);
-			assertEquals(Misc.streamToString(getFile("simpleMockedHttpPost.txt")), result);
+			assertEquals(getFile("simpleMockedHttpPost.txt"), result);
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {
@@ -156,7 +156,7 @@ public class HttpSenderTest extends BaseHttpSender<HttpSender> {
 			sender.open();
 
 			String result = sender.sendMessage(null, input, prc);
-			assertEquals(Misc.streamToString(getFile("simpleMockedHttpMultipart.txt")), result);
+			assertEquals(getFile("simpleMockedHttpMultipart.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {
@@ -192,7 +192,7 @@ public class HttpSenderTest extends BaseHttpSender<HttpSender> {
 			sender.open();
 
 			String result = sender.sendMessage(null, input, prc);
-			assertEquals(Misc.streamToString(getFile("simpleMockedHttpMtom.txt")), result);
+			assertEquals(getFile("simpleMockedHttpMtom.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {

@@ -11,6 +11,8 @@ import javax.json.JsonStructure;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import nl.nn.adapterframework.testutil.MatchUtils;
+
 /**
  * @author Gerrit van Brakel
  */
@@ -44,7 +46,7 @@ public class TestXml2Map extends AlignTestBase {
 	    	if (mapString==null) {
 	    		fail("no expected input file!");
 	    	}
-	    	assertEquals(mapString.trim(), mapToString(result).trim());
+	    	assertEquals(mapString.trim(), MatchUtils.mapToString(result).trim());
 		} catch (Exception e) {
 			if (expectValid) {
 				e.printStackTrace();
