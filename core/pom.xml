@@ -11,7 +11,7 @@
 	<name>Ibis AdapterFramework core</name>
 
 	<properties>
-		<spring.version>4.3.21.RELEASE</spring.version>
+		<spring.version>3.2.16.RELEASE</spring.version>
 		<resteasy.version>3.0.4.Final</resteasy.version>
 		<j2v8.version>4.6.0</j2v8.version>
 	</properties>
@@ -54,10 +54,6 @@
 				<exclusion>
 					<groupId>org.jboss.resteasy</groupId>
 					<artifactId>resteasy-jaxb-provider</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>javax.servlet</groupId>
-					<artifactId>servlet-api</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -265,9 +261,9 @@
 			<version>1.6.2</version>
 		</dependency>
 		<dependency>
-    		<groupId>org.quartz-scheduler</groupId>
-    		<artifactId>quartz</artifactId>
-    		<version>2.2.3</version>
+			<groupId>org.quartz-scheduler</groupId>
+			<artifactId>quartz</artifactId>
+			<version>1.7.2</version>
 		</dependency>
 		<dependency>
 			<groupId>sshtools</groupId>
@@ -346,12 +342,6 @@
 			<groupId>jcifs</groupId>
 			<artifactId>jcifs</artifactId>
 			<version>1.3.17</version>
-			<exclusions>
-				<exclusion>
-					<groupId>javax.servlet</groupId>
-					<artifactId>servlet-api</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
@@ -427,11 +417,7 @@
 			<artifactId>liquibase-core</artifactId>
 			<version>3.5.3</version>
 		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
+
         <dependency>
             <groupId>com.eclipsesource.j2v8</groupId>
             <artifactId>j2v8_macosx_x86_64</artifactId>
