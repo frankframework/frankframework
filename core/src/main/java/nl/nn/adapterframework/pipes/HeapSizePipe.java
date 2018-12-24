@@ -33,17 +33,6 @@ import nl.nn.adapterframework.util.ProcessMetrics;
  * 			<property name="currentTime">2018-12-24 14:27:29.730</property>
  * 		</properties>
  * 	</processMetrics>
-
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAlgorithm(String) algorithm}</td><td>name of the Pipe</td><td>HmacSHA256</td></tr>
- * <tr><td>{@link #setEncoding(String) encoding}</td><td>name of the Pipe</td><td>ISO8859_1</td></tr>
- * <tr><td>{@link #setSecret(String) secret}</td><td>the secret to hash with</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>AuthAlias to retrieve the secret from (password field).</td><td>&nbsp;</td></tr>
- * </table>
- * <p><b>NOTE:</b> You can also retrieve the secret or authAlias from a parameter.</p>
  * 
  * @author	Laurens Mäkel
  */
