@@ -2091,6 +2091,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	public String getCorrelationIDNamespaceDefs() {
 		return correlationIDNamespaceDefs;
 	}
+
 	@IbisDoc({"namespace defintions for correlationidxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", " "})
 	public void setCorrelationIDNamespaceDefs(String correlationIDNamespaceDefs) {
 		this.correlationIDNamespaceDefs = correlationIDNamespaceDefs;
@@ -2115,6 +2116,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	public String getLabelNamespaceDefs() {
 		return labelNamespaceDefs;
 	}
+
 	@IbisDoc({"namespace defintions for labelxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", " "})
 	public void setLabelNamespaceDefs(String labelNamespaceDefs) {
 		this.labelNamespaceDefs = labelNamespaceDefs;
@@ -2170,6 +2172,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	public boolean isXslt2() {
 		return xslt2;
 	}
+
 	@IbisDoc({"when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used for extracting correlationid and label, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
 	public void setXslt2(boolean b) {
 		xslt2 = b;

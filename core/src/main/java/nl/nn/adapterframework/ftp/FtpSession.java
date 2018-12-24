@@ -778,6 +778,7 @@ public class FtpSession {
 	int getFtpType() {
 		return ftpType;
 	}
+
 	@IbisDoc({"one of ftp, sftp, ftps(i) or ftpsi, ftpsx(ssl), ftpsx(tls)", "ftp"})
 	public void setFtpTypeDescription(String string) {
 		ftpTypeDescription = string;

@@ -1697,6 +1697,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	public boolean isStoreFullMessage() {
 		return storeFullMessage;
 	}
+
 	@IbisDoc({"when set to <code>true</code>, the messages are stored compressed", "<code>true</code>"})
 	public void setStoreFullMessage(boolean storeFullMessage) {
 		this.storeFullMessage = storeFullMessage;

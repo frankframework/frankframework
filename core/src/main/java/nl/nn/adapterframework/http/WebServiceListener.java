@@ -197,6 +197,7 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 	public String getServiceNamespaceURI() {
 		return serviceNamespaceURI;
 	}
+
 	@IbisDoc({"namespace of the service that is provided by the adapter of this listener", " "})
 	public void setServiceNamespaceURI(String string) {
 		serviceNamespaceURI = string;

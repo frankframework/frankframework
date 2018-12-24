@@ -1116,6 +1116,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	public String getAuditTrailNamespaceDefs() {
 		return auditTrailNamespaceDefs;
 	}
+
 	@IbisDoc({"namespace defintions for audittrailxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", " "})
 	public void setAuditTrailNamespaceDefs(String auditTrailNamespaceDefs) {
 		this.auditTrailNamespaceDefs = auditTrailNamespaceDefs;
@@ -1124,6 +1125,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	public String getCorrelationIDNamespaceDefs() {
 		return correlationIDNamespaceDefs;
 	}
+
 	@IbisDoc({"namespace defintions for correlationidxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", " "})
 	public void setCorrelationIDNamespaceDefs(String correlationIDNamespaceDefs) {
 		this.correlationIDNamespaceDefs = correlationIDNamespaceDefs;
@@ -1132,6 +1134,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	public String getLabelNamespaceDefs() {
 		return labelNamespaceDefs;
 	}
+
 	@IbisDoc({"namespace defintions for labelxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", " "})
 	public void setLabelNamespaceDefs(String labelXNamespaceDefs) {
 		this.labelNamespaceDefs = labelXNamespaceDefs;

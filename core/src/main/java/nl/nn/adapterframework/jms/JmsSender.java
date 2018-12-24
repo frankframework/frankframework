@@ -380,6 +380,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	public String getReplyTo() {
 		return replyToName;
 	}
+
 	@IbisDoc({"name of the queue the reply is expected on. this value is send in the jmsreplyto-header with the message.", " "})
 	public void setReplyToName(String replyTo) {
 		this.replyToName = replyTo;
@@ -414,6 +415,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	public int getPriority() {
 		return priority;
 	}
+
 	@IbisDoc({"sets the priority that is used to deliver the message. ranges from 0 to 9. defaults to -1, meaning not set. effectively the default priority is set by jms to 4", " "})
 	public void setPriority(int i) {
 		priority = i;

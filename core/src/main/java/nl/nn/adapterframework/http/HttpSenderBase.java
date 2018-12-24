@@ -859,6 +859,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	public String getAuthAlias() {
 		return authAlias;
 	}
+
 	@IbisDoc({"alias used to obtain credentials for authentication to host", " "})
 	public void setAuthAlias(String string) {
 		authAlias = string;
@@ -867,6 +868,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	public String getUserName() {
 		return userName;
 	}
+
 	@IbisDoc({"username used in authentication to host", " "})
 	public void setUserName(String string) {
 		userName = string;
@@ -875,6 +877,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	public String getPassword() {
 		return password;
 	}
+
 	@IbisDoc({"&nbsp;", " "})
 	public void setPassword(String string) {
 		password = string;
@@ -890,6 +893,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	public String getProxyHost() {
 		return proxyHost;
 	}
+
 	@IbisDoc({"&nbsp;", " "})
 	public void setProxyHost(String string) {
 		proxyHost = string;
@@ -898,6 +902,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	public int getProxyPort() {
 		return proxyPort;
 	}
+
 	@IbisDoc({"&nbsp;", "80"})
 	public void setProxyPort(int i) {
 		proxyPort = i;
@@ -906,6 +911,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	public String getProxyAuthAlias() {
 		return proxyAuthAlias;
 	}
+
 	@IbisDoc({"alias used to obtain credentials for authentication to proxy", " "})
 	public void setProxyAuthAlias(String string) {
 		proxyAuthAlias = string;
@@ -914,6 +920,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	public String getProxyUserName() {
 		return proxyUserName;
 	}
+
 	@IbisDoc({"&nbsp;", " "})
 	public void setProxyUserName(String string) {
 		proxyUserName = string;
@@ -922,6 +929,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	public String getProxyPassword() {
 		return proxyPassword;
 	}
+
 	@IbisDoc({"&nbsp;", " "})
 	public void setProxyPassword(String string) {
 		proxyPassword = string;
@@ -932,6 +940,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 			return null;
 		return proxyRealm;
 	}
+
 	@IbisDoc({"&nbsp;", " "})
 	public void setProxyRealm(String string) {
 		proxyRealm = string;
@@ -949,6 +958,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	public String getCertificate() {
 		return certificate;
 	}
+
 	@IbisDoc({"resource url to certificate to be used for authentication", " "})
 	public void setCertificate(String string) {
 		certificate = string;
@@ -957,6 +967,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	public String getCertificateAuthAlias() {
 		return certificateAuthAlias;
 	}
+
 	@IbisDoc({"alias used to obtain truststore password", " "})
 	public void setTruststoreAuthAlias(String string) {
 		truststoreAuthAlias = string;
@@ -965,6 +976,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	public String getCertificatePassword() {
 		return certificatePassword;
 	}
+
 	@IbisDoc({"&nbsp;", " "})
 	public void setCertificatePassword(String string) {
 		certificatePassword = string;
@@ -973,6 +985,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	public String getKeystoreType() {
 		return keystoreType;
 	}
+
 	@IbisDoc({"&nbsp;", "pkcs12"})
 	public void setKeystoreType(String string) {
 		keystoreType = string;
@@ -990,6 +1003,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	public String getTruststore() {
 		return truststore;
 	}
+
 	@IbisDoc({"resource url to truststore to be used for authentication", " "})
 	public void setTruststore(String string) {
 		truststore = string;
@@ -998,6 +1012,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	public String getTruststoreAuthAlias() {
 		return truststoreAuthAlias;
 	}
+
 	@IbisDoc({"alias used to obtain certificate password", " "})
 	public void setCertificateAuthAlias(String string) {
 		certificateAuthAlias = string;
@@ -1006,6 +1021,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	public String getTruststorePassword() {
 		return truststorePassword;
 	}
+
 	@IbisDoc({"&nbsp;", " "})
 	public void setTruststorePassword(String string) {
 		truststorePassword = string;
@@ -1014,6 +1030,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	public String getTruststoreType() {
 		return truststoreType;
 	}
+
 	@IbisDoc({"&nbsp;", "jks"})
 	public void setTruststoreType(String string) {
 		truststoreType = string;
@@ -1031,6 +1048,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	public boolean isVerifyHostname() {
 		return verifyHostname;
 	}
+
 	@IbisDoc({"when true, the hostname in the certificate will be checked against the actual hostname", "true"})
 	public void setVerifyHostname(boolean b) {
 		verifyHostname = b;

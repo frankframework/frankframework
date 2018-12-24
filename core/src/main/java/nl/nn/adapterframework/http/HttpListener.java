@@ -72,6 +72,7 @@ public class HttpListener extends PushingListenerAdapter implements HasPhysicalD
 	public String getServiceName() {
 		return serviceName;
 	}
+
 	@IbisDoc({"name of the service that is provided by the adapter of this listener", " "})
 	public void setServiceName(String string) {
 		serviceName = string;

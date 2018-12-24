@@ -290,6 +290,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		configWarnings.add(log, msg);
 		setInputSeparator(string);
 	}
+
 	@IbisDoc({"separator that separated the fields in the input record. if neither this attribute nor <code>inputfields</code> is specified then the entire record is parsed", " "})
 	public void setInputSeparator(String string) {
 		inputSeparator = string;

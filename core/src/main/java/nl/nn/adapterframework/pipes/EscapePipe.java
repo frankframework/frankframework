@@ -130,6 +130,7 @@ public class EscapePipe extends FixedForwardPipe {
 	public String getSubstringStart() {
 		return substringStart;
 	}
+
 	@IbisDoc({"substring to start translation", " "})
 	public void setSubstringStart(String substringStart) {
 		this.substringStart = substringStart;
@@ -138,6 +139,7 @@ public class EscapePipe extends FixedForwardPipe {
 	public String getSubstringEnd() {
 		return substringEnd;
 	}
+
 	@IbisDoc({"substring to end translation", " "})
 	public void setSubstringEnd(String substringEnd) {
 		this.substringEnd = substringEnd;
@@ -146,6 +148,7 @@ public class EscapePipe extends FixedForwardPipe {
 	public String getDirection() {
 		return direction;
 	}
+
 	@IbisDoc({"either <code>encode</code>, <code>decode</code> or <code>cdata2text</code>", "encode"})
 	public void setDirection(String direction) {
 		this.direction = direction;
@@ -154,6 +157,7 @@ public class EscapePipe extends FixedForwardPipe {
 	public boolean isEncodeSubstring() {
 		return encodeSubstring;
 	}
+
 	@IbisDoc({"when set <code>true</code> special characters in <code>substringstart</code> and <code>substringend</code> are first translated to their xml equivalents", "false"})
 	public void setEncodeSubstring(boolean b) {
 		encodeSubstring = b;

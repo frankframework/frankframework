@@ -83,6 +83,7 @@ public class UUIDGeneratorPipe extends FixedForwardPipe {
 	public String getType() {
 		return type;
 	}
+
 	@IbisDoc({"either <code>alphanumeric</code> or <code>numeric</code>", "alphanumeric"})
 	public void setType(String type) {
 		this.type = type;

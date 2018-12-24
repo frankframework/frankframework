@@ -181,10 +181,12 @@ public class JNDIBase {
     public java.lang.String getUrlPkgPrefixes() {
         return urlPkgPrefixes;
     }
+
 	@IbisDoc({"maps to the field context.security_authentication", " "})
     public void setAuthentication(java.lang.String newAuthentication) {
         authentication = newAuthentication;
     }
+
 	@IbisDoc({"username to connect to context, maps to context.security_credentials", " "})
     public void setCredentials(java.lang.String newCredentials) {
         credentials = newCredentials;
@@ -207,6 +209,7 @@ public class JNDIBase {
     public void setProviderURL(String value) {
         providerURL = value;
     }
+
 	@IbisDoc({"maps to the field context.security_protocol", " "})
     public void setSecurityProtocol(String securityProtocol) {
         this.securityProtocol = securityProtocol;

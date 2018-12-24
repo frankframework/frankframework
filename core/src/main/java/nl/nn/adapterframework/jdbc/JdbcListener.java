@@ -366,6 +366,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 	public String getKeyField() {
 		return keyField;
 	}
+
 	@IbisDoc({"(optional) field containing the message data", "<i>same as keyfield</i>"})
 	protected void setMessageField(String fieldname) {
 		messageField = fieldname;

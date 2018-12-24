@@ -172,6 +172,7 @@ public class JsonPipe extends FixedForwardPipe {
 	public boolean addXmlRootElement() {
 		return addXmlRootElement;
 	}
+
 	@IbisDoc({"when true, and direction is json2xml, it wraps a root element around the converted message", "true"})
 	public void setAddXmlRootElement(boolean addXmlRootElement) {
 		this.addXmlRootElement = addXmlRootElement;

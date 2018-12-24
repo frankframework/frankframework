@@ -297,6 +297,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	public String getDirection() {
 		return direction;
 	}
+
 	@IbisDoc({"either <code>wrap</code> or <code>unwrap</code>", "wrap"})
 	public void setDirection(String string) {
 		direction = string;

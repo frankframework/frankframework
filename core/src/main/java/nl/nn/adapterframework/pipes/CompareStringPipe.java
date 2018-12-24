@@ -277,6 +277,7 @@ public class CompareStringPipe extends AbstractPipe {
 	public boolean isXml() {
 		return xml;
 	}
+
 	@IbisDoc({"when set <code>true</code> the string values to compare are considered to be xml strings and before the actual compare both xml strings are transformed to a canonical form", "false"})
 	public void setXml(boolean b) {
 		xml = b;

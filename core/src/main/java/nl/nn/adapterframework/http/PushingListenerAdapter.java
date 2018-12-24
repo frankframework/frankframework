@@ -107,6 +107,7 @@ public class PushingListenerAdapter implements IPushingListener, ServiceClient {
 	public String getName() {
 		return name;
 	}
+
 	@IbisDoc({"name of the listener as known to the adapter", " "})
 	public void setName(String name) {
 		this.name=name;

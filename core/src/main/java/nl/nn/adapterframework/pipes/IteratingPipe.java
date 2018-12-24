@@ -652,6 +652,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 	protected boolean isCloseIteratorOnExit() {
 		return closeIteratorOnExit;
 	}
+
 	@IbisDoc({"when <code>startposition &gt;= 0</code>, this field contains the start position of the key in the current record (first character is 0); all sequenced lines with the same key are put in one block and send to the sender", "-1"})
 	public void setStartPosition(int i) {
 		startPosition = i;

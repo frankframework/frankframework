@@ -195,6 +195,7 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	public void setHost(String host) {
 		ftpSession.setHost(host);
 	}
+
 	@IbisDoc({"portnumber of remote host", "21"})
 	public void setPort(int port) {
 		ftpSession.setPort(port);
@@ -204,10 +205,12 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	public void setAuthAlias(String alias) {
 		ftpSession.setAuthAlias(alias);
 	}
+
 	@IbisDoc({"name of the user to authenticatie on remote server", " "})
 	public void setUsername(String username) {
 		ftpSession.setUsername(username);
 	}
+
 	@IbisDoc({"name of the password to authenticatie on remote server", " "})
 	public void setPassword(String passwd) {
 		ftpSession.setPassword(passwd);
@@ -217,18 +220,22 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	public void setProxyHost(String proxyHost) {
 		ftpSession.setProxyHost(proxyHost);
 	}
+
 	@IbisDoc({"proxy port", "1080"})
 	public void setProxyPort(int proxyPort) {
 		ftpSession.setProxyPort(proxyPort);
 	}
+
 	@IbisDoc({"name of the alias to obtain credentials to authenticate on proxy", " "})
 	public void setProxyAuthAlias(String proxyAuthAlias) {
 		ftpSession.setProxyAuthAlias(proxyAuthAlias);
 	}
+
 	@IbisDoc({"default user name in case proxy requires authentication", " "})
 	public void setProxyUsername(String proxyUsername) {
 		ftpSession.setProxyUsername(proxyUsername);
 	}
+
 	@IbisDoc({"default password in case proxy requires authentication", " "})
 	public void setProxyPassword(String proxyPassword) {
 		ftpSession.setProxyPassword(proxyPassword);
@@ -238,14 +245,17 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	public void setFtpTypeDescription(String ftpTypeDescription) {
 		ftpSession.setFtpTypeDescription(ftpTypeDescription);
 	}
+
 	@IbisDoc({"file type, one of ascii, binary", " "})
 	public void setFileType(String fileType) {
 		ftpSession.setFileType(fileType);
 	}
+
 	@IbisDoc({"if true, the contents of the message is send, otherwise it message contains the local filenames of the files to be send", "false"})
 	public void setMessageIsContent(boolean messageIsContent) {
 		ftpSession.setMessageIsContent(messageIsContent);
 	}
+
 	@IbisDoc({"if true, passive ftp is used: before data is sent, a pasv command is issued, and the connection is set up by the server", "true"})
 	public void setPassive(boolean b) {
 		ftpSession.setPassive(b);
@@ -256,10 +266,12 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	public void setProxyTransportType(int proxyTransportType) {
 		ftpSession.setProxyTransportType(proxyTransportType);
 	}
+
 	@IbisDoc({"(sftp) optional preferred encryption from client to server for sftp protocol", " "})
 	public void setPrefCSEncryption(String prefCSEncryption) {
 		ftpSession.setPrefCSEncryption(prefCSEncryption);
 	}
+
 	@IbisDoc({"(sftp) optional preferred encryption from server to client for sftp protocol", " "})
 	public void setPrefSCEncryption(String prefSCEncryption) {
 		ftpSession.setPrefSCEncryption(prefSCEncryption);
@@ -269,18 +281,22 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	public void setPrivateKeyFilePath(String privateKeyFilePath) {
 		ftpSession.setPrivateKeyFilePath(privateKeyFilePath);
 	}
+
 	@IbisDoc({"(sftp) name of the alias to obtain credentials for passphrase of private key file", " "})
 	public void setPrivateKeyAuthAlias(String privateKeyAuthAlias) {
 		ftpSession.setPrivateKeyAuthAlias(privateKeyAuthAlias);
 	}
+
 	@IbisDoc({"(sftp) passphrase of private key file", " "})
 	public void setPrivateKeyPassword(String passPhrase) {
 		ftpSession.setPrivateKeyPassword(passPhrase);
 	}
+
 	@IbisDoc({"(sftp) path to file with knownhosts", " "})
 	public void setKnownHostsPath(String knownHostsPath) {
 		ftpSession.setKnownHostsPath(knownHostsPath);
 	}
+
 	@IbisDoc({"(sftp) &nbsp;", "false"})
 	public void setConsoleKnownHostsVerifier(boolean verifier) {
 		ftpSession.setConsoleKnownHostsVerifier(verifier);
@@ -291,18 +307,22 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	public void setCertificate(String certificate) {
 		ftpSession.setCertificate(certificate);
 	}
+
 	@IbisDoc({"(ftps) &nbsp;", "pkcs12"})
 	public void setCertificateType(String keystoreType) {
 		ftpSession.setCertificateType(keystoreType);
 	}
+
 	@IbisDoc({"selects the algorithm to generate keymanagers. can be left empty to use the servers default algorithm", "websphere: ibmx509"})
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		ftpSession.setKeyManagerAlgorithm(keyManagerAlgorithm);
 	}
+
 	@IbisDoc({"(ftps) alias used to obtain certificate password", " "})
 	public void setCertificateAuthAlias(String certificateAuthAlias) {
 		ftpSession.setCertificateAuthAlias(certificateAuthAlias);
 	}
+
 	@IbisDoc({"(ftps) &nbsp;", " "})
 	public void setCertificatePassword(String certificatePassword) {
 		ftpSession.setCertificatePassword(certificatePassword);
@@ -313,18 +333,22 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	public void setTruststore(String truststore) {
 		ftpSession.setTruststore(truststore);
 	}
+
 	@IbisDoc({"(ftps) &nbsp;", "jks"})
 	public void setTruststoreType(String truststoreType) {
 		ftpSession.setTruststoreType(truststoreType);
 	}
+
 	@IbisDoc({"selects the algorithm to generate trustmanagers. can be left empty to use the servers default algorithm", "websphere: ibmx509"})
 	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
 		ftpSession.setTrustManagerAlgorithm(trustManagerAlgorithm);
 	}
+
 	@IbisDoc({"(ftps) alias used to obtain truststore password", " "})
 	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
 		ftpSession.setTruststoreAuthAlias(truststoreAuthAlias);
 	}
+
 	@IbisDoc({"(ftps) &nbsp;", " "})
 	public void setTruststorePassword(String truststorePassword) {
 		ftpSession.setTruststorePassword(truststorePassword);
@@ -334,18 +358,22 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	public void setJdk13Compatibility(boolean jdk13Compatibility) {
 		ftpSession.setJdk13Compatibility(jdk13Compatibility);
 	}
+
 	@IbisDoc({"(ftps) when true, the hostname in the certificate will be checked against the actual hostname", "true"})
 	public void setVerifyHostname(boolean verifyHostname) {
 		ftpSession.setVerifyHostname(verifyHostname);
 	}
+
 	@IbisDoc({"(ftps) if true, the server certificate can be self signed", "false"})
 	public void setAllowSelfSignedCertificates(boolean testModeNoCertificatorCheck) {
 		ftpSession.setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
 	}
+
 	@IbisDoc({"(ftps) if true, the server returns data via another socket", "false"})
 	public void setProtP(boolean protP) {
 		ftpSession.setProtP(protP);
 	}
+
 	@IbisDoc({"when true, keyboardinteractive is used to login", "false"})
 	public void setKeyboardInteractive(boolean keyboardInteractive) {
 		ftpSession.setKeyboardInteractive(keyboardInteractive);

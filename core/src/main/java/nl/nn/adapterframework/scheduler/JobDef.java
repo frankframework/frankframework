@@ -1185,6 +1185,7 @@ public class JobDef {
 	public int getQueryTimeout() {
 		return queryTimeout;
 	}
+
 	@IbisDoc({"the number of seconds the driver will wait for a statement object to execute. if the limit is exceeded, a timeoutexception is thrown. 0 means no timeout", "0"})
 	public void setQueryTimeout(int i) {
 		queryTimeout = i;

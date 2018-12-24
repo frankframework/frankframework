@@ -81,6 +81,7 @@ public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 
 		separator = string;
 	}
+
 	@IbisDoc({"separator that separates the fields in the record", " "})
 	public void setSeparator(String string) {
 		separator = string;

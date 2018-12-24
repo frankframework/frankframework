@@ -129,6 +129,7 @@ public class SoapValidator extends Json2XmlValidator {
     public String getRoot() {
         return "Envelope";
     }
+
 	@IbisDoc({"always envelope (not allowed to change)", "envelope"})
     @Override
     public void setRoot(String r) {

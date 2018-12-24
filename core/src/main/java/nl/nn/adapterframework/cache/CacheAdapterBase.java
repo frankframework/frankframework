@@ -169,6 +169,7 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 	public String getName() {
 		return name;
 	}
+
 	@IbisDoc({"name of the cache, will be set from owner", " "})
 	public void setName(String name) {
 		this.name=name;
@@ -181,6 +182,7 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 	public String getKeyXPath() {
 		return keyXPath;
 	}
+
 	@IbisDoc({"xpath expression to extract cache key from request message", " "})
 	public void setKeyXPath(String keyXPath) {
 		this.keyXPath = keyXPath;
@@ -188,6 +190,7 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 	public String getKeyXPathOutputType() {
 		return keyXPathOutputType;
 	}
+
 	@IbisDoc({"output type of xpath expression to extract cache key from request message, must be 'xml' or 'text'", "text"})
 	public void setKeyXPathOutputType(String keyXPathOutputType) {
 		this.keyXPathOutputType = keyXPathOutputType;
@@ -195,6 +198,7 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 	public String getKeyNamespaceDefs() {
 		return keyNamespaceDefs;
 	}
+
 	@IbisDoc({"namespace defintions for keyxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", " "})
 	public void setKeyNamespaceDefs(String keyNamespaceDefs) {
 		this.keyNamespaceDefs = keyNamespaceDefs;
@@ -202,6 +206,7 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 	public String getKeyStyleSheet() {
 		return keyStyleSheet;
 	}
+
 	@IbisDoc({"setcacheemptykeys", " "})
 	public void setKeyStyleSheet(String keyStyleSheet) {
 		this.keyStyleSheet = keyStyleSheet;
@@ -210,6 +215,7 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 	public String getKeyInputSessionKey() {
 		return keyInputSessionKey;
 	}
+
 	@IbisDoc({"session key to use as input for transformation of request message to key by keyxpath or keystylesheet", " "})
 	public void setKeyInputSessionKey(String keyInputSessionKey) {
 		this.keyInputSessionKey = keyInputSessionKey;
@@ -218,6 +224,7 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 	public boolean isCacheEmptyKeys() {
 		return cacheEmptyKeys;
 	}
+
 	@IbisDoc({"controls whether empty keys are used for caching. when set true, cache entries with empty keys can exist.", "false"})
 	public void setCacheEmptyKeys(boolean cacheEmptyKeys) {
 		this.cacheEmptyKeys = cacheEmptyKeys;
@@ -226,6 +233,7 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 	public String getValueXPath() {
 		return valueXPath;
 	}
+
 	@IbisDoc({"setcacheemptyvalues", " "})
 	public void setValueXPath(String valueXPath) {
 		this.valueXPath = valueXPath;
@@ -239,6 +247,7 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 	public String getValueNamespaceDefs() {
 		return valueNamespaceDefs;
 	}
+
 	@IbisDoc({"namespace defintions for valuexpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", " "})
 	public void setValueNamespaceDefs(String valueNamespaceDefs) {
 		this.valueNamespaceDefs = valueNamespaceDefs;
@@ -246,6 +255,7 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 	public String getValueStyleSheet() {
 		return valueStyleSheet;
 	}
+
 	@IbisDoc({"stylesheet to extract value to be cached from response message", " "})
 	public void setValueStyleSheet(String valueStyleSheet) {
 		this.valueStyleSheet = valueStyleSheet;
@@ -254,6 +264,7 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 	public String getValueInputSessionKey() {
 		return valueInputSessionKey;
 	}
+
 	@IbisDoc({"session key to use as input for transformation of response message to cached value by valuexpath or valuestylesheet", " "})
 	public void setValueInputSessionKey(String valueInputSessionKey) {
 		this.valueInputSessionKey = valueInputSessionKey;
@@ -262,6 +273,7 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 	public boolean isCacheEmptyValues() {
 		return cacheEmptyValues;
 	}
+
 	@IbisDoc({"controls whether empty values will be cached. when set true, empty cache entries can exist for any key.", "false"})
 	public void setCacheEmptyValues(boolean cacheEmptyValues) {
 		this.cacheEmptyValues = cacheEmptyValues;

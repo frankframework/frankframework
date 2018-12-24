@@ -165,6 +165,7 @@ public class Base64Pipe extends FixedForwardPipe {
 	public void setConvert2String(boolean b) {
 		convertToString = b;
 	}
+
 	@IbisDoc({"either <code>string</code>, <code>bytes</code>, <code>stream</code> or <code>base64</code>", "string"})
 	public void setOutputType(String outputType) {
 		this.outputType = outputType.toLowerCase();

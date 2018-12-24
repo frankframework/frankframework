@@ -685,6 +685,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		configWarnings.add(log, msg);
 		setOutputSeparator(string);
 	}
+
 	@IbisDoc({"optional separator to add between the fields", " "})
 	public void setOutputSeparator(String string) {
 		outputSeparator = string;

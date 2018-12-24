@@ -97,6 +97,7 @@ public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
 	public String getName() {
 		return name;
 	}
+
 	@IbisDoc({"name of the sender", " "})
 	public void setName(String name) {
 		this.name=name;
@@ -105,6 +106,7 @@ public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
 	public String getIbisHost() {
 		return ibisHost;
 	}
+
 	@IbisDoc({"name (or ipaddress) and optinally port of the host where the ibis to be called is running", "localhost"})
 	public void setIbisHost(String ibisHost) {
 		this.ibisHost=ibisHost;
@@ -113,6 +115,7 @@ public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
 	public String getIbisInstance() {
 		return ibisInstance;
 	}
+
 	@IbisDoc({"name of the ibis instance to be called", "name of the current instance"})
 	public void setIbisInstance(String ibisInstance) {
 		this.ibisInstance=ibisInstance;
@@ -121,6 +124,7 @@ public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
 	public String getServiceName() {
 		return serviceName;
 	}
+
 	@IbisDoc({"name of the receiver that should be called", "servicelistener"})
 	public void setServiceName(String serviceName) {
 		this.serviceName=serviceName;
