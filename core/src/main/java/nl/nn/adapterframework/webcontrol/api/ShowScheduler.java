@@ -22,7 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.ServletConfig;
@@ -47,14 +46,11 @@ import org.apache.commons.lang.StringUtils;
 import org.quartz.CronTrigger;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
-import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SchedulerMetaData;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
-import org.quartz.TriggerKey;
-import org.quartz.impl.matchers.GroupMatcher;
 
 /**
  * Retrieves the Scheduler metadata and the jobgroups with there jobs from the Scheduler.
@@ -123,7 +119,7 @@ public final class ShowScheduler extends Base {
 			schedulesMap.put("started", schedulerMetaData.isStarted());
 			schedulesMap.put("paused", schedulerMetaData.isInStandbyMode());
 
-			schedulesMap.put("jobStoreSupportsPersistence", schedulerMetaData.isJobStoreSupportsPersistence());
+			schedulesMap.put("jobStoreSupportsPersistence", schedulerMetaData.jobStoreSupportsPersistence());
 			schedulesMap.put("jobsExecuted", schedulerMetaData.getNumberOfJobsExecuted());
 			long runningSinceInLong = 0;
 			try {
@@ -148,17 +144,16 @@ public final class ShowScheduler extends Base {
 	private Map<String,Object> getJobGroupNamesWithJobs(Scheduler scheduler) throws ApiException {
 		Map<String, Object> jobGroups = new HashMap<String, Object>();
 		try {
-			List<String> jobGroupNames = scheduler.getJobGroupNames();
+			String[] jobGroupNames = scheduler.getJobGroupNames();
 
-			for (int i = 0; i < jobGroupNames.size(); i++) {
+			for (int i = 0; i < jobGroupNames.length; i++) {
 				Map<String, Object> jobsInGroup = new HashMap<String, Object>();
 
-				String jobGroupName = jobGroupNames.get(i);
-				
-				Set<JobKey> jobKeys = scheduler.getJobKeys(GroupMatcher.jobGroupEquals(jobGroupName));
+				String jobGroupName = jobGroupNames[i];
+				String[] jobNames = scheduler.getJobNames(jobGroupName);
 
-				for (JobKey jobKey : jobKeys) {
-					String jobName = jobKey.getName();
+				for (int j = 0; j < jobNames.length; j++) {
+					String jobName = jobNames[j];
 					Map<String, Object> jobData = new HashMap<String, Object>();
 
 					JobDef jobDef = null;
@@ -169,16 +164,17 @@ public final class ShowScheduler extends Base {
 						}
 					}
 
-					JobDetail job = scheduler.getJobDetail(JobKey.jobKey(jobName, jobGroupName));
+					JobDetail job = scheduler.getJobDetail(jobName, jobGroupName);
 
-					jobData.put("fullName", job.getKey().getName() + "." + job.getKey().getGroup());
-					jobData.put("name", job.getKey().getName());
+					jobData.put("fullName", job.getFullName());
+					jobData.put("name", job.getName());
 					String description = "-";
 					if (StringUtils.isNotEmpty(job.getDescription()))
 						description = job.getDescription();
 					jobData.put("description", description);
-					jobData.put("stateful", job.isPersistJobDataAfterExecution() && job.isConcurrentExectionDisallowed());
+					jobData.put("stateful", job.isStateful());
 					jobData.put("durable",job.isDurable());
+					jobData.put("volatile", job.isVolatile());
 					jobData.put("jobClass", job.getJobClass().getName());
 
 					jobData.put("triggers", getJobTriggers(scheduler, jobName, jobGroupName));
@@ -204,20 +200,18 @@ public final class ShowScheduler extends Base {
 		List<Map<String, Object>> jobTriggers = new ArrayList<Map<String, Object>>();
 
 		try {
-			List<String> triggerGroupNames = scheduler.getTriggerGroupNames();
-			
-			for (int i = 0; i < triggerGroupNames.size(); i++) {
-				String triggerGroupName = triggerGroupNames.get(i);
-				
-                Set<TriggerKey> triggerKeys = scheduler.getTriggerKeys(GroupMatcher.triggerGroupEquals(triggerGroupNames.get(i)));
-                
-				for (TriggerKey triggerKey : triggerKeys) {
-					Trigger trigger = scheduler.getTrigger(TriggerKey.triggerKey(triggerKey.getName(), triggerGroupName));
-					if ((trigger.getJobKey().getName().equals(jobName)) && (trigger.getJobKey().getGroup().equals(groupName))) {
+			String[] triggerGroupNames = scheduler.getTriggerGroupNames();
+			for (int i = 0; i < triggerGroupNames.length; i++) {
+				String triggerGroupName = triggerGroupNames[i];
+				String[] triggerNames = scheduler.getTriggerNames(triggerGroupName);
+
+				for (int s = 0; s < triggerNames.length; s++) {
+					Trigger trigger = scheduler.getTrigger(triggerNames[s], triggerGroupName);
+					if ((trigger.getJobName().equals(jobName)) && (trigger.getJobGroup().equals(groupName))) {
 						Map<String, Object> triggerDetails = new HashMap<String, Object>();
 
-						triggerDetails.put("fullName", trigger.getKey().getGroup() + "." + trigger.getKey().getName());
-						triggerDetails.put("name", trigger.getKey().getName());
+						triggerDetails.put("fullName", trigger.getFullName());
+						triggerDetails.put("name", trigger.getName());
 						triggerDetails.put("calendarName", trigger.getCalendarName());
 						Date date;
 						try {
@@ -247,6 +241,8 @@ public final class ShowScheduler extends Base {
 						} else {
 							triggerDetails.put("triggerType", "unknown");
 						}
+
+						triggerDetails.put("isVolatile", trigger.isVolatile());
 
 						jobTriggers.add(triggerDetails);
 					}
@@ -392,7 +388,7 @@ public final class ShowScheduler extends Base {
 			commandIssuedBy += servletConfig.getInitParameter("remoteUser");
 
 			log.info("trigger job jobName [" + jobName + "] groupName [" + groupName + "] " + commandIssuedBy);
-			scheduler.triggerJob(JobKey.jobKey(jobName, groupName));
+			scheduler.triggerJob(jobName, groupName);
 
 		} catch (Exception e) {
 			throw new ApiException("Failed to trigger job"); 
@@ -426,7 +422,7 @@ public final class ShowScheduler extends Base {
 			commandIssuedBy += servletConfig.getInitParameter("remoteUser");
 
 			log.info("delete job jobName [" + jobName + "] groupName [" + groupName + "] " + commandIssuedBy);
-			scheduler.deleteJob(JobKey.jobKey(jobName, groupName));
+			scheduler.deleteJob(jobName, groupName);
 		} catch (Exception e) {
 			throw new ApiException("Failed to delete job"); 
 		}
