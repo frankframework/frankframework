@@ -19,6 +19,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -34,7 +35,6 @@ import org.apache.commons.lang.StringUtils;
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * </p>
  * 
@@ -62,6 +62,7 @@ public class ExceptionPipe extends FixedForwardPipe {
 	}
 
 
+	@IbisDoc({"when <code>true</code>, a piperunexception is thrown. otherwise the output is only logged as an error (and no rollback is performed).", "true"})
 	public void setThrowException(boolean b) {
 		throwException = b;
 	}

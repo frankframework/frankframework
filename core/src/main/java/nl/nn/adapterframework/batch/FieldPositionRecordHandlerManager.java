@@ -17,6 +17,7 @@ package nl.nn.adapterframework.batch;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
@@ -62,6 +63,7 @@ public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 
 
 
+	@IbisDoc({"position of field that identifies the recordtype (position of first field is 1)", " "})
 	public void setFieldNr(int i) {
 		fieldNr = i;
 	}
@@ -79,6 +81,7 @@ public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 
 		separator = string;
 	}
+	@IbisDoc({"separator that separates the fields in the record", " "})
 	public void setSeparator(String string) {
 		separator = string;
 	}

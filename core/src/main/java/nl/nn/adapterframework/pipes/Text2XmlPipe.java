@@ -24,6 +24,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.EncapsulatingReader;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -127,6 +128,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 	/**
 	 * @param xmlTag
 	 */
+	@IbisDoc({"the xml tag to encapsulate the text in", ""})
 	public void setXmlTag(String xmlTag) {
 		this.xmlTag = xmlTag;
 	}
@@ -135,6 +137,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 		return includeXmlDeclaration;
 	}
 
+	@IbisDoc({"controls whether a declation is included above the xml text", "true"})
 	public void setIncludeXmlDeclaration(boolean b) {
 		includeXmlDeclaration = b;
 	}
@@ -143,10 +146,12 @@ public class Text2XmlPipe extends FixedForwardPipe {
 		return splitLines;
 	}
 
+	@IbisDoc({"controls whether the lines of the input are places in separated &lt;line&gt; tags", "false"})
 	public void setSplitLines(boolean b) {
 		splitLines = b;
 	}
 
+	@IbisDoc({"replace all non xml chars (not in the <a href=\"http://www.w3.org/tr/2006/rec-xml-20060816/#nt-char\">character range as specified by the xml specification</a>) with the inverted question mark (0x00bf)", "true"})
 	public void setReplaceNonXmlChars(boolean b) {
 		replaceNonXmlChars = b;
 	}
@@ -155,6 +160,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 		return useCdataSection;
 	}
 
+	@IbisDoc({"controls whether the text to encapsulate should be put in a cdata section", "true"})
 	public void setUseCdataSection(boolean b) {
 		useCdataSection = b;
 	}

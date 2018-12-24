@@ -18,6 +18,7 @@ package nl.nn.adapterframework.scheduler;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -126,18 +127,22 @@ public class SchedulerSender extends SenderWithParametersBase {
 		}
 	}
 
+	@IbisDoc({"expression that generates the cron trigger", " "})
 	public void setCronExpressionPattern(String string) {
 		cronExpressionPattern = string;
 	}
 
+	@IbisDoc({"job group in which the new trigger is to be created (optional)", " "})
 	public void setJobGroup(String string) {
 		jobGroup = string;
 	}
 
+	@IbisDoc({"pattern that leads to the name of the registered trigger(optional)", " "})
 	public void setJobNamePattern(String string) {
 		jobNamePattern = string;
 	}
 
+	@IbisDoc({"java listener to be called when scheduler trigger fires", " "})
 	public void setJavaListener(String string) {
 		javaListener = string;
 	}

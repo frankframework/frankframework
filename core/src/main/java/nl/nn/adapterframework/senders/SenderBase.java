@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.senders;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ClassLoaderManager;
@@ -63,6 +64,7 @@ public abstract class SenderBase implements ISender {
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
 	}
 
+	@IbisDoc({"name of the sender", " "})
 	@Override
 	public void setName(String name) {
 		this.name=name;

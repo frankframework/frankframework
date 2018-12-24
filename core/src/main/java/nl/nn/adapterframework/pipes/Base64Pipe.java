@@ -36,7 +36,7 @@ import nl.nn.adapterframework.util.Misc;
 
 /**
  * Pipe that performs base64 encoding and decoding.
- * 
+ *
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
@@ -48,7 +48,7 @@ import nl.nn.adapterframework.util.Misc;
  * <tr><td>{@link #setOutputType(String) outputType}</td><td>either <code>string</code>, <code>bytes</code>, <code>stream</code> or <code>base64</code></td><td>"string"</td></tr>
  * </table>
  * </p>
- * 
+ *
  * @since   4.4
  * @author  Niels Meijer
  * @version 2.0
@@ -147,7 +147,7 @@ public class Base64Pipe extends FixedForwardPipe {
 		return new PipeRunResult(getForward(), result);
 	}
 
-	@IbisDoc({"either encode or decode", "encode"})
+	@IbisDoc({"either <code>encode</code> or <code>decode</code>", "encode"})
 	public void setDirection(String string) {
 		direction = string.toLowerCase();
 	}
@@ -165,6 +165,7 @@ public class Base64Pipe extends FixedForwardPipe {
 	public void setConvert2String(boolean b) {
 		convertToString = b;
 	}
+	@IbisDoc({"either <code>string</code>, <code>bytes</code>, <code>stream</code> or <code>base64</code>", "string"})
 	public void setOutputType(String outputType) {
 		this.outputType = outputType.toLowerCase();
 	}
@@ -173,7 +174,7 @@ public class Base64Pipe extends FixedForwardPipe {
 		return outputType;
 	}
 
-	@IbisDoc({"character encoding to be used to encode or decode message to or from string. (only used when convert2String=true)", "UTF-8"})
+	@IbisDoc({"character encoding to be used to encode or decode message to or from string. (only used when convert2string=true)", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}
@@ -181,6 +182,7 @@ public class Base64Pipe extends FixedForwardPipe {
 		return charset;
 	}
 
+	@IbisDoc({" (only used when direction=encode) defines separator between lines. special values: <code>auto</code>: platform default, <code>dos</code>: crlf, <code>unix</code>: lf", "auto"})
 	public void setLineSeparator(String lineSeparator) {
 		this.lineSeparator = lineSeparator;
 	}
@@ -188,6 +190,7 @@ public class Base64Pipe extends FixedForwardPipe {
 		return lineSeparator;
 	}
 
+	@IbisDoc({" (only used when direction=encode) each line of encoded data will be at most of the given length (rounded down to nearest multiple of 4). if linelength <= 0, then the output will not be divided into lines", "auto"})
 	public void setLineLength(int lineLength) {
 		this.lineLength = lineLength;
 	}

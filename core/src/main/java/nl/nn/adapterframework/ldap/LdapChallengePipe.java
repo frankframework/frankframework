@@ -23,6 +23,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.AbstractPipe;
@@ -87,7 +88,7 @@ public class LdapChallengePipe extends AbstractPipe {
 
 	/** 
 	 * Checks to see if the supplied parameteres of the pipe can login to LDAP 
-	 * @see nl.nn.adapterframework.core.IPipe#doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)
+	 * @see nl.nn.adapterframework.core.IPipe#doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)
 	 */
 	public PipeRunResult doPipe(Object msg, IPipeLineSession pls) throws PipeRunException {
 
@@ -161,6 +162,7 @@ public class LdapChallengePipe extends AbstractPipe {
 		ldapSender.storeLdapException(t, prc);
 	}
 
+	@IbisDoc({"url to the ldap server. <br/>example: ldap://su05b9.itc.intranet", " "})
 	public void setLdapProviderURL(String string) {
 		ldapProviderURL = string;
 	}
@@ -168,6 +170,7 @@ public class LdapChallengePipe extends AbstractPipe {
 		return ldapProviderURL;
 	}
 
+	@IbisDoc({"class to use as initial context factory", "com.sun.jndi.ldap.ldapctxfactory"})
 	public void setInitialContextFactoryName(String value) {
 		initialContextFactoryName = value;
 	}
@@ -178,6 +181,7 @@ public class LdapChallengePipe extends AbstractPipe {
 	/**
 	 * @since 4.7
 	 */
+	@IbisDoc({"key of session variable used to store cause of errors", " "})
 	public void setErrorSessionKey(String string) {
 		errorSessionKey = string;
 	}

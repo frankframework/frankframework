@@ -27,6 +27,7 @@ import jcifs.ntlmssp.Type2Message;
 import jcifs.ntlmssp.Type3Message;
 import jcifs.util.Base64;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -233,6 +234,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return getUrl();
 	}
 
+	@IbisDoc({"content-type of the request", "text/html; charset=utf-8"})
 	public void setContentType(String string) {
 		contentType = string;
 	}
@@ -245,6 +247,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return url;
 	}
 
+	@IbisDoc({"url or base of url to be used ", " "})
 	public void setUrl(String string) {
 		url = string;
 	}
@@ -253,6 +256,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return timeout;
 	}
 
+	@IbisDoc({"timeout in ms of obtaining a connection/result. 0 means no timeout", "10000"})
 	public void setTimeout(int i) {
 		timeout = i;
 	}
@@ -261,6 +265,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return maxConnections;
 	}
 
+	@IbisDoc({"the maximum number of concurrent connections", "10"})
 	public void setMaxConnections(int i) {
 		maxConnections = i;
 	}
@@ -269,6 +274,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return authAlias;
 	}
 
+	@IbisDoc({"alias used to obtain credentials for authentication to host", " "})
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
@@ -277,6 +283,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return userName;
 	}
 
+	@IbisDoc({"username used in authentication to host", " "})
 	public void setUserName(String string) {
 		userName = string;
 	}
@@ -285,6 +292,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return password;
 	}
 
+	@IbisDoc({"&nbsp;", " "})
 	public void setPassword(String string) {
 		password = string;
 	}
@@ -301,6 +309,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return proxyHost;
 	}
 
+	@IbisDoc({"&nbsp;", " "})
 	public void setProxyHost(String string) {
 		proxyHost = string;
 	}
@@ -309,6 +318,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return proxyPort;
 	}
 
+	@IbisDoc({"&nbsp;", "80"})
 	public void setProxyPort(int i) {
 		proxyPort = i;
 	}
@@ -317,6 +327,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return soapAction;
 	}
 
+	@IbisDoc({"the soapactionuri to be set in the requestheader", " "})
 	public void setSoapAction(String string) {
 		soapAction = string;
 	}

@@ -34,7 +34,7 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link Parameter param}</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>

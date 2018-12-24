@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -37,7 +38,7 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.FixedForwardPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
+ * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified, then the message is logged informatory</td><td>-1</td></tr>
  * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setGetInputFromFixedValue(String) getInputFromFixedValue}</td><td>when set, this fixed value is taken as input, instead of regular input</td><td>&nbsp;</td></tr>
@@ -151,6 +152,7 @@ public class FixedForwardPipe extends AbstractPipe {
  	 * Sets the name of the <code>forward</code> that is looked up
  	 * upon completion.
  	 */
+	@IbisDoc({"if specified", " "})
 	public void setForwardName(String forwardName) {
         this.forwardName = forwardName;
     }
@@ -158,6 +160,7 @@ public class FixedForwardPipe extends AbstractPipe {
 		return forwardName;
 	}
 
+	@IbisDoc({"when set, this pipe is skipped", "false"})
 	public void setSkipOnEmptyInput(boolean b) {
 		skipOnEmptyInput = b;
 	}
@@ -166,6 +169,7 @@ public class FixedForwardPipe extends AbstractPipe {
 		return skipOnEmptyInput;
 	}
 
+	@IbisDoc({"when set, this pipe is only executed when the value of parameter with name <code>ifparam</code> equals <code>ifvalue</code> (otherwise this pipe is skipped)", " "})
 	public void setIfParam(String string) {
 		ifParam = string;
 	}
@@ -174,6 +178,7 @@ public class FixedForwardPipe extends AbstractPipe {
 		return ifParam;
 	}
 
+	@IbisDoc({"see <code>ifparam</code>", " "})
 	public void setIfValue(String string) {
 		ifValue = string;
 	}

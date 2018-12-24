@@ -26,6 +26,7 @@ import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunStateEnum;
@@ -126,8 +127,8 @@ public class FtpListener extends FtpSession implements IPullingListener, INamedO
 	}
 
 	/**
-	 * Returns the name of the file in process (the {@link #archiveFile(File) archived} file) concatenated with the
-	 * record number. As te {@link #archiveFile(File) archivedFile} method always renames to a 
+	 * Returns the name of the file in process (the 'archiveFile(File)' archived} file) concatenated with the
+	 * record number. As the 'archiveFile(File)' archivedFile method always renames to a
 	 * unique file, the combination of this filename and the recordnumber is unique, enabling tracing in case of errors
 	 * in the processing of the file.
 	 * Override this method for your specific needs! 
@@ -211,6 +212,7 @@ public class FtpListener extends FtpSession implements IPullingListener, INamedO
 
 
 	
+	@IbisDoc({"name of the listener", " "})
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -218,6 +220,7 @@ public class FtpListener extends FtpSession implements IPullingListener, INamedO
 		return name;
 	}
 	
+	@IbisDoc({"time between pollings", "3600000 (one hour)"})
 	public void setResponseTime(long responseTime) {
 		this.responseTime = responseTime;
 	}
@@ -225,6 +228,7 @@ public class FtpListener extends FtpSession implements IPullingListener, INamedO
 		return responseTime;
 	}
 
+	@IbisDoc({"remote directory from which files have to be downloaded", " "})
 	public void setRemoteDirectory(String string) {
 		remoteDirectory = string;
 	}

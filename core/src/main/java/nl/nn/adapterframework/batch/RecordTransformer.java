@@ -31,6 +31,7 @@ import java.util.Vector;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.FileUtils;
@@ -290,6 +291,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 	 * @param outputfieldsDef
 	 * @throws ConfigurationException
 	 */
+	@IbisDoc({"semicolon separated list of output record field specifications (see table below)", " "})
 	public void setOutputFields(String outputfieldsDef) throws ConfigurationException {
 		StringTokenizer st = new StringTokenizer(outputfieldsDef, ";");
 		while (st.hasMoreTokens()) {
@@ -683,6 +685,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		configWarnings.add(log, msg);
 		setOutputSeparator(string);
 	}
+	@IbisDoc({"optional separator to add between the fields", " "})
 	public void setOutputSeparator(String string) {
 		outputSeparator = string;
 	}

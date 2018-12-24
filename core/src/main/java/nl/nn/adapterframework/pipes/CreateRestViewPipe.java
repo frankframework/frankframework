@@ -26,6 +26,7 @@ import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -306,6 +307,7 @@ public class CreateRestViewPipe extends XsltPipe {
 		return imagelink;
 	}
 
+	@IbisDoc({"content type of the servlet response", "text/html"})
 	public void setContentType(String string) {
 		contentType = string;
 	}

@@ -22,6 +22,7 @@ import javax.xml.soap.SOAPException;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -296,6 +297,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	public String getDirection() {
 		return direction;
 	}
+	@IbisDoc({"either <code>wrap</code> or <code>unwrap</code>", "wrap"})
 	public void setDirection(String string) {
 		direction = string;
 	}
@@ -307,6 +309,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return soapHeaderSessionKey;
 	}
 
+	@IbisDoc({"the encodingstyle to be set in the soap header", " "})
 	public void setEncodingStyle(String string) {
 		encodingStyle = string;
 	}
@@ -314,6 +317,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return encodingStyle;
 	}
 
+	@IbisDoc({"the namespace of the message sent. identifies the service to be called. may be overriden by an actual namespace setting in the message to be sent", " "})
 	public void setServiceNamespace(String string) {
 		serviceNamespace = string;
 	}
@@ -321,6 +325,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return serviceNamespace;
 	}
 
+	@IbisDoc({"(only used when <code>direction=wrap</code>) stylesheet to create the content of the soap header. as input for this stylesheet a dummy xml string is used. note: outputtype=<code>xml</code> and xslt2=<code>true</code>", " "})
 	public void setSoapHeaderStyleSheet(String string){
 		this.soapHeaderStyleSheet = string;
 	}
@@ -328,6 +333,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return soapHeaderStyleSheet;
 	}
 
+	@IbisDoc({"(only used when <code>direction=wrap</code>) stylesheet to apply to the input message. note: outputtype=<code>xml</code> and xslt2=<code>true</code>", " "})
 	public void setSoapBodyStyleSheet(String string){
 		this.soapBodyStyleSheet = string;
 	}
@@ -335,6 +341,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return soapBodyStyleSheet;
 	}
 
+	@IbisDoc({"(only used when <code>direction=unwrap</code>) when <code>true</code>, namespaces (and prefixes) in the content of the soap body are removed", "false"})
 	public void setRemoveOutputNamespaces(boolean b) {
 		removeOutputNamespaces = b;
 	}
@@ -342,6 +349,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return removeOutputNamespaces;
 	}
 
+	@IbisDoc({"(only used when <code>direction=unwrap</code> and <code>removeoutputnamespaces=false</code>) when <code>true</code>, unused namespaces in the content of the soap body are removed", "true"})
 	public void setRemoveUnusedOutputNamespaces(boolean b) {
 		removeUnusedOutputNamespaces = b;
 	}
@@ -349,6 +357,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return removeUnusedOutputNamespaces;
 	}
 
+	@IbisDoc({"(only used when <code>direction=wrap</code>) when not empty, this namespace is added to the root element in the soap body", " "})
 	public void setOutputNamespace(String string) {
 		outputNamespace = string;
 	}
@@ -356,6 +365,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return outputNamespace;
 	}
 
+	@IbisDoc({"(only used when <code>direction=wrap</code>) namespace of the soap envelope", "http://schemas.xmlsoap.org/soap/envelope/"})
 	public void setSoapNamespace(String string) {
 		soapNamespace = string;
 	}
@@ -363,6 +373,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return soapNamespace;
 	}
 
+	@IbisDoc({"when not empty, the root element in the soap body is changed to this value", " "})
 	public void setRoot(String string) {
 		root = string;
 	}
@@ -370,6 +381,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return root;
 	}
 
+	@IbisDoc({"(only used when <code>direction=unwrap</code>) when <code>false</code> and the soap body contains a soap fault, a piperunexception is thrown", "false"})
 	public void setIgnoreSoapFault(boolean b) {
 		ignoreSoapFault = b;
 	}
@@ -377,6 +389,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return ignoreSoapFault;
 	}
 
+	@IbisDoc({"&nbsp;", " "})
 	public void setWssUserName(String string) {
 		wssUserName = string;
 	}
@@ -384,6 +397,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return wssUserName;
 	}
 
+	@IbisDoc({"&nbsp;", " "})
 	public void setWssPassword(String string) {
 		wssPassword = string;
 	}
@@ -391,6 +405,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return wssPassword;
 	}
 
+	@IbisDoc({"alias used to obtain credentials for authentication to web services security", " "})
 	public void setWssAuthAlias(String string) {
 		wssAuthAlias = string;
 	}
@@ -398,6 +413,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return wssAuthAlias;
 	}
 
+	@IbisDoc({"when true, the password is sent digested. otherwise it is sent in clear text", "true"})
 	public void setWssPasswordDigest(boolean b) {
 		wssPasswordDigest = b;
 	}

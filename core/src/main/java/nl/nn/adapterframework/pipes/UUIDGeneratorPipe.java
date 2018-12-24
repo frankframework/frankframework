@@ -19,6 +19,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.Misc;
 
 /**
@@ -82,6 +83,7 @@ public class UUIDGeneratorPipe extends FixedForwardPipe {
 	public String getType() {
 		return type;
 	}
+	@IbisDoc({"either <code>alphanumeric</code> or <code>numeric</code>", "alphanumeric"})
 	public void setType(String type) {
 		this.type = type;
 	}

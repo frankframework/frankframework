@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -112,6 +113,7 @@ public class ZipWriterSender extends SenderWithParametersBase {
 	}
 
 
+	@IbisDoc({"when set to <code>false</code>, the inputstream is not closed after it has been used", "true"})
 	public void setCloseInputstreamOnExit(boolean b) {
 		closeInputstreamOnExit = b;
 	}
@@ -123,6 +125,7 @@ public class ZipWriterSender extends SenderWithParametersBase {
 		return closeInputstreamOnExit;
 	}
 
+	@IbisDoc({"characterset used for writing zip entry", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}
@@ -130,6 +133,7 @@ public class ZipWriterSender extends SenderWithParametersBase {
 		return charset;
 	}
 	
+	@IbisDoc({"session key used to refer to zip session. must be used if zipwriterpipes are nested", "zipwriterhandle"})
 	public void setZipWriterHandle(String string) {
 		zipWriterHandle = string;
 	}

@@ -18,6 +18,7 @@ package nl.nn.adapterframework.pipes;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
  * Skip a number of bytes or characters from the input. 
@@ -81,10 +82,12 @@ public class SkipPipe extends FixedForwardPipe {
 	/**
 	 * @param skip  the number of bytes to skip
 	 */
+	@IbisDoc({"number of bytes (for byte array input) or characters (for string input) to skip. an empty byte array or string is returned when skip is larger then the length of the input", "0"})
 	public void setSkip(int skip) {
 		this.skip = skip;
 	}
 
+	@IbisDoc({"if length>=0 only these number of bytes (for byte array input) or characters (for string input) is returned.", "-1"})
 	public void setLength(int length) {
 		this.length = length;
 	}

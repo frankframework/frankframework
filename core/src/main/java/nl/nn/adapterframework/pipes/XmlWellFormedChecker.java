@@ -19,6 +19,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
 
@@ -67,6 +68,7 @@ public class XmlWellFormedChecker extends FixedForwardPipe {
 		return new PipeRunResult(forward, input);
 	}
 
+	@IbisDoc({"name of the root element", " "})
 	public void setRoot(String root) {
 		this.root = root;
 	}

@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -590,6 +591,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		return FileUtils.getNamesFromList(results, ';');
 	}
 	
+	@IbisDoc({"when set <code>true</code> the original block is stored under the session key originalblock", "false"})
 	public void setStoreOriginalBlock(boolean b) {
 		storeOriginalBlock = b;
 	}
@@ -597,6 +599,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		return storeOriginalBlock;
 	}
 
+	@IbisDoc({"when set to <code>false</code>, the inputstream is not closed after it has been used", "true"})
 	public void setCloseInputstreamOnExit(boolean b) {
 		closeInputstreamOnExit = b;
 	}
@@ -604,6 +607,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		return closeInputstreamOnExit;
 	}
 
+	@IbisDoc({"characterset used for reading file or inputstream", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}

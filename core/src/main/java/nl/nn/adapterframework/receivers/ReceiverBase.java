@@ -30,6 +30,7 @@ import java.util.StringTokenizer;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -1815,6 +1816,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	 * If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and <code>getName()</code>
 	 * of the listener is empty, the name of this object is given to the listener.
 	 */
+	@IbisDoc({"name of the receiver as known to the adapter", " "})
 	@Override
 	public void setName(String newName) {
 		name = newName;
@@ -1828,6 +1830,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	/**
 	 * Controls the use of XA-transactions.
 	 */
+	@IbisDoc({"if set to <code>true</code>, messages will be received and processed under transaction control. if processing fails, messages will be sent to the error-sender. (see below)</code>", "<code>false</code>"})
 	public void setTransacted(boolean transacted) {
 //		this.transacted = transacted;
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
@@ -1866,6 +1869,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return transactionAttribute;
 	}
 
+	@IbisDoc({"one of 'continue' or 'close'. controls the behaviour of the receiver when it encounters an error sending a reply or receives an exception asynchronously", "continue"})
 	public void setOnError(String newOnError) {
 		onError = newOnError;
 	}
@@ -1901,6 +1905,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	/**
 	 * The number of threads that this receiver is configured to work with.
 	 */
+	@IbisDoc({"the number of threads that may execute a pipeline concurrently (only for pulling listeners)", "1"})
 	public void setNumThreads(int newNumThreads) {
 		numThreads = newNumThreads;
 	}
@@ -1918,6 +1923,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return numThreadsPolling;
 	}
 
+	@IbisDoc({"the number of threads that are activily polling for messages concurrently. '0' means 'limited only by <code>numthreads</code>' (only for pulling listeners)", "1"})
 	public void setNumThreadsPolling(int i) {
 		numThreadsPolling = i;
 	}
@@ -1926,6 +1932,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return maxDeliveries;
 	}
 
+	@IbisDoc({"the maximum delivery count after which to stop processing the message. when -1 the delivery count is ignored", "5"})
 	public void setMaxDeliveries(int i) {
 		maxDeliveries = i;
 	}
@@ -1934,10 +1941,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return maxRetries;
 	}
 
+	@IbisDoc({"the number of times a processing attempt is retried after an exception is caught or rollback is experienced (only applicable for transacted receivers). if maxretries &lt; 0 the number of attempts is infinite", "1"})
 	public void setMaxRetries(int i) {
 		maxRetries = i;
 	}
 	
+	@IbisDoc({"when set <code>false</code> or set to something else as <code>true</code>, (even set to the empty string), the receiver is not included in the configuration", "true"})
 	public void setActive(boolean b) {
 		active = b;
 	}
@@ -1945,6 +1954,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return active;
 	}
 
+	@IbisDoc({"comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (only for listeners that support it, like javalistener)", " "})
 	public void setReturnedSessionKeys(String string) {
 		returnedSessionKeys = string;
 	}
@@ -1952,6 +1962,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return returnedSessionKeys;
 	}
 
+	@IbisDoc({"comma separated list of keys of session variables which are available when the <code>pipelinesession</code> is created and of which the value will not be shown in the log (replaced by asterisks)", " "})
 	public void setHiddenInputSessionKeys(String string) {
 		hiddenInputSessionKeys = string;
 	}
@@ -2037,6 +2048,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		this.processResultCacheSize = processResultCacheSize;
 	}
 	
+	@IbisDoc({"the number of seconds waited after an unsuccesful poll attempt before another poll attempt is made. (only for polling listeners, not for e.g. ifsa, jms, webservice or javalisteners)", "10"})
 	public void setPollInterval(int i) {
 		pollInterval = i;
 	}
@@ -2044,6 +2056,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return pollInterval;
 	}
 
+	@IbisDoc({"if set to <code>true</code>, each message is checked for presence in the message log. if already present, it is not processed again. (only required for non xa compatible messaging). requires messagelog!</code>", "<code>false</code>"})
 	public void setCheckForDuplicates(boolean b) {
 		checkForDuplicates = b;
 	}
@@ -2051,6 +2064,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return checkForDuplicates;
 	}
 
+	@IbisDoc({"(only used when <code>checkforduplicates=true</code>) either 'correlationid' or 'messageid'. indicates whether the messageid or the correlationid is used for checking presence in the message log", "messageid"})
 	public void setCheckForDuplicatesMethod(String method) {
 		checkForDuplicatesMethod=method;
 	}
@@ -2058,6 +2072,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return checkForDuplicatesMethod;
 	}
 
+	@IbisDoc({"timeout (in seconds) of transaction started to receive and process a message.", "<code>0</code> (use system default)</code>"})
 	public void setTransactionTimeout(int i) {
 		transactionTimeout = i;
 	}
@@ -2065,6 +2080,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return transactionTimeout;
 	}
 
+	@IbisDoc({"xpath expression to extract correlationid from message", " "})
 	public void setCorrelationIDXPath(String string) {
 		correlationIDXPath = string;
 	}
@@ -2075,10 +2091,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	public String getCorrelationIDNamespaceDefs() {
 		return correlationIDNamespaceDefs;
 	}
+	@IbisDoc({"namespace defintions for correlationidxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", " "})
 	public void setCorrelationIDNamespaceDefs(String correlationIDNamespaceDefs) {
 		this.correlationIDNamespaceDefs = correlationIDNamespaceDefs;
 	}
 
+	@IbisDoc({"stylesheet to extract correlationid from message", " "})
 	public void setCorrelationIDStyleSheet(String string) {
 		correlationIDStyleSheet = string;
 	}
@@ -2086,6 +2104,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return correlationIDStyleSheet;
 	}
 
+	@IbisDoc({"xpath expression to extract label from message", " "})
 	public void setLabelXPath(String string) {
 		labelXPath = string;
 	}
@@ -2096,10 +2115,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	public String getLabelNamespaceDefs() {
 		return labelNamespaceDefs;
 	}
+	@IbisDoc({"namespace defintions for labelxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", " "})
 	public void setLabelNamespaceDefs(String labelNamespaceDefs) {
 		this.labelNamespaceDefs = labelNamespaceDefs;
 	}
 	
+	@IbisDoc({"stylesheet to extract label from message", " "})
 	public void setLabelStyleSheet(String string) {
 		labelStyleSheet = string;
 	}
@@ -2107,6 +2128,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return labelStyleSheet;
 	}
 
+	@IbisDoc({"if set (>=0) and the character data length inside a xml element exceeds this size, the character data is chomped (with a clear comment)", " "})
 	public void setChompCharSize(String string) {
 		chompCharSize = string;
 	}
@@ -2114,6 +2136,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return chompCharSize;
 	}
 
+	@IbisDoc({"if set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: {sessionkey: + <code>elementtomovesessionkey</code> + }", " "})
 	public void setElementToMove(String string) {
 		elementToMove = string;
 	}
@@ -2121,6 +2144,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return elementToMove;
 	}
 
+	@IbisDoc({"(only used when <code>elementtomove</code> is set) name of the session key under which the character data is stored", "ref_ + the name of the element"})
 	public void setElementToMoveSessionKey(String string) {
 		elementToMoveSessionKey = string;
 	}
@@ -2128,6 +2152,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return elementToMoveSessionKey;
 	}
 
+	@IbisDoc({"like <code>elementtomove</code> but element is preceded with all ancestor elements and separated by semicolons (e.g. adapter;pipeline;pipe)", " "})
 	public void setElementToMoveChain(String string) {
 		elementToMoveChain = string;
 	}
@@ -2145,6 +2170,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	public boolean isXslt2() {
 		return xslt2;
 	}
+	@IbisDoc({"when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used for extracting correlationid and label, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
 	public void setXslt2(boolean b) {
 		xslt2 = b;
 	}
@@ -2166,6 +2192,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return false;
 	}
 
+	@IbisDoc({"regular expression to mask strings in the error/logstore. everything character between to strings in this expression will be replaced by a '*'that fits the expression is replaced. for example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys<party> and </party> ", " "})
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
 	}
@@ -2174,6 +2201,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return hideRegex;
 	}
 
+	@IbisDoc({"(only used when hideregex is not empty) either <code>all</code> or <code>firsthalf</code>. when <code>firsthalf</code> only the first half of the string is masked, otherwise (<code>all</code>) the entire string is masked", "all"})
 	public void setHideMethod(String hideMethod) {
 		this.hideMethod = hideMethod;
 	}

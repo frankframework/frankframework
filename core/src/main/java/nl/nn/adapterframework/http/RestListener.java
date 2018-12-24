@@ -21,6 +21,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -199,6 +200,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public String getUriPattern() {
 		return uriPattern;
 	}
+	@IbisDoc({"uri pattern to match. ", " "})
 	public void setUriPattern(String uriPattern) {
 		this.uriPattern = uriPattern;
 	}
@@ -206,6 +208,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public String getMethod() {
 		return method;
 	}
+	@IbisDoc({"method (e.g. get or post) to match", " "})
 	public void setMethod(String method) {
 		this.method = method;
 	}
@@ -213,6 +216,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public String getEtagSessionKey() {
 		return etagSessionKey;
 	}
+	@IbisDoc({"key of session variable to store etag", " "})
 	public void setEtagSessionKey(String etagSessionKey) {
 		this.etagSessionKey = etagSessionKey;
 	}
@@ -220,6 +224,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public String getContentTypeSessionKey() {
 		return contentTypeSessionKey;
 	}
+	@IbisDoc({"setproduces", " "})
 	public void setContentTypeSessionKey(String contentTypeSessionKey) {
 		this.contentTypeSessionKey = contentTypeSessionKey;
 	}
@@ -231,6 +236,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		this.restPath = restPath;
 	}
 
+	@IbisDoc({"indicates whether this listener supports a view (and a link should be put in the ibis console)", "if <code>method=get</code> then <code>true</code>, else <code>false</code>"})
 	public void setView(boolean b) {
 		view = b;
 	}
@@ -250,6 +256,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		return defaultValue;
 	}
 
+	@IbisDoc({"comma separated list of authorization roles which are granted for this rest service", "ibisadmin,ibisdataadmin,ibistester,ibisobserver,ibiswebservice"})
 	public void setAuthRoles(String string) {
 		authRoles = string;
 	}
@@ -271,6 +278,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		return writeSecLogMessage;
 	}
 
+	@IbisDoc({"indicates whether the parts of a multipart entity should be retrieved and put in session keys. this can only be done once!", "true"})
 	public void setRetrieveMultipart(boolean b) {
 		retrieveMultipart = b;
 	}
@@ -278,6 +286,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		return retrieveMultipart;
 	}
 
+	@IbisDoc({"mediatype (e.g. xml, json, text) the {@link nl.nn.adapterframework.http.restservicedispatcher restservicedispatcher} receives as input", "xml"})
 	public void setConsumes(String consumes) throws ConfigurationException {
 		if(mediaTypes.contains(consumes))
 			this.consumes = consumes;
@@ -289,6 +298,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		return consumes;
 	}
 
+	@IbisDoc({"mediatype (e.g. xml, json, text) the {@link nl.nn.adapterframework.http.restservicedispatcher restservicedispatcher} sends as output, if set to json the ibis will automatically try to convert the xml message", "xml"})
 	public void setProduces(String produces) throws ConfigurationException {
 		if(mediaTypes.contains(produces))
 			this.produces = produces;
@@ -300,6 +310,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		return produces;
 	}
 
+	@IbisDoc({"when set to true the ibis will automatically validate and process etags", "false"})
 	public void setValidateEtag(boolean b) {
 		this.validateEtag = b;
 	}
@@ -308,6 +319,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		return validateEtag;
 	}
 
+	@IbisDoc({"when set to true the ibis will automatically create an etag", "false"})
 	public void setGenerateEtag(boolean b) {
 		this.generateEtag = b;
 	}

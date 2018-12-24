@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -155,6 +156,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		fos.write(eolArray);
 	}
 	
+	@IbisDoc({"type of the optional status field which is set after the row is written to the file: timestamp", " "})
 	public void setStatusFieldType(String statusFieldType) {
 		this.statusFieldType = statusFieldType;
 	}
@@ -162,6 +164,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		return statusFieldType;
 	}
 
+	@IbisDoc({"the session key that contains the name of the file to use", " "})
 	public void setFileNameSessionKey(String filenameSessionKey) {
 		this.fileNameSessionKey = filenameSessionKey;
 	}
@@ -169,6 +172,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		return fileNameSessionKey;
 	}
 
+	@IbisDoc({"when set <code>true</code> and the file already exists, the resultset rows are written to the end of the file", "false"})
 	public void setAppend(boolean b) {
 		append = b;
 	}
@@ -176,6 +180,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		return append;
 	}
 
+	@IbisDoc({"when set (and &gt;=0), this session key contains the maximum number of records which are processed. if <code>query</code> contains a group field (3), then also following records with the same group field value as the last record are processed", " "})
 	public void setMaxRecordsSessionKey(String maxRecordsSessionKey) {
 		this.maxRecordsSessionKey = maxRecordsSessionKey;
 	}

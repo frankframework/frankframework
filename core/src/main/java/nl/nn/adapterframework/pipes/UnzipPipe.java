@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 
@@ -82,7 +83,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.FixedResult</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
+ * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setDirectory(String) directory}</td> <td>directory to extract the archive to</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDirectorySessionKey(String) directorySessionKey}</td> <td>SessionKey with a directory value to extract the archive to</td><td>&nbsp;</td></tr> 
@@ -280,6 +281,7 @@ public class UnzipPipe extends FixedForwardPipe {
 		return new PipeRunResult(getForward(),result);
 	}
 
+	@IbisDoc({"directory to extract the archive to", ""})
 	public void setDirectory(String string) {
 		directory = string;
 	}
@@ -287,6 +289,7 @@ public class UnzipPipe extends FixedForwardPipe {
 		return directory;
 	}
 	
+	@IbisDoc({"sessionkey with a directory value to extract the archive to", ""})
 	public void setDirectorySessionKey(String directorySessionKey) {
 		this.directorySessionKey = directorySessionKey;
 	}
@@ -294,6 +297,7 @@ public class UnzipPipe extends FixedForwardPipe {
 		return directorySessionKey;
 	}
 	
+	@IbisDoc({"when true, file is automatically deleted upon normal jvm termination", "true"})
 	public void setDeleteOnExit(boolean b) {
 		deleteOnExit = b;
 	}
@@ -301,6 +305,7 @@ public class UnzipPipe extends FixedForwardPipe {
 		return deleteOnExit;
 	}
 
+	@IbisDoc({"if set <code>false</code>, only a small summary (count of items in zip) is returned", "true"})
 	public void setCollectResults(boolean b) {
 		collectResults = b;
 	}
@@ -308,6 +313,7 @@ public class UnzipPipe extends FixedForwardPipe {
 		return collectResults;
 	}
 
+	@IbisDoc({"if set <code>true</code>, the content of the files in the zip is returned in the result xml message of this pipe. please note this can consume a lot of memory for large files or a large number of files", "false"})
 	public void setCollectFileContents(boolean b) {
 		collectFileContents = b;
 	}
@@ -315,6 +321,7 @@ public class UnzipPipe extends FixedForwardPipe {
 		return collectFileContents;
 	}
 
+	@IbisDoc({"comma separated list of file extensions. files with an extension which is part of this list will be base64 encoded. all other files are assumed to have utf-8 when reading it from the zip and are added as escaped xml with non-unicode-characters being replaced by inverted question mark appended with #, the character number and ;", "false"})
 	public void setCollectFileContentsBase64Encoded(String string) {
 		collectFileContentsBase64Encoded = string;
 	}
@@ -322,6 +329,7 @@ public class UnzipPipe extends FixedForwardPipe {
 		return collectFileContentsBase64Encoded;
 	}
 
+	@IbisDoc({"if set <code>false</code>, a suffix is added to the original filename to be sure it is unique", "false"})
 	public void setKeepOriginalFileName(boolean b) {
 		keepOriginalFileName = b;
 	}
@@ -329,6 +337,7 @@ public class UnzipPipe extends FixedForwardPipe {
 		return keepOriginalFileName;
 	}
 
+	@IbisDoc({"if set <code>true</code>, subdirectories in the zip file are created in the directory to extract the archive to", "false"})
 	public void setCreateSubdirectories(boolean b) {
 		createSubdirectories = b;
 	}

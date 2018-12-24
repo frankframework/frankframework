@@ -26,6 +26,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
@@ -180,9 +181,11 @@ public class JNDIBase {
     public java.lang.String getUrlPkgPrefixes() {
         return urlPkgPrefixes;
     }
+	@IbisDoc({"maps to the field context.security_authentication", " "})
     public void setAuthentication(java.lang.String newAuthentication) {
         authentication = newAuthentication;
     }
+	@IbisDoc({"username to connect to context, maps to context.security_credentials", " "})
     public void setCredentials(java.lang.String newCredentials) {
         credentials = newCredentials;
     }
@@ -191,6 +194,7 @@ public class JNDIBase {
      *
      * @param  value  The new initialContextFactoryName value
      */
+	@IbisDoc({"class to use as initial context factory", " "})
     public void setInitialContextFactoryName(String value) {
         initialContextFactoryName = value;
     }
@@ -199,9 +203,11 @@ public class JNDIBase {
      *
      * @param  value  The new providerURL value
      */
+	@IbisDoc({"&nbsp;", " "})
     public void setProviderURL(String value) {
         providerURL = value;
     }
+	@IbisDoc({"maps to the field context.security_protocol", " "})
     public void setSecurityProtocol(String securityProtocol) {
         this.securityProtocol = securityProtocol;
     }
@@ -210,6 +216,7 @@ public class JNDIBase {
      * Creation date: (03-04-2003 8:50:36)
      * @param newUrlPkgPrefixes java.lang.String
      */
+	@IbisDoc({"maps to the field context.url_pkg_prefixes", " "})
     public void setUrlPkgPrefixes(java.lang.String newUrlPkgPrefixes) {
         urlPkgPrefixes = newUrlPkgPrefixes;
     }
@@ -252,10 +259,12 @@ public class JNDIBase {
 		return principal;
 	}
 
+	@IbisDoc({"username to connect to context, maps to context.security_principal", " "})
 	public void setPrincipal(String string) {
 		principal = string;
 	}
 
+	@IbisDoc({"authentication alias, may be used to override principal and credential-settings", " "})
 	public void setJndiAuthAlias(String string) {
 		jndiAuthAlias = string;
 	}

@@ -18,6 +18,7 @@ package nl.nn.adapterframework.pipes;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -85,6 +86,7 @@ public class XmlBuilderPipe extends FixedForwardPipe {
 		return substringStart;
 	}
 
+	@IbisDoc({"substring to start translation", " "})
 	public void setSubstringStart(String substringStart) {
 		this.substringStart = substringStart;
 	}
@@ -93,6 +95,7 @@ public class XmlBuilderPipe extends FixedForwardPipe {
 		return substringEnd;
 	}
 
+	@IbisDoc({"substring to end translation", " "})
 	public void setSubstringEnd(String substringEnd) {
 		this.substringEnd = substringEnd;
 	}

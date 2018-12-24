@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -45,7 +46,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>the parameters <code>operand1</code> and <code>operand2</code> are compared. If one of these parameters doesn't exist the input message is taken.
+ * <tr><td>{@link Parameter param}</td><td>the parameters <code>operand1</code> and <code>operand2</code> are compared. If one of these parameters doesn't exist the input message is taken.
  * If parameter <code>ignorepatterns</code> exists it contains a xml table with references to substrings which have to be ignored during the comparison. This xml table has the following layout:
  * <br/><code><pre>
  *	&lt;ignores&gt;
@@ -251,6 +252,7 @@ public class CompareStringPipe extends AbstractPipe {
 		return null;
 	}
 
+	@IbisDoc({"reference to one of the session variables to be compared", " "})
 	public void setSessionKey1(String string) {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		String msg = getLogPrefix(null) + "The attribute sessionKey1 has been deprecated. Please use the parameter operand1";
@@ -261,6 +263,7 @@ public class CompareStringPipe extends AbstractPipe {
 		return sessionKey1;
 	}
 
+	@IbisDoc({"reference to the other session variables to be compared", " "})
 	public void setSessionKey2(String string) {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		String msg = getLogPrefix(null) + "The attribute sessionKey2 has been deprecated. Please use the parameter operand2";
@@ -274,6 +277,7 @@ public class CompareStringPipe extends AbstractPipe {
 	public boolean isXml() {
 		return xml;
 	}
+	@IbisDoc({"when set <code>true</code> the string values to compare are considered to be xml strings and before the actual compare both xml strings are transformed to a canonical form", "false"})
 	public void setXml(boolean b) {
 		xml = b;
 	}

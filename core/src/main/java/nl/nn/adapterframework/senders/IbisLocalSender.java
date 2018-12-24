@@ -17,6 +17,7 @@ package nl.nn.adapterframework.senders;
 
 import java.util.HashMap;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
@@ -269,6 +270,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	/**
 	 * serviceName under which the JavaListener or WebServiceListener is registered.
 	 */
+	@IbisDoc({"name of the {@link nl.nn.adapterframework.http.webservicelistener webservicelistener} that should be called", " "})
 	public void setServiceName(String serviceName) {
 		this.serviceName = serviceName;
 	}
@@ -280,6 +282,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	/**
 	 * when <code>true</code>, the call is made in a separate thread, possibly using separate transaction. 
 	 */
+	@IbisDoc({"when <code>true</code>, the call is made in a separate thread, possibly using separate transaction", "false"})
 	public void setIsolated(boolean b) {
 		isolated = b;
 	}
@@ -288,6 +291,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 
+	@IbisDoc({"name of the sessionkey which holds the name of the {@link nl.nn.adapterframework.receivers.javalistener javalistener} that should be called", " "})
 	public void setJavaListenerSessionKey(String string) {
 		javaListenerSessionKey = string;
 	}
@@ -296,6 +300,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 
+	@IbisDoc({"name of the {@link nl.nn.adapterframework.receivers.javalistener javalistener} that should be called (will be ignored when javalistenersessionkey is set)", " "})
 	public void setJavaListener(String string) {
 		javaListener = string;
 	}
@@ -304,6 +309,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 
+	@IbisDoc({" when set <code>false</code>, the call is made asynchronously. this implies <code>isolated=true</code>", "true"})
 	public void setSynchronous(boolean b) {
 		synchronous = b;
 	}
@@ -313,6 +319,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 
+	@IbisDoc({"when <code>true</code>, the sender waits upon open until the called {@link nl.nn.adapterframework.receivers.javalistener javalistener} is opened", "true"})
 	public void setCheckDependency(boolean b) {
 		checkDependency = b;
 	}
@@ -321,6 +328,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 
+	@IbisDoc({"maximum time (in seconds) the sender waits for the listener to start. a value of -1 indicates to wait indefinitely", "60 s"})
 	public void setDependencyTimeOut(int i) {
 		dependencyTimeOut = i;
 	}
@@ -339,6 +347,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		this.isolatedServiceCaller = isolatedServiceCaller;
 	}
 
+	@IbisDoc({"when set <code>false</code>, the xml-string \"&lt;error&gt;could not find javalistener [...]&lt;/error&gt;\" is returned instead of throwing a senderexception", "true"})
 	public void setThrowJavaListenerNotFoundException(boolean b) {
 		throwJavaListenerNotFoundException = b;
 	}

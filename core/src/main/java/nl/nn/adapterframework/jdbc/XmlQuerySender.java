@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
 
@@ -613,6 +614,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		cw.add("The XmlSender is not released for production. The configuration options for this pipe will change in a non-backward compatible way");
 	}
 
+	@IbisDoc({"when set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the select statement (by appending ' for update nowait skip locked' to the end of the query)", "false"})
 	public void setLockRows(boolean b) {
 		lockRows = b;
 	}
@@ -621,6 +623,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		return lockRows;
 	}
 
+	@IbisDoc({"when set and >=0, ' for update wait #' is used instead of ' for update nowait skip locked'", "-1"})
 	public void setLockWait(int i) {
 		lockWait = i;
 	}

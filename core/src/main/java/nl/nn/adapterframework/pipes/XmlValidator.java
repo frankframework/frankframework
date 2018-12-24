@@ -40,6 +40,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -217,7 +218,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
      /**
       * Validate the XML string
       * @param input a String
-      * @param session a {@link nl.nn.adapterframework.core.IPipeLineSession Pipelinesession}
+      * @param session a {@link IPipeLineSession Pipelinesession}
 
       * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
       */
@@ -344,6 +345,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
      * <p> see property http://apache.org/xml/features/validation/schema-full-checking</p>
      * Defaults to <code>false</code>;
      */
+	@IbisDoc({"perform addional memory intensive checks", "<code>false</code>"})
     public void setFullSchemaChecking(boolean fullSchemaChecking) {
         validator.setFullSchemaChecking(fullSchemaChecking);
     }
@@ -357,8 +359,9 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
      * <p>An example value would be "xml/xsd/GetPartyDetail.xsd"</p>
      * <p>The value of the schema attribute is only used if the schemaLocation
      * attribute and the noNamespaceSchemaLocation are not set</p>
-     * @see nl.nn.adapterframework.util.ClassUtils#getResourceURL
+     * @see ClassUtils#getResourceURL
      */
+	@IbisDoc({"the filename of the schema on the classpath. see doc on the method. (effectively the same as nonamespaceschemalocation)", " "})
     public void setSchema(String schema) {
         setNoNamespaceSchemaLocation(schema);
     }
@@ -380,6 +383,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	 *
 	 * N.B. since 4.3.0 schema locations are resolved automatically, without the need for ${baseResourceURL}
 	 */
+	@IbisDoc({"pairs of uri references (one for the namespace name, and one for a hint as to the location of a schema document defining names for that namespace name). see doc on the method.", " "})
 	public void setSchemaLocation(String schemaLocation) {
 		this.schemaLocation = schemaLocation;
 	}
@@ -393,6 +397,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	 * <p>A URI reference as a hint as to the location of a schema document with
 	 * no target namespace.</p>
 	 */
+	@IbisDoc({"a uri reference as a hint as to the location of a schema document with no target namespace. see doc on the method.", " "})
 	public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
 		this.noNamespaceSchemaLocation = noNamespaceSchemaLocation;
 	}
@@ -404,6 +409,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	/**
 	 * <p>The sessionkey to a value that is the uri to the schema definition.</P>
 	 */
+	@IbisDoc({" ", " "})
 	public void setSchemaSessionKey(String schemaSessionKey) {
 		this.schemaSessionKey = schemaSessionKey;
 	}
@@ -426,6 +432,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
      * Indicates wether to throw an error (piperunexception) when
      * the xml is not compliant.
      */
+	@IbisDoc({"should the xmlvalidator throw a piperunexception on a validation error (if not, a forward with name 'failure' should be defined.", "<code>false</code>"})
     public void setThrowException(boolean throwException) {
     	validator.setThrowException(throwException);
     }
@@ -436,6 +443,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	/**
 	 * The sessionkey to store the reasons of misvalidation in.
 	 */
+	@IbisDoc({"if set: key of session variable to store reasons of mis-validation in", "failurereason"})
 	public void setReasonSessionKey(String reasonSessionKey) {
 		validator.setReasonSessionKey(reasonSessionKey);
 	}
@@ -443,6 +451,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return validator.getReasonSessionKey();
 	}
 
+	@IbisDoc({"like <code>reasonsessionkey</code> but stores reasons in xml format and more extensive", "xmlfailurereason"})
 	public void setXmlReasonSessionKey(String xmlReasonSessionKey) {
 		validator.setXmlReasonSessionKey(xmlReasonSessionKey);
 	}
@@ -450,6 +459,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return validator.getXmlReasonSessionKey();
 	}
 
+	@IbisDoc({"name of the root element. or a comma separated list of names to choose from (only one is allowed)", " "})
 	public void setRoot(String root) {
 		this.root = root;
 		addRequestRootValidation(Arrays.asList(root));
@@ -481,6 +491,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
         return new QName(getSchema()/* TODO*/, getRoot());
     }
 
+	@IbisDoc({"when set <code>true</code>, the input is assumed to be the name of the file to be validated. otherwise the input itself is validated", "<code>false</code>"})
 	public void setValidateFile(boolean b) {
 		validator.setValidateFile(b);
 	}
@@ -488,6 +499,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return validator.isValidateFile();
 	}
 
+	@IbisDoc({"setvalidatefile", "utf-8"})
 	public void setCharset(String string) {
 		validator.setCharset(string);
 	}
@@ -503,10 +515,12 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
         return validator.isAddNamespaceToSchema();
     }
 
+	@IbisDoc({"when set <code>true</code>, the namespace from schemalocation is added to the schema document as targetnamespace", "<code>false</code>"})
     public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
         validator.setAddNamespaceToSchema(addNamespaceToSchema);
     }
 
+	@IbisDoc({"comma separated list of schemalocations which are excluded from an import or include in the schema document", " "})
 	public void setImportedSchemaLocationsToIgnore(String string) {
 		validator.setImportedSchemaLocationsToIgnore(string);
     }
@@ -519,10 +533,12 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
         return validator.isUseBaseImportedSchemaLocationsToIgnore();
     }
 
+	@IbisDoc({"when set <code>true</code>, the comparison for importedschemalocationstoignore is done on base filename without any path", "<code>false</code>"})
     public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
         validator.setUseBaseImportedSchemaLocationsToIgnore(useBaseImportedSchemaLocationsToIgnore);
     }
 
+	@IbisDoc({"comma separated list of namespaces which are excluded from an import or include in the schema document", " "})
 	public void setImportedNamespacesToIgnore(String string) {
 		validator.setImportedNamespacesToIgnore(string);
 	}
@@ -532,6 +548,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
     @Deprecated
+	@IbisDoc({"the namespace of the soap envelope, when this property has a value and the input message is a soap message the content of the soap body is used for validation, hence the soap envelope and soap body elements are not considered part of the message to validate. please note that this functionality is deprecated, using {@link nl.nn.adapterframework.soap.soapvalidator} is now the preferred solution in case a soap message needs to be validated, in other cases give this property an empty value", "http://schemas.xmlsoap.org/soap/envelope/"})
 	public void setSoapNamespace(String string) {
 		soapNamespace = string;
     }
@@ -541,10 +558,12 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return soapNamespace;
 	}
 
+	@IbisDoc({"when set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)", "<code>true</code>"})
 	public void setWarn(boolean warn) {
         validator.setWarn(warn);
     }
 
+	@IbisDoc({"ignore namespaces in the input message which are unknown", "true when schema or nonamespaceschemalocation is used, false otherwise"})
 	public void setIgnoreUnknownNamespaces(boolean ignoreUnknownNamespaces) {
 		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
 	}
@@ -665,6 +684,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			return name;
 		}
 
+	@IbisDoc({"name of the pipe", " "})
 		@Override
 		public void setName(String name) {
 			this.name=name;
@@ -819,6 +839,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return null;
 	}
 
+	@IbisDoc({"when set <code>true</code>, the failure forward is replaced by the success forward (like a warning mode)", "<code>false</code>"})
 	public void setForwardFailureToSuccess(boolean b) {
 		this.forwardFailureToSuccess = b;
 	}
@@ -875,10 +896,12 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		this.invalidRootNamespaces.put(path, invalidRootNamespaces);
 	}
 
+	@IbisDoc({"when set <code>true</code>, the number for caching validators in appconstants is ignored and no caching is done (for this validator only)", "<code>false</code>"})
 	public void setIgnoreCaching(boolean ignoreCaching) {
 		validator.setIgnoreCaching(ignoreCaching);
 	}
 
+	@IbisDoc({"when set, the value in appconstants is overwritten (for this validator only)", "<code>application default (false)</code>"})
     public void setLazyInit(boolean lazyInit) {
     	validator.setLazyInit(lazyInit);
     }

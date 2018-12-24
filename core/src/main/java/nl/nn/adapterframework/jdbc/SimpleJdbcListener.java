@@ -28,6 +28,7 @@ import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -251,6 +252,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener {
 		}
 	}
 
+	@IbisDoc({"count query that returns the number of available records. when there are available records the pipeline is activated", " "})
 	public void setSelectQuery(String string) {
 		selectQuery = string;
 	}

@@ -24,6 +24,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.codec.binary.Base64;
 
 import nl.nn.adapterframework.core.PipeRunException;
@@ -113,6 +114,7 @@ public class HashPipe extends FixedForwardPipe {
 	public String getAlgorithm() {
 		return algorithm;
 	}
+	@IbisDoc({"name of the pipe", "hmacsha256"})
 	public void setAlgorithm(String algorithm) {
 		this.algorithm = algorithm;
 	}
@@ -120,6 +122,7 @@ public class HashPipe extends FixedForwardPipe {
 	public String getEncoding() {
 		return encoding;
 	}
+	@IbisDoc({"name of the pipe", "iso8859_1"})
 	public void setEncoding(String encoding) {
 		this.encoding = encoding;
 	}
@@ -127,6 +130,7 @@ public class HashPipe extends FixedForwardPipe {
 	public String getSecret() {
 		return secret;
 	}
+	@IbisDoc({"the secret to hash with", " "})
 	public void setSecret(String secret) {
 		this.secret = secret;
 	}
@@ -134,6 +138,7 @@ public class HashPipe extends FixedForwardPipe {
 	public String getAuthAlias() {
 		return authAlias;
 	}
+	@IbisDoc({"authalias to retrieve the secret from (password field).", " "})
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}

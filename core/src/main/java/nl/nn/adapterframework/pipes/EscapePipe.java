@@ -19,6 +19,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -38,7 +39,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * </p>
  * @author Peter Leeuwenburgh
@@ -130,6 +130,7 @@ public class EscapePipe extends FixedForwardPipe {
 	public String getSubstringStart() {
 		return substringStart;
 	}
+	@IbisDoc({"substring to start translation", " "})
 	public void setSubstringStart(String substringStart) {
 		this.substringStart = substringStart;
 	}
@@ -137,6 +138,7 @@ public class EscapePipe extends FixedForwardPipe {
 	public String getSubstringEnd() {
 		return substringEnd;
 	}
+	@IbisDoc({"substring to end translation", " "})
 	public void setSubstringEnd(String substringEnd) {
 		this.substringEnd = substringEnd;
 	}
@@ -144,6 +146,7 @@ public class EscapePipe extends FixedForwardPipe {
 	public String getDirection() {
 		return direction;
 	}
+	@IbisDoc({"either <code>encode</code>, <code>decode</code> or <code>cdata2text</code>", "encode"})
 	public void setDirection(String direction) {
 		this.direction = direction;
 	}
@@ -151,6 +154,7 @@ public class EscapePipe extends FixedForwardPipe {
 	public boolean isEncodeSubstring() {
 		return encodeSubstring;
 	}
+	@IbisDoc({"when set <code>true</code> special characters in <code>substringstart</code> and <code>substringend</code> are first translated to their xml equivalents", "false"})
 	public void setEncodeSubstring(boolean b) {
 		encodeSubstring = b;
 	}

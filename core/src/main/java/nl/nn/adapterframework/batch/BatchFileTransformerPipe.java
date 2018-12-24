@@ -23,6 +23,7 @@ import java.io.InputStream;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.FileUtils;
 
@@ -126,6 +127,7 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	/**
 	 * @param readyDir directory where input file is moved to in case of a succesful transformation
 	 */
+	@IbisDoc({"directory in which the transformed file(s) is stored", " "})
 	public void setMove2dirAfterTransform(String readyDir) {
 		move2dirAfterTransform = readyDir;
 	}
@@ -136,6 +138,7 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	/**
 	 * @param errorDir directory where input file is moved to in case of an error
 	 */
+	@IbisDoc({"directory to which the inputfile is moved in case an error occurs", " "})
 	public void setMove2dirAfterError(String errorDir) {
 		move2dirAfterError = errorDir;
 	}
@@ -144,6 +147,7 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	}
 
 
+	@IbisDoc({"number of copies held of a file with the same name. backup files have a dot and a number suffixed to their name. if set to 0, no backups will be kept.", "5"})
 	public void setNumberOfBackups(int i) {
 		numberOfBackups = i;
 	}
@@ -151,6 +155,7 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 		return numberOfBackups;
 	}
 
+	@IbisDoc({"when set <code>true</code>, the destination file will be deleted if it already exists", "false"})
 	public void setOverwrite(boolean b) {
 		overwrite = b;
 	}
@@ -158,6 +163,7 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 		return overwrite;
 	}
 
+	@IbisDoc({"when set <code>true</code>, the file processed will deleted after being processed, and not stored", "false"})
 	public void setDelete(boolean b) {
 		delete = b;
 	}

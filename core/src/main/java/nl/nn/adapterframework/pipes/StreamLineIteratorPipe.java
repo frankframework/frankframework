@@ -23,6 +23,7 @@ import java.util.Map;
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.ReaderLineIterator;
 
 /**
@@ -69,6 +70,7 @@ public class StreamLineIteratorPipe extends IteratingPipe {
 		return item;
 	}
 
+	@IbisDoc({"when set to <code>false</code>, the inputstream is not closed after it has been used", "true"})
 	public void setCloseInputstreamOnExit(boolean b) {
 		setCloseIteratorOnExit(b);
 	}
@@ -76,6 +78,7 @@ public class StreamLineIteratorPipe extends IteratingPipe {
 		return isCloseIteratorOnExit();
 	}
 
+	@IbisDoc({"when set, each line has to end with this string. if the line doesn't end with this string next lines are added (including line separators) until the total line ends with the given string", ""})
 	public void setEndOfLineString(String string) {
 		endOfLineString = string;
 	}

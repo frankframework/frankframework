@@ -22,6 +22,7 @@ import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
@@ -106,6 +107,7 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 		
 	}
 
+	@IbisDoc({"name of the manager", " "})
 	public void setName(String string) {
 		name = string;
 	}
@@ -113,6 +115,7 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 		return name;
 	}
 
+	@IbisDoc({"this manager is the initial manager, i.e. to be used for the first record", "false"})
 	public void setInitial(boolean b) {
 		initial = b;
 	}

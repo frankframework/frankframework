@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -250,10 +251,12 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		this.proxiedDataSources = proxiedDataSources;
 	}
 
+	@IbisDoc({"&nbsp;", " "})
 	public void setJmsRealm(String jmsRealm) {
 		this.jmsRealm = jmsRealm;
 	}
 
+	@IbisDoc({"the name of the table that contains the mapping", "mapping"})
 	public void setTableName(String tableName) {
 		this.tableName = tableName;
 	}
@@ -262,6 +265,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		return tableName;
 	}
 
+	@IbisDoc({"the name of the column labels are stored in", "label"})
 	public void setLabelField(String labelField) {
 		this.labelField = labelField;
 	}
@@ -270,6 +274,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		return labelField;
 	}
 
+	@IbisDoc({"the name of the column source values are stored in", "valuein"})
 	public void setValueInField(String valueInField) {
 		this.valueInField = valueInField;
 	}
@@ -278,6 +283,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		return valueInField;
 	}
 
+	@IbisDoc({"the name of the column destination values are stored in", "valueout"})
 	public void setValueOutField(String valueOutField) {
 		this.valueOutField = valueOutField;
 	}

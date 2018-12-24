@@ -63,7 +63,7 @@ import org.apache.commons.lang.SystemUtils;
  * </tr>
  * <tr>
  * <td>{@link #setMaxThreads(int) maxThreads}</td>
- * <td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td>
+ * <td>maximum number of threads that may call {@link #doPipe(Object, IPipeLineSession)} simultaneously</td>
  * <td>0 (unlimited)</td>
  * </tr>
  * <tr>
@@ -266,7 +266,7 @@ public class RhinoPipe extends FixedForwardPipe {
             
             jsResult = (String) cx.jsToJava(result, String.class);
 			
-		} catch (org.mozilla.javascript.EcmaError ex) {
+		} catch (EcmaError ex) {
 			throw new PipeRunException(this, "org.mozilla.javascript.EcmaError -> ", ex);
 //System.out.println(ex.getMessage());
         }finally {
@@ -292,7 +292,6 @@ public class RhinoPipe extends FixedForwardPipe {
  * Sets the name of the filename. The fileName should not be specified as an
  * absolute path, but as a resource in the classpath.
  * 
- * @param fileName the name of the file to return the contents from
  */
 	public void setDebug(boolean b) {
 		debug = b;

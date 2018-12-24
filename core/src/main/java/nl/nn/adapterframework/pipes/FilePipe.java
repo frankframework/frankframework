@@ -29,7 +29,6 @@ import nl.nn.adapterframework.util.FileHandler;
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * <tr><td>"exception"</td><td>if an error occurred</td></tr>
  * </table>
  * </p>

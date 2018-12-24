@@ -22,6 +22,7 @@ import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -132,6 +133,7 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 	}
 
 
+	@IbisDoc({"optional identifier for this storage, to be able to share the physical storage between a number of receivers", " "})
 	public void setSlotId(String string) {
 		slotId = string;
 	}

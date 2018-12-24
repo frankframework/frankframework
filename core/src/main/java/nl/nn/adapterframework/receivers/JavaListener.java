@@ -33,6 +33,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.dispatcher.RequestProcessor;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -47,9 +48,9 @@ import org.apache.log4j.Logger;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.receivers.JavaListener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the listener as known to the adapter. An {@link nl.nn.adapterframework.pipes.IbisLocalSender IbisLocalSender} refers to this name in its <code>javaListener</code>-attribute.</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>name of the listener as known to the adapter. An {@link nl.nn.adapterframework.senders.IbisLocalSender IbisLocalSender} refers to this name in its <code>javaListener</code>-attribute.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setServiceName(String) serviceName}</td><td>(optional) name under which the JavaListener registers itself with the RequestDispatcherManager.
- * An {@link nl.nn.adapterframework.pipes.IbisJavaSender IbisJavaSender} refers to this attribute in its <code>serviceName</code>-attribute.
+ * An {@link nl.nn.adapterframework.senders.IbisJavaSender IbisJavaSender} refers to this attribute in its <code>serviceName</code>-attribute.
  * If not empty, the IbisServiceDispatcher.jar must be on the classpath of the server.
  *     <br>N.B. If this java listener is to be only called locally (from within the same Ibis), please leave
  * 	   this attribute empty, to avoid dependency to an IbisServiceDispatcher.jar on the server classpath.</td><td>&nbsp;</td></tr>
@@ -173,8 +174,6 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 
 	/**
 	 * Register listener so that it can be used by a proxy
-	 * @param name
-	 * @param receiver
 	 */
 	private void registerListener() {
 		getListeners().put(getName(), this);
@@ -266,6 +265,7 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		return serviceName;
 	}
 
+	@IbisDoc({"name of the listener as known to the adapter. an {@link nl.nn.adapterframework.pipes.ibislocalsender ibislocalsender} refers to this name in its <code>javalistener</code>-attribute.", " "})
 	@Override
 	public void setName(String name) {
 		this.name = name;
@@ -287,6 +287,7 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		return isolated;
 	}
 
+	@IbisDoc({" when set <code>false</code>, the request is executed asynchronously. this implies <code>isolated=true</code>. n.b. be aware that there is no limit on the number of threads generated", "true"})
 	public void setSynchronous(boolean b) {
 		synchronous = b;
 	}
@@ -298,6 +299,7 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		return opened;
 	}
 
+	@IbisDoc({"should the javalistener throw a listenerexception when it occurs or return an error message", "<code>true</code>"})
 	public void setThrowException(boolean throwException) {
 		this.throwException = throwException;
 	}
@@ -305,6 +307,7 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		return throwException;
 	}
 	
+	@IbisDoc({"when <code>true</code>, the wsdl of the service provided by this listener is available for download ", "<code>false</code>"})
 	public void setHttpWsdl(boolean httpWsdl) {
 		this.httpWsdl = httpWsdl;
 	}

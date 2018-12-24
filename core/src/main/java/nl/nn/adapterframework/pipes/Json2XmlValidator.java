@@ -23,6 +23,7 @@ import javax.json.JsonStructure;
 import javax.xml.transform.Source;
 import javax.xml.validation.ValidatorHandler;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.xs.PSVIProvider;
 import org.xml.sax.XMLReader;
@@ -64,7 +65,7 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
 * <tr><td>{@link #setRoot(String) root}</td><td>name of the root element. Or a comma separated list of names to choose from (only one is allowed)</td><td>&nbsp;</td></tr>
 * <tr><td>{@link #setValidateFile(boolean) validateFile}</td><td>when set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated</td><td><code>false</code></td></tr>
 * <tr><td>{@link #setCharset(String) charset}</td><td>characterset used for reading file, only used when {@link #setValidateFile(boolean) validateFile} is <code>true</code></td><td>UTF-8</td></tr>
-* <tr><td>{@link #setSoapNamespace(String) soapNamespace}</td><td>the namespace of the SOAP Envelope, when this property has a value and the input message is a SOAP Message the content of the SOAP Body is used for validation, hence the SOAP Envelope and SOAP Body elements are not considered part of the message to validate. Please note that this functionality is deprecated, using {@link nl.nn.adapterframework.soap.SoapValidator2} is now the preferred solution in case a SOAP Message needs to be validated, in other cases give this property an empty value</td><td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
+* <tr><td>{@link #setSoapNamespace(String) soapNamespace}</td><td>the namespace of the SOAP Envelope, when this property has a value and the input message is a SOAP Message the content of the SOAP Body is used for validation, hence the SOAP Envelope and SOAP Body elements are not considered part of the message to validate. Please note that this functionality is deprecated, using {@link nl.nn.adapterframework.soap.SoapValidator} is now the preferred solution in case a SOAP Message needs to be validated, in other cases give this property an empty value</td><td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
 * <tr><td>{@link #setIgnoreUnknownNamespaces(boolean) ignoreUnknownNamespaces}</td><td>ignore namespaces in the input message which are unknown</td><td>true when schema or noNamespaceSchemaLocation is used, false otherwise</td></tr>
 * <tr><td>{@link #setWarn(boolean) warn}</td><td>when set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)</td><td><code>true</code></td></tr>
 * <tr><td>{@link #setForwardFailureToSuccess(boolean) forwardFailureToSuccess}</td><td>when set <code>true</code>, the failure forward is replaced by the success forward (like a warning mode)</td><td><code>false</code></td></tr>
@@ -154,7 +155,7 @@ public class Json2XmlValidator extends XmlValidator {
     /**
      * Validate the XML or JSON string. The format is automatically detected.
      * @param input a String
-     * @param session a {@link nl.nn.adapterframework.core.IPipeLineSession Pipelinesession}
+     * @param session a {@link IPipeLineSession Pipelinesession}
 
      * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
      */
@@ -291,6 +292,7 @@ public class Json2XmlValidator extends XmlValidator {
 	public String getTargetNamespace() {
 		return targetNamespace;
 	}
+	@IbisDoc({"ony for json input: namespace of the resulting xml. need only be specified when the namespace of root name is ambiguous in the schema", " "})
 	public void setTargetNamespace(String targetNamespace) {
 		this.targetNamespace = targetNamespace;
 	}
@@ -298,6 +300,7 @@ public class Json2XmlValidator extends XmlValidator {
 	public String getOutputFormat() {
 		return outputFormat;
 	}
+	@IbisDoc({"default format of the result. either 'xml' or 'json'", "xml"})
 	public void setOutputFormat(String outputFormat) {
 		this.outputFormat = outputFormat;
 	}
@@ -305,6 +308,7 @@ public class Json2XmlValidator extends XmlValidator {
 	public String getOutputFormatSessionKey() {
 		return outputFormatSessionKey;
 	}
+	@IbisDoc({"session key to retrieve outputformat from.", "outputformat"})
 	public void setOutputFormatSessionKey(String outputFormatSessionKey) {
 		this.outputFormatSessionKey = outputFormatSessionKey;
 	}
@@ -312,6 +316,7 @@ public class Json2XmlValidator extends XmlValidator {
 	public boolean isCompactJsonArrays() {
 		return compactJsonArrays;
 	}
+	@IbisDoc({"when true assume arrays in json do not have the element containers like in xml", "true"})
 	public void setCompactJsonArrays(boolean compactJsonArrays) {
 		this.compactJsonArrays = compactJsonArrays;
 	}
@@ -319,6 +324,7 @@ public class Json2XmlValidator extends XmlValidator {
 	public boolean isStrictJsonArraySyntax() {
 		return strictJsonArraySyntax;
 	}
+	@IbisDoc({"when true check that incoming json adheres to the specified syntax (compact or full), otherwise both types are accepted for conversion from json to xml", "false"})
 	public void setStrictJsonArraySyntax(boolean strictJsonArraySyntax) {
 		this.strictJsonArraySyntax = strictJsonArraySyntax;
 	}
@@ -326,6 +332,7 @@ public class Json2XmlValidator extends XmlValidator {
 	public boolean isJsonWithRootElements() {
 		return jsonWithRootElements;
 	}
+	@IbisDoc({"when true, assume that json contains/must contain a root element", "false"})
 	public void setJsonWithRootElements(boolean jsonWithRootElements) {
 		this.jsonWithRootElements = jsonWithRootElements;
 	}
@@ -333,6 +340,7 @@ public class Json2XmlValidator extends XmlValidator {
 	public boolean isAutoFormat() {
 		return autoFormat;
 	}
+	@IbisDoc({"when true, the format on 'output' is set to the same as the format of the input message on 'input'", "true"})
 	public void setAutoFormat(boolean autoFormat) {
 		this.autoFormat = autoFormat;
 	}
@@ -347,6 +355,7 @@ public class Json2XmlValidator extends XmlValidator {
 	public boolean isFailOnWildcards() {
 		return failOnWildcards;
 	}
+	@IbisDoc({"when true, an exception is thrown when a wildcard is found in the xml schema when parsing an object. this often indicates that an element is not properly typed in the xml schema, and could lead to ambuigities.", "true"})
 	public void setFailOnWildcards(boolean failOnWildcards) {
 		this.failOnWildcards = failOnWildcards;
 	}
@@ -354,6 +363,7 @@ public class Json2XmlValidator extends XmlValidator {
 	public boolean isAcceptNamespaceLessXml() {
 		return acceptNamespaceLessXml;
 	}
+	@IbisDoc({"when true, all xml is allowed to be without namespaces. when no namespaces are detected (by the presence of the string 'xmlns') in the xml string, the root namespace is added to the xml", "false"})
 	public void setAcceptNamespaceLessXml(boolean acceptNamespaceLessXml) {
 		this.acceptNamespaceLessXml = acceptNamespaceLessXml;
 	}
@@ -361,6 +371,7 @@ public class Json2XmlValidator extends XmlValidator {
 	public boolean isProduceNamespaceLessXml() {
 		return produceNamespaceLessXml;
 	}
+	@IbisDoc({"when true, all xml that is generated is without a namespace set", "false"})
 	public void setProduceNamespaceLessXml(boolean produceNamespaceLessXml) {
 		this.produceNamespaceLessXml = produceNamespaceLessXml;
 	}

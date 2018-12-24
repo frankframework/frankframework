@@ -34,6 +34,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -54,7 +55,7 @@ import org.apache.commons.lang.StringUtils;
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be passed as external variable to the XQuery</td></tr>
+ * <tr><td>{@link Parameter param}</td><td>any parameters defined on the pipe will be passed as external variable to the XQuery</td></tr>
  * </table>
  * </p>
  * 
@@ -135,6 +136,7 @@ public class XQueryPipe extends FixedForwardPipe {
 		}
 	}
 
+	@IbisDoc({"name of the file (resource) on the classpath to read the xquery from", ""})
 	public void setXqueryName(String xqueryName){
 		this.xqueryName = xqueryName;
 	}
@@ -143,6 +145,7 @@ public class XQueryPipe extends FixedForwardPipe {
 		return xqueryName;
 	}
 
+	@IbisDoc({"name of the file on the file system to read the xquery from", ""})
 	public void setXqueryFile(String xqueryFile){
 		this.xqueryFile = xqueryFile;
 	}

@@ -18,6 +18,7 @@ package nl.nn.adapterframework.senders;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 /**
@@ -41,6 +42,7 @@ public class EchoSender extends SenderWithParametersBase {
 		return message;
 	}
 
+	@IbisDoc({"hack to allow to introduce a correlationid", "true"})
 	public void setSynchronous(boolean b) {
 		synchronous = b;
 	}

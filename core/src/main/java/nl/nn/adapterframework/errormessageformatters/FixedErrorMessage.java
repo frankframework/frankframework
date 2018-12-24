@@ -18,6 +18,7 @@ package nl.nn.adapterframework.errormessageformatters;
 import java.net.URL;
 
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -96,6 +97,7 @@ public class FixedErrorMessage extends ErrorMessageFormatter {
 	}
 
 
+	@IbisDoc({"returned message", " "})
 	public void setReturnString(String string) {
 		returnString = string;
 	}
@@ -104,6 +106,7 @@ public class FixedErrorMessage extends ErrorMessageFormatter {
 	}
 
 
+	@IbisDoc({"name of the file containing the resultmessage", " "})
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}

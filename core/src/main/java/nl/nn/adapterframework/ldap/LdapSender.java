@@ -38,6 +38,7 @@ import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.digester.Digester;
 import org.apache.commons.lang.StringUtils;
 
@@ -1327,6 +1328,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		paramList.add(p);
 	}
 
+	@IbisDoc({"name of the sender", " "})
 	@Override
 	public void setName(String name) {
 		this.name = name;
@@ -1343,6 +1345,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		return operation;
 	}
 
+	@IbisDoc({"url to context to search in, e.g. 'ldap://edsnlm01.group.intranet/ou=people, o=ing' to search in te people group of ing cds. used to overwrite the providerurl specified in jmsrealm.", " "})
 	public void setLdapProviderURL(String string) {
 		ldapProviderURL = string;
 	}
@@ -1350,6 +1353,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		return ldapProviderURL;
 	}
 
+	@IbisDoc({"specifies subject to perform operation on. must be one of 'entry' or 'attribute'", "attribute"})
 	public void setManipulationSubject(String string) {
 		manipulationSubject = string;
 	}
@@ -1357,6 +1361,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		return manipulationSubject;
 	}
 
+	@IbisDoc({"comma separated list of attributes to return. when no are attributes specified, all the attributes from the object read are returned.", "<i>all attributes</i>"})
 	public void setAttributesToReturn(String string) {
 		attributesToReturn = string;
 	}
@@ -1364,6 +1369,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		return attributesToReturn;
 	}
 
+	@IbisDoc({"specifies whether connection pooling is used or not", "true when principal not set as parameter, false otherwise"})
 	public void setUsePooling(boolean b) {
 		usePooling = b;
 	}
@@ -1371,6 +1377,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		return usePooling;
 	}
 
+	@IbisDoc({"specifies the time (in ms) that is spent searching for results for operation search", "20000 ms"})
 	public void setSearchTimeout(int i) {
 		searchTimeout = i;
 	}
@@ -1379,6 +1386,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	}
 
 
+	@IbisDoc({"key of session variable used to store cause of errors", "errorreason"})
 	public void setErrorSessionKey(String string) {
 		errorSessionKey = string;
 	}
@@ -1386,6 +1394,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		return errorSessionKey;
 	}
 
+	@IbisDoc({"the maximum number of entries to be returned by a search query, or 0 for unlimited", "<i>0 (unlimited)</i>"})
 	public void setMaxEntriesReturned(int i) {
 		maxEntriesReturned = i;
 	}
@@ -1393,6 +1402,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		return maxEntriesReturned;
 	}
 
+	@IbisDoc({"when true the attributes passed by the input xml are scanned for an attribute with id unicodepwd, when found the value of this attribute will be encoded as required by active directory (a utf-16 encoded unicode string containing the password surrounded by quotation marks) before sending it to the ldap server", "false"})
 	public void setUnicodePwd(boolean b) {
 		unicodePwd = b;
 	}
@@ -1400,6 +1410,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		return unicodePwd;
 	}
 
+	@IbisDoc({"(only used when <code>operation=search/deepsearch</code>) when <code>true</code> the xml '&lt;ldapresult&gt;object not found&lt;/ldapresult&gt;' is returned instead of the partialresultexception 'unprocessed continuation reference(s)'", "false"})
 	public void setReplyNotFound(boolean b) {
 		replyNotFound = b;
 	}

@@ -22,6 +22,7 @@ import java.util.Map;
 
 import javax.xml.transform.Transformer;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -132,6 +133,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 	/**
 	 * URL to the stylesheet used to transform the output of the standard {@link ErrorMessageFormatter} 
 	 */
+	@IbisDoc({"stylesheet to use for transformation", " "})
 	public void setStyleSheet(String newStyleSheet) {
 		styleSheet = newStyleSheet;
 	}
@@ -139,6 +141,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 		return styleSheet;
 	}
 
+	@IbisDoc({"xpathexpression to use for transformation", " "})
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
 	}

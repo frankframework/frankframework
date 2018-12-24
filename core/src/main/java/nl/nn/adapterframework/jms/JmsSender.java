@@ -30,6 +30,7 @@ import javax.jms.Session;
 import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
@@ -70,7 +71,6 @@ import nl.nn.adapterframework.util.DomBuilderException;
  * <tr><td>{@link #setReplyTimeout(int) replyTimeout}</td><td>maximum time in ms to wait for a reply. 0 means no timeout. (Only for synchronous=true)</td><td>5000</td></tr>
  * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>rather useless attribute, and not the same as delivery mode. You probably want to use that.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUseDynamicReplyQueue(boolean) useDynamicReplyQueue}</td><td>when <code>true</code>, a temporary queue is used to receive a reply</td><td>false</td></tr>
  * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>SoapAction string sent as messageproperty</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapHeaderParam(String) soapHeaderParam}</td><td>name of parameter containing SOAP header</td><td>soapHeader</td></tr>
@@ -368,6 +368,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 
 	}
 
+	@IbisDoc({"when <code>true</code>, the sender operates in rr mode: the a reply is expected, either on the queue specified in 'replytoname', or on a dynamically generated temporary queue", "false"})
 	public void setSynchronous(boolean synchronous) {
 		this.synchronous=synchronous;
 	}
@@ -379,10 +380,12 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	public String getReplyTo() {
 		return replyToName;
 	}
+	@IbisDoc({"name of the queue the reply is expected on. this value is send in the jmsreplyto-header with the message.", " "})
 	public void setReplyToName(String replyTo) {
 		this.replyToName = replyTo;
 	}
 	
+	@IbisDoc({"value of the jmstype field", "not set by application"})
 	public void setMessageType(String string) {
 		messageType = string;
 	}
@@ -390,6 +393,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		return messageType;
 	}
 
+	@IbisDoc({"controls mode that messages are sent with: either 'persistent' or 'non_persistent'", "not set by application"})
 	public void setDeliveryMode(String deliveryMode) {
 		int newMode = stringToDeliveryMode(deliveryMode);
 		if (newMode==0) {
@@ -410,10 +414,12 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	public int getPriority() {
 		return priority;
 	}
+	@IbisDoc({"sets the priority that is used to deliver the message. ranges from 0 to 9. defaults to -1, meaning not set. effectively the default priority is set by jms to 4", " "})
 	public void setPriority(int i) {
 		priority = i;
 	}
 
+	@IbisDoc({"when <code>true</code>, messages sent are put in a soap envelope", "<code>false</code>"})
 	public void setSoap(boolean b) {
 		soap = b;
 	}
@@ -435,6 +441,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		return serviceNamespaceURI;
 	}
 
+	@IbisDoc({"soapaction string sent as messageproperty", " "})
 	public void setSoapAction(String string) {
 		soapAction = string;
 	}
@@ -442,6 +449,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		return soapAction;
 	}
 
+	@IbisDoc({"name of parameter containing soap header", "soapheader"})
 	public void setSoapHeaderParam(String string) {
 		soapHeaderParam = string;
 	}
@@ -449,6 +457,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		return soapHeaderParam;
 	}
 
+	@IbisDoc({"maximum time in ms to wait for a reply. 0 means no timeout. (only for synchronous=true)", "5000"})
 	public void setReplyTimeout(int i) {
 		replyTimeout = i;
 	}
@@ -456,6 +465,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		return replyTimeout;
 	}
 
+	@IbisDoc({"session key to store soap header of reply", "soapheader"})
 	public void setReplySoapHeaderSessionKey(String string) {
 		replySoapHeaderSessionKey = string;
 	}
@@ -463,6 +473,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		return replySoapHeaderSessionKey;
 	}
 
+	@IbisDoc({"(only used when synchronous='true' and and replytoname is set) eithter 'correlationid', 'correlationid_from_message' or 'messageid'. indicates wether the server uses the correlationid from the pipeline, the correlationid from the message or the messageid in the correlationid field of the reply. this requires the sender to have set the correlationid at the time of sending.", "messageid"})
 	public void setLinkMethod(String method) {
 		linkMethod=method;
 	}
@@ -470,6 +481,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		return linkMethod;
 	}
 
+	@IbisDoc({"a list with jms headers to add to the ipipelinesession", " "})
 	public void setResponseHeadersToSessionKeys(String responseHeaders) {
 		this.responseHeaders = responseHeaders;
 	}

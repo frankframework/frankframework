@@ -22,6 +22,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.log4j.NDC;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -145,6 +146,7 @@ public class TimeoutGuardPipe extends FixedForwardPipe {
 		return input.toString();
 	}
 
+	@IbisDoc({"when <code>true</code>, a piperunexception is thrown. otherwise the output is only logged as an error (and returned in a xml string with 'error' tags)", "true"})
 	public void setThrowException(boolean b) {
 		throwException = b;
 	}
@@ -157,6 +159,7 @@ public class TimeoutGuardPipe extends FixedForwardPipe {
 		return timeout;
 	}
 
+	@IbisDoc({"timeout in seconds of obtaining a result", "30"})
 	public void setTimeout(int i) {
 		timeout = i;
 	}

@@ -21,6 +21,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -99,6 +100,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 	public String getRole() {
 		return role;
 	}
+	@IbisDoc({"the j2ee role to check. ", " "})
 	public void setRole(String string) {
 		role = string;
 	}
@@ -106,6 +108,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 	public String getNotInRoleForwardName() {
 		return notInRoleForwardName;
 	}
+	@IbisDoc({"user may not assume role", " "})
 	public void setNotInRoleForwardName(String string) {
 		notInRoleForwardName = string;
 	}

@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -345,6 +346,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	}
 
 
+	@IbisDoc({"name of the listener", " "})
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -357,6 +359,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	 * set the directory name to look for files in.
 	 * @see #setWildcard(String)
 	 */
+	@IbisDoc({"directory to look for files", " "})
 	public void setInputDirectory(String inputDirectory) {
 		this.inputDirectory = inputDirectory;
 	}
@@ -368,6 +371,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	/**
 	 * set the {@link nl.nn.adapterframework.util.WildCardFilter wildcard}  to look for files in the specifiek directory, e.g. "*.inp"
 	 */
+	@IbisDoc({"filter of files to look for in inputdirectory", " "})
 	public void setWildcard(String wildcard) {
 		this.wildcard = wildcard;
 	}
@@ -378,6 +382,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		return wildcard;
 	}
 
+	@IbisDoc({"filter of files to be excluded when looking in inputdirectory", " "})
 	public void setExcludeWildcard(String excludeWildcard) {
 		this.excludeWildcard = excludeWildcard;
 	}
@@ -386,6 +391,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		return excludeWildcard;
 	}
 
+	@IbisDoc({"when set a list of files in xml format (&lt;files&gt;&lt;file&gt;/file/name&lt;/file&gt;&lt;file&gt;/another/file/name&lt;/file&gt;&lt;/files&gt;) is passed to the pipleline instead of 1 file name when the specified amount of files is present in the input directory. when set to -1 the list of files is passed to the pipleline whenever one of more files are present.", " "})
 	public void setFileList(Integer fileList) {
 		this.fileList = fileList;
 	}
@@ -394,6 +400,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		return fileList;
 	}
 	
+	@IbisDoc({"when set along with filelist a list of files is passed to the pipleline when the specified amount of ms has passed since the first file for a new list of files was found even if the amount of files specified by filelist isn't present in the input directory yet", " "})
 	public void setFileListForcedAfter(Long fileListForcedAfter) {
 		this.fileListForcedAfter = fileListForcedAfter;
 	}
@@ -402,6 +409,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		return fileListForcedAfter;
 	}
 
+	@IbisDoc({"directory where files are stored <i>while</i> being processed", " "})
 	public void setOutputDirectory(String outputDirectory) {
 		this.outputDirectory = outputDirectory;
 	}
@@ -411,6 +419,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	}
 
 
+	@IbisDoc({"pattern for the name using the messageformat.format method. params: 0=inputfilename, 1=inputfile extension, 2=unique uuid, 3=current date", " "})
 	public void setOutputFilenamePattern(String string) {
 		outputFilenamePattern = string;
 	}
@@ -423,6 +432,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	 * set the time to delay when no records are to be processed and this class has to look for the arrival of a new file
 	 * @deprecated
 	 */
+	@IbisDoc({"waittime to wait between polling. n.b. not used anymore. please use pollinterval on the receiver instead", "10000 [ms]"})
 	public void setResponseTime(long responseTime) {
 		this.responseTime = responseTime;
 	}
@@ -433,6 +443,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		return responseTime;
 	}
 
+	@IbisDoc({"minimal age of file in milliseconds, to avoid receiving a file while it is still being written", "1000 [ms]"})
 	public void setMinStableTime(long minStableTime) {
 		this.minStableTime = minStableTime;
 	}
@@ -443,6 +454,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	/**
 	 * @deprecated
 	 */
+	@IbisDoc({"maximum number of move attempts before throwing an exception. n.b. not used anymore. please use maxretries on the receiver instead", "1"})
 	public void setNumberOfAttempts(int i) {
 		numberOfAttempts = i;
 	}
@@ -457,6 +469,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	/**
 	 * @deprecated
 	 */
+	@IbisDoc({"time waited after unsuccesful try. n.b. not used anymore.", "1000 [ms]"})
 	public void setWaitBeforeRetry(long l) {
 		waitBeforeRetry = l;
 	}
@@ -468,6 +481,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	}
 
 
+	@IbisDoc({"pass the filename without the <code>outputdirectory</code> to the pipeline", "false"})
 	public void setPassWithoutDirectory(boolean b) {
 		passWithoutDirectory = b;
 	}
@@ -476,6 +490,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		return passWithoutDirectory;
 	}
 
+	@IbisDoc({"when set to <code>true</code>, the directory to look for files is created if it does not exist", "false"})
 	public void setCreateInputDirectory(boolean b) {
 		createInputDirectory = b;
 	}
@@ -484,6 +499,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		return createInputDirectory;
 	}
 
+	@IbisDoc({"directory where files are stored <i>after</i> being processed", " "})
 	public void setProcessedDirectory(String processedDirectory) {
 		this.processedDirectory = processedDirectory;
 	}
@@ -491,6 +507,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		return processedDirectory;
 	}
 	
+	@IbisDoc({"number of copies held of a file with the same name. backup files have a dot and a number suffixed to their name. if set to 0, no backups will be kept.", "5"})
 	public void setNumberOfBackups(int i) {
 		numberOfBackups = i;
 	}
@@ -498,6 +515,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		return numberOfBackups;
 	}
 
+	@IbisDoc({"when set <code>true</code>, the destination file will be deleted if it already exists", "false"})
 	public void setOverwrite(boolean overwrite) {
 		this.overwrite = overwrite;
 	}
@@ -505,6 +523,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		return overwrite;
 	}
 
+	@IbisDoc({"when set <code>true</code>, the file processed will deleted after being processed, and not stored", "false"})
 	public void setDelete(boolean b) {
 		delete = b;
 	}
@@ -512,6 +531,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		return delete;
 	}
 
+	@IbisDoc({"when <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before", "false"})
 	public void setFileTimeSensitive(boolean b) {
 		fileTimeSensitive = b;
 	}
@@ -519,6 +539,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		return fileTimeSensitive;
 	}
 
+	@IbisDoc({"when set to <code>true</code>, every file in the directory is passed in a random order", "false"})
 	public void setRandom(boolean b) {
 		random = b;
 	}

@@ -17,6 +17,7 @@ package nl.nn.adapterframework.jdbc;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -108,6 +109,7 @@ public class JdbcTableListener extends JdbcListener {
 
 
 
+	@IbisDoc({"name of the table to be used", " "})
 	public void setTableName(String string) {
 		tableName = string;
 	}
@@ -115,14 +117,17 @@ public class JdbcTableListener extends JdbcListener {
 		return tableName;
 	}
 
+	@IbisDoc({"primary key field of the table, used to identify messages", " "})
 	public void setKeyField(String fieldname) {
 		super.setKeyField(fieldname);
 	}
 
+	@IbisDoc({"(optional) field containing the message data", "<i>same as keyfield</i>"})
 	public void setMessageField(String fieldname) {
 		super.setMessageField(fieldname);
 	}
 
+	@IbisDoc({"field containing the status of the message", " "})
 	public void setStatusField(String fieldname) {
 		statusField = fieldname;
 	}
@@ -130,6 +135,7 @@ public class JdbcTableListener extends JdbcListener {
 		return statusField;
 	}
 
+	@IbisDoc({"(optional) field determining the order in which messages are processed", " "})
 	public void setOrderField(String string) {
 		orderField = string;
 	}
@@ -137,6 +143,7 @@ public class JdbcTableListener extends JdbcListener {
 		return orderField;
 	}
 
+	@IbisDoc({"(optional) field used to store the date and time of the last change of the status field", " "})
 	public void setTimestampField(String fieldname) {
 		timestampField = fieldname;
 	}
@@ -144,6 +151,7 @@ public class JdbcTableListener extends JdbcListener {
 		return timestampField;
 	}
 
+	@IbisDoc({"(optional) value of status field indicating row is available to be processed. if not specified, any row not having any of the other status values is considered available.", " "})
 	public void setStatusValueAvailable(String string) {
 		statusValueAvailable = string;
 	}
@@ -151,6 +159,7 @@ public class JdbcTableListener extends JdbcListener {
 		return statusValueAvailable;
 	}
 
+	@IbisDoc({"value of status field indicating the processing of the row resulted in an error", " "})
 	public void setStatusValueError(String string) {
 		statusValueError = string;
 	}
@@ -158,6 +167,7 @@ public class JdbcTableListener extends JdbcListener {
 		return statusValueError;
 	}
 
+	@IbisDoc({"value of status field indicating row is processed ok", " "})
 	public void setStatusValueProcessed(String string) {
 		statusValueProcessed = string;
 	}

@@ -17,6 +17,7 @@ package nl.nn.adapterframework.xcom;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.*;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.FileUtils;
@@ -274,6 +275,7 @@ public class XComSender extends SenderWithParametersBase {
 	/* (non-Javadoc)
 	 * @see nl.nn.adapterframework.core.INamedObject#setName(java.lang.String)
 	 */
+	@IbisDoc({"name of the sender", " "})
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -282,6 +284,7 @@ public class XComSender extends SenderWithParametersBase {
 		return fileOption;
 	}
 
+	@IbisDoc({"one of create, append or replace", " "})
 	public void setFileOption(String newVal) {
 		fileOption = newVal;
 	}
@@ -290,6 +293,7 @@ public class XComSender extends SenderWithParametersBase {
 		return remoteDirectory;
 	}
 
+	@IbisDoc({"remote directory is prefixed witht the remote file", " "})
 	public void setRemoteDirectory(String string) {
 		remoteDirectory = string;
 	}
@@ -334,46 +338,57 @@ public class XComSender extends SenderWithParametersBase {
 		return userid;
 	}
 
+	@IbisDoc({"one of yes, no, vrl, vrl2, mpack or xpack", " "})
 	public void setCarriageflag(String string) {
 		carriageflag = string;
 	}
 
+	@IbisDoc({"characterset conversion, one of ascii or ebcdic", " "})
 	public void setCodeflag(String string) {
 		codeflag = string;
 	}
 
+	@IbisDoc({"one of yes, no, rle, compact, lzlarge, lzmedium or lzsmall", " "})
 	public void setCompress(String string) {
 		compress = string;
 	}
 
+	@IbisDoc({"name of logfile for xcomtcp to be used", " "})
 	public void setLogfile(String string) {
 		logfile = string;
 	}
 
+	@IbisDoc({"password of user on remote system", " "})
 	public void setPassword(String string) {
 		password = string;
 	}
 
+	@IbisDoc({"port of remote host", " "})
 	public void setPort(String string) {
 		port = string;
 	}
 
+	@IbisDoc({"set queue off or on", " "})
 	public void setQueue(Boolean b) {
 		queue = b;
 	}
 
+	@IbisDoc({"hostname or tcpip adres of remote host", " "})
 	public void setRemoteSystem(String string) {
 		remoteSystem = string;
 	}
 
+	@IbisDoc({"set between 0 (no trace) and 10", " "})
 	public void setTracelevel(Integer i) {
 		tracelevel = i;
 	}
 
+	@IbisDoc({"set truncation off or on", " "})
 	public void setTruncation(Boolean b) {
 		truncation = b;
 	}
 
+	@IbisDoc({"loginname of user on remote system", " "})
 	public void setUserid(String string) {
 		userid = string;
 	}
@@ -382,6 +397,7 @@ public class XComSender extends SenderWithParametersBase {
 		return remoteFilePattern;
 	}
 
+	@IbisDoc({"remote file to create. if empty, the name is equal to the local file", " "})
 	public void setRemoteFilePattern(String string) {
 		remoteFilePattern = string;
 	}
@@ -389,10 +405,12 @@ public class XComSender extends SenderWithParametersBase {
 		return workingDirName;
 	}
 
+	@IbisDoc({"directory in which to run the xcomtcp command", " "})
 	public void setWorkingDirName(String string) {
 		workingDirName = string;
 	}
 
+	@IbisDoc({"path to xcomtcp command", " "})
 	public void setXcomtcp(String string) {
 		xcomtcp = string;
 	}
@@ -405,6 +423,7 @@ public class XComSender extends SenderWithParametersBase {
 		configFile = string;
 	}
 
+	@IbisDoc({"name of the alias to obtain credentials to authenticatie on remote server", " "})
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}

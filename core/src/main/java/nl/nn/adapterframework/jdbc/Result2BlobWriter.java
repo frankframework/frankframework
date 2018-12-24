@@ -19,6 +19,7 @@ import java.io.Writer;
 import java.sql.ResultSet;
 
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.JdbcUtil;
 
@@ -80,14 +81,17 @@ public class Result2BlobWriter extends Result2LobWriterBase {
 		}
 	}
 
+	@IbisDoc({"column that contains the clob to be updated", "1"})
 	public void setBlobColumn(int column) {
 		querySender.setBlobColumn(column);
 	}
 
+	@IbisDoc({"charset used to read and write blobs", "utf-8"})
 	public void setBlobCharset(String charset) {
 		querySender.setBlobCharset(charset);
 	}
 
+	@IbisDoc({"controls whether blobdata is stored compressed in the database", "true"})
 	public void setBlobsCompressed(boolean compressed) {
 		querySender.setBlobsCompressed(compressed);
 	}

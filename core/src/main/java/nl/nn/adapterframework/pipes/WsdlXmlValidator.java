@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Node;
@@ -90,6 +91,7 @@ public class WsdlXmlValidator extends SoapValidator {
 	private Definition definition;
 	private String schemaLocationToAdd;
 
+	@IbisDoc({"the wsdl to read the xsd's from", " "})
 	public void setWsdl(String wsdl) throws ConfigurationException {
 		this.wsdl = wsdl;
 		WSDLReader reader  = FACTORY.newWSDLReader();
@@ -249,16 +251,16 @@ public class WsdlXmlValidator extends SoapValidator {
 		if (getSoapVersion() == null || "1.1".equals(getSoapVersion()) || "any".equals(getSoapVersion())) {
 			XSD xsd = new XSD();
 			xsd.setClassLoader(classLoader);
-			xsd.setNamespace(SoapValidator.SoapVersion.VERSION_1_1.namespace);
-			xsd.setResource(SoapValidator.SoapVersion.VERSION_1_1.location);
+			xsd.setNamespace(SoapVersion.VERSION_1_1.namespace);
+			xsd.setResource(SoapVersion.VERSION_1_1.location);
 			xsd.init();
 			xsds.add(xsd);
 		}
 		if ("1.2".equals(getSoapVersion()) || "any".equals(getSoapVersion())) {
 			XSD xsd = new XSD();
 			xsd.setClassLoader(classLoader);
-			xsd.setNamespace(SoapValidator.SoapVersion.VERSION_1_2.namespace);
-			xsd.setResource(SoapValidator.SoapVersion.VERSION_1_2.location);
+			xsd.setNamespace(SoapVersion.VERSION_1_2.namespace);
+			xsd.setResource(SoapVersion.VERSION_1_2.location);
 			xsd.init();
 			xsds.add(xsd);
 		}
@@ -332,6 +334,7 @@ public class WsdlXmlValidator extends SoapValidator {
 		return xsds;
 	}
 
+	@IbisDoc({"pairs of uri references which will be added to the wsdl", " "})
 	public void setSchemaLocationToAdd(String schemaLocationToAdd) {
 		this.schemaLocationToAdd = schemaLocationToAdd;
 	}
@@ -340,6 +343,7 @@ public class WsdlXmlValidator extends SoapValidator {
 		return schemaLocationToAdd;
 	}
 
+	@IbisDoc({"creates <code>schemalocation</code> attribute based on the wsdl and replaces the namespace of the soap body element", " "})
     public void setSoapBodyNamespace(String soapBodyNamespace) {
         this.soapBodyNamespace = soapBodyNamespace;
     }

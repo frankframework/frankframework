@@ -21,6 +21,7 @@ import java.util.Map;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -213,6 +214,7 @@ public class XsltSender extends SenderWithParametersBase {
 	/**
 	 * Specify the stylesheet to use
 	 */
+	@IbisDoc({"stylesheet to apply to the input message", " "})
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
@@ -224,6 +226,7 @@ public class XsltSender extends SenderWithParametersBase {
 	 * set the "omit xml declaration" on the transfomer. Defaults to true.
 	 * @return true or false
 	 */
+	@IbisDoc({"force the transformer generated from the xpath-expression to omit the xml declaration", "true"})
 	public void setOmitXmlDeclaration(boolean b) {
 		omitXmlDeclaration = b;
 	}
@@ -232,6 +235,7 @@ public class XsltSender extends SenderWithParametersBase {
 	}
 
 
+	@IbisDoc({"alternatively: xpath-expression to create stylesheet from", ""})
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
 	}
@@ -239,6 +243,7 @@ public class XsltSender extends SenderWithParametersBase {
 		return xpathExpression;
 	}
 
+	@IbisDoc({"namespace defintions for xpathexpression. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
@@ -246,6 +251,7 @@ public class XsltSender extends SenderWithParametersBase {
 		return namespaceDefs;
 	}
 
+	@IbisDoc({"either 'text' or 'xml'. only valid for xpathexpression", "text"})
 	public void setOutputType(String string) {
 		outputType = string;
 	}
@@ -254,6 +260,7 @@ public class XsltSender extends SenderWithParametersBase {
 	}
 
 
+	@IbisDoc({"when set <code>true</code> empty tags in the output are removed", "false"})
 	public void setSkipEmptyTags(boolean b) {
 		skipEmptyTags = b;
 	}
@@ -261,6 +268,7 @@ public class XsltSender extends SenderWithParametersBase {
 		return skipEmptyTags;
 	}
 
+	@IbisDoc({"when set <code>true</code>, result is pretty-printed. (only used when <code>skipemptytags=true</code>)", "true"})
 	public void setIndentXml(boolean b) {
 		indentXml = b;
 	}
@@ -268,6 +276,7 @@ public class XsltSender extends SenderWithParametersBase {
 		return indentXml;
 	}
 
+	@IbisDoc({"when set <code>true</code> namespaces (and prefixes) in the input message are removed", "false"})
 	public void setRemoveNamespaces(boolean b) {
 		removeNamespaces = b;
 	}
@@ -279,6 +288,7 @@ public class XsltSender extends SenderWithParametersBase {
 		return xslt2;
 	}
 
+	@IbisDoc({"when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
 	public void setXslt2(boolean b) {
 		xslt2 = b;
 	}

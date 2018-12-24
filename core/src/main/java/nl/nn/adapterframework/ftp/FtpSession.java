@@ -32,6 +32,7 @@ import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.FileUtils;
@@ -689,6 +690,7 @@ public class FtpSession {
 	}
 
 
+	@IbisDoc({"name or ip adres of remote host", " "})
 	public void setHost(String string) {
 		host = string;
 	}
@@ -696,6 +698,7 @@ public class FtpSession {
 		return host;
 	}
 	
+	@IbisDoc({"portnumber of remote host", "21"})
 	public void setPort(int i) {
 		port = i;
 	}
@@ -705,6 +708,7 @@ public class FtpSession {
 
 
 
+	@IbisDoc({"name of the alias to obtain credentials to authenticatie on remote server", " "})
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
@@ -712,6 +716,7 @@ public class FtpSession {
 		return authAlias;
 	}
 
+	@IbisDoc({"name of the user to authenticatie on remote server", " "})
 	public void setUsername(String string) {
 		username = string;
 	}
@@ -719,6 +724,7 @@ public class FtpSession {
 		return username;
 	}
 
+	@IbisDoc({"name of the password to authenticatie on remote server", " "})
 	public void setPassword(String string) {
 		password = string;
 	}
@@ -728,6 +734,7 @@ public class FtpSession {
 	
 
 	
+	@IbisDoc({"proxy host name", " "})
 	public void setProxyHost(String string) {
 		proxyHost = string;
 	}
@@ -735,6 +742,7 @@ public class FtpSession {
 		return proxyHost;
 	}
 
+	@IbisDoc({"proxy port", "1080"})
 	public void setProxyPort(int i) {
 		proxyPort = i;
 	}
@@ -742,6 +750,7 @@ public class FtpSession {
 		return proxyPort;
 	}
 
+	@IbisDoc({"name of the alias to obtain credentials to authenticate on proxy", " "})
 	public void setProxyAuthAlias(String string) {
 		proxyAuthAlias = string;
 	}
@@ -749,6 +758,7 @@ public class FtpSession {
 		return proxyAuthAlias;
 	}
 
+	@IbisDoc({"default user name in case proxy requires authentication", " "})
 	public void setProxyUsername(String string) {
 		proxyUsername = string;
 	}
@@ -756,6 +766,7 @@ public class FtpSession {
 		return proxyUsername;
 	}
 
+	@IbisDoc({"default password in case proxy requires authentication", " "})
 	public void setProxyPassword(String string) {
 		proxyPassword = string;
 	}
@@ -767,6 +778,7 @@ public class FtpSession {
 	int getFtpType() {
 		return ftpType;
 	}
+	@IbisDoc({"one of ftp, sftp, ftps(i) or ftpsi, ftpsx(ssl), ftpsx(tls)", "ftp"})
 	public void setFtpTypeDescription(String string) {
 		ftpTypeDescription = string;
 	}
@@ -775,10 +787,12 @@ public class FtpSession {
 	}
 
 
+	@IbisDoc({"file type, one of ascii, binary", " "})
 	public void setFileType(String string) {
 		fileType = string;
 	}
 
+	@IbisDoc({"if true, the contents of the message is send, otherwise it message contains the local filenames of the files to be send", "false"})
 	public void setMessageIsContent(boolean b) {
 		messageIsContent = b;
 	}
@@ -786,6 +800,7 @@ public class FtpSession {
 		return messageIsContent;
 	}
 
+	@IbisDoc({"if true, passive ftp is used: before data is sent, a pasv command is issued, and the connection is set up by the server", "true"})
 	public void setPassive(boolean b) {
 		passive = b;
 	}
@@ -795,6 +810,7 @@ public class FtpSession {
 
 
 
+	@IbisDoc({"(sftp) transport type in case of sftp (1=standard, 2=http, 3=socks4, 4=socks5)", "4"})
 	public void setProxyTransportType(int i) {
 		proxyTransportType = i;
 	}
@@ -803,6 +819,7 @@ public class FtpSession {
 	}
 
 
+	@IbisDoc({"(sftp) optional preferred encryption from client to server for sftp protocol", " "})
 	public void setPrefCSEncryption(String string) {
 		prefCSEncryption = string;
 	}
@@ -810,6 +827,7 @@ public class FtpSession {
 		return prefCSEncryption;
 	}
 
+	@IbisDoc({"(sftp) optional preferred encryption from server to client for sftp protocol", " "})
 	public void setPrefSCEncryption(String string) {
 		prefSCEncryption = string;
 	}
@@ -818,6 +836,7 @@ public class FtpSession {
 	}
 
 
+	@IbisDoc({"(sftp) path to private key file for sftp authentication", " "})
 	public void setPrivateKeyFilePath(String string) {
 		privateKeyFilePath = string;
 	}
@@ -825,6 +844,7 @@ public class FtpSession {
 		return privateKeyFilePath;
 	}
 	
+	@IbisDoc({"(sftp) name of the alias to obtain credentials for passphrase of private key file", " "})
 	public void setPrivateKeyAuthAlias(String string) {
 		privateKeyAuthAlias = string;
 	}
@@ -832,6 +852,7 @@ public class FtpSession {
 		return privateKeyAuthAlias;
 	}
 
+	@IbisDoc({"(sftp) passphrase of private key file", " "})
 	public void setPrivateKeyPassword(String password) {
 		privateKeyPassword = password;
 	}
@@ -840,6 +861,7 @@ public class FtpSession {
 	}
 
 
+	@IbisDoc({"(sftp) path to file with knownhosts", " "})
 	public void setKnownHostsPath(String string) {
 		knownHostsPath = string;
 	}
@@ -847,6 +869,7 @@ public class FtpSession {
 		return knownHostsPath;
 	}
 
+	@IbisDoc({"(sftp) &nbsp;", "false"})
 	public void setConsoleKnownHostsVerifier(boolean b) {
 		consoleKnownHostsVerifier = b;
 	}
@@ -858,6 +881,7 @@ public class FtpSession {
 
 
 
+	@IbisDoc({"(ftps) resource url to certificate to be used for authentication", " "})
 	public void setCertificate(String string) {
 		certificate = string;
 	}
@@ -865,6 +889,7 @@ public class FtpSession {
 		return certificate;
 	}
 
+	@IbisDoc({"(ftps) &nbsp;", "pkcs12"})
 	public void setCertificateType(String string) {
 		certificateType = string;
 	}
@@ -872,6 +897,7 @@ public class FtpSession {
 		return certificateType;
 	}
 
+	@IbisDoc({"(ftps) alias used to obtain certificate password", " "})
 	public void setCertificateAuthAlias(String string) {
 		certificateAuthAlias = string;
 	}
@@ -879,6 +905,7 @@ public class FtpSession {
 		return certificateAuthAlias;
 	}
 
+	@IbisDoc({"(ftps) &nbsp;", " "})
 	public void setCertificatePassword(String string) {
 		certificatePassword = string;
 	}
@@ -890,11 +917,13 @@ public class FtpSession {
 		return keyManagerAlgorithm;
 	}
 
+	@IbisDoc({"selects the algorithm to generate keymanagers. can be left empty to use the servers default algorithm", "websphere: ibmx509"})
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		this.keyManagerAlgorithm = keyManagerAlgorithm;
 	}
 
 
+	@IbisDoc({"(ftps) resource url to truststore to be used for authentication", " "})
 	public void setTruststore(String string) {
 		truststore = string;
 	}
@@ -902,6 +931,7 @@ public class FtpSession {
 		return truststore;
 	}
 
+	@IbisDoc({"(ftps) &nbsp;", "jks"})
 	public void setTruststoreType(String string) {
 		truststoreType = string;
 	}
@@ -909,6 +939,7 @@ public class FtpSession {
 		return truststoreType;
 	}
 
+	@IbisDoc({"(ftps) alias used to obtain truststore password", " "})
 	public void setTruststoreAuthAlias(String string) {
 		truststoreAuthAlias = string;
 	}
@@ -916,6 +947,7 @@ public class FtpSession {
 		return truststoreAuthAlias;
 	}
 
+	@IbisDoc({"(ftps) &nbsp;", " "})
 	public void setTruststorePassword(String string) {
 		truststorePassword = string;
 	}
@@ -927,12 +959,14 @@ public class FtpSession {
 		return trustManagerAlgorithm;
 	}
 
+	@IbisDoc({"selects the algorithm to generate trustmanagers. can be left empty to use the servers default algorithm", "websphere: ibmx509"})
 	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
 		this.trustManagerAlgorithm = trustManagerAlgorithm;
 	}
 
 
 
+	@IbisDoc({"(ftps) enables the use of certificates on jdk 1.3.x. the sun reference implementation jsse 1.0.3 is included for convenience", "false"})
 	public void setJdk13Compatibility(boolean b) {
 		jdk13Compatibility = b;
 	}
@@ -940,6 +974,7 @@ public class FtpSession {
 		return jdk13Compatibility;
 	}
 
+	@IbisDoc({"(ftps) when true, the hostname in the certificate will be checked against the actual hostname", "true"})
 	public void setVerifyHostname(boolean b) {
 		verifyHostname = b;
 	}
@@ -947,6 +982,7 @@ public class FtpSession {
 		return verifyHostname;
 	}
 
+	@IbisDoc({"(ftps) if true, the server certificate can be self signed", "false"})
 	public void setAllowSelfSignedCertificates(boolean b) {
 		allowSelfSignedCertificates = b;
 	}
@@ -955,6 +991,7 @@ public class FtpSession {
 	}
 
 
+	@IbisDoc({"(ftps) if true, the server returns data via another socket", "false"})
 	public void setProtP(boolean b) {
 		protP = b;
 	}
@@ -966,6 +1003,7 @@ public class FtpSession {
 		return keyboardInteractive;
 	}
 
+	@IbisDoc({"when true, keyboardinteractive is used to login", "false"})
 	public void setKeyboardInteractive(boolean keyboardInteractive) {
 		this.keyboardInteractive = keyboardInteractive;
 	}

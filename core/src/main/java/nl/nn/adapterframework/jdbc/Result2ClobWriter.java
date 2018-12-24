@@ -19,6 +19,7 @@ import java.io.Writer;
 import java.sql.ResultSet;
 
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 
 
@@ -77,6 +78,7 @@ public class Result2ClobWriter extends Result2LobWriterBase {
 		}
 	}
 
+	@IbisDoc({"column that contains the clob to be updated", "1"})
 	public void setClobColumn(int column) {
 		querySender.setClobColumn(column);
 	}

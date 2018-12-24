@@ -24,6 +24,7 @@ import java.util.List;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -36,14 +37,10 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.batch.CleanupOldFilesPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setFilePattern(String) filePattern}</td><td>files that match this pattern will be deleted. Parameters of the pipe are applied to this pattern. If this attribute is not set, the input of the pipe is interpreted as the file to be removed</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFilePatternSessionKey(String) filePatternSessionKey}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setSubdirectories(boolean) subdirectories}</td><td>when <code>true</code>, files  in subdirectories will be deleted, too</td><td>false</td></tr>
  * <tr><td>{@link #setLastModifiedDelta(long) lastModifiedDelta}</td><td>time in milliseconds after last modification that must have passed at least before a file will be deleted (set to negative value to disable)</td><td>0</td></tr>
  * <tr><td>{@link #setDeleteEmptySubdirectories(boolean) deleteEmptySubdirectories}</td><td>when <code>true</code>, empty subdirectories will be deleted, too</td><td>false</td></tr>
- * <tr><td>{@link #setWildcard(String) wildcard}</td><td>filter of files to delete. If not set and a directory is specified, all files in the directory are interpreted to be deleted</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setExcludeWildcard(String) excludeWildcard}</td><td>Filter of files to be excluded for deletion</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMinStableTime(long) minStableTime}</td><td>minimal age of file in milliseconds, to avoid deleting a file while it is still being written (only used when wildcard is set) (set to 0 or negative value to disable)</td><td>1000 [ms]</td></tr>
  * </table>
  * </p>
@@ -192,6 +189,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		}
 	}
 
+	@IbisDoc({"files that match this pattern will be deleted. parameters of the pipe are applied to this pattern. if this attribute is not set, the input of the pipe is interpreted as the file to be removed", " "})
 	public void setFilePattern(String string) {
 		filePattern = string;
 	}
@@ -199,6 +197,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		return filePattern;
 	}
 
+	@IbisDoc({"&nbsp;", " "})
 	public void setFilePatternSessionKey(String string) {
 		filePatternSessionKey = string;
 	}
@@ -206,6 +205,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		return filePatternSessionKey;
 	}
 
+	@IbisDoc({"time in milliseconds after last modification that must have passed at least before a file will be deleted (set to negative value to disable)", "0"})
 	public void setLastModifiedDelta(long l) {
 		lastModifiedDelta = l;
 	}
@@ -213,6 +213,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		return lastModifiedDelta;
 	}
 
+	@IbisDoc({"when <code>true</code>, files  in subdirectories will be deleted, too", "false"})
 	public void setSubdirectories(boolean b) {
 		subdirectories = b;
 	}
@@ -220,6 +221,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		return subdirectories;
 	}
 
+	@IbisDoc({"when <code>true</code>, empty subdirectories will be deleted, too", "false"})
 	public void setDeleteEmptySubdirectories(boolean b) {
 		deleteEmptySubdirectories = b;
 	}
@@ -227,6 +229,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		return deleteEmptySubdirectories;
 	}
 
+	@IbisDoc({"filter of files to delete. if not set and a directory is specified, all files in the directory are interpreted to be deleted", " "})
 	public void setWildcard(String string) {
 		wildcard = string;
 	}
@@ -234,6 +237,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		return wildcard;
 	}
 
+	@IbisDoc({"filter of files to be excluded for deletion", " "})
 	public void setExcludeWildcard(String excludeWildcard) {
 		this.excludeWildcard = excludeWildcard;
 	}
@@ -241,6 +245,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		return excludeWildcard;
 	}
 
+	@IbisDoc({"minimal age of file in milliseconds, to avoid deleting a file while it is still being written (only used when wildcard is set) (set to 0 or negative value to disable)", "1000 [ms]"})
 	public void setMinStableTime(long minStableTime) {
 		this.minStableTime = minStableTime;
 	}

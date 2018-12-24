@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
  * Manager that decides the handlers based on the content of a field in the specified 
@@ -81,6 +82,7 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 	}
 
 
+	@IbisDoc({"startposition of the field in the record that identifies the recordtype (first character is 0)", "0"})
 	public void setStartPosition(int i) {
 		startPosition = i;
 	}
@@ -88,6 +90,7 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 		return startPosition;
 	}
 
+	@IbisDoc({"if endposition >= 0 then this field contains the endposition of the recordtype field in the record; all characters beyond this position are ignored. else, if endposition < 0 then it depends on the length of the recordkey in the flow", "-1"})
 	public void setEndPosition(int i) {
 		endPosition = i;
 	}

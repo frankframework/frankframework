@@ -30,6 +30,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -205,6 +206,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe {
 		}
 	}
 
+	@IbisDoc({"the name of the element to iterate over (alternatively: <code>elementchain</code>)", ""})
 	public void setElementName(String string) {
 		elementName = string;
 	}
@@ -213,6 +215,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe {
 		return elementName;
 	}
 
+	@IbisDoc({"the name of the element to iterate over, preceded with all ancestor elements and separated by semicolons (e.g. adapter;pipeline;pipe)", ""})
 	public void setElementChain(String string) {
 		elementChain = string;
 	}

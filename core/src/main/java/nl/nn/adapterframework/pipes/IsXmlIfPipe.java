@@ -20,6 +20,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -89,6 +90,7 @@ public class IsXmlIfPipe extends AbstractPipe {
 		return new PipeRunResult(pipeForward, input);
 	}
 
+	@IbisDoc({"forward returned when 'true'</code>", "then"})
 	public void setThenForwardName(String thenForwardName) {
 		this.thenForwardName = thenForwardName;
 	}
@@ -97,6 +99,7 @@ public class IsXmlIfPipe extends AbstractPipe {
 		return thenForwardName;
 	}
 
+	@IbisDoc({"forward returned when 'false'", "else"})
 	public void setElseForwardName(String elseForwardName) {
 		this.elseForwardName = elseForwardName;
 	}
@@ -109,6 +112,7 @@ public class IsXmlIfPipe extends AbstractPipe {
 		return elseForwardOnEmptyInput;
 	}
 
+	@IbisDoc({"return elseforward when input is empty (or thenforward)", "true"})
 	public void setElseForwardOnEmptyInput(boolean b) {
 		elseForwardOnEmptyInput = b;
 	}

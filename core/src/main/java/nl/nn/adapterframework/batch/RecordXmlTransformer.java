@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -134,6 +135,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 		return record.toXML();
 	}
 
+	@IbisDoc({"comma separated string with tagnames for the individual input fields (related using there positions). if you leave a tagname empty, the field is not xml-ized", " "})
 	public void setOutputFields(String fieldLengths) {
 		StringTokenizer st = new StringTokenizer(fieldLengths, ",");
 		while (st.hasMoreTokens()) {
@@ -154,6 +156,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 
 
 
+	@IbisDoc({"roottag for the generated xml document", "record"})
 	public void setRootTag(String string) {
 		rootTag = string;
 	}
@@ -161,6 +164,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 		return rootTag;
 	}
 
+	@IbisDoc({"alternatively: xpath-expression to create stylesheet from", " "})
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
 	}
@@ -168,6 +172,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 		return xpathExpression;
 	}
 
+	@IbisDoc({"namespace defintions for xpathexpression. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", " "})
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
@@ -175,6 +180,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 		return namespaceDefs;
 	}
 
+	@IbisDoc({"name of stylesheet to transform an individual record", " "})
 	public void setStyleSheetName(String string) {
 		styleSheetName = string;
 	}
@@ -182,6 +188,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 		return styleSheetName;
 	}
 
+	@IbisDoc({"either 'text' or 'xml'. only valid for xpathexpression", "text"})
 	public void setOutputType(String string) {
 		outputType = string;
 	}
@@ -189,6 +196,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 		return outputType;
 	}
 
+	@IbisDoc({"force the transformer generated from the xpath-expression to omit the xml declaration", "true"})
 	public void setOmitXmlDeclaration(boolean b) {
 		omitXmlDeclaration = b;
 	}
@@ -196,6 +204,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 		return omitXmlDeclaration;
 	}
 
+	@IbisDoc({"string which ends the record and must be ignored", " "})
 	public void setEndOfRecord(String string) {
 		endOfRecord = string;
 	}

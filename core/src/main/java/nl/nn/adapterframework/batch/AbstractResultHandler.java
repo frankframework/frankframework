@@ -17,6 +17,7 @@ package nl.nn.adapterframework.batch;
 
 import java.util.List;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -95,6 +96,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	}
 
 
+	@IbisDoc({"name of the resulthandler", " "})
 	@Override
 	public void setName(String string) {
 		name = string;
@@ -104,6 +106,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 		return name;
 	}
 
+	@IbisDoc({"<i>deprecated</i> prefix that has to be written before record, if the record is in another block than the previous record", " "})
 	public void setPrefix(String string) {
 		prefix = string;
 	}
@@ -115,6 +118,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 		return StringUtils.isNotEmpty(getPrefix());
 	}
 
+	@IbisDoc({"<i>deprecated</i> suffix that has to be written after the record, if the record is in another block than the next record. <br/>n.b. if a suffix is set without a prefix, it is only used at the end of processing (i.e. at the end of the file) as a final close", " "})
 	public void setSuffix(String string) {
 		suffix = string;
 	}
@@ -122,6 +126,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 		return suffix;
 	}
 
+	@IbisDoc({"if set <code>true</code>, this resulthandler is the default for all {@link recordhandlingflow flow}s that do not have a handler specified", "false"})
 	@Override
 	public void setDefault(boolean isDefault) {
 		this.defaultResultHandler = isDefault;
@@ -131,6 +136,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 		return defaultResultHandler;
 	}
 
+	@IbisDoc({"isnewrecordtype", "true"})
 	public void setBlockByRecordType(boolean b) {
 		blockByRecordType = b;
 	}

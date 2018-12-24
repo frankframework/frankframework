@@ -23,6 +23,7 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.soap.Wsdl;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
@@ -86,6 +87,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		return from;
 	}
 
+	@IbisDoc({"either parent (adapter of pipeline which contains this pipe) or input (name of adapter specified by input of pipe)", "parent"})
 	public void setFrom(String from) {
 		this.from = from;
 	}

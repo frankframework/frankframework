@@ -21,6 +21,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 
 
 /**
@@ -95,6 +96,7 @@ public class FilenameSwitch extends AbstractPipe {
 	}
 	
 	
+	@IbisDoc({"forward returned when the forward or pipename derived from the filename that was the input could not be found.</i>", " "})
 	public void setNotFoundForwardName(String notFound){
 		notFoundForwardName=notFound;
 	}
@@ -102,6 +104,7 @@ public class FilenameSwitch extends AbstractPipe {
 		return notFoundForwardName;
 	}
 	
+	@IbisDoc({"convert the result to lowercase, before searching for a corresponding forward", "true"})
 	public void setToLowercase(boolean b) {
 		toLowercase = b;
 	}

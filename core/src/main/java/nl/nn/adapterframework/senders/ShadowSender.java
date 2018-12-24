@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.springframework.core.task.TaskExecutor;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -228,6 +229,7 @@ public class ShadowSender extends ParallelSenders {
 	}
 
 
+	@IbisDoc({"the default or original sender", " "})
 	public void setOriginalSender(String sender) {
 		this.originalSender = sender;
 	}
@@ -235,6 +237,7 @@ public class ShadowSender extends ParallelSenders {
 		return originalSender;
 	}
 
+	@IbisDoc({"the sender which will process all results", " "})
 	public void setResultSender(String sender) {
 		this.resultSender = sender;
 	}

@@ -30,6 +30,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.IteratingPipe;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -207,6 +208,7 @@ public class ZipIteratorPipe extends IteratingPipe {
 
 
 
+	@IbisDoc({"session key used to store contents of each zip entry", "zipdata"})
 	public void setContentsSessionKey(String string) {
 		contentsSessionKey = string;
 	}
@@ -214,6 +216,7 @@ public class ZipIteratorPipe extends IteratingPipe {
 		return contentsSessionKey;
 	}
 
+	@IbisDoc({"when set to <code>false</code>, a string containing the contents of the entry is placed under the session key, instead of the inputstream to the contents", "true"})
 	public void setStreamingContents(boolean b) {
 		streamingContents = b;
 	}
@@ -221,6 +224,7 @@ public class ZipIteratorPipe extends IteratingPipe {
 		return streamingContents;
 	}
 
+	@IbisDoc({"when set to <code>false</code>, the inputstream is not closed after it has been used", "true"})
 	public void setCloseInputstreamOnExit(boolean b) {
 		closeInputstreamOnExit = b;
 	}
@@ -232,6 +236,7 @@ public class ZipIteratorPipe extends IteratingPipe {
 		return closeInputstreamOnExit;
 	}
 
+	@IbisDoc({"charset used when reading the contents of the entry (only used if streamingcontens=false>", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}
@@ -239,6 +244,7 @@ public class ZipIteratorPipe extends IteratingPipe {
 		return charset;
 	}
 
+	@IbisDoc({"when set to <code>true</code>, a possible bytes order mark (bom) at the start of the file is skipped (only used for encoding uft-8)", "false"})
 	public void setSkipBOM(boolean b) {
 		skipBOM = b;
 	}

@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
@@ -71,11 +72,13 @@ public class BatchBlobTransformerPipe extends BatchTransformerPipeBase {
 		}
 	}
 
+	@IbisDoc({"charset used to read and write blobs", "utf-8"})
 	public void setBlobCharset(String charset) {
 		setCharset(charset);
 		ConfigurationWarnings.getInstance().add(log,"attribute blobCharset is replaced by charset for class ["+this.getClass().getName()+"]");
 	}
 
+	@IbisDoc({"controls whether blobdata is stored compressed in the database", "true"})
 	public void setBlobsCompressed(boolean compressed) {
 		querySender.setBlobsCompressed(compressed);
 	}

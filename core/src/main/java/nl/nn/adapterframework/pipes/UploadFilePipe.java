@@ -23,6 +23,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -114,6 +115,7 @@ public class UploadFilePipe extends FixedForwardPipe {
 		return new PipeRunResult(getForward(), dir.getPath());
 	}
 
+	@IbisDoc({"base directory where files are unzipped to", " "})
 	public void setDirectory(String string) {
 		directory = string;
 	}
@@ -122,6 +124,7 @@ public class UploadFilePipe extends FixedForwardPipe {
 		return directory;
 	}
 
+	@IbisDoc({"the session key that contains the base directory where files are unzipped to", "destination"})
 	public void setDirectorySessionKey(String string) {
 		directorySessionKey = string;
 	}
@@ -134,6 +137,7 @@ public class UploadFilePipe extends FixedForwardPipe {
 		return sessionKey;
 	}
 
+	@IbisDoc({"name of the key in the <code>pipelinesession</code> which contains the inputstream", "file"})
 	public void setSessionKey(String string) {
 		sessionKey = string;
 	}

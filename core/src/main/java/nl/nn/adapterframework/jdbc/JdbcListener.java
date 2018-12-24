@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.JtaUtil;
@@ -358,12 +359,14 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 	}
 
 
+	@IbisDoc({"primary key field of the table, used to identify messages", " "})
 	protected void setKeyField(String fieldname) {
 		keyField = fieldname;
 	}
 	public String getKeyField() {
 		return keyField;
 	}
+	@IbisDoc({"(optional) field containing the message data", "<i>same as keyfield</i>"})
 	protected void setMessageField(String fieldname) {
 		messageField = fieldname;
 	}
@@ -385,6 +388,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		return commitLocalTransactionQuery;
 	}
 
+	@IbisDoc({"type of the field containing the message data: either string, clob or blob", "<i>string</i>"})
 	public void setMessageFieldType(String string) {
 		messageFieldType = string;
 	}
@@ -392,6 +396,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		return messageFieldType;
 	}
 
+	@IbisDoc({"charset used to read blobs", "utf-8"})
 	public void setBlobCharset(String string) {
 		blobCharset = string;
 	}
@@ -399,6 +404,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		return blobCharset;
 	}
 
+	@IbisDoc({"controls whether blobdata is considered stored compressed in the database", "true"})
 	public void setBlobsCompressed(boolean b) {
 		blobsCompressed = b;
 	}
@@ -406,6 +412,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		return blobsCompressed;
 	}
 
+	@IbisDoc({"controls automatically whether blobdata is stored compressed and/or serialized in the database", "false"})
 	public void setBlobSmartGet(boolean b) {
 		blobSmartGet = b;
 	}

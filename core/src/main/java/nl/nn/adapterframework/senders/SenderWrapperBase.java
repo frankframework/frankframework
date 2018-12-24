@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.senders;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.cache.ICacheAdapter;
@@ -126,6 +127,7 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 
 	public abstract void setSender(ISender sender);
 	
+	@IbisDoc({"when set, input is taken from this session key, instead of regular input", " "})
 	public void setGetInputFromSessionKey(String string) {
 		getInputFromSessionKey = string;
 	}
@@ -133,6 +135,7 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 		return getInputFromSessionKey;
 	}
 
+	@IbisDoc({"when set, this fixed value is taken as input, instead of regular input", " "})
 	public void setGetInputFromFixedValue(String string) {
 		getInputFromFixedValue = string;
 	}
@@ -140,6 +143,7 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 		return getInputFromFixedValue;
 	}
 
+	@IbisDoc({"when set, the result is stored under this session key", " "})
 	public void setStoreResultInSessionKey(String string) {
 		storeResultInSessionKey = string;
 	}
@@ -147,6 +151,7 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 		return storeResultInSessionKey;
 	}
 
+	@IbisDoc({"when set <code>true</code>, the input of a pipe is restored before processing the next one", "false"})
 	public void setPreserveInput(boolean preserveInput) {
 		this.preserveInput = preserveInput;
 	}

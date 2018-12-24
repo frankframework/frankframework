@@ -29,6 +29,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.cxf.MessageProvider;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.soap.SoapWrapper;
@@ -185,6 +186,7 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 		return "name ["+getName()+"]";
 	}
 
+	@IbisDoc({"when <code>true</code> the soap envelope is removed from received messages and a soap envelope is added to returned messages (soap envelope will not be visible to the pipeline)", "<code>true</code>"})
 	public void setSoap(boolean b) {
 		soap = b;
 	}
@@ -195,6 +197,7 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 	public String getServiceNamespaceURI() {
 		return serviceNamespaceURI;
 	}
+	@IbisDoc({"namespace of the service that is provided by the adapter of this listener", " "})
 	public void setServiceNamespaceURI(String string) {
 		serviceNamespaceURI = string;
 	}

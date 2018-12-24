@@ -17,6 +17,7 @@ package nl.nn.adapterframework.util;
 
 import java.io.File;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -113,6 +114,7 @@ public class DirectoryCleaner {
 		}
 	}
 
+	@IbisDoc({"directory to be cleaned up", " "})
 	public void setDirectory(String directory) {
 		this.directory = directory;
 	}
@@ -121,6 +123,7 @@ public class DirectoryCleaner {
 		return directory;
 	}
 
+	@IbisDoc({"time (with suffix 'd', 'h', 'm' or 's' in milliseconds) that must have passed at least before a file will be deleted", "30d"})
 	public void setRetention(String retention) {
 		this.retention = retention;
 	}
@@ -129,6 +132,7 @@ public class DirectoryCleaner {
 		return retention;
 	}
 
+	@IbisDoc({"when <code>true</code>, files in subdirectories will be deleted, too", "false"})
 	public void setSubdirectories(boolean b) {
 		subdirectories = b;
 	}
@@ -137,6 +141,7 @@ public class DirectoryCleaner {
 		return subdirectories;
 	}
 
+	@IbisDoc({"when <code>true</code>, empty subdirectories will be deleted, too", "false"})
 	public void setDeleteEmptySubdirectories(boolean b) {
 		deleteEmptySubdirectories = b;
 	}
@@ -145,6 +150,7 @@ public class DirectoryCleaner {
 		return deleteEmptySubdirectories;
 	}
 
+	@IbisDoc({"when set <code>true</code>, send warnings to logging and console about not existing directories", "true"})
 	public void setNotExistWarn(boolean b) {
 		notExistWarn = b;
 	}

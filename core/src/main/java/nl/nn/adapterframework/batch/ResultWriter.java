@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 import org.apache.commons.lang.StringUtils;
@@ -182,6 +183,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 	}
 
 	
+	@IbisDoc({"string that is written before any data of results is written", "&lt;document name=&quot;#name#&quot;&gt;"})
 	public void setOnOpenDocument(String line) {
 		onOpenDocument = line;
 	}
@@ -189,6 +191,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		return onOpenDocument;
 	}
 
+	@IbisDoc({"string that is written after all data of results is written", "&lt;/document&gt;"})
 	public void setOnCloseDocument(String line) {
 		onCloseDocument = line;
 	}
@@ -196,6 +199,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		return onCloseDocument;
 	}
 
+	@IbisDoc({"string that is written before the start of each logical block, as defined in the flow", "&lt;#name#&gt;"})
 	public void setOnOpenBlock(String line) {
 		onOpenBlock = line;
 	}
@@ -203,6 +207,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		return onOpenBlock;
 	}
 
+	@IbisDoc({"string that is written after the end of each logical block, as defined in the flow", "&lt;/#name#&gt;"})
 	public void setOnCloseBlock(String line) {
 		onCloseBlock = line;
 	}
@@ -210,6 +215,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		return onCloseBlock;
 	}
 
+	@IbisDoc({"string that is replaced by name of block or name of stream in above strings", "#name#"})
 	public void setBlockNamePattern(String pattern) {
 		blockNamePattern = pattern;
 	}

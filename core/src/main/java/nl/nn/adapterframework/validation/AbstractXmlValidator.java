@@ -26,6 +26,7 @@ import java.util.Set;
 
 import javax.xml.validation.ValidatorHandler;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.xml.sax.InputSource;
@@ -271,6 +272,7 @@ public abstract class AbstractXmlValidator {
      * <p> see property http://apache.org/xml/features/validation/schema-full-checking</p>
      * Defaults to <code>false</code>;
      */
+	@IbisDoc({"perform addional memory intensive checks", "<code>false</code>"})
     public void setFullSchemaChecking(boolean fullSchemaChecking) {
         this.fullSchemaChecking = fullSchemaChecking;
     }
@@ -302,6 +304,7 @@ public abstract class AbstractXmlValidator {
      * Indicates wether to throw an error (piperunexception) when
      * the xml is not compliant.
      */
+	@IbisDoc({"should the xmlvalidator throw a piperunexception on a validation error (if not, a forward with name 'failure' should be defined.", "<code>false</code>"})
     public void setThrowException(boolean throwException) {
         this.throwException = throwException;
     }
@@ -312,6 +315,7 @@ public abstract class AbstractXmlValidator {
 	/**
 	 * The sessionkey to store the reasons of misvalidation in.
 	 */
+	@IbisDoc({"if set: key of session variable to store reasons of mis-validation in", "failurereason"})
 	public void setReasonSessionKey(String reasonSessionKey) {
 		this.reasonSessionKey = reasonSessionKey;
 	}
@@ -319,6 +323,7 @@ public abstract class AbstractXmlValidator {
 		return reasonSessionKey;
 	}
 
+	@IbisDoc({"like <code>reasonsessionkey</code> but stores reasons in xml format and more extensive", "xmlfailurereason"})
 	public void setXmlReasonSessionKey(String xmlReasonSessionKey) {
 		this.xmlReasonSessionKey = xmlReasonSessionKey;
 	}
@@ -326,6 +331,7 @@ public abstract class AbstractXmlValidator {
 		return xmlReasonSessionKey;
 	}
 
+	@IbisDoc({"when set <code>true</code>, the input is assumed to be the name of the file to be validated. otherwise the input itself is validated", "<code>false</code>"})
 	public void setValidateFile(boolean b) {
 		validateFile = b;
 	}
@@ -333,6 +339,7 @@ public abstract class AbstractXmlValidator {
 		return validateFile;
 	}
 
+	@IbisDoc({"setvalidatefile", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}

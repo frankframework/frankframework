@@ -18,6 +18,7 @@ package nl.nn.adapterframework.http;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPushingListener;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 
 import org.apache.commons.lang.StringUtils;
@@ -71,6 +72,7 @@ public class HttpListener extends PushingListenerAdapter implements HasPhysicalD
 	public String getServiceName() {
 		return serviceName;
 	}
+	@IbisDoc({"name of the service that is provided by the adapter of this listener", " "})
 	public void setServiceName(String string) {
 		serviceName = string;
 	}

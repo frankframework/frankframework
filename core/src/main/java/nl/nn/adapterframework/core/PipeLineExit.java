@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.doc.IbisDoc;
+
 /**
  * The PipeLineExit, that represents a terminator of the PipeLine, provides a placeholder
  * for a path (corresponding to a pipeforward) and a state (that is returned to the receiver).
@@ -57,6 +59,7 @@ public class PipeLineExit {
 	public String getPath() {
 		return path;
 	}
+	@IbisDoc({"name of the pipeline exit", " "})
 	public void setPath(String newPath) {
 		path = newPath;
 	}
@@ -64,6 +67,7 @@ public class PipeLineExit {
 	public String getState() {
 		return state;
 	}
+	@IbisDoc({"the exit state defines possible exists to the pipeline. the state can be one of the following: <code>success, error</code>", " "})
 	public void setState(String newState) {
 		state = newState;
 	}
@@ -71,12 +75,14 @@ public class PipeLineExit {
 	public int getExitCode() {
 		return exitCode;
 	}
+	@IbisDoc({"http statuscode e.g. <code>500</code>", "200"})
 	public void setCode(String code) {
 		this.exitCode = Integer.parseInt(code);
 	}
 	public boolean getEmptyResult() {
 		return emptyResult;
 	}
+	@IbisDoc({"when using restlistener and set to <code>true</code>, this removes the output and shows a blank page, the output is still logged in the ladybug testtool", "false"})
 	public void setEmpty(String b) {
 		emptyResult = Boolean.parseBoolean(b);
 	}

@@ -24,6 +24,7 @@ import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -106,6 +107,7 @@ public class PushingListenerAdapter implements IPushingListener, ServiceClient {
 	public String getName() {
 		return name;
 	}
+	@IbisDoc({"name of the listener as known to the adapter", " "})
 	public void setName(String name) {
 		this.name=name;
 	}

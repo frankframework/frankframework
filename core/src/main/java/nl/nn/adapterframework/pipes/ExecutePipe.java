@@ -21,6 +21,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.ProcessUtil;
 
 import org.apache.commons.lang.StringUtils;
@@ -67,6 +68,7 @@ public class ExecutePipe extends FixedForwardPipe {
 		}
 	}
 
+	@IbisDoc({"the command to execute (if command and commandsessionkey are empty, the command is taken from the input of the pipe)", " "})
 	public void setCommand(String command) {
 		this.command = command;
 	}
@@ -74,6 +76,7 @@ public class ExecutePipe extends FixedForwardPipe {
 		return command;
 	}
 
+	@IbisDoc({"the session key that holds the command to execute", " "})
 	public void setCommandSessionKey(String commandSessionKey) {
 		this.commandSessionKey = commandSessionKey;
 	}

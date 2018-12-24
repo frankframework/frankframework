@@ -37,6 +37,7 @@ import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
@@ -1108,6 +1109,7 @@ public class JobDef {
 		return jobGroup;
 	}
 
+	@IbisDoc({"name of the job", " "})
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -1115,6 +1117,7 @@ public class JobDef {
 		return name;
 	}
 	
+	@IbisDoc({"optional description of the job", " "})
 	public void setDescription(String description) {
 		this.description = description;
 	}
@@ -1122,6 +1125,7 @@ public class JobDef {
 	   return description;
 	}
 
+	@IbisDoc({"cron expression that determines the frequency of execution (see below)", " "})
 	public void setCronExpression(String cronExpression) {
 		this.cronExpression = cronExpression;
 	}
@@ -1129,6 +1133,7 @@ public class JobDef {
 		return cronExpression;
 	}
 
+	@IbisDoc({"repeat the job at the specified number of ms. keep cronexpression empty to use interval. set to 0 to only run once at startup of the application. a value of 0 in combination with function 'sendmessage' will set dependencytimeout on the ibislocalsender to -1 the keep waiting indefinitely instead of max 60 seconds for the adapter to start.", " "})
 	public void setInterval(long interval) {
 		this.interval = interval;
 	}
@@ -1137,6 +1142,7 @@ public class JobDef {
 		return interval;
 	}
 
+	@IbisDoc({"one of: stopadapter, startadapter, stopreceiver, startreceiver, sendmessage, executequery", " "})
 	public void setFunction(String function) {
 		this.function = function;
 	}
@@ -1144,6 +1150,7 @@ public class JobDef {
 		return function;
 	}
 
+	@IbisDoc({"configuration on which job operates", " "})
 	public void setConfigurationName(String configurationName) {
 		this.configurationName = configurationName;
 	}
@@ -1151,6 +1158,7 @@ public class JobDef {
 		return configurationName;
 	}
  
+	@IbisDoc({"adapter on which job operates", " "})
 	public void setAdapterName(String adapterName) {
 		this.adapterName = adapterName;
 	}
@@ -1158,6 +1166,7 @@ public class JobDef {
 		return adapterName;
 	}
   
+	@IbisDoc({"receiver on which job operates. if function is 'sendmessage' is used this name is also used as name of javalistener", " "})
 	public void setReceiverName(String receiverName) {
 		this.receiverName = receiverName;
 	}
@@ -1165,6 +1174,7 @@ public class JobDef {
 		return receiverName;
 	}
 
+	@IbisDoc({"the sql query text to be executed", " "})
 	public void setQuery(String query) {
 		this.query = query;
 	}
@@ -1175,10 +1185,12 @@ public class JobDef {
 	public int getQueryTimeout() {
 		return queryTimeout;
 	}
+	@IbisDoc({"the number of seconds the driver will wait for a statement object to execute. if the limit is exceeded, a timeoutexception is thrown. 0 means no timeout", "0"})
 	public void setQueryTimeout(int i) {
 		queryTimeout = i;
 	}
 
+	@IbisDoc({"&nbsp;", " "})
 	public void setJmsRealm(String jmsRealm) {
 		this.jmsRealm = jmsRealm;
 	}
@@ -1213,6 +1225,7 @@ public class JobDef {
 		return transactionAttribute;
 	}
 
+	@IbisDoc({"timeout (in seconds) of transaction started to process a message.", "<code>0</code> (use system default)</code>"})
 	public void setTransactionTimeout(int i) {
 		transactionTimeout = i;
 	}
@@ -1227,6 +1240,7 @@ public class JobDef {
 		return txManager;
 	}
 
+	@IbisDoc({"the number of threads that may execute concurrently", "1"})
 	public void setNumThreads(int newNumThreads) {
 		numThreads = newNumThreads;
 	}
@@ -1240,6 +1254,7 @@ public class JobDef {
 		return messageKeeper;
 	}
 
+	@IbisDoc({"number of message displayed in ibisconsole", "10"})
 	public void setMessageKeeperSize(int size) {
 		this.messageKeeperSize = size;
 	}

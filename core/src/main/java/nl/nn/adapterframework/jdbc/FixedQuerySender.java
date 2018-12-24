@@ -21,6 +21,7 @@ import java.sql.SQLException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -99,6 +100,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase {
 	 * Sets the SQL-query text to be executed each time sendMessage() is called.
 	 * @param query
 	 */
+	@IbisDoc({"the sql query text to be excecuted each time sendmessage() is called", " "})
 	public void setQuery(String query) {
 		this.query = query;
 	}
@@ -106,6 +108,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase {
 		return query;
 	}
 
+	@IbisDoc({"when set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the select statement (by appending ' for update nowait skip locked' to the end of the query)", "false"})
 	public void setLockRows(boolean b) {
 		lockRows = b;
 	}
@@ -114,6 +117,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase {
 		return lockRows;
 	}
 
+	@IbisDoc({"when set and >=0, ' for update wait #' is used instead of ' for update nowait skip locked'", "-1"})
 	public void setLockWait(int i) {
 		lockWait = i;
 	}

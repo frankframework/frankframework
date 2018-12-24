@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.ParallelSenderExecutor;
 import nl.nn.adapterframework.senders.ParallelSenders;
@@ -110,9 +111,9 @@ import org.springframework.core.task.TaskExecutor;
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.core.ISender sender}</td><td>specification of sender to send messages with</td></tr>
+ * <tr><td>{@link ISender sender}</td><td>specification of sender to send messages with</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}</td><td>specification of listener to listen to for replies</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be handed to the sender, if this is a {@link nl.nn.adapterframework.core.ISenderWithParameters ISenderWithParameters}</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}</td></tr>
  * <tr><td><code>inputValidator</code></td><td>specification of Pipe to validate input messages</td></tr>
  * <tr><td><code>outputValidator</code></td><td>specification of Pipe to validate output messages</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.ITransactionalStorage messageLog}</td><td>log of all messages sent</td></tr>
@@ -494,6 +495,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		return taskExecutor;
 	}
 
+	@IbisDoc({" when set <code>true</code>, the calls for all items are done in parallel (a new thread is started for each call). when collectresults set <code>true</code>, this pipe will wait for all calls to finish before results are collected and pipe result is returned", "false"})
 	public void setParallel(boolean parallel) {
 		this.parallel = parallel;
 	}
@@ -509,6 +511,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 	}
 
 
+	@IbisDoc({"postprocess each partial result, to remove the xml-declaration, as this is not allowed inside an xml-document", "false"})
 	public void setRemoveXmlDeclarationInResults(boolean b) {
 		removeXmlDeclarationInResults = b;
 	}
@@ -516,6 +519,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		return removeXmlDeclarationInResults;
 	}
 
+	@IbisDoc({"controls whether all the results of each iteration will be collected in one result message. if set <code>false</code>, only a small summary is returned", "true"})
 	public void setCollectResults(boolean b) {
 		collectResults = b;
 	}
@@ -528,6 +532,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 	}
 
 
+	@IbisDoc({"stylesheet to apply to each message, before sending it", " "})
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
@@ -535,6 +540,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		return styleSheetName;
 	}
 
+	@IbisDoc({"force the transformer generated from the xpath-expression to omit the xml declaration", "true"})
 	public void setOmitXmlDeclaration(boolean b) {
 		omitXmlDeclaration = b;
 	}
@@ -543,6 +549,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 	}
 
 
+	@IbisDoc({"alternatively: xpath-expression to create stylesheet from", " "})
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
 	}
@@ -550,6 +557,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		return xpathExpression;
 	}
 
+	@IbisDoc({"namespace defintions for xpathexpression. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", " "})
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
@@ -557,6 +565,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		return namespaceDefs;
 	}
 
+	@IbisDoc({"either 'text' or 'xml'. only valid for xpathexpression", "text"})
 	public void setOutputType(String string) {
 		outputType = string;
 	}
@@ -565,6 +574,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 	}
 
 
+	@IbisDoc({"when <code>true</code> ignore any exception thrown by executing sender", "false"})
 	public void setIgnoreExceptions(boolean b) {
 		ignoreExceptions = b;
 	}
@@ -572,6 +582,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		return ignoreExceptions;
 	}
 
+	@IbisDoc({"when <code>blocksize &gt; 0</code>, this string is inserted at the start of the set of lines.", "&lt;block&gt;"})
 	public void setBlockPrefix(String string) {
 		blockPrefix = string;
 	}
@@ -579,6 +590,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		return blockPrefix;
 	}
 
+	@IbisDoc({"this string is inserted at the start of each line", " "})
 	public void setLinePrefix(String string) {
 		linePrefix = string;
 	}
@@ -586,6 +598,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		return linePrefix;
 	}
 
+	@IbisDoc({"when <code>blocksize &gt; 0</code>, this string is inserted at the end of the set of lines.", "&lt;/block&gt;"})
 	public void setBlockSuffix(String string) {
 		blockSuffix = string;
 	}
@@ -593,6 +606,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		return blockSuffix;
 	}
 
+	@IbisDoc({"this string is inserted at the end of each line", " "})
 	public void setLineSuffix(String string) {
 		lineSuffix = string;
 	}
@@ -600,6 +614,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		return lineSuffix;
 	}
 
+	@IbisDoc({"controls multiline behaviour. when set to a value greater than 0, it specifies the number of rows send in a block to the sender.", "0 (one line at a time, no prefix of suffix)"})
 	public void setBlockSize(int i) {
 		blockSize = i;
 	}
@@ -607,6 +622,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		return blockSize;
 	}
 
+	@IbisDoc({"key of session variable to store number of item processed.", " "})
 	public void setItemNoSessionKey(String string) {
 		itemNoSessionKey = string;
 	}
@@ -614,6 +630,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		return itemNoSessionKey;
 	}
 
+	@IbisDoc({"when <code>true</code> the input is added to the result in an input element", "false"})
 	public void setAddInputToResult(boolean b) {
 		addInputToResult = b;
 	}
@@ -621,6 +638,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		return addInputToResult;
 	}
 
+	@IbisDoc({"when <code>true</code> duplicate input elements are removed", "false"})
 	public void setRemoveDuplicates(boolean b) {
 		removeDuplicates = b;
 	}
@@ -634,6 +652,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 	protected boolean isCloseIteratorOnExit() {
 		return closeIteratorOnExit;
 	}
+	@IbisDoc({"when <code>startposition &gt;= 0</code>, this field contains the start position of the key in the current record (first character is 0); all sequenced lines with the same key are put in one block and send to the sender", "-1"})
 	public void setStartPosition(int i) {
 		startPosition = i;
 	}
@@ -641,6 +660,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		return startPosition;
 	}
 
+	@IbisDoc({"when <code>endposition &gt;= startposition</code>, this field contains the end position of the key in the current record", "-1"})
 	public void setEndPosition(int i) {
 		endPosition = i;
 	}

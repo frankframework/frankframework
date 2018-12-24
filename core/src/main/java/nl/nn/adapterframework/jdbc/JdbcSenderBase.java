@@ -18,6 +18,7 @@ package nl.nn.adapterframework.jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
@@ -160,6 +161,7 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 	public int getTimeout() {
 		return timeout;
 	}
+	@IbisDoc({"the number of seconds the driver will wait for a statement object to execute. if the limit is exceeded, a timeoutexception is thrown. 0 means no timeout", "0"})
 	public void setTimeout(int i) {
 		timeout = i;
 	}

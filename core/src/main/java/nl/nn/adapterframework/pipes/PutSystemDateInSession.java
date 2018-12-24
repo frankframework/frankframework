@@ -25,12 +25,13 @@ import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.DateUtils;
 
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Puts the system date/time under a key in the {@link nl.nn.adapterframework.core.IPipeLineSession pipeLineSession}.
+ * Puts the system date/time under a key in the {@link IPipeLineSession pipeLineSession}.
  *
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -41,7 +42,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setTimeZone(String) timeZone}</td><td>the time zone to use for the formatter</td><td>the default time zone for the JVM</td></tr>
  * <tr><td>{@link #setSleepWhenEqualToPrevious(long) sleepWhenEqualToPrevious}</td><td>set to a time in millisecond to create a value that is different to the previous returned value by a PutSystemDateInSession pipe in this virtual machine. The thread will sleep for the specified time before recalculating a new value. Set the timezone to a value without daylight saving time (like GMT+1) to prevent this pipe to generate two equal value's when the clock is set back. <b>Note:</b> When you're looking for a guid parameter for you XSLT it might be better to use &lt;param name=&quot;guid&quot; pattern=&quot;{hostname}_{uid}&quot;/&gt;, see {@link nl.nn.adapterframework.parameters.Parameter}</a></td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setReturnFixedDate(boolean) returnFixedDate}</td><td>If <code>true</code>, the date/time returned will always be December 17, 2001, 09:30:47 (for testing purposes only). It is overridden by the value of the pipeLineSession key <code>stub4testtool.fixeddate</code> when it exists</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
+ * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * </table>
  * </p>
@@ -149,15 +150,16 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 	
 	/**
 	 * The name of the key in the <code>PipeLineSession</code> to store the systemdate in
-	 * @see nl.nn.adapterframework.core.IPipeLineSession
+	 * @see IPipeLineSession
 	 */
 	public String getSessionKey() {
 		return sessionKey;
 	}
 	/**
 	 * The name of the key in the <code>PipeLineSession</code> to store the systemdate in
-	 * @see nl.nn.adapterframework.core.IPipeLineSession
+	 * @see IPipeLineSession
 	 */
+	@IbisDoc({"key of session variable to store result in", "systemdate"})
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
@@ -165,8 +167,9 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 	
 	/**
 	 * The String for the DateFormat.
-	 * @see java.text.SimpleDateFormat
+	 * @see SimpleDateFormat
 	 */
+	@IbisDoc({"format to store date in", "fullisoformat: yyyy-mm-dd't'hh:mm:sszzz"})
 	public void setDateFormat(String rhs) {
 		dateFormat = rhs;
 	}
@@ -174,14 +177,17 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 		return dateFormat;
 	}
 	
+	@IbisDoc({"the time zone to use for the formatter", "the default time zone for the jvm"})
 	public void setTimeZone(String timeZone) {
 		this.timeZone = TimeZone.getTimeZone(timeZone);
 	}
 
+	@IbisDoc({"set to a time in millisecond to create a value that is different to the previous returned value by a putsystemdateinsession pipe in this virtual machine. the thread will sleep for the specified time before recalculating a new value. set the timezone to a value without daylight saving time (like gmt+1) to prevent this pipe to generate two equal value's when the clock is set back. <b>note:</b> when you're looking for a guid parameter for you xslt it might be better to use &lt;param name=&quot;guid&quot; pattern=&quot;{hostname}_{uid}&quot;/&gt;, see {@link nl.nn.adapterframework.parameters.parameter}</a>", "-1 (disabled)"})
 	public void setSleepWhenEqualToPrevious(long sleepWhenEqualToPrevious) {
 		this.sleepWhenEqualToPrevious = sleepWhenEqualToPrevious;
 	}
 	
+	@IbisDoc({"if <code>true</code>, the date/time returned will always be december 17, 2001, 09:30:47 (for testing purposes only). it is overridden by the value of the pipelinesession key <code>stub4testtool.fixeddate</code> when it exists", "<code>false</code>"})
 	public void setReturnFixedDate(boolean b) {
 		returnFixedDate = b;
 	}

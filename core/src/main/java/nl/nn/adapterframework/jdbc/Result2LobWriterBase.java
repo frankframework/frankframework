@@ -28,6 +28,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -124,10 +125,12 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 	}
 
 	
+	@IbisDoc({"the sql query text", " "})
 	public void setQuery(String query) {
 		querySender.setQuery(query);
 	}
 
+	@IbisDoc({"can be configured from jmsrealm, too", " "})
 	public void setDatasourceName(String datasourceName) {
 		querySender.setDatasourceName(datasourceName);
 	}

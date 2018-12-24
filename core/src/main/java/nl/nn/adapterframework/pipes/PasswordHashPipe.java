@@ -21,6 +21,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.PasswordHash;
 
 import org.apache.commons.lang.StringUtils;
@@ -102,6 +103,7 @@ public class PasswordHashPipe extends FixedForwardPipe {
 		return hashSessionKey;
 	}
 
+	@IbisDoc({"name of sessionkey that holds the hash which will be used to validate the password (input of the pipe)", " "})
 	public void setHashSessionKey(String hashSessionKey) {
 		this.hashSessionKey = hashSessionKey;
 	}

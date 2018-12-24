@@ -37,6 +37,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -629,6 +630,7 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 	public String getStreamResultToFileNameSessionKey() {
 		return streamResultToFileNameSessionKey;
 	}
+	@IbisDoc({"if set, the result is streamed to a file (instead of passed as a string)", " "})
 	public void setStreamResultToFileNameSessionKey(String string) {
 		streamResultToFileNameSessionKey = string;
 	}
@@ -636,6 +638,7 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 	public String getStoreResultAsStreamInSessionKey() {
 		return storeResultAsStreamInSessionKey;
 	}
+	@IbisDoc({"if set, a pointer to an input stream of the result is put in the specified sessionkey (as the sender interface only allows a sender to return a string a sessionkey is used instead to return the stream)", " "})
 	public void setStoreResultAsStreamInSessionKey(String storeResultAsStreamInSessionKey) {
 		this.storeResultAsStreamInSessionKey = storeResultAsStreamInSessionKey;
 	}
@@ -647,6 +650,7 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 		this.storeResultAsByteArrayInSessionKey = storeResultAsByteArrayInSessionKey;
 	}
 
+	@IbisDoc({"when true, the result is base64 encoded", "false"})
 	public void setBase64(boolean b) {
 		base64 = b;
 	}
@@ -654,6 +658,7 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 		return base64;
 	}
 
+	@IbisDoc({"if set, the result is streamed to the httpservletresponse object of the restservicedispatcher (instead of passed as a string)", "false"})
 	public void setStreamResultToServlet(boolean b) {
 		streamResultToServlet = b;
 	}
@@ -661,6 +666,7 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 		return streamResultToServlet;
 	}
 
+	@IbisDoc({"when true and <code>methodetype=post</code> and <code>paramsinurl=false</code>, request parameters are put in a multipart/form-data entity instead of in the request body", "false"})
 	public void setMultipart(boolean b) {
 		multipart = b;
 	}
@@ -668,6 +674,7 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 		return multipart;
 	}
 
+	@IbisDoc({"when true the response body is expected to be in mime multipart which is the case when a soap message with attachments is received (see also <a href=\"https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html\">https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html</a>). the first part will be returned as result of this sender. other parts are returned as streams in sessionkeys with names multipart1, multipart2, etc. the http connection is held open until the last stream is read.", "false"})
 	public void setMultipartResponse(boolean b) {
 		multipartResponse = b;
 	}
@@ -678,6 +685,7 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 	public String getMultipartXmlSessionKey() {
 		return multipartXmlSessionKey;
 	}
+	@IbisDoc({"if set and <code>methodetype=post</code> and <code>paramsinurl=false</code>, a multipart/form-data entity is created instead of a request body. for each part element in the session key a part in the multipart entity is created", " "})
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
 	}

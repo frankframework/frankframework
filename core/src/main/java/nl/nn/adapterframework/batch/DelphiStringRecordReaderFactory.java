@@ -21,6 +21,7 @@ import java.io.Reader;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
  * {@link IInputStreamReaderFactory} that provides a reader that reads Delphi records containing Strings.
@@ -52,6 +53,7 @@ public class DelphiStringRecordReaderFactory implements IInputStreamReaderFactor
 		return new DelphiStringRecordReader(in,charset,getStringLength(),getStringsPerRecord(),getSeparator(),getSeparatorReplacement()); 
 	}
 
+	@IbisDoc({"separator placed between each string read", "|"})
 	public void setSeparator(String string) {
 		separator = string;
 	}
@@ -59,6 +61,7 @@ public class DelphiStringRecordReaderFactory implements IInputStreamReaderFactor
 		return separator;
 	}
 
+	@IbisDoc({"the maximum length of each string. each string is preceded by a one byte length indication.", "50"})
 	public void setStringLength(int i) {
 		stringLength = i;
 	}
@@ -66,6 +69,7 @@ public class DelphiStringRecordReaderFactory implements IInputStreamReaderFactor
 		return stringLength;
 	}
 
+	@IbisDoc({"the number of strings read for each record. 0 means file consists of one logical record", "0"})
 	public void setStringsPerRecord(int i) {
 		stringsPerRecord = i;
 	}
@@ -73,6 +77,7 @@ public class DelphiStringRecordReaderFactory implements IInputStreamReaderFactor
 		return stringsPerRecord;
 	}
 
+	@IbisDoc({"replacement character, used when separator is found in string read", "_"})
 	public void setSeparatorReplacement(String string) {
 		separatorReplacement = string;
 	}

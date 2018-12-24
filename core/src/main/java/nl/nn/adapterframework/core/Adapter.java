@@ -28,6 +28,7 @@ import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
@@ -740,6 +741,7 @@ public class Adapter implements IAdapter, NamedBean {
 	/**
 	 *  some functional description of the <code>Adapter</code>/
 	 */
+	@IbisDoc({"description of the adapter", " "})
 	public void setDescription(String description) {
 		this.description = description;
 	}
@@ -752,6 +754,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * @param errorMessageFormatter
 	 * @see IErrorMessageFormatter
 	 */
+	@IbisDoc({" ", " "})
 	public void setErrorMessageFormatter(IErrorMessageFormatter errorMessageFormatter) {
 		this.errorMessageFormatter = errorMessageFormatter;
 	}
@@ -774,12 +777,14 @@ public class Adapter implements IAdapter, NamedBean {
 	 * @param size
 	 * @see nl.nn.adapterframework.util.MessageKeeper
 	 */
+	@IbisDoc({"number of message displayed in ibisconsole", "10"})
 	public void setMessageKeeperSize(int size) {
 		this.messageKeeperSize = size;
 	}
 	/**
 	 * the functional name of this adapter
 	 */
+	@IbisDoc({"name of the adapter", " "})
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -799,7 +804,6 @@ public class Adapter implements IAdapter, NamedBean {
 	 * extends the <code>Runnable</code> interface. The actual starting is done
 	 * in the <code>run</code> method.
 	 * @see IReceiver#startRunning()
-	 * @see Adapter#run
 	 */
 	public void startRunning() {
 		Runnable runnable = new Runnable() {
@@ -1009,6 +1013,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * is started. AutoStart defaults to <code>true</code>
 	 * @since 4.1.1
 	 */
+	@IbisDoc({"controls whether adapters starts when configuration loads", "true"})
 	public void setAutoStart(boolean autoStart) {
 		this.autoStart = autoStart;
 	}
@@ -1029,6 +1034,7 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 	}
 
+	@IbisDoc({"controls whether adapter is included in configuration. when set <code>false</code> or set to something else as <code>true</code>, (even set to the empty string), the receiver is not included in the configuration", "true"})
 	public void setActive(boolean b) {
 		active = b;
 	}
@@ -1079,6 +1085,7 @@ public class Adapter implements IAdapter, NamedBean {
 		return false;
 	}
 
+	@IbisDoc({"if set to <code>true</code>, the length of the message is shown in the msg log instead of the content of the message", "false"})
 	public void setMsgLogHidden(boolean b) {
 		msgLogHidden = b;
 	}
@@ -1095,6 +1102,7 @@ public class Adapter implements IAdapter, NamedBean {
 		return recover;
 	}
 
+	@IbisDoc({"when <code>true</code> a null message is replaced by an empty message", "false"})
 	public void setReplaceNullMessage(boolean b) {
 		replaceNullMessage = b;
 	}

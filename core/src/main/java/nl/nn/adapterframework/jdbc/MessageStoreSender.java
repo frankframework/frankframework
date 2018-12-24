@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.text.StrBuilder;
 
@@ -148,6 +149,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 		return storeMessage(messageId, correlationID, new Date(), null, null, message);
 	}
 
+	@IbisDoc({"comma separated list of sessionkey's to be stored together with the message. please note: corresponding {@link messagestorelistener} must have the same value for this attribute", " "})
 	public void setSessionKeys(String sessionKeys) {
 		this.sessionKeys = sessionKeys;
 	}
@@ -156,6 +158,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 		return sessionKeys;
 	}
 
+	@IbisDoc({" ", "true"})
 	@Override
 	public void setOnlyStoreWhenMessageIdUnique(boolean onlyStoreWhenMessageIdUnique) {
 		this.onlyStoreWhenMessageIdUnique = onlyStoreWhenMessageIdUnique;

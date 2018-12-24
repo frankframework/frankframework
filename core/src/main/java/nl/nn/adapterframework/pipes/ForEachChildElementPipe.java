@@ -33,6 +33,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -371,6 +372,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 
 
 
+	@IbisDoc({"expression used to determine the set of elements iterated over, i.e. the set of child elements", " "})
 	public void setElementXPathExpression(String string) {
 		elementXPathExpression = string;
 	}
@@ -378,6 +380,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		return elementXPathExpression;
 	}
 
+	@IbisDoc({"when set <code>true</code>, the input is assumed to be the name of a file to be processed. otherwise, the input itself is transformed", "application default"})
 	public void setProcessFile(boolean b) {
 		processFile = b;
 	}
@@ -385,6 +388,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		return processFile;
 	}
 
+	@IbisDoc({"setprocessfile", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}
@@ -396,6 +400,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		return xslt2;
 	}
 
+	@IbisDoc({"when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used for <code>elementxpathexpression</code>, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
 	public void setXslt2(boolean b) {
 		xslt2 = b;
 	}

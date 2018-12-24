@@ -27,6 +27,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
@@ -39,7 +40,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.FixedForwardPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
+ * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified, then the message is logged informatory</td><td>-1</td></tr>
  * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
@@ -81,7 +82,7 @@ public class ChecksumPipe extends FixedForwardPipe {
 	}
 
 	protected interface ChecksumGenerator {
-		public void update(byte b[],int length);
+		public void update(byte b[], int length);
 		public String getResult();
 	}
 	
@@ -167,6 +168,7 @@ public class ChecksumPipe extends FixedForwardPipe {
 	}
 
 
+	@IbisDoc({"character encoding to be used to encode message before calculating checksum", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}
@@ -174,6 +176,7 @@ public class ChecksumPipe extends FixedForwardPipe {
 		return charset;
 	}
 
+	@IbisDoc({"type of checksum to be calculated. must be one of md5, sha, crc32, adler32", "md5"})
 	public void setType(String string) {
 		type = string;
 	}
@@ -181,6 +184,7 @@ public class ChecksumPipe extends FixedForwardPipe {
 		return type;
 	}
 
+	@IbisDoc({"when set <code>true</code>, the input is assumed to be a filename; otherwise the input itself is used in the calculations", "false"})
 	public void setInputIsFile(boolean b) {
 		inputIsFile = b;
 	}

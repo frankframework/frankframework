@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -70,22 +71,27 @@ public class JdbcQueryListener extends JdbcListener {
 	}
 	
 
+	@IbisDoc({"primary key field of the table, used to identify messages", " "})
 	public void setKeyField(String fieldname) {
 		super.setKeyField(fieldname);
 	}
 
+	@IbisDoc({"(optional) field containing the message data", "<i>same as keyfield</i>"})
 	public void setMessageField(String fieldname) {
 		super.setMessageField(fieldname);
 	}
 
+	@IbisDoc({"query that returns a row to be processed. must contain a key field and optionally a message field", " "})
 	public void setSelectQuery(String string) {
 		super.setSelectQuery(string);
 	}
 
+	@IbisDoc({"sql statement to the status of a row to 'error'. must contain one parameter, that is set to the value of the key", "same as <code>updatestatustoprocessedquery</code>"})
 	public void setUpdateStatusToErrorQuery(String string) {
 		super.setUpdateStatusToErrorQuery(string);
 	}
 
+	@IbisDoc({"sql statement to the status of a row to 'processed'. must contain one parameter, that is set to the value of the key", " "})
 	public void setUpdateStatusToProcessedQuery(String string) {
 		super.setUpdateStatusToProcessedQuery(string);
 	}

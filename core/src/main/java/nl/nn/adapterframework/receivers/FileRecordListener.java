@@ -32,6 +32,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.WildCardFilter;
@@ -363,6 +364,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 
 	}
 	
+	@IbisDoc({"name of the listener as known to the adapter.", " "})
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -374,6 +376,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	 * set the directory name to look in for files.
 	 * @see #setWildcard(String)
 	 */
+	@IbisDoc({"set the directory name to look in for files.", " "})
 	public void setInputDirectory(String inputDirectory) {
 		this.inputDirectory = inputDirectory;
 	}
@@ -384,6 +387,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	/**
 	 * set the {@link nl.nn.adapterframework.util.WildCardFilter wildcard} to look for files in the specified directory, e.g. "*.inp"
 	 */
+	@IbisDoc({"the {@link nl.nn.adapterframework.util.wildcardfilter wildcard} to look for files in the specified directory, e.g. \"*.inp\"", " "})
 	public void setWildcard(String wildcard) {
 		this.wildcard = wildcard;
 	}
@@ -395,6 +399,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	 * Sets the directory to store processed files in
 	 * @param directoryProcessedFiles The directoryProcessedFiles to set
 	 */
+	@IbisDoc({"the directory to store processed files in", " "})
 	public void setDirectoryProcessedFiles(String directoryProcessedFiles) {
 		this.directoryProcessedFiles = directoryProcessedFiles;
 	}
@@ -405,6 +410,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	/**
 	 * set the time to delay when no records are to be processed and this class has to look for the arrival of a new file
 	 */
+	@IbisDoc({"set the time to delay when no records are to be processed and this class has to look for the arrival of a new file", "1000 [ms]"})
 	public void setResponseTime(long responseTime) {
 		this.responseTime = responseTime;
 	}
@@ -412,6 +418,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 		return responseTime;
 	}
 
+	@IbisDoc({"when set, the name of the read file is stored under this session key", " "})
 	public void setStoreFileNameInSessionKey(String storeFileNameInSessionKey) {
 		this.storeFileNameInSessionKey = storeFileNameInSessionKey;
 	}

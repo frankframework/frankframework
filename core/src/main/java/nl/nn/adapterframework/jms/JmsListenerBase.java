@@ -34,6 +34,7 @@ import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapper;
@@ -68,13 +69,10 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setReplyDeliveryMode(String) replyDeliveryMode}</td><td>controls mode that reply messages are sent with: either 'persistent' or 'non_persistent'</td><td>not set by application</td></tr>
  * <tr><td>{@link #setReplyPriority(int) replyPriority}</td><td>sets the priority that is used to deliver the reply message. ranges from 0 to 9. Defaults to -1, meaning not set. Effectively the default priority is set by Jms to 4</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setForceMQCompliancy(String) forceMQCompliancy}</td><td>Possible values: 'MQ' or 'JMS'. Setting to 'MQ' informs the MQ-server that the replyto queue is not JMS compliant.</td><td>JMS</td></tr>
  * <tr><td>{@link #setForceMessageIdAsCorrelationId(boolean) forceMessageIdAsCorrelationId}</td><td>
  * forces that the CorrelationId that is received is ignored and replaced by the messageId that is received. Use this to create a new, globally unique correlationId to be used downstream. It also
  * forces that not the Correlation ID of the received message is used in a reply as CorrelationId, but the MessageId.</td><td>false</td></tr>
  * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>SoapAction string sent as messageproperty</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSoapHeaderParam(String) soapHeaderParam}</td><td>name of parameter containing SOAP header</td><td>soapHeader</td></tr>
  * <tr><td>{@link #setxPathLoggingKeys(String) xPathLoggingKeys}</td><td>comma separated list of all xPath keys that need to be logged. (Overrides <code>msg.log.keys</code> property)</td><td>&nbsp;</td></tr>
  * </table>
  * 
@@ -409,6 +407,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 * @deprecated consider using XA transactions, controled by the <code>transacted</code>-attribute, rather than
 	 * local transactions controlled by the <code>jmsTransacted</code>-attribute.
 	 */
+	@IbisDoc({"<i>deprecated</i> exit state to control commit or rollback of jmssession. only used if <code>jmstransacted</code> is set true.", "success"})
 	public void setCommitOnState(String newCommitOnState) {
 		commitOnState = newCommitOnState;
 	}
@@ -416,6 +415,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		return commitOnState;
 	}
 
+	@IbisDoc({"receiver timeout, in milliseconds", "3000 [ms]"})
 	public void setTimeOut(long newTimeOut) {
 		timeOut = newTimeOut;
 	}
@@ -424,6 +424,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 
 
+	@IbisDoc({"&nbsp;", "true"})
 	public void setUseReplyTo(boolean newUseReplyTo) {
 		useReplyTo = newUseReplyTo;
 	}
@@ -432,6 +433,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 
 	
+	@IbisDoc({"value of the jmstype field of the reply message", "not set by application"})
 	public void setReplyMessageType(String string) {
 		replyMessageType = string;
 	}
@@ -440,6 +442,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 
 
+	@IbisDoc({"controls mode that reply messages are sent with: either 'persistent' or 'non_persistent'", "not set by application"})
 	public void setReplyDeliveryMode(String string) {
 		replyDeliveryMode = string;
 	}
@@ -448,6 +451,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 
 
+	@IbisDoc({"sets the priority that is used to deliver the reply message. ranges from 0 to 9. defaults to -1, meaning not set. effectively the default priority is set by jms to 4", " "})
 	public void setReplyPriority(int i) {
 		replyPriority = i;
 	}
@@ -456,6 +460,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 
 
+	@IbisDoc({"time that replymessage will live", "0 [ms]"})
 	public void setReplyMessageTimeToLive(long l) {
 		replyMessageTimeToLive = l;
 	}
@@ -463,6 +468,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		return replyMessageTimeToLive;
 	}
 
+	@IbisDoc({"when <code>true</code>, messages sent are put in a soap envelope", "<code>false</code>"})
 	public void setSoap(boolean b) {
 		soap = b;
 	}
@@ -498,6 +504,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		return soapHeaderSessionKey;
 	}
 
+	@IbisDoc({"comma separated list of all xpath keys that need to be logged. (overrides <code>msg.log.keys</code> property)", " "})
 	public void setxPathLoggingKeys(String string) {
 		xPathLoggingKeys = string;
 	}

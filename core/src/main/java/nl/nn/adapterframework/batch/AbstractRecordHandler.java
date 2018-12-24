@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -229,6 +230,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return recordIdentifyingFields;
 	}
 
+	@IbisDoc({"comma separated list of numbers of those fields that are compared with the previous record to determine if a prefix must be written. if any of these fields is not equal in both records, the record types are assumed to be different", " "})
 	public void setRecordIdentifyingFields(String fieldNrs) {
 		StringTokenizer st = new StringTokenizer(fieldNrs, ",");
 		while (st.hasMoreTokens()) {
@@ -257,6 +259,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	}
 
 
+	@IbisDoc({"name of the recordhandler", " "})
 	@Override
 	public void setName(String string) {
 		name = string;
@@ -267,6 +270,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	}
 
 
+	@IbisDoc({"comma separated specification of fieldlengths. if neither this attribute nor <code>inputseparator</code> is specified then the entire record is parsed", " "})
 	public void setInputFields(String fieldLengths) {
 		StringTokenizer st = new StringTokenizer(fieldLengths, ",");
 		while (st.hasMoreTokens()) {
@@ -286,6 +290,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		configWarnings.add(log, msg);
 		setInputSeparator(string);
 	}
+	@IbisDoc({"separator that separated the fields in the input record. if neither this attribute nor <code>inputfields</code> is specified then the entire record is parsed", " "})
 	public void setInputSeparator(String string) {
 		inputSeparator = string;
 	}
@@ -293,6 +298,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return inputSeparator;
 	}
 
+	@IbisDoc({"when set <code>true</code>, trailing spaces are removed from each field", "false"})
 	public void setTrim(boolean b) {
 		trim = b;
 	}
