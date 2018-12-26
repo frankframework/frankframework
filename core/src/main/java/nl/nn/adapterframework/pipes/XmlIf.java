@@ -156,7 +156,7 @@ public class XmlIf extends AbstractPipe {
 	}
 	
 
-	@IbisDoc({"name of the key in the <code>pipelinesession</code> to retrieve the input-message from. if not set, the current input message of the pipe is taken. n.b. same as <code>getinputfromsessionkey</code>", " "})
+	@IbisDoc({"name of the key in the <code>pipelinesession</code> to retrieve the input-message from. if not set, the current input message of the pipe is taken. n.b. same as <code>getinputfromsessionkey</code>", ""})
 	public void setSessionKey(String sessionKey){
 		this.sessionKey = sessionKey;
 	}
@@ -165,7 +165,7 @@ public class XmlIf extends AbstractPipe {
 		return sessionKey;
 	}
 
-	@IbisDoc({"a string to compare the result of the xpathexpression (or the input-message itself) to. if not specified, a non-empty result leads to the 'then'-forward, an empty result to 'else'-forward", " "})
+	@IbisDoc({"a string to compare the result of the xpathexpression (or the input-message itself) to. if not specified, a non-empty result leads to the 'then'-forward, an empty result to 'else'-forward", ""})
 	public void setExpressionValue(String expressionValue){
 		this.expressionValue = expressionValue;
 	}
@@ -190,7 +190,7 @@ public class XmlIf extends AbstractPipe {
 	}
 	
 
-	@IbisDoc({"xpath expression to be applied to the input-message. if not set, no transformation is done", " "})
+	@IbisDoc({"xpath expression to be applied to the input-message. if not set, no transformation is done", ""})
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
 	}
@@ -198,7 +198,7 @@ public class XmlIf extends AbstractPipe {
 		return xpathExpression;
 	}
 
-	@IbisDoc({"regular expression to be applied to the input-message (ignored if xpathexpression is specified). the input-message matching the given regular expression leads to the 'then'-forward", " "})
+	@IbisDoc({"regular expression to be applied to the input-message (ignored if xpathexpression is specified). the input-message matching the given regular expression leads to the 'then'-forward", ""})
 	public void setRegex(String regex){
 		this.regex = regex;
 	}

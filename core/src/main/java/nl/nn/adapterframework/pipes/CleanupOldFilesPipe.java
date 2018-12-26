@@ -189,7 +189,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		}
 	}
 
-	@IbisDoc({"files that match this pattern will be deleted. parameters of the pipe are applied to this pattern. if this attribute is not set, the input of the pipe is interpreted as the file to be removed", " "})
+	@IbisDoc({"files that match this pattern will be deleted. parameters of the pipe are applied to this pattern. if this attribute is not set, the input of the pipe is interpreted as the file to be removed", ""})
 	public void setFilePattern(String string) {
 		filePattern = string;
 	}
@@ -197,7 +197,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		return filePattern;
 	}
 
-	@IbisDoc({"&nbsp;", " "})
+	@IbisDoc({"", " "})
 	public void setFilePatternSessionKey(String string) {
 		filePatternSessionKey = string;
 	}
@@ -229,7 +229,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		return deleteEmptySubdirectories;
 	}
 
-	@IbisDoc({"filter of files to delete. if not set and a directory is specified, all files in the directory are interpreted to be deleted", " "})
+	@IbisDoc({"filter of files to delete. if not set and a directory is specified, all files in the directory are interpreted to be deleted", ""})
 	public void setWildcard(String string) {
 		wildcard = string;
 	}
@@ -237,7 +237,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		return wildcard;
 	}
 
-	@IbisDoc({"filter of files to be excluded for deletion", " "})
+	@IbisDoc({"filter of files to be excluded for deletion", ""})
 	public void setExcludeWildcard(String excludeWildcard) {
 		this.excludeWildcard = excludeWildcard;
 	}

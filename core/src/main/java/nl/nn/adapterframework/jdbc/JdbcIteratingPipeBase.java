@@ -150,7 +150,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 	}
 
 
-	@IbisDoc({"the sql query text to be excecuted each time sendmessage() is called. when not set, the input message is taken as the query", " "})
+	@IbisDoc({"the sql query text to be excecuted each time sendmessage() is called. when not set, the input message is taken as the query", ""})
 	public void setQuery(String query) {
 		this.query=query;
 	}
@@ -162,7 +162,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 		querySender.setProxiedDataSources(proxiedDataSources);
 	}
 
-	@IbisDoc({"can be configured from jmsrealm, too", " "})
+	@IbisDoc({"can be configured from jmsrealm, too", ""})
 	public void setDatasourceName(String datasourceName) {
 		querySender.setDatasourceName(datasourceName);
 	}

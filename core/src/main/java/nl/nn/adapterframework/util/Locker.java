@@ -224,7 +224,7 @@ public class Locker extends JdbcFacade {
 		return name;
 	}
 
-	@IbisDoc({"format for date which is added after <code>objectid</code> (e.g. yyyymmdd to be sure the job is executed only once a day)", " "})
+	@IbisDoc({"format for date which is added after <code>objectid</code> (e.g. yyyymmdd to be sure the job is executed only once a day)", ""})
 	public void setDateFormatSuffix(String dateFormatSuffix) {
 		this.dateFormatSuffix = dateFormatSuffix;
 	}
@@ -242,7 +242,7 @@ public class Locker extends JdbcFacade {
 		return type;
 	}
 
-	@IbisDoc({"identifier for this lock", " "})
+	@IbisDoc({"identifier for this lock", ""})
 	public void setObjectId(String objectId) {
 		this.objectId = objectId;
 	}

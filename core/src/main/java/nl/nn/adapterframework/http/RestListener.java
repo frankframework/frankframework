@@ -201,7 +201,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		return uriPattern;
 	}
 
-	@IbisDoc({"uri pattern to match. ", " "})
+	@IbisDoc({"uri pattern to match. ", ""})
 	public void setUriPattern(String uriPattern) {
 		this.uriPattern = uriPattern;
 	}
@@ -210,7 +210,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		return method;
 	}
 
-	@IbisDoc({"method (e.g. get or post) to match", " "})
+	@IbisDoc({"method (e.g. get or post) to match", ""})
 	public void setMethod(String method) {
 		this.method = method;
 	}
@@ -219,7 +219,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		return etagSessionKey;
 	}
 
-	@IbisDoc({"key of session variable to store etag", " "})
+	@IbisDoc({"key of session variable to store etag", ""})
 	public void setEtagSessionKey(String etagSessionKey) {
 		this.etagSessionKey = etagSessionKey;
 	}
@@ -228,7 +228,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		return contentTypeSessionKey;
 	}
 
-	@IbisDoc({"setproduces", " "})
+	@IbisDoc({"setproduces", ""})
 	public void setContentTypeSessionKey(String contentTypeSessionKey) {
 		this.contentTypeSessionKey = contentTypeSessionKey;
 	}

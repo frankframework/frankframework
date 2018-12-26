@@ -71,7 +71,7 @@ public class JdbcQueryListener extends JdbcListener {
 	}
 	
 
-	@IbisDoc({"primary key field of the table, used to identify messages", " "})
+	@IbisDoc({"primary key field of the table, used to identify messages", ""})
 	public void setKeyField(String fieldname) {
 		super.setKeyField(fieldname);
 	}
@@ -81,7 +81,7 @@ public class JdbcQueryListener extends JdbcListener {
 		super.setMessageField(fieldname);
 	}
 
-	@IbisDoc({"query that returns a row to be processed. must contain a key field and optionally a message field", " "})
+	@IbisDoc({"query that returns a row to be processed. must contain a key field and optionally a message field", ""})
 	public void setSelectQuery(String string) {
 		super.setSelectQuery(string);
 	}
@@ -91,7 +91,7 @@ public class JdbcQueryListener extends JdbcListener {
 		super.setUpdateStatusToErrorQuery(string);
 	}
 
-	@IbisDoc({"sql statement to the status of a row to 'processed'. must contain one parameter, that is set to the value of the key", " "})
+	@IbisDoc({"sql statement to the status of a row to 'processed'. must contain one parameter, that is set to the value of the key", ""})
 	public void setUpdateStatusToProcessedQuery(String string) {
 		super.setUpdateStatusToProcessedQuery(string);
 	}

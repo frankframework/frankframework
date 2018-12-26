@@ -125,12 +125,12 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 	}
 
 	
-	@IbisDoc({"the sql query text", " "})
+	@IbisDoc({"the sql query text", ""})
 	public void setQuery(String query) {
 		querySender.setQuery(query);
 	}
 
-	@IbisDoc({"can be configured from jmsrealm, too", " "})
+	@IbisDoc({"can be configured from jmsrealm, too", ""})
 	public void setDatasourceName(String datasourceName) {
 		querySender.setDatasourceName(datasourceName);
 	}

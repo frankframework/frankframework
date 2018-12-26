@@ -610,7 +610,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
      * @param pipeName the name of the pipe
      * @see nl.nn.adapterframework.pipes.AbstractPipe
      */
-	@IbisDoc({"name of the first pipe to execute when a message is to be processed", " "})
+	@IbisDoc({"name of the first pipe to execute when a message is to be processed", ""})
     public void setFirstPipe(String pipeName){
         firstPipe=pipeName;
     }

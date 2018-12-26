@@ -98,7 +98,7 @@ public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
 		return name;
 	}
 
-	@IbisDoc({"name of the sender", " "})
+	@IbisDoc({"name of the sender", ""})
 	public void setName(String name) {
 		this.name=name;
 	}

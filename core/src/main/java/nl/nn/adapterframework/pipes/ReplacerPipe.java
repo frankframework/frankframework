@@ -132,7 +132,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 	/**
 	 * Sets the string that is searched for.
 	 */ 
-	@IbisDoc({"string to search for", " "})
+	@IbisDoc({"string to search for", ""})
 	public void setFind(String find) {
 		this.find = find;
 	}
@@ -143,7 +143,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 	/**
 	 * Sets the string that will replace each of the occurrences of the find-string.
 	 */ 
-	@IbisDoc({"string that will replace each of the strings found", " "})
+	@IbisDoc({"string that will replace each of the strings found", ""})
 	public void setReplace(String replace) {
 		this.replace = replace;
 	}
@@ -158,7 +158,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 		return lineSeparatorSymbol;
 	}
 
-	@IbisDoc({"sets the string the representation in find and replace of the line separator", " "})
+	@IbisDoc({"sets the string the representation in find and replace of the line separator", ""})
 	public void setLineSeparatorSymbol(String string) {
 		lineSeparatorSymbol = string;
 	}

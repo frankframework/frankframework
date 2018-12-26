@@ -96,7 +96,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	}
 
 
-	@IbisDoc({"name of the resulthandler", " "})
+	@IbisDoc({"name of the resulthandler", ""})
 	@Override
 	public void setName(String string) {
 		name = string;
@@ -106,7 +106,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 		return name;
 	}
 
-	@IbisDoc({"<i>deprecated</i> prefix that has to be written before record, if the record is in another block than the previous record", " "})
+	@IbisDoc({"<i>deprecated</i> prefix that has to be written before record, if the record is in another block than the previous record", ""})
 	public void setPrefix(String string) {
 		prefix = string;
 	}
@@ -118,7 +118,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 		return StringUtils.isNotEmpty(getPrefix());
 	}
 
-	@IbisDoc({"<i>deprecated</i> suffix that has to be written after the record, if the record is in another block than the next record. <br/>n.b. if a suffix is set without a prefix, it is only used at the end of processing (i.e. at the end of the file) as a final close", " "})
+	@IbisDoc({"<i>deprecated</i> suffix that has to be written after the record, if the record is in another block than the next record. <br/>n.b. if a suffix is set without a prefix, it is only used at the end of processing (i.e. at the end of the file) as a final close", ""})
 	public void setSuffix(String string) {
 		suffix = string;
 	}

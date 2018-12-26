@@ -97,7 +97,7 @@ public class FixedErrorMessage extends ErrorMessageFormatter {
 	}
 
 
-	@IbisDoc({"returned message", " "})
+	@IbisDoc({"returned message", ""})
 	public void setReturnString(String string) {
 		returnString = string;
 	}
@@ -106,7 +106,7 @@ public class FixedErrorMessage extends ErrorMessageFormatter {
 	}
 
 
-	@IbisDoc({"name of the file containing the resultmessage", " "})
+	@IbisDoc({"name of the file containing the resultmessage", ""})
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}

@@ -361,7 +361,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
      * attribute and the noNamespaceSchemaLocation are not set</p>
      * @see ClassUtils#getResourceURL
      */
-	@IbisDoc({"the filename of the schema on the classpath. see doc on the method. (effectively the same as nonamespaceschemalocation)", " "})
+	@IbisDoc({"the filename of the schema on the classpath. see doc on the method. (effectively the same as nonamespaceschemalocation)", ""})
     public void setSchema(String schema) {
         setNoNamespaceSchemaLocation(schema);
     }
@@ -383,7 +383,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	 *
 	 * N.B. since 4.3.0 schema locations are resolved automatically, without the need for ${baseResourceURL}
 	 */
-	@IbisDoc({"pairs of uri references (one for the namespace name, and one for a hint as to the location of a schema document defining names for that namespace name). see doc on the method.", " "})
+	@IbisDoc({"pairs of uri references (one for the namespace name, and one for a hint as to the location of a schema document defining names for that namespace name). see doc on the method.", ""})
 	public void setSchemaLocation(String schemaLocation) {
 		this.schemaLocation = schemaLocation;
 	}
@@ -397,7 +397,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	 * <p>A URI reference as a hint as to the location of a schema document with
 	 * no target namespace.</p>
 	 */
-	@IbisDoc({"a uri reference as a hint as to the location of a schema document with no target namespace. see doc on the method.", " "})
+	@IbisDoc({"a uri reference as a hint as to the location of a schema document with no target namespace. see doc on the method.", ""})
 	public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
 		this.noNamespaceSchemaLocation = noNamespaceSchemaLocation;
 	}
@@ -409,7 +409,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	/**
 	 * <p>The sessionkey to a value that is the uri to the schema definition.</P>
 	 */
-	@IbisDoc({" ", " "})
+	@IbisDoc({" ", ""})
 	public void setSchemaSessionKey(String schemaSessionKey) {
 		this.schemaSessionKey = schemaSessionKey;
 	}
@@ -459,7 +459,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return validator.getXmlReasonSessionKey();
 	}
 
-	@IbisDoc({"name of the root element. or a comma separated list of names to choose from (only one is allowed)", " "})
+	@IbisDoc({"name of the root element. or a comma separated list of names to choose from (only one is allowed)", ""})
 	public void setRoot(String root) {
 		this.root = root;
 		addRequestRootValidation(Arrays.asList(root));
@@ -520,7 +520,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
         validator.setAddNamespaceToSchema(addNamespaceToSchema);
     }
 
-	@IbisDoc({"comma separated list of schemalocations which are excluded from an import or include in the schema document", " "})
+	@IbisDoc({"comma separated list of schemalocations which are excluded from an import or include in the schema document", ""})
 	public void setImportedSchemaLocationsToIgnore(String string) {
 		validator.setImportedSchemaLocationsToIgnore(string);
     }
@@ -538,7 +538,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
         validator.setUseBaseImportedSchemaLocationsToIgnore(useBaseImportedSchemaLocationsToIgnore);
     }
 
-	@IbisDoc({"comma separated list of namespaces which are excluded from an import or include in the schema document", " "})
+	@IbisDoc({"comma separated list of namespaces which are excluded from an import or include in the schema document", ""})
 	public void setImportedNamespacesToIgnore(String string) {
 		validator.setImportedNamespacesToIgnore(string);
 	}
@@ -684,7 +684,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			return name;
 		}
 
-	@IbisDoc({"name of the pipe", " "})
+	@IbisDoc({"name of the pipe", ""})
 		@Override
 		public void setName(String name) {
 			this.name=name;

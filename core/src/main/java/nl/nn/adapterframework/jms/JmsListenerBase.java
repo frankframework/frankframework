@@ -290,7 +290,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 
 
 	/**
-	 * Extracts string from message obtained from {@link #getRawMessage(Map)}. May also extract
+	 * Extracts string from message obtained from getRawMessage. May also extract
 	 * other parameters from the message and put those in the threadContext.
 	 * @return String  input message for adapter.
 	 */
@@ -424,7 +424,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 
 
-	@IbisDoc({"&nbsp;", "true"})
+	@IbisDoc({"", "true"})
 	public void setUseReplyTo(boolean newUseReplyTo) {
 		useReplyTo = newUseReplyTo;
 	}
@@ -451,7 +451,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 
 
-	@IbisDoc({"sets the priority that is used to deliver the reply message. ranges from 0 to 9. defaults to -1, meaning not set. effectively the default priority is set by jms to 4", " "})
+	@IbisDoc({"sets the priority that is used to deliver the reply message. ranges from 0 to 9. defaults to -1, meaning not set. effectively the default priority is set by jms to 4", ""})
 	public void setReplyPriority(int i) {
 		replyPriority = i;
 	}
@@ -504,7 +504,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		return soapHeaderSessionKey;
 	}
 
-	@IbisDoc({"comma separated list of all xpath keys that need to be logged. (overrides <code>msg.log.keys</code> property)", " "})
+	@IbisDoc({"comma separated list of all xpath keys that need to be logged. (overrides <code>msg.log.keys</code> property)", ""})
 	public void setxPathLoggingKeys(String string) {
 		xPathLoggingKeys = string;
 	}

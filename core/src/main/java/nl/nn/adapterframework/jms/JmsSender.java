@@ -381,7 +381,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		return replyToName;
 	}
 
-	@IbisDoc({"name of the queue the reply is expected on. this value is send in the jmsreplyto-header with the message.", " "})
+	@IbisDoc({"name of the queue the reply is expected on. this value is send in the jmsreplyto-header with the message.", ""})
 	public void setReplyToName(String replyTo) {
 		this.replyToName = replyTo;
 	}
@@ -416,7 +416,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		return priority;
 	}
 
-	@IbisDoc({"sets the priority that is used to deliver the message. ranges from 0 to 9. defaults to -1, meaning not set. effectively the default priority is set by jms to 4", " "})
+	@IbisDoc({"sets the priority that is used to deliver the message. ranges from 0 to 9. defaults to -1, meaning not set. effectively the default priority is set by jms to 4", ""})
 	public void setPriority(int i) {
 		priority = i;
 	}
@@ -443,7 +443,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		return serviceNamespaceURI;
 	}
 
-	@IbisDoc({"soapaction string sent as messageproperty", " "})
+	@IbisDoc({"soapaction string sent as messageproperty", ""})
 	public void setSoapAction(String string) {
 		soapAction = string;
 	}
@@ -483,7 +483,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		return linkMethod;
 	}
 
-	@IbisDoc({"a list with jms headers to add to the ipipelinesession", " "})
+	@IbisDoc({"a list with jms headers to add to the ipipelinesession", ""})
 	public void setResponseHeadersToSessionKeys(String responseHeaders) {
 		this.responseHeaders = responseHeaders;
 	}

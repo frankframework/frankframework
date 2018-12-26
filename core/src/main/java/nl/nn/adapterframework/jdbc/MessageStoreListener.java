@@ -117,7 +117,7 @@ public class MessageStoreListener extends JdbcQueryListener {
 		return rawMessage;
 	}
 
-	@IbisDoc({"identifier for this service", " "})
+	@IbisDoc({"identifier for this service", ""})
 	public void setSlotId(String slotId) {
 		this.slotId = slotId;
 	}
@@ -126,7 +126,7 @@ public class MessageStoreListener extends JdbcQueryListener {
 		return slotId;
 	}
 
-	@IbisDoc({"comma separated list of sessionkey's to be read together with the message. please note: corresponding {@link messagestoresender} must have the same value for this attribute", " "})
+	@IbisDoc({"comma separated list of sessionkey's to be read together with the message. please note: corresponding {@link messagestoresender} must have the same value for this attribute", ""})
 	public void setSessionKeys(String sessionKeys) {
 		this.sessionKeys = sessionKeys;
 	}

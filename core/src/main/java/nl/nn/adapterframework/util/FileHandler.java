@@ -62,7 +62,7 @@ import org.apache.log4j.Logger;
  * <p>
  * When a file needs to be created and both the fileName and the directory are
  * not specified a temporary file is created as specified by the
- * {@link java.io.File.createTempFile(String, String) } method using the string "ibis" as a
+ * java.io.File.createTempFile method using the string "ibis" as a
  * prefix and a suffix as specified bij the writeSuffix attribute. If only
  * the directory is specified, the temporary file is created the same way except
  * that the temporary file is created in the specified directory.
@@ -705,7 +705,7 @@ public class FileHandler {
 	/**
 	 * @param directory in which the file resides or has to be created
 	 */
-	@IbisDoc({"base directory where files are stored in or read from", " "})
+	@IbisDoc({"base directory where files are stored in or read from", ""})
 	public void setDirectory(String directory) {
 		this.directory = directory;
 	}
@@ -716,7 +716,7 @@ public class FileHandler {
 	/**
 	 * @param suffix of the file that is written
 	 */
-	@IbisDoc({"suffix of the file to be created (only used if filename and filenamesession are not set)", " "})
+	@IbisDoc({"suffix of the file to be created (only used if filename and filenamesession are not set)", ""})
 	public void setWriteSuffix(String suffix) {
 		this.writeSuffix = suffix;
 	}
@@ -727,7 +727,7 @@ public class FileHandler {
 	/**
 	 * @param filename of the file that is written
 	 */
-	@IbisDoc({"the name of the file to use", " "})
+	@IbisDoc({"the name of the file to use", ""})
 	public void setFileName(String filename) {
 		this.fileName = filename;
 	}
@@ -738,7 +738,7 @@ public class FileHandler {
 	/**
 	 * @param filenameSessionKey the session key that contains the name of the file to be created
 	 */
-	@IbisDoc({"the session key that contains the name of the file to use (only used if filename is not set)", " "})
+	@IbisDoc({"the session key that contains the name of the file to use (only used if filename is not set)", ""})
 	public void setFileNameSessionKey(String filenameSessionKey) {
 		this.fileNameSessionKey = filenameSessionKey;
 	}

@@ -741,7 +741,7 @@ public class Adapter implements IAdapter, NamedBean {
 	/**
 	 *  some functional description of the <code>Adapter</code>/
 	 */
-	@IbisDoc({"description of the adapter", " "})
+	@IbisDoc({"description of the adapter", ""})
 	public void setDescription(String description) {
 		this.description = description;
 	}
@@ -754,7 +754,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * @param errorMessageFormatter
 	 * @see IErrorMessageFormatter
 	 */
-	@IbisDoc({" ", " "})
+	@IbisDoc({" ", ""})
 	public void setErrorMessageFormatter(IErrorMessageFormatter errorMessageFormatter) {
 		this.errorMessageFormatter = errorMessageFormatter;
 	}
@@ -784,7 +784,7 @@ public class Adapter implements IAdapter, NamedBean {
 	/**
 	 * the functional name of this adapter
 	 */
-	@IbisDoc({"name of the adapter", " "})
+	@IbisDoc({"name of the adapter", ""})
 	public void setName(String name) {
 		this.name = name;
 	}

@@ -1816,7 +1816,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	 * If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and <code>getName()</code>
 	 * of the listener is empty, the name of this object is given to the listener.
 	 */
-	@IbisDoc({"name of the receiver as known to the adapter", " "})
+	@IbisDoc({"name of the receiver as known to the adapter", ""})
 	@Override
 	public void setName(String newName) {
 		name = newName;
@@ -1954,7 +1954,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return active;
 	}
 
-	@IbisDoc({"comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (only for listeners that support it, like javalistener)", " "})
+	@IbisDoc({"comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (only for listeners that support it, like javalistener)", ""})
 	public void setReturnedSessionKeys(String string) {
 		returnedSessionKeys = string;
 	}
@@ -1962,7 +1962,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return returnedSessionKeys;
 	}
 
-	@IbisDoc({"comma separated list of keys of session variables which are available when the <code>pipelinesession</code> is created and of which the value will not be shown in the log (replaced by asterisks)", " "})
+	@IbisDoc({"comma separated list of keys of session variables which are available when the <code>pipelinesession</code> is created and of which the value will not be shown in the log (replaced by asterisks)", ""})
 	public void setHiddenInputSessionKeys(String string) {
 		hiddenInputSessionKeys = string;
 	}
@@ -2080,7 +2080,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return transactionTimeout;
 	}
 
-	@IbisDoc({"xpath expression to extract correlationid from message", " "})
+	@IbisDoc({"xpath expression to extract correlationid from message", ""})
 	public void setCorrelationIDXPath(String string) {
 		correlationIDXPath = string;
 	}
@@ -2092,12 +2092,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return correlationIDNamespaceDefs;
 	}
 
-	@IbisDoc({"namespace defintions for correlationidxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", " "})
+	@IbisDoc({"namespace defintions for correlationidxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setCorrelationIDNamespaceDefs(String correlationIDNamespaceDefs) {
 		this.correlationIDNamespaceDefs = correlationIDNamespaceDefs;
 	}
 
-	@IbisDoc({"stylesheet to extract correlationid from message", " "})
+	@IbisDoc({"stylesheet to extract correlationid from message", ""})
 	public void setCorrelationIDStyleSheet(String string) {
 		correlationIDStyleSheet = string;
 	}
@@ -2105,7 +2105,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return correlationIDStyleSheet;
 	}
 
-	@IbisDoc({"xpath expression to extract label from message", " "})
+	@IbisDoc({"xpath expression to extract label from message", ""})
 	public void setLabelXPath(String string) {
 		labelXPath = string;
 	}
@@ -2117,12 +2117,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return labelNamespaceDefs;
 	}
 
-	@IbisDoc({"namespace defintions for labelxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", " "})
+	@IbisDoc({"namespace defintions for labelxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setLabelNamespaceDefs(String labelNamespaceDefs) {
 		this.labelNamespaceDefs = labelNamespaceDefs;
 	}
 	
-	@IbisDoc({"stylesheet to extract label from message", " "})
+	@IbisDoc({"stylesheet to extract label from message", ""})
 	public void setLabelStyleSheet(String string) {
 		labelStyleSheet = string;
 	}
@@ -2130,7 +2130,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return labelStyleSheet;
 	}
 
-	@IbisDoc({"if set (>=0) and the character data length inside a xml element exceeds this size, the character data is chomped (with a clear comment)", " "})
+	@IbisDoc({"if set (>=0) and the character data length inside a xml element exceeds this size, the character data is chomped (with a clear comment)", ""})
 	public void setChompCharSize(String string) {
 		chompCharSize = string;
 	}
@@ -2138,7 +2138,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return chompCharSize;
 	}
 
-	@IbisDoc({"if set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: {sessionkey: + <code>elementtomovesessionkey</code> + }", " "})
+	@IbisDoc({"if set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: {sessionkey: + <code>elementtomovesessionkey</code> + }", ""})
 	public void setElementToMove(String string) {
 		elementToMove = string;
 	}
@@ -2154,7 +2154,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return elementToMoveSessionKey;
 	}
 
-	@IbisDoc({"like <code>elementtomove</code> but element is preceded with all ancestor elements and separated by semicolons (e.g. adapter;pipeline;pipe)", " "})
+	@IbisDoc({"like <code>elementtomove</code> but element is preceded with all ancestor elements and separated by semicolons (e.g. adapter;pipeline;pipe)", ""})
 	public void setElementToMoveChain(String string) {
 		elementToMoveChain = string;
 	}
@@ -2195,7 +2195,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return false;
 	}
 
-	@IbisDoc({"regular expression to mask strings in the error/logstore. everything character between to strings in this expression will be replaced by a '*'that fits the expression is replaced. for example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys<party> and </party> ", " "})
+	@IbisDoc({"regular expression to mask strings in the error/logstore. everything character between to strings in this expression will be replaced by a '*'that fits the expression is replaced. for example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys<party> and </party> ", ""})
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
 	}

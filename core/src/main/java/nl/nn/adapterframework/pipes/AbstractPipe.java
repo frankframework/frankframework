@@ -459,7 +459,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	/**
 	 * The functional name of this pipe
 	 */
-	@IbisDoc({"name of the pipe", " "})
+	@IbisDoc({"name of the pipe", ""})
 	@Override
 	public void setName(String name) {
 		this.name=name;
@@ -485,7 +485,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return durationThreshold;
 	}
 
-	@IbisDoc({"when set, input is taken from this session key, instead of regular input", " "})
+	@IbisDoc({"when set, input is taken from this session key, instead of regular input", ""})
 	@Override
 	public void setGetInputFromSessionKey(String string) {
 		getInputFromSessionKey = string;
@@ -495,7 +495,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return getInputFromSessionKey;
 	}
 
-	@IbisDoc({"when set, this fixed value is taken as input, instead of regular input", " "})
+	@IbisDoc({"when set, this fixed value is taken as input, instead of regular input", ""})
 	@Override
 	public void setGetInputFromFixedValue(String string) {
 		getInputFromFixedValue = string;
@@ -505,7 +505,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return getInputFromFixedValue;
 	}
 
-	@IbisDoc({"when set, the result is stored under this session key", " "})
+	@IbisDoc({"when set, the result is stored under this session key", ""})
 	@Override
 	public void setStoreResultInSessionKey(String string) {
 		storeResultInSessionKey = string;
@@ -525,7 +525,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return preserveInput;
 	}
 
-	@IbisDoc({"if set (>=0) and the character data length inside a xml element exceeds this size, the character data is chomped (with a clear comment)", " "})
+	@IbisDoc({"if set (>=0) and the character data length inside a xml element exceeds this size, the character data is chomped (with a clear comment)", ""})
 	@Override
 	public void setChompCharSize(String string) {
 		chompCharSize = string;
@@ -536,7 +536,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return chompCharSize;
 	}
 
-	@IbisDoc({"if set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: {sessionkey: + <code>elementtomovesessionkey</code> + }", " "})
+	@IbisDoc({"if set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: {sessionkey: + <code>elementtomovesessionkey</code> + }", ""})
 	@Override
 	public void setElementToMove(String string) {
 		elementToMove = string;
@@ -558,7 +558,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return elementToMoveSessionKey;
 	}
 
-	@IbisDoc({"like <code>elementtomove</code> but element is preceded with all ancestor elements and separated by semicolons (e.g. 'adapter;pipeline;pipe')", " "})
+	@IbisDoc({"like <code>elementtomove</code> but element is preceded with all ancestor elements and separated by semicolons (e.g. 'adapter;pipeline;pipe')", ""})
 	@Override
 	public void setElementToMoveChain(String string) {
 		elementToMoveChain = string;
@@ -651,7 +651,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return locker;
 	}
 
-	@IbisDoc({"when set and the regular input is empty, this fixed value is taken as input", " "})
+	@IbisDoc({"when set and the regular input is empty, this fixed value is taken as input", ""})
 	@Override
 	public void setEmptyInputReplacement(String string) {
 		emptyInputReplacement = string;
@@ -679,7 +679,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return writeToSecLog;
 	}
 
-	@IbisDoc({"(only used when <code>writetoseclog=true</code>) comma separated list of keys of session variables that is appended to the security log record", " "})
+	@IbisDoc({"(only used when <code>writetoseclog=true</code>) comma separated list of keys of session variables that is appended to the security log record", ""})
 	@Override
 	public void setSecLogSessionKeys(String string) {
 		secLogSessionKeys = string;
@@ -700,7 +700,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return logIntermediaryResults;
 	}
 
-	@IbisDoc({"regular expression to mask strings in the log. for example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code> will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>note:</b> this feature is used at adapter level, so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)", " "})
+	@IbisDoc({"regular expression to mask strings in the log. for example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code> will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>note:</b> this feature is used at adapter level, so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)", ""})
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
 	}

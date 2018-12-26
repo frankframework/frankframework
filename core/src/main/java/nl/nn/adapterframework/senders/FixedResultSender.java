@@ -191,7 +191,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 	 *
 	 * @param fileName the name of the file to return the contents from
 	 */
-	@IbisDoc({"name of the file containing the resultmessage", " "})
+	@IbisDoc({"name of the file containing the resultmessage", ""})
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}
@@ -199,7 +199,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 		return fileName;
 	}
 
-	@IbisDoc({"returned message", " "})
+	@IbisDoc({"returned message", ""})
 	public void setReturnString(String returnString) {
 		this.returnString = returnString;
 	}

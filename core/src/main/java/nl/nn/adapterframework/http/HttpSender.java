@@ -631,7 +631,7 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 		return streamResultToFileNameSessionKey;
 	}
 
-	@IbisDoc({"if set, the result is streamed to a file (instead of passed as a string)", " "})
+	@IbisDoc({"if set, the result is streamed to a file (instead of passed as a string)", ""})
 	public void setStreamResultToFileNameSessionKey(String string) {
 		streamResultToFileNameSessionKey = string;
 	}
@@ -640,7 +640,7 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 		return storeResultAsStreamInSessionKey;
 	}
 
-	@IbisDoc({"if set, a pointer to an input stream of the result is put in the specified sessionkey (as the sender interface only allows a sender to return a string a sessionkey is used instead to return the stream)", " "})
+	@IbisDoc({"if set, a pointer to an input stream of the result is put in the specified sessionkey (as the sender interface only allows a sender to return a string a sessionkey is used instead to return the stream)", ""})
 	public void setStoreResultAsStreamInSessionKey(String storeResultAsStreamInSessionKey) {
 		this.storeResultAsStreamInSessionKey = storeResultAsStreamInSessionKey;
 	}
@@ -688,7 +688,7 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 		return multipartXmlSessionKey;
 	}
 
-	@IbisDoc({"if set and <code>methodetype=post</code> and <code>paramsinurl=false</code>, a multipart/form-data entity is created instead of a request body. for each part element in the session key a part in the multipart entity is created", " "})
+	@IbisDoc({"if set and <code>methodetype=post</code> and <code>paramsinurl=false</code>, a multipart/form-data entity is created instead of a request body. for each part element in the session key a part in the multipart entity is created", ""})
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
 	}

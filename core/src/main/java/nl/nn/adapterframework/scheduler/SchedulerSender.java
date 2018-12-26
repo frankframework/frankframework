@@ -127,22 +127,22 @@ public class SchedulerSender extends SenderWithParametersBase {
 		}
 	}
 
-	@IbisDoc({"expression that generates the cron trigger", " "})
+	@IbisDoc({"expression that generates the cron trigger", ""})
 	public void setCronExpressionPattern(String string) {
 		cronExpressionPattern = string;
 	}
 
-	@IbisDoc({"job group in which the new trigger is to be created (optional)", " "})
+	@IbisDoc({"job group in which the new trigger is to be created (optional)", ""})
 	public void setJobGroup(String string) {
 		jobGroup = string;
 	}
 
-	@IbisDoc({"pattern that leads to the name of the registered trigger(optional)", " "})
+	@IbisDoc({"pattern that leads to the name of the registered trigger(optional)", ""})
 	public void setJobNamePattern(String string) {
 		jobNamePattern = string;
 	}
 
-	@IbisDoc({"java listener to be called when scheduler trigger fires", " "})
+	@IbisDoc({"java listener to be called when scheduler trigger fires", ""})
 	public void setJavaListener(String string) {
 		javaListener = string;
 	}

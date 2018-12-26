@@ -162,7 +162,7 @@ public class LdapChallengePipe extends AbstractPipe {
 		ldapSender.storeLdapException(t, prc);
 	}
 
-	@IbisDoc({"url to the ldap server. <br/>example: ldap://su05b9.itc.intranet", " "})
+	@IbisDoc({"url to the ldap server. <br/>example: ldap://su05b9.itc.intranet", ""})
 	public void setLdapProviderURL(String string) {
 		ldapProviderURL = string;
 	}
@@ -181,7 +181,7 @@ public class LdapChallengePipe extends AbstractPipe {
 	/**
 	 * @since 4.7
 	 */
-	@IbisDoc({"key of session variable used to store cause of errors", " "})
+	@IbisDoc({"key of session variable used to store cause of errors", ""})
 	public void setErrorSessionKey(String string) {
 		errorSessionKey = string;
 	}

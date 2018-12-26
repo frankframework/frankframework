@@ -131,7 +131,7 @@ public class EscapePipe extends FixedForwardPipe {
 		return substringStart;
 	}
 
-	@IbisDoc({"substring to start translation", " "})
+	@IbisDoc({"substring to start translation", ""})
 	public void setSubstringStart(String substringStart) {
 		this.substringStart = substringStart;
 	}
@@ -140,7 +140,7 @@ public class EscapePipe extends FixedForwardPipe {
 		return substringEnd;
 	}
 
-	@IbisDoc({"substring to end translation", " "})
+	@IbisDoc({"substring to end translation", ""})
 	public void setSubstringEnd(String substringEnd) {
 		this.substringEnd = substringEnd;
 	}

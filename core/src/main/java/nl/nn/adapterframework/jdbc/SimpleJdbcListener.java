@@ -252,7 +252,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener {
 		}
 	}
 
-	@IbisDoc({"count query that returns the number of available records. when there are available records the pipeline is activated", " "})
+	@IbisDoc({"count query that returns the number of available records. when there are available records the pipeline is activated", ""})
 	public void setSelectQuery(String string) {
 		selectQuery = string;
 	}

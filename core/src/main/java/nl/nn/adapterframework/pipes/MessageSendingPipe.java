@@ -259,7 +259,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		}
 	}
 
-	@IbisDoc({"name of the pipe", " "})
+	@IbisDoc({"name of the pipe", ""})
 	@Override
 	public void setName(String name) {
 		super.setName(name);
@@ -970,7 +970,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	 * The message that is returned when the time listening for a reply message
 	 * exceeds the timeout, or in other situations no reply message is received.
 	 */
-	@IbisDoc({"result returned when no return-message was received within the timeout limit (e.g. 'receiver timed out').", " "})
+	@IbisDoc({"result returned when no return-message was received within the timeout limit (e.g. 'receiver timed out').", ""})
 	public void setResultOnTimeOut(String newResultOnTimeOut) {
 		resultOnTimeOut = newResultOnTimeOut;
 	}
@@ -1002,7 +1002,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return linkMethod;
 	}
 
-	@IbisDoc({"when set, the pipe returns a message from a file, instead of doing the regular process", " "})
+	@IbisDoc({"when set, the pipe returns a message from a file, instead of doing the regular process", ""})
 	public void setStubFileName(String fileName) {
 		stubFileName = fileName;
 	}
@@ -1018,7 +1018,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return checkXmlWellFormed;
 	}
 
-	@IbisDoc({"when set, besides the xml well-formedness the root element of the result is checked to be equal to the value set", " "})
+	@IbisDoc({"when set, besides the xml well-formedness the root element of the result is checked to be equal to the value set", ""})
 	public void setCheckRootTag(String s) {
 		checkRootTag = s;
 	}
@@ -1026,7 +1026,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return checkRootTag;
 	}
 
-	@IbisDoc({"xpath expression to extract audit trail from message", " "})
+	@IbisDoc({"xpath expression to extract audit trail from message", ""})
 	public void setAuditTrailXPath(String string) {
 		auditTrailXPath = string;
 	}
@@ -1034,7 +1034,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return auditTrailXPath;
 	}
 
-	@IbisDoc({"xpath expression to extract correlationid from message", " "})
+	@IbisDoc({"xpath expression to extract correlationid from message", ""})
 	public void setCorrelationIDXPath(String string) {
 		correlationIDXPath = string;
 	}
@@ -1042,7 +1042,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return correlationIDXPath;
 	}
 
-	@IbisDoc({"stylesheet to extract correlationid from message", " "})
+	@IbisDoc({"stylesheet to extract correlationid from message", ""})
 	public void setCorrelationIDStyleSheet(String string) {
 		correlationIDStyleSheet = string;
 	}
@@ -1050,7 +1050,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return correlationIDStyleSheet;
 	}
 
-	@IbisDoc({"xpath expression to extract label from message", " "})
+	@IbisDoc({"xpath expression to extract label from message", ""})
 	public void setLabelXPath(String string) {
 		labelXPath = string;
 	}
@@ -1058,7 +1058,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return labelXPath;
 	}
 
-	@IbisDoc({"stylesheet to extract label from message", " "})
+	@IbisDoc({"stylesheet to extract label from message", ""})
 	public void setLabelStyleSheet(String string) {
 		labelStyleSheet = string;
 	}
@@ -1104,7 +1104,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return outputWrapper;
 	}
 
-	@IbisDoc({"key of a pipelinesession-variable. is specified, the value of the pipelinesession variable is used as input for the xpathexpression or stylesheet, instead of the current input message", " "})
+	@IbisDoc({"key of a pipelinesession-variable. is specified, the value of the pipelinesession variable is used as input for the xpathexpression or stylesheet, instead of the current input message", ""})
 	public void setCorrelationIDSessionKey(String string) {
 		correlationIDSessionKey = string;
 	}
@@ -1117,7 +1117,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return auditTrailNamespaceDefs;
 	}
 
-	@IbisDoc({"namespace defintions for audittrailxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", " "})
+	@IbisDoc({"namespace defintions for audittrailxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setAuditTrailNamespaceDefs(String auditTrailNamespaceDefs) {
 		this.auditTrailNamespaceDefs = auditTrailNamespaceDefs;
 	}
@@ -1126,7 +1126,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return correlationIDNamespaceDefs;
 	}
 
-	@IbisDoc({"namespace defintions for correlationidxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", " "})
+	@IbisDoc({"namespace defintions for correlationidxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setCorrelationIDNamespaceDefs(String correlationIDNamespaceDefs) {
 		this.correlationIDNamespaceDefs = correlationIDNamespaceDefs;
 	}
@@ -1135,12 +1135,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return labelNamespaceDefs;
 	}
 
-	@IbisDoc({"namespace defintions for labelxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", " "})
+	@IbisDoc({"namespace defintions for labelxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setLabelNamespaceDefs(String labelXNamespaceDefs) {
 		this.labelNamespaceDefs = labelXNamespaceDefs;
 	}
 	
-	@IbisDoc({"when not empty, a timeoutexception is thrown when the result equals this value (for testing purposes only)", " "})
+	@IbisDoc({"when not empty, a timeoutexception is thrown when the result equals this value (for testing purposes only)", ""})
 	public void setTimeOutOnResult(String string) {
 		timeOutOnResult = string;
 	}
@@ -1148,7 +1148,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return timeOutOnResult;
 	}
 
-	@IbisDoc({"when not empty, a piperunexception is thrown when the result equals this value (for testing purposes only)", " "})
+	@IbisDoc({"when not empty, a piperunexception is thrown when the result equals this value (for testing purposes only)", ""})
 	public void setExceptionOnResult(String string) {
 		exceptionOnResult = string;
 	}
@@ -1191,7 +1191,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		retryMaxInterval = i;
 	}
 
-	@IbisDoc({"xpath expression evaluated on each technical successful reply. retry is done if condition returns true", " "})
+	@IbisDoc({"xpath expression evaluated on each technical successful reply. retry is done if condition returns true", ""})
 	public void setRetryXPath(String string) {
 		retryXPath = string;
 	}
@@ -1204,7 +1204,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return retryNamespaceDefs;
 	}
 
-	@IbisDoc({"namespace defintions for retryxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", " "})
+	@IbisDoc({"namespace defintions for retryxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setRetryNamespaceDefs(String retryNamespaceDefs) {
 		this.retryNamespaceDefs = retryNamespaceDefs;
 	}
@@ -1217,7 +1217,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		}
 	}
 
-	@IbisDoc({"key of a pipelinesession-variable. if specified, the value of the pipelinesession variable is used as audit trail (instead of the default 'no audit trail)", " "})
+	@IbisDoc({"key of a pipelinesession-variable. if specified, the value of the pipelinesession variable is used as audit trail (instead of the default 'no audit trail)", ""})
 	public void setAuditTrailSessionKey(String string) {
 		auditTrailSessionKey = string;
 	}
@@ -1234,7 +1234,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return useInputForExtract;
 	}
 	
-	@IbisDoc({"next to common usage in {@link abstractpipe}, also strings in the error/logstore are masked", " "})
+	@IbisDoc({"next to common usage in {@link abstractpipe}, also strings in the error/logstore are masked", ""})
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
 	}

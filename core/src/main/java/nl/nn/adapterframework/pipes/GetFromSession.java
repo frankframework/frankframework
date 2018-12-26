@@ -111,7 +111,7 @@ public class GetFromSession  extends FixedForwardPipe {
 	 * 
 	 * @param sessionKey String
 	 */
-	@IbisDoc({"name of the key in the <code>pipelinesession</code> to retrieve the output message from", " "})
+	@IbisDoc({"name of the key in the <code>pipelinesession</code> to retrieve the output message from", ""})
 	public void setSessionKey(String sessionKey) {
 		this.sessionKey = sessionKey;
 	}

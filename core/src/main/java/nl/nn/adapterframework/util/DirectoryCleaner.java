@@ -114,7 +114,7 @@ public class DirectoryCleaner {
 		}
 	}
 
-	@IbisDoc({"directory to be cleaned up", " "})
+	@IbisDoc({"directory to be cleaned up", ""})
 	public void setDirectory(String directory) {
 		this.directory = directory;
 	}

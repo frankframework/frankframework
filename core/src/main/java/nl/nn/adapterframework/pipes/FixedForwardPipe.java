@@ -152,7 +152,7 @@ public class FixedForwardPipe extends AbstractPipe {
  	 * Sets the name of the <code>forward</code> that is looked up
  	 * upon completion.
  	 */
-	@IbisDoc({"if specified", " "})
+	@IbisDoc({"if specified", ""})
 	public void setForwardName(String forwardName) {
         this.forwardName = forwardName;
     }
@@ -169,7 +169,7 @@ public class FixedForwardPipe extends AbstractPipe {
 		return skipOnEmptyInput;
 	}
 
-	@IbisDoc({"when set, this pipe is only executed when the value of parameter with name <code>ifparam</code> equals <code>ifvalue</code> (otherwise this pipe is skipped)", " "})
+	@IbisDoc({"when set, this pipe is only executed when the value of parameter with name <code>ifparam</code> equals <code>ifvalue</code> (otherwise this pipe is skipped)", ""})
 	public void setIfParam(String string) {
 		ifParam = string;
 	}
@@ -178,7 +178,7 @@ public class FixedForwardPipe extends AbstractPipe {
 		return ifParam;
 	}
 
-	@IbisDoc({"see <code>ifparam</code>", " "})
+	@IbisDoc({"see <code>ifparam</code>", ""})
 	public void setIfValue(String string) {
 		ifValue = string;
 	}

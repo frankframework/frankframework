@@ -372,7 +372,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 
 
 
-	@IbisDoc({"expression used to determine the set of elements iterated over, i.e. the set of child elements", " "})
+	@IbisDoc({"expression used to determine the set of elements iterated over, i.e. the set of child elements", ""})
 	public void setElementXPathExpression(String string) {
 		elementXPathExpression = string;
 	}

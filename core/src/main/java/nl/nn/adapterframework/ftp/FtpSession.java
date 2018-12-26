@@ -690,7 +690,7 @@ public class FtpSession {
 	}
 
 
-	@IbisDoc({"name or ip adres of remote host", " "})
+	@IbisDoc({"name or ip adres of remote host", ""})
 	public void setHost(String string) {
 		host = string;
 	}
@@ -708,7 +708,7 @@ public class FtpSession {
 
 
 
-	@IbisDoc({"name of the alias to obtain credentials to authenticatie on remote server", " "})
+	@IbisDoc({"name of the alias to obtain credentials to authenticatie on remote server", ""})
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
@@ -716,7 +716,7 @@ public class FtpSession {
 		return authAlias;
 	}
 
-	@IbisDoc({"name of the user to authenticatie on remote server", " "})
+	@IbisDoc({"name of the user to authenticatie on remote server", ""})
 	public void setUsername(String string) {
 		username = string;
 	}
@@ -724,7 +724,7 @@ public class FtpSession {
 		return username;
 	}
 
-	@IbisDoc({"name of the password to authenticatie on remote server", " "})
+	@IbisDoc({"name of the password to authenticatie on remote server", ""})
 	public void setPassword(String string) {
 		password = string;
 	}
@@ -734,7 +734,7 @@ public class FtpSession {
 	
 
 	
-	@IbisDoc({"proxy host name", " "})
+	@IbisDoc({"proxy host name", ""})
 	public void setProxyHost(String string) {
 		proxyHost = string;
 	}
@@ -750,7 +750,7 @@ public class FtpSession {
 		return proxyPort;
 	}
 
-	@IbisDoc({"name of the alias to obtain credentials to authenticate on proxy", " "})
+	@IbisDoc({"name of the alias to obtain credentials to authenticate on proxy", ""})
 	public void setProxyAuthAlias(String string) {
 		proxyAuthAlias = string;
 	}
@@ -758,7 +758,7 @@ public class FtpSession {
 		return proxyAuthAlias;
 	}
 
-	@IbisDoc({"default user name in case proxy requires authentication", " "})
+	@IbisDoc({"default user name in case proxy requires authentication", ""})
 	public void setProxyUsername(String string) {
 		proxyUsername = string;
 	}
@@ -766,7 +766,7 @@ public class FtpSession {
 		return proxyUsername;
 	}
 
-	@IbisDoc({"default password in case proxy requires authentication", " "})
+	@IbisDoc({"default password in case proxy requires authentication", ""})
 	public void setProxyPassword(String string) {
 		proxyPassword = string;
 	}
@@ -788,7 +788,7 @@ public class FtpSession {
 	}
 
 
-	@IbisDoc({"file type, one of ascii, binary", " "})
+	@IbisDoc({"file type, one of ascii, binary", ""})
 	public void setFileType(String string) {
 		fileType = string;
 	}
@@ -820,7 +820,7 @@ public class FtpSession {
 	}
 
 
-	@IbisDoc({"(sftp) optional preferred encryption from client to server for sftp protocol", " "})
+	@IbisDoc({"(sftp) optional preferred encryption from client to server for sftp protocol", ""})
 	public void setPrefCSEncryption(String string) {
 		prefCSEncryption = string;
 	}
@@ -828,7 +828,7 @@ public class FtpSession {
 		return prefCSEncryption;
 	}
 
-	@IbisDoc({"(sftp) optional preferred encryption from server to client for sftp protocol", " "})
+	@IbisDoc({"(sftp) optional preferred encryption from server to client for sftp protocol", ""})
 	public void setPrefSCEncryption(String string) {
 		prefSCEncryption = string;
 	}
@@ -837,7 +837,7 @@ public class FtpSession {
 	}
 
 
-	@IbisDoc({"(sftp) path to private key file for sftp authentication", " "})
+	@IbisDoc({"(sftp) path to private key file for sftp authentication", ""})
 	public void setPrivateKeyFilePath(String string) {
 		privateKeyFilePath = string;
 	}
@@ -845,7 +845,7 @@ public class FtpSession {
 		return privateKeyFilePath;
 	}
 	
-	@IbisDoc({"(sftp) name of the alias to obtain credentials for passphrase of private key file", " "})
+	@IbisDoc({"(sftp) name of the alias to obtain credentials for passphrase of private key file", ""})
 	public void setPrivateKeyAuthAlias(String string) {
 		privateKeyAuthAlias = string;
 	}
@@ -853,7 +853,7 @@ public class FtpSession {
 		return privateKeyAuthAlias;
 	}
 
-	@IbisDoc({"(sftp) passphrase of private key file", " "})
+	@IbisDoc({"(sftp) passphrase of private key file", ""})
 	public void setPrivateKeyPassword(String password) {
 		privateKeyPassword = password;
 	}
@@ -862,7 +862,7 @@ public class FtpSession {
 	}
 
 
-	@IbisDoc({"(sftp) path to file with knownhosts", " "})
+	@IbisDoc({"(sftp) path to file with knownhosts", ""})
 	public void setKnownHostsPath(String string) {
 		knownHostsPath = string;
 	}
@@ -870,7 +870,7 @@ public class FtpSession {
 		return knownHostsPath;
 	}
 
-	@IbisDoc({"(sftp) &nbsp;", "false"})
+	@IbisDoc({"(sftp) ", "false"})
 	public void setConsoleKnownHostsVerifier(boolean b) {
 		consoleKnownHostsVerifier = b;
 	}
@@ -882,7 +882,7 @@ public class FtpSession {
 
 
 
-	@IbisDoc({"(ftps) resource url to certificate to be used for authentication", " "})
+	@IbisDoc({"(ftps) resource url to certificate to be used for authentication", ""})
 	public void setCertificate(String string) {
 		certificate = string;
 	}
@@ -890,7 +890,7 @@ public class FtpSession {
 		return certificate;
 	}
 
-	@IbisDoc({"(ftps) &nbsp;", "pkcs12"})
+	@IbisDoc({"(ftps) ", "pkcs12"})
 	public void setCertificateType(String string) {
 		certificateType = string;
 	}
@@ -898,7 +898,7 @@ public class FtpSession {
 		return certificateType;
 	}
 
-	@IbisDoc({"(ftps) alias used to obtain certificate password", " "})
+	@IbisDoc({"(ftps) alias used to obtain certificate password", ""})
 	public void setCertificateAuthAlias(String string) {
 		certificateAuthAlias = string;
 	}
@@ -906,7 +906,7 @@ public class FtpSession {
 		return certificateAuthAlias;
 	}
 
-	@IbisDoc({"(ftps) &nbsp;", " "})
+	@IbisDoc({"(ftps) ", " "})
 	public void setCertificatePassword(String string) {
 		certificatePassword = string;
 	}
@@ -924,7 +924,7 @@ public class FtpSession {
 	}
 
 
-	@IbisDoc({"(ftps) resource url to truststore to be used for authentication", " "})
+	@IbisDoc({"(ftps) resource url to truststore to be used for authentication", ""})
 	public void setTruststore(String string) {
 		truststore = string;
 	}
@@ -932,7 +932,7 @@ public class FtpSession {
 		return truststore;
 	}
 
-	@IbisDoc({"(ftps) &nbsp;", "jks"})
+	@IbisDoc({"(ftps) ", "jks"})
 	public void setTruststoreType(String string) {
 		truststoreType = string;
 	}
@@ -940,7 +940,7 @@ public class FtpSession {
 		return truststoreType;
 	}
 
-	@IbisDoc({"(ftps) alias used to obtain truststore password", " "})
+	@IbisDoc({"(ftps) alias used to obtain truststore password", ""})
 	public void setTruststoreAuthAlias(String string) {
 		truststoreAuthAlias = string;
 	}
@@ -948,7 +948,7 @@ public class FtpSession {
 		return truststoreAuthAlias;
 	}
 
-	@IbisDoc({"(ftps) &nbsp;", " "})
+	@IbisDoc({"(ftps) ", " "})
 	public void setTruststorePassword(String string) {
 		truststorePassword = string;
 	}

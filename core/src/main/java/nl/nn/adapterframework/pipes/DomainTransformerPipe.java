@@ -251,7 +251,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		this.proxiedDataSources = proxiedDataSources;
 	}
 
-	@IbisDoc({"&nbsp;", " "})
+	@IbisDoc({"", " "})
 	public void setJmsRealm(String jmsRealm) {
 		this.jmsRealm = jmsRealm;
 	}

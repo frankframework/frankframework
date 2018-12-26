@@ -1328,7 +1328,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		paramList.add(p);
 	}
 
-	@IbisDoc({"name of the sender", " "})
+	@IbisDoc({"name of the sender", ""})
 	@Override
 	public void setName(String name) {
 		this.name = name;
@@ -1345,7 +1345,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		return operation;
 	}
 
-	@IbisDoc({"url to context to search in, e.g. 'ldap://edsnlm01.group.intranet/ou=people, o=ing' to search in te people group of ing cds. used to overwrite the providerurl specified in jmsrealm.", " "})
+	@IbisDoc({"url to context to search in, e.g. 'ldap://edsnlm01.group.intranet/ou=people, o=ing' to search in te people group of ing cds. used to overwrite the providerurl specified in jmsrealm.", ""})
 	public void setLdapProviderURL(String string) {
 		ldapProviderURL = string;
 	}

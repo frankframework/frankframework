@@ -107,7 +107,7 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 		
 	}
 
-	@IbisDoc({"name of the manager", " "})
+	@IbisDoc({"name of the manager", ""})
 	public void setName(String string) {
 		name = string;
 	}

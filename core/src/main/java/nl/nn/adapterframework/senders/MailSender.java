@@ -644,14 +644,14 @@ public class MailSender extends SenderWithParametersBase {
 	/**
 	 * Set the default for From
 	 */
-	@IbisDoc({"value of the from: header if not specified in message itself", " "})
+	@IbisDoc({"value of the from: header if not specified in message itself", ""})
 	public void setDefaultFrom(String newFrom) {
 		defaultFrom = newFrom;
 	}
 	/**
 	 * Set the default for Subject>
 	 */
-	@IbisDoc({"value of the subject: header if not specified in message itself", " "})
+	@IbisDoc({"value of the subject: header if not specified in message itself", ""})
 	public void setDefaultSubject(String newSubject) {
 		defaultSubject = newSubject;
 	}
@@ -659,7 +659,7 @@ public class MailSender extends SenderWithParametersBase {
 	/**
 	 * Name of the SMTP Host.
 	 */
-	@IbisDoc({"name of the host by which the messages are to be send", " "})
+	@IbisDoc({"name of the host by which the messages are to be send", ""})
 	public void setSmtpHost(String newSmtpHost) {
 		smtpHost = newSmtpHost;
 	}
@@ -667,7 +667,7 @@ public class MailSender extends SenderWithParametersBase {
 		return smtpHost;
 	}
 
-	@IbisDoc({"alias used to obtain credentials for authentication to smtphost", " "})
+	@IbisDoc({"alias used to obtain credentials for authentication to smtphost", ""})
 	public void setSmtpAuthAlias(String string) {
 		smtpAuthAlias = string;
 	}
@@ -675,7 +675,7 @@ public class MailSender extends SenderWithParametersBase {
 		return smtpAuthAlias;
 	}
 
-	@IbisDoc({"userid on the smtphost", " "})
+	@IbisDoc({"userid on the smtphost", ""})
 	public void setSmtpUserid(java.lang.String newSmtpUserid) {
 		smtpUserid = newSmtpUserid;
 	}
@@ -683,7 +683,7 @@ public class MailSender extends SenderWithParametersBase {
 		return smtpUserid;
 	}
 	
-	@IbisDoc({"password of userid on the smtphost", " "})
+	@IbisDoc({"password of userid on the smtphost", ""})
 	public void setSmtpPassword(String newSmtpPassword) {
 		smtpPassword = newSmtpPassword;
 	}

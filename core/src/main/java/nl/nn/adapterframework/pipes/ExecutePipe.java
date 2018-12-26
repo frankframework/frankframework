@@ -68,7 +68,7 @@ public class ExecutePipe extends FixedForwardPipe {
 		}
 	}
 
-	@IbisDoc({"the command to execute (if command and commandsessionkey are empty, the command is taken from the input of the pipe)", " "})
+	@IbisDoc({"the command to execute (if command and commandsessionkey are empty, the command is taken from the input of the pipe)", ""})
 	public void setCommand(String command) {
 		this.command = command;
 	}
@@ -76,7 +76,7 @@ public class ExecutePipe extends FixedForwardPipe {
 		return command;
 	}
 
-	@IbisDoc({"the session key that holds the command to execute", " "})
+	@IbisDoc({"the session key that holds the command to execute", ""})
 	public void setCommandSessionKey(String commandSessionKey) {
 		this.commandSessionKey = commandSessionKey;
 	}

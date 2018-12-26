@@ -939,7 +939,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	}
 
 
-	@IbisDoc({"&nbsp;", "true"})
+	@IbisDoc({"", "true"})
 	public void setSynchronous(boolean synchronous) {
 	   this.synchronous=synchronous;
 	}
@@ -958,7 +958,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 
 
-	@IbisDoc({"comma separated list of columns whose values are to be returned. works only if the driver implements jdbc 3.0 getgeneratedkeys()", " "})
+	@IbisDoc({"comma separated list of columns whose values are to be returned. works only if the driver implements jdbc 3.0 getgeneratedkeys()", ""})
 	public void setColumnsReturned(String string) {
 		columnsReturned = string;
 	}
@@ -970,7 +970,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	}
 
 
-	@IbisDoc({"query that can be used to obtain result of side-effecto of update-query, like generated value of sequence. example: select mysequence.currval from dual", " "})
+	@IbisDoc({"query that can be used to obtain result of side-effecto of update-query, like generated value of sequence. example: select mysequence.currval from dual", ""})
 	public void setResultQuery(String string) {
 		resultQuery = string;
 	}
@@ -995,7 +995,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return blobsCompressed;
 	}
 
-	@IbisDoc({"controls whether the streamed blobdata will need to be base64 <code>encode</code> or <code>decode</code> or not.", " "})
+	@IbisDoc({"controls whether the streamed blobdata will need to be base64 <code>encode</code> or <code>decode</code> or not.", ""})
 	public void setBlobBase64Direction(String string) {
 		blobBase64Direction = string;
 	}
@@ -1029,7 +1029,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return blobColumn;
 	}
 
-	@IbisDoc({"for querytype 'updateblob': key of session variable that contains the data (string or inputstream) to be loaded to the blob. when empty, the input of the pipe, which then must be a string, is used. for querytype 'select': key of session variable that contains the outputstream, writer or filename to write the blob to", " "})
+	@IbisDoc({"for querytype 'updateblob': key of session variable that contains the data (string or inputstream) to be loaded to the blob. when empty, the input of the pipe, which then must be a string, is used. for querytype 'select': key of session variable that contains the outputstream, writer or filename to write the blob to", ""})
 	public void setBlobSessionKey(String string) {
 		blobSessionKey = string;
 	}
@@ -1045,7 +1045,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return clobColumn;
 	}
 
-	@IbisDoc({"for querytype 'updateclob': key of session variable that contains the clob (string or inputstream) to be loaded to the clob. when empty, the input of the pipe, which then must be a string, is used. for querytype 'select': key of session variable that contains the outputstream, writer or filename to write the clob to", " "})
+	@IbisDoc({"for querytype 'updateclob': key of session variable that contains the clob (string or inputstream) to be loaded to the clob. when empty, the input of the pipe, which then must be a string, is used. for querytype 'select': key of session variable that contains the outputstream, writer or filename to write the clob to", ""})
 	public void setClobSessionKey(String string) {
 		clobSessionKey = string;
 	}
@@ -1070,7 +1070,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	}
 
 
-	@IbisDoc({"charset used when reading a stream (that is e.g. going to be written to a blob or clob). when empty, the stream is copied directly to the blob, without conversion", " "})
+	@IbisDoc({"charset used when reading a stream (that is e.g. going to be written to a blob or clob). when empty, the stream is copied directly to the blob, without conversion", ""})
 	 public void setStreamCharset(String string) {
 		streamCharset = string;
 	}
@@ -1101,7 +1101,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return rowIdSessionKey;
 	}
 
-	@IbisDoc({"if specified, the rowid of the processed row is put in the pipelinesession under the specified key (only applicable for <code>querytype=other</code>). <b>note:</b> if multiple rows are processed a sqlexception is thrown.", " "})
+	@IbisDoc({"if specified, the rowid of the processed row is put in the pipelinesession under the specified key (only applicable for <code>querytype=other</code>). <b>note:</b> if multiple rows are processed a sqlexception is thrown.", ""})
 	public void setRowIdSessionKey(String string) {
 		rowIdSessionKey = string;
 	}

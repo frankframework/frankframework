@@ -136,7 +136,7 @@ public class SoapValidator extends Json2XmlValidator {
         throw new IllegalArgumentException("The root element of a soap envelope is always " + getRoot());
     }
 
-	@IbisDoc({"name of the child element of the soap body. or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap body, for example to allow element x and an empty soap body use: x,)", " "})
+	@IbisDoc({"name of the child element of the soap body. or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap body, for example to allow element x and an empty soap body use: x,)", ""})
     public void setSoapBody(String soapBody) {
         this.soapBody = soapBody;
     }
@@ -145,7 +145,7 @@ public class SoapValidator extends Json2XmlValidator {
         return soapBody;
     }
 
-	@IbisDoc({"identical to the <code>soapbody</code> attribute except that it's used for the output message instead of the input message. for more information see <a href=\"#note1\">note 1</a>", " "})
+	@IbisDoc({"identical to the <code>soapbody</code> attribute except that it's used for the output message instead of the input message. for more information see <a href=\"#note1\">note 1</a>", ""})
     public void setOutputSoapBody(String outputSoapBody) {
         this.outputSoapBody = outputSoapBody;
     }
@@ -154,7 +154,7 @@ public class SoapValidator extends Json2XmlValidator {
         return outputSoapBody;
     }
 
-	@IbisDoc({"name of the child element of the soap header. or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap header, for example to allow element x and an empty soap header use: x,)", " "})
+	@IbisDoc({"name of the child element of the soap header. or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap header, for example to allow element x and an empty soap header use: x,)", ""})
     public void setSoapHeader(String soapHeader) {
         this.soapHeader = soapHeader;
     }
@@ -163,7 +163,7 @@ public class SoapValidator extends Json2XmlValidator {
         return soapHeader;
     }
 
-	@IbisDoc({"can be used when the soap header element exists multiple times", " "})
+	@IbisDoc({"can be used when the soap header element exists multiple times", ""})
     public void setSoapHeaderNamespace(String soapHeaderNamespace) {
         this.soapHeaderNamespace = soapHeaderNamespace;
     }

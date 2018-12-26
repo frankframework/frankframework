@@ -152,7 +152,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 		return result;
 	}
 
-	@IbisDoc({"name of the sender", " "})
+	@IbisDoc({"name of the sender", ""})
 	public void setName(String name) {
 		this.name=name;
 	}
@@ -168,7 +168,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 		serviceName = string;
 	}
 
-	@IbisDoc({"comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (only for listeners that support it, like javalistener)", " "})
+	@IbisDoc({"comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (only for listeners that support it, like javalistener)", ""})
 	public void setReturnedSessionKeys(String string) {
 		returnedSessionKeys = string;
 	}

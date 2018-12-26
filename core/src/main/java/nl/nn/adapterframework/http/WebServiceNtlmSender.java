@@ -247,7 +247,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return url;
 	}
 
-	@IbisDoc({"url or base of url to be used ", " "})
+	@IbisDoc({"url or base of url to be used ", ""})
 	public void setUrl(String string) {
 		url = string;
 	}
@@ -274,7 +274,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return authAlias;
 	}
 
-	@IbisDoc({"alias used to obtain credentials for authentication to host", " "})
+	@IbisDoc({"alias used to obtain credentials for authentication to host", ""})
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
@@ -283,7 +283,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return userName;
 	}
 
-	@IbisDoc({"username used in authentication to host", " "})
+	@IbisDoc({"username used in authentication to host", ""})
 	public void setUserName(String string) {
 		userName = string;
 	}
@@ -292,7 +292,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return password;
 	}
 
-	@IbisDoc({"&nbsp;", " "})
+	@IbisDoc({"", " "})
 	public void setPassword(String string) {
 		password = string;
 	}
@@ -309,7 +309,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return proxyHost;
 	}
 
-	@IbisDoc({"&nbsp;", " "})
+	@IbisDoc({"", " "})
 	public void setProxyHost(String string) {
 		proxyHost = string;
 	}
@@ -318,7 +318,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return proxyPort;
 	}
 
-	@IbisDoc({"&nbsp;", "80"})
+	@IbisDoc({"", "80"})
 	public void setProxyPort(int i) {
 		proxyPort = i;
 	}
@@ -327,7 +327,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return soapAction;
 	}
 
-	@IbisDoc({"the soapactionuri to be set in the requestheader", " "})
+	@IbisDoc({"the soapactionuri to be set in the requestheader", ""})
 	public void setSoapAction(String string) {
 		soapAction = string;
 	}

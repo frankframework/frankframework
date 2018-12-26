@@ -234,7 +234,7 @@ public class WebServiceSender extends HttpSender {
 	/**
 	 * @deprecated please use setSoapAction() instead
 	 */
-	@IbisDoc({"deprecated: please use soapaction instead", " "})
+	@IbisDoc({"deprecated: please use soapaction instead", ""})
 	public void setSoapActionURI(String soapAction) {
 		ConfigurationWarnings.getInstance().add(log, getLogPrefix()+" the attribute 'soapActionURI' has been renamed 'soapAction'");
 		setSoapAction(soapAction);
@@ -243,7 +243,7 @@ public class WebServiceSender extends HttpSender {
 	/**
 	 * @deprecated please use setSoapActionParam instead
 	 */
-	@IbisDoc({"deprecated: please use soapactionparam instead", " "})
+	@IbisDoc({"deprecated: please use soapactionparam instead", ""})
 	public void setSoapActionURIParam(String soapActionParam) {
 		ConfigurationWarnings.getInstance().add(log, getLogPrefix()+" the attribute 'soapActionURIParam' has been renamed 'soapActionParam'");
 		setSoapActionParam(soapActionParam);
@@ -253,7 +253,7 @@ public class WebServiceSender extends HttpSender {
 		return soapAction;
 	}
 
-	@IbisDoc({"the soapactionuri to be set in the requestheader", " "})
+	@IbisDoc({"the soapactionuri to be set in the requestheader", ""})
 	public void setSoapAction(String soapAction) {
 		this.soapAction = soapAction;
 	}
@@ -262,18 +262,18 @@ public class WebServiceSender extends HttpSender {
 		return soapActionParam;
 	}
 
-	@IbisDoc({"parameter to obtain the soapactionuri", " "})
+	@IbisDoc({"parameter to obtain the soapactionuri", ""})
 	public void setSoapActionParam(String soapActionParam) {
 		this.soapActionParam = soapActionParam;
 	}
 	
-	@IbisDoc({"deprecated: please use encodingstyle instead", " "})
+	@IbisDoc({"deprecated: please use encodingstyle instead", ""})
 	public void setEncodingStyleURI(String encodingStyle) {
 		ConfigurationWarnings.getInstance().add(log, getLogPrefix()+" the attribute 'encodingStyleURI' has been renamed 'encodingStyle'");
 		setEncodingStyle(encodingStyle);
 	}
 
-	@IbisDoc({"the encodingstyle to be set in the messageheader", " "})
+	@IbisDoc({"the encodingstyle to be set in the messageheader", ""})
 	public void setEncodingStyle(String encodingStyle) {
 		this.encodingStyle = encodingStyle;
 	}
@@ -291,13 +291,13 @@ public class WebServiceSender extends HttpSender {
 	}
 
 
-	@IbisDoc({"deprecated: please use servicenamespace instead", " "})
+	@IbisDoc({"deprecated: please use servicenamespace instead", ""})
 	public void setServiceNamespaceURI(String serviceNamespace) {
 		ConfigurationWarnings.getInstance().add(log, getLogPrefix()+" the attribute 'serviceNamespaceURI' has been renamed 'serviceNamespace'");
 		setServiceNamespace(serviceNamespace);
 	}
 
-	@IbisDoc({"the namespace of the message sent. identifies the service to be called. may be overriden by an actual namespace setting in the message to be sent", " "})
+	@IbisDoc({"the namespace of the message sent. identifies the service to be called. may be overriden by an actual namespace setting in the message to be sent", ""})
 	public void setServiceNamespace(String serviceNamespace) {
 		this.serviceNamespace = serviceNamespace;
 	}
@@ -305,13 +305,13 @@ public class WebServiceSender extends HttpSender {
 		return serviceNamespace;
 	}
 
-	@IbisDoc({"deprecated: please use servicenamespaceparam instead", " "})
+	@IbisDoc({"deprecated: please use servicenamespaceparam instead", ""})
 	public void setServiceNamespaceURIParam(String serviceNamespaceParam) {
 		ConfigurationWarnings.getInstance().add(log, getLogPrefix()+" the attribute 'serviceNamespaceURIParam' has been renamed 'serviceNamespaceParam'");
 		setServiceNamespaceParam(serviceNamespaceParam);
 	}
 
-	@IbisDoc({"parameter to obtain the servicenamespace", " "})
+	@IbisDoc({"parameter to obtain the servicenamespace", ""})
 	public void setServiceNamespaceParam(String serviceNamespaceParam) {
 		this.serviceNamespaceParam = serviceNamespaceParam;
 	}
@@ -319,7 +319,7 @@ public class WebServiceSender extends HttpSender {
 		return serviceNamespaceParam;
 	}
 
-	@IbisDoc({"namespace defintions to be added in the soap envelope tag. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", " "})
+	@IbisDoc({"namespace defintions to be added in the soap envelope tag. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
@@ -327,7 +327,7 @@ public class WebServiceSender extends HttpSender {
 		return namespaceDefs;
 	}
 
-	@IbisDoc({"&nbsp;", " "})
+	@IbisDoc({"", " "})
 	public void setWssUserName(String string) {
 		wssUserName = string;
 	}
@@ -335,7 +335,7 @@ public class WebServiceSender extends HttpSender {
 		return wssUserName;
 	}
 
-	@IbisDoc({"&nbsp;", " "})
+	@IbisDoc({"", " "})
 	public void setWssPassword(String string) {
 		wssPassword = string;
 	}
@@ -343,7 +343,7 @@ public class WebServiceSender extends HttpSender {
 		return wssPassword;
 	}
 
-	@IbisDoc({"alias used to obtain credentials for authentication to web services security", " "})
+	@IbisDoc({"alias used to obtain credentials for authentication to web services security", ""})
 	public void setWssAuthAlias(String string) {
 		wssAuthAlias = string;
 	}

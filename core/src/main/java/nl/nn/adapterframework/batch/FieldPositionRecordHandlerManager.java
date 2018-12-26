@@ -63,7 +63,7 @@ public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 
 
 
-	@IbisDoc({"position of field that identifies the recordtype (position of first field is 1)", " "})
+	@IbisDoc({"position of field that identifies the recordtype (position of first field is 1)", ""})
 	public void setFieldNr(int i) {
 		fieldNr = i;
 	}
@@ -82,7 +82,7 @@ public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 		separator = string;
 	}
 
-	@IbisDoc({"separator that separates the fields in the record", " "})
+	@IbisDoc({"separator that separates the fields in the record", ""})
 	public void setSeparator(String string) {
 		separator = string;
 	}

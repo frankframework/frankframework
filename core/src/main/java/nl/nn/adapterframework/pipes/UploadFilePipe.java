@@ -115,7 +115,7 @@ public class UploadFilePipe extends FixedForwardPipe {
 		return new PipeRunResult(getForward(), dir.getPath());
 	}
 
-	@IbisDoc({"base directory where files are unzipped to", " "})
+	@IbisDoc({"base directory where files are unzipped to", ""})
 	public void setDirectory(String string) {
 		directory = string;
 	}

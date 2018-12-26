@@ -133,7 +133,7 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 	}
 
 
-	@IbisDoc({"optional identifier for this storage, to be able to share the physical storage between a number of receivers", " "})
+	@IbisDoc({"optional identifier for this storage, to be able to share the physical storage between a number of receivers", ""})
 	public void setSlotId(String string) {
 		slotId = string;
 	}

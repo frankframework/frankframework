@@ -231,7 +231,7 @@ public class CompressPipe extends FixedForwardPipe {
 		compress = b;
 	}
 
-	@IbisDoc({"required if result is a file, the pattern for the result filename", " "})
+	@IbisDoc({"required if result is a file, the pattern for the result filename", ""})
 	public void setFilenamePattern(String string) {
 		filenamePattern = string;
 	}
@@ -241,7 +241,7 @@ public class CompressPipe extends FixedForwardPipe {
 		messageIsContent = b;
 	}
 
-	@IbisDoc({"required if result is a file, the directory in which to store the result file", " "})
+	@IbisDoc({"required if result is a file, the directory in which to store the result file", ""})
 	public void setOutputDirectory(String string) {
 		outputDirectory = string;
 	}
@@ -255,7 +255,7 @@ public class CompressPipe extends FixedForwardPipe {
 		return zipEntryPattern;
 	}
 
-	@IbisDoc({"the pattern for the zipentry name in case a zipfile is read or written", " "})
+	@IbisDoc({"the pattern for the zipentry name in case a zipfile is read or written", ""})
 	public void setZipEntryPattern(String string) {
 		zipEntryPattern = string;
 	}
@@ -269,7 +269,7 @@ public class CompressPipe extends FixedForwardPipe {
 		convert2String = b;
 	}
 
-	@IbisDoc({"when set to gz, the gzip format is used. when set to another value, the zip format is used. if not set and direction is compress, the resultiscontent specifies the output format used (resultiscontent=<code>true</code> -> gzip format, resultiscontent=<code>false</code> -> zip format) if not set and direction is decompress, the messageiscontent specifies the output format used (messageiscontent=<code>true</code> -> gzip format, messageiscontent=<code>false</code> -> zip format)", " "})
+	@IbisDoc({"when set to gz, the gzip format is used. when set to another value, the zip format is used. if not set and direction is compress, the resultiscontent specifies the output format used (resultiscontent=<code>true</code> -> gzip format, resultiscontent=<code>false</code> -> zip format) if not set and direction is decompress, the messageiscontent specifies the output format used (messageiscontent=<code>true</code> -> gzip format, messageiscontent=<code>false</code> -> zip format)", ""})
 	public void setFileFormat(String string) {
 		fileFormat = string;
 	}

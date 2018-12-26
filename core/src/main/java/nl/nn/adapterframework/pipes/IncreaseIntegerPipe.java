@@ -92,7 +92,7 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 		return new PipeRunResult(findForward("success"), input);
 	}
 
-	@IbisDoc({"reference to the session variable whose value is to be increased", " "})
+	@IbisDoc({"reference to the session variable whose value is to be increased", ""})
 	public void setSessionKey(String string) {
 		sessionKey = string;
 	}

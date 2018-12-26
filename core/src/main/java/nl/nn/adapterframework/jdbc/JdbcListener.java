@@ -359,7 +359,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 	}
 
 
-	@IbisDoc({"primary key field of the table, used to identify messages", " "})
+	@IbisDoc({"primary key field of the table, used to identify messages", ""})
 	protected void setKeyField(String fieldname) {
 		keyField = fieldname;
 	}

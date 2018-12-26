@@ -212,7 +212,7 @@ public class FtpListener extends FtpSession implements IPullingListener, INamedO
 
 
 	
-	@IbisDoc({"name of the listener", " "})
+	@IbisDoc({"name of the listener", ""})
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -228,7 +228,7 @@ public class FtpListener extends FtpSession implements IPullingListener, INamedO
 		return responseTime;
 	}
 
-	@IbisDoc({"remote directory from which files have to be downloaded", " "})
+	@IbisDoc({"remote directory from which files have to be downloaded", ""})
 	public void setRemoteDirectory(String string) {
 		remoteDirectory = string;
 	}

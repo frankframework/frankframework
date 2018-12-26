@@ -131,7 +131,7 @@ public class CompareIntegerPipe extends AbstractPipe {
 
 	}
 
-	@IbisDoc({"reference to one of the session variables to be compared", " "})
+	@IbisDoc({"reference to one of the session variables to be compared", ""})
 	public void setSessionKey1(String string) {
 		sessionKey1 = string;
 	}
@@ -139,7 +139,7 @@ public class CompareIntegerPipe extends AbstractPipe {
 		return sessionKey1;
 	}
 
-	@IbisDoc({"reference to the other session variables to be compared", " "})
+	@IbisDoc({"reference to the other session variables to be compared", ""})
 	public void setSessionKey2(String string) {
 		sessionKey2 = string;
 	}

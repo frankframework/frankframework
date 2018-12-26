@@ -346,7 +346,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	}
 
 
-	@IbisDoc({"name of the listener", " "})
+	@IbisDoc({"name of the listener", ""})
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -359,7 +359,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	 * set the directory name to look for files in.
 	 * @see #setWildcard(String)
 	 */
-	@IbisDoc({"directory to look for files", " "})
+	@IbisDoc({"directory to look for files", ""})
 	public void setInputDirectory(String inputDirectory) {
 		this.inputDirectory = inputDirectory;
 	}
@@ -371,7 +371,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	/**
 	 * set the {@link nl.nn.adapterframework.util.WildCardFilter wildcard}  to look for files in the specifiek directory, e.g. "*.inp"
 	 */
-	@IbisDoc({"filter of files to look for in inputdirectory", " "})
+	@IbisDoc({"filter of files to look for in inputdirectory", ""})
 	public void setWildcard(String wildcard) {
 		this.wildcard = wildcard;
 	}
@@ -382,7 +382,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		return wildcard;
 	}
 
-	@IbisDoc({"filter of files to be excluded when looking in inputdirectory", " "})
+	@IbisDoc({"filter of files to be excluded when looking in inputdirectory", ""})
 	public void setExcludeWildcard(String excludeWildcard) {
 		this.excludeWildcard = excludeWildcard;
 	}
@@ -391,7 +391,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		return excludeWildcard;
 	}
 
-	@IbisDoc({"when set a list of files in xml format (&lt;files&gt;&lt;file&gt;/file/name&lt;/file&gt;&lt;file&gt;/another/file/name&lt;/file&gt;&lt;/files&gt;) is passed to the pipleline instead of 1 file name when the specified amount of files is present in the input directory. when set to -1 the list of files is passed to the pipleline whenever one of more files are present.", " "})
+	@IbisDoc({"when set a list of files in xml format (&lt;files&gt;&lt;file&gt;/file/name&lt;/file&gt;&lt;file&gt;/another/file/name&lt;/file&gt;&lt;/files&gt;) is passed to the pipleline instead of 1 file name when the specified amount of files is present in the input directory. when set to -1 the list of files is passed to the pipleline whenever one of more files are present.", ""})
 	public void setFileList(Integer fileList) {
 		this.fileList = fileList;
 	}
@@ -400,7 +400,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		return fileList;
 	}
 	
-	@IbisDoc({"when set along with filelist a list of files is passed to the pipleline when the specified amount of ms has passed since the first file for a new list of files was found even if the amount of files specified by filelist isn't present in the input directory yet", " "})
+	@IbisDoc({"when set along with filelist a list of files is passed to the pipleline when the specified amount of ms has passed since the first file for a new list of files was found even if the amount of files specified by filelist isn't present in the input directory yet", ""})
 	public void setFileListForcedAfter(Long fileListForcedAfter) {
 		this.fileListForcedAfter = fileListForcedAfter;
 	}
@@ -409,7 +409,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		return fileListForcedAfter;
 	}
 
-	@IbisDoc({"directory where files are stored <i>while</i> being processed", " "})
+	@IbisDoc({"directory where files are stored <i>while</i> being processed", ""})
 	public void setOutputDirectory(String outputDirectory) {
 		this.outputDirectory = outputDirectory;
 	}
@@ -419,7 +419,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	}
 
 
-	@IbisDoc({"pattern for the name using the messageformat.format method. params: 0=inputfilename, 1=inputfile extension, 2=unique uuid, 3=current date", " "})
+	@IbisDoc({"pattern for the name using the messageformat.format method. params: 0=inputfilename, 1=inputfile extension, 2=unique uuid, 3=current date", ""})
 	public void setOutputFilenamePattern(String string) {
 		outputFilenamePattern = string;
 	}
@@ -499,7 +499,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		return createInputDirectory;
 	}
 
-	@IbisDoc({"directory where files are stored <i>after</i> being processed", " "})
+	@IbisDoc({"directory where files are stored <i>after</i> being processed", ""})
 	public void setProcessedDirectory(String processedDirectory) {
 		this.processedDirectory = processedDirectory;
 	}

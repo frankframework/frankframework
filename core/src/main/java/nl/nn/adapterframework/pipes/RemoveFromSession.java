@@ -120,7 +120,7 @@ public String getSessionKey() {
  * 
  * @param newSessionKey String
  */
-	@IbisDoc({"name of the key in the <code>pipelinesession</code> to remove. if this key is empty the input message is interpretted as key. for multiple keys use ',' as delimiter", " "})
+	@IbisDoc({"name of the key in the <code>pipelinesession</code> to remove. if this key is empty the input message is interpretted as key. for multiple keys use ',' as delimiter", ""})
 public void setSessionKey(String newSessionKey) {
 	sessionKey = newSessionKey;
 }

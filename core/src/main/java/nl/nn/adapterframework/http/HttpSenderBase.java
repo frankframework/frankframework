@@ -752,7 +752,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	 * URL or base of URL to be used
 	 * @param string
 	 */
-	@IbisDoc({"url or base of url to be used ", " "})
+	@IbisDoc({"url or base of url to be used ", ""})
 	public void setUrl(String string) {
 		url = string;
 	}
@@ -860,7 +860,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return authAlias;
 	}
 
-	@IbisDoc({"alias used to obtain credentials for authentication to host", " "})
+	@IbisDoc({"alias used to obtain credentials for authentication to host", ""})
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
@@ -869,7 +869,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return userName;
 	}
 
-	@IbisDoc({"username used in authentication to host", " "})
+	@IbisDoc({"username used in authentication to host", ""})
 	public void setUserName(String string) {
 		userName = string;
 	}
@@ -878,7 +878,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return password;
 	}
 
-	@IbisDoc({"&nbsp;", " "})
+	@IbisDoc({"", " "})
 	public void setPassword(String string) {
 		password = string;
 	}
@@ -894,7 +894,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return proxyHost;
 	}
 
-	@IbisDoc({"&nbsp;", " "})
+	@IbisDoc({"", " "})
 	public void setProxyHost(String string) {
 		proxyHost = string;
 	}
@@ -903,7 +903,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return proxyPort;
 	}
 
-	@IbisDoc({"&nbsp;", "80"})
+	@IbisDoc({"", "80"})
 	public void setProxyPort(int i) {
 		proxyPort = i;
 	}
@@ -912,7 +912,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return proxyAuthAlias;
 	}
 
-	@IbisDoc({"alias used to obtain credentials for authentication to proxy", " "})
+	@IbisDoc({"alias used to obtain credentials for authentication to proxy", ""})
 	public void setProxyAuthAlias(String string) {
 		proxyAuthAlias = string;
 	}
@@ -921,7 +921,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return proxyUserName;
 	}
 
-	@IbisDoc({"&nbsp;", " "})
+	@IbisDoc({"", " "})
 	public void setProxyUserName(String string) {
 		proxyUserName = string;
 	}
@@ -930,7 +930,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return proxyPassword;
 	}
 
-	@IbisDoc({"&nbsp;", " "})
+	@IbisDoc({"", " "})
 	public void setProxyPassword(String string) {
 		proxyPassword = string;
 	}
@@ -941,7 +941,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return proxyRealm;
 	}
 
-	@IbisDoc({"&nbsp;", " "})
+	@IbisDoc({"", " "})
 	public void setProxyRealm(String string) {
 		proxyRealm = string;
 	}
@@ -959,7 +959,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return certificate;
 	}
 
-	@IbisDoc({"resource url to certificate to be used for authentication", " "})
+	@IbisDoc({"resource url to certificate to be used for authentication", ""})
 	public void setCertificate(String string) {
 		certificate = string;
 	}
@@ -968,7 +968,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return certificateAuthAlias;
 	}
 
-	@IbisDoc({"alias used to obtain truststore password", " "})
+	@IbisDoc({"alias used to obtain truststore password", ""})
 	public void setTruststoreAuthAlias(String string) {
 		truststoreAuthAlias = string;
 	}
@@ -977,7 +977,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return certificatePassword;
 	}
 
-	@IbisDoc({"&nbsp;", " "})
+	@IbisDoc({"", " "})
 	public void setCertificatePassword(String string) {
 		certificatePassword = string;
 	}
@@ -986,12 +986,12 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return keystoreType;
 	}
 
-	@IbisDoc({"&nbsp;", "pkcs12"})
+	@IbisDoc({"", "pkcs12"})
 	public void setKeystoreType(String string) {
 		keystoreType = string;
 	}
 
-	@IbisDoc({"&nbsp;", " "})
+	@IbisDoc({"", " "})
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		this.keyManagerAlgorithm = keyManagerAlgorithm;
 	}
@@ -1004,7 +1004,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return truststore;
 	}
 
-	@IbisDoc({"resource url to truststore to be used for authentication", " "})
+	@IbisDoc({"resource url to truststore to be used for authentication", ""})
 	public void setTruststore(String string) {
 		truststore = string;
 	}
@@ -1013,7 +1013,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return truststoreAuthAlias;
 	}
 
-	@IbisDoc({"alias used to obtain certificate password", " "})
+	@IbisDoc({"alias used to obtain certificate password", ""})
 	public void setCertificateAuthAlias(String string) {
 		certificateAuthAlias = string;
 	}
@@ -1022,7 +1022,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return truststorePassword;
 	}
 
-	@IbisDoc({"&nbsp;", " "})
+	@IbisDoc({"", " "})
 	public void setTruststorePassword(String string) {
 		truststorePassword = string;
 	}
@@ -1031,12 +1031,12 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return truststoreType;
 	}
 
-	@IbisDoc({"&nbsp;", "jks"})
+	@IbisDoc({"", "jks"})
 	public void setTruststoreType(String string) {
 		truststoreType = string;
 	}
 
-	@IbisDoc({"&nbsp;", " "})
+	@IbisDoc({"", " "})
 	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
 		this.trustManagerAlgorithm = trustManagerAlgorithm;
 	}
@@ -1118,7 +1118,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	 * Name of the request parameter which is used to put the input message in
 	 * @param inputMessageParam
 	 */
-	@IbisDoc({"(only used when <code>methodetype=post</code> and <code>paramsinurl=false</code>) name of the request parameter which is used to put the input message in", " "})
+	@IbisDoc({"(only used when <code>methodetype=post</code> and <code>paramsinurl=false</code>) name of the request parameter which is used to put the input message in", ""})
 	public void setInputMessageParam(String inputMessageParam) {
 		this.inputMessageParam = inputMessageParam;
 	}
@@ -1130,7 +1130,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	 * Comma separated list of parameter names which should be set as http headers
 	 * @param headersParams
 	 */
-	@IbisDoc({"comma separated list of parameter names which should be set as http headers", " "})
+	@IbisDoc({"comma separated list of parameter names which should be set as http headers", ""})
 	public void setHeadersParams(String headersParams) {
 		this.headersParams = headersParams;
 	}
@@ -1193,7 +1193,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	 * Only used when xhtml=true.
 	 * @param stylesheetName to apply to the html response
 	 */
-	@IbisDoc({">(only used when <code>xhtml=true</code>) stylesheet to apply to the html response", " "})
+	@IbisDoc({">(only used when <code>xhtml=true</code>) stylesheet to apply to the html response", ""})
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
@@ -1206,7 +1206,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	 * @param protocol
 	 * @IbisDoc.default SSL
 	 */
-	@IbisDoc({"secure socket protocol (such as 'ssl' and 'tls') to use when a sslcontext object is generated. if empty the protocol 'ssl' is used", " "})
+	@IbisDoc({"secure socket protocol (such as 'ssl' and 'tls') to use when a sslcontext object is generated. if empty the protocol 'ssl' is used", ""})
 	public void setProtocol(String protocol) {
 		this.protocol = protocol;
 	}
@@ -1218,7 +1218,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	 * The statusCode of the HTTP response is put in specified in the sessionKey and the (error or okay) response message is returned
 	 * @param resultStatusCodeSessionKey to store the statusCode in
 	 */
-	@IbisDoc({"if set, the status code of the http response is put in specified in the sessionkey and the (error or okay) response message is returned", " "})
+	@IbisDoc({"if set, the status code of the http response is put in specified in the sessionkey and the (error or okay) response message is returned", ""})
 	public void setResultStatusCodeSessionKey(String resultStatusCodeSessionKey) {
 		this.resultStatusCodeSessionKey = resultStatusCodeSessionKey;
 	}

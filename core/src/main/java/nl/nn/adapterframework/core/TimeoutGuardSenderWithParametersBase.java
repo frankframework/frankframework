@@ -156,7 +156,7 @@ public class TimeoutGuardSenderWithParametersBase extends
 		return tymeout;
 	}
 
-	@IbisDoc({"when not empty, the xml tag to encapsulate the result in", " "})
+	@IbisDoc({"when not empty, the xml tag to encapsulate the result in", ""})
 	public void setXmlTag(String string) {
 		xmlTag = string;
 	}

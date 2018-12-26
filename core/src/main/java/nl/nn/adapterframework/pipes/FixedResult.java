@@ -253,7 +253,7 @@ public class FixedResult extends FixedForwardPipe {
      *
      * @param fileName the name of the file to return the contents from
      */
-	@IbisDoc({"name of the file containing the resultmessage", " "})
+	@IbisDoc({"name of the file containing the resultmessage", ""})
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
@@ -264,7 +264,7 @@ public class FixedResult extends FixedForwardPipe {
 	/**
 	 * @param filenameSessionKey the session key that contains the name of the file
 	 */
-	@IbisDoc({"name of the session key containing the file name of the file containing the result message", " "})
+	@IbisDoc({"name of the session key containing the file name of the file containing the result message", ""})
 	public void setFileNameSessionKey(String filenameSessionKey) {
 		this.fileNameSessionKey = filenameSessionKey;
 	}
@@ -272,7 +272,7 @@ public class FixedResult extends FixedForwardPipe {
 		return fileNameSessionKey;
 	}
 
-	@IbisDoc({"returned message", " "})
+	@IbisDoc({"returned message", ""})
     public void setReturnString(String returnString) {
         this.returnString = returnString;
     }

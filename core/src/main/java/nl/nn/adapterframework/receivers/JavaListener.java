@@ -265,7 +265,7 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		return serviceName;
 	}
 
-	@IbisDoc({"name of the listener as known to the adapter. an {@link nl.nn.adapterframework.pipes.ibislocalsender ibislocalsender} refers to this name in its <code>javalistener</code>-attribute.", " "})
+	@IbisDoc({"name of the listener as known to the adapter. an {@link nl.nn.adapterframework.pipes.ibislocalsender ibislocalsender} refers to this name in its <code>javalistener</code>-attribute.", ""})
 	@Override
 	public void setName(String name) {
 		this.name = name;

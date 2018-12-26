@@ -179,7 +179,7 @@ public class XsltPipe extends FixedForwardPipe {
 	/**
 	 * Specify the stylesheet to use
 	 */
-	@IbisDoc({"stylesheet to apply to the input message", " "})
+	@IbisDoc({"stylesheet to apply to the input message", ""})
 	public void setStyleSheetName(String stylesheetName) {
 		sender.setStyleSheetName(stylesheetName);
 	}
@@ -199,7 +199,7 @@ public class XsltPipe extends FixedForwardPipe {
 	}
 
 
-	@IbisDoc({"xpath-expression to apply to the input message. it's possible to refer to a parameter (which e.g. contains a value from a sessionkey) by using the parameter name prefixed with $", " "})
+	@IbisDoc({"xpath-expression to apply to the input message. it's possible to refer to a parameter (which e.g. contains a value from a sessionkey) by using the parameter name prefixed with $", ""})
 	public void setXpathExpression(String string) {
 		sender.setXpathExpression(string);
 	}
@@ -207,7 +207,7 @@ public class XsltPipe extends FixedForwardPipe {
 		return sender.getXpathExpression();
 	}
 
-	@IbisDoc({"namespace defintions for xpathexpression. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", " "})
+	@IbisDoc({"namespace defintions for xpathexpression. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		sender.setNamespaceDefs(namespaceDefs);
 	}

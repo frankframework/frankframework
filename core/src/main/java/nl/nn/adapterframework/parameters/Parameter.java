@@ -608,7 +608,7 @@ public class Parameter implements INamedObject, IWithParameters {
 		return substitutionValue;		
 	}
 
-	@IbisDoc({"name of the parameter", " "})
+	@IbisDoc({"name of the parameter", ""})
 	@Override
 	public void setName(String parameterName) {
 		name = parameterName;
@@ -619,7 +619,7 @@ public class Parameter implements INamedObject, IWithParameters {
 		return name;
 	}
 
-	@IbisDoc({"if the result of sessionkey, xpathexpressen and/or stylesheet returns null or an empty string, this value is returned", " "})
+	@IbisDoc({"if the result of sessionkey, xpathexpressen and/or stylesheet returns null or an empty string, this value is returned", ""})
 	public void setDefaultValue(String string) {
 		defaultValue = string;
 	}
@@ -641,7 +641,7 @@ public class Parameter implements INamedObject, IWithParameters {
 		return transformerPool;
 	}
 
-	@IbisDoc({"key of a pipelinesession-variable. is specified, the value of the pipelinesession variable is used as input for the xpathexpression or stylesheet, instead of the current input message. if no xpathexpression or stylesheet are specified, the value itself is returned. if the value '*' is specified, all existing sessionkeys are added as parameter of which the name starts with the name of this parameter. if also the name of the parameter has the value '*' then all existing sessionkeys are added as parameter (except tsreceived)", " "})
+	@IbisDoc({"key of a pipelinesession-variable. is specified, the value of the pipelinesession variable is used as input for the xpathexpression or stylesheet, instead of the current input message. if no xpathexpression or stylesheet are specified, the value itself is returned. if the value '*' is specified, all existing sessionkeys are added as parameter of which the name starts with the name of this parameter. if also the name of the parameter has the value '*' then all existing sessionkeys are added as parameter (except tsreceived)", ""})
 	public void setSessionKey(String string) {
 		sessionKey = string;
 	}
@@ -650,7 +650,7 @@ public class Parameter implements INamedObject, IWithParameters {
 		return sessionKey;
 	}
 
-	@IbisDoc({"instead of a fixed <code>sessionkey</code> it's also possible to use a xpath expression to extract the name of the <code>sessionkey</code>", " "})
+	@IbisDoc({"instead of a fixed <code>sessionkey</code> it's also possible to use a xpath expression to extract the name of the <code>sessionkey</code>", ""})
 	public void setSessionKeyXPath(String string) {
 		sessionKeyXPath = string;
 	}
@@ -659,7 +659,7 @@ public class Parameter implements INamedObject, IWithParameters {
 		return sessionKeyXPath;
 	}
 
-	@IbisDoc({"a fixed value", " "})
+	@IbisDoc({"a fixed value", ""})
 	public void setValue(String value) {
 		this.value = value;
 	}
@@ -697,7 +697,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	/**
 	 * @param xpathExpression to extract the parameter value from the (xml formatted) input 
 	 */
-	@IbisDoc({"the xpath expression to extract the parameter value from the (xml formatted) input or session-variable.", " "})
+	@IbisDoc({"the xpath expression to extract the parameter value from the (xml formatted) input or session-variable.", ""})
 	public void setXpathExpression(String xpathExpression) {
 		this.xpathExpression = xpathExpression;
 	}
@@ -705,7 +705,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	/**
 	 * Specify the stylesheet to use
 	 */
-	@IbisDoc({"url to a stylesheet that wil be applied to the contents of the message or the value of the session-variable.", " "})
+	@IbisDoc({"url to a stylesheet that wil be applied to the contents of the message or the value of the session-variable.", ""})
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
@@ -714,7 +714,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	/**
 	 * @param string with pattern to be used, follows MessageFormat syntax with named parameters
 	 */
-	@IbisDoc({"value of parameter is determined using substitution and formating. the expression can contain references to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.messageformat. {now}, {uid}, {uuid}, {hostname} and {fixeddate} are named constants that can be used in the expression. if fname is a parameter or session variable that resolves to eric, then the pattern 'hi {fname}, hoe gaat het?' resolves to 'hi eric, hoe gaat het?'. a guid can be generated using {hostname}_{uid}, see also <a href=\"http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html\">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html</a> for more information about (g)uid's or <a href=\"http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html\">http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html</a> for more information about uuid's.", " "})
+	@IbisDoc({"value of parameter is determined using substitution and formating. the expression can contain references to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.messageformat. {now}, {uid}, {uuid}, {hostname} and {fixeddate} are named constants that can be used in the expression. if fname is a parameter or session variable that resolves to eric, then the pattern 'hi {fname}, hoe gaat het?' resolves to 'hi eric, hoe gaat het?'. a guid can be generated using {hostname}_{uid}, see also <a href=\"http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html\">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html</a> for more information about (g)uid's or <a href=\"http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html\">http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html</a> for more information about uuid's.", ""})
 	public void setPattern(String string) {
 		pattern = string;
 	}
@@ -754,7 +754,7 @@ public class Parameter implements INamedObject, IWithParameters {
 		return hidden;
 	}
 
-	@IbisDoc({"namespace defintions for xpathexpression. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", " "})
+	@IbisDoc({"namespace defintions for xpathexpression. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
@@ -786,7 +786,7 @@ public class Parameter implements INamedObject, IWithParameters {
 		return maxLength;
 	}
 
-	@IbisDoc({"used in combination with type <code>number</code>; if set and the value of the parameter exceeds this maximum value, this maximum value is taken", " "})
+	@IbisDoc({"used in combination with type <code>number</code>; if set and the value of the parameter exceeds this maximum value, this maximum value is taken", ""})
 	public void setMaxInclusive(String string) {
 		maxInclusiveString = string;
 	}
@@ -794,7 +794,7 @@ public class Parameter implements INamedObject, IWithParameters {
 		return maxInclusiveString;
 	}
 
-	@IbisDoc({"used in combination with type <code>number</code>; if set and the value of the parameter exceeds this minimum value, this minimum value is taken", " "})
+	@IbisDoc({"used in combination with type <code>number</code>; if set and the value of the parameter exceeds this minimum value, this minimum value is taken", ""})
 	public void setMinInclusive(String string) {
 		minInclusiveString = string;
 	}

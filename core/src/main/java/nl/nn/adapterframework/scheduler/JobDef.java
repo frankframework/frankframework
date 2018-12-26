@@ -1109,7 +1109,7 @@ public class JobDef {
 		return jobGroup;
 	}
 
-	@IbisDoc({"name of the job", " "})
+	@IbisDoc({"name of the job", ""})
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -1117,7 +1117,7 @@ public class JobDef {
 		return name;
 	}
 	
-	@IbisDoc({"optional description of the job", " "})
+	@IbisDoc({"optional description of the job", ""})
 	public void setDescription(String description) {
 		this.description = description;
 	}
@@ -1125,7 +1125,7 @@ public class JobDef {
 	   return description;
 	}
 
-	@IbisDoc({"cron expression that determines the frequency of execution (see below)", " "})
+	@IbisDoc({"cron expression that determines the frequency of execution (see below)", ""})
 	public void setCronExpression(String cronExpression) {
 		this.cronExpression = cronExpression;
 	}
@@ -1133,7 +1133,7 @@ public class JobDef {
 		return cronExpression;
 	}
 
-	@IbisDoc({"repeat the job at the specified number of ms. keep cronexpression empty to use interval. set to 0 to only run once at startup of the application. a value of 0 in combination with function 'sendmessage' will set dependencytimeout on the ibislocalsender to -1 the keep waiting indefinitely instead of max 60 seconds for the adapter to start.", " "})
+	@IbisDoc({"repeat the job at the specified number of ms. keep cronexpression empty to use interval. set to 0 to only run once at startup of the application. a value of 0 in combination with function 'sendmessage' will set dependencytimeout on the ibislocalsender to -1 the keep waiting indefinitely instead of max 60 seconds for the adapter to start.", ""})
 	public void setInterval(long interval) {
 		this.interval = interval;
 	}
@@ -1142,7 +1142,7 @@ public class JobDef {
 		return interval;
 	}
 
-	@IbisDoc({"one of: stopadapter, startadapter, stopreceiver, startreceiver, sendmessage, executequery", " "})
+	@IbisDoc({"one of: stopadapter, startadapter, stopreceiver, startreceiver, sendmessage, executequery", ""})
 	public void setFunction(String function) {
 		this.function = function;
 	}
@@ -1150,7 +1150,7 @@ public class JobDef {
 		return function;
 	}
 
-	@IbisDoc({"configuration on which job operates", " "})
+	@IbisDoc({"configuration on which job operates", ""})
 	public void setConfigurationName(String configurationName) {
 		this.configurationName = configurationName;
 	}
@@ -1158,7 +1158,7 @@ public class JobDef {
 		return configurationName;
 	}
  
-	@IbisDoc({"adapter on which job operates", " "})
+	@IbisDoc({"adapter on which job operates", ""})
 	public void setAdapterName(String adapterName) {
 		this.adapterName = adapterName;
 	}
@@ -1166,7 +1166,7 @@ public class JobDef {
 		return adapterName;
 	}
   
-	@IbisDoc({"receiver on which job operates. if function is 'sendmessage' is used this name is also used as name of javalistener", " "})
+	@IbisDoc({"receiver on which job operates. if function is 'sendmessage' is used this name is also used as name of javalistener", ""})
 	public void setReceiverName(String receiverName) {
 		this.receiverName = receiverName;
 	}
@@ -1174,7 +1174,7 @@ public class JobDef {
 		return receiverName;
 	}
 
-	@IbisDoc({"the sql query text to be executed", " "})
+	@IbisDoc({"the sql query text to be executed", ""})
 	public void setQuery(String query) {
 		this.query = query;
 	}
@@ -1191,7 +1191,7 @@ public class JobDef {
 		queryTimeout = i;
 	}
 
-	@IbisDoc({"&nbsp;", " "})
+	@IbisDoc({"", " "})
 	public void setJmsRealm(String jmsRealm) {
 		this.jmsRealm = jmsRealm;
 	}

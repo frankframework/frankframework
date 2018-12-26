@@ -113,7 +113,7 @@ public class Result2Filewriter extends ResultWriter {
 	}
 
 	
-	@IbisDoc({"directory to which the created file must be moved after finalization (is optional)", " "})
+	@IbisDoc({"directory to which the created file must be moved after finalization (is optional)", ""})
 	public void setMove2dirAfterFinalize(String string) {
 		move2dirAfterFinalize = string;
 	}
@@ -121,7 +121,7 @@ public class Result2Filewriter extends ResultWriter {
 		return move2dirAfterFinalize;
 	}
 
-	@IbisDoc({"name of the file is created using the messageformat. params: 1=inputfilename, 2=extension of file, 3=current date", " "})
+	@IbisDoc({"name of the file is created using the messageformat. params: 1=inputfilename, 2=extension of file, 3=current date", ""})
 	public void setFilenamePattern(String string) {
 		filenamePattern = string;
 	}
@@ -129,7 +129,7 @@ public class Result2Filewriter extends ResultWriter {
 		return filenamePattern;
 	}
 
-	@IbisDoc({"directory in which the resultfile must be stored", " "})
+	@IbisDoc({"directory in which the resultfile must be stored", ""})
 	public void setOutputDirectory(String string) {
 		outputDirectory = string;
 	}

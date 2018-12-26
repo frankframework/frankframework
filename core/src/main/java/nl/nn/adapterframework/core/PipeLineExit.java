@@ -60,7 +60,7 @@ public class PipeLineExit {
 		return path;
 	}
 
-	@IbisDoc({"name of the pipeline exit", " "})
+	@IbisDoc({"name of the pipeline exit", ""})
 	public void setPath(String newPath) {
 		path = newPath;
 	}
@@ -69,7 +69,7 @@ public class PipeLineExit {
 		return state;
 	}
 
-	@IbisDoc({"the exit state defines possible exists to the pipeline. the state can be one of the following: <code>success, error</code>", " "})
+	@IbisDoc({"the exit state defines possible exists to the pipeline. the state can be one of the following: <code>success, error</code>", ""})
 	public void setState(String newState) {
 		state = newState;
 	}

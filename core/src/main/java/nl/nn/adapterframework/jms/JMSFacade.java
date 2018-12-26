@@ -783,7 +783,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	/**
 	 * The name of the object.
 	 */
-	@IbisDoc({"name of the listener", " "})
+	@IbisDoc({"name of the listener", ""})
 	public void setName(String newName) {
 		name = newName;
 	}
@@ -794,7 +794,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	/**
 	 * The name of the destination, this may be a <code>queue</code> or <code>topic</code> name.
 	 */
-	@IbisDoc({"name of the jms destination (queue or topic) to use", " "})
+	@IbisDoc({"name of the jms destination (queue or topic) to use", ""})
 	public void setDestinationName(String destinationName) {
 		this.destinationName = destinationName;
 	}
@@ -855,7 +855,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	/**
 	 * String-version of {@link #setAckMode(int)}
 	 */
-	@IbisDoc({"&nbsp;", "auto_acknowledge"})
+	@IbisDoc({"", "auto_acknowledge"})
 	public void setAcknowledgeMode(String acknowledgeMode) {
 
 		if (acknowledgeMode.equalsIgnoreCase("auto") || acknowledgeMode.equalsIgnoreCase("AUTO_ACKNOWLEDGE")) {
@@ -886,7 +886,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 *
 	 * When set <code>true</code>, the JMS provider ensures that messages aren't lost when the application might crash.
 	 */
-	@IbisDoc({"rather useless attribute, and not the same as <code>deliverymode</code>. you probably want to use that.", " "})
+	@IbisDoc({"rather useless attribute, and not the same as <code>deliverymode</code>. you probably want to use that.", ""})
 	public void setPersistent(boolean value) {
 		persistent = value;
 	}
@@ -916,7 +916,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * The JNDI-name of the connection factory to use to connect to a <i>queue</i> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions.
 	 */
-	@IbisDoc({"jndi-name of the queueconnectionfactory, used when <code>destinationtype<code>=</code>queue</code>", " "})
+	@IbisDoc({"jndi-name of the queueconnectionfactory, used when <code>destinationtype<code>=</code>queue</code>", ""})
 	public void setQueueConnectionFactoryName(String name) {
 		queueConnectionFactoryName=name;
 	}
@@ -940,7 +940,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * The JNDI-name of the connection factory to use to connect to a <i>topic</i> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions.
 	 */
-	@IbisDoc({"jndi-name of the topicconnectionfactory, used when <code>destinationtype<code>=</code>topic</code>", " "})
+	@IbisDoc({"jndi-name of the topicconnectionfactory, used when <code>destinationtype<code>=</code>topic</code>", ""})
 	public void setTopicConnectionFactoryName(String topicConnectionFactoryName) {
 		this.topicConnectionFactoryName = topicConnectionFactoryName;
 	}
@@ -993,7 +993,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * Controls whether messages are send under transaction control.
 	 * If set <code>true</code>, messages are committed or rolled back under control of an XA-transaction.
 	 */
-	@IbisDoc({"&nbsp;", "false"})
+	@IbisDoc({"", "false"})
 	public void setTransacted(boolean transacted) {
 		this.transacted = transacted;
 	}
@@ -1045,7 +1045,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 
 
-	@IbisDoc({"alias used to obtain credentials for authentication to jms server", " "})
+	@IbisDoc({"alias used to obtain credentials for authentication to jms server", ""})
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}

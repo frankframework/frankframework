@@ -133,7 +133,7 @@ public class HashPipe extends FixedForwardPipe {
 		return secret;
 	}
 
-	@IbisDoc({"the secret to hash with", " "})
+	@IbisDoc({"the secret to hash with", ""})
 	public void setSecret(String secret) {
 		this.secret = secret;
 	}
@@ -142,7 +142,7 @@ public class HashPipe extends FixedForwardPipe {
 		return authAlias;
 	}
 
-	@IbisDoc({"authalias to retrieve the secret from (password field).", " "})
+	@IbisDoc({"authalias to retrieve the secret from (password field).", ""})
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}

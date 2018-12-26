@@ -101,7 +101,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		return role;
 	}
 
-	@IbisDoc({"the j2ee role to check. ", " "})
+	@IbisDoc({"the j2ee role to check. ", ""})
 	public void setRole(String string) {
 		role = string;
 	}
@@ -110,7 +110,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		return notInRoleForwardName;
 	}
 
-	@IbisDoc({"user may not assume role", " "})
+	@IbisDoc({"user may not assume role", ""})
 	public void setNotInRoleForwardName(String string) {
 		notInRoleForwardName = string;
 	}

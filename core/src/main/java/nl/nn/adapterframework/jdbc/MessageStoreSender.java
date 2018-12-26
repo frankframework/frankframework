@@ -149,7 +149,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 		return storeMessage(messageId, correlationID, new Date(), null, null, message);
 	}
 
-	@IbisDoc({"comma separated list of sessionkey's to be stored together with the message. please note: corresponding {@link messagestorelistener} must have the same value for this attribute", " "})
+	@IbisDoc({"comma separated list of sessionkey's to be stored together with the message. please note: corresponding {@link messagestorelistener} must have the same value for this attribute", ""})
 	public void setSessionKeys(String sessionKeys) {
 		this.sessionKeys = sessionKeys;
 	}

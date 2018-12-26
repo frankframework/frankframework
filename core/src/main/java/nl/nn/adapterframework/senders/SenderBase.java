@@ -64,7 +64,7 @@ public abstract class SenderBase implements ISender {
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
 	}
 
-	@IbisDoc({"name of the sender", " "})
+	@IbisDoc({"name of the sender", ""})
 	@Override
 	public void setName(String name) {
 		this.name=name;

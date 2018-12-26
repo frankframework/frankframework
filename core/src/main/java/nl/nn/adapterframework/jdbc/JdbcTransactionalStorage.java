@@ -1570,7 +1570,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return slotId;
 	}
 
-	@IbisDoc({"optional identifier for this storage, to be able to share the physical table between a number of receivers", " "})
+	@IbisDoc({"optional identifier for this storage, to be able to share the physical table between a number of receivers", ""})
 	public void setSlotId(String string) {
 		slotId = string;
 	}

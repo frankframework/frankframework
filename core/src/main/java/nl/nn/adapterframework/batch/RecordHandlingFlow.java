@@ -136,7 +136,7 @@ public final class RecordHandlingFlow {
 	}
 
 	
-	@IbisDoc({"key under which this recordhandlingflow must be registered in the manager", " "})
+	@IbisDoc({"key under which this recordhandlingflow must be registered in the manager", ""})
 	public void setRecordKey(String recordKey) {
 		this.recordKey = recordKey;
 	}
@@ -144,7 +144,7 @@ public final class RecordHandlingFlow {
 		return recordKey;
 	}
 	
-	@IbisDoc({"name of the manager to be used after handling this record", " "})
+	@IbisDoc({"name of the manager to be used after handling this record", ""})
 	public void setNextRecordHandlerManagerRef(String nextRecordHandlerManagerName) {
 		nextRecordHandlerManagerRef = nextRecordHandlerManagerName;
 	}
@@ -152,7 +152,7 @@ public final class RecordHandlingFlow {
 		return nextRecordHandlerManagerRef;
 	}
 
-	@IbisDoc({"name of the recordhandler to be used to transform records of the type specified in the key (optional)", " "})
+	@IbisDoc({"name of the recordhandler to be used to transform records of the type specified in the key (optional)", ""})
 	public void setRecordHandlerRef(String recordHandlerName) {
 		recordHandlerRef = recordHandlerName;
 	}
@@ -160,7 +160,7 @@ public final class RecordHandlingFlow {
 		return recordHandlerRef;
 	}
 
-	@IbisDoc({"name of the manager to which this recordhandlingflow must be added", " "})
+	@IbisDoc({"name of the manager to which this recordhandlingflow must be added", ""})
 	public void setRecordHandlerManagerRef(String recordHandlerManagerName) {
 		recordHandlerManagerRef = recordHandlerManagerName;
 	}
@@ -168,7 +168,7 @@ public final class RecordHandlingFlow {
 		return recordHandlerManagerRef;
 	}
 
-	@IbisDoc({"name of the resulthandler to be used to handle the transformed result", " "})
+	@IbisDoc({"name of the resulthandler to be used to handle the transformed result", ""})
 	public void setResultHandlerRef(String resultHandlerName) {
 		resultHandlerRef = resultHandlerName;
 	}
@@ -177,7 +177,7 @@ public final class RecordHandlingFlow {
 	}
 
 
-	@IbisDoc({"instructs the resulthandler to start a new block before the parsed line is processed", " "})
+	@IbisDoc({"instructs the resulthandler to start a new block before the parsed line is processed", ""})
 	public void setOpenBlockBeforeLine(String blockName) {
 		openBlockBeforeLine = blockName;
 	}
@@ -185,7 +185,7 @@ public final class RecordHandlingFlow {
 		return openBlockBeforeLine;
 	}
 
-	@IbisDoc({"instructs the resulthandler to end the specified block before the parsed line is processed", " "})
+	@IbisDoc({"instructs the resulthandler to end the specified block before the parsed line is processed", ""})
 	public void setCloseBlockBeforeLine(String blockName) {
 		closeBlockBeforeLine = blockName;
 	}
@@ -194,7 +194,7 @@ public final class RecordHandlingFlow {
 	}
 
 
-	@IbisDoc({"instructs the resulthandler to start a new block after the parsed line is processed", " "})
+	@IbisDoc({"instructs the resulthandler to start a new block after the parsed line is processed", ""})
 	public void setOpenBlockAfterLine(String blockName) {
 		openBlockAfterLine = blockName;
 	}
@@ -202,7 +202,7 @@ public final class RecordHandlingFlow {
 		return openBlockAfterLine;
 	}
 
-	@IbisDoc({"instructs the resulthandler to end the specified block after the parsed line is processed", " "})
+	@IbisDoc({"instructs the resulthandler to end the specified block after the parsed line is processed", ""})
 	public void setCloseBlockAfterLine(String blockName) {
 		closeBlockAfterLine = blockName;
 	}

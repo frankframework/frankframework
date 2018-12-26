@@ -103,7 +103,7 @@ public class FileLineIteratorPipe extends StreamLineIteratorPipe {
 	/**
 	 * @param readyDir directory where input file is moved to in case of a succesful transformation
 	 */
-	@IbisDoc({"directory in which the transformed file(s) is stored", " "})
+	@IbisDoc({"directory in which the transformed file(s) is stored", ""})
 	public void setMove2dirAfterTransform(String readyDir) {
 		move2dirAfterTransform = readyDir;
 	}
@@ -114,7 +114,7 @@ public class FileLineIteratorPipe extends StreamLineIteratorPipe {
 	/**
 	 * @param errorDir directory where input file is moved to in case of an error
 	 */
-	@IbisDoc({"directory to which the inputfile is moved in case an error occurs", " "})
+	@IbisDoc({"directory to which the inputfile is moved in case an error occurs", ""})
 	public void setMove2dirAfterError(String errorDir) {
 		move2dirAfterError = errorDir;
 	}

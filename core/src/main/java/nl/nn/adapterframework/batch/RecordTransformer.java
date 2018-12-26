@@ -291,7 +291,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 	 * @param outputfieldsDef
 	 * @throws ConfigurationException
 	 */
-	@IbisDoc({"semicolon separated list of output record field specifications (see table below)", " "})
+	@IbisDoc({"semicolon separated list of output record field specifications (see table below)", ""})
 	public void setOutputFields(String outputfieldsDef) throws ConfigurationException {
 		StringTokenizer st = new StringTokenizer(outputfieldsDef, ";");
 		while (st.hasMoreTokens()) {
@@ -686,7 +686,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		setOutputSeparator(string);
 	}
 
-	@IbisDoc({"optional separator to add between the fields", " "})
+	@IbisDoc({"optional separator to add between the fields", ""})
 	public void setOutputSeparator(String string) {
 		outputSeparator = string;
 	}

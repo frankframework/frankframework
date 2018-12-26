@@ -68,7 +68,7 @@ public class XmlWellFormedChecker extends FixedForwardPipe {
 		return new PipeRunResult(forward, input);
 	}
 
-	@IbisDoc({"name of the root element", " "})
+	@IbisDoc({"name of the root element", ""})
 	public void setRoot(String root) {
 		this.root = root;
 	}

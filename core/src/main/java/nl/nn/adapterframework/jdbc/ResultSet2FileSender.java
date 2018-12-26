@@ -156,7 +156,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		fos.write(eolArray);
 	}
 	
-	@IbisDoc({"type of the optional status field which is set after the row is written to the file: timestamp", " "})
+	@IbisDoc({"type of the optional status field which is set after the row is written to the file: timestamp", ""})
 	public void setStatusFieldType(String statusFieldType) {
 		this.statusFieldType = statusFieldType;
 	}
@@ -164,7 +164,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		return statusFieldType;
 	}
 
-	@IbisDoc({"the session key that contains the name of the file to use", " "})
+	@IbisDoc({"the session key that contains the name of the file to use", ""})
 	public void setFileNameSessionKey(String filenameSessionKey) {
 		this.fileNameSessionKey = filenameSessionKey;
 	}
@@ -180,7 +180,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		return append;
 	}
 
-	@IbisDoc({"when set (and &gt;=0), this session key contains the maximum number of records which are processed. if <code>query</code> contains a group field (3), then also following records with the same group field value as the last record are processed", " "})
+	@IbisDoc({"when set (and &gt;=0), this session key contains the maximum number of records which are processed. if <code>query</code> contains a group field (3), then also following records with the same group field value as the last record are processed", ""})
 	public void setMaxRecordsSessionKey(String maxRecordsSessionKey) {
 		this.maxRecordsSessionKey = maxRecordsSessionKey;
 	}

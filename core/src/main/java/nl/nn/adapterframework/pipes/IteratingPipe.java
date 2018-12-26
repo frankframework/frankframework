@@ -532,7 +532,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 	}
 
 
-	@IbisDoc({"stylesheet to apply to each message, before sending it", " "})
+	@IbisDoc({"stylesheet to apply to each message, before sending it", ""})
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
@@ -549,7 +549,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 	}
 
 
-	@IbisDoc({"alternatively: xpath-expression to create stylesheet from", " "})
+	@IbisDoc({"alternatively: xpath-expression to create stylesheet from", ""})
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
 	}
@@ -557,7 +557,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		return xpathExpression;
 	}
 
-	@IbisDoc({"namespace defintions for xpathexpression. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", " "})
+	@IbisDoc({"namespace defintions for xpathexpression. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
@@ -590,7 +590,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		return blockPrefix;
 	}
 
-	@IbisDoc({"this string is inserted at the start of each line", " "})
+	@IbisDoc({"this string is inserted at the start of each line", ""})
 	public void setLinePrefix(String string) {
 		linePrefix = string;
 	}
@@ -606,7 +606,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		return blockSuffix;
 	}
 
-	@IbisDoc({"this string is inserted at the end of each line", " "})
+	@IbisDoc({"this string is inserted at the end of each line", ""})
 	public void setLineSuffix(String string) {
 		lineSuffix = string;
 	}
@@ -622,7 +622,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		return blockSize;
 	}
 
-	@IbisDoc({"key of session variable to store number of item processed.", " "})
+	@IbisDoc({"key of session variable to store number of item processed.", ""})
 	public void setItemNoSessionKey(String string) {
 		itemNoSessionKey = string;
 	}

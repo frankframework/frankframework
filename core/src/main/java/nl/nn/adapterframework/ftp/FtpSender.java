@@ -114,7 +114,7 @@ public class FtpSender extends SenderWithParametersBase {
 
 
 	
-	@IbisDoc({"remote directory in which files have to be uploaded", " "})
+	@IbisDoc({"remote directory in which files have to be uploaded", ""})
 	public void setRemoteDirectory(String remoteDirectory) {
 		this.remoteDirectory = remoteDirectory;
 	}
@@ -122,7 +122,7 @@ public class FtpSender extends SenderWithParametersBase {
 		return remoteDirectory;
 	}
 
-	@IbisDoc({"filename pattern for uploaded files", " "})
+	@IbisDoc({"filename pattern for uploaded files", ""})
 	public void setRemoteFilenamePattern(String string) {
 		remoteFilenamePattern = string;
 	}
@@ -133,7 +133,7 @@ public class FtpSender extends SenderWithParametersBase {
 
 	
 
-	@IbisDoc({"name or ip adres of remote host", " "})
+	@IbisDoc({"name or ip adres of remote host", ""})
 	public void setHost(String host) {
 		ftpSession.setHost(host);
 	}
@@ -143,22 +143,22 @@ public class FtpSender extends SenderWithParametersBase {
 		ftpSession.setPort(port);
 	}
 
-	@IbisDoc({"name of the alias to obtain credentials to authenticatie on remote server", " "})
+	@IbisDoc({"name of the alias to obtain credentials to authenticatie on remote server", ""})
 	public void setAuthAlias(String alias) {
 		ftpSession.setAuthAlias(alias);
 	}
 
-	@IbisDoc({"name of the user to authenticatie on remote server", " "})
+	@IbisDoc({"name of the user to authenticatie on remote server", ""})
 	public void setUsername(String username) {
 		ftpSession.setUsername(username);
 	}
 
-	@IbisDoc({"name of the password to authenticatie on remote server", " "})
+	@IbisDoc({"name of the password to authenticatie on remote server", ""})
 	public void setPassword(String passwd) {
 		ftpSession.setPassword(passwd);
 	}
 
-	@IbisDoc({"proxy host name", " "})
+	@IbisDoc({"proxy host name", ""})
 	public void setProxyHost(String proxyHost) {
 		ftpSession.setProxyHost(proxyHost);
 	}
@@ -168,17 +168,17 @@ public class FtpSender extends SenderWithParametersBase {
 		ftpSession.setProxyPort(proxyPort);
 	}
 
-	@IbisDoc({"name of the alias to obtain credentials to authenticate on proxy", " "})
+	@IbisDoc({"name of the alias to obtain credentials to authenticate on proxy", ""})
 	public void setProxyAuthAlias(String proxyAuthAlias) {
 		ftpSession.setProxyAuthAlias(proxyAuthAlias);
 	}
 
-	@IbisDoc({"default user name in case proxy requires authentication", " "})
+	@IbisDoc({"default user name in case proxy requires authentication", ""})
 	public void setProxyUsername(String proxyUsername) {
 		ftpSession.setProxyUsername(proxyUsername);
 	}
 
-	@IbisDoc({"default password in case proxy requires authentication", " "})
+	@IbisDoc({"default password in case proxy requires authentication", ""})
 	public void setProxyPassword(String proxyPassword) {
 		ftpSession.setProxyPassword(proxyPassword);
 	}
@@ -188,7 +188,7 @@ public class FtpSender extends SenderWithParametersBase {
 		ftpSession.setFtpTypeDescription(ftpTypeDescription);
 	}
 
-	@IbisDoc({"file type, one of ascii, binary", " "})
+	@IbisDoc({"file type, one of ascii, binary", ""})
 	public void setFileType(String fileType) {
 		ftpSession.setFileType(fileType);
 	}
@@ -209,43 +209,43 @@ public class FtpSender extends SenderWithParametersBase {
 		ftpSession.setProxyTransportType(proxyTransportType);
 	}
 
-	@IbisDoc({"(sftp) optional preferred encryption from client to server for sftp protocol", " "})
+	@IbisDoc({"(sftp) optional preferred encryption from client to server for sftp protocol", ""})
 	public void setPrefCSEncryption(String prefCSEncryption) {
 		ftpSession.setPrefCSEncryption(prefCSEncryption);
 	}
 
-	@IbisDoc({"(sftp) optional preferred encryption from server to client for sftp protocol", " "})
+	@IbisDoc({"(sftp) optional preferred encryption from server to client for sftp protocol", ""})
 	public void setPrefSCEncryption(String prefSCEncryption) {
 		ftpSession.setPrefSCEncryption(prefSCEncryption);
 	}
 
-	@IbisDoc({"(sftp) path to private key file for sftp authentication", " "})
+	@IbisDoc({"(sftp) path to private key file for sftp authentication", ""})
 	public void setPrivateKeyFilePath(String privateKeyFilePath) {
 		ftpSession.setPrivateKeyFilePath(privateKeyFilePath);
 	}
 
-	@IbisDoc({"(sftp) name of the alias to obtain credentials for passphrase of private key file", " "})
+	@IbisDoc({"(sftp) name of the alias to obtain credentials for passphrase of private key file", ""})
 	public void setPrivateKeyAuthAlias(String privateKeyAuthAlias) {
 		ftpSession.setPrivateKeyAuthAlias(privateKeyAuthAlias);
 	}
 
-	@IbisDoc({"(sftp) passphrase of private key file", " "})
+	@IbisDoc({"(sftp) passphrase of private key file", ""})
 	public void setPrivateKeyPassword(String passPhrase) {
 		ftpSession.setPrivateKeyPassword(passPhrase);
 	}
 
-	@IbisDoc({"(sftp) path to file with knownhosts", " "})
+	@IbisDoc({"(sftp) path to file with knownhosts", ""})
 	public void setKnownHostsPath(String knownHostsPath) {
 		ftpSession.setKnownHostsPath(knownHostsPath);
 	}
 
-	@IbisDoc({"(sftp) &nbsp;", "false"})
+	@IbisDoc({"(sftp) ", "false"})
 	public void setConsoleKnownHostsVerifier(boolean verifier) {
 		ftpSession.setConsoleKnownHostsVerifier(verifier);
 	}
 
 
-	@IbisDoc({"(ftps) resource url to certificate to be used for authentication", " "})
+	@IbisDoc({"(ftps) resource url to certificate to be used for authentication", ""})
 	public void setCertificate(String certificate) {
 		ftpSession.setCertificate(certificate);
 	}
@@ -253,7 +253,7 @@ public class FtpSender extends SenderWithParametersBase {
 		return ftpSession.getCertificate();
 	}
 
-	@IbisDoc({"(ftps) &nbsp;", "pkcs12"})
+	@IbisDoc({"(ftps) ", "pkcs12"})
 	public void setCertificateType(String keystoreType) {
 		ftpSession.setCertificateType(keystoreType);
 	}
@@ -266,7 +266,7 @@ public class FtpSender extends SenderWithParametersBase {
 		ftpSession.setKeyManagerAlgorithm(keyManagerAlgorithm);
 	}
 
-	@IbisDoc({"(ftps) alias used to obtain certificate password", " "})
+	@IbisDoc({"(ftps) alias used to obtain certificate password", ""})
 	public void setCertificateAuthAlias(String certificateAuthAlias) {
 		ftpSession.setCertificateAuthAlias(certificateAuthAlias);
 	}
@@ -274,7 +274,7 @@ public class FtpSender extends SenderWithParametersBase {
 		return ftpSession.getCertificateAuthAlias();
 	}
 
-	@IbisDoc({"(ftps) &nbsp;", " "})
+	@IbisDoc({"(ftps) ", " "})
 	public void setCertificatePassword(String certificatePassword) {
 		ftpSession.setCertificatePassword(certificatePassword);
 	}
@@ -283,12 +283,12 @@ public class FtpSender extends SenderWithParametersBase {
 	}
 
 
-	@IbisDoc({"(ftps) resource url to truststore to be used for authentication", " "})
+	@IbisDoc({"(ftps) resource url to truststore to be used for authentication", ""})
 	public void setTruststore(String truststore) {
 		ftpSession.setTruststore(truststore);
 	}
 
-	@IbisDoc({"(ftps) &nbsp;", "jks"})
+	@IbisDoc({"(ftps) ", "jks"})
 	public void setTruststoreType(String truststoreType) {
 		ftpSession.setTruststoreType(truststoreType);
 	}
@@ -298,12 +298,12 @@ public class FtpSender extends SenderWithParametersBase {
 		ftpSession.setTrustManagerAlgorithm(trustManagerAlgorithm);
 	}
 
-	@IbisDoc({"(ftps) alias used to obtain truststore password", " "})
+	@IbisDoc({"(ftps) alias used to obtain truststore password", ""})
 	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
 		ftpSession.setTruststoreAuthAlias(truststoreAuthAlias);
 	}
 
-	@IbisDoc({"(ftps) &nbsp;", " "})
+	@IbisDoc({"(ftps) ", " "})
 	public void setTruststorePassword(String truststorePassword) {
 		ftpSession.setTruststorePassword(truststorePassword);
 	}

@@ -76,7 +76,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 		return cacheName;
 	}
 
-	@IbisDoc({"name of the cache to remove", " "})
+	@IbisDoc({"name of the cache to remove", ""})
 	public void setCacheName(String cacheName) {
 		this.cacheName = cacheName;
 	}
@@ -85,7 +85,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 		return keyTransformer.getKeyXPath();
 	}
 
-	@IbisDoc({"xpath expression to extract cache key from request message", " "})
+	@IbisDoc({"xpath expression to extract cache key from request message", ""})
 	public void setKeyXPath(String keyXPath) {
 		keyTransformer.setKeyXPath(keyXPath);
 	}
@@ -103,7 +103,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 		return keyTransformer.getKeyNamespaceDefs();
 	}
 
-	@IbisDoc({"namespace defintions for keyxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", " "})
+	@IbisDoc({"namespace defintions for keyxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setKeyNamespaceDefs(String keyNamespaceDefs) {
 		keyTransformer.setKeyNamespaceDefs(keyNamespaceDefs);
 	}
@@ -112,7 +112,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 		return keyTransformer.getKeyStyleSheet();
 	}
 
-	@IbisDoc({"setcacheemptykeys", " "})
+	@IbisDoc({"setcacheemptykeys", ""})
 	public void setKeyStyleSheet(String keyStyleSheet) {
 		keyTransformer.setKeyStyleSheet(keyStyleSheet);
 	}
@@ -121,7 +121,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 		return keyTransformer.getKeyInputSessionKey();
 	}
 
-	@IbisDoc({"session key to use as input for transformation of request message to key by keyxpath or keystylesheet", " "})
+	@IbisDoc({"session key to use as input for transformation of request message to key by keyxpath or keystylesheet", ""})
 	public void setKeyInputSessionKey(String keyInputSessionKey) {
 		keyTransformer.setKeyInputSessionKey(keyInputSessionKey);
 	}

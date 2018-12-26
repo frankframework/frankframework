@@ -103,7 +103,7 @@ public class PasswordHashPipe extends FixedForwardPipe {
 		return hashSessionKey;
 	}
 
-	@IbisDoc({"name of sessionkey that holds the hash which will be used to validate the password (input of the pipe)", " "})
+	@IbisDoc({"name of sessionkey that holds the hash which will be used to validate the password (input of the pipe)", ""})
 	public void setHashSessionKey(String hashSessionKey) {
 		this.hashSessionKey = hashSessionKey;
 	}
