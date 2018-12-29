@@ -54,8 +54,8 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>name of the JMS destination (queue or topic) to use</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>either <code>QUEUE</code> or <code>TOPIC</code></td><td><code>QUEUE</code></td></tr>
- * <tr><td>{@link #setQueueConnectionFactoryName(String) queueConnectionFactoryName}</td><td>jndi-name of the queueConnectionFactory, used when <code>destinationType<code>=</code>QUEUE</code></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTopicConnectionFactoryName(String) topicConnectionFactoryName}</td><td>jndi-name of the topicConnectionFactory, used when <code>destinationType<code>=</code>TOPIC</code></td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setQueueConnectionFactoryName(String) queueConnectionFactoryName}</td><td>jndi-name of the queueConnectionFactory, used when <code>destinationType</code>=<code>QUEUE</code></td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTopicConnectionFactoryName(String) topicConnectionFactoryName}</td><td>jndi-name of the topicConnectionFactory, used when <code>destinationType</code>=<code>TOPIC</code></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageSelector(String) messageSelector}</td><td>When set, the value of this attribute is used as a selector to filter messages.</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setJmsTransacted(boolean) jmsTransacted}</td><td><i>Deprecated</i> when true, sessions are explicitly committed (exit-state equals commitOnState) or rolled-back (other exit-states). Please do not use this mechanism, but control transactions using <code>transactionAttribute</code>s.</td><td>false</td></tr>
  * <tr><td>{@link #setCommitOnState(String) commitOnState}</td><td><i>Deprecated</i> exit state to control commit or rollback of jmsSession. Only used if <code>jmsTransacted</code> is set true.</td><td>"success"</td></tr>
@@ -68,13 +68,10 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setReplyDeliveryMode(String) replyDeliveryMode}</td><td>controls mode that reply messages are sent with: either 'persistent' or 'non_persistent'</td><td>not set by application</td></tr>
  * <tr><td>{@link #setReplyPriority(int) replyPriority}</td><td>sets the priority that is used to deliver the reply message. ranges from 0 to 9. Defaults to -1, meaning not set. Effectively the default priority is set by Jms to 4</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setForceMQCompliancy(String) forceMQCompliancy}</td><td>Possible values: 'MQ' or 'JMS'. Setting to 'MQ' informs the MQ-server that the replyto queue is not JMS compliant.</td><td>JMS</td></tr>
  * <tr><td>{@link #setForceMessageIdAsCorrelationId(boolean) forceMessageIdAsCorrelationId}</td><td>
  * forces that the CorrelationId that is received is ignored and replaced by the messageId that is received. Use this to create a new, globally unique correlationId to be used downstream. It also
  * forces that not the Correlation ID of the received message is used in a reply as CorrelationId, but the MessageId.</td><td>false</td></tr>
  * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>SoapAction string sent as messageproperty</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSoapHeaderParam(String) soapHeaderParam}</td><td>name of parameter containing SOAP header</td><td>soapHeader</td></tr>
  * <tr><td>{@link #setxPathLoggingKeys(String) xPathLoggingKeys}</td><td>comma separated list of all xPath keys that need to be logged. (Overrides <code>msg.log.keys</code> property)</td><td>&nbsp;</td></tr>
  * </table>
  * 
@@ -180,6 +177,8 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 * 
 	 * @param rawMessage - Original message received, can not be <code>null</code>
 	 * @param threadContext - Thread context to be populated, can not be <code>null</code>
+	 * @return the Id from the message
+	 * @throws ListenerException thrown when listening to the message fails
 	 */
 	public String getIdFromRawMessage(Object rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		TextMessage message = null;
@@ -292,9 +291,12 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 
 
 	/**
-	 * Extracts string from message obtained from {@link #getRawMessage(Map)}. May also extract
+	 * Extracts string from message obtained from getRawMessage. May also extract
 	 * other parameters from the message and put those in the threadContext.
+	 * @param rawMessage the raw message
+	 * @param threadContext the context the message resides in
 	 * @return String  input message for adapter.
+	 * @throws ListenerException thrown when listening to the message fails
 	 */
 	public String getStringFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 		try {
@@ -360,6 +362,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 
 	/**
 	 * return the Parameters
+	 * @return the parameter list
 	 */
 	public ParameterList getParameterList() {
 		return paramList;
@@ -394,7 +397,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 * By default, the JmsListener takes the Correlation ID (if present) as the ID that has to be put in the
 	 * correlation id of the reply. When you set ForceMessageIdAsCorrelationId to <code>true</code>,
 	 * the messageID set in the correlationID of the reply.
-	 * @param force
+	 * @param force whether to set forceMessageId as correlationId
 	 */
 	public void setForceMessageIdAsCorrelationId(boolean force){
 	   forceMessageIdAsCorrelationId=force;
@@ -408,6 +411,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 * jmsTransacted = <code>true</code>. This is probably not what you want. 
 	 * @deprecated consider using XA transactions, controled by the <code>transacted</code>-attribute, rather than
 	 * local transactions controlled by the <code>jmsTransacted</code>-attribute.
+	 * @param newCommitOnState the commit on state
 	 */
 	public void setCommitOnState(String newCommitOnState) {
 		commitOnState = newCommitOnState;

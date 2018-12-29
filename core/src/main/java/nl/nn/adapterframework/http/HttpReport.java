@@ -25,7 +25,7 @@ public class HttpReport extends HttpEntityEnclosingRequestBase {
 	/**
 	 * @param uri to connect to
 	 * @param element entity
-	 * @throws TransformerException 
+	 * @throws TransformerException thrown if transformation fails
 	 * @throws IllegalArgumentException if the uri is invalid.
 	 */
 	public HttpReport(final URI uri, Element element) throws TransformerException {
@@ -46,7 +46,7 @@ public class HttpReport extends HttpEntityEnclosingRequestBase {
 	/**
 	 * @param uri to connect to
 	 * @param element entity
-	 * @throws TransformerException 
+	 * @throws TransformerException thrown if transformation fails
 	 * @throws IllegalArgumentException if the uri is invalid.
 	 */
 	public HttpReport(final String uri, Element element) throws TransformerException {

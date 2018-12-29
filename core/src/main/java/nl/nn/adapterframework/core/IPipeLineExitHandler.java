@@ -27,9 +27,10 @@ public interface IPipeLineExitHandler extends INamedObject {
 	/**
 	 * Called to allow registered handler to perform cleanup or commit/rollback.
 	 * 
-	 * @param correlationId	 correlationId of current session
-	 * @param pipeLineResult the result of the PipeLine 
-	 * @param session		 the PipeLineSession
+	 * @param correlationId	    correlationId of current session
+	 * @param pipeLineResult    the result of the PipeLine
+	 * @param session		    the PipeLineSession
+	 * @throws PipeRunException thrown when processing ExitHandler fails
 	 */
 	public void atEndOfPipeLine(String correlationId, PipeLineResult pipeLineResult, IPipeLineSession session) throws PipeRunException;
 }

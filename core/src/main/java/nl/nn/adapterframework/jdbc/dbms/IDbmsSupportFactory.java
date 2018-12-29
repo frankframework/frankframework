@@ -19,7 +19,6 @@ import java.sql.Connection;
 
 /**
  * @author  Gerrit van Brakel
- * @since  
  */
 public interface IDbmsSupportFactory {
 

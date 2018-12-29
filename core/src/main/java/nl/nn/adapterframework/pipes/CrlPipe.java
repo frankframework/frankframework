@@ -64,7 +64,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 			>
 			<forward name="success" path="EXIT" />
 		</pipe>
- * </pre></code>
+ * </code>
  * 
  * <p><b>Configuration:</b>
  * <table border="1">

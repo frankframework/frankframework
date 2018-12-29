@@ -137,8 +137,14 @@ public class SchemaUtils {
 
 	
 	/**
+	 * @param classLoader the class loader
+	 * @param xsdsGroupedByNamespace the xsds that are grouped by name space
+	 * @param xmlStreamWriter the xml stream writer
 	 * @return XSD's when xmlStreamWriter is null, otherwise write to
 	 *		 xmlStreamWriter
+	 * @throws XMLStreamException thrown when XML Stream fails
+	 * @throws IOException thrown when communication with I/O fails
+	 * @throws ConfigurationException thrown when configuration fails
 	 */
 	public static Set<XSD> mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(
 			ClassLoader classLoader, Map<String,
@@ -214,18 +220,24 @@ public class SchemaUtils {
 	 * {@link javax.xml.stream.XMLStreamWriter} while parsing it. It is parsed
 	 * (using a low level {@link javax.xml.stream.XMLEventReader} so that
 	 * certain things can be corrected on the fly.
-	 * @param xsd
-	 * @param xmlStreamWriter
-	 * @param standalone
+	 * @param xsd the xsd
+	 * @param xmlStreamWriter the xml stream writer
+	 * @param standalone whether to be a standalone
 	 * When standalone the start and end document contants are ignored, hence
 	 * the xml declaration is ignored.
+	 * @param imports the imports
+	 * @param noOutput whether there is no output
+	 * @param rootAttributes the root attributes
+	 * @param rootNamespaceAttributes the root name space attributes
+	 * @param skipRootEndElement whether to skip the root end element
+	 * @param skipRootStartElement whether to skip the root start element
 	 * @param stripSchemaLocationFromImport
 	 * Useful when generating a WSDL which should contain all XSD's inline
 	 * (without includes or imports). The XSD might have an import with
 	 * schemaLocation to make it valid on it's own, when
 	 * stripSchemaLocationFromImport is true it will be removed.
-	 * @throws java.io.IOException
-	 * @throws javax.xml.stream.XMLStreamException
+	 * @throws IOException thrown when communication with I/O fails
+	 * @throws ConfigurationException thrown when configuration fails
 	 */
 	public static void xsdToXmlStreamWriter(final XSD xsd,
 			XMLStreamWriter xmlStreamWriter, boolean standalone,

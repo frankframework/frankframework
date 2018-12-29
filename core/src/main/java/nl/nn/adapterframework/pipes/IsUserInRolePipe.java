@@ -44,7 +44,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success" or value set by {@link #setForwardName(String) forwardName}</td><td>user may assume role</td></tr>
  * <tr><td>"notInRole" or value set by {@link #setNotInRoleForwardName(String) notInRoleForwardName}</td><td>user may not assume role</td></tr>
- * <tr><td><i></i></td><td>if specified</td></tr>
+ * <tr><td></td><td>if specified</td></tr>
  * </table>
  * </p>
  * 

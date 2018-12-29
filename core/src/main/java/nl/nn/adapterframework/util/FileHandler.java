@@ -61,7 +61,7 @@ import org.apache.log4j.Logger;
  * <p>
  * When a file needs to be created and both the fileName and the directory are
  * not specified a temporary file is created as specified by the
- * {@link java.io.File.createTempFile} method using the string "ibis" as a
+ * java.io.File.createTempFile method using the string "ibis" as a
  * prefix and a suffix as specified bij the writeSuffix attribute. If only
  * the directory is specified, the temporary file is created the same way except
  * that the temporary file is created in the specified directory.
@@ -139,6 +139,7 @@ public class FileHandler {
 	
 	/** 
 	 * @see nl.nn.adapterframework.core.IPipe#configure()
+	 * @throws ConfigurationException thrown when configuration fails
 	 */
 	public void configure() throws ConfigurationException {
 		// translation action seperated string to Transformers

@@ -115,7 +115,7 @@ import org.w3c.dom.Node;
  * <tr><td>{@link #setDefaultAttachmentName(String) defaultAttachmentName}</td><td>When this name is used, it will be followed by a number which is equal to the node's position</td><td>attachment</td></tr>
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>timeout (in milliseconds). Used for socket connection timeout and socket I/O timeout</td><td>20000</td></tr>
  * </table>
- * <p>
+ * <br>
  * <table border="1">
  * <b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
@@ -137,6 +137,8 @@ import org.w3c.dom.Node;
  *       &lt;attachment name="filename4.pdf" sessionKey="fileContent"/&gt;
  * </pre></code></td></tr>
  * </table>
+ * </br>
+ *
  * <p>
  * <b>Compilation and Deployment Note:</b> mail.jar (v1.2) and activation.jar must appear BEFORE j2ee.jar.
  * Otherwise errors like the following might occur: <code>NoClassDefFoundException: com/sun/mail/util/MailDateFormat</code> 
@@ -227,7 +229,7 @@ public class MailSender extends SenderWithParametersBase {
 	/**
 	 * Create a <code>Session</code> and <code>Transport</code> to the
 	 * smtp host.
-	  * @throws SenderException
+	  * @throws SenderException thrown when opening MailSender fails
 	 */
 	public void open() throws SenderException {
 		try {
@@ -425,6 +427,10 @@ public class MailSender extends SenderWithParametersBase {
 
 	/**
 	 * Send a mail conforming to the XML input
+	 * @param input the XML input
+	 * @param prc the ParameterResolution context
+	 * @return a mail conforming to the XML input
+	 * @throws SenderException thrown when sending the mail fails
 	 */
 	protected String sendEmail(String input, ParameterResolutionContext prc) throws SenderException {
 		// initialize this request
@@ -642,12 +648,14 @@ public class MailSender extends SenderWithParametersBase {
 
 	/**
 	 * Set the default for From
+	 * @param newFrom the new from to be set
 	 */
 	public void setDefaultFrom(String newFrom) {
 		defaultFrom = newFrom;
 	}
 	/**
 	 * Set the default for Subject>
+	 * @param newSubject the new subject to be set
 	 */
 	public void setDefaultSubject(String newSubject) {
 		defaultSubject = newSubject;
@@ -655,6 +663,7 @@ public class MailSender extends SenderWithParametersBase {
 	
 	/**
 	 * Name of the SMTP Host.
+	 * @param newSmtpHost the new SMTP host to be set
 	 */
 	public void setSmtpHost(String newSmtpHost) {
 		smtpHost = newSmtpHost;

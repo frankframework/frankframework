@@ -39,7 +39,10 @@ public class DraconianErrorHandler implements ErrorHandler {
     
     private DraconianErrorHandler() {}
     
-    /** Returns the one and only instance of this error handler. */
+    /**
+     * Returns the one and only instance of this error handler.
+     * @return the one and only instance of this error handler
+     */
     public static DraconianErrorHandler getInstance() {
         return ERROR_HANDLER_INSTANCE;
     }

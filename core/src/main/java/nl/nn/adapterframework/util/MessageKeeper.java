@@ -47,6 +47,7 @@ public class MessageKeeper extends SizeLimitedVector {
 	}
 	/**
 	 * Get a message by number
+	 * @param i the number
 	 * @return MessageKeeperMessage the Message
 	 * @see MessageKeeperMessage
 	 */

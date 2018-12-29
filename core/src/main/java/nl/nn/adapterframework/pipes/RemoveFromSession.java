@@ -59,7 +59,7 @@ import org.apache.commons.lang.StringUtils;
     
 	/**
      * checks wether the proper forward is defined.
-     * @throws ConfigurationException
+     * @throws ConfigurationException thrown when configuration fails
      */
     public void configure() throws ConfigurationException {
 	    super.configure();
@@ -108,6 +108,7 @@ public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeR
 }
 /**
  * The name of the key in the <code>PipeLineSession</code> to store the input in
+ * @return the name of the key
  * {@link nl.nn.adapterframework.core.IPipeLineSession pipeLineSession}
  */
 public String getSessionKey() {
@@ -117,7 +118,7 @@ public String getSessionKey() {
  * The name of the key in the <code>PipeLineSession</code> to store the input in
  * @see nl.nn.adapterframework.core.IPipeLineSession
  * 
- * @param newSessionKey String
+ * @param newSessionKey the new session key to be set
  */
 public void setSessionKey(String newSessionKey) {
 	sessionKey = newSessionKey;

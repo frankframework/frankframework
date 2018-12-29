@@ -28,7 +28,6 @@ import org.apache.log4j.Logger;
 
 /**
  * @author  Gerrit van Brakel
- * @since  
  */
 public class DbmsSupportFactory implements IDbmsSupportFactory {
 	protected Logger log = LogUtil.getLogger(this.getClass());

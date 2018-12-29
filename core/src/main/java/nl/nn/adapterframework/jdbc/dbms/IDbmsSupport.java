@@ -28,18 +28,19 @@ import nl.nn.adapterframework.jdbc.JdbcException;
  * Interface to define DBMS specific SQL implementations.
  * 
  * @author  Gerrit van Brakel
- * @since  
  */
 public interface IDbmsSupport {
 
 	/**
 	 * Numeric value defining database type, defined in {@link DbmsSupportFactory}.
+	 * @return the numeric value defining the database type
 	 */
 	int getDatabaseType(); 
 	String getDbmsName();
 	
 	/**
 	 * SQL String returning current date and time of dbms.
+	 * @return the current date and time of dbms
 	 */
 	String getSysDate();
 
@@ -47,6 +48,7 @@ public interface IDbmsSupport {
 
 	/**
 	 * http://en.wikipedia.org/wiki/DUAL_table
+	 * @return http://en.wikipedia.org/wiki/DUAL_table
 	 */
 	String getFromForTablelessSelect();
 

@@ -48,8 +48,8 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>{@link #setRetrievePhysicalDestination(boolean) retrievePhysicalDestination}</td><td>(only used when <code>direction=wrap</code>) when <code>true</code>, the physical destination is retrieved from the queue instead of using the parameter <code>destination</code></td><td><code>true</code></td></tr>
  * <tr><td>{@link #setUseFixedValues(boolean) useFixedValues}</td><td>If <code>true</code>, the fields CorrelationId, MessageId and Timestamp will have a fixed value (for testing purposes only)</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setFixResultNamespace(boolean) fixResultNamespace}</td><td>(only used when <code>direction=wrap</code>) when <code>true</code> and the Result tag already exists, the namespace is changed</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setP2pAlias(String) p2pAlias}</td><td>When the messagingLayer part of the destination has this value interpret it as P2P</td><td><code></code></td></tr>
- * <tr><td>{@link #setEsbAlias(String) esbAlias}</td><td>When the messagingLayer part of the destination has this value interpret it as ESB</td><td><code></code></td></tr>
+ * <tr><td>{@link #setP2pAlias(String) p2pAlias}</td><td>When the messagingLayer part of the destination has this value interpret it as P2P</td>
+ * <tr><td>{@link #setEsbAlias(String) esbAlias}</td><td>When the messagingLayer part of the destination has this value interpret it as ESB</td>
  * </table></p>
  * <p>
  * <b>/xml/xsl/esb/soapHeader.xsl:</b>

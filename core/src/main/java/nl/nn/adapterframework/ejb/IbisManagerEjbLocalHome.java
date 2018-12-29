@@ -24,6 +24,8 @@ package nl.nn.adapterframework.ejb;
 public interface IbisManagerEjbLocalHome extends javax.ejb.EJBLocalHome {
     /**
      * Creates a default instance of Session Bean: IbisManagerEjb
+     * @return the created IbisManagerEjb
+     * @throws javax.ejb.CreateException thrown when creation fails
      */
     public IbisManagerEjbLocal create()
         throws javax.ejb.CreateException;

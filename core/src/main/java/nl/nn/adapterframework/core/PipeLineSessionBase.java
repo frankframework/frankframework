@@ -63,7 +63,11 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 
 	/**
 	 * Convenience method to set required parameters from listeners
-	 * @param map
+	 * @param map the context in which the messages reside
+	 * @param messageId the unique id of the message, used for logging purposes
+	 * @param technicalCorrelationId the technical correlation id
+	 * @param tsReceived the date it was received
+	 * @param tsSent the date it was sent
 	 */
 	public static void setListenerParameters(Map<String,Object> map, String messageId, String technicalCorrelationId, Date tsReceived, Date tsSent) {
 		if (messageId!=null) {

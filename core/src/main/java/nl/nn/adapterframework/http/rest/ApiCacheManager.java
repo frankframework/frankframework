@@ -43,6 +43,7 @@ public class ApiCacheManager {
 
 	/**
 	 * Creates an IBIS independent cachePrefix so multiple IBIS can connect to the same cache
+	 * @param uriPattern the uri pattern
 	 * @return cachePrefix 'instanceName_otapStage_'
 	 */
 	public static String buildCacheKey(String uriPattern) {

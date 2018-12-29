@@ -26,26 +26,39 @@ public interface IMessageBrowser extends IXAEnabled {
 
 	/**
 	 * Gets an enumeration of messages. This includes setting up connections, sessions etc.
+	 * @return enumeration of messages
+	 * @throws ListenerException thrown when listening to the message fails
 	 */
 	IMessageBrowsingIterator getIterator() throws ListenerException;
 	IMessageBrowsingIterator getIterator(Date startTime, Date endTime, boolean forceDescending) throws ListenerException;
 	
 	/**
 	 * Retrieves the message context as an iteratorItem.
-	 * The result can be used in the methods above that use an iteratorItem as 
+	 * The result can be used in the methods above that use an iteratorItem as
+	 * @param messageId the message from which the context is retrieved
+	 * @return the context of the message
+	 * @throws ListenerException thrown when listening to the message fails
 	 */
 	IMessageBrowsingIteratorItem getContext(String messageId) throws ListenerException;
 
 	/**
-	 * Retrieves the message, but does not delete. 
+	 * Retrieves the message, but does not delete.
+	 * @param messageId the message to retrieve the message from
+	 * @return the message
+	 * @throws ListenerException thrown when listening to the message fails
 	 */
 	Object browseMessage(String messageId) throws ListenerException;
 	/**
 	 * Retrieves and deletes the message.
+	 * @param messageId the message to retrieve the message from
+	 * @return the message
+	 * @throws ListenerException thrown when listening to the message fails
 	 */
 	Object getMessage(String messageId) throws ListenerException;
 	/**
 	 * Deletes the message.
+	 * @param messageId the message to delete
+	 * @throws ListenerException thrown when listening to the message fails
 	 */
 	void   deleteMessage(String messageId) throws ListenerException;
 

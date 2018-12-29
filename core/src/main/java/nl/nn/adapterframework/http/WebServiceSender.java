@@ -231,6 +231,7 @@ public class WebServiceSender extends HttpSender {
 
 	/**
 	 * @deprecated please use setSoapAction() instead
+	 * @param soapAction the soap action
 	 */
 	public void setSoapActionURI(String soapAction) {
 		ConfigurationWarnings.getInstance().add(log, getLogPrefix()+" the attribute 'soapActionURI' has been renamed 'soapAction'");
@@ -239,6 +240,7 @@ public class WebServiceSender extends HttpSender {
 
 	/**
 	 * @deprecated please use setSoapActionParam instead
+	 * @param soapActionParam the soap action param
 	 */
 	public void setSoapActionURIParam(String soapActionParam) {
 		ConfigurationWarnings.getInstance().add(log, getLogPrefix()+" the attribute 'soapActionURIParam' has been renamed 'soapActionParam'");

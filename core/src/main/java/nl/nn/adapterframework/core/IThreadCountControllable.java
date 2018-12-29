@@ -22,7 +22,6 @@ package nl.nn.adapterframework.core;
  * from the ibisconsole.
  * 
  * @author  Gerrit van Brakel
- * @since  
  */
 public interface IThreadCountControllable {
 

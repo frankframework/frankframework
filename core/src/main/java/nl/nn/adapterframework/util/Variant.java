@@ -47,6 +47,7 @@ public class Variant {
 
 	/**
 	 * Renders an InputSource for SAX parsing
+	 * @return InputSource for SAX parsing
 	 */
 	public InputSource asXmlInputSource() {
 
@@ -56,6 +57,8 @@ public class Variant {
 
 	/**
 	 * Renders a Source for XSLT-transformation
+	 * @return a Source for XSLT-transformation
+	 * @throws DomBuilderException thrown when DomBuilder fails
 	 */
 	public Source asXmlSource() throws DomBuilderException {
 		return asXmlSource(true);

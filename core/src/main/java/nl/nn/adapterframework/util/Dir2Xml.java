@@ -123,6 +123,7 @@ public class Dir2Xml  {
 	}
 	/**
 	 * Set a Wildcard
+	 * @param wildcard the wildcard to be set
 	 * @see WildCardFilter
 	 */
 	public void setWildCard(String wildcard) {

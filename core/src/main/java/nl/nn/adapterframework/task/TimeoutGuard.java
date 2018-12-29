@@ -80,6 +80,7 @@ public class TimeoutGuard {
 	
 	/**
 	 * cancels timer, and returns true if thread has been killed by this guard or interrupted by another.
+	 * @return whether the thread has been killed
 	 */
 	public boolean cancel() {	
 		if (timer!=null) {

@@ -97,7 +97,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase {
 
 	/**
 	 * Sets the SQL-query text to be executed each time sendMessage() is called.
-	 * @param query
+	 * @param query the SQL-query to be set
 	 */
 	public void setQuery(String query) {
 		this.query = query;

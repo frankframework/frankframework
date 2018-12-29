@@ -53,6 +53,8 @@ public class GlobalListItem implements INamedObject {
     /**
      * Get an item by Name.
      * Descender classes should implement a similar method, that returns an object of its own type.
+	 * @param itemName the item name
+	 * @return the item
      */
     protected static GlobalListItem getItem(String itemName) {
 		GlobalListItem result = null;
@@ -93,7 +95,8 @@ public class GlobalListItem implements INamedObject {
     
     /**
      * Register an item in the list
-     */
+     * @param dummyParent the dummyParent
+	 */
     public void registerItem(Object dummyParent) {
     	if (StringUtils.isEmpty(getAliasFor())) {
 			configure();
@@ -119,7 +122,7 @@ public class GlobalListItem implements INamedObject {
 
 	/**
 	 * If this attribute is set, the item is only an alias for another item.
-	 * @param string
+	 * @param string the alias to be set
 	 */
 	public void setAliasFor(String string) {
 		aliasFor = string;

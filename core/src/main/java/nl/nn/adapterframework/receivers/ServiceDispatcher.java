@@ -61,6 +61,12 @@ public class ServiceDispatcher  {
 
 	/**
 	 * Dispatch a request.
+	 * @param serviceName name of the service
+	 * @param correlationId the correlation id
+	 * @param request the request
+	 * @param requestContext the context of the request
+	 * @return the result
+	 * @throws ListenerException thrown when the service is not registered
 	 * 
 	 * @since 4.3
 	 */
@@ -93,7 +99,7 @@ public class ServiceDispatcher  {
 	
 	/**
 	 * Check whether a serviceName is registered at the <code>ServiceDispatcher</code>.
-	 * @param name
+	 * @param name name of the service
 	 * @return true if the service is registered at this dispatcher, otherwise false
 	 */
 	public boolean isRegisteredServiceListener(String name) {

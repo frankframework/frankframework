@@ -44,7 +44,7 @@ public class ServiceDispatcher_ServiceProxy {
 	 * @param servicename ServiceName
 	 * @param message Message
 	 * @return String the result
-	 * @throws SOAPException
+	 * @throws SOAPException thrown when an invalid URL is given
 	 */
 	public String dispatchRequest(String servicename, String message) throws SOAPException {
 		Call call = new Call();
@@ -82,7 +82,7 @@ public class ServiceDispatcher_ServiceProxy {
    * @param correlationId CorrelationID
    * @param message Message
    * @return String the result
-   * @throws SOAPException
+   * @throws SOAPException thrown when an invalid URL is given
    */
 	public  String dispatchRequest(String servicename, String correlationId, String message) throws SOAPException {
 		Call call = new Call();

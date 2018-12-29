@@ -45,6 +45,7 @@ public SizeLimitedVector() {
 	/**
 	 * sets the Maximum Size to maxSize. If the current size
 	 * is greater than the maximum size, the top elements are removed.
+	 * @param maxSize the maximum size to be set
 	 */
 	public void setMaxSize(int maxSize) {
 		this.maxSize=maxSize;

@@ -47,9 +47,9 @@ import org.apache.log4j.Logger;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.receivers.JavaListener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the listener as known to the adapter. An {@link nl.nn.adapterframework.pipes.IbisLocalSender IbisLocalSender} refers to this name in its <code>javaListener</code>-attribute.</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>name of the listener as known to the adapter. An IbisLocalSender refers to this name in its <code>javaListener</code>-attribute.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setServiceName(String) serviceName}</td><td>(optional) name under which the JavaListener registers itself with the RequestDispatcherManager.
- * An {@link nl.nn.adapterframework.pipes.IbisJavaSender IbisJavaSender} refers to this attribute in its <code>serviceName</code>-attribute.
+ * An bisJavaSender refers to this attribute in its <code>serviceName</code>-attribute.
  * If not empty, the IbisServiceDispatcher.jar must be on the classpath of the server.
  *     <br>N.B. If this java listener is to be only called locally (from within the same Ibis), please leave
  * 	   this attribute empty, to avoid dependency to an IbisServiceDispatcher.jar on the server classpath.</td><td>&nbsp;</td></tr>
@@ -173,8 +173,6 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 
 	/**
 	 * Register listener so that it can be used by a proxy
-	 * @param name
-	 * @param receiver
 	 */
 	private void registerListener() {
 		getListeners().put(getName(), this);
@@ -185,7 +183,7 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 	}
 
 	/**
-	 * @param name
+	 * @param name the name it is registered under
 	 * @return JavaReiver registered under name
 	 */
 	public static JavaListener getListener(String name) {

@@ -26,6 +26,7 @@ public interface IXAEnabled {
 	
 	/**
 	 *  indicates implementing object is under transaction control, using XA-transactions
+	 *  @return whether object is under transaction control
 	 */
 	public boolean isTransacted();
 

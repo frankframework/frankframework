@@ -55,9 +55,11 @@ public class ClassUtils {
         return Thread.currentThread().getContextClassLoader();
     }
 	/**
-	* Retrieves the constructor of a class, based on the parameters
-	*
-	**/
+	 * Retrieves the constructor of a class, based on the parameters
+	 * @param clas the class
+	 * @param parameterTypes the parameter type
+	 * @return the constructor of the class
+	 */
 	public static Constructor getConstructorOnType(Class clas, Class[] parameterTypes) {
 		Constructor theConstructor = null;
 		try {
@@ -74,8 +76,10 @@ public class ClassUtils {
      * BL: if this is command line operation, the classloading issues
      *     are more sane.  During servlet execution, we explicitly set
      *     the ClassLoader.
-     *
+     * @param klass the class
+	 * @param resource the resource
      * @return The context classloader.
+	 * @throws IOException thrown when communication with I/O fails
      * @deprecated Use getResourceURL().openStream instead.
      */
     public static InputStream getResourceAsStream(Class klass, String resource) throws  IOException {
@@ -104,7 +108,10 @@ public class ClassUtils {
 	 * because the configuration might be loaded from outside the webapp
 	 * classpath. Hence the Thread.currentThread().getContextClassLoader() at
 	 * the time the class was instantiated should be used.
-	 * 
+	 *
+	 * @param classLoader the classloader
+	 * @param resource the resource
+	 * @return the resource-URL
 	 * @see IbisContext#init()
 	 */
 	static public URL getResourceURL(ClassLoader classLoader, String resource) {
@@ -115,7 +122,7 @@ public class ClassUtils {
 	 * Get a resource-URL from a ClassLoader
 	 * @param classLoader to retrieve the file from
 	 * @param resource name of the resource you are trying to fetch the URL from
-	 * @param getFileFromFilesystem specifies if when the file can't be found 
+	 * @param allowedProtocols specifies if when the file can't be found
 	 * on the classpath, (and begins with 'file://' it can be retrieved from the filesystem instead.
 	 * @return URL of the resource or null if it can't be not found
 	 */
@@ -148,7 +155,8 @@ public class ClassUtils {
 
     /**
      * Tests if a class implements a given interface
-     *
+     * @param class1 the class
+	 * @param iface the interface
      * @return true if class implements given interface.
      */
     public static boolean implementsInterface(Class class1, Class iface) {
@@ -156,8 +164,10 @@ public class ClassUtils {
     }
     /**
      * Tests if a class implements a given interface
-     *
+     * @param className the class name
+	 * @param iface the interface
      * @return true if class implements given interface.
+	 * @throws Exception an Exception
      */
     public static boolean implementsInterface(String className, String iface) throws Exception {
         Class class1 = ClassUtils.loadClass (className);
@@ -220,6 +230,10 @@ public class ClassUtils {
   /**
    * creates a new instance of an object, based on the classname as string, the classes
    * and the actual parameters.
+   * @param className the class name
+   * @param parameterClasses the parameters in the class
+   * @param parameterObjects the object of the class
+   * @return the new instance of an object
    */
   public static Object newInstance(String className, Class[] parameterClasses, Object[] parameterObjects) {
     // get a class object
@@ -264,6 +278,7 @@ public class ClassUtils {
      * by the current classpath.
      *
      * @param aClass A class
+	 * @return the absolute pathname
      */
      public static String which(Class aClass) {
         String path = null;
@@ -276,6 +291,8 @@ public class ClassUtils {
 
  	/**
  	 * returns the classname of the object, without the pacakge name.
+	 * @param o the object
+	 * @return the classname of the object
  	 */
 	public static String nameOf(Object o) {
 		if (o==null) {

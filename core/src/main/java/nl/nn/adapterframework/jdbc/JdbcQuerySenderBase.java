@@ -112,7 +112,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>the number of seconds the driver will wait for a Statement object to execute. If the limit is exceeded, a TimeOutException is thrown. 0 means no timeout</td><td>0</td></tr>
  * <tr><td>{@link #setUseNamedParams(boolean) useNamedParams}</td><td>when <code>true</code>, every string in the message which equals "?{<code>paramName</code>}" will be replaced by the setter method for the corresponding parameter (the parameters don't need to be in the correct order and unused parameters are skipped)</td><td>false</td></tr>
  * <tr><td>{@link #setIncludeFieldDefinition(boolean) includeFieldDefinition}</td><td>when <code>true</code>, the result contains besides the returned rows also a header with information about the fetched fields</td><td>application default (true)</td></tr>
- * <tr><td>{@link #setRowIdSessionKey(boolean) rowIdSessionKey}</td><td>If specified, the ROWID of the processed row is put in the PipeLineSession under the specified key (only applicable for <code>queryType=other</code>). <b>Note:</b> If multiple rows are processed a SQLException is thrown.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>if set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as a String)</td><td>false</td></tr>
  * </table>
  * </p>
@@ -197,6 +196,13 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	/**
 	 * Obtain a prepared statement to be executed.
 	 * Method-stub to be overridden in descender-classes.
+	 * @param con the connection
+	 * @param correlationID the correlation Id
+	 * @param message the message
+	 * @param updateable whether it is update-able
+	 * @return the prepared statement
+	 * @throws JdbcException thrown when communication with jdbc fails
+	 * @throws SQLException thrown when communication with SQL fails
 	 */
 	protected abstract PreparedStatement getStatement(Connection con, String correlationID, String message, boolean updateable) throws JdbcException, SQLException;
 	
@@ -871,6 +877,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		 * <li>select:</li> xml content s expected
 		 * <li><i>anything else</i>:</li> db2 content is expected
 		 * </ul>
+	     * @param packageContent the content of the package to be set
 		 */
 		public void setPackageContent(String packageContent) {
 			this.packageContent = packageContent;
@@ -887,6 +894,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	 * <li>select:</li> output is expected
 	 * <li><i>anything else</i>:</li> no output is expected, the number of rows affected is returned
 	 * </ul>
+	 * @param queryType the query type to be set
 	 */
 	public void setQueryType(String queryType) {
 		this.queryType = queryType;
@@ -898,6 +906,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	/**
 	 * Sets the maximum number of rows to be returned from the output of <code>select</code> queries.
 	 * The default is 0, which will return all rows.
+	 * @param i the maximum number of rows to be returned
 	 */
 	public void setMaxRows(int i) {
 		maxRows = i;
@@ -909,6 +918,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	/**
 	 * Sets the number of the first row to be returned from the output of <code>select</code> queries.
 	 * Rows before this are skipped from the output.
+	 * @param i the starting row to be returned
 	 */
 	public void setStartRow(int i) {
 		startRow = i;

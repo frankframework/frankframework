@@ -90,6 +90,7 @@ public class DigesterPipe extends FixedForwardPipe {
 
 	/**
 	 * Sets the location of the resource with digester rules used for processing messages.
+	 * @param digesterRulesFile the location of the resource
 	 */
 	public void setDigesterRulesFile(String digesterRulesFile) {
 		this.digesterRulesFile = digesterRulesFile;

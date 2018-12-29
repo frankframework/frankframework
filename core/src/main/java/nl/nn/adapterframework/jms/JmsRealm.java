@@ -70,6 +70,7 @@ public class JmsRealm {
 
  	/**
  	 * Includes another realm into this one
+	 * @param jmsRealmName the jms realm name for which to create an alias
  	 */ 
 	public void setAliasForRealm(String jmsRealmName){
 		String myName=getRealmName(); // save name, as it will be overwritten by the copy
@@ -83,6 +84,7 @@ public class JmsRealm {
 
 	/**
 	 * copies matching properties to any other class
+	 * @param destination the destination to copy the realm to
 	 */
 	public void copyRealm(Object destination) {
 		String logPrefixDest=destination.getClass().getName()+" ";
@@ -109,6 +111,9 @@ public class JmsRealm {
 
  	/**
  	 * copies matching properties from a JmsRealm to any other class
+	 * @param destination the destination to copy the realm to
+	 * @param jmsRealmName the realm to copy
+	 * @throws ConfigurationException thrown when configuration fails
  	 * @see JmsRealm
      * 
      * TODO: Some amount of cleanup possible by putting JmsRealmFactory in Spring context
@@ -148,12 +153,14 @@ public class JmsRealm {
     }
 	/**
 	 * The name of the QueueConnectionFactory <br/>
+	 * @return the name of the QueueConnectionFactory
 	 */
 	public java.lang.String getQueueConnectionFactoryName() {
 		return queueConnectionFactoryName;
 	}
 	/**
 	 * The name of this realm<br/>
+	 * @return the name of this realm
 	 */
 	public java.lang.String getRealmName() {
 		return realmName;
@@ -163,6 +170,7 @@ public class JmsRealm {
     }
 	/**
 	 * The name of the TopicConnectionFactory <br/>
+	 * @return the name of the TopicConnectionFactory
 	 */
 	public java.lang.String getTopicConnectionFactoryName() {
 		return topicConnectionFactoryName;
@@ -212,6 +220,7 @@ public class JmsRealm {
   /**
    * The <code>toString()</code> method retrieves its value
    * by reflection.
+   * @return the string generated
    * @see org.apache.commons.lang.builder.ToStringBuilder#reflectionToString
    *
    **/
@@ -226,6 +235,7 @@ public class JmsRealm {
 
   /**
 	 * Returns the queueConnectionFactoryNameXA.
+     * @return the name of QueueConnectionFactoryXA
 	 */
 	public String getQueueConnectionFactoryNameXA() {
 		return queueConnectionFactoryNameXA;
@@ -233,6 +243,7 @@ public class JmsRealm {
 
 	/**
 	 * Returns the topicConnectionFactoryNameXA.
+	 * @return the name of topicConnectionFactoryXA
 	 */
 	public String getTopicConnectionFactoryNameXA() {
 		return topicConnectionFactoryNameXA;

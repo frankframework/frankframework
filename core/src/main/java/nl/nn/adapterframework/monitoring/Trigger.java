@@ -227,6 +227,7 @@ public class Trigger {
 
 	/**
 	 * set List of all adapters that are present in the FilterMap, to be called from client
+	 * @param arr the list of adapters to add
 	 */
 	public void setAdapters(String[] arr) {
 		log.debug(getLogPrefix()+"setAdapters()");
@@ -247,7 +248,7 @@ public class Trigger {
 		for(int i=0; i<arr.length; i++) {
 			String adapterName=arr[i];
 			if (!adapterFilters.containsKey(adapterName)) {
-				log.debug(getLogPrefix()+"setAdapters() addding adapter ["+adapterName+"] to filter");
+				log.debug(getLogPrefix()+"setAdapters() adding adapter ["+adapterName+"] to filter");
 				AdapterFilter af=new AdapterFilter();
 				af.setAdapter(adapterName);
 				registerAdapterFilter(af);
@@ -256,6 +257,7 @@ public class Trigger {
 	}
 	/**
 	 * get List of all adapters that are present in the FilterMap.
+	 * @return the list of all adapters
 	 */
 	public String[] getAdapters() {
 		String[] result=(String[])adapterFilters.keySet().toArray(new String[adapterFilters.size()]);
@@ -288,6 +290,7 @@ public class Trigger {
 
 	/**
 	 * set List of all throwers that can trigger this Trigger.
+	 * @param sourcesArr the list of throwers
 	 */
 	public void setSources(String[] sourcesArr) {
 		log.debug(getLogPrefix()+"setSources()");
@@ -325,6 +328,7 @@ public class Trigger {
 	
 	/**
 	 * get List of all throwers that can trigger this Trigger.
+	 * @return a list of all throwers
 	 */
 	public String[] getSources() {
 		List<String> list=new ArrayList<String>();

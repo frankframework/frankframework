@@ -125,7 +125,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * @param xmlTag
+	 * @param xmlTag the xmlTag to be set
 	 */
 	public void setXmlTag(String xmlTag) {
 		this.xmlTag = xmlTag;

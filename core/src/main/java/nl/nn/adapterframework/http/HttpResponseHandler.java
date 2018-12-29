@@ -58,7 +58,7 @@ public class HttpResponseHandler {
 	/**
 	 * Returns an {@link ReleaseConnectionAfterReadInputStream InputStream} that will automatically close the HttpRequest when fully read
 	 * @return an {@link ReleaseConnectionAfterReadInputStream InputStream} retrieved from {@link HttpEntity#getContent()}
-	 * @throws IOException
+	 * @throws IOException thrown when one of the I/O operations fails or is interrupted
 	 */
 	public InputStream getResponse() throws IOException {
 		statusCode = getStatusLine().getStatusCode();
@@ -104,7 +104,7 @@ public class HttpResponseHandler {
 
 	/**
 	 * Consumes the {@link HttpEntity} and will release the connection.
-	 * @throws IOException
+	 * @throws IOException thrown when one of the I/O operations fails or is interrupted
 	 */
 	public void close() throws IOException {
 		EntityUtils.consume(httpEntity);

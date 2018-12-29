@@ -224,6 +224,7 @@ public class XmlSwitch extends AbstractPipe {
 	/**
 	 * Set the stylesheet to use. The stylesheet should return a <code>String</code>
 	 * that indicates the name of the Forward or Pipe to execute.
+	 * @param newServiceSelectionStylesheetFilename the new file name to be set
 	 */
 	public void setServiceSelectionStylesheetFilename(String newServiceSelectionStylesheetFilename) {
 		serviceSelectionStylesheetFilename = newServiceSelectionStylesheetFilename;
@@ -250,6 +251,7 @@ public class XmlSwitch extends AbstractPipe {
 	/**
 	 * Set the xpath expression to evaluate. The evaluation should result in a <code>String</code>
 	 * that indicates the name of the Forward or Pipe to execute.
+	 * @param xpathExpression the xpathExpression to be set
 	 */
 	public void setXpathExpression(String xpathExpression) {
 		this.xpathExpression = xpathExpression;

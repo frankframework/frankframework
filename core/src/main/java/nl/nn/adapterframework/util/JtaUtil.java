@@ -219,6 +219,7 @@ public class JtaUtil {
 
 	/** 
 	 * returns true if the current thread is associated with a transaction
+	 * @return whether the current thread is associated with a transaction
 	 */
 	public static boolean inTransaction() {
 		return TransactionSynchronizationManager.isSynchronizationActive();
@@ -237,7 +238,9 @@ public class JtaUtil {
 //	}
 
 	/**
-	 * Returns a UserTransaction object, that is used by Receivers and PipeLines to demarcate transactions. 
+	 * Returns a UserTransaction object, that is used by Receivers and PipeLines to demarcate transactions.
+	 * @return a UserTransaction object
+	 * @throws NamingException thrown when naming conventions are not upheld
 	 */
 	public static UserTransaction getUserTransaction() throws NamingException {
 		if (utx == null) {

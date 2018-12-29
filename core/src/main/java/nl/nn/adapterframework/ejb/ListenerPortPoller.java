@@ -57,6 +57,7 @@ public class ListenerPortPoller implements DisposableBean {
 	 * Add an EjbListenerPortConnector instance to be polled.
 	 *
 	 * Only add instances if they are not already registered.
+	 * @param ejc the listener connector
 	 */
 	public void registerEjbListenerPortConnector(IListenerConnector ejc) {
 		if (!isRegistered(ejc)) {
@@ -66,6 +67,7 @@ public class ListenerPortPoller implements DisposableBean {
 
 	/**
 	 * Remove an EjbListenerPortConnector instance from the list to be polled.
+	 * @param ejc the listener connector
 	 */
 	public void unregisterEjbListenerPortConnector(IListenerConnector ejc) {
 		for (Iterator iter = portConnectorList.iterator(); iter.hasNext();) {
@@ -99,6 +101,9 @@ public class ListenerPortPoller implements DisposableBean {
 	 * Poll all registered EjbListenerPortConnector instances to see if they
 	 * are in the same state as their associated listener-ports, and
 	 * toggle their state if not.
+	 * @throws NoSuchMethodException thrown when a non-existing method is called
+	 * @throws InvocationTargetException thrown when invoking a method fails
+	 * @throws IllegalAccessException thrown when no access is given to access or change something
 	 */
 	public void poll() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 //		  if (log.isDebugEnabled()) {
@@ -154,7 +159,10 @@ public class ListenerPortPoller implements DisposableBean {
 	 *
 	 * @param elpc ListenerPortConnector for which state is to be changed.
 	 *
-	 * @throws nl.nn.adapterframework.configuration.ConfigurationException
+	 * @throws ConfigurationException thrown when configuration fails
+	 * @throws NoSuchMethodException thrown when a non-existing method is called
+	 * @throws InvocationTargetException thrown when invoking a method fails
+	 * @throws IllegalAccessException thrown when no access is given to access or change something
 	 */
 	public void toggleConfiguratorState(IListenerConnector elpc) throws ConfigurationException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
 		GenericReceiver receiver = (GenericReceiver) getListener(elpc).getReceiver();
@@ -193,7 +201,7 @@ public class ListenerPortPoller implements DisposableBean {
 	 *
 	 * This method ensures that all registered listener are cleared.
 	 *
-	 * @throws java.lang.Exception
+	 * @throws Exception an Exception
 	 */
 	public void destroy() throws Exception {
 		clear();

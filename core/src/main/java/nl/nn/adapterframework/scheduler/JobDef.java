@@ -108,13 +108,15 @@ import org.springframework.transaction.TransactionStatus;
  * <tr><td>{@link #setMessageKeeperSize(int) messageKeeperSize}</td><td>number of message displayed in IbisConsole</td><td>10</td></tr>
  * </table>
  * </p>
- * <p>
+ *
+ * <br>
  * <table border="1">
  * <tr><th>nested elements (accessible in descender-classes)</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.util.Locker locker}</td><td>optional: the job will only be executed if a lock could be set successfully</td></tr>
  * </table>
- * </p>
- * <p> 
+ * </br>
+ *
+ * <p>
  * <br>
  * Operation of scheduling:
  * <ul>
@@ -132,6 +134,7 @@ import org.springframework.transaction.TransactionStatus;
  *   <li>Depending on the value of <code>function</code> the Adapter or Receiver is stopped or started, or an empty message is sent</li>
  *   <li>If function=sendMessage, an IbisLocalSender is used to call a JavaListener that has to have an attribute <code>name</code> that is equal to receiverName!!</li>
  * </ul>
+ * </p>
  *
  * All registered jobs are displayed in the IbisConsole under 'Show Scheduler Status'.
  * <p>

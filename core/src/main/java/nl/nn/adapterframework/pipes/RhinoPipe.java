@@ -146,7 +146,7 @@ public class RhinoPipe extends FixedForwardPipe {
 	 * is used as java-script function library. After evaluation the result is returned via
 	 * <code>Pipeline</code>.
 	 * 
-	 * @throws ConfigurationException
+	 * @throws ConfigurationException thrown when configuration fails
 	 */
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -288,12 +288,7 @@ public class RhinoPipe extends FixedForwardPipe {
 			}
 	}
 
-/**
- * Sets the name of the filename. The fileName should not be specified as an
- * absolute path, but as a resource in the classpath.
- * 
- * @param fileName the name of the file to return the contents from
- */
+
 	public void setDebug(boolean b) {
 		debug = b;
 	}
@@ -302,6 +297,12 @@ public class RhinoPipe extends FixedForwardPipe {
 		return debug;
 	}
 
+	/**
+	 * Sets the name of the filename. The fileName should not be specified as an
+	 * absolute path, but as a resource in the classpath.
+	 *
+	 * @param fileName the name of the file to return the contents from
+	 */
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}

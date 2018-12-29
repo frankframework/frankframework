@@ -268,6 +268,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	
 	/**
 	 * serviceName under which the JavaListener or WebServiceListener is registered.
+	 * @param serviceName the service name to be set
 	 */
 	public void setServiceName(String serviceName) {
 		this.serviceName = serviceName;
@@ -278,7 +279,8 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 
 
 	/**
-	 * when <code>true</code>, the call is made in a separate thread, possibly using separate transaction. 
+	 * when <code>true</code>, the call is made in a separate thread, possibly using separate transaction.
+	 * @param b whether to make the call in a separate thread
 	 */
 	public void setIsolated(boolean b) {
 		isolated = b;

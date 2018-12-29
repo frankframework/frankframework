@@ -297,8 +297,10 @@ public class MonitorManager implements EventHandler {
 	}
 
 	/**
-	 * Returns a list of eventcodes that each can be thrown by at least one of the throwers in the list.
+	 * Returns a list of event codes that each can be thrown by at least one of the throwers in the list.
 	 * Used by EditTrigger to populate events-listbox.
+	 * @param throwers the throwers
+	 * @return a list of event codes
 	 */
 	public List getEventCodesBySources(List<EventThrowing> throwers) {
 		if (log.isDebugEnabled()) {
@@ -354,6 +356,8 @@ public class MonitorManager implements EventHandler {
 	/**
 	 * Returns a list of eventcodes that can be thrown by at least one of the adapters in the list.
 	 * Used by EditTrigger to populate events-listbox.
+	 * @param adapters the adapters to get the event codes from
+	 * @return a list of the event codes
 	 */
 	public List getEventCodesByAdapters(String[] adapters) {
 		List result = new ArrayList();
@@ -391,6 +395,8 @@ public class MonitorManager implements EventHandler {
 //	}
 	/**
 	 * Returns a list of throwers that can throw at least one of the events in the list.
+	 * @param eventCodes the event codes
+	 * @return a list of throwers
 	 */
 	public List<EventThrowing> getEventSources(List<String> eventCodes) {
 		if (eventCodes!=null) {
@@ -427,6 +433,8 @@ public class MonitorManager implements EventHandler {
 	/**
 	 * Returns a list of names of throwers that can throw at least one of the events in the list.
 	 * Used by EditTrigger to populate sources-listbox.
+	 * @param eventCodes the event codes
+	 * @return tje list of names of throwers
 	 */
 	public List<String> getEventSourceNamesByEventCodes(List<String> eventCodes) {
 		List<String> result = new ArrayList<String>();
@@ -446,6 +454,8 @@ public class MonitorManager implements EventHandler {
 	/**
 	 * Returns a list of names of throwers that can throw at least one of the events in the list.
 	 * Used by EditTrigger to populate sources-listbox.
+	 * @param adapters the adapters
+	 * @return the list of names of throwers
 	 */
 	public List getEventSourceNamesByAdapters(String[] adapters) {
 		List result = new ArrayList();
@@ -527,6 +537,8 @@ public class MonitorManager implements EventHandler {
 	/**
 	 * any object in the configuration has to call this function at configuration
 	 * time to notifiy the monitoring system of any event that he may wish to throw.
+	 * @param thrower the thrower
+	 * @param eventCode the event code
 	 */
 	public void registerEvent(EventThrowing thrower, String eventCode) {
 
@@ -632,6 +644,11 @@ public class MonitorManager implements EventHandler {
 
 	/**
 	 * Provides a list of items of type EventThrowing.
+	 * @param eventCodes the event codes
+	 * @param adapterFilters map of the adapter filers
+	 * @param filterOnLowerLevelObjects whether to filter on lower level objects
+	 * @param filterInclusive whether to filter inclusive's
+	 * @return the list of times of type EventThrowing
 	 */
 	public List filterEventSources(List eventCodes, Map adapterFilters, boolean filterOnLowerLevelObjects, boolean filterInclusive) {
 		List result = new LinkedList();

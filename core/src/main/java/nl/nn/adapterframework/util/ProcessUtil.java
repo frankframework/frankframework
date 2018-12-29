@@ -89,9 +89,10 @@ public class ProcessUtil {
 	 * Execute a command as a process in the operating system.
 	 *  
 	 * @param timeout timeout in seconds, or 0 to wait indefinetely until the process ends
-	 * @param command 
-	 * @throws TimeOutException
-	 * @throws SenderException
+	 * @param command the list of commands
+	 * @return the output of the command
+	 * @throws TimeOutException thrown when there is a time out
+	 * @throws SenderException thrown when sending fails
 	 */
 	public static String executeCommand(List command, int timeout) throws TimeOutException, SenderException {
 		String output;

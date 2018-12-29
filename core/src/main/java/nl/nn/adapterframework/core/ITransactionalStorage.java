@@ -32,6 +32,7 @@ public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
 	/**
 	 * Prepares the object for operation. After this
 	 * method is called the storeMessage() and retrieveMessage() methods may be called
+	 * @throws Exception an Exception
 	 */ 
 	public void open() throws Exception;
 	public void close();
@@ -42,12 +43,23 @@ public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
 	 * Store the message, returns new messageId.
 	 * 
 	 * The messageId should be unique.
+	 * @param messageId the id of the message
+	 * @param correlationId the id the message is correlated with
+	 * @param receivedDate the date the message is received
+	 * @param comments comments concerning the message
+	 * @param label the label of the message
+	 * @param message the message to be stored
+	 * @return a new messageId
+	 * @throws SenderException thrown when storing the message fails
 	 */
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException;
 	
     /**
      * Check if the storage contains message with the given original messageId
      * (as passed to storeMessage).
+	 * @param originalMessageId the original id of the message
+	 * @return whether the storage still contains the message
+	 * @throws ListenerException thrown when listening to the message fails
      */
     public boolean containsMessageId(String originalMessageId) throws ListenerException;
 
@@ -56,6 +68,7 @@ public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
 
 	/**
 	 *  slotId allows using component to define a kind of 'subsection'.
+	 *  @return the slotId
 	 */	
 	public String getSlotId();
 	public void setSlotId(String string);
@@ -63,6 +76,7 @@ public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
 
 	/**
 	 *  type is one character: E for error, I for inprocessStorage, L for logging.
+	 *  @return the type
 	 */	
 	public String getType();
 	public void setType(String string);

@@ -50,6 +50,7 @@ public class DelayPipe extends FixedForwardPipe {
 
 	/**
 	 * the time the thread will be put to sleep.
+	 * @param l the delay time to be set
 	 */
 	public void setDelayTime(long l) {
 		delayTime = l;

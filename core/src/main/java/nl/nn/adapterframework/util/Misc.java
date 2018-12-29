@@ -76,8 +76,9 @@ public class Misc {
 	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 
 	/**
-	* Creates a Universally Unique Identifier, via the java.rmi.server.UID class.
-	*/
+	 * Creates a Universally Unique Identifier, via the java.rmi.server.UID class.
+	 * @return a Universally Unique Identifier
+	 */
 	public static String createSimpleUUID() {
 		UID uid = new UID();
 
@@ -92,8 +93,10 @@ public class Misc {
 	}
 
 	/**
-	* Creates a Universally Unique Identifier, via the java.util.UUID class (36 characters or 32 characters without dashes).
-	*/
+	 * Creates a Universally Unique Identifier, via the java.util.UUID class (36 characters or 32 characters without dashes).
+	 * @param removeDashes whether to remove the dashes
+	 * @return a Universally Unique identifier
+	 */
 	public static String createRandomUUID(boolean removeDashes) {
 		String uuidString = java.util.UUID.randomUUID().toString();
 		if (removeDashes) {
@@ -234,18 +237,30 @@ public class Misc {
 
 	/**
 	 * Please consider using resourceToString() instead of relying on files.
+	 * @param fileName the filename
+	 * @return the string form of the file
+	 * @throws IOException thrown when comminucation with I/O fails
 	 */
 	public static String fileToString(String fileName) throws IOException {
 		return fileToString(fileName, null, false);
 	}
 	/**
 	 * Please consider using resourceToString() instead of relying on files.
+	 * @param fileName the filename
+	 * @param endOfLineString the end of line string
+	 * @return the string form of the file
+	 * @throws IOException thrown when comminucation with I/O fails
 	 */
 	public static String fileToString(String fileName, String endOfLineString) throws IOException {
 		return fileToString(fileName, endOfLineString, false);
 	}
 	/**
 	  * Please consider using resourceToString() instead of relying on files.
+	 * @param fileName the filename
+	 * @param endOfLineString the end of line string
+	 * @param xmlEncode whether it is xmlEncode
+	 * @return the string form of the file
+	 * @throws IOException thrown when comminucation with I/O fails
 	 */
 	public static String fileToString(String fileName, String endOfLineString, boolean xmlEncode) throws IOException {
 		FileReader reader = new FileReader(fileName);
@@ -335,6 +350,7 @@ public class Misc {
 	 * @param source	is the original string
 	 * @param from		is the string to be replaced
 	 * @param to		is the string which will used to replace
+	 * @return the replaced string
 
 	 */
 	public static String replace (String source, String from, String to) {

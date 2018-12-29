@@ -97,6 +97,8 @@ public class DB2XMLWriter {
 
    /**
     * Retrieve the Resultset as a well-formed XML string
+	* @param rs the resultset
+	* @return the result set as a well-formed XML string
     */
 	public synchronized String getXML(ResultSet rs) {
 		return getXML(rs, Integer.MAX_VALUE);
@@ -104,6 +106,9 @@ public class DB2XMLWriter {
 
 	/**
 	 * Retrieve the Resultset as a well-formed XML string
+	 * @param rs the result set
+	 * @param maxlength the max length
+	 * @return the resultset as a well-formed XML string
 	 */
 	public synchronized String getXML(ResultSet rs, int maxlength) {
 		return getXML(rs, maxlength, true);
@@ -243,12 +248,14 @@ public class DB2XMLWriter {
    
    /**
 	* Set the presentation of a <code>Null</code> value
+	* @param s the presentation of a Null value
 	**/
    public void setNullValue(String s) {
 	 nullValue=s;
    }
    /**
 	* Get the presentation of a <code>Null</code> value
+	* @return the NullValue
 	**/
    public String getNullValue () {
 	 return nullValue;

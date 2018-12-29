@@ -163,6 +163,8 @@ public class CredentialFactory implements CallbackHandler {
 
 	/** 
 	 * return a loginContext, obtained by logging in using the obtained credentials
+	 * @return a loginContext
+	 * @throws LoginException thrown when logging in fails
 	 */
 	public LoginContext getLoginContext() throws LoginException {
 		String loginConfig="ClientContainer";

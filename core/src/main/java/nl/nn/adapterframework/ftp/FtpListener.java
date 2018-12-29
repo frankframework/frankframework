@@ -126,11 +126,15 @@ public class FtpListener extends FtpSession implements IPullingListener, INamedO
 	}
 
 	/**
-	 * Returns the name of the file in process (the {@link #archiveFile(File) archived} file) concatenated with the
-	 * record number. As te {@link #archiveFile(File) archivedFile} method always renames to a 
+	 * Returns the name of the file in process archiveFile(File) concatenated with the
+	 * record number. As te archiveFile(File) method always renames to a
 	 * unique file, the combination of this filename and the recordnumber is unique, enabling tracing in case of errors
 	 * in the processing of the file.
-	 * Override this method for your specific needs! 
+	 * Override this method for your specific needs!
+	 * @param rawMessage the raw message
+	 * @param threadContext the context in which the message residees
+	 * @return the id of the message
+	 * @throws ListenerException thrown when listening to the message fails
 	 */
 	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 		String correlationId = rawMessage.toString();

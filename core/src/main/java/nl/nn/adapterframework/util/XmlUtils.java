@@ -506,6 +506,7 @@ public class XmlUtils {
 	/**
 	 * Convert an XML string to a Document
 	 * Creation date: (20-02-2003 8:12:52)
+	 * @param s XML string
 	 * @return org.w3c.dom.Document
 	 * @exception nl.nn.adapterframework.util.DomBuilderException The exception description.
 	 */
@@ -535,9 +536,9 @@ public class XmlUtils {
 
 	/**
 	 * Build a Document from a URL
-	 * @param url
+	 * @param url the url
 	 * @return Document
-	 * @throws DomBuilderException
+	 * @throws DomBuilderException thrown when the Dom Builder fails
 	 */
 	public static Document buildDomDocument(URL url)
 		throws DomBuilderException {
@@ -559,6 +560,10 @@ public class XmlUtils {
 	}
 	/**
 	 * Convert an XML string to a Document, then return the root-element
+	 * @param s the string
+	 * @param namespaceAware whether to be name space aware
+	 * @return the root-element
+	 * @throws DomBuilderException thrown when the Dom Builder fails
 	 */
 	public static org.w3c.dom.Element buildElement(String s, boolean namespaceAware) throws DomBuilderException {
 		return buildDomDocument(s,namespaceAware).getDocumentElement();
@@ -566,6 +571,10 @@ public class XmlUtils {
 
 	/**
 	 * Convert an XML string to a Document, then return the root-element as a Node
+	 * @param s the string
+	 * @param namespaceAware whether to be name space aware
+	 * @return the root-element as a Node
+	 * @throws DomBuilderException thrown when the Dom Builder fails
 	 */
 	public static Node buildNode(String s, boolean namespaceAware) throws DomBuilderException {
 		log.debug("buildNode() ["+s+"],["+namespaceAware+"]");
@@ -581,6 +590,9 @@ public class XmlUtils {
 	/**
 	 * Convert an XML string to a Document, then return the root-element.
 	 * (namespace aware)
+	 * @param s the string
+	 * @return the root-element
+	 * @throws DomBuilderException thrown when the Dom Builder fails
 	 */
 	public static Element buildElement(String s) throws DomBuilderException {
 
@@ -790,6 +802,10 @@ public class XmlUtils {
 	/**
 	 * Converts a string containing xml-markup to a Source-object, that can be used as the input of a XSLT-transformer.
 	 * The source may be used multiple times.
+	 * @param xmlString the xml string
+	 * @param namespaceAware whether to be name space aware
+	 * @return the Source-objects that is converted to
+	 * @throws DomBuilderException thrown when the Dom Builder fails
 	 */
 	public static Source stringToSource(String xmlString, boolean namespaceAware) throws DomBuilderException {
 		Document doc = XmlUtils.buildDomDocument(xmlString, namespaceAware);
@@ -944,6 +960,8 @@ public class XmlUtils {
 	 * like <b>&gt;</b> and <b>&amp;</b>. Please note that non valid xml chars
 	 * are not changed, hence you might want to use
 	 * replaceNonValidXmlCharacters() or stripNonValidXmlCharacters() too.
+	 * @param string the string
+	 * @return the xml equivalent
 	 */
 	public static String encodeChars(String string) {
 		if (string==null) {
@@ -964,6 +982,10 @@ public class XmlUtils {
 	 * like <b>&gt;</b> and <b>&amp;</b>. Please note that non valid xml chars
 	 * are not changed, hence you might want to use
 	 * replaceNonValidXmlCharacters() or stripNonValidXmlCharacters() too.
+	 * @param chars the characters
+	 * @param offset the offset
+	 * @param length the length
+	 * @return the xml equivalents
 	 */
 	public static String encodeChars(char[] chars, int offset, int length) {
 
@@ -985,6 +1007,8 @@ public class XmlUtils {
 
 	/**
 	 * Translates the five reserved XML characters (&lt; &gt; &amp; &quot; &apos;) to their normal selves
+	 * @param string the string
+	 * @return the normal version of the five reserved XML characters
 	 */
 	public static String decodeChars(String string) {
 		StringBuilder decoded = new StringBuilder();
@@ -1060,8 +1084,9 @@ public class XmlUtils {
 
 	/**
 	 * encodes a url
+	 * @param url the url
+	 * @return the encoded url
 	 */
-
 	static public String encodeURL(String url) {
 		String mark = "-_.!~*'()\"";
 		StringBuilder encodedUrl = new StringBuilder();
@@ -1338,6 +1363,8 @@ public class XmlUtils {
 
 	/**
 	 * Replaces non-unicode-characters by '0x00BF' (inverted question mark).
+	 * @param string the string
+	 * @return the encoded C string
 	 */
 	public static String encodeCdataString(String string) {
 		return replaceNonValidXmlCharacters(string, REPLACE_NON_XML_CHAR, false,
@@ -1347,6 +1374,8 @@ public class XmlUtils {
 	/**
 	 * Replaces non-unicode-characters by '0x00BF' (inverted question mark)
 	 * appended with #, the character number and ;.
+	 * @param string the string
+	 * @return the string only containing unicode characters and 0x00BF
 	 */
 	public static String replaceNonValidXmlCharacters(String string) {
 		return replaceNonValidXmlCharacters(string, REPLACE_NON_XML_CHAR, true,
@@ -1422,6 +1451,8 @@ public class XmlUtils {
 
 	/**
 	 * sets all the parameters of the transformer using a Map with parameter values.
+	 * @param t the transformer
+	 * @param parameters the parameters
 	 */
 	public static void setTransformerParameters(Transformer t, Map parameters) {
 		t.clearParameters();
@@ -1513,9 +1544,10 @@ public class XmlUtils {
 
 	/**
 	 * Performs an Identity-transform, with resolving entities with the content files in the classpath
-	 * @param input
+	 * @param input the input
+	 * @param classLoader the class loader
 	 * @return String (the complete and xml)
-	 * @throws DomBuilderException
+	 * @throws DomBuilderException thrown when the Dom Builder fails
 	 */
 	static public String identityTransform(ClassLoader classLoader, String input)
 		throws DomBuilderException {
@@ -1756,9 +1788,11 @@ public class XmlUtils {
 	 * Like {@link javanet.staxutils.XMLStreamUtils#mergeAttributes} but it can
 	 * also merge namespaces
 	 * 
-	 * @param tag
-	 * @param attrs
-	 * @param nsps
+	 * @param tag the tage
+	 * @param attrs the attributes
+	 * @param nsps the namespaces
+	 * @param factory XML event factory
+	 * @return the start element
 	 */
 	public static StartElement mergeAttributes(StartElement tag,
 			Iterator<? extends Attribute> attrs,

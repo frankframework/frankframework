@@ -505,6 +505,11 @@ public class JdbcUtil {
 	
 	/**
 	 * retrieves an outputstream to a clob column from an updatable resultset.
+	 * @param rs the resultset
+	 * @param columnIndex the index of the column
+	 * @return the outputstream
+	 * @throws SQLException thrown when communication with SQL fails
+	 * @throws JdbcException thrown when the communication with the Jdbc fails
 	 */
 	public static OutputStream getClobUpdateOutputStreamxxx(ResultSet rs, int columnIndex) throws SQLException, JdbcException {
 		Clob clob = rs.getClob(columnIndex);
@@ -659,7 +664,11 @@ public class JdbcUtil {
 	}
 
 	/**
-	 * exectues query that returns a string. Returns null if no results are found. 
+	 * exectues query that returns a string. Returns null if no results are found.
+	 * @param connection the connection
+	 * @param query the query
+	 * @return a string
+	 * @throws JdbcException thrown when communication with the Jdbc fails
 	 */
 	public static String executeStringQuery(Connection connection, String query) throws JdbcException {
 		PreparedStatement stmt = null;
@@ -754,7 +763,13 @@ public class JdbcUtil {
 	}
 
 	/**
-	 * exectues query that returns an integer. Returns -1 if no results are found. 
+	 * exectues query that returns an integer. Returns -1 if no results are found.
+	 * @param connection the connection
+	 * @param query the query
+	 * @param param1 the first parameter
+	 * @param param2 the second parameter
+	 * @return an integer
+	 * @throws JdbcException thrown when communication with the jdbc fails
 	 */
 	public static int executeIntQuery(Connection connection, String query, String param1, String param2) throws JdbcException {
 		PreparedStatement stmt = null;

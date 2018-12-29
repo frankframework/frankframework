@@ -49,6 +49,7 @@ public class DelaySender extends SenderBase {
 
 	/**
 	 * the time the thread will be put to sleep.
+	 * @param l the time to be set
 	 */
 	public void setDelayTime(long l) {
 		delayTime = l;

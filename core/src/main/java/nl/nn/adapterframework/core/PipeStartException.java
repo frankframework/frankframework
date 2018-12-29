@@ -33,6 +33,7 @@ public PipeStartException() {
 }
 /**
  * PipeStartException constructor comment.
+ * @param msg the message of the exception
  */
 public PipeStartException(String msg) {
 	super(msg);

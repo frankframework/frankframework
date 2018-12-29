@@ -47,11 +47,10 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>xpathExpression to use for transformation</td><td>&nbsp;</td></tr>
  * </table>
  *
- * <p><table border="1">
+ * <br><table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
+ * </br>
  *
  * Hint:  use <code>xpathExression="/errorMessage/@message"</code> for a single compact string errormessage.
  * @author Johan Verrips IOS
@@ -130,7 +129,8 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 	}
 
 	/**
-	 * URL to the stylesheet used to transform the output of the standard {@link ErrorMessageFormatter} 
+	 * URL to the stylesheet used to transform the output of the standard {@link ErrorMessageFormatter}
+	 * @param newStyleSheet the style sheet to be set
 	 */
 	public void setStyleSheet(String newStyleSheet) {
 		styleSheet = newStyleSheet;

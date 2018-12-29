@@ -100,8 +100,9 @@ public class ParameterResolutionContext {
 	}
 	
 	/**
-	 * @param parameters
+	 * @param parameters the list of parameters
 	 * @return arraylist of <link>ParameterValue<link> objects
+	 * @throws ParameterException thrown when an invalid parameter is given
 	 */
 	public ParameterValueList getValues(ParameterList parameters) throws ParameterException {
 		if (parameters == null)
@@ -137,8 +138,9 @@ public class ParameterResolutionContext {
 	}
 
 	/**
-	 * @param parameters
+	 * @param parameters a list of parameters
 	 * @return map of value objects
+	 * @throws ParameterException thrown when an invalid parameter is given
 	 */
 	public Map<String,Object> getValueMap(ParameterList parameters) throws ParameterException {
 		if (parameters==null) {
@@ -166,9 +168,7 @@ public class ParameterResolutionContext {
 		
 	/**
 	 * @return the DOM document parsed from the (xml formatted) input
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws IOException
+	 * @throws DomBuilderException a DomBuilder Exception
 	 */
 	@Deprecated 
 	public Source getInputSource() throws DomBuilderException {

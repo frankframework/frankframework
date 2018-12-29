@@ -181,6 +181,8 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	 * exists under that name, the pipe is NOT added, allowing globalForwards
 	 * to prevail.
 	 * @see nl.nn.adapterframework.pipes.AbstractPipe
+	 * @param pipe the pipe to be added
+	 * @throws ConfigurationException thrown when adding the pipe fails
 	 **/
 	public void addPipe(IPipe pipe) throws ConfigurationException {
 		if (pipe == null) {
@@ -237,6 +239,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	 * Configures the pipes of this Pipeline and does some basic checks. It also
 	 * registers the <code>PipeLineSession</code> object at the pipes.
 	 * @see IPipe
+	 * @throws ConfigurationException thrown when configuration of the pipe fails
 	 */
 	public void configure() throws ConfigurationException {
 		INamedObject owner = getOwner();
@@ -548,6 +551,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	 * While processing the process method keeps statistics.
 	 * @param message The message as received from the Listener
 	 * @param messageId A unique id for this message, used for logging purposes.
+	 * @param pipeLineSession the session
 	 * @return the result of the processing.
 	 * @throws PipeRunException when something went wrong in the pipes.
 	 */
@@ -559,7 +563,8 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	}
 
 	/**
-    * Register global forwards.
+    * Register global forwards
+	* @param forward the pipeForward to be registered
     */
    public void registerForward(PipeForward forward){
       globalForwards.put(forward.getName(), forward);
@@ -576,7 +581,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 
     /**
      * Register the adapterName of this Pipelineprocessor.
-     * @param adapter
+     * @param adapter the adapter to be set
      */
     public void setAdapter(Adapter adapter) {
         this.adapter = adapter;
@@ -596,6 +601,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
     * The indicator for the end of the processing, with default state "undefined".
     * @deprecated since v 3.2 this functionality is superseded by the use of {@link nl.nn.adapterframework.core.PipeLineExit PipeLineExits}.
     * @see PipeLineExit
+	* @param endPath the indicator path
     */
     public void setEndPath(String endPath){
 	    PipeLineExit te=new PipeLineExit();
@@ -707,6 +713,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 
 	/**
 	 * the exit state of the pipeline on which the receiver will commit the transaction.
+	 * @param string the exit state of the pipeline
 	 */
 	public void setCommitOnState(String string) {
 		commitOnState = string;
@@ -789,6 +796,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	 * interpreted being expressed respectively in kilobytes, megabytes
 	 * or gigabytes. For example, the value "10KB" will be interpreted
 	 * as 10240.
+	 * @param s the size of the message
 	 */
 	public void setMessageSizeWarn(String s) {
 		messageSizeWarn = Misc.toFileSize(s, messageSizeWarn + 1);

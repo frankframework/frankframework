@@ -58,6 +58,8 @@ public class PasswordHash
      *
      * @param   password    the password to hash
      * @return              a salted PBKDF2 hash of the password
+     * @throws NoSuchAlgorithmException thrown when an invalid algorithm is called upon
+     * @throws InvalidKeySpecException thrown for an invalid KeySpec
      */
     public static String createHash(String password)
         throws NoSuchAlgorithmException, InvalidKeySpecException
@@ -70,6 +72,8 @@ public class PasswordHash
      *
      * @param   password    the password to hash
      * @return              a salted PBKDF2 hash of the password
+     * @throws NoSuchAlgorithmException thrown when an invalid algorithm is called upon
+     * @throws InvalidKeySpecException thrown for an invalid KeySpec
      */
     public static String createHash(char[] password)
         throws NoSuchAlgorithmException, InvalidKeySpecException
@@ -99,6 +103,8 @@ public class PasswordHash
      * @param   password        the password to check
      * @param   correctHash     the hash of the valid password
      * @return                  true if the password is correct, false if not
+     * @throws NoSuchAlgorithmException thrown when an invalid algorithm is called upon
+     * @throws InvalidKeySpecException thrown for an invalid KeySpec
      */
     public static boolean validatePassword(String password, String correctHash)
         throws NoSuchAlgorithmException, InvalidKeySpecException
@@ -112,6 +118,8 @@ public class PasswordHash
      * @param   password        the password to check
      * @param   correctHash     the hash of the valid password
      * @return                  true if the password is correct, false if not
+     * @throws NoSuchAlgorithmException thrown when an invalid algorithm is called upon
+     * @throws InvalidKeySpecException thrown for an invalid KeySpec
      */
     public static boolean validatePassword(char[] password, String correctHash)
         throws NoSuchAlgorithmException, InvalidKeySpecException

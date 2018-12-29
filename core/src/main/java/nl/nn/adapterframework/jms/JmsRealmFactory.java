@@ -52,6 +52,7 @@ public class JmsRealmFactory {
     }
     /**
      * Get a hold of the singleton JmsRealmFactory
+     * @return the singleton JmsRealmFactory
      */
     public static synchronized JmsRealmFactory getInstance() {
         if (self == null) {
@@ -62,6 +63,7 @@ public class JmsRealmFactory {
     }
     /**
      * Get a realm by name
+     * @param jmsRealmName the name of the realm
      * @return JmsRealm the requested realm or null if none was found under that name
      */
     public JmsRealm getJmsRealm(String jmsRealmName) {
@@ -93,7 +95,7 @@ public class JmsRealmFactory {
     }
     /**
      * register a Realm
-     * @param jmsRealm
+     * @param jmsRealm the realm to register
      */
     public void registerJmsRealm(JmsRealm jmsRealm) {
         jmsRealms.put(jmsRealm.getRealmName(), jmsRealm);

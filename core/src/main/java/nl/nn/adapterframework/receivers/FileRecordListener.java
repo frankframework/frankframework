@@ -93,7 +93,9 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	}
 	/**
 	 * Moves a file to another directory and places a UUID in the name.
+	 * @param file the file to be moved
 	 * @return String with the name of the (renamed and moved) file
+	 * @throws ListenerException thrown when moving the file fails
 	 * 
 	 */
 	protected String archiveFile(File file) throws ListenerException {
@@ -225,6 +227,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	}
 	/**
 	 * Gets a file to process.
+	 * @return the file to process
 	 */
 	protected File getFileToProcess() {
 		WildCardFilter filter = new WildCardFilter(wildcard);
@@ -335,6 +338,8 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	 * Parse a String to an Iterator with objects (records). This method
 	 * currently uses the end-of-line character ("\n") as a seperator. 
 	 * This method is easy to extend to satisfy your project needs.
+	 * @param input the string to parse
+	 * @return the iterator with objects from the string
 	 */
 	protected Iterator parseToRecords(String input) {
 		StringTokenizer t = new StringTokenizer(input, "\n");
@@ -373,6 +378,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	/**
 	 * set the directory name to look in for files.
 	 * @see #setWildcard(String)
+	 * @param inputDirectory the input directory to be set
 	 */
 	public void setInputDirectory(String inputDirectory) {
 		this.inputDirectory = inputDirectory;
@@ -383,6 +389,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 
 	/**
 	 * set the {@link nl.nn.adapterframework.util.WildCardFilter wildcard} to look for files in the specified directory, e.g. "*.inp"
+	 * @param wildcard the wildcard to be set
 	 */
 	public void setWildcard(String wildcard) {
 		this.wildcard = wildcard;
@@ -404,6 +411,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 
 	/**
 	 * set the time to delay when no records are to be processed and this class has to look for the arrival of a new file
+	 * @param responseTime the time of response to be set
 	 */
 	public void setResponseTime(long responseTime) {
 		this.responseTime = responseTime;

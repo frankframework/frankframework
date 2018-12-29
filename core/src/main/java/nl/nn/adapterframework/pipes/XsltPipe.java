@@ -86,7 +86,7 @@ public class XsltPipe extends FixedForwardPipe {
 	/**
 	 * The <code>configure()</code> method instantiates a transformer for the specified
 	 * XSL. If the stylesheetname cannot be accessed, a ConfigurationException is thrown.
-	 * @throws ConfigurationException
+	 * @throws ConfigurationException thrown when configuration fails
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
@@ -126,8 +126,10 @@ public class XsltPipe extends FixedForwardPipe {
 //	}
 
 	/**
-	 * @param input  
-	 * @param session  
+	 * @param input the input
+	 * @param session the current session
+	 * @return the input of the XML
+	 * @throws TransformerException thrown when conversion of XML fails
 	 */
 	protected String getInputXml(Object input, IPipeLineSession session) throws TransformerException {
 		return (String)input;
@@ -177,6 +179,7 @@ public class XsltPipe extends FixedForwardPipe {
 
 	/**
 	 * Specify the stylesheet to use
+	 * @param stylesheetName the name of the stylesheet to be set
 	 */
 	public void setStyleSheetName(String stylesheetName) {
 		sender.setStyleSheetName(stylesheetName);
@@ -187,6 +190,7 @@ public class XsltPipe extends FixedForwardPipe {
 
 	/**
 	 * set the "omit xml declaration" on the transfomer. Defaults to true.
+	 * @param b whether to omit the XML declaration
 	 */
 	public void setOmitXmlDeclaration(boolean b) {
 		sender.setOmitXmlDeclaration(b);
@@ -212,6 +216,7 @@ public class XsltPipe extends FixedForwardPipe {
 
 	/**
 	 * The name of the key in the <code>PipeLineSession</code> to store the input in
+	 * @param newSessionKey the new session key to be set
 	 * @see nl.nn.adapterframework.core.IPipeLineSession
 	 */
 	public void setSessionKey(String newSessionKey) {

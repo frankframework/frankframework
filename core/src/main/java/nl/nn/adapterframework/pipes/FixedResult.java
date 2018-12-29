@@ -107,7 +107,7 @@ public class FixedResult extends FixedForwardPipe {
      * If a fileName or fileNameSessionKey was specified, the contents of the file is put in the
      * <code>returnString</code>, so that the <code>returnString</code>
      * may always be returned.
-     * @throws ConfigurationException
+     * @throws ConfigurationException thrown when configuration fails
      */
     public void configure() throws ConfigurationException {
 		super.configure();

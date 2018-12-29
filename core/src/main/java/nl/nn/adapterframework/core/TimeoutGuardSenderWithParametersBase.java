@@ -148,6 +148,7 @@ public class TimeoutGuardSenderWithParametersBase extends
 	 * existing) timeout attribute:
 	 * 
 	 * public int retrieveTymeout() { return getTimeout() / 1000; }
+	 * @return the timeout
 	 */
 
 	public int retrieveTymeout() {

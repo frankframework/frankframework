@@ -131,6 +131,7 @@ public abstract class AbstractXmlValidator {
      * for "failure"</li>
      * <li>when the parser does not accept setting the properties for validating</li>
      * </ul>
+	 * @param logPrefix the log prefix
      */
     public void configure(String logPrefix) throws ConfigurationException {
         this.logPrefix = logPrefix;
@@ -209,10 +210,14 @@ public abstract class AbstractXmlValidator {
 	 * Validate the XML string
 	 * @param input a String
 	 * @param session a {@link nl.nn.adapterframework.core.IPipeLineSession pipeLineSession}
+	 * @param logPrefix the log prefix
+	 * @param rootValidations the root validations
+	 * @param invalidRootNamespaces list of invalid root namespaces
+	 * @param resolveExternalEntities whether to resolve external entities
 	 * @return MonitorEvent declared in{@link AbstractXmlValidator}
 	 * @throws XmlValidatorException when <code>isThrowException</code> is true and a validationerror occurred.
-	 * @throws PipeRunException
-	 * @throws ConfigurationException
+	 * @throws PipeRunException thrown when running the current pipe fails
+	 * @throws ConfigurationException thrown when configuration fails
 	 */
 //	public String validate(Object input, IPipeLineSession session, String logPrefix) throws XmlValidatorException, PipeRunException, ConfigurationException {
 //		return validate(input, session, logPrefix, rootValidations, invalidRootNamespaces, false);
@@ -251,7 +256,7 @@ public abstract class AbstractXmlValidator {
 	 * @param session: the PipeLineSession
 	 * @param t:       the exception thrown by the validation, or null
 	 * @return the result event, e.g. 'valid XML' or 'Invalid XML'
-	 * @throws XmlValidatorException, when configured to do so
+	 * @throws XmlValidatorException , when configured to do so
 	 */
 	public String finalizeValidation(ValidationContext context, IPipeLineSession session, Throwable t) throws XmlValidatorException {
 		if (t!=null) {
@@ -270,6 +275,7 @@ public abstract class AbstractXmlValidator {
      * derivation resriction checking are controlled by this option.
      * <p> see property http://apache.org/xml/features/validation/schema-full-checking</p>
      * Defaults to <code>false</code>;
+	 * @param fullSchemaChecking whether to do full schema checking
      */
     public void setFullSchemaChecking(boolean fullSchemaChecking) {
         this.fullSchemaChecking = fullSchemaChecking;
@@ -280,7 +286,7 @@ public abstract class AbstractXmlValidator {
 
     /**
      * @since 5.0
-     * @param schemasProvider
+     * @param schemasProvider the schema provider to be set
      */
 	public void setSchemasProvider(SchemasProvider schemasProvider) {
 		this.schemasProvider = schemasProvider;
@@ -301,6 +307,7 @@ public abstract class AbstractXmlValidator {
     /**
      * Indicates wether to throw an error (piperunexception) when
      * the xml is not compliant.
+	 * @param throwException whether to throw an error
      */
     public void setThrowException(boolean throwException) {
         this.throwException = throwException;
@@ -311,6 +318,7 @@ public abstract class AbstractXmlValidator {
 
 	/**
 	 * The sessionkey to store the reasons of misvalidation in.
+	 * @param reasonSessionKey the sessionkey to be set
 	 */
 	public void setReasonSessionKey(String reasonSessionKey) {
 		this.reasonSessionKey = reasonSessionKey;

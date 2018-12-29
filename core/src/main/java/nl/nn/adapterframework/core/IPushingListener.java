@@ -27,6 +27,7 @@ public interface IPushingListener extends IListener {
 	/**
 	 * Set the handler that will do the processing of the message.
 	 * Each of the received messages must be pushed through handler.processMessage()
+	 * @param handler the message handler to be set
 	 */
 	void setHandler(IMessageHandler handler);
 	
@@ -34,6 +35,7 @@ public interface IPushingListener extends IListener {
 	 * Set a (single) listener that will be notified of any exceptions.
 	 * The listener should use this listener to notify the receiver of 
 	 * any exception that occurs outside the processing of a message.
+	 * @param listener the exception listener to be set
 	 */
 	void setExceptionListener(IbisExceptionListener listener);
 

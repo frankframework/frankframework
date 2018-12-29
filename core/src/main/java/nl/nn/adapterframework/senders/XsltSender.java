@@ -81,7 +81,7 @@ public class XsltSender extends SenderWithParametersBase {
 	/**
 	 * The <code>configure()</code> method instantiates a transformer for the specified
 	 * XSL. If the stylesheetname cannot be accessed, a ConfigurationException is thrown.
-	 * @throws ConfigurationException
+	 * @throws ConfigurationException thrown when configuration fails
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
@@ -212,6 +212,7 @@ public class XsltSender extends SenderWithParametersBase {
 
 	/**
 	 * Specify the stylesheet to use
+	 * @param stylesheetName the style sheet name to be set
 	 */
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
@@ -222,7 +223,7 @@ public class XsltSender extends SenderWithParametersBase {
 
 	/**
 	 * set the "omit xml declaration" on the transfomer. Defaults to true.
-	 * @return true or false
+	 * @param b true or false
 	 */
 	public void setOmitXmlDeclaration(boolean b) {
 		omitXmlDeclaration = b;

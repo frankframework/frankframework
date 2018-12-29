@@ -65,7 +65,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 
 	/**
 	 * checks wether the proper forward is defined, a dateformat is specified and the dateformat is valid.
-	 * @throws ConfigurationException
+	 * @throws ConfigurationException thrown when configuration fails
 	 */
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -149,6 +149,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 	
 	/**
 	 * The name of the key in the <code>PipeLineSession</code> to store the systemdate in
+	 * @return the name of the session key
 	 * @see nl.nn.adapterframework.core.IPipeLineSession
 	 */
 	public String getSessionKey() {
@@ -156,6 +157,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 	}
 	/**
 	 * The name of the key in the <code>PipeLineSession</code> to store the systemdate in
+	 * @param newSessionKey the new session key to be set
 	 * @see nl.nn.adapterframework.core.IPipeLineSession
 	 */
 	public void setSessionKey(String newSessionKey) {
@@ -165,6 +167,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 	
 	/**
 	 * The String for the DateFormat.
+	 * @param rhs the date format to be set
 	 * @see java.text.SimpleDateFormat
 	 */
 	public void setDateFormat(String rhs) {

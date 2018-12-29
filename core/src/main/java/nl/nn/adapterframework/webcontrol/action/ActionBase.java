@@ -78,6 +78,13 @@ public abstract class ActionBase extends Action {
 
     /**
      * This proc should start with <code>initAction(request)</code>
+	 * @param mapping the mapping
+	 * @param form the action form
+	 * @param request the request
+	 * @param response the response
+	 * @return the action forward
+	 * @throws IOException thrown when commmunication with I/O fails
+	 * @throws ServletException thrown when the Servlet fails
      * @see Action
      */
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
@@ -112,6 +119,8 @@ public abstract class ActionBase extends Action {
     
     /**
      * looks under the session for an attribute named forward. Returns it as an ActionForward
+	 * @param request the request
+	 * @return the action forward
      */
     public ActionForward getDefaultActionForward(HttpServletRequest request) {
         HttpSession session = request.getSession();
@@ -149,6 +158,8 @@ public abstract class ActionBase extends Action {
     /**
      * Gets the full request Uri, that is, the reference suitable for ActionForwards.<br/>
      * Queryparameters of the request are added to it.
+	 * @param request the request
+	 * @return the full request in uri
      */
     public String getFullRequestUri (HttpServletRequest request) {
             String ctxtPath = request.getContextPath();
@@ -183,6 +194,7 @@ public abstract class ActionBase extends Action {
  	 * Initializes the fields in the <code>Action</code> for this specific
  	 * application. Most important: it retrieves the Configuration object
  	 * from the servletContext.
+	 * @param request the request
  	 * @see nl.nn.adapterframework.configuration.Configuration
  	 */ 
 	public void initAction(HttpServletRequest request) {
@@ -208,6 +220,8 @@ public abstract class ActionBase extends Action {
      * removes formbean <br/>
      * removes what is defined under the Attribute of a mapping from either the
      * request or the session
+	 * @param mapping the mapping
+	 * @param request the request
      */
     public void removeFormBean(ActionMapping mapping, HttpServletRequest request) {
         HttpSession session = request.getSession();
@@ -223,6 +237,8 @@ public abstract class ActionBase extends Action {
     /**
      * Sets under the session an attribute named forward with an ActionForward to the current
      * request.
+	 * @param request the request
+	 * @return the action forward
      */
     public ActionForward setDefaultActionForward(HttpServletRequest request) {
         HttpSession session = request.getSession();

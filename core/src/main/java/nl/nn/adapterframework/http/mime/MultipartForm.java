@@ -91,6 +91,7 @@ public class MultipartForm {
 	 *
 	 * @param charset the character set to use. May be {@code null}, in which case {@link MIME#DEFAULT_CHARSET} - i.e. US-ASCII - is used.
 	 * @param boundary to use  - must not be {@code null}
+	 * @param parts list of body parts
 	 * @throws IllegalArgumentException if charset is null or boundary is null
 	 */
 	public MultipartForm(final Charset charset, final String boundary, final List<FormBodyPart> parts) {
@@ -131,6 +132,9 @@ public class MultipartForm {
 
 	/**
 	  * Write the multipart header fields; depends on the style.
+	 * @param part the body part
+	 * @param out the output stream
+	 * @throws IOException thrown when I/O operations failed or are interrupted
 	  */
 	protected void formatMultipartHeader(
 			final FormBodyPart part,
@@ -147,6 +151,8 @@ public class MultipartForm {
 	 * Writes out the content in the specified multipart encoding. This method
 	 * produces slightly different formatting depending on its compatibility
 	 * mode.
+	 * @param out the output stream
+	 * @throws IOException thrown when I/O operations failed or are interrupted
 	 */
 	public void writeTo(final OutputStream out) throws IOException {
 		doWriteTo(out, true);

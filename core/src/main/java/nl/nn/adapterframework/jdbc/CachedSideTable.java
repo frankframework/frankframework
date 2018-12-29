@@ -22,7 +22,6 @@ import java.util.Map;
 
 /**
  * @author  Gerrit van Brakel
- * @since  
  */
 public class CachedSideTable extends SideTable {
 	

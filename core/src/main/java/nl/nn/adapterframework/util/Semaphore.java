@@ -23,7 +23,7 @@ package nl.nn.adapterframework.util;
  * it first needs to make sure the printer is available by checking to see if the semaphore
  * has been set. If it is set, it needs to wait to the process that currently has it is finished. however, 
  * If the printer were free, the process would set the semaphore and start using the printer, blocking 
- * access to all other processes until it finished. <p>
+ * access to all other processes until it finished.
  * <p>Semphores are a classical technique for protecting critical sections of code from being
  * simultaneously executed by more than one thread. A semaphore is a generalisation of a monitor.
  * A monitor allows only one thread to lock an object at once. A semaphore allows N processes. </p> 

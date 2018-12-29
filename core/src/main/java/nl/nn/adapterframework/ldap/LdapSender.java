@@ -958,8 +958,11 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 
 	/**
 	 * Performs the specified operation and returns the results.
-	 *  
+	 *  @param message the operation
+	 *  @param prc the resolution context
 	 * @return - Depending on operation, DEFAULT_RESULT or read/search result (always XML)
+	 * @throws SenderException thrown if wrong or unknown operation is given
+	 * @throws ParameterException thrown when invalid parameter is given
 	 */
 	public String performOperation(String message, ParameterResolutionContext prc)
 			throws SenderException, ParameterException {
@@ -1000,7 +1003,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	}
 
 	/** 
-	 * Return xml element containing all of the subcontexts of the parent context with their attributes. 
+	 * Return xml element containing all of the subcontexts of the parent context with their attributes.
 	 * @return tree xml.
 	 */ 
 	private XmlBuilder getTree(DirContext parentContext, String context, ParameterResolutionContext prc, Map paramValueMap)
@@ -1051,7 +1054,10 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	}
 
 	/** 
-	 * Return a list of all of the subcontexts of the current context, which is relative to parentContext. 
+	 * Return a list of all of the subcontexts of the current context, which is relative to parentContext.
+	 * @param parentContext the context of the parent dir
+	 * @param relativeContext the relative context
+	 * @param prc the ParameterResolution context
 	 * @return an array of Strings containing a list of the subcontexts for a current context.
 	 */ 
 	public String[] getSubContextList (DirContext parentContext, String relativeContext, ParameterResolutionContext prc) {
@@ -1156,6 +1162,8 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	 *Strips all the values from the attributes in <code>input</code>. This is performed to be able to delete 
 	 *the attributes without having to match the values. If values exist they must be exactly matched too in
 	 *order to delete the attribute.
+	 * @param input the attributes
+	 * @return value free attributes
 	 */
 	protected Attributes removeValuesFromAttributes(Attributes input) {
 		Attributes result = new BasicAttributes(true);
@@ -1170,7 +1178,10 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 
 	/**
 	 * Retrieves the DirContext from the JNDI environment and sets the <code>providerURL</code> back to <code>ldapProviderURL</code> if specified.
-	 * @throws ParameterException 
+	 * @param paramValueMap the parameter value Map
+	 * @return the dirContext from the JNDI environment
+	 * @throws NamingException thrown when naming convention are not upheld
+	 * @throws ParameterException  thrown when invalid parameter(s) are given
 	 * 
 	 */
 	protected synchronized DirContext loopkupDirContext(Map paramValueMap) throws NamingException, ParameterException {

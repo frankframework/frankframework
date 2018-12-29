@@ -51,6 +51,9 @@ public abstract class ConfigurationBase extends TimeoutGuardPipe {
 	/**
 	 * When extending this class, copy and extend the doGet method in the new
 	 * child class.
+	 * @param session the current session
+	 * @return the root
+	 * @throws PipeRunException thrown when the PipeRun fails
 	 */
 	protected String doGet(IPipeLineSession session) throws PipeRunException {
 		IbisManager ibisManager = RestListenerUtils.retrieveIbisManager(session);

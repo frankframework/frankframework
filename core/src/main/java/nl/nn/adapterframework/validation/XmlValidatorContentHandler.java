@@ -56,7 +56,8 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	 * @param rootValidations
 	 *         contains path's (just a single element in case of the root of the
 	 *         entire xml) to root elements which should be checked upon
-	 * @param ignoreUnknownNamespaces
+	 * @param ignoreUnknownNamespaces whether to ignore unknown name spaces
+	 * @param invalidRootNamespaces the invalid root name spaces
 	 */
 	public XmlValidatorContentHandler(Set<String> validNamespaces,
 				Set<List<String>> rootValidations,

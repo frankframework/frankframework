@@ -27,28 +27,49 @@ import java.util.Map;
 public interface IMessageHandler {
 	
 	/**
-	 * Will use listener to perform getIdFromRawMessage(), getStringFromRawMessage and afterMessageProcessed 
+	 * Will use listener to perform getIdFromRawMessage(), getStringFromRawMessage and afterMessageProcessed
+	 * @param origin the source
+	 * @param message the message to be processed
+	 * @param context the context in which the message resides
+	 * @throws ListenerException thrown when listening to the message fails
 	 */
 	public void processRawMessage(IListener origin, Object message, Map<String,Object> context) throws ListenerException;
 	
 	/**
 	 * Same as {@link #processRawMessage(IListener,Object,Map)}, but now updates IdleStatistics too
+	 * @param origin the source
+	 * @param message the message to be processed
+	 * @param context the context in which the message resides
+	 * @param waitingTime the waiting time
+	 * @throws ListenerException thrown when listening to the message fails
 	 */
 	public void processRawMessage(IListener origin, Object message, Map<String,Object> context, long waitingTime) throws ListenerException;
 
 	/**
 	 * Same as {@link #processRawMessage(IListener,Object,Map)}, but now without context, for convenience
+	 * @param origin the source
+	 * @param message the message to be processed
+	 * @throws ListenerException thrown when listening to the message fails
 	 */
 	public void processRawMessage(IListener origin, Object message) throws ListenerException;
 	
 	/**
 	 * Alternative to functions above, wil NOT use getIdFromRawMessage() and getStringFromRawMessage().
+	 * @param origin the source
+	 * @param message holds the request
+	 * @return the request made
+	 * @throws ListenerException thrown when listening to the message (request) fails
 	 */
 	public String processRequest(IListener origin, String message) throws ListenerException;
 
 	/**
-	 * Does a processRequest() with a correlationId from the client. This is usefull for logging purposes,
+	 * Does a processRequest() with a correlationId from the client. This is useful for logging purposes,
 	 * as the correlationId is logged also.
+	 * @param origin the source
+	 * @param correlationId the id from the client
+	 * @param message holds the request
+	 * @return the request made
+	 * @throws ListenerException thrown when listening to the message (request) fails
 	 */	
 	public String processRequest(IListener origin, String correlationId, String message) throws ListenerException;
 	public String processRequest(IListener origin, String correlationId, String message, Map<String,Object> context) throws ListenerException;
@@ -56,7 +77,12 @@ public interface IMessageHandler {
 
 	/**
 	 *	Formats any exception thrown by any of the above methods to a message that can be returned.
-	 *  Can be used if the calling system has no other way of returnin the exception to the caller. 
+	 *  Can be used if the calling system has no other way of returning the exception to the caller.
+	 *  @param extrainfo extra information concerning the exception
+	 *  @param correlationId the id of the request that went wrong
+	 *  @param message the message
+	 *  @param t the exception that is thrown
+	 *  @return a well formed message on why the exception occurred
 	 */	
 	public String formatException(String extrainfo, String correlationId, String message, Throwable t);
 

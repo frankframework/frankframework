@@ -45,6 +45,7 @@ public class PipeLineResult {
 	}
 	/**
 	 * set the result of the PipeLine processing to the specified value.
+	 * @param newResult the result to be set
 	 */
 	public void setResult(String newResult) {
 		result = newResult;
@@ -52,12 +53,14 @@ public class PipeLineResult {
 
 	/**
 	 * Get the exit-state of the pipeline
+	 * @return the exit-state of the pipeline
 	 */
 	public String getState() {
 		return state;
 	}
 	/**
-	 * set the state of the pipeline. 
+	 * set the state of the pipeline.
+	 * @param newState the state to be set
 	 */
 	public void setState(String newState) {
 		state = newState;

@@ -65,6 +65,7 @@ public class StatisticsKeeper implements ItemList {
 	 * Constructor for StatisticsKeeper.
 	 *
 	 * Initializes statistics. Reads values for class boundaries from AppConstants
+	 * @param name the name of the statistics keeper
 	 *
 	 * @see AppConstants
 	 */

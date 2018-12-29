@@ -103,7 +103,8 @@ public final class AppConstants extends Properties implements Serializable{
 	 * because the configuration might be loaded from outside the webapp
 	 * classpath. Hence the Thread.currentThread().getContextClassLoader() at
 	 * the time the class was instantiated should be used.
-	 * 
+	 *
+	 * @param classLoader the classloader
 	 * @see IbisContext#init()
 	 * @return AppConstants instance
 	 */
@@ -113,6 +114,7 @@ public final class AppConstants extends Properties implements Serializable{
 
 	/**
 	 * Retrieve an instance based on a directory (not a singleton)
+	 * @param directory the directory
 	 * @return AppConstants instance
 	 */
 	public static synchronized AppConstants getInstance(String directory) {
@@ -154,6 +156,8 @@ public final class AppConstants extends Properties implements Serializable{
 	/**
 	 * the method is like the <code>Properties.getProperty</code>, but provides functionality to resolve <code>${variable}</code>
 	 * syntaxis. It uses the AppConstants values and systemvalues to resolve the variables, and does this recursively.
+	 * @param key the key
+	 * @return the resolved property
 	 * @see nl.nn.adapterframework.util.StringResolver
 	 */
 	public String getResolvedProperty(String key) {
@@ -185,6 +189,8 @@ public final class AppConstants extends Properties implements Serializable{
 	 * Creates a tokenizer from the values of this key.  As a sepearator the "," is used.
 	 * Uses the {@link #getResolvedProperty(String)} method.
 	 * Can be used to process lists of values.
+	 * @param key the key of which the tokenizer is created
+	 * @return the created tokenizer
 	 */
 	public StringTokenizer getTokenizer(String key) {
 	    return new StringTokenizer(getResolvedProperty(key), ",");
@@ -193,6 +199,9 @@ public final class AppConstants extends Properties implements Serializable{
 	 * Creates a tokenizer from the values of this key.
 	 * Uses the {@link #getResolvedProperty(String)} method.
 	 * Can be used to process lists of values.
+	 * @param key the key of which the tokenizer is created
+	 * @param defaults the default
+	 * @return the created tokenizer
 	 */
 	public StringTokenizer getTokenizer(String key, String defaults) {
 		String list = getResolvedProperty(key);
@@ -280,6 +289,8 @@ public final class AppConstants extends Properties implements Serializable{
 	/**
 	 * Add property which can be used to substitute variables in the value of
 	 * the property ADDITIONAL.PROPERTIES.FILE.
+	 * @param name the name
+	 * @param value the value
 	 */
 	public void putAdditionalPropertiesFilesSubstVarsProperty(String name, String value) {
 		additionalPropertiesFilesSubstVarsProperties.put(name, value);
@@ -292,6 +303,8 @@ public final class AppConstants extends Properties implements Serializable{
 	 * AppConstants in sync. AppConstants properties are initially added to
 	 * Spring as PropertiesPropertySource in the createApplicationContext method
 	 * of IbisContext.
+	 * @param name the name
+	 * @param value the value
 	 */
 	public void putPropertyPlaceholderConfigurerProperty(String name, String value) {
 		self.put(name, value);

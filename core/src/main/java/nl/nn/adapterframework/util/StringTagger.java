@@ -226,12 +226,14 @@ public class StringTagger implements Map {
      * Returns a Enumeration of the values as String.
      * The values returned are all single, unsepartated, strings.
      * Use {@link #multiElements} to get a list of multi-values.
+     * @return an Enumeration of the values
      */
     public Enumeration elements() {
         return tokens.elements();
     }
     /**
      *  returns all values
+     *  @return all values
      */
     public Set entrySet() {
         return tokens.entrySet();
@@ -239,6 +241,7 @@ public class StringTagger implements Map {
     /**
      * Returns whether two objects are the same
      * @param ob the key of the value to retrieve
+     * @return whether two objects are the same
      */
     public boolean equals(Object ob) {
         return (ob instanceof Map) && (ob.hashCode()==this.hashCode());
@@ -249,18 +252,21 @@ public class StringTagger implements Map {
      * Use {@link #Values} to get a list of multi-values as a <code>Vector</code>.<br>
      * Use {@link #Value} to get the first value as a String
      * @param ob the key of the value to retrieve
+     * @return the value fo a key as an Object
      */
     public Object get(Object ob) {
         return tokens.get(ob);
     }
     /**
      *  Hashcode for sorting and comparing
+     *  @return Hashcode for sorting and comparing
      */
     public int hashCode() {
         return multitokens.hashCode();
     }
     /**
      * Checks whether the tagger is empty
+     * @return whether the tagger is empty
      */
     public boolean isEmpty() {
         return tokens.isEmpty();
@@ -269,18 +275,21 @@ public class StringTagger implements Map {
 
     /**
      * Returns a Enumeration of the name keys.
+     * @return an Enumeration of the name keys
      */
     public Enumeration keys() {
         return tokens.keys();
     }
     /**
      * Returns a Set of the name keys.
+     * @return a set of the name keys
      */
     public Set keySet() {
         return tokens.keySet();
     }
     /**
      *  For testing
+     *  @param args the arguments
      */
     public static void main(String args[]) {
 
@@ -305,6 +314,8 @@ public class StringTagger implements Map {
      * Returns a Enumeration of the values as Vectors that contain
      * the seperated values.
      * Use {@link #elements} to get a list of single, unseparated, values.
+     * @param token the token
+     * @return an Enumeration of the values as vectors
      */
     public Enumeration multiElements(String token) {
         Vector tmp=(Vector)multitokens.get(token);
@@ -338,7 +349,9 @@ public class StringTagger implements Map {
         return res;
     }
     /**
-     *  Manually sets a single value.
+     * Manually sets a single value.
+     * @param token the token
+     * @param val the value
      */
     public void setValue(String token,String val) {
         Vector newval=new Vector();
@@ -347,7 +360,9 @@ public class StringTagger implements Map {
         multitokens.put(token,newval);
     }
     /**
-     *  Manually sets a multi-value value.
+     * Manually sets a multi-value value.
+     * @param token the token
+     * @param values the values
      */
     public void setValues(String token,Vector values) {
         tokens.put(token,values.toString());
@@ -427,6 +442,7 @@ public class StringTagger implements Map {
      * Use {@link #get} to get the list of values as a <code>String</code><br>
      * Use {@link #Values} to get a list of multi-values as a <code>Vector</code>.<br>
      * @param token the key of the value to retrieve
+     * @return the first value
      */
     public String Value(String token) {
         String val;
@@ -455,6 +471,7 @@ public class StringTagger implements Map {
      * Use {@link #get} to get the list of values as a <code>String</code><br>
      * Use {@link #Value} to get the first value as a String
      * @param token the key of the value to retrieve
+     * @return the values as a vector
      */
     public Vector Values(String token) {
         Vector tmp=(Vector)multitokens.get(token);
@@ -463,6 +480,7 @@ public class StringTagger implements Map {
     /**
      * Returns the original parsed line
      * @param token unused
+     * @return the original parsed line
      */
     public String ValuesString(String token) {
         return startline;

@@ -29,7 +29,7 @@ import org.apache.xmlbeans.GDate;
  * 
  * @author Johan Verrips IOS
  */
-public class DateUtils {
+public class  DateUtils {
 	protected static Logger log = LogUtil.getLogger(DateUtils.class);
 	
 
@@ -92,6 +92,9 @@ public class DateUtils {
     }
     /**
      * Parses a string to a Date, according to the pattern
+	 * @param s the date
+	 * @param dateFormat the format
+	 * @return the parsed Date
      */
     static public Date parseToDate(String s, String dateFormat) {
         SimpleDateFormat df = new SimpleDateFormat(dateFormat);
@@ -102,6 +105,8 @@ public class DateUtils {
 
     /**
      * Parses a string to a Date, according to the XML Schema dateTime data type
+	 * @param s the date
+	 * @return the parsed Date
      */
     static public Date parseXmlDateTime(String s) {
     	GDate gdate = new org.apache.xmlbeans.GDate(s);
@@ -111,6 +116,9 @@ public class DateUtils {
 
 	/**
 	 * Parses a string to a Date, according to many possible conventions
+	 * @param dateInAnyFormat the date
+	 * @return the parsed Date
+	 * @throws CalendarParserException thrown when no Date is found
 	 */
 	static public Date parseAnyDate(String dateInAnyFormat) throws CalendarParserException {
 		Calendar c = CalendarParser.parse(dateInAnyFormat);
@@ -120,6 +128,8 @@ public class DateUtils {
 
 	/**
 	 * Formats a Date to a String, leaving out trailing zero values.
+	 * @param d the date
+	 * @return the date in string format
 	 */
 	static public String formatOptimal(Date d)  {
 		String result;
@@ -141,6 +151,8 @@ public class DateUtils {
 
 	/**
 	 * returns the next higher value, as if it was formatted optimally using formatOptimal().
+	 * @param d the date
+	 * @return the next higher value
 	 */
 	static public Date nextHigherValue(Date d)  {
 		int delta;
@@ -172,6 +184,8 @@ public class DateUtils {
 	 * @param 	from	String	date format from.
 	 * @param 	to		String	date format to.
 	 * @param 	value	String	date to reformat.
+	 * @return new form of date
+	 * @throws ParseException  thrown when parsing the current date fails
 	 */
 	public static String convertDate(String from, String to, String value) throws ParseException {
 		log.debug("convertDate from " + from + " to " + to + " value " + value);
@@ -204,9 +218,11 @@ public class DateUtils {
 	 * Dus bijv: changeDate("2006-03-23", 2, 1, -4) = "2008-05-19"
 	 * 
 	 * @param 	date	A String representing a date in format yyyy-MM-dd.
-	 * @param 	years
-	 * @param 	months
-	 * @param 	days
+	 * @param 	years 	The amount of years added
+	 * @param 	months  The amount of months added
+	 * @param 	days	The amount of days added
+	 * @return the new Date
+	 * @throws ParseException thrown when parsing the date fails
 	 */
 	public static String changeDate(String date, int years, int months, int days) throws ParseException {
 		return changeDate(date, years, months, days, "yyyy-MM-dd");
@@ -223,6 +239,8 @@ public class DateUtils {
 	 * @param 	months	int
 	 * @param 	days	int
 	 * @param 	dateFormat	A String representing the date format of date.
+	 * @return the new date
+	 * @throws ParseException thrown when parsing the date fails
 	 */
 	public static String changeDate(String date, int years, int months, int days, String dateFormat) throws ParseException {
 		if (log.isDebugEnabled()) log.debug("changeDate date " + date + " years " + years + " months " + months + " days " + days);

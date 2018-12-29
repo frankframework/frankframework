@@ -70,8 +70,8 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>name of the JMS destination (queue or topic) to use</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>either <code>QUEUE</code> or <code>TOPIC</code></td><td><code>QUEUE</code></td></tr>
- * <tr><td>{@link #setQueueConnectionFactoryName(String) queueConnectionFactoryName}</td><td>jndi-name of the queueConnectionFactory, used when <code>destinationType<code>=</code>QUEUE</code></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTopicConnectionFactoryName(String) topicConnectionFactoryName}</td><td>jndi-name of the topicConnectionFactory, used when <code>destinationType<code>=</code>TOPIC</code></td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setQueueConnectionFactoryName(String) queueConnectionFactoryName}</td><td>jndi-name of the queueConnectionFactory, used when <code>destinationType</code>=<code>QUEUE</code></td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTopicConnectionFactoryName(String) topicConnectionFactoryName}</td><td>jndi-name of the topicConnectionFactory, used when <code>destinationType</code>=<code>TOPIC</code></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageSelector(String) messageSelector}</td><td>When set, the value of this attribute is used as a selector to filter messages.</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setMessageTimeToLive(long) messageTimeToLive}</td><td>the time (in milliseconds) it takes for the message to expire. If the message is not consumed before, it will be lost. Make sure to set it to a positive value for request/repy type of messages.</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>rather useless attribute, and not the same as <code>deliveryMode</code>. You probably want to use that.</td><td>&nbsp;</td></tr>
@@ -238,6 +238,8 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 	/**
 	 * Returns a session on the connection for a topic or a queue
+	 * @return the created session
+	 * @throws JmsException a reference to the IbisException
 	 */
 	protected Session createSession() throws JmsException {
 		try {
@@ -269,6 +271,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 	/**
 	 * Obtains a connection and a serviceQueue.
+	 * @throws Exception an Exception
 	 */
 	public void open() throws Exception {
 		try {
@@ -364,9 +367,10 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 	/**
 	 * Utilitiy function to retrieve a Destination from a jndi.
-	 * @param destinationName
+	 * @param destinationName the name of the destination
 	 * @return javax.jms.Destination
-	 * @throws javax.naming.NamingException
+	 * @throws NamingException thrown when naming causes an error
+	 * @throws JmsException thrown when retrieving the destination fails
 	 */
 	public Destination getDestination(String destinationName) throws JmsException, NamingException {
 		return getJmsMessagingSource().lookupDestination(destinationName);
@@ -378,8 +382,8 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * @param destination a Destination object
 	 * @param correlationId the Correlation ID as a String value
 	 * @return a MessageConsumer with the right filter (messageSelector)
-	 * @throws NamingException
-	 * @throws JMSException
+	 * @throws NamingException thrown when naming causes an error
+	 * @throws JMSException thrown when retrieving the destination fails
 	 */
 
 	public MessageConsumer getMessageConsumerForCorrelationId(Session session, Destination destination, String correlationId) throws NamingException, JMSException {
@@ -399,8 +403,8 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * @param destination the Destination
 	 * @param selector the MessageSelector
 	 * @return MessageConsumer
-	 * @throws NamingException
-	 * @throws JMSException
+	 * @throws NamingException thrown when naming causes an error
+	 * @throws JMSException thrown when retrieving the destination fails
 	 */
 	public MessageConsumer getMessageConsumer(Session session, Destination destination, String selector) throws NamingException, JMSException {
 		if (useTopicFunctions) {
@@ -424,8 +428,8 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * @param session the Session
 	 * @param destination the Destination
 	 * @return the MessageConsumer
-	 * @throws NamingException
-	 * @throws JMSException
+	 * @throws NamingException thrown when naming causes an error
+	 * @throws JMSException thrown when retrieving the destination fails
 	 */
 	public MessageConsumer getMessageConsumer(Session session, Destination destination) throws NamingException, JMSException {
 		return getMessageConsumer(session, destination, getMessageSelector());
@@ -499,7 +503,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
      * @see javax.jms.QueueReceiver
      * @return                                   The queueReceiver value
      * @exception  javax.naming.NamingException  Description of the Exception
-     * @exception  javax.jms.JMSException                  Description of the Exception
+     * @exception  javax.jms.JMSException        Description of the Exception
      */
 	private QueueReceiver getQueueReceiver(QueueSession session, Queue destination, String selector) throws NamingException, JMSException {
 	    QueueReceiver queueReceiver = session.createReceiver(destination, selector);
@@ -510,7 +514,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	  * @see javax.jms.QueueSender
 	  * @return                                   The queueReceiver value
 	  * @exception  javax.naming.NamingException  Description of the Exception
-	  * @exception  javax.jms.JMSException
+	  * @exception  javax.jms.JMSException		  Description of the Exception
 	  */
 	private QueueSender getQueueSender(QueueSession session, Queue destination) throws NamingException, JMSException {
 		return session.createSender(destination);
@@ -614,11 +618,11 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 	/**
 	 * Send a message
-	 * @param messageProducer
-	 * @param message
+	 * @param messageProducer the message producer
+	 * @param message the message
 	 * @return messageID of the sent message
-	 * @throws NamingException
-	 * @throws JMSException
+	 * @throws NamingException thrown when naming causes an error
+	 * @throws JMSException thrown when retrieving the destination fails
 	 */
 	public String send(MessageProducer messageProducer, Message message)
 			throws NamingException, JMSException {
@@ -660,12 +664,12 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 	/**
 	 * Send a message
-	 * @param session
+	 * @param session the current session
 	 * @param dest destination
-	 * @param message
+	 * @param message the message
 	 * @return message ID of the sent message
-	 * @throws NamingException
-	 * @throws JMSException
+	 * @throws NamingException thrown when naming causes an error
+	 * @throws JMSException thrown when retrieving the destination fails
 	 */
 	public String send(Session session, Destination dest, Message message)
 		throws NamingException, JMSException {
@@ -722,9 +726,18 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 
 	/**
-	 * Extracts string from message obtained from {@link #getRawMessage(Map)}. May also extract
+	 * Extracts string from message obtained from getRawMessage. May also extract
 	 * other parameters from the message and put those in the threadContext.
+	 * @param rawMessage the raw message
+	 * @param context the context of the message
+	 * @param soap soap
+	 * @param soapHeaderSessionKey the soapHeaderSessionKey
+	 * @param soapWrapper the soapWrapper
 	 * @return String  input message for adapter.
+	 * @throws JMSException thrown when an exception is thrown in the JMS API
+	 * @throws DomBuilderException an Exception
+	 * @throws TransformerException thrown when XML transformation fails
+	 * @throws IOException thrown when IO fails
 	 */
 	public String getStringFromRawMessage(Object rawMessage, Map context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, DomBuilderException, TransformerException, IOException {
 		TextMessage message = null;
@@ -781,6 +794,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 	/**
 	 * The name of the object.
+	 * @param newName name to be set
 	 */
 	public void setName(String newName) {
 		name = newName;
@@ -791,6 +805,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 	/**
 	 * The name of the destination, this may be a <code>queue</code> or <code>topic</code> name.
+	 * @param destinationName name of the destination to be set
 	 */
 	public void setDestinationName(String destinationName) {
 		this.destinationName = destinationName;
@@ -804,6 +819,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * should be <code>QUEUE</code> or <code>TOPIC</code><br/>
 	 * This function also sets the <code>useTopicFunctions</code> field,
 	 * that controls wether Topic functions are used or Queue functions.
+	 * @param type the type of the destination to be set
 	 */
 	public void setDestinationType(String type) {
 		this.destinationType = type;
@@ -820,6 +836,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	/**
 	 * Sets the JMS-acknowledge mode. This controls for non transacted listeners the way messages are acknowledged.
 	 * See the jms-documentation.
+	 * @param ackMode the JMS-acknowledge mode to be set
 	 */
 	public void setAckMode(int ackMode) {
 		this.ackMode = ackMode;
@@ -830,6 +847,8 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 	/**
 	 * Convencience function to convert the numeric value of an (@link #setAckMode(int) acknowledgeMode} to a human-readable string.
+	 * @param ackMode the JMS-acknowledge mode
+	 * @return the JMS-acknowledge mode in string format
 	 */
 	public static String getAcknowledgeModeAsString(int ackMode) {
 		String ackString;
@@ -850,6 +869,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 	/**
 	 * String-version of {@link #setAckMode(int)}
+	 * @param acknowledgeMode the JMS-acknowledge mode to be set
 	 */
 	public void setAcknowledgeMode(String acknowledgeMode) {
 
@@ -870,6 +890,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 	/**
 	 * String-version of {@link #getAckMode()}
+	 * @return the JMS-acknowledge mode
 	 */
 	public String getAcknowledgeMode() {
 		return getAcknowledgeModeAsString(getAckMode());
@@ -880,6 +901,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * Controls whether messages are processed persistently.
 	 *
 	 * When set <code>true</code>, the JMS provider ensures that messages aren't lost when the application might crash.
+	 * @param value whether messages are to be processed persistently
 	 */
 	public void setPersistent(boolean value) {
 		persistent = value;
@@ -891,6 +913,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	/**
 	 * SubscriberType should <b>DURABLE</b> or <b>TRANSIENT</b>
 	 * Only applicable for topics <br/>
+	 * @param subscriberType the subscriber type to be set
 	 */
 	public void setSubscriberType(String subscriberType) {
 		if ((!subscriberType.equalsIgnoreCase("DURABLE"))
@@ -909,6 +932,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	/**
 	 * The JNDI-name of the connection factory to use to connect to a <i>queue</i> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions.
+	 * @param name the name for the queueConnectionFactory to be set
 	 */
 	public void setQueueConnectionFactoryName(String name) {
 		queueConnectionFactoryName=name;
@@ -921,6 +945,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * The JNDI-name of the connection factory to use to connect to a <i>queue</i> if {@link #isTransacted()} returns <code>true</code>.
 	 * The corresponding connection factory should support XA transactions.
 	 * @deprecated please use 'setQueueConnectionFactoryName()' instead
+	 * @param queueConnectionFactoryNameXA the queueConnectionFactory name to be set
 	 */
 	public void setQueueConnectionFactoryNameXA(String queueConnectionFactoryNameXA) {
 		if (StringUtils.isNotEmpty(queueConnectionFactoryNameXA)) {
@@ -932,6 +957,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	/**
 	 * The JNDI-name of the connection factory to use to connect to a <i>topic</i> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions.
+	 * @param topicConnectionFactoryName the topicConnectionFactoryName to be set
 	 */
 	public void setTopicConnectionFactoryName(String topicConnectionFactoryName) {
 		this.topicConnectionFactoryName = topicConnectionFactoryName;
@@ -944,6 +970,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * The JNDI-name of the connection factory to use to connect to a <i>topic</i> if {@link #isTransacted()} returns <code>true</code>.
 	 * The corresponding connection factory should support XA transactions.
 	 * @deprecated please use 'setTopicConnectionFactoryName()' instead
+	 * @param topicConnectionFactoryNameXA the topicConnectionFactoryName to be set
 	 */
 	public void setTopicConnectionFactoryNameXA(String topicConnectionFactoryNameXA) {
 		if (StringUtils.isNotEmpty(topicConnectionFactoryNameXA)) {
@@ -962,6 +989,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 *
 	 * @deprecated This attribute has been added to provide the pre-4.1 transaction functionality to configurations that
 	 * relied this specific functionality. New configurations should not use it.
+	 * @param jmsTransacted whether it should be jmsTransacted
 	 *
 	 */
 	public void setJmsTransacted(boolean jmsTransacted) {
@@ -982,6 +1010,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	/**
 	 * Controls whether messages are send under transaction control.
 	 * If set <code>true</code>, messages are committed or rolled back under control of an XA-transaction.
+	 * @param transacted whether it should be transacted
 	 */
 	public void setTransacted(boolean transacted) {
 		this.transacted = transacted;
@@ -995,6 +1024,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 	/**
 	 * Get the  time-to-live in milliseconds of a message
+	 * @return the time to live for the message
 	 */
 	public long getMessageTimeToLive(){
 		return this.messageTimeToLive;

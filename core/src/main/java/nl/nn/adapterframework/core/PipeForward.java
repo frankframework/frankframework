@@ -47,24 +47,28 @@ public class PipeForward {
 
 	/**
 	 * the <code>name</code> is a symbolic reference to a <code>path</code>.<br/>
+     * @return the name
 	 */
     public String getName() {
         return name;
     }
 	/**
 	 * The path is the name of the Pipe to execute/store
+     * @return the path
 	 */
 	public String getPath() {
         return path;
     }
   	/**
 	 * the <code>name</code> is a symbolic reference to a <code>path</code>.<br/>
+     * @param name the name to be set
 	 */
     public void setName(String name) {
         this.name = name;
     }
 	/**
 	 * The path is the name of the Pipe to execute/store
+     * @param path the path to be set
 	 */
     public void setPath(String path) {
         this.path = path;

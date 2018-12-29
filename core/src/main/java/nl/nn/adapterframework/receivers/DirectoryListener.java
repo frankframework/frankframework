@@ -195,7 +195,10 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 
 	/**
 	 * Moves a file to another directory and places a UUID in the name.
+	 *@param session the current session
+	 * @param file the file to be moved
 	 * @return String with the name of the (renamed and moved) file
+	 * @throws ListenerException thrown when moving the file fails
 	 * 
 	 */
 	protected String archiveFile(IPipeLineSession session, File file) throws ListenerException {
@@ -355,6 +358,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 
 	/**
 	 * set the directory name to look for files in.
+	 * @param inputDirectory the input directory to be set
 	 * @see #setWildcard(String)
 	 */
 	public void setInputDirectory(String inputDirectory) {
@@ -366,14 +370,16 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 
 
 	/**
+	 * @param wildcard the wildcard to be set
 	 * set the {@link nl.nn.adapterframework.util.WildCardFilter wildcard}  to look for files in the specifiek directory, e.g. "*.inp"
 	 */
 	public void setWildcard(String wildcard) {
 		this.wildcard = wildcard;
 	}
 	/**
-	* get the {@link nl.nn.adapterframework.util.WildCardFilter wildcard}  to look for files in the specifiek directory, e.g. "*.inp"
-	*/
+	 * get the {@link nl.nn.adapterframework.util.WildCardFilter wildcard}  to look for files in the specifiek directory, e.g. "*.inp"
+	 * @return the wildcard
+	 */
 	public String getWildcard() {
 		return wildcard;
 	}
@@ -422,12 +428,14 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	/**
 	 * set the time to delay when no records are to be processed and this class has to look for the arrival of a new file
 	 * @deprecated
+	 * @param responseTime the response time to be set
 	 */
 	public void setResponseTime(long responseTime) {
 		this.responseTime = responseTime;
 	}
 	/**
 	 * @deprecated
+	 * @return the response time
 	 */
 	public long getResponseTime() {
 		return responseTime;
@@ -442,12 +450,14 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 
 	/**
 	 * @deprecated
+	 * @param i the number of attempts to be set
 	 */
 	public void setNumberOfAttempts(int i) {
 		numberOfAttempts = i;
 	}
 	/**
 	 * @deprecated
+	 * @return the numbert of attempts
 	 */
 	public int getNumberOfAttempts() {
 		return numberOfAttempts;
@@ -456,12 +466,14 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 
 	/**
 	 * @deprecated
+	 * @param l time to wait before retrying
 	 */
 	public void setWaitBeforeRetry(long l) {
 		waitBeforeRetry = l;
 	}
 	/**
 	 * @deprecated
+	 * @return the time to wait before retrying
 	 */
 	public long getWaitBeforeRetry() {
 		return waitBeforeRetry;

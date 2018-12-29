@@ -42,13 +42,14 @@ import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
  * <tr><td>{@link #setOnCloseBlock(String) onCloseBlock}</td><td>String that is written after the end of each logical block, as defined in the flow</td><td>&lt;/#name#&gt;</td></tr>
  * <tr><td>{@link #setBlockNamePattern(String) blockNamePattern}</td><td>String that is replaced by name of block or name of stream in above strings</td><td>#name#</td></tr>
  * </table>
- * <p/>
+ * </p>
+ * <br>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the resultHandler will be applied to the SQL statement</td></tr>
  * </table>
- * <p/>
- * 
+ * <br/>
+ *
  * @author  Gerrit van Brakel
  * @since   4.7
  */

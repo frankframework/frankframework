@@ -257,7 +257,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 	/**
 	 * Add log prefix to make it easier to debug
 	 * @param correlationId message identifier
-	 * @return
+	 * @return the correlationId
 	 */
 	protected String getLogPrefix(String correlationId) {
 		return "correlationId["+correlationId+"] ";

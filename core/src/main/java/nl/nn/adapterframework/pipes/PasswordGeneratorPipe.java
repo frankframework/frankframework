@@ -131,7 +131,8 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	}
 	/**
 	 * Change the order of the characters in a <code>String</code>
-	 * @param input
+	 * @param input the input to change the order for
+	 * @return the changed order of the characters
 	 */
 	protected String garbleString(String input){
 		List clist=new Vector();
@@ -150,13 +151,14 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 
 
 	/**
+	 * @return whether use secure random is enabled
 	 */
 	public boolean isUseSecureRandom() {
 		return useSecureRandom;
 	}
 
 	/**
-	 * @param b
+	 * @param b whether to use secure random
 	 */
 	public void setUseSecureRandom(boolean b) {
 		useSecureRandom = b;

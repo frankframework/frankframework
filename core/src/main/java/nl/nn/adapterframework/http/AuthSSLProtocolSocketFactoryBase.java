@@ -410,9 +410,9 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
 
 	/**
 	 * Added to completely implement the SocketFactory interface 
-	 * @param adress
-	 * @param port
-	 * @throws IOException
+	 * @param adress the address
+	 * @param port the port number
+	 * @throws IOException thrown due to failed or interrupted I/O operations
 	 */
 	public abstract Socket createSocket(InetAddress adress, int port) throws IOException;
 
@@ -439,6 +439,7 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
 
 	/**
 	 * Properties
+	 * @return the protocol
 	 */	
 	public String getProtocol() {
 		return protocol;

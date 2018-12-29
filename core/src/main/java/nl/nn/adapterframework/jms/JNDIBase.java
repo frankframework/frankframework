@@ -230,6 +230,7 @@ public class JNDIBase {
 	/**
 	 * loads JNDI (and other) properties from a JmsRealm
 	 * @see JmsRealm
+	 * @param jmsRealmName the name of the JmsRealm to be set
 	 */ 
 	public void setJmsRealm(String jmsRealmName) {
 		try {

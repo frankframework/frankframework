@@ -57,14 +57,17 @@ public interface IReceiver extends IManagable, HasStatistics {
 	
 	/**
 	 * get the number of messages received by this receiver.
+	 * @return the number of messages received
 	 */
 	public long getMessagesReceived();
 	/**
 	 * get the number of duplicate messages received this receiver.
+	 * @return the number of duplicate messages received
 	 */
 	public long getMessagesRetried();
 	/**
 	 * get the number of messages received this receiver that are not process, but are discarded or put in the errorstorage.
+	 * @return the number of messaged not processed
 	 */
 	public long getMessagesRejected();
 	
@@ -73,6 +76,7 @@ public interface IReceiver extends IManagable, HasStatistics {
      * object. The adapter also provides a MessageKeeper, which the receiver
      * may use to store messages in.
      * @see nl.nn.adapterframework.core.IAdapter
+	 * @param adapter the adapter to be set
      */
     public void setAdapter(IAdapter adapter);
 

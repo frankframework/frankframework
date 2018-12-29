@@ -130,6 +130,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 	
 	/**
 	 * Sets the string that is searched for.
+	 * @param find the string to be searched
 	 */ 
 	public void setFind(String find) {
 		this.find = find;
@@ -140,6 +141,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 	
 	/**
 	 * Sets the string that will replace each of the occurrences of the find-string.
+	 * @param replace the replacement string
 	 */ 
 	public void setReplace(String replace) {
 		this.replace = replace;
@@ -150,6 +152,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 
 	/**
 	 * Sets the string the representation in find and replace of the line separator.
+	 * @return the line separator symbol
 	 */ 
 	public String getLineSeparatorSymbol() {
 		return lineSeparatorSymbol;

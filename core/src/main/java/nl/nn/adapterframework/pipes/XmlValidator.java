@@ -343,6 +343,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
      * derivation resriction checking are controlled by this option.
      * <p> see property http://apache.org/xml/features/validation/schema-full-checking</p>
      * Defaults to <code>false</code>;
+	 * @param fullSchemaChecking set whether a full schema checking is done
      */
     public void setFullSchemaChecking(boolean fullSchemaChecking) {
         validator.setFullSchemaChecking(fullSchemaChecking);
@@ -358,6 +359,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
      * <p>The value of the schema attribute is only used if the schemaLocation
      * attribute and the noNamespaceSchemaLocation are not set</p>
      * @see nl.nn.adapterframework.util.ClassUtils#getResourceURL
+	 * @param schema the schema to be set
      */
     public void setSchema(String schema) {
         setNoNamespaceSchemaLocation(schema);
@@ -379,6 +381,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	 * </p>
 	 *
 	 * N.B. since 4.3.0 schema locations are resolved automatically, without the need for ${baseResourceURL}
+	 * @param schemaLocation the schema location to be set
 	 */
 	public void setSchemaLocation(String schemaLocation) {
 		this.schemaLocation = schemaLocation;
@@ -392,6 +395,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	/**
 	 * <p>A URI reference as a hint as to the location of a schema document with
 	 * no target namespace.</p>
+	 * @param noNamespaceSchemaLocation the noNamespaceSchemaLocation to be set
 	 */
 	public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
 		this.noNamespaceSchemaLocation = noNamespaceSchemaLocation;
@@ -403,6 +407,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	/**
 	 * <p>The sessionkey to a value that is the uri to the schema definition.</P>
+	 * @param schemaSessionKey the schemaSessionKey to be set
 	 */
 	public void setSchemaSessionKey(String schemaSessionKey) {
 		this.schemaSessionKey = schemaSessionKey;
@@ -413,6 +418,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	/**
 	 * @deprecated attribute name changed to {@link #setSchemaSessionKey(String) schemaSessionKey}
+	 * @param schemaSessionKey the schemaSessionKey to be set
 	 */
 	public void setSchemaSession(String schemaSessionKey) {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
@@ -425,6 +431,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
     /**
      * Indicates wether to throw an error (piperunexception) when
      * the xml is not compliant.
+	 * @param throwException whether to throw an error
      */
     public void setThrowException(boolean throwException) {
     	validator.setThrowException(throwException);
@@ -435,6 +442,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	/**
 	 * The sessionkey to store the reasons of misvalidation in.
+	 * @param reasonSessionKey the reasonSessionKey to be set
 	 */
 	public void setReasonSessionKey(String reasonSessionKey) {
 		validator.setReasonSessionKey(reasonSessionKey);
@@ -475,6 +483,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
     /**
      * Not ready yet (namespace not yet correctly parsed)
+	 * @return the Root Tag
      *
      */
     public QName getRootTag() {

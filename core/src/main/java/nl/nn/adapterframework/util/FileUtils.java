@@ -55,7 +55,13 @@ public class FileUtils {
 	static Logger log = LogUtil.getLogger(FileUtils.class);
 
 	/**
-	 * Construct a filename from a pattern and session variables. 
+	 * Construct a filename from a pattern and session variables.
+	 * @param definedParameters the defined parameters
+	 * @param session the current session
+	 * @param originalFilename the original filename
+	 * @param filenamePattern the pattern of the filename
+	 * @return the new filename from the pattern and session
+	 * @throws ParameterException thrown when an invalid parameter is passed
 	 */
 	public static String getFilename(ParameterList definedParameters, IPipeLineSession session, String originalFilename, String filenamePattern) throws ParameterException {
 		// no pattern defined, outputname = inputname

@@ -68,6 +68,13 @@ public class StringResolver {
 	  * object is specified, it looks in the specified <code>Properties</code> object.
 	  * If two <code>Properties</code> objects are specified, first it look in the first object. If
 	  * none is found, it looks in the second object.
+	  *
+	  * @param val the value
+	  * @param props1 the first property
+	  * @param props2 the second property
+	  * @param propsToHide the properties to hide
+	  * @return the value
+	  * @throws IllegalArgumentException thrown when an illegal argument is given
 	  * 
 	  */ 
 	public static String substVars(String val, Map props1, Map props2, List<String> propsToHide)

@@ -31,7 +31,10 @@ public interface IPostboxListener extends IPullingListener {
 	 *
 	 * @param messageSelector search criteria for messages. Not that the format of the selector
 	 * changes per listener, for example a JMSListener's messageSelector follows the JMS specification.
-	 * @param threadContext context in which the method is called 
+	 * @param threadContext context in which the method is called
+	 * @return the raw message
+	 * @throws ListenerException thrown when retrieving message fails
+	 * @throws TimeOutException thrown when retrieving takes too long (due to failure)
 	 */ 
 	Object retrieveRawMessage(String messageSelector, Map<String,Object> threadContext) throws ListenerException, TimeOutException;
 

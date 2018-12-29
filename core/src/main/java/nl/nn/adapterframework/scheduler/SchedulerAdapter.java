@@ -52,6 +52,9 @@ public class SchedulerAdapter {
     /**
      * Get all jobgroups, jobs within this group, the jobdetail and the
      * associated triggers in XML format.
+     * @param theScheduler the scheduler
+     * @param ibisManager the ibis manager
+     * @return the jobgroups
      */
     public XmlBuilder getJobGroupNamesWithJobsToXml(Scheduler theScheduler, IbisManager ibisManager) {
         XmlBuilder xbRoot = new XmlBuilder("jobGroups");

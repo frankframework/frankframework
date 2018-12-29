@@ -231,7 +231,9 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return dbmsSupport;
 	}
 	/**
-	 * Obtains a connection to the datasource. 
+	 * Obtains a connection to the datasource.
+	 * @return the connection to the datasource
+	 * @throws JdbcException thrown when communication with jdbc fails
 	 */
 	// TODO: consider making this one protected.
 	public Connection getConnection() throws JdbcException {
@@ -298,6 +300,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 
 	/**
 	 * Sets the name of the object.
+	 * @param name the name to be set
 	 */
 	public void setName(String name) {
 		this.name = name;
@@ -307,7 +310,8 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	}
 
 	/**
-	 * Sets the JNDI name of datasource that is used when {@link #isTransacted()} returns <code>false</code> 
+	 * Sets the JNDI name of datasource that is used when {@link #isTransacted()} returns <code>false</code>
+	 * @param datasourceName the data source name to be set
 	 */
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;
@@ -316,7 +320,8 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return datasourceName;
 	}
 	/**
-	 * Sets the JNDI name of datasource that is used when {@link #isTransacted()} returns <code>true</code> 
+	 * Sets the JNDI name of datasource that is used when {@link #isTransacted()} returns <code>true</code>
+	 * @param datasourceNameXA the data source name (XA) to be set
 	 */
 	public void setDatasourceNameXA(String datasourceNameXA) {
 		if (StringUtils.isNotEmpty(datasourceNameXA)) {
@@ -330,8 +335,9 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 
 	/**
 	 * Sets the user name that is used to open the database connection.
-	 * If a value is set, it will be used together with the (@link #setPassword(String) specified password} 
+	 * If a value is set, it will be used together with the (@link #setPassword(String) specified password}
 	 * to open the connection to the database.
+	 * @param username the username to be set
 	 */
 	public void setUsername(String username) {
 		this.username = username;
@@ -342,6 +348,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 
 	/**
 	 * Sets the password that is used to open the database connection.
+	 * @param password the password to be set
 	 * @see #setPassword(String)
 	 */
 	public void setPassword(String password) {
@@ -353,6 +360,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 
 	/**
 	 * controls the use of transactions
+	 * @param transacted the boolean to be set
 	 */
 	public void setTransacted(boolean transacted) {
 		this.transacted = transacted;

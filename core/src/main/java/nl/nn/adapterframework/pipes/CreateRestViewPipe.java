@@ -130,7 +130,7 @@ import org.apache.commons.lang.StringUtils;
  * </pre>
  * </code>
  * </p>
- * <p>
+ *
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
@@ -138,7 +138,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setContentType(String) contentType}</td><td>content type of the servlet response</td><td>"text/html"</td></tr>
  * </table>
  * </p>
- * 
+ *
  * @author Peter Leeuwenburgh
  */
 

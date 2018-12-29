@@ -289,9 +289,10 @@ public class Parameter implements INamedObject, IWithParameters {
 
 	/**
 	 * determines the raw value 
-	 * @param alreadyResolvedParameters
+	 * @param alreadyResolvedParameters list of already resolved parameters
+	 * @param prc the ParameterResolution context
 	 * @return the raw value as object
-	 * @throws IbisException
+	 * @throws ParameterException thrown when an invalid parameter is given
 	 */
 	public Object getValue(ParameterValueList alreadyResolvedParameters, ParameterResolutionContext prc) throws ParameterException {
 		Object result = null;
@@ -696,6 +697,7 @@ public class Parameter implements INamedObject, IWithParameters {
 
 	/**
 	 * Specify the stylesheet to use
+	 * @param stylesheetName the name of the stylesheet
 	 */
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;

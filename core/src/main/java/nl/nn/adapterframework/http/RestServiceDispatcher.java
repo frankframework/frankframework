@@ -136,10 +136,16 @@ public class RestServiceDispatcher  {
 
 	/**
 	 * Dispatch a request.
+	 * @param restPath the rest path
 	 * @param uri the name of the IReceiver object
-	 * @param method the correlationId of this request;
+	 * @param httpServletRequest the servlet request
+	 * @param contentType the type of the content
 	 * @param request the <code>String</code> with the request/input
+	 * @param context the current session
+	 * @param httpServletResponse the servlet response
+	 * @param servletContext the servlet context
 	 * @return String with the result of processing the <code>request</code> through the <code>serviceName</code>
+	 * @throws ListenerException thrown when no listener is configured correctly for the uri
 	 */
 	public String dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String contentType, String request, IPipeLineSession context, HttpServletResponse httpServletResponse, ServletContext servletContext) throws ListenerException {
 		String method = httpServletRequest.getMethod();

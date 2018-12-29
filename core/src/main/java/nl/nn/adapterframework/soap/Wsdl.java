@@ -472,6 +472,12 @@ public class Wsdl {
 
     /**
      * Generates a zip file (and writes it to the given outputstream), containing the WSDL and all referenced XSD's.
+     * @param stream the output stream
+     * @param servletName the servlet name
+     * @throws IOException thrown when communication with I/O fails
+     * @throws ConfigurationException thrown when configuration fails
+     * @throws XMLStreamException thrown when XML stream fails
+     * @throws NamingException thrown when naming conventions are not upheld
      * @see #wsdl(java.io.OutputStream, String)
      */
     public void zip(OutputStream stream, String servletName) throws IOException, ConfigurationException, XMLStreamException, NamingException {
@@ -502,10 +508,12 @@ public class Wsdl {
 
     /**
      * Writes the WSDL to an output stream
-     * @param out
+     * @param out the output stream
      * @param servlet  The servlet what is used as the web service (because this needs to be present in the WSDL)
-     * @throws XMLStreamException
-     * @throws IOException
+     * @throws XMLStreamException thrown when the XML stream fails
+     * @throws IOException thrown when communication with I/O fails
+     * @throws ConfigurationException thrown when configuration fails
+     * @throws NamingException thrown when naming conventions are not upheld
      */
     public void wsdl(OutputStream out, String servlet) throws XMLStreamException, IOException, ConfigurationException,  NamingException {
         XMLStreamWriter w = WsdlUtils.getWriter(out, isIndent());
@@ -553,6 +561,8 @@ public class Wsdl {
 
     /**
      * Outputs a 'documentation' section of the WSDL
+     * @param w the XML stream writer
+     * @throws XMLStreamException thrown when XML stream fails
      */
     protected void documentation(XMLStreamWriter w) throws XMLStreamException {
         if (documentation != null) {
@@ -564,9 +574,10 @@ public class Wsdl {
 
     /**
      * Output the 'types' section of the WSDL
-     * @param w
-     * @throws XMLStreamException
-     * @throws IOException
+     * @param w the XML stream writer
+     * @throws XMLStreamException thrown when XML stream fails
+     * @throws IOException thrown when communication with I/O fails
+     * @throws ConfigurationException thrown when configuration fails
      */
     protected void types(XMLStreamWriter w) throws XMLStreamException, IOException, ConfigurationException {
         w.writeStartElement(WSDL_NAMESPACE, "types");
@@ -583,10 +594,10 @@ public class Wsdl {
 
     /**
      * Outputs the 'messages' section.
-     * @param w
-     * @throws XMLStreamException
-     * @throws IOException
-     * @throws ConfigurationException 
+     * @param w the XML stream writer
+     * @throws XMLStreamException thrown when XML stream fails
+     * @throws IOException thrown when communication with I/O fails
+     * @throws ConfigurationException  thrown when configuration fails
      */
     protected void messages(XMLStreamWriter w) throws XMLStreamException, IOException, ConfigurationException {
         List<QName> parts = new ArrayList<QName>();

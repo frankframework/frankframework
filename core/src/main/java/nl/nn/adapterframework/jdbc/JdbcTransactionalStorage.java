@@ -447,7 +447,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 
 	/**
-	 * change datatypes used for specific database vendor. 
+	 * change datatypes used for specific database vendor.
+	 * @param dbmsSupport the dbms support id
 	 */
 	protected void setDataTypes(IDbmsSupport dbmsSupport) {
 		if (StringUtils.isEmpty(getKeyFieldType())) {
@@ -574,7 +575,11 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 
 	/**
-	 *	Checks if table exists, and creates when necessary. 
+	 *	Checks if table exists, and creates when necessary.
+	 *	@param dbmsSupport the dbms support id to be set
+	 *  @throws JdbcException thrown when communication with jdbc fails
+	 *  @throws SQLException thrown when communication with SQL fails
+	 *  @throws SenderException sender exception
 	 */
 	public void initialize(IDbmsSupport dbmsSupport) throws JdbcException, SQLException, SenderException {
 		Connection conn = getConnection();
@@ -615,7 +620,11 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	
 	
 	/**
-	 *	Acutaly creates storage. Can be overridden in descender classes 
+	 *	Acutaly creates storage. Can be overridden in descender classes
+	 *	@param conn the connection
+	 *	@param stmt the statement for jdbc
+	 *  @param dbmsSupport the dbms support id
+	 *  @throws JdbcException thrown when communication with jdbc fails
 	 */
 	protected void createStorage(Connection conn, Statement stmt, IDbmsSupport dbmsSupport) throws JdbcException {
 		String query=null;
@@ -669,7 +678,14 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 
 	/**
-	 * Retrieves the value of the primary key for the record just inserted. 
+	 * Retrieves the value of the primary key for the record just inserted.
+	 * @param conn the connection
+	 * @param messageId the message reference
+	 * @param correlationId the correlation reference
+	 * @param receivedDateTime the time the value was retrieved
+	 * @return the value of the primary key for the record that is inserted
+	 * @throws SQLException thrown when communication with SQL fails
+	 * @throws SenderException an exception
 	 */
 	protected String retrieveKey(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime) throws SQLException, SenderException {
 		PreparedStatement stmt=null;
@@ -1447,6 +1463,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 	/**
 	 * Sets the name of the table messages are stored in.
+	 * @param tableName the name of the table to be set
 	 */
 	public void setTableName(String tableName) {
 		this.tableName = tableName;
@@ -1457,6 +1474,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 	/**
 	 * Sets the name of the column messageids are stored in.
+	 * @param idField the id of the field to be set
 	 */
 	public void setIdField(String idField) {
 		this.idField = idField;
@@ -1467,6 +1485,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 	/**
 	 * Sets the name of the column message themselves are stored in.
+	 * @param messageField the message field to be set
 	 */
 	public void setMessageField(String messageField) {
 		this.messageField = messageField;

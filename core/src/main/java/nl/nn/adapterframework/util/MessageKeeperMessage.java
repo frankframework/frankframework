@@ -40,6 +40,8 @@ public class MessageKeeperMessage {
 	
 	/**
 	* Set the messagetext of this message. The text will be xml-encoded.
+	 * @param message the message
+	 * @param level the level of the message
 	*/
 	public MessageKeeperMessage(String message, String level){
 	//	this.messageText=XmlUtils.encodeChars(message);
@@ -48,6 +50,10 @@ public class MessageKeeperMessage {
 	}
 	/**
 	* Set the messagetext and -date of this message. The text will be xml-encoded.
+	 * @param message the message
+	 * @param date the date of the message
+	 * @param level the level of the message
+	 *
 	*/
 	public MessageKeeperMessage(String message, Date date, String level) {
 	//	this.messageText=XmlUtils.encodeChars(message);

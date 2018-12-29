@@ -122,6 +122,7 @@ public class LabelFormat extends FixedForwardPipe {
 	 *   <li>"Label2Xml": transform an ascii file to XML</li>
 	 * </ul>
 	 * default: None
+	 * @param newDirection the direction to be set
 	 */
 	public void setDirection(String newDirection) {
 		direction = newDirection;

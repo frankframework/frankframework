@@ -73,7 +73,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * this technique (specifying the key under which to store the value by a parameter).
  * </p>
  * <p>Since 4.1 this class also has parameters, so that decendants of this class automatically are parameter-enabled.
- * However, your documentation should say if and how parameters are used!<p>
+ * However, your documentation should say if and how parameters are used!</p>
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
@@ -117,14 +117,14 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setHideRegex(String) hideRegex}</td><td>Regular expression to mask strings in the log. For example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code> will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>Note:</b> this feature is used at adapter level, so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
- * 
- * <p>
+ *
+ * <br>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.util.Locker locker}</td><td>optional: the pipe will only be executed if a lock could be set successfully</td></tr>
  * </table>
- * </p>
- * 
+ * </br>
+ *
  * @author     Johan Verrips / Gerrit van Brakel
  *
  * @see nl.nn.adapterframework.core.IPipeLineSession

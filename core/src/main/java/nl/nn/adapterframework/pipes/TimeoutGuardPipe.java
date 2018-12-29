@@ -44,14 +44,14 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>timeout in seconds of obtaining a result</td><td>30</td></tr>
  * </table>
  * </p>
- * <p>
+ * <br>
  * <table border="1">
  * <b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
  * <tr><td>timeout</td><td>int</td><td>When a parameter with name timeout is present, it is used instead of the timeout specified by the attribute</td></tr>
  * </table>
- * </p>
- * 
+ * </br>
+ *
  * @author Peter Leeuwenburgh
  */
 

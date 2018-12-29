@@ -24,7 +24,6 @@ import nl.nn.adapterframework.core.SenderException;
  * Allows operations on iterations over all statistics keepers.
  * 
  * @author  Gerrit van Brakel
- * @since  
  */
 public interface StatisticsKeeperIterationHandler {
 

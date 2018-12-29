@@ -49,6 +49,7 @@ public class Guard {
 	/**
 	 * Wait for the counter to get zero.
 	 *
+     * @param timeout the time to wait
 	 * @exception InterruptedException passed from this.wait().
 	 * @exception TimeOutException if the time specified has passed, but the counter did not reach zero.
 	 */

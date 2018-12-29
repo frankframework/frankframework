@@ -571,7 +571,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	 * @param headersParamsMap Map that contains the {@link #setHeadersParams}
 	 * @param session PipeLineSession to retrieve or store data from, or NULL when not set
 	 * @return a {@link HttpRequestBase HttpRequest} object
-	 * @throws SenderException
+	 * @throws SenderException thrown when sending fails
 	 */
 	protected abstract HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap, IPipeLineSession session) throws SenderException;
 
@@ -582,8 +582,8 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	 * @param responseHandler {@link HttpResponseHandler} that contains the response information
 	 * @param prc ParameterResolutionContext
 	 * @return a string that will be passed to the pipeline
-	 * @throws SenderException
-	 * @throws IOException
+	 * @throws SenderException thrown when sending fails
+	 * @throws IOException thrown when one of the I/O operations fails or is interrupted
 	 */
 	protected abstract String extractResult(HttpResponseHandler responseHandler, ParameterResolutionContext prc) throws SenderException, IOException;
 
@@ -750,7 +750,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * URL or base of URL to be used
-	 * @param string
+	 * @param string the url to be set
 	 */
 	public void setUrl(String string) {
 		url = string;
@@ -761,7 +761,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * Parameter that is used to obtain url; overrides url-attribute
-	 * @param urlParam
+	 * @param urlParam the url parameter to be set
 	 * @IbisDoc.default url
 	 */
 	public void setUrlParam(String urlParam) {
@@ -785,7 +785,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * Content-Type of the request
-	 * @param string
+	 * @param string the content-type to be set
 	 */
 	public void setContentType(String string) {
 		contentType = string;
@@ -796,7 +796,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * Default charset of the request
-	 * @param string
+	 * @param string the charset to be set
 	 * @IbisDoc.Default UTF-8
 	 */
 	public void setCharSet(String string) {
@@ -808,7 +808,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * Timeout in ms of obtaining a connection/result. 0 means no timeout
-	 * @param i
+	 * @param i the timeout to be set
 	 * @IbisDoc.default 10000
 	 */
 	public void setTimeout(int i) {
@@ -827,7 +827,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * The maximum number of concurrent connections
-	 * @param i
+	 * @param i the max number of concurrent connections to be set
 	 * @IbisDoc.default 10
 	 */
 	public void setMaxConnections(int i) {
@@ -839,7 +839,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * The maximum number of times the execution is retried
-	 * @param i
+	 * @param i the number of retries on failure to be set
 	 * @IbisDoc.default 1
 	 */
 	public void setMaxExecuteRetries(int i) {
@@ -1019,7 +1019,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * Specifies whether messages will encoded, e.g. spaces will be replaced by '+'
-	 * @param b
+	 * @param b whether the messages will be encoded
 	 */
 	public void setEncodeMessages(boolean b) {
 		encodeMessages = b;
@@ -1030,7 +1030,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * Controls whether connections checked to be stale, i.e. appear open, but are not.	
-	 * @param b
+	 * @param b whether connections checked to be stale
 	 * @IbisDoc.default true
 	 */
 	public void setStaleChecking(boolean b) {
@@ -1042,7 +1042,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * Used when StaleChecking=true. Timeout when stale connections should be closed.
-	 * @param timeout
+	 * @param timeout the stale timeout to be set
 	 * @IbisDoc.default 5000
 	 */
 	public void setStaleTimeout(int timeout) {
@@ -1054,7 +1054,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * When true, a redirect request will be honored, e.g. to switch to https	
-	 * @param b
+	 * @param b whether a redirect request is honored
 	 * @IbisDoc.default true
 	 */
 	public void setFollowRedirects(boolean b) {
@@ -1068,7 +1068,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	/**
 	 * Only used when methodeType=POST and paramsInUrl=false.
 	 * Name of the request parameter which is used to put the input message in
-	 * @param inputMessageParam
+	 * @param inputMessageParam the name of the request parameter to be set
 	 */
 	public void setInputMessageParam(String inputMessageParam) {
 		this.inputMessageParam = inputMessageParam;
@@ -1079,7 +1079,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * Comma separated list of parameter names which should be set as http headers
-	 * @param headersParams
+	 * @param headersParams the list of parameter names to be set
 	 */
 	public void setHeadersParams(String headersParams) {
 		this.headersParams = headersParams;
@@ -1090,7 +1090,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * When true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful
-	 * @param b
+	 * @param b whether to ignore redirects
 	 */
 	public void setIgnoreRedirects(boolean b) {
 		ignoreRedirects = b;
@@ -1101,7 +1101,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * The CertificateExpiredException is ignored when set to true
-	 * @param b
+	 * @param b whether to ignore CertificateExpiredException
 	 * @IbisDoc.default false
 	 */
 	public void setIgnoreCertificateExpiredException(boolean b) {
@@ -1113,7 +1113,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * When false and methodeType=POST, request parameters are put in the request body instead of in the url
-	 * @param b
+	 * @param b whether to put the request parameters in the request body
 	 * @IbisDoc.default true
 	 */
 	public void setParamsInUrl(boolean b) {
@@ -1125,7 +1125,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * Transformes the response to xhtml
-	 * @param xHtml
+	 * @param xHtml whether to transform to xhtml
 	 * @IbisDoc.default false
 	 */
 	public void setXhtml(boolean xHtml) {
@@ -1148,7 +1148,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * Secure socket protocol (such as "SSL" and "TLS") to use when a SSLContext object is generated.
-	 * @param protocol
+	 * @param protocol the socket protocol to be set
 	 * @IbisDoc.default SSL
 	 */
 	public void setProtocol(String protocol) {

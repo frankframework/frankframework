@@ -50,7 +50,7 @@ public class PutInSession extends FixedForwardPipe {
 	
 	/**
      * checks wether the proper forward is defined.
-     * @throws ConfigurationException
+     * @throws ConfigurationException thrown when configuration fails
      */
     public void configure() throws ConfigurationException {
 	    super.configure();
@@ -73,6 +73,7 @@ public class PutInSession extends FixedForwardPipe {
 	}
 	/**
 	 * The name of the key in the <code>PipeLineSession</code> to store the input in
+	 * @return the of the key
 	 * @see nl.nn.adapterframework.core.IPipeLineSession
 	 */
 	public String getSessionKey() {
@@ -80,6 +81,7 @@ public class PutInSession extends FixedForwardPipe {
 	}
 	/**
 	 * The name of the key in the <code>PipeLineSession</code> to store the input in
+	 * @param newSessionKey the new session key to be set
 	 * @see nl.nn.adapterframework.core.IPipeLineSession
 	 */
 	public void setSessionKey(String newSessionKey) {
@@ -88,6 +90,7 @@ public class PutInSession extends FixedForwardPipe {
 
 	/**
 	 * The value to store the in the <code>PipeLineSession</code>
+	 * @param value the value to be set
 	 * @see nl.nn.adapterframework.core.IPipeLineSession
 	 */
 	public void setValue(String value) {

@@ -36,12 +36,14 @@ public interface IListenerConnector {
 			throws ConfigurationException;
 
 	/**
-	 * Start Listener-port to which the Listener is connected.
+	 * Start Listener-port to which the Listener is connected.0
+	 * @throws ListenerException thrown when starting Listener-port fails
 	 */
     void start() throws ListenerException;
  
 	/**
 	 * Stop Listener-port to which the Listener is connected.
+	 * @throws ListenerException thrown when stopping Listener-port fails
 	 */
     void stop() throws ListenerException;
 }

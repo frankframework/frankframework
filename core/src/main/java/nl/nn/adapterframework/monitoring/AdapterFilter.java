@@ -32,6 +32,7 @@ public class AdapterFilter {
 
 	/**
 	 * Set the name of the Adapter that this AdapterFilter filters on.
+	 * @param string the name of the adapter
 	 */
 	public void setAdapter(String string) {
 		adapter = string;
@@ -42,12 +43,14 @@ public class AdapterFilter {
 
 	/**
 	 * Register the name of a SubObject (such as a Pipe) to be included in the filter.
+	 * @param name the name of the subObject
 	 */
 	public void registerSubOject(String name) {
 		subObjectList.add(name);
 	}
 	/**
 	 * Get the list of registered names of SubObjects included in the filter.
+	 * @return a list of subObjects
 	 */
 	public List<String> getSubObjectList() {
 		return subObjectList;

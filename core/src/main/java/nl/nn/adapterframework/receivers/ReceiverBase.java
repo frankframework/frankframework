@@ -161,7 +161,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>otherwise</td><td>false</td></tr>
  * </table>
  * </p>
- * <p>
+ *
+ * <br>
  * <table border="1">
  * <tr><th>nested elements (accessible in descender-classes)</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.IPullingListener listener}</td><td>the listener used to receive messages from</td></tr>
@@ -170,7 +171,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link nl.nn.adapterframework.core.ISender errorSender}</td><td>optional for {@link #setTransacted(boolean) transacted} receviers: 
  * will be called to store messages that failed to process. If no errorSender is specified, failed messages will remain in inProcessStorage</td></tr>
  * </table>
- * </p>
+ * </br>
+ *
  * <p><b>Transaction control</b><br>
  * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be received and processed under transaction control.
  * This means that after a message has been read and processed and the transaction has ended, one of the following apply:
@@ -418,6 +420,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
     
 	/** 
 	 * sends an informational message to the log and to the messagekeeper of the adapter
+	 * @param msg the informational message
 	 */
 	protected void info(String msg) {
 		log.info(msg);
@@ -427,6 +430,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 	/** 
 	 * sends a warning to the log and to the messagekeeper of the adapter
+	 * @param msg the warning
 	 */
 	protected void warn(String msg) {
 		log.warn(msg);
@@ -436,6 +440,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 	/** 
 	 * sends a warning to the log and to the messagekeeper of the adapter
+	 * @param msg the messagekeeper
+	 * @param t the error thrown
 	 */
 	protected void error(String msg, Throwable t) {
 		log.error(msg, t);
@@ -1755,6 +1761,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	
 	/**
 	 * Sets the messageLog.
+	 * @param messageLog the messageLog to be set
 	 */
 	protected void setMessageLog(ITransactionalStorage messageLog) {
 		if (messageLog.isActive()) {
@@ -1827,6 +1834,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	
 	/**
 	 * Controls the use of XA-transactions.
+	 * @param transacted whether XA-transactions are to be used
 	 */
 	public void setTransacted(boolean transacted) {
 //		this.transacted = transacted;
@@ -1900,6 +1908,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	
 	/**
 	 * The number of threads that this receiver is configured to work with.
+	 * @param newNumThreads the number of threads to be set
 	 */
 	public void setNumThreads(int newNumThreads) {
 		numThreads = newNumThreads;
