@@ -110,6 +110,14 @@ public final class ExecuteJdbcQuery extends Base {
 		}
 
 		//We have all info we need, lets execute the query!
+		
+		
+		DispatcherManager dispatcher = new DispatcherManagerFactory().getDispatcherManager();
+		HashMap session = new HashMap<>();
+		String result = dispatcher.processRequest("javaListenerName", "correlationId", "input goes here!", session);
+		
+		
+		// ====================== DIRECT QUERY SENDER CREATION + ACTIVATION
 		DirectQuerySender qs;
 		try {
 			qs = (DirectQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
@@ -138,6 +146,7 @@ public final class ExecuteJdbcQuery extends Base {
 		} finally {
 			qs.close();
 		}
+		// ====================== DIRECT QUERY SENDER CREATION + ACTIVATION ^
 
 		if(resultType.equalsIgnoreCase("json")) {
 			if(XmlUtils.isWellFormed(result)) {
