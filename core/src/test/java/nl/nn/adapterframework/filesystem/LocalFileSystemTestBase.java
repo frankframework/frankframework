@@ -11,26 +11,21 @@ import java.io.OutputStream;
 import org.junit.Before;
 import org.junit.rules.TemporaryFolder;
 
-public class LocalFileSystemTests extends FileSystemTest<File,LocalFileSystem> {
+import nl.nn.adapterframework.configuration.ConfigurationException;
+
+public abstract class LocalFileSystemTestBase<Ff,FS extends IFileSystem<Ff>> extends FileSystemTest<Ff,FS> {
 
 	public TemporaryFolder folder;
 	
 	@Override
 	@Before
-	public void setup() throws IOException {
+	public void setup() throws IOException, ConfigurationException {
 		folder = new TemporaryFolder();
 		folder.create();
 		super.setup();
 	}
 
-	@Override
-	protected LocalFileSystem getFileSystem() {
-		LocalFileSystem result=new LocalFileSystem();
-		result.setDirectory(folder.getRoot().getAbsolutePath());
-		return result;
-	}
 
-	@Override
 	protected File getFileHandle(String filename) {
 		return new File(folder.getRoot().getAbsolutePath(),filename);
 	}
@@ -38,25 +33,26 @@ public class LocalFileSystemTests extends FileSystemTest<File,LocalFileSystem> {
 	
 	
 	@Override
-	public boolean _fileExists(File f) {
-		return f.exists();
+	public boolean _fileExists(String filename) {
+		return getFileHandle(filename).exists();
 	}
 
 	@Override
-	public void _deleteFile(File f) {
-		f.delete();
+	public void _deleteFile(String filename) {
+		getFileHandle(filename).delete();
 	}
 
 	@Override
-	public OutputStream _createFile(File f) throws IOException {
+	public OutputStream _createFile(String filename) throws IOException {
+		File f = getFileHandle(filename);
 		f.createNewFile();
 		return new FileOutputStream(f);
 		
 	}
 
 	@Override
-	public InputStream _readFile(File f) throws FileNotFoundException {
-		return new FileInputStream(f);
+	public InputStream _readFile(String filename) throws FileNotFoundException {
+		return new FileInputStream(getFileHandle(filename));
 	}
 
 

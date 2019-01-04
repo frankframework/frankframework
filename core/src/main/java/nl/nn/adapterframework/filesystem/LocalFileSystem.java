@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.Dir2Xml;
 
 public class LocalFileSystem implements IFileSystem<File> {
@@ -41,6 +42,10 @@ public class LocalFileSystem implements IFileSystem<File> {
 		
 	}
 	
+	@Override
+	public void configure() throws ConfigurationException {
+	}
+
 	@Override
 	public File toFile(String filename) {
 		return new File(getDirectory(),filename);

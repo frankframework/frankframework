@@ -1,21 +1,24 @@
 package nl.nn.adapterframework.filesystem;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+
 
 public interface IFileSystemBase<F> {
 
-	public F toFile(String filename);
-	public Iterator<F> listFiles();
-	public boolean exists(F f);
-	public OutputStream createFile(F f) throws IOException;
-	public OutputStream appendFile(F f) throws FileNotFoundException;
-	public InputStream readFile(F f) throws FileNotFoundException;
-	public void deleteFile(F f);
-	public String getInfo(F f);
+	public void configure() throws ConfigurationException;
+	
+	public F toFile(String filename) throws FileSystemException;
+	public Iterator<F> listFiles() throws FileSystemException;
+	public boolean exists(F f) throws FileSystemException;
+	public OutputStream createFile(F f) throws FileSystemException,IOException;
+	public OutputStream appendFile(F f) throws FileSystemException,IOException;
+	public InputStream readFile(F f) throws FileSystemException,IOException;
+	public void deleteFile(F f) throws FileSystemException;
+	public String getInfo(F f) throws FileSystemException;
 	
 }
