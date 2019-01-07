@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -732,6 +732,8 @@ public class JobDef {
 			String deleteQuery;
 			if (qs.getDatabaseType() == DbmsSupportFactory.DBMS_MSSQLSERVER) {
 				deleteQuery = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < CONVERT(datetime, '" + formattedDate + "', 120)";
+			} else if (qs.getDatabaseType() == DbmsSupportFactory.DBMS_MARIADB) {
+				deleteQuery = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < TIMESTAMP('" + formattedDate + "')";
 			} else {
 				deleteQuery = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < TO_TIMESTAMP('" + formattedDate + "', 'YYYY-MM-DD HH24:MI:SS')";
 			}
@@ -784,6 +786,14 @@ public class JobDef {
 						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER
 						+ "') AND " + mlo.getExpiryDateField()
 						+ " < CONVERT(datetime, '" + formattedDate + "', 120))";
+			} else if (qs.getDatabaseType() == DbmsSupportFactory.DBMS_MARIADB) {
+				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE "
+						+ mlo.getTypeField() + " IN ('"
+						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','"
+						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER
+						+ "') AND " + mlo.getExpiryDateField()
+						+ " < TIMESTAMP('" + formattedDate
+						+ "')";
 			} else {
 				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE "
 						+ mlo.getTypeField() + " IN ('"

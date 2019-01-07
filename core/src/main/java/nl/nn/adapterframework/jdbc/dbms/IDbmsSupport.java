@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018 Nationale-Nederlanden
+   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -85,6 +85,9 @@ public interface IDbmsSupport {
 	String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery) throws JdbcException;
 	String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException;
 	String getFirstRecordQuery(String tableName) throws JdbcException;
+
+	String convertOracleQuery(Connection connection, String query, boolean resultQuery, boolean updateable) throws JdbcException, SQLException;
+	int alterSequence(Connection connection, String sequenceName, int startWith) throws JdbcException;
 
 	String provideIndexHintAfterFirstKeyword(String tableName, String indexName);
 	String provideFirstRowsHintAfterFirstKeyword(int rowCount);

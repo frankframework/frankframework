@@ -39,7 +39,7 @@
 					</xsl:otherwise>
 				</xsl:choose>
 			</xsl:when>
-			<xsl:when test="starts-with($dbmsName, 'MS SQL')">
+			<xsl:when test="starts-with($dbmsName, 'MS SQL') or $dbmsName='MariaDB'">
 				<xsl:text>SELECT * FROM (SELECT ROW_NUMBER() OVER (ORDER BY </xsl:text>
 				<xsl:choose>
 					<xsl:when test="string-length($order)&gt;0">
@@ -84,7 +84,7 @@
 	</xsl:template>
 	<xsl:template name="selectAllFields">
 		<xsl:choose>
-			<xsl:when test="$rownumMax!=$rownumMin and fielddefinition/field[number(@size)&gt;$maxColumnSize]">
+			<xsl:when test="$dbmsName='MariaDB' or ($rownumMax!=$rownumMin and fielddefinition/field[number(@size)&gt;$maxColumnSize])">
 				<xsl:for-each select="fielddefinition/field">
 					<xsl:if test="number(@size)&gt;$maxColumnSize">
 						<xsl:choose>

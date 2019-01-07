@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018 Nationale-Nederlanden
+   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -273,5 +273,26 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	public String getSchemaOwner(Connection conn) throws SQLException, JdbcException {
 		String query="SELECT SYS_CONTEXT('USERENV','CURRENT_SCHEMA') FROM DUAL";
 		return JdbcUtil.executeStringQuery(conn, query);
+	}
+
+	@Override
+	public int alterSequence(Connection connection, String sequenceName,
+			int startWith) throws JdbcException {
+		String callQuery = "declare" + " pragma autonomous_transaction;"
+				+ " ln_increment number;" + " ln_curr_val number;"
+				+ " ln_reset_increment number;" + " ln_reset_val number;"
+				+ "begin"
+				+ " select increment_by into ln_increment from user_sequences where sequence_name = '"
+				+ sequenceName + "';" + " select " + (startWith - 2) + " - "
+				+ sequenceName + ".nextval into ln_reset_increment from dual;"
+				+ " select " + sequenceName
+				+ ".nextval into ln_curr_val from dual;"
+				+ " EXECUTE IMMEDIATE 'alter sequence " + sequenceName
+				+ " increment by '|| ln_reset_increment ||' minvalue 0';"
+				+ " select " + sequenceName
+				+ ".nextval into ln_reset_val from dual;"
+				+ " EXECUTE IMMEDIATE 'alter sequence " + sequenceName
+				+ " increment by '|| ln_increment;" + "end;";
+		return JdbcUtil.executeIntCallQuery(connection, callQuery);
 	}
 }

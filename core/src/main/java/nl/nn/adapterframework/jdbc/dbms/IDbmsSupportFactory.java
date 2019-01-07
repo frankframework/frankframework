@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ public interface IDbmsSupportFactory {
 	final int DBMS_MSSQLSERVER=2;
 	final int DBMS_DB2=3;
 	final int DBMS_H2=4;
+	final int DBMS_MARIADB=5;
 	
 	IDbmsSupport getDbmsSupport(Connection conn);
 

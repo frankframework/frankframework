@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -47,10 +47,12 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -170,6 +172,8 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	protected String[] columnsReturnedList=null;
 	private boolean streamResultToServlet=false;
 
+	protected boolean convertOracleQueries = AppConstants.getInstance().getBoolean("jdbc.convertOracleQueries", false);
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -204,17 +208,34 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return con.prepareStatement(query,columnsReturned);
 	}
 
-	protected PreparedStatement prepareQuery(Connection con, String query, boolean updateable) throws SQLException {
+	protected PreparedStatement prepareQuery(Connection con, String query, boolean updateable) throws SQLException, JdbcException {
+		String convertedQuery = convertQuery(con, query, false);
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix() +"preparing statement for query ["+query+"]");
+			log.debug(getLogPrefix() +"preparing statement for query ["+convertedQuery+"]");
 		}
 		String[] columnsReturned = getColumnsReturnedList();
 		if (columnsReturned!=null) {
-			return prepareQueryWithColunmsReturned(con,query,columnsReturned);
+			return prepareQueryWithColunmsReturned(con,convertedQuery,columnsReturned);
 		}
-		return con.prepareStatement(query,ResultSet.TYPE_FORWARD_ONLY,updateable?ResultSet.CONCUR_UPDATABLE:ResultSet.CONCUR_READ_ONLY);
+		return con.prepareStatement(convertedQuery,ResultSet.TYPE_FORWARD_ONLY,updateable?ResultSet.CONCUR_UPDATABLE:ResultSet.CONCUR_READ_ONLY);
 	}
 
+	private String convertQuery(Connection connection, String query,
+			boolean resultQuery) throws JdbcException, SQLException {
+		if (convertFromOracle()) {
+			if (log.isDebugEnabled()) {
+				log.debug(getLogPrefix() + "converting "
+						+ (resultQuery ? "result" : "") + " query [" + query
+						+ "]");
+			}
+			boolean updateBlob = "updateBlob".equalsIgnoreCase(getQueryType());
+			boolean updateClob = "updateClob".equalsIgnoreCase(getQueryType());
+			return getDbmsSupport().convertOracleQuery(connection, query,
+					resultQuery, updateBlob||updateClob);
+		}
+		return query;
+	}
+	
 	protected CallableStatement getCallWithRowIdReturned(Connection con, String correlationID, String message) throws SQLException {
 		String callMessage = "BEGIN " + message + " RETURNING ROWID INTO ?; END;";
 		if (log.isDebugEnabled()) {
@@ -238,8 +259,20 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			message = adjustParamList(newParamList, message);
 		}
 		try {
-			boolean updateBlob="updateBlob".equalsIgnoreCase(getQueryType());
-			boolean updateClob="updateClob".equalsIgnoreCase(getQueryType());
+			boolean updateBlob = "updateBlob".equalsIgnoreCase(getQueryType());
+			boolean updateClob = "updateClob".equalsIgnoreCase(getQueryType());
+			if (convertFromOracle() && (updateBlob || updateClob)) {
+				// set variables to false so executeOtherQuery() will be
+				// executed
+				updateBlob = false;
+				updateClob = false;
+				// add inputMessage as first parameter (shifting other
+				// parameters)
+				Parameter param = new Parameter();
+				param.setName("inputMessage");
+				param.configure();
+				newParamList.add(0, param);
+			}
 			log.debug(getLogPrefix() + "obtaining prepared statement to execute");
 			statement = getStatement(connection, correlationID, message, updateBlob||updateClob);
 			log.debug(getLogPrefix() + "obtained prepared statement to execute");
@@ -656,11 +689,12 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			log.debug(getLogPrefix() + "executing a package SQL command");
 			int numRowsAffected = pstmt.executeUpdate();
 			if (StringUtils.isNotEmpty(getResultQuery())) {
+				String convertedQuery = convertQuery(connection, getResultQuery(), true);
 				Statement resStmt = null;
 				try {
 					resStmt = connection.createStatement();
-					log.debug("obtaining result from ["	+ getResultQuery() + "]");
-					ResultSet rs = resStmt.executeQuery(getResultQuery());
+					log.debug("obtaining result from ["	+ convertedQuery + "]");
+					ResultSet rs = resStmt.executeQuery(convertedQuery);
 					return getResult(rs);
 				} finally {
 					if (resStmt != null) {
@@ -698,6 +732,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		try {
 			int numRowsAffected = 0;
 			if (StringUtils.isNotEmpty(getRowIdSessionKey())) {
+				//TODO: move this block to in IDbmsSupport (executeUpdateQueryWithRowIdReturned)
 				CallableStatement cstmt = getCallWithRowIdReturned(connection, correlationID, message);
 				int ri = 1;
 				if (prc != null && paramList != null) {
@@ -715,11 +750,12 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				numRowsAffected = statement.executeUpdate();
 			}
 			if (StringUtils.isNotEmpty(getResultQuery())) {
+				String convertedQuery = convertQuery(connection, getResultQuery(), true);
 				Statement resStmt = null;
 				try { 
 					resStmt = connection.createStatement();
-					log.debug("obtaining result from ["+getResultQuery()+"]");
-					ResultSet rs = resStmt.executeQuery(getResultQuery());
+					log.debug("obtaining result from ["+convertedQuery+"]");
+					ResultSet rs = resStmt.executeQuery(convertedQuery);
 					return getResult(rs);
 				} finally {
 					if (resStmt!=null) {
@@ -864,6 +900,11 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		}
 	}
 
+	protected boolean convertFromOracle() {
+		return DbmsSupportFactory.DBMS_ORACLE != getDatabaseType()
+				&& convertOracleQueries;
+	}
+	
 	/**
 		 * Controls wheter the returned package content is db2 format or xml format. 
 		 * Possible values: 

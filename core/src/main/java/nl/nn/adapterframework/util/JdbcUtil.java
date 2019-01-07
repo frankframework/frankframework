@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2014, 2017, 2018 Nationale-Nederlanden
+   Copyright 2013, 2014, 2017-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.sql.Blob;
+import java.sql.CallableStatement;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -1245,6 +1246,25 @@ public class JdbcUtil {
 			statement.setBytes(parameterIndex, (byte[]) value);
 		} else {
 			statement.setString(parameterIndex, (String) value);
+		}
+	}
+
+	public static int executeIntCallQuery(Connection connection, String query) throws JdbcException {
+		CallableStatement stmt = null;
+		try {
+			if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]");
+			stmt = connection.prepareCall(query);
+			return stmt.executeUpdate();
+		} catch (SQLException e) {
+			throw new JdbcException("could not obtain value using query ["+query+"]",e);
+		} finally {
+			if (stmt!=null) {
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					log.warn("exception closing statement ["+query+"]",e);
+				}
+			}
 		}
 	}
 }

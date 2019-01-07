@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018 Nationale-Nederlanden
+   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -386,5 +386,17 @@ public class GenericDbmsSupport implements IDbmsSupport {
 
 	public String getBooleanValue(boolean value) {
 		return (""+value).toUpperCase();
+	}
+
+
+	@Override
+	public String convertOracleQuery(Connection connection, String query, boolean resultQuery, boolean updateable) throws JdbcException, SQLException {
+		return query;
+	}
+
+	@Override
+	public int alterSequence(Connection connection, String sequenceName, int startWith) throws JdbcException {
+		log.warn("altering sequence not supported for this database type");
+		return -1;
 	}
 }

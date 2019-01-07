@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017 Nationale-Nederlanden
+   Copyright 2013, 2017, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.DateUtils;
@@ -201,7 +202,10 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 						}
 						parameter = new java.sql.Timestamp(nDate.getTime());
 					} else {
-						if (type.equalsIgnoreCase(TYPE_BLOB) || type.equalsIgnoreCase(TYPE_CLOB) || type.equalsIgnoreCase(TYPE_FUNCTION)) {
+						if ((!convertFromOracle()
+								&& (type.equalsIgnoreCase(TYPE_BLOB)
+										|| type.equalsIgnoreCase(TYPE_CLOB)))
+								|| type.equalsIgnoreCase(TYPE_FUNCTION)) {
 							//skip
 						} else {
 							// type.equalsIgnoreCase("string")
@@ -214,10 +218,10 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 
 		private void fillQueryValue() {
 			queryValue = "?";
-			if (type.equalsIgnoreCase(TYPE_BLOB)) {
+			if (!convertFromOracle() && type.equalsIgnoreCase(TYPE_BLOB)) {
 				queryValue = "EMPTY_BLOB()";
 			} else {
-				if (type.equalsIgnoreCase(TYPE_CLOB)) {
+				if (!convertFromOracle() && type.equalsIgnoreCase(TYPE_CLOB)) {
 					queryValue = "EMPTY_CLOB()";
 				} else {
 					if (type.equalsIgnoreCase(TYPE_FUNCTION)) {
@@ -303,7 +307,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 							if (root.equalsIgnoreCase("alter")) {
 								String sequenceName = XmlUtils.getChildTagAsString(queryElement, "sequenceName");
 								int startWith = Integer.parseInt(XmlUtils.getChildTagAsString(queryElement, "startWith"));
-								result = alterQuery(connection, sequenceName, startWith);
+								result = alterQuery(connection, correlationID, sequenceName, startWith);
 							} else {
 								if (root.equalsIgnoreCase("sql")) {
 									String type = XmlUtils.getChildTagAsString(queryElement, "type");
@@ -455,7 +459,8 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 
 	private String executeUpdate(Connection connection, String correlationID, String tableName, String query, Vector columns) throws SenderException {
 		try {
-			if (existLob(columns)) {
+			if (DbmsSupportFactory.DBMS_ORACLE==getDatabaseType() && existLob(columns)) {
+				//TODO: move this block to IDbmsSupport
 				CallableStatement callableStatement = getCallWithRowIdReturned(connection, correlationID, query);
 				applyParameters(callableStatement, columns);
 				int ri = 1 + countParameters(columns);
@@ -464,7 +469,6 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				int numRowsAffected = callableStatement.executeUpdate();
 				String rowId = callableStatement.getString(ri);
 				log.debug(getLogPrefix() + "returning ROWID [" + rowId + "]");
-
 				Iterator iter = columns.iterator();
 				while (iter.hasNext()) {
 					Column column = (Column) iter.next();
@@ -514,14 +518,15 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		return parameterCount;
 	}
 
-	private String alterQuery(Connection connection, String sequenceName, int startWith) throws SenderException {
+	private String alterQuery(Connection connection, String correlationID,
+			String sequenceName, int startWith)
+			throws SenderException, JdbcException {
 		try {
-			String callQuery = "declare" + " pragma autonomous_transaction;" + " ln_increment number;" + " ln_curr_val number;" + " ln_reset_increment number;" + " ln_reset_val number;" + "begin" + " select increment_by into ln_increment from user_sequences where sequence_name = '" + sequenceName + "';" + " select " + (startWith - 2) + " - " + sequenceName + ".nextval into ln_reset_increment from dual;" + " select " + sequenceName + ".nextval into ln_curr_val from dual;" + " EXECUTE IMMEDIATE 'alter sequence " + sequenceName + " increment by '|| ln_reset_increment ||' minvalue 0';" + " select " + sequenceName + ".nextval into ln_reset_val from dual;" + " EXECUTE IMMEDIATE 'alter sequence " + sequenceName + " increment by '|| ln_increment;" + "end;";
-			log.debug(getLogPrefix() + "preparing procedure for query [" + callQuery + "]");
-			CallableStatement callableStatement = connection.prepareCall(callQuery);
-			int numRowsAffected = callableStatement.executeUpdate();
-			return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
-		} catch (SQLException e) {
+			int numRowsAffected = getDbmsSupport().alterSequence(connection,
+					sequenceName, startWith);
+			return "<result><rowsupdated>" + numRowsAffected
+					+ "</rowsupdated></result>";
+		} catch (Exception e) {
 			throw new SenderException(e);
 		}
 	}
