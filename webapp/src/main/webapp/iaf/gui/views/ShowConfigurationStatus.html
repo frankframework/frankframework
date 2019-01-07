@@ -179,13 +179,13 @@
                                 <table class="table table-striped table-nohead m-b-none">
                                     <tbody>
                                         <tr ng-repeat="message in messageLog[selectedConfiguration].messages" ng-class="{
-                                            'text-warning' : message.level == 'WARNING',
+                                            'text-warning' : message.level == 'WARN',
                                             'text-danger' : message.level == 'ERROR'
                                         }">
                                             <td style="width:40px;" class="text-center">
                                                 <i class="m-l-md fa" ng-class="{
                                                     'fa-info': message.level == 'INFO',
-                                                    'fa-warning' : message.level == 'WARNING',
+                                                    'fa-warning' : message.level == 'WARN',
                                                     'fa-times' : message.level == 'ERROR'
                                                 }"></i>
                                             </td>
