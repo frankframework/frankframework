@@ -28,6 +28,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.extensions.graphviz.Format;
 import nl.nn.adapterframework.extensions.graphviz.GraphvizEngine;
+import nl.nn.adapterframework.extensions.graphviz.GraphvizException;
 import nl.nn.adapterframework.extensions.graphviz.Options;
 
 import org.apache.log4j.Logger;
@@ -88,7 +89,7 @@ public class FlowDiagram {
 		options = options.format(this.format);
 	}
 
-	public void generate(IAdapter adapter) throws ConfigurationException, IOException {
+	public void generate(IAdapter adapter) throws ConfigurationException, IOException, GraphvizException {
 		File destFile = retrieveAdapterFlowFile(adapter);
 
 		if(destFile.exists()) //If the file exists, update it
@@ -110,7 +111,7 @@ public class FlowDiagram {
 		generateFlowDiagram(name, dotOutput, destFile);
 	}
 
-	public void generate(Configuration configuration) throws ConfigurationException, IOException {
+	public void generate(Configuration configuration) throws ConfigurationException, IOException, GraphvizException {
 		File destFile = retrieveConfigurationFlowFile(configuration);
 
 		if(destFile.exists()) //If the file exists, update it
@@ -132,7 +133,7 @@ public class FlowDiagram {
 		generateFlowDiagram(name, dotOutput, destFile);
 	}
 
-	public void generate(List<Configuration> configurations) throws ConfigurationException, IOException {
+	public void generate(List<Configuration> configurations) throws ConfigurationException, IOException, GraphvizException {
 		File destFile = retrieveAllConfigurationsFlowFile();
 		destFile.delete();
 
@@ -176,7 +177,7 @@ public class FlowDiagram {
 		return new File(parent, name);
 	}
 
-	private void generateFlowDiagram(String name, String dot, File destFile) throws IOException {
+	private void generateFlowDiagram(String name, String dot, File destFile) throws IOException, GraphvizException {
 		log.debug("generating flow diagram for " + name);
 		long start = System.currentTimeMillis();
 

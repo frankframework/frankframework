@@ -62,8 +62,9 @@ public class GraphvizEngine {
 	 * @param src dot file
 	 * @return {@link Format#SVG} string
 	 * @throws IOException when VizJs files can't be found on the classpath
+	 * @throws GraphvizException when some V8 engine error occurs
 	 */
-	public String execute(String src) throws IOException {
+	public String execute(String src) throws IOException, GraphvizException {
 		return execute(src, Options.create());
 	}
 
@@ -73,8 +74,9 @@ public class GraphvizEngine {
 	 * @param options see {@link Options}
 	 * @return string in specified {@link Format}
 	 * @throws IOException when VizJs files can't be found on the classpath
+	 * @throws GraphvizException when some V8 engine error occurs
 	 */
-	public String execute(String src, Options options) throws IOException {
+	public String execute(String src, Options options) throws IOException, GraphvizException {
 		long start = 0;
 		if(log.isDebugEnabled()) {
 			log.debug("executing VizJS src["+src+"] options["+options.toString()+"]");
@@ -101,7 +103,7 @@ public class GraphvizEngine {
 	}
 
 	private String jsEscape(String js) {
-		return js.replaceAll("\r\n", " ").replace("\\", "\\\\").replace("'", "\\'");
+		return js.replaceAll("\n", " ").replaceAll("\r", "").replace("\\", "\\\\").replace("'", "\\'");
 	}
 
 	private String getVizJsSource(String version) throws IOException {
@@ -161,13 +163,12 @@ public class GraphvizEngine {
 			log.info("initialized graphviz");
 		}
 
-		public String execute(String call) {
+		public String execute(String call) throws GraphvizException {
 			try {
 				v8.executeVoidScript(call);
 				return resultHandler.waitFor();
 			} catch (Exception e) {
-				log.error("unable to successfully execute graphviz");
-				return null;
+				throw new GraphvizException(e);
 			}
 		}
 
