@@ -90,7 +90,7 @@
 				<div class="ibox-title">
 					<h4>Jobgroup: {{jobGroupName}}</h4>
 				</div>
-				<div class="ibox-content" ng-repeat="job in jobs | orderObjectBy:'name'">
+				<div class="ibox-content" ng-repeat="job in jobs">
 					<div class="col-md-12">
 						<div class="pull-right">
 							<button title="Delete Job" class="btn btn-danger btn-xs" type="button" ng-click="remove(jobGroupName, job.name)"><i class="fa fa-times"></i> Delete</button>
@@ -143,7 +143,7 @@
 						</table>
 					</div>
 					<div class="col-md-4">
-						<table class="table" ng-repeat="trigger in job.triggers | orderObjectBy:'name'">
+						<table class="table" ng-repeat="trigger in job.triggers | orderBy:'name'">
 							<thead>
 								<tr>
 									<th colspan="2">Trigger: {{trigger.name}}</th>
