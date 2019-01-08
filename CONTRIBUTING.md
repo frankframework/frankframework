@@ -127,7 +127,7 @@ In some cases you might want/need to:
   Right click Tomcat v7.0 Server at localhost, Clean...
 - When running Tomcat v8.5, make sure to disable its pluggability scans to prevent unnecessarily long startup times.
   To do this, go to Tomcat's local context.xml file (under the Servers folder in Eclipse's project explorer) and
-  add a JarScannerFilter element with the defaultPluggabilityScan="false" attribute. Encapsulate this in JarScanner tags.
+  add a JarScanner element. Within the JarScanner's tags, add a self-closing JarScannerFilter element with the defaultPluggabilityScan="false" attribute.
 
 
 ## Developing with IntelliJ
