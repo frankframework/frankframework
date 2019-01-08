@@ -55,8 +55,15 @@ public class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 		pipe.setDirection("not encode");
 		pipe.configure();
 	}
+
+	@Test(expected = ConfigurationException.class)
+	public void wrongOutputType() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		pipe.setOutputType("not string or stream or bytes");
+		pipe.configure();
+	}
+
 	@Test(expected = PipeRunException.class)
-    public void wrongInputEncoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void wrongInputEncoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setCharset("test123");
 		pipe.configure();
 		pipe.start();
@@ -65,18 +72,12 @@ public class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 	}
 
 	@Test(expected = PipeRunException.class)
-    public void wrongOutputEncoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void wrongOutputEncoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setCharset("test123");
 		pipe.configure();
 		pipe.start();
 
 		pipe.doPipe(input.getBytes(), session);
-	}
-
-	@Test(expected = ConfigurationException.class)
-	public void wrongOutputType() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
-		pipe.setOutputType("not string or stream or bytes");
-		pipe.configure();
 	}
 
 	@Test
@@ -343,6 +344,4 @@ public class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 		InputStream result = (InputStream) prr.getResult();
 		assertEquals(input, (Misc.streamToString(result)).trim());
 	}
-
-
 }
