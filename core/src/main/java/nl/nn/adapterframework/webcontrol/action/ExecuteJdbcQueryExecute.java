@@ -70,7 +70,13 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 
 		DirectQuerySender qs;
 		String result = "";
-
+		
+//		DispatcherManager dispatcher = new DispatcherManagerFactory().getDispatcherManager();
+//		HashMap session = new HashMap<>();
+//		String result = dispatcher.processRequest("javaListenerName", "correlationId", "input goes here!", session);
+		
+		// TODO: In this class, the functionality of the ExecuteJdbcQuery.do's send button is described
+		
 		try {
 			qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 			try {

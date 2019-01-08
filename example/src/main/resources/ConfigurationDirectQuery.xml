@@ -19,7 +19,9 @@
 				name="DirectQueryPipe"
 				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
 				>
-				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender"/>
+				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender"
+					jmsRealm="jdbc"
+				/>
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>
