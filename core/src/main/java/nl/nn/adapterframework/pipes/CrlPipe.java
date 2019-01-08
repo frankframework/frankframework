@@ -67,13 +67,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
 		</pipe>
  * </pre></code>
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setIssuerSessionKey(String) issuerSessionKey}</td><td>name of the sessionKey that holds a stream to the certificate of the issuer who signed the CRL. The steam is closed after reading</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
  * 
  * @author Miel Hoppenbrouwers
  * @author Jaco de Groot

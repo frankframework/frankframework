@@ -24,16 +24,6 @@ import org.apache.log4j.Logger;
 /**
  * Cleans up a directory.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setDirectory(String) directory}</td><td>directory to be cleaned up</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRetention(String) retention}</td><td>time (with suffix 'd', 'h', 'm' or 's' in milliseconds) that must have passed at least before a file will be deleted</td><td>30d</td></tr>
- * <tr><td>{@link #setSubdirectories(boolean) subdirectories}</td><td>when <code>true</code>, files in subdirectories will be deleted, too</td><td>false</td></tr>
- * <tr><td>{@link #setDeleteEmptySubdirectories(boolean) deleteEmptySubdirectories}</td><td>when <code>true</code>, empty subdirectories will be deleted, too</td><td>false</td></tr>
- * <tr><td>{@link #setNotExistWarn(boolean) notExistWarn}</td><td>when set <code>true</code>, send warnings to logging and console about not existing directories</td><td>true</td></tr>
- * </table>
- * </p>
  * 
  * @author Peter Leeuwenburgh
  */

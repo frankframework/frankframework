@@ -30,19 +30,6 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Remove specified cache key from cache with specified name.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.WsdlGeneratorPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCacheName(String) cacheName}</td><td>name of the cache to remove</td><td></td></tr>
- * <tr><td>{@link #setKeyXPath(String) keyXPath}</td><td>xpath expression to extract cache key from request message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setKeyXPathOutputType(String) keyXPathOutputType}</td><td>output type of xpath expression to extract cache key from request message, must be 'xml' or 'text'</td><td>text</td></tr>
- * <tr><td>{@link #setKeyNamespaceDefs(String) keyNamespaceDefs}</td><td>namespace defintions for keyXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setKeyStyleSheet(String) keyStyleSheet}</td><td>stylesheet to extract cache key from request message.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setKeyInputSessionKey(String) keyInputSessionKey}</td><td>session key to use as input for transformation of request message to key by keyXPath or keyStyleSheet</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
  *
  * @author Jaco de Groot
  */

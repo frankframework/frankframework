@@ -23,13 +23,6 @@ import nl.nn.adapterframework.doc.IbisDoc;
 /**
  * Skip a number of bytes or characters from the input. 
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setSkip(int) skip}</td><td>number of bytes (for byte array input) or characters (for String input) to skip. An empty byte array or String is returned when skip is larger then the length of the input</td><td>0</td></tr>
- * <tr><td>{@link #setLength(int) length}</td><td>if length>=0 only these number of bytes (for byte array input) or characters (for String input) is returned.</td><td>-1</td></tr>
- * </table>
- * </p>
  * 
  * @author Jaco de Groot (***@dynasol.nl)
  *

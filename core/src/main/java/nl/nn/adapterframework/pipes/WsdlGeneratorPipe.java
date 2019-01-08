@@ -31,14 +31,6 @@ import nl.nn.adapterframework.util.DateUtils;
 /**
  * Generate WSDL of parent or specified adapter.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.WsdlGeneratorPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFrom(String) from}</td><td>either parent (adapter of pipeline which contains this pipe) or input (name of adapter specified by input of pipe)</td><td>parent</td></tr>
- * </table>
- * </p>
 
  * @author Jaco de Groot
  */

@@ -42,19 +42,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Pipe to wrap or unwrap a message from/into a SOAP Envelope.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDirection(String) direction}</td><td>either <code>wrap</code> or <code>unwrap</code></td><td>wrap</td></tr>
- * <tr>
- *   <td>{@link #setSoapHeaderSessionKey(String) soapHeaderSessionKey}</td>
- *   <td>
- *     <table>
- *       <tr><td><code>direction=unwrap</code></td><td>name of the session key to store the content of the SOAP Header from the request in</td></tr>
- *       <tr><td><code>direction=wrap</code></td><td>name of the session key to retrieve the content of the SOAP Header for the response from. If the attribute soapHeaderStyleSheet is not empty, the attribute soapHeaderStyleSheet precedes this attribute</td></tr>
- *     </table>
- *   </td>
  *   <td>soapHeader when inputWrapper of pipeline and direction=unwrap, empty otherwise</td>
  * </tr>
  * <tr><td>{@link #setEncodingStyle(String) encodingStyle}</td><td>the encodingStyle to be set in the SOAP Header</td><td>&nbsp;</td></tr>

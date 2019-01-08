@@ -46,17 +46,6 @@ import nl.nn.adapterframework.util.JdbcUtil;
  *   <li><code>number</code>: the method setDouble() is used </li>
  * </ul>
  *  
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTableName(String) tableName}</td><td>the name of the table that contains the mapping</td><td>mapping</td></tr>
- * <tr><td>{@link #setLabelField(String) labelField}</td><td>the name of the column labels are stored in</td><td>label</td></tr>
- * <tr><td>{@link #setValueInField(String) valueInField}</td><td>the name of the column source values are stored in</td><td>valueIn</td></tr>
- * <tr><td>{@link #setValueOutField(String) valueOutField}</td><td>the name of the column destination values are stored in</td><td>valueOut</td></tr>
- * </table>
- * </p>
  * 
  * @author  Peter Leeuwenburgh
  * @since   4.9

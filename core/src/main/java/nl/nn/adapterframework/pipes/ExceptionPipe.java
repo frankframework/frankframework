@@ -25,12 +25,6 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Pipe that throws an exception, based on the input message.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>when <code>true</code>, a PipeRunException is thrown. Otherwise the output is only logged as an error (and no rollback is performed).</td><td>true</td></tr>
- * </table>
- * </p>
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>

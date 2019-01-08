@@ -99,7 +99,7 @@ public class SchedulerAdapter {
                 el.addSubElement(jb);
                 xbRoot.addSubElement(el);
             }
-        } catch (org.quartz.SchedulerException se) {
+        } catch (SchedulerException se) {
            log.error(se);
         }
         return xbRoot;
@@ -127,7 +127,7 @@ public class SchedulerAdapter {
                     }
                 }
             }
-        } catch (org.quartz.SchedulerException se) {
+        } catch (SchedulerException se) {
             log.error(se);
 
         }
@@ -177,7 +177,7 @@ public class SchedulerAdapter {
                 el.setValue(names[i]);
                 xbRoot.addSubElement(el);
             }
-        } catch (org.quartz.SchedulerException se) {
+        } catch (SchedulerException se) {
             log.error(se.toString());
         }
         return xbRoot;
@@ -248,7 +248,7 @@ public class SchedulerAdapter {
 
                 xbRoot.addSubElement(el);
             }
-        } catch (org.quartz.SchedulerException se) {
+        } catch (SchedulerException se) {
             log.error(se);
         }
         return xbRoot;
@@ -286,7 +286,7 @@ public class SchedulerAdapter {
 
                 xbRoot.addSubElement(ds);
             }
-        } catch (org.quartz.SchedulerException se) {
+        } catch (SchedulerException se) {
             log.error(se);
         }
         return xbRoot;
@@ -310,7 +310,7 @@ public class SchedulerAdapter {
             xbRoot.addAttribute("isDurable", (jd.isDurable() ? "True" : "False"));
             xbRoot.addAttribute("isVolatile", (jd.isVolatile() ? "True" : "False"));
             xbRoot.addAttribute("jobClass", jd.getJobClass().getName());
-        } catch (org.quartz.SchedulerException se) {
+        } catch (SchedulerException se) {
             log.error(se);
         }
         return xbRoot;

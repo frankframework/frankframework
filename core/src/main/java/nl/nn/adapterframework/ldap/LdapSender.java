@@ -60,38 +60,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * Returns the set of attributes in an XML format. Examples are shown below.
  * 
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.ldap.LdapSender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLdapProviderURL(String) ldapProviderURL}</td><td>URL to context to search in, e.g. 'ldap://edsnlm01.group.intranet/ou=People, o=ing' to search in te People group of ING CDS. Used to overwrite the providerURL specified in jmsRealm.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>sets jndi parameters from defined realm (including authentication)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setOperation(String) operation}</td><td>specifies operation to perform. Must be one of 
- * <ul>
- * <li><code>read</code>: read the contents of an entry</li>
- * <li><code>create</code>: create an attribute or an entry</li>
- * <li><code>update</code>: update an attribute or an entry</li>
- * <li><code>delete</code>: delete an attribute or an entry</li>
- * <li><code>search</code>: search for an entry in the direct children of the specified root</li>
- * <li><code>deepSearch</code>: search for an entry in the complete tree below the specified root</li>
- * <li><code>getSubContexts</code>: get a list of the direct children of the specifed root</li>
- * <li><code>getTree</code>: get a copy of the complete tree below the specified root</li>
- * <li><code>challenge</code>: check username and password against LDAP specifying principal and credential using parameters</li>
- * <li><code>changeUnicodePwd</code>: typical user change-password operation (one of the two methods to modify the unicodePwd attribute in AD (http://support.microsoft.com/kb/263991))</li>
- * </ul></td><td>read</td></tr>
- * <tr><td>{@link #setManipulationSubject(String) manipulationSubject}</td><td>specifies subject to perform operation on. Must be one of 'entry' or 'attribute'</td><td>attribute</td></tr>
- * <tr><td>{@link #setErrorSessionKey(String) errorSessionKey}</td><td>key of session variable used to store cause of errors</td><td>errorReason</td></tr>
- * <tr><td>{@link #setSearchTimeout(int) searchTimeout}</td><td>specifies the time (in ms) that is spent searching for results for operation Search</td><td>20000 ms</td></tr>
- * <tr><td>{@link #setUsePooling(boolean) usePooling}</td><td>specifies whether connection pooling is used or not</td><td>true when principal not set as parameter, false otherwise</td></tr>
- * <tr><td>{@link #setInitialContextFactoryName(String) initialContextFactoryName}</td><td>class to use as initial context factory</td><td>com.sun.jndi.ldap.LdapCtxFactory</td></tr>
- * <tr><td>{@link #setAttributesToReturn(String) attributesToReturn}</td>  <td>comma separated list of attributes to return. when no are attributes specified, all the attributes from the object read are returned.</td><td><i>all attributes</i></td></tr>
- * <tr><td>{@link #setMaxEntriesReturned(int) maxEntriesReturned}</td>  <td>The maximum number of entries to be returned by a search query, or 0 for unlimited</td><td><i>0 (unlimited)</i></td></tr>
- * <tr><td>{@link #setUnicodePwd(boolean) unicodePwd}</td>  <td>When true the attributes passed by the input xml are scanned for an attribute with id unicodePwd, when found the value of this attribute will be encoded as required by Active Directory (a UTF-16 encoded Unicode string containing the password surrounded by quotation marks) before sending it to the LDAP server</td><td>false</td></tr>
- * <tr><td>{@link #setJndiAuthAlias(String) jndiAuthAlias}</td><td>Authentication alias, may be used to override principal and credential-settings</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setReplyNotFound(boolean) replyNotFound}</td><td>(only used when <code>operation=search/deepSearch</code>) when <code>true</code> the xml '&lt;LdapResult&gt;Object not found&lt;/LdapResult&gt;' is returned instead of the PartialResultException 'Unprocessed Continuation Reference(s)'</td><td>false</td></tr>
- * </table>
- * </p>
  * 
  * <p>
  * <b>Parameters:</b>
@@ -1095,10 +1063,10 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	 * BasicAttribute implements Attribute
 	 * </pre>
 	 * 
-	 * @see javax.naming.directory.Attributes
-	 * @see javax.naming.directory.BasicAttributes
-	 * @see javax.naming.directory.Attribute
-	 * @see javax.naming.directory.BasicAttribute  
+	 * @see Attributes
+	 * @see BasicAttributes
+	 * @see Attribute
+	 * @see BasicAttribute
 	 */
 	private Attributes parseAttributesFromMessage(String message) throws SenderException {
 

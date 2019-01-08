@@ -35,20 +35,6 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Pipe to calculate checksum on input.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.FixedForwardPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified, then the message is logged informatory</td><td>-1</td></tr>
- * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setType(String) type}</td>  <td>type of checksum to be calculated. Must be one of MD5, SHA, CRC32, Adler32</td><td>MD5</td></tr>
- * <tr><td>{@link #setCharset(String) charset}</td>  <td>character encoding to be used to encode message before calculating checksum</td><td>UTF-8</td></tr>
- * <tr><td>{@link #setInputIsFile(boolean) inputIsFile}</td><td>when set <code>true</code>, the input is assumed to be a filename; otherwise the input itself is used in the calculations</td><td>false</td></tr>
- * </table>
- * </p>
  * 
  * @author  Gerrit van Brakel
  * @since   4.9  

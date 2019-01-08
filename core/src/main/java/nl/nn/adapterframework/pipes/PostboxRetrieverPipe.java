@@ -38,16 +38,6 @@ import nl.nn.adapterframework.doc.IbisDoc;
  * <li>&gt;= 0 maximum wait in milliseconds<li>
  * </ul> 
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setResultOnEmptyPostbox(String) resultOnEmptyPostbox}</td><td>result when no object is on postbox</td><td>empty postbox</td></tr>
- * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td><code>listener.*</td><td>any attribute of the listener instantiated by descendant classes</td><td>&nbsp;</td></tr>
- * </table>
- * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link IPostboxListener listener}</td><td>specification of postbox listener to retrieve messages from</td></tr>
  * </table>

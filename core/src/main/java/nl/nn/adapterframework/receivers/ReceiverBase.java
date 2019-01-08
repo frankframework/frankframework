@@ -102,34 +102,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * This {@link IReceiver Receiver} may be used as a base-class for developing receivers.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>name of the class, mostly a class that extends this class</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td>  <td>name of the receiver as known to the adapter</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setActive(boolean) active}</td>  <td>when set <code>false</code> or set to something else as "true", (even set to the empty string), the receiver is not included in the configuration</td><td>true</td></tr>
- * <tr><td>{@link #setNumThreads(int) numThreads}</td><td>the number of threads that may execute a pipeline concurrently (only for pulling listeners)</td><td>1</td></tr>
- * <tr><td>{@link #setNumThreadsPolling(int) numThreadsPolling}</td><td>the number of threads that are activily polling for messages concurrently. '0' means 'limited only by <code>numThreads</code>' (only for pulling listeners)</td><td>1</td></tr>
- * <tr><td>{@link #setOnError(String) onError}</td><td>one of 'continue' or 'close'. Controls the behaviour of the receiver when it encounters an error sending a reply or receives an exception asynchronously</td><td>continue</td></tr>
- * <tr><td>{@link #setReturnedSessionKeys(String) returnedSessionKeys}</td><td>comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTransacted(boolean) transacted} <i>deprecated</i></td><td>if set to <code>true</code>, messages will be received and processed under transaction control. If processing fails, messages will be sent to the error-sender. (see below)</code></td><td><code>false</code></td></tr>
- * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are: 
- *   <table border="1">
- *   <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>
- *   <tr><td colspan="1" rowspan="2">Required</td>    <td>none</td><td>T2</td></tr>
- * 											      <tr><td>T1</td>  <td>T1</td></tr>
- *   <tr><td colspan="1" rowspan="2">RequiresNew</td> <td>none</td><td>T2</td></tr>
- * 											      <tr><td>T1</td>  <td>T2</td></tr>
- *   <tr><td colspan="1" rowspan="2">Mandatory</td>   <td>none</td><td>error</td></tr>
- * 											      <tr><td>T1</td>  <td>T1</td></tr>
- *   <tr><td colspan="1" rowspan="2">NotSupported</td><td>none</td><td>none</td></tr>
- * 											      <tr><td>T1</td>  <td>none</td></tr>
- *   <tr><td colspan="1" rowspan="2">Supports</td>    <td>none</td><td>none</td></tr>
- * 											      <tr><td>T1</td>  <td>T1</td></tr>
- *   <tr><td colspan="1" rowspan="2">Never</td>       <td>none</td><td>none</td></tr>
- * 											      <tr><td>T1</td>  <td>error</td></tr>
- *  </table></td><td>Supports</td></tr>
- * <tr><td>{@link #setTransactionTimeout(int) transactionTimeout}</td><td>Timeout (in seconds) of transaction started to receive and process a message.</td><td><code>0</code> (use system default)</code></td></tr>
  * <tr><td>{@link #setMaxDeliveries(int) maxDeliveries}</td><td>The maximum delivery count after which to stop processing the message. When -1 the delivery count is ignored</td><td>5</td></tr>
  * <tr><td>{@link #setMaxRetries(int) maxRetries}</td><td>The number of times a processing attempt is retried after an exception is caught or rollback is experienced (only applicable for transacted receivers). If maxRetries &lt; 0 the number of attempts is infinite</td><td>1</td></tr>
  * <tr><td>{@link #setCheckForDuplicates(boolean) checkForDuplicates}</td><td>if set to <code>true</code>, each message is checked for presence in the message log. If already present, it is not processed again. (only required for non XA compatible messaging). Requires messagelog!</code></td><td><code>false</code></td></tr>
@@ -165,10 +137,10 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <p>
  * <table border="1">
  * <tr><th>nested elements (accessible in descender-classes)</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.core.IPullingListener listener}</td><td>the listener used to receive messages from</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.core.ITransactionalStorage inProcessStorage}</td><td>mandatory for {@link #setTransacted(boolean) transacted} receivers: place to store messages during processing.</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.core.ITransactionalStorage errorStorage}</td><td>optional for {@link #setTransacted(boolean) transacted} receivers: place to store messages if message processing has gone wrong. If no errorStorage is specified, the inProcessStorage is used for errorStorage</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.core.ISender errorSender}</td><td>optional for {@link #setTransacted(boolean) transacted} receviers: 
+ * <tr><td>{@link IPullingListener listener}</td><td>the listener used to receive messages from</td></tr>
+ * <tr><td>{@link ITransactionalStorage inProcessStorage}</td><td>mandatory for {@link #setTransacted(boolean) transacted} receivers: place to store messages during processing.</td></tr>
+ * <tr><td>{@link ITransactionalStorage errorStorage}</td><td>optional for {@link #setTransacted(boolean) transacted} receivers: place to store messages if message processing has gone wrong. If no errorStorage is specified, the inProcessStorage is used for errorStorage</td></tr>
+ * <tr><td>{@link ISender errorSender}</td><td>optional for {@link #setTransacted(boolean) transacted} receviers:
  * will be called to store messages that failed to process. If no errorSender is specified, failed messages will remain in inProcessStorage</td></tr>
  * </table>
  * </p>
@@ -973,7 +945,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 	/**
 	 * All messages that for this receiver are pumped down to this method, so it actually
-	 * calls the {@link nl.nn.adapterframework.core.Adapter adapter} to process the message.<br/>
+	 * calls the {@link Adapter adapter} to process the message.<br/>
 
 	 * Assumes that a transation has been started where necessary.
 	 */
@@ -1692,7 +1664,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	public IListener getListener() {
 		return listener;
 	}/**
-	 * Sets the listener. If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and no <code>getName()</code>
+	 * Sets the listener. If the listener implements the {@link INamedObject name} interface and no <code>getName()</code>
 	 * of the listener is empty, the name of this object is given to the listener.
 	 * Creation date: (04-11-2003 12:04:05)
 	 * @param newListener IListener
@@ -1813,7 +1785,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 	/**
 	 * Sets the name of the Receiver. 
-	 * If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and <code>getName()</code>
+	 * If the listener implements the {@link INamedObject name} interface and <code>getName()</code>
 	 * of the listener is empty, the name of this object is given to the listener.
 	 */
 	@IbisDoc({"name of the receiver as known to the adapter", ""})

@@ -43,16 +43,6 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Pipe to zip or unzip a message or file.  
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.ibis4fundation.BatchFileTransformerPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMessageIsContent(boolean) messageIsContent}</td><td>Flag indicates whether the message is the content or the path to a file with the contents. For multiple files use ';' as delimiter</td><td>false</td></tr>
- * <tr><td>{@link #setResultIsContent(boolean) resultIsContent}</td><td>Flag indicates whether the result must be written to the message or to a file (filename = message)</td><td>false</td></tr>
- * <tr><td>{@link #setCompress(boolean) compress}</td><td>If <code>true</code> the pipe compresses, otherwise it decompress</td><td>false</td></tr>
- * <tr><td>{@link #setConvert2String(boolean) convert2String}</td><td>If <code>true</code> result is returned as a string, otherwise as a byte array</td><td>false</td></tr>
- * </table>
- * </p>
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>

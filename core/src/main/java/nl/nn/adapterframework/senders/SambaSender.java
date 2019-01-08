@@ -47,21 +47,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
 /**
  * Samba Sender: The standard Windows interoperability suite for Linux and Unix.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setAction(String) action}</td><td>possible values: delete, download, list, mkdir, rename, rmdir, upload</td><td>&nbsp;</td></tr>
- * 
- * <tr><td>{@link #setShare(String) share}</td><td>The destination, aka smb://xxx/yyy share</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setForce(boolean) force}</td><td>Used when creating folders or overwriting existing files (when renaming or moving)</td><td>false</td></tr>
- * 
- * <tr><td>{@link #setAuthDomain(String) domain}</td><td>in case the user account is bound to a domain</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUsername(String) username}</td><td>the smb share username</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPassword(String) password}</td><td>the smb share password</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for the smb share</td><td>&nbsp;</td></tr>
- * 
- * </table>
- * </p>
  * 
  * <p><b>Parameters:</b></p>
  * <p>The <code>upload</code> action requires the file parameter to be set which should contain the fileContent to upload in either Stream, Bytes or String format</p>

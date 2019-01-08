@@ -36,20 +36,6 @@ import org.apache.commons.lang.StringUtils;
  *
  * Tries to set a lock (by inserting a record in the database table IbisLock) and only if this is done
  * successfully the job is executed.
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.scheduler.Locker</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setObjectId(String) objectId}</td><td>identifier for this lock</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setType(String) type}</td><td>type for this lock: P(ermanent) or T(emporary). A temporary lock is deleted after the job has completed</td><td>T</td></tr>
- * <tr><td>{@link #setDateFormatSuffix(String) dateFormatSuffix}</td><td>format for date which is added after <code>objectId</code> (e.g. yyyyMMdd to be sure the job is executed only once a day)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRetention(int) retention}</td><td>the time (for type=P in days and for type=T in hours) to keep the record in the database before making it eligible for deletion by a cleanup process</td><td>30 days (type=P), 4 hours (type=T)</td></tr>
- * <tr><td>{@link #setNumRetries(int) numRetries}</td><td>the number of times an attempt should be made to acquire a lock, after this many times an exception is thrown when no lock could be acquired, when -1 the number of retries is unlimited</td><td>0</td></tr>
- * <tr><td>{@link #setFirstDelay(int) firstDelay}</td><td>the time in ms to wait before the first attempt to acquire a lock is made, this may be 0 but keep in mind that the other thread or Ibis instance will propably not get much change to acquire a lock when another message is already waiting for the thread having the current lock in which case it will probably acquire a new lock soon after releasing the current lock</td><td>10000</td></tr>
- * <tr><td>{@link #setRetryDelay(int) retryDelay}</td><td>the time in ms to wait before another attempt to acquire a lock is made</td><td>10000</td></tr>
- * </table>
- * </p>
  * 
  * For an Oracle database the following objects are used:
  *  <pre>

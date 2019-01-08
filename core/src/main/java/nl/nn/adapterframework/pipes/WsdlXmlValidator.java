@@ -55,16 +55,6 @@ import javax.xml.namespace.QName;
  * XmlValidator that will read the XSD's to use from a WSDL. As it extends the
  * SoapValidator is will also add the SOAP envelope XSD.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>*</td><td>all attributes available on {@link SoapValidator} can be used</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setWsdl(String) wsdl}</td><td>the WSDL to read the XSD's from</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSchemaLocation(String) schemaLocation}</td><td>see schemaLocation attribute on XmlValidator except that the schema locations are referring to schema's in the WSDL, schema1 refers to the first, schema2 refers to the second and so on. If not set, all schema's are derived from the WSDL</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSchemaLocationToAdd(String) schemaLocationToAdd}</td><td>Pairs of URI references which will be added to the WSDL</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSoapBodyNamespace(String) soapBodyNamespace}</td><td>creates <code>schemaLocation</code> attribute based on the WSDL and replaces the namespace of the SOAP Body element</td><td>&nbsp;</td></tr>
- * </table>
- * 
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
  */

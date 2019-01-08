@@ -29,30 +29,6 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Pipe for moving files to another directory.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.ibis4fundation.FtpSender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDirectory(String) directory}</td><td>base directory where files are moved from</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFilename(String) filename}</td><td>name of the file to move (if not specified, the input for this pipe is assumed to be the name of the file</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setWildcard(String) wildcard}</td><td>filter of files to replace</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setWildcardSessionKey(String) wildcardSessionKey}</td><td>session key that contains the name of the filter to use (only used if wildcard is not set)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMove2dir(String) move2dir}</td><td>destination directory</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMove2file(String) move2file}</td><td>name of the destination file (if not specified, the name of the file to move is taken)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMove2fileSessionKey(String) move2fileSessionKey}</td><td>session key that contains the name of the file to use (only used if move2file is not set)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setNumberOfBackups(int) numberOfBackups}</td><td>number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.</td><td>5</td></tr>
- * <tr><td>{@link #setOverwrite(boolean) overwrite}</td><td>when set <code>true</code>, the destination file will be deleted if it already exists. When set <code>false</code> and <code>numberOfBackups</code> set to 0, a counter is added to the destination filename ('basename_###.ext')</td><td>false</td></tr>
- * <tr><td>{@link #setNumberOfAttempts(int) numberOfAttempts}</td><td>maximum number of attempts before throwing an exception</td><td>10</td></tr>
- * <tr><td>{@link #setWaitBeforeRetry(long) waitBeforeRetry}</td><td>time between attempts</td><td>1000 [ms]</td></tr>
- * <tr><td>{@link #setAppend(boolean) append}</td><td> when set <code>true</code> and the destination file already exists, the content of the file to move is written to the end of the destination file. This implies <code>overwrite=false</code></td><td>false</td></tr>
- * <tr><td>{@link #setDeleteEmptyDirectory(boolean) deleteEmptyDirectory}</td><td>when set to <code>true</code>, the directory from which a file is moved is deleted when it contains no other files</td><td>false</td></tr>
- * <tr><td>{@link #setCreateDirectory(boolean) createDirectory}</td><td>when set to <code>true</code>, the directory to move to is created if it does not exist</td><td>false</td></tr>
- * <tr><td>{@link #setPrefix(String) prefix}</td><td>string which is inserted at the start of the destination file</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSuffix(String) suffix}</td><td>string which is inserted at the end of the destination file (and replaces the extension if present)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>when <code>true</code>, <code>numberOfBackups</code> is set to 0 and the destination file already exists a PipeRunException is thrown (instead of adding a counter to the destination filename)</td><td>false</td></tr>
- * </table>
- * </p>
  * 
  * @author  John Dekker
  * @author  Jaco de Groot (***@dynasol.nl)

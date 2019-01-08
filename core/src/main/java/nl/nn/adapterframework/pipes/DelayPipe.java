@@ -24,13 +24,6 @@ import nl.nn.adapterframework.doc.IbisDoc;
  * Pipe that sleeps for a specified time, which defaults to 5000 msecs.
  * Usefull for testing purposes.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDelayTime(long) delayTime}</td><td>the time the thread will be put to sleep</td><td>5000 [ms]</td></tr>
- * </table>
- * 
  * @author L180564 - Johan Verrips
  */
 public class DelayPipe extends FixedForwardPipe {

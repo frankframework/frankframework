@@ -27,17 +27,6 @@ import nl.nn.adapterframework.doc.IbisDoc;
 /**
  * Selects an exitState, based on the last (filename) part of the path that is the input.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.FilenameSwitch</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setNotFoundForwardName(String) notFoundForwardName}</td><td>Forward returned when the forward or pipename derived from the filename that was the input could not be found.</i></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setToLowercase(boolean) toLowercase}</td><td>convert the result to lowercase, before searching for a corresponding forward</td><td>true</td></tr>
- * </table>
- * </p>
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>

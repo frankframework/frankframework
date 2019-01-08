@@ -70,37 +70,16 @@ import org.springframework.core.task.TaskExecutor;
  * object, which returns a {@link PipeLineResult}. If an error occurs during
  * the pipeline execution, the state in the <code>PipeLineResult</code> is set
  * to the state specified by <code>setErrorState</code>, which defaults to "ERROR".
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.AbstractPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Adapter</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDescription(String) description}</td><td>description of the Adapter</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAutoStart(boolean) autoStart}</td><td>controls whether Adapters starts when configuration loads</td><td>true</td></tr>
- * <tr><td>{@link #setActive(boolean) active}</td>  <td>controls whether Adapter is included in configuration. When set <code>false</code> or set to something else as "true", (even set to the empty string), the receiver is not included in the configuration</td><td>true</td></tr>
- * <tr><td>{@link #setErrorMessageFormatter(IErrorMessageFormatter) errorMessageFormatter}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setErrorState(String) errorState}</td><td>If an error occurs during
- * the pipeline execution, the state in the <code>PipeLineResult</code> is set to this state</td><td>ERROR</td></tr>
- * <tr><td>{@link #setMessageKeeperSize(int) messageKeeperSize}</td><td>number of message displayed in IbisConsole</td><td>10</td></tr>
- * <tr><td>{@link #setMsgLogLevel(String) msgLogLevel}</td><td>defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties. Possible values are: 
- *   <table border="1">
- *   <tr><th>msgLogLevel</th><th>messages which are logged</th></tr>
- *   <tr><td colspan="1">None</td> <td>none</td></tr>
- *   <tr><td colspan="1">Terse</td><td>at adapter level</td></tr>
- *   <tr><td colspan="1">Basic</td><td>at adapter and sending pipe level (not yet available; only at adapter level)</td></tr>
- *   <tr><td colspan="1">Full</td> <td>at adapter and pipe level (not yet available; only at adapter level)</td></tr>
- *  </table></td><td>application default (None)</td></tr>
- * <tr><td>{@link #setMsgLogHidden(boolean) msgLogHidden}</td><td>if set to <code>true</code>, the length of the message is shown in the MSG log instead of the content of the message</td><td>false</td></tr>
  * <tr><td>{@link #setReplaceNullMessage(boolean) replaceNullMessage}</td><td>when <code>true</code> a null message is replaced by an empty message</td><td>false</td></tr>
  * </table>
  * 
  * @author Johan Verrips
- * @see    nl.nn.adapterframework.core.IReceiver
- * @see    nl.nn.adapterframework.core.PipeLine
- * @see    nl.nn.adapterframework.statistics.StatisticsKeeper
- * @see    nl.nn.adapterframework.util.DateUtils
- * @see    nl.nn.adapterframework.util.MessageKeeper
- * @see    nl.nn.adapterframework.core.PipeLineResult
+ * @see    IReceiver
+ * @see    PipeLine
+ * @see    StatisticsKeeper
+ * @see    DateUtils
+ * @see    MessageKeeper
+ * @see    PipeLineResult
  * 
  */
 public class Adapter implements IAdapter, NamedBean {
@@ -368,7 +347,7 @@ public class Adapter implements IAdapter, NamedBean {
 	/**
 	 * the MessageKeeper is for keeping the last <code>messageKeeperSize</code>
 	 * messages available, for instance for displaying it in the webcontrol
-	 * @see nl.nn.adapterframework.util.MessageKeeper
+	 * @see MessageKeeper
 	 */
 	public synchronized MessageKeeper getMessageKeeper() {
 		if (messageKeeper == null)
@@ -537,7 +516,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 	/**
 	 * Return the total processing duration as a StatisticsKeeper
-	 * @see nl.nn.adapterframework.statistics.StatisticsKeeper
+	 * @see StatisticsKeeper
 	 * @return nl.nn.adapterframework.statistics.StatisticsKeeper
 	 */
 	public StatisticsKeeper getStatsMessageProcessingDuration() {
@@ -763,7 +742,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * @param newErrorState java.lang.String
 	 * @see PipeLineResult
 	 */
-	public void setErrorState(java.lang.String newErrorState) {
+	public void setErrorState(String newErrorState) {
 		errorState = newErrorState;
 	}
 	/**
@@ -775,7 +754,7 @@ public class Adapter implements IAdapter, NamedBean {
 	/**
 	 * Set the number of messages that are kept on the screen.
 	 * @param size
-	 * @see nl.nn.adapterframework.util.MessageKeeper
+	 * @see MessageKeeper
 	 */
 	@IbisDoc({"number of message displayed in ibisconsole", "10"})
 	public void setMessageKeeperSize(int size) {

@@ -32,16 +32,6 @@ import nl.nn.adapterframework.util.AppConstants;
 /**
  * Posts a message to another IBIS-adapter as a WebService.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.http.IbisWebServiceSender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setIbisHost(String) ibisHost}</td><td>name (or ipaddress) and optinally port of the host where the ibis to be called is running</td><td>localhost</td></tr>
- * <tr><td>{@link #setIbisInstance(String) ibisInstance}</td><td>name of the ibis instance to be called</td><td>name of the current instance</td></tr>
- * <tr><td>{@link #setServiceName(String) serviceName}</td><td>Name of the receiver that should be called</td><td>"serviceListener"</td></tr>
- * </table>
- * </p>
  *
  * @author Gerrit van Brakel
  * @since 4.2

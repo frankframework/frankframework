@@ -33,15 +33,6 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Pipe to check if a username and password are valid in LDAP.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.ldap.LdapChallengePipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLdapProviderURL(String) ldapProviderURL}</td><td>URL to the LDAP server. <br/>Example: ldap://su05b9.itc.intranet</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInitialContextFactoryName(String) initialContextFactoryName}</td><td>class to use as initial context factory</td><td>com.sun.jndi.ldap.LdapCtxFactory</td></tr>
- * <tr><td>{@link #setErrorSessionKey(String) errorSessionKey}</td><td>key of session variable used to store cause of errors</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
  * <table border="1">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
@@ -88,7 +79,7 @@ public class LdapChallengePipe extends AbstractPipe {
 
 	/** 
 	 * Checks to see if the supplied parameteres of the pipe can login to LDAP 
-	 * @see nl.nn.adapterframework.core.IPipe#doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)
+	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
 	 */
 	public PipeRunResult doPipe(Object msg, IPipeLineSession pls) throws PipeRunException {
 

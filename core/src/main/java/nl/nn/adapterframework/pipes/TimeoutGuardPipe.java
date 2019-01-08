@@ -37,14 +37,6 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 /**
  * Extension to FixedForwardPipe for interrupting processing when timeout is exceeded.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>when <code>true</code>, a PipeRunException is thrown. Otherwise the output is only logged as an error (and returned in a XML string with 'error' tags)</td><td>true</td></tr>
- * <tr><td>{@link #setTimeout(int) timeout}</td><td>timeout in seconds of obtaining a result</td><td>30</td></tr>
- * </table>
- * </p>
  * <p>
  * <table border="1">
  * <b>Parameters:</b>

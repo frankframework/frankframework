@@ -72,37 +72,6 @@ import org.apache.log4j.Logger;
  * The pipe also support base64 en- and decoding.
  * </p>
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setCharset(String) charset}</td><td>The charset to be used when transforming a string to a byte array and/or the other way around</td><td>The value of the system property file.encoding</td></tr>
- * <tr><td>{@link #setDirectory(String) directory}</td><td>base directory where files are stored in or read from</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFileName(String) fileName}</td><td>The name of the file to use</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFileNameSessionKey(String) fileNameSessionKey}</td><td>The session key that contains the name of the file to use (only used if fileName is not set)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setActions(String) actions}</td><td>comma separated list of actions to be performed. Possible action values:
- * <ul>
- * <li>write: create a new file and write input to it</li>
- * <li>write_append: create a new file if it does not exist, otherwise append to existing file; then write input to it</li>
- * <li>create: create a new file, but do not write anything to it</li>
- * <li>read: read from file</li>
- * <li>delete: delete the file</li>
- * <li>read_delete: read the contents, then delete (when outputType is stream the file is deleted after the stream is read)</li>
- * <li>encode: encode base64</li>
- * <li>decode: decode base64</li>
- * <li>list: returns the files and directories in the directory that satisfy the specified filter (see {@link nl.nn.adapterframework.util.Dir2Xml dir2xml}). If a directory is not specified, the fileName is expected to include the directory</li>
- * <li>info: returns information about the file</li>
- * </ul></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setWriteSuffix(String) writeSuffix}</td><td>suffix of the file to be created (only used if fileName and fileNameSession are not set)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCreateDirectory(boolean) createDirectory}</td><td>when set to <code>true</code>, the directory to read from or write to is created if it does not exist</td><td>false</td></tr>
- * <tr><td>{@link #setWriteLineSeparator(boolean) writeLineSeparator}</td><td>when set to <code>true</code>, a line separator is written after the content is written</td><td>false</td></tr>
- * <tr><td>{@link #setTestCanWrite(boolean) testCanWrite}</td><td>when set to <code>true</code>, a test is performed to find out if a temporary file can be created and deleted in the specified directory (only used if directory is set and combined with the action write, write_append or create)</td><td>true</td></tr>
- * <tr><td>{@link #setSkipBOM(boolean) skipBOM}</td><td>when set to <code>true</code>, a possible Bytes Order Mark (BOM) at the start of the file is skipped (only used for the action read and encoding UFT-8)</td><td>false</td></tr>
- * <tr><td>{@link #setDeleteEmptyDirectory(boolean) deleteEmptyDirectory}</td><td>(only used when actions=delete) when set to <code>true</code>, the directory from which a file is deleted is also deleted when it contains no other files</td><td>false</td></tr>
- * <tr><td>{@link #setOutputType(String) outputType}</td><td>either <code>string</code>, <code>bytes</code>, <code>stream</code> or <code>base64</code></td><td>"string"</td></tr>
- * <tr><td>{@link #setFileSource(String) fileSource}</td><td>either <code>filesystem</code> or <code>classpath</code> (classpath will only work for actions "read" and "info" and for "info" only when resources are available as a file (i.e. doesn't work for resources in jar files and war files which are deployed without being extracted by the application server))</td><td>"filesystem"</td></tr>
- * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>(only used when outputType=stream) if set, the result is streamed to the HttpServletResponse object</td><td>false</td></tr>
- * </table>
- * </p>
  * <table border="1">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>

@@ -30,14 +30,6 @@ import nl.nn.adapterframework.statistics.StatisticsKeeper;
  * the remainder of [number of received messages] modulus <code>divisor</code>.
  * This will always be an integer between 1 and <code>divisor</code>, inclusive.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.XmlIf</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDivisor(int) divisor}</td><td>&nbsp;</td><td>2</td></tr>
- * </table>
- * </p>
  *
  * @author  Peter Leeuwenburgh
  */

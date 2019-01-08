@@ -25,14 +25,6 @@ import nl.nn.adapterframework.doc.IbisDoc;
  * Puts the input in the PipeLineSession, under the key specified by
  * <code>{@link #setSessionKey(String) sessionKey}</code>.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> to store the input in</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setValue(String) value}</td><td>The value to store the in the <code>PipeLineSession</code>. If not set, the input of the pipe is stored</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>

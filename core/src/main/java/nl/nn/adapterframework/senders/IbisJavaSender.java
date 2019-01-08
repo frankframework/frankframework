@@ -40,18 +40,6 @@ import org.apache.commons.lang.StringUtils;
  * An IbisJavaSender makes a call to a Receiver with a {@link nl.nn.adapterframework.receivers.JavaListener JavaListener}
  * or any other application in the same JVM that has registered a <code>RequestProcessor</code> with the IbisServiceDispatcher.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.senders.IbisJavaSender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setServiceName(String) serviceName}</td><td>serviceName of the 
- * {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setReturnedSessionKeys(String) returnedSessionKeys}</td><td>comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMultipartResponse(boolean) multipartResponse}</td><td>currently used to mimic the HttpSender when it is stubbed locally. It could be useful in other situations too although currently the response string is used which isn't streamed, it would be better to pass the multipart as an input stream in the context map in which case content type and charset could also be passed</td><td>false</td></tr>
- * <tr><td>{@link #setDispatchType(String) type}</td><td>set to 'DLL' to make the dispatcher communicate with a DLL set on the classpath</td><td></td></tr>
- * </table>
- * </p>
  * Any parameters are copied to the PipeLineSession of the service called.
  * 
  * <h4>configuring IbisJavaSender and JavaListener</h4>

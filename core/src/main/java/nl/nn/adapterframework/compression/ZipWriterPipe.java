@@ -49,30 +49,6 @@ import org.apache.commons.lang.StringUtils;
  * </ul>
  * The parameter 'filename' is used to specify the filename if the input is a HttpResponse.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.compression.ZipWriterPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified, then the message is logged informatory</td><td>-1</td></tr>
- * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPreserveInput(boolean) preserveInput}</td><td>when set <code>true</code>, the input of a pipe is restored before processing the next one</td><td>false</td></tr>
- * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setAction(String) action}</td>  <td>one of <ul>
- *   <li>open: to open a new zip file or stream</li> 
- *   <li>close: to close the zip file or stream</li> 
- *   <li>write: write the input to the zip as a new entry</li> 
- *   <li>stream: create a new zip entry, and provide an outputstream that another pipe can use to write the contents</li> 
- * </ul></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setZipWriterHandle(String) zipWriterHandle}</td>  <td>session key used to refer to zip session. Must be used if ZipWriterPipes are nested</td><td>"zipwriterhandle"</td></tr>
- * <tr><td>{@link #setCloseOutputstreamOnExit(boolean) closeOutputstreamOnExit}</td>  <td>only for action="open": when set to <code>false</code>, the outputstream is not closed after the zip creation is finished</td><td>true</td></tr>
- * <tr><td>{@link #setCloseInputstreamOnExit(boolean) closeInputstreamOnExit}</td>  <td>only for action='write': when set to <code>false</code>, the inputstream is not closed after the zip entry is written</td><td>true</td></tr>
- * <tr><td>{@link #setCharset(String) charset}</td><td>only for action='write': charset used to write strings to zip entries</td><td>UTF-8</td></tr>
- * <tr><td>{@link #setCompleteFileHeader(boolean) completeFileHeader}</td><td>only for action='write': when set to <code>true</code>, the fields 'crc-32', 'compressed size' and 'uncompressed size' in the zip entry file header are set explicitly (note: compression ratio is zero)</td><td>false</td></tr>
- * </table>
- * </p>
  * <table border="1">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>

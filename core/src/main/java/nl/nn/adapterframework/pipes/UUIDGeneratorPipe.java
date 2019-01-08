@@ -25,13 +25,6 @@ import nl.nn.adapterframework.util.Misc;
 /**
  * Pipe that generates an UUID (Universally Unique Identifier).
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setType(String) type}</td><td>either <code>alphanumeric</code> or <code>numeric</code></td><td>alphanumeric</td></tr>
- * </table>
- * </p>
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>

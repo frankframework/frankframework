@@ -31,14 +31,6 @@ import org.apache.log4j.Logger;
  * Basic implementation of RecordHandlerManager, that allows only for a single flow.
  * The manager decides which handlers to be used for a specific record.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.batch.FieldPositionRecordHandlerManager</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>Name of the manager</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInitial(boolean) initial}</td><td>This manager is the initial manager, i.e. to be used for the first record</td><td>false</td></tr>
- * </table>
- * </p>
  * 
  * @author  John Dekker
  */

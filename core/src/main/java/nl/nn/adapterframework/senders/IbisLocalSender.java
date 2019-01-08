@@ -39,31 +39,13 @@ import nl.nn.adapterframework.util.Misc;
  * Posts a message to another IBIS-adapter in the same IBIS instance.
  * 
  * An IbisLocalSender makes a call to a Receiver with either a {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener}
- * or a {@link nl.nn.adapterframework.receivers.JavaListener JavaListener}. 
+ * or a {@link JavaListener JavaListener}.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.senders.IbisLocalSender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setServiceName(String) serviceName}</td><td>Name of the {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener} that should be called</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJavaListener(String) javaListener}</td><td>Name of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called (will be ignored when javaListenerSessionKey is set)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJavaListenerSessionKey(String) javaListenerSessionKey}</td><td>Name of the sessionKey which holds the name of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setIsolated(boolean) isolated}</td><td>when <code>true</code>, the call is made in a separate thread, possibly using separate transaction</td><td>false</td></tr>
- * <tr><td>{@link #setCheckDependency(boolean) checkDependency}</td><td>when <code>true</code>, the sender waits upon open until the called {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} is opened</td><td>true</td></tr>
- * <tr><td>{@link #setDependencyTimeOut(int) dependencyTimeOut}</td><td>maximum time (in seconds) the sender waits for the listener to start. A value of -1 indicates to wait indefinitely</td><td>60 s</td></tr>
- * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td> when set <code>false</code>, the call is made asynchronously. This implies <code>isolated=true</code></td><td>true</td></tr>
- * <tr><td>{@link #setReturnedSessionKeys(String) returnedSessionKeys}</td><td>comma separated list of keys of session variables that should be returned to caller, 
- *         for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)<br/>
- *         N.B. To get this working, the attribute returnedSessionKeys must also be set on the corresponding Receiver</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setThrowJavaListenerNotFoundException(boolean) throwJavaListenerNotFoundException}</td><td>when set <code>false</code>, the xml-string "&lt;error&gt;could not find JavaListener [...]&lt;/error&gt;" is returned instead of throwing a SenderException</td><td>true</td></tr>
- * </table>
- * </p>
  * Any parameters are copied to the PipeLineSession of the service called.
  * 
  * <h3>Configuration of the Adapter to be called</h3>
  * A call to another Adapter in the same IBIS instance is preferably made using the combination
- * of an IbisLocalSender and a {@link nl.nn.adapterframework.receivers.JavaListener JavaListener}. If, 
+ * of an IbisLocalSender and a {@link JavaListener JavaListener}. If,
  * however, a Receiver with a {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener} is already present, that can be used in some cases, too.
  *  
  * <h4>configuring IbisLocalSender and JavaListener</h4>

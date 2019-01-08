@@ -60,42 +60,6 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 /**
  * JDBC implementation of {@link ITransactionalStorage}.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.jdbc.JdbcTransactionalStorage</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSlotId(String) slotId}</td><td>optional identifier for this storage, to be able to share the physical table between a number of receivers</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setType(String) type}</td><td>possible values are E (error store), M (message store), L (message log for pipe) or A (message log for receiver). ReceiverBase will always set type to E for errorStorage and always set type to A for messageLog. GenericMessageSendingPipe will set type to L for messageLog (when type isn't specified). See {@link MessageStoreSender} for type M</td><td>E for errorStorage on receiver, A for messageLog on receiver and L for messageLog on pipe</td></tr>
- * <tr><td>{@link #setDatasourceNameXA(String) datasourceNameXA}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUsername(String) username}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTableName(String) tableName}</td><td>the name of the table messages are stored in</td><td>ibisstore</td></tr>
- * <tr><td>{@link #setCreateTable(boolean) createTable}</td><td>when set to <code>true</code>, the table is created if it does not exist</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setKeyField(String) keyField}</td><td>the name of the column that contains the primary key of the table</td><td>messageKey</td></tr>
- * <tr><td>{@link #setTypeField(String) typeField}</td><td>the name of the column types are stored in</td><td>type</td></tr>
- * <tr><td>{@link #setHostField(String) hostField}</td><td>the name of the column that stores the hostname of the server</td><td>host</td></tr>
- * <tr><td>{@link #setIdField(String) idField}</td><td>the name of the column messageids are stored in</td><td>messageId</td></tr>
- * <tr><td>{@link #setCorrelationIdField(String) correlationIdField}</td><td>the name of the column correlation-ids are stored in</td><td>correlationId</td></tr>
- * <tr><td>{@link #setDateField(String) dateField}</td><td>the name of the column the timestamp is stored in</td><td>messageDate</td></tr>
- * <tr><td>{@link #setCommentField(String) commentField}</td><td>the name of the column comments are stored in</td><td>comments</td></tr>
- * <tr><td>{@link #setMessageField(String) messageField}</td><td>the name of the column message themselves are stored in</td><td>message</td></tr>
- * <tr><td>{@link #setSlotIdField(String) slotIdField}</td><td>the name of the column slotIds are stored in</td><td>slotId</td></tr>
- * <tr><td>{@link #setExpiryDateField(String) expiryDateField}</td><td>the name of the column the timestamp for expiry is stored in</td><td>expiryDate</td></tr>
- * <tr><td>{@link #setLabelField(String) labelField}</td><td>the name of the column labels are stored in</td><td>label</td></tr>
- * <tr><td>{@link #setKeyFieldType(String) keyFieldType}</td><td>the type of the column that contains the primary key of the table</td><td>INT DEFAULT AUTOINCREMENT</td></tr>
- * <tr><td>{@link #setDateFieldType(String) dateFieldType}</td><td>the type of the column the timestamps are stored in</td><td>TIMESTAMP</td></tr>
- * <tr><td>{@link #setTextFieldType(String) textFieldType}</td><td>the type of the columns messageId and correlationId, slotId and comments are stored in. N.B. (100) is appended for id's, (1000) is appended for comments.</td><td>VARCHAR</td></tr>
- * <tr><td>{@link #setMessageFieldType(String) messageFieldType}</td><td>the type of the column message themselves are stored in</td><td>LONG BINARY</td></tr>
- * <tr><td>{@link #setStoreFullMessage(boolean) storeFullMessage}</td><td>when set to <code>true</code>, the messages are stored compressed</td><td><code>true</code></td></tr>
- * <tr><td>{@link #setBlobsCompressed(boolean) blobsCompressed}</td><td>when set to <code>true</code>, the full message is stored with the log. Can be set to <code>false</code> to reduce table size, by avoiding to store the full message</td><td><code>true</code></td></tr>
- * <tr><td>{@link #setSequenceName(String) sequenceName}</td><td>the name of the sequence used to generate the primary key (only for Oracle)<br>N.B. the default name has been changed in version 4.6</td><td>seq_ibisstore</td></tr>
- * <tr><td>{@link #setIndexName(String) indexName}</td><td>the name of the index, to be used in hints for query optimizer too (only for Oracle)</td><td>IX_IBISSTORE</td></tr>
- * <tr><td>{@link #setPrefix(String) prefix}</td><td>prefix to be prefixed on all database objects (tables, indices, sequences), e.q. to access a different Oracle Schema</td><td></td></tr>
- * <tr><td>{@link #setRetention(int) retention}</td><td>the time (in days) to keep the record in the database before making it eligible for deletion by a cleanup process. When set to -1, the record will live on forever</td><td>30</td></tr>
- * <tr><td>{@link #setSchemaOwner4Check(String) schemaOwner4Check}</td><td>schema owner to be used to check the database</td><td>&lt;current_schema&gt; (only for Oracle)</td></tr>
- * </table>
- * </p>
  * 
  * For an Oracle database the following objects are used by default:
  *  <pre>

@@ -44,23 +44,6 @@ import org.apache.log4j.Logger;
 /** *
  * The JavaListener listens to java requests.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.receivers.JavaListener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the listener as known to the adapter. An {@link nl.nn.adapterframework.senders.IbisLocalSender IbisLocalSender} refers to this name in its <code>javaListener</code>-attribute.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setServiceName(String) serviceName}</td><td>(optional) name under which the JavaListener registers itself with the RequestDispatcherManager.
- * An {@link nl.nn.adapterframework.senders.IbisJavaSender IbisJavaSender} refers to this attribute in its <code>serviceName</code>-attribute.
- * If not empty, the IbisServiceDispatcher.jar must be on the classpath of the server.
- *     <br>N.B. If this java listener is to be only called locally (from within the same Ibis), please leave
- * 	   this attribute empty, to avoid dependency to an IbisServiceDispatcher.jar on the server classpath.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setIsolated(boolean) isolated}</td><td>when <code>true</code>, the call is made in a separate thread, possibly using a separate transaction.
- * 		<br>N.B. do not use this attribute, set an appropriate <code>transactionAttribute</code>, like <code>NotSupported</code> or <code>RequiresNew</code> instead</td><td>false</td></tr>
- * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td> when set <code>false</code>, the request is executed asynchronously. This implies <code>isolated=true</code>. N.B. Be aware that there is no limit on the number of threads generated</td><td>true</td></tr>
- * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>Should the JavaListener throw a ListenerException when it occurs or return an error message</td><td><code>true</code></td></tr>
- * <tr><td>{@link #setHttpWsdl(boolean)}</td><td>when <code>true</code>, the WSDL of the service provided by this listener is available for download </td><td><code>false</code></td></tr>
- * </table>
- *
  * @author  Gerrit van Brakel
  */
 public class JavaListener implements IPushingListener, RequestProcessor, HasPhysicalDestination {

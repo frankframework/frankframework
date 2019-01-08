@@ -40,17 +40,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * {@link ErrorMessageFormatter}.
  * <p>If the transformation does not succeed, this standard error message
  * is returned and an exception is logged.
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.errormessageformatters.XslErrorMessageFormatter</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStyleSheet(String) styleSheet}</td><td>stylesheet to use for transformation</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>xpathExpression to use for transformation</td><td>&nbsp;</td></tr>
- * </table>
- *
  * <p><table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link Parameter param}</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  *

@@ -64,28 +64,6 @@ import org.apache.commons.lang.StringUtils;
  * type should be used.<br/>
  * This class sends messages with JMS.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.jms.JMSFacade</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>name of the JMS destination (queue or topic) to use</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>either <code>QUEUE</code> or <code>TOPIC</code></td><td><code>QUEUE</code></td></tr>
- * <tr><td>{@link #setQueueConnectionFactoryName(String) queueConnectionFactoryName}</td><td>jndi-name of the queueConnectionFactory, used when <code>destinationType<code>=</code>QUEUE</code></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTopicConnectionFactoryName(String) topicConnectionFactoryName}</td><td>jndi-name of the topicConnectionFactory, used when <code>destinationType<code>=</code>TOPIC</code></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMessageSelector(String) messageSelector}</td><td>When set, the value of this attribute is used as a selector to filter messages.</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setMessageTimeToLive(long) messageTimeToLive}</td><td>the time (in milliseconds) it takes for the message to expire. If the message is not consumed before, it will be lost. Make sure to set it to a positive value for request/repy type of messages.</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>rather useless attribute, and not the same as <code>deliveryMode</code>. You probably want to use that.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>&nbsp;</td><td>AUTO_ACKNOWLEDGE</td></tr>
- * <tr><td>{@link #setCorrelationIdToHex(boolean) correlationIdToHex}</td><td>Transform the value of the correlationId to a hexadecimal value if it starts with ID: (preserving the ID: part). Useful when sending messages to MQ which expects this value to be in hexadecimal format when it starts with ID:, otherwise generating the error: MQJMS1044: String is not a valid hexadecimal number</td><td>false</td></tr>
- * <tr><td>{@link #setCorrelationIdToHexPrefix(String) correlationIdToHexPrefix}</td><td>Prefix to check before executing correlationIdToHex. When empty (and correlationIdToHex equals true) all correlationId's are transformed, this is useful in case you want the entire correlationId to be transformed (for example when the receiving party doesn't allow characters like a colon to be present in the correlationId).</td><td>ID:</td></tr>
- * <tr><td>{@link #setCorrelationIdMaxLength(int) correlationIdMaxLength}</td><td>if set (>=0) and the length of the correlationID exceeds this maximum length, the correlationID is trimmed from the left side of a string to this maximum length</td><td>-1</td></tr>
- * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
- * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to JMS server</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLookupDestination(boolean) lookupDestination}</td><td>when set <code>false</code>, the destinationName is used directly instead of performing a JNDI lookup</td><td>true</td></tr>
- * </table>
- * </p>
  *
  * @author 	Gerrit van Brakel
  */
@@ -303,7 +281,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 
 	public TextMessage createTextMessage(Session session, String correlationID, String message)
-			throws javax.naming.NamingException, JMSException {
+			throws NamingException, JMSException {
 		TextMessage textMessage = null;
 		textMessage = session.createTextMessage();
 		if (null != correlationID) {
@@ -367,7 +345,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * Utilitiy function to retrieve a Destination from a jndi.
 	 * @param destinationName
 	 * @return javax.jms.Destination
-	 * @throws javax.naming.NamingException
+	 * @throws NamingException
 	 */
 	public Destination getDestination(String destinationName) throws JmsException, NamingException {
 		return getJmsMessagingSource().lookupDestination(destinationName);
@@ -497,10 +475,10 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
     /**
      *  Gets a queueReceiver
-     * @see javax.jms.QueueReceiver
+     * @see QueueReceiver
      * @return                                   The queueReceiver value
-     * @exception  javax.naming.NamingException  Description of the Exception
-     * @exception  javax.jms.JMSException                  Description of the Exception
+     * @exception  NamingException  Description of the Exception
+     * @exception  JMSException                  Description of the Exception
      */
 	private QueueReceiver getQueueReceiver(QueueSession session, Queue destination, String selector) throws NamingException, JMSException {
 	    QueueReceiver queueReceiver = session.createReceiver(destination, selector);
@@ -508,10 +486,10 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 	/**
 	  *  Gets the queueSender for a specific queue, not the one in <code>destination</code>
-	  * @see javax.jms.QueueSender
+	  * @see QueueSender
 	  * @return                                   The queueReceiver value
-	  * @exception  javax.naming.NamingException  Description of the Exception
-	  * @exception  javax.jms.JMSException
+	  * @exception  NamingException  Description of the Exception
+	  * @exception  JMSException
 	  */
 	private QueueSender getQueueSender(QueueSession session, Queue destination) throws NamingException, JMSException {
 		return session.createSender(destination);

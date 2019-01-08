@@ -32,23 +32,6 @@ import nl.nn.adapterframework.doc.IbisDoc;
 /**
  * Returns random password.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setLCharacters(String) LCharacters}</td><td>The lowercase characters to use</td><td>('a'..'z')</td></tr>
- * <tr><td>{@link #setUCharacters(String) UCharacters}</td><td>The uppercase characters to use</td><td>('A'..'Z')</td></tr>
- * <tr><td>{@link #setNumbers(String) numbers}</td><td>The numbers to use</td><td>('0'..'9')</td></tr>
- * <tr><td>{@link #setSigns(String) signs}</td><td>The signs to use</td><td>(;:_%$#@!&gt;&lt;)</td></tr>
- * <tr><td>{@link #setUseSecureRandom(boolean) useSecureRandom}</td>  <td>Whether the SecureRandom algorithm is to be used (slower)</td><td>true</td></tr>
- * <tr><td>{@link #setNumOfLCharacters(int) numOfLCharacters}</td><td>The number of lowercase characters in the generated password</td><td>2</td></tr>
- * <tr><td>{@link #setNumOfUCharacters(int) numOfUCharacters}</td><td>The number of uppercase characters in the generated password</td><td>2</td></tr>
- * <tr><td>{@link #setNumOfDigits(int) numOfDigits}</td><td>The number of digits in the generated password</td><td>2</td></tr>
- * <tr><td>{@link #setNumOfSigns(int) numOfSigns}</td><td>The number of sign characters in the generated password</td><td>2</td></tr>
- * </table>
- * </p>
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>

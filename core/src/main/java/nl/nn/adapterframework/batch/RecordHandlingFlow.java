@@ -28,23 +28,6 @@ import org.apache.log4j.Logger;
  * The flow contains the handlers to handle records of a specific type. 
  * Each flow is registered to a manager using the recordHandlerManagerRef.
  *  
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.batch.RecordHandlingFlow</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRecordHandlerManagerRef(String) recordHandlerManagerRef}</td><td>Name of the manager to which this RecordHandlingFlow must be added</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRecordKey(String) recordKey}</td><td>Key under which this RecordHandlingFlow must be registered in the manager</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRecordHandlerRef(String) recordHandlerRef}</td><td>Name of the recordhandler to be used to transform records of the type specified in the key (optional)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setResultHandlerRef(String) resultHandlerRef}</td><td>Name of the resulthandler to be used to handle the transformed result</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setNextRecordHandlerManagerRef(String) nextRecordHandlerManagerRef}</td><td>Name of the manager to be used after handling this record</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setOpenBlockBeforeLine(String) openBlockBeforeLine}</td><td>instructs the resultHandler to start a new block before the parsed line is processed</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setOpenBlockBeforeLineNumber(int) openBlockBeforeLineNumber}</td><td>when &gt;0 the <code>openBlockBeforeLine</code> instruction is only performed when the current line number is a multiple of this value</td><td>0</td></tr>
- * <tr><td>{@link #setCloseBlockBeforeLine(String) closeBlockBeforeLine}</td><td>instructs the resultHandler to end the specified block before the parsed line is processed</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setOpenBlockAfterLine(String) openBlockAfterLine}</td><td>instructs the resultHandler to start a new block after the parsed line is processed</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCloseBlockAfterLine(String) closeBlockAfterLine}</td><td>instructs the resultHandler to end the specified block after the parsed line is processed</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAutoCloseBlock(boolean) autoCloseBlock}</td><td>when <code>true</code>, any open block of this type (and other nested open 'autoclose' block) is closed before a new one of the same type is opened. At a forced close, nested blocks are closed too (since 4.9)</td><td><code>true</code></td></tr>
- * </table>
- * </p>
  * 
  * @author  John Dekker
  */

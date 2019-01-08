@@ -63,49 +63,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * can be specified. If an XPathExpression or stylesheet is specified, it will be applied to the message, the value retrieved
  * from the pipelineSession or the fixed value specified.
  * <br/>
- * * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td>  <td>name of the parameter</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setType(String) type}</td><td>
- * <ul>
- * 	<li><code>string</code>: renders the contents of the first node (in combination with xslt or xpath)</li>
- * 	<li><code>xml</code>:  renders a xml-nodeset as an xml-string (in combination with xslt or xpath)</li>
- * 	<li><code>node</code>: renders the CONTENTS of the first node as a nodeset that can be used as such when passed as xslt-parameter (only for XSLT 1.0). Please note that the nodeset may contain multiple nodes, without a common root node. N.B. The result is the set of children of what you might expect it to be...</li>
- * 	<li><code>domdoc</code>: renders xml as a DOM document; similar to <code>node</code> with the distinction that there is always a common root node (required for XSLT 2.0)</li>
- * 	<li><code>date</code>: converts the result to a Date, by default using formatString <code>yyyy-MM-dd</code>. When applied as a JDBC parameter, the method setDate() is used</li>
- * 	<li><code>time</code>: converts the result to a Date, by default using formatString <code>HH:mm:ss</code>. When applied as a JDBC parameter, the method setTime() is used</li>
- * 	<li><code>datetime</code>: converts the result to a Date, by default using formatString <code>yyyy-MM-dd HH:mm:ss</code>. When applied as a JDBC parameter, the method setTimestamp() is used</li>
- * 	<li><code>timestamp</code>: similar to datetime, except for the formatString that is <code>yyyy-MM-dd HH:mm:ss.SSS</code> by default</li>
- * 	<li><code>xmldatetime</code>: converts the result from a XML dateTime to a Date. When applied as a JDBC parameter, the method setTimestamp() is used</li>
- * 	<li><code>number</code>: converts the result to a Number, using decimalSeparator and groupingSeparator. When applied as a JDBC parameter, the method setDouble() is used</li>
- * 	<li><code>integer</code>: converts the result to an Integer</li>
- * 	<li><code>inputstream</code>: only applicable as a JDBC parameter, the method setBinaryStream() is used</li>
- * 	<li><code>list</code>: converts a List&lt;String&gt; object to a xml-string (&lt;items&gt;&lt;item&gt;...&lt;/item&gt;&lt;item&gt;...&lt;/item&gt;&lt;/items&gt;)</li>
- * 	<li><code>map</code>: converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name="..."&gt;...&lt;/item&gt;&lt;item name="..."&gt;...&lt;/item&gt;&lt;/items&gt;)</li>
- * </ul>
- * </td><td>string</td></tr>
- * <tr><td>{@link #setFormatString(String) formatString}</td><td>used in combination with types <code>date</code>, <code>time</code> and <code>datetime</code></td><td>depends on type</td></tr>
- * <tr><td>{@link #setDecimalSeparator(String) decimalSeparator}</td><td>used in combination with type <code>number</code></td><td>system default</td></tr>
- * <tr><td>{@link #setGroupingSeparator(String) groupingSeparator}</td><td>used in combination with type <code>number</code></td><td>system default</td></tr>
- * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>Key of a PipeLineSession-variable. Is specified, the value of the PipeLineSession variable is used as input for the XpathExpression or Stylesheet, instead of the current input message. If no xpathExpression or Stylesheet are specified, the value itself is returned. If the value "*" is specified, all existing sessionKeys are added as parameter of which the name starts with the name of this parameter. If also the name of the parameter has the value "*" then all existing sessionKeys are added as parameter (except "tsReceived")</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSessionKeyXPath(String) sessionKeyXPath}</td><td>Instead of a fixed <code>sessionKey</code> it's also possible to use a xpath expression to extract the name of the <code>sessionKey</code></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>The xpath expression to extract the parameter value from the (xml formatted) input or session-variable.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setNamespaceDefs(String) namespaceDefs}</td><td>namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>URL to a stylesheet that wil be applied to the contents of the message or the value of the session-variable.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRemoveNamespaces(boolean) removeNamespaces}</td><td>when set <code>true</code> namespaces (and prefixes) in the input message are removed before the stylesheet/xpathExpression is executed</td><td>false</td></tr>
- * <tr><td>{@link #setDefaultValue(String) defaultValue}</td><td>If the result of sessionKey, XpathExpressen and/or Stylesheet returns null or an empty String, this value is returned</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDefaultValueMethods(String) defaultValueMethods}</td><td>Comma separated list of methods (defaultValue, sessionKey, pattern, value or input) to use as default value. Used in the order they appear until a non-null value is found.</td><td>defaultValue</td></tr>
- * <tr><td>{@link #setPattern(String) pattern}</td><td>Value of parameter is determined using substitution and formating. The expression can contain references to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat. {now}, {uid}, {uuid}, {hostname} and {fixeddate} are named constants that can be used in the expression. If fname is a parameter or session variable that resolves to Eric, then the pattern 'Hi {fname}, hoe gaat het?' resolves to 'Hi Eric, hoe gaat het?'. A guid can be generated using {hostname}_{uid}, see also <a href="http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/UID.html">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/UID.html</a> for more information about (g)uid's or <a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/UUID.html">http://docs.oracle.com/javase/1.5.0/docs/api/java/util/UUID.html</a> for more information about uuid's.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setValue(String) value}</td><td>A fixed value</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setHidden(boolean) hidden}</td><td>if set to <code>true</code>, the value of the parameter will not be shown in the log (replaced by asterisks)</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setMinLength(int) minLength}</td><td>if set (>=0) and the length of the value of the parameter deceeds this minimum length, the value is padded</td><td>-1</td></tr>
- * <tr><td>{@link #setMaxLength(int) maxLength}</td><td>if set (>=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed to this maximum length</td><td>-1</td></tr>
- * <tr><td>{@link #setMinInclusive(String) minInclusive}</td><td>used in combination with type <code>number</code>; if set and the value of the parameter exceeds this minimum value, this minimum value is taken</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxInclusive(String) maxInclusive}</td><td>used in combination with type <code>number</code>; if set and the value of the parameter exceeds this maximum value, this maximum value is taken</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setXslt2(boolean) xslt2}</td><td>(applicable for xpathExpression and styleSheetName) when set <code>true</code> XSLT processor 2.0 (net.sf.saxon) will be used, otherwise XSLT processor 1.0 (org.apache.xalan)</td><td>false</td></tr>
- * </table>
- * </p>
  * Examples:
  * <pre>
  * 

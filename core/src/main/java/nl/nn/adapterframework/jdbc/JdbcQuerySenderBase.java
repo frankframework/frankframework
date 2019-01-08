@@ -65,58 +65,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * Each occurrence of a questionmark ('?') will be replaced by a parameter value. Parameters are applied
  * in order: The n-th questionmark is replaced by the value of the n-th parameter.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.jdbc.JdbcQuerySenderBase</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
-
- * <tr><td>{@link #setDatasourceName(String) datasourceName}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDatasourceNameXA(String) datasourceNameXA}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUsername(String) username}</td><td>username used to connect to datasource</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPassword(String) password}</td><td>password used to connect to datasource</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setConnectionsArePooled(boolean) connectionsArePooled}</td><td>when true, it is assumed that an connectionpooling mechanism is present. Before a message is sent, a new connection is obtained, that is closed after the message is sent. When transacted is true, connectionsArePooled is true, too</td><td>true</td></tr>
- * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
- * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-
- * <tr><td>{@link #setQueryType(String) queryType}</td><td>one of:
- * <ul><li>"select" for queries that return data</li>
- *     <li>"updateBlob" for queries that update a BLOB</li>
- *     <li>"updateClob" for queries that update a CLOB</li>
- *     <li>"package" to execute Oracle PL/SQL package</li>
- *     <li>anything else for queries that return no data.</li>
- * </ul></td><td>"other"</td></tr>
- * <tr><td>{@link #setBlobColumn(int) blobColumn}</td><td>only for queryType 'updateBlob': column that contains the blob to be updated</td><td>1</td></tr>
- * <tr><td>{@link #setClobColumn(int) clobColumn}</td><td>only for queryType 'updateClob': column that contains the clob to be updated</td><td>1</td></tr>
- * <tr><td>{@link #setBlobSessionKey(String) blobSessionKey}</td><td>for queryType 'updateBlob': key of session variable that contains the data (String or InputStream) to be loaded to the blob. When empty, the input of the pipe, which then must be a String, is used. For queryType 'select': key of session variable that contains the OutputStream, Writer or filename to write the Blob to</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setClobSessionKey(String) clobSessionKey}</td><td>for queryType 'updateClob': key of session variable that contains the clob (String or InputStream) to be loaded to the clob. When empty, the input of the pipe, which then must be a String, is used. For queryType 'select': key of session variable that contains the OutputStream, Writer or filename to write the Clob to</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxRows(int) maxRows}</td><td>maximum number of rows returned</td><td>-1 (unlimited)</td></tr>
- * <tr><td>{@link #setStartRow(int) startRow}</td><td>the number of the first row returned from the output</td><td>1</td></tr>
- * <tr><td>{@link #setScalar(boolean) scalar}</td><td>when true, the value of the first column of the first row (or the StartRow) is returned as the only result, as a simple non-XML value</td><td>false</td></tr>
- * <tr><td>{@link #setScalarExtended(boolean) scalarExtended}</td><td>when <code>true</code> and <code>scalar</code> is also <code>true</code>, but returns no value, one of the following is returned:
- * <ul><li>"[absent]" no row is found</li>
- *     <li>"[null]" a row is found, but the value is a SQL-NULL</li>
- *     <li>"[empty]" a row is found, but the value is a empty string</li>
- * </ul></td><td>false</td></tr>
- * <tr><td>{@link #setNullValue(String) nullValue}</td><td>value used in result as contents of fields that contain no value (SQL-NULL)</td><td><i>empty string</></td></tr>
- * <tr><td>{@link #setResultQuery(String) resultQuery}</td><td>query that can be used to obtain result of side-effecto of update-query, like generated value of sequence. Example: SELECT mysequence.currval FROM DUAL</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>&nbsp;</td><td>true</td></tr>
- * <tr><td>{@link #setTrimSpaces(boolean) trimSpaces}</td><td>remove trailing blanks from all values.</td><td>true</td></tr>
- * <tr><td>{@link #setBlobCharset(String) blobCharset}</td><td>charset used to read and write BLOBs</td><td>UTF-8</td></tr>
- * <tr><td>{@link #setCloseInputstreamOnExit(boolean) closeInputstreamOnExit}</td><td>when set to <code>false</code>, the inputstream is not closed after it has been used</td><td>true</td></tr>
- * <tr><td>{@link #setCloseOutputstreamOnExit(boolean) closeOutputstreamOnExit}</td><td>when set to <code>false</code>, the outputstream is not closed after Blob or Clob has been written to it</td><td>true</td></tr>
- * <tr><td>{@link #setStreamCharset(String) streamCharset}</td><td>charset used when reading a stream (that is e.g. going to be written to a BLOB or CLOB). When empty, the stream is copied directly to the BLOB, without conversion</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setBlobsCompressed(boolean) blobsCompressed}</td><td>controls whether blobdata is stored compressed in the database</td><td>true</td></tr>
- * <tr><td>{@link #setBlobBase64Direction(String) blobBase64Direction}</td><td>controls whether the streamed blobdata will need to be base64 <code>encode</code> or <code>decode</code> or not.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setColumnsReturned(String) columnsReturned}</td><td>comma separated list of columns whose values are to be returned. Works only if the driver implements JDBC 3.0 getGeneratedKeys()</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setBlobSmartGet(boolean) blobSmartGet}</td><td>controls automatically whether blobdata is stored compressed and/or serialized in the database</td><td>false</td></tr>
- * <tr><td>{@link #setTimeout(int) timeout}</td><td>the number of seconds the driver will wait for a Statement object to execute. If the limit is exceeded, a TimeOutException is thrown. 0 means no timeout</td><td>0</td></tr>
- * <tr><td>{@link #setUseNamedParams(boolean) useNamedParams}</td><td>when <code>true</code>, every string in the message which equals "?{<code>paramName</code>}" will be replaced by the setter method for the corresponding parameter (the parameters don't need to be in the correct order and unused parameters are skipped)</td><td>false</td></tr>
- * <tr><td>{@link #setIncludeFieldDefinition(boolean) includeFieldDefinition}</td><td>when <code>true</code>, the result contains besides the returned rows also a header with information about the fetched fields</td><td>application default (true)</td></tr>
- * <tr><td>{@link #setRowIdSessionKey(String) rowIdSessionKey}</td><td>If specified, the ROWID of the processed row is put in the PipeLineSession under the specified key (only applicable for <code>queryType=other</code>). <b>Note:</b> If multiple rows are processed a SQLException is thrown.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>if set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as a String)</td><td>false</td></tr>
- * </table>
- * </p>
  * <table border="1">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
@@ -814,7 +762,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 									String pattern = "yyyy-MM-dd HH:mm:ss";
 									SimpleDateFormat sdf = new SimpleDateFormat(pattern);
 									java.util.Date nDate = (java.util.Date)sdf.parseObject(element.toString());
-									java.sql.Timestamp sqlTimestamp = new java.sql.Timestamp(nDate.getTime());
+									Timestamp sqlTimestamp = new Timestamp(nDate.getTime());
 									paramArray[idx] = sqlTimestamp;
 									 
 								} else {

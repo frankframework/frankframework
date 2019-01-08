@@ -78,23 +78,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  *  &lt;/results&gt;
  * </pre>
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.FixedResult</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setDirectory(String) directory}</td> <td>directory to extract the archive to</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDirectorySessionKey(String) directorySessionKey}</td> <td>SessionKey with a directory value to extract the archive to</td><td>&nbsp;</td></tr> 
- * <tr><td>{@link #setDeleteOnExit(boolean) deleteOnExit}</td><td>when true, file is automatically deleted upon normal JVM termination</td><td>true</td></tr>
- * <tr><td>{@link #setCollectResults(boolean) collectResults}</td><td>if set <code>false</code>, only a small summary (count of items in zip) is returned</td><td>true</td></tr>
- * <tr><td>{@link #setCollectFileContents(boolean) collectFileContents}</td><td>if set <code>true</code>, the content of the files in the zip is returned in the result xml message of this pipe. Please note this can consume a lot of memory for large files or a large number of files</td><td>false</td></tr>
- * <tr><td>{@link #setCollectFileContentsBase64Encoded(String) collectFileContentsBase64Encoded}</td><td>comma separated list of file extensions. Files with an extension which is part of this list will be base64 encoded. All other files are assumed to have UTF-8 when reading it from the zip and are added as escaped xml with non-unicode-characters being replaced by inverted question mark appended with #, the character number and ;</td><td>false</td></tr>
- * <tr><td>{@link #setKeepOriginalFileName(boolean) keepOriginalFileName}</td><td>if set <code>false</code>, a suffix is added to the original filename to be sure it is unique</td><td>false</td></tr>
- * <tr><td>{@link #setCreateSubdirectories(boolean) createSubdirectories}</td><td>if set <code>true</code>, subdirectories in the zip file are created in the directory to extract the archive to</td><td>false</td></tr>
- * </table>
- * </p>
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>

@@ -31,13 +31,6 @@ import org.apache.log4j.Level;
 /**
  * Sender that just logs its message.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setLogLevel(String) logLevel}</td><td>level on which messages are logged</td><td>info</td></tr>
- * <tr><td>{@link #setLogCategory(String) logCategory}</td><td>category under which messages are logged</td><td>name of the sender</td></tr>
- * </table>
- * 
  * @author Gerrit van Brakel
  * @since  4.9
  */

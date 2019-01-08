@@ -29,13 +29,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Performs a reload on database config .
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setForceReload(boolean) forceReload}</td><td>reload the configuration regardless of the version</td><td>false</td></tr>
- * </table>
- * </p>
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>

@@ -74,37 +74,6 @@ import org.springframework.transaction.TransactionStatus;
  * 
  * Specified in the Configuration.xml by a &lt;job&gt; inside a &lt;scheduler&gt;. The scheduler element must
  * be a direct child of configuration, not of adapter.
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Job</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDescription(String) description}</td><td>optional description of the job</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCronExpression(String) cronExpression}</td><td>cron expression that determines the frequency of execution (see below)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInterval(long) interval}</td><td>Repeat the job at the specified number of ms. Keep cronExpression empty to use interval. Set to 0 to only run once at startup of the application. A value of 0 in combination with function 'sendMessage' will set dependencyTimeOut on the IbisLocalSender to -1 the keep waiting indefinitely instead of max 60 seconds for the adapter to start.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFunction(String) function}</td><td>one of: StopAdapter, StartAdapter, StopReceiver, StartReceiver, SendMessage, ExecuteQuery</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setConfigurationName(String) configurationName}</td><td>Configuration on which job operates</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAdapterName(String) adapterName}</td><td>Adapter on which job operates</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setReceiverName(String) receiverName}</td><td>Receiver on which job operates. If function is 'sendMessage' is used this name is also used as name of JavaListener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setQuery(String) query}</td><td>the SQL query text to be executed</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setQueryTimeout(int) queryTimeout}</td><td>the number of seconds the driver will wait for a Statement object to execute. If the limit is exceeded, a TimeOutException is thrown. 0 means no timeout</td><td>0</td></tr>
- * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are: 
- *   <table border="1">
- *   <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>
- *   <tr><td colspan="1" rowspan="2">Required</td>    <td>none</td><td>T2</td></tr>
- * 											      <tr><td>T1</td>  <td>T1</td></tr>
- *   <tr><td colspan="1" rowspan="2">RequiresNew</td> <td>none</td><td>T2</td></tr>
- * 											      <tr><td>T1</td>  <td>T2</td></tr>
- *   <tr><td colspan="1" rowspan="2">Mandatory</td>   <td>none</td><td>error</td></tr>
- * 											      <tr><td>T1</td>  <td>T1</td></tr>
- *   <tr><td colspan="1" rowspan="2">NotSupported</td><td>none</td><td>none</td></tr>
- * 											      <tr><td>T1</td>  <td>none</td></tr>
- *   <tr><td colspan="1" rowspan="2">Supports</td>    <td>none</td><td>none</td></tr>
- * 											      <tr><td>T1</td>  <td>T1</td></tr>
- *   <tr><td colspan="1" rowspan="2">Never</td>       <td>none</td><td>none</td></tr>
- * 											      <tr><td>T1</td>  <td>error</td></tr>
- *  </table></td><td>Supports</td></tr>
- * <tr><td>{@link #setTransactionTimeout(int) transactionTimeout}</td><td>Timeout (in seconds) of transaction started to process a message.</td><td><code>0</code> (use system default)</code></td></tr>
  * <tr><td>{@link #setNumThreads(int) numThreads}</td><td>the number of threads that may execute concurrently</td><td>1</td></tr>
  * <tr><td>{@link #setMessageKeeperSize(int) messageKeeperSize}</td><td>number of message displayed in IbisConsole</td><td>10</td></tr>
  * </table>
@@ -112,15 +81,15 @@ import org.springframework.transaction.TransactionStatus;
  * <p>
  * <table border="1">
  * <tr><th>nested elements (accessible in descender-classes)</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.util.Locker locker}</td><td>optional: the job will only be executed if a lock could be set successfully</td></tr>
+ * <tr><td>{@link Locker locker}</td><td>optional: the job will only be executed if a lock could be set successfully</td></tr>
  * </table>
  * </p>
  * <p> 
  * <br>
  * Operation of scheduling:
  * <ul>
- *   <li>at configuration time {@link nl.nn.adapterframework.configuration.Configuration#registerScheduledJob(JobDef) Configuration.registerScheduledJob()} is called; </li>
- *   <li>this calls {@link nl.nn.adapterframework.scheduler.SchedulerHelper#scheduleJob(IbisManager, JobDef) SchedulerHelper.scheduleJob()};</li>
+ *   <li>at configuration time {@link Configuration#registerScheduledJob(JobDef) Configuration.registerScheduledJob()} is called; </li>
+ *   <li>this calls {@link SchedulerHelper#scheduleJob(IbisManager, JobDef) SchedulerHelper.scheduleJob()};</li>
  *   <li>this creates a Quartz JobDetail object, and copies adaptername, receivername, function and a reference to the configuration to jobdetail's datamap;</li>
  *   <li>it sets the class to execute to AdapterJob</li>
  *   <li>this job is scheduled using the cron expression</li> 

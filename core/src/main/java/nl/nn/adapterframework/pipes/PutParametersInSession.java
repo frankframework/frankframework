@@ -27,12 +27,6 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 /**
  * Puts each parameter value in the PipeLineSession, under the key specified by the parameter name.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * </table>
- * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link Parameter param}</td><td>&nbsp;</td></tr>
  * </table>

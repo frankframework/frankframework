@@ -49,35 +49,6 @@ import org.springframework.core.task.TaskExecutor;
 /**
  * Abstract base class to sends a message to a Sender for each item returned by a configurable iterator.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.IteratingPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setParallel(boolean) parallel}</td><td> when set <code>true</code>, the calls for all items are done in parallel (a new thread is started for each call). When collectResults set <code>true</code>, this pipe will wait for all calls to finish before results are collected and pipe result is returned</td><td>false</td></tr>
- * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified the message is logged informatory</td><td>-1</td></tr>
- * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCheckXmlWellFormed(boolean) checkXmlWellFormed}</td><td>when set <code>true</code>, the XML well-formedness of the result is checked</td><td>false</td></tr>
- * <tr><td>{@link #setPreserveInput(boolean) preserveInput}</td><td>when set <code>true</code>, the input of a pipe is restored before processing the next one</td><td>false</td></tr>
- * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespaceAwareness for parameters</td><td>application default</td></tr>
- * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are: 
- *   <table border="1">
- *   <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipe excecuted in Transaction</th></tr>
- *   <tr><td colspan="1" rowspan="2">Required</td>    <td>none</td><td>T2</td></tr>
- * 											      <tr><td>T1</td>  <td>T1</td></tr>
- *   <tr><td colspan="1" rowspan="2">RequiresNew</td> <td>none</td><td>T2</td></tr>
- * 											      <tr><td>T1</td>  <td>T2</td></tr>
- *   <tr><td colspan="1" rowspan="2">Mandatory</td>   <td>none</td><td>error</td></tr>
- * 											      <tr><td>T1</td>  <td>T1</td></tr>
- *   <tr><td colspan="1" rowspan="2">NotSupported</td><td>none</td><td>none</td></tr>
- * 											      <tr><td>T1</td>  <td>none</td></tr>
- *   <tr><td colspan="1" rowspan="2">Supports</td>    <td>none</td><td>none</td></tr>
- * 											      <tr><td>T1</td>  <td>T1</td></tr>
- *   <tr><td colspan="1" rowspan="2">Never</td>       <td>none</td><td>none</td></tr>
- * 											      <tr><td>T1</td>  <td>error</td></tr>
- *  </table></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit (e.g. "receiver timed out").</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply</td><td>CORRELATIONID</td></tr>
  * <tr><td>{@link #setAuditTrailXPath(String) auditTrailXPath}</td><td>xpath expression to extract audit trail from message</td><td>&nbsp;</td></tr>
