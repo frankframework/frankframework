@@ -125,7 +125,9 @@ In some cases you might want/need to:
 - When changing IAF versions Eclipse doesn't always automatically clean the 
   tomcat deploy folder (wtpwebapps). Rightclick project, Run As, Maven Clean, followed by 
   Right click Tomcat v7.0 Server at localhost, Clean...
-
+- When running Tomcat v8.5, make sure to disable its pluggability scans to prevent unnecessarily long startup times.
+  To do this, go to Tomcat's local context.xml file (under the Servers folder in Eclipse's project explorer) and
+  add a JarScannerFilter element with the defaultPluggabilityScan="false" attribute. Encapsulate this in JarScanner tags.
 
 
 ## Developing with IntelliJ
