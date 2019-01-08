@@ -1,6 +1,5 @@
 package nl.nn.adapterframework.testtool;
 
-import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.util.Dir2Xml;
