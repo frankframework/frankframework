@@ -90,10 +90,12 @@ public class SchedulerAdapter {
 					jb.addSubElement(jn);
 
 					JobDef jobDef = null;
-					for (Configuration configuration : ibisManager.getConfigurations()) {
-						jobDef = configuration.getScheduledJob(jobKey.getName());
-						if (jobDef != null) {
-							break;
+					if(ibisManager != null) {
+						for (Configuration configuration : ibisManager.getConfigurations()) {
+							jobDef = configuration.getScheduledJob(jobKey.getName());
+							if (jobDef != null) {
+								break;
+							}
 						}
 					}
 					XmlBuilder ms= getJobMessages(jobDef);

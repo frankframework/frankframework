@@ -117,7 +117,7 @@ public class SchedulerSender extends SenderWithParametersBase {
 	/*
 	 * Schedule the job
 	 */
-	private void schedule(String jobName, String cronExpression, String correlationId, String message) throws Exception {
+	void schedule(String jobName, String cronExpression, String correlationId, String message) throws Exception {
 		
 		JobDataMap jobDataMap = new JobDataMap();
 		jobDataMap.put(JAVALISTENER, javaListener);
@@ -126,7 +126,7 @@ public class SchedulerSender extends SenderWithParametersBase {
 		
 		JobDetail jobDetail = newJob(ServiceJob.class)
 				.withIdentity(jobName, jobGroup)
-				.usingJobData(jobDataMap)
+				.usingJobData(jobDataMap) 
 				.build();
 		
 		schedulerHelper.scheduleJob(jobDetail, cronExpression, -1, false);

@@ -75,7 +75,7 @@ public class SchedulerHelper {
 						.withIdentity(jobDetail.getKey().getName(), jobDetail.getKey().getGroup())
 						.forJob(jobDetail)
 						.withSchedule(simpleSchedule()
-								.withIntervalInSeconds(60 * 60 * 24 * 365 * 100)
+								.withIntervalInHours(876000)
 								.withRepeatCount(1))
 						.build();
 			} else {
