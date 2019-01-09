@@ -1,6 +1,8 @@
 package nl.nn.adapterframework.scheduler;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -22,18 +24,22 @@ public class SchedulerSenderTest extends SchedulerTestBase {
 	}
 	
 	@Test
-	public void testConfigureWithoutJobNamePattern() throws ConfigurationException {
-		schedulerSender.setJavaListener(JAVALISTENER);
-		schedulerSender.setCronExpressionPattern("0 0 5 * * ?");
-		schedulerSender.configure();
-	}
-	
-	@Test
 	public void testConfigure() throws ConfigurationException {
 		schedulerSender.setJavaListener(JAVALISTENER);
 		schedulerSender.setCronExpressionPattern("0 0 5 * * ?");
 		schedulerSender.setJobNamePattern("DummyJobNamePattern");
+		
 		schedulerSender.configure();
+		assertNotNull(schedulerSender.getParameterList().findParameter("_jobname"));
+	}
+	
+	@Test
+	public void testConfigureWithoutJobNamePattern() throws ConfigurationException {
+		schedulerSender.setJavaListener(JAVALISTENER);
+		schedulerSender.setCronExpressionPattern("0 0 5 * * ?");
+		
+		schedulerSender.configure();
+		assertNull(schedulerSender.getParameterList().findParameter("_jobname"));
 	}
 	
 	@Test(expected = ConfigurationException.class)
@@ -49,9 +55,13 @@ public class SchedulerSenderTest extends SchedulerTestBase {
 	}
 	
 	@Test
-	public void testOpen() throws SenderException {
-		schedulerSender.setSchedulerHelper(new SchedulerHelper());
+	public void testOpen() throws SenderException, SchedulerException {
+		SchedulerHelper schedulerHelper;
+		schedulerSender.setSchedulerHelper(schedulerHelper = new SchedulerHelper());
+		schedulerHelper.setScheduler(StdSchedulerFactory.getDefaultScheduler());
+		
 		schedulerSender.open();
+		assertTrue(schedulerSender.getSchedulerHelper().getScheduler().isStarted());
 	}
 	
 	@Test
@@ -78,5 +88,6 @@ public class SchedulerSenderTest extends SchedulerTestBase {
 		schedulerHelper.setScheduler(StdSchedulerFactory.getDefaultScheduler());
 		
 		schedulerSender.schedule("TestScheduleJob", "0 0 5 * * ?", CORRELATIONID, MESSAGE);
+		assertNotNull(schedulerSender.getSchedulerHelper().getTrigger("TestScheduleJob"));
 	}
 }

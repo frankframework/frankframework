@@ -1,15 +1,8 @@
 package nl.nn.adapterframework.scheduler;
 
-import org.mockito.Mock;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.quartz.JobBuilder.newJob;
 
 import java.text.ParseException;
 
@@ -22,8 +15,6 @@ import org.quartz.SimpleTrigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.impl.StdSchedulerFactory;
 import org.quartz.impl.matchers.GroupMatcher;
-
-import nl.nn.adapterframework.configuration.BasicAdapterServiceImpl;
 
 public class SchedulerHelperTest extends SchedulerTestBase {
 	
@@ -39,8 +30,8 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 	@Test
 	public void testDeleteTrigger() throws SchedulerException, ParseException {
 		JobDetail jobDetail = createDummyJob();
-		schedulerHelper.deleteTrigger(jobDetail.getKey().getName(), jobDetail.getKey().getGroup());
 		
+		schedulerHelper.deleteTrigger(jobDetail.getKey().getName(), jobDetail.getKey().getGroup());
 		assertTrue(schedulerHelper.getScheduler().getJobKeys(GroupMatcher.jobGroupEquals("DummyGroup")).isEmpty());
 	}
 	
@@ -78,6 +69,7 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 		JobDetail jobDetail = createDummyJob();
 		
 		schedulerHelper.scheduleJob(jobDetail, null, -1, false);
+		assertNull(schedulerHelper.getScheduler().getJobDetail(jobDetail.getKey()));
 	}
 	
 	@Test(expected = SchedulerException.class)
@@ -99,5 +91,6 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 	@Test
 	public void testStartScheduler() throws SchedulerException {
 		schedulerHelper.startScheduler();
+		assertTrue(schedulerHelper.getScheduler().isStarted());
 	}
 }

@@ -50,7 +50,6 @@ public class SchedulerAdapterTest extends SchedulerTestBase {
 
 		String result = schedulerAdapter.getJobGroupNamesWithJobsToXml(scheduler, null).toXML();
 		assertTrue(result.contains("DummyGroup A") && result.contains("DummyGroup B"));
-		// assertEquals("<jobGroups />", schedulerAdapter.getJobGroupNamesWithJobsToXml(scheduler, null).toXML().trim());
 	}
 	
 	@Test
