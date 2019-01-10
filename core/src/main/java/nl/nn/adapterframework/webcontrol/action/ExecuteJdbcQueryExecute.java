@@ -51,6 +51,38 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		addSecLogParamName("jmsRealm");
 		addSecLogParamName("queryType");
 	}
+	
+	public String getResult(String form_jmsRealm, String form_queryType, String form_resultType, String form_query) {
+		DirectQuerySender qs;
+		String result = "";
+		
+		try {
+			qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
+			try {
+				qs.setName("QuerySender");
+				qs.setJmsRealm(form_jmsRealm);
+				qs.setQueryType(form_queryType);
+				qs.setBlobSmartGet(true);
+				qs.configure(true);
+				qs.open();
+				result = qs.sendMessage("dummy", form_query);
+				if ("csv".equalsIgnoreCase(form_resultType)) {
+					URL url= ClassUtils.getResourceURL(this,DB2XML_XSLT);
+					if (url!=null) {
+						Transformer t = XmlUtils.createTransformer(url);
+						result = XmlUtils.transformXml(t,result);
+					}
+				}
+			} catch (Throwable t) {
+				error("error occured on executing jdbc query",t);
+			} finally {
+				qs.close();
+			}
+		} catch (Exception e) {
+			error("error occured on creating or closing connection",e);
+		}
+		return result;
+	}
 
 	public ActionForward executeSub(
 		ActionMapping mapping,
