@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 - 2018 Nationale-Nederlanden
+   Copyright 2013, 2016-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -177,12 +177,15 @@ public class IbisContext {
 			messageKeepers.put("*ALL*", messageKeeper);
 
 			applicationContext = createApplicationContext();
+			LOG.debug("Created Ibis Application Context");
 			ibisManager = (IbisManager)applicationContext.getBean("ibisManager");
 			ibisManager.setIbisContext(this);
+			LOG.debug("Loaded IbisManager Bean");
 			classLoaderManager = new ClassLoaderManager(this);
 
 			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
 			registerApplicationModules();
+			LOG.debug("found configurations to load ["+CONFIGURATIONS+"]");
 			load();
 			getMessageKeeper().setMaxSize(Math.max(messageKeeperSize, getMessageKeeper().size()));
 
@@ -238,8 +241,10 @@ public class IbisContext {
 		for(String module: iafModules) {
 			String version = getModuleVersion(module);
 
-			if(version != null)
+			if(version != null) {
 				appConstants.put(module+".version", version);
+				LOG.debug("Found IAF module["+module+"]");
+			}
 		}
 	}
 

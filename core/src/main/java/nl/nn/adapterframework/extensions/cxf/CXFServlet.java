@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.extensions.cxf;
 
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
@@ -35,14 +36,24 @@ public class CXFServlet extends org.apache.cxf.transport.servlet.CXFServlet {
 
 	private static final long serialVersionUID = 1L;
 	private final Logger log = LogUtil.getLogger(this);
+	private IbisContext ibisContext = null;
+
+	@Override
+	public void init(ServletConfig sc) throws ServletException {
+
+		AppConstants appConstants = AppConstants.getInstance();
+		String ibisContextKey = appConstants.getResolvedProperty(ConfigurationServlet.KEY_CONTEXT);
+		ibisContext = (IbisContext)sc.getServletContext().getAttribute(ibisContextKey);
+		if(ibisContext.getIbisManager() == null)
+			throw new ServletException("failed to retreive ibisContext from servletContext, did the IBIS start up correctly?");
+
+		super.init(sc);
+	}
 
 	@Override
 	protected void loadBus(ServletConfig sc) {
 		log.debug("loading cxf bus for servlet["+sc.getServletName()+"]");
 
-		AppConstants appConstants = AppConstants.getInstance();
-		String ibisContextKey = appConstants.getResolvedProperty(ConfigurationServlet.KEY_CONTEXT);
-		IbisContext ibisContext = (IbisContext)getServletContext().getAttribute(ibisContextKey);
 		setBus((Bus)ibisContext.getBean("cxf"));
 	}
 }
