@@ -126,7 +126,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * The package processor makes some assumptions about the datatypes:
  * <ul>
  *   <li>elements that start with a single quote are assumed to be Strings</li>
- *   <li>elements thta contain a dash ('-') are assumed to be dates (yyyy-MM-dd) or timestamps (yyyy-MM-dd HH:mm:ss)</li>
+ *   <li>elements that contain a dash ('-') are assumed to be dates (yyyy-MM-dd) or timestamps (yyyy-MM-dd HH:mm:ss)</li>
  *   <li>elements containing a dot ('.') are assumed to be floats</li>
  *   <li>all other elements are assumed to be integers</li>
  * </ul>

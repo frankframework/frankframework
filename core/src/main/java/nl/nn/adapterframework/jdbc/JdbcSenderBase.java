@@ -72,9 +72,9 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 		paramList.add(p);
 	}
 
-	public void configure(ParameterList parameterList) throws ConfigurationException {
-		configure();		
-	}
+//	public void configure(ParameterList parameterList) throws ConfigurationException {
+//		configure();
+//	}
 
 	@Override
 	public void configure() throws ConfigurationException {

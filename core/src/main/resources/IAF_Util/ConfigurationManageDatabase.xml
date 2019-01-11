@@ -7,6 +7,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="ManageDatabase-ws" active="${manageDatabase.webServiceListener.active}">
 			<listener className="nl.nn.adapterframework.http.WebServiceListener" name="ManageDatabase-ws" serviceNamespaceURI="http://managedatabase.ibissource.org/" />
 		</receiver>
+		<!-- <pipeline firstPipe="PutParamsInSession" transactionAttribute="Required"> -->
 		<pipeline firstPipe="Query" transactionAttribute="Required">
 			<inputValidator className="nl.nn.adapterframework.pipes.XmlValidator" schema="ManageDatabase/xsd/ManageDatabase.xsd" root="manageDatabaseREQ">
 				<forward name="failure" path="InputValidateFailure" />
@@ -19,8 +20,14 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
+			<!-- <pipe className="nl.nn.adapterframework.pipes.PutParametersInSession" name="PutParamsInSession">
+				<param name= "jmsRealm" xpathExpression="/manageDatabaseREQ/@jmsRealm" defaultValue="jdbc"/>
+				<forward name="success" path="Query" />
+			</pipe> -->
 			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="Query" elementXPathExpression="manageDatabaseREQ/*" ignoreExceptions="true">
-				<sender className="nl.nn.adapterframework.jdbc.XmlQuerySender" jmsRealm="jdbc" />
+				<sender className="nl.nn.adapterframework.jdbc.XmlQuerySender" jmsRealm="@jmsRealm">
+					<!-- <param name="jmsRealm" sessionKey="jmsRealm" xpathExpression="*/@jmsRealm" defaultValueMethods="xpathExpression, sessionKey, defaultValue"/> -->
+				</sender>
 				<forward name="success" path="ManageDatabaseRLY" />
 			</pipe>
 			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="ManageDatabaseRLY" styleSheetName="/ManageDatabase/xsl/ManageDatabaseRLY.xsl">

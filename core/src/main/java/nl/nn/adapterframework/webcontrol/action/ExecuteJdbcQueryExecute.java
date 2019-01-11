@@ -28,10 +28,12 @@ import javax.xml.transform.Transformer;
 
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringTagger;
+import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.struts.action.ActionForm;

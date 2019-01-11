@@ -607,8 +607,13 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 	}
 
 	@Override
-	public void configure(ParameterList parameterList) throws ConfigurationException {
-		super.configure(parameterList);
+	public void configure() throws ConfigurationException {
+		if (StringUtils.isEmpty(getJmsRealName())) {
+			setJmsRealm("jdbc");
+		}
+		System.out.println(getJmsRealName());
+		
+		super.configure();
 		ConfigurationWarnings cw = ConfigurationWarnings.getInstance();
 		cw.add("The XmlSender is not released for production. The configuration options for this pipe will change in a non-backward compatible way");
 	}
