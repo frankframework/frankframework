@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<deployment>
+		<exclusions />
+		<exports />
+		<module-alias name="iaf-example" />
+		<dependencies />
+		<exclude-subsystems>
+			<subsystem name="resteasy" />		<!-- To avoid resteasy conflict -->
+			<subsystem name="jaxrs" />			<!-- To avoid resteasy conflict -->
+			<subsystem name="webservices" />	<!-- To avoid apache CXF conflict -->
+		</exclude-subsystems>
+		<local-last value="true" />
+		<resources />
+		<transformers />
+	</deployment>
+</jboss-deployment-structure>
