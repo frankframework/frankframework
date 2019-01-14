@@ -84,7 +84,7 @@ public class ConfigurationServlet extends HttpServlet {
 		String stage = appConstants.getString("otap.stage", "LOC");
 		if(appConstants.getBoolean("security.constraint.warning", !"LOC".equalsIgnoreCase(stage))) {
 			try {
-				String web = "/WEB-INF"+File.separator+"web.xml";
+				String web = File.separator+"WEB-INF"+File.separator+"web.xml";
 				URL webXml = servletContext.getResource(web);
 				if(webXml != null) {
 					if(XmlUtils.buildDomDocument(webXml).getElementsByTagName("security-constraint").getLength() < 1)
@@ -130,8 +130,6 @@ public class ConfigurationServlet extends HttpServlet {
 		} else if (StringUtils.containsIgnoreCase(serverInfo, "Tomcat")) {
 			defaultApplicationServerType = "TOMCAT";
 		} else if (StringUtils.containsIgnoreCase(serverInfo, "JBoss")) {
-			defaultApplicationServerType = "JBOSS";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "WildFly")) {
 			defaultApplicationServerType = "JBOSS";
 		} else if (StringUtils.containsIgnoreCase(serverInfo, "jetty")) {
 			String javaHome = AppConstants.getInstance().getString("java.home",

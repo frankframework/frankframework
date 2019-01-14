@@ -72,28 +72,25 @@ public class LogUtil {
 					// NN WebSphere
 					logDir = new File(userDir, "log");
 					if (!logDir.isDirectory()) {
-						// NN JBoss 
-						String jBossHome = System.getProperty("jboss.server.base.dir");
-						logDir = new File(jBossHome, "log");
-						if(!logDir.isDirectory()){
-							logDir = new File(logDir.getParent(), "log");
+						// NN JBoss
+						logDir = new File(logDir.getParent(), "log");
+						if (!logDir.isDirectory()) {
+							String wtpDeploy = System.getProperty("wtp.deploy");
+							if (wtpDeploy != null) {
+								// Eclipse Tomcat ("Serve modules without publishing" disabled)
+								logDir = new File(wtpDeploy);
+								logDir = new File(logDir.getParent(), "logs");
+							}
 							if (!logDir.isDirectory()) {
-								String wtpDeploy = System.getProperty("wtp.deploy");
-								if (wtpDeploy != null) {
-									// Eclipse Tomcat ("Serve modules without publishing" disabled)
-									logDir = new File(wtpDeploy);
-									logDir = new File(logDir.getParent(), "logs");
-								}
-								if (!logDir.isDirectory()) {
-									String catalinaHome = System.getProperty("catalina.base");
-									if (catalinaHome != null) {
-										// Vanilla Tomcat and
-										// Eclipse Tomcat classic ("Serve modules without publishing" enabled)
-										logDir = new File(catalinaHome, "logs");
-									}
+								String catalinaHome = System.getProperty("catalina.base");
+								if (catalinaHome != null) {
+									// Vanilla Tomcat and
+									// Eclipse Tomcat classic ("Serve modules without publishing" enabled)
+									logDir = new File(catalinaHome, "logs");
 								}
 							}
 						}
+						
 					}
 				}
 			}
