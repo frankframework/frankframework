@@ -114,13 +114,9 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		XmlBuilder xSql = new XmlBuilder("sql");
 		xSql.addAttribute("jmsRealm", form_jmsRealm);
 		xbRoot.addSubElement(xSql);
-		
-//		XmlBuilder xRType = new XmlBuilder("result");
-//		xRType.setValue(form_resultType);
-//		xbRoot.addSubElement(xRType);
 
 		XmlBuilder xQType = new XmlBuilder("type");
-		xQType.setValue("query");
+		xQType.setValue(form_query.split(" ")[0]);
 		xSql.addSubElement(xQType);
 		
 		XmlBuilder xQuery = new XmlBuilder("query");
@@ -129,11 +125,22 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		
 		System.out.println("xbRoot: " + xbRoot.toXML());
 		JavaListener listener = JavaListener.getListener("ManageDatabase");
+		String resultA = "";
 		try {
-			String jajaj = listener.processRequest(session.getId(), xbRoot.toXML(), new HashMap());
-			System.out.println("Result (JL): " + jajaj);
+			resultA = listener.processRequest(session.getId(), xbRoot.toXML(), new HashMap());
+			System.out.println("Result (JL pre-transform): " + resultA);
+			if (form_resultType.equalsIgnoreCase("csv")) {
+				URL url= ClassUtils.getResourceURL(this,DB2XML_XSLT);
+				if (url!=null) {
+					Transformer t = XmlUtils.createTransformer(url);
+					resultA = XmlUtils.transformXml(t,resultA);
+					System.out.println("Result from listener: " + resultA);
+				}
+			}
 		} catch (ListenerException e1) {
 			error("error occured on creating or closing connection",e1);
+		} catch (Throwable e) {
+			error("error occured on executing jdbc query", e);
 		}
 		
 		
@@ -153,13 +160,14 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 				qs.configure(true);
 				qs.open();
 				result = qs.sendMessage("dummy", form_query);
+				System.out.println(result);
 				if ("csv".equalsIgnoreCase(form_resultType)) {
 					URL url= ClassUtils.getResourceURL(this,DB2XML_XSLT);
 					if (url!=null) {
 						Transformer t = XmlUtils.createTransformer(url);
-						System.out.println("Result (QS pre-transform): " + result);
+						System.out.println("Result (QS 1/2): " + result);
 						result = XmlUtils.transformXml(t,result);
-						System.out.println("Result (QS post-transform): " + result);
+						System.out.println("Result (QS 2/2): " + result);
 					}
 				}
 			} catch (Throwable t) {
@@ -170,6 +178,9 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		} catch (Exception e) {
 			error("error occured on creating or closing connection", e);
 		}
+		
+		System.out.println("RESULT FROM LISTENER.PROCESSREQUEST() AND SENDER.SENDMESSAGE() IS EQUAL: "
+				+ result.equals(resultA));
 		
 //		String result = "";
 //		if ("csv".equalsIgnoreCase(form_resultType)) {
