@@ -483,11 +483,11 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 			result+=" selector ["+getMessageSelector()+"]";
 		}
 		JmsRealm jmsRealm=null;
-		if (getJmsRealName()!=null) {
-			jmsRealm=JmsRealmFactory.getInstance().getJmsRealm(getJmsRealName());
+		if (getJmsRealmName()!=null) {
+			jmsRealm=JmsRealmFactory.getInstance().getJmsRealm(getJmsRealmName());
 		}
 	    if (jmsRealm==null) {
-	    	log.warn("Could not find jmsRealm ["+getJmsRealName()+"]");
+	    	log.warn("Could not find jmsRealm ["+getJmsRealmName()+"]");
 	    } else {
 			result+=" on ("+jmsRealm.retrieveConnectionFactoryName()+")";
 		}

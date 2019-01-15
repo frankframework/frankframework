@@ -36,10 +36,13 @@ import org.w3c.dom.Element;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -268,7 +271,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		}
 		return prepareQuery(con, qry, updateable);
 	}
-
+	
 	@Override
 	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		Element queryElement;
@@ -277,6 +280,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		String where = null;
 		String order = null;
 		String result = null;
+		
 		try {
 			queryElement = XmlUtils.buildElement(message);
 			String root = queryElement.getTagName();
@@ -287,7 +291,18 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			}
 			where = XmlUtils.getChildTagAsString(queryElement, "where");
 			order = XmlUtils.getChildTagAsString(queryElement, "order");
-
+			
+			System.out.println("");
+			System.out.println("Query input = [" + message + "]");
+			System.out.println("jmsRealm write = [" + queryElement.getAttribute("jmsRealm") + "]");
+			setJmsRealm(queryElement.getAttribute("jmsRealm").toString());
+			System.out.println("jmsRealm read = [" + getJmsRealmName() + "]");
+			
+//			ParameterValueList pvl = null;
+//			pvl = prc.getValues(paramList);
+//			setJmsRealm(pvl.getParameterValue("jmsRealm").toString());
+//			System.out.println(pvl.getParameterValue("jmsRealm").toString());
+			
 			if (root.equalsIgnoreCase("select")) {
 				result = selectQuery(connection, correlationID, tableName, columns, where, order);
 			} else {
@@ -310,17 +325,20 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 									String query = XmlUtils.getChildTagAsString(queryElement, "query");
 									result = sql(connection, correlationID, query, type);
 								} else {
-								throw new SenderException(getLogPrefix() + "unknown root element [" + root + "]");
+									throw new SenderException(getLogPrefix() + "unknown root element [" + root + "]");
+								}
 							}
 						}
 					}
 				}
 			}
-			}
 		} catch (DomBuilderException e) {
 			throw new SenderException(getLogPrefix() + "got exception parsing [" + message + "]", e);
 		} catch (JdbcException e) {
 			throw new SenderException(getLogPrefix() + "got exception preparing [" + message + "]", e);
+//		} catch (ParameterException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
 		}
 
 		return result;
@@ -608,10 +626,9 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isEmpty(getJmsRealName())) {
+		if (StringUtils.isEmpty(getJmsRealmName())) {
 			setJmsRealm("jdbc");
 		}
-		System.out.println(getJmsRealName());
 		
 		super.configure();
 		ConfigurationWarnings cw = ConfigurationWarnings.getInstance();

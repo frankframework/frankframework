@@ -696,7 +696,7 @@ public class JobDef {
 			List<JobDef> scheduledJobs = configuration.getScheduledJobs();
 			for (JobDef jobdef : configuration.getScheduledJobs()) {
 				if (jobdef.getLocker()!=null) {
-					String jmsRealmName = jobdef.getLocker().getJmsRealName();
+					String jmsRealmName = jobdef.getLocker().getJmsRealmName();
 					if (!jmsRealmNames.contains(jmsRealmName)) {
 						jmsRealmNames.add(jmsRealmName);
 					}
@@ -712,7 +712,7 @@ public class JobDef {
 						if (pipe instanceof IExtendedPipe) {
 							IExtendedPipe extendedPipe = (IExtendedPipe)pipe;
 							if (extendedPipe.getLocker() != null) {
-								String jmsRealmName = extendedPipe.getLocker().getJmsRealName();
+								String jmsRealmName = extendedPipe.getLocker().getJmsRealmName();
 								if (!jmsRealmNames.contains(jmsRealmName)) {
 									jmsRealmNames.add(jmsRealmName);
 								}
@@ -752,7 +752,7 @@ public class JobDef {
 						ITransactionalStorage transactionStorage = msp.getMessageLog();
 						if (transactionStorage instanceof JdbcTransactionalStorage) {
 							JdbcTransactionalStorage messageLog = (JdbcTransactionalStorage)transactionStorage;
-							String jmsRealmName = messageLog.getJmsRealName();
+							String jmsRealmName = messageLog.getJmsRealmName();
 							String expiryDateField = messageLog.getExpiryDateField();
 							String tableName = messageLog.getTableName();
 							String keyField = messageLog.getKeyField();

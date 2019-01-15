@@ -232,15 +232,20 @@ public class JNDIBase {
 	 * @see JmsRealm
 	 */ 
 	public void setJmsRealm(String jmsRealmName) {
+		System.out.println(" > Trying to set jmsRealm...");
 		try {
 			JmsRealm.copyRealm(this,jmsRealmName);
+			System.out.println("   > ...success!");
+			System.out.println("   > Realm [1/2]: " + jmsRealmName);
             this.jmsRealmName = jmsRealmName;
+			System.out.println("   > Realm [2/2]: " + jmsRealmName);
 		} catch (ConfigurationException e) {
+			System.out.println("   > ...failure!");
 			log.warn("cannot copy data from realm",e);
 		}
 	}
     
-    public String getJmsRealName() {
+    public String getJmsRealmName() {
         return this.jmsRealmName;
     }
     

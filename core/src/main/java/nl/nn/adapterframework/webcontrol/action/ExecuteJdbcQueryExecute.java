@@ -18,6 +18,7 @@ package nl.nn.adapterframework.webcontrol.action;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -25,12 +26,16 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 
+import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringTagger;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -96,20 +101,47 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		// Initialize action
 		initAction(request);
 
+		
+		
 		DynaActionForm executeJdbcQueryExecuteForm = (DynaActionForm) form;
 		String form_jmsRealm = (String) executeJdbcQueryExecuteForm.get("jmsRealm");
 		String form_queryType = (String) executeJdbcQueryExecuteForm.get("queryType");
 		String form_resultType = (String) executeJdbcQueryExecuteForm.get("resultType");
 		String form_query = (String) executeJdbcQueryExecuteForm.get("query");
 
+		XmlBuilder xbRoot = new XmlBuilder("manageDatabaseREQ");
+		
+		XmlBuilder xSql = new XmlBuilder("sql");
+		xSql.addAttribute("jmsRealm", form_jmsRealm);
+		xbRoot.addSubElement(xSql);
+		
+//		XmlBuilder xRType = new XmlBuilder("result");
+//		xRType.setValue(form_resultType);
+//		xbRoot.addSubElement(xRType);
+
+		XmlBuilder xQType = new XmlBuilder("type");
+		xQType.setValue("query");
+		xSql.addSubElement(xQType);
+		
+		XmlBuilder xQuery = new XmlBuilder("query");
+		xQuery.setValue(form_query);
+		xSql.addSubElement(xQuery);
+		
+		System.out.println("xbRoot: " + xbRoot.toXML());
+		JavaListener listener = JavaListener.getListener("ManageDatabase");
+		try {
+			String jajaj = listener.processRequest(session.getId(), xbRoot.toXML(), new HashMap());
+			System.out.println("Result (JL): " + jajaj);
+		} catch (ListenerException e1) {
+			error("error occured on creating or closing connection",e1);
+		}
+		
+		
+		
+		
+
 		DirectQuerySender qs;
 		String result = "";
-		
-//		DispatcherManager dispatcher = new DispatcherManagerFactory().getDispatcherManager();
-//		HashMap session = new HashMap<>();
-//		String result = dispatcher.processRequest("javaListenerName", "correlationId", "input goes here!", session);
-		
-		// TODO: In this class, the functionality of the ExecuteJdbcQuery.do's send button is described
 		
 		try {
 			qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
@@ -125,17 +157,34 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 					URL url= ClassUtils.getResourceURL(this,DB2XML_XSLT);
 					if (url!=null) {
 						Transformer t = XmlUtils.createTransformer(url);
+						System.out.println("Result (QS pre-transform): " + result);
 						result = XmlUtils.transformXml(t,result);
+						System.out.println("Result (QS post-transform): " + result);
 					}
 				}
 			} catch (Throwable t) {
-				error("error occured on executing jdbc query",t);
+				error("error occured on executing jdbc query", t);
 			} finally {
 				qs.close();
 			}
 		} catch (Exception e) {
-			error("error occured on creating or closing connection",e);
+			error("error occured on creating or closing connection", e);
 		}
+		
+//		String result = "";
+//		if ("csv".equalsIgnoreCase(form_resultType)) {
+//			URL url= ClassUtils.getResourceURL(this,DB2XML_XSLT);
+//			if (url!=null) {
+//				try {
+//					Transformer t = XmlUtils.createTransformer(url);
+//					result = XmlUtils.transformXml(t,result);
+//				} catch (Throwable t) {
+//					error("error occured on executing jdbc query",t);
+//				}
+//				
+//				System.out.println(result);
+//			}
+//		}
 
 		StoreFormData(form_query, result, executeJdbcQueryExecuteForm);
 

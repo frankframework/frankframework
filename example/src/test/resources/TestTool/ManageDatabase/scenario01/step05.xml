@@ -1,0 +1,7 @@
+<manageDatabaseREQ>
+	<sql>
+		<type>query</type>
+		<query>ALTER TABLE mytable
+		ADD myothercolumn varchar(255);</query>
+	</sql>
+</manageDatabaseREQ>

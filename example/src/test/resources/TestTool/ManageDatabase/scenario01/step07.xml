@@ -1,11 +1,11 @@
 <manageDatabaseREQ>
-	<select>
+	<update>
 		<tableName>mytable</tableName>
 		<columns>
 			<column>
-				<name>mycolumn</name>
-				<value>1</value>
+				<name>myothercolumn</name>
+				<value>1337</value>
 			</column>
 		</columns>
-	</select>
+	</update>
 </manageDatabaseREQ>
