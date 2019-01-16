@@ -10,15 +10,15 @@
     
 	<xsl:template match="/manageDatabaseREQ/sql | /manageDatabaseREQ/insert | /manageDatabaseREQ/select | /manageDatabaseREQ/update | /manageDatabaseREQ/delete | /manageDatabaseREQ/alter">
 		<xsl:copy>
-			<xsl:text disable-output-escaping="yes">
+			<xsl:if test="$jmsRealm != ''">
            		<xsl:attribute name="jmsRealm">
 					<xsl:choose>
 						<xsl:when test="./@jmsRealm != ''"><xsl:value-of select="./@jmsRealm"/></xsl:when>
 						<xsl:otherwise><xsl:value-of select="$jmsRealm"/></xsl:otherwise>
 					</xsl:choose>
             	</xsl:attribute>
-            	<xsl:apply-templates select="@*|node()" />
-         	</xsl:text>
+            </xsl:if>
+           	<xsl:apply-templates select="@*|node()" />
        	</xsl:copy>
      </xsl:template>
 

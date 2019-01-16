@@ -105,9 +105,9 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		// Transfer form results into XML
 		DynaActionForm executeJdbcQueryExecuteForm = (DynaActionForm) form;
 		String form_jmsRealm = (String) executeJdbcQueryExecuteForm.get("jmsRealm");
+		String form_queryType = (String) executeJdbcQueryExecuteForm.get("queryType");
 		String form_resultType = (String) executeJdbcQueryExecuteForm.get("resultType");
 		String form_query = (String) executeJdbcQueryExecuteForm.get("query");
-		String queryType = form_query.split(" ")[0];
 
 		XmlBuilder xbRoot = new XmlBuilder("manageDatabaseREQ");
 		
@@ -116,7 +116,7 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		xbRoot.addSubElement(xSql);
 
 		XmlBuilder xQType = new XmlBuilder("type");
-		xQType.setValue(queryType);
+		xQType.setValue(form_query.split(" ")[0]);
 		xSql.addSubElement(xQType);
 		
 		XmlBuilder xQuery = new XmlBuilder("query");
@@ -128,6 +128,7 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		String result = "";
 		try {
 			result = listener.processRequest(session.getId(), xbRoot.toXML(), new HashMap());
+			
 			if (form_resultType.equalsIgnoreCase("csv")) {
 				URL url= ClassUtils.getResourceURL(this,XML2CSV_XSLT);
 				if (url!=null) {
@@ -141,6 +142,9 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 			error("error occured on executing jdbc query", e);
 		}
 
+		if(result.isEmpty()) {
+			result = "[Query was successfully executed.]";
+		}
 		StoreFormData(form_query, result, executeJdbcQueryExecuteForm);
 
 		if (!errors.isEmpty()) {
@@ -152,7 +156,7 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		String cookieValue = "";
 		cookieValue += "jmsRealm=\"" + form_jmsRealm + "\"";
 		cookieValue += " "; //separator
-		cookieValue += "queryType=\"" + queryType + "\"";
+		cookieValue += "queryType=\"" + form_queryType + "\"";
 		cookieValue += " "; //separator
 		cookieValue += "resultType=\"" + form_resultType + "\"";
 		cookieValue += " "; //separator

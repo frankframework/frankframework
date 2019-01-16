@@ -292,16 +292,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			where = XmlUtils.getChildTagAsString(queryElement, "where");
 			order = XmlUtils.getChildTagAsString(queryElement, "order");
 			
-			System.out.println("");
-			System.out.println("Query input = [" + message + "]");
-			System.out.println("jmsRealm write = [" + queryElement.getAttribute("jmsRealm") + "]");
-			setJmsRealm(queryElement.getAttribute("jmsRealm").toString());
-			System.out.println("jmsRealm read = [" + getJmsRealmName() + "]");
-			
-//			ParameterValueList pvl = null;
-//			pvl = prc.getValues(paramList);
-//			setJmsRealm(pvl.getParameterValue("jmsRealm").toString());
-//			System.out.println(pvl.getParameterValue("jmsRealm").toString());
+			setJmsRealm(queryElement.getAttribute("jmsRealm"));
 			
 			if (root.equalsIgnoreCase("select")) {
 				result = selectQuery(connection, correlationID, tableName, columns, where, order);
