@@ -1,5 +1,5 @@
 <manageDatabaseREQ>
-	<sql jmsRealm="dummyRealm">
+	<sql>
 		<type>query</type>
 		<query>create table mytable (mycolumn int)</query>
 	</sql>

@@ -51,6 +51,7 @@ import org.apache.struts.action.DynaActionForm;
  */
 public final class ExecuteJdbcQueryExecute extends ActionBase {
 	public static final String DB2XML_XSLT="xml/xsl/dbxml2csv.xslt";
+	public static final String XML2CSV_XSLT="xml/xsl/xmlresult2csv.xsl";
 
 	public ExecuteJdbcQueryExecute() {
 		setWriteToSecLog(true);
@@ -101,13 +102,12 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		// Initialize action
 		initAction(request);
 
-		
-		
+		// Transfer form results into XML
 		DynaActionForm executeJdbcQueryExecuteForm = (DynaActionForm) form;
 		String form_jmsRealm = (String) executeJdbcQueryExecuteForm.get("jmsRealm");
-		String form_queryType = (String) executeJdbcQueryExecuteForm.get("queryType");
 		String form_resultType = (String) executeJdbcQueryExecuteForm.get("resultType");
 		String form_query = (String) executeJdbcQueryExecuteForm.get("query");
+		String queryType = form_query.split(" ")[0];
 
 		XmlBuilder xbRoot = new XmlBuilder("manageDatabaseREQ");
 		
@@ -116,25 +116,23 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		xbRoot.addSubElement(xSql);
 
 		XmlBuilder xQType = new XmlBuilder("type");
-		xQType.setValue(form_query.split(" ")[0]);
+		xQType.setValue(queryType);
 		xSql.addSubElement(xQType);
 		
 		XmlBuilder xQuery = new XmlBuilder("query");
 		xQuery.setValue(form_query);
 		xSql.addSubElement(xQuery);
 		
-		System.out.println("xbRoot: " + xbRoot.toXML());
+		// Send XML to ManageDatabase adapter
 		JavaListener listener = JavaListener.getListener("ManageDatabase");
-		String resultA = "";
+		String result = "";
 		try {
-			resultA = listener.processRequest(session.getId(), xbRoot.toXML(), new HashMap());
-			System.out.println("Result (JL pre-transform): " + resultA);
+			result = listener.processRequest(session.getId(), xbRoot.toXML(), new HashMap());
 			if (form_resultType.equalsIgnoreCase("csv")) {
-				URL url= ClassUtils.getResourceURL(this,DB2XML_XSLT);
+				URL url= ClassUtils.getResourceURL(this,XML2CSV_XSLT);
 				if (url!=null) {
 					Transformer t = XmlUtils.createTransformer(url);
-					resultA = XmlUtils.transformXml(t,resultA);
-					System.out.println("Result from listener: " + resultA);
+					result = XmlUtils.transformXml(t,result);
 				}
 			}
 		} catch (ListenerException e1) {
@@ -142,60 +140,6 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		} catch (Throwable e) {
 			error("error occured on executing jdbc query", e);
 		}
-		
-		
-		
-		
-
-		DirectQuerySender qs;
-		String result = "";
-		
-		try {
-			qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
-			try {
-				qs.setName("QuerySender");
-				qs.setJmsRealm(form_jmsRealm);
-				qs.setQueryType(form_queryType);
-				qs.setBlobSmartGet(true);
-				qs.configure(true);
-				qs.open();
-				result = qs.sendMessage("dummy", form_query);
-				System.out.println(result);
-				if ("csv".equalsIgnoreCase(form_resultType)) {
-					URL url= ClassUtils.getResourceURL(this,DB2XML_XSLT);
-					if (url!=null) {
-						Transformer t = XmlUtils.createTransformer(url);
-						System.out.println("Result (QS 1/2): " + result);
-						result = XmlUtils.transformXml(t,result);
-						System.out.println("Result (QS 2/2): " + result);
-					}
-				}
-			} catch (Throwable t) {
-				error("error occured on executing jdbc query", t);
-			} finally {
-				qs.close();
-			}
-		} catch (Exception e) {
-			error("error occured on creating or closing connection", e);
-		}
-		
-		System.out.println("RESULT FROM LISTENER.PROCESSREQUEST() AND SENDER.SENDMESSAGE() IS EQUAL: "
-				+ result.equals(resultA));
-		
-//		String result = "";
-//		if ("csv".equalsIgnoreCase(form_resultType)) {
-//			URL url= ClassUtils.getResourceURL(this,DB2XML_XSLT);
-//			if (url!=null) {
-//				try {
-//					Transformer t = XmlUtils.createTransformer(url);
-//					result = XmlUtils.transformXml(t,result);
-//				} catch (Throwable t) {
-//					error("error occured on executing jdbc query",t);
-//				}
-//				
-//				System.out.println(result);
-//			}
-//		}
 
 		StoreFormData(form_query, result, executeJdbcQueryExecuteForm);
 
@@ -208,7 +152,7 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		String cookieValue = "";
 		cookieValue += "jmsRealm=\"" + form_jmsRealm + "\"";
 		cookieValue += " "; //separator
-		cookieValue += "queryType=\"" + form_queryType + "\"";
+		cookieValue += "queryType=\"" + queryType + "\"";
 		cookieValue += " "; //separator
 		cookieValue += "resultType=\"" + form_resultType + "\"";
 		cookieValue += " "; //separator

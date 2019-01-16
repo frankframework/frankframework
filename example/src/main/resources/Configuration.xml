@@ -2,7 +2,6 @@
 	<!ENTITY HelloWorld SYSTEM "ConfigurationHelloWorld.xml">
 	<!ENTITY HelloWorlds SYSTEM "ConfigurationHelloWorlds.xml">
 	<!ENTITY HelloBeatifulWorld SYSTEM "ConfigurationHelloBeatifulWorld.xml">
-	<!ENTITY ConfigurationDirectQuery SYSTEM "ConfigurationDirectQuery.xml">
 ]>
 <configuration name="Ibis4Example">
 	<jmsRealms>
@@ -12,5 +11,4 @@
 	&HelloWorld;
 	&HelloWorlds;
 	&HelloBeatifulWorld;
-	&ConfigurationDirectQuery;
 </configuration>
