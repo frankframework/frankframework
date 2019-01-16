@@ -97,7 +97,6 @@ public class JmsRealmFactory {
      */
     public void registerJmsRealm(JmsRealm jmsRealm) {
         jmsRealms.put(jmsRealm.getRealmName(), jmsRealm);
-    	System.out.println("Registered jmsRealm with name [" + jmsRealm.getRealmName() + "]");
         log.debug("JmsRealmFactory registered realm [" + jmsRealm.toString() + "]");
     }
     public String toString(){

@@ -120,8 +120,6 @@ public class JmsRealm {
 	    	throw new ConfigurationException("Could not find jmsRealm ["+jmsRealmName+"]");
 	    }
 	    jmsRealm.copyRealm(destination);
-	    
-	    System.out.println(" > CopyRealm jmsRealmName: " + jmsRealm.getRealmName());
     }
 
     public String getAuthentication() {
