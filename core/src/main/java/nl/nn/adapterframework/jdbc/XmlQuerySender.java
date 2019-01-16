@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017 Nationale-Nederlanden
+   Copyright 2013, 2017, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,14 +35,9 @@ import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -622,8 +617,6 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		}
 		
 		super.configure();
-		ConfigurationWarnings cw = ConfigurationWarnings.getInstance();
-		cw.add("The XmlSender is not released for production. The configuration options for this pipe will change in a non-backward compatible way");
 	}
 
 	public void setLockRows(boolean b) {
