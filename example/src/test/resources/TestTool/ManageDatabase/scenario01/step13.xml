@@ -1,0 +1,22 @@
+<manageDatabaseREQ jmsRealm="jdbc">
+	<sql>
+		<type>create</type>
+		<query>create table tempTable (mycolumn int)</query>
+	</sql>
+	<sql>
+		<type>alter</type>
+		<query>alter table tempTable add myothercolumn int</query>
+	</sql>
+	<sql>
+		<type>insert</type>
+		<query>insert into tempTable (mycolumn, myothercolumn) values (1337, 8008)</query>
+	</sql>
+	<sql>
+		<type>select</type>
+		<query>select * from tempTable</query>
+	</sql>
+	<sql>
+		<type>drop</type>
+		<query>drop table tempTable</query>
+	</sql>
+</manageDatabaseREQ>

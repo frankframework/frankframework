@@ -1,0 +1,42 @@
+<manageDatabaseRLY>
+<completionInformation>
+<returnCode>OK</returnCode>
+</completionInformation>
+<results count="5">
+<result item="1">
+<result>
+<rowsupdated>0</rowsupdated>
+</result>
+</result>
+<result item="2">
+<result>
+<rowsupdated>0</rowsupdated>
+</result>
+</result>
+<result item="3">
+<result>
+<rowsupdated>1</rowsupdated>
+</result>
+</result>
+<result item="4">
+<result>
+  <fielddefinition>
+    <field columnClassName="java.lang.Integer" columnDisplaySize="11" columnTypeName="INTEGER" isCurrency="false" name="MYCOLUMN" precision="10" scale="0" type="INTEGER"/>
+    <field columnClassName="java.lang.Integer" columnDisplaySize="11" columnTypeName="INTEGER" isCurrency="false" name="MYOTHERCOLUMN" precision="10" scale="0" type="INTEGER"/>
+  </fielddefinition>
+  <rowset>
+    <row number="0">
+      <field name="MYCOLUMN">1337</field>
+      <field name="MYOTHERCOLUMN">8008</field>
+    </row>
+  </rowset>
+</result>
+
+</result>
+<result item="5">
+<result>
+<rowsupdated>0</rowsupdated>
+</result>
+</result>
+</results>
+</manageDatabaseRLY>
