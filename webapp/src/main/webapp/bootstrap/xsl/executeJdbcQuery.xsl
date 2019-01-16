@@ -36,15 +36,6 @@
 										</div>	
 									</div>
 									<div class="form-group">
-										<label for="select-querytype" class="control-label col-lg-2">Select a query type</label>
-										<div class="col-lg-3">
-											<select id="select-querytype" class="form-control">
-												<option>Select</option>
-												<option>Other</option>
-											</select>
-										</div>	
-									</div>
-									<div class="form-group">
 										<label for="select-resulttype" class="control-label col-lg-2">result type</label>
 										<div class="col-lg-3">
 											<select id="select-resulttype" class="form-control">

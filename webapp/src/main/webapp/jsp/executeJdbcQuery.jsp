@@ -26,16 +26,6 @@
 </tr>
 <tr>
 	<td>
-		Select a query type
-	</td>
-	<td>
-		<html:select property="queryType">	
-			<html:options name="executeJdbcQueryForm" property="queryTypes"/> 
-		</html:select> <br/>
-	</td>
-</tr>
-<tr>
-	<td>
 		result type
 	</td>
 	<td>
