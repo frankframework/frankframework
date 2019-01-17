@@ -58,54 +58,6 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 	}
 	
 	public String getResult(String form_jmsRealm, String form_queryType, String form_resultType, String form_query) {
-		DirectQuerySender qs;
-		String result = "";
-		
-		try {
-			qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
-			try {
-				qs.setName("QuerySender");
-				qs.setJmsRealm(form_jmsRealm);
-				qs.setQueryType(form_queryType);
-				qs.setBlobSmartGet(true);
-				qs.configure(true);
-				qs.open();
-				result = qs.sendMessage("dummy", form_query);
-				if ("csv".equalsIgnoreCase(form_resultType)) {
-					URL url= ClassUtils.getResourceURL(this,DB2XML_XSLT);
-					if (url!=null) {
-						Transformer t = XmlUtils.createTransformer(url);
-						result = XmlUtils.transformXml(t,result);
-					}
-				}
-			} catch (Throwable t) {
-				error("error occured on executing jdbc query",t);
-			} finally {
-				qs.close();
-			}
-		} catch (Exception e) {
-			error("error occured on creating or closing connection",e);
-		}
-		return result;
-	}
-
-	public ActionForward executeSub(
-		ActionMapping mapping,
-		ActionForm form,
-		HttpServletRequest request,
-		HttpServletResponse response)
-		throws IOException, ServletException {
-
-		// Initialize action
-		initAction(request);
-
-		// Transfer form results into XML
-		DynaActionForm executeJdbcQueryExecuteForm = (DynaActionForm) form;
-		String form_jmsRealm = (String) executeJdbcQueryExecuteForm.get("jmsRealm");
-		String form_queryType = (String) executeJdbcQueryExecuteForm.get("queryType");
-		String form_resultType = (String) executeJdbcQueryExecuteForm.get("resultType");
-		String form_query = (String) executeJdbcQueryExecuteForm.get("query");
-
 		XmlBuilder xbRoot = new XmlBuilder("manageDatabaseREQ");
 		
 		XmlBuilder xSql = new XmlBuilder("sql");
@@ -138,10 +90,33 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		} catch (Throwable e) {
 			error("error occured on executing jdbc query", e);
 		}
+		
+		return result;
+	}
 
+	public ActionForward executeSub(
+		ActionMapping mapping,
+		ActionForm form,
+		HttpServletRequest request,
+		HttpServletResponse response)
+		throws IOException, ServletException {
+
+		// Initialize action
+		initAction(request);
+
+		// Transfer form results into XML
+		DynaActionForm executeJdbcQueryExecuteForm = (DynaActionForm) form;
+		String form_jmsRealm = (String) executeJdbcQueryExecuteForm.get("jmsRealm");
+		String form_queryType = (String) executeJdbcQueryExecuteForm.get("queryType");
+		String form_resultType = (String) executeJdbcQueryExecuteForm.get("resultType");
+		String form_query = (String) executeJdbcQueryExecuteForm.get("query");
+		
+		String result = getResult(form_jmsRealm, form_queryType, form_resultType, form_query);
 		if(result.isEmpty()) {
-			result = "[Query was successfully executed.]";
+			result += "[Query \""+form_query+"\" was successfully executed.]";
 		}
+		
+		// Store form data on page
 		StoreFormData(form_query, result, executeJdbcQueryExecuteForm);
 
 		if (!errors.isEmpty()) {
@@ -149,11 +124,9 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 			return (new ActionForward(mapping.getInput()));
 		}
 
-		//Successfull: store cookie
+		// Successful: store cookie
 		String cookieValue = "";
 		cookieValue += "jmsRealm=\"" + form_jmsRealm + "\"";
-		cookieValue += " "; //separator
-		cookieValue += "queryType=\"" + form_queryType + "\"";
 		cookieValue += " "; //separator
 		cookieValue += "resultType=\"" + form_resultType + "\"";
 		cookieValue += " "; //separator
@@ -197,10 +170,6 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		if (jmsRealms.size() == 0)
 			jmsRealms.add("no realms defined");
 		executeJdbcQueryExecuteForm.set("jmsRealms", jmsRealms);
-		List queryTypes = new ArrayList();
-		queryTypes.add("select");
-		queryTypes.add("other");
-		executeJdbcQueryExecuteForm.set("queryTypes", queryTypes);
 
 		List resultTypes = new ArrayList();
 		resultTypes.add("csv");
