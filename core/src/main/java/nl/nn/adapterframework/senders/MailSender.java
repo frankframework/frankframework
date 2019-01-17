@@ -698,5 +698,8 @@ public class MailSender extends SenderWithParametersBase {
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
 	}
-
+	
+	public void setProperties(Properties properties){
+		this.properties = properties;
+	}
 }
