@@ -131,7 +131,7 @@ public class IbmMisc {
 			throw new IOException("cannot find resource ["
 					+ GETCONNPOOLPROP_XSLT + "]");
 		}
-		Transformer t = XmlUtils.createTransformer(url, true);
+		Transformer t = XmlUtils.createTransformer(url, 2);
 		Map parameters = new Hashtable();
 		parameters.put("providerType", providerType);
 		parameters.put("jndiName", jndiName);
@@ -151,7 +151,7 @@ public class IbmMisc {
 			throw new IOException(
 					"cannot find resource [" + GETJMSDEST_XSLT + "]");
 		}
-		Transformer t = XmlUtils.createTransformer(url, true);
+		Transformer t = XmlUtils.createTransformer(url, 2);
 		String jmsDestinations = XmlUtils.transformXml(t, confResString);
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("jmsDestinations [" + chomp(jmsDestinations, 100, true)

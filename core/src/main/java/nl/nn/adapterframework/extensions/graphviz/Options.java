@@ -73,10 +73,7 @@ public final class Options {
 	}
 
 	public String postProcess(String result) {
-		if(result != null)
-			return format.postProcess(result, fontAdjust);
-
-		return result;
+		return format.postProcess(result, fontAdjust);
 	}
 
 	public String toJson(boolean raw) {

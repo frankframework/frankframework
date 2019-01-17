@@ -8,20 +8,20 @@ http://schemas.ibissource.org/ibisdoc.xsd, OK
 <Configuration
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:noNamespaceSchemaLocation="http://schemas.ibissource.org/ibisdoc.xsd"
-	name="My first beatiful configuration"
+	name="My first beautiful configuration"
 	>
-	<Adapter name="HelloBeatifulWorld" active="${HelloBeatifulWorld.active}">
+	<Adapter name="HelloBeautifulWorld" active="${HelloBeautifulWorld.active}">
 		<Receiver
-			name="HelloBeatifulWorld"
+			name="HelloBeautifulWorld"
 			>
 			<JavaListener
-				name="HelloBeatifulWorld"
+				name="HelloBeautifulWorld"
 			/>
 		</Receiver>
-		<Pipeline firstPipe="HelloBeatifulWorld">
+		<Pipeline firstPipe="HelloBeautifulWorld">
 			<FixedResultPipe
-				name="HelloBeatifulWorld"
-				returnString="Hello Beatiful World"
+				name="HelloBeautifulWorld"
+				returnString="Hello Beautiful World"
 				>
 				<Forward name="success" path="EXIT"/>
 			</FixedResultPipe>

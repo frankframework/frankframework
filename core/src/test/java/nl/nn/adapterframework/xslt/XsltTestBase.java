@@ -16,6 +16,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.pipes.PipeTestBase;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 
 public abstract class XsltTestBase<P extends IPipe> extends PipeTestBase<P> {
@@ -68,8 +69,8 @@ public abstract class XsltTestBase<P extends IPipe> extends PipeTestBase<P> {
 	@Test
 	public void basic() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		String styleSheetName=  "/Xslt3/orgchart.xslt";
-		String input   =getFile("/Xslt3/employees.xml");
-		String expected=getFile("/Xslt3/orgchart.xml");
+		String input   =TestFileUtils.getTestFile("/Xslt3/employees.xml");
+		String expected=TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
 		Boolean omitXmlDeclaration=null;
 		Boolean indent=null;
 		Boolean skipEmptyTags=null;

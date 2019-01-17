@@ -317,7 +317,35 @@ angular.module('iaf.beheerconsole')
 			if(amount < 1) amount = 1;
 			return this.list.slice(0, amount);
 		};
-	}]).service('Cookies', ['Debug', '$cookies', function(Debug, $cookies) {
+	}]).service('Cookies', ['Debug', '$cookies', 'GDPR', '$rootScope', function(Debug, $cookies, GDPR, $rootScope) {
+		this.cache = null;
+		this.addToCache = function(key, value) {
+			Debug.log("adding cookie["+key+"] to cache");
+
+			if(this.cache == null)
+				this.cache = {};
+
+			//If the same key is set twice, just overwrite the old setting
+			this.cache[key] = value;
+		};
+
+		this.flushCache = function() {
+			Debug.info("trying to save cookies from cache", this.cache);
+
+			if(GDPR.allowFunctional() === true) { //Only run when explicitly set to true
+				for(c in this.cache) {
+					this.set(c, this.cache[c]);
+				}
+				this.cache = null; //Clear the cache, free up memory :)
+			}
+		};
+
+		//Runs everytime the GDPR settings update
+		var Cookies = this;
+		$rootScope.$on('GDPR', function() {
+			Cookies.flushCache();
+		});
+
 		var date = new Date();
 		date.setDate(date.getDate() + 7);
 		this.options = {
@@ -325,10 +353,18 @@ angular.module('iaf.beheerconsole')
 			path: '/'
 		};
 		this.get = function(key) {
-			return $cookies.getObject(key);
+			var val = null;
+			if(this.cache != null) //Maybe a cookie has been set but the user has not accepted cookies?
+				val = this.cache[key];
+			if(val == null)
+				val = $cookies.getObject(key);
+			return val;
 		};
 		this.set = function(key, value) {
-			$cookies.putObject(key, value, this.options);
+			if(GDPR.allowFunctional())
+				$cookies.putObject(key, value, this.options); //Only actually set the cookie when allowed to
+			else
+				this.addToCache(key, value); //Cache the request while the user hasn't selected their preference or disallowed functional cookies
 		};
 		this.remove = function(key) {
 			$cookies.remove(key, {path: '/'});
@@ -353,7 +389,135 @@ angular.module('iaf.beheerconsole')
 		this.clear = function() {
 			sessionStorage.clear();
 		};
-	}]).service('Debug', function() {
+	}])
+	.service('GDPR', ['$cookies', '$rootScope', 'Debug', function($cookies, $rootScope, Debug) {
+		this.settings = null;
+		this.defaults = {necessary: true, functional: false, analytical: false, personalization: false};
+		var date = new Date();
+		date.setFullYear(date.getFullYear() +10);
+
+		this.cookieName = "_cookieSettings";
+		this.options = {
+			expires: date,
+			path: '/'
+		};
+
+		this.showCookie = function() {
+			this.getSettings();
+			return this.settings == null;
+		};
+
+		this.getSettings = function() {
+			if(this.settings == null) {
+				var cookie = $cookies.getObject(this.cookieName);
+				if(cookie != undefined) {
+					Debug.log("fetch cookie with GDPR settings", cookie);
+					this.settings = cookie;
+
+					//Extend the cookie lifetime by another 10 years
+					$cookies.putObject(this.cookieName, cookie, this.options);
+				}
+				else {
+					Debug.log("unable to find GDPR settings, falling back to defaults", this.defaults);
+					return this.defaults;
+				}
+
+				Debug.info("set GDPR settings to", this.settings);
+			}
+			return this.settings;
+		};
+		this.allowFunctional = function() {
+			return this.getSettings().functional;
+		};
+		this.allowAnalytical = function() {
+			return this.getSettings().analytical;
+		};
+		this.allowPersonalization = function() {
+			return this.getSettings().personalization;
+		};
+		this.setSettings = function(settings){
+			this.settings = settings;
+			$cookies.putObject(this.cookieName, settings, this.options);
+
+			$rootScope.$broadcast('GDPR');
+		};
+	}])
+	.service('gTag', ['Debug', 'GDPR', '$rootScope', function(Debug, GDPR, $rootScope) {
+		window.dataLayer = window.dataLayer || [];
+		this.trackingId = "";
+		this.configured = false;
+
+		//Push something to the dataLayer
+		this.add = function() {
+			if(this.configured)
+				dataLayer.push(arguments);
+		};
+		//Set the gTag trackingId
+		this.setTrackingId = function(id) {
+			this.trackingId = id;
+			this.configure();
+		};
+		//Setup the gTag service
+		this.configure = function() {
+			if(!GDPR.allowAnalytical()) {
+				Debug.log("unable to configure gTag due to GDPR settings");
+				window.dataLayer = [];
+				this.configured = false;
+				return ;
+			}
+
+			if(this.configured == false) {
+				if(this.trackingId) {
+					this.add('js', new Date());
+					this.config({
+						'send_page_view': false,
+						'anonymize_ip': true,
+						'custom_map': {
+							'dimension1': 'application.version'
+						}
+					});
+					this.configured = true;
+					Debug.info("succesfully configured gTag with trackingId["+this.trackingId+"]");
+				}
+				else
+					Debug.warn("unable to configure gTag, no trackingId specified");
+			}
+			else
+				Debug.warn("can only configure gTag Analytics once");
+		};
+
+		//Not to confuse with configure, this method allows you to push gTag config events
+		this.config = function(object) {
+			if(typeof object == "object")
+				this.add('config', this.trackingId, object);
+		};
+		//Push events to the dataLayer
+		this.event = function(name, label, value, non_interaction) {
+			this.add('event', name, {
+				'event_label': label,
+				'value': (value == undefined || value < 0) ? 1 : value,
+				'non_interaction': (non_interaction == undefined || non_interaction == false) ? false : true
+			});
+		};
+
+		var gTag = this;
+		$rootScope.$on('GDPR', function() {
+			gTag.configure();
+		});
+
+		$rootScope.$on("$stateChangeStart", function(_, state) {
+			Debug.log("triggered state change");
+			var url = state.url;
+			if(url.indexOf("?") > 0)
+				url = url.substring(0, url.indexOf("?"));
+
+			gTag.config({
+				'page_path': url,
+				'page_title': state.data.pageTitle
+			});
+		});
+	}])
+	.service('Debug', function() {
 		var level = 0;
 		var inGroup = false;
 		this.getLevel = function() {

@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P> {
@@ -149,9 +150,9 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 		pipe.configure();
 		pipe.start();
 
-		String input=getFile("/Xslt/duplicateImport/in.xml");
+		String input=TestFileUtils.getTestFile("/Xslt/duplicateImport/in.xml");
 		log.debug("inputfile ["+input+"]");
-		String expected=getFile("/Xslt/duplicateImport/out.xml");
+		String expected=TestFileUtils.getTestFile("/Xslt/duplicateImport/out.xml");
 
 		PipeRunResult prr=pipe.doPipe(input, session);
 
@@ -178,7 +179,7 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 		setIndent(true);
 		pipe.configure();
 		pipe.start();
-		String input = getFile("/Xslt/documentNotFound/in.xml");
+		String input = TestFileUtils.getTestFile("/Xslt/documentNotFound/in.xml");
 		String errorMessage = null;
 		try {
 			pipe.doPipe(input, session);
@@ -200,7 +201,7 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 		setXslt2(true);
 		pipe.configure();
 		pipe.start();
-		String input = getFile("/Xslt/documentNotFound/in.xml");
+		String input = TestFileUtils.getTestFile("/Xslt/documentNotFound/in.xml");
 		String errorMessage = null;
 		try {
 			pipe.doPipe(input, session);

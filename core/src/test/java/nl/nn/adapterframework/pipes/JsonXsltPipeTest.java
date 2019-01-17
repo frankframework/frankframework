@@ -16,6 +16,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 
@@ -52,9 +53,9 @@ public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 		pipe.setStyleSheetName("/Xslt3/orgchart.xslt");
 		pipe.configure();
 		pipe.start();
-		String input=getFile("/Xslt3/employees.json");
+		String input=TestFileUtils.getTestFile("/Xslt3/employees.json");
 		log.debug("inputfile ["+input+"]");
-		String expectedJson=getFile("/Xslt3/orgchart.json");
+		String expectedJson=TestFileUtils.getTestFile("/Xslt3/orgchart.json");
 		PipeRunResult prr = pipe.doPipe(input,session);
 		String jsonOut=(String)prr.getResult();
 		assertJsonEqual(null,expectedJson,jsonOut);

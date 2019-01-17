@@ -290,20 +290,11 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		templateUrl: "views/iFrame.html",
 		data: {
 			pageTitle: 'Larva',
-			breadcrumbs: 'Test > Larva'
+			breadcrumbs: 'Test > Larva',
+			iframe: true
 		},
 		controller: function($scope, Misc, $interval){
 			$scope.url = Misc.getServerPath() + "larva";
-			var iframe = angular.element("iframe");
-			var container = iframe.parent();
-			container.css({"margin-left":"-15px", "margin-right":"-15px", "padding-bottom":"50px"});
-
-			/*iframe[0].onload = function() {
-				$interval(function(){
-					var height = iframe[0].contentWindow.document.body.clientHeight + 50;
-					iframe.css("height", height);
-				}, 50);
-			};*/
 		}
 	})
 	.state('pages.ladybug', {
@@ -311,21 +302,11 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		templateUrl: "views/iFrame.html",
 		data: {
 			pageTitle: 'Ladybug',
-			breadcrumbs: 'Test > Ladybug'
+			breadcrumbs: 'Test > Ladybug',
+			iframe: true
 		},
 		controller: function($scope, Misc, $timeout){
 			$scope.url = Misc.getServerPath() + "testtool";
-			var iframe = angular.element("iframe");
-			var container = iframe.parent();
-			container.css({"margin-left":"-15px", "margin-right":"-15px", "padding-bottom":"50px", "background-color":"rgb(202, 214, 223)"});
-			iframe.css({"height":"800px"});
-			iframe[0].onload = function() {
-				var iframeBody = $(iframe[0].contentWindow.document.body);
-				$timeout(function() {
-					var c_13_content_c_14 = iframeBody.children("form").find("#c_13_content_c_14");
-					c_13_content_c_14.css("padding-right", "12px");
-				}, 500);
-			};
 		}
 	})
 	.state('pages.empty_page', {
@@ -350,7 +331,11 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 
 	$locationProvider.html5Mode(false);
 
-}]).run(['$rootScope', '$state', 'Debug', function($rootScope, $state, Debug) {
+}]).run(['$rootScope', '$state', 'Debug', 'gTag', function($rootScope, $state, Debug, gTag) {
+	// Set this asap on localhost to capture all debug data
+	if(location.hostname == "localhost")
+		Debug.setLevel(3);
+
 	$rootScope.$state = $state;
 
 	$rootScope.foist = function(callback) {
@@ -365,19 +350,6 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 			$rootScope.$apply();
 		}
 	};
-	$rootScope.$on("$stateChangeStart", function(_, state) {
-		Debug.log("Triggered state change");
-		var url = state.url;
-		if(url.indexOf("?") > 0)
-			url = url.substring(0, url.indexOf("?"));
 
-		gtag('config', 'UA-111373008-1', {
-			'page_path': url,
-			'page_title': state.data.pageTitle
-		});
-	});
-
-	// Set this asap on localhost to capture all debug data
-	if(location.hostname == "localhost")
-		Debug.setLevel(3);
+	gTag.setTrackingId("UA-111373008-1");
 }]);

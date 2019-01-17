@@ -9,27 +9,24 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.concurrent.TimeoutException;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import nl.nn.adapterframework.align.AlignTestBase;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.filesystem.IFileHandler;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public abstract class FileHandlerTestBase {
 
@@ -58,25 +55,8 @@ public abstract class FileHandlerTestBase {
 		return FileHandlerTestBase.class.getResource(BASEDIR+file);
 	}
  
-	protected String getTestFile(String file, String charset) throws IOException, TimeoutException {
-		URL url=AlignTestBase.class.getResource(BASEDIR+file);
-		return getFile(url,charset);
-	}
-	
-	protected String getFile(URL url, String charset) throws IOException, TimeoutException {
-		if (url==null) {
-			return null;
-		}
-		BufferedReader buf = new BufferedReader(new InputStreamReader(url.openStream(),charset));
-		StringBuilder string = new StringBuilder();
-		while (true) {
-			int c=buf.read();
-			if (c<0) {
-				break;
-			}
-			string.append((char)c);
-		}
-		return string.toString();
+	protected String getTestFile(String file, String charset) throws IOException {
+		return TestFileUtils.getTestFile(BASEDIR+file,charset);
 	}
 
 	public void testIllegalAction(String action) throws Exception {
@@ -206,8 +186,8 @@ public abstract class FileHandlerTestBase {
 		}
 		File fa = new File(actFilename);
 		
-		String actualContents = getFile(fa.toURL(), charset);
-		assertEquals("appended file contents", expectedContents, actualContents);
+		String actualContents = TestFileUtils.getTestFile(fa.toURL(), charset);
+		assertEquals("appended file contents", expectedContents.trim(), actualContents);
 	}
 
 	public void testList(String filename, String charset) throws Exception {
@@ -277,7 +257,7 @@ public abstract class FileHandlerTestBase {
 		handler.setCharset(charset);
 		handler.configure();
 
-		String contents=getTestFile(contentFile, charset);
+		//String contents=TestFileUtils.getTestFile(contentFile, charset);
 
 		String actualContents = (String) handler.handle(null,session,null);
 		if (read) assertEquals("file contents", expectedContents, actualContents);
