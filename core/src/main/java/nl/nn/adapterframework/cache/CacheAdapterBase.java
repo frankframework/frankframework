@@ -190,7 +190,7 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 		return keyStyleSheet;
 	}
 
-	@IbisDoc({"setcacheemptykeys", ""})
+	@IbisDoc({"stylesheet to extract cache key from request message. Use in combination with {@link #setCacheEmptyKeys(boolean) cacheEmptyKeys} to inhibit caching for certain groups of request messages", ""})
 	public void setKeyStyleSheet(String keyStyleSheet) {
 		this.keyStyleSheet = keyStyleSheet;
 	}
@@ -217,7 +217,7 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 		return valueXPath;
 	}
 
-	@IbisDoc({"setcacheemptyvalues", ""})
+	@IbisDoc({"xpath expression to extract value to be cached key from response message. Use in combination with {@link #setCacheEmptyValues(boolean) cacheEmptyValues} to inhibit caching for certain groups of response messages", ""})
 	public void setValueXPath(String valueXPath) {
 		this.valueXPath = valueXPath;
 	}

@@ -388,7 +388,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		return processFile;
 	}
 
-	@IbisDoc({"setprocessfile", "utf-8"})
+	@IbisDoc({"characterset used for reading file or inputstream, only used when {@link #setProcessFile(boolean) processFile} is <code>true</code>, or the input is of type InputStream", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}

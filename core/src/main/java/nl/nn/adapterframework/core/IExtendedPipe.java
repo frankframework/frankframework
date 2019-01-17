@@ -95,7 +95,7 @@ public interface IExtendedPipe extends IPipe {
 	public void setRemoveCompactMsgNamespaces(boolean b);
 	public boolean isRemoveCompactMsgNamespaces();
 	
-	@IbisDoc({"setelementtomove", "false"})
+	@IbisDoc({"when set <code>true</code>, compacted messages in the result are restored to their original format (see also  {@link nl.nn.adapterframework.receivers.ReceiverBase#setElementToMove(java.lang.String)})", "false"})
 	public void setRestoreMovedElements(boolean restoreMovedElements);
 	public boolean isRestoreMovedElements();
 

@@ -410,7 +410,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * Indicates the maximum number of treads ;that may call {@link #doPipe(Object, IPipeLineSession)} simultaneously in case
 	 *  A value of 0 indicates an unlimited number of threads.
 	 */
-	@IbisDoc({"dopipe", "0 (unlimited)"})
+	@IbisDoc({"maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously", "0 (unlimited)"})
 	public void setMaxThreads(int newMaxThreads) {
 		maxThreads = newMaxThreads;
 	}
@@ -542,7 +542,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return removeCompactMsgNamespaces;
 	}
 
-	@IbisDoc({"setelementtomove", "false"})
+	@IbisDoc({"when set <code>true</code>, compacted messages in the result are restored to their original format (see also  {@link nl.nn.adapterframework.receivers.ReceiverBase#setElementToMove(java.lang.String)})", "false"})
 	@Override
 	public void setRestoreMovedElements(boolean restoreMovedElements) {
 		this.restoreMovedElements = restoreMovedElements;

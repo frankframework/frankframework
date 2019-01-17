@@ -99,7 +99,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 		return keyTransformer.getKeyStyleSheet();
 	}
 
-	@IbisDoc({"setcacheemptykeys", ""})
+	@IbisDoc({"stylesheet to extract cache key from request message. Use in combination with {@link #setCacheEmptyKeys(boolean) cacheEmptyKeys} to inhibit caching for certain groups of request messages", ""})
 	public void setKeyStyleSheet(String keyStyleSheet) {
 		keyTransformer.setKeyStyleSheet(keyStyleSheet);
 	}

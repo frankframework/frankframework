@@ -37,17 +37,7 @@ import nl.nn.adapterframework.pipes.JsonPipe;
 /**
  * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
  * to receive REST messages.
- * <tr><td>{@link #setView(boolean) view}</td><td>indicates whether this listener supports a view (and a link should be put in the IBIS console)</td><td>if <code>method=GET</code> then <code>true</code>, else <code>false</code></td></tr> 
- * <tr><td>{@link #setAuthRoles(String) authRoles}</td><td>comma separated list of authorization roles which are granted for this REST service</td><td>IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService</td></tr>
- * <tr><td>{@link #setRetrieveMultipart(boolean) retrieveMultipart}</td><td>indicates whether the parts of a multipart entity should be retrieved and put in session keys. This can only be done once!</td><td>true</td></tr>
-
- * <tr><td>{@link #setConsumes(String) consumes}</td><td>mediatype (e.g. XML, JSON, TEXT) the {@link RestServiceDispatcher RestServiceDispatcher} receives as input</td><td>XML</td></tr>
- * <tr><td>{@link #setProduces(String) produces}</td><td>mediatype (e.g. XML, JSON, TEXT) the {@link RestServiceDispatcher RestServiceDispatcher} sends as output, if set to json the ibis will automatically try to convert the xml message</td><td>XML</td></tr>
- * <tr><td>{@link #setGenerateEtag(boolean) generateEtag}</td><td>when set to true the IBIS will automatically create an Etag</td><td>false</td></tr>
- * <tr><td>{@link #setValidateEtag(boolean) validateEtag}</td><td>when set to true the IBIS will automatically validate and process Etags</td><td>false</td></tr>
- * </table>
- * </p>
- * <p>
+ *
  * Note:
  * Servlets' multipart configuration expects a Content-Type of <code>multipart/form-data</code> (see http://docs.oracle.com/javaee/6/api/javax/servlet/annotation/MultipartConfig.html).
  * So do not use other multipart content types like <code>multipart/related</code>
@@ -213,7 +203,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		return contentTypeSessionKey;
 	}
 
-	@IbisDoc({"setproduces", ""})
+	@IbisDoc({"key of Session variable to requested content type, overwrites {@link #setProduces(String) produces}", ""})
 	public void setContentTypeSessionKey(String contentTypeSessionKey) {
 		this.contentTypeSessionKey = contentTypeSessionKey;
 	}

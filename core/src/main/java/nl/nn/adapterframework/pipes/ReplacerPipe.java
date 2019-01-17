@@ -149,7 +149,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 		lineSeparatorSymbol = string;
 	}
 
-	@IbisDoc({"replacenonvalidxmlcharacters", "false"})
+	@IbisDoc({"Replace all non XML chars (not in the <a href=\"http://www.w3.org/TR/2006/REC-xml-20060816/#NT-Char\">character range as specified by the XML specification</a>) with {@link nl.nn.adapterframework.util.XmlUtils#replaceNonValidXmlCharacters(String, char, boolean, boolean) replaceNonValidXmlCharacters}", "false"})
 	public void setReplaceNonXmlChars(boolean b) {
 		replaceNonXmlChars = b;
 	}
@@ -167,7 +167,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 		return replaceNonXmlChar;
 	}
 
-	@IbisDoc({"replacenonvalidxmlcharacters", "false"})
+	@IbisDoc({"Whether to allow Unicode supplementary characters (like a smiley) during {@link nl.nn.adapterframework.util.XmlUtils#replaceNonValidXmlCharacters(String, char, boolean, boolean) replaceNonValidXmlCharacters}", "false"})
 	public void setAllowUnicodeSupplementaryCharacters(boolean b) {
 		allowUnicodeSupplementaryCharacters = b;
 	}

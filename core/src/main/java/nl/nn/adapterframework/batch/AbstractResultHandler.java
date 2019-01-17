@@ -125,7 +125,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 		return defaultResultHandler;
 	}
 
-	@IbisDoc({"isnewrecordtype", "true"})
+	@IbisDoc({"when set <code>true</code>(default), every group of records, as indicated by {@link IRecordHandler#isNewRecordType(IPipeLineSession, boolean, List, List) RecordHandler.newRecordType} is handled as a block.", "true"})
 	public void setBlockByRecordType(boolean b) {
 		blockByRecordType = b;
 	}

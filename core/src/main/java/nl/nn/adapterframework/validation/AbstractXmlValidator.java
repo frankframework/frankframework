@@ -327,7 +327,7 @@ public abstract class AbstractXmlValidator {
 		return validateFile;
 	}
 
-	@IbisDoc({"setvalidatefile", "utf-8"})
+	@IbisDoc({"characterset used for reading file, only used when {@link #setValidateFile(boolean) validateFile} is <code>true</code>", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}
