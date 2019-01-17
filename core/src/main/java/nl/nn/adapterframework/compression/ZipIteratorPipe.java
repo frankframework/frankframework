@@ -50,16 +50,6 @@ import org.apache.commons.lang.StringUtils;
  * The message sent each time to the sender is the filename of the entry found in the archive. 
  * The contents of the archive is available as a Stream or a String in a session variable. 
  *
- * <p><b>Configuration </b><i>(where deviating from IteratingPipe)</i><b>:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.StreamLineIteratorPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setContentsSessionKey(String) contentsSessionKey}</td><td>session key used to store contents of each zip entry</td><td>zipdata</td></tr>
- * <tr><td>{@link #setStreamingContents(boolean) streamingContents}</td><td>when set to <code>false</code>, a string containing the contents of the entry is placed under the session key, instead of the inputstream to the contents</td><td>true</td></tr>
- * <tr><td>{@link #setCloseInputstreamOnExit(boolean) closeInputstreamOnExit}</td><td>when set to <code>false</code>, the inputstream is not closed after it has been used</td><td>true</td></tr>
- * <tr><td>{@link #setCharset(String) charset}</td><td>charset used when reading the contents of the entry (only used if streamingContens=false></td><td>UTF-8</td></tr>
- * <tr><td>{@link #setSkipBOM(boolean) skipBOM}</td><td>when set to <code>true</code>, a possible Bytes Order Mark (BOM) at the start of the file is skipped (only used for encoding UFT-8)</td><td>false</td></tr>
- * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.ISender sender}</td><td>specification of sender to send messages with</td></tr>

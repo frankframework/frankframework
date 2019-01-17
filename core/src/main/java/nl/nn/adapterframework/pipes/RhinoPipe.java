@@ -16,6 +16,8 @@
 package nl.nn.adapterframework.pipes;
 
 import java.net.URL;
+
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.mozilla.javascript.*;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -38,62 +40,6 @@ import org.apache.commons.lang.SystemUtils;
  * This pipe takes all input and pushes it into javascript runtime.
  * The invoke method is called to initialize the runtime
  * Afterward the results are evaluated.
- * <p>
- * <b>Configuration:</b>
- * <table border="1">
- * <tr>
- * <th>attributes</th>
- * <th>description</th>
- * <th>default</th>
- * </tr>
- * <tr>
- * <td>className</td>
- * <td>nl.nn.adapterframework.pipes.RhinoPipe</td>
- * <td>&nbsp;</td>
- * </tr>
- * <tr>
- * <td>{@link #setDebug(boolean) debug}</td>
- * <td>when set <code>true</code> or set to something else then "true", (even set to the empty string), the debugging is not active</td>
- * <td>true</td>
- * </tr>
- * <tr>
- * <td>{@link #setName(String) name}</td>
- * <td>name of the Pipe</td>
- * <td>&nbsp;</td>
- * </tr>
- * <tr>
- * <td>{@link #setMaxThreads(int) maxThreads}</td>
- * <td>maximum number of threads that may call {@link #doPipe(Object, IPipeLineSession)} simultaneously</td>
- * <td>0 (unlimited)</td>
- * </tr>
- * <tr>
- * <td>{@link #setForwardName(String) forwardName}</td>
- * <td>name of forward returned upon completion</td>
- * <td>"success"</td>
- * </tr>
- * <tr>
- * <td>{@link #setFileName(String) fileName}</td>
- * <td>name of the file containing the Java-script Functions as base input</td>
- * <td>&nbsp;</td>
- * </tr>
- * <tr>
- * <td>{@link #setjsfunctionName(String) jsfunctionName}</td>
- * <td>The name of the function in the java-script library to run</td>
- * <td>&nbsp;</td>
- * </tr>
- *  * <tr>
- * <td>{@link #setjsfunctionArguments(String) jsfunctionArguments}</td>
- * <td>The arguments to run the function in the java-script library to run</td>
- * <td>&nbsp;</td>
- * </tr>
- * <tr>
- * <td>{@link #setLookupAtRuntime(boolean) lookupAtRuntime}</td>
- * <td>when set <code>true</code>, the lookup of the file will be done at
- * runtime instead of at configuration time</td>
- * <td>false</td>
- * </tr>
- * </table>
- * </p>
  * <table border="1">
  * <p>
  * <b>Parameters:</b>
@@ -119,10 +65,6 @@ import org.apache.commons.lang.SystemUtils;
  * <tr>
  * <td>"success"</td>
  * <td>default</td>
- * </tr>
- * <tr>
- * <td><i>{@link #setForwardName(String) forwardName}</i></td>
- * <td>if specified</td>
  * </tr>
  * </table>
  * </p>
@@ -293,6 +235,7 @@ public class RhinoPipe extends FixedForwardPipe {
  * absolute path, but as a resource in the classpath.
  * 
  */
+	@IbisDoc({"when set <code>true</code> or set to something else then \"true\", (even set to the empty string), the debugging is not active", "true"})
 	public void setDebug(boolean b) {
 		debug = b;
 	}
@@ -301,6 +244,7 @@ public class RhinoPipe extends FixedForwardPipe {
 		return debug;
 	}
 
+	@IbisDoc({"name of the file containing the Java-script Functions as base input", ""})
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}
@@ -309,6 +253,7 @@ public class RhinoPipe extends FixedForwardPipe {
 		return fileName;
 	}
 
+	@IbisDoc({"The name of the function in the java-script library to run", ""})
 	public void setjsfunctionName(String jsfunctionName) {
 		this.jsfunctionName = jsfunctionName;
 	}
@@ -316,7 +261,8 @@ public class RhinoPipe extends FixedForwardPipe {
 	public String getjsfunctionName() {
 		return jsfunctionName;
 	}
-	
+
+	@IbisDoc({"The arguments to run the function in the java-script library to run", ""})
 	public void setjsfunctionArguments(String jsfunctionArguments) {
 		this.jsfunctionArguments = jsfunctionArguments;
 	}
@@ -325,7 +271,7 @@ public class RhinoPipe extends FixedForwardPipe {
 		return jsfunctionArguments;
 	}
 	
-
+	@IbisDoc({"when set <code>true</code>, the lookup of the file will be done at runtime instead of at configuration time", "false"})
 	public void setLookupAtRuntime(boolean b) {
 		lookupAtRuntime = b;
 	}

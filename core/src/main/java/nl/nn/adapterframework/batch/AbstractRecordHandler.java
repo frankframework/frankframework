@@ -40,7 +40,6 @@ import nl.nn.adapterframework.util.LogUtil;
  * record (line). Fields in the record are either separated with a separator or have
  * a fixed position in the line.
  * 
- * 
  * @author  John Dekker
  */
 public abstract class AbstractRecordHandler implements IRecordHandler, IWithParameters {

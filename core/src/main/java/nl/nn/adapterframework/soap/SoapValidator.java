@@ -33,19 +33,7 @@ import nl.nn.adapterframework.util.LogUtil;
 /**
  * XmlValidator that will automatically add the SOAP envelope XSD to the set of
  * XSD's used for validation.
- * <p>
- * <b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>*</td><td>all attributes available on {@link XmlValidator} can be used except the root attribute</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRoot(String) root}</td><td>always Envelope (not allowed to change)</td><td>Envelope</td></tr>
- * <tr><td>{@link #setSoapBody(String) soapBody}</td><td>name of the child element of the SOAP body. Or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap body, for example to allow element x and an empty soap body use: x,)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setOutputSoapBody(String) outputSoapBody}</td><td>identical to the <code>soapBody</code> attribute except that it's used for the output message instead of the input message. For more information see <A href="#note1">Note 1</a></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSoapHeader(String) soapHeader}</td><td>name of the child element of the SOAP header. Or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap header, for example to allow element x and an empty soap header use: x,)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSoapHeaderNamespace(String) soapHeaderNamespace}</td><td>can be used when the soap header element exists multiple times</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSoapVersion(String) soapVersion}</td><td>SOAP envelope XSD version to use: 1.1, 1.2 or any (both 1.1 and 1.2)</td><td>1.1</td></tr>
- * </table>
- * <p>
+ *
  * <b><A name="note1">Note 1:</A></b>
  * Before the <code>outputSoapBody</code> attribute was introduced, two validators were used for a request-reply pattern (an inputValidator for the request and an outputValidator for the reply).
  * These inputValidator and outputValidator were identical except for the child element of the SOAP body. Because validators use relatively a lot of memory, the <code>outputSoapBody</code> attribute was added which replaces the outputValidator.

@@ -31,19 +31,7 @@ import org.quartz.SchedulerException;
 /**
  * Registers a trigger in the scheduler so that the message is send to a javalistener
  * at a scheduled time.
- * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.scheduler.SchedulerSender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJavaListener(String) javaListener}</td><td>Java listener to be called when scheduler trigger fires</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCronExpressionPattern(String) cronExpressionPattern}</td><td>Expression that generates the cron trigger</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJobGroup(String) jobGroup}</td><td>Job group in which the new trigger is to be created (optional)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJobNamePattern(String) jobNamePattern}</td><td>Pattern that leads to the name of the registered trigger(optional)</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
- * 
+ *
  * @author John Dekker
  */
 public class SchedulerSender extends SenderWithParametersBase {

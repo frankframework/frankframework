@@ -32,33 +32,7 @@ import org.json.XML;
 
 /**
  * Perform an JSON to XML transformation
- * 
- * <p>
- * <b>Configuration:</b>
- * <table border="1">
- * <tr>
- * <th>attributes</th>
- * <th>description</th>
- * <th>default</th>
- * </tr>
- * <tr>
- * <td>className</td>
- * <td>nl.nn.adapterframework.pipes.JsonPipe</td>
- * <td>&nbsp;</td>
- * </tr>
- * <tr>
- * <td>{@link #setDirection(String) direction}</td>
- * <td>Direction of the transformation. Either json2xml or xml2json</td>
- * <td>json2xml</td>
- * </tr>
- * <tr>
- * <td>{@link #setVersion(String) version}</td>
- * <td>Version of the jsonpipe. Either 1 or 2.</td>
- * <td>1</td>
- * </tr>
- * <tr><td>{@link #setAddXmlRootElement(boolean) addXmlRootElement}</td><td>when true, and direction is json2xml, it wraps a root element around the converted message</td><td>true</td></tr>
- * </table>
- * </p>
+ *
  * <p>
  * <b>Exits:</b>
  * <table border="1">
@@ -153,6 +127,7 @@ public class JsonPipe extends FixedForwardPipe {
 		}
 	}
 
+	@IbisDoc({"Direction of the transformation. Either json2xml or xml2json", "json2xml"})
 	public void setDirection(String string) {
 		direction = string;
 	}
@@ -161,6 +136,7 @@ public class JsonPipe extends FixedForwardPipe {
 		return StringUtils.lowerCase(direction);
 	}
 
+	@IbisDoc({"Version of the jsonpipe. Either 1 or 2.", "1"})
 	public void setVersion(String version) {
 		this.version = version;
 	}
