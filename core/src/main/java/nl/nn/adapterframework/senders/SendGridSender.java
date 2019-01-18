@@ -80,12 +80,8 @@ import com.sendgrid.SendGrid;
  */
 public class SendGridSender extends SenderWithParametersBase {
 
-	/** userName is "apikey" for everyone */
-	private String userName = "apikey";
 	/** Password is the apikey itself */
 	private String password;
-
-	private CredentialFactory cf;
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -237,7 +233,33 @@ public class SendGridSender extends SenderWithParametersBase {
 			replyToemail.setEmail(replyTo);
 			email.setReplyTo(replyToemail);
 		}
+		getAttachments(email,attachments);
+		getUniqueArguments(personalization, uniqueArguments);
+		email.addPersonalization(personalization);
+		return email;
+	}
 
+	private void getUniqueArguments(Personalization personalization,
+			Collection<Node> uniqueArguments) {
+		Iterator<Node> iter = uniqueArguments.iterator();
+		if (uniqueArguments != null) {
+			iter = uniqueArguments.iterator();
+			if (iter.hasNext()) {
+				while (iter.hasNext()) {
+					Element uniqueArgumentElement = (Element) iter.next();
+					String uniqueArgumentName = XmlUtils.getChildTagAsString(
+							uniqueArgumentElement, "name");
+					String uniqueArgumentValue = XmlUtils.getChildTagAsString(
+							uniqueArgumentElement, "value");
+					personalization.addHeader(uniqueArgumentName,
+							uniqueArgumentValue);
+				}
+			}
+		}
+	}
+
+	private void getAttachments(Mail email, Collection<Node> attachments) throws SenderException {
+		Iterator<Node> iter = attachments.iterator();
 		if (attachments != null) {
 			iter = attachments.iterator();
 			while (iter.hasNext()) {
@@ -297,23 +319,7 @@ public class SendGridSender extends SenderWithParametersBase {
 				}
 			}
 		}
-
-		if (uniqueArguments != null) {
-			iter = uniqueArguments.iterator();
-			if (iter.hasNext()) {
-				while (iter.hasNext()) {
-					Element uniqueArgumentElement = (Element) iter.next();
-					String uniqueArgumentName = XmlUtils.getChildTagAsString(
-							uniqueArgumentElement, "name");
-					String uniqueArgumentValue = XmlUtils.getChildTagAsString(
-							uniqueArgumentElement, "value");
-					personalization.addHeader(uniqueArgumentName,
-							uniqueArgumentValue);
-				}
-			}
-		}
-		email.addPersonalization(personalization);
-		return email;
+		
 	}
 
 	private static String encodeFileToBase64Binary(File file) {
