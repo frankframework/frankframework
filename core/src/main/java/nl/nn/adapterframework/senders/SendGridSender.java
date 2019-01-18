@@ -241,8 +241,8 @@ public class SendGridSender extends SenderWithParametersBase {
 
 	private void getUniqueArguments(Personalization personalization,
 			Collection<Node> uniqueArguments) {
-		Iterator<Node> iter = uniqueArguments.iterator();
 		if (uniqueArguments != null) {
+			Iterator<Node> iter = uniqueArguments.iterator();
 			iter = uniqueArguments.iterator();
 			if (iter.hasNext()) {
 				while (iter.hasNext()) {
@@ -259,8 +259,8 @@ public class SendGridSender extends SenderWithParametersBase {
 	}
 
 	private void getAttachments(Mail email, Collection<Node> attachments) throws SenderException {
-		Iterator<Node> iter = attachments.iterator();
 		if (attachments != null) {
+			Iterator<Node> iter = attachments.iterator();
 			iter = attachments.iterator();
 			while (iter.hasNext()) {
 				Element attachmentElement = (Element) iter.next();
