@@ -77,59 +77,5 @@
 			function="sendMessage"
 			active="${HelloWorlds.active}"
 		/>
-		<!-- <job
-			name="HelloWorlds"
-			description="Interval test"
-			adapterName="HelloWorlds"
-			receiverName="HelloWorlds"
-			interval="86340"
-			function="sendMessage"
-			active="${HelloWorlds.active}"
-		/>
-		<job
-			name="HelloWorlds"
-			description="Specific day test"
-			adapterName="HelloWorlds"
-			receiverName="HelloWorlds"
-			cronExpression="59 59 23 ? * SUN"
-			function="sendMessage"
-			active="${HelloWorlds.active}"
-		/>
-		<job
-			name="HelloWorlds"
-			description="Duplicate test (1/3 - should not exist)"
-			adapterName="HelloWorlds"
-			receiverName="HelloWorlds"
-			cronExpression="0 0 12 * * ?"
-			function="sendMessage"
-			active="${HelloWorlds.active}"
-		/>
-		<job
-			name="HelloWorlds"
-			description="Duplicate test (2/3 - should not exist)"
-			adapterName="HelloWorlds"
-			receiverName="HelloWorlds"
-			cronExpression="0 0 12 * * ?"
-			function="sendMessage"
-			active="${HelloWorlds.active}"
-		/>
-		<job
-			name="HelloWorlds"
-			description="Duplicate test (3/3 - the right one)"
-			adapterName="HelloWorlds"
-			receiverName="HelloWorlds"
-			cronExpression="0 0 15 * * ?"
-			function="sendMessage"
-			active="${HelloWorlds.active}"
-		/>
-		<job
-			name="HelloWorlds"
-			description="Pizza test"
-			adapterName="HelloWorlds"
-			receiverName="HelloWorlds"
-			cronExpression="0 0 18 ? * 6L"
-			function="sendMessage"
-			active="${HelloWorlds.active}"
-		/> -->
 	</scheduler>
 </module>
