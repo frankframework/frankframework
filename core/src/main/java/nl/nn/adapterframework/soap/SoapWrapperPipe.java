@@ -114,27 +114,22 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 			}
 		}
 		if (StringUtils.isNotEmpty(getSoapHeaderStyleSheet())) {
-			soapHeaderTp = TransformerPool.configureTransformer0(getLogPrefix(null), classLoader, null, null, getSoapHeaderStyleSheet(), "xml", false, getParameterList(), true);
+			soapHeaderTp = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), classLoader, getSoapHeaderStyleSheet(), 0);
 		}
 		if (StringUtils.isNotEmpty(getSoapBodyStyleSheet())) {
-			soapBodyTp = TransformerPool.configureTransformer0(getLogPrefix(null), classLoader, null, null, getSoapBodyStyleSheet(), "xml", false, getParameterList(), true);
+			soapBodyTp = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), classLoader, getSoapBodyStyleSheet(), 0);
 		}
-		try {
-			if (isRemoveOutputNamespaces()) {
-				removeOutputNamespacesTp = XmlUtils.getRemoveNamespacesTransformerPool(true, false);
-			}
-			if (isRemoveUnusedOutputNamespaces() && !isRemoveOutputNamespaces()) {
-				String removeUnusedOutputNamespaces_xslt = XmlUtils.makeRemoveUnusedNamespacesXslt2(true, false);
-				removeUnusedOutputNamespacesTp = TransformerPool.getInstance(removeUnusedOutputNamespaces_xslt, true);
-			}
-			if (StringUtils.isNotEmpty(getOutputNamespace())) {
-				outputNamespaceTp = XmlUtils.getAddRootNamespaceTransformerPool(getOutputNamespace(), true, false);
-			}
-			if (StringUtils.isNotEmpty(getRoot())) {
-				rootTp = XmlUtils.getChangeRootTransformerPool(getRoot(), true, false);
-			}
-		} catch (TransformerConfigurationException e) {
-			throw new ConfigurationException(getLogPrefix(null) + "cannot create transformer", e);
+		if (isRemoveOutputNamespaces()) {
+			removeOutputNamespacesTp = XmlUtils.getRemoveNamespacesTransformerPool(true, false);
+		}
+		if (isRemoveUnusedOutputNamespaces() && !isRemoveOutputNamespaces()) {
+			removeUnusedOutputNamespacesTp = XmlUtils.getRemoveUnusedNamespacesXslt2TransformerPool(true, false);
+		}
+		if (StringUtils.isNotEmpty(getOutputNamespace())) {
+			outputNamespaceTp = XmlUtils.getAddRootNamespaceTransformerPool(getOutputNamespace(), true, false);
+		}
+		if (StringUtils.isNotEmpty(getRoot())) {
+			rootTp = XmlUtils.getChangeRootTransformerPool(getRoot(), true, false);
 		}
 		if (StringUtils.isNotEmpty(getWssAuthAlias()) || StringUtils.isNotEmpty(getWssUserName())) {
 			wssCredentialFactory = new CredentialFactory(getWssAuthAlias(), getWssUserName(), getWssPassword());

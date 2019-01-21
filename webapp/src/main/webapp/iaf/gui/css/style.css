@@ -167,8 +167,12 @@ h5 {
   border-top: 1px solid #19aa8d;
   background: #293846;
 }
+.nav > li.nav-group.active {
+  border-left: none;
+}
 .nav.nav-second-level > li.active {
-  border: none;
+  border-top: none;
+  border-left: 4px solid #19aa8d;
 }
 .nav.nav-second-level.collapse[style] {
   height: auto !important;
@@ -3470,6 +3474,7 @@ video {
   padding: 0 15px;
   min-height: 568px;
   position: relative !important;
+  overflow: hidden;
 }
 @media (min-width: 768px) {
   #page-wrapper {
@@ -4059,11 +4064,8 @@ table.table-mail tr td {
   margin-top: 0;
 }
 /* COLORS */
-.text-navy {
-  color: #1ab394;
-}
 .text-primary {
-  color: inherit;
+  color: #1ab394;
 }
 .text-success {
   color: #1c84c6;
@@ -6804,4 +6806,89 @@ body.body-small .vote-icon {
 .fa-size-up {
   margin-top: 3px;
   font-size: 16px;
+}
+
+.cookie-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #fefefe;
+  z-index: 5000;
+  box-shadow: 0px 0px 1px 1px rgba(103,106,108,0.4);
+  border-top: 1px solid #f3f3f4;
+}
+.cookie-bar .content {
+  width: 960px;
+  margin-left: -480px;
+  left: 50%;
+  position: relative;
+}
+.cookie-bar .content h3 {
+  line-height: 36px;
+  margin: 8px;
+  float: left;
+}
+.cookie-bar .read-more, .cookie-bar .consent-all {
+  float: left;
+  height: 36px;
+  margin: 8px 0 0 14px;
+}
+.cookie-bar .actions {
+  float: left;
+  margin-top: 8px;
+}
+.cookie-bar .consent-all {
+  display: none;
+}
+.actions {
+  float: right;
+}
+.actions .btn {
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
+  height: 36px;
+}
+.selections {
+  height: 36px;
+  border: 1px solid #18a689;
+  padding: 5px 0 5px 5px;
+  float: left;
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+}
+.selection {
+  display: inline-block;
+  padding: 1px 14px;
+  text-align: left;
+}
+.selection label {
+  cursor: pointer;
+}
+@media (max-width: 992px) {
+  .actions {
+    float: none;
+  }
+  .actions .btn {
+    border-radius: 3px;
+    margin-top: 70px;
+  }
+  .selections {
+    border: none;
+    height: 110px;
+    width: 170px;
+  }
+  .selection {
+    display: block;
+  }
+  .cookie-bar .content .actions {
+    display: none;
+  }
+  .cookie-bar .consent-all {
+    display: block;
+  }
+  .cookie-bar .content {
+    width: 400px;
+    margin-left: -200px;
+  }
 }

@@ -115,10 +115,10 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <p>
  * <table border="1">
  * <tr><th>nested elements (accessible in descender-classes)</th><th>description</th></tr>
- * <tr><td>{@link IPullingListener listener}</td><td>the listener used to receive messages from</td></tr>
- * <tr><td>{@link ITransactionalStorage inProcessStorage}</td><td>mandatory for {@link #setTransacted(boolean) transacted} receivers: place to store messages during processing.</td></tr>
- * <tr><td>{@link ITransactionalStorage errorStorage}</td><td>optional for {@link #setTransacted(boolean) transacted} receivers: place to store messages if message processing has gone wrong. If no errorStorage is specified, the inProcessStorage is used for errorStorage</td></tr>
- * <tr><td>{@link ISender errorSender}</td><td>optional for {@link #setTransacted(boolean) transacted} receviers:
+ * <tr><td>{@link nl.nn.adapterframework.core.IPullingListener listener}</td><td>the listener used to receive messages from</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.core.ITransactionalStorage inProcessStorage}</td><td>mandatory for {@link #setTransacted(boolean) transacted} receivers: place to store messages during processing.</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.core.ITransactionalStorage errorStorage}</td><td>optional for {@link #setTransacted(boolean) transacted} receivers: place to store messages if message processing has gone wrong. If no errorStorage is specified, the inProcessStorage is used for errorStorage</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.core.ISender errorSender}</td><td>optional for {@link #setTransacted(boolean) transacted} receviers: 
  * will be called to store messages that failed to process. If no errorSender is specified, failed messages will remain in inProcessStorage</td></tr>
  * </table>
  * </p>
@@ -206,7 +206,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
     private String elementToMoveSessionKey = null;
     private String elementToMoveChain = null;
 	private boolean removeCompactMsgNamespaces = true;
-	private boolean xslt2 = false;
 	private boolean recover = false;
 
 	public static final String ONERROR_CONTINUE = "continue";
@@ -281,15 +280,17 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	 */
 	private LinkedHashMap poisonMessageIdCache = new LinkedHashMap() {
 
+		@Override
 		protected boolean removeEldestEntry(Entry eldest) {
 			return size() > getPoisonMessageIdCacheSize();
 		}
         
 	};
 
-	private LinkedHashMap processResultCache = new LinkedHashMap() {
+	private LinkedHashMap<String,ProcessResultCacheItem> processResultCache = new LinkedHashMap<String,ProcessResultCacheItem>() {
 
-		protected boolean removeEldestEntry(Entry eldest) {
+		@Override
+		protected boolean removeEldestEntry(Entry<String,ProcessResultCacheItem> eldest) {
 			return size() > getProcessResultCacheSize();
 		}
         
@@ -633,7 +634,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					info(getLogPrefix()+"has messageLog in "+((HasPhysicalDestination)messageLog).getPhysicalDestinationName());
 				}
 				if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
-					labelTp=TransformerPool.configureTransformer0(getLogPrefix(), classLoader, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null,isXslt2());
+					labelTp=TransformerPool.configureTransformer0(getLogPrefix(), classLoader, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null,0);
 				}
 			}
 			if (isTransacted()) {
@@ -668,7 +669,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			} 
 
 			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
-				correlationIDTp=TransformerPool.configureTransformer0(getLogPrefix(), classLoader, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null,isXslt2());
+				correlationIDTp=TransformerPool.configureTransformer0(getLogPrefix(), classLoader, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null,0);
 			}
 
 			if (adapter != null) {
@@ -923,7 +924,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 	/**
 	 * All messages that for this receiver are pumped down to this method, so it actually
-	 * calls the {@link Adapter adapter} to process the message.<br/>
+	 * calls the {@link nl.nn.adapterframework.core.Adapter adapter} to process the message.<br/>
 
 	 * Assumes that a transation has been started where necessary.
 	 */
@@ -1257,7 +1258,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return processResultCache.containsKey(messageId);
 	}
 	private synchronized ProcessResultCacheItem getCachedProcessResult(String messageId) {
-		return (ProcessResultCacheItem)processResultCache.get(messageId);
+		return processResultCache.get(messageId);
 	}
 
 	/*
@@ -1642,7 +1643,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	public IListener getListener() {
 		return listener;
 	}/**
-	 * Sets the listener. If the listener implements the {@link INamedObject name} interface and no <code>getName()</code>
+	 * Sets the listener. If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and no <code>getName()</code>
 	 * of the listener is empty, the name of this object is given to the listener.
 	 * Creation date: (04-11-2003 12:04:05)
 	 * @param newListener IListener
@@ -1763,7 +1764,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 	/**
 	 * Sets the name of the Receiver. 
-	 * If the listener implements the {@link INamedObject name} interface and <code>getName()</code>
+	 * If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and <code>getName()</code>
 	 * of the listener is empty, the name of this object is given to the listener.
 	 */
 	@IbisDoc({"name of the receiver as known to the adapter", ""})
@@ -2117,15 +2118,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	}
 	public boolean isRemoveCompactMsgNamespaces() {
 		return removeCompactMsgNamespaces;
-	}
-
-	public boolean isXslt2() {
-		return xslt2;
-	}
-
-	@IbisDoc({"when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used for extracting correlationid and label, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
-	public void setXslt2(boolean b) {
-		xslt2 = b;
 	}
 
 	public void setRecover(boolean b) {

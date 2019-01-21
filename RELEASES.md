@@ -14,6 +14,10 @@ Ibis AdapterFramework release notes
 
 - Generate IbisDoc and XSD and support beautiful configuration xml. The XSD can be used for code completion of beautiful Ibis configurations in Eclipse
 - Use XSLT 2.0 instead of 1.0 for configuration tweaks (e.g. stub4testtool.xsl)
+- Display showConfig jdbc errors per realm
+- Add heath endpoints for individual adapters and entire application
+- Add Google's V8 JavaScript engine
+- Use VizJs to generate flow diagrams
 
 
 

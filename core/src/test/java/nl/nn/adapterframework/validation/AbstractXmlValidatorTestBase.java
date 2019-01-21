@@ -14,6 +14,7 @@ import org.junit.runners.Parameterized;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 /**
  * @author Gerrit van Brakel
@@ -45,7 +46,7 @@ public abstract class AbstractXmlValidatorTestBase extends XmlValidatorTestBase 
         instance.setThrowException(true);
         instance.setFullSchemaChecking(true);
 
-        String testXml=inputfile!=null?getTestXml(inputfile+".xml"):null;
+        String testXml=inputfile!=null?TestFileUtils.getTestFile(inputfile+".xml"):null;
         PipeLineSessionBase session = new PipeLineSessionBase();
 
         try {

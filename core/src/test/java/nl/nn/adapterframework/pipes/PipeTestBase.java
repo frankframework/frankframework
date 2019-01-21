@@ -1,10 +1,5 @@
 package nl.nn.adapterframework.pipes;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
@@ -41,6 +36,14 @@ public abstract class PipeTestBase<P extends IPipe> {
 		adapter.registerPipeLine(pipeline);
 	}
 
+	protected void configurePipe() throws ConfigurationException {
+		if (pipe instanceof AbstractPipe) {
+			((AbstractPipe) pipe).configure(pipeline);
+		} else {
+			pipe.configure();
+		}
+	}
+
 	
 	@Test
 	public void notConfigured() throws ConfigurationException {
@@ -54,21 +57,4 @@ public abstract class PipeTestBase<P extends IPipe> {
 		adapter.configure();
 	}
 
-	protected String readLines(Reader reader) throws IOException {
-        BufferedReader buf = new BufferedReader(reader);
-        StringBuilder string = new StringBuilder();
-        String line = buf.readLine();
-        while (line != null) {
-            string.append(line);
-            line = buf.readLine();
-            if (line!=null) {
-            	string.append("\n");
-            }
-        }
-        return string.toString();	
-	}
-
-    protected String getFile(String file) throws IOException {
-        return readLines(new InputStreamReader(XmlValidator.class.getResourceAsStream(file)));
-    }
 }

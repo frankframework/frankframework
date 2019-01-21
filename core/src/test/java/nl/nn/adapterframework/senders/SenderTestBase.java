@@ -36,7 +36,9 @@ public abstract class SenderTestBase<S extends ISender> {
 
 	@After
 	public void setdown() throws SenderException {
-		sender.close();
+		if (sender!=null) {
+			sender.close();
+		}
 	}
 
 	protected String readLines(Reader reader) throws IOException {

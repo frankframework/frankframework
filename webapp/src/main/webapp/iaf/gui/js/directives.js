@@ -149,12 +149,92 @@ angular.module('iaf.beheerconsole')
 .directive('fitHeight', function() {
 	return {
 		restrict: 'A',
-		link: function(scope, element) {
-			element.css("height", $(window).height() + "px");
-			element.css("min-height", $(window).height() + "px");
+		link: function($scope, element) {
+			$scope.height = {
+				topnavbar: 0,
+				topinfobar: 0,
+				window: 0,
+				min: 800
+			};
+
+			function fitHeight() {
+				var offset = $scope.height.topnavbar + $scope.height.topinfobar;
+				var height = ($scope.height.window > $scope.height.min ? $scope.height.window : $scope.height.min) - offset;
+				element.css("height", height + "px");
+				element.css("min-height", height + "px");
+			}
+
+			$scope.$watch(function(){ return $(window).height();}, function(newValue){
+				if(!newValue) return;
+				$scope.height.window = newValue;
+				fitHeight();
+			});
+			$scope.$watch(function(){ return $('nav.navbar-default').height();}, function(newValue){
+				if(!newValue) return;
+				$scope.height.min = newValue;
+				fitHeight();
+			});
+			$scope.$watch(function(){ return $('.topnavbar').height();}, function(newValue){
+				if(!newValue) return;
+				$scope.height.topnavbar = newValue;
+				fitHeight();
+			});
+			$scope.$watch(function(){ return $('.topinfobar').height();}, function(newValue){
+				if(!newValue) return;
+				$scope.height.topinfobar = newValue;
+				fitHeight();
+			});
+
+			fitHeight();
 		}
 	};
 })
+
+.directive('generalDataProtectionRegulation', ['$uibModal', 'GDPR', function($uibModal, GDPR) {
+	return {
+		restrict: 'A',
+		require: 'icheck',
+		templateUrl: 'views/common/cookie.html',
+		controller: function ($scope) {
+			$scope.bottomNotification = GDPR.showCookie();
+			$scope.cookies = {
+					necessary: true,
+					personalization: true,
+					analytical: true,
+					functional: true
+			};
+
+			$scope.savePreferences = function(cookies) {
+				GDPR.setSettings(cookies);
+				$scope.bottomNotification = false;
+			};
+			$scope.consentAllCookies = function() {
+				$scope.savePreferences({
+					necessary: true,
+					personalization: true,
+					analytical: true,
+					functional: true
+				});
+			};
+
+			$scope.openModal = function() {
+				$scope.bottomNotification = false;
+
+				$uibModal.open({
+					templateUrl: 'views/common/cookieModal.html',
+					size: 'lg',
+					backdrop: 'static',
+					controller: function($uibModalInstance) {
+						$scope.savePreferences = function(cookies) {
+							GDPR.setSettings(cookies);
+							$uibModalInstance.close();
+						};
+					}
+				});
+			};
+		}
+	};
+}])
 
 .directive('icheck', ['$timeout', function($timeout) {
 	return {

@@ -15,6 +15,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.pipes.XmlValidator;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 /**
  * @author Gerrit van Brakel
@@ -167,14 +168,7 @@ public abstract class ValidatorTestBase extends TestCase {
     }
     
     protected String getTestXml(String testxml) throws IOException {
-        BufferedReader buf = new BufferedReader(new InputStreamReader(XmlValidator.class.getResourceAsStream(testxml)));
-        StringBuilder string = new StringBuilder();
-        String line = buf.readLine();
-        while (line != null) {
-            string.append(line);
-            line = buf.readLine();
-        }
-        return string.toString();
+    	return TestFileUtils.getTestFile(testxml);
     }
        
 	public SchemasProvider getSchemasProvider(final String schemaLocation, final boolean addNamespaceToSchema) {

@@ -12,6 +12,8 @@ import java.util.Properties;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import nl.nn.adapterframework.testutil.MatchUtils;
+
 public class TestMap2Xml extends AlignTestBase {
 	
 	public void testStrings(String xmlIn, String mapInStr, URL schemaUrl, String targetNamespace, String rootElement, boolean checkRoundTrip, String expectedFailureReason) throws Exception {
@@ -42,8 +44,8 @@ public class TestMap2Xml extends AlignTestBase {
 	       	if (checkRoundTrip) {
 		       	Map<String,String> roundTrippedmap=Xml2Map.translate(xmlAct, schemaUrl);
 				System.out.println("mapIn:\n"+mapInStr);
-		    	System.out.println("roundTrippedmap:\n"+mapToString(roundTrippedmap));
-		    	assertEquals(mapInStr.trim(),mapToString(roundTrippedmap).trim());
+		    	System.out.println("roundTrippedmap:\n"+MatchUtils.mapToString(roundTrippedmap));
+		    	assertEquals(mapInStr.trim(),MatchUtils.mapToString(roundTrippedmap).trim());
 //		    	assertMapEquals(mapIn,roundTrippedmap);
 	       	}
 		} catch (Exception e) {

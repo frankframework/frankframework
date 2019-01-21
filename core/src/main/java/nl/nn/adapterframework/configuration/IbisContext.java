@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 - 2018 Nationale-Nederlanden
+   Copyright 2013, 2016-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -73,7 +73,6 @@ public class IbisContext {
 	private static final String INSTANCE_NAME = APP_CONSTANTS.getResolvedProperty("instance.name");
 	private static final String CONFIGURATIONS = APP_CONSTANTS.getResolvedProperty("configurations.names.application");
 	private static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
-	private static final String FLOW_CREATE_DIAGRAM_URL = APP_CONSTANTS.getResolvedProperty("flow.create.url");
 	private static final long UPTIME = System.currentTimeMillis();
 
 	static {
@@ -177,19 +176,23 @@ public class IbisContext {
 			MessageKeeper messageKeeper = new MessageKeeper();
 			messageKeepers.put("*ALL*", messageKeeper);
 
-			if (StringUtils.isNotEmpty(FLOW_CREATE_DIAGRAM_URL)) {
-				flowDiagram = new FlowDiagram(FLOW_CREATE_DIAGRAM_URL);
-			}
-
 			applicationContext = createApplicationContext();
+			LOG.debug("Created Ibis Application Context");
 			ibisManager = (IbisManager)applicationContext.getBean("ibisManager");
 			ibisManager.setIbisContext(this);
+			LOG.debug("Loaded IbisManager Bean");
 			classLoaderManager = new ClassLoaderManager(this);
 
 			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
 			registerApplicationModules();
+			LOG.debug("found configurations to load ["+CONFIGURATIONS+"]");
 			load();
 			getMessageKeeper().setMaxSize(Math.max(messageKeeperSize, getMessageKeeper().size()));
+
+			//TODO consider moving this to #FlowDiagram
+			String graphvizJsVersion = APP_CONSTANTS.getProperty("graphviz.js.version", null);
+			String graphvizJsFormat = APP_CONSTANTS.getProperty("graphviz.js.format", null);
+			flowDiagram = new FlowDiagram(graphvizJsFormat, graphvizJsVersion);
 
 			log("startup in " + (System.currentTimeMillis() - start) + " ms");
 		}
@@ -238,8 +241,10 @@ public class IbisContext {
 		for(String module: iafModules) {
 			String version = getModuleVersion(module);
 
-			if(version != null)
+			if(version != null) {
 				appConstants.put(module+".version", version);
+				LOG.debug("Found IAF module["+module+"]");
+			}
 		}
 	}
 
@@ -549,13 +554,11 @@ public class IbisContext {
 
 	private void generateFlow() {
 		if (flowDiagram != null) {
-			List<Configuration> configurations = ibisManager
-					.getConfigurations();
+			List<Configuration> configurations = ibisManager.getConfigurations();
 			try {
 				flowDiagram.generate(configurations);
 			} catch (Exception e) {
-				log("*ALL*", null, "error generating flowDiagram",
-						MessageKeeperMessage.WARN_LEVEL, e);
+				log("*ALL*", null, "error generating flowDiagram", MessageKeeperMessage.WARN_LEVEL, e);
 			}
 		}
 	}

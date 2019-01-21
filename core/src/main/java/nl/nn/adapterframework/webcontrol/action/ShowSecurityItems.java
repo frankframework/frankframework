@@ -575,7 +575,7 @@ public final class ShowSecurityItems extends ActionBase {
 			URL url = ClassUtils.getResourceURL(this, AUTHALIAS_XSLT);
 			if (url != null) {
 				for (Configuration configuration : ibisManager.getConfigurations()) {
-					Transformer t = XmlUtils.createTransformer(url, true);
+					Transformer t = XmlUtils.createTransformer(url);
 					String configString = configuration.getLoadedConfiguration();
 					String authEntries = XmlUtils.transformXml(t, configString);
 					log.debug("authentication aliases for configuration ["

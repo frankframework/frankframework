@@ -138,8 +138,10 @@ public class ShowConfig extends TimeoutGuardPipe {
 				String queryResult = qs.sendMessage("dummy", "dummy", prc);
 				configXML.setValue(queryResult, false);
 			} catch (Throwable t) {
-				throw new PipeRunException(this, getLogPrefix(session)
-						+ "Error occured on executing jdbc query", t);
+				log.warn(getLogPrefix(session) + "Error occured on executing jdbc query", t);
+				XmlBuilder errorXML = new XmlBuilder("error");
+				errorXML.setValue(t.getMessage());
+				configXML.addSubElement(errorXML);
 			} finally {
 				qs.close();
 			}

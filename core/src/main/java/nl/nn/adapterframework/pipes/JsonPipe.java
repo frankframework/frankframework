@@ -113,9 +113,8 @@ public class JsonPipe extends FixedForwardPipe {
 				if ("2".equals(actualVersion)) {
 					stringResult = (String) input;
 					ParameterResolutionContext prc = new ParameterResolutionContext(stringResult, session, true);
-					TransformerPool transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), classLoader, null, null,
-							"/xml/xsl/xml2json.xsl", null, false, null, true);
-					stringResult = transformerPool.transform(prc.getInputSource(), null);
+					TransformerPool tp = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), classLoader, "/xml/xsl/xml2json.xsl", 0);
+					stringResult = tp.transform(prc.getInputSource(isNamespaceAware()), null);
 				} else {
 					JSONObject jsonObject = XML.toJSONObject(stringResult);
 					stringResult = jsonObject.toString();

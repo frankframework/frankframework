@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.xslt;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.not;
@@ -21,19 +22,17 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P> {
 
-	private IPipeLineSession session = new PipeLineSessionBase();
-	private TestAppender testAppender;
+	protected TestAppender testAppender;
 	private ErrorOutputStream errorOutputStream;
 
 	protected int getMultiplicity() {
@@ -58,7 +57,7 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 		}
 	}
 
-	private class TestAppender extends AppenderSkeleton {
+	protected class TestAppender extends AppenderSkeleton {
 		public List<String> alerts = new ArrayList<String>();
 
 		@Override
@@ -114,6 +113,12 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 	}
 	
 	
+	protected void checkTestAppender(int expectedSize, String expectedString) {
+		assertThat(testAppender.getNumberOfAlerts(),is(expectedSize));
+		if (expectedString!=null) assertThat(testAppender.toString(),containsString(expectedString));
+	}
+	
+	
 	// detect duplicate imports in configure()
 	@Test
 	public void duplicateImportErrorAlertsXslt1() throws Exception {
@@ -123,7 +128,8 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 		setXslt2(false);
 		pipe.configure();
 		assertThat(errorOutputStream.toString(),isEmptyString());
-		assertEquals(0, testAppender.getNumberOfAlerts());
+		System.out.println(testAppender.toString());
+		checkTestAppender(0,null);
 	}
 
 	// detect duplicate imports in configure()
@@ -135,8 +141,7 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 		pipe.configure();
 		pipe.start();
 		assertThat(errorOutputStream.toString(),isEmptyString());
-		assertThat(testAppender.toString(),containsString("is included or imported more than once"));
-		assertEquals(getMultiplicity(), testAppender.getNumberOfAlerts());
+		checkTestAppender(getMultiplicity(),"is included or imported more than once");
 	}
 
 	public void duplicateImportErrorProcessing(boolean xslt2) throws SenderException, TimeOutException, ConfigurationException, IOException, PipeRunException, PipeStartException {
@@ -145,9 +150,9 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 		pipe.configure();
 		pipe.start();
 
-		String input=getFile("/Xslt/duplicateImport/in.xml");
+		String input=TestFileUtils.getTestFile("/Xslt/duplicateImport/in.xml");
 		log.debug("inputfile ["+input+"]");
-		String expected=getFile("/Xslt/duplicateImport/out.xml");
+		String expected=TestFileUtils.getTestFile("/Xslt/duplicateImport/out.xml");
 
 		PipeRunResult prr=pipe.doPipe(input, session);
 
@@ -174,7 +179,7 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 		setIndent(true);
 		pipe.configure();
 		pipe.start();
-		String input = getFile("/Xslt/documentNotFound/in.xml");
+		String input = TestFileUtils.getTestFile("/Xslt/documentNotFound/in.xml");
 		String errorMessage = null;
 		try {
 			pipe.doPipe(input, session);
@@ -196,7 +201,7 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 		setXslt2(true);
 		pipe.configure();
 		pipe.start();
-		String input = getFile("/Xslt/documentNotFound/in.xml");
+		String input = TestFileUtils.getTestFile("/Xslt/documentNotFound/in.xml");
 		String errorMessage = null;
 		try {
 			pipe.doPipe(input, session);
@@ -216,7 +221,7 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 		pipe.configure();
 		assertThat(errorOutputStream.toString(),not(isEmptyString()));
 		assertThat(errorOutputStream.toString(),containsString("java.io.FileNotFoundException"));
-		assertEquals(0, testAppender.getNumberOfAlerts());
+		checkTestAppender(0,null);
 	}
 
 	@Test
@@ -232,7 +237,7 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 		}
 		assertThat(errorOutputStream.toString(),isEmptyOrNullString());
 		assertEquals(true, errorOutputStream.isEmpty());
-		assertEquals(0, testAppender.getNumberOfAlerts());
+		assertThat(testAppender.getNumberOfAlerts(),is(0));
 		assertThat(errorMessage,containsString("Failed to compile stylesheet"));
 	}
 

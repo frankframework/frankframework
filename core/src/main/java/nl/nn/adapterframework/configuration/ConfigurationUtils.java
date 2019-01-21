@@ -85,7 +85,7 @@ public class ConfigurationUtils {
 			throw new ConfigurationException("cannot find resource [" + tweakXslt + "]");
 		}
 		try {
-			Transformer tweak_transformer = XmlUtils.createTransformer(tweak_xsltSource, true);
+			Transformer tweak_transformer = XmlUtils.createTransformer(tweak_xsltSource);
 			XmlUtils.setTransformerParameters(tweak_transformer, parameters);
 			// Use namespaceAware=true, otherwise for some reason the
 			// transformation isn't working with a SAXSource, in system out it
