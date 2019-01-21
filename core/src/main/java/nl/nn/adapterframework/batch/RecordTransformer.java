@@ -44,7 +44,7 @@ import org.apache.commons.lang.StringUtils;
  * 
  * The {@link #setOutputFields(String) outputFields} description can contain the following functions:
  * 
- * <table>
+ * <table border="1">
  * <tr><td>string(value)</td><td>inserts the value between the braces</td><td>string( Dit wordt geinsert inclusief spaties ervoor en erna. )</td></tr>
  * <tr><td>align(value,size,align,fillchar)</td><td>inserts the value aligned</td><td>align(test~10~left~ )</td></tr>
  * <tr><td>fill(size,fillchar)</td><td>insert size fillchars</td><td>fill(2,0)</td></tr>
