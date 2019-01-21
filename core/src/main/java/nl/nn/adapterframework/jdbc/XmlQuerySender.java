@@ -309,7 +309,8 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 								if (root.equalsIgnoreCase("sql")) {
 									String type = XmlUtils.getChildTagAsString(queryElement, "type");
 									String query = XmlUtils.getChildTagAsString(queryElement, "query");
-									result = sql(connection, correlationID, query, type);
+									String expectResultSet = queryElement.getAttribute("expectResultSet");
+									result = sql(connection, correlationID, query, type, expectResultSet);
 								} else {
 									throw new SenderException(getLogPrefix() + "unknown root element [" + root + "]");
 								}
@@ -428,12 +429,20 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		}
 	}
 
-	private String sql(Connection connection, String correlationID, String query, String type) throws SenderException, JdbcException {
+	private String sql(Connection connection, String correlationID, String query, String type, String expectResultSetArg) throws SenderException, JdbcException {
 		try {
 			PreparedStatement statement = getStatement(connection, correlationID, query, false);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
-			if (StringUtils.isNotEmpty(type) && type.equalsIgnoreCase("select")) {
+			
+			boolean expectResultSet = false;
+			if(expectResultSetArg.equalsIgnoreCase("yes")
+					|| ((expectResultSetArg.equalsIgnoreCase("auto") || expectResultSetArg.isEmpty())
+					&& StringUtils.isNotEmpty(type) && type.equalsIgnoreCase("select"))) {
+				expectResultSet = true;
+			}
+			
+			if (expectResultSet) {
 				return executeSelectQuery(statement,null,null);
 			} else if (StringUtils.isNotEmpty(type) && type.equalsIgnoreCase("ddl")) {
 				//TODO: alles tussen -- en newline nog weggooien

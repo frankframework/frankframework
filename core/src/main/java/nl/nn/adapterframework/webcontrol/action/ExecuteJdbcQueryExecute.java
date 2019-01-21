@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -57,11 +58,12 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		addSecLogParamName("queryType");
 	}
 	
-	public String getResult(String form_jmsRealm, String form_queryType, String form_resultType, String form_query) {
+	public String getResult(String form_jmsRealm, String form_expectResultSet, String form_resultType, String form_query) {
 		XmlBuilder xbRoot = new XmlBuilder("manageDatabaseREQ");
 		
 		XmlBuilder xSql = new XmlBuilder("sql");
 		xSql.addAttribute("jmsRealm", form_jmsRealm);
+		xSql.addAttribute("expectResultSet", form_expectResultSet);
 		xbRoot.addSubElement(xSql);
 
 		XmlBuilder xQType = new XmlBuilder("type");
@@ -107,11 +109,11 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		// Transfer form results into XML
 		DynaActionForm executeJdbcQueryExecuteForm = (DynaActionForm) form;
 		String form_jmsRealm = (String) executeJdbcQueryExecuteForm.get("jmsRealm");
-		String form_queryType = (String) executeJdbcQueryExecuteForm.get("queryType");
+		String form_expectResultSet = (String) executeJdbcQueryExecuteForm.get("expectResultSet");
 		String form_resultType = (String) executeJdbcQueryExecuteForm.get("resultType");
 		String form_query = (String) executeJdbcQueryExecuteForm.get("query");
 		
-		String result = getResult(form_jmsRealm, form_queryType, form_resultType, form_query);
+		String result = getResult(form_jmsRealm, form_expectResultSet, form_resultType, form_query);
 		if(result.isEmpty()) {
 			result += "[Query \""+form_query+"\" was successfully executed.]";
 		}
@@ -127,6 +129,8 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		// Successful: store cookie
 		String cookieValue = "";
 		cookieValue += "jmsRealm=\"" + form_jmsRealm + "\"";
+		cookieValue += " "; //separator
+		cookieValue += "expectResult=\"" + form_expectResultSet + "\"";
 		cookieValue += " "; //separator
 		cookieValue += "resultType=\"" + form_resultType + "\"";
 		cookieValue += " "; //separator
@@ -170,6 +174,12 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		if (jmsRealms.size() == 0)
 			jmsRealms.add("no realms defined");
 		executeJdbcQueryExecuteForm.set("jmsRealms", jmsRealms);
+		
+		List expectResultOptions = new ArrayList();
+		expectResultOptions.add("auto");
+		expectResultOptions.add("yes");
+		expectResultOptions.add("no");
+		executeJdbcQueryExecuteForm.set("expectResultOptions", expectResultOptions);
 
 		List resultTypes = new ArrayList();
 		resultTypes.add("csv");
@@ -179,7 +189,6 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 			executeJdbcQueryExecuteForm.set("query", query);
 		if (null != result) {
 			executeJdbcQueryExecuteForm.set("result", result);
-
 		}
 	}
 }

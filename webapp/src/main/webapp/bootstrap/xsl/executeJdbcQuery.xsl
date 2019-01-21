@@ -35,8 +35,18 @@
 											</select>
 										</div>	
 									</div>
+                                    <div class="form-group">
+                                        <label for="select-expectresultset" class="control-label col-lg-2">Expect result set?</label>
+                                        <div class="col-lg-3">
+                                            <select id="select-querytype" class="form-control">
+                                                <option>Auto</option>
+                                                <option>Yes</option>
+                                                <option>No</option>
+                                            </select>
+                                        </div>    
+                                    </div>
 									<div class="form-group">
-										<label for="select-resulttype" class="control-label col-lg-2">result type</label>
+										<label for="select-resulttype" class="control-label col-lg-2">Result type</label>
 										<div class="col-lg-3">
 											<select id="select-resulttype" class="form-control">
 												<option>CVS</option>

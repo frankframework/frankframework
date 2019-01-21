@@ -72,14 +72,14 @@ public final class ExecuteJdbcQuery extends ActionBase {
 							"jmsRealm",
 							cs.Value("jmsRealm"));
 						executeJdbcQueryForm.set(
-							"queryType",
-							cs.Value("queryType"));
+							"expectResultSet",
+							cs.Value("expectResultSet"));
 						executeJdbcQueryForm.set(
 							"resultType",
 							cs.Value("resultType"));
 						executeJdbcQueryForm.set("query", cs.Value("query"));
 					} catch (Exception e) {
-						log.warn("could not restore Cookie value's", e);
+						log.warn("could not restore cookie values", e);
 					}
 				}
 
@@ -91,10 +91,11 @@ public final class ExecuteJdbcQuery extends ActionBase {
 			jmsRealms.add("no realms defined");
 		executeJdbcQueryForm.set("jmsRealms", jmsRealms);
 
-		List queryTypes = new ArrayList();
-		queryTypes.add("select");
-		queryTypes.add("other");
-		executeJdbcQueryForm.set("queryTypes", queryTypes);
+		List expectResultOptions = new ArrayList();
+		expectResultOptions.add("auto");
+		expectResultOptions.add("yes");
+		expectResultOptions.add("no");
+		executeJdbcQueryForm.set("expectResultOptions", expectResultOptions);
 
 		List resultTypes = new ArrayList();
 		resultTypes.add("csv");

@@ -74,6 +74,7 @@
 			<xsd:element name="query" type="xsd:string"/>
 		</xsd:sequence>
 		<xsd:attribute name="jmsRealm" type="xsd:string" use="optional"/>
+		<xsd:attribute name="expectResultSet" type="xsd:string" use="optional"/>
 	</xsd:complexType>
 	<xsd:complexType name="columnsType">
 		<xsd:sequence>

@@ -97,8 +97,8 @@
                         <form-property name="action" 			type="java.lang.String"/>
                         <form-property name="jmsRealm"			type="java.lang.String"/>
                         <form-property name="jmsRealms"       	type="java.util.ArrayList"/>
-                        <form-property name="queryType"			type="java.lang.String"/>
-                        <form-property name="queryTypes"       	type="java.util.ArrayList"/>
+                        <form-property name="expectResultSet"			type="java.lang.String"/>
+                        <form-property name="expectResultOptions"      	type="java.util.ArrayList"/>
                         <form-property name="resultType"		type="java.lang.String"/>
                         <form-property name="resultTypes"       type="java.util.ArrayList"/>
                         <form-property name="query"       		type="java.lang.String"/>

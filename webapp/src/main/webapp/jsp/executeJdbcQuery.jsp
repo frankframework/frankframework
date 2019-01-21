@@ -25,8 +25,18 @@
 	</td>
 </tr>
 <tr>
+    <td>
+        Expect result set?
+    </td>
+    <td>
+        <html:select property="expectResultSet">    
+            <html:options name="executeJdbcQueryForm" property="expectResultOptions"/> 
+        </html:select> <br/>
+    </td>
+</tr>
+<tr>
 	<td>
-		result type
+		Result type
 	</td>
 	<td>
 		<html:select property="resultType">	
