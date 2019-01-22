@@ -309,10 +309,7 @@ public class MailSender extends MailSenderBase {
 			msg.setHeader("Thread-Topic", threadTopic);
 		}
 
-		addRecipients(msg, sb);
-		String messageTypeWithCharset = setCharSet();
-		addAttachemtns(msg, messageTypeWithCharset);
-		addHeader(msg);
+		addRecipientsAndAttachments(msg, sb);
 
 		log.debug(sb.toString());
 		msg.setSentDate(new Date());
@@ -332,7 +329,7 @@ public class MailSender extends MailSenderBase {
 		}
 	}
 
-	private void addAttachemtns(MimeMessage msg, String messageTypeWithCharset)
+	private void addAttachemtnsAndHeader(MimeMessage msg, String messageTypeWithCharset)
 			throws MessagingException {
 		if (attachmentList == null || attachmentList.size() == 0) {
 			msg.setContent(message, messageTypeWithCharset);
@@ -366,6 +363,7 @@ public class MailSender extends MailSenderBase {
 			}
 			msg.setContent(multipart);
 		}
+		addHeader(msg);
 	}
 
 	private String setCharSet() {
@@ -385,7 +383,7 @@ public class MailSender extends MailSenderBase {
 		return messageTypeWithCharset;
 	}
 
-	private void addRecipients(MimeMessage msg, StringBuffer sb)
+	private void addRecipientsAndAttachments(MimeMessage msg, StringBuffer sb)
 			throws UnsupportedEncodingException, MessagingException, SenderException {
 		boolean recipientsFound = false;
 		Iterator iter = emailList.iterator();
@@ -411,6 +409,8 @@ public class MailSender extends MailSenderBase {
 			throw new SenderException("MailSender [" + getName()
 					+ "] did not find any valid recipients");
 		}
+		String messageTypeWithCharset = setCharSet();
+		addAttachemtnsAndHeader(msg, messageTypeWithCharset);
 
 	}
 
