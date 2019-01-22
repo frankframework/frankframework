@@ -253,8 +253,11 @@ public class MailSenderBase extends SenderWithParametersBase {
 		messageBase64 = XmlUtils.getChildTagAsString(emailElement, "messageBase64");
 		threadTopic = XmlUtils.getChildTagAsString(emailElement, "threadTopic");
 		replyTo = XmlUtils.getFirstChildTag(emailElement, "replyTo");
-		// TODO : date can be added to send the email scheduled time.
+
 		date = XmlUtils.getChildTagAsString(emailElement, "date");
+		if (StringUtils.isNotEmpty(date)) {
+			// TODO : date can be added to send the email scheduled time.
+		}
 		charSet = XmlUtils.getChildTagAsString(emailElement, "charset");
 		Element attachmentsElement = XmlUtils.getFirstChildTag(emailElement, "attachments");
 		attachments = attachmentsElement == null ? null : XmlUtils.getChildTags(attachmentsElement,

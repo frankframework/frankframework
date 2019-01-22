@@ -73,6 +73,7 @@ public class SendGridSender extends MailSenderBase {
 			request.setBody(mail.build());
 			Response response = sendGrid.api(request);
 			result = response.getBody();
+			log.debug("Mail send result" + result);
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix() + "exception sending mail with subject ["
 					+ mail.getSubject() + "]", e);
