@@ -52,7 +52,7 @@ public class GraphvizEngineTest {
 	}
 
 	@Test
-	public void happyFlowDot2SVG() throws IOException {
+	public void happyFlowDot2SVG() throws IOException, GraphvizException {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 
@@ -63,7 +63,7 @@ public class GraphvizEngineTest {
 	}
 
 	@Test
-	public void happyFlowRender2SVG() throws IOException {
+	public void happyFlowRender2SVG() throws IOException, GraphvizException {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 
@@ -75,7 +75,7 @@ public class GraphvizEngineTest {
 	}
 
 	@Test
-	public void happyFlowDot2SVG_STANDALONE() throws IOException {
+	public void happyFlowDot2SVG_STANDALONE() throws IOException, GraphvizException {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 
@@ -86,7 +86,7 @@ public class GraphvizEngineTest {
 	}
 
 	@Test
-	public void happyFlowRender2SVG_STANDALONE() throws IOException {
+	public void happyFlowRender2SVG_STANDALONE() throws IOException, GraphvizException {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 
@@ -103,7 +103,7 @@ public class GraphvizEngineTest {
 	}
 
 	@Test
-	public void happyFlowDot2SVGCustomOptions() throws IOException {
+	public void happyFlowDot2SVGCustomOptions() throws IOException, GraphvizException {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 		String result = engine.execute(dot, Options.create().format(Format.SVG));
@@ -115,22 +115,21 @@ public class GraphvizEngineTest {
 	}
 
 	@Test(expected = IOException.class)
-	public void getUnknownVizJsVersion() throws IOException {
+	public void getUnknownVizJsVersion() throws IOException, GraphvizException {
 		GraphvizEngine engine = new GraphvizEngine("1.2.3");
 		assertNotNull(engine);
 		engine.execute(dot);
 	}
 
-	@Test
-	public void getFaultyDot() throws IOException {
+	@Test(expected = GraphvizException.class)
+	public void getFaultyDot() throws IOException, GraphvizException {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
-		String result = engine.execute("i'm not a dot!");
-		assertNull(result);
+		engine.execute("i'm not a dot!");
 	}
 
 	@Test
-	public void smallerFontSize() throws IOException {
+	public void smallerFontSize() throws IOException, GraphvizException {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 
@@ -145,7 +144,7 @@ public class GraphvizEngineTest {
 	}
 
 	@Test
-	public void largerFontSize() throws IOException {
+	public void largerFontSize() throws IOException, GraphvizException {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 

@@ -97,7 +97,7 @@
 			<param-name>servlet-class</param-name>
 			<param-value>nl.nn.adapterframework.extensions.cmis.server.WebServicesServlet</param-value>
 		</init-param>
-		<load-on-startup>1</load-on-startup>
+		<load-on-startup>3</load-on-startup>
 	</servlet>
 
 	<servlet>
@@ -112,7 +112,7 @@
 			<param-name>servlet-class</param-name>
 			<param-value>nl.nn.adapterframework.extensions.cmis.server.WebServicesServlet</param-value>
 		</init-param>
-		<load-on-startup>1</load-on-startup>
+		<load-on-startup>3</load-on-startup>
 	</servlet>
 
 	<servlet>
@@ -132,7 +132,7 @@
 			<param-name>cmisVersion</param-name>
 			<param-value>1.0</param-value>
 		</init-param>
-		<load-on-startup>2</load-on-startup>
+		<load-on-startup>3</load-on-startup>
 	</servlet>
 
 	<servlet>
@@ -152,7 +152,7 @@
 			<param-name>cmisVersion</param-name>
 			<param-value>1.1</param-value>
 		</init-param>
-		<load-on-startup>2</load-on-startup>
+		<load-on-startup>3</load-on-startup>
 	</servlet>
 
 	<servlet>
@@ -167,7 +167,7 @@
 			<param-name>callContextHandler</param-name>
 			<param-value>org.apache.chemistry.opencmis.server.impl.browser.token.TokenCallContextHandler</param-value>
 		</init-param>
-		<load-on-startup>2</load-on-startup>
+		<load-on-startup>3</load-on-startup>
 	</servlet>
 
 	<servlet-mapping>
@@ -205,7 +205,7 @@
 			<param-name>hide-service-list-page</param-name>
 			<param-value>true</param-value>
 		</init-param>
-		<load-on-startup>1</load-on-startup>
+		<load-on-startup>2</load-on-startup>
 	</servlet>
 
 	<servlet-mapping>

@@ -9,7 +9,7 @@ Ibis AdapterFramework release notes
 7.3-B1
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.1...HEAD)
+[Commits](https://github.com/ibissource/iaf/compare/v7.2...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
 - Generate IbisDoc and XSD and support beautiful configuration xml. The XSD can be used for code completion of beautiful Ibis configurations in Eclipse
@@ -25,8 +25,8 @@ Ibis AdapterFramework release notes
 7.2
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.1-B4...v7.1)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.1)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/ibissource/iaf/compare/v7.1...v7.2)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.2)](https://travis-ci.org/ibissource/iaf)
 
 - Fix NPE in BatchFileTransformerPipe when using an IbisLocalSender
 - Various bugfixes en performance improvements in SOAPProviders (WebServiceListener)

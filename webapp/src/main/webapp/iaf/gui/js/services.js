@@ -394,7 +394,9 @@ angular.module('iaf.beheerconsole')
 		this.settings = null;
 		this.defaults = {necessary: true, functional: false, analytical: false, personalization: false};
 		var date = new Date();
-		date.setDate(date.getDate() + 7);
+		date.setFullYear(date.getFullYear() +10);
+
+		this.cookieName = "_cookieSettings";
 		this.options = {
 			expires: date,
 			path: '/'
@@ -407,10 +409,13 @@ angular.module('iaf.beheerconsole')
 
 		this.getSettings = function() {
 			if(this.settings == null) {
-				var cookie = $cookies.getObject("cookieSettings");
+				var cookie = $cookies.getObject(this.cookieName);
 				if(cookie != undefined) {
 					Debug.log("fetch cookie with GDPR settings", cookie);
 					this.settings = cookie;
+
+					//Extend the cookie lifetime by another 10 years
+					$cookies.putObject(this.cookieName, cookie, this.options);
 				}
 				else {
 					Debug.log("unable to find GDPR settings, falling back to defaults", this.defaults);
@@ -432,7 +437,7 @@ angular.module('iaf.beheerconsole')
 		};
 		this.setSettings = function(settings){
 			this.settings = settings;
-			$cookies.putObject("cookieSettings", settings, this.options);
+			$cookies.putObject(this.cookieName, settings, this.options);
 
 			$rootScope.$broadcast('GDPR');
 		};
