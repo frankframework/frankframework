@@ -32,17 +32,17 @@ import org.w3c.dom.Node;
 
 public class MailSenderBase extends SenderWithParametersBase {
 
-	EMail from = new EMail();
-	EMail replyTo = new EMail();
-	List<EMail> emailList = new ArrayList<EMail>();
-	List<Attachment> attachmentList = new ArrayList<Attachment>();
-	String subject = null;
-	String message = null;
-	String messageType = null;
-	String messageBase64 = null;
-	String charSet = null;
-	String threadTopic = null;
-	Collection headers;
+	protected EMail from = new EMail();
+	protected EMail replyTo = new EMail();
+	protected List<EMail> emailList = new ArrayList<EMail>();
+	protected List<Attachment> attachmentList = new ArrayList<Attachment>();
+	protected String subject = null;
+	protected String message = null;
+	protected String messageType = null;
+	protected String messageBase64 = null;
+	protected String charSet = null;
+	protected String threadTopic = null;
+	protected Collection headers;
 
 	/**
 	 * Reads fields from either paramList or Xml file
@@ -288,13 +288,13 @@ public class MailSenderBase extends SenderWithParametersBase {
 	 * @author alisihab
 	 *
 	 */
-	public class Attachment {
-		String attachmentName;
-		String attachmentType;
-		String attachmentURL;
-		Object attachmentText;
-		String attachmentBase64;
-		String sessionKey;
+	protected class Attachment {
+		protected String attachmentName;
+		protected String attachmentType;
+		protected String attachmentURL;
+		protected Object attachmentText;
+		protected String attachmentBase64;
+		protected String sessionKey;
 
 		public String getAttachmentName() {
 			return attachmentName;
@@ -350,10 +350,10 @@ public class MailSenderBase extends SenderWithParametersBase {
 	 * @author alisihab
 	 *
 	 */
-	public class EMail {
-		String address;
-		String name;
-		String type; //"cc", "to", "from", "bcc" 
+	protected class EMail {
+		protected String address;
+		protected String name;
+		protected String type; //"cc", "to", "from", "bcc" 
 
 		public String getAddress() {
 			return address;

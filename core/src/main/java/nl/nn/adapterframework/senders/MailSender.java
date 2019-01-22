@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.ByteArrayOutputStream;
-import java.util.Collection;
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
@@ -220,8 +220,7 @@ public class MailSender extends MailSenderBase {
 			e.printStackTrace();
 		}
 		String messageInMailSafeForm;
-		messageInMailSafeForm = sendEmail(from, replyTo, subject, "", message, messageType,
-				messageBase64, charSet, emailList, attachmentList, headers);
+		messageInMailSafeForm = sendEmail();
 		prc.getSession().put("messageInMailSafeForm", messageInMailSafeForm);
 		return correlationID;
 	}
@@ -242,18 +241,14 @@ public class MailSender extends MailSenderBase {
 	protected String sendEmail(String input, ParameterResolutionContext prc)
 			throws SenderException, DomBuilderException {
 		extract(input, prc);
-		return sendEmail(from, replyTo, subject, threadTopic, message, messageType, messageBase64,
-				charSet, emailList, attachmentList, headers);
+		return sendEmail();
 	}
 
-	protected String sendEmail(EMail from, EMail replyTo, String subject, String threadTopic,
-			String message, String messageType, String messageBase64, String charset,
-			Collection<EMail> recipients, Collection<Attachment> attachments, Collection headers)
-			throws SenderException {
+	protected String sendEmail() throws SenderException {
 
 		StringBuffer sb = new StringBuffer();
 
-		if (recipients == null || recipients.size() == 0) {
+		if (emailList == null || emailList.size() == 0) {
 			throw new SenderException("MailSender [" + getName()
 					+ "] has no recipients for message");
 		}
@@ -264,7 +259,7 @@ public class MailSender extends MailSenderBase {
 			subject = defaultSubject;
 		}
 		log.debug("MailSender [" + getName() + "] requested to send message from [" + from
-				+ "] subject [" + subject + "] to #recipients [" + recipients.size() + "]");
+				+ "] subject [" + subject + "] to #recipients [" + emailList.size() + "]");
 
 		if (StringUtils.isEmpty(messageType)) {
 			messageType = defaultMessageType;
@@ -291,97 +286,8 @@ public class MailSender extends MailSenderBase {
 			}
 
 			// construct a message  
-			MimeMessage msg = new MimeMessage(session);
-			msg.setFrom(new InternetAddress(from.getAddress(), from.getName()));
-			msg.setSubject(subject, charset);
-			if (StringUtils.isNotEmpty(threadTopic)) {
-				msg.setHeader("Thread-Topic", threadTopic);
-			}
-			Iterator iter = recipients.iterator();
-			boolean recipientsFound = false;
-			while (iter.hasNext()) {
-				EMail recipient = (EMail) iter.next();
-				String value = recipient.getAddress();
-				String type = recipient.getType();
-				Message.RecipientType recipientType;
-				if ("cc".equalsIgnoreCase(type)) {
-					recipientType = Message.RecipientType.CC;
-				} else if ("bcc".equalsIgnoreCase(type)) {
-					recipientType = Message.RecipientType.BCC;
-				} else {
-					recipientType = Message.RecipientType.TO;
-				}
-				msg.addRecipient(recipientType, new InternetAddress(value, recipient.getName()));
-				recipientsFound = true;
-				if (log.isDebugEnabled()) {
-					sb.append("[recipient [" + recipient + "]]");
-				}
-			}
-			if (!recipientsFound) {
-				throw new SenderException("MailSender [" + getName()
-						+ "] did not find any valid recipients");
-			}
+			MimeMessage msg = constructMessage(sb);
 
-			String messageTypeWithCharset;
-			if (charset == null) {
-				charset = System.getProperty("mail.mime.charset");
-				if (charset == null) {
-					charset = System.getProperty("file.encoding");
-				}
-			}
-			if (charset != null) {
-				messageTypeWithCharset = messageType + ";charset=" + charset;
-			} else {
-				messageTypeWithCharset = messageType;
-			}
-			log.debug("MailSender [" + getName() + "] uses encoding [" + messageTypeWithCharset
-					+ "]");
-
-			if (attachments == null || attachments.size() == 0) {
-				msg.setContent(message, messageTypeWithCharset);
-			} else {
-				Multipart multipart = new MimeMultipart();
-				BodyPart messageBodyPart = new MimeBodyPart();
-				messageBodyPart.setContent(message, messageTypeWithCharset);
-				multipart.addBodyPart(messageBodyPart);
-
-				int counter = 0;
-				iter = attachments.iterator();
-				while (iter.hasNext()) {
-					counter++;
-					Attachment attachment = (Attachment) iter.next();
-					Object value = attachment.getAttachmentText();
-					String name = attachment.getAttachmentName();
-					if (StringUtils.isEmpty(name)) {
-						name = getDefaultAttachmentName() + counter;
-					}
-					log.debug("found attachment [" + attachment + "]");
-
-					messageBodyPart = new MimeBodyPart();
-					messageBodyPart.setFileName(name);
-
-					if (value instanceof DataHandler) {
-						messageBodyPart.setDataHandler((DataHandler) value);
-					} else {
-						messageBodyPart.setText((String) value);
-					}
-
-					multipart.addBodyPart(messageBodyPart);
-				}
-				msg.setContent(multipart);
-			}
-			if (headers != null && headers.size() > 0) {
-				iter = headers.iterator();
-				while (iter.hasNext()) {
-					Element headerElement = (Element) iter.next();
-					String headerName = headerElement.getAttribute("name");
-					String headerValue = XmlUtils.getStringValue(headerElement);
-					msg.addHeader(headerName, headerValue);
-				}
-			}
-			log.debug(sb.toString());
-			msg.setSentDate(new Date());
-			msg.saveChanges();
 			// send the message
 			putOnTransport(msg);
 			// return the mail in mail-safe from
@@ -392,6 +298,120 @@ public class MailSender extends MailSenderBase {
 		} catch (Exception e) {
 			throw new SenderException("MailSender got error", e);
 		}
+	}
+
+	private MimeMessage constructMessage(StringBuffer sb) throws MessagingException,
+			UnsupportedEncodingException, SenderException {
+		MimeMessage msg = new MimeMessage(session);
+		msg.setFrom(new InternetAddress(from.getAddress(), from.getName()));
+		msg.setSubject(subject, charSet);
+		if (StringUtils.isNotEmpty(threadTopic)) {
+			msg.setHeader("Thread-Topic", threadTopic);
+		}
+
+		addRecipients(msg, sb);
+		String messageTypeWithCharset = setCharSet();
+		addAttachemtns(msg, messageTypeWithCharset);
+		addHeader(msg);
+
+		log.debug(sb.toString());
+		msg.setSentDate(new Date());
+		msg.saveChanges();
+		return msg;
+	}
+
+	private void addHeader(MimeMessage msg) throws MessagingException {
+		if (headers != null && headers.size() > 0) {
+			Iterator iter = headers.iterator();
+			while (iter.hasNext()) {
+				Element headerElement = (Element) iter.next();
+				String headerName = headerElement.getAttribute("name");
+				String headerValue = XmlUtils.getStringValue(headerElement);
+				msg.addHeader(headerName, headerValue);
+			}
+		}
+	}
+
+	private void addAttachemtns(MimeMessage msg, String messageTypeWithCharset)
+			throws MessagingException {
+		if (attachmentList == null || attachmentList.size() == 0) {
+			msg.setContent(message, messageTypeWithCharset);
+		} else {
+			Multipart multipart = new MimeMultipart();
+			BodyPart messageBodyPart = new MimeBodyPart();
+			messageBodyPart.setContent(message, messageTypeWithCharset);
+			multipart.addBodyPart(messageBodyPart);
+
+			int counter = 0;
+			Iterator iter = attachmentList.iterator();
+			while (iter.hasNext()) {
+				counter++;
+				Attachment attachment = (Attachment) iter.next();
+				Object value = attachment.getAttachmentText();
+				String name = attachment.getAttachmentName();
+				if (StringUtils.isEmpty(name)) {
+					name = getDefaultAttachmentName() + counter;
+				}
+				log.debug("found attachment [" + attachment + "]");
+
+				messageBodyPart = new MimeBodyPart();
+				messageBodyPart.setFileName(name);
+
+				if (value instanceof DataHandler) {
+					messageBodyPart.setDataHandler((DataHandler) value);
+				} else {
+					messageBodyPart.setText((String) value);
+				}
+				multipart.addBodyPart(messageBodyPart);
+			}
+			msg.setContent(multipart);
+		}
+	}
+
+	private String setCharSet() {
+		String messageTypeWithCharset;
+		if (charSet == null) {
+			charSet = System.getProperty("mail.mime.charset");
+			if (charSet == null) {
+				charSet = System.getProperty("file.encoding");
+			}
+		}
+		if (charSet != null) {
+			messageTypeWithCharset = messageType + ";charset=" + charSet;
+		} else {
+			messageTypeWithCharset = messageType;
+		}
+		log.debug("MailSender [" + getName() + "] uses encoding [" + messageTypeWithCharset + "]");
+		return messageTypeWithCharset;
+	}
+
+	private void addRecipients(MimeMessage msg, StringBuffer sb)
+			throws UnsupportedEncodingException, MessagingException, SenderException {
+		boolean recipientsFound = false;
+		Iterator iter = emailList.iterator();
+		while (iter.hasNext()) {
+			EMail recipient = (EMail) iter.next();
+			String value = recipient.getAddress();
+			String type = recipient.getType();
+			Message.RecipientType recipientType;
+			if ("cc".equalsIgnoreCase(type)) {
+				recipientType = Message.RecipientType.CC;
+			} else if ("bcc".equalsIgnoreCase(type)) {
+				recipientType = Message.RecipientType.BCC;
+			} else {
+				recipientType = Message.RecipientType.TO;
+			}
+			msg.addRecipient(recipientType, new InternetAddress(value, recipient.getName()));
+			recipientsFound = true;
+			if (log.isDebugEnabled()) {
+				sb.append("[recipient [" + recipient + "]]");
+			}
+		}
+		if (!recipientsFound) {
+			throw new SenderException("MailSender [" + getName()
+					+ "] did not find any valid recipients");
+		}
+
 	}
 
 	private String decodeBase64ToString(String str) {

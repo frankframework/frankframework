@@ -43,8 +43,8 @@ public class SendGridSender extends MailSenderBase {
 	private String userName;
 	private String password;
 	private CredentialFactory cf;
-	Mail mail = new Mail();
-	Personalization personalization = new Personalization();
+	private Mail mail = new Mail();
+	private Personalization personalization = new Personalization();
 
 	/**
 	 * Configure credentials
