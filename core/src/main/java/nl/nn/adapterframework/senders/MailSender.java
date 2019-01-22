@@ -220,8 +220,17 @@ public class MailSender extends MailSenderBase {
 			e.printStackTrace();
 		}
 		String messageInMailSafeForm;
-		messageInMailSafeForm = sendEmail();
-		prc.getSession().put("messageInMailSafeForm", messageInMailSafeForm);
+		StringBuffer sb = new StringBuffer();
+		MimeMessage msg;
+		try {
+			msg = constructMessage(sb);
+			messageInMailSafeForm = sendEmail(msg, sb);
+			prc.getSession().put("messageInMailSafeForm", messageInMailSafeForm);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		}
 		return correlationID;
 	}
 
@@ -230,6 +239,10 @@ public class MailSender extends MailSenderBase {
 			sendEmail(input, null);
 		} catch (DomBuilderException e) {
 			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (MessagingException e) {
+			e.printStackTrace();
 		}
 		return correlationID;
 	}
@@ -237,16 +250,19 @@ public class MailSender extends MailSenderBase {
 	/**
 	 * Send a mail conforming to the XML input
 	 * @throws DomBuilderException 
+	 * @throws MessagingException 
+	 * @throws UnsupportedEncodingException 
 	 */
 	protected String sendEmail(String input, ParameterResolutionContext prc)
-			throws SenderException, DomBuilderException {
+			throws SenderException, DomBuilderException, UnsupportedEncodingException,
+			MessagingException {
 		extract(input, prc);
-		return sendEmail();
+		StringBuffer sb = new StringBuffer();
+		MimeMessage msg = constructMessage(sb);
+		return sendEmail(msg, sb);
 	}
 
-	protected String sendEmail() throws SenderException {
-
-		StringBuffer sb = new StringBuffer();
+	protected String sendEmail(MimeMessage msg, StringBuffer sb) throws SenderException {
 
 		if (emailList == null || emailList.size() == 0) {
 			throw new SenderException("MailSender [" + getName()
@@ -284,9 +300,6 @@ public class MailSender extends MailSenderBase {
 			if ("true".equalsIgnoreCase(messageBase64) && StringUtils.isNotEmpty(message)) {
 				message = decodeBase64ToString(message);
 			}
-
-			// construct a message  
-			MimeMessage msg = constructMessage(sb);
 
 			// send the message
 			putOnTransport(msg);
