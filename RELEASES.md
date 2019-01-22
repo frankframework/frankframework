@@ -18,6 +18,7 @@ Ibis AdapterFramework release notes
 - Add heath endpoints for individual adapters and entire application
 - Add Google's V8 JavaScript engine
 - Use VizJs to generate flow diagrams
+- Improve 'error' handling in Show Security Items
 
 
 
