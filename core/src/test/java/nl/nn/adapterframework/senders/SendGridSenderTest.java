@@ -22,18 +22,17 @@ public class SendGridSenderTest extends SenderTestBase<SendGridSender> {
 	}
 
 	@Test
-	public void testXMLFiles() throws SenderException, TimeOutException,
-			ConfigurationException, IOException {
+	public void testXMLFiles() throws SenderException, TimeOutException, ConfigurationException,
+			IOException {
 		completeXMLFile("/emailSamplesXML/emailSample1.xml");
 	}
 
-	public void completeXMLFile(String filePath) throws SenderException,
-			TimeOutException, ConfigurationException, IOException {
+	public void completeXMLFile(String filePath) throws SenderException, TimeOutException,
+			ConfigurationException, IOException {
 		sender.setPassword(""); // should be apikey itself
 		if (!sender.getPassword().isEmpty()) {
 			sender.configure();
-			Reader fileReader = new FileReader(getClass().getResource(filePath)
-					.getFile());
+			Reader fileReader = new FileReader(getClass().getResource(filePath).getFile());
 			BufferedReader bufReader = new BufferedReader(fileReader);
 			StringBuilder sb = new StringBuilder();
 			String line = bufReader.readLine();

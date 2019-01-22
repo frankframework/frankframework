@@ -29,10 +29,10 @@ public class MailSenderTest extends SenderTestBase<MailSender> {
 	}
 
 	@Test
-	public void basic() throws SenderException, TimeOutException,
-			ConfigurationException, IOException {
+	public void basic() throws SenderException, TimeOutException, ConfigurationException,
+			IOException {
 		sender.setSmtpHost(smtpHost);
-		sender.setSmtpUserid("apikey");
+		sender.setSmtpUserid("");
 		sender.setSmtpPassword(""); // should be apikey itself if smtp.sendgrid.net is the hostname
 		if (!sender.getSmtpPassword().isEmpty()) {
 			sender.configure();

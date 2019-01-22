@@ -1,7 +1,7 @@
 <email>
 	<recipients>
 		<recipient name="name" type="cc">***@integrationpartners.nl</recipient>
-		<recipient name="name" type="bcc">***@integrationpartners.nl</recipient>
+		<recipient name="name" type="to">***@integrationpartnerss.nl</recipient>
 		<recipient name="name" type="to">***@hotmail.com</recipient>	<!--Required-->
 		<recipient name="name" type="to">***@gmail.com</recipient>
 	</recipients>
