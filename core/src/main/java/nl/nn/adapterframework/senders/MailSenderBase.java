@@ -256,6 +256,7 @@ public class MailSenderBase extends SenderWithParametersBase {
 
 		date = XmlUtils.getChildTagAsString(emailElement, "date");
 		if (StringUtils.isNotEmpty(date)) {
+			log.debug("date can be set to " + date);
 			// TODO : date can be added to send the email scheduled time.
 		}
 		charSet = XmlUtils.getChildTagAsString(emailElement, "charset");
