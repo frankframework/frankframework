@@ -66,13 +66,6 @@ public class MailSenderBase extends SenderWithParametersBase {
 	 * @throws SenderException
 	 */
 	private void readParameters(ParameterResolutionContext prc) throws SenderException {
-		String subject = null;
-		String threadTopic = null;
-		String messageType = null;
-		String messageBase64 = null;
-		String charset = null;
-		Collection<EMail> recipients = null;
-		Collection<Attachment> attachments = null;
 		ParameterValueList pvl;
 		ParameterValue pv;
 
@@ -115,26 +108,42 @@ public class MailSenderBase extends SenderWithParametersBase {
 			}
 			pv = pvl.getParameterValue("charset");
 			if (pv != null) {
-				charset = pv.asStringValue(null);
-				log.debug("MailSender [" + getName() + "] retrieved charset-parameter [" + charset
+				charSet = pv.asStringValue(null);
+				log.debug("MailSender [" + getName() + "] retrieved charset-parameter [" + charSet
 						+ "]");
 			}
 			pv = pvl.getParameterValue("recipients");
-			if (pv != null) {
-				recipients = retrieveRecipients(pv.asCollection());
-				log.debug("MailSender [" + getName() + "] retrieved recipients-parameter ["
-						+ recipients + "]");
-			}
+			emailList = new ArrayList<EMail>(retrieveRecipientsFromParameterList(pv));
+
 			pv = pvl.getParameterValue("attachments");
-			if (pv != null) {
-				attachments = retrieveAttachments(pv.asCollection(), prc);
-				log.debug("MailSender [" + getName() + "] retrieved attachments-parameter ["
-						+ attachments + "]");
-			}
+			attachmentList = new ArrayList<Attachment>(retrieveAttachmentsFromParamList(pv, prc));
+
 		} catch (ParameterException e) {
 			throw new SenderException("MailSender [" + getName()
 					+ "] got exception determining parametervalues", e);
 		}
+	}
+
+	private Collection<Attachment> retrieveAttachmentsFromParamList(ParameterValue pv,
+			ParameterResolutionContext prc) throws SenderException, ParameterException {
+		Collection<Attachment> attachments = null;
+		if (pv != null) {
+			attachments = retrieveAttachments(pv.asCollection(), prc);
+			log.debug("MailSender [" + getName() + "] retrieved attachments-parameter ["
+					+ attachments + "]");
+		}
+		return attachments;
+	}
+
+	private Collection<EMail> retrieveRecipientsFromParameterList(ParameterValue pv)
+			throws ParameterException {
+		Collection<EMail> recipients = null;
+		if (pv != null) {
+			recipients = retrieveRecipients(pv.asCollection());
+			log.debug("MailSender [" + getName() + "] retrieved recipients-parameter ["
+					+ recipients + "]");
+		}
+		return recipients;
 	}
 
 	private Collection<Attachment> retrieveAttachments(Collection<Node> attachmentsNode,
@@ -244,8 +253,8 @@ public class MailSenderBase extends SenderWithParametersBase {
 		messageBase64 = XmlUtils.getChildTagAsString(emailElement, "messageBase64");
 		threadTopic = XmlUtils.getChildTagAsString(emailElement, "threadTopic");
 		replyTo = XmlUtils.getFirstChildTag(emailElement, "replyTo");
+		// TODO : date can be added to send the email scheduled time.
 		date = XmlUtils.getChildTagAsString(emailElement, "date");
-		// TODO : can be customized to send the email scheduled time.
 		charSet = XmlUtils.getChildTagAsString(emailElement, "charset");
 		Element attachmentsElement = XmlUtils.getFirstChildTag(emailElement, "attachments");
 		attachments = attachmentsElement == null ? null : XmlUtils.getChildTags(attachmentsElement,

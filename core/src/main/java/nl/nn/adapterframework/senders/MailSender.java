@@ -264,26 +264,7 @@ public class MailSender extends MailSenderBase {
 
 	protected String sendEmail(MimeMessage msg, StringBuffer sb) throws SenderException {
 
-		if (emailList == null || emailList.size() == 0) {
-			throw new SenderException("MailSender [" + getName()
-					+ "] has no recipients for message");
-		}
-		if (StringUtils.isEmpty(from.getAddress())) {
-			from.setAddress(defaultFrom);
-		}
-		if (StringUtils.isEmpty(subject)) {
-			subject = defaultSubject;
-		}
-		log.debug("MailSender [" + getName() + "] requested to send message from [" + from
-				+ "] subject [" + subject + "] to #recipients [" + emailList.size() + "]");
-
-		if (StringUtils.isEmpty(messageType)) {
-			messageType = defaultMessageType;
-		}
-
-		if (StringUtils.isEmpty(messageBase64)) {
-			messageBase64 = defaultMessageBase64;
-		}
+		emptyCheckForFields();
 
 		try {
 			if (log.isDebugEnabled()) {
@@ -310,6 +291,29 @@ public class MailSender extends MailSenderBase {
 			return Misc.byteArrayToString(byteArray, "\n", false);
 		} catch (Exception e) {
 			throw new SenderException("MailSender got error", e);
+		}
+	}
+
+	private void emptyCheckForFields() throws SenderException {
+		if (emailList == null || emailList.size() == 0) {
+			throw new SenderException("MailSender [" + getName()
+					+ "] has no recipients for message");
+		}
+		if (StringUtils.isEmpty(from.getAddress())) {
+			from.setAddress(defaultFrom);
+		}
+		if (StringUtils.isEmpty(subject)) {
+			subject = defaultSubject;
+		}
+		log.debug("MailSender [" + getName() + "] requested to send message from [" + from
+				+ "] subject [" + subject + "] to #recipients [" + emailList.size() + "]");
+
+		if (StringUtils.isEmpty(messageType)) {
+			messageType = defaultMessageType;
+		}
+
+		if (StringUtils.isEmpty(messageBase64)) {
+			messageBase64 = defaultMessageBase64;
 		}
 	}
 
