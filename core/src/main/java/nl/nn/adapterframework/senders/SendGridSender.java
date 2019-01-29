@@ -180,17 +180,18 @@ public class SendGridSender extends MailSenderBase {
 	 * @param messageType 
 	 */
 	private void setMessage(Mail mail, String message, String messageType, String messageBase64) {
+		String messageContent = null;
 		if (StringUtils.isNotEmpty(message)) {
 			Content content = new Content();
 			if ("true".equalsIgnoreCase(messageBase64)) {
-				message = decodeBase64ToString(message);
+				messageContent = decodeBase64ToString(message);
 			}
 			if ("text/html".equalsIgnoreCase(messageType)) {
 				content.setType("text/html");
-				content.setValue(message);
+				content.setValue(messageContent);
 			} else {
 				content.setType("text/plain");
-				content.setValue(message);
+				content.setValue(messageContent);
 			}
 			mail.addContent(content);
 		}

@@ -267,7 +267,7 @@ public class MailSender extends MailSenderBase {
 		String subject = mailSession.getSubject();
 		String messageType = mailSession.getMessageType();
 		String threadTopic = mailSession.getThreadTopic();
-		emptyCheckForFields(mailSession.getEmailList(), from, subject, messageType, messageBase64);
+		emptyCheckForFields(mailSession);
 
 		try {
 			if (log.isDebugEnabled()) {
@@ -297,25 +297,26 @@ public class MailSender extends MailSenderBase {
 		}
 	}
 
-	private void emptyCheckForFields(List<EMail> emailList, EMail from, String subject,
-			String messageType, String messageBase64) throws SenderException {
+	private void emptyCheckForFields(MailSession mailSession) throws SenderException {
+		List<EMail> emailList = mailSession.getEmailList();
 		if (emailList == null || emailList.size() == 0) {
 			throw new SenderException("MailSender [" + getName()
 					+ "] has no recipients for message");
 		}
-		if (StringUtils.isEmpty(from.getAddress())) {
-			from.setAddress(getDefaultFrom());
+		if (StringUtils.isEmpty(mailSession.getFrom().getAddress())) {
+			mailSession.getFrom().setAddress(getDefaultFrom());
 		}
-		if (StringUtils.isEmpty(subject)) {
-			subject = getDefaultSubject();
+		if (StringUtils.isEmpty(mailSession.getSubject())) {
+			mailSession.setSubject(getDefaultSubject());
 		}
-		log.debug("MailSender [" + getName() + "] requested to send message from [" + from
-				+ "] subject [" + subject + "] to #recipients [" + emailList.size() + "]");
-		if (StringUtils.isEmpty(messageType)) {
-			messageType = defaultMessageType;
+		log.debug("MailSender [" + getName() + "] requested to send message from ["
+				+ mailSession.getFrom().getAddress() + "] subject [" + mailSession.getSubject()
+				+ "] to #recipients [" + emailList.size() + "]");
+		if (StringUtils.isEmpty(mailSession.getMessageType())) {
+			mailSession.setMessageType(defaultMessageType);
 		}
-		if (StringUtils.isEmpty(messageBase64)) {
-			messageBase64 = defaultMessageBase64;
+		if (StringUtils.isEmpty(mailSession.getMessageBase64())) {
+			mailSession.setMessageBase64(defaultMessageBase64);
 		}
 
 	}
