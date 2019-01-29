@@ -393,14 +393,15 @@ public class MailSender extends MailSenderBase {
 
 	private String setCharSet(String charSet, String messageType) {
 		String messageTypeWithCharset;
-		if (charSet == null) {
-			charSet = System.getProperty("mail.mime.charset");
-			if (charSet == null) {
-				charSet = System.getProperty("file.encoding");
+		String charset = charSet;
+		if (charset == null) {
+			charset = System.getProperty("mail.mime.charset");
+			if (charset == null) {
+				charset = System.getProperty("file.encoding");
 			}
 		}
-		if (charSet != null) {
-			messageTypeWithCharset = messageType + ";charset=" + charSet;
+		if (charset != null) {
+			messageTypeWithCharset = messageType + ";charset=" + charset;
 		} else {
 			messageTypeWithCharset = messageType;
 		}
