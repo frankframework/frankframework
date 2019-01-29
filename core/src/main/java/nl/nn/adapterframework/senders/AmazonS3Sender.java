@@ -140,10 +140,8 @@ public class AmazonS3Sender extends SenderWithParametersBase
 	private String accessKey;
 	private String secretKey;
 	private String authAlias;
-	private CredentialFactory cf;
 
 	private String name;
-	private AmazonS3ClientBuilder s3ClientBuilder;
 	private AmazonS3 s3Client;
 	private boolean chunkedEncodingDisabled = false;
 	private boolean accelerateModeEnabled = false; // this may involve some extra costs
@@ -186,9 +184,8 @@ public class AmazonS3Sender extends SenderWithParametersBase
 			if(StringUtils.isEmpty(action) || !availableActions.contains(action))
 				throw new ConfigurationException(getLogPrefix()+" invalid action [" + action + "] please use one of the following supported actions " + availableActions.toString());	
 
-			if(action.equalsIgnoreCase("createBucket") && isForceGlobalBucketAccessEnabled())
-				if(StringUtils.isEmpty(getBucketRegion()) || !AVAILABLE_REGIONS.contains(getBucketRegion()))
-					throw new ConfigurationException(getLogPrefix()+" invalid bucketRegion [" + getBucketRegion() + "] please use following supported regions " + AVAILABLE_REGIONS.toString());
+			if(action.equalsIgnoreCase("createBucket") && isForceGlobalBucketAccessEnabled() && (StringUtils.isEmpty(getBucketRegion()) || !AVAILABLE_REGIONS.contains(getBucketRegion())))
+				throw new ConfigurationException(getLogPrefix()+" invalid bucketRegion [" + getBucketRegion() + "] please use following supported regions " + AVAILABLE_REGIONS.toString());
 
 			if(action.equalsIgnoreCase("upload") || action.equalsIgnoreCase("copy"))
 			{
@@ -203,9 +200,9 @@ public class AmazonS3Sender extends SenderWithParametersBase
 						throw new ConfigurationException(getLogPrefix() + " invalid or empty destinationBucketName [" + getDestinationBucketName() + "] please visit AWS to see correct bucket naming");
 					if(parameterList.findParameter("destinationFileName") == null)
 						throw new ConfigurationException(getLogPrefix()+" destinationFileName parameter requires to be present to perform [" + action + "] action");
-					if(isStorageClassEnabled())
-						if(StringUtils.isEmpty(getStorageClass()) || !STORAGE_CLASSES.contains(getStorageClass()))
-							throw new ConfigurationException(getLogPrefix()+" invalid storage class ["+getStorageClass()+"] please use following supported storage classes " + STORAGE_CLASSES.toString());
+					if(isStorageClassEnabled() && (StringUtils.isEmpty(getStorageClass()) || !STORAGE_CLASSES.contains(getStorageClass())))
+						throw new ConfigurationException(getLogPrefix()+" invalid storage class ["+getStorageClass()+"] please use following supported storage classes " + STORAGE_CLASSES.toString());
+				
 				}
 			}
 
@@ -213,18 +210,18 @@ public class AmazonS3Sender extends SenderWithParametersBase
 				if(!isAccelerateModeEnabled())
 					throw new ConfigurationException(getLogPrefix()+" when performing ["+action+"] action, accelerateModeEnabled attribute should be set to 'true'");
 */			
-			if(action.equalsIgnoreCase("restore"))
-				if(StringUtils.isEmpty(getTier()) || !TIERS.contains(getTier()))
-					throw new ConfigurationException(getLogPrefix()+" invalid tier when restoring an object from Amazon S3 Glacier, please use one of the following supported tiers: "+ TIERS.toString());
+			if(action.equalsIgnoreCase("restore") && (StringUtils.isEmpty(getTier()) || !TIERS.contains(getTier())))
+				throw new ConfigurationException(getLogPrefix()+" invalid tier when restoring an object from Amazon S3 Glacier, please use one of the following supported tiers: "+ TIERS.toString());
 	    }
 	}
 
 	@Override
 	public void open()
 	{
-		cf = new CredentialFactory(getAuthAlias(), getAccessKey(), getSecretKey());
+		
+		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getAccessKey(), getSecretKey());
 		BasicAWSCredentials awsCreds = new BasicAWSCredentials(cf.getUsername(), cf.getPassword());
-		s3ClientBuilder = AmazonS3ClientBuilder.standard()
+		AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
 				.withChunkedEncodingDisabled(isChunkedEncodingDisabled())
 				.withAccelerateModeEnabled(isAccelerateModeEnabled())
 				.withForceGlobalBucketAccessEnabled(isForceGlobalBucketAccessEnabled())
@@ -270,9 +267,8 @@ public class AmazonS3Sender extends SenderWithParametersBase
 		while (tokenizer.hasMoreTokens())
 		{
 			String action = tokenizer.nextToken();
-			if(!(action.equalsIgnoreCase("createBucket") || action.equalsIgnoreCase("deleteBucket")))
-				if(StringUtils.isEmpty(generalFileName) && StringUtils.isEmpty(message))
-					throw new SenderException(getLogPrefix() + " no value found for the fileName and message parameter, atleast one value has to be assigned");
+			if(!(action.equalsIgnoreCase("createBucket") || action.equalsIgnoreCase("deleteBucket")) && StringUtils.isEmpty(generalFileName) && StringUtils.isEmpty(message))
+				throw new SenderException(getLogPrefix() + " no value found for the fileName and message parameter, atleast one value has to be assigned");
 
 			if(action.equalsIgnoreCase("createBucket"))												//createBucket block
 				result = createBucket(getBucketName(), bucketExistsThrowException);
