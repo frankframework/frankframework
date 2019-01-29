@@ -17,8 +17,10 @@ package nl.nn.adapterframework.senders;
 
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
@@ -141,12 +143,6 @@ public class MailSender extends MailSenderBase {
 	private String defaultMessageType = "text/plain";
 	private String defaultMessageBase64 = "false";
 
-	private int timeout = 20000;
-
-	// defaults
-	private String defaultSubject;
-	private String defaultFrom;
-
 	private Session session;
 	private Properties properties;
 
@@ -214,8 +210,9 @@ public class MailSender extends MailSenderBase {
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc)
 			throws SenderException, TimeOutException {
+		MailSession mailSession = new MailSession();
 		try {
-			extract(message, prc);
+			mailSession = extract(message, prc);
 		} catch (DomBuilderException e) {
 			e.printStackTrace();
 		}
@@ -223,8 +220,8 @@ public class MailSender extends MailSenderBase {
 		StringBuffer sb = new StringBuffer();
 		MimeMessage msg;
 		try {
-			msg = constructMessage(sb);
-			messageInMailSafeForm = sendEmail(msg, sb);
+			msg = constructMessage(mailSession, sb);
+			messageInMailSafeForm = sendEmail(mailSession, msg, sb);
 			prc.getSession().put("messageInMailSafeForm", messageInMailSafeForm);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
@@ -256,15 +253,21 @@ public class MailSender extends MailSenderBase {
 	protected String sendEmail(String input, ParameterResolutionContext prc)
 			throws SenderException, DomBuilderException, UnsupportedEncodingException,
 			MessagingException {
-		extract(input, prc);
+		MailSession mailSession = extract(input, prc);
 		StringBuffer sb = new StringBuffer();
-		MimeMessage msg = constructMessage(sb);
-		return sendEmail(msg, sb);
+		MimeMessage msg = constructMessage(mailSession, sb);
+		return sendEmail(mailSession, msg, sb);
 	}
 
-	protected String sendEmail(MimeMessage msg, StringBuffer sb) throws SenderException {
-
-		emptyCheckForFields();
+	protected String sendEmail(MailSession mailSession, MimeMessage msg, StringBuffer sb)
+			throws SenderException {
+		EMail from = mailSession.getFrom();
+		String messageBase64 = mailSession.getMessageBase64();
+		String message = mailSession.getMessage();
+		String subject = mailSession.getSubject();
+		String messageType = mailSession.getMessageType();
+		String threadTopic = mailSession.getThreadTopic();
+		emptyCheckForFields(mailSession.getEmailList(), from, subject, messageType, messageBase64);
 
 		try {
 			if (log.isDebugEnabled()) {
@@ -294,39 +297,40 @@ public class MailSender extends MailSenderBase {
 		}
 	}
 
-	private void emptyCheckForFields() throws SenderException {
+	private void emptyCheckForFields(List<EMail> emailList, EMail from, String subject,
+			String messageType, String messageBase64) throws SenderException {
 		if (emailList == null || emailList.size() == 0) {
 			throw new SenderException("MailSender [" + getName()
 					+ "] has no recipients for message");
 		}
 		if (StringUtils.isEmpty(from.getAddress())) {
-			from.setAddress(defaultFrom);
+			from.setAddress(getDefaultFrom());
 		}
 		if (StringUtils.isEmpty(subject)) {
-			subject = defaultSubject;
+			subject = getDefaultSubject();
 		}
 		log.debug("MailSender [" + getName() + "] requested to send message from [" + from
 				+ "] subject [" + subject + "] to #recipients [" + emailList.size() + "]");
-
 		if (StringUtils.isEmpty(messageType)) {
 			messageType = defaultMessageType;
 		}
-
 		if (StringUtils.isEmpty(messageBase64)) {
 			messageBase64 = defaultMessageBase64;
 		}
+
 	}
 
-	private MimeMessage constructMessage(StringBuffer sb) throws MessagingException,
-			UnsupportedEncodingException, SenderException {
+	private MimeMessage constructMessage(MailSession mailSession, StringBuffer sb)
+			throws MessagingException, UnsupportedEncodingException, SenderException {
 		MimeMessage msg = new MimeMessage(session);
-		msg.setFrom(new InternetAddress(from.getAddress(), from.getName()));
-		msg.setSubject(subject, charSet);
-		if (StringUtils.isNotEmpty(threadTopic)) {
-			msg.setHeader("Thread-Topic", threadTopic);
+		msg.setFrom(new InternetAddress(mailSession.getFrom().getAddress(), mailSession.getFrom()
+				.getName()));
+		msg.setSubject(mailSession.getSubject(), mailSession.getCharSet());
+		if (StringUtils.isNotEmpty(mailSession.getThreadTopic())) {
+			msg.setHeader("Thread-Topic", mailSession.getThreadTopic());
 		}
 
-		addRecipientsAndAttachments(msg, sb);
+		addRecipientsAndAttachments(mailSession, msg, sb);
 
 		log.debug(sb.toString());
 		msg.setSentDate(new Date());
@@ -334,7 +338,7 @@ public class MailSender extends MailSenderBase {
 		return msg;
 	}
 
-	private void addHeader(MimeMessage msg) throws MessagingException {
+	private void addHeader(Collection headers, MimeMessage msg) throws MessagingException {
 		if (headers != null && headers.size() > 0) {
 			Iterator iter = headers.iterator();
 			while (iter.hasNext()) {
@@ -346,8 +350,10 @@ public class MailSender extends MailSenderBase {
 		}
 	}
 
-	private void addAttachemtnsAndHeader(MimeMessage msg, String messageTypeWithCharset)
-			throws MessagingException {
+	private void addAttachemtnsAndHeader(MailSession mailSession, MimeMessage msg,
+			String messageTypeWithCharset) throws MessagingException {
+		List<Attachment> attachmentList = mailSession.getAttachmentList();
+		String message = mailSession.getMessage();
 		if (attachmentList == null || attachmentList.size() == 0) {
 			msg.setContent(message, messageTypeWithCharset);
 		} else {
@@ -380,10 +386,11 @@ public class MailSender extends MailSenderBase {
 			}
 			msg.setContent(multipart);
 		}
-		addHeader(msg);
+		Collection headers = mailSession.getHeaders();
+		addHeader(headers, msg);
 	}
 
-	private String setCharSet() {
+	private String setCharSet(String charSet, String messageType) {
 		String messageTypeWithCharset;
 		if (charSet == null) {
 			charSet = System.getProperty("mail.mime.charset");
@@ -400,9 +407,11 @@ public class MailSender extends MailSenderBase {
 		return messageTypeWithCharset;
 	}
 
-	private void addRecipientsAndAttachments(MimeMessage msg, StringBuffer sb)
-			throws UnsupportedEncodingException, MessagingException, SenderException {
+	private void addRecipientsAndAttachments(MailSession mailSession, MimeMessage msg,
+			StringBuffer sb) throws UnsupportedEncodingException, MessagingException,
+			SenderException {
 		boolean recipientsFound = false;
+		List<EMail> emailList = mailSession.getEmailList();
 		Iterator iter = emailList.iterator();
 		while (iter.hasNext()) {
 			EMail recipient = (EMail) iter.next();
@@ -426,8 +435,10 @@ public class MailSender extends MailSenderBase {
 			throw new SenderException("MailSender [" + getName()
 					+ "] did not find any valid recipients");
 		}
-		String messageTypeWithCharset = setCharSet();
-		addAttachemtnsAndHeader(msg, messageTypeWithCharset);
+		String charSet = mailSession.getCharSet();
+		String messageType = mailSession.getMessageType();
+		String messageTypeWithCharset = setCharSet(charSet, messageType);
+		addAttachemtnsAndHeader(mailSession, msg, messageTypeWithCharset);
 
 	}
 
@@ -462,20 +473,6 @@ public class MailSender extends MailSenderBase {
 				}
 			}
 		}
-	}
-
-	/**
-	 * Set the default for From
-	 */
-	public void setDefaultFrom(String newFrom) {
-		defaultFrom = newFrom;
-	}
-
-	/**
-	 * Set the default for Subject>
-	 */
-	public void setDefaultSubject(String newSubject) {
-		defaultSubject = newSubject;
 	}
 
 	/**
@@ -519,14 +516,6 @@ public class MailSender extends MailSenderBase {
 
 	public String getDefaultAttachmentName() {
 		return defaultAttachmentName;
-	}
-
-	public int getTimeout() {
-		return timeout;
-	}
-
-	public void setTimeout(int timeout) {
-		this.timeout = timeout;
 	}
 
 	public void setProperties(Properties properties) {

@@ -32,17 +32,9 @@ import org.w3c.dom.Node;
 
 public class MailSenderBase extends SenderWithParametersBase {
 
-	protected EMail from = new EMail();
-	protected EMail replyTo = new EMail();
-	protected List<EMail> emailList = new ArrayList<EMail>();
-	protected List<Attachment> attachmentList = new ArrayList<Attachment>();
-	protected String subject = null;
-	protected String message = null;
-	protected String messageType = null;
-	protected String messageBase64 = null;
-	protected String charSet = null;
-	protected String threadTopic = null;
-	protected Collection headers;
+	private String defaultSubject;
+	private String defaultFrom;
+	private int timeout = 20000;
 
 	/**
 	 * Reads fields from either paramList or Xml file
@@ -51,13 +43,15 @@ public class MailSenderBase extends SenderWithParametersBase {
 	 * @throws SenderException
 	 * @throws DomBuilderException
 	 */
-	public void extract(String input, ParameterResolutionContext prc) throws SenderException,
-			DomBuilderException {
+	public MailSession extract(String input, ParameterResolutionContext prc)
+			throws SenderException, DomBuilderException {
+		MailSession mailSession = new MailSession();
 		if (paramList == null) {
-			parseXML(input, prc);
+			mailSession = parseXML(input, prc);
 		} else {
-			readParameters(prc);
+			mailSession = readParameters(prc);
 		}
+		return mailSession;
 	}
 
 	/**
@@ -65,63 +59,75 @@ public class MailSenderBase extends SenderWithParametersBase {
 	 * @param prc
 	 * @throws SenderException
 	 */
-	private void readParameters(ParameterResolutionContext prc) throws SenderException {
+	private MailSession readParameters(ParameterResolutionContext prc) throws SenderException {
 		ParameterValueList pvl;
 		ParameterValue pv;
-
+		MailSession mail = new MailSession();
 		try {
 			pvl = prc.getValues(paramList);
 			pv = pvl.getParameterValue("from");
 			if (pv != null) {
+				EMail from = new EMail();
 				from.setAddress(pv.asStringValue(null));
 				log.debug("MailSender [" + getName() + "] retrieved from-parameter [" + from + "]");
+				mail.setFrom(from);
 			}
 			pv = pvl.getParameterValue("subject");
 			if (pv != null) {
-				subject = pv.asStringValue(null);
+				String subject = pv.asStringValue(null);
 				log.debug("MailSender [" + getName() + "] retrieved subject-parameter [" + subject
 						+ "]");
+				mail.setSubject(subject);
 			}
 			pv = pvl.getParameterValue("threadTopic");
 			if (pv != null) {
-				threadTopic = pv.asStringValue(null);
+				String threadTopic = pv.asStringValue(null);
 				log.debug("MailSender [" + getName() + "] retrieved threadTopic-parameter ["
 						+ threadTopic + "]");
+				mail.setThreadTopic(threadTopic);
 			}
 			pv = pvl.getParameterValue("message");
 			if (pv != null) {
-				message = pv.asStringValue(message);
+				String message = pv.asStringValue("message");
 				log.debug("MailSender [" + getName() + "] retrieved message-parameter [" + message
 						+ "]");
+				mail.setMessage(message);
 			}
 			pv = pvl.getParameterValue("messageType");
 			if (pv != null) {
-				messageType = pv.asStringValue(null);
+				String messageType = pv.asStringValue(null);
 				log.debug("MailSender [" + getName() + "] retrieved messageType-parameter ["
 						+ messageType + "]");
+				mail.setMessageType(messageType);
 			}
 			pv = pvl.getParameterValue("messageBase64");
 			if (pv != null) {
-				messageBase64 = pv.asStringValue(null);
+				String messageBase64 = pv.asStringValue(null);
 				log.debug("MailSender [" + getName() + "] retrieved messageBase64-parameter ["
 						+ messageBase64 + "]");
+				mail.setMessageBase64(messageBase64);
 			}
 			pv = pvl.getParameterValue("charset");
 			if (pv != null) {
-				charSet = pv.asStringValue(null);
+				String charSet = pv.asStringValue(null);
 				log.debug("MailSender [" + getName() + "] retrieved charset-parameter [" + charSet
 						+ "]");
+				mail.setCharSet(charSet);
 			}
 			pv = pvl.getParameterValue("recipients");
-			emailList = new ArrayList<EMail>(retrieveRecipientsFromParameterList(pv));
+			List<EMail> emailList = new ArrayList<EMail>(retrieveRecipientsFromParameterList(pv));
+			mail.setEmailList(emailList);
 
 			pv = pvl.getParameterValue("attachments");
-			attachmentList = new ArrayList<Attachment>(retrieveAttachmentsFromParamList(pv, prc));
+			ArrayList<Attachment> attachmentList = new ArrayList<Attachment>(
+					retrieveAttachmentsFromParamList(pv, prc));
+			mail.setAttachmentList(attachmentList);
 
 		} catch (ParameterException e) {
 			throw new SenderException("MailSender [" + getName()
 					+ "] got exception determining parametervalues", e);
 		}
+		return mail;
 	}
 
 	private Collection<Attachment> retrieveAttachmentsFromParamList(ParameterValue pv,
@@ -234,11 +240,11 @@ public class MailSenderBase extends SenderWithParametersBase {
 		return recipients;
 	}
 
-	private void parseXML(String input, ParameterResolutionContext prc) throws SenderException,
-			DomBuilderException {
+	private MailSession parseXML(String input, ParameterResolutionContext prc)
+			throws SenderException, DomBuilderException {
 		Collection<Node> recipients = null;
 		Collection<Node> attachments = null;
-
+		MailSession mailSession = new MailSession();
 		Element fromElement = null;
 		String date = null;
 		Element replyTo = null;
@@ -246,12 +252,12 @@ public class MailSenderBase extends SenderWithParametersBase {
 		Element recipientsElement = XmlUtils.getFirstChildTag(emailElement, "recipients");
 		recipients = XmlUtils.getChildTags(recipientsElement, "recipient");
 
-		subject = XmlUtils.getChildTagAsString(emailElement, "subject");
+		mailSession.setSubject(XmlUtils.getChildTagAsString(emailElement, "subject"));
 		fromElement = XmlUtils.getFirstChildTag(emailElement, "from");
-		message = XmlUtils.getChildTagAsString(emailElement, "message");
-		messageType = XmlUtils.getChildTagAsString(emailElement, "messageType");
-		messageBase64 = XmlUtils.getChildTagAsString(emailElement, "messageBase64");
-		threadTopic = XmlUtils.getChildTagAsString(emailElement, "threadTopic");
+		mailSession.setMessage(XmlUtils.getChildTagAsString(emailElement, "message"));
+		mailSession.setMessageType(XmlUtils.getChildTagAsString(emailElement, "messageType"));
+		mailSession.setMessageBase64(XmlUtils.getChildTagAsString(emailElement, "messageBase64"));
+		mailSession.setThreadTopic(XmlUtils.getChildTagAsString(emailElement, "threadTopic"));
 		replyTo = XmlUtils.getFirstChildTag(emailElement, "replyTo");
 
 		date = XmlUtils.getChildTagAsString(emailElement, "date");
@@ -259,34 +265,52 @@ public class MailSenderBase extends SenderWithParametersBase {
 			log.debug("date can be set to " + date);
 			// TODO : date can be added to send the email scheduled time.
 		}
-		charSet = XmlUtils.getChildTagAsString(emailElement, "charset");
+		String charSet = XmlUtils.getChildTagAsString(emailElement, "charset");
+		mailSession.setCharSet(charSet);
 		Element attachmentsElement = XmlUtils.getFirstChildTag(emailElement, "attachments");
 		attachments = attachmentsElement == null ? null : XmlUtils.getChildTags(attachmentsElement,
 				"attachment");
 		Element headersElement = XmlUtils.getFirstChildTag(emailElement, "headers");
-		headers = headersElement == null ? null : XmlUtils.getChildTags(headersElement, "header");
-		getFrom(fromElement);
-		getReplyTo(replyTo);
-		emailList = retrieveRecipients(recipients);
-		attachmentList = (List<Attachment>) retrieveAttachments(attachments, prc);
+		Collection headers = headersElement == null ? null : XmlUtils.getChildTags(headersElement,
+				"header");
+		mailSession.setHeaders(headers);
+
+		EMail from = getFrom(fromElement);
+		mailSession.setFrom(from);
+
+		EMail replyto = getReplyTo(replyTo);
+		mailSession.setReplyto(replyto);
+
+		List<EMail> emailList = retrieveRecipients(recipients);
+		mailSession.setEmailList(emailList);
+
+		List<Attachment> attachmentList = (List<Attachment>) retrieveAttachments(attachments, prc);
+		mailSession.setAttachmentList(attachmentList);
+		return mailSession;
 	}
 
-	private void getFrom(Element fromElement) {
+	private EMail getFrom(Element fromElement) {
 		String value = XmlUtils.getStringValue(fromElement);
 		if (StringUtils.isNotEmpty(value)) {
+			EMail from = new EMail();
 			from.setAddress(value);
 			from.setName(fromElement.getAttribute("name"));
 			from.setType("from");
+			return from;
 		}
+		return null;
 	}
 
-	private void getReplyTo(Element replyToElement) {
+	private EMail getReplyTo(Element replyToElement) {
 		String value = XmlUtils.getStringValue(replyToElement);
 		if (StringUtils.isNotEmpty(value)) {
-			replyTo.setAddress(value);
-			replyTo.setName(replyToElement.getAttribute("name"));
-			replyTo.setType("replyTo");
+			EMail reply = new EMail();
+			reply.setAddress(value);
+			reply.setName(replyToElement.getAttribute("name"));
+			reply.setType("replyTo");
+			return reply;
 		}
+		return null;
 	}
 
 	private DataHandler decodeBase64(String str) {
@@ -294,6 +318,136 @@ public class MailSenderBase extends SenderWithParametersBase {
 		String encodingType = "application/octet-stream";
 		DataSource ads = new ByteArrayDataSource(bytesDecoded, encodingType);
 		return new DataHandler(ads);
+	}
+
+	public boolean isSynchronous() {
+		return false;
+	}
+
+	public String getDefaultSubject() {
+		return defaultSubject;
+	}
+
+	public void setDefaultSubject(String defaultSubject) {
+		this.defaultSubject = defaultSubject;
+	}
+
+	public String getDefaultFrom() {
+		return defaultFrom;
+	}
+
+	public void setDefaultFrom(String defaultFrom) {
+		this.defaultFrom = defaultFrom;
+	}
+
+	public int getTimeout() {
+		return timeout;
+	}
+
+	public void setTimeout(int timeout) {
+		this.timeout = timeout;
+	}
+
+	protected class MailSession {
+		protected EMail from = new EMail();
+		protected EMail replyto = new EMail();
+		protected List<EMail> emailList = new ArrayList<EMail>();
+		protected List<Attachment> attachmentList = new ArrayList<Attachment>();
+		protected String subject = null;
+		protected String message = null;
+		protected String messageType = null;
+		protected String messageBase64 = null;
+		protected String charSet = null;
+		protected String threadTopic = null;
+		protected Collection headers;
+
+		public EMail getFrom() {
+			return from;
+		}
+
+		public void setFrom(EMail from) {
+			this.from = from;
+		}
+
+		public EMail getReplyto() {
+			return replyto;
+		}
+
+		public void setReplyto(EMail replyto) {
+			this.replyto = replyto;
+		}
+
+		public List<EMail> getEmailList() {
+			return emailList;
+		}
+
+		public void setEmailList(List<EMail> emailList) {
+			this.emailList = emailList;
+		}
+
+		public List<Attachment> getAttachmentList() {
+			return attachmentList;
+		}
+
+		public void setAttachmentList(List<Attachment> attachmentList) {
+			this.attachmentList = attachmentList;
+		}
+
+		public String getSubject() {
+			return subject;
+		}
+
+		public void setSubject(String subject) {
+			this.subject = subject;
+		}
+
+		public String getMessage() {
+			return message;
+		}
+
+		public void setMessage(String message) {
+			this.message = message;
+		}
+
+		public String getMessageType() {
+			return messageType;
+		}
+
+		public void setMessageType(String messageType) {
+			this.messageType = messageType;
+		}
+
+		public String getMessageBase64() {
+			return messageBase64;
+		}
+
+		public void setMessageBase64(String messageBase64) {
+			this.messageBase64 = messageBase64;
+		}
+
+		public String getCharSet() {
+			return charSet;
+		}
+
+		public void setCharSet(String charSet) {
+			this.charSet = charSet;
+		}
+
+		public String getThreadTopic() {
+			return threadTopic;
+		}
+
+		public void setThreadTopic(String threadTopic) {
+			this.threadTopic = threadTopic;
+		}
+
+		public Collection getHeaders() {
+			return headers;
+		}
+
+		public void setHeaders(Collection headers) {
+			this.headers = headers;
+		}
 	}
 
 	/**

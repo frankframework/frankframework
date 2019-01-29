@@ -6,7 +6,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.activation.DataHandler;
 
@@ -43,8 +45,6 @@ public class SendGridSender extends MailSenderBase {
 	private String userName;
 	private String password;
 	private CredentialFactory cf;
-	private Mail mail = new Mail();
-	private Personalization personalization = new Personalization();
 
 	/**
 	 * Configure credentials
@@ -60,8 +60,9 @@ public class SendGridSender extends MailSenderBase {
 		String result = null;
 
 		SendGrid sendGrid = new SendGrid(cf.getPassword());
+		Mail mail = null;
 		try {
-			createEmail(message, prc);
+			mail = createEmail(message, prc);
 		} catch (DomBuilderException e1) {
 			e1.printStackTrace();
 		}
@@ -86,24 +87,44 @@ public class SendGridSender extends MailSenderBase {
 	 * Creates sendgrid mail object
 	 * @param input : XML file content
 	 * @param prc	
+	 * @return 
 	 * @throws SenderException
 	 * @throws DomBuilderException
 	 */
-	private void createEmail(String input, ParameterResolutionContext prc) throws SenderException,
+	private Mail createEmail(String input, ParameterResolutionContext prc) throws SenderException,
 			DomBuilderException {
-		extract(input, prc);
-		setEmailAddresses();
-		setSubject();
-		setMessage();
-		setAttachments();
-		setHeader();
+		Mail mail = new Mail();
+		Personalization personalization = new Personalization();
+		MailSession mailSession = extract(input, prc);
+
+		List<EMail> emailList = mailSession.getEmailList();
+		EMail from = mailSession.getFrom();
+		EMail replyTo = mailSession.getReplyto();
+		setEmailAddresses(mail, personalization, emailList, from, replyTo);
+
+		String subject = mailSession.getSubject();
+		setSubject(mail, personalization, subject);
+
+		String message = mailSession.getMessage();
+		String messageType = mailSession.getMessageType();
+		String messageBase64 = mailSession.getMessageBase64();
+		setMessage(mail, message, messageType, messageBase64);
+
+		List<Attachment> attachmentList = mailSession.getAttachmentList();
+		setAttachments(mail, attachmentList);
+
+		Collection headers = mailSession.getHeaders();
+		setHeader(mail, headers);
 		mail.addPersonalization(personalization);
+		return mail;
 	}
 
 	/**
 	 * Sets header of mail object if header exists
+	 * @param mail 
+	 * @param headers 
 	 */
-	private void setHeader() {
+	private void setHeader(Mail mail, Collection headers) {
 		if (headers != null && headers.size() > 0) {
 			Iterator iter = headers.iterator();
 			while (iter.hasNext()) {
@@ -117,8 +138,10 @@ public class SendGridSender extends MailSenderBase {
 
 	/**
 	 * Adds attachments to mail Object if there is any
+	 * @param mail 
+	 * @param attachmentList 
 	 */
-	private void setAttachments() {
+	private void setAttachments(Mail mail, List<Attachment> attachmentList) {
 		if (attachmentList != null) {
 			Iterator iter = attachmentList.iterator();
 			while (iter.hasNext()) {
@@ -151,8 +174,12 @@ public class SendGridSender extends MailSenderBase {
 
 	/**
 	 * Sets content of email to mail Object
+	 * @param mail 
+	 * @param message 
+	 * @param messageBase64 
+	 * @param messageType 
 	 */
-	private void setMessage() {
+	private void setMessage(Mail mail, String message, String messageType, String messageBase64) {
 		if (StringUtils.isNotEmpty(message)) {
 			Content content = new Content();
 			if ("true".equalsIgnoreCase(messageBase64)) {
@@ -171,19 +198,32 @@ public class SendGridSender extends MailSenderBase {
 
 	/**
 	 * Sets subject of mail object
+	 * @param personalization 
+	 * @param mail 
+	 * @param subject 
 	 */
-	private void setSubject() {
+	private void setSubject(Mail mail, Personalization personalization, String subject) {
 		if (StringUtils.isNotEmpty(subject)) {
 			personalization.setSubject(subject);
 			mail.setSubject(subject);
+		} else {
+			String defaultSubject = getDefaultSubject();
+			personalization.setSubject(defaultSubject);
+			mail.setSubject(defaultSubject);
 		}
 	}
 
 	/**
 	 * Sets recipients, sender and replyto to mail object 
+	 * @param mail 
+	 * @param personalization 
+	 * @param list 
+	 * @param replyTo 
+	 * @param from 
 	 */
-	private void setEmailAddresses() {
-		for (EMail e : emailList) {
+	private void setEmailAddresses(Mail mail, Personalization personalization, List<EMail> list,
+			EMail from, EMail replyTo) {
+		for (EMail e : list) {
 			if ("cc".equalsIgnoreCase(e.getType())) {
 				Email cc = new Email();
 				cc.setName(e.getName());
@@ -202,8 +242,12 @@ public class SendGridSender extends MailSenderBase {
 			}
 		}
 		Email fromEmail = new Email();
-		fromEmail.setEmail(from.getAddress());
-		fromEmail.setName(from.getName());
+		if (from.getAddress().isEmpty()) {
+			fromEmail.setEmail(from.getAddress());
+		} else {
+			fromEmail.setEmail(from.getAddress());
+			fromEmail.setName(from.getName());
+		}
 		mail.setFrom(fromEmail);
 		Email replyToEmail = new Email();
 		replyToEmail.setEmail(replyTo.getAddress());
