@@ -47,11 +47,11 @@ public abstract class FileSystemTest<F,FS extends IFileSystemBase<F>> {
 		}
 	}
 	public void createFile(String filename, String contents) throws IOException {
-		OutputStream out=_createFile(filename);
+		OutputStream out =_createFile(filename);
 		if (contents!=null) out.write(contents.getBytes());
 		out.close();
 	}
-		
+	
 	public String readFile(String filename) throws IOException {
 		InputStream in =_readFile(filename);
 		return StreamUtil.getReaderContents(new InputStreamReader(in));
@@ -74,38 +74,38 @@ public abstract class FileSystemTest<F,FS extends IFileSystemBase<F>> {
 	
 	@Test
 	public void testCreateNewFile() throws IOException, FileSystemException {
-		String filename=FILE1;
-		String contents="regeltje tekst";
+		String filename = FILE1;
+		String contents = "regeltje tekst";
 		deleteFile(filename);
 		
 		F file = fileSystem.toFile(filename);
-		OutputStream out=fileSystem.createFile(file);
+		OutputStream out = fileSystem.createFile(file);
 
-		PrintWriter pw=new PrintWriter(out);
+		PrintWriter pw = new PrintWriter(out);
 		pw.println(contents);
 		pw.close();
 		out.close();
 		assertTrue(_fileExists(filename));
-		String actual=readFile(filename);
+		String actual = readFile(filename);
 		assertEquals(contents.trim(),actual.trim());
 	}
 
 	@Test
 	public void testCreateOverwriteFile() throws IOException, FileSystemException {
-		String filename=FILE1;
-		createFile(filename,"Eerste versie van de file");
-		String contents="Tweede versie van de file";
-		
-		F file = fileSystem.toFile(filename);
-		OutputStream out=fileSystem.createFile(file);
+		String filename = FILE1;
+		createFile(filename, "Eerste versie van de file");
+		String contents = "Tweede versie van de file";
 
-		PrintWriter pw=new PrintWriter(out);
+		F file = fileSystem.toFile(filename);
+		OutputStream out = fileSystem.createFile(file);
+
+		PrintWriter pw = new PrintWriter(out);
 		pw.println(contents);
 		pw.close();
 		out.close();
 		assertTrue(_fileExists(filename));
-		String actual=readFile(filename);
-		assertEquals(contents.trim(),actual.trim());
+		String actual = readFile(filename);
+		assertEquals(contents.trim(), actual.trim());
 	}
 
 	@Test

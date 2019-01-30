@@ -30,8 +30,6 @@ public abstract class LocalFileSystemTestBase<Ff,FS extends IFileSystem<Ff>> ext
 		return new File(folder.getRoot().getAbsolutePath(),filename);
 	}
 
-	
-	
 	@Override
 	public boolean _fileExists(String filename) {
 		return getFileHandle(filename).exists();
@@ -46,15 +44,11 @@ public abstract class LocalFileSystemTestBase<Ff,FS extends IFileSystem<Ff>> ext
 	public OutputStream _createFile(String filename) throws IOException {
 		File f = getFileHandle(filename);
 		f.createNewFile();
-		return new FileOutputStream(f);
-		
+		return new FileOutputStream(f);		
 	}
 
 	@Override
 	public InputStream _readFile(String filename) throws FileNotFoundException {
 		return new FileInputStream(getFileHandle(filename));
 	}
-
-
-
 }
