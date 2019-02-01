@@ -10,6 +10,4 @@ public class LocalFileSystemTest extends LocalFileSystemTestBase<File,LocalFileS
 		result.setDirectory(folder.getRoot().getAbsolutePath());
 		return result;
 	}
-
-
 }

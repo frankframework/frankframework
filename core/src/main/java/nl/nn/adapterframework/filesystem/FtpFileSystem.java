@@ -3,8 +3,7 @@ package nl.nn.adapterframework.filesystem;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.text.DateFormat;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.commons.net.ftp.FTPFile;
@@ -12,8 +11,6 @@ import org.apache.commons.net.ftp.FTPFile;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
-import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.Dir2Xml;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -30,7 +27,13 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 		int i=0;
 		
 		FTPFilePathIterator(FTPFile files[]) {
-			this.files=files;
+			
+			ArrayList<FTPFile> tempList = new ArrayList<FTPFile>();
+			for(FTPFile f : files)
+				if(f.isFile())
+					tempList.add(f);
+			
+			tempList.toArray(this.files);
 		}
 		
 		@Override
@@ -40,7 +43,13 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 
 		@Override
 		public FTPFile next() {
+//			FTPFile f = files[i++];
+//			if(!f.isFile() && hasNext()) {
+//				return next();
+//			}
+			
 			return files[i++];
+//			return !f.isFile() ? (hasNext() ? next() : null) : f;
 		}
 
 		@Override
@@ -51,7 +60,6 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 				e.printStackTrace();
 			}
 		}
-		
 	}
 	
 	public FtpFileSystem() {
@@ -71,96 +79,60 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 
 	@Override
 	public FTPFile toFile(String filename) throws FileSystemException {
-		openClient();
 		FTPFile ftpFile = null;
 		ftpFile = new FTPFile();
 		ftpFile.setName(filename);
-		closeClient();
 		
 		return ftpFile;
 	}
 
 	@Override
 	public Iterator<FTPFile> listFiles() throws FileSystemException {
-		openClient();
-		Iterator<FTPFile> result = null;
 		try {
-			result = new FTPFilePathIterator(ftpSession.ftpClient.listFiles(remoteDirectory));
+			return new FTPFilePathIterator(ftpSession.ftpClient.listFiles(remoteDirectory));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		closeClient();
-		
-		return result;
+		return null;
 	}
 
 	@Override
 	public boolean exists(FTPFile f) throws FileSystemException {
-		openClient();
-		boolean result = false;
 		try {
 			FTPFile[] files = ftpSession.ftpClient.listFiles();
 			for(FTPFile o : files) {
 				if(o.getName().equals(f.getName())) {
-					result = true;
+					return true;
 				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		closeClient();
-		
-		return result;
+		return false;
 	}
 
 	@Override
 	public OutputStream createFile(FTPFile f) throws FileSystemException, IOException {
-		openClient();
-		OutputStream result = ftpSession.ftpClient.storeFileStream(f.getName());
-		closeClient();
-		
-		return result;
+		return ftpSession.ftpClient.storeFileStream(f.getName());
 	}
 
 	@Override
 	public OutputStream appendFile(FTPFile f) throws FileSystemException, IOException {
-		openClient();
-		OutputStream result = ftpSession.ftpClient.appendFileStream(f.getName());
-		closeClient();
-		
-		return result;
-	}
-	
-	void openClient() {
-//		try {
-//			ftpSession.openClient("");
-//		} catch (FtpConnectException e) {
-//			e.printStackTrace();
-//		}
-	}
-	
-	void closeClient() {
-//		ftpSession.closeClient();
+		return ftpSession.ftpClient.appendFileStream(f.getName());
 	}
 
 	@Override
 	public InputStream readFile(FTPFile f) throws FileSystemException, IOException {
-		openClient();
-		InputStream result = ftpSession.ftpClient.retrieveFileStream(f.getName());
-		closeClient();
-		
-		return result;
+		return ftpSession.ftpClient.retrieveFileStream(f.getName());
 	}
-
+	
 	@Override
 	public void deleteFile(FTPFile f) throws FileSystemException {
-		openClient();
 		try {
 			ftpSession.ftpClient.deleteFile(f.getName());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		closeClient();
 	}
 
 	@Override
@@ -193,24 +165,20 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 
 	@Override
 	public void createFolder(FTPFile f) throws FileSystemException {
-		openClient();
 		try {
 			ftpSession.ftpClient.makeDirectory(f.getName());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		closeClient();
 	}
 
 	@Override
 	public void removeFolder(FTPFile f) throws FileSystemException {
-		openClient();
 		try {
 			ftpSession.ftpClient.removeDirectory(f.getName());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		closeClient();
 	}
 	
 	

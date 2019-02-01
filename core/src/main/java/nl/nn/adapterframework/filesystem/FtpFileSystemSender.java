@@ -8,9 +8,9 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 public class FtpFileSystemSender extends FileSystemSender<FTPFile, FtpFileSystem> {
-
-	private FtpFileSystem ftpFileSystem;
 	
+//	private FtpFileSystem ffs;
+//	
 //	@Override
 //	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc)
 //			throws SenderException, TimeOutException {
@@ -19,7 +19,7 @@ public class FtpFileSystemSender extends FileSystemSender<FTPFile, FtpFileSystem
 //			if (prc!=null) {
 //				session=prc.getSession();
 //			}
-//			ftpFileSystem.getFtpSession().put(paramList, session, message, ftpFileSystem.getRemoteDirectory(), ftpFileSystem.getRemoteFilenamePattern(), true);
+//			ffs.getFtpSession().put(paramList, session, message, ffs.getRemoteDirectory(), ffs.getRemoteFilenamePattern(), true);
 //		} catch(SenderException e) {
 //			throw e;
 //		} catch(Exception e) {

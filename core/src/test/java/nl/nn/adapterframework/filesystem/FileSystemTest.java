@@ -63,8 +63,12 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	}
 
 	public String readFile(String filename) throws IOException {
-		InputStream in = _readFile(filename);		
-		return StreamUtil.getReaderContents(new InputStreamReader(in));
+		InputStream in = _readFile(filename);	
+		try {
+			return StreamUtil.getReaderContents(new InputStreamReader(in));
+		} finally {
+			in.close();
+		}
 	}
 
 	@Test
@@ -101,6 +105,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		pw.println(contents);
 		pw.close();
 		out.close();
+		finalizeCommand();
 		assertTrue(_fileExists(filename));
 		
 		String actual = readFile(filename);
@@ -120,10 +125,15 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		pw.println(contents);
 		pw.close();
 		out.close();
+		finalizeCommand();
 		assertTrue(_fileExists(filename));
 		
 		String actual = readFile(filename);
 		assertEquals(contents.trim(), actual.trim());
+	}
+
+	protected void finalizeCommand() throws IOException {
+		// Placeholder
 	}
 
 	@Test
@@ -135,6 +145,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		OutputStream out = fileSystem.createFile(file);
 
 		out.close();
+		finalizeCommand();
 		assertTrue(_fileExists(filename));
 		String actual = readFile(filename);
 		assertEquals("", actual.trim());
@@ -155,6 +166,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		pw.println(regel2);
 		pw.close();
 		out.close();
+		finalizeCommand();
 		assertTrue(_fileExists(filename));
 		String actual = readFile(filename);
 		assertEquals(expected.trim(), actual.trim());
@@ -224,7 +236,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		Iterator<F> it = fileSystem.listFiles();
 		assertTrue(it.hasNext());
 		F file = it.next();
-		System.out.println("file =[" + file + "]");
+		System.out.println("file 2=[" + file + "]");
 		//		testReadFile(file,contents1); 
 		assertTrue(it.hasNext());
 		file = it.next();

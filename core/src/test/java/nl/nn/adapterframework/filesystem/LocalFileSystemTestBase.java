@@ -26,7 +26,7 @@ public abstract class LocalFileSystemTestBase<Ff, FS extends IFileSystem<Ff>> ex
 		super.setup();
 	}
 
-	protected synchronized File getFileHandle(String filename) {
+	protected File getFileHandle(String filename) {
 		return new File(folder.getRoot().getAbsolutePath(), filename);
 	}
 
@@ -58,5 +58,4 @@ public abstract class LocalFileSystemTestBase<Ff, FS extends IFileSystem<Ff>> ex
 	public InputStream _readFile(String filename) throws FileNotFoundException {		
 		return new FileInputStream(getFileHandle(filename));
 	}
-
 }
