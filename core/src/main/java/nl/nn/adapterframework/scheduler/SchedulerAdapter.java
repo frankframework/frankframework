@@ -102,17 +102,17 @@ public class SchedulerAdapter {
 					jn.addSubElement(ms);
 					XmlBuilder jrs= getJobRunStatistics(jobDef);
 					jn.addSubElement(jrs);
-				}
-				el.addSubElement(jb);
-				xbRoot.addSubElement(el);
-			}
-		} catch (org.quartz.SchedulerException se) {
-			log.error(se);
-		}
-		return xbRoot;
-	}
-
-	public XmlBuilder getJobTriggers(Scheduler theScheduler, String jobName, String groupName) {
+                }
+                el.addSubElement(jb);
+                xbRoot.addSubElement(el);
+            }
+        } catch (SchedulerException se) {
+           log.error(se);
+        }
+        return xbRoot;
+    }
+    
+    public XmlBuilder getJobTriggers(Scheduler theScheduler, String jobName, String groupName) {
 
         XmlBuilder xbRoot = new XmlBuilder("triggersForJob");
 
@@ -134,7 +134,7 @@ public class SchedulerAdapter {
                     }
                 }
             }
-        } catch (org.quartz.SchedulerException se) {
+        } catch (SchedulerException se) {
             log.error(se);
 
         }
@@ -184,7 +184,7 @@ public class SchedulerAdapter {
                 el.setValue(names.get(i));
                 xbRoot.addSubElement(el);
             }
-        } catch (org.quartz.SchedulerException se) {
+        } catch (SchedulerException se) {
             log.error(se.toString());
         }
         return xbRoot;
@@ -261,7 +261,7 @@ public class SchedulerAdapter {
 		return xbRoot;
 	}
 
-    public XmlBuilder jobDataMapToXmlBuilder(Scheduler theScheduler, String jobName, String groupName) {
+   public XmlBuilder jobDataMapToXmlBuilder(Scheduler theScheduler, String jobName, String groupName) {
 
         XmlBuilder xbRoot = new XmlBuilder("jobDataMap");
 
@@ -293,7 +293,7 @@ public class SchedulerAdapter {
 
                 xbRoot.addSubElement(ds);
             }
-        } catch (org.quartz.SchedulerException se) {
+        } catch (SchedulerException se) {
             log.error(se);
         }
         return xbRoot;
@@ -316,8 +316,7 @@ public class SchedulerAdapter {
             xbRoot.addAttribute("isStateful", (jd.isConcurrentExectionDisallowed() && jd.isPersistJobDataAfterExecution() ? "True" : "False"));
             xbRoot.addAttribute("isDurable", (jd.isDurable() ? "True" : "False"));
             xbRoot.addAttribute("jobClass", jd.getJobClass().getName());
-            
-        } catch (org.quartz.SchedulerException se) {
+        } catch (SchedulerException se) {
             log.error(se);
         }
         return xbRoot;

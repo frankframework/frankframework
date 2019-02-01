@@ -17,22 +17,13 @@ package nl.nn.adapterframework.util;
 
 import java.io.File;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
  * Cleans up a directory.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setDirectory(String) directory}</td><td>directory to be cleaned up</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRetention(String) retention}</td><td>time (with suffix 'd', 'h', 'm' or 's' in milliseconds) that must have passed at least before a file will be deleted</td><td>30d</td></tr>
- * <tr><td>{@link #setSubdirectories(boolean) subdirectories}</td><td>when <code>true</code>, files in subdirectories will be deleted, too</td><td>false</td></tr>
- * <tr><td>{@link #setDeleteEmptySubdirectories(boolean) deleteEmptySubdirectories}</td><td>when <code>true</code>, empty subdirectories will be deleted, too</td><td>false</td></tr>
- * <tr><td>{@link #setNotExistWarn(boolean) notExistWarn}</td><td>when set <code>true</code>, send warnings to logging and console about not existing directories</td><td>true</td></tr>
- * </table>
- * </p>
  * 
  * @author Peter Leeuwenburgh
  */
@@ -113,6 +104,7 @@ public class DirectoryCleaner {
 		}
 	}
 
+	@IbisDoc({"directory to be cleaned up", ""})
 	public void setDirectory(String directory) {
 		this.directory = directory;
 	}
@@ -121,6 +113,7 @@ public class DirectoryCleaner {
 		return directory;
 	}
 
+	@IbisDoc({"time (with suffix 'd', 'h', 'm' or 's' in milliseconds) that must have passed at least before a file will be deleted", "30d"})
 	public void setRetention(String retention) {
 		this.retention = retention;
 	}
@@ -129,6 +122,7 @@ public class DirectoryCleaner {
 		return retention;
 	}
 
+	@IbisDoc({"when <code>true</code>, files in subdirectories will be deleted, too", "false"})
 	public void setSubdirectories(boolean b) {
 		subdirectories = b;
 	}
@@ -137,6 +131,7 @@ public class DirectoryCleaner {
 		return subdirectories;
 	}
 
+	@IbisDoc({"when <code>true</code>, empty subdirectories will be deleted, too", "false"})
 	public void setDeleteEmptySubdirectories(boolean b) {
 		deleteEmptySubdirectories = b;
 	}
@@ -145,6 +140,7 @@ public class DirectoryCleaner {
 		return deleteEmptySubdirectories;
 	}
 
+	@IbisDoc({"when set <code>true</code>, send warnings to logging and console about not existing directories", "true"})
 	public void setNotExistWarn(boolean b) {
 		notExistWarn = b;
 	}

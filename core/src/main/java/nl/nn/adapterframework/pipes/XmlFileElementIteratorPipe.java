@@ -30,6 +30,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -39,13 +40,6 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Sends a message to a Sender for each element in the XML file that the input message refers to.
- *
- * <p><b>Configuration </b><i>(where deviating from IteratingPipe)</i><b>:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setElementName(String) elementName}</td><td>the name of the element to iterate over (alternatively: <code>elementChain</code>)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setElementChain(String) elementChain}</td><td>the name of the element to iterate over, preceded with all ancestor elements and separated by semicolons (e.g. "adapter;pipeline;pipe")</td><td>&nbsp;</td></tr>
- * </table></p>
  * 
  * @author  Peter Leeuwenburgh
  */
@@ -205,6 +199,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe {
 		}
 	}
 
+	@IbisDoc({"the name of the element to iterate over (alternatively: <code>elementchain</code>)", ""})
 	public void setElementName(String string) {
 		elementName = string;
 	}
@@ -213,6 +208,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe {
 		return elementName;
 	}
 
+	@IbisDoc({"the name of the element to iterate over, preceded with all ancestor elements and separated by semicolons (e.g. adapter;pipeline;pipe)", ""})
 	public void setElementChain(String string) {
 		elementChain = string;
 	}
