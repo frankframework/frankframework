@@ -8,15 +8,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+
 import org.junit.Before;
 import org.junit.rules.TemporaryFolder;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-
-public abstract class LocalFileSystemTestBase<Ff,FS extends IFileSystem<Ff>> extends FileSystemTest<Ff,FS> {
+public abstract class LocalFileSystemTestBase<Ff, FS extends IFileSystem<Ff>> extends
+		FileSystemTest<Ff, FS> {
 
 	public TemporaryFolder folder;
-	
+
 	@Override
 	@Before
 	public void setup() throws IOException, ConfigurationException {
@@ -25,13 +26,10 @@ public abstract class LocalFileSystemTestBase<Ff,FS extends IFileSystem<Ff>> ext
 		super.setup();
 	}
 
-
 	protected File getFileHandle(String filename) {
-		return new File(folder.getRoot().getAbsolutePath(),filename);
+		return new File(folder.getRoot().getAbsolutePath(), filename);
 	}
 
-	
-	
 	@Override
 	public boolean _fileExists(String filename) {
 		return getFileHandle(filename).exists();
@@ -47,14 +45,18 @@ public abstract class LocalFileSystemTestBase<Ff,FS extends IFileSystem<Ff>> ext
 		File f = getFileHandle(filename);
 		f.createNewFile();
 		return new FileOutputStream(f);
-		
+
+	}
+
+	@Override
+	public void _createFolder(String filename) throws IOException {
+		File f = getFileHandle(filename);
+		f.mkdir();
 	}
 
 	@Override
 	public InputStream _readFile(String filename) throws FileNotFoundException {
 		return new FileInputStream(getFileHandle(filename));
 	}
-
-
 
 }

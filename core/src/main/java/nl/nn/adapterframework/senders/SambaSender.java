@@ -22,9 +22,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.codec.binary.Base64InputStream;
-import org.apache.commons.lang.StringUtils;
-
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
@@ -35,6 +32,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.filesystem.ISambaSender;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -42,6 +40,9 @@ import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
+
+import org.apache.commons.codec.binary.Base64InputStream;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Samba Sender: The standard Windows interoperability suite for Linux and Unix.
@@ -82,7 +83,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author	Niels Meijer
  * @since	7.1-B4
  */
-public class SambaSender extends SenderWithParametersBase {
+public class SambaSender extends SenderWithParametersBase implements ISambaSender {
 
 	private String domain = null;
 	private String username = null;
@@ -91,7 +92,8 @@ public class SambaSender extends SenderWithParametersBase {
 	private NtlmPasswordAuthentication auth = null;
 
 	private String action = null;
-	private List<String> actions = Arrays.asList("delete", "upload", "mkdir", "rmdir", "rename", "download", "list");
+	private List<String> actions = Arrays.asList("delete", "upload", "mkdir", "rmdir", "rename",
+			"download", "list");
 	private String share = null;
 	private SmbFile smbContext = null;
 	private boolean force = false;
@@ -100,29 +102,35 @@ public class SambaSender extends SenderWithParametersBase {
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if(getShare() == null)
-			throw new ConfigurationException(getLogPrefix()+"server share endpoint is required");
-		if(!getShare().startsWith("smb://"))
-			throw new ConfigurationException(getLogPrefix()+"url must begin with [smb://]");
+		if (getShare() == null)
+			throw new ConfigurationException(getLogPrefix() + "server share endpoint is required");
+		if (!getShare().startsWith("smb://"))
+			throw new ConfigurationException(getLogPrefix() + "url must begin with [smb://]");
 
-		if(getAction() == null)
-			throw new ConfigurationException(getLogPrefix()+"action must be specified");
-		if(!actions.contains(getAction()))
-			throw new ConfigurationException(getLogPrefix()+"unknown or invalid action ["+getAction()+"] supported actions are "+actions.toString()+"");
+		if (getAction() == null)
+			throw new ConfigurationException(getLogPrefix() + "action must be specified");
+		if (!actions.contains(getAction()))
+			throw new ConfigurationException(getLogPrefix() + "unknown or invalid action ["
+					+ getAction() + "] supported actions are " + actions.toString() + "");
 
 		//Check if necessarily parameters are available
 		ParameterList parameterList = getParameterList();
-		if(getAction().equals("upload") && (parameterList == null || parameterList.findParameter("file") == null))
-			throw new ConfigurationException(getLogPrefix()+"the upload action requires the file parameter to be present");
-		if(getAction().equals("rename") && (parameterList == null || parameterList.findParameter("destination") == null))
-			throw new ConfigurationException(getLogPrefix()+"the rename action requires a destination parameter to be present");
+		if (getAction().equals("upload")
+				&& (parameterList == null || parameterList.findParameter("file") == null))
+			throw new ConfigurationException(getLogPrefix()
+					+ "the upload action requires the file parameter to be present");
+		if (getAction().equals("rename")
+				&& (parameterList == null || parameterList.findParameter("destination") == null))
+			throw new ConfigurationException(getLogPrefix()
+					+ "the rename action requires a destination parameter to be present");
 
 		//Setup credentials if applied, may be null.
 		//NOTE: When using NtmlPasswordAuthentication without username it returns GUEST
 		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
-		if(StringUtils.isNotEmpty(cf.getUsername())) {
-			auth = new NtlmPasswordAuthentication(getAuthDomain(), cf.getUsername(), cf.getPassword());
-			log.debug("setting authentication to ["+ auth.toString() +"]");
+		if (StringUtils.isNotEmpty(cf.getUsername())) {
+			auth = new NtlmPasswordAuthentication(getAuthDomain(), cf.getUsername(),
+					cf.getPassword());
+			log.debug("setting authentication to [" + auth.toString() + "]");
 		}
 
 		try {
@@ -135,88 +143,85 @@ public class SambaSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc)
+			throws SenderException, TimeOutException {
 		ParameterValueList pvl = null;
 		try {
 			if (prc != null && paramList != null) {
 				pvl = prc.getValues(paramList);
 			}
 		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
+			throw new SenderException(getLogPrefix() + "Sender [" + getName()
+					+ "] caught exception evaluating parameters", e);
 		}
 
 		SmbFile file;
 		try {
 			file = new SmbFile(smbContext, message);
 		} catch (IOException e) {
-			throw new SenderException(getLogPrefix()+"unable to get SMB file", e);
+			throw new SenderException(getLogPrefix() + "unable to get SMB file", e);
 		}
 
 		try {
 			if (getAction().equalsIgnoreCase("download")) {
-				SmbFileInputStream is = new SmbFileInputStream( file );
+				SmbFileInputStream is = new SmbFileInputStream(file);
 				InputStream base64 = new Base64InputStream(is, true);
 				return Misc.streamToString(base64);
-			}
-			else if (getAction().equalsIgnoreCase("list")) {
+			} else if (getAction().equalsIgnoreCase("list")) {
 				return listFilesInDirectory(file);
-			}
-			else if (getAction().equalsIgnoreCase("upload")) {
+			} else if (getAction().equalsIgnoreCase("upload")) {
 				Object paramValue = pvl.getParameterValue("file").getValue();
 				byte[] fileBytes = null;
-				if(paramValue instanceof InputStream)
+				if (paramValue instanceof InputStream)
 					fileBytes = Misc.streamToBytes((InputStream) paramValue);
-				else if(paramValue instanceof byte[])
+				else if (paramValue instanceof byte[])
 					fileBytes = (byte[]) paramValue;
-				else if(paramValue instanceof String)
+				else if (paramValue instanceof String)
 					fileBytes = ((String) paramValue).getBytes(Misc.DEFAULT_INPUT_STREAM_ENCODING);
 				else
-					throw new SenderException("expected InputStream, ByteArray or String but got ["+paramValue.getClass().getName()+"] instead");
+					throw new SenderException("expected InputStream, ByteArray or String but got ["
+							+ paramValue.getClass().getName() + "] instead");
 
-				SmbFileOutputStream out = new SmbFileOutputStream( file );
+				SmbFileOutputStream out = new SmbFileOutputStream(file);
 				out.write(fileBytes);
 				out.close();
 
 				return getFileAsXmlBuilder(new SmbFile(smbContext, message)).toXML();
-			}
-			else if (getAction().equalsIgnoreCase("delete")) {
-				if(!file.exists())
+			} else if (getAction().equalsIgnoreCase("delete")) {
+				if (!file.exists())
 					throw new SenderException("file not found");
 
-				if(file.isFile())
+				if (file.isFile())
 					file.delete();
 				else
 					throw new SenderException("trying to remove a directory instead of a file");
-			}
-			else if (getAction().equalsIgnoreCase("mkdir")) {
-				if(isForced())
+			} else if (getAction().equalsIgnoreCase("mkdir")) {
+				if (isForced())
 					file.mkdirs();
 				else
 					file.mkdir();
-			}
-			else if (getAction().equalsIgnoreCase("rmdir")) {
-				if(!file.exists())
+			} else if (getAction().equalsIgnoreCase("rmdir")) {
+				if (!file.exists())
 					throw new SenderException("folder not found");
 
-				if(file.isDirectory())
+				if (file.isDirectory())
 					file.delete();
 				else
 					throw new SenderException("trying to remove a file instead of a directory");
-			}
-			else if (getAction().equalsIgnoreCase("rename")) {
+			} else if (getAction().equalsIgnoreCase("rename")) {
 				String destination = pvl.getParameterValue("destination").asStringValue(null);
-				if(destination == null)
+				if (destination == null)
 					throw new SenderException("unknown destination[+destination+]");
 
 				SmbFile dest = new SmbFile(smbContext, destination);
-				if(isForced() && dest.exists())
+				if (isForced() && dest.exists())
 					dest.delete();
 
 				file.renameTo(dest);
 			}
-		}
-		catch(Exception e) { //Different types of SMB exceptions can be thrown, no exception means success.. Got to catch them all!
-			throw new SenderException(getLogPrefix()+"unable to process action for SmbFile ["+file.getCanonicalPath()+"]", e);
+		} catch (Exception e) { //Different types of SMB exceptions can be thrown, no exception means success.. Got to catch them all!
+			throw new SenderException(getLogPrefix() + "unable to process action for SmbFile ["
+					+ file.getCanonicalPath() + "]", e);
 		}
 
 		return "<result>ok</result>";
@@ -241,7 +246,7 @@ public class SambaSender extends SenderWithParametersBase {
 		fileXml.addAttribute("name", file.getName());
 		long fileSize = file.length();
 		fileXml.addAttribute("size", "" + fileSize);
-		fileXml.addAttribute("fSize", "" + Misc.toFileSize(fileSize,true));
+		fileXml.addAttribute("fSize", "" + Misc.toFileSize(fileSize, true));
 		fileXml.addAttribute("directory", "" + file.isDirectory());
 		fileXml.addAttribute("canonicalName", file.getCanonicalPath());
 
@@ -250,18 +255,20 @@ public class SambaSender extends SenderWithParametersBase {
 		//add date
 		String date = DateUtils.format(modificationDate, DateUtils.FORMAT_DATE);
 		fileXml.addAttribute("modificationDate", date);
-	
+
 		// add the time
 		String time = DateUtils.format(modificationDate, DateUtils.FORMAT_TIME_HMS);
 		fileXml.addAttribute("modificationTime", time);
-	
+
 		return fileXml;
 	}
 
 	public void setShare(String share) {
-		if(!share.endsWith("/")) share += "/";
+		if (!share.endsWith("/"))
+			share += "/";
 		this.share = share;
 	}
+
 	public String getShare() {
 		return share;
 	}
@@ -269,6 +276,7 @@ public class SambaSender extends SenderWithParametersBase {
 	public void setAction(String action) {
 		this.action = action.toLowerCase();
 	}
+
 	public String getAction() {
 		return action;
 	}
@@ -276,6 +284,7 @@ public class SambaSender extends SenderWithParametersBase {
 	public void setForce(boolean force) {
 		this.force = force;
 	}
+
 	public boolean isForced() {
 		return force;
 	}
@@ -283,6 +292,7 @@ public class SambaSender extends SenderWithParametersBase {
 	public void setAuthDomain(String domain) {
 		this.domain = domain;
 	}
+
 	public String getAuthDomain() {
 		return domain;
 	}
@@ -290,6 +300,7 @@ public class SambaSender extends SenderWithParametersBase {
 	public void setUsername(String username) {
 		this.username = username;
 	}
+
 	public String getUsername() {
 		return username;
 	}
@@ -297,6 +308,7 @@ public class SambaSender extends SenderWithParametersBase {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+
 	public String getPassword() {
 		return password;
 	}
@@ -304,6 +316,7 @@ public class SambaSender extends SenderWithParametersBase {
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
+
 	public String getAuthAlias() {
 		return authAlias;
 	}
