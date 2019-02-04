@@ -3,15 +3,16 @@ package nl.nn.adapterframework.filesystem;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
+import java.util.Vector;
 
 import org.apache.commons.net.ftp.FTPFile;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 public class FtpFileSystem implements IFileSystem<FTPFile> {
@@ -27,13 +28,15 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 		int i=0;
 		
 		FTPFilePathIterator(FTPFile files[]) {
+			Vector<FTPFile> fList = new Vector<FTPFile>();
+			for(int i = 0; i < files.length; i++) {
+				if(files[i].isFile()) {
+					fList.addElement(files[i]);
+				}
+			}
 			
-			ArrayList<FTPFile> tempList = new ArrayList<FTPFile>();
-			for(FTPFile f : files)
-				if(f.isFile())
-					tempList.add(f);
-			
-			tempList.toArray(this.files);
+			this.files = new FTPFile[fList.size()];
+			fList.copyInto(this.files);
 		}
 		
 		@Override
@@ -42,14 +45,8 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 		}
 
 		@Override
-		public FTPFile next() {
-//			FTPFile f = files[i++];
-//			if(!f.isFile() && hasNext()) {
-//				return next();
-//			}
-			
+		public FTPFile next() {			
 			return files[i++];
-//			return !f.isFile() ? (hasNext() ? next() : null) : f;
 		}
 
 		@Override
@@ -79,7 +76,7 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 
 	@Override
 	public FTPFile toFile(String filename) throws FileSystemException {
-		FTPFile ftpFile = null;
+		FTPFile ftpFile;
 		ftpFile = new FTPFile();
 		ftpFile.setName(filename);
 		
@@ -141,21 +138,24 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 	}
 
 	private String getFileInfoAsXML(FTPFile f) throws FileSystemException {
-		XmlBuilder xb = new XmlBuilder(f.getName());
-
 		XmlBuilder fileXml = new XmlBuilder("file");
 		fileXml.addAttribute("name", f.getName());
 		fileXml.addAttribute("user", f.getUser());
 		fileXml.addAttribute("group", f.getGroup());
-		
-		long fileSize = f.getSize();
-		fileXml.addAttribute("size", "" + fileSize);
-		fileXml.addAttribute("fSize", "" + Misc.toFileSize(fileSize,true));
-		
-		fileXml.addAttribute("directory", "" + isFolder(f));
+		fileXml.addAttribute("type", f.getType());
+		fileXml.addAttribute("size", "" + f.getSize());
+		fileXml.addAttribute("rawListing", f.getRawListing());
+		fileXml.addAttribute("isDirectory", "" + isFolder(f));
 		fileXml.addAttribute("link", f.getLink());
+		fileXml.addAttribute("hardLinkCount", f.getHardLinkCount());
 		
-		return xb.toXML();
+		if(f.getTimestamp() != null) {
+			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+			Date date = new Date(f.getTimestamp().getTimeInMillis());
+			fileXml.addAttribute("lastModified", sdf.format(date));
+		}
+		
+		return fileXml.toXML();
 	}
 
 	@Override
