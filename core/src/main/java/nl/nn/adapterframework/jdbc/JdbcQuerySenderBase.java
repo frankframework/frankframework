@@ -769,7 +769,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 									String pattern = "yyyy-MM-dd HH:mm:ss";
 									SimpleDateFormat sdf = new SimpleDateFormat(pattern);
 									java.util.Date nDate = (java.util.Date)sdf.parseObject(element.toString());
-									java.sql.Timestamp sqlTimestamp = new java.sql.Timestamp(nDate.getTime());
+									Timestamp sqlTimestamp = new Timestamp(nDate.getTime());
 									paramArray[idx] = sqlTimestamp;
 									 
 								} else {

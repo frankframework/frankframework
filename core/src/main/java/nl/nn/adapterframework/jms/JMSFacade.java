@@ -284,7 +284,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 
 	public TextMessage createTextMessage(Session session, String correlationID, String message)
-			throws javax.naming.NamingException, JMSException {
+			throws NamingException, JMSException {
 		TextMessage textMessage = null;
 		textMessage = session.createTextMessage();
 		if (null != correlationID) {

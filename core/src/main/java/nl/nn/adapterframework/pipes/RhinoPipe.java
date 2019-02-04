@@ -208,7 +208,7 @@ public class RhinoPipe extends FixedForwardPipe {
             
             jsResult = (String) cx.jsToJava(result, String.class);
 			
-		} catch (org.mozilla.javascript.EcmaError ex) {
+		} catch (EcmaError ex) {
 			throw new PipeRunException(this, "org.mozilla.javascript.EcmaError -> ", ex);
 //System.out.println(ex.getMessage());
         }finally {
