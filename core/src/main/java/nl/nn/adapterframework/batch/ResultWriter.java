@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 import org.apache.commons.lang.StringUtils;
@@ -32,22 +33,6 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Baseclass for resulthandlers that write the transformed record to a writer.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.batch.ResultWriter</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>Name of the resulthandler</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDefault(boolean) default}</td><td>If true, this resulthandler is the default for all RecordHandlingFlow that do not have a handler specified</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPrefix(String) prefix}</td><td><i>Deprecated</i> Prefix that has to be written before record, if the record is in another block than the previous record</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSuffix(String) suffix}</td><td><i>Deprecated</i> Suffix that has to be written after the record, if the record is in another block than the next record</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setOnOpenDocument(String) onOpenDocument}</td><td>String that is written before any data of results is written</td><td>&lt;document name=&quot;#name#&quot;&gt;</td></tr>
- * <tr><td>{@link #setOnCloseDocument(String) onCloseDocument}</td><td>String that is written after all data of results is written</td><td>&lt;/document&gt;</td></tr>
- * <tr><td>{@link #setOnOpenBlock(String) onOpenBlock}</td><td>String that is written before the start of each logical block, as defined in the flow</td><td>&lt;#name#&gt;</td></tr>
- * <tr><td>{@link #setOnCloseBlock(String) onCloseBlock}</td><td>String that is written after the end of each logical block, as defined in the flow</td><td>&lt;/#name#&gt;</td></tr>
- * <tr><td>{@link #setBlockNamePattern(String) blockNamePattern}</td><td>String that is replaced by name of block or name of stream in above strings</td><td>#name#</td></tr>
- * <tr><td>{@link #setBlockByRecordType(boolean) blockByRecordType}</td><td>when set <code>true</code>(default), every group of records, as indicated by {@link IRecordHandler#isNewRecordType(IPipeLineSession, boolean, List, List) RecordHandler.newRecordType} is handled as a block.</td><td>true</td></tr>
- * </table>
- * </p>
  * 
  * @author  Gerrit van Brakel
  * @since   4.7
@@ -182,6 +167,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 	}
 
 	
+	@IbisDoc({"string that is written before any data of results is written", "&lt;document name=&quot;#name#&quot;&gt;"})
 	public void setOnOpenDocument(String line) {
 		onOpenDocument = line;
 	}
@@ -189,6 +175,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		return onOpenDocument;
 	}
 
+	@IbisDoc({"string that is written after all data of results is written", "&lt;/document&gt;"})
 	public void setOnCloseDocument(String line) {
 		onCloseDocument = line;
 	}
@@ -196,6 +183,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		return onCloseDocument;
 	}
 
+	@IbisDoc({"string that is written before the start of each logical block, as defined in the flow", "&lt;#name#&gt;"})
 	public void setOnOpenBlock(String line) {
 		onOpenBlock = line;
 	}
@@ -203,6 +191,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		return onOpenBlock;
 	}
 
+	@IbisDoc({"string that is written after the end of each logical block, as defined in the flow", "&lt;/#name#&gt;"})
 	public void setOnCloseBlock(String line) {
 		onCloseBlock = line;
 	}
@@ -210,6 +199,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		return onCloseBlock;
 	}
 
+	@IbisDoc({"string that is replaced by name of block or name of stream in above strings", "#name#"})
 	public void setBlockNamePattern(String pattern) {
 		blockNamePattern = pattern;
 	}

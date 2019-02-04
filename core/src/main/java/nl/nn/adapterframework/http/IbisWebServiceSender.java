@@ -18,6 +18,7 @@ package nl.nn.adapterframework.http;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.soap.SOAPException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -31,16 +32,6 @@ import nl.nn.adapterframework.util.AppConstants;
 /**
  * Posts a message to another IBIS-adapter as a WebService.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.http.IbisWebServiceSender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setIbisHost(String) ibisHost}</td><td>name (or ipaddress) and optinally port of the host where the ibis to be called is running</td><td>localhost</td></tr>
- * <tr><td>{@link #setIbisInstance(String) ibisInstance}</td><td>name of the ibis instance to be called</td><td>name of the current instance</td></tr>
- * <tr><td>{@link #setServiceName(String) serviceName}</td><td>Name of the receiver that should be called</td><td>"serviceListener"</td></tr>
- * </table>
- * </p>
  *
  * @author Gerrit van Brakel
  * @since 4.2
@@ -96,6 +87,8 @@ public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
 	public String getName() {
 		return name;
 	}
+
+	@IbisDoc({"name of the sender", ""})
 	public void setName(String name) {
 		this.name=name;
 	}
@@ -103,6 +96,8 @@ public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
 	public String getIbisHost() {
 		return ibisHost;
 	}
+
+	@IbisDoc({"name (or ipaddress) and optinally port of the host where the ibis to be called is running", "localhost"})
 	public void setIbisHost(String ibisHost) {
 		this.ibisHost=ibisHost;
 	}
@@ -110,6 +105,8 @@ public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
 	public String getIbisInstance() {
 		return ibisInstance;
 	}
+
+	@IbisDoc({"name of the ibis instance to be called", "name of the current instance"})
 	public void setIbisInstance(String ibisInstance) {
 		this.ibisInstance=ibisInstance;
 	}
@@ -117,6 +114,8 @@ public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
 	public String getServiceName() {
 		return serviceName;
 	}
+
+	@IbisDoc({"name of the receiver that should be called", "servicelistener"})
 	public void setServiceName(String serviceName) {
 		this.serviceName=serviceName;
 	}

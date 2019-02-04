@@ -23,6 +23,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.AbstractPipe;
@@ -32,15 +33,6 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Pipe to check if a username and password are valid in LDAP.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.ldap.LdapChallengePipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLdapProviderURL(String) ldapProviderURL}</td><td>URL to the LDAP server. <br/>Example: ldap://su05b9.itc.intranet</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInitialContextFactoryName(String) initialContextFactoryName}</td><td>class to use as initial context factory</td><td>com.sun.jndi.ldap.LdapCtxFactory</td></tr>
- * <tr><td>{@link #setErrorSessionKey(String) errorSessionKey}</td><td>key of session variable used to store cause of errors</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
  * <table border="1">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
@@ -161,6 +153,7 @@ public class LdapChallengePipe extends AbstractPipe {
 		ldapSender.storeLdapException(t, prc);
 	}
 
+	@IbisDoc({"url to the ldap server. <br/>example: ldap://su05b9.itc.intranet", ""})
 	public void setLdapProviderURL(String string) {
 		ldapProviderURL = string;
 	}
@@ -168,6 +161,7 @@ public class LdapChallengePipe extends AbstractPipe {
 		return ldapProviderURL;
 	}
 
+	@IbisDoc({"class to use as initial context factory", "com.sun.jndi.ldap.ldapctxfactory"})
 	public void setInitialContextFactoryName(String value) {
 		initialContextFactoryName = value;
 	}
@@ -179,6 +173,7 @@ public class LdapChallengePipe extends AbstractPipe {
 	 * @param string the error session key
 	 * @since 4.7
 	 */
+	@IbisDoc({"key of session variable used to store cause of errors", ""})
 	public void setErrorSessionKey(String string) {
 		errorSessionKey = string;
 	}

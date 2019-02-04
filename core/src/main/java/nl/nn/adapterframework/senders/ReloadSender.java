@@ -21,6 +21,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -28,13 +29,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Performs a reload on database config .
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setForceReload(boolean) forceReload}</td><td>reload the configuration regardless of the version</td><td>false</td></tr>
- * </table>
- * </p>
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
@@ -111,6 +105,7 @@ public class ReloadSender extends SenderWithParametersBase implements Configurat
 		return configuration;
 	}
 
+	@IbisDoc({"reload the configuration regardless of the version", "false"})
 	public void setForceReload(boolean forceReload) {
 		this.forceReload  = forceReload;
 	}

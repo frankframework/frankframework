@@ -44,6 +44,7 @@ import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -59,42 +60,6 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 /**
  * JDBC implementation of {@link ITransactionalStorage}.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.jdbc.JdbcTransactionalStorage</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSlotId(String) slotId}</td><td>optional identifier for this storage, to be able to share the physical table between a number of receivers</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setType(String) type}</td><td>possible values are E (error store), M (message store), L (message log for pipe) or A (message log for receiver). ReceiverBase will always set type to E for errorStorage and always set type to A for messageLog. GenericMessageSendingPipe will set type to L for messageLog (when type isn't specified). See {@link MessageStoreSender} for type M</td><td>E for errorStorage on receiver, A for messageLog on receiver and L for messageLog on pipe</td></tr>
- * <tr><td>{@link #setDatasourceNameXA(String) datasourceNameXA}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUsername(String) username}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTableName(String) tableName}</td><td>the name of the table messages are stored in</td><td>ibisstore</td></tr>
- * <tr><td>{@link #setCreateTable(boolean) createTable}</td><td>when set to <code>true</code>, the table is created if it does not exist</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setKeyField(String) keyField}</td><td>the name of the column that contains the primary key of the table</td><td>messageKey</td></tr>
- * <tr><td>{@link #setTypeField(String) typeField}</td><td>the name of the column types are stored in</td><td>type</td></tr>
- * <tr><td>{@link #setHostField(String) hostField}</td><td>the name of the column that stores the hostname of the server</td><td>host</td></tr>
- * <tr><td>{@link #setIdField(String) idField}</td><td>the name of the column messageids are stored in</td><td>messageId</td></tr>
- * <tr><td>{@link #setCorrelationIdField(String) correlationIdField}</td><td>the name of the column correlation-ids are stored in</td><td>correlationId</td></tr>
- * <tr><td>{@link #setDateField(String) dateField}</td><td>the name of the column the timestamp is stored in</td><td>messageDate</td></tr>
- * <tr><td>{@link #setCommentField(String) commentField}</td><td>the name of the column comments are stored in</td><td>comments</td></tr>
- * <tr><td>{@link #setMessageField(String) messageField}</td><td>the name of the column message themselves are stored in</td><td>message</td></tr>
- * <tr><td>{@link #setSlotIdField(String) slotIdField}</td><td>the name of the column slotIds are stored in</td><td>slotId</td></tr>
- * <tr><td>{@link #setExpiryDateField(String) expiryDateField}</td><td>the name of the column the timestamp for expiry is stored in</td><td>expiryDate</td></tr>
- * <tr><td>{@link #setLabelField(String) labelField}</td><td>the name of the column labels are stored in</td><td>label</td></tr>
- * <tr><td>{@link #setKeyFieldType(String) keyFieldType}</td><td>the type of the column that contains the primary key of the table</td><td>INT DEFAULT AUTOINCREMENT</td></tr>
- * <tr><td>{@link #setDateFieldType(String) dateFieldType}</td><td>the type of the column the timestamps are stored in</td><td>TIMESTAMP</td></tr>
- * <tr><td>{@link #setTextFieldType(String) textFieldType}</td><td>the type of the columns messageId and correlationId, slotId and comments are stored in. N.B. (100) is appended for id's, (1000) is appended for comments.</td><td>VARCHAR</td></tr>
- * <tr><td>{@link #setMessageFieldType(String) messageFieldType}</td><td>the type of the column message themselves are stored in</td><td>LONG BINARY</td></tr>
- * <tr><td>{@link #setStoreFullMessage(boolean) storeFullMessage}</td><td>when set to <code>true</code>, the messages are stored compressed</td><td><code>true</code></td></tr>
- * <tr><td>{@link #setBlobsCompressed(boolean) blobsCompressed}</td><td>when set to <code>true</code>, the full message is stored with the log. Can be set to <code>false</code> to reduce table size, by avoiding to store the full message</td><td><code>true</code></td></tr>
- * <tr><td>{@link #setSequenceName(String) sequenceName}</td><td>the name of the sequence used to generate the primary key (only for Oracle)<br>N.B. the default name has been changed in version 4.6</td><td>seq_ibisstore</td></tr>
- * <tr><td>{@link #setIndexName(String) indexName}</td><td>the name of the index, to be used in hints for query optimizer too (only for Oracle)</td><td>IX_IBISSTORE</td></tr>
- * <tr><td>{@link #setPrefix(String) prefix}</td><td>prefix to be prefixed on all database objects (tables, indices, sequences), e.q. to access a different Oracle Schema</td><td></td></tr>
- * <tr><td>{@link #setRetention(int) retention}</td><td>the time (in days) to keep the record in the database before making it eligible for deletion by a cleanup process. When set to -1, the record will live on forever</td><td>30</td></tr>
- * <tr><td>{@link #setSchemaOwner4Check(String) schemaOwner4Check}</td><td>schema owner to be used to check the database</td><td>&lt;current_schema&gt; (only for Oracle)</td></tr>
- * </table>
- * </p>
  * 
  * For an Oracle database the following objects are used by default:
  *  <pre>
@@ -1453,6 +1418,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return super.getPhysicalDestinationName()+" in table ["+getTableName()+"]";
 	}
 
+	@IbisDoc({"the name of the sequence used to generate the primary key (only for oracle)<br>n.b. the default name has been changed in version 4.6", "seq_ibisstore"})
 	public void setSequenceName(String string) {
 		sequenceName = string;
 	}
@@ -1465,6 +1431,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	 * Sets the name of the table messages are stored in.
 	 * @param tableName the name of the table to be set
 	 */
+	@IbisDoc({"the name of the table messages are stored in", "ibisstore"})
 	public void setTableName(String tableName) {
 		this.tableName = tableName;
 	}
@@ -1476,6 +1443,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	 * Sets the name of the column messageids are stored in.
 	 * @param idField the id of the field to be set
 	 */
+	@IbisDoc({"the name of the column messageids are stored in", "messageid"})
 	public void setIdField(String idField) {
 		this.idField = idField;
 	}
@@ -1487,6 +1455,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	 * Sets the name of the column message themselves are stored in.
 	 * @param messageField the message field to be set
 	 */
+	@IbisDoc({"the name of the column message themselves are stored in", "message"})
 	public void setMessageField(String messageField) {
 		this.messageField = messageField;
 	}
@@ -1510,18 +1479,22 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return labelField;
 	}
 
+	@IbisDoc({"the name of the column comments are stored in", "comments"})
 	public void setCommentField(String string) {
 		commentField = string;
 	}
 
+	@IbisDoc({"the name of the column the timestamp is stored in", "messagedate"})
 	public void setDateField(String string) {
 		dateField = string;
 	}
 
+	@IbisDoc({"the name of the column the timestamp for expiry is stored in", "expirydate"})
 	public void setExpiryDateField(String string) {
 		expiryDateField = string;
 	}
 
+	@IbisDoc({"the name of the column labels are stored in", "label"})
 	public void setLabelField(String string) {
 		labelField = string;
 	}
@@ -1530,10 +1503,12 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return correlationIdField;
 	}
 
+	@IbisDoc({"the name of the column correlation-ids are stored in", "correlationid"})
 	public void setCorrelationIdField(String string) {
 		correlationIdField = string;
 	}
 
+	@IbisDoc({"the type of the column message themselves are stored in", "long binary"})
 	public void setMessageFieldType(String string) {
 		messageFieldType = string;
 	}
@@ -1541,6 +1516,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return messageFieldType;
 	}
 
+	@IbisDoc({"the type of the column that contains the primary key of the table", "int default autoincrement"})
 	public void setKeyFieldType(String string) {
 		keyFieldType = string;
 	}
@@ -1548,6 +1524,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return keyFieldType;
 	}
 
+	@IbisDoc({"the type of the column the timestamps are stored in", "timestamp"})
 	public void setDateFieldType(String string) {
 		dateFieldType = string;
 	}
@@ -1555,6 +1532,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return dateFieldType;
 	}
 
+	@IbisDoc({"the type of the columns messageid and correlationid, slotid and comments are stored in. n.b. (100) is appended for id's, (1000) is appended for comments.", "varchar"})
 	public void setTextFieldType(String string) {
 		textFieldType = string;
 	}
@@ -1566,6 +1544,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return keyField;
 	}
 
+	@IbisDoc({"the name of the column that contains the primary key of the table", "messagekey"})
 	public void setKeyField(String string) {
 		keyField = string;
 	}
@@ -1574,6 +1553,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return slotId;
 	}
 
+	@IbisDoc({"optional identifier for this storage, to be able to share the physical table between a number of receivers", ""})
 	public void setSlotId(String string) {
 		slotId = string;
 	}
@@ -1582,6 +1562,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return slotIdField;
 	}
 
+	@IbisDoc({"the name of the column slotids are stored in", "slotid"})
 	public void setSlotIdField(String string) {
 		slotIdField = string;
 	}
@@ -1590,6 +1571,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return type;
 	}
 
+	@IbisDoc({"possible values are e (error store), m (message store), l (message log for pipe) or a (message log for receiver). receiverbase will always set type to e for errorstorage and always set type to a for messagelog. genericmessagesendingpipe will set type to l for messagelog (when type isn't specified). see {@link messagestoresender} for type m", "e for errorstorage on receiver, a for messagelog on receiver and l for messagelog on pipe"})
 	public void setType(String string) {
 		type = string;
 	}
@@ -1598,11 +1580,13 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return typeField;
 	}
 
+	@IbisDoc({"the name of the column types are stored in", "type"})
 	public void setTypeField(String string) {
 		typeField = string;
 	}
 
 
+	@IbisDoc({"when set to <code>true</code>, the table is created if it does not exist", "<code>false</code>"})
 	public void setCreateTable(boolean b) {
 		createTable = b;
 	}
@@ -1617,6 +1601,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return active;
 	}
 
+	@IbisDoc({"the name of the column that stores the hostname of the server", "host"})
 	public void setHostField(String string) {
 		hostField = string;
 	}
@@ -1643,6 +1628,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 	}
 
+	@IbisDoc({"when set to <code>true</code>, the full message is stored with the log. can be set to <code>false</code> to reduce table size, by avoiding to store the full message", "<code>true</code>"})
 	public void setBlobsCompressed(boolean b) {
 		blobsCompressed = b;
 	}
@@ -1650,6 +1636,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return blobsCompressed;
 	}
 
+	@IbisDoc({"the name of the index, to be used in hints for query optimizer too (only for oracle)", "ix_ibisstore"})
 	public void setIndexName(String string) {
 		indexName = string;
 	}
@@ -1664,6 +1651,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return txManager;
 	}
 
+	@IbisDoc({"prefix to be prefixed on all database objects (tables, indices, sequences), e.q. to access a different oracle schema", ""})
 	public void setPrefix(String string) {
 		prefix = string;
 	}
@@ -1671,6 +1659,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return prefix;
 	}
 
+	@IbisDoc({"the time (in days) to keep the record in the database before making it eligible for deletion by a cleanup process. when set to -1, the record will live on forever", "30"})
 	public void setRetention(int retention) {
 		this.retention = retention;
 	}
@@ -1679,6 +1668,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return retention;
 	}
 
+	@IbisDoc({"schema owner to be used to check the database", "&lt;current_schema&gt; (only for oracle)"})
 	public void setSchemaOwner4Check(String string) {
 		schemaOwner4Check = string;
 	}
@@ -1690,6 +1680,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	public boolean isStoreFullMessage() {
 		return storeFullMessage;
 	}
+
+	@IbisDoc({"when set to <code>true</code>, the messages are stored compressed", "<code>true</code>"})
 	public void setStoreFullMessage(boolean storeFullMessage) {
 		this.storeFullMessage = storeFullMessage;
 	}

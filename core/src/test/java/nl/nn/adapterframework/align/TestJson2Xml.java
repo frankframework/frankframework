@@ -11,9 +11,10 @@ import java.util.Map;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonStructure;
-import javax.json.JsonValue;
 
 import org.junit.Test;
+
+import nl.nn.adapterframework.testutil.MatchUtils;
 
 public class TestJson2Xml extends AlignTestBase {
 	
@@ -125,7 +126,7 @@ public class TestJson2Xml extends AlignTestBase {
 		
 		JsonStructure jsonIn = Utils.string2Json(jsonString);
 		System.out.println("jsonIn ["+jsonIn+"]");
-		Map<String,Object> map = stringToMap(propertiesString);
+		Map<String,Object> map = MatchUtils.stringToMap(propertiesString);
 		
 		testJson(jsonString, map, true, schemaUrl, namespace, rootElement, true, false, resultJsonString, expectedFailureReason, null);
 		

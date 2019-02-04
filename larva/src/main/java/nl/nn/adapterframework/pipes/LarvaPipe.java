@@ -17,13 +17,16 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.testtool.TestTool;
@@ -31,14 +34,101 @@ import nl.nn.adapterframework.util.AppConstants;
 
 /**
  * Call Larva Test Tool
+ *
+ * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.pipes.FixedForwardPipe</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setWaitBeforeCleanup(String) waitBeforeCleanup}</td><td>ms</td><td>100</td></tr>
+ * <tr><td>{@link #setLogLevel(String) logLevel}</td><td>the larva log level: one of [debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]</td><td>wrong pipeline messages</td></tr>
+ * <tr><td>{@link #setWriteToLog(boolean) writeToLog}</td><td></td><td>false</td></tr>
+ * <tr><td>{@link #setWriteToSystemOut(boolean) writeToSystemOut}</td><td></td><td>false</td></tr>
+ * <tr><td>{@link #setTimeout(int) timeout}</td><td>the larva timeout</td>30000</tr>
+ * </table>
+ * </p>
+ * <p><b>Exits:</b>
+ * <table border="1">
+ * <tr><th>state</th><th>condition</th></tr>
+ * <tr><td>"success"</td><td>no errors and all scenarios passed</td></tr>
+ * <tr><td>"fail"</td><td>errors or failed scenarios</td></tr>
+ * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
+ * </table>
  * 
  * @author Jaco de Groot
  *
  */
 public class LarvaPipe extends FixedForwardPipe {
+	
+	public final String DEFAULT_LOG_LEVEL = "wrong pipeline messages";
+	public final String FORWARD_FAIL="fail";
+	
 	private boolean writeToLog = false;
 	private boolean writeToSystemOut = false;
 	private String execute;
+	private String logLevel=DEFAULT_LOG_LEVEL;
+	private String waitBeforeCleanup="100";
+	private int timeout=30000;
+	
+	private PipeForward failForward;
+
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		if (getLogLevel()==null) {
+			log.warn("no log level specified, setting to default ["+DEFAULT_LOG_LEVEL+"]");
+			setLogLevel(DEFAULT_LOG_LEVEL);
+		} else {
+			String[] LOG_LEVELS = TestTool.LOG_LEVEL_ORDER.split(",\\s*");
+			if (!Arrays.asList(LOG_LEVELS).contains("["+getLogLevel()+"]")) {
+				throw new ConfigurationException("illegal log level ["+getLogLevel()+"]");
+			}
+		}
+		failForward=findForward(FORWARD_FAIL);
+		if (failForward==null) {
+			failForward=getForward();
+		}
+	}
+
+	
+	
+	
+	@Override
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
+		AppConstants appConstants = TestTool.getAppConstants(ibisContext);
+		// Property webapp.realpath is not available in appConstants which was
+		// created with AppConstants.getInstance(ClassLoader classLoader), this
+		// should be fixed but for now use AppConstants.getInstance().
+		String realPath = AppConstants.getInstance().getResolvedProperty("webapp.realpath") + "larva/";
+		List<String> scenariosRootDirectories = new ArrayList<String>();
+		List<String> scenariosRootDescriptions = new ArrayList<String>();
+		String currentScenariosRootDirectory = TestTool.initScenariosRootDirectories(
+				appConstants, realPath,
+				null, scenariosRootDirectories,
+				scenariosRootDescriptions, null);
+		String paramScenariosRootDirectory = currentScenariosRootDirectory;
+		String paramExecute = currentScenariosRootDirectory;
+		if (StringUtils.isNotEmpty(execute)) {
+			paramExecute = paramExecute + execute;
+		}
+		String paramLogLevel = getLogLevel();
+		String paramAutoScroll = "true";
+		String paramWaitBeforeCleanUp = getWaitBeforeCleanup();
+		LogWriter out = new LogWriter();
+		out.setLogger(log);
+		out.setWriteToLog(writeToLog);
+		out.setWriteToSystemOut(writeToSystemOut);
+		boolean silent = true;
+		TestTool.setTimeout(getTimeout());
+		int numScenariosFailed=TestTool.runScenarios(ibisContext, appConstants, paramLogLevel,
+								paramAutoScroll, paramExecute,
+								paramWaitBeforeCleanUp, realPath,
+								paramScenariosRootDirectory,
+								out, silent);
+		PipeForward forward=numScenariosFailed==0? getForward(): failForward;
+		return new PipeRunResult(forward, out.toString());
+	}
 
 	public void setWriteToLog(boolean writeToLog) {
 		this.writeToLog = writeToLog;
@@ -52,38 +142,27 @@ public class LarvaPipe extends FixedForwardPipe {
 		this.execute = execute;
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
-		AppConstants appConstants = TestTool.getAppConstants(ibisContext);
-		// Property webapp.realpath is not available in appConstants which was
-		// created with AppConstants.getInstance(ClassLoader classLoader), this
-		// should be fixed but for now use AppConstants.getInstance().
-		String realPath = AppConstants.getInstance().getResolvedProperty("webapp.realpath") + "larva/";
-		List scenariosRootDirectories = new ArrayList();
-		List scenariosRootDescriptions = new ArrayList();
-		String currentScenariosRootDirectory = TestTool.initScenariosRootDirectories(
-				appConstants, realPath,
-				null, scenariosRootDirectories,
-				scenariosRootDescriptions, null);
-		String paramScenariosRootDirectory = currentScenariosRootDirectory;
-		String paramExecute = currentScenariosRootDirectory;
-		if (StringUtils.isNotEmpty(execute)) {
-			paramExecute = paramExecute + execute;
-		}
-		String paramLogLevel = "wrong pipeline messages";
-		String paramAutoScroll = "true";
-		String paramWaitBeforeCleanUp = "100";
-		LogWriter out = new LogWriter();
-		out.setLogger(log);
-		out.setWriteToLog(writeToLog);
-		out.setWriteToSystemOut(writeToSystemOut);
-		boolean silent = true;
-		TestTool.runScenarios(ibisContext, appConstants, paramLogLevel,
-				paramAutoScroll, paramExecute,
-				paramWaitBeforeCleanUp, realPath,
-				paramScenariosRootDirectory,
-				out, silent);
-		return new PipeRunResult(getForward(), out.toString());
+	public String getLogLevel() {
+		return logLevel;
+	}
+	public void setLogLevel(String logLevel) {
+		this.logLevel = logLevel;
+	}
+
+
+	public String getWaitBeforeCleanup() {
+		return waitBeforeCleanup;
+	}
+	public void setWaitBeforeCleanup(String waitBeforeCleanup) {
+		this.waitBeforeCleanup = waitBeforeCleanup;
+	}
+
+
+	public int getTimeout() {
+		return timeout;
+	}
+	public void setTimeout(int timeout) {
+		this.timeout = timeout;
 	}
 
 }

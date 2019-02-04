@@ -817,6 +817,14 @@ public class Misc {
 		if (confSrvString==null) {
 			return null;
 		}
+		return getTotalTransactionLifetimeTimeout(confSrvString);
+	}
+
+	public static String getTotalTransactionLifetimeTimeout(String configServerXml) throws IOException, DomBuilderException, TransformerException {
+		if (configServerXml==null) {
+			return null;
+		}
+		String confSrvString = XmlUtils.removeNamespaces(configServerXml);
 		confSrvString = XmlUtils.removeNamespaces(confSrvString);
 		String xPath = "Server/components/services/@totalTranLifetimeTimeout";
 		TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(xPath));
@@ -828,6 +836,14 @@ public class Misc {
 		if (confSrvString==null) {
 			return null;
 		}
+		return getMaximumTransactionTimeout(confSrvString);
+	}
+
+	public static String getMaximumTransactionTimeout(String configServerXml) throws IOException, DomBuilderException, TransformerException {
+		if (configServerXml==null) {
+			return null;
+		}
+		String confSrvString = XmlUtils.removeNamespaces(configServerXml);
 		confSrvString = XmlUtils.removeNamespaces(confSrvString);
 		String xPath = "Server/components/services/@propogatedOrBMTTranLifetimeTimeout";
 		TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(xPath));
@@ -835,19 +851,26 @@ public class Misc {
 	}
 
 	public static String getSystemTransactionTimeout() {
-		String totalTransactionLifetimeTimeout;
-		String maximumTransactionTimeout;
+		String confSrvString = null;
 		try {
-			totalTransactionLifetimeTimeout = Misc.getTotalTransactionLifetimeTimeout();
+			confSrvString = getConfigurationServer();
+		} catch (Exception e) {
+			log.warn("Exception getting configurationServer",e);
+		}
+		if (confSrvString==null) {
+			return null;
+		}
+		String totalTransactionLifetimeTimeout = null;
+		String maximumTransactionTimeout = null;
+		try {
+			totalTransactionLifetimeTimeout = Misc.getTotalTransactionLifetimeTimeout(confSrvString);
 		} catch (Exception e) {
 			log.warn("Exception getting totalTransactionLifetimeTimeout",e);
-			totalTransactionLifetimeTimeout = null;
 		}
 		try {
-			maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
+			maximumTransactionTimeout = Misc.getMaximumTransactionTimeout(confSrvString);
 		} catch (Exception e) {
 			log.warn("Exception getting maximumTransactionTimeout",e);
-			maximumTransactionTimeout = null;
 		}
 		if (totalTransactionLifetimeTimeout==null || maximumTransactionTimeout==null) {
 			return null;

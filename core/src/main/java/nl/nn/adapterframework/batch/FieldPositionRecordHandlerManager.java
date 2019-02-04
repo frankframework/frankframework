@@ -17,6 +17,7 @@ package nl.nn.adapterframework.batch;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
@@ -24,16 +25,6 @@ import nl.nn.adapterframework.util.ClassUtils;
  * position in a record. The fields in the record are separated by a separator.
  * The value of the specified field is taken as key in the flow-table.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.batch.FieldPositionRecordHandlerManager</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>Name of the manager</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInitial(boolean) initial}</td><td>This manager is the initial manager, i.e. to be used for the first record</td><td>false</td></tr>
- * <tr><td>{@link #setSeparator(String) separator}</td><td>Separator that separates the fields in the record</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFieldNr(int) fieldNr}</td><td>Position of field that identifies the recordtype (position of first field is 1)</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
  * 
  * @author John Dekker
  */
@@ -62,6 +53,7 @@ public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 
 
 
+	@IbisDoc({"position of field that identifies the recordtype (position of first field is 1)", ""})
 	public void setFieldNr(int i) {
 		fieldNr = i;
 	}
@@ -80,6 +72,8 @@ public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 
 		separator = string;
 	}
+
+	@IbisDoc({"separator that separates the fields in the record", ""})
 	public void setSeparator(String string) {
 		separator = string;
 	}

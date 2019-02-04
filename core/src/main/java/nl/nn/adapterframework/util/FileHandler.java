@@ -37,6 +37,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -71,37 +72,6 @@ import org.apache.log4j.Logger;
  * The pipe also support base64 en- and decoding.
  * </p>
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setCharset(String) charset}</td><td>The charset to be used when transforming a string to a byte array and/or the other way around</td><td>The value of the system property file.encoding</td></tr>
- * <tr><td>{@link #setDirectory(String) directory}</td><td>base directory where files are stored in or read from</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFileName(String) fileName}</td><td>The name of the file to use</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFileNameSessionKey(String) fileNameSessionKey}</td><td>The session key that contains the name of the file to use (only used if fileName is not set)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setActions(String) actions}</td><td>comma separated list of actions to be performed. Possible action values:
- * <ul>
- * <li>write: create a new file and write input to it</li>
- * <li>write_append: create a new file if it does not exist, otherwise append to existing file; then write input to it</li>
- * <li>create: create a new file, but do not write anything to it</li>
- * <li>read: read from file</li>
- * <li>delete: delete the file</li>
- * <li>read_delete: read the contents, then delete (when outputType is stream the file is deleted after the stream is read)</li>
- * <li>encode: encode base64</li>
- * <li>decode: decode base64</li>
- * <li>list: returns the files and directories in the directory that satisfy the specified filter (see {@link nl.nn.adapterframework.util.Dir2Xml dir2xml}). If a directory is not specified, the fileName is expected to include the directory</li>
- * <li>info: returns information about the file</li>
- * </ul></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setWriteSuffix(String) writeSuffix}</td><td>suffix of the file to be created (only used if fileName and fileNameSession are not set)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCreateDirectory(boolean) createDirectory}</td><td>when set to <code>true</code>, the directory to read from or write to is created if it does not exist</td><td>false</td></tr>
- * <tr><td>{@link #setWriteLineSeparator(boolean) writeLineSeparator}</td><td>when set to <code>true</code>, a line separator is written after the content is written</td><td>false</td></tr>
- * <tr><td>{@link #setTestCanWrite(boolean) testCanWrite}</td><td>when set to <code>true</code>, a test is performed to find out if a temporary file can be created and deleted in the specified directory (only used if directory is set and combined with the action write, write_append or create)</td><td>true</td></tr>
- * <tr><td>{@link #setSkipBOM(boolean) skipBOM}</td><td>when set to <code>true</code>, a possible Bytes Order Mark (BOM) at the start of the file is skipped (only used for the action read and encoding UFT-8)</td><td>false</td></tr>
- * <tr><td>{@link #setDeleteEmptyDirectory(boolean) deleteEmptyDirectory}</td><td>(only used when actions=delete) when set to <code>true</code>, the directory from which a file is deleted is also deleted when it contains no other files</td><td>false</td></tr>
- * <tr><td>{@link #setOutputType(String) outputType}</td><td>either <code>string</code>, <code>bytes</code>, <code>stream</code> or <code>base64</code></td><td>"string"</td></tr>
- * <tr><td>{@link #setFileSource(String) fileSource}</td><td>either <code>filesystem</code> or <code>classpath</code> (classpath will only work for actions "read" and "info" and for "info" only when resources are available as a file (i.e. doesn't work for resources in jar files and war files which are deployed without being extracted by the application server))</td><td>"filesystem"</td></tr>
- * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>(only used when outputType=stream) if set, the result is streamed to the HttpServletResponse object</td><td>false</td></tr>
- * </table>
- * </p>
  * <table border="1">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
@@ -144,10 +114,10 @@ public class FileHandler {
 	public void configure() throws ConfigurationException {
 		// translation action seperated string to Transformers
 		transformers = new LinkedList();
-		if (StringUtils.isEmpty(actions))
+		if (StringUtils.isEmpty(getActions()))
 			throw new ConfigurationException(getLogPrefix(null)+"should at least define one action");
 			
-		StringTokenizer tok = new StringTokenizer(actions, " ,\t\n\r\f");
+		StringTokenizer tok = new StringTokenizer(getActions(), " ,\t\n\r\f");
 		while (tok.hasMoreTokens()) {
 			String token = tok.nextToken();
 			
@@ -191,9 +161,9 @@ public class FileHandler {
 		eolArray = System.getProperty("line.separator").getBytes();
 	}
 	
-	public Object handle(Object input, IPipeLineSession session) throws Exception {
-		return handle(input, session, null);
-	}
+//	public Object handle(Object input, IPipeLineSession session) throws Exception {
+//		return handle(input, session, null);
+//	}
 	
 	public Object handle(Object input, IPipeLineSession session, ParameterList paramList) throws Exception {
 		Object output = null;
@@ -298,7 +268,7 @@ public class FileHandler {
 	}
 
 	private String getEffectiveFileName(byte[] in, IPipeLineSession session) {
-		String name = fileName;
+		String name = getFileName();
 		if (StringUtils.isEmpty(name)) {
 			name = (String)session.get(fileNameSessionKey);
 		}
@@ -458,7 +428,7 @@ public class FileHandler {
 		public void configure() throws ConfigurationException {
 			if (StringUtils.isNotEmpty(getDirectory())) {
 				File file = new File(getDirectory());
-				if (!file.exists() && createDirectory) {
+				if (!file.exists() && isCreateDirectory()) {
 					if (!file.mkdirs()) {
 						throw new ConfigurationException(directory + " could not be created");
 					}
@@ -674,14 +644,17 @@ public class FileHandler {
 		return sb.toString();
 	}
 
+	@IbisDoc({"the charset to be used when transforming a string to a byte array and/or the other way around", "the value of the system property file.encoding"})
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}
 
+	@IbisDoc({"either <code>string</code>, <code>bytes</code>, <code>stream</code> or <code>base64</code>", "string"})
 	public void setOutputType(String outputType) {
 		this.outputType = outputType;
 	}
 
+	@IbisDoc({"either <code>filesystem</code> or <code>classpath</code> (classpath will only work for actions 'read' and 'info' and for 'info' only when resources are available as a file (i.e. doesn't work for resources in jar files and war files which are deployed without being extracted by the application server))", "filesystem"})
 	public void setFileSource(String fileSource) {
 		this.fileSource = fileSource;
 	}
@@ -702,6 +675,7 @@ public class FileHandler {
 	/**
 	 * @param directory in which the file resides or has to be created
 	 */
+	@IbisDoc({"base directory where files are stored in or read from", ""})
 	public void setDirectory(String directory) {
 		this.directory = directory;
 	}
@@ -712,6 +686,7 @@ public class FileHandler {
 	/**
 	 * @param suffix of the file that is written
 	 */
+	@IbisDoc({"suffix of the file to be created (only used if filename and filenamesession are not set)", ""})
 	public void setWriteSuffix(String suffix) {
 		this.writeSuffix = suffix;
 	}
@@ -722,6 +697,7 @@ public class FileHandler {
 	/**
 	 * @param filename of the file that is written
 	 */
+	@IbisDoc({"the name of the file to use", ""})
 	public void setFileName(String filename) {
 		this.fileName = filename;
 	}
@@ -732,6 +708,7 @@ public class FileHandler {
 	/**
 	 * @param filenameSessionKey the session key that contains the name of the file to be created
 	 */
+	@IbisDoc({"the session key that contains the name of the file to use (only used if filename is not set)", ""})
 	public void setFileNameSessionKey(String filenameSessionKey) {
 		this.fileNameSessionKey = filenameSessionKey;
 	}
@@ -739,6 +716,7 @@ public class FileHandler {
 		return fileNameSessionKey;
 	}
 
+	@IbisDoc({"when set to <code>true</code>, the directory to read from or write to is created if it does not exist", "false"})
 	public void setCreateDirectory(boolean b) {
 		createDirectory = b;
 	}
@@ -746,6 +724,7 @@ public class FileHandler {
 		return createDirectory;
 	}
 
+	@IbisDoc({"when set to <code>true</code>, a line separator is written after the content is written", "false"})
 	public void setWriteLineSeparator(boolean b) {
 		writeLineSeparator = b;
 	}
@@ -753,6 +732,7 @@ public class FileHandler {
 		return writeLineSeparator;
 	}
 
+	@IbisDoc({"when set to <code>true</code>, a test is performed to find out if a temporary file can be created and deleted in the specified directory (only used if directory is set and combined with the action write, write_append or create)", "true"})
 	public void setTestCanWrite(boolean b) {
 		testCanWrite = b;
 	}
@@ -760,6 +740,7 @@ public class FileHandler {
 		return testCanWrite;
 	}
 
+	@IbisDoc({"when set to <code>true</code>, a possible bytes order mark (bom) at the start of the file is skipped (only used for the action read and encoding uft-8)", "false"})
 	public void setSkipBOM(boolean b) {
 		skipBOM = b;
 	}
@@ -767,6 +748,7 @@ public class FileHandler {
 		return skipBOM;
 	}
 
+	@IbisDoc({"(only used when actions=delete) when set to <code>true</code>, the directory from which a file is deleted is also deleted when it contains no other files", "false"})
 	public void setDeleteEmptyDirectory(boolean b) {
 		deleteEmptyDirectory = b;
 	}
@@ -774,6 +756,7 @@ public class FileHandler {
 		return deleteEmptyDirectory;
 	}
 
+	@IbisDoc({"(only used when outputtype=stream) if set, the result is streamed to the httpservletresponse object", "false"})
 	public void setStreamResultToServlet(boolean b) {
 		streamResultToServlet = b;
 	}

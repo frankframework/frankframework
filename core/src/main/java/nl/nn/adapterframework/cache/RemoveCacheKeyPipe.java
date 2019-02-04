@@ -22,6 +22,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 
 import org.apache.commons.lang.StringUtils;
@@ -29,19 +30,6 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Remove specified cache key from cache with specified name.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.WsdlGeneratorPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCacheName(String) cacheName}</td><td>name of the cache to remove</td><td></td></tr>
- * <tr><td>{@link #setKeyXPath(String) keyXPath}</td><td>xpath expression to extract cache key from request message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setKeyXPathOutputType(String) keyXPathOutputType}</td><td>output type of xpath expression to extract cache key from request message, must be 'xml' or 'text'</td><td>text</td></tr>
- * <tr><td>{@link #setKeyNamespaceDefs(String) keyNamespaceDefs}</td><td>namespace defintions for keyXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setKeyStyleSheet(String) keyStyleSheet}</td><td>stylesheet to extract cache key from request message. Use in combination with {@link CacheAdapterBase#setCacheEmptyKeys(boolean) cacheEmptyKeys} to inhibit caching for certain groups of request messages</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setKeyInputSessionKey(String) keyInputSessionKey}</td><td>session key to use as input for transformation of request message to key by keyXPath or keyStyleSheet</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
  *
  * @author Jaco de Groot
  */
@@ -75,6 +63,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 		return cacheName;
 	}
 
+	@IbisDoc({"name of the cache to remove", ""})
 	public void setCacheName(String cacheName) {
 		this.cacheName = cacheName;
 	}
@@ -83,6 +72,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 		return keyTransformer.getKeyXPath();
 	}
 
+	@IbisDoc({"xpath expression to extract cache key from request message", ""})
 	public void setKeyXPath(String keyXPath) {
 		keyTransformer.setKeyXPath(keyXPath);
 	}
@@ -91,6 +81,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 		return keyTransformer.getKeyXPathOutputType();
 	}
 
+	@IbisDoc({"output type of xpath expression to extract cache key from request message, must be 'xml' or 'text'", "text"})
 	public void setKeyXPathOutputType(String keyXPathOutputType) {
 		keyTransformer.setKeyXPathOutputType(keyXPathOutputType);
 	}
@@ -99,6 +90,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 		return keyTransformer.getKeyNamespaceDefs();
 	}
 
+	@IbisDoc({"namespace defintions for keyxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setKeyNamespaceDefs(String keyNamespaceDefs) {
 		keyTransformer.setKeyNamespaceDefs(keyNamespaceDefs);
 	}
@@ -107,6 +99,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 		return keyTransformer.getKeyStyleSheet();
 	}
 
+	@IbisDoc({"stylesheet to extract cache key from request message. Use in combination with {@link #setCacheEmptyKeys(boolean) cacheEmptyKeys} to inhibit caching for certain groups of request messages", ""})
 	public void setKeyStyleSheet(String keyStyleSheet) {
 		keyTransformer.setKeyStyleSheet(keyStyleSheet);
 	}
@@ -115,6 +108,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 		return keyTransformer.getKeyInputSessionKey();
 	}
 
+	@IbisDoc({"session key to use as input for transformation of request message to key by keyxpath or keystylesheet", ""})
 	public void setKeyInputSessionKey(String keyInputSessionKey) {
 		keyTransformer.setKeyInputSessionKey(keyInputSessionKey);
 	}

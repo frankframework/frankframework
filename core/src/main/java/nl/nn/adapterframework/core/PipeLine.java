@@ -25,6 +25,7 @@ import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
@@ -55,30 +56,6 @@ import org.springframework.transaction.TransactionDefinition;
  * In the AppConstants there may be a property named "log.logIntermediaryResults" (true/false)
  * which indicates wether the intermediary results (between calling pipes) have to be logged.
  *
- * * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>name of the class, mostly a class that extends this class</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFirstPipe(String) firstPipe}</td><td>name of the first pipe to execute when a message is to be processed</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTransacted(boolean) transacted} <i>deprecated</i></td><td>if set to <code>true, messages will be processed under transaction control. (see below)</code></td><td><code>false</code></td></tr>
- * <tr><td>{@link #setCommitOnState(String) commitOnState}</td><td>If the pipelineResult.getState() equals this value, the transaction is committed, otherwise it is rolled back.</td><td><code>success</code></td></tr>
- * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are:
- *   <table border="1">
- *   <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>
- *   <tr><td colspan="1" rowspan="2">Required</td>    <td>none</td><td>T2</td></tr>
- * 											      <tr><td>T1</td>  <td>T1</td></tr>
- *   <tr><td colspan="1" rowspan="2">RequiresNew</td> <td>none</td><td>T2</td></tr>
- * 											      <tr><td>T1</td>  <td>T2</td></tr>
- *   <tr><td colspan="1" rowspan="2">Mandatory</td>   <td>none</td><td>error</td></tr>
- * 											      <tr><td>T1</td>  <td>T1</td></tr>
- *   <tr><td colspan="1" rowspan="2">NotSupported</td><td>none</td><td>none</td></tr>
- * 											      <tr><td>T1</td>  <td>none</td></tr>
- *   <tr><td colspan="1" rowspan="2">Supports</td>    <td>none</td><td>none</td></tr>
- * 											      <tr><td>T1</td>  <td>T1</td></tr>
- *   <tr><td colspan="1" rowspan="2">Never</td>       <td>none</td><td>none</td></tr>
- * 											      <tr><td>T1</td>  <td>error</td></tr>
- *  </table></td><td>Supports</td></tr>
- * <tr><td>{@link #setTransactionTimeout(int) transactionTimeout}</td><td>Timeout (in seconds) of transaction started to process a message.</td><td><code>0</code> (use system default)</code></td></tr>
  * <tr><td>{@link #setStoreOriginalMessageWithoutNamespaces(boolean) storeOriginalMessageWithoutNamespaces}</td><td>when set <code>true</code> the original message without namespaces (and prefixes) is stored under the session key originalMessageWithoutNamespaces</td><td>false</td></tr>
  * <tr><td>{@link #setMessageSizeWarn(String) messageSizeWarn}</td><td>if messageSizeWarn>=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged</td><td>application default (3MB)</td></tr>
  * <tr><td>{@link #setForceFixedForwarding(boolean) forceFixedForwarding}</td><td>forces that each pipe in the pipeline is not automatically added to the globalForwards table</td><td>application default</td></tr>
@@ -615,6 +592,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
      * @param pipeName the name of the pipe
      * @see nl.nn.adapterframework.pipes.AbstractPipe
      */
+	@IbisDoc({"name of the first pipe to execute when a message is to be processed", ""})
     public void setFirstPipe(String pipeName){
         firstPipe=pipeName;
     }
@@ -689,6 +667,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
     }
 
 
+	@IbisDoc({"if set to <code>true, messages will be processed under transaction control. (see below)</code>", "<code>false</code>"})
 	public void setTransacted(boolean transacted) {
 //		this.transacted = transacted;
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
@@ -715,6 +694,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	 * the exit state of the pipeline on which the receiver will commit the transaction.
 	 * @param string the exit state of the pipeline
 	 */
+	@IbisDoc({"if the pipelineresult.getstate() equals this value, the transaction is committed, otherwise it is rolled back.", "<code>success</code>"})
 	public void setCommitOnState(String string) {
 		commitOnState = string;
 	}
@@ -775,6 +755,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		return outputWrapper;
 	}
 
+	@IbisDoc({"timeout (in seconds) of transaction started to process a message.", "<code>0</code> (use system default)</code>"})
 	public void setTransactionTimeout(int i) {
 		transactionTimeout = i;
 	}
@@ -782,6 +763,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		return transactionTimeout;
 	}
 
+	@IbisDoc({"when set <code>true</code> the original message without namespaces (and prefixes) is stored under the session key originalmessagewithoutnamespaces", "false"})
 	public void setStoreOriginalMessageWithoutNamespaces(boolean b) {
 		storeOriginalMessageWithoutNamespaces = b;
 	}
@@ -798,6 +780,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	 * as 10240.
 	 * @param s the size of the message
 	 */
+	@IbisDoc({"if messagesizewarn>=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged", "application default (3mb)"})
 	public void setMessageSizeWarn(String s) {
 		messageSizeWarn = Misc.toFileSize(s, messageSizeWarn + 1);
 	}
@@ -830,6 +813,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		return cache;
 	}
 
+	@IbisDoc({"forces that each pipe in the pipeline is not automatically added to the globalforwards table", "application default"})
 	public void setForceFixedForwarding(boolean b) {
 		forceFixedForwarding = b;
 	}
@@ -837,6 +821,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		return forceFixedForwarding;
 	}
 
+	@IbisDoc({"when specified and <code>null</code> is received as a message the message is changed to the specified value", ""})
 	public void setTransformNullMessage(String s) {
 		transformNullMessage = s;
 	}
@@ -848,6 +833,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		return requestSizeStats;
 	}
 
+	@IbisDoc({"when specified and an empty message is received the specified adapter is run before passing the message (response from specified adapter) to the pipeline", ""})
 	public void setAdapterToRunBeforeOnEmptyInput(String s) {
 		adapterToRunBeforeOnEmptyInput = s;
 	}

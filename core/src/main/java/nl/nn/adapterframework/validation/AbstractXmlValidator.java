@@ -26,6 +26,7 @@ import java.util.Set;
 
 import javax.xml.validation.ValidatorHandler;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.xml.sax.InputSource;
@@ -47,18 +48,6 @@ import nl.nn.adapterframework.util.XmlExternalEntityResolver;
 /**
  * baseclass for validating input message against a XML-Schema.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.XmlValidator</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFullSchemaChecking(boolean) fullSchemaChecking}</td><td>Perform addional memory intensive checks</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>Should the XmlValidator throw a PipeRunException on a validation error (if not, a forward with name "failure" should be defined.</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setReasonSessionKey(String) reasonSessionKey}</td><td>if set: key of session variable to store reasons of mis-validation in</td><td>failureReason</td></tr>
- * <tr><td>{@link #setXmlReasonSessionKey(String) xmlReasonSessionKey}</td><td>like <code>reasonSessionKey</code> but stores reasons in xml format and more extensive</td><td>xmlFailureReason</td></tr>
- * <tr><td>{@link #setValidateFile(boolean) validateFile}</td><td>when set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setCharset(String) charset}</td><td>characterset used for reading file, only used when {@link #setValidateFile(boolean) validateFile} is <code>true</code></td><td>UTF-8</td></tr>
- * </table>
- * <br>
  * N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
  * @author Johan Verrips IOS
  * @author Jaco de Groot
@@ -277,6 +266,7 @@ public abstract class AbstractXmlValidator {
      * Defaults to <code>false</code>;
 	 * @param fullSchemaChecking whether to do full schema checking
      */
+	@IbisDoc({"perform addional memory intensive checks", "<code>false</code>"})
     public void setFullSchemaChecking(boolean fullSchemaChecking) {
         this.fullSchemaChecking = fullSchemaChecking;
     }
@@ -309,6 +299,7 @@ public abstract class AbstractXmlValidator {
      * the xml is not compliant.
 	 * @param throwException whether to throw an error
      */
+	@IbisDoc({"should the xmlvalidator throw a piperunexception on a validation error (if not, a forward with name 'failure' should be defined.", "<code>false</code>"})
     public void setThrowException(boolean throwException) {
         this.throwException = throwException;
     }
@@ -320,6 +311,7 @@ public abstract class AbstractXmlValidator {
 	 * The sessionkey to store the reasons of misvalidation in.
 	 * @param reasonSessionKey the sessionkey to be set
 	 */
+	@IbisDoc({"if set: key of session variable to store reasons of mis-validation in", "failurereason"})
 	public void setReasonSessionKey(String reasonSessionKey) {
 		this.reasonSessionKey = reasonSessionKey;
 	}
@@ -327,6 +319,7 @@ public abstract class AbstractXmlValidator {
 		return reasonSessionKey;
 	}
 
+	@IbisDoc({"like <code>reasonsessionkey</code> but stores reasons in xml format and more extensive", "xmlfailurereason"})
 	public void setXmlReasonSessionKey(String xmlReasonSessionKey) {
 		this.xmlReasonSessionKey = xmlReasonSessionKey;
 	}
@@ -334,6 +327,7 @@ public abstract class AbstractXmlValidator {
 		return xmlReasonSessionKey;
 	}
 
+	@IbisDoc({"when set <code>true</code>, the input is assumed to be the name of the file to be validated. otherwise the input itself is validated", "<code>false</code>"})
 	public void setValidateFile(boolean b) {
 		validateFile = b;
 	}
@@ -341,6 +335,7 @@ public abstract class AbstractXmlValidator {
 		return validateFile;
 	}
 
+	@IbisDoc({"characterset used for reading file, only used when {@link #setValidateFile(boolean) validateFile} is <code>true</code>", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}

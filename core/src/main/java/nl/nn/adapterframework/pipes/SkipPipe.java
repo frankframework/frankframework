@@ -18,17 +18,11 @@ package nl.nn.adapterframework.pipes;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
  * Skip a number of bytes or characters from the input. 
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setSkip(int) skip}</td><td>number of bytes (for byte array input) or characters (for String input) to skip. An empty byte array or String is returned when skip is larger then the length of the input</td><td>0</td></tr>
- * <tr><td>{@link #setLength(int) length}</td><td>if length>=0 only these number of bytes (for byte array input) or characters (for String input) is returned.</td><td>-1</td></tr>
- * </table>
- * </p>
  * 
  * @author Jaco de Groot (***@dynasol.nl)
  *
@@ -81,10 +75,12 @@ public class SkipPipe extends FixedForwardPipe {
 	/**
 	 * @param skip  the number of bytes to skip
 	 */
+	@IbisDoc({"number of bytes (for byte array input) or characters (for string input) to skip. an empty byte array or string is returned when skip is larger then the length of the input", "0"})
 	public void setSkip(int skip) {
 		this.skip = skip;
 	}
 
+	@IbisDoc({"if length>=0 only these number of bytes (for byte array input) or characters (for string input) is returned.", "-1"})
 	public void setLength(int length) {
 		this.length = length;
 	}

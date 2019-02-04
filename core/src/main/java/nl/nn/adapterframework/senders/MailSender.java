@@ -45,6 +45,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -650,6 +651,7 @@ public class MailSender extends SenderWithParametersBase {
 	 * Set the default for From
 	 * @param newFrom the new from to be set
 	 */
+	@IbisDoc({"value of the from: header if not specified in message itself", ""})
 	public void setDefaultFrom(String newFrom) {
 		defaultFrom = newFrom;
 	}
@@ -657,6 +659,7 @@ public class MailSender extends SenderWithParametersBase {
 	 * Set the default for Subject>
 	 * @param newSubject the new subject to be set
 	 */
+	@IbisDoc({"value of the subject: header if not specified in message itself", ""})
 	public void setDefaultSubject(String newSubject) {
 		defaultSubject = newSubject;
 	}
@@ -665,6 +668,7 @@ public class MailSender extends SenderWithParametersBase {
 	 * Name of the SMTP Host.
 	 * @param newSmtpHost the new SMTP host to be set
 	 */
+	@IbisDoc({"name of the host by which the messages are to be send", ""})
 	public void setSmtpHost(String newSmtpHost) {
 		smtpHost = newSmtpHost;
 	}
@@ -672,6 +676,7 @@ public class MailSender extends SenderWithParametersBase {
 		return smtpHost;
 	}
 
+	@IbisDoc({"alias used to obtain credentials for authentication to smtphost", ""})
 	public void setSmtpAuthAlias(String string) {
 		smtpAuthAlias = string;
 	}
@@ -679,6 +684,7 @@ public class MailSender extends SenderWithParametersBase {
 		return smtpAuthAlias;
 	}
 
+	@IbisDoc({"userid on the smtphost", ""})
 	public void setSmtpUserid(java.lang.String newSmtpUserid) {
 		smtpUserid = newSmtpUserid;
 	}
@@ -686,6 +692,7 @@ public class MailSender extends SenderWithParametersBase {
 		return smtpUserid;
 	}
 	
+	@IbisDoc({"password of userid on the smtphost", ""})
 	public void setSmtpPassword(String newSmtpPassword) {
 		smtpPassword = newSmtpPassword;
 	}
@@ -693,6 +700,7 @@ public class MailSender extends SenderWithParametersBase {
 		return smtpPassword;
 	}
 
+	@IbisDoc({"when this name is used, it will be followed by a number which is equal to the node's position", "attachment"})
 	public void setDefaultAttachmentName(String string) {
 		defaultAttachmentName = string;
 	}
@@ -704,6 +712,7 @@ public class MailSender extends SenderWithParametersBase {
 		return timeout;
 	}
 
+	@IbisDoc({"timeout (in milliseconds). used for socket connection timeout and socket i/o timeout", "20000"})
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
 	}

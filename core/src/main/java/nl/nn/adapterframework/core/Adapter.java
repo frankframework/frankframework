@@ -28,6 +28,7 @@ import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
@@ -69,27 +70,6 @@ import org.springframework.core.task.TaskExecutor;
  * object, which returns a {@link PipeLineResult}. If an error occurs during
  * the pipeline execution, the state in the <code>PipeLineResult</code> is set
  * to the state specified by <code>setErrorState</code>, which defaults to "ERROR".
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.AbstractPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Adapter</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDescription(String) description}</td><td>description of the Adapter</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAutoStart(boolean) autoStart}</td><td>controls whether Adapters starts when configuration loads</td><td>true</td></tr>
- * <tr><td>{@link #setActive(boolean) active}</td>  <td>controls whether Adapter is included in configuration. When set <code>false</code> or set to something else as "true", (even set to the empty string), the receiver is not included in the configuration</td><td>true</td></tr>
- * <tr><td>{@link #setErrorMessageFormatter(IErrorMessageFormatter) errorMessageFormatter}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setErrorState(String) errorState}</td><td>If an error occurs during
- * the pipeline execution, the state in the <code>PipeLineResult</code> is set to this state</td><td>ERROR</td></tr>
- * <tr><td>{@link #setMessageKeeperSize(int) messageKeeperSize}</td><td>number of message displayed in IbisConsole</td><td>10</td></tr>
- * <tr><td>{@link #setMsgLogLevel(String) msgLogLevel}</td><td>defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties. Possible values are: 
- *   <table border="1">
- *   <tr><th>msgLogLevel</th><th>messages which are logged</th></tr>
- *   <tr><td colspan="1">None</td> <td>none</td></tr>
- *   <tr><td colspan="1">Terse</td><td>at adapter level</td></tr>
- *   <tr><td colspan="1">Basic</td><td>at adapter and sending pipe level (not yet available; only at adapter level)</td></tr>
- *   <tr><td colspan="1">Full</td> <td>at adapter and pipe level (not yet available; only at adapter level)</td></tr>
- *  </table></td><td>application default (None)</td></tr>
- * <tr><td>{@link #setMsgLogHidden(boolean) msgLogHidden}</td><td>if set to <code>true</code>, the length of the message is shown in the MSG log instead of the content of the message</td><td>false</td></tr>
  * <tr><td>{@link #setReplaceNullMessage(boolean) replaceNullMessage}</td><td>when <code>true</code> a null message is replaced by an empty message</td><td>false</td></tr>
  * </table>
  * 
@@ -749,6 +729,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 *  some functional description of the <code>Adapter</code>/
 	 *  @param description the description to be set
 	 */
+	@IbisDoc({"description of the adapter", ""})
 	public void setDescription(String description) {
 		this.description = description;
 	}
@@ -761,6 +742,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * @param errorMessageFormatter the formatter for the error message
 	 * @see IErrorMessageFormatter
 	 */
+	@IbisDoc({"", ""})
 	public void setErrorMessageFormatter(IErrorMessageFormatter errorMessageFormatter) {
 		this.errorMessageFormatter = errorMessageFormatter;
 	}
@@ -783,12 +765,14 @@ public class Adapter implements IAdapter, NamedBean {
 	 * @param size the number of messages that are kept on the screen
 	 * @see nl.nn.adapterframework.util.MessageKeeper
 	 */
+	@IbisDoc({"number of message displayed in ibisconsole", "10"})
 	public void setMessageKeeperSize(int size) {
 		this.messageKeeperSize = size;
 	}
 	/**
 	 * the functional name of this adapter
 	 */
+	@IbisDoc({"name of the adapter", ""})
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -1019,6 +1003,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * @param autoStart set whether the adapter should be started when the configuration is
 	 * @since 4.1.1
 	 */
+	@IbisDoc({"controls whether adapters starts when configuration loads", "true"})
 	public void setAutoStart(boolean autoStart) {
 		this.autoStart = autoStart;
 	}
@@ -1039,6 +1024,7 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 	}
 
+	@IbisDoc({"controls whether adapter is included in configuration. when set <code>false</code> or set to something else as <code>true</code>, (even set to the empty string), the receiver is not included in the configuration", "true"})
 	public void setActive(boolean b) {
 		active = b;
 	}
@@ -1089,6 +1075,7 @@ public class Adapter implements IAdapter, NamedBean {
 		return false;
 	}
 
+	@IbisDoc({"if set to <code>true</code>, the length of the message is shown in the msg log instead of the content of the message", "false"})
 	public void setMsgLogHidden(boolean b) {
 		msgLogHidden = b;
 	}
@@ -1105,6 +1092,7 @@ public class Adapter implements IAdapter, NamedBean {
 		return recover;
 	}
 
+	@IbisDoc({"when <code>true</code> a null message is replaced by an empty message", "false"})
 	public void setReplaceNullMessage(boolean b) {
 		replaceNullMessage = b;
 	}

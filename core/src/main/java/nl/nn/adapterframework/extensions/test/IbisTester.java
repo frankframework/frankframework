@@ -414,7 +414,7 @@ public class IbisTester {
 	private static String evaluateXPathFirst(String xhtml, String xpath) {
 		try {
 			return XmlUtils
-					.evaluateXPathNodeSetFirstElement(xhtml, xpath, true);
+					.evaluateXPathNodeSetFirstElement(xhtml, xpath);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -424,7 +424,7 @@ public class IbisTester {
 
 	private static Collection<String> evaluateXPath(String xhtml, String xpath) {
 		try {
-			return XmlUtils.evaluateXPathNodeSet(xhtml, xpath, true);
+			return XmlUtils.evaluateXPathNodeSet(xhtml, xpath);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

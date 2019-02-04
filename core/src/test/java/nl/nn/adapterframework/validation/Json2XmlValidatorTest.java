@@ -21,6 +21,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.pipes.JsonPipe;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 /**
  * @author Gerrit van Brakel
@@ -92,11 +93,11 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
         validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
         validator.configure("setup");
 
-        String testXml=inputFile!=null?getTestXml(inputFile+".xml"):null;
+        String testXml=inputFile!=null?TestFileUtils.getTestFile(inputFile+".xml"):null;
         System.out.println("testXml ["+inputFile+".xml] contents ["+testXml+"]");
         String xml2json = (String)jsonPipe.doPipe(testXml,session).getResult();
         System.out.println("testXml ["+inputFile+".xml] to json ["+xml2json+"]");
-        String testJson=inputFile!=null?getTestXml(inputFile+".json"):null;
+        String testJson=inputFile!=null?TestFileUtils.getTestFile(inputFile+".json"):null;
         System.out.println("testJson ["+testJson+"]");
          
         try {

@@ -30,6 +30,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * FxF wrapper to be used with FxF3. When receiving files (direction=unwrap)
@@ -117,14 +118,8 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			} else if (!new File(fxfDir).isDirectory()) {
 				throw new ConfigurationException("fxf.dir '" + fxfDir + "' doesn't exist or is not a directory");
 			}
-			transferFlowIdTp = TransformerPool.configureTransformer0(
-					getLogPrefix(null), classLoader, null,
-					"/OnCompletedTransferNotify_Action/TransferFlowId", null,
-					"text", false, getParameterList(), true);
-			clientFilenameTp = TransformerPool.configureTransformer0(
-					getLogPrefix(null), classLoader, null,
-					"/OnCompletedTransferNotify_Action/ClientFilename", null,
-					"text", false, getParameterList(), true);
+			transferFlowIdTp = XmlUtils.getXPathTransformerPool(null, "/OnCompletedTransferNotify_Action/TransferFlowId", "text", false, getParameterList());
+			clientFilenameTp = XmlUtils.getXPathTransformerPool(null, "/OnCompletedTransferNotify_Action/ClientFilename", "text", false, getParameterList());
 		}
 		if (!getFxfVersion().equals("3.1") && !getFxfVersion().equals("3.2")) {
 			throw new ConfigurationException("illegal value for fxfVersion ["

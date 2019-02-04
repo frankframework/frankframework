@@ -29,6 +29,7 @@ import java.util.Iterator;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -66,13 +67,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
 		</pipe>
  * </code>
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setIssuerSessionKey(String) issuerSessionKey}</td><td>name of the sessionKey that holds a stream to the certificate of the issuer who signed the CRL. The steam is closed after reading</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
  * 
  * @author Miel Hoppenbrouwers
  * @author Jaco de Groot
@@ -140,6 +134,7 @@ public class CrlPipe extends FixedForwardPipe {
 		return issuerSessionKey;
 	}
 
+	@IbisDoc({"name of the sessionkey that holds a stream to the certificate of the issuer who signed the crl. the steam is closed after reading", ""})
 	public void setIssuerSessionKey(String issuerSessionKey) {
 		this.issuerSessionKey = issuerSessionKey;
 	}

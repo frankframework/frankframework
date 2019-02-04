@@ -33,6 +33,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -46,17 +47,6 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * Sends a message to a Sender for each child element of the input XML.
  * Input can be a String containing XML, a filename (set processFile true), an InputStream or a Reader.
- * 
- * <p><b>Configuration </b><i>(where deviating from IteratingPipe)</i><b>:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.ForEachChildElementPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setElementXPathExpression(String) elementXPathExpression}</td><td>expression used to determine the set of elements iterated over, i.e. the set of child elements</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProcessFile(boolean) processFile}</td><td>when set <code>true</code>, the input is assumed to be the name of a file to be processed. Otherwise, the input itself is transformed</td><td>application default</td></tr>
- * <tr><td>{@link #setCharset(String) charset}</td><td>characterset used for reading file or inputstream, only used when {@link #setProcessFile(boolean) processFile} is <code>true</code>, or the input is of type InputStream</td><td>UTF-8</td></tr>
- * <tr><td>{@link #setXslt2(boolean) xslt2}</td><td>when set <code>true</code> XSLT processor 2.0 (net.sf.saxon) will be used for <code>elementXPathExpression</code>, otherwise XSLT processor 1.0 (org.apache.xalan)</td><td>false</td></tr>
- * </table>
- * </p>
  * 
  * @author Gerrit van Brakel
  * @since 4.6.1
@@ -76,7 +66,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		super.configure();
 		try {
 			if (StringUtils.isNotEmpty(getElementXPathExpression())) {
-				extractElementsTp=TransformerPool.getInstance(makeEncapsulatingXslt("root",getElementXPathExpression()), isXslt2());
+				extractElementsTp=TransformerPool.getInstance(makeEncapsulatingXslt("root",getElementXPathExpression()), isXslt2()?2:1);
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix(null)+"elementXPathExpression ["+getElementXPathExpression()+"]",e);
@@ -371,6 +361,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 
 
 
+	@IbisDoc({"expression used to determine the set of elements iterated over, i.e. the set of child elements", ""})
 	public void setElementXPathExpression(String string) {
 		elementXPathExpression = string;
 	}
@@ -378,6 +369,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		return elementXPathExpression;
 	}
 
+	@IbisDoc({"when set <code>true</code>, the input is assumed to be the name of a file to be processed. otherwise, the input itself is transformed", "application default"})
 	public void setProcessFile(boolean b) {
 		processFile = b;
 	}
@@ -385,6 +377,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		return processFile;
 	}
 
+	@IbisDoc({"characterset used for reading file or inputstream, only used when {@link #setProcessFile(boolean) processFile} is <code>true</code>, or the input is of type InputStream", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}
@@ -396,6 +389,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		return xslt2;
 	}
 
+	@IbisDoc({"when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used for <code>elementxpathexpression</code>, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
 	public void setXslt2(boolean b) {
 		xslt2 = b;
 	}

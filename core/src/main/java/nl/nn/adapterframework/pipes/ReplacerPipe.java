@@ -19,6 +19,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -27,20 +28,6 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Replaces all occurrences of one string with another.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFind(String) find}</td><td>string to search for</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setReplace(String) replace}</td><td>string that will replace each of the strings found</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLineSeparatorSymbol(String) lineSeparatorSymbol}</td><td>Sets the string the representation in find and replace of the line separator</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setReplaceNonXmlChars(boolean) replaceNonXmlChars}</td><td>Replace all non XML chars (not in the <a href="http://www.w3.org/TR/2006/REC-xml-20060816/#NT-Char">character range as specified by the XML specification</a>) with {@link nl.nn.adapterframework.util.XmlUtils#replaceNonValidXmlCharacters(String, char, boolean, boolean) replaceNonValidXmlCharacters}</td><td>false</td></tr>
- * <tr><td>{@link #setReplaceNonXmlChar(String) replaceNonXmlChar}</td><td>character that will replace each non valid XML character (empty string is also possible) (use &amp;#x00BF; for inverted question mark)</td><td>empty string</td></tr>
- * <tr><td>{@link #setAllowUnicodeSupplementaryCharacters(boolean) allowUnicodeSupplementaryCharacters}</td><td>Whether to allow Unicode supplementary characters (like a smiley) during {@link nl.nn.adapterframework.util.XmlUtils#replaceNonValidXmlCharacters(String, char, boolean, boolean) replaceNonValidXmlCharacters}</td><td>false</td></tr>
- * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
- * </table>
- * </p>
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
@@ -132,6 +119,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 	 * Sets the string that is searched for.
 	 * @param find the string to be searched
 	 */ 
+	@IbisDoc({"string to search for", ""})
 	public void setFind(String find) {
 		this.find = find;
 	}
@@ -143,6 +131,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 	 * Sets the string that will replace each of the occurrences of the find-string.
 	 * @param replace the replacement string
 	 */ 
+	@IbisDoc({"string that will replace each of the strings found", ""})
 	public void setReplace(String replace) {
 		this.replace = replace;
 	}
@@ -158,10 +147,12 @@ public class ReplacerPipe extends FixedForwardPipe {
 		return lineSeparatorSymbol;
 	}
 
+	@IbisDoc({"sets the string the representation in find and replace of the line separator", ""})
 	public void setLineSeparatorSymbol(String string) {
 		lineSeparatorSymbol = string;
 	}
 
+	@IbisDoc({"Replace all non XML chars (not in the <a href=\"http://www.w3.org/TR/2006/REC-xml-20060816/#NT-Char\">character range as specified by the XML specification</a>) with {@link nl.nn.adapterframework.util.XmlUtils#replaceNonValidXmlCharacters(String, char, boolean, boolean) replaceNonValidXmlCharacters}", "false"})
 	public void setReplaceNonXmlChars(boolean b) {
 		replaceNonXmlChars = b;
 	}
@@ -170,6 +161,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 		return replaceNonXmlChars;
 	}
 
+	@IbisDoc({"character that will replace each non valid xml character (empty string is also possible) (use &amp;#x00bf; for inverted question mark)", "empty string"})
 	public void setReplaceNonXmlChar(String replaceNonXmlChar) {
 		this.replaceNonXmlChar = replaceNonXmlChar;
 	}
@@ -178,6 +170,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 		return replaceNonXmlChar;
 	}
 
+	@IbisDoc({"Whether to allow Unicode supplementary characters (like a smiley) during {@link nl.nn.adapterframework.util.XmlUtils#replaceNonValidXmlCharacters(String, char, boolean, boolean) replaceNonValidXmlCharacters}", "false"})
 	public void setAllowUnicodeSupplementaryCharacters(boolean b) {
 		allowUnicodeSupplementaryCharacters = b;
 	}

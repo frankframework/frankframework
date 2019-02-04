@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -38,18 +39,6 @@ import nl.nn.adapterframework.util.LogUtil;
  * Abstract class that contains functionality for parsing the field values from a 
  * record (line). Fields in the record are either separated with a separator or have
  * a fixed position in the line.
- * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.batch.AbstractRecordHandler</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the RecordHandler</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInputFields(String) inputFields}</td><td>Comma separated specification of fieldlengths. If neither this attribute nor <code>inputSeparator</code> is specified then the entire record is parsed</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInputSeparator(String) inputSeparator}</td><td>Separator that separated the fields in the input record. If neither this attribute nor <code>inputFields</code> is specified then the entire record is parsed</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTrim(boolean) trim}</td><td>when set <code>true</code>, trailing spaces are removed from each field</td><td>false</td></tr>
- * <tr><td>{@link #setRecordIdentifyingFields(String) recordIdentifyingFields}</td><td>Comma separated list of numbers of those fields that are compared with the previous record to determine if a prefix must be written. If any of these fields is not equal in both records, the record types are assumed to be different</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
  * 
  * @author  John Dekker
  */
@@ -229,6 +218,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return recordIdentifyingFields;
 	}
 
+	@IbisDoc({"comma separated list of numbers of those fields that are compared with the previous record to determine if a prefix must be written. if any of these fields is not equal in both records, the record types are assumed to be different", ""})
 	public void setRecordIdentifyingFields(String fieldNrs) {
 		StringTokenizer st = new StringTokenizer(fieldNrs, ",");
 		while (st.hasMoreTokens()) {
@@ -257,6 +247,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	}
 
 
+	@IbisDoc({"name of the recordhandler", ""})
 	@Override
 	public void setName(String string) {
 		name = string;
@@ -267,6 +258,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	}
 
 
+	@IbisDoc({"comma separated specification of fieldlengths. if neither this attribute nor <code>inputseparator</code> is specified then the entire record is parsed", ""})
 	public void setInputFields(String fieldLengths) {
 		StringTokenizer st = new StringTokenizer(fieldLengths, ",");
 		while (st.hasMoreTokens()) {
@@ -287,6 +279,8 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		configWarnings.add(log, msg);
 		setInputSeparator(string);
 	}
+
+	@IbisDoc({"separator that separated the fields in the input record. if neither this attribute nor <code>inputfields</code> is specified then the entire record is parsed", ""})
 	public void setInputSeparator(String string) {
 		inputSeparator = string;
 	}
@@ -294,6 +288,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return inputSeparator;
 	}
 
+	@IbisDoc({"when set <code>true</code>, trailing spaces are removed from each field", "false"})
 	public void setTrim(boolean b) {
 		trim = b;
 	}

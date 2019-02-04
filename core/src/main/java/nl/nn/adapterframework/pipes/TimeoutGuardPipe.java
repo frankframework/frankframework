@@ -22,6 +22,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.log4j.NDC;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -36,15 +37,7 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 /**
  * Extension to FixedForwardPipe for interrupting processing when timeout is exceeded.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>when <code>true</code>, a PipeRunException is thrown. Otherwise the output is only logged as an error (and returned in a XML string with 'error' tags)</td><td>true</td></tr>
- * <tr><td>{@link #setTimeout(int) timeout}</td><td>timeout in seconds of obtaining a result</td><td>30</td></tr>
- * </table>
- * </p>
- * <br>
+ * <p>
  * <table border="1">
  * <b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
@@ -145,6 +138,7 @@ public class TimeoutGuardPipe extends FixedForwardPipe {
 		return input.toString();
 	}
 
+	@IbisDoc({"when <code>true</code>, a piperunexception is thrown. otherwise the output is only logged as an error (and returned in a xml string with 'error' tags)", "true"})
 	public void setThrowException(boolean b) {
 		throwException = b;
 	}
@@ -157,6 +151,7 @@ public class TimeoutGuardPipe extends FixedForwardPipe {
 		return timeout;
 	}
 
+	@IbisDoc({"timeout in seconds of obtaining a result", "30"})
 	public void setTimeout(int i) {
 		timeout = i;
 	}

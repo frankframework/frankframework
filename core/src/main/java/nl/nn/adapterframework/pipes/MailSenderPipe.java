@@ -37,17 +37,6 @@ import nl.nn.adapterframework.senders.MailSender;
  * &lt;message&gt;&lt;![CDATA[&lt;h1&gt;This is a HtmlMessage&lt;/h1&gt;]]&gt;&lt;/message&gt;
  * </pre></code><br/>
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link MailSender#setSmtpHost(String) sender.smtpHost}</td><td>name of the host by which the messages are to be send</td><td>&nbsp;</td></tr>
- * <tr><td>{@link MailSender#setSmtpUserid(String) sender.smtpUserid}</td><td>userid on the smtpHost</td><td>&nbsp;</td></tr>
- * <tr><td>{@link MailSender#setSmtpPassword(String) sender.smtpPassword}</td><td>password of userid on the smtpHost</td><td>&nbsp;</td></tr>
- * <tr><td>{@link MailSender#setDefaultFrom(String) sender.defaultFrom}</td><td>value of the From: header if not specified in message itself</td><td>&nbsp;</td></tr>
- * <tr><td>{@link MailSender#setDefaultSubject(String) sender.defaultSubject}</td><td>value of the Subject: header if not specified in message itself</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}</td><td>specification of a listener to listen to for replies, assuming these to arrive quickly!</td></tr>

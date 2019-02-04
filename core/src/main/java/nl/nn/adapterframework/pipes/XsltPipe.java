@@ -17,6 +17,7 @@ package nl.nn.adapterframework.pipes;
 
 import javax.xml.transform.TransformerException;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -34,31 +35,6 @@ import nl.nn.adapterframework.senders.XsltSender;
 /**
  * Perform an XSLT transformation with a specified stylesheet.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.XsltPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified the message is logged informatory</td><td>-1</td></tr>
- * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of transformation</td><td>application default</td></tr>
- * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>stylesheet to apply to the input message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>XPath-expression to apply to the input message. It's possible to refer to a parameter (which e.g. contains a value from a sessionKey) by using the parameter name prefixed with $</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setNamespaceDefs(String) namespaceDefs}</td><td>namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setOutputType(String) outputType}</td><td>either 'text' or 'xml'. Only valid for xpathExpression</td><td>text</td></tr>
- * <tr><td>{@link #setOmitXmlDeclaration(boolean) omitXmlDeclaration}</td><td>force the transformer generated from the XPath-expression to omit the xml declaration</td><td>true</td></tr>
- * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>If specified, the result is put 
- * in the PipeLineSession under the specified key, and the result of this pipe will be 
- * the same as the input (the xml). If NOT specified, the result of the xpath expression 
- * will be the result of this pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSkipEmptyTags(boolean) skipEmptyTags}</td><td>when set <code>true</code> empty tags in the output are removed</td><td>false</td></tr>
- * <tr><td>{@link #setIndentXml(boolean) indentXml}</td><td>when set <code>true</code>, result is pretty-printed. (only used when <code>skipEmptyTags="true"</code>)</td><td>true</td></tr>
- * <tr><td>{@link #setRemoveNamespaces(boolean) removeNamespaces}</td><td>when set <code>true</code> namespaces (and prefixes) in the input message are removed</td><td>false</td></tr>
- * <tr><td>{@link #setXslt2(boolean) xslt2}</td><td>when set <code>true</code> XSLT processor 2.0 (net.sf.saxon) will be used, otherwise XSLT processor 1.0 (org.apache.xalan)</td><td>false</td></tr>
- * </table>
- * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be applied to the created transformer</td></tr>
  * </table>
@@ -181,6 +157,7 @@ public class XsltPipe extends FixedForwardPipe {
 	 * Specify the stylesheet to use
 	 * @param stylesheetName the name of the stylesheet to be set
 	 */
+	@IbisDoc({"stylesheet to apply to the input message", ""})
 	public void setStyleSheetName(String stylesheetName) {
 		sender.setStyleSheetName(stylesheetName);
 	}
@@ -192,6 +169,7 @@ public class XsltPipe extends FixedForwardPipe {
 	 * set the "omit xml declaration" on the transfomer. Defaults to true.
 	 * @param b whether to omit the XML declaration
 	 */
+	@IbisDoc({"force the transformer generated from the xpath-expression to omit the xml declaration", "true"})
 	public void setOmitXmlDeclaration(boolean b) {
 		sender.setOmitXmlDeclaration(b);
 	}
@@ -200,6 +178,7 @@ public class XsltPipe extends FixedForwardPipe {
 	}
 
 
+	@IbisDoc({"xpath-expression to apply to the input message. it's possible to refer to a parameter (which e.g. contains a value from a sessionkey) by using the parameter name prefixed with $", ""})
 	public void setXpathExpression(String string) {
 		sender.setXpathExpression(string);
 	}
@@ -207,6 +186,7 @@ public class XsltPipe extends FixedForwardPipe {
 		return sender.getXpathExpression();
 	}
 
+	@IbisDoc({"namespace defintions for xpathexpression. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		sender.setNamespaceDefs(namespaceDefs);
 	}
@@ -227,6 +207,7 @@ public class XsltPipe extends FixedForwardPipe {
 	}
 
 
+	@IbisDoc({"either 'text' or 'xml'. only valid for xpathexpression", "text"})
 	public void setOutputType(String string) {
 		sender.setOutputType(string);
 	}
@@ -235,6 +216,7 @@ public class XsltPipe extends FixedForwardPipe {
 	}
 
 
+	@IbisDoc({"when set <code>true</code> empty tags in the output are removed", "false"})
 	public void setSkipEmptyTags(boolean b) {
 		sender.setSkipEmptyTags(b);
 	}
@@ -242,6 +224,7 @@ public class XsltPipe extends FixedForwardPipe {
 		return sender.isSkipEmptyTags();
 	}
 
+	@IbisDoc({"when set <code>true</code>, result is pretty-printed. (only used when <code>skipemptytags=true</code>)", "true"})
 	public void setIndentXml(boolean b) {
 		sender.setIndentXml(b);
 	}
@@ -249,6 +232,7 @@ public class XsltPipe extends FixedForwardPipe {
 		return sender.isIndentXml();
 	}
 
+	@IbisDoc({"when set <code>true</code> namespaces (and prefixes) in the input message are removed", "false"})
 	public void setRemoveNamespaces(boolean b) {
 		sender.setRemoveNamespaces(b);
 	}
@@ -256,6 +240,7 @@ public class XsltPipe extends FixedForwardPipe {
 		return sender.isRemoveNamespaces();
 	}
 
+	@IbisDoc({"controls namespace-awareness of transformation", "application default"})
 	@Override
 	public void setNamespaceAware(boolean b) {
 		sender.setNamespaceAware(b);
@@ -269,6 +254,7 @@ public class XsltPipe extends FixedForwardPipe {
 		return sender.isXslt2();
 	}
 
+	@IbisDoc({"when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
 	public void setXslt2(boolean b) {
 		sender.setXslt2(b);
 	}

@@ -45,11 +45,21 @@
                                 <thead>
                                     <tr>
                                         <th><strong>State</strong></th>
-                                        <th><i class="fa fa-check-square"></i></th>
-                                        <th><i class="fa fa-check-square-o"></i></th>
-                                        <th><i class="fa fa-stop-circle"></i></th>
-                                        <th><i class="fa fa-stop-circle-o"></i></th>
-                                        <th><i class="fa fa-warning"></i></th>
+                                        <th title="Started" ng-class="{'text-primary': (adapterSummary.started > 0 || receiverSummary.started > 0) }">
+                                            <i class="fa fa-check-square"></i>
+                                        </th>
+                                        <th title="Starting" ng-class="{'text-primary': (adapterSummary.starting > 0 || receiverSummary.starting > 0) }">
+                                            <i class="fa fa-check-square-o"></i>
+                                        </th>
+                                        <th title="Stopped" ng-class="{'text-danger': (adapterSummary.stopped > 0 || receiverSummary.stopped > 0) }">
+                                            <i class="fa fa-stop-circle"></i>
+                                        </th>
+                                        <th title="Stopping" ng-class="{'text-danger': (adapterSummary.stopping > 0 || receiverSummary.stopping > 0) }">
+                                            <i class="fa fa-stop-circle-o"></i>
+                                        </th>
+                                        <th title="Error" ng-class="{'text-warning': (adapterSummary.error > 0 || receiverSummary.error > 0) }">
+                                            <i class="fa fa-warning"></i>
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -169,13 +179,13 @@
                                 <table class="table table-striped table-nohead m-b-none">
                                     <tbody>
                                         <tr ng-repeat="message in messageLog[selectedConfiguration].messages" ng-class="{
-                                            'text-warning' : message.level == 'WARNING',
+                                            'text-warning' : message.level == 'WARN',
                                             'text-danger' : message.level == 'ERROR'
                                         }">
                                             <td style="width:40px;" class="text-center">
                                                 <i class="m-l-md fa" ng-class="{
                                                     'fa-info': message.level == 'INFO',
-                                                    'fa-warning' : message.level == 'WARNING',
+                                                    'fa-warning' : message.level == 'WARN',
                                                     'fa-times' : message.level == 'ERROR'
                                                 }"></i>
                                             </td>

@@ -34,7 +34,7 @@ public class HttpReport extends HttpEntityEnclosingRequestBase {
 		setHeader("Depth", "0");
 		Document doc = element.getOwnerDocument();
 		Source xmlSource = new DOMSource(doc);
-		Transformer t = XmlUtils.getTransformerFactory(true).newTransformer();
+		Transformer t = XmlUtils.getTransformerFactory(2).newTransformer();
 
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		Result outputTarget = new StreamResult(outputStream);

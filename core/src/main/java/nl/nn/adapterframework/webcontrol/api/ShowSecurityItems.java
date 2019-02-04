@@ -318,7 +318,7 @@ public final class ShowSecurityItems extends Base {
 			URL url = ClassUtils.getResourceURL(this, AUTHALIAS_XSLT);
 			if (url != null) {
 				for (Configuration configuration : ibisManager.getConfigurations()) {
-					Transformer t = XmlUtils.createTransformer(url, true);
+					Transformer t = XmlUtils.createTransformer(url);
 					String configString = configuration.getOriginalConfiguration();
 					configString = StringResolver.substVars(configString, AppConstants.getInstance());
 					configString = ConfigurationUtils.getActivatedConfiguration(configuration, configString);

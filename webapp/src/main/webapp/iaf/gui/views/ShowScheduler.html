@@ -139,15 +139,11 @@
 									<td>Durable</td>
 									<td><i class="fa {{job.durable ? 'fa-check-square' : 'fa-times-circle'}}"></i></td>
 								</tr>
-								<tr>
-									<td>Volatile</td>
-									<td><i class="fa {{job.volatile ? 'fa-check-square' : 'fa-times-circle'}}"></i></td>
-								</tr>
 							</tbody>
 						</table>
 					</div>
 					<div class="col-md-4">
-						<table class="table" ng-repeat="trigger in job.triggers">
+						<table class="table" ng-repeat="trigger in job.triggers | orderBy:'name'">
 							<thead>
 								<tr>
 									<th colspan="2">Trigger: {{trigger.name}}</th>

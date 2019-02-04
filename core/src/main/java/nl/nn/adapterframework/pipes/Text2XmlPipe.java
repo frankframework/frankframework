@@ -24,6 +24,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.EncapsulatingReader;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -32,16 +33,6 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Pipe for converting text to or from xml. 
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setXmlTag(String) xmlTag}</td><td>the xml tag to encapsulate the text in</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setIncludeXmlDeclaration(boolean) includeXmlDeclaration}</td><td>controls whether a declation is included above the Xml text</td><td>true</td></tr>
- * <tr><td>{@link #setSplitLines(boolean) splitLines}</td><td>controls whether the lines of the input are places in separated &lt;line&gt; tags</td><td>false</td></tr>
- * <tr><td>{@link #setReplaceNonXmlChars(boolean) replaceNonXmlChars}</td><td>Replace all non XML chars (not in the <a href="http://www.w3.org/TR/2006/REC-xml-20060816/#NT-Char">character range as specified by the XML specification</a>) with the inverted question mark (0x00BF)</td><td>true</td></tr>
- * <tr><td>{@link #setUseCdataSection(boolean) useCdataSection}</td><td>controls whether the text to encapsulate should be put in a CDATA section</td><td>true</td></tr>
- * </table>
- * </p>
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
@@ -127,6 +118,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 	/**
 	 * @param xmlTag the xmlTag to be set
 	 */
+	@IbisDoc({"the xml tag to encapsulate the text in", ""})
 	public void setXmlTag(String xmlTag) {
 		this.xmlTag = xmlTag;
 	}
@@ -135,6 +127,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 		return includeXmlDeclaration;
 	}
 
+	@IbisDoc({"controls whether a declation is included above the xml text", "true"})
 	public void setIncludeXmlDeclaration(boolean b) {
 		includeXmlDeclaration = b;
 	}
@@ -143,10 +136,12 @@ public class Text2XmlPipe extends FixedForwardPipe {
 		return splitLines;
 	}
 
+	@IbisDoc({"controls whether the lines of the input are places in separated &lt;line&gt; tags", "false"})
 	public void setSplitLines(boolean b) {
 		splitLines = b;
 	}
 
+	@IbisDoc({"replace all non xml chars (not in the <a href=\"http://www.w3.org/tr/2006/rec-xml-20060816/#nt-char\">character range as specified by the xml specification</a>) with the inverted question mark (0x00bf)", "true"})
 	public void setReplaceNonXmlChars(boolean b) {
 		replaceNonXmlChars = b;
 	}
@@ -155,6 +150,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 		return useCdataSection;
 	}
 
+	@IbisDoc({"controls whether the text to encapsulate should be put in a cdata section", "true"})
 	public void setUseCdataSection(boolean b) {
 		useCdataSection = b;
 	}
