@@ -101,7 +101,9 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		pw.println(contents);
 		pw.close();
 		out.close();
+		finalizeCommand();
 		assertTrue(_fileExists(filename));
+		
 		String actual = readFile(filename);
 		assertEquals(contents.trim(), actual.trim());
 	}
@@ -111,17 +113,23 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		String filename = FILE1;
 		createFile(filename, "Eerste versie van de file");
 		String contents = "Tweede versie van de file";
-
+		
 		F file = fileSystem.toFile(filename);
 		OutputStream out = fileSystem.createFile(file);
-
+		
 		PrintWriter pw = new PrintWriter(out);
 		pw.println(contents);
 		pw.close();
 		out.close();
+		finalizeCommand();
 		assertTrue(_fileExists(filename));
+		
 		String actual = readFile(filename);
 		assertEquals(contents.trim(), actual.trim());
+	}
+
+	protected void finalizeCommand() throws IOException {
+		// Placeholder
 	}
 
 	@Test
@@ -133,6 +141,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		OutputStream out = fileSystem.createFile(file);
 
 		out.close();
+		finalizeCommand();
 		assertTrue(_fileExists(filename));
 		String actual = readFile(filename);
 		assertEquals("", actual.trim());
@@ -153,6 +162,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		pw.println(regel2);
 		pw.close();
 		out.close();
+		finalizeCommand();
 		assertTrue(_fileExists(filename));
 		String actual = readFile(filename);
 		assertEquals(expected.trim(), actual.trim());
@@ -222,7 +232,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		Iterator<F> it = fileSystem.listFiles();
 		assertTrue(it.hasNext());
 		F file = it.next();
-		System.out.println("file =[" + file + "]");
+		System.out.println("file 2=[" + file + "]");
 		//		testReadFile(file,contents1); 
 		assertTrue(it.hasNext());
 		file = it.next();

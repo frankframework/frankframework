@@ -19,7 +19,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 import org.apache.commons.codec.binary.Base64InputStream;
 
 public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithParametersBase
-		implements ISambaSender {
+		implements IFileSystemSender {
 
 	private String action = null;
 	private List<String> actions = Arrays.asList("delete", "upload", "mkdir", "rmdir", "rename",
@@ -65,7 +65,6 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix() + "unable to get file", e);
 		}
-
 		try {
 			if (action.equalsIgnoreCase("delete")) {
 				ifs.deleteFile(file);
@@ -117,7 +116,6 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 			throw new SenderException(getLogPrefix() + "unable to process action for SmbFile ["
 					+ message + "]", e);
 		}
-
 		return correlationID;
 	}
 

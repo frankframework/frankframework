@@ -213,10 +213,10 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 			try {
 				jmsContainer.start();
 				if (pollGuardInterval != -1 && jmsContainer instanceof IbisMessageListenerContainer) {
-					PollerGuard pollerGuard = new PollerGuard();
-					pollerGuard.setSpringJmsConnector(this);
+					PollGuard pollGuard = new PollGuard();
+					pollGuard.setSpringJmsConnector(this);
 					pollGuardTimer = new Timer(true);
-					pollGuardTimer.schedule(pollerGuard, pollGuardInterval, pollGuardInterval);
+					pollGuardTimer.schedule(pollGuard, pollGuardInterval, pollGuardInterval);
 				}
 			} catch (Exception e) {
 				throw new ListenerException(getLogPrefix()+"cannot start", e);
@@ -394,14 +394,14 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 }
 
-class PollerGuard extends TimerTask {
+class PollGuard extends TimerTask {
 	private Logger log = LogUtil.getLogger(this);
 	private SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
 	private SpringJmsConnector springJmsConnector;
 	private long lastCheck;
 	private long lastPollFinishedTimeToIgnore;
 
-	PollerGuard() {
+	PollGuard() {
 		lastCheck = System.currentTimeMillis();
 	}
 

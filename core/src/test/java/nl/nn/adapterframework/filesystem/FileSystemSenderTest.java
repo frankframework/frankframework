@@ -25,10 +25,11 @@ import org.junit.Test;
 public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 		LocalFileSystemTestBase<F, FS> {
 
-	ISambaSender fileSystemSender;
+	IFileSystemSender fileSystemSender;
 
-	public ISambaSender createFileSystemSender() {
-		ISambaSender fileSystemSender = (ISambaSender) new FileSystemSender<F, FS>();
+	@SuppressWarnings("unchecked")
+	public IFileSystemSender createFileSystemSender() {
+		IFileSystemSender fileSystemSender = (IFileSystemSender) new FileSystemSender<F, FS>();
 		((FileSystemSender<F, FS>) fileSystemSender).setFileSystem(fileSystem);
 		return fileSystemSender;
 	}
@@ -252,7 +253,6 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 		int resultCount = Integer.valueOf(resultArray[3]);
 		assertEquals(count, resultCount);
 		assertEquals(actualPath, resultArray[1]);
-
 	}
 
 	@Override
@@ -260,5 +260,4 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 	@Test
 	public void testListFile() throws IOException, FileSystemException {
 	}
-
 }

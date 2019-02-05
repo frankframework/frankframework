@@ -205,8 +205,8 @@
                messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
-               name="HelloBeatifulWorld"
-               nameUC="HELLOBEATIFULWORLD"
+               name="HelloBeautifulWorld"
+               nameUC="HELLOBEAUTIFULWORLD"
                started="true"
                state="Started"
                stateAlert="false"
@@ -220,11 +220,11 @@
                       isRestListener="false"
                       isStarted="true"
                       listenerClass="JavaListener"
-                      listenerDestination="internal: HelloBeatifulWorld"
+                      listenerDestination="internal: HelloBeautifulWorld"
                       messagesReceived="0"
                       messagesRejected="0"
                       messagesRetried="0"
-                      name="HelloBeatifulWorld"
+                      name="HelloBeautifulWorld"
                       state="Started"/>
             <receiver class="GenericReceiver"
                       hasErrorStorage="false"
@@ -233,25 +233,25 @@
                       isRestListener="false"
                       isStarted="true"
                       listenerClass="JavaListener"
-                      listenerDestination="external: testtool-HelloBeatifulWorld"
+                      listenerDestination="external: testtool-HelloBeautifulWorld"
                       messagesReceived="0"
                       messagesRejected="0"
                       messagesRetried="0"
-                      name="HelloBeatifulWorld"
+                      name="HelloBeautifulWorld"
                       state="Started"/>
          </receivers>
          <pipes/>
          <adapterMessages>
-            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Adapter [HelloBeatifulWorld] pipeline successfully configured</adapterMessage>
-            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeatifulWorld] has listener on internal: HelloBeatifulWorld</adapterMessage>
-            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeatifulWorld] initialization complete</adapterMessage>
-            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeatifulWorld] successfully configured</adapterMessage>
-            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeatifulWorld] has listener on external: testtool-HelloBeatifulWorld</adapterMessage>
-            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeatifulWorld] initialization complete</adapterMessage>
-            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeatifulWorld] successfully configured</adapterMessage>
-            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Adapter [HelloBeatifulWorld] up and running</adapterMessage>
-            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeatifulWorld] starts listening</adapterMessage>
-            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeatifulWorld] starts listening</adapterMessage>
+            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Adapter [HelloBeautifulWorld] pipeline successfully configured</adapterMessage>
+            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeautifulWorld] has listener on internal: HelloBeautifulWorld</adapterMessage>
+            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeautifulWorld] initialization complete</adapterMessage>
+            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeautifulWorld] successfully configured</adapterMessage>
+            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeautifulWorld] has listener on external: testtool-HelloBeautifulWorld</adapterMessage>
+            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeautifulWorld] initialization complete</adapterMessage>
+            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeautifulWorld] successfully configured</adapterMessage>
+            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Adapter [HelloBeautifulWorld] up and running</adapterMessage>
+            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeautifulWorld] starts listening</adapterMessage>
+            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeautifulWorld] starts listening</adapterMessage>
          </adapterMessages>
       </adapter>
       <summary>

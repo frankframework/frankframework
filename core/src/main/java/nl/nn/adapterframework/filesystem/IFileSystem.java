@@ -7,5 +7,5 @@ public interface IFileSystem<F> extends IFileSystemBase<F> {
 	public void createFolder(F f) throws FileSystemException;
 
 	public void removeFolder(F f) throws FileSystemException;
-
+	
 }

@@ -325,8 +325,8 @@
                messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
-               name="HelloBeatifulWorld"
-               nameUC="HELLOBEATIFULWORLD"
+               name="HelloBeautifulWorld"
+               nameUC="HELLOBEAUTIFULWORLD"
                started="true"
                state="Started"
                stateAlert="false"
@@ -338,14 +338,14 @@
                       messagesReceived="0"
                       messagesRejected="0"
                       messagesRetried="0"
-                      name="HelloBeatifulWorld"
+                      name="HelloBeautifulWorld"
                       state="Started"/>
             <receiver class="GenericReceiver"
                       isStarted="true"
                       messagesReceived="0"
                       messagesRejected="0"
                       messagesRetried="0"
-                      name="HelloBeatifulWorld"
+                      name="HelloBeautifulWorld"
                       state="Started"/>
          </receivers>
          <adapterMessages error="0" info="10" lastMessageLevel="info" warn="0"/>
