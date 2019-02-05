@@ -19,7 +19,6 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
@@ -251,11 +250,9 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 		fileSystemSender.setAction("list");
 		fileSystemSender.configure();
 		String result = fileSystemSender.sendMessage(null, remoteFolder);
-		System.out.println(result);
 
 		String[] resultArray = result.split("\"");
 		int resultCount = Integer.valueOf(resultArray[3]);
-		System.out.println("Expected = " + count + ", actual = " + resultCount);
 		assertEquals(count, resultCount);
 		assertEquals(remoteFolder, resultArray[1]);
 	}

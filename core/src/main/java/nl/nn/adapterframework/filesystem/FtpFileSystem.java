@@ -33,7 +33,6 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 				String filename = files[i].getName();
 				if(!filename.equals(".") && !filename.equals("..")) {
 					fList.addElement(files[i]);
-					System.out.println(filename + " created on " + files[i].getTimestamp().getTimeInMillis());
 				}
 			}
 			
@@ -200,7 +199,6 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 	@Override
 	public void augmentDirectoryInfo(XmlBuilder dirInfo, FTPFile f) {
 		dirInfo.addAttribute("name", f.getName());
-		System.out.println(f.getName());
 	}
 	
 	public FtpSession getFtpSession() {

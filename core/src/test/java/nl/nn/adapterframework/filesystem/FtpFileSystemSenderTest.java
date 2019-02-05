@@ -1,7 +1,6 @@
 package nl.nn.adapterframework.filesystem;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.apache.commons.net.ftp.FTPFile;
 
