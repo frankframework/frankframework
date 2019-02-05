@@ -34,4 +34,11 @@ public interface IFileSystemBase<F> {
 
 	public void augmentDirectoryInfo(XmlBuilder dirInfo, F f);
 
+	/**
+	 * Some file system test implementations may face a <code>FileNotFoundException</code> 
+	 * while running certain actions, due to resources still being used by another process. 
+	 * To solve this, the developer may call implementation-specific code to release these 
+	 * resources.
+	 */
+	public void finalizeAction();
 }

@@ -6,6 +6,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -67,6 +68,18 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		return StreamUtil.getReaderContents(new InputStreamReader(in));
 	}
 
+	// TODO: Check if Ali's version of testExists() works like the one below
+//	@Test
+//	public void testExists() throws IOException, FileSystemException {
+//		//setup negative
+//		String filename = FILE1;
+//		deleteFile(filename);
+//		// test
+//		F file = fileSystem.toFile(filename);
+//		assertFalse("Expected file[" + filename + "] not to be present", fileSystem.exists(file));
+//
+//	}
+
 	@Test
 	public void testExists() throws IOException, FileSystemException {
 		//setup negative
@@ -101,9 +114,9 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		pw.println(contents);
 		pw.close();
 		out.close();
-		finalizeCommand();
-		assertTrue(_fileExists(filename));
+		fileSystem.finalizeAction();
 		
+		assertTrue(_fileExists(filename));
 		String actual = readFile(filename);
 		assertEquals(contents.trim(), actual.trim());
 	}
@@ -121,15 +134,11 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		pw.println(contents);
 		pw.close();
 		out.close();
-		finalizeCommand();
-		assertTrue(_fileExists(filename));
+		fileSystem.finalizeAction();
 		
+		assertTrue(_fileExists(filename));
 		String actual = readFile(filename);
 		assertEquals(contents.trim(), actual.trim());
-	}
-
-	protected void finalizeCommand() throws IOException {
-		// Placeholder
 	}
 
 	@Test
@@ -139,9 +148,9 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 
 		F file = fileSystem.toFile(filename);
 		OutputStream out = fileSystem.createFile(file);
-
 		out.close();
-		finalizeCommand();
+		fileSystem.finalizeAction();
+
 		assertTrue(_fileExists(filename));
 		String actual = readFile(filename);
 		assertEquals("", actual.trim());
@@ -162,7 +171,8 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		pw.println(regel2);
 		pw.close();
 		out.close();
-		finalizeCommand();
+		fileSystem.finalizeAction();
+		
 		assertTrue(_fileExists(filename));
 		String actual = readFile(filename);
 		assertEquals(expected.trim(), actual.trim());
@@ -209,9 +219,9 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	public void testFileInfo(F f) throws FileSystemException {
 		String fiString = fileSystem.getInfo(f);
 		assertThat(fiString, containsString("name"));
-		assertThat(fiString, containsString("lastmodified"));
+		assertThat(fiString, containsString("lastModified"));
 	}
-
+	
 	public void testFileInfo() throws FileSystemException {
 		testFileInfo(fileSystem.toFile(FILE1));
 		testFileInfo(fileSystem.toFile(FILE2));
@@ -226,26 +236,22 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		String contents2 = "maakt ook niet uit";
 		createFile(FILE1, contents1);
 		createFile(FILE2, contents2);
-
-		System.out.println("file 1=[" + FILE1 + "]");
-
 		Iterator<F> it = fileSystem.listFiles();
-		assertTrue(it.hasNext());
-		F file = it.next();
-		System.out.println("file 2=[" + file + "]");
-		//		testReadFile(file,contents1); 
-		assertTrue(it.hasNext());
-		file = it.next();
-		//		testReadFile(file,contents2);
+		
+		F file;
+		for(int i = 0; i < 8; i++) {
+			assertTrue(it.hasNext());
+			file = it.next();
+		}
 		assertFalse(it.hasNext());
 
 		deleteFile(FILE1);
 
 		it = fileSystem.listFiles();
-		assertTrue(it.hasNext());
-		file = it.next();
-		//		testReadFile(file,contents2);
+		for(int i = 0; i < 7; i++) {
+			assertTrue(it.hasNext());
+			file = it.next();
+		}
 		assertFalse(it.hasNext());
 	}
-
 }

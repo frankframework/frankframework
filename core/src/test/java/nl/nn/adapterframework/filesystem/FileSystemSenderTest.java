@@ -80,6 +80,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 		String actual;
 		actual = fileSystemSender.sendMessage("<result>ok</result>", filename, prc);
 
+		fileSystem.finalizeAction();
 		actual = readFile(filename);
 		assertEquals(contents.trim(), actual.trim());
 	}
@@ -109,6 +110,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 		String actual;
 		actual = fileSystemSender.sendMessage("<result>ok</result>", filename, prc);
 
+		fileSystem.finalizeAction();
 		actual = readFile(filename);
 		assertEquals(contents.trim(), actual.trim());
 	}
@@ -136,10 +138,11 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 
 		ParameterResolutionContext prc = new ParameterResolutionContext();
 		prc.setSession(session);
-
+		
 		String actual;
 		actual = fileSystemSender.sendMessage("<result>ok</result>", filename, prc);
 
+		fileSystem.finalizeAction();
 		actual = readFile(filename);
 		assertEquals(contents.trim(), actual.trim());
 	}
@@ -238,26 +241,22 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 	@Test
 	public void listActionTest() throws SenderException, TimeOutException, ConfigurationException,
 			IOException {
-
-		File folder = getFileHandle("");
-		File[] listOfFiles = folder.listFiles();
-
-		String actualPath = ""; // FIXME : add your root path
+		
+		File localFolder = getFileHandle("");
+		File[] listOfFiles = localFolder.listFiles();
+		
+		String remoteFolder = "C:/Users/Daniel/Desktop/DummyFolder/"; // FIXME : add your root path
 		int count = (listOfFiles == null ? 0 : listOfFiles.length);
-
+		
 		fileSystemSender.setAction("list");
 		fileSystemSender.configure();
-		String result = fileSystemSender.sendMessage(null, actualPath);
+		String result = fileSystemSender.sendMessage(null, remoteFolder);
+		System.out.println(result);
 
 		String[] resultArray = result.split("\"");
 		int resultCount = Integer.valueOf(resultArray[3]);
+		System.out.println("Expected = " + count + ", actual = " + resultCount);
 		assertEquals(count, resultCount);
-		assertEquals(actualPath, resultArray[1]);
-	}
-
-	@Override
-	@Ignore
-	@Test
-	public void testListFile() throws IOException, FileSystemException {
+		assertEquals(remoteFolder, resultArray[1]);
 	}
 }
