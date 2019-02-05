@@ -26,6 +26,7 @@ import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.IteratingPipe;
@@ -36,17 +37,6 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * Base class for JDBC iterating pipes.
- *
- * 
- * <p><b>Configuration </b><i>(where deviating from IteratingPipe)</i><b>:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.jdbc.JdbcIteratingPipeBase</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setQuery(String) query}</td><td>the SQL query text to be excecuted each time sendMessage() is called. When not set, the input message is taken as the query</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLockRows(boolean) lockRows}</td><td>When set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the SELECT statement (by appending ' FOR UPDATE NOWAIT SKIP LOCKED' to the end of the query)</td><td>false</td></tr>
- * <tr><td>{@link #setLockWait(int) lockWait}</td><td>when set and >=0, ' FOR UPDATE WAIT #' is used instead of ' FOR UPDATE NOWAIT SKIP LOCKED'</td><td>-1</td></tr>
- * <tr><td>{@link #setDatasourceName(String) datasourceName}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
- * </table>
  * 
  * @author  Gerrit van Brakel
  * @since   4.7
@@ -149,6 +139,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 	}
 
 
+	@IbisDoc({"the sql query text to be excecuted each time sendmessage() is called. when not set, the input message is taken as the query", ""})
 	public void setQuery(String query) {
 		this.query=query;
 	}
@@ -160,6 +151,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 		querySender.setProxiedDataSources(proxiedDataSources);
 	}
 
+	@IbisDoc({"can be configured from jmsrealm, too", ""})
 	public void setDatasourceName(String datasourceName) {
 		querySender.setDatasourceName(datasourceName);
 	}
@@ -175,6 +167,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 		querySender.setJmsRealm(jmsRealmName);
 	}
 	
+	@IbisDoc({"when set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the select statement (by appending ' for update nowait skip locked' to the end of the query)", "false"})
 	public void setLockRows(boolean b) {
 		lockRows = b;
 	}
@@ -183,6 +176,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 		return lockRows;
 	}
 
+	@IbisDoc({"when set and >=0, ' for update wait #' is used instead of ' for update nowait skip locked'", "-1"})
 	public void setLockWait(int i) {
 		lockWait = i;
 	}

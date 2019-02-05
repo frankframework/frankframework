@@ -18,18 +18,12 @@ package nl.nn.adapterframework.pipes;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Pipe for converting special characters to their xml equivalents. 
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setSubstringStart(String) substringStart}</td><td>substring to start translation</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSubstringEnd(String) substringEnd}</td><td>substring to end translation</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
@@ -85,6 +79,7 @@ public class XmlBuilderPipe extends FixedForwardPipe {
 		return substringStart;
 	}
 
+	@IbisDoc({"substring to start translation", ""})
 	public void setSubstringStart(String substringStart) {
 		this.substringStart = substringStart;
 	}
@@ -93,6 +88,7 @@ public class XmlBuilderPipe extends FixedForwardPipe {
 		return substringEnd;
 	}
 
+	@IbisDoc({"substring to end translation", ""})
 	public void setSubstringEnd(String substringEnd) {
 		this.substringEnd = substringEnd;
 	}

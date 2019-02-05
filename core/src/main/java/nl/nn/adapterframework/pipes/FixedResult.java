@@ -28,6 +28,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -46,24 +47,6 @@ import org.apache.commons.lang.SystemUtils;
  * (in the classpath) when <code>fileName</code> or <code>fileNameSessionKey</code> is specified, otherwise the
  * input of <code>returnString</code> is returned.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.FixedResult</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setFileName(String) fileName}</td><td>name of the file containing the resultmessage</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFileNameSessionKey(String) fileNameSessionKey}</td><td>name of the session key containing the file name of the file containing the result message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setReturnString(String) returnString}</td><td>returned message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSubstituteVars(boolean) substituteVars}</td><td>Should values between ${ and } be resolved from the PipeLineSession (search order: 1) system properties 2) pipeLineSession variables 3) application properties)</td><td>False</td></tr>
- * <tr><td>{@link #setReplaceFrom(String) replaceFrom}</td><td>string to search for in the returned message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setReplaceTo(String) replaceTo}</td><td>string that will replace each of the strings found in the returned message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>stylesheet to apply to the output message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLookupAtRuntime(boolean) lookupAtRuntime}</td><td>when set <code>true</code>, the lookup of the file will be done at runtime instead of at configuration time</td><td>false</td></tr>
- * <tr><td>{@link #setReplaceFixedParams(boolean) replaceFixedParams}</td><td>when set <code>true</code>, any parameter is used for replacements but with <code>name-of-parameter</code> and not <code>${name-of-parameter}</code></td><td>false</td></tr>
- * </table>
- * </p>
  * <table border="1">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
@@ -238,6 +221,7 @@ public class FixedResult extends FixedForwardPipe {
 		return buffer.toString();
 	}
 
+	@IbisDoc({"should values between ${ and } be resolved from the pipelinesession (search order: 1) system properties 2) pipelinesession variables 3) application properties)", "false"})
 	public void setSubstituteVars(boolean substitute){
 		this.substituteVars=substitute;
 	}
@@ -251,6 +235,7 @@ public class FixedResult extends FixedForwardPipe {
      *
      * @param fileName the name of the file to return the contents from
      */
+	@IbisDoc({"name of the file containing the resultmessage", ""})
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
@@ -261,6 +246,7 @@ public class FixedResult extends FixedForwardPipe {
 	/**
 	 * @param filenameSessionKey the session key that contains the name of the file
 	 */
+	@IbisDoc({"name of the session key containing the file name of the file containing the result message", ""})
 	public void setFileNameSessionKey(String filenameSessionKey) {
 		this.fileNameSessionKey = filenameSessionKey;
 	}
@@ -268,6 +254,7 @@ public class FixedResult extends FixedForwardPipe {
 		return fileNameSessionKey;
 	}
 
+	@IbisDoc({"returned message", ""})
     public void setReturnString(String returnString) {
         this.returnString = returnString;
     }
@@ -296,6 +283,7 @@ public class FixedResult extends FixedForwardPipe {
 		this.styleSheetName=styleSheetName;
 	}
 
+	@IbisDoc({"when set <code>true</code>, the lookup of the file will be done at runtime instead of at configuration time", "false"})
 	public void setLookupAtRuntime(boolean b){
 		lookupAtRuntime=b;
 	}
@@ -303,6 +291,7 @@ public class FixedResult extends FixedForwardPipe {
 		return lookupAtRuntime;
 	}
 
+	@IbisDoc({"when set <code>true</code>, any parameter is used for replacements but with <code>name-of-parameter</code> and not <code>${name-of-parameter}</code>", "false"})
 	public void setReplaceFixedParams(boolean b){
 		replaceFixedParams=b;
 	}

@@ -26,28 +26,12 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 
 
 /**
  * Returns random password.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setLCharacters(String) LCharacters}</td><td>The lowercase characters to use</td><td>('a'..'z')</td></tr>
- * <tr><td>{@link #setUCharacters(String) UCharacters}</td><td>The uppercase characters to use</td><td>('A'..'Z')</td></tr>
- * <tr><td>{@link #setNumbers(String) numbers}</td><td>The numbers to use</td><td>('0'..'9')</td></tr>
- * <tr><td>{@link #setSigns(String) signs}</td><td>The signs to use</td><td>(;:_%$#@!&gt;&lt;)</td></tr>
- * <tr><td>{@link #setUseSecureRandom(boolean) useSecureRandom}</td>  <td>Whether the SecureRandom algorithm is to be used (slower)</td><td>true</td></tr>
- * <tr><td>{@link #setNumOfLCharacters(int) numOfLCharacters}</td><td>The number of lowercase characters in the generated password</td><td>2</td></tr>
- * <tr><td>{@link #setNumOfUCharacters(int) numOfUCharacters}</td><td>The number of uppercase characters in the generated password</td><td>2</td></tr>
- * <tr><td>{@link #setNumOfDigits(int) numOfDigits}</td><td>The number of digits in the generated password</td><td>2</td></tr>
- * <tr><td>{@link #setNumOfSigns(int) numOfSigns}</td><td>The number of sign characters in the generated password</td><td>2</td></tr>
- * </table>
- * </p>
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
@@ -158,6 +142,7 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	/**
 	 * @param b
 	 */
+	@IbisDoc({"whether the securerandom algorithm is to be used (slower)", "true"})
 	public void setUseSecureRandom(boolean b) {
 		useSecureRandom = b;
 	}
@@ -166,6 +151,7 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 		return lCharacters;
 	}
 
+	@IbisDoc({"the lowercase characters to use", "('a'..'z')"})
 	public void setLCharacters(String lCharacters) {
 		this.lCharacters = lCharacters;
 	}
@@ -174,6 +160,7 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 		return uCharacters;
 	}
 
+	@IbisDoc({"the uppercase characters to use", "('a'..'z')"})
 	public void setUCharacters(String uCharacters) {
 		this.uCharacters = uCharacters;
 	}
@@ -182,6 +169,7 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 		return numbers;
 	}
 
+	@IbisDoc({"the numbers to use", "('0'..'9')"})
 	public void setNumbers(String numbers) {
 		this.numbers = numbers;
 	}
@@ -190,6 +178,7 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 		return signs;
 	}
 
+	@IbisDoc({"the signs to use", "(;:_%$#@!&gt;&lt;)"})
 	public void setSigns(String signs) {
 		this.signs = signs;
 	}
@@ -210,18 +199,22 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 		return numOfUCharacters;
 	}
 
+	@IbisDoc({"the number of lowercase characters in the generated password", "2"})
 	public void setNumOfLCharacters(int i) {
 		numOfLCharacters = i;
 	}
 
+	@IbisDoc({"the number of digits in the generated password", "2"})
 	public void setNumOfDigits(int i) {
 		numOfDigits = i;
 	}
 
+	@IbisDoc({"the number of sign characters in the generated password", "2"})
 	public void setNumOfSigns(int i) {
 		numOfSigns = i;
 	}
 
+	@IbisDoc({"the number of uppercase characters in the generated password", "2"})
 	public void setNumOfUCharacters(int i) {
 		numOfUCharacters = i;
 	}

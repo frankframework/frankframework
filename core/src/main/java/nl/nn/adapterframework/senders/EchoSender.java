@@ -18,17 +18,11 @@ package nl.nn.adapterframework.senders;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 /**
  * Echos input to output. 
- * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>hack to allow to introduce a correlationID</td><td>true</td></tr>
- * </table>
  * 
  * @author  Gerrit van Brakel
  * @since   4.9
@@ -41,6 +35,7 @@ public class EchoSender extends SenderWithParametersBase {
 		return message;
 	}
 
+	@IbisDoc({"hack to allow to introduce a correlationid", "true"})
 	public void setSynchronous(boolean b) {
 		synchronous = b;
 	}

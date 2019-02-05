@@ -20,6 +20,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -27,16 +28,6 @@ import org.apache.commons.lang.StringUtils;
  * 
  * The input is a XML string if it, after removing leading white-space characters, starts with '<'.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.IsXmlIfPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setThenForwardName(String) thenForwardName}</td><td>forward returned when 'true'</code></td><td>then</td></tr>
- * <tr><td>{@link #setElseForwardName(String) elseForwardName}</td><td>forward returned when 'false'</td><td>else</td></tr>
- * <tr><td>{@link #setElseForwardOnEmptyInput(boolean) elseForwardOnEmptyInput}</td><td>return elseForward when input is empty (or thenForward)</td><td>true</td></tr>
- * </table>
- * </p>
  *
  * @author  Peter Leeuwenburgh
  * @since   4.3
@@ -89,6 +80,7 @@ public class IsXmlIfPipe extends AbstractPipe {
 		return new PipeRunResult(pipeForward, input);
 	}
 
+	@IbisDoc({"forward returned when 'true'</code>", "then"})
 	public void setThenForwardName(String thenForwardName) {
 		this.thenForwardName = thenForwardName;
 	}
@@ -97,6 +89,7 @@ public class IsXmlIfPipe extends AbstractPipe {
 		return thenForwardName;
 	}
 
+	@IbisDoc({"forward returned when 'false'", "else"})
 	public void setElseForwardName(String elseForwardName) {
 		this.elseForwardName = elseForwardName;
 	}
@@ -109,6 +102,7 @@ public class IsXmlIfPipe extends AbstractPipe {
 		return elseForwardOnEmptyInput;
 	}
 
+	@IbisDoc({"return elseforward when input is empty (or thenforward)", "true"})
 	public void setElseForwardOnEmptyInput(boolean b) {
 		elseForwardOnEmptyInput = b;
 	}
