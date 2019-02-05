@@ -47,6 +47,7 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
@@ -63,28 +64,6 @@ import org.apache.commons.lang.StringUtils;
  * type should be used.<br/>
  * This class sends messages with JMS.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.jms.JMSFacade</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>name of the JMS destination (queue or topic) to use</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>either <code>QUEUE</code> or <code>TOPIC</code></td><td><code>QUEUE</code></td></tr>
- * <tr><td>{@link #setQueueConnectionFactoryName(String) queueConnectionFactoryName}</td><td>jndi-name of the queueConnectionFactory, used when <code>destinationType<code>=</code>QUEUE</code></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTopicConnectionFactoryName(String) topicConnectionFactoryName}</td><td>jndi-name of the topicConnectionFactory, used when <code>destinationType<code>=</code>TOPIC</code></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMessageSelector(String) messageSelector}</td><td>When set, the value of this attribute is used as a selector to filter messages.</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setMessageTimeToLive(long) messageTimeToLive}</td><td>the time (in milliseconds) it takes for the message to expire. If the message is not consumed before, it will be lost. Make sure to set it to a positive value for request/repy type of messages.</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>rather useless attribute, and not the same as <code>deliveryMode</code>. You probably want to use that.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>&nbsp;</td><td>AUTO_ACKNOWLEDGE</td></tr>
- * <tr><td>{@link #setCorrelationIdToHex(boolean) correlationIdToHex}</td><td>Transform the value of the correlationId to a hexadecimal value if it starts with ID: (preserving the ID: part). Useful when sending messages to MQ which expects this value to be in hexadecimal format when it starts with ID:, otherwise generating the error: MQJMS1044: String is not a valid hexadecimal number</td><td>false</td></tr>
- * <tr><td>{@link #setCorrelationIdToHexPrefix(String) correlationIdToHexPrefix}</td><td>Prefix to check before executing correlationIdToHex. When empty (and correlationIdToHex equals true) all correlationId's are transformed, this is useful in case you want the entire correlationId to be transformed (for example when the receiving party doesn't allow characters like a colon to be present in the correlationId).</td><td>ID:</td></tr>
- * <tr><td>{@link #setCorrelationIdMaxLength(int) correlationIdMaxLength}</td><td>if set (>=0) and the length of the correlationID exceeds this maximum length, the correlationID is trimmed from the left side of a string to this maximum length</td><td>-1</td></tr>
- * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
- * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to JMS server</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLookupDestination(boolean) lookupDestination}</td><td>when set <code>false</code>, the destinationName is used directly instead of performing a JNDI lookup</td><td>true</td></tr>
- * </table>
- * </p>
  *
  * @author 	Gerrit van Brakel
  */
@@ -302,7 +281,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 
 	public TextMessage createTextMessage(Session session, String correlationID, String message)
-			throws javax.naming.NamingException, JMSException {
+			throws NamingException, JMSException {
 		TextMessage textMessage = null;
 		textMessage = session.createTextMessage();
 		if (null != correlationID) {
@@ -366,7 +345,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * Utilitiy function to retrieve a Destination from a jndi.
 	 * @param destinationName
 	 * @return javax.jms.Destination
-	 * @throws javax.naming.NamingException
+	 * @throws NamingException
 	 */
 	public Destination getDestination(String destinationName) throws JmsException, NamingException {
 		return getJmsMessagingSource().lookupDestination(destinationName);
@@ -496,10 +475,10 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
     /**
      *  Gets a queueReceiver
-     * @see javax.jms.QueueReceiver
+     * @see QueueReceiver
      * @return                                   The queueReceiver value
-     * @exception  javax.naming.NamingException  Description of the Exception
-     * @exception  javax.jms.JMSException                  Description of the Exception
+     * @exception  NamingException  Description of the Exception
+     * @exception  JMSException                  Description of the Exception
      */
 	private QueueReceiver getQueueReceiver(QueueSession session, Queue destination, String selector) throws NamingException, JMSException {
 	    QueueReceiver queueReceiver = session.createReceiver(destination, selector);
@@ -507,10 +486,10 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 	/**
 	  *  Gets the queueSender for a specific queue, not the one in <code>destination</code>
-	  * @see javax.jms.QueueSender
+	  * @see QueueSender
 	  * @return                                   The queueReceiver value
-	  * @exception  javax.naming.NamingException  Description of the Exception
-	  * @exception  javax.jms.JMSException
+	  * @exception  NamingException  Description of the Exception
+	  * @exception  JMSException
 	  */
 	private QueueSender getQueueSender(QueueSession session, Queue destination) throws NamingException, JMSException {
 		return session.createSender(destination);
@@ -722,7 +701,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 
 	/**
-	 * Extracts string from message obtained from {@link #getRawMessage(Map)}. May also extract
+	 * Extracts string from message obtained from getRawMessage(Map). May also extract
 	 * other parameters from the message and put those in the threadContext.
 	 * @return String  input message for adapter.
 	 */
@@ -782,6 +761,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	/**
 	 * The name of the object.
 	 */
+	@IbisDoc({"name of the listener", ""})
 	public void setName(String newName) {
 		name = newName;
 	}
@@ -792,6 +772,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	/**
 	 * The name of the destination, this may be a <code>queue</code> or <code>topic</code> name.
 	 */
+	@IbisDoc({"name of the jms destination (queue or topic) to use", ""})
 	public void setDestinationName(String destinationName) {
 		this.destinationName = destinationName;
 	}
@@ -805,6 +786,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * This function also sets the <code>useTopicFunctions</code> field,
 	 * that controls wether Topic functions are used or Queue functions.
 	 */
+	@IbisDoc({"either <code>queue</code> or <code>topic</code>", "<code>queue</code>"})
 	public void setDestinationType(String type) {
 		this.destinationType = type;
 		if (destinationType.equalsIgnoreCase("TOPIC")) {
@@ -851,6 +833,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	/**
 	 * String-version of {@link #setAckMode(int)}
 	 */
+	@IbisDoc({"", "auto_acknowledge"})
 	public void setAcknowledgeMode(String acknowledgeMode) {
 
 		if (acknowledgeMode.equalsIgnoreCase("auto") || acknowledgeMode.equalsIgnoreCase("AUTO_ACKNOWLEDGE")) {
@@ -881,6 +864,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 *
 	 * When set <code>true</code>, the JMS provider ensures that messages aren't lost when the application might crash.
 	 */
+	@IbisDoc({"rather useless attribute, and not the same as <code>deliverymode</code>. you probably want to use that.", ""})
 	public void setPersistent(boolean value) {
 		persistent = value;
 	}
@@ -910,6 +894,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * The JNDI-name of the connection factory to use to connect to a <i>queue</i> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions.
 	 */
+	@IbisDoc({"jndi-name of the queueconnectionfactory, used when <code>destinationtype<code>=</code>queue</code>", ""})
 	public void setQueueConnectionFactoryName(String name) {
 		queueConnectionFactoryName=name;
 	}
@@ -933,6 +918,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * The JNDI-name of the connection factory to use to connect to a <i>topic</i> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions.
 	 */
+	@IbisDoc({"jndi-name of the topicconnectionfactory, used when <code>destinationtype<code>=</code>topic</code>", ""})
 	public void setTopicConnectionFactoryName(String topicConnectionFactoryName) {
 		this.topicConnectionFactoryName = topicConnectionFactoryName;
 	}
@@ -971,10 +957,12 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return jmsTransacted;
 	}
 
+	@IbisDoc({"transform the value of the correlationid to a hexadecimal value if it starts with id: (preserving the id: part). useful when sending messages to mq which expects this value to be in hexadecimal format when it starts with id:, otherwise generating the error: mqjms1044: string is not a valid hexadecimal number", "false"})
 	public void setCorrelationIdToHex(boolean correlationIdToHex) {
 		this.correlationIdToHex = correlationIdToHex;
 	}
 
+	@IbisDoc({"prefix to check before executing correlationidtohex. when empty (and correlationidtohex equals true) all correlationid's are transformed, this is useful in case you want the entire correlationid to be transformed (for example when the receiving party doesn't allow characters like a colon to be present in the correlationid).", "id:"})
 	public void setCorrelationIdToHexPrefix(String correlationIdToHexPrefix) {
 		this.correlationIdToHexPrefix = correlationIdToHexPrefix;
 	}
@@ -983,6 +971,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * Controls whether messages are send under transaction control.
 	 * If set <code>true</code>, messages are committed or rolled back under control of an XA-transaction.
 	 */
+	@IbisDoc({"", "false"})
 	public void setTransacted(boolean transacted) {
 		this.transacted = transacted;
 	}
@@ -990,6 +979,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * Set the time-to-live in milliseconds of a message
 	 * @param ttl exp time in milliseconds
 	 */
+	@IbisDoc({"the time (in milliseconds) it takes for the message to expire. if the message is not consumed before, it will be lost. make sure to set it to a positive value for request/repy type of messages.", "0 (unlimited)"})
 	public void setMessageTimeToLive(long ttl){
 		this.messageTimeToLive=ttl;
 	}
@@ -1004,6 +994,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return correlationIdToHex;
 	}
 
+	@IbisDoc({"if set (>=0) and the length of the correlationid exceeds this maximum length, the correlationid is trimmed from the left side of a string to this maximum length", "-1"})
 	public void setCorrelationIdMaxLength(int i) {
 		correlationIdMaxLength = i;
 	}
@@ -1023,6 +1014,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
         return useTopicFunctions;
     }
 
+	@IbisDoc({"when set, the value of this attribute is used as a selector to filter messages.", "0 (unlimited)"})
 	public void setMessageSelector(String newMessageSelector) {
 		this.messageSelector=newMessageSelector;
 	}
@@ -1031,6 +1023,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 
 
+	@IbisDoc({"alias used to obtain credentials for authentication to jms server", ""})
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
@@ -1038,6 +1031,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return authAlias;
 	}
 
+	@IbisDoc({"when set <code>false</code>, the destinationname is used directly instead of performing a jndi lookup", "true"})
 	public void setLookupDestination(boolean b) {
 		lookupDestination = b;
 	}

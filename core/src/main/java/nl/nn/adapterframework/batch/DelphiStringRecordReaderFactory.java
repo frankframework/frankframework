@@ -21,19 +21,10 @@ import java.io.Reader;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
  * {@link IInputStreamReaderFactory} that provides a reader that reads Delphi records containing Strings.
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.batch.DelphiRecordReaderFactory</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStringLength(int) stringLength}</td><td>the maximum length of each string. Each string is preceded by a one byte length indication.</td><td>50</td></tr>
- * <tr><td>{@link #setStringsPerRecord(int) stringsPerRecord}</td><td>The number of strings read for each record. 0 means file consists of one logical record</td><td>0</td></tr>
- * <tr><td>{@link #setSeparator(String) separator}</td><td>separator placed between each string read</td><td>|</td></tr>
- * <tr><td>{@link #setSeparatorReplacement(String) separatorReplacement}</td><td>Replacement character, used when separator is found in string read</td><td>_</td></tr>
- * </table>
- * </p>
  * 
  * @author  Gerrit van Brakel
  * @since   4.10  
@@ -52,6 +43,7 @@ public class DelphiStringRecordReaderFactory implements IInputStreamReaderFactor
 		return new DelphiStringRecordReader(in,charset,getStringLength(),getStringsPerRecord(),getSeparator(),getSeparatorReplacement()); 
 	}
 
+	@IbisDoc({"separator placed between each string read", "|"})
 	public void setSeparator(String string) {
 		separator = string;
 	}
@@ -59,6 +51,7 @@ public class DelphiStringRecordReaderFactory implements IInputStreamReaderFactor
 		return separator;
 	}
 
+	@IbisDoc({"the maximum length of each string. each string is preceded by a one byte length indication.", "50"})
 	public void setStringLength(int i) {
 		stringLength = i;
 	}
@@ -66,6 +59,7 @@ public class DelphiStringRecordReaderFactory implements IInputStreamReaderFactor
 		return stringLength;
 	}
 
+	@IbisDoc({"the number of strings read for each record. 0 means file consists of one logical record", "0"})
 	public void setStringsPerRecord(int i) {
 		stringsPerRecord = i;
 	}
@@ -73,6 +67,7 @@ public class DelphiStringRecordReaderFactory implements IInputStreamReaderFactor
 		return stringsPerRecord;
 	}
 
+	@IbisDoc({"replacement character, used when separator is found in string read", "_"})
 	public void setSeparatorReplacement(String string) {
 		separatorReplacement = string;
 	}

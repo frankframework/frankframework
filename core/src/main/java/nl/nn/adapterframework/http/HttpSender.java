@@ -37,6 +37,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -75,60 +76,6 @@ import org.w3c.dom.Node;
 /**
  * Sender for the HTTP protocol using GET, POST, PUT or DELETE.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.http.HttpSender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUrl(String) url}</td><td>URL or base of URL to be used </td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUrlParam(String) urlParam}</td><td>parameter that is used to obtain url; overrides url-attribute.</td><td>url</td></tr>
- * <tr><td>{@link #setMethodType(String) methodType}</td><td>type of method to be executed, either 'GET', 'POST', 'PUT', 'DELETE', 'HEAD' or 'REPORT'</td><td>GET</td></tr>
- * <tr><td>{@link #setContentType(String) contentType}</td><td>content-type of the request, only for POST and PUT methods</td><td>text/html; charset=UTF-8</td></tr>
- * <tr><td>{@link #setTimeout(int) timeout}</td><td>timeout in ms of obtaining a connection/result. 0 means no timeout</td><td>10000</td></tr>
- * <tr><td>{@link #setMaxConnections(int) maxConnections}</td><td>the maximum number of concurrent connections</td><td>10</td></tr>
- * <tr><td>{@link #setMaxExecuteRetries(int) maxExecuteRetries}</td><td>the maximum number of times it the execution is retried</td><td>1</td></tr>
- * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to host</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProxyHost(String) proxyHost}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProxyPort(int) proxyPort}</td><td>&nbsp;</td><td>80</td></tr>
- * <tr><td>{@link #setProxyAuthAlias(String) proxyAuthAlias}</td><td>alias used to obtain credentials for authentication to proxy</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProxyUserName(String) proxyUserName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProxyPassword(String) proxyPassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProxyRealm(String) proxyRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCertificate(String) certificate}</td><td>resource URL to certificate to be used for authentication</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCertificateAuthAlias(String) certificateAuthAlias}</td><td>alias used to obtain certificate password</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCertificatePassword(String) certificatePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setKeystoreType(String) keystoreType}</td><td>&nbsp;</td><td>pkcs12</td></tr>
- * <tr><td>{@link #setKeyManagerAlgorithm(String) keyManagerAlgorithm}</td><td>&nbsp;</td><td></td></tr>
- * <tr><td>{@link #setTruststore(String) truststore}</td><td>resource URL to truststore to be used for authentication</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTruststoreAuthAlias(String) truststoreAuthAlias}</td><td>alias used to obtain truststore password</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTruststorePassword(String) truststorePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTruststoreType(String) truststoreType}</td><td>&nbsp;</td><td>jks</td></tr>
- * <tr><td>{@link #setTrustManagerAlgorithm(String) trustManagerAlgorithm}</td><td>&nbsp;</td><td></td></tr>
- * <tr><td>{@link #setAllowSelfSignedCertificates(boolean) allowSelfSignedCertificates}</td><td>when true, self signed certificates are accepted</td><td>false</td></tr>
- * <tr><td>{@link #setFollowRedirects(boolean) followRedirects}</td><td>when true, a redirect request will be honoured, e.g. to switch to https</td><td>true</td></tr>
- * <tr><td>{@link #setVerifyHostname(boolean) verifyHostname}</td><td>when true, the hostname in the certificate will be checked against the actual hostname</td><td>true</td></tr>
- * <tr><td>{@link #setStaleChecking(boolean) staleChecking}</td><td>controls whether connections checked to be stale, i.e. appear open, but are not.</td><td>true</td></tr>
- * <tr><td>{@link #setEncodeMessages(boolean) encodeMessages}</td><td>specifies whether messages will encoded, e.g. spaces will be replaced by '+' etc.</td><td>false</td></tr>
- * <tr><td>{@link #setParamsInUrl(boolean) paramsInUrl}</td><td>when false and <code>methodeType=POST</code>, request parameters are put in the request body instead of in the url</td><td>true</td></tr>
- * <tr><td>{@link #setInputMessageParam(String) inputMessageParam}</td><td>(only used when <code>methodeType=POST</code> and <code>paramsInUrl=false</code>) name of the request parameter which is used to put the input message in</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setHeadersParams(String) headersParams}</td><td>Comma separated list of parameter names which should be set as http headers</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setIgnoreRedirects(boolean) ignoreRedirects}</td><td>when true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful</td><td>false</td></tr>
- * <tr><td>{@link #setIgnoreCertificateExpiredException(boolean) ignoreCertificateExpiredException}</td><td>when true, the CertificateExpiredException is ignored</td><td>false</td></tr>
- * <tr><td>{@link #setXhtml(boolean) xhtml}</td><td>when true, the html response is transformed to xhtml</td><td>false</td></tr>
- * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>>(only used when <code>xhtml=true</code>) stylesheet to apply to the html response</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMultipart(boolean) multipart}</td><td>when true and <code>methodeType=POST</code> and <code>paramsInUrl=false</code>, request parameters are put in a multipart/form-data entity instead of in the request body</td><td>false</td></tr>
- * <tr><td>{@link #setMultipartResponse(boolean) multipartResponse}</td><td>when true the response body is expected to be in mime multipart which is the case when a soap message with attachments is received (see also <a href="https://docs.oracle.com/javaee/7/api/javax/xml/soap/SOAPMessage.html">https://docs.oracle.com/javaee/7/api/javax/xml/soap/SOAPMessage.html</a>). The first part will be returned as result of this sender. Other parts are returned as streams in sessionKeys with names multipart1, multipart2, etc. The http connection is held open until the last stream is read.</td><td>false</td></tr>
- * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>if set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as a String)</td><td>false</td></tr>
- * <tr><td>{@link #setBase64(boolean) base64}</td><td>when true, the result is base64 encoded</td><td>false</td></tr>
- * <tr><td>{@link #setProtocol(String) protocol}</td><td>Secure socket protocol (such as "SSL" and "TLS") to use when a SSLContext object is generated. If empty the protocol "SSL" is used</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStreamResultToFileNameSessionKey(String) streamResultToFileNameSessionKey}</td><td>if set, the result is streamed to a file (instead of passed as a String)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStoreResultAsStreamInSessionKey(String) storeResultAsStreamInSessionKey}</td><td>if set, a pointer to an input stream of the result is put in the specified sessionKey (as the sender interface only allows a sender to return a string a sessionKey is used instead to return the stream)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setResultStatusCodeSessionKey(String) resultStatusCodeSessionKey}</td><td>if set, the status code of the HTTP response is put in specified in the sessionKey and the (error or okay) response message is returned</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMultipartXmlSessionKey(String) multipartXmlSessionKey}</td><td>if set and <code>methodeType=POST</code> and <code>paramsInUrl=false</code>, a multipart/form-data entity is created instead of a request body. For each part element in the session key a part in the multipart entity is created</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
  * <p><b>Parameters:</b></p>
  * <p>Any parameters present are appended to the request as request-parameters except the headersParams list which are added as http headers</p>
  * 
@@ -629,6 +576,8 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 	public String getStreamResultToFileNameSessionKey() {
 		return streamResultToFileNameSessionKey;
 	}
+
+	@IbisDoc({"if set, the result is streamed to a file (instead of passed as a string)", ""})
 	public void setStreamResultToFileNameSessionKey(String string) {
 		streamResultToFileNameSessionKey = string;
 	}
@@ -636,6 +585,8 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 	public String getStoreResultAsStreamInSessionKey() {
 		return storeResultAsStreamInSessionKey;
 	}
+
+	@IbisDoc({"if set, a pointer to an input stream of the result is put in the specified sessionkey (as the sender interface only allows a sender to return a string a sessionkey is used instead to return the stream)", ""})
 	public void setStoreResultAsStreamInSessionKey(String storeResultAsStreamInSessionKey) {
 		this.storeResultAsStreamInSessionKey = storeResultAsStreamInSessionKey;
 	}
@@ -647,6 +598,7 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 		this.storeResultAsByteArrayInSessionKey = storeResultAsByteArrayInSessionKey;
 	}
 
+	@IbisDoc({"when true, the result is base64 encoded", "false"})
 	public void setBase64(boolean b) {
 		base64 = b;
 	}
@@ -654,6 +606,7 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 		return base64;
 	}
 
+	@IbisDoc({"if set, the result is streamed to the httpservletresponse object of the restservicedispatcher (instead of passed as a string)", "false"})
 	public void setStreamResultToServlet(boolean b) {
 		streamResultToServlet = b;
 	}
@@ -661,6 +614,7 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 		return streamResultToServlet;
 	}
 
+	@IbisDoc({"when true and <code>methodetype=post</code> and <code>paramsinurl=false</code>, request parameters are put in a multipart/form-data entity instead of in the request body", "false"})
 	public void setMultipart(boolean b) {
 		multipart = b;
 	}
@@ -668,6 +622,7 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 		return multipart;
 	}
 
+	@IbisDoc({"when true the response body is expected to be in mime multipart which is the case when a soap message with attachments is received (see also <a href=\"https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html\">https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html</a>). the first part will be returned as result of this sender. other parts are returned as streams in sessionkeys with names multipart1, multipart2, etc. the http connection is held open until the last stream is read.", "false"})
 	public void setMultipartResponse(boolean b) {
 		multipartResponse = b;
 	}
@@ -678,6 +633,8 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 	public String getMultipartXmlSessionKey() {
 		return multipartXmlSessionKey;
 	}
+
+	@IbisDoc({"if set and <code>methodetype=post</code> and <code>paramsinurl=false</code>, a multipart/form-data entity is created instead of a request body. for each part element in the session key a part in the multipart entity is created", ""})
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
 	}

@@ -22,6 +22,7 @@ import java.util.Map;
 
 import javax.xml.transform.Transformer;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -39,17 +40,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * {@link ErrorMessageFormatter}.
  * <p>If the transformation does not succeed, this standard error message
  * is returned and an exception is logged.
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.errormessageformatters.XslErrorMessageFormatter</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStyleSheet(String) styleSheet}</td><td>stylesheet to use for transformation</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>xpathExpression to use for transformation</td><td>&nbsp;</td></tr>
- * </table>
- *
  * <p><table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link Parameter param}</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  *
@@ -132,6 +125,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 	/**
 	 * URL to the stylesheet used to transform the output of the standard {@link ErrorMessageFormatter} 
 	 */
+	@IbisDoc({"stylesheet to use for transformation", ""})
 	public void setStyleSheet(String newStyleSheet) {
 		styleSheet = newStyleSheet;
 	}
@@ -139,6 +133,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 		return styleSheet;
 	}
 
+	@IbisDoc({"xpathexpression to use for transformation", ""})
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
 	}

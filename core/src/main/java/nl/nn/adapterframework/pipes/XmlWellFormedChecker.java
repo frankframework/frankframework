@@ -19,6 +19,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
 
@@ -26,12 +27,6 @@ import nl.nn.adapterframework.validation.AbstractXmlValidator;
  *<code>Pipe</code> that checks the well-formedness of the input message.
  * If <code>root</code> is given then this is also checked.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setRoot(String) root}</td><td>name of the root element</td><td>&nbsp;</td></tr>
- * </table>
- * </p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
@@ -67,6 +62,7 @@ public class XmlWellFormedChecker extends FixedForwardPipe {
 		return new PipeRunResult(forward, input);
 	}
 
+	@IbisDoc({"name of the root element", ""})
 	public void setRoot(String root) {
 		this.root = root;
 	}

@@ -23,6 +23,7 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.soap.Wsdl;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
@@ -30,14 +31,6 @@ import nl.nn.adapterframework.util.DateUtils;
 /**
  * Generate WSDL of parent or specified adapter.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.WsdlGeneratorPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFrom(String) from}</td><td>either parent (adapter of pipeline which contains this pipe) or input (name of adapter specified by input of pipe)</td><td>parent</td></tr>
- * </table>
- * </p>
 
  * @author Jaco de Groot
  */
@@ -86,6 +79,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		return from;
 	}
 
+	@IbisDoc({"either parent (adapter of pipeline which contains this pipe) or input (name of adapter specified by input of pipe)", "parent"})
 	public void setFrom(String from) {
 		this.from = from;
 	}
