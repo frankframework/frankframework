@@ -22,8 +22,6 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 	private String password = "";
 	private String host = "";
 	private int port = 22;
-	
-	// TODO: Try running this with a real FTP server, like with Robert's S3 server credentials.
 
 	@Override
 	protected synchronized File getFileHandle(String filename) {
