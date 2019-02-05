@@ -14,12 +14,12 @@
 <table border="0" width="100%">
 <tr>
 	<td>
-		Select a jms realm
+		Select a data source
 	</td>
 	<td>
 	
-		<html:select property="jmsRealm">	
-			<html:options name="executeJdbcQueryForm" property="jmsRealms"/> 
+		<html:select property="datasourceName">	
+			<html:options name="executeJdbcQueryForm" property="datasourceNames"/> 
 		</html:select> <br/>
   	 	
 	</td>

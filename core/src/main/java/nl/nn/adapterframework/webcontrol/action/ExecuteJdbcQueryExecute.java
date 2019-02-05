@@ -33,7 +33,6 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.DynaActionForm;
 
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.AppConstants;
@@ -53,15 +52,15 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 	public ExecuteJdbcQueryExecute() {
 		setWriteToSecLog(true);
 		setWriteSecLogMessage(true);
-		addSecLogParamName("jmsRealm");
-		addSecLogParamName("queryType");
+		addSecLogParamName("datasourceName");
+		addSecLogParamName("expectResultSet");
 	}
 	
-	public String getResult(String form_jmsRealm, String form_expectResultSet, String form_resultType, String form_query) {
+	public String getResult(String form_datasourceName, String form_expectResultSet, String form_resultType, String form_query) {
 		XmlBuilder xbRoot = new XmlBuilder("manageDatabaseREQ");
 		
 		XmlBuilder xSql = new XmlBuilder("sql");
-		xSql.addAttribute("jmsRealm", form_jmsRealm);
+		xSql.addAttribute("datasourceName", form_datasourceName);
 		xSql.addAttribute("expectResultSet", form_expectResultSet);
 		xbRoot.addSubElement(xSql);
 
@@ -107,12 +106,12 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 
 		// Transfer form results into XML
 		DynaActionForm executeJdbcQueryExecuteForm = (DynaActionForm) form;
-		String form_jmsRealm = (String) executeJdbcQueryExecuteForm.get("jmsRealm");
+		String form_datasourceName = (String) executeJdbcQueryExecuteForm.get("datasourceName");
 		String form_expectResultSet = (String) executeJdbcQueryExecuteForm.get("expectResultSet");
 		String form_resultType = (String) executeJdbcQueryExecuteForm.get("resultType");
 		String form_query = (String) executeJdbcQueryExecuteForm.get("query");
 		
-		String result = getResult(form_jmsRealm, form_expectResultSet, form_resultType, form_query);
+		String result = getResult(form_datasourceName, form_expectResultSet, form_resultType, form_query);
 		if(result.isEmpty()) {
 			result += "[Query \""+form_query+"\" was successfully executed.]";
 		}
@@ -127,7 +126,7 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 
 		// Successful: store cookie
 		String cookieValue = "";
-		cookieValue += "jmsRealm=\"" + form_jmsRealm + "\"";
+		cookieValue += "datasourceName=\"" + form_datasourceName + "\"";
 		cookieValue += " "; //separator
 		cookieValue += "expectResult=\"" + form_expectResultSet + "\"";
 		cookieValue += " "; //separator
@@ -169,10 +168,10 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		String query,
 		String result,
 		DynaActionForm executeJdbcQueryExecuteForm) {
-		List jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
-		if (jmsRealms.size() == 0)
-			jmsRealms.add("no realms defined");
-		executeJdbcQueryExecuteForm.set("jmsRealms", jmsRealms);
+		List datasourceNames = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
+		if (datasourceNames.size() == 0)
+			datasourceNames.add("no data sources defined");
+		executeJdbcQueryExecuteForm.set("datasourceNames", datasourceNames);
 		
 		List expectResultOptions = new ArrayList();
 		expectResultOptions.add("auto");

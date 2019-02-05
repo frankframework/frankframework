@@ -287,7 +287,8 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			where = XmlUtils.getChildTagAsString(queryElement, "where");
 			order = XmlUtils.getChildTagAsString(queryElement, "order");
 			
-			setJmsRealm(queryElement.getAttribute("jmsRealm"));
+			// TODO: Only run this when datasourceName != default datasourceName?
+			connection = getConnection(queryElement.getAttribute("datasourceName"));
 			
 			if (root.equalsIgnoreCase("select")) {
 				result = selectQuery(connection, correlationID, tableName, columns, where, order);

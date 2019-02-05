@@ -28,7 +28,7 @@
 							<fieldset>
 								<legend>JDBC Query form</legend>
 									<div class="form-group">
-										<label for="select-jms" class="control-label col-lg-2">Select a jms realm</label>
+										<label for="select-datasourcename" class="control-label col-lg-2">Select a data source</label>
 										<div class="col-lg-3">
 											<select id="select-jms" class="form-control">
 												<option>jdbc</option>

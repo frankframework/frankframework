@@ -69,8 +69,8 @@ public final class ExecuteJdbcQuery extends ActionBase {
 					log.debug("restoring values from cookie: " + cs.toString());
 					try {
 						executeJdbcQueryForm.set(
-							"jmsRealm",
-							cs.Value("jmsRealm"));
+							"datasourceName",
+							cs.Value("datasourceNames"));
 						executeJdbcQueryForm.set(
 							"expectResultSet",
 							cs.Value("expectResultSet"));
@@ -86,10 +86,11 @@ public final class ExecuteJdbcQuery extends ActionBase {
 			}
 		}
 
-		List jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
-		if (jmsRealms.size() == 0)
-			jmsRealms.add("no realms defined");
-		executeJdbcQueryForm.set("jmsRealms", jmsRealms);
+		// TODO: JmsRealmFactory call might need to be replaced with something else?
+		List datasourceNames = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
+		if (datasourceNames.size() == 0)
+			datasourceNames.add("no data sources defined");
+		executeJdbcQueryForm.set("datasourceNames", datasourceNames);
 
 		List expectResultOptions = new ArrayList();
 		expectResultOptions.add("auto");

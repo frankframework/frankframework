@@ -44,8 +44,8 @@
 						<td>
 							<xsl:variable name="jr">
 								<xsl:choose>
-									<xsl:when test="string-length($jmsRealmList)=0">
-										<xsl:for-each select="jmsRealms/jmsRealm">
+									<xsl:when test="string-length($datasourceNameList)=0">
+										<xsl:for-each select="datasourceNames/datasourceName">
 											<xsl:if test="position()&gt;1">
 												<xsl:value-of select="$brvbar" />
 											</xsl:if>
@@ -57,14 +57,14 @@
 									</xsl:otherwise>
 								</xsl:choose>
 							</xsl:variable>
-							<input class="normal" type="hidden" name="jmsRealmList">
+							<input class="normal" type="hidden" name="datasourceNameList">
 								<xsl:attribute name="value" select="$jr" />
 							</input>
 							<select class="normal" name="jmsRealm">
 								<xsl:for-each select="tokenize($jr,$brvbar)">
 									<option>
 										<xsl:attribute name="value" select="." />
-										<xsl:if test="$jmsRealm=.">
+										<xsl:if test="$datasourceName=.">
 											<xsl:attribute name="selected">selected</xsl:attribute>
 										</xsl:if>
 										<xsl:value-of select="." />

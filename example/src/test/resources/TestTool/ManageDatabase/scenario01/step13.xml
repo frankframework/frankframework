@@ -1,4 +1,4 @@
-<manageDatabaseREQ jmsRealm="jdbc">
+<manageDatabaseREQ datasourceName="jdbc">
 	<sql>
 		<type>create</type>
 		<query>create table tempTable (mycolumn int)</query>
