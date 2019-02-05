@@ -22,23 +22,47 @@
 					<subHeader>SpecialSubjects</subHeader>
 					<subHeader>Groups</subHeader>
 				</tr>
-				<xtags:forEach select="securityRoleBindings/ApplicationBinding/authorizationTable/authorizations">
-					<xtags:variable id="count" select="count(groups)"/>
-					<xtags:variable id="role" select="substring-after(role/@href,'#')"/>
-					<xtags:variable id="srole" select="ancestor::*/applicationDeploymentDescriptor/application/security-role[@id=$role]/role-name"/>
-					<tr ref="spannedRow">
-						<td rowspan="<%=(count=="0"?"1":count)%>"><xtags:valueOf select="$srole"/></td>
-						<td rowspan="<%=(count=="0"?"1":count)%>"><booleanImage value="<%=request.isUserInRole(srole)%>"/></td>
-						<td rowspan="<%=(count=="0"?"1":count)%>"><xtags:valueOf select="specialSubjects/@name"/></td>
-						<td><xtags:valueOf select="groups[1]/@name"/></td>
-					</tr>
-					<xtags:remove select="groups[1]"/>
-					<xtags:forEach select="groups">
+				<xtags:choose>
+					<xtags:when test="applicationDeploymentDescriptor/@error='true'">
 						<tr>
-							<td><xtags:valueOf select="@name"/></td>
+							<td colspan="4"><font color="red"><xtags:valueOf select="concat('ERROR: ', applicationDeploymentDescriptor)"/></font></td>
 						</tr>
-					</xtags:forEach>
-				</xtags:forEach>
+					</xtags:when>
+					<xtags:when test="applicationDeploymentDescriptor/@warn='true'">
+						<tr>
+							<td colspan="4"><font color="orange"><xtags:valueOf select="concat('WARN: ', applicationDeploymentDescriptor)"/></font></td>
+						</tr>
+					</xtags:when>
+					<xtags:when test="securityRoleBindings/@error='true'">
+						<tr>
+							<td colspan="4"><font color="red"><xtags:valueOf select="concat('ERROR: ', securityRoleBindings)"/></font></td>
+						</tr>
+					</xtags:when>
+					<xtags:when test="securityRoleBindings/@warn='true'">
+						<tr>
+							<td colspan="4"><font color="orange"><xtags:valueOf select="concat('WARN: ', securityRoleBindings)"/></font></td>
+						</tr>
+					</xtags:when>
+					<xtags:otherwise>
+						<xtags:forEach select="securityRoleBindings/ApplicationBinding/authorizationTable/authorizations">
+							<xtags:variable id="count" select="count(groups)"/>
+							<xtags:variable id="role" select="substring-after(role/@href,'#')"/>
+							<xtags:variable id="srole" select="ancestor::*/applicationDeploymentDescriptor/application/security-role[@id=$role]/role-name"/>
+							<tr ref="spannedRow">
+								<td rowspan="<%=(count=="0"?"1":count)%>"><xtags:valueOf select="$srole"/></td>
+								<td rowspan="<%=(count=="0"?"1":count)%>"><booleanImage value="<%=request.isUserInRole(srole)%>"/></td>
+								<td rowspan="<%=(count=="0"?"1":count)%>"><xtags:valueOf select="specialSubjects/@name"/></td>
+								<td><xtags:valueOf select="groups[1]/@name"/></td>
+							</tr>
+							<xtags:remove select="groups[1]"/>
+							<xtags:forEach select="groups">
+								<tr>
+							<td><xtags:valueOf select="@name"/></td>
+								</tr>
+							</xtags:forEach>
+						</xtags:forEach>
+					</xtags:otherwise>
+				</xtags:choose>
 			</tbody>
 		</contentTable>
 		<br/><br/>
@@ -52,23 +76,32 @@
 					<subHeader>TopicConnectionFactory</subHeader>
 					<subHeader>Info</subHeader>
 				</tr>
-				<xtags:forEach select="jmsRealms/jmsRealm">
-					<tr ref="spannedRow">
-						<xtags:variable id="count" select="count(info)"/>
-						<td rowspan="<%=count%>"><xtags:valueOf select="@name"/></td>
-						<td rowspan="<%=count%>"><xtags:valueOf select="@datasourceName"/></td>
-						<td rowspan="<%=count%>"><xtags:valueOf select="@queueConnectionFactoryName"/></td>
-						<td rowspan="<%=count%>"><xtags:valueOf select="@topicConnectionFactoryName"/></td>
-						<td><xtags:valueOf select="info[1]"/></td>
-					</tr>
-						<xtags:forEach select="info[position()>1]">
-							<tr>
-								<td>
-									<xtags:valueOf select="."/>
-								</td>
+				<xtags:choose>
+					<xtags:when test="jmsRealms/@info='true'">
+						<tr>
+							<td colspan="5"><xtags:valueOf select="concat('INFO: ', jmsRealms)"/></td>
+						</tr>
+					</xtags:when>
+					<xtags:otherwise>
+						<xtags:forEach select="jmsRealms/jmsRealm">
+							<tr ref="spannedRow">
+								<xtags:variable id="count" select="count(info)"/>
+								<td rowspan="<%=count%>"><xtags:valueOf select="@name"/></td>
+								<td rowspan="<%=count%>"><xtags:valueOf select="@datasourceName"/></td>
+								<td rowspan="<%=count%>"><xtags:valueOf select="@queueConnectionFactoryName"/></td>
+								<td rowspan="<%=count%>"><xtags:valueOf select="@topicConnectionFactoryName"/></td>
+								<td><xtags:valueOf select="info[1]"/></td>
 							</tr>
+								<xtags:forEach select="info[position()>1]">
+									<tr>
+										<td>
+											<xtags:valueOf select="."/>
+										</td>
+									</tr>
+								</xtags:forEach>
 						</xtags:forEach>
-				</xtags:forEach>
+					</xtags:otherwise>
+				</xtags:choose>
 			</tbody>
 		</contentTable>
 		<br/><br/>
@@ -128,12 +161,21 @@
 					<subHeader>Name</subHeader>
 					<subHeader>Info</subHeader>
 				</tr>
-				<xtags:forEach select="sapSystems/sapSystem">
-					<tr ref="spannedRow">
-						<td><xtags:valueOf select="@name"/></td>
-						<td><xtags:valueOf select="info"/></td>
-					</tr>
-				</xtags:forEach>
+				<xtags:choose>
+					<xtags:when test="sapSystems/@info='true'">
+						<tr>
+							<td colspan="2"><xtags:valueOf select="concat('INFO: ', sapSystems)"/></td>
+						</tr>
+					</xtags:when>
+					<xtags:otherwise>
+						<xtags:forEach select="sapSystems/sapSystem">
+							<tr ref="spannedRow">
+								<td><xtags:valueOf select="@name"/></td>
+								<td><xtags:valueOf select="info"/></td>
+							</tr>
+						</xtags:forEach>
+					</xtags:otherwise>
+				</xtags:choose>
 			</tbody>
 		</contentTable>
 		<br/><br/>
@@ -145,13 +187,22 @@
 					<subHeader>Username</subHeader>
 					<subHeader>Password</subHeader>
 				</tr>
-				<xtags:forEach select="authEntries/entry">
-					<tr ref="spannedRow">
-						<td><xtags:valueOf select="@alias"/></td>
-						<td><xtags:valueOf select="@userName"/></td>
-						<td><xtags:valueOf select="@passWord"/></td>
-					</tr>
-				</xtags:forEach>
+				<xtags:choose>
+					<xtags:when test="authEntries/@info='true'">
+						<tr>
+							<td colspan="3"><xtags:valueOf select="concat('INFO: ', authEntries)"/></td>
+						</tr>
+					</xtags:when>
+					<xtags:otherwise>
+						<xtags:forEach select="authEntries/entry">
+							<tr ref="spannedRow">
+								<td><xtags:valueOf select="@alias"/></td>
+								<td><xtags:valueOf select="@userName"/></td>
+								<td><xtags:valueOf select="@passWord"/></td>
+							</tr>
+						</xtags:forEach>
+					</xtags:otherwise>
+				</xtags:choose>
 			</tbody>
 		</contentTable>
 		<br/><br/>
@@ -164,33 +215,40 @@
 					<subHeader>Certificate</subHeader>
 					<subHeader>Info</subHeader>
 				</tr>
-				<xtags:forEach select="registeredAdapters/adapter/pipes/pipe/certificate" sort="@url">
-					<xtags:variable id="url" select="@url"/>
-					<xtags:choose>
-						<xtags:when test="preceding::certificate[@url=$url]=true()">
-							<tr ref="spannedRow">
-								<td><xtags:valueOf select="../../../@name"/></td>
-								<td><xtags:valueOf select="../@name"/></td>
-								<td><xtags:valueOf select="@name"/></td>
-								<td><i>same certificate as above</i></td>
-							</tr>
-						</xtags:when>
-						<xtags:otherwise>
-							<xtags:variable id="count" select="count(info)+1"/>
-							<tr ref="spannedRow">
-								<td rowspan="<%=count%>"><xtags:valueOf select="../../../@name"/></td>
-								<td rowspan="<%=count%>"><xtags:valueOf select="../@name"/></td>
-								<td rowspan="<%=count%>"><xtags:valueOf select="@name"/></td>
-								<td><xtags:valueOf select="@url"/></td>
-							</tr>
-							<xtags:forEach select="info">
-								<tr>
-									<td><xtags:valueOf select="."/></td>
-								</tr>
-							</xtags:forEach>
-						</xtags:otherwise>
-					</xtags:choose>
-				</xtags:forEach>
+				<xtags:choose>
+					<xtags:when test="registeredAdapters/@info='true'">
+						<tr>
+							<td colspan="4"><xtags:valueOf select="concat('INFO: ', registeredAdapters/text)"/></td>
+						</tr>
+					</xtags:when>
+						<xtags:forEach select="registeredAdapters/adapter/pipes/pipe/certificate" sort="@url">
+							<xtags:variable id="url" select="@url"/>
+							<xtags:choose>
+								<xtags:when test="preceding::certificate[@url=$url]=true()">
+									<tr ref="spannedRow">
+										<td><xtags:valueOf select="../../../@name"/></td>
+										<td><xtags:valueOf select="../@name"/></td>
+										<td><xtags:valueOf select="@name"/></td>
+										<td><i>same certificate as above</i></td>
+									</tr>
+								</xtags:when>
+								<xtags:otherwise>
+									<xtags:variable id="count" select="count(info)+1"/>
+									<tr ref="spannedRow">
+										<td rowspan="<%=count%>"><xtags:valueOf select="../../../@name"/></td>
+										<td rowspan="<%=count%>"><xtags:valueOf select="../@name"/></td>
+										<td rowspan="<%=count%>"><xtags:valueOf select="@name"/></td>
+										<td><xtags:valueOf select="@url"/></td>
+									</tr>
+									<xtags:forEach select="info">
+										<tr>
+											<td><xtags:valueOf select="."/></td>
+										</tr>
+									</xtags:forEach>
+								</xtags:otherwise>
+							</xtags:choose>
+						</xtags:forEach>
+				</xtags:choose>
 			</tbody>
 		</contentTable>
 		<br/><br/>
@@ -201,16 +259,33 @@
 					<subHeader>Property</subHeader>
 					<subHeader>Value</subHeader>
 				</tr>
-				<xtags:forEach select="serverProps/transactionService">
-					<tr ref="spannedRow">
-						<td>Total transaction lifetime timeout (in seconds)</td>
-						<td><xtags:valueOf select="@totalTransactionLifetimeTimeout"/></td>
-					</tr>
-					<tr ref="spannedRow">
-						<td>Maximum transaction timeout (in seconds)</td>
-						<td><xtags:valueOf select="@maximumTransactionTimeout"/></td>
-					</tr>
-				</xtags:forEach>
+
+				<xtags:choose>
+					<xtags:when test="serverProps/@error='true'">
+						<tr>
+							<td colspan="4"><font color="red"><xtags:valueOf select="concat('ERROR: ', serverProps)"/></font></td>
+						</tr>
+					</xtags:when>
+					<xtags:when test="serverProps/@warn='true'">
+						<tr>
+							<td colspan="4"><font color="orange"><xtags:valueOf select="concat('WARN: ', serverProps)"/></font></td>
+						</tr>
+					</xtags:when>
+					<xtags:otherwise>
+						<xtags:forEach select="serverProps/transactionService">
+							<tr ref="spannedRow">
+								<td>Total transaction lifetime timeout (in seconds)</td>
+								<td><xtags:valueOf select="@totalTransactionLifetimeTimeout"/></td>
+							</tr>
+							<tr ref="spannedRow">
+								<td>Maximum transaction timeout (in seconds)</td>
+								<td><xtags:valueOf select="@maximumTransactionTimeout"/></td>
+							</tr>
+						</xtags:forEach>
+					</xtags:otherwise>
+				</xtags:choose>
+
+
 			</tbody>
 		</contentTable>
 	</xtags:forEach>

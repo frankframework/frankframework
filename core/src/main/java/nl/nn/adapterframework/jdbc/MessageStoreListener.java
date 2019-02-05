@@ -22,6 +22,7 @@ import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 
@@ -54,15 +55,6 @@ import org.apache.commons.lang.text.StrTokenizer;
 		/>
  * </pre></code>
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.jdbc.MessageStoreListener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSlotId(String) slotId}</td><td>identifier for this service</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSessionKeys(String) sessionKeys}</td><td>comma separated list of sessionKey's to be read together with the message. Please note: corresponding {@link MessageStoreSender} must have the same value for this attribute</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMoveToMessageLog(boolean) moveToMessageLog}</td><td>move to messagelog after processing, as the message is already stored in the ibisstore only some fields need to be updated, use a messageLog element with class {@link DummyTransactionalStorage} to enable it in the console</td><td>true</td></tr>
- * </table>
- * </p>
  * 
  * @author Jaco de Groot
  */
@@ -116,6 +108,7 @@ public class MessageStoreListener extends JdbcQueryListener {
 		return rawMessage;
 	}
 
+	@IbisDoc({"identifier for this service", ""})
 	public void setSlotId(String slotId) {
 		this.slotId = slotId;
 	}
@@ -124,6 +117,7 @@ public class MessageStoreListener extends JdbcQueryListener {
 		return slotId;
 	}
 
+	@IbisDoc({"comma separated list of sessionkey's to be read together with the message. please note: corresponding {@link messagestoresender} must have the same value for this attribute", ""})
 	public void setSessionKeys(String sessionKeys) {
 		this.sessionKeys = sessionKeys;
 	}
@@ -132,6 +126,7 @@ public class MessageStoreListener extends JdbcQueryListener {
 		return sessionKeys;
 	}
 
+	@IbisDoc({"move to messagelog after processing, as the message is already stored in the ibisstore only some fields need to be updated, use a messagelog element with class {@link dummytransactionalstorage} to enable it in the console", "true"})
 	public void setMoveToMessageLog(boolean moveToMessageLog) {
 		this.moveToMessageLog = moveToMessageLog;
 	}

@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.Misc;
@@ -39,20 +40,6 @@ import org.apache.commons.lang.StringUtils;
  * An IbisJavaSender makes a call to a Receiver with a {@link nl.nn.adapterframework.receivers.JavaListener JavaListener}
  * or any other application in the same JVM that has registered a <code>RequestProcessor</code> with the IbisServiceDispatcher.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.senders.IbisJavaSender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setServiceName(String) serviceName}</td><td>serviceName of the 
- * {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setReturnedSessionKeys(String) returnedSessionKeys}</td><td>comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMultipartResponse(boolean) multipartResponse}</td><td>currently used to mimic the HttpSender when it is stubbed locally. It could be useful in other situations too although currently the response string is used which isn't streamed, it would be better to pass the multipart as an input stream in the context map in which case content type and charset could also be passed</td><td>false</td></tr>
- * <tr><td>{@link #setMultipartResponseContentType(String) multipartResponseContentType}</td><td></td><td>application/octet-stream</td></tr>
- * <tr><td>{@link #setMultipartResponseCharset(String) multipartResponseCharset}</td><td></td><td>UTF-8</td></tr>
- * <tr><td>{@link #setDispatchType(String) type}</td><td>set to 'DLL' to make the dispatcher communicate with a DLL set on the classpath</td><td></td></tr>
- * </table>
- * </p>
  * Any parameters are copied to the PipeLineSession of the service called.
  * 
  * <h4>configuring IbisJavaSender and JavaListener</h4>
@@ -153,6 +140,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 		return result;
 	}
 
+	@IbisDoc({"name of the sender", ""})
 	public void setName(String name) {
 		this.name=name;
 	}
@@ -168,6 +156,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 		serviceName = string;
 	}
 
+	@IbisDoc({"comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (only for listeners that support it, like javalistener)", ""})
 	public void setReturnedSessionKeys(String string) {
 		returnedSessionKeys = string;
 	}
@@ -176,6 +165,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 		return returnedSessionKeys;
 	}
 
+	@IbisDoc({"currently used to mimic the httpsender when it is stubbed locally. it could be useful in other situations too although currently the response string is used which isn't streamed, it would be better to pass the multipart as an input stream in the context map in which case content type and charset could also be passed", "false"})
 	public void setMultipartResponse(boolean b) {
 		multipartResponse = b;
 	}
@@ -184,6 +174,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 		return multipartResponse;
 	}
 
+	@IbisDoc({"set to 'dll' to make the dispatcher communicate with a dll set on the classpath", ""})
 	public void setDispatchType(String type) {
 		if(type.equalsIgnoreCase("DLL"))
 			dispatchType = type;

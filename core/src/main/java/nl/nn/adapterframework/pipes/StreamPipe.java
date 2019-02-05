@@ -25,6 +25,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -47,21 +48,6 @@ import nl.nn.adapterframework.util.Misc;
 /**
  * Stream an input stream to an output stream.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setExtractFirstStringPart(boolean) extractFirstStringPart}</td><td>(only used for parameter <code>httpRequest</code>) when true the first part is not put in a session key but returned to the pipeline (as the result of this pipe)</td><td>false</td></tr>
- * <tr><td>{@link #setMultipartXmlSessionKey(String) multipartXmlSessionKey}</td><td>(only used when <code>extractFirstStringPart=true</code>) the session key to put the xml in with info about the stored parts</td><td><code>multipartXml</code></td></tr>
- * <tr><td>{@link #setCheckAntiVirus(boolean) checkAntiVirus}</td><td>(only used for parameter <code>httpRequest</code>) when true parts are checked for antivirus scan returncode. These antivirus scan parts have been added by another application (so the antivirus scan is NOT performed in this pipe). For each file part an antivirus scan part have been added by this other application (directly after this file part)</td><td>false</td></tr>
- * <tr><td>{@link #setAntiVirusPartName(String) antiVirusPartName}</td><td>(only used for parameter <code>httpRequest</code> and when <code>checkAntiVirus=true</code>) name of antivirus scan status parts</td><td><code>antivirus_rc</code></td></tr>
- * <tr><td>{@link #setAntiVirusMessagePartName(String) antiVirusMessagePartName}</td><td>(only used for parameter <code>httpRequest</code> and when <code>checkAntiVirus=true</code>) name of antivirus scan message parts</td><td><code>antivirus_msg</code></td></tr>
- * <tr><td>{@link #setAntiVirusPassedMessage(String) antiVirusPassedMessage}</td><td>(only used for parameter <code>httpRequest</code> and when <code>checkAntiVirus=true</code>) message of antivirus scan parts which indicates the antivirus scan passed</td><td><code>Pass</code></td></tr>
- * <tr><td>{@link #setAntiVirusFailureAsSoapFault(boolean) antiVirusFailureAsSoapFault}</td><td>(only used for parameter <code>httpRequest</code> and when <code>checkAntiVirus=true</code>) when true and the antiVirusFailed forward is specified and the antivirus scan did not pass, a SOAP Fault is returned instead of only a plain error message</td><td>false</td></tr>
- * <tr><td>{@link #setAntiVirusFailureReasonSessionKey(String) antiVirusFailureReasonSessionKey}</td><td>(only used for parameter <code>httpRequest</code> and when <code>checkAntiVirus=true</code>) if not empty and the antiVirusFailed forward is specified and the antivirus scan did not pass, the error message (or SOAP Fault) is stored in this session key and the first string part is returned to the pipeline</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
  * <p><b>Parameters:</b></p>
  * <table border="1">
  * <tr><th>name</th><th>default</th></tr>
@@ -391,6 +377,7 @@ public class StreamPipe extends FixedForwardPipe {
 		session.put(key, value);
 	}
 
+	@IbisDoc({"(only used for parameter <code>httprequest</code>) when true the first part is not put in a session key but returned to the pipeline (as the result of this pipe)", "false"})
 	public void setExtractFirstStringPart(boolean b) {
 		extractFirstStringPart = b;
 	}
@@ -403,10 +390,12 @@ public class StreamPipe extends FixedForwardPipe {
 		return multipartXmlSessionKey;
 	}
 
+	@IbisDoc({"(only used when <code>extractfirststringpart=true</code>) the session key to put the xml in with info about the stored parts", "<code>multipartxml</code>"})
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
 	}
 
+	@IbisDoc({"(only used for parameter <code>httprequest</code>) when true parts are checked for antivirus scan returncode. these antivirus scan parts have been added by another application (so the antivirus scan is not performed in this pipe). for each file part an antivirus scan part have been added by this other application (directly after this file part)", "false"})
 	public void setCheckAntiVirus(boolean b) {
 		checkAntiVirus = b;
 	}
@@ -419,6 +408,7 @@ public class StreamPipe extends FixedForwardPipe {
 		return antiVirusPartName;
 	}
 
+	@IbisDoc({"(only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) name of antivirus scan status parts", "<code>antivirus_rc</code>"})
 	public void setAntiVirusPartName(String antiVirusPartName) {
 		this.antiVirusPartName = antiVirusPartName;
 	}
@@ -427,6 +417,7 @@ public class StreamPipe extends FixedForwardPipe {
 		return antiVirusMessagePartName;
 	}
 
+	@IbisDoc({"(only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) name of antivirus scan message parts", "<code>antivirus_msg</code>"})
 	public void setAntiVirusMessagePartName(String antiVirusMessagePartName) {
 		this.antiVirusMessagePartName = antiVirusMessagePartName;
 	}
@@ -435,10 +426,12 @@ public class StreamPipe extends FixedForwardPipe {
 		return antiVirusPassedMessage;
 	}
 
+	@IbisDoc({"(only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) message of antivirus scan parts which indicates the antivirus scan passed", "<code>pass</code>"})
 	public void setAntiVirusPassedMessage(String antiVirusPassedMessage) {
 		this.antiVirusPassedMessage = antiVirusPassedMessage;
 	}
 
+	@IbisDoc({"(only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) when true and the antivirusfailed forward is specified and the antivirus scan did not pass, a soap fault is returned instead of only a plain error message", "false"})
 	public void setAntiVirusFailureAsSoapFault(boolean b) {
 		antiVirusFailureAsSoapFault = b;
 	}
@@ -447,6 +440,7 @@ public class StreamPipe extends FixedForwardPipe {
 		return antiVirusFailureAsSoapFault;
 	}
 
+	@IbisDoc({"(only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) if not empty and the antivirusfailed forward is specified and the antivirus scan did not pass, the error message (or soap fault) is stored in this session key and the first string part is returned to the pipeline", ""})
 	public void setAntiVirusFailureReasonSessionKey(String antiVirusFailureReasonSessionKey) {
 		this.antiVirusFailureReasonSessionKey = antiVirusFailureReasonSessionKey;
 	}

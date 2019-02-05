@@ -26,6 +26,7 @@ import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -131,13 +132,6 @@ import org.apache.commons.lang.StringUtils;
  * </code>
  * </p>
  * <p>
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setContentType(String) contentType}</td><td>content type of the servlet response</td><td>"text/html"</td></tr>
- * </table>
- * </p>
  * 
  * @author Peter Leeuwenburgh
  */
@@ -306,6 +300,7 @@ public class CreateRestViewPipe extends XsltPipe {
 		return imagelink;
 	}
 
+	@IbisDoc({"content type of the servlet response", "text/html"})
 	public void setContentType(String string) {
 		contentType = string;
 	}
