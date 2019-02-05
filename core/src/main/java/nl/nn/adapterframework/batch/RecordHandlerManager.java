@@ -22,6 +22,7 @@ import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
@@ -30,14 +31,6 @@ import org.apache.log4j.Logger;
  * Basic implementation of RecordHandlerManager, that allows only for a single flow.
  * The manager decides which handlers to be used for a specific record.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.batch.FieldPositionRecordHandlerManager</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>Name of the manager</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInitial(boolean) initial}</td><td>This manager is the initial manager, i.e. to be used for the first record</td><td>false</td></tr>
- * </table>
- * </p>
  * 
  * @author  John Dekker
  */
@@ -106,6 +99,7 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 		
 	}
 
+	@IbisDoc({"name of the manager", ""})
 	public void setName(String string) {
 		name = string;
 	}
@@ -113,6 +107,7 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 		return name;
 	}
 
+	@IbisDoc({"this manager is the initial manager, i.e. to be used for the first record", "false"})
 	public void setInitial(boolean b) {
 		initial = b;
 	}

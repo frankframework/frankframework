@@ -27,6 +27,7 @@ import jcifs.ntlmssp.Type2Message;
 import jcifs.ntlmssp.Type3Message;
 import jcifs.util.Base64;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -62,21 +63,6 @@ import nl.nn.adapterframework.util.Misc;
 /**
  * Sender that sends a message via a WebService based on NTLM authentication.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setUrl(String) url}</td><td>URL or base of URL to be used </td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setContentType(String) contentType}</td><td>content-type of the request</td><td>text/html; charset=UTF-8</td></tr>
- * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>the SOAPActionUri to be set in the requestheader</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTimeout(int) timeout}</td><td>timeout in ms of obtaining a connection/result. 0 means no timeout</td><td>10000</td></tr>
- * <tr><td>{@link #setMaxConnections(int) maxConnections}</td><td>the maximum number of concurrent connections</td><td>10</td></tr>
- * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to host</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProxyHost(String) proxyHost}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProxyPort(int) proxyPort}</td><td>&nbsp;</td><td>80</td></tr>
- * </table></p>
- * 
  * @author  Peter Leeuwenburgh
  */
 public class WebServiceNtlmSender extends SenderWithParametersBase implements
@@ -233,6 +219,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return getUrl();
 	}
 
+	@IbisDoc({"content-type of the request", "text/html; charset=utf-8"})
 	public void setContentType(String string) {
 		contentType = string;
 	}
@@ -245,6 +232,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return url;
 	}
 
+	@IbisDoc({"url or base of url to be used ", ""})
 	public void setUrl(String string) {
 		url = string;
 	}
@@ -253,6 +241,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return timeout;
 	}
 
+	@IbisDoc({"timeout in ms of obtaining a connection/result. 0 means no timeout", "10000"})
 	public void setTimeout(int i) {
 		timeout = i;
 	}
@@ -261,6 +250,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return maxConnections;
 	}
 
+	@IbisDoc({"the maximum number of concurrent connections", "10"})
 	public void setMaxConnections(int i) {
 		maxConnections = i;
 	}
@@ -269,6 +259,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return authAlias;
 	}
 
+	@IbisDoc({"alias used to obtain credentials for authentication to host", ""})
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
@@ -277,6 +268,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return userName;
 	}
 
+	@IbisDoc({"username used in authentication to host", ""})
 	public void setUserName(String string) {
 		userName = string;
 	}
@@ -285,6 +277,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return password;
 	}
 
+	@IbisDoc({"", " "})
 	public void setPassword(String string) {
 		password = string;
 	}
@@ -301,6 +294,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return proxyHost;
 	}
 
+	@IbisDoc({"", " "})
 	public void setProxyHost(String string) {
 		proxyHost = string;
 	}
@@ -309,6 +303,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return proxyPort;
 	}
 
+	@IbisDoc({"", "80"})
 	public void setProxyPort(int i) {
 		proxyPort = i;
 	}
@@ -317,6 +312,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return soapAction;
 	}
 
+	@IbisDoc({"the soapactionuri to be set in the requestheader", ""})
 	public void setSoapAction(String string) {
 		soapAction = string;
 	}

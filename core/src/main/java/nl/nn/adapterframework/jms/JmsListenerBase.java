@@ -34,6 +34,7 @@ import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapper;
@@ -47,37 +48,6 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Common baseclass for Pulling and Pushing JMS Listeners.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.jms.JmsListener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>name of the JMS destination (queue or topic) to use</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>either <code>QUEUE</code> or <code>TOPIC</code></td><td><code>QUEUE</code></td></tr>
- * <tr><td>{@link #setQueueConnectionFactoryName(String) queueConnectionFactoryName}</td><td>jndi-name of the queueConnectionFactory, used when <code>destinationType<code>=</code>QUEUE</code></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTopicConnectionFactoryName(String) topicConnectionFactoryName}</td><td>jndi-name of the topicConnectionFactory, used when <code>destinationType<code>=</code>TOPIC</code></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMessageSelector(String) messageSelector}</td><td>When set, the value of this attribute is used as a selector to filter messages.</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setJmsTransacted(boolean) jmsTransacted}</td><td><i>Deprecated</i> when true, sessions are explicitly committed (exit-state equals commitOnState) or rolled-back (other exit-states). Please do not use this mechanism, but control transactions using <code>transactionAttribute</code>s.</td><td>false</td></tr>
- * <tr><td>{@link #setCommitOnState(String) commitOnState}</td><td><i>Deprecated</i> exit state to control commit or rollback of jmsSession. Only used if <code>jmsTransacted</code> is set true.</td><td>"success"</td></tr>
- * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>"auto", "dups" or "client"</td><td>"auto"</td></tr>
- * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>3000 [ms]</td></tr>
- * <tr><td>{@link #setUseReplyTo(boolean) useReplyTo}</td><td>&nbsp;</td><td>true</td></tr>
- * <tr><td>{@link #setReplyMessageTimeToLive(long) replyMessageTimeToLive}</td><td>time that replymessage will live</td><td>0 [ms]</td></tr>
- * <tr><td>{@link #setReplyMessageType(String) replyMessageType}</td><td>value of the JMSType field of the reply message</td><td>not set by application</td></tr>
- * <tr><td>{@link #setReplyDeliveryMode(String) replyDeliveryMode}</td><td>controls mode that reply messages are sent with: either 'persistent' or 'non_persistent'</td><td>not set by application</td></tr>
- * <tr><td>{@link #setReplyPriority(int) replyPriority}</td><td>sets the priority that is used to deliver the reply message. ranges from 0 to 9. Defaults to -1, meaning not set. Effectively the default priority is set by Jms to 4</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setForceMQCompliancy(String) forceMQCompliancy}</td><td>Possible values: 'MQ' or 'JMS'. Setting to 'MQ' informs the MQ-server that the replyto queue is not JMS compliant.</td><td>JMS</td></tr>
- * <tr><td>{@link #setForceMessageIdAsCorrelationId(boolean) forceMessageIdAsCorrelationId}</td><td>
- * forces that the CorrelationId that is received is ignored and replaced by the messageId that is received. Use this to create a new, globally unique correlationId to be used downstream. It also
- * forces that not the Correlation ID of the received message is used in a reply as CorrelationId, but the MessageId.</td><td>false</td></tr>
- * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>SoapAction string sent as messageproperty</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSoapHeaderParam(String) soapHeaderParam}</td><td>name of parameter containing SOAP header</td><td>soapHeader</td></tr>
- * <tr><td>{@link #setxPathLoggingKeys(String) xPathLoggingKeys}</td><td>comma separated list of all xPath keys that need to be logged. (Overrides <code>msg.log.keys</code> property)</td><td>&nbsp;</td></tr>
- * </table>
- * 
  * @author  Gerrit van Brakel
  * @since   4.9
  */
@@ -292,7 +262,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 
 
 	/**
-	 * Extracts string from message obtained from {@link #getRawMessage(Map)}. May also extract
+	 * Extracts string from message obtained from getRawMessage. May also extract
 	 * other parameters from the message and put those in the threadContext.
 	 * @return String  input message for adapter.
 	 */
@@ -409,6 +379,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 * @deprecated consider using XA transactions, controled by the <code>transacted</code>-attribute, rather than
 	 * local transactions controlled by the <code>jmsTransacted</code>-attribute.
 	 */
+	@IbisDoc({"<i>deprecated</i> exit state to control commit or rollback of jmssession. only used if <code>jmstransacted</code> is set true.", "success"})
 	public void setCommitOnState(String newCommitOnState) {
 		commitOnState = newCommitOnState;
 	}
@@ -416,6 +387,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		return commitOnState;
 	}
 
+	@IbisDoc({"receiver timeout, in milliseconds", "3000 [ms]"})
 	public void setTimeOut(long newTimeOut) {
 		timeOut = newTimeOut;
 	}
@@ -424,6 +396,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 
 
+	@IbisDoc({"", "true"})
 	public void setUseReplyTo(boolean newUseReplyTo) {
 		useReplyTo = newUseReplyTo;
 	}
@@ -432,6 +405,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 
 	
+	@IbisDoc({"value of the jmstype field of the reply message", "not set by application"})
 	public void setReplyMessageType(String string) {
 		replyMessageType = string;
 	}
@@ -440,6 +414,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 
 
+	@IbisDoc({"controls mode that reply messages are sent with: either 'persistent' or 'non_persistent'", "not set by application"})
 	public void setReplyDeliveryMode(String string) {
 		replyDeliveryMode = string;
 	}
@@ -448,6 +423,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 
 
+	@IbisDoc({"sets the priority that is used to deliver the reply message. ranges from 0 to 9. defaults to -1, meaning not set. effectively the default priority is set by jms to 4", ""})
 	public void setReplyPriority(int i) {
 		replyPriority = i;
 	}
@@ -456,6 +432,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 
 
+	@IbisDoc({"time that replymessage will live", "0 [ms]"})
 	public void setReplyMessageTimeToLive(long l) {
 		replyMessageTimeToLive = l;
 	}
@@ -463,6 +440,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		return replyMessageTimeToLive;
 	}
 
+	@IbisDoc({"when <code>true</code>, messages sent are put in a soap envelope", "<code>false</code>"})
 	public void setSoap(boolean b) {
 		soap = b;
 	}
@@ -498,6 +476,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		return soapHeaderSessionKey;
 	}
 
+	@IbisDoc({"comma separated list of all xpath keys that need to be logged. (overrides <code>msg.log.keys</code> property)", ""})
 	public void setxPathLoggingKeys(String string) {
 		xPathLoggingKeys = string;
 	}

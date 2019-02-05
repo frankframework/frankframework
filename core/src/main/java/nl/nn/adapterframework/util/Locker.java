@@ -24,6 +24,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.util.Misc;
@@ -35,20 +36,6 @@ import org.apache.commons.lang.StringUtils;
  *
  * Tries to set a lock (by inserting a record in the database table IbisLock) and only if this is done
  * successfully the job is executed.
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.scheduler.Locker</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setObjectId(String) objectId}</td><td>identifier for this lock</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setType(String) type}</td><td>type for this lock: P(ermanent) or T(emporary). A temporary lock is deleted after the job has completed</td><td>T</td></tr>
- * <tr><td>{@link #setDateFormatSuffix(String) dateFormatSuffix}</td><td>format for date which is added after <code>objectId</code> (e.g. yyyyMMdd to be sure the job is executed only once a day)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRetention(int) retention}</td><td>the time (for type=P in days and for type=T in hours) to keep the record in the database before making it eligible for deletion by a cleanup process</td><td>30 days (type=P), 4 hours (type=T)</td></tr>
- * <tr><td>{@link #setNumRetries(int) numRetries}</td><td>the number of times an attempt should be made to acquire a lock, after this many times an exception is thrown when no lock could be acquired, when -1 the number of retries is unlimited</td><td>0</td></tr>
- * <tr><td>{@link #setFirstDelay(int) firstDelay}</td><td>the time in ms to wait before the first attempt to acquire a lock is made, this may be 0 but keep in mind that the other thread or Ibis instance will propably not get much change to acquire a lock when another message is already waiting for the thread having the current lock in which case it will probably acquire a new lock soon after releasing the current lock</td><td>10000</td></tr>
- * <tr><td>{@link #setRetryDelay(int) retryDelay}</td><td>the time in ms to wait before another attempt to acquire a lock is made</td><td>10000</td></tr>
- * </table>
- * </p>
  * 
  * For an Oracle database the following objects are used:
  *  <pre>
@@ -223,6 +210,7 @@ public class Locker extends JdbcFacade {
 		return name;
 	}
 
+	@IbisDoc({"format for date which is added after <code>objectid</code> (e.g. yyyymmdd to be sure the job is executed only once a day)", ""})
 	public void setDateFormatSuffix(String dateFormatSuffix) {
 		this.dateFormatSuffix = dateFormatSuffix;
 	}
@@ -231,6 +219,7 @@ public class Locker extends JdbcFacade {
 		return dateFormatSuffix;
 	}
 
+	@IbisDoc({"type for this lock: p(ermanent) or t(emporary). a temporary lock is deleted after the job has completed", "t"})
 	public void setType(String type) {
 		this.type = type;
 	}
@@ -239,6 +228,7 @@ public class Locker extends JdbcFacade {
 		return type;
 	}
 
+	@IbisDoc({"identifier for this lock", ""})
 	public void setObjectId(String objectId) {
 		this.objectId = objectId;
 	}
@@ -247,6 +237,7 @@ public class Locker extends JdbcFacade {
 		return objectId;
 	}
 
+	@IbisDoc({"the time (for type=p in days and for type=t in hours) to keep the record in the database before making it eligible for deletion by a cleanup process", "30 days (type=p), 4 hours (type=t)"})
 	public void setRetention(int retention) {
 		this.retention = retention;
 	}
@@ -259,6 +250,7 @@ public class Locker extends JdbcFacade {
 		return numRetries;
 	}
 
+	@IbisDoc({"the number of times an attempt should be made to acquire a lock, after this many times an exception is thrown when no lock could be acquired, when -1 the number of retries is unlimited", "0"})
 	public void setNumRetries(int numRetries) {
 		this.numRetries = numRetries;
 	}
@@ -267,6 +259,7 @@ public class Locker extends JdbcFacade {
 		return firstDelay;
 	}
 
+	@IbisDoc({"the time in ms to wait before the first attempt to acquire a lock is made, this may be 0 but keep in mind that the other thread or ibis instance will propably not get much change to acquire a lock when another message is already waiting for the thread having the current lock in which case it will probably acquire a new lock soon after releasing the current lock", "10000"})
 	public void setFirstDelay(int firstDelay) {
 		this.firstDelay = firstDelay;
 	}
@@ -275,6 +268,7 @@ public class Locker extends JdbcFacade {
 		return retryDelay;
 	}
 
+	@IbisDoc({"the time in ms to wait before another attempt to acquire a lock is made", "10000"})
 	public void setRetryDelay(int retryDelay) {
 		this.retryDelay = retryDelay;
 	}

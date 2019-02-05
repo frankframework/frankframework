@@ -24,22 +24,14 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.ClassUtils;
 
 import org.apache.commons.lang.StringUtils;
 
 /**
  * Sends a message to a Sender for each line of the file that the input message refers to.
- * 
- * <p><b>Configuration </b><i>(where deviating from IteratingPipe)</i><b>:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.FileLineIteratorPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMove2dirAfterTransform(String) move2dirAfterTransform}</td><td>Directory in which the transformed file(s) is stored</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMove2dirAfterError(String) move2dirAfterError}</td><td>Directory to which the inputfile is moved in case an error occurs</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
- * 
+ *
  * @author  Gerrit van Brakel
  */
 public class FileLineIteratorPipe extends StreamLineIteratorPipe {
@@ -69,7 +61,7 @@ public class FileLineIteratorPipe extends StreamLineIteratorPipe {
 	 * Move the input file to a done directory when transformation is finished
 	 * and return the names of the generated files. 
 	 * 
-	 * @see nl.nn.adapterframework.core.IPipe#doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)
+	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
 	 */
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		if (input==null) {
@@ -102,6 +94,7 @@ public class FileLineIteratorPipe extends StreamLineIteratorPipe {
 	/**
 	 * @param readyDir directory where input file is moved to in case of a succesful transformation
 	 */
+	@IbisDoc({"directory in which the transformed file(s) is stored", ""})
 	public void setMove2dirAfterTransform(String readyDir) {
 		move2dirAfterTransform = readyDir;
 	}
@@ -112,6 +105,7 @@ public class FileLineIteratorPipe extends StreamLineIteratorPipe {
 	/**
 	 * @param errorDir directory where input file is moved to in case of an error
 	 */
+	@IbisDoc({"directory to which the inputfile is moved in case an error occurs", ""})
 	public void setMove2dirAfterError(String errorDir) {
 		move2dirAfterError = errorDir;
 	}

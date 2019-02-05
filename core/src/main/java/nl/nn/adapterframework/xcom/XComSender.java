@@ -17,6 +17,7 @@ package nl.nn.adapterframework.xcom;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.*;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.FileUtils;
@@ -35,30 +36,6 @@ import org.apache.commons.lang.StringUtils;
 /**
  * XCom client voor het versturen van files via XCom.
 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.ibis4fundation.XComSender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setWorkingDirName(String) workingDirName}</td><td>directory in which to run the xcomtcp command</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setXcomtcp(String) xcomtcp}</td><td>Path to xcomtcp command</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFileOption(String) fileOption}</td><td>One of CREATE, APPEND or REPLACE</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setQueue(Boolean) queue}</td><td>Set queue off or on</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTruncation(Boolean) truncation}</td><td>Set truncation off or on</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTracelevel(Integer) tracelevel}</td><td>Set between 0 (no trace) and 10</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCodeflag(String) codeflag}</td><td>Characterset conversion, one of ASCII or EBCDIC</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCarriageflag(String) carriageflag}</td><td>One of YES, NO, VRL, VRL2, MPACK or XPACK</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCompress(String) compress}</td><td>One of YES, NO, RLE, COMPACT, LZLARGE, LZMEDIUM or LZSMALL</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLogfile(String) logfile}</td><td>Name of logfile for xcomtcp to be used</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRemoteSystem(String) remoteSystem}</td><td>Hostname or tcpip adres of remote host</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPort(String) port}</td><td>Port of remote host</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRemoteDirectory(String) remoteDirectory}</td><td>Remote directory is prefixed witht the remote file</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRemoteFilePattern(String) remoteFilePattern}</td><td>Remote file to create. If empty, the name is equal to the local file</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>name of the alias to obtain credentials to authenticatie on remote server</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUserid(String) userid}</td><td>Loginname of user on remote system</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPassword(String) password}</td><td>Password of user on remote system</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
  *
  * @author John Dekker
  */
@@ -274,6 +251,7 @@ public class XComSender extends SenderWithParametersBase {
 	/* (non-Javadoc)
 	 * @see nl.nn.adapterframework.core.INamedObject#setName(java.lang.String)
 	 */
+	@IbisDoc({"name of the sender", ""})
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -282,6 +260,7 @@ public class XComSender extends SenderWithParametersBase {
 		return fileOption;
 	}
 
+	@IbisDoc({"one of create, append or replace", ""})
 	public void setFileOption(String newVal) {
 		fileOption = newVal;
 	}
@@ -290,6 +269,7 @@ public class XComSender extends SenderWithParametersBase {
 		return remoteDirectory;
 	}
 
+	@IbisDoc({"remote directory is prefixed witht the remote file", ""})
 	public void setRemoteDirectory(String string) {
 		remoteDirectory = string;
 	}
@@ -334,46 +314,57 @@ public class XComSender extends SenderWithParametersBase {
 		return userid;
 	}
 
+	@IbisDoc({"one of yes, no, vrl, vrl2, mpack or xpack", ""})
 	public void setCarriageflag(String string) {
 		carriageflag = string;
 	}
 
+	@IbisDoc({"characterset conversion, one of ascii or ebcdic", ""})
 	public void setCodeflag(String string) {
 		codeflag = string;
 	}
 
+	@IbisDoc({"one of yes, no, rle, compact, lzlarge, lzmedium or lzsmall", ""})
 	public void setCompress(String string) {
 		compress = string;
 	}
 
+	@IbisDoc({"name of logfile for xcomtcp to be used", ""})
 	public void setLogfile(String string) {
 		logfile = string;
 	}
 
+	@IbisDoc({"password of user on remote system", ""})
 	public void setPassword(String string) {
 		password = string;
 	}
 
+	@IbisDoc({"port of remote host", ""})
 	public void setPort(String string) {
 		port = string;
 	}
 
+	@IbisDoc({"set queue off or on", ""})
 	public void setQueue(Boolean b) {
 		queue = b;
 	}
 
+	@IbisDoc({"hostname or tcpip adres of remote host", ""})
 	public void setRemoteSystem(String string) {
 		remoteSystem = string;
 	}
 
+	@IbisDoc({"set between 0 (no trace) and 10", ""})
 	public void setTracelevel(Integer i) {
 		tracelevel = i;
 	}
 
+	@IbisDoc({"set truncation off or on", ""})
 	public void setTruncation(Boolean b) {
 		truncation = b;
 	}
 
+	@IbisDoc({"loginname of user on remote system", ""})
 	public void setUserid(String string) {
 		userid = string;
 	}
@@ -382,6 +373,7 @@ public class XComSender extends SenderWithParametersBase {
 		return remoteFilePattern;
 	}
 
+	@IbisDoc({"remote file to create. if empty, the name is equal to the local file", ""})
 	public void setRemoteFilePattern(String string) {
 		remoteFilePattern = string;
 	}
@@ -389,10 +381,12 @@ public class XComSender extends SenderWithParametersBase {
 		return workingDirName;
 	}
 
+	@IbisDoc({"directory in which to run the xcomtcp command", ""})
 	public void setWorkingDirName(String string) {
 		workingDirName = string;
 	}
 
+	@IbisDoc({"path to xcomtcp command", ""})
 	public void setXcomtcp(String string) {
 		xcomtcp = string;
 	}
@@ -405,6 +399,7 @@ public class XComSender extends SenderWithParametersBase {
 		configFile = string;
 	}
 
+	@IbisDoc({"name of the alias to obtain credentials to authenticatie on remote server", ""})
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}

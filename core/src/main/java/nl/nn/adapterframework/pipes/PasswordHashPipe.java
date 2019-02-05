@@ -21,6 +21,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.PasswordHash;
 
 import org.apache.commons.lang.StringUtils;
@@ -33,14 +34,6 @@ import org.apache.commons.lang.StringUtils;
  * it is validated against the hash in the session key which will determine
  * the forward to be used (success or failure).
  *  
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.PasswordHashPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setHashSessionKey(String) hashSessionKey}</td><td>name of sessionKey that holds the hash which will be used to validate the password (input of the pipe)</td><td></td></tr>
- * </table>
- * </p>
  * 
  * <b>Exits:</b>
  * <table border="1">
@@ -102,6 +95,7 @@ public class PasswordHashPipe extends FixedForwardPipe {
 		return hashSessionKey;
 	}
 
+	@IbisDoc({"name of sessionkey that holds the hash which will be used to validate the password (input of the pipe)", ""})
 	public void setHashSessionKey(String hashSessionKey) {
 		this.hashSessionKey = hashSessionKey;
 	}
