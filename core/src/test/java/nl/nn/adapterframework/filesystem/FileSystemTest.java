@@ -67,18 +67,6 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		return StreamUtil.getReaderContents(new InputStreamReader(in));
 	}
 
-	// TODO: Check if Ali's version of testExists() works like the one below
-//	@Test
-//	public void testExists() throws IOException, FileSystemException {
-//		//setup negative
-//		String filename = FILE1;
-//		deleteFile(filename);
-//		// test
-//		F file = fileSystem.toFile(filename);
-//		assertFalse("Expected file[" + filename + "] not to be present", fileSystem.exists(file));
-//
-//	}
-
 	@Test
 	public void testExists() throws IOException, FileSystemException {
 		//setup negative

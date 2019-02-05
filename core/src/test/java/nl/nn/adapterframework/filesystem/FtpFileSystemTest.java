@@ -4,20 +4,24 @@ package nl.nn.adapterframework.filesystem;
 import java.io.File;
 
 import org.apache.commons.net.ftp.FTPFile;
+import org.junit.Ignore;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.ftp.FtpSession;
 
+@Ignore
 public class FtpFileSystemTest extends LocalFileSystemTestBase<FTPFile, FtpFileSystem> {
 
 	FtpFileSystem ffs;
 	
-	private String localFilePath = "C:/Users/Daniel/Desktop/";
+	// TODO: Add local connection parameters. 
+	
+	private String localFilePath = "";
 	private String share = null;
 	private String relativePath = "DummyFolder/";
-	private String username = "test";
-	private String password = "test";
-	private String host = "10.0.0.179";
+	private String username = "";
+	private String password = "";
+	private String host = "";
 	private int port = 22;
 
 	@Override
