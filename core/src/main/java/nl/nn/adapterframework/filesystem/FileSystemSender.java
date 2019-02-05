@@ -38,12 +38,6 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-
-		if (getAction() == null)
-			throw new ConfigurationException(getLogPrefix() + "action must be specified");
-		if (!actions.contains(getAction()))
-			throw new ConfigurationException(getLogPrefix() + "unknown or invalid action ["
-					+ getAction() + "] supported actions are " + actions.toString() + "");
 	}
 
 	@Override
