@@ -843,7 +843,7 @@ public class FtpSession {
 	public void setCertificate(String string) {
 		certificate = string;
 	}
-	String getCertificate() {
+	public String getCertificate() {
 		return certificate;
 	}
 
@@ -851,7 +851,7 @@ public class FtpSession {
 	public void setCertificateType(String string) {
 		certificateType = string;
 	}
-	String getCertificateType() {
+	public String getCertificateType() {
 		return certificateType;
 	}
 
@@ -867,7 +867,7 @@ public class FtpSession {
 	public void setCertificatePassword(String string) {
 		certificatePassword = string;
 	}
-	String getCertificatePassword() {
+	public String getCertificatePassword() {
 		return certificatePassword;
 	}
 

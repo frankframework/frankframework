@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.senders;
 
-import nl.nn.adapterframework.filesystem.ISambaSender;
+import nl.nn.adapterframework.filesystem.IFileSystemSender;
 
 import org.junit.Ignore;
 
@@ -8,7 +8,7 @@ import org.junit.Ignore;
 public class SambaSenderTest extends SambaFileSystemSenderTest {
 
 	@Override
-	public ISambaSender createFileSystemSender() {
+	public IFileSystemSender createFileSystemSender() {
 		String share = ""; // the path of smb network must start with "smb://"
 		String username = "";
 		String password = "";

@@ -45,7 +45,6 @@ public abstract class LocalFileSystemTestBase<Ff, FS extends IFileSystem<Ff>> ex
 		File f = getFileHandle(filename);
 		f.createNewFile();
 		return new FileOutputStream(f);
-
 	}
 
 	@Override
@@ -55,8 +54,7 @@ public abstract class LocalFileSystemTestBase<Ff, FS extends IFileSystem<Ff>> ex
 	}
 
 	@Override
-	public InputStream _readFile(String filename) throws FileNotFoundException {
+	public InputStream _readFile(String filename) throws FileNotFoundException {		
 		return new FileInputStream(getFileHandle(filename));
 	}
-
 }

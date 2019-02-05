@@ -255,7 +255,6 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 	@Override
 	public void augmentDirectoryInfo(XmlBuilder dirInfo, SmbFile file) {
 		dirInfo.addAttribute("name", file.getCanonicalPath());
-
 	}
 
 	public boolean isListHiddenFiles() {
@@ -264,5 +263,10 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 
 	public void setListHiddenFiles(boolean listHiddenFiles) {
 		this.listHiddenFiles = listHiddenFiles;
+	}
+
+	@Override
+	public void finalizeAction() {
+		// TODO Auto-generated method stub
 	}
 }

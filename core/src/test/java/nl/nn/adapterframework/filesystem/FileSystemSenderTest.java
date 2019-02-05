@@ -19,16 +19,16 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 		LocalFileSystemTestBase<F, FS> {
 
-	ISambaSender fileSystemSender;
+	IFileSystemSender fileSystemSender;
 
-	public ISambaSender createFileSystemSender() {
-		ISambaSender fileSystemSender = (ISambaSender) new FileSystemSender<F, FS>();
+	@SuppressWarnings("unchecked")
+	public IFileSystemSender createFileSystemSender() {
+		IFileSystemSender fileSystemSender = (IFileSystemSender) new FileSystemSender<F, FS>();
 		((FileSystemSender<F, FS>) fileSystemSender).setFileSystem(fileSystem);
 		return fileSystemSender;
 	}
@@ -79,6 +79,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 		String actual;
 		actual = fileSystemSender.sendMessage("<result>ok</result>", filename, prc);
 
+		fileSystem.finalizeAction();
 		actual = readFile(filename);
 		assertEquals(contents.trim(), actual.trim());
 	}
@@ -108,6 +109,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 		String actual;
 		actual = fileSystemSender.sendMessage("<result>ok</result>", filename, prc);
 
+		fileSystem.finalizeAction();
 		actual = readFile(filename);
 		assertEquals(contents.trim(), actual.trim());
 	}
@@ -135,10 +137,11 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 
 		ParameterResolutionContext prc = new ParameterResolutionContext();
 		prc.setSession(session);
-
+		
 		String actual;
 		actual = fileSystemSender.sendMessage("<result>ok</result>", filename, prc);
 
+		fileSystem.finalizeAction();
 		actual = readFile(filename);
 		assertEquals(contents.trim(), actual.trim());
 	}
@@ -237,28 +240,20 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 	@Test
 	public void listActionTest() throws SenderException, TimeOutException, ConfigurationException,
 			IOException {
-
-		File folder = getFileHandle("");
-		File[] listOfFiles = folder.listFiles();
-
-		String actualPath = ""; // FIXME : add your root path
+		
+		File localFolder = getFileHandle("");
+		File[] listOfFiles = localFolder.listFiles();
+		
+		String remoteFolder = "C:/Users/Daniel/Desktop/DummyFolder/"; // FIXME : add your root path
 		int count = (listOfFiles == null ? 0 : listOfFiles.length);
-
+		
 		fileSystemSender.setAction("list");
 		fileSystemSender.configure();
-		String result = fileSystemSender.sendMessage(null, actualPath);
+		String result = fileSystemSender.sendMessage(null, remoteFolder);
 
 		String[] resultArray = result.split("\"");
 		int resultCount = Integer.valueOf(resultArray[3]);
 		assertEquals(count, resultCount);
-		assertEquals(actualPath, resultArray[1]);
-
+		assertEquals(remoteFolder, resultArray[1]);
 	}
-
-	@Override
-	@Ignore
-	@Test
-	public void testListFile() throws IOException, FileSystemException {
-	}
-
 }

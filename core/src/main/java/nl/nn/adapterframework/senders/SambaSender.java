@@ -32,8 +32,8 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.filesystem.IFileSystemSender;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.filesystem.ISambaSender;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -69,7 +69,7 @@ import org.apache.commons.lang.StringUtils;
  * @author	Niels Meijer
  * @since	7.1-B4
  */
-public class SambaSender extends SenderWithParametersBase implements ISambaSender {
+public class SambaSender extends SenderWithParametersBase implements IFileSystemSender {
 
 	private String domain = null;
 	private String username = null;
