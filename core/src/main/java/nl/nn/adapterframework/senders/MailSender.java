@@ -163,6 +163,50 @@ public class MailSender extends SenderWithParametersBase {
 
 	private Session session;
 	private Properties properties;
+
+	private class Recipient {
+		String value;
+		String type;
+
+		Recipient(String value, String type) {
+			this.value = value;
+			this.type = type;
+		}
+		
+		public String toString() {
+			return "type ["+type+"] value ["+value+"]";
+		}
+		
+		public String getValue() {
+			return value;
+		}
+
+		public String getType() {
+			return type;
+		}
+	}
+
+	private class Attachment {
+		Object value;
+		String name;
+
+		Attachment(Object value, String name) {
+			this.value = value;
+			this.name = name;
+		}
+
+		public String toString() {
+			return "name ["+name+"] value ["+value+"]";
+		}
+
+		public Object getValue() {
+			return value;
+		}
+
+		public String getName() {
+			return name;
+		}
+}
 	
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getSmtpHost())) {
@@ -663,53 +707,5 @@ public class MailSender extends SenderWithParametersBase {
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
 	}
-
-	public void setProperties(Properties properties) {
-		this.properties = properties;
-	}
-	
-	private class Recipient {
-		String value;
-		String type;
-
-		Recipient(String value, String type) {
-			this.value = value;
-			this.type = type;
-		}
-		
-		public String toString() {
-			return "type ["+type+"] value ["+value+"]";
-		}
-		
-		public String getValue() {
-			return value;
-		}
-
-		public String getType() {
-			return type;
-		}
-	}
-
-	private class Attachment {
-		Object value;
-		String name;
-
-		Attachment(Object value, String name) {
-			this.value = value;
-			this.name = name;
-		}
-
-		public String toString() {
-			return "name ["+name+"] value ["+value+"]";
-		}
-
-		public Object getValue() {
-			return value;
-		}
-
-		public String getName() {
-			return name;
-		}
-}
 
 }
