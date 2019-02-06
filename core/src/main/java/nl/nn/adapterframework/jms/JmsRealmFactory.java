@@ -40,7 +40,7 @@ public class JmsRealmFactory {
 
 
     private static JmsRealmFactory self = null;
-    private Hashtable jmsRealms = new Hashtable();
+    private Hashtable<String, JmsRealm> jmsRealms = new Hashtable<String, JmsRealm>();
 
     /**
      * Private constructor to prevent breaking of the singleton pattern
@@ -75,8 +75,8 @@ public class JmsRealmFactory {
      * Get the realmnames as an Iterator, alphabetically sorted
      * @return Iterator with the realm names, alphabetically sorted
      */
-    public Iterator getRegisteredRealmNames() {
-        SortedSet sortedKeys = new TreeSet(jmsRealms.keySet());
+    public Iterator<String> getRegisteredRealmNames() {
+        SortedSet<String> sortedKeys = new TreeSet<String>(jmsRealms.keySet());
         return sortedKeys.iterator();
     }
     /**
@@ -84,8 +84,8 @@ public class JmsRealmFactory {
      * @return List with the realm names
      */
     public List<String> getRegisteredRealmNamesAsList() {
-        Iterator it = getRegisteredRealmNames();
-        List result = new ArrayList();
+        Iterator<String> it = getRegisteredRealmNames();
+        List<String> result = new ArrayList<String>();
         while (it.hasNext()) {
             result.add((String) it.next());
         }
@@ -104,7 +104,7 @@ public class JmsRealmFactory {
     }
 
 	public String getFirstDatasourceJmsRealm() {
-		Iterator it = getRegisteredRealmNames();
+		Iterator<String> it = getRegisteredRealmNames();
 		while (it.hasNext()) {
 			String jr = (String) it.next();
 			if (StringUtils.isNotEmpty(getJmsRealm(jr).getDatasourceName())) {
@@ -115,8 +115,8 @@ public class JmsRealmFactory {
 	}
 
     public List getRegisteredDatasourceRealmNamesAsList() {
-        Iterator it = getRegisteredRealmNames();
-        List result = new ArrayList();
+        Iterator<String> it = getRegisteredRealmNames();
+        List<String> result = new ArrayList<String>();
         while (it.hasNext()) {
 			String jr = (String) it.next();
 			if (StringUtils.isNotEmpty(getJmsRealm(jr).getDatasourceName())) {

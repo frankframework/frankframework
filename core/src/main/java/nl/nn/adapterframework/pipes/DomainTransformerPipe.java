@@ -22,13 +22,14 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import javax.sql.DataSource;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -76,7 +77,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 
 	private FixedQuerySender qs;
 	private String query;
-	private Map proxiedDataSources;
+	private Map<String, DataSource> proxiedDataSources;
 	private String jmsRealm;
 
 	public void configure() throws ConfigurationException {

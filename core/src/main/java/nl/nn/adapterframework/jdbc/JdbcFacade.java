@@ -66,7 +66,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
     private String username=null;
     private String password=null;
     
-	private Map proxiedDataSources = null;
+	private Map<String, DataSource> proxiedDataSources = null;
 	private DataSource datasource = null;
 	private String datasourceName = null;
 
@@ -81,7 +81,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
 	}
 
-	public void setProxiedDataSources(Map proxiedDataSources) {
+	public void setProxiedDataSources(Map<String, DataSource> proxiedDataSources) {
 		this.proxiedDataSources = proxiedDataSources;
 	}
 
