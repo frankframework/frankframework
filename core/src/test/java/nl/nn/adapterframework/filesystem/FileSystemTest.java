@@ -6,6 +6,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -223,10 +224,18 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		String contents2 = "maakt ook niet uit";
 		createFile(FILE1, contents1);
 		createFile(FILE2, contents2);
+		
 		Iterator<F> it = fileSystem.listFiles();
+		int fileCount = 0;
+		while(it.hasNext()) {
+			fileCount++;
+			it.next();
+		}
+
+		it = fileSystem.listFiles();
 		
 		F file;
-		for(int i = 0; i < 8; i++) {
+		for(int i = 0; i < fileCount; i++) {
 			assertTrue(it.hasNext());
 			file = it.next();
 		}
@@ -235,7 +244,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		deleteFile(FILE1);
 
 		it = fileSystem.listFiles();
-		for(int i = 0; i < 7; i++) {
+		for(int i = 0; i < fileCount-1; i++) {
 			assertTrue(it.hasNext());
 			file = it.next();
 		}
