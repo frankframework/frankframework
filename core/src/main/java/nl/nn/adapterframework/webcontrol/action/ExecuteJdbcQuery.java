@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -82,23 +82,21 @@ public final class ExecuteJdbcQuery extends ActionBase {
 						log.warn("could not restore cookie values", e);
 					}
 				}
-
 			}
 		}
 
-		// TODO: JmsRealmFactory call might need to be replaced with something else?
-		List datasourceNames = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
+		List<String> datasourceNames = JmsRealmFactory.getInstance().getRegisteredDatasourceRealmNamesAsList();
 		if (datasourceNames.size() == 0)
 			datasourceNames.add("no data sources defined");
 		executeJdbcQueryForm.set("datasourceNames", datasourceNames);
 
-		List expectResultOptions = new ArrayList();
+		List<String> expectResultOptions = new ArrayList<String>();
 		expectResultOptions.add("auto");
 		expectResultOptions.add("yes");
 		expectResultOptions.add("no");
 		executeJdbcQueryForm.set("expectResultOptions", expectResultOptions);
 
-		List resultTypes = new ArrayList();
+		List<String> resultTypes = new ArrayList<String>();
 		resultTypes.add("csv");
 		resultTypes.add("xml");
 		executeJdbcQueryForm.set("resultTypes", resultTypes);

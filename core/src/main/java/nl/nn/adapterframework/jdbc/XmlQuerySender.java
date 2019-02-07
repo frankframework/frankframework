@@ -287,8 +287,10 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			where = XmlUtils.getChildTagAsString(queryElement, "where");
 			order = XmlUtils.getChildTagAsString(queryElement, "order");
 			
-			// TODO: Only run this when datasourceName != default datasourceName?
-			connection = getConnection(queryElement.getAttribute("datasourceName"));
+			String datasourceName = queryElement.getAttribute("datasourceName");
+			if(datasourceName != getDataSourceNameToUse()) {
+				connection = getConnection(datasourceName);
+			}
 			
 			if (root.equalsIgnoreCase("select")) {
 				result = selectQuery(connection, correlationID, tableName, columns, where, order);
@@ -624,6 +626,9 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getJmsRealmName())) {
 			setJmsRealm("jdbc");
+		}
+		if(StringUtils.isEmpty(getDatasourceName())) {
+			setDatasourceName("jdbc/ibis4example");
 		}
 		
 		super.configure();

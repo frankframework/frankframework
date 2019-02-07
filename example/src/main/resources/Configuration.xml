@@ -5,8 +5,10 @@
 ]>
 <configuration name="Ibis4Example">
 	<jmsRealms>
-		<jmsRealm realmName="jdbc" datasourceName="jdbc/${instance.name.lc}"/>
+		<jmsRealm realmName="${instance.name.lc}" datasourceName="jdbc/${instance.name.lc}"/>
+		<jmsRealm realmName="secondDatabase" datasourceName="jdbc/secondDatabase"/>
 		<!-- jmsRealm realmName="qcf" queueConnectionFactoryName="jms/qcf"/ -->
+		<!-- TODO: Wat wordt de realm name van deze jongens? -->
 	</jmsRealms>
 	&HelloWorld;
 	&HelloWorlds;

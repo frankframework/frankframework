@@ -2,19 +2,19 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 	<xsl:output method="xml" indent="yes" />
 
-    <xsl:variable name="jmsRealm">
-        <xsl:value-of select="manageDatabaseREQ/@jmsRealm"/>
+    <xsl:variable name="datasourceName">
+        <xsl:value-of select="manageDatabaseREQ/@datasourceName"/>
     </xsl:variable>
     
-    <xsl:template match="/manageDatabaseREQ/@jmsRealm" />
+    <xsl:template match="/manageDatabaseREQ/@datasourceName" />
     
 	<xsl:template match="/manageDatabaseREQ/sql | /manageDatabaseREQ/insert | /manageDatabaseREQ/select | /manageDatabaseREQ/update | /manageDatabaseREQ/delete | /manageDatabaseREQ/alter">
 		<xsl:copy>
-			<xsl:if test="$jmsRealm != ''">
-           		<xsl:attribute name="jmsRealm">
+			<xsl:if test="$datasourceName != ''">
+           		<xsl:attribute name="datasourceName">
 					<xsl:choose>
-						<xsl:when test="./@jmsRealm != ''"><xsl:value-of select="./@jmsRealm"/></xsl:when>
-						<xsl:otherwise><xsl:value-of select="$jmsRealm"/></xsl:otherwise>
+						<xsl:when test="./@datasourceName != ''"><xsl:value-of select="./@datasourceName"/></xsl:when>
+						<xsl:otherwise><xsl:value-of select="$datasourceName"/></xsl:otherwise>
 					</xsl:choose>
             	</xsl:attribute>
             </xsl:if>

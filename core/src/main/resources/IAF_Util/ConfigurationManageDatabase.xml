@@ -26,7 +26,7 @@
 			</pipe> -->
 			<pipe name="ApplyJmsRealms"
 				className="nl.nn.adapterframework.pipes.XsltPipe"
-				styleSheetName="ManageDatabase/xsl/ApplyJmsRealmAttribute.xsl"
+				styleSheetName="ManageDatabase/xsl/ApplyDatasourceNameAttribute.xsl"
 				>
 				<forward name="success" path="Query"/>
 			</pipe>

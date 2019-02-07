@@ -51,6 +51,33 @@
 		<property name="maxIdle" value="5"/>
 		<property name="maxWait" value="30000"/>
 	</bean>
+	
+	<!-- Uncomment the following code (up until the TEST END marker) for multiple data source test purposes -->
+	<bean
+		id="secondDataSource"
+		class="org.apache.commons.dbcp.BasicDataSource"
+		>
+		<property name="driverClassName" value="org.h2.Driver"/>
+		<property name="url" value="jdbc:h2:${log.dir}/secondDatabase;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE"/>
+		<property name="maxActive" value="1000"/>
+		<property name="maxIdle" value="5"/>
+		<property name="maxWait" value="30000"/>
+	</bean>
+
+	<!-- Make the proxied data source available to the JdbcFacade. -->
+	<bean id="proxiedDataSources" class="java.util.HashMap">
+		<constructor-arg>
+			<map>
+				<entry key="jdbc/${instance.name.lc}">
+					<ref bean="defaultDataSource"/>
+				</entry>
+				<entry key="jdbc/secondDatabase">
+					<ref bean="secondDataSource"/>
+				</entry>
+			</map>
+		</constructor-arg>
+	</bean>
+	<!-- TEST END -->
 
 	<!--
 	Overwrite jndiDataSource bean to prevent:

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -93,28 +93,22 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return result;
 	}
 
+	/**
+	 * Looks for the sender's default data source through the sender's configured proxied data sources,
+	 * then through the sender's JNDI context, and returns it when found.
+	 * 
+	 * @return The data source with matching name.
+	 * @throws JdbcException
+	 */
 	protected DataSource getDatasource() throws JdbcException {
 		if (datasource==null) {
 			String dsName = getDataSourceNameToUse();
-			if (proxiedDataSources != null && proxiedDataSources.containsKey(dsName)) {
-				log.debug(getLogPrefix()+"looking up proxied Datasource ["+dsName+"]");
-				datasource = (DataSource)proxiedDataSources.get(dsName);
-			} else {
-				String prefixedDsName=getJndiContextPrefix()+dsName;
-				log.debug(getLogPrefix()+"looking up Datasource ["+prefixedDsName+"]");
-				if (StringUtils.isNotEmpty(getJndiContextPrefix())) {
-					log.debug(getLogPrefix()+"using JNDI context prefix ["+getJndiContextPrefix()+"]");
-				}
-				try {
-					datasource =(DataSource) getContext().lookup( prefixedDsName );
-				} catch (NamingException e) {
-					throw new JdbcException("Could not find Datasource ["+prefixedDsName+"]", e);
-				}
-			}
+			
+			datasource = lookupDatasource(dsName);
 			if (datasource==null) {
 				throw new JdbcException("Could not find Datasource ["+dsName+"]");
 			}
-			String dsinfo=getDatasourceInfo();
+			String dsinfo=getDatasourceInfo(dsName);
 			if (dsinfo==null) {
 				dsinfo=datasource.toString();
 			}
@@ -122,12 +116,51 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		}
 		return datasource;
 	}
+	
+	/**
+	 * Searches through the sender's configured proxied data sources, then through the sender's JNDI context,
+	 * for a data source with a name that matches the given parameter.
+	 * 
+	 * @param dsName The name of the data source.
+	 * @return The data source with matching name.
+	 * @throws JdbcException
+	 */
+	public DataSource getDatasource(String dsName) throws JdbcException {
+		if(!dsName.startsWith("jdbc/"))
+			dsName = "jdbc/" + dsName;
+		
+		return lookupDatasource(dsName);
+	}
+	
+	private DataSource lookupDatasource(String dsName) throws JdbcException {
+		if (proxiedDataSources != null && proxiedDataSources.containsKey(dsName)) {
+			log.debug(getLogPrefix()+"looking up proxied Datasource ["+dsName+"]");
+			datasource = (DataSource)proxiedDataSources.get(dsName);
+		} else {
+			String prefixedDsName=getJndiContextPrefix()+dsName;
+			log.debug(getLogPrefix()+"looking up Datasource ["+prefixedDsName+"]");
+			if (StringUtils.isNotEmpty(getJndiContextPrefix())) {
+				log.debug(getLogPrefix()+"using JNDI context prefix ["+getJndiContextPrefix()+"]");
+			}
+			try {
+				datasource = (DataSource) getContext().lookup( prefixedDsName );
+			} catch (NamingException e) {
+				System.out.println("DatasourceName = " + prefixedDsName);
+				throw new JdbcException("Could not find Datasource ["+prefixedDsName+"]", e);
+			}
+		}
+		return datasource;
+	}
 
 	public String getDatasourceInfo() throws JdbcException {
+		return getDatasourceInfo(getDataSourceNameToUse());
+	}
+	
+	public String getDatasourceInfo(String dsName) throws JdbcException {
 		String dsinfo=null;
 		Connection conn=null;
 		try {
-			conn=getConnection();
+			conn=getConnection(dsName);
 			DatabaseMetaData md=conn.getMetaData();
 			String product=md.getDatabaseProductName();
 			String productVersion=md.getDatabaseProductVersion();
@@ -135,10 +168,10 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 			String driverVersion=md.getDriverVersion();
 			String url=md.getURL();
 			String user=md.getUserName();
-			if (getDatabaseType() == DbmsSupportFactory.DBMS_DB2
+			if (getDatabaseType(dsName) == DbmsSupportFactory.DBMS_DB2
 					&& "WAS".equals(IbisContext.getApplicationServerType())
 					&& md.getResultSetHoldability() != ResultSet.HOLD_CURSORS_OVER_COMMIT) {
-				// For (some?) combinations of WebShere and DB2 this seems to be
+				// For (some?) combinations of WebSphere and DB2 this seems to be
 				// the default and result in the following exception when (for
 				// example?) a ResultSetIteratingPipe is calling next() on the
 				// ResultSet after it's sender has called a pipeline which
@@ -167,13 +200,21 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return dsinfo;
 	}
 
-	
-	public int getDatabaseType() {
-		IDbmsSupport dbms=getDbmsSupport();
+	/**
+	 * 
+	 * @param dsName The name of the data source to retrieve the database type of.
+	 * @return The type of the specified database.
+	 */
+	public int getDatabaseType(String dsName) {
+		IDbmsSupport dbms=getDbmsSupport(dsName);
 		if (dbms==null) {
 			return -1;
 		}
 		return dbms.getDatabaseType();
+	}
+	
+	public int getDatabaseType() throws JdbcException {
+		return getDatabaseType(getDataSourceNameToUse());
 	}
 
 	public IDbmsSupportFactory getDbmsSupportFactoryDefault() {
@@ -199,12 +240,21 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	public void setDbmsSupport(IDbmsSupport dbmsSupport) {
 		this.dbmsSupport=dbmsSupport;
 	}
-		
+	
 	public IDbmsSupport getDbmsSupport() {
+		try {
+			return getDbmsSupport(getDataSourceNameToUse());
+		} catch (JdbcException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+		
+	public IDbmsSupport getDbmsSupport(String dsName) {
 		if (dbmsSupport==null) {
 			Connection conn=null;
 			try {
-				conn=getConnection();
+				conn=getConnection(dsName);
 			} catch (Exception e) {
 				throw new RuntimeException("Cannot obtain connection to determine dbmssupport", e);
 			}
@@ -230,22 +280,31 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		}
 		return dbmsSupport;
 	}
+	
 	/**
-	 * Obtains a connection to the datasource. 
+	 * Obtains a connection to the default data source. 
 	 */
 	// TODO: consider making this one protected.
 	public Connection getConnection() throws JdbcException {
-		DataSource ds=getDatasource();
+		return getConnection(getDataSourceNameToUse());
+	}
+	
+	/**
+	 * Attempts to obtain a connection to a data source with the specified name.
+	 */
+	// TODO: consider making this one protected.
+	public Connection getConnection(String datasourceName) throws JdbcException {
+		DataSource ds = getDatasource(datasourceName);
 		try {
-			if (StringUtils.isNotEmpty(getUsername())) {
+			if(StringUtils.isNotEmpty(getUsername())) {
 				return ds.getConnection(getUsername(),getPassword());
 			}
 			return ds.getConnection();
 		} catch (SQLException e) {
-			throw new JdbcException(getLogPrefix()+"cannot open connection on datasource ["+getDataSourceNameToUse()+"]", e);
+			throw new JdbcException(getLogPrefix()+"cannot open connection on datasource ["+datasourceName+"]", e);
 		}
 	}
-
+	
 	public Connection getConnectionWithTimeout(int timeout) throws JdbcException, TimeOutException {
 		if (timeout<=0) {
 			return getConnection();
@@ -260,7 +319,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 			} 
 		}
 	}
-
+	
 	/**
 	 * Returns the name and location of the database that this objects operates on.
 	 *  
