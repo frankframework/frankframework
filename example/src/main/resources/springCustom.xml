@@ -53,7 +53,7 @@
 	</bean>
 	
 	<!-- Uncomment the following code (up until the TEST END marker) for multiple data source test purposes -->
-	<bean
+	<!-- <bean
 		id="secondDataSource"
 		class="org.apache.commons.dbcp.BasicDataSource"
 		>
@@ -64,7 +64,6 @@
 		<property name="maxWait" value="30000"/>
 	</bean>
 
-	<!-- Make the proxied data source available to the JdbcFacade. -->
 	<bean id="proxiedDataSources" class="java.util.HashMap">
 		<constructor-arg>
 			<map>
@@ -76,8 +75,10 @@
 				</entry>
 			</map>
 		</constructor-arg>
-	</bean>
+	</bean> -->
 	<!-- TEST END -->
+
+
 
 	<!--
 	Overwrite jndiDataSource bean to prevent:
