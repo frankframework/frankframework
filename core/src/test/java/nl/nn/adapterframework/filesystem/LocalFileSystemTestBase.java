@@ -8,13 +8,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-
 import org.junit.Before;
 import org.junit.rules.TemporaryFolder;
 
-public abstract class LocalFileSystemTestBase<Ff, FS extends IFileSystem<Ff>> extends
-		FileSystemTest<Ff, FS> {
+import nl.nn.adapterframework.configuration.ConfigurationException;
+
+public abstract class LocalFileSystemTestBase<Ff, FS extends IFileSystem<Ff>>
+		extends FileSystemTest<Ff, FS> {
 
 	public TemporaryFolder folder;
 
@@ -54,7 +54,7 @@ public abstract class LocalFileSystemTestBase<Ff, FS extends IFileSystem<Ff>> ex
 	}
 
 	@Override
-	public InputStream _readFile(String filename) throws FileNotFoundException {		
+	public InputStream _readFile(String filename) throws FileNotFoundException {
 		return new FileInputStream(getFileHandle(filename));
 	}
 }

@@ -14,11 +14,11 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Iterator;
 
-import liquibase.util.StreamUtil;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-
 import org.junit.Before;
 import org.junit.Test;
+
+import liquibase.util.StreamUtil;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 
 public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 
@@ -70,7 +70,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	@Test
 	public void testExists() throws IOException, FileSystemException {
 		//setup negative
-		String filename = FILE1;
+		String filename = "testExists" + FILE1;
 		deleteFile(filename);
 		// test
 		F file = fileSystem.toFile(filename);
@@ -90,7 +90,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 
 	@Test
 	public void testCreateNewFile() throws IOException, FileSystemException {
-		String filename = FILE1;
+		String filename = "create" + FILE1;
 		String contents = "regeltje tekst";
 		deleteFile(filename);
 
@@ -102,7 +102,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		pw.close();
 		out.close();
 		fileSystem.finalizeAction();
-		
+
 		assertTrue(_fileExists(filename));
 		String actual = readFile(filename);
 		assertEquals(contents.trim(), actual.trim());
@@ -110,19 +110,19 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 
 	@Test
 	public void testCreateOverwriteFile() throws IOException, FileSystemException {
-		String filename = FILE1;
+		String filename = "overwrited" + FILE1;
 		createFile(filename, "Eerste versie van de file");
 		String contents = "Tweede versie van de file";
-		
+
 		F file = fileSystem.toFile(filename);
 		OutputStream out = fileSystem.createFile(file);
-		
+
 		PrintWriter pw = new PrintWriter(out);
 		pw.println(contents);
 		pw.close();
 		out.close();
 		fileSystem.finalizeAction();
-		
+
 		assertTrue(_fileExists(filename));
 		String actual = readFile(filename);
 		assertEquals(contents.trim(), actual.trim());
@@ -130,7 +130,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 
 	@Test
 	public void testTruncateFile() throws IOException, FileSystemException {
-		String filename = FILE1;
+		String filename = "truncated" + FILE1;
 		createFile(filename, "Eerste versie van de file");
 
 		F file = fileSystem.toFile(filename);
@@ -159,7 +159,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		pw.close();
 		out.close();
 		fileSystem.finalizeAction();
-		
+
 		assertTrue(_fileExists(filename));
 		String actual = readFile(filename);
 		assertEquals(expected.trim(), actual.trim());
@@ -167,7 +167,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 
 	@Test
 	public void testDelete() throws IOException, FileSystemException {
-		String filename = FILE1;
+		String filename = "tobeDeleted" + FILE1;
 		createFile(filename, "maakt niet uit");
 		assertTrue(_fileExists(filename));
 
@@ -184,8 +184,8 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	//		assertEquals(expectedContents.trim(),actual.trim());
 	//	}
 
-	public void testReadFile(F file, String expectedContents) throws IOException,
-			FileSystemException {
+	public void testReadFile(F file, String expectedContents)
+			throws IOException, FileSystemException {
 		InputStream in = fileSystem.readFile(file);
 
 		String actual = StreamUtil.getReaderContents(new InputStreamReader(in));
@@ -208,7 +208,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		assertThat(fiString, containsString("name"));
 		assertThat(fiString, containsString("lastModified"));
 	}
-	
+
 	public void testFileInfo() throws FileSystemException {
 		testFileInfo(fileSystem.toFile(FILE1));
 		testFileInfo(fileSystem.toFile(FILE2));
@@ -224,9 +224,9 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		createFile(FILE1, contents1);
 		createFile(FILE2, contents2);
 		Iterator<F> it = fileSystem.listFiles();
-		
+
 		F file;
-		for(int i = 0; i < 8; i++) {
+		for (int i = 0; i < 8; i++) {
 			assertTrue(it.hasNext());
 			file = it.next();
 		}
@@ -235,7 +235,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		deleteFile(FILE1);
 
 		it = fileSystem.listFiles();
-		for(int i = 0; i < 7; i++) {
+		for (int i = 0; i < 7; i++) {
 			assertTrue(it.hasNext());
 			file = it.next();
 		}

@@ -2,9 +2,9 @@ package nl.nn.adapterframework.filesystem;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
+
+import org.apache.commons.codec.binary.Base64InputStream;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
@@ -13,27 +13,17 @@ import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.senders.IFileSystemSender;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
-
-import org.apache.commons.codec.binary.Base64InputStream;
 
 public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithParametersBase
 		implements IFileSystemSender {
 
-	private String action = null;
-	private List<String> actions = Arrays.asList("delete", "upload", "mkdir", "rmdir", "rename",
-			"download", "list");
-
+	private int lastProcessedActionIndex = 0;
+	private String[] actionArray;
+	private String action;
 	private FS fileSystem;
-
-	public FS getFileSystem() {
-		return fileSystem;
-	}
-
-	public void setFileSystem(FS fileSystem) {
-		this.fileSystem = fileSystem;
-	}
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -107,17 +97,42 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 				ifs.renameTo(file, destination);
 			}
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix() + "unable to process action for SmbFile ["
-					+ message + "]", e);
+			throw new SenderException(
+					getLogPrefix() + "unable to process action for File [" + message + "]", e);
 		}
+
 		return correlationID;
 	}
 
-	public void setAction(String action) {
-		this.action = action.toLowerCase();
+	public FS getFileSystem() {
+		return fileSystem;
+	}
+
+	public void setFileSystem(FS fileSystem) {
+		this.fileSystem = fileSystem;
+	}
+
+	public String[] getActionArray() {
+		return actionArray;
+	}
+
+	public void setActionArray(String[] actionArray) {
+		this.actionArray = actionArray;
+	}
+
+	public int getLastProcessedActionIndex() {
+		return lastProcessedActionIndex;
+	}
+
+	public void setLastProcessedActionIndex(int lastProcessedActionIndex) {
+		this.lastProcessedActionIndex = lastProcessedActionIndex;
 	}
 
 	public String getAction() {
 		return action;
+	}
+
+	public void setAction(String action) {
+		this.action = action;
 	}
 }

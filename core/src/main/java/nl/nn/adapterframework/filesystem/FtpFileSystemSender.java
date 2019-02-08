@@ -4,6 +4,7 @@ import org.apache.commons.net.ftp.FTPFile;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.ftp.FtpSession;
+import nl.nn.adapterframework.senders.IFileSystemSender;
 
 public class FtpFileSystemSender extends FileSystemSender<FTPFile, FtpFileSystem> 
 implements IFileSystemSender {
