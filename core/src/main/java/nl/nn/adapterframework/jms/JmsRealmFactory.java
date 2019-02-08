@@ -114,7 +114,7 @@ public class JmsRealmFactory {
 		return null;
 	}
 
-    public List getRegisteredDatasourceRealmNamesAsList() {
+    public List<String> getRegisteredDatasourceRealmNamesAsList() {
         Iterator<String> it = getRegisteredRealmNames();
         List<String> result = new ArrayList<String>();
         while (it.hasNext()) {

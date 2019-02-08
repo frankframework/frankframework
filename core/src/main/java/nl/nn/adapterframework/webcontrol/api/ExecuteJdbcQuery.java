@@ -112,7 +112,6 @@ public final class ExecuteJdbcQuery extends Base {
 		//We have all info we need, lets execute the query!
 		
 		DirectQuerySender qs;
-		System.out.println("DirectQuery sent via: " + this.getClass().getName());
 		try {
 			qs = (DirectQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 		} catch (Exception e) {

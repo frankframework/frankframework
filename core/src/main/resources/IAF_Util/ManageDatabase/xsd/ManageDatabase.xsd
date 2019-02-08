@@ -51,6 +51,7 @@
 			<xsd:element name="columns" type="columnsType" minOccurs="0"/>
 			<xsd:element name="where" type="xsd:string" minOccurs="0"/>
 			<xsd:element name="order" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="datasourceName" type="xsd:string" minOccurs="0"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="updateType">

@@ -168,18 +168,18 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		String query,
 		String result,
 		DynaActionForm executeJdbcQueryExecuteForm) {
-		List datasourceNames = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
+		List<String> datasourceNames = JmsRealmFactory.getInstance().getRegisteredDatasourceRealmNamesAsList();
 		if (datasourceNames.size() == 0)
 			datasourceNames.add("no data sources defined");
 		executeJdbcQueryExecuteForm.set("datasourceNames", datasourceNames);
 		
-		List expectResultOptions = new ArrayList();
+		List<String> expectResultOptions = new ArrayList<String>();
 		expectResultOptions.add("auto");
 		expectResultOptions.add("yes");
 		expectResultOptions.add("no");
 		executeJdbcQueryExecuteForm.set("expectResultOptions", expectResultOptions);
 
-		List resultTypes = new ArrayList();
+		List<String> resultTypes = new ArrayList<String>();
 		resultTypes.add("csv");
 		resultTypes.add("xml");
 		executeJdbcQueryExecuteForm.set("resultTypes", resultTypes);
