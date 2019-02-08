@@ -20,10 +20,6 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<!-- <pipe className="nl.nn.adapterframework.pipes.PutParametersInSession" name="PutParamsInSession">
-				<param name= "jmsRealm" xpathExpression="/manageDatabaseREQ/@jmsRealm" defaultValue="jdbc"/>
-				<forward name="success" path="Query" />
-			</pipe> -->
 			<pipe name="ApplyJmsRealms"
 				className="nl.nn.adapterframework.pipes.XsltPipe"
 				styleSheetName="ManageDatabase/xsl/ApplyDatasourceNameAttribute.xsl"
@@ -31,8 +27,7 @@
 				<forward name="success" path="Query"/>
 			</pipe>
 			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="Query" elementXPathExpression="manageDatabaseREQ/*" ignoreExceptions="true">
-				<sender className="nl.nn.adapterframework.jdbc.XmlQuerySender" jmsRealm="@jmsRealm">
-					<!-- <param name="jmsRealm" sessionKey="jmsRealm" xpathExpression="*/@jmsRealm" defaultValueMethods="xpathExpression, sessionKey, defaultValue"/> -->
+				<sender className="nl.nn.adapterframework.jdbc.XmlQuerySender">
 				</sender>
 				<forward name="success" path="ManageDatabaseRLY" />
 			</pipe>

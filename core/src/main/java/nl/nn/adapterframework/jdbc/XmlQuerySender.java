@@ -35,6 +35,7 @@ import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -291,7 +292,6 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			
 			String datasourceName = queryElement.getAttribute("datasourceName");
 			if(!datasourceName.equals(getDataSourceNameToUse())) {
-				System.out.println("Executing query with data source: " + datasourceName);
 				myConn = getConnection(datasourceName);
 				connection = myConn;
 			}
@@ -626,15 +626,11 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			}
 		}
 	}
-
+	
 	@Override
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isEmpty(getJmsRealmName())) {
-			setJmsRealm("jdbc");
-		}
-		if(StringUtils.isEmpty(getDatasourceName())) {
-			setDatasourceName("jdbc/ibis4example");
-		}
+		if(StringUtils.isEmpty(getDatasourceName()))
+			setDatasourceName((String)getProxiedDataSources().keySet().toArray()[0]);
 		
 		super.configure();
 	}

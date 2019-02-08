@@ -85,7 +85,11 @@ public final class ExecuteJdbcQuery extends ActionBase {
 			}
 		}
 
-		List<String> datasourceNames = JmsRealmFactory.getInstance().getRegisteredDatasourceRealmNamesAsList();
+		List<String> realmNames = JmsRealmFactory.getInstance().getRegisteredDatasourceRealmNamesAsList();
+		List<String> datasourceNames = new ArrayList<String>();
+		for(String s : realmNames) {
+			datasourceNames.add(JmsRealmFactory.getInstance().getJmsRealm(s).getDatasourceName());
+		}
 		if (datasourceNames.size() == 0)
 			datasourceNames.add("no data sources defined");
 		executeJdbcQueryForm.set("datasourceNames", datasourceNames);

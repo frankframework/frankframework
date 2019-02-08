@@ -81,18 +81,6 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
 	}
 
-	public void setProxiedDataSources(Map<String, DataSource> proxiedDataSources) {
-		this.proxiedDataSources = proxiedDataSources;
-	}
-
-	public String getDataSourceNameToUse() throws JdbcException {
-		String result = getDatasourceName();
-		if (StringUtils.isEmpty(result)) {
-			throw new JdbcException(getLogPrefix()+"no datasourceName specified");
-		}
-		return result;
-	}
-
 	/**
 	 * Looks for the sender's default data source through the sender's configured proxied data sources,
 	 * then through the sender's JNDI context, and returns it when found.
@@ -126,9 +114,6 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	 * @throws JdbcException
 	 */
 	public DataSource getDatasource(String dsName) throws JdbcException {
-		if(!dsName.startsWith("jdbc/"))
-			dsName = "jdbc/" + dsName;
-		
 		return lookupDatasource(dsName);
 	}
 	
@@ -145,7 +130,6 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 			try {
 				datasource = (DataSource) getContext().lookup( prefixedDsName );
 			} catch (NamingException e) {
-				System.out.println("DatasourceName = " + prefixedDsName);
 				throw new JdbcException("Could not find Datasource ["+prefixedDsName+"]", e);
 			}
 		}
@@ -244,10 +228,9 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	public IDbmsSupport getDbmsSupport() {
 		try {
 			return getDbmsSupport(getDataSourceNameToUse());
-		} catch (JdbcException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			throw new RuntimeException("Cannot obtain connection to determine dbmssupport", e);
 		}
-		return null;
 	}
 		
 	public IDbmsSupport getDbmsSupport(String dsName) {
@@ -352,8 +335,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 							pv.getDefinition().getType(), pv.getValue()),
 					i + 1);
 		}
-	}	
-
+	}
 
 	/**
 	 * Sets the name of the object.
@@ -427,4 +409,19 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		connectionsArePooled = b;
 	}
 	
+	public Map<String, DataSource> getProxiedDataSources() {
+		return proxiedDataSources;
+	}
+
+	public void setProxiedDataSources(Map<String, DataSource> proxiedDataSources) {
+		this.proxiedDataSources = proxiedDataSources;
+	}
+
+	public String getDataSourceNameToUse() throws JdbcException {
+		String result = getDatasourceName();
+		if (StringUtils.isEmpty(result)) {
+			throw new JdbcException(getLogPrefix()+"no datasourceName specified");
+		}
+		return result;
+	}
 }
