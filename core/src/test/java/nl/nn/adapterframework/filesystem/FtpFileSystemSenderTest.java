@@ -15,7 +15,10 @@
 */
 package nl.nn.adapterframework.filesystem;
 
-import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.apache.commons.net.ftp.FTPFile;
 import org.junit.Ignore;
@@ -32,34 +35,76 @@ import nl.nn.adapterframework.ftp.FtpSession;
 @Ignore
 public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFileSystem> {
 
-	FtpFileSystem ffs;
-	
+	private FtpFileSystem ffs;
+
 	// TODO: Add local connection parameters.
 	
-	private String localFilePath = "";
-	private String share = null;
-	private String relativePath = "DummyFolder/";
 	private String username = "";
 	private String password = "";
 	private String host = "";
 	private int port = 21;
-
-	@Override
-	protected File getFileHandle(String filename) {
-		return new File(localFilePath + relativePath + filename);
-	}
 	
 	@Override
 	protected FtpFileSystem getFileSystem() throws ConfigurationException {
 		ffs = new FtpFileSystem();
 		FtpSession session = ffs.getFtpSession();
-		
+
 		session.setUsername(username);
 		session.setPassword(password);
 		session.setHost(host);
 		session.setPort(port);
 		ffs.configure();
-		
+
 		return ffs;
+	}
+
+	@Override
+	protected boolean _fileExists(String filename) {
+		try {
+			return ffs.exists(ffs.toFile(filename));
+		} catch (FileSystemException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	@Override
+	protected void _deleteFile(String filename) {
+		try {
+			ffs.deleteFile(ffs.toFile(filename));
+		} catch (FileSystemException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	protected OutputStream _createFile(String filename) throws IOException {
+		try {
+			return ffs.createFile(ffs.toFile(filename));
+		} catch (FileSystemException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	@Override
+	protected InputStream _readFile(String filename) throws FileNotFoundException {
+		try {
+			return ffs.readFile(ffs.toFile(filename));
+		} catch (FileSystemException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	@Override
+	public void _createFolder(String filename) throws IOException {
+		try {
+			ffs.createFolder(ffs.toFile(filename));
+		} catch (FileSystemException e) {
+			e.printStackTrace();
+		}
 	}
 }

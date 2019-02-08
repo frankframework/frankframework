@@ -1,15 +1,18 @@
 package nl.nn.adapterframework.senders;
 
-import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
+
+import org.junit.Ignore;
 
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbFile;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
 import nl.nn.adapterframework.filesystem.SambaFileSystem;
-
-import org.junit.Ignore;
 
 /**
  *  To run this ignore should be removed if all fields are filled.
@@ -27,11 +30,6 @@ public class SambaFileSystemSenderTest extends FileSystemSenderTest<SmbFile, Sam
 	SmbFile context;
 
 	@Override
-	protected File getFileHandle(String filename) {
-		return new File(localFilePath, filename);
-	}
-
-	@Override
 	protected SambaFileSystem getFileSystem() throws ConfigurationException {
 		NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(null, username, password);
 		try {
@@ -40,6 +38,36 @@ public class SambaFileSystemSenderTest extends FileSystemSenderTest<SmbFile, Sam
 			e.printStackTrace();
 		}
 		return new SambaFileSystem(context, false);
+	}
+
+	@Override
+	protected boolean _fileExists(String filename) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	protected void _deleteFile(String filename) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	protected OutputStream _createFile(String filename) throws IOException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected InputStream _readFile(String filename) throws FileNotFoundException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void _createFolder(String filename) throws IOException {
+		// TODO Auto-generated method stub
+
 	}
 
 }

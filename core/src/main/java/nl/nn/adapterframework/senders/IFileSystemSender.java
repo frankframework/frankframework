@@ -1,9 +1,10 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.core.ISenderWithParameters;
 
 public interface IFileSystemSender extends ISenderWithParameters {
-	
-	public void setAction(String action);
+
 	public String getAction();
+
+	public void setAction(String action);
 }

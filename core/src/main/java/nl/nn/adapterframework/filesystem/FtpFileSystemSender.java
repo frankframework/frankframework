@@ -25,53 +25,35 @@ import nl.nn.adapterframework.ftp.FtpSession;
  * @author Daniël Meyer
  *
  */
-public class FtpFileSystemSender extends FileSystemSender<FTPFile, FtpFileSystem> 
-implements IFileSystemSender {
+public class FtpFileSystemSender extends FileSystemSender<FTPFile, FtpFileSystem> {
 	
-	private FtpFileSystem ffs;
 	private FtpSession session;
-	
-//	
-//	@Override
-//	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc)
-//			throws SenderException, TimeOutException {
-//		try {
-//			IPipeLineSession session=null;
-//			if (prc!=null) {
-//				session=prc.getSession();
-//			}
-//			ffs.getFtpSession().put(paramList, session, message, ffs.getRemoteDirectory(), ffs.getRemoteFilenamePattern(), true);
-//		} catch(SenderException e) {
-//			throw e;
-//		} catch(Exception e) {
-//			throw new SenderException("Error during ftp-ing " + message, e);
-//		}
-//		return message;
-//	}
 	
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		setFileSystem(ffs = new FtpFileSystem());
-		session = ffs.getFtpSession();
+		setFileSystem(new FtpFileSystem());
+		session = getFileSystem().getFtpSession();
 	}
+	
+	
 	
 	public FtpSession getFtpSession() {
 		return session;
 	}
 	
 	public void setRemoteDirectory(String remoteDirectory) {
-		ffs.setRemoteDirectory(remoteDirectory);
+		getFileSystem().setRemoteDirectory(remoteDirectory);
 	}
 	public String getRemoteDirectory() {
-		return ffs.getRemoteDirectory();
+		return getFileSystem().getRemoteDirectory();
 	}
 
 	public void setRemoteFilenamePattern(String string) {
-		ffs.setRemoteFilenamePattern(string);
+		getFileSystem().setRemoteFilenamePattern(string);
 	}
 	public String getRemoteFilenamePattern() {
-		return ffs.getRemoteFilenamePattern();
+		return getFileSystem().getRemoteFilenamePattern();
 	}
 
 

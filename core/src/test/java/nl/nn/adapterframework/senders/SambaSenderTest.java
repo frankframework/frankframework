@@ -1,7 +1,5 @@
 package nl.nn.adapterframework.senders;
 
-import nl.nn.adapterframework.filesystem.IFileSystemSender;
-
 import org.junit.Ignore;
 
 @Ignore
