@@ -47,6 +47,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	@Before
 	public void setup() throws IOException, ConfigurationException {
 		fileSystem = getFileSystem();
+		fileSystem.configure();
 	}
 
 	public void deleteFile(String filename) {

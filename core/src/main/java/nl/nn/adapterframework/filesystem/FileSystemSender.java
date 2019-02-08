@@ -2,7 +2,9 @@ package nl.nn.adapterframework.filesystem;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 
@@ -11,6 +13,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.senders.IFileSystemSender;
@@ -20,14 +23,33 @@ import nl.nn.adapterframework.util.XmlBuilder;
 public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithParametersBase
 		implements IFileSystemSender {
 
-	private int lastProcessedActionIndex = 0;
-	private String[] actionArray;
 	private String action;
+	private List<String> actions = Arrays.asList("delete", "upload", "mkdir", "rmdir", "rename",
+			"download", "list");
+
 	private FS fileSystem;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+		getFileSystem().configure();
+
+		if (getAction() == null)
+			throw new ConfigurationException(getLogPrefix() + "action must be specified");
+		if (!actions.contains(getAction()))
+			throw new ConfigurationException(getLogPrefix() + "unknown or invalid action ["
+					+ getAction() + "] supported actions are " + actions.toString() + "");
+
+		//Check if necessarily parameters are available
+		ParameterList parameterList = getParameterList();
+		if (getAction().equals("upload")
+				&& (parameterList == null || parameterList.findParameter("file") == null))
+			throw new ConfigurationException(
+					getLogPrefix() + "the upload action requires the file parameter to be present");
+		if (getAction().equals("rename")
+				&& (parameterList == null || parameterList.findParameter("destination") == null))
+			throw new ConfigurationException(getLogPrefix()
+					+ "the rename action requires a destination parameter to be present");
 	}
 
 	@Override
@@ -110,22 +132,6 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 
 	public void setFileSystem(FS fileSystem) {
 		this.fileSystem = fileSystem;
-	}
-
-	public String[] getActionArray() {
-		return actionArray;
-	}
-
-	public void setActionArray(String[] actionArray) {
-		this.actionArray = actionArray;
-	}
-
-	public int getLastProcessedActionIndex() {
-		return lastProcessedActionIndex;
-	}
-
-	public void setLastProcessedActionIndex(int lastProcessedActionIndex) {
-		this.lastProcessedActionIndex = lastProcessedActionIndex;
 	}
 
 	public String getAction() {
