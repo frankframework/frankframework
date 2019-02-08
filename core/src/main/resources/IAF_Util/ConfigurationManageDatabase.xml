@@ -27,7 +27,7 @@
 				<forward name="success" path="Query"/>
 			</pipe>
 			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="Query" elementXPathExpression="manageDatabaseREQ/*" ignoreExceptions="true">
-				<sender className="nl.nn.adapterframework.jdbc.XmlQuerySender">
+				<sender className="nl.nn.adapterframework.jdbc.XmlQuerySender" datasourceName="jdbc/${instance.name.lc}">
 				</sender>
 				<forward name="success" path="ManageDatabaseRLY" />
 			</pipe>

@@ -626,14 +626,6 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			}
 		}
 	}
-	
-	@Override
-	public void configure() throws ConfigurationException {
-		if(StringUtils.isEmpty(getDatasourceName()))
-			setDatasourceName((String)getProxiedDataSources().keySet().toArray()[0]);
-		
-		super.configure();
-	}
 
 	public void setLockRows(boolean b) {
 		lockRows = b;
