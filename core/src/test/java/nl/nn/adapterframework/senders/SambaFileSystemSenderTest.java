@@ -4,12 +4,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
-
-import org.junit.Ignore;
 
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbFile;
+import jcifs.smb.SmbFileInputStream;
+import jcifs.smb.SmbFileOutputStream;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
 import nl.nn.adapterframework.filesystem.SambaFileSystem;
@@ -20,54 +19,59 @@ import nl.nn.adapterframework.filesystem.SambaFileSystem;
  * @author alisihab
  *
  */
-@Ignore
 public class SambaFileSystemSenderTest extends FileSystemSenderTest<SmbFile, SambaFileSystem> {
-	private String localFilePath = ""; // If working with local smb network
-	private String share = ""; // the path of smb network must start with "smb://"
-	private String username = "";
-	private String password = "";
+	protected String share = ""; // the path of smb network must start with "smb://"
+	protected String username = "";
+	protected String password = "";
+	private SmbFile context;
 
-	SmbFile context;
+	@Override
+	public void setup() throws ConfigurationException, IOException {
+		NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication("", username, password);
+		context = new SmbFile(share, auth);
+		super.setup();
+	}
 
 	@Override
 	protected SambaFileSystem getFileSystem() throws ConfigurationException {
-		NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(null, username, password);
-		try {
-			context = new SmbFile(share, auth);
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		}
-		return new SambaFileSystem(context, false);
+		SambaFileSystem sfs = new SambaFileSystem();
+		sfs.setShare(share);
+		sfs.setUsername(username);
+		sfs.setPassword(password);
+		return sfs;
 	}
 
 	@Override
-	protected boolean _fileExists(String filename) {
-		// TODO Auto-generated method stub
-		return false;
+	protected boolean _fileExists(String filename) throws Exception {
+		return new SmbFile(context, filename).exists();
 	}
 
 	@Override
-	protected void _deleteFile(String filename) {
-		// TODO Auto-generated method stub
-
+	protected void _deleteFile(String filename) throws Exception {
+		SmbFile f = null;
+		f = new SmbFile(context, filename);
+		f.delete();
 	}
 
 	@Override
-	protected OutputStream _createFile(String filename) throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+	protected OutputStream _createFile(String filename) throws Exception {
+		return new SmbFileOutputStream(new SmbFile(context, filename));
 	}
 
 	@Override
-	protected InputStream _readFile(String filename) throws FileNotFoundException {
-		// TODO Auto-generated method stub
-		return null;
+	protected InputStream _readFile(String filename) throws FileNotFoundException, Exception {
+		SmbFileInputStream is = null;
+		is = new SmbFileInputStream(new SmbFile(context, filename));
+		return is;
 	}
 
 	@Override
 	public void _createFolder(String filename) throws IOException {
-		// TODO Auto-generated method stub
-
+		try {
+			new SmbFile(context, filename).mkdir();
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
 	}
 
 }

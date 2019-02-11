@@ -2,6 +2,7 @@ package nl.nn.adapterframework.filesystem;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -24,8 +25,8 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 		implements IFileSystemSender {
 
 	private String action;
-	private List<String> actions = Arrays.asList("delete", "upload", "mkdir", "rmdir", "rename",
-			"download", "list");
+	private List<String> actions = new ArrayList<String>(
+			Arrays.asList("delete", "upload", "mkdir", "rmdir", "rename", "download", "list"));
 
 	private FS fileSystem;
 
@@ -79,7 +80,6 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 				return Misc.streamToString(is);
 			} else if (action.equalsIgnoreCase("list")) {
 				Iterator<F> fileList = ifs.listFiles();
-
 				int count = 0;
 				XmlBuilder dirXml = new XmlBuilder("directory");
 				while (fileList.hasNext()) {
@@ -141,4 +141,9 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 	public void setAction(String action) {
 		this.action = action;
 	}
+
+	protected void addActions(List<String> specificActions) {
+		actions.addAll(specificActions);
+	}
+
 }

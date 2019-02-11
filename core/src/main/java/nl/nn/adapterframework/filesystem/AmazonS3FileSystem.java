@@ -10,10 +10,15 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.internal.BucketNameUtils;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.CreateBucketRequest;
@@ -26,35 +31,72 @@ import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.RestoreObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.StorageClass;
+import com.amazonaws.services.s3.model.Tier;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 public class AmazonS3FileSystem implements IFileSystem<S3Object> {
-	private AmazonS3 s3Client;
-	private String bucketName;
-	private String bucketRegion;
-	private String storageClass;
-	private String tier;
 
+	protected Logger log = LogUtil.getLogger(this);
+
+	public static final List<String> AVAILABLE_REGIONS = getAvailableRegions();
+	public static final List<String> STORAGE_CLASSES = getStorageClasses();
+	public static final List<String> TIERS = getTiers();
+
+	private String accessKey;
+	private String secretKey;
+	private String authAlias;
+
+	private AmazonS3 s3Client;
+	private boolean chunkedEncodingDisabled = false;
 	private boolean forceGlobalBucketAccessEnabled = false;
-	private boolean bucketCreationEnabled = false;
+
+	private String clientRegion = Regions.EU_WEST_1.getName();
+	private String bucketName;
+	private String destinationBucketName;
+	private String bucketRegion;
+
+	private String storageClass;
+	private String tier = Tier.Standard.toString();
+	private int experationInDays = -1;
+
 	private boolean storageClassEnabled = false;
+	private boolean bucketCreationEnabled = false;
 	private boolean bucketExistsThrowException = true;
 
-	private String logPrefix;
-	private Logger log;
-
-	public AmazonS3FileSystem(AmazonS3 s3Client, String bucketName) {
-		this.bucketName = bucketName;
-		this.s3Client = s3Client;
-	}
-
-	@Override
 	public void configure() throws ConfigurationException {
 
+		if (StringUtils.isEmpty(getAccessKey()) || StringUtils.isEmpty(getSecretKey()))
+			throw new ConfigurationException(
+					" empty credential fields, please prodive aws credentials");
+
+		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getAccessKey(),
+				getSecretKey());
+		BasicAWSCredentials awsCreds = new BasicAWSCredentials(cf.getUsername(), cf.getPassword());
+		AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
+				.withChunkedEncodingDisabled(isChunkedEncodingDisabled())
+				.withForceGlobalBucketAccessEnabled(isForceGlobalBucketAccessEnabled())
+				.withRegion(getClientRegion())
+				.withCredentials(new AWSStaticCredentialsProvider(awsCreds));
+
+		if (StringUtils.isEmpty(getClientRegion())
+				|| !AVAILABLE_REGIONS.contains(getClientRegion()))
+			throw new ConfigurationException(" invalid region [" + getClientRegion()
+					+ "] please use one of the following supported regions "
+					+ AVAILABLE_REGIONS.toString());
+
+		if (StringUtils.isEmpty(getBucketName())
+				|| !BucketNameUtils.isValidV2BucketName(getBucketName()))
+			throw new ConfigurationException(" invalid or empty bucketName [" + getBucketName()
+					+ "] please visit AWS to see correct bucket naming");
+
+		s3Client = s3ClientBuilder.build();
 	}
 
 	@Override
@@ -109,14 +151,12 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 				PutObjectResult result = s3Client.putObject(bucketName, f.getKey(), inputStream,
 						f.getObjectMetadata());
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
 			try {
 				inputStream.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -214,16 +254,8 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 	}
 
 	@Override
-	public void augmentDirectoryInfo(XmlBuilder dirInfo, S3Object f) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void finalizeAction() {
-		//		for (int i = 0; i < 50000; i++) {
-		//			System.err.println("asdadasdas");
-		//		}
+	public void augmentDirectoryInfo(XmlBuilder dirXml, S3Object f) {
+		dirXml.addAttribute("name", bucketName);
 	}
 
 	/**
@@ -248,7 +280,7 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 				s3Client.createBucket(createBucketRequest);
 				log.debug("Bucket with bucketName: [" + bucketName + "] is created.");
 			} else if (bucketExistsThrowException)
-				throw new SenderException(getLogPrefix() + " bucket with bucketName [" + bucketName
+				throw new SenderException(" bucket with bucketName [" + bucketName
 						+ "] already exists, please specify a unique bucketName");
 
 		} catch (AmazonServiceException e) {
@@ -309,8 +341,8 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 						+ "] into bucket with bucketName [" + destinationBucketName
 						+ "] and new fileName [" + destinationFileName + "]");
 			} else
-				throw new SenderException(getLogPrefix()
-						+ " file with given name already exists, please specify a new name");
+				throw new SenderException(
+						" file with given name already exists, please specify a new name");
 		} catch (AmazonServiceException e) {
 			log.error("Failed to perform [copy] action on object with fileName [" + fileName + "]");
 			throw new SenderException(
@@ -361,8 +393,8 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 		if (isBucketCreationEnabled())
 			createBucket(bucketName, !bucketExistsThrowException);
 		else
-			throw new SenderException(getLogPrefix()
-					+ " failed to create a bucket, to create a bucket bucketCreationEnabled attribute must be assinged to [true]");
+			throw new SenderException(
+					" failed to create a bucket, to create a bucket bucketCreationEnabled attribute must be assinged to [true]");
 	}
 
 	/**
@@ -373,7 +405,7 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 	 */
 	public void bucketDoesNotExist(String bucketName) throws SenderException {
 		if (!s3Client.doesBucketExistV2(bucketName))
-			throw new SenderException(getLogPrefix() + " bucket with bucketName [" + bucketName
+			throw new SenderException(" bucket with bucketName [" + bucketName
 					+ "] does not exist, please specify the name of an existing bucket");
 	}
 
@@ -387,8 +419,72 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 	 */
 	public void fileDoesNotExist(String bucketName, String fileName) throws SenderException {
 		if (!s3Client.doesObjectExist(bucketName, fileName))
-			throw new SenderException(getLogPrefix() + " file with fileName [" + fileName
+			throw new SenderException(" file with fileName [" + fileName
 					+ "] does not exist, please specify the name of an existing file");
+	}
+
+	public static List<String> getAvailableRegions() {
+		List<String> availableRegions = new ArrayList<String>(Regions.values().length);
+		for (Regions region : Regions.values())
+			availableRegions.add(region.getName());
+
+		return availableRegions;
+	}
+
+	public static List<String> getStorageClasses() {
+		List<String> storageClasses = new ArrayList<String>(StorageClass.values().length);
+		for (StorageClass storageClass : StorageClass.values())
+			storageClasses.add(storageClass.toString());
+
+		return storageClasses;
+	}
+
+	public static List<String> getTiers() {
+		List<String> tiers = new ArrayList<String>(Tier.values().length);
+		for (Tier tier : Tier.values())
+			tiers.add(tier.toString());
+
+		return tiers;
+	}
+
+	public String getAccessKey() {
+		return accessKey;
+	}
+
+	public void setAccessKey(String accessKey) {
+		this.accessKey = accessKey;
+	}
+
+	public String getSecretKey() {
+		return secretKey;
+	}
+
+	public void setSecretKey(String secretKey) {
+		this.secretKey = secretKey;
+	}
+
+	public String getAuthAlias() {
+		return authAlias;
+	}
+
+	public void setAuthAlias(String authAlias) {
+		this.authAlias = authAlias;
+	}
+
+	public AmazonS3 getS3Client() {
+		return s3Client;
+	}
+
+	public void setS3Client(AmazonS3 s3Client) {
+		this.s3Client = s3Client;
+	}
+
+	public boolean isChunkedEncodingDisabled() {
+		return chunkedEncodingDisabled;
+	}
+
+	public void setChunkedEncodingDisabled(boolean chunkedEncodingDisabled) {
+		this.chunkedEncodingDisabled = chunkedEncodingDisabled;
 	}
 
 	public boolean isForceGlobalBucketAccessEnabled() {
@@ -399,20 +495,28 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 		this.forceGlobalBucketAccessEnabled = forceGlobalBucketAccessEnabled;
 	}
 
-	public boolean isBucketCreationEnabled() {
-		return bucketCreationEnabled;
+	public String getClientRegion() {
+		return clientRegion;
 	}
 
-	public void setBucketCreationEnabled(boolean bucketCreationEnabled) {
-		this.bucketCreationEnabled = bucketCreationEnabled;
+	public void setClientRegion(String clientRegion) {
+		this.clientRegion = clientRegion;
 	}
 
-	public boolean isStorageClassEnabled() {
-		return storageClassEnabled;
+	public String getBucketName() {
+		return bucketName;
 	}
 
-	public void setStorageClassEnabled(boolean storageClassEnabled) {
-		this.storageClassEnabled = storageClassEnabled;
+	public void setBucketName(String bucketName) {
+		this.bucketName = bucketName;
+	}
+
+	public String getDestinationBucketName() {
+		return destinationBucketName;
+	}
+
+	public void setDestinationBucketName(String destinationBucketName) {
+		this.destinationBucketName = destinationBucketName;
 	}
 
 	public String getBucketRegion() {
@@ -423,27 +527,6 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 		this.bucketRegion = bucketRegion;
 	}
 
-	public boolean isBucketExistsThrowException() {
-		return bucketExistsThrowException;
-	}
-
-	public void setBucketExistsThrowException(boolean bucketExistsThrowException) {
-		this.bucketExistsThrowException = bucketExistsThrowException;
-	}
-
-	public String getLogPrefix() {
-		return logPrefix;
-	}
-
-	public void setLogPrefix(String logPrefix) {
-		this.logPrefix = logPrefix;
-	}
-
-	public void setLog(Logger log) {
-		this.log = log;
-
-	}
-
 	public String getStorageClass() {
 		return storageClass;
 	}
@@ -452,8 +535,40 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 		this.storageClass = storageClass;
 	}
 
+	public String getTier() {
+		return tier;
+	}
+
 	public void setTier(String tier) {
 		this.tier = tier;
+	}
+
+	public int getExperationInDays() {
+		return experationInDays;
+	}
+
+	public void setExperationInDays(int experationInDays) {
+		this.experationInDays = experationInDays;
+	}
+
+	public boolean isStorageClassEnabled() {
+		return storageClassEnabled;
+	}
+
+	public void setStorageClassEnabled(boolean storageClassEnabled) {
+		this.storageClassEnabled = storageClassEnabled;
+	}
+
+	public boolean isBucketCreationEnabled() {
+		return bucketCreationEnabled;
+	}
+
+	public void setBucketCreationEnabled(boolean bucketCreationEnabled) {
+		this.bucketCreationEnabled = bucketCreationEnabled;
+	}
+
+	public boolean isBucketExistsThrowException() {
+		return bucketExistsThrowException;
 	}
 
 }

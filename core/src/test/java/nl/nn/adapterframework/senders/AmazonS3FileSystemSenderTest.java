@@ -11,6 +11,7 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
+import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -29,7 +30,6 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
-import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -52,12 +52,13 @@ public class AmazonS3FileSystemSenderTest
 	AmazonS3FileSystemSender s3FileSystemSender;
 
 	@Override
+	@Before
 	public void setup() throws ConfigurationException, IOException {
-		super.setup();
 		s3FileSystemSender = new AmazonS3FileSystemSender();
 		s3FileSystemSender.setAccessKey(accessKey);
 		s3FileSystemSender.setSecretKey(secretKey);
-		getFileSystem();
+		s3FileSystemSender.setBucketName(bucketName);
+		super.setup();
 	}
 
 	@Override
@@ -72,7 +73,10 @@ public class AmazonS3FileSystemSenderTest
 				.withCredentials(new AWSStaticCredentialsProvider(awsCreds));
 
 		s3Client = s3ClientBuilder.build();
-		s3 = new AmazonS3FileSystem(s3Client, bucketName);
+		s3 = new AmazonS3FileSystem();
+		s3.setAccessKey(accessKey);
+		s3.setSecretKey(secretKey);
+		s3.setBucketName(bucketName);
 		return s3;
 	}
 
@@ -122,13 +126,10 @@ public class AmazonS3FileSystemSenderTest
 	@Test
 	public void atestCreateBucket()
 			throws SenderException, ConfigurationException, TimeOutException {
-		s3FileSystemSender.setActions("createBucket");
 		s3FileSystemSender.setAction("createBucket");
 
 		s3FileSystemSender.setBucketName(bucketNameTobeCreatedAndDeleted);
 		s3FileSystemSender.configure();
-		System.out.println("AmazonS3FileSystemSenderTest.atestCreateBucket()"
-				+ bucketNameTobeCreatedAndDeleted);
 		String result = s3FileSystemSender.sendMessage("<result>ok</result>",
 				bucketNameTobeCreatedAndDeleted);
 
@@ -140,13 +141,10 @@ public class AmazonS3FileSystemSenderTest
 	@Test
 	public void btestRemoveBucket()
 			throws SenderException, ConfigurationException, TimeOutException {
-		s3FileSystemSender.setActions("deleteBucket");
 		s3FileSystemSender.setAction("deleteBucket");
 
 		s3FileSystemSender.setBucketName(bucketNameTobeCreatedAndDeleted);
 		s3FileSystemSender.configure();
-		System.out.println("AmazonS3FileSystemSenderTest.btestRemoveBucket()"
-				+ bucketNameTobeCreatedAndDeleted);
 		String result = s3FileSystemSender.sendMessage("<result>ok</result>",
 				bucketNameTobeCreatedAndDeleted);
 
@@ -162,7 +160,7 @@ public class AmazonS3FileSystemSenderTest
 
 		s3FileSystemSender.setBucketName(bucketName);
 		s3FileSystemSender.setDestinationBucketName(bucketName);
-		s3FileSystemSender.setActions("copy");
+
 		s3FileSystemSender.setAction("copy");
 		s3FileSystemSender.setForceGlobalBucketAccessEnabled(true);
 		PipeLineSessionBase session = new PipeLineSessionBase();
@@ -191,7 +189,7 @@ public class AmazonS3FileSystemSenderTest
 	@Override
 	@Ignore
 	@Test
-	public void testAppendFile() throws IOException, FileSystemException {
+	public void testAppendFile() throws Exception {
 		// TODO Auto-generated method stub
 		super.testAppendFile();
 	}

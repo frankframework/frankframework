@@ -146,10 +146,4 @@ public class LocalFileSystem implements IFileSystem<File> {
 		}
 
 	}
-
-	@Override
-	public void finalizeAction() {
-		// TODO Auto-generated method stub
-	}
-
 }

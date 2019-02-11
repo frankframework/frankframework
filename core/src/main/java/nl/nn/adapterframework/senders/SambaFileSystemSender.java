@@ -29,4 +29,8 @@ public class SambaFileSystemSender extends FileSystemSender<SmbFile, SambaFileSy
 	public void setForce(boolean force) {
 		getFileSystem().setForce(force);
 	}
+
+	public void setShare(String share) {
+		getFileSystem().setShare(share);
+	}
 }

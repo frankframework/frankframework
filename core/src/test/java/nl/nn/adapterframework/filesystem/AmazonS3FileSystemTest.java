@@ -7,6 +7,9 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
+import org.junit.Ignore;
+import org.junit.Test;
+
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
@@ -46,7 +49,10 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 				.withCredentials(new AWSStaticCredentialsProvider(awsCreds));
 
 		s3Client = s3ClientBuilder.build();
-		s3 = new AmazonS3FileSystem(s3Client, bucketName);
+		s3 = new AmazonS3FileSystem();
+		s3.setAccessKey(accessKey);
+		s3.setSecretKey(secretKey);
+		s3.setBucketName(bucketName);
 		return s3;
 	}
 
@@ -90,7 +96,13 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	@Override
 	public void _createFolder(String filename) throws IOException {
 		s3Client.putObject(bucketName, filename, "");
+	}
 
+	@Override
+	@Ignore
+	@Test
+	public void testAppendFile() throws Exception {
+		super.testAppendFile();
 	}
 
 }

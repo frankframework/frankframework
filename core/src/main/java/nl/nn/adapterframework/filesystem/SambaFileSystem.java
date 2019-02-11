@@ -295,11 +295,6 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 		this.listHiddenFiles = listHiddenFiles;
 	}
 
-	@Override
-	public void finalizeAction() {
-		// TODO Auto-generated method stub
-	}
-
 	public String getDomain() {
 		return domain;
 	}
@@ -350,6 +345,13 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 
 	public void setForce(boolean force) {
 		isForce = force;
+	}
 
+	public SmbFile getSmbContext() {
+		return smbContext;
+	}
+
+	public void setSmbContext(SmbFile smbContext) {
+		this.smbContext = smbContext;
 	}
 }
