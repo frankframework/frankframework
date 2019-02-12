@@ -1,8 +1,8 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.senders;
 
 import org.apache.commons.net.ftp.FTPFile;
 
-import nl.nn.adapterframework.senders.IFileSystemSender;
+import nl.nn.adapterframework.filesystem.FtpFileSystem;
 
 public class FtpFileSystemSender extends FileSystemSender<FTPFile, FtpFileSystem>
 		implements IFileSystemSender {

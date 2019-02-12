@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.senders;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,10 +14,10 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.filesystem.IFileSystem;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.senders.IFileSystemSender;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 

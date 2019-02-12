@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import org.apache.commons.net.ftp.FTPFile;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.filesystem.FtpFileSystem;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
 

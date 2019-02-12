@@ -1,7 +1,6 @@
 package nl.nn.adapterframework.senders;
 
 import jcifs.smb.SmbFile;
-import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.SambaFileSystem;
 
 public class SambaFileSystemSender extends FileSystemSender<SmbFile, SambaFileSystem> {

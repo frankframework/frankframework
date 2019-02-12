@@ -10,7 +10,6 @@ import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
 import nl.nn.adapterframework.filesystem.SambaFileSystem;
 
 /**
