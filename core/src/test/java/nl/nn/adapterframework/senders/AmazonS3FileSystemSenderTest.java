@@ -33,6 +33,7 @@ import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
+@Ignore
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AmazonS3FileSystemSenderTest
 		extends FileSystemSenderTest<S3Object, AmazonS3FileSystem> {
@@ -87,26 +88,29 @@ public class AmazonS3FileSystemSenderTest
 	@Override
 	protected void _deleteFile(String filename) {
 		s3Client.deleteObject(bucketName, filename);
-
 	}
 
 	@Override
-	protected OutputStream _createFile(String filename) throws IOException {
+	protected OutputStream _createFile(final String filename) throws IOException {
 		PipedOutputStream pos = new PipedOutputStream();
-		PipedInputStream pis = new PipedInputStream(pos);
-		new Thread(() -> {
-			try {
-				s3Client.putObject(bucketName, filename, pis, new ObjectMetadata());
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+		final PipedInputStream pis = new PipedInputStream(pos);
+		Thread putObjectThread = new Thread(new Runnable() {
 
-			try {
-				pis.close();
-			} catch (IOException e) {
-				e.printStackTrace();
+			@Override
+			public void run() {
+				try {
+					s3Client.putObject(bucketName, filename, pis, new ObjectMetadata());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				try {
+					pis.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
-		}).start();
+		});
+		putObjectThread.start();
 
 		return pos;
 	}
@@ -119,7 +123,6 @@ public class AmazonS3FileSystemSenderTest
 	@Override
 	public void _createFolder(String filename) throws IOException {
 		s3Client.putObject(bucketName, filename, "");
-
 	}
 
 	@Test
@@ -189,7 +192,7 @@ public class AmazonS3FileSystemSenderTest
 	@Ignore
 	@Test
 	public void testAppendFile() throws Exception {
-		// TODO Auto-generated method stub
+		// Ignored because S3 does not support append.
 		super.testAppendFile();
 	}
 

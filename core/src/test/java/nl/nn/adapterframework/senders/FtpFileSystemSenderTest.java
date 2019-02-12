@@ -5,20 +5,22 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.apache.commons.net.ftp.FTPFile;
+import org.junit.Ignore;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.filesystem.FtpFileSystem;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
 
+@Ignore
 public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFileSystem> {
 
 	FtpFileSystem ffs = new FtpFileSystem();
 	private FtpSession ftpSession = new FtpSession();
 
-	private String username = "test";
-	private String password = "test";
-	private String host = "10.0.0.190";
+	private String username = "";
+	private String password = "";
+	private String host = "";
 	private int port = 21;
 
 	@Override

@@ -20,7 +20,6 @@ import nl.nn.adapterframework.filesystem.FileSystemTest;
 import nl.nn.adapterframework.filesystem.IFileSystem;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.senders.IFileSystemSender;
 
 public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>>
 		extends FileSystemTest<F, FS> {

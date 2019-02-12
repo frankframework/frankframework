@@ -143,24 +143,28 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 	}
 
 	@Override
-	public OutputStream createFile(S3Object f) throws FileSystemException, IOException {
+	public OutputStream createFile(final S3Object f) throws FileSystemException, IOException {
 		PipedOutputStream outputStream = new PipedOutputStream();
-		PipedInputStream inputStream = new PipedInputStream(outputStream);
-		new Thread(() -> {
-			try {
-				PutObjectResult result = s3Client.putObject(bucketName, f.getKey(), inputStream,
-						f.getObjectMetadata());
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+		final PipedInputStream inputStream = new PipedInputStream(outputStream);
+		Thread putObjectThread = new Thread(new Runnable() {
 
-			try {
-				inputStream.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			@Override
+			public void run() {
+				try {
+					PutObjectResult result = s3Client.putObject(bucketName, f.getKey(), inputStream,
+							f.getObjectMetadata());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 
-		}).start();
+				try {
+					inputStream.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		putObjectThread.start();
 
 		return outputStream;
 	}

@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.junit.Ignore;
+
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
@@ -18,6 +20,8 @@ import nl.nn.adapterframework.filesystem.SambaFileSystem;
  * @author alisihab
  *
  */
+
+@Ignore
 public class SambaFileSystemSenderTest extends FileSystemSenderTest<SmbFile, SambaFileSystem> {
 	protected String share = ""; // the path of smb network must start with "smb://"
 	protected String username = "";

@@ -7,6 +7,10 @@ import nl.nn.adapterframework.filesystem.FtpFileSystem;
 public class FtpFileSystemSender extends FileSystemSender<FTPFile, FtpFileSystem>
 		implements IFileSystemSender {
 
+	public FtpFileSystemSender() {
+		setFileSystem(new FtpFileSystem());
+	}
+
 	public void setRemoteDirectory(String remoteDirectory) {
 		getFileSystem().setRemoteDirectory(remoteDirectory);
 	}

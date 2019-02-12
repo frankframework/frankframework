@@ -5,20 +5,21 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.apache.commons.net.ftp.FTPFile;
+import org.junit.Ignore;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
 
+@Ignore
 public class FtpFileSystemTest extends FileSystemTest<FTPFile, FtpFileSystem> {
 
 	FtpFileSystem ffs = new FtpFileSystem();;
 	FtpSession ftpSession = new FtpSession();
-	// TODO: Add local connection parameters. 
 
-	private String username = "test";
-	private String password = "test";
-	private String host = "10.0.0.190";
+	private String username = "";
+	private String password = "";
+	private String host = "";
 	private int port = 21;
 
 	@Override
@@ -28,20 +29,17 @@ public class FtpFileSystemTest extends FileSystemTest<FTPFile, FtpFileSystem> {
 		ftpSession.setPassword(password);
 		ftpSession.setHost(host);
 		ftpSession.setPort(port);
-
 		ftpSession.configure();
 	}
 
 	@Override
 	protected FtpFileSystem getFileSystem() throws ConfigurationException {
 		FtpSession session = ffs.getFtpSession();
-
 		session.setUsername(username);
 		session.setPassword(password);
 		session.setHost(host);
 		session.setPort(port);
 		ffs.configure();
-
 		return ffs;
 	}
 

@@ -259,7 +259,6 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 			file = it.next();
 			count++;
 		}
-		System.out.println(count);
 
 		it = fileSystem.listFiles();
 		for (int i = 0; i < count; i++) {
