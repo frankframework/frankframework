@@ -22,7 +22,7 @@ public class Samba2FileSystemTest extends FileSystemTest<File, IFileSystemBase<F
 
 	private String share = "smb://DESKTOP-1MC6G8V/Users/alisihab/Desktop/Shared/"; // the path of smb network must start with "smb://"
 	private String username = "alisihab";
-	private String password = "Deneme1";
+	private String password = "";
 	private String domain = "localhost";
 	private DiskShare client;
 
