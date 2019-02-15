@@ -196,9 +196,6 @@ public class XsltSender extends SenderWithParametersBase {
 	}
 
 
-	/**
-	 * Specify the stylesheet to use
-	 */
 	@IbisDoc({"stylesheet to apply to the input message", ""})
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
@@ -207,10 +204,6 @@ public class XsltSender extends SenderWithParametersBase {
 		return styleSheetName;
 	}
 
-	/**
-	 * set the "omit xml declaration" on the transfomer. Defaults to true.
-	 * @return true or false
-	 */
 	@IbisDoc({"force the transformer generated from the xpath-expression to omit the xml declaration", "true"})
 	public void setOmitXmlDeclaration(boolean b) {
 		omitXmlDeclaration = b;
