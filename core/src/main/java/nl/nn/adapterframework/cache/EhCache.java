@@ -22,36 +22,12 @@ import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.AppConstants;
 
 /**
  * General Cache provider.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Cache, will be set from owner</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxElementsInMemory(int) maxElementsInMemory}</td><td>the maximum number of elements in memory, before they are evicted</td><td>100</td></tr>
- * <tr><td>{@link #setMemoryStoreEvictionPolicy(String) memoryStoreEvictionPolicy}</td><td>either <code>LRU</code>=LeastRecentUse,<code>LFU</code>=LeastFrequentUse or <code>FIFO</code>=FirstInFirstOut</td><td>"LRU"</td></tr>
- * <tr><td>{@link #setEternal(boolean) eternal}</td><td>If <code>true</code>, the elements in the cache are eternal, i.e. never expire</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setTimeToLiveSeconds(int) timeToLiveSeconds}</td><td>the amount of time to live for an element from its creation date</td><td>36000 (=10 hours)</td></tr>
- * <tr><td>{@link #setTimeToIdleSeconds(int) timeToIdleSeconds}</td><td>the amount of time to live for an element from its last accessed or modified date</td><td>36000 (=10 hours)</td></tr>
- * <tr><td>{@link #setOverflowToDisk(boolean) overflowToDisk}</td><td>If <code>true</code>, the elements that are evicted from memory are spooled to disk</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setMaxElementsOnDisk(int) maxElementsOnDisk}</td><td>the maximum number of elements on disk, before they are removed</td><td>10000</td></tr>
- * <tr><td>{@link #setDiskPersistent(boolean) diskPersistent}</td><td>If <code>true</code>, the the cache is reloaded after the JVM restarts</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setDiskExpiryThreadIntervalSeconds(int) diskExpiryThreadIntervalSeconds}</td>  <td>how often to run the disk store expiry thread</td><td>600</td></tr>
- * <tr><td>{@link #setKeyXPath(String) keyXPath}</td><td>xpath expression to extract cache key from request message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setKeyNamespaceDefs(String) keyNamespaceDefs}</td><td>namespace defintions for keyXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setKeyStyleSheet(String) keyStyleSheet}</td><td>stylesheet to extract cache key from request message. Use in combination with {@link #setCacheEmptyKeys(boolean) cacheEmptyKeys} to inhibit caching for certain groups of request messages</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setKeyInputSessionKey(String) keyInputSessionKey}</td><td>session key to use as input for transformation of request message to key by keyXPath or keyStyleSheet</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCacheEmptyKeys(boolean) cacheEmptyKeys}</td><td>controls whether empty keys are used for caching. When set true, cache entries with empty keys can exist.</td><td>false</td></tr>
- * <tr><td>{@link #setValueXPath(String) valueXPath}</td><td>xpath expression to extract value to be cached key from response message. Use in combination with {@link #setCacheEmptyValues(boolean) cacheEmptyValues} to inhibit caching for certain groups of response messages</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setValueNamespaceDefs(String) valueNamespaceDefs}</td><td>namespace defintions for valueXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setValueStyleSheet(String) valueStyleSheet}</td><td>stylesheet to extract value to be cached from response message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setValueInputSessionKey(String) valueInputSessionKey}</td><td>session key to use as input for transformation of response message to cached value by valueXPath or valueStyleSheet</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCacheEmptyValues(boolean) cacheEmptyValues}</td><td>controls whether empty values will be cached. When set true, empty cache entries can exist for any key.</td><td>false</td></tr>
- * </table>
- * </p>
  * N.B. the default values shown can be overridden using properties in appConstants. The property names are found by prefixing the attribute name with <code>cache.default.</code>.
  * </p>
  * 
@@ -176,6 +152,8 @@ public class EhCache extends CacheAdapterBase {
 	public int getMaxElementsInMemory() {
 		return maxElementsInMemory;
 	}
+
+	@IbisDoc({"the maximum number of elements in memory, before they are evicted", "100"})
 	public void setMaxElementsInMemory(int maxElementsInMemory) {
 		this.maxElementsInMemory = maxElementsInMemory;
 	}
@@ -183,6 +161,8 @@ public class EhCache extends CacheAdapterBase {
 	public String getMemoryStoreEvictionPolicy() {
 		return memoryStoreEvictionPolicy;
 	}
+
+	@IbisDoc({"either <code>lru</code>=leastrecentuse,<code>lfu</code>=leastfrequentuse or <code>fifo</code>=firstinfirstout", "lru"})
 	public void setMemoryStoreEvictionPolicy(String memoryStoreEvictionPolicy) {
 		this.memoryStoreEvictionPolicy = memoryStoreEvictionPolicy;
 	}
@@ -190,6 +170,8 @@ public class EhCache extends CacheAdapterBase {
 	public boolean isEternal() {
 		return eternal;
 	}
+
+	@IbisDoc({"if <code>true</code>, the elements in the cache are eternal, i.e. never expire", "<code>false</code>"})
 	public void setEternal(boolean eternal) {
 		this.eternal = eternal;
 	}
@@ -197,6 +179,8 @@ public class EhCache extends CacheAdapterBase {
 	public int getTimeToLiveSeconds() {
 		return timeToLiveSeconds;
 	}
+
+	@IbisDoc({"the amount of time to live for an element from its creation date", "36000 (=10 hours)"})
 	public void setTimeToLiveSeconds(int timeToLiveSeconds) {
 		this.timeToLiveSeconds = timeToLiveSeconds;
 	}
@@ -204,6 +188,8 @@ public class EhCache extends CacheAdapterBase {
 	public int getTimeToIdleSeconds() {
 		return timeToIdleSeconds;
 	}
+
+	@IbisDoc({"the amount of time to live for an element from its last accessed or modified date", "36000 (=10 hours)"})
 	public void setTimeToIdleSeconds(int timeToIdleSeconds) {
 		this.timeToIdleSeconds = timeToIdleSeconds;
 	}
@@ -211,6 +197,8 @@ public class EhCache extends CacheAdapterBase {
 	public boolean isOverflowToDisk() {
 		return overflowToDisk;
 	}
+
+	@IbisDoc({"if <code>true</code>, the elements that are evicted from memory are spooled to disk", "<code>false</code>"})
 	public void setOverflowToDisk(boolean overflowToDisk) {
 		this.overflowToDisk = overflowToDisk;
 	}
@@ -218,6 +206,8 @@ public class EhCache extends CacheAdapterBase {
 	public int getMaxElementsOnDisk() {
 		return maxElementsOnDisk;
 	}
+
+	@IbisDoc({"the maximum number of elements on disk, before they are removed", "10000"})
 	public void setMaxElementsOnDisk(int maxElementsOnDisk) {
 		this.maxElementsOnDisk = maxElementsOnDisk;
 	}
@@ -225,6 +215,8 @@ public class EhCache extends CacheAdapterBase {
 	public boolean isDiskPersistent() {
 		return diskPersistent;
 	}
+
+	@IbisDoc({"if <code>true</code>, the the cache is reloaded after the jvm restarts", "<code>false</code>"})
 	public void setDiskPersistent(boolean diskPersistent) {
 		this.diskPersistent = diskPersistent;
 	}
@@ -232,6 +224,8 @@ public class EhCache extends CacheAdapterBase {
 	public int getDiskExpiryThreadIntervalSeconds() {
 		return diskExpiryThreadIntervalSeconds;
 	}
+
+	@IbisDoc({"how often to run the disk store expiry thread", "600"})
 	public void setDiskExpiryThreadIntervalSeconds(
 			int diskExpiryThreadIntervalSeconds) {
 		this.diskExpiryThreadIntervalSeconds = diskExpiryThreadIntervalSeconds;

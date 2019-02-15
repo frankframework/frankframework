@@ -23,6 +23,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -30,15 +31,6 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Uploads a zip file (inputstream in a sessionKey) and unzips it to a directory.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> which contains the inputstream</td><td>file</td></tr>
- * <tr><td>{@link #setDirectory(String) directory}</td><td>base directory where files are unzipped to</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDirectorySessionKey(String) directorySessionKey}</td><td>the session key that contains the base directory where files are unzipped to</td><td>destination</td></tr>
- * </table>
- * </p>
  * 
  * @author Peter Leeuwenburgh
  */
@@ -114,6 +106,7 @@ public class UploadFilePipe extends FixedForwardPipe {
 		return new PipeRunResult(getForward(), dir.getPath());
 	}
 
+	@IbisDoc({"base directory where files are unzipped to", ""})
 	public void setDirectory(String string) {
 		directory = string;
 	}
@@ -122,6 +115,7 @@ public class UploadFilePipe extends FixedForwardPipe {
 		return directory;
 	}
 
+	@IbisDoc({"the session key that contains the base directory where files are unzipped to", "destination"})
 	public void setDirectorySessionKey(String string) {
 		directorySessionKey = string;
 	}
@@ -134,6 +128,7 @@ public class UploadFilePipe extends FixedForwardPipe {
 		return sessionKey;
 	}
 
+	@IbisDoc({"name of the key in the <code>pipelinesession</code> which contains the inputstream", "file"})
 	public void setSessionKey(String string) {
 		sessionKey = string;
 	}

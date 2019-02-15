@@ -21,6 +21,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -28,18 +29,10 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Performs a reload on database config .
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setForceReload(String) forceReload}</td><td>reload the configuration regardless of the version</td><td>false</td></tr>
- * </table>
- * </p>
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * </p>
  * <p>It is possible to set the name of the configuration with the parameter 'name'.</p>
@@ -112,6 +105,7 @@ public class ReloadSender extends SenderWithParametersBase implements Configurat
 		return configuration;
 	}
 
+	@IbisDoc({"reload the configuration regardless of the version", "false"})
 	public void setForceReload(boolean forceReload) {
 		this.forceReload  = forceReload;
 	}

@@ -22,6 +22,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.NDC;
 
@@ -31,14 +32,6 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * Extension to SenderWithParametersBase for interrupting processing when
  * timeout is exceeded.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>when <code>true</code>, a SenderException (or TimeOutException) is thrown. Otherwise the output is only logged as an error (and returned in a XML string with 'error' tags)</td><td>true</td></tr>
- * <tr><td>{@link #setXmlTag(String) xmlTag}</td><td>when not empty, the xml tag to encapsulate the result in</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
  * 
  * @author Peter Leeuwenburgh
  */
@@ -135,6 +128,7 @@ public class TimeoutGuardSenderWithParametersBase extends
 		return null;
 	}
 
+	@IbisDoc({"when <code>true</code>, a senderexception (or timeoutexception) is thrown. otherwise the output is only logged as an error (and returned in a xml string with 'error' tags)", "true"})
 	public void setThrowException(boolean b) {
 		throwException = b;
 	}
@@ -154,6 +148,7 @@ public class TimeoutGuardSenderWithParametersBase extends
 		return tymeout;
 	}
 
+	@IbisDoc({"when not empty, the xml tag to encapsulate the result in", ""})
 	public void setXmlTag(String string) {
 		xmlTag = string;
 	}

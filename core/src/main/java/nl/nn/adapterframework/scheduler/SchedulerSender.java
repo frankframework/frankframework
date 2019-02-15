@@ -18,6 +18,7 @@ package nl.nn.adapterframework.scheduler;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -32,19 +33,7 @@ import static org.quartz.JobBuilder.*;
 /**
  * Registers a trigger in the scheduler so that the message is send to a javalistener
  * at a scheduled time.
- * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.scheduler.SchedulerSender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJavaListener(String) javaListener}</td><td>Java listener to be called when scheduler trigger fires</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCronExpressionPattern(String) cronExpressionPattern}</td><td>Expression that generates the cron trigger</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJobGroup(String) jobGroup}</td><td>Job group in which the new trigger is to be created (optional)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJobNamePattern(String) jobNamePattern}</td><td>Pattern that leads to the name of the registered trigger(optional)</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
- * 
+ *
  * @author John Dekker
  */
 public class SchedulerSender extends SenderWithParametersBase {
@@ -135,18 +124,22 @@ public class SchedulerSender extends SenderWithParametersBase {
 		}
 	}
 
+	@IbisDoc({"expression that generates the cron trigger", ""})
 	public void setCronExpressionPattern(String string) {
 		cronExpressionPattern = string;
 	}
 
+	@IbisDoc({"job group in which the new trigger is to be created (optional)", ""})
 	public void setJobGroup(String string) {
 		jobGroup = string;
 	}
 
+	@IbisDoc({"pattern that leads to the name of the registered trigger(optional)", ""})
 	public void setJobNamePattern(String string) {
 		jobNamePattern = string;
 	}
 
+	@IbisDoc({"java listener to be called when scheduler trigger fires", ""})
 	public void setJavaListener(String string) {
 		javaListener = string;
 	}

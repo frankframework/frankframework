@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -35,16 +36,6 @@ import nl.nn.adapterframework.util.StreamUtil;
  * Filename and contents are taken from parameters. If one of the parameters is not present, the input message 
  * is used for either filename or contents.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.compression.ZipWriterSender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setZipWriterHandle(String) zipWriterHandle}</td>  <td>session key used to refer to zip session. Must be used if ZipWriterPipes are nested</td><td>"zipwriterhandle"</td></tr>
- * <tr><td>{@link #setCloseInputstreamOnExit(boolean) closeInputstreamOnExit}</td><td>when set to <code>false</code>, the inputstream is not closed after it has been used</td><td>true</td></tr>
- * <tr><td>{@link #setCharset(String) charset}</td><td>characterset used for writing zip entry</td><td>UTF-8</td></tr>
- * </table>
- * </p>
  * <table border="1">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
@@ -112,6 +103,7 @@ public class ZipWriterSender extends SenderWithParametersBase {
 	}
 
 
+	@IbisDoc({"when set to <code>false</code>, the inputstream is not closed after it has been used", "true"})
 	public void setCloseInputstreamOnExit(boolean b) {
 		closeInputstreamOnExit = b;
 	}
@@ -123,6 +115,7 @@ public class ZipWriterSender extends SenderWithParametersBase {
 		return closeInputstreamOnExit;
 	}
 
+	@IbisDoc({"characterset used for writing zip entry", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}
@@ -130,6 +123,7 @@ public class ZipWriterSender extends SenderWithParametersBase {
 		return charset;
 	}
 	
+	@IbisDoc({"session key used to refer to zip session. must be used if zipwriterpipes are nested", "zipwriterhandle"})
 	public void setZipWriterHandle(String string) {
 		zipWriterHandle = string;
 	}

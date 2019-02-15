@@ -18,6 +18,7 @@ package nl.nn.adapterframework.errormessageformatters;
 import java.net.URL;
 
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -29,16 +30,6 @@ import org.apache.commons.lang.SystemUtils;
 
 /**
  * ErrorMessageFormatter that returns a fixed message with replacements.
- * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setFileName(String) fileName}</td><td>name of the file containing the resultmessage</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setReturnString(String) returnString}</td><td>returned message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setReplaceFrom(String) replaceFrom}</td><td>string to search for in the returned message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setReplaceTo(String) replaceTo}</td><td>string that will replace each of the strings found in the returned message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>stylesheet to apply to the output message</td><td>&nbsp;</td></tr>
- * </table>
  * 
  * @author  Peter Leeuwenburgh
  * @since   4.3
@@ -96,6 +87,7 @@ public class FixedErrorMessage extends ErrorMessageFormatter {
 	}
 
 
+	@IbisDoc({"returned message", ""})
 	public void setReturnString(String string) {
 		returnString = string;
 	}
@@ -104,6 +96,7 @@ public class FixedErrorMessage extends ErrorMessageFormatter {
 	}
 
 
+	@IbisDoc({"name of the file containing the resultmessage", ""})
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}

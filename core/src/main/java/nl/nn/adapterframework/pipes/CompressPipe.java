@@ -34,6 +34,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.util.FileUtils;
 
@@ -42,20 +43,6 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Pipe to zip or unzip a message or file.  
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.ibis4fundation.BatchFileTransformerPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMessageIsContent(boolean) messageIsContent}</td><td>Flag indicates whether the message is the content or the path to a file with the contents. For multiple files use ';' as delimiter</td><td>false</td></tr>
- * <tr><td>{@link #setResultIsContent(boolean) resultIsContent}</td><td>Flag indicates whether the result must be written to the message or to a file (filename = message)</td><td>false</td></tr>
- * <tr><td>{@link #setOutputDirectory(String) outputDirectory}</td><td>Required if result is a file, the directory in which to store the result file</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFilenamePattern(String) filenamePattern}</td><td>Required if result is a file, the pattern for the result filename</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setZipEntryPattern(String) zipEntryPattern}</td><td>The pattern for the zipentry name in case a zipfile is read or written</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCompress(boolean) compress}</td><td>If <code>true</code> the pipe compresses, otherwise it decompress</td><td>false</td></tr>
- * <tr><td>{@link #setConvert2String(boolean) convert2String}</td><td>If <code>true</code> result is returned as a string, otherwise as a byte array</td><td>false</td></tr>
- * <tr><td>{@link #setFileFormat(String) fileFormat}</td><td>When set to gz, the GZIP format is used. When set to another value, the ZIP format is used. If not set and direction is compress, the resultIsContent specifies the output format used (resultIsContent="true" -> GZIP format, resultIsContent="false" -> ZIP format) If not set and direction is decompress, the messageIsContent specifies the output format used (messageIsContent="true" -> GZIP format, messageIsContent="false" -> ZIP format)</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
@@ -229,22 +216,27 @@ public class CompressPipe extends FixedForwardPipe {
 		return resultIsContent;
 	}
 
+	@IbisDoc({"if <code>true</code> the pipe compresses, otherwise it decompress", "false"})
 	public void setCompress(boolean b) {
 		compress = b;
 	}
 
+	@IbisDoc({"required if result is a file, the pattern for the result filename", ""})
 	public void setFilenamePattern(String string) {
 		filenamePattern = string;
 	}
 
+	@IbisDoc({"flag indicates whether the message is the content or the path to a file with the contents. for multiple files use ';' as delimiter", "false"})
 	public void setMessageIsContent(boolean b) {
 		messageIsContent = b;
 	}
 
+	@IbisDoc({"required if result is a file, the directory in which to store the result file", ""})
 	public void setOutputDirectory(String string) {
 		outputDirectory = string;
 	}
 
+	@IbisDoc({"flag indicates whether the result must be written to the message or to a file (filename = message)", "false"})
 	public void setResultIsContent(boolean b) {
 		resultIsContent = b;
 	}
@@ -253,6 +245,7 @@ public class CompressPipe extends FixedForwardPipe {
 		return zipEntryPattern;
 	}
 
+	@IbisDoc({"the pattern for the zipentry name in case a zipfile is read or written", ""})
 	public void setZipEntryPattern(String string) {
 		zipEntryPattern = string;
 	}
@@ -261,10 +254,12 @@ public class CompressPipe extends FixedForwardPipe {
 		return convert2String;
 	}
 
+	@IbisDoc({"if <code>true</code> result is returned as a string, otherwise as a byte array", "false"})
 	public void setConvert2String(boolean b) {
 		convert2String = b;
 	}
 
+	@IbisDoc({"when set to gz, the gzip format is used. when set to another value, the zip format is used. if not set and direction is compress, the resultiscontent specifies the output format used (resultiscontent=<code>true</code> -> gzip format, resultiscontent=<code>false</code> -> zip format) if not set and direction is decompress, the messageiscontent specifies the output format used (messageiscontent=<code>true</code> -> gzip format, messageiscontent=<code>false</code> -> zip format)", ""})
 	public void setFileFormat(String string) {
 		fileFormat = string;
 	}
