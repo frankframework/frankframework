@@ -247,9 +247,6 @@ public class Parameter implements INamedObject, IWithParameters {
 
 	/**
 	 * determines the raw value 
-	 * @param alreadyResolvedParameters
-	 * @return the raw value as object
-	 * @throws IbisException
 	 */
 	public Object getValue(ParameterValueList alreadyResolvedParameters, ParameterResolutionContext prc) throws ParameterException {
 		Object result = null;

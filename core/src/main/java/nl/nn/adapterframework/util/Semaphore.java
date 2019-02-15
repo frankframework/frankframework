@@ -60,8 +60,6 @@ public class Semaphore {
 
 	/**
 	 * non blocking decrements internal counter.
-	 *
-	 * @exception InterruptedException passed from this.wait().
 	 */
 	public synchronized void tighten() {
 		counter--;

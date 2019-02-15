@@ -101,8 +101,6 @@ public abstract class ToXml<C,N> extends XmlAligner {
 
 	/**
 	 * return namespace of node, if known. If not, it will be determined from the schema.
-	 * @param node
-	 * @return
 	 */
 	public String getNodeNamespaceURI(N node) {
 		return null; 
@@ -173,7 +171,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	 * 
 	 * Must push all nodes through validatorhandler, recursively, respecting the alignment request.
 	 * Must set current=node before calling validatorHandler.startElement(), in order to get the right argument for the onStartElement / performAlignment callbacks.
-	 * @param node 
+
 	 * @throws SAXException 
 	 */
 	public void handleNode(C container, String name, String nodeNamespace) throws SAXException {
@@ -449,8 +447,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	 * @param baseElementDeclaration TODO
 	 * @param particle
 	 * @param failureReasons returns the reasons why no match was found
-	 * @param availableElements
-	 * @param path: in this list the longest list of child elements, that matches the available, is maintained. Null if no matching.
+	 * @param path in this list the longest list of child elements, that matches the available, is maintained. Null if no matching.
 	 * @return true when a matching path is found. if false, failureReasons will contain reasons why.
 	 * @throws SAXException 
  	 */
