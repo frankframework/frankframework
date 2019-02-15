@@ -54,7 +54,6 @@ public class JmxUtils {
 	 * under the specified name, it is first de-registered.
 	 * @param name	the objectName
 	 * @param mbean	the modelMbean to register
-	 * @throws ConfigurationException
 	 */
 	public static void registerMBean(ObjectName name, RequiredModelMBean mbean) throws Exception {
 
