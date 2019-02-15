@@ -14,6 +14,12 @@ import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.activation.URLDataSource;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.soap.util.mime.ByteArrayDataSource;
+import org.apache.xerces.impl.dv.util.Base64;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
@@ -23,12 +29,6 @@ import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.soap.util.mime.ByteArrayDataSource;
-import org.apache.xerces.impl.dv.util.Base64;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 public class MailSenderBase extends SenderWithParametersBase {
 
@@ -58,83 +58,6 @@ public class MailSenderBase extends SenderWithParametersBase {
 		return mailSession;
 	}
 
-	/**
-	 * Reads fields from paramList
-	 * @param prc
-	 * @return MailSession
-	 * @throws SenderException
-	 */
-	private MailSession readParameters(ParameterResolutionContext prc) throws SenderException {
-		ParameterValueList pvl;
-		ParameterValue pv;
-		MailSession mail = new MailSession();
-		try {
-			pvl = prc.getValues(paramList);
-			pv = pvl.getParameterValue("from");
-			if (pv != null) {
-				EMail from = new EMail();
-				from.setAddress(pv.asStringValue(null));
-				log.debug("MailSender [" + getName() + "] retrieved from-parameter [" + from + "]");
-				mail.setFrom(from);
-			}
-			pv = pvl.getParameterValue("subject");
-			if (pv != null) {
-				String subject = pv.asStringValue(null);
-				log.debug("MailSender [" + getName() + "] retrieved subject-parameter [" + subject
-						+ "]");
-				mail.setSubject(subject);
-			}
-			pv = pvl.getParameterValue("threadTopic");
-			if (pv != null) {
-				String threadTopic = pv.asStringValue(null);
-				log.debug("MailSender [" + getName() + "] retrieved threadTopic-parameter ["
-						+ threadTopic + "]");
-				mail.setThreadTopic(threadTopic);
-			}
-			pv = pvl.getParameterValue("message");
-			if (pv != null) {
-				String message = pv.asStringValue("message");
-				log.debug("MailSender [" + getName() + "] retrieved message-parameter [" + message
-						+ "]");
-				mail.setMessage(message);
-			}
-			pv = pvl.getParameterValue("messageType");
-			if (pv != null) {
-				String messageType = pv.asStringValue(null);
-				log.debug("MailSender [" + getName() + "] retrieved messageType-parameter ["
-						+ messageType + "]");
-				mail.setMessageType(messageType);
-			}
-			pv = pvl.getParameterValue("messageBase64");
-			if (pv != null) {
-				String messageBase64 = pv.asStringValue(null);
-				log.debug("MailSender [" + getName() + "] retrieved messageBase64-parameter ["
-						+ messageBase64 + "]");
-				mail.setMessageBase64(messageBase64);
-			}
-			pv = pvl.getParameterValue("charset");
-			if (pv != null) {
-				String charSet = pv.asStringValue(null);
-				log.debug("MailSender [" + getName() + "] retrieved charset-parameter [" + charSet
-						+ "]");
-				mail.setCharSet(charSet);
-			}
-			pv = pvl.getParameterValue("recipients");
-			List<EMail> emailList = new ArrayList<EMail>(retrieveRecipientsFromParameterList(pv));
-			mail.setEmailList(emailList);
-
-			pv = pvl.getParameterValue("attachments");
-			ArrayList<Attachment> attachmentList = new ArrayList<Attachment>(
-					retrieveAttachmentsFromParamList(pv, prc));
-			mail.setAttachmentList(attachmentList);
-
-		} catch (ParameterException e) {
-			throw new SenderException("MailSender [" + getName()
-					+ "] got exception determining parametervalues", e);
-		}
-		return mail;
-	}
-
 	private Collection<Attachment> retrieveAttachmentsFromParamList(ParameterValue pv,
 			ParameterResolutionContext prc) throws SenderException, ParameterException {
 		Collection<Attachment> attachments = null;
@@ -151,8 +74,109 @@ public class MailSenderBase extends SenderWithParametersBase {
 		Collection<EMail> recipients = null;
 		if (pv != null) {
 			recipients = retrieveRecipients(pv.asCollection());
-			log.debug("MailSender [" + getName() + "] retrieved recipients-parameter ["
-					+ recipients + "]");
+			log.debug("MailSender [" + getName() + "] retrieved recipients-parameter [" + recipients
+					+ "]");
+		}
+		return recipients;
+	}
+
+	private MailSession readParameters(ParameterResolutionContext prc) throws SenderException {
+		EMail from = null;
+		String subject = null;
+		String threadTopic = null;
+		String messageType = null;
+		String messageBase64 = null;
+		String charset = null;
+		List<EMail> recipients;
+		ArrayList<Attachment> attachments = null;
+		ParameterValueList pvl;
+		ParameterValue pv;
+
+		MailSession mail = new MailSession();
+		try {
+			pvl = prc.getValues(paramList);
+			pv = pvl.getParameterValue("from");
+			if (pv != null) {
+				from = new EMail();
+				from.setAddress(pv.asStringValue(null));
+				log.debug("MailSender [" + getName() + "] retrieved from-parameter [" + from + "]");
+				mail.setFrom(from);
+			}
+			pv = pvl.getParameterValue("subject");
+			if (pv != null) {
+				subject = pv.asStringValue(null);
+				log.debug("MailSender [" + getName() + "] retrieved subject-parameter [" + subject
+						+ "]");
+				mail.setSubject(subject);
+			}
+			pv = pvl.getParameterValue("threadTopic");
+			if (pv != null) {
+				threadTopic = pv.asStringValue(null);
+				log.debug("MailSender [" + getName() + "] retrieved threadTopic-parameter ["
+						+ threadTopic + "]");
+				mail.setThreadTopic(threadTopic);
+			}
+			pv = pvl.getParameterValue("message");
+			if (pv != null) {
+				String message = pv.asStringValue("message");
+				log.debug("MailSender [" + getName() + "] retrieved message-parameter [" + message
+						+ "]");
+				mail.setMessage(message);
+			}
+			pv = pvl.getParameterValue("messageType");
+			if (pv != null) {
+				messageType = pv.asStringValue(null);
+				log.debug("MailSender [" + getName() + "] retrieved messageType-parameter ["
+						+ messageType + "]");
+				mail.setMessageType(messageType);
+			}
+			pv = pvl.getParameterValue("messageBase64");
+			if (pv != null) {
+				messageBase64 = pv.asStringValue(null);
+				log.debug("MailSender [" + getName() + "] retrieved messageBase64-parameter ["
+						+ messageBase64 + "]");
+				mail.setMessageBase64(messageBase64);
+			}
+			pv = pvl.getParameterValue("charset");
+			if (pv != null) {
+				charset = pv.asStringValue(null);
+				log.debug("MailSender [" + getName() + "] retrieved charset-parameter [" + charset
+						+ "]");
+				mail.setCharSet(charset);
+			}
+			pv = pvl.getParameterValue("recipients");
+			recipients = new ArrayList<EMail>(retrieveRecipientsFromParameterList(pv));
+			mail.setEmailList(recipients);
+
+			pv = pvl.getParameterValue("attachments");
+			attachments = new ArrayList<Attachment>(retrieveAttachmentsFromParamList(pv, prc));
+			mail.setAttachmentList(attachments);
+
+		} catch (ParameterException e) {
+			throw new SenderException(
+					"MailSender [" + getName() + "] got exception determining parametervalues", e);
+		}
+		return mail;
+	}
+
+	private List<EMail> retrieveRecipients(Collection<Node> recipientsNode) {
+		List<EMail> recipients = null;
+		Iterator iter = recipientsNode.iterator();
+		if (iter.hasNext()) {
+			recipients = new LinkedList<EMail>();
+			while (iter.hasNext()) {
+				Element recipientElement = (Element) iter.next();
+				String value = XmlUtils.getStringValue(recipientElement);
+				if (StringUtils.isNotEmpty(value)) {
+					String type = recipientElement.getAttribute("type");
+					EMail email = new EMail();
+					email.setAddress(value);
+					email.setType(type);
+					recipients.add(email);
+				} else {
+					log.debug("empty recipient found, ignoring");
+				}
+			}
 		}
 		return recipients;
 	}
@@ -178,8 +202,8 @@ public class MailSenderBase extends SenderWithParametersBase {
 							attachmentDataSource = new ByteArrayDataSource((InputStream) object,
 									"application/octet-stream");
 						} catch (IOException e) {
-							throw new SenderException(
-									"error retrieving attachment from sessionkey", e);
+							throw new SenderException("error retrieving attachment from sessionkey",
+									e);
 						}
 						value = new DataHandler(attachmentDataSource);
 					} else if (object instanceof String) {
@@ -190,9 +214,9 @@ public class MailSenderBase extends SenderWithParametersBase {
 							value = skValue;
 						}
 					} else {
-						throw new SenderException("MailSender [" + getName()
-								+ "] received unknown attachment type ["
-								+ object.getClass().getName() + "] in sessionkey");
+						throw new SenderException(
+								"MailSender [" + getName() + "] received unknown attachment type ["
+										+ object.getClass().getName() + "] in sessionkey");
 					}
 				} else {
 					if (StringUtils.isNotEmpty(url)) {
@@ -223,66 +247,50 @@ public class MailSenderBase extends SenderWithParametersBase {
 		return attachments;
 	}
 
-	private List<EMail> retrieveRecipients(Collection<Node> recipientsNode) {
-		List<EMail> recipients = null;
-		Iterator iter = recipientsNode.iterator();
-		if (iter.hasNext()) {
-			recipients = new LinkedList<EMail>();
-			while (iter.hasNext()) {
-				Element recipientElement = (Element) iter.next();
-				String value = XmlUtils.getStringValue(recipientElement);
-				if (StringUtils.isNotEmpty(value)) {
-					String type = recipientElement.getAttribute("type");
-					EMail email = new EMail();
-					email.setAddress(value);
-					email.setType(type);
-					recipients.add(email);
-				} else {
-					log.debug("empty recipient found, ignoring");
-				}
-			}
-		}
-		return recipients;
-	}
-
 	private MailSession parseXML(String input, ParameterResolutionContext prc)
 			throws SenderException, DomBuilderException {
-		Collection<Node> recipients = null;
-		Collection<Node> attachments = null;
-		MailSession mailSession = new MailSession();
-		Element fromElement = null;
-		String date = null;
+		Element from;
+		String subject;
+		String threadTopic;
+		String message;
+		String messageType;
+		String messageBase64;
+		String charset;
+		Collection<Node> recipients;
+		Collection<Node> attachments;
 		Element replyTo = null;
+
+		MailSession mailSession = new MailSession();
+
 		Element emailElement = XmlUtils.buildElement(input);
+		from = XmlUtils.getFirstChildTag(emailElement, "from");
+		subject = XmlUtils.getChildTagAsString(emailElement, "subject");
+		threadTopic = XmlUtils.getChildTagAsString(emailElement, "threadTopic");
+		message = XmlUtils.getChildTagAsString(emailElement, "message");
+		messageType = XmlUtils.getChildTagAsString(emailElement, "messageType");
+		messageBase64 = XmlUtils.getChildTagAsString(emailElement, "messageBase64");
+		charset = XmlUtils.getChildTagAsString(emailElement, "charset");
+
 		Element recipientsElement = XmlUtils.getFirstChildTag(emailElement, "recipients");
 		recipients = XmlUtils.getChildTags(recipientsElement, "recipient");
 
-		mailSession.setSubject(XmlUtils.getChildTagAsString(emailElement, "subject"));
-		fromElement = XmlUtils.getFirstChildTag(emailElement, "from");
-		mailSession.setMessage(XmlUtils.getChildTagAsString(emailElement, "message"));
-		mailSession.setMessageType(XmlUtils.getChildTagAsString(emailElement, "messageType"));
-		mailSession.setMessageBase64(XmlUtils.getChildTagAsString(emailElement, "messageBase64"));
-		mailSession.setThreadTopic(XmlUtils.getChildTagAsString(emailElement, "threadTopic"));
-		replyTo = XmlUtils.getFirstChildTag(emailElement, "replyTo");
-
-		date = XmlUtils.getChildTagAsString(emailElement, "date");
-		if (StringUtils.isNotEmpty(date)) {
-			log.debug("date can be set to " + date);
-			// TODO : date can be added to send the email scheduled time.
-		}
-		String charSet = XmlUtils.getChildTagAsString(emailElement, "charset");
-		mailSession.setCharSet(charSet);
 		Element attachmentsElement = XmlUtils.getFirstChildTag(emailElement, "attachments");
-		attachments = attachmentsElement == null ? null : XmlUtils.getChildTags(attachmentsElement,
-				"attachment");
+		attachments = attachmentsElement == null ? null
+				: XmlUtils.getChildTags(attachmentsElement, "attachment");
+		replyTo = XmlUtils.getFirstChildTag(emailElement, "replyTo");
 		Element headersElement = XmlUtils.getFirstChildTag(emailElement, "headers");
-		Collection headers = headersElement == null ? null : XmlUtils.getChildTags(headersElement,
-				"header");
+		Collection headers = headersElement == null ? null
+				: XmlUtils.getChildTags(headersElement, "header");
+
+		EMail emailFrom = getFrom(from);
+		mailSession.setFrom(emailFrom);
+		mailSession.setSubject(subject);
+		mailSession.setThreadTopic(threadTopic);
+		mailSession.setMessage(message);
+		mailSession.setMessageType(messageType);
+		mailSession.setMessageBase64(messageBase64);
+		mailSession.setCharSet(charset);
 		mailSession.setHeaders(headers);
-
-		EMail from = getFrom(fromElement);
-		mailSession.setFrom(from);
-
 		EMail replyto = getReplyTo(replyTo);
 		mailSession.setReplyto(replyto);
 
@@ -352,6 +360,37 @@ public class MailSenderBase extends SenderWithParametersBase {
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
 	}
+
+	@Override
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc)
+			throws SenderException, TimeOutException {
+		return correlationID;
+	}
+
+	public String getDefaultAttachmentName() {
+		return defaultAttachmentName;
+	}
+
+	public void setDefaultAttachmentName(String defaultAttachmentName) {
+		this.defaultAttachmentName = defaultAttachmentName;
+	}
+
+	public String getDefaultMessageType() {
+		return defaultMessageType;
+	}
+
+	public void setDefaultMessageType(String defaultMessageType) {
+		this.defaultMessageType = defaultMessageType;
+	}
+
+	public String getDefaultMessageBase64() {
+		return defaultMessageBase64;
+	}
+
+	public void setDefaultMessageBase64(String defaultMessageBase64) {
+		this.defaultMessageBase64 = defaultMessageBase64;
+	}
+
 	/**
 	 * Generic email class
 	 * @author alisihab
@@ -554,35 +593,5 @@ public class MailSenderBase extends SenderWithParametersBase {
 		public void setType(String type) {
 			this.type = type;
 		}
-	}
-
-	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc)
-			throws SenderException, TimeOutException {
-		return correlationID;
-	}
-
-	public String getDefaultAttachmentName() {
-		return defaultAttachmentName;
-	}
-
-	public void setDefaultAttachmentName(String defaultAttachmentName) {
-		this.defaultAttachmentName = defaultAttachmentName;
-	}
-
-	public String getDefaultMessageType() {
-		return defaultMessageType;
-	}
-
-	public void setDefaultMessageType(String defaultMessageType) {
-		this.defaultMessageType = defaultMessageType;
-	}
-
-	public String getDefaultMessageBase64() {
-		return defaultMessageBase64;
-	}
-
-	public void setDefaultMessageBase64(String defaultMessageBase64) {
-		this.defaultMessageBase64 = defaultMessageBase64;
 	}
 }
