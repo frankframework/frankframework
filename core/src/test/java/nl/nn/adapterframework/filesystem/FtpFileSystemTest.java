@@ -117,7 +117,22 @@ public class FtpFileSystemTest extends FileSystemTest<FTPFile, FtpFileSystem> {
 
 	@Override
 	protected boolean _folderExists(String folderName) throws Exception {
-		// TODO Auto-generated method stub
+		try {
+			close();
+			open();
+			FTPFile[] files = ftpSession.ftpClient.listFiles();
+			for (FTPFile o : files) {
+				if (o.isDirectory()) {
+					if ((o.getName() + "/").equals(folderName)) {
+						return true;
+					}
+				} else if (o.getName().equals(folderName)) {
+					return true;
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return false;
 	}
 }
