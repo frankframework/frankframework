@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2016-2017, 2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -35,9 +35,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.transform.Transformer;
 
+import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -51,7 +54,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public final class ExecuteJdbcQuery extends Base {
 	@Context ServletConfig servletConfig;
 
-	public static final String DB2XML_XSLT="xml/xsl/dbxml2csv.xslt";
+	public static final String XML2CSV_XSLT="xml/xsl/xmlresult2csv.xsl";
 
 	@GET
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -62,11 +65,6 @@ public final class ExecuteJdbcQuery extends Base {
 
 		Map<String, Object> result = new HashMap<String, Object>();
 
-		List<String> jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
-		if (jmsRealms.size() == 0)
-			jmsRealms.add("no realms defined");
-		result.put("jmsRealms", jmsRealms);
-
 		List<String> realmNames = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
 		List<String> datasourceNames = new ArrayList<String>();
 		for(String s : realmNames) {
@@ -75,6 +73,13 @@ public final class ExecuteJdbcQuery extends Base {
 		if (datasourceNames.size() == 0)
 			datasourceNames.add("no data sources defined");
 		result.put("datasourceNames", datasourceNames);
+
+		List<String> expectResultOptions = new ArrayList<String>();
+		expectResultOptions.add("auto");
+		expectResultOptions.add("yes");
+		expectResultOptions.add("no");
+		result.put("expectResultOptions", expectResultOptions);
+		
 		List<String> resultTypes = new ArrayList<String>();
 		resultTypes.add("csv");
 		resultTypes.add("xml");
@@ -90,62 +95,74 @@ public final class ExecuteJdbcQuery extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
 		initBase(servletConfig);
-
-		String realm = null, resultType = null, query = null, queryType = "select", result = "", returnType = MediaType.APPLICATION_XML;
+		
+		String datasourceName = null, resultType = null, query = null, queryType = null, expectResultSet = null, result = "", returnType = MediaType.APPLICATION_XML;
 		Object returnEntity = null;
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
-			if(key.equalsIgnoreCase("realm")) {
-				realm = entry.getValue().toString();
+			if(key.equalsIgnoreCase("datasourceName")) {
+				datasourceName = entry.getValue().toString();
 			}
 			if(key.equalsIgnoreCase("resultType")) {
 				resultType = entry.getValue().toString().toLowerCase();
 				if(resultType.equalsIgnoreCase("csv")) {
 					returnType = MediaType.TEXT_PLAIN;
 				}
-				if(resultType.equalsIgnoreCase("json")) {
+				else if(resultType.equalsIgnoreCase("json")) {
 					returnType = MediaType.APPLICATION_JSON;
+				}
+				else if(resultType.equalsIgnoreCase("xml")) {
+					returnType = MediaType.APPLICATION_XML;
 				}
 			}
 			if(key.equalsIgnoreCase("query")) {
 				query = entry.getValue().toString();
-				if(query.toLowerCase().indexOf("select") == -1) queryType = "other";
+				queryType = entry.getValue().toString().split(" ")[0];
+			}
+			if(key.equalsIgnoreCase("expectResultSet")) {
+				expectResultSet = entry.getValue().toString();
 			}
 		}
 
-		if(realm == null || resultType == null || query == null) {
-			throw new ApiException("Missing data, realm, resultType and query are expected.", 400);
+		if(datasourceName == null || resultType == null || query == null) {
+			throw new ApiException("Missing data; datasourceName, resultType and query are expected.", 400);
 		}
 
 		//We have all info we need, lets execute the query!
 		
-		DirectQuerySender qs;
-		try {
-			qs = (DirectQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
-		} catch (Exception e) {
-			log.error(e);
-			throw new ApiException("An error occured on creating or closing the connection!", 500);
-		}
+		XmlBuilder xbRoot = new XmlBuilder("manageDatabaseREQ");
+		
+		XmlBuilder xSql = new XmlBuilder("sql");
+		xSql.addAttribute("datasourceName", datasourceName);
+		xSql.addAttribute("expectResultSet", expectResultSet);
+		xbRoot.addSubElement(xSql);
 
-		try {
-			qs.setName("QuerySender");
-			qs.setJmsRealm(realm);
-			qs.setQueryType(queryType);
-			qs.setBlobSmartGet(true);
-			qs.configure(true);
-			qs.open();
-			result = qs.sendMessage("dummy", query);
+		XmlBuilder xQType = new XmlBuilder("type");
+		xQType.setValue(query.split(" ")[0]);
+		xSql.addSubElement(xQType);
+		
+		XmlBuilder xQuery = new XmlBuilder("query");
+		xQuery.setValue(query);
+		xSql.addSubElement(xQuery);
+		
+		// Send XML to ManageDatabase adapter
+		JavaListener listener = JavaListener.getListener("ManageDatabase");
+		try {			
+			HashMap context = new HashMap();
+			String mId = listener.getIdFromRawMessage(xbRoot, context);
+			result = listener.processRequest(mId, xbRoot.toXML(), context);
+			
 			if (resultType.equalsIgnoreCase("csv")) {
-				URL url = ClassUtils.getResourceURL(this, DB2XML_XSLT);
+				URL url= ClassUtils.getResourceURL(this, XML2CSV_XSLT);
 				if (url!=null) {
 					Transformer t = XmlUtils.createTransformer(url);
 					result = XmlUtils.transformXml(t,result);
 				}
 			}
-		} catch (Throwable t) {
-			throw new ApiException("An error occured on executing jdbc query: " + t.getMessage(), 400);
-		} finally {
-			qs.close();
+		} catch (ListenerException e1) {
+			log.error("Error occured on creating or closing connection:\n" + e1);
+		} catch (Throwable e) {
+			log.error("Error occured on executing jdbc query:\n" + e);
 		}
 		
 		if(resultType.equalsIgnoreCase("json")) {

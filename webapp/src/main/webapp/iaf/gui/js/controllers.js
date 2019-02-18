@@ -1253,7 +1253,8 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('ExecuteJdbcQueryCtrl', ['$scope', 'Api', '$timeout', '$state', function($scope, Api, $timeout, $state) {
-	$scope.jmsRealms = {};
+	$scope.datasourceNames = {};
+	$scope.expectResultOptions = {};
 	$scope.resultTypes = {};
 	$scope.error = "";
 
@@ -1263,10 +1264,11 @@ angular.module('iaf.beheerconsole')
 
 	$scope.submit = function(formData) {
 		if(!formData || !formData.query) {
-			$scope.error = "Please specify a jms realm, resulttype and query!";
+			$scope.error = "Please specify a data source, result type and query!";
 			return;
 		}
-		if(!formData.realm) formData.realm = $scope.jmsRealms[0] || false;
+		if(!formData.datasourceName) formData.datasourceName = $scope.datasourceNames[0] || false;
+		if(!formData.expectResultSet) formData.expectResultSet = $scope.expectResultOptions[0] || false;
 		if(!formData.resultType) formData.resultType = $scope.resultTypes[0] || false;
 
 		Api.Post("jdbc/query", JSON.stringify(formData), function(returnData) {
