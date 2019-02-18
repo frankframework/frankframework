@@ -168,10 +168,10 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		String query,
 		String result,
 		DynaActionForm executeJdbcQueryExecuteForm) {
-		List<String> realmNames = JmsRealmFactory.getInstance().getRegisteredDatasourceRealmNamesAsList();
+		List<String> realmNames = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
 		List<String> datasourceNames = new ArrayList<String>();
 		for(String s : realmNames) {
-			datasourceNames.add(JmsRealmFactory.getInstance().getJmsRealm(s).getDatasourceName());
+			datasourceNames.add("["+s+"] " + JmsRealmFactory.getInstance().getJmsRealm(s).getDatasourceName());
 		}
 		if (datasourceNames.size() == 0)
 			datasourceNames.add("no data sources defined");

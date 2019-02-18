@@ -67,6 +67,14 @@ public final class ExecuteJdbcQuery extends Base {
 			jmsRealms.add("no realms defined");
 		result.put("jmsRealms", jmsRealms);
 
+		List<String> realmNames = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
+		List<String> datasourceNames = new ArrayList<String>();
+		for(String s : realmNames) {
+			datasourceNames.add("["+s+"] "  + JmsRealmFactory.getInstance().getJmsRealm(s).getDatasourceName());
+		}
+		if (datasourceNames.size() == 0)
+			datasourceNames.add("no data sources defined");
+		result.put("datasourceNames", datasourceNames);
 		List<String> resultTypes = new ArrayList<String>();
 		resultTypes.add("csv");
 		resultTypes.add("xml");

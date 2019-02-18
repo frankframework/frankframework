@@ -289,8 +289,8 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			}
 			where = XmlUtils.getChildTagAsString(queryElement, "where");
 			order = XmlUtils.getChildTagAsString(queryElement, "order");
-			
-			String datasourceName = queryElement.getAttribute("datasourceName");
+
+			String datasourceName = queryElement.getAttribute("datasourceName").split("] ")[1];
 			if(!datasourceName.equals(getDataSourceNameToUse())) {
 				myConn = getConnection(datasourceName);
 				connection = myConn;
