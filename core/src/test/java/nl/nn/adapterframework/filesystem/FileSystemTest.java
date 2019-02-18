@@ -1,9 +1,7 @@
 package nl.nn.adapterframework.filesystem;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -11,6 +9,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Date;
 import java.util.Iterator;
 
 import org.junit.Before;
@@ -32,6 +31,8 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	//	protected abstract String getFileInfo(F f); // expected to return a XML 
 
 	protected abstract boolean _fileExists(String filename) throws Exception;
+
+	protected abstract boolean _folderExists(String folderName) throws Exception;
 
 	protected abstract void _deleteFile(String filename) throws Exception;
 
@@ -72,15 +73,21 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		//setup negative
 		String filename = "testExists" + FILE1;
 		createFile(filename, "tja");
-		deleteFile(filename);
-		// test
+		//		// test
 		F file = fileSystem.toFile(filename);
-		testExistsCheck(file, filename);
+		assertTrue("Expected file[" + filename + "] to be present", _fileExists(filename));
 
 	}
 
-	private void testExistsCheck(F file, String filename) throws FileSystemException {
-		assertFalse("Expected file[" + filename + "] not to be present", fileSystem.exists(file));
+	@Test
+	public void testNotExists() throws Exception {
+		//setup negative
+		String filename = "testExists" + FILE1;
+		createFile(filename, "tja");
+		deleteFile(filename);
+		//		// test
+		F file = fileSystem.toFile(filename);
+		assertFalse("Expected file[" + filename + "] not to be present", _fileExists(filename));
 
 	}
 
@@ -201,7 +208,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		F file = fileSystem.toFile(filename);
 		fileSystem.deleteFile(file);
 
-		assertFalse("Expected file [" + filename + "] not to be present", fileSystem.exists(file));
+		assertFalse("Expected file [" + filename + "] not to be present", _fileExists(filename));
 	}
 
 	//	public void assertFileEquals(String filename, String expectedContents) throws IOException {
@@ -230,10 +237,35 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		testReadFile(file, contents);
 	}
 
+	@Test
+	public void testGetName() throws Exception {
+		String filename = "readName" + FILE1;
+		String contents = "Tekst om te lezen";
+		createFile(filename, contents);
+
+		F file = fileSystem.toFile(filename);
+
+		assertEquals(filename, fileSystem.getName(file));
+	}
+
+	@Test
+	public void testModificationTime() throws Exception {
+		String filename = "readModificationTime" + FILE1;
+		String contents = "Tekst om te lezen";
+		Date date = new Date();
+		createFile(filename, contents);
+
+		F file = fileSystem.toFile(filename);
+		Date actual = fileSystem.getModificationTime(file, false);
+		long diff = actual.getTime() - date.getTime();
+
+		assertFalse(diff > 10000);
+	}
+
 	public void testFileInfo(F f) throws FileSystemException {
-		String fiString = fileSystem.getInfo(f);
-		assertThat(fiString, containsString("name"));
-		assertThat(fiString, containsString("lastModified"));
+		//		String fiString = fileSystem.getInfo(f);
+		//		assertThat(fiString, containsString("name"));
+		//		assertThat(fiString, containsString("lastModified"));
 	}
 
 	public void testFileInfo() throws FileSystemException {

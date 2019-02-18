@@ -5,14 +5,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.junit.Ignore;
-
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.filesystem.SambaFileSystem;
+import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 
 /**
  *  To run this ignore should be removed if all fields are filled.
@@ -21,12 +19,13 @@ import nl.nn.adapterframework.filesystem.SambaFileSystem;
  *
  */
 
-@Ignore
-public class SambaFileSystemSenderTest extends FileSystemSenderTest<SmbFile, SambaFileSystem> {
-	protected String share = ""; // the path of smb network must start with "smb://"
+public class SambaFileSystemSenderTest extends FileSystemSenderTest<String, Samba2FileSystem> {
+	protected String shareName = "Shared"; // the path of smb network must start with "smb://"
 	protected String username = "";
 	protected String password = "";
+	protected String domain = "";
 	private SmbFile context;
+	protected String share = "smb://" + domain + "/Users/alisihab/Desktop/" + shareName + "/";
 
 	@Override
 	public void setup() throws ConfigurationException, IOException {
@@ -36,11 +35,12 @@ public class SambaFileSystemSenderTest extends FileSystemSenderTest<SmbFile, Sam
 	}
 
 	@Override
-	protected SambaFileSystem getFileSystem() throws ConfigurationException {
-		SambaFileSystem sfs = new SambaFileSystem();
-		sfs.setShare(share);
+	protected Samba2FileSystem getFileSystem() throws ConfigurationException {
+		Samba2FileSystem sfs = new Samba2FileSystem();
+		sfs.setShare(shareName);
 		sfs.setUsername(username);
 		sfs.setPassword(password);
+		sfs.setDomain(domain);
 		return sfs;
 	}
 
@@ -75,6 +75,12 @@ public class SambaFileSystemSenderTest extends FileSystemSenderTest<SmbFile, Sam
 		} catch (Exception e) {
 			throw new IOException(e);
 		}
+	}
+
+	@Override
+	protected boolean _folderExists(String folderName) throws Exception {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

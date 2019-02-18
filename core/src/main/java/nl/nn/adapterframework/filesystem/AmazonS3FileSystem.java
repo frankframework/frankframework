@@ -198,7 +198,6 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 		}
 	}
 
-	@Override
 	public String getInfo(S3Object f) throws FileSystemException {
 		return getFileAsXmlBuilder(f).toXML();
 	}
@@ -237,7 +236,6 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 
 	}
 
-	@Override
 	public XmlBuilder getFileAsXmlBuilder(S3Object f) throws FileSystemException {
 		S3Object fObject = s3Client.getObject(bucketName, f.getKey());
 		XmlBuilder fileXml = new XmlBuilder("file");
@@ -573,6 +571,26 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 
 	public boolean isBucketExistsThrowException() {
 		return bucketExistsThrowException;
+	}
+
+	@Override
+	public long getFileSize(S3Object f, boolean isFolder) throws FileSystemException {
+		return f.getObjectMetadata().getContentLength();
+	}
+
+	@Override
+	public String getName(S3Object f) throws FileSystemException {
+		return f.getKey();
+	}
+
+	@Override
+	public String getCanonicalName(S3Object f, boolean isFolder) throws FileSystemException {
+		return f.getBucketName() + f.getKey();
+	}
+
+	@Override
+	public Date getModificationTime(S3Object f, boolean isFolder) throws FileSystemException {
+		return f.getObjectMetadata().getLastModified();
 	}
 
 }

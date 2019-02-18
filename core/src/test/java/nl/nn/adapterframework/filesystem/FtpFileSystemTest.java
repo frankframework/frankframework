@@ -114,4 +114,10 @@ public class FtpFileSystemTest extends FileSystemTest<FTPFile, FtpFileSystem> {
 			e.printStackTrace();
 		}
 	}
+
+	@Override
+	protected boolean _folderExists(String folderName) throws Exception {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

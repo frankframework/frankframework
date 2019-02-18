@@ -196,4 +196,10 @@ public class AmazonS3FileSystemSenderTest
 		super.testAppendFile();
 	}
 
+	@Override
+	protected boolean _folderExists(String folderName) throws Exception {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

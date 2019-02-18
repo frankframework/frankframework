@@ -34,9 +34,7 @@ import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -165,11 +163,6 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 	}
 
 	@Override
-	public String getInfo(SmbFile f) throws FileSystemException {
-		return getFileAsXmlBuilder(f).toXML();
-	}
-
-	@Override
 	public boolean isFolder(SmbFile f) throws FileSystemException {
 		try {
 			return f.isDirectory();
@@ -233,35 +226,6 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 
 	}
 
-	@Override
-	public XmlBuilder getFileAsXmlBuilder(SmbFile file) throws FileSystemException {
-		XmlBuilder fileXml = new XmlBuilder("file");
-		fileXml.addAttribute("name", file.getName());
-		long fileSize = 0;
-		try {
-			fileSize = file.length();
-			fileXml.addAttribute("size", "" + fileSize);
-			fileXml.addAttribute("fSize", "" + Misc.toFileSize(fileSize, true));
-			fileXml.addAttribute("directory", "" + file.isDirectory());
-			fileXml.addAttribute("canonicalName", file.getCanonicalPath());
-
-			// Get the modification date of the file
-			Date modificationDate = null;
-			modificationDate = new Date(file.lastModified());
-			//add date
-			String date = DateUtils.format(modificationDate, DateUtils.FORMAT_DATE);
-			fileXml.addAttribute("modificationDate", date);
-
-			// add the time
-			String time = DateUtils.format(modificationDate, DateUtils.FORMAT_TIME_HMS);
-			fileXml.addAttribute("modificationTime", time);
-		} catch (SmbException e) {
-			throw new FileSystemException(e);
-		}
-
-		return fileXml;
-	}
-
 	private class SmbFileIterator implements Iterator<SmbFile> {
 
 		private SmbFile files[];
@@ -283,8 +247,31 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 	}
 
 	@Override
+	public long getFileSize(SmbFile f, boolean isFolder) throws FileSystemException {
+		try {
+			return f.length();
+		} catch (SmbException e) {
+			throw new FileSystemException(e);
+		}
+	}
+
+	@Override
+	public String getName(SmbFile f) throws FileSystemException {
+		return f.getName();
+	}
+
+	@Override
+	public String getCanonicalName(SmbFile f, boolean isFolder) throws FileSystemException {
+		return f.getCanonicalPath();
+	}
+
+	@Override
+	public Date getModificationTime(SmbFile f, boolean isFolder) throws FileSystemException {
+		return new Date(f.getLastModified());
+	}
+
+	@Override
 	public void augmentDirectoryInfo(XmlBuilder dirInfo, SmbFile file) {
-		dirInfo.addAttribute("name", file.getCanonicalPath());
 	}
 
 	public boolean isListHiddenFiles() {
@@ -354,4 +341,5 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 	public void setSmbContext(SmbFile smbContext) {
 		this.smbContext = smbContext;
 	}
+
 }

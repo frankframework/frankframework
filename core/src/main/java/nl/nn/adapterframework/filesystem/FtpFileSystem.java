@@ -3,7 +3,6 @@ package nl.nn.adapterframework.filesystem;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
@@ -98,11 +97,6 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 	}
 
 	@Override
-	public String getInfo(FTPFile f) throws FileSystemException {
-		return getFileAsXmlBuilder(f).toXML();
-	}
-
-	@Override
 	public boolean isFolder(FTPFile f) throws FileSystemException {
 		return f.isDirectory();
 	}
@@ -135,34 +129,36 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 	}
 
 	@Override
-	public XmlBuilder getFileAsXmlBuilder(FTPFile f) throws FileSystemException {
-		XmlBuilder fileXml = new XmlBuilder("file");
-		fileXml.addAttribute("name", f.getName());
-		fileXml.addAttribute("user", f.getUser());
-		fileXml.addAttribute("group", f.getGroup());
-		fileXml.addAttribute("type", f.getType());
-		fileXml.addAttribute("size", "" + f.getSize());
-		fileXml.addAttribute("rawListing", f.getRawListing());
-		fileXml.addAttribute("isDirectory", "" + isFolder(f));
-		fileXml.addAttribute("link", f.getLink());
-		fileXml.addAttribute("hardLinkCount", f.getHardLinkCount());
+	public long getFileSize(FTPFile f, boolean isFolder) throws FileSystemException {
+		return f.getSize();
+	}
 
+	@Override
+	public String getName(FTPFile f) throws FileSystemException {
+		return f.getName();
+	}
+
+	@Override
+	public String getCanonicalName(FTPFile f, boolean isFolder) throws FileSystemException {
+		return f.getName();
+	}
+
+	@Override
+	public Date getModificationTime(FTPFile f, boolean isFolder) throws FileSystemException {
 		if (f.getTimestamp() != null) {
-			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-			Date date = new Date(f.getTimestamp().getTimeInMillis());
-			fileXml.addAttribute("modificationDate", sdf.format(date));
-
-			sdf = new SimpleDateFormat("hh:mm:ss");
-			date = new Date(f.getTimestamp().getTimeInMillis());
-			fileXml.addAttribute("modificationTime", sdf.format(date));
+			return f.getTimestamp().getTime();
 		}
-
-		return fileXml;
+		return null;
 	}
 
 	@Override
 	public void augmentDirectoryInfo(XmlBuilder dirInfo, FTPFile f) {
-		dirInfo.addAttribute("name", f.getName());
+		dirInfo.addAttribute("user", f.getUser());
+		dirInfo.addAttribute("group", f.getGroup());
+		dirInfo.addAttribute("type", f.getType());
+		dirInfo.addAttribute("rawListing", f.getRawListing());
+		dirInfo.addAttribute("link", f.getLink());
+		dirInfo.addAttribute("hardLinkCount", f.getHardLinkCount());
 	}
 
 	public FtpSession getFtpSession() {

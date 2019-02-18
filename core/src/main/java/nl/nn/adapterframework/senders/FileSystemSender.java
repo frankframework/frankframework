@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -14,10 +15,12 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.filesystem.IFileSystem;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -84,7 +87,7 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 				XmlBuilder dirXml = new XmlBuilder("directory");
 				while (fileList.hasNext()) {
 					F fileObject = fileList.next();
-					dirXml.addSubElement(ifs.getFileAsXmlBuilder(fileObject));
+					dirXml.addSubElement(getFileAsXmlBuilder(fileObject));
 					count++;
 				}
 				ifs.augmentDirectoryInfo(dirXml, file);
@@ -107,7 +110,7 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 				out = ifs.createFile(file);
 				out.write(fileBytes);
 				out.close();
-				return ifs.getFileAsXmlBuilder(file).toXML();
+				return getFileAsXmlBuilder(file).toXML();
 			} else if (action.equalsIgnoreCase("mkdir")) {
 				ifs.createFolder(file);
 			} else if (action.equalsIgnoreCase("rmdir")) {
@@ -124,6 +127,41 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 		}
 
 		return correlationID;
+	}
+
+	public XmlBuilder getFileAsXmlBuilder(F f) throws FileSystemException {
+		IFileSystem<F> ifs = getFileSystem();
+		XmlBuilder fileXml = new XmlBuilder("file");
+
+		String name = ifs.getName(f);
+		fileXml.addAttribute("name", name);
+		if (!name.equals(".") && !name.equals("..")) {
+			boolean isFolder = ifs.isFolder(f);
+			long fileSize = ifs.getFileSize(f, isFolder);
+			fileXml.addAttribute("size", "" + fileSize);
+			fileXml.addAttribute("fSize", "" + Misc.toFileSize(fileSize, true));
+			fileXml.addAttribute("directory", "" + isFolder);
+			try {
+				fileXml.addAttribute("canonicalName", fileSystem.getCanonicalName(f, isFolder));
+			} catch (Exception e) {
+				log.warn("cannot get canonicalName for file [" + name + "]", e);
+				fileXml.addAttribute("canonicalName", name);
+			}
+			// Get the modification date of the file
+			Date modificationDate = ifs.getModificationTime(f, isFolder);
+			//add date
+			if (modificationDate != null) {
+				String date = DateUtils.format(modificationDate, DateUtils.FORMAT_DATE);
+				fileXml.addAttribute("modificationDate", date);
+
+				// add the time
+				String time = DateUtils.format(modificationDate, DateUtils.FORMAT_TIME_HMS);
+				fileXml.addAttribute("modificationTime", time);
+			}
+
+		}
+
+		return fileXml;
 	}
 
 	public FS getFileSystem() {

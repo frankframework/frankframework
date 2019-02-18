@@ -141,7 +141,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>>
 
 	@Test
 	public void mkdirActionTest() throws Exception {
-		String filename = DIR1;
+		String filename = "mkdir" + DIR1;
 
 		fileSystemSender.setAction("mkdir");
 		fileSystemSender.configure();
@@ -151,7 +151,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>>
 
 		assertEquals(message.trim(), actual.trim());
 
-		boolean result = _fileExists(filename);
+		boolean result = _folderExists(filename);
 		assertTrue("Expected file[" + filename + "] to be present", result);
 	}
 

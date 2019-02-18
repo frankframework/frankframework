@@ -109,4 +109,10 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		super.testAppendFile();
 	}
 
+	@Override
+	protected boolean _folderExists(String folderName) throws Exception {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

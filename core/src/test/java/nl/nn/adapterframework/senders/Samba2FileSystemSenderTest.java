@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,34 +24,28 @@ import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 
-public class Samba2FileSystemTest extends FileSystemTest<String, IFileSystemBase<String>> {
+public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Samba2FileSystem> {
 
-	private String shareName = "Shared";
-	private String username = "";
-	private String password = "";
-	private String domain = "";
-	private DiskShare client;
-	private Session session;
-	Connection connection;
+	protected String shareName = "Shared"; // the path of smb network must start with "smb://"
+	protected String username = "";
+	protected String password = "";
+	protected String domain = "";
+	protected String share = "smb://" + domain + "/Users/alisihab/Desktop/" + shareName + "/";
+	private DiskShare client = null;
+	private Session session = null;
+	private Connection connection = null;
+	private SMBClient smbClient = null;
 
 	@Before
 	@Override
 	public void setup() throws IOException, ConfigurationException {
 		super.setup();
-		SMBClient smbClient = new SMBClient();
 
 		AuthenticationContext auth = new AuthenticationContext(username, password.toCharArray(),
 				domain);
-
-		try {
-			connection = smbClient.connect(domain);
-			session = connection.authenticate(auth);
-			client = (DiskShare) session.connectShare(shareName);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		open(auth);
 	}
 
 	@After
@@ -65,10 +59,30 @@ public class Samba2FileSystemTest extends FileSystemTest<String, IFileSystemBase
 		if (connection != null) {
 			connection.close();
 		}
+
+	}
+
+	public void open(AuthenticationContext auth) {
+		if (smbClient == null) {
+			smbClient = new SMBClient();
+		}
+		try {
+			if (connection == null) {
+				connection = smbClient.connect(domain);
+			}
+			if (session == null) {
+				session = connection.authenticate(auth);
+			}
+			if (client == null) {
+				client = (DiskShare) session.connectShare(shareName);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
-	protected IFileSystemBase<String> getFileSystem() throws ConfigurationException {
+	protected Samba2FileSystem getFileSystem() throws ConfigurationException {
 		Samba2FileSystem fileSystem = new Samba2FileSystem();
 		fileSystem.setDomain(domain);
 		fileSystem.setPassword(password);
@@ -81,7 +95,6 @@ public class Samba2FileSystemTest extends FileSystemTest<String, IFileSystemBase
 	@Override
 	protected boolean _fileExists(String filename) throws Exception {
 		try {
-
 			return client.fileExists(filename);
 		} catch (SMBApiException e) {
 			if (e.getStatus().equals(NtStatus.STATUS_DELETE_PENDING))
@@ -118,11 +131,6 @@ public class Samba2FileSystemTest extends FileSystemTest<String, IFileSystemBase
 				SMB2CreateDisposition.FILE_OPEN, null);
 
 		return file.getInputStream();
-
-		//		Set<SMB2CreateOptions> createOptions = new HashSet<SMB2CreateOptions>(
-		//				EnumSet.of(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE));
-		//		return client.openFile(filename, null, null, SMB2ShareAccess.ALL,
-		//				SMB2CreateDisposition.FILE_OPEN, createOptions).getInputStream();
 	}
 
 	@Override
