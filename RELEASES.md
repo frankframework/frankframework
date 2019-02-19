@@ -19,6 +19,14 @@ Ibis AdapterFramework release notes
 - Add Google's V8 JavaScript engine
 - Use VizJs to generate flow diagrams
 - Improve 'error' handling in Show Security Items
+- Upgrade Ladybug Test Tool to version 2.0.7
+    - Make it possible to specify a transformation per report
+    - Fix selecting root node on refresh at some parts of tree of Test tab
+    - Return to previous active tab after closing tab
+    - Show Compare button after run in Test tab
+    - Display run result error (if any) on run in Test tab
+    - Fix error on selecting checkpoint with null message
+    - Fix error on selecting different stub strategy
 
 
 
@@ -30,7 +38,7 @@ Ibis AdapterFramework release notes
 
 - Fix NPE in BatchFileTransformerPipe when using an IbisLocalSender
 - Various bugfixes en performance improvements in SOAPProviders (WebServiceListener)
-- Update to latest Ladybug Test Tool version
+- Upgrade Ladybug Test Tool to version 2.0.6
     - Prevent error on reselect node after Delete and Replace
     - Refresh after upload
     - Limit the use of special chars in normalized path

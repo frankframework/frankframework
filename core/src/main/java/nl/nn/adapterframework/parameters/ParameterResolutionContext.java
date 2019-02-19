@@ -166,9 +166,6 @@ public class ParameterResolutionContext {
 		
 	/**
 	 * @return the DOM document parsed from the (xml formatted) input
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws IOException
 	 */
 	@Deprecated 
 	public Source getInputSource() throws DomBuilderException {

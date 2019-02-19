@@ -236,9 +236,9 @@ public abstract class AbstractXmlValidator {
 	/**
 	 * Evaluate the validation and set 'reason' session variables.
 	 * 
-	 * @param context: the validationContext of this attempt
-	 * @param session: the PipeLineSession
-	 * @param t:       the exception thrown by the validation, or null
+	 * @param context the validationContext of this attempt
+	 * @param session the PipeLineSession
+	 * @param t the exception thrown by the validation, or null
 	 * @return the result event, e.g. 'valid XML' or 'Invalid XML'
 	 * @throws XmlValidatorException, when configured to do so
 	 */
