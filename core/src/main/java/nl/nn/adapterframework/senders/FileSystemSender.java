@@ -1,8 +1,12 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.senders;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 
@@ -11,23 +15,45 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.filesystem.FileSystemException;
+import nl.nn.adapterframework.filesystem.IFileSystem;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.senders.IFileSystemSender;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithParametersBase
 		implements IFileSystemSender {
 
-	private int lastProcessedActionIndex = 0;
-	private String[] actionArray;
 	private String action;
+	private List<String> actions = new ArrayList<String>(
+			Arrays.asList("delete", "upload", "mkdir", "rmdir", "rename", "download", "list"));
+
 	private FS fileSystem;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+		getFileSystem().configure();
+
+		if (getAction() == null)
+			throw new ConfigurationException(getLogPrefix() + "action must be specified");
+		if (!actions.contains(getAction()))
+			throw new ConfigurationException(getLogPrefix() + "unknown or invalid action ["
+					+ getAction() + "] supported actions are " + actions.toString() + "");
+
+		//Check if necessarily parameters are available
+		ParameterList parameterList = getParameterList();
+		if (getAction().equals("upload")
+				&& (parameterList == null || parameterList.findParameter("file") == null))
+			throw new ConfigurationException(
+					getLogPrefix() + "the upload action requires the file parameter to be present");
+		if (getAction().equals("rename")
+				&& (parameterList == null || parameterList.findParameter("destination") == null))
+			throw new ConfigurationException(getLogPrefix()
+					+ "the rename action requires a destination parameter to be present");
 	}
 
 	@Override
@@ -57,12 +83,11 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 				return Misc.streamToString(is);
 			} else if (action.equalsIgnoreCase("list")) {
 				Iterator<F> fileList = ifs.listFiles();
-
 				int count = 0;
 				XmlBuilder dirXml = new XmlBuilder("directory");
 				while (fileList.hasNext()) {
 					F fileObject = fileList.next();
-					dirXml.addSubElement(ifs.getFileAsXmlBuilder(fileObject));
+					dirXml.addSubElement(getFileAsXmlBuilder(fileObject));
 					count++;
 				}
 				ifs.augmentDirectoryInfo(dirXml, file);
@@ -85,7 +110,7 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 				out = ifs.createFile(file);
 				out.write(fileBytes);
 				out.close();
-				return ifs.getFileAsXmlBuilder(file).toXML();
+				return getFileAsXmlBuilder(file).toXML();
 			} else if (action.equalsIgnoreCase("mkdir")) {
 				ifs.createFolder(file);
 			} else if (action.equalsIgnoreCase("rmdir")) {
@@ -104,28 +129,47 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 		return correlationID;
 	}
 
+	public XmlBuilder getFileAsXmlBuilder(F f) throws FileSystemException {
+		IFileSystem<F> ifs = getFileSystem();
+		XmlBuilder fileXml = new XmlBuilder("file");
+
+		String name = ifs.getName(f);
+		fileXml.addAttribute("name", name);
+		if (!name.equals(".") && !name.equals("..")) {
+			boolean isFolder = ifs.isFolder(f);
+			long fileSize = ifs.getFileSize(f, isFolder);
+			fileXml.addAttribute("size", "" + fileSize);
+			fileXml.addAttribute("fSize", "" + Misc.toFileSize(fileSize, true));
+			fileXml.addAttribute("directory", "" + isFolder);
+			try {
+				fileXml.addAttribute("canonicalName", fileSystem.getCanonicalName(f, isFolder));
+			} catch (Exception e) {
+				log.warn("cannot get canonicalName for file [" + name + "]", e);
+				fileXml.addAttribute("canonicalName", name);
+			}
+			// Get the modification date of the file
+			Date modificationDate = ifs.getModificationTime(f, isFolder);
+			//add date
+			if (modificationDate != null) {
+				String date = DateUtils.format(modificationDate, DateUtils.FORMAT_DATE);
+				fileXml.addAttribute("modificationDate", date);
+
+				// add the time
+				String time = DateUtils.format(modificationDate, DateUtils.FORMAT_TIME_HMS);
+				fileXml.addAttribute("modificationTime", time);
+			}
+
+		}
+
+		return fileXml;
+	}
+
 	public FS getFileSystem() {
 		return fileSystem;
 	}
 
 	public void setFileSystem(FS fileSystem) {
 		this.fileSystem = fileSystem;
-	}
-
-	public String[] getActionArray() {
-		return actionArray;
-	}
-
-	public void setActionArray(String[] actionArray) {
-		this.actionArray = actionArray;
-	}
-
-	public int getLastProcessedActionIndex() {
-		return lastProcessedActionIndex;
-	}
-
-	public void setLastProcessedActionIndex(int lastProcessedActionIndex) {
-		this.lastProcessedActionIndex = lastProcessedActionIndex;
 	}
 
 	public String getAction() {
@@ -135,4 +179,9 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 	public void setAction(String action) {
 		this.action = action;
 	}
+
+	protected void addActions(List<String> specificActions) {
+		actions.addAll(specificActions);
+	}
+
 }

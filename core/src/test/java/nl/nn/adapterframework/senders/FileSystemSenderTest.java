@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.senders;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -9,17 +9,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Iterator;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.filesystem.FileSystemTest;
+import nl.nn.adapterframework.filesystem.IFileSystem;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.senders.IFileSystemSender;
 
 public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>>
 		extends FileSystemTest<F, FS> {
@@ -40,12 +40,11 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>>
 	}
 
 	@Test
-	public void downloadActionTest()
-			throws IOException, SenderException, TimeOutException, ConfigurationException {
+	public void downloadActionTest() throws Exception {
 		String filename = "sender" + FILE1;
 		String contents = "Tekst om te lezen";
 		createFile(filename, contents);
-		assertTrue(_fileExists(filename));
+		assertTrue("Expected file [" + filename + "] to be present", _fileExists(filename));
 
 		fileSystemSender.setAction("download");
 		fileSystemSender.configure();
@@ -56,8 +55,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>>
 	}
 
 	@Test
-	public void uploadActionTestWithString()
-			throws SenderException, TimeOutException, IOException, ConfigurationException {
+	public void uploadActionTestWithString() throws Exception {
 		String filename = "uploadedwithString" + FILE1;
 		String contents = "Some text content to test upload action\n";
 		createFile(filename, contents);
@@ -79,14 +77,12 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>>
 		String actual;
 		actual = fileSystemSender.sendMessage("<result>ok</result>", filename, prc);
 
-		fileSystem.finalizeAction();
 		actual = readFile(filename);
 		assertEquals(contents.trim(), actual.trim());
 	}
 
 	@Test
-	public void uploadActionTestWithByteArray()
-			throws SenderException, TimeOutException, IOException, ConfigurationException {
+	public void uploadActionTestWithByteArray() throws Exception {
 		String filename = "uploadedwithByteArray" + FILE1;
 		String contents = "Some text content to test upload action\n";
 		createFile(filename, contents);
@@ -109,14 +105,12 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>>
 		String actual;
 		actual = fileSystemSender.sendMessage("<result>ok</result>", filename, prc);
 
-		fileSystem.finalizeAction();
 		actual = readFile(filename);
 		assertEquals(contents.trim(), actual.trim());
 	}
 
 	@Test
-	public void uploadActionTestWithInputStream()
-			throws SenderException, TimeOutException, IOException, ConfigurationException {
+	public void uploadActionTestWithInputStream() throws Exception {
 		String filename = "uploadedwithInputStream" + FILE1;
 		String contents = "Some text content to test upload action\n";
 		createFile(filename, contents);
@@ -141,14 +135,13 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>>
 		String actual;
 		actual = fileSystemSender.sendMessage("<result>ok</result>", filename, prc);
 
-		fileSystem.finalizeAction();
 		actual = readFile(filename);
 		assertEquals(contents.trim(), actual.trim());
 	}
 
 	@Test
-	public void mkdirActionTest() throws SenderException, TimeOutException, ConfigurationException {
-		String filename = DIR1;
+	public void mkdirActionTest() throws Exception {
+		String filename = "mkdir" + DIR1;
 
 		fileSystemSender.setAction("mkdir");
 		fileSystemSender.configure();
@@ -158,13 +151,12 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>>
 
 		assertEquals(message.trim(), actual.trim());
 
-		boolean result = _fileExists(filename);
+		boolean result = _folderExists(filename);
 		assertTrue("Expected file[" + filename + "] to be present", result);
 	}
 
 	@Test
-	public void rmdirActionTest()
-			throws IOException, SenderException, TimeOutException, ConfigurationException {
+	public void rmdirActionTest() throws Exception {
 		String filename = DIR1;
 		if (!_fileExists(DIR1)) {
 			_createFolder(filename);
@@ -182,8 +174,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>>
 	}
 
 	@Test
-	public void deleteActionTest()
-			throws IOException, SenderException, TimeOutException, ConfigurationException {
+	public void deleteActionTest() throws Exception {
 		String filename = "tobedeleted" + FILE1;
 		if (!_fileExists(filename)) {
 			createFile(filename, "is not empty");
@@ -201,8 +192,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>>
 	}
 
 	@Test
-	public void renameActionTest()
-			throws IOException, SenderException, TimeOutException, ConfigurationException {
+	public void renameActionTest() throws Exception {
 		String filename = "toberenamed" + FILE1;
 		String dest = "renamed" + FILE1;
 		if (!_fileExists(filename)) {
@@ -238,22 +228,20 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>>
 
 	//TODO : Configure this case for your sender structure (can be changed to fit every sender)
 	@Test
-	public void listActionTest()
-			throws SenderException, TimeOutException, ConfigurationException, IOException {
+	public void listActionTest() throws Exception {
 
-		//		File localFolder = getFileHandle("");
-		//		File[] listOfFiles = localFolder.listFiles();
-		//
-		//		String remoteFolder = "C:/Users/Daniel/Desktop/DummyFolder/"; // FIXME : add your root path
-		//		int count = (listOfFiles == null ? 0 : listOfFiles.length);
-		//
-		//		fileSystemSender.setAction("list");
-		//		fileSystemSender.configure();
-		//		String result = fileSystemSender.sendMessage(null, remoteFolder);
-		//
-		//		String[] resultArray = result.split("\"");
-		//		int resultCount = Integer.valueOf(resultArray[3]);
-		//		assertEquals(count, resultCount);
-		//		assertEquals(remoteFolder, resultArray[1]);
+		fileSystemSender.setAction("list");
+		fileSystemSender.configure();
+		String result = fileSystemSender.sendMessage(null, "");
+		F file;
+		Iterator<F> it = fileSystem.listFiles();
+		int count = 0;
+		while (it.hasNext()) {
+			file = it.next();
+			count++;
+		}
+		String[] resultArray = result.split("\"");
+		int resultCount = Integer.valueOf(resultArray[3]);
+		assertEquals(resultCount, count);
 	}
 }

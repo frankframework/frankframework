@@ -3,6 +3,7 @@ package nl.nn.adapterframework.filesystem;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Date;
 import java.util.Iterator;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -26,19 +27,17 @@ public interface IFileSystemBase<F> {
 
 	public void deleteFile(F f) throws FileSystemException;
 
-	public String getInfo(F f) throws FileSystemException;
-
 	public void renameTo(F f, String destination) throws FileSystemException;
 
-	public XmlBuilder getFileAsXmlBuilder(F f) throws FileSystemException;
+	public long getFileSize(F f, boolean isFolder) throws FileSystemException;
 
+	public String getName(F f) throws FileSystemException;
+
+	public String getCanonicalName(F f, boolean isFolder) throws FileSystemException;
+
+	public Date getModificationTime(F f, boolean isFolder) throws FileSystemException;
+
+	//	public String getInfo(F f) throws FileSystemException;
+	//	public XmlBuilder getFileAsXmlBuilder(F f) throws FileSystemException;
 	public void augmentDirectoryInfo(XmlBuilder dirInfo, F f);
-
-	/**
-	 * Some file system test implementations may face a <code>FileNotFoundException</code> 
-	 * while running certain actions, due to resources still being used by another process. 
-	 * To solve this, the developer may call implementation-specific code to release these 
-	 * resources.
-	 */
-	public void finalizeAction();
 }

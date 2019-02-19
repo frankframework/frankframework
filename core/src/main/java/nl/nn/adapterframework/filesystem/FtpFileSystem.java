@@ -18,7 +18,6 @@ package nl.nn.adapterframework.filesystem;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
@@ -38,56 +37,17 @@ import nl.nn.adapterframework.util.XmlBuilder;
 public class FtpFileSystem implements IFileSystem<FTPFile> {
 
 	private FtpSession ftpSession;
-	
+
 	private String remoteDirectory;
-	private String remoteFilenamePattern=null;
+	private String remoteFilenamePattern = null;
 
-	private class FTPFilePathIterator implements Iterator<FTPFile> {
-
-		private FTPFile files[];
-		int i=0;
-		
-		FTPFilePathIterator(FTPFile files[]) {
-			Vector<FTPFile> fList = new Vector<FTPFile>();
-			for(int i = 0; i < files.length; i++) {
-				String filename = files[i].getName();
-				if(!filename.equals(".") && !filename.equals("..")) {
-					fList.addElement(files[i]);
-				}
-			}
-			
-			this.files = new FTPFile[fList.size()];
-			fList.copyInto(this.files);
-		}
-		
-		@Override
-		public boolean hasNext() {
-			return files!=null && i<files.length;
-		}
-
-		@Override
-		public FTPFile next() {			
-			return files[i++];
-		}
-
-		@Override
-		public void remove() {
-			try {
-				deleteFile(files[i++]);
-			} catch (FileSystemException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
 	public FtpFileSystem() {
 		ftpSession = new FtpSession();
 	}
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		ftpSession.configure();
-
 		try {
 			ftpSession.openClient("");
 		} catch (FtpConnectException e) {
@@ -100,7 +60,7 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 		FTPFile ftpFile;
 		ftpFile = new FTPFile();
 		ftpFile.setName(filename);
-		
+
 		return ftpFile;
 	}
 
@@ -118,8 +78,8 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 	public boolean exists(FTPFile f) throws FileSystemException {
 		try {
 			FTPFile[] files = ftpSession.ftpClient.listFiles();
-			for(FTPFile o : files) {
-				if(o.getName().equals(f.getName())) {
+			for (FTPFile o : files) {
+				if (o.getName().equals(f.getName())) {
 					return true;
 				}
 			}
@@ -131,19 +91,22 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 
 	@Override
 	public OutputStream createFile(FTPFile f) throws FileSystemException, IOException {
-		return ftpSession.ftpClient.storeFileStream(f.getName());
+		OutputStream outputStream = ftpSession.ftpClient.storeFileStream(f.getName());
+		return outputStream;
 	}
 
 	@Override
 	public OutputStream appendFile(FTPFile f) throws FileSystemException, IOException {
-		return ftpSession.ftpClient.appendFileStream(f.getName());
+		OutputStream outputStream = ftpSession.ftpClient.appendFileStream(f.getName());
+		return outputStream;
 	}
 
 	@Override
 	public InputStream readFile(FTPFile f) throws FileSystemException, IOException {
-		return ftpSession.ftpClient.retrieveFileStream(f.getName());
+		InputStream inputStream = ftpSession.ftpClient.retrieveFileStream(f.getName());
+		return inputStream;
 	}
-	
+
 	@Override
 	public void deleteFile(FTPFile f) throws FileSystemException {
 		try {
@@ -151,11 +114,6 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-
-	@Override
-	public String getInfo(FTPFile f) throws FileSystemException {
-		return getFileAsXmlBuilder(f).toXML();
 	}
 
 	@Override
@@ -187,47 +145,50 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 			ftpSession.ftpClient.rename(f.getName(), destination);
 		} catch (IOException e) {
 			e.printStackTrace();
-		}		
+		}
 	}
 
 	@Override
-	public XmlBuilder getFileAsXmlBuilder(FTPFile f) throws FileSystemException {
-		XmlBuilder fileXml = new XmlBuilder("file");
-		fileXml.addAttribute("name", f.getName());
-		fileXml.addAttribute("user", f.getUser());
-		fileXml.addAttribute("group", f.getGroup());
-		fileXml.addAttribute("type", f.getType());
-		fileXml.addAttribute("size", "" + f.getSize());
-		fileXml.addAttribute("rawListing", f.getRawListing());
-		fileXml.addAttribute("isDirectory", "" + isFolder(f));
-		fileXml.addAttribute("link", f.getLink());
-		fileXml.addAttribute("hardLinkCount", f.getHardLinkCount());
+	public long getFileSize(FTPFile f, boolean isFolder) throws FileSystemException {
+		return f.getSize();
+	}
 
-		if(f.getTimestamp() != null) {
-			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-			Date date = new Date(f.getTimestamp().getTimeInMillis());
-			fileXml.addAttribute("modificationDate", sdf.format(date));
-			
-			sdf = new SimpleDateFormat("hh:mm:ss");
-			date = new Date(f.getTimestamp().getTimeInMillis());
-			fileXml.addAttribute("modificationTime", sdf.format(date));
+	@Override
+	public String getName(FTPFile f) throws FileSystemException {
+		return f.getName();
+	}
+
+	@Override
+	public String getCanonicalName(FTPFile f, boolean isFolder) throws FileSystemException {
+		return f.getName();
+	}
+
+	@Override
+	public Date getModificationTime(FTPFile f, boolean isFolder) throws FileSystemException {
+		if (f.getTimestamp() != null) {
+			return f.getTimestamp().getTime();
 		}
-		
-		return fileXml;
+		return null;
 	}
 
 	@Override
 	public void augmentDirectoryInfo(XmlBuilder dirInfo, FTPFile f) {
-		dirInfo.addAttribute("name", f.getName());
+		dirInfo.addAttribute("user", f.getUser());
+		dirInfo.addAttribute("group", f.getGroup());
+		dirInfo.addAttribute("type", f.getType());
+		dirInfo.addAttribute("rawListing", f.getRawListing());
+		dirInfo.addAttribute("link", f.getLink());
+		dirInfo.addAttribute("hardLinkCount", f.getHardLinkCount());
 	}
-	
+
 	public FtpSession getFtpSession() {
 		return ftpSession;
 	}
-	
+
 	public void setRemoteDirectory(String remoteDirectory) {
 		this.remoteDirectory = remoteDirectory;
 	}
+
 	public String getRemoteDirectory() {
 		return remoteDirectory;
 	}
@@ -235,16 +196,46 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 	public void setRemoteFilenamePattern(String string) {
 		this.remoteFilenamePattern = string;
 	}
+
 	public String getRemoteFilenamePattern() {
 		return remoteFilenamePattern;
 	}
 
-	@Override
-	public void finalizeAction() {
-		try {
-			ftpSession.ftpClient.completePendingCommand();
-		} catch (IOException e) {
-			e.printStackTrace();
+	private class FTPFilePathIterator implements Iterator<FTPFile> {
+
+		private FTPFile files[];
+		int i = 0;
+
+		FTPFilePathIterator(FTPFile files[]) {
+			Vector<FTPFile> fList = new Vector<FTPFile>();
+			for (int i = 0; i < files.length; i++) {
+				String filename = files[i].getName();
+				if (!filename.equals(".") && !filename.equals("..")) {
+					fList.addElement(files[i]);
+				}
+			}
+
+			this.files = new FTPFile[fList.size()];
+			fList.copyInto(this.files);
+		}
+
+		@Override
+		public boolean hasNext() {
+			return files != null && i < files.length;
+		}
+
+		@Override
+		public FTPFile next() {
+			return files[i++];
+		}
+
+		@Override
+		public void remove() {
+			try {
+				deleteFile(files[i++]);
+			} catch (FileSystemException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }

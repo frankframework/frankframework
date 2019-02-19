@@ -7,6 +7,9 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
+import org.junit.Ignore;
+import org.junit.Test;
+
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
@@ -17,6 +20,7 @@ import com.amazonaws.services.s3.model.S3Object;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
+@Ignore
 public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3FileSystem> {
 
 	private String accessKey = "";
@@ -46,7 +50,10 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 				.withCredentials(new AWSStaticCredentialsProvider(awsCreds));
 
 		s3Client = s3ClientBuilder.build();
-		s3 = new AmazonS3FileSystem(s3Client, bucketName);
+		s3 = new AmazonS3FileSystem();
+		s3.setAccessKey(accessKey);
+		s3.setSecretKey(secretKey);
+		s3.setBucketName(bucketName);
 		return s3;
 	}
 
@@ -58,26 +65,29 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	@Override
 	protected void _deleteFile(String filename) {
 		s3Client.deleteObject(bucketName, filename);
-
 	}
 
 	@Override
-	protected OutputStream _createFile(String filename) throws IOException {
+	protected OutputStream _createFile(final String filename) throws IOException {
 		PipedOutputStream pos = new PipedOutputStream();
-		PipedInputStream pis = new PipedInputStream(pos);
-		new Thread(() -> {
-			try {
-				s3Client.putObject(bucketName, filename, pis, new ObjectMetadata());
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+		final PipedInputStream pis = new PipedInputStream(pos);
+		Thread putObjectThread = new Thread(new Runnable() {
 
-			try {
-				pis.close();
-			} catch (IOException e) {
-				e.printStackTrace();
+			@Override
+			public void run() {
+				try {
+					s3Client.putObject(bucketName, filename, pis, new ObjectMetadata());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				try {
+					pis.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
-		}).start();
+		});
+		putObjectThread.start();
 
 		return pos;
 	}
@@ -90,7 +100,19 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	@Override
 	public void _createFolder(String filename) throws IOException {
 		s3Client.putObject(bucketName, filename, "");
+	}
 
+	@Override
+	@Ignore
+	@Test
+	public void testAppendFile() throws Exception {
+		super.testAppendFile();
+	}
+
+	@Override
+	protected boolean _folderExists(String folderName) throws Exception {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

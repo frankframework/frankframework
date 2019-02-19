@@ -23,14 +23,18 @@ import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.Iterator;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+
+import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileFilter;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -41,18 +45,42 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class SambaFileSystem implements IFileSystem<SmbFile> {
 
-	private SmbFile smbContext;
+	protected Logger log = LogUtil.getLogger(this);
+
+	private String domain = null;
+	private String username = null;
+	private String password = null;
+	private String authAlias = null;
+	private String share = null;
 	private boolean isForce;
 	private boolean listHiddenFiles = true;
 
-	public SambaFileSystem(SmbFile smbContext, boolean isForce) {
-		this.smbContext = smbContext;
-		this.isForce = isForce;
-	}
+	private NtlmPasswordAuthentication auth = null;
+	private SmbFile smbContext;
 
 	@Override
 	public void configure() throws ConfigurationException {
+		if (getShare() == null)
+			throw new ConfigurationException("server share endpoint is required");
+		if (!getShare().startsWith("smb://"))
+			throw new ConfigurationException("url must begin with [smb://]");
 
+		//Setup credentials if applied, may be null.
+		//NOTE: When using NtmlPasswordAuthentication without username it returns GUEST
+		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+		if (StringUtils.isNotEmpty(cf.getUsername())) {
+			auth = new NtlmPasswordAuthentication(getDomain(), cf.getUsername(), cf.getPassword());
+			log.debug("setting authentication to [" + auth.toString() + "]");
+		}
+
+		try {
+			//Try to initially connect to the host and create the SMB session.
+			//The session automatically closes and re-creates when required.
+			smbContext = new SmbFile(getShare(), auth);
+
+		} catch (MalformedURLException e) {
+			throw new ConfigurationException(e);
+		}
 	}
 
 	@Override
@@ -135,11 +163,6 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 	}
 
 	@Override
-	public String getInfo(SmbFile f) throws FileSystemException {
-		return getFileAsXmlBuilder(f).toXML();
-	}
-
-	@Override
 	public boolean isFolder(SmbFile f) throws FileSystemException {
 		try {
 			return f.isDirectory();
@@ -172,8 +195,8 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 							+ "] which is a file instead of a directory");
 				}
 			} else {
-				throw new FileSystemException("trying to remove file [" + f.getName()
-						+ "] which does not exist");
+				throw new FileSystemException(
+						"trying to remove file [" + f.getName() + "] which does not exist");
 			}
 		} catch (SmbException e) {
 			throw new FileSystemException(e);
@@ -203,35 +226,6 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 
 	}
 
-	@Override
-	public XmlBuilder getFileAsXmlBuilder(SmbFile file) throws FileSystemException {
-		XmlBuilder fileXml = new XmlBuilder("file");
-		fileXml.addAttribute("name", file.getName());
-		long fileSize = 0;
-		try {
-			fileSize = file.length();
-			fileXml.addAttribute("size", "" + fileSize);
-			fileXml.addAttribute("fSize", "" + Misc.toFileSize(fileSize, true));
-			fileXml.addAttribute("directory", "" + file.isDirectory());
-			fileXml.addAttribute("canonicalName", file.getCanonicalPath());
-
-			// Get the modification date of the file
-			Date modificationDate = null;
-			modificationDate = new Date(file.lastModified());
-			//add date
-			String date = DateUtils.format(modificationDate, DateUtils.FORMAT_DATE);
-			fileXml.addAttribute("modificationDate", date);
-
-			// add the time
-			String time = DateUtils.format(modificationDate, DateUtils.FORMAT_TIME_HMS);
-			fileXml.addAttribute("modificationTime", time);
-		} catch (SmbException e) {
-			throw new FileSystemException(e);
-		}
-
-		return fileXml;
-	}
-
 	private class SmbFileIterator implements Iterator<SmbFile> {
 
 		private SmbFile files[];
@@ -253,8 +247,31 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 	}
 
 	@Override
+	public long getFileSize(SmbFile f, boolean isFolder) throws FileSystemException {
+		try {
+			return f.length();
+		} catch (SmbException e) {
+			throw new FileSystemException(e);
+		}
+	}
+
+	@Override
+	public String getName(SmbFile f) throws FileSystemException {
+		return f.getName();
+	}
+
+	@Override
+	public String getCanonicalName(SmbFile f, boolean isFolder) throws FileSystemException {
+		return f.getCanonicalPath();
+	}
+
+	@Override
+	public Date getModificationTime(SmbFile f, boolean isFolder) throws FileSystemException {
+		return new Date(f.getLastModified());
+	}
+
+	@Override
 	public void augmentDirectoryInfo(XmlBuilder dirInfo, SmbFile file) {
-		dirInfo.addAttribute("name", file.getCanonicalPath());
 	}
 
 	public boolean isListHiddenFiles() {
@@ -265,8 +282,64 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 		this.listHiddenFiles = listHiddenFiles;
 	}
 
-	@Override
-	public void finalizeAction() {
-		// TODO Auto-generated method stub
+	public String getDomain() {
+		return domain;
 	}
+
+	public void setDomain(String domain) {
+		this.domain = domain;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getAuthAlias() {
+		return authAlias;
+	}
+
+	public void setAuthAlias(String authAlias) {
+		this.authAlias = authAlias;
+	}
+
+	public NtlmPasswordAuthentication getAuth() {
+		return auth;
+	}
+
+	public void setAuth(NtlmPasswordAuthentication auth) {
+		this.auth = auth;
+	}
+
+	public String getShare() {
+		return share;
+	}
+
+	public void setShare(String share) {
+		this.share = share;
+	}
+
+	public void setForce(boolean force) {
+		isForce = force;
+	}
+
+	public SmbFile getSmbContext() {
+		return smbContext;
+	}
+
+	public void setSmbContext(SmbFile smbContext) {
+		this.smbContext = smbContext;
+	}
+
 }
