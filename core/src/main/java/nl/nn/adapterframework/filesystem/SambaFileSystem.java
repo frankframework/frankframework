@@ -272,6 +272,7 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 
 	@Override
 	public void augmentDirectoryInfo(XmlBuilder dirInfo, SmbFile file) {
+		dirInfo.addAttribute("name", file.getName());
 	}
 
 	public boolean isListHiddenFiles() {

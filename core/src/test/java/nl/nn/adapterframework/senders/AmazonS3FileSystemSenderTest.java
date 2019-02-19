@@ -33,7 +33,6 @@ import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
-@Ignore
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AmazonS3FileSystemSenderTest
 		extends FileSystemSenderTest<S3Object, AmazonS3FileSystem> {
@@ -198,8 +197,7 @@ public class AmazonS3FileSystemSenderTest
 
 	@Override
 	protected boolean _folderExists(String folderName) throws Exception {
-		// TODO Auto-generated method stub
-		return false;
+		return _fileExists(folderName);
 	}
 
 }

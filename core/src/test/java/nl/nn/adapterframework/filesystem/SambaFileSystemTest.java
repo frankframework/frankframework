@@ -76,8 +76,7 @@ public class SambaFileSystemTest extends FileSystemTest<SmbFile, SambaFileSystem
 
 	@Override
 	protected boolean _folderExists(String folderName) throws Exception {
-		// TODO Auto-generated method stub
-		return false;
+		return _fileExists(folderName);
 	}
 
 }

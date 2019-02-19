@@ -30,6 +30,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.RestoreObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.model.StorageClass;
 import com.amazonaws.services.s3.model.Tier;
@@ -180,7 +181,9 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 	public InputStream readFile(S3Object f) throws FileSystemException, IOException {
 		try {
 			GetObjectRequest getObjectrequest = new GetObjectRequest(bucketName, f.getKey());
-			return s3Client.getObject(getObjectrequest).getObjectContent();
+			S3Object file = s3Client.getObject(getObjectrequest);
+			S3ObjectInputStream is = file.getObjectContent();
+			return is;
 		} catch (AmazonServiceException e) {
 			e.printStackTrace();
 			throw new FileSystemException();
@@ -590,7 +593,9 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 
 	@Override
 	public Date getModificationTime(S3Object f, boolean isFolder) throws FileSystemException {
-		return f.getObjectMetadata().getLastModified();
+		S3Object file = s3Client.getObject(bucketName, f.getKey());
+		Date date = file.getObjectMetadata().getLastModified();
+		return date;
 	}
 
 }

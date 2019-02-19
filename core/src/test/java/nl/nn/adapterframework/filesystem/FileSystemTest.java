@@ -118,7 +118,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		PrintWriter pw = new PrintWriter(out);
 		pw.println(contents);
 		pw.close();
-		out.close();
+		//		out.close();
 
 		existsCheck(filename);
 		String actual = readFile(filename);
@@ -146,7 +146,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		PrintWriter pw = new PrintWriter(out);
 		pw.println(contents);
 		pw.close();
-		out.close();
+		//		out.close();
 
 		existsCheck(filename);
 
@@ -306,6 +306,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 			assertTrue(it.hasNext());
 			file = it.next();
 		}
+		assertFalse(it.hasNext());
 
 		deleteFile(FILE2);
 		it = fileSystem.listFiles();

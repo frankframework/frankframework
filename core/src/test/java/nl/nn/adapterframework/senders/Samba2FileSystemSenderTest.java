@@ -28,11 +28,11 @@ import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 
 public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Samba2FileSystem> {
 
-	protected String shareName = "Shared"; // the path of smb network must start with "smb://"
+	protected String shareName = "Shared";
 	protected String username = "";
 	protected String password = "";
-	protected String domain = "";
-	protected String share = "smb://" + domain + "/Users/alisihab/Desktop/" + shareName + "/";
+	protected String domain = "localhost";
+	protected String share = "";
 	private DiskShare client = null;
 	private Session session = null;
 	private Connection connection = null;
