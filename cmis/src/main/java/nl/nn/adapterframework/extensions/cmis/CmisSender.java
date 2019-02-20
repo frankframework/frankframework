@@ -639,11 +639,20 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		while (iter.hasNext()) {
 			Element propertyElement = (Element) iter.next();
 			String property = XmlUtils.getStringValue(propertyElement);
-			if (StringUtils.isNotEmpty(property)) {
+
+			boolean setPropertyAsNull = false;
+			String isNull = propertyElement.getAttribute("isNull");
+			if(StringUtils.isNotEmpty(isNull)) {
+				setPropertyAsNull = Boolean.parseBoolean(isNull);
+			}
+
+			if (StringUtils.isNotEmpty(property) || setPropertyAsNull) {
 				String nameAttr = propertyElement.getAttribute("name");
 				String typeAttr = propertyElement.getAttribute("type");
 
-				if (StringUtils.isEmpty(typeAttr) || typeAttr.equalsIgnoreCase("string")) {
+				if (setPropertyAsNull) {
+					props.put(nameAttr, null);
+				} else if (StringUtils.isEmpty(typeAttr) || typeAttr.equalsIgnoreCase("string")) {
 					props.put(nameAttr, property);
 				} else if (typeAttr.equalsIgnoreCase("integer")) {
 					props.put(nameAttr, new BigInteger(property));

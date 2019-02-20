@@ -27,6 +27,7 @@ Ibis AdapterFramework release notes
     - Display run result error (if any) on run in Test tab
     - Fix error on selecting checkpoint with null message
     - Fix error on selecting different stub strategy
+- Add ability to use nullvalues on cmis properties
 
 
 
