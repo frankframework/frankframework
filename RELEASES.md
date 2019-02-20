@@ -19,6 +19,7 @@ Ibis AdapterFramework release notes
 - Add Google's V8 JavaScript engine
 - Use VizJs to generate flow diagrams
 - Improve 'error' handling in Show Security Items
+- Add ability to use nullvalues on cmis properties
 
 
 
