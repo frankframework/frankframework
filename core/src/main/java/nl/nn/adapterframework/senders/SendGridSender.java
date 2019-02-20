@@ -1,9 +1,6 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
@@ -11,14 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.activation.DataHandler;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.impl.dv.util.Base64;
@@ -34,35 +23,34 @@ import com.sendgrid.Request;
 import com.sendgrid.Response;
 import com.sendgrid.SendGrid;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.XmlUtils;
+
 /**
  * Sender that sends a mail via SendGrid v3 (cloud-based SMTP provider).
+ * 
  * Sample XML file can be found in the path: iaf-core/src/test/resources/emailSamplesXML/emailSample.xml
  * @author alisihab
  */
 public class SendGridSender extends MailSenderBase {
 
-	private String alias;
-	private String userName;
-	private String password;
-	private CredentialFactory cf;
-
-	/**
-	 * Configure credentials
-	 */
 	public void configure() throws ConfigurationException {
 		cf = new CredentialFactory(getAlias(), getUserName(), getPassword());
 		super.configure();
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc)
-			throws SenderException, TimeOutException {
+	public void sendEmail(MailSession mailSession) throws SenderException {
 		String result = null;
 
 		SendGrid sendGrid = new SendGrid(cf.getPassword());
 		Mail mail = null;
+
 		try {
-			mail = createEmail(message, prc);
+			mail = createEmail(mailSession);
 		} catch (DomBuilderException e1) {
 			e1.printStackTrace();
 		}
@@ -79,8 +67,6 @@ public class SendGridSender extends MailSenderBase {
 			throw new SenderException(getLogPrefix() + "exception sending mail with subject ["
 					+ mail.getSubject() + "]", e);
 		}
-
-		return correlationID;
 	}
 
 	/**
@@ -91,13 +77,11 @@ public class SendGridSender extends MailSenderBase {
 	 * @throws SenderException
 	 * @throws DomBuilderException
 	 */
-	private Mail createEmail(String input, ParameterResolutionContext prc) throws SenderException,
-			DomBuilderException {
+	private Mail createEmail(MailSession mailSession) throws SenderException, DomBuilderException {
 		Mail mail = new Mail();
 		Personalization personalization = new Personalization();
-		MailSession mailSession = extract(input, prc);
 
-		List<EMail> emailList = mailSession.getEmailList();
+		List<EMail> emailList = mailSession.getRecipientList();
 		EMail from = mailSession.getFrom();
 		EMail replyTo = mailSession.getReplyto();
 		setEmailAddresses(mail, personalization, emailList, from, replyTo);
@@ -185,7 +169,7 @@ public class SendGridSender extends MailSenderBase {
 			Content content = new Content();
 			if ("true".equalsIgnoreCase(messageBase64)) {
 				messageContent = decodeBase64ToString(message);
-			} else{
+			} else {
 				messageContent = message;
 			}
 			if ("text/html".equalsIgnoreCase(messageType)) {
@@ -258,58 +242,28 @@ public class SendGridSender extends MailSenderBase {
 		mail.setReplyTo(replyToEmail);
 	}
 
-	/**
-	 * Encodes file to base64 
-	 * @param file : attachment
-	 * @return
-	 */
-	private static String encodeFileToBase64Binary(File file) {
-		String encodedfile = null;
-		try {
-			FileInputStream fileInputStreamReader = new FileInputStream(file);
-			byte[] bytes = new byte[(int) file.length()];
-			fileInputStreamReader.read(bytes);
-			encodedfile = new String(Base64.encode(bytes));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return encodedfile;
-	}
-
-	private byte[] decodeBase64ToBytes(String str) {
-		byte[] bytesDecoded = Base64.decode(str);
-		return bytesDecoded;
-	}
-
-	private String decodeBase64ToString(String str) {
-		byte[] bytesDecoded = Base64.decode(str);
-		return new String(bytesDecoded);
-	}
-
 	public String getPassword() {
-		return password;
+		return smtpPassword;
 	}
 
 	public void setPassword(String password) {
-		this.password = password;
+		this.smtpPassword = password;
 	}
 
 	public String getUserName() {
-		return userName;
+		return smtpUserId;
 	}
 
 	public void setUserName(String userName) {
-		this.userName = userName;
+		this.smtpUserId = userName;
 	}
 
 	public String getAlias() {
-		return alias;
+		return smtpAuthAlias;
 	}
 
-	public void setAlias(String alias) {
-		this.alias = alias;
+	public void setAlias(String authAlias) {
+		this.smtpAuthAlias = authAlias;
 	}
+
 }

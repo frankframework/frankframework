@@ -1,5 +1,8 @@
 package nl.nn.adapterframework.senders;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -27,10 +30,16 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
 
-public class MailSenderBase extends SenderWithParametersBase {
+public abstract class MailSenderBase extends SenderWithParametersBase {
+
+	protected String smtpAuthAlias;
+	protected String smtpUserId;
+	protected String smtpPassword;
+	protected CredentialFactory cf;
 
 	private String defaultAttachmentName = "attachment";
 	private String defaultMessageType = "text/plain";
@@ -38,6 +47,32 @@ public class MailSenderBase extends SenderWithParametersBase {
 	private String defaultSubject;
 	private String defaultFrom;
 	private int timeout = 20000;
+
+	protected abstract void sendEmail(MailSession mailSession) throws SenderException;
+
+	@Override
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc)
+			throws SenderException, TimeOutException {
+		try {
+			MailSession mailSession = extract(message, prc);
+			sendEmail(mailSession);
+		} catch (DomBuilderException e) {
+			e.printStackTrace();
+		}
+
+		return correlationID;
+	}
+
+	@Override
+	public String sendMessage(String correlationID, String input) throws SenderException {
+		try {
+			MailSession mailSession = extract(input, null);
+			sendEmail(mailSession);
+		} catch (Exception e) {
+			throw new SenderException("Sending mail has failed", e);
+		}
+		return correlationID;
+	}
 
 	/**
 	 * Reads fields from either paramList or Xml file
@@ -62,7 +97,7 @@ public class MailSenderBase extends SenderWithParametersBase {
 			ParameterResolutionContext prc) throws SenderException, ParameterException {
 		Collection<Attachment> attachments = null;
 		if (pv != null) {
-			attachments = retrieveAttachments(pv.asCollection(), prc);
+			attachments = processAttachments(pv.asCollection(), prc);
 			log.debug("MailSender [" + getName() + "] retrieved attachments-parameter ["
 					+ attachments + "]");
 		}
@@ -73,7 +108,7 @@ public class MailSenderBase extends SenderWithParametersBase {
 			throws ParameterException {
 		Collection<EMail> recipients = null;
 		if (pv != null) {
-			recipients = retrieveRecipients(pv.asCollection());
+			recipients = processRecipients(pv.asCollection());
 			log.debug("MailSender [" + getName() + "] retrieved recipients-parameter [" + recipients
 					+ "]");
 		}
@@ -146,7 +181,7 @@ public class MailSenderBase extends SenderWithParametersBase {
 			}
 			pv = pvl.getParameterValue("recipients");
 			recipients = new ArrayList<EMail>(retrieveRecipientsFromParameterList(pv));
-			mail.setEmailList(recipients);
+			mail.setRecipientList(recipients);
 
 			pv = pvl.getParameterValue("attachments");
 			attachments = new ArrayList<Attachment>(retrieveAttachmentsFromParamList(pv, prc));
@@ -159,7 +194,7 @@ public class MailSenderBase extends SenderWithParametersBase {
 		return mail;
 	}
 
-	private List<EMail> retrieveRecipients(Collection<Node> recipientsNode) {
+	private List<EMail> processRecipients(Collection<Node> recipientsNode) {
 		List<EMail> recipients = null;
 		Iterator iter = recipientsNode.iterator();
 		if (iter.hasNext()) {
@@ -181,7 +216,7 @@ public class MailSenderBase extends SenderWithParametersBase {
 		return recipients;
 	}
 
-	private Collection<Attachment> retrieveAttachments(Collection<Node> attachmentsNode,
+	private Collection<Attachment> processAttachments(Collection<Node> attachmentsNode,
 			ParameterResolutionContext prc) throws SenderException {
 		Collection<Attachment> attachments = null;
 		Iterator iter = attachmentsNode.iterator();
@@ -256,7 +291,7 @@ public class MailSenderBase extends SenderWithParametersBase {
 		String messageType;
 		String messageBase64;
 		String charset;
-		Collection<Node> recipients;
+		Collection<Node> recipientList;
 		Collection<Node> attachments;
 		Element replyTo = null;
 
@@ -272,7 +307,7 @@ public class MailSenderBase extends SenderWithParametersBase {
 		charset = XmlUtils.getChildTagAsString(emailElement, "charset");
 
 		Element recipientsElement = XmlUtils.getFirstChildTag(emailElement, "recipients");
-		recipients = XmlUtils.getChildTags(recipientsElement, "recipient");
+		recipientList = XmlUtils.getChildTags(recipientsElement, "recipient");
 
 		Element attachmentsElement = XmlUtils.getFirstChildTag(emailElement, "attachments");
 		attachments = attachmentsElement == null ? null
@@ -294,10 +329,10 @@ public class MailSenderBase extends SenderWithParametersBase {
 		EMail replyto = getReplyTo(replyTo);
 		mailSession.setReplyto(replyto);
 
-		List<EMail> emailList = retrieveRecipients(recipients);
-		mailSession.setEmailList(emailList);
+		List<EMail> recipients = processRecipients(recipientList);
+		mailSession.setRecipientList(recipients);
 
-		List<Attachment> attachmentList = (List<Attachment>) retrieveAttachments(attachments, prc);
+		List<Attachment> attachmentList = (List<Attachment>) processAttachments(attachments, prc);
 		mailSession.setAttachmentList(attachmentList);
 		return mailSession;
 	}
@@ -326,11 +361,37 @@ public class MailSenderBase extends SenderWithParametersBase {
 		return null;
 	}
 
-	private DataHandler decodeBase64(String str) {
+	protected DataHandler decodeBase64(String str) {
 		byte[] bytesDecoded = Base64.decode(str);
 		String encodingType = "application/octet-stream";
 		DataSource ads = new ByteArrayDataSource(bytesDecoded, encodingType);
 		return new DataHandler(ads);
+	}
+
+	protected String decodeBase64ToString(String str) {
+		byte[] bytesDecoded = Base64.decode(str);
+		return new String(bytesDecoded);
+	}
+
+	protected byte[] decodeBase64ToBytes(String str) {
+		byte[] bytesDecoded = Base64.decode(str);
+		return bytesDecoded;
+	}
+
+	protected static String encodeFileToBase64Binary(File file) {
+		String encodedfile = null;
+		try {
+			FileInputStream fileInputStreamReader = new FileInputStream(file);
+			byte[] bytes = new byte[(int) file.length()];
+			fileInputStreamReader.read(bytes);
+			encodedfile = new String(Base64.encode(bytes));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return encodedfile;
 	}
 
 	public boolean isSynchronous() {
@@ -359,12 +420,6 @@ public class MailSenderBase extends SenderWithParametersBase {
 
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
-	}
-
-	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc)
-			throws SenderException, TimeOutException {
-		return correlationID;
 	}
 
 	public String getDefaultAttachmentName() {
@@ -399,7 +454,7 @@ public class MailSenderBase extends SenderWithParametersBase {
 	protected class MailSession {
 		protected EMail from = new EMail();
 		protected EMail replyto = new EMail();
-		protected List<EMail> emailList = new ArrayList<EMail>();
+		protected List<EMail> recipients = new ArrayList<EMail>();
 		protected List<Attachment> attachmentList = new ArrayList<Attachment>();
 		protected String subject = null;
 		protected String message = null;
@@ -425,12 +480,12 @@ public class MailSenderBase extends SenderWithParametersBase {
 			this.replyto = replyto;
 		}
 
-		public List<EMail> getEmailList() {
-			return emailList;
+		public List<EMail> getRecipientList() {
+			return recipients;
 		}
 
-		public void setEmailList(List<EMail> emailList) {
-			this.emailList = emailList;
+		public void setRecipientList(List<EMail> recipients) {
+			this.recipients = recipients;
 		}
 
 		public List<Attachment> getAttachmentList() {
