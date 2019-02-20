@@ -312,7 +312,6 @@ public class Configuration {
 
 	/**
 	 * @deprecated replaced by getName()
-	 * @param name
 	 */
 	public String getConfigurationName() {
 		return name;

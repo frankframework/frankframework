@@ -224,8 +224,7 @@ public class SchemaUtils {
 	 * (without includes or imports). The XSD might have an import with
 	 * schemaLocation to make it valid on it's own, when
 	 * stripSchemaLocationFromImport is true it will be removed.
-	 * @throws java.io.IOException
-	 * @throws javax.xml.stream.XMLStreamException
+	 * @throws java.io.IOException, XMLStreamException
 	 */
 	public static void xsdToXmlStreamWriter(final XSD xsd,
 			XMLStreamWriter xmlStreamWriter, boolean standalone,

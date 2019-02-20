@@ -315,7 +315,7 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
      * Set the state of a feature.
      *
      * @param featureId The unique identifier (URI) of the feature.
-     * @param state The requested state of the feature (true or false).
+     * @param value The requested state of the feature.
      *
      * @exception XMLConfigurationException If the requested feature is not known.
      */
