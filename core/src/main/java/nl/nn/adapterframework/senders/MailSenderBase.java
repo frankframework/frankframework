@@ -23,6 +23,7 @@ import org.apache.xerces.impl.dv.util.Base64;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
@@ -36,10 +37,10 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public abstract class MailSenderBase extends SenderWithParametersBase {
 
-	protected String smtpAuthAlias;
-	protected String smtpUserId;
-	protected String smtpPassword;
-	protected CredentialFactory cf;
+	private String authAlias;
+	private String userId;
+	private String password;
+	private CredentialFactory cf;
 
 	private String defaultAttachmentName = "attachment";
 	private String defaultMessageType = "text/plain";
@@ -51,27 +52,29 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	protected abstract void sendEmail(MailSession mailSession) throws SenderException;
 
 	@Override
+	public void configure() throws ConfigurationException {
+		cf = new CredentialFactory(getSmtpAuthAlias(), getSmtpUserId(), getSmtpPassword());
+		super.configure();
+	}
+
+	@Override
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc)
 			throws SenderException, TimeOutException {
+		MailSession mailSession;
 		try {
-			MailSession mailSession = extract(message, prc);
-			sendEmail(mailSession);
+			mailSession = extract(message, prc);
 		} catch (DomBuilderException e) {
-			e.printStackTrace();
+			throw new SenderException(e);
 		}
+		sendEmail(mailSession);
 
 		return correlationID;
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String input) throws SenderException {
-		try {
-			MailSession mailSession = extract(input, null);
-			sendEmail(mailSession);
-		} catch (Exception e) {
-			throw new SenderException("Sending mail has failed", e);
-		}
-		return correlationID;
+	public String sendMessage(String correlationID, String input)
+			throws SenderException, TimeOutException {
+		return sendMessage(correlationID, input, null);
 	}
 
 	/**
@@ -97,7 +100,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			ParameterResolutionContext prc) throws SenderException, ParameterException {
 		Collection<Attachment> attachments = null;
 		if (pv != null) {
-			attachments = processAttachments(pv.asCollection(), prc);
+			attachments = retrieveAttachments(pv.asCollection(), prc);
 			log.debug("MailSender [" + getName() + "] retrieved attachments-parameter ["
 					+ attachments + "]");
 		}
@@ -108,7 +111,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			throws ParameterException {
 		Collection<EMail> recipients = null;
 		if (pv != null) {
-			recipients = processRecipients(pv.asCollection());
+			recipients = retrieveRecipients(pv.asCollection());
 			log.debug("MailSender [" + getName() + "] retrieved recipients-parameter [" + recipients
 					+ "]");
 		}
@@ -194,7 +197,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return mail;
 	}
 
-	private List<EMail> processRecipients(Collection<Node> recipientsNode) {
+	private List<EMail> retrieveRecipients(Collection<Node> recipientsNode) {
 		List<EMail> recipients = null;
 		Iterator iter = recipientsNode.iterator();
 		if (iter.hasNext()) {
@@ -216,7 +219,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return recipients;
 	}
 
-	private Collection<Attachment> processAttachments(Collection<Node> attachmentsNode,
+	private Collection<Attachment> retrieveAttachments(Collection<Node> attachmentsNode,
 			ParameterResolutionContext prc) throws SenderException {
 		Collection<Attachment> attachments = null;
 		Iterator iter = attachmentsNode.iterator();
@@ -329,10 +332,10 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		EMail replyto = getReplyTo(replyTo);
 		mailSession.setReplyto(replyto);
 
-		List<EMail> recipients = processRecipients(recipientList);
+		List<EMail> recipients = retrieveRecipients(recipientList);
 		mailSession.setRecipientList(recipients);
 
-		List<Attachment> attachmentList = (List<Attachment>) processAttachments(attachments, prc);
+		List<Attachment> attachmentList = (List<Attachment>) retrieveAttachments(attachments, prc);
 		mailSession.setAttachmentList(attachmentList);
 		return mailSession;
 	}
@@ -350,13 +353,15 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	}
 
 	private EMail getReplyTo(Element replyToElement) {
-		String value = XmlUtils.getStringValue(replyToElement);
-		if (StringUtils.isNotEmpty(value)) {
-			EMail reply = new EMail();
-			reply.setAddress(value);
-			reply.setName(replyToElement.getAttribute("name"));
-			reply.setType("replyTo");
-			return reply;
+		if (replyToElement != null) {
+			String value = XmlUtils.getStringValue(replyToElement);
+			if (StringUtils.isNotEmpty(value)) {
+				EMail reply = new EMail();
+				reply.setAddress(value);
+				reply.setName(replyToElement.getAttribute("name"));
+				reply.setType("replyTo");
+				return reply;
+			}
 		}
 		return null;
 	}
@@ -396,6 +401,38 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 	public boolean isSynchronous() {
 		return false;
+	}
+
+	public String getSmtpAuthAlias() {
+		return authAlias;
+	}
+
+	public void setSmtpAuthAlias(String smtpAuthAlias) {
+		this.authAlias = smtpAuthAlias;
+	}
+
+	public String getSmtpUserId() {
+		return userId;
+	}
+
+	public void setSmtpUserId(String smtpUserId) {
+		this.userId = smtpUserId;
+	}
+
+	public String getSmtpPassword() {
+		return password;
+	}
+
+	public void setSmtpPassword(String smtpPassword) {
+		this.password = smtpPassword;
+	}
+
+	public CredentialFactory getCf() {
+		return cf;
+	}
+
+	public void setCf(CredentialFactory cf) {
+		this.cf = cf;
 	}
 
 	public String getDefaultSubject() {

@@ -7,11 +7,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 
+import org.junit.Test;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-
-import org.junit.Test;
 
 public class SendGridSenderTest extends SenderTestBase<SendGridSender> {
 
@@ -22,17 +22,17 @@ public class SendGridSenderTest extends SenderTestBase<SendGridSender> {
 	}
 
 	@Test
-	public void testXMLFiles() throws SenderException, TimeOutException, ConfigurationException,
-			IOException {
+	public void testXMLFiles()
+			throws SenderException, TimeOutException, ConfigurationException, IOException {
 		completeXMLFile("/emailSamplesXML/emailSample.xml");
 		// Added for codacy check should be removed
 		assertEquals("test", "test");
 	}
 
-	public void completeXMLFile(String filePath) throws SenderException, TimeOutException,
-			ConfigurationException, IOException {
-		sender.setPassword(""); // should be apikey itself
-		if (!sender.getPassword().isEmpty()) {
+	public void completeXMLFile(String filePath)
+			throws SenderException, TimeOutException, ConfigurationException, IOException {
+		sender.setSmtpPassword(""); // should be apikey itself
+		if (!sender.getSmtpPassword().isEmpty()) {
 			sender.configure();
 			Reader fileReader = new FileReader(getClass().getResource(filePath).getFile());
 			BufferedReader bufReader = new BufferedReader(fileReader);

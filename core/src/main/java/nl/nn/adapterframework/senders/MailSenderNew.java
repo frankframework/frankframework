@@ -41,7 +41,6 @@ import org.w3c.dom.Element;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -208,7 +207,7 @@ public class MailSenderNew extends MailSenderBase {
 		sendEmail(mailSession, msg, logBuffer);
 	}
 
-	private void retrieveRecipient(MailSession mailSession, MimeMessage msg, StringBuffer sb)
+	private void setRecipient(MailSession mailSession, MimeMessage msg, StringBuffer sb)
 			throws UnsupportedEncodingException, MessagingException, SenderException {
 		boolean recipientsFound = false;
 		List<EMail> emailList = mailSession.getRecipientList();
@@ -235,14 +234,10 @@ public class MailSenderNew extends MailSenderBase {
 			throw new SenderException(
 					"MailSender [" + getName() + "] did not find any valid recipients");
 		}
-		String charSet = mailSession.getCharSet();
-		String messageType = mailSession.getMessageType();
-		String messageTypeWithCharset = setCharSet(charSet, messageType);
-		retrieveAttachments(mailSession, msg, messageTypeWithCharset);
 
 	}
 
-	private void retrieveAttachments(MailSession mailSession, MimeMessage msg,
+	private void setAttachments(MailSession mailSession, MimeMessage msg,
 			String messageTypeWithCharset) throws MessagingException {
 		List<Attachment> attachmentList = mailSession.getAttachmentList();
 		String message = mailSession.getMessage();
@@ -278,8 +273,6 @@ public class MailSenderNew extends MailSenderBase {
 			}
 			msg.setContent(multipart);
 		}
-		Collection headers = mailSession.getHeaders();
-		addHeader(headers, msg);
 	}
 
 	private String sendEmail(MailSession mailSession, MimeMessage msg, StringBuffer logBuffer)
@@ -339,7 +332,7 @@ public class MailSenderNew extends MailSenderBase {
 
 	}
 
-	private MimeMessage createMessage(MailSession mailSession, StringBuffer sb)
+	private MimeMessage createMessage(MailSession mailSession, StringBuffer logBuffer)
 			throws SenderException {
 		MimeMessage msg = new MimeMessage(session);
 		try {
@@ -349,8 +342,18 @@ public class MailSenderNew extends MailSenderBase {
 			if (StringUtils.isNotEmpty(mailSession.getThreadTopic())) {
 				msg.setHeader("Thread-Topic", mailSession.getThreadTopic());
 			}
-			retrieveRecipient(mailSession, msg, sb);
-			log.debug(sb.toString());
+
+			setRecipient(mailSession, msg, logBuffer);
+
+			String charSet = mailSession.getCharSet();
+			String messageType = mailSession.getMessageType();
+			String messageTypeWithCharset = setCharSet(charSet, messageType);
+			setAttachments(mailSession, msg, messageTypeWithCharset);
+
+			Collection headers = mailSession.getHeaders();
+			setHeader(headers, msg);
+
+			log.debug(logBuffer.toString());
 			msg.setSentDate(new Date());
 			msg.saveChanges();
 		} catch (Exception e) {
@@ -361,7 +364,7 @@ public class MailSenderNew extends MailSenderBase {
 		return msg;
 	}
 
-	private void addHeader(Collection headers, MimeMessage msg) throws MessagingException {
+	private void setHeader(Collection headers, MimeMessage msg) throws MessagingException {
 		if (headers != null && headers.size() > 0) {
 			Iterator iter = headers.iterator();
 			while (iter.hasNext()) {
@@ -395,9 +398,8 @@ public class MailSenderNew extends MailSenderBase {
 		// connect to the transport 
 		Transport transport = null;
 		try {
-			cf = new CredentialFactory(getSmtpAuthAlias(), getSmtpUserid(), getSmtpPassword());
 			transport = session.getTransport("smtp");
-			transport.connect(getSmtpHost(), cf.getUsername(), cf.getPassword());
+			transport.connect(getSmtpHost(), getCf().getUsername(), getCf().getPassword());
 			if (log.isDebugEnabled()) {
 				log.debug("MailSender [" + getName() + "] connected transport to URL ["
 						+ transport.getURLName() + "]");
@@ -428,33 +430,6 @@ public class MailSenderNew extends MailSenderBase {
 
 	public String getSmtpHost() {
 		return smtpHost;
-	}
-
-	@IbisDoc({ "alias used to obtain credentials for authentication to smtphost", "" })
-	public void setSmtpAuthAlias(String string) {
-		smtpAuthAlias = string;
-	}
-
-	public String getSmtpAuthAlias() {
-		return smtpAuthAlias;
-	}
-
-	@IbisDoc({ "userid on the smtphost", "" })
-	public void setSmtpUserid(java.lang.String newSmtpUserid) {
-		smtpUserId = newSmtpUserid;
-	}
-
-	public String getSmtpUserid() {
-		return smtpUserId;
-	}
-
-	@IbisDoc({ "password of userid on the smtphost", "" })
-	public void setSmtpPassword(String newSmtpPassword) {
-		smtpPassword = newSmtpPassword;
-	}
-
-	public String getSmtpPassword() {
-		return smtpPassword;
 	}
 
 	public void setProperties(Properties properties) {

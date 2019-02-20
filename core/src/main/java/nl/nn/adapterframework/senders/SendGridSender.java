@@ -25,7 +25,6 @@ import com.sendgrid.SendGrid;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -38,7 +37,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class SendGridSender extends MailSenderBase {
 
 	public void configure() throws ConfigurationException {
-		cf = new CredentialFactory(getAlias(), getUserName(), getPassword());
 		super.configure();
 	}
 
@@ -46,13 +44,13 @@ public class SendGridSender extends MailSenderBase {
 	public void sendEmail(MailSession mailSession) throws SenderException {
 		String result = null;
 
-		SendGrid sendGrid = new SendGrid(cf.getPassword());
+		SendGrid sendGrid = new SendGrid(getCf().getPassword());
 		Mail mail = null;
 
 		try {
 			mail = createEmail(mailSession);
 		} catch (DomBuilderException e1) {
-			e1.printStackTrace();
+			throw new SenderException("Exception occured while composing email", e1);
 		}
 
 		try {
@@ -124,8 +122,9 @@ public class SendGridSender extends MailSenderBase {
 	 * Adds attachments to mail Object if there is any
 	 * @param mail 
 	 * @param attachmentList 
+	 * @throws SenderException 
 	 */
-	private void setAttachments(Mail mail, List<Attachment> attachmentList) {
+	private void setAttachments(Mail mail, List<Attachment> attachmentList) throws SenderException {
 		if (attachmentList != null) {
 			Iterator iter = attachmentList.iterator();
 			while (iter.hasNext()) {
@@ -137,7 +136,8 @@ public class SendGridSender extends MailSenderBase {
 								new URL(attachmentElement.getAttachmentURL()).getPath());
 						attachmentElement.setAttachmentText(encodeFileToBase64Binary(file));
 					} catch (MalformedURLException e) {
-						e.printStackTrace();
+						throw new SenderException("Exception occured while getting attachment. ",
+								e);
 					}
 				} else {
 					byte[] aTextBytes;
@@ -236,34 +236,13 @@ public class SendGridSender extends MailSenderBase {
 			fromEmail.setName(from.getName());
 		}
 		mail.setFrom(fromEmail);
-		Email replyToEmail = new Email();
-		replyToEmail.setEmail(replyTo.getAddress());
-		replyToEmail.setName(replyTo.getName());
-		mail.setReplyTo(replyToEmail);
-	}
+		if (replyTo != null && !replyTo.getAddress().isEmpty()) {
+			Email replyToEmail = new Email();
+			replyToEmail.setEmail(replyTo.getAddress());
+			replyToEmail.setName(replyTo.getName());
+			mail.setReplyTo(replyToEmail);
+		}
 
-	public String getPassword() {
-		return smtpPassword;
-	}
-
-	public void setPassword(String password) {
-		this.smtpPassword = password;
-	}
-
-	public String getUserName() {
-		return smtpUserId;
-	}
-
-	public void setUserName(String userName) {
-		this.smtpUserId = userName;
-	}
-
-	public String getAlias() {
-		return smtpAuthAlias;
-	}
-
-	public void setAlias(String authAlias) {
-		this.smtpAuthAlias = authAlias;
 	}
 
 }
