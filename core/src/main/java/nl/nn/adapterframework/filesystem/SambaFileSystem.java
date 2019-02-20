@@ -72,15 +72,22 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 			auth = new NtlmPasswordAuthentication(getDomain(), cf.getUsername(), cf.getPassword());
 			log.debug("setting authentication to [" + auth.toString() + "]");
 		}
+		open();
+	}
 
+	@Override
+	public void open() throws ConfigurationException {
 		try {
-			//Try to initially connect to the host and create the SMB session.
-			//The session automatically closes and re-creates when required.
 			smbContext = new SmbFile(getShare(), auth);
-
-		} catch (MalformedURLException e) {
+			smbContext.connect();
+		} catch (IOException e) {
 			throw new ConfigurationException(e);
 		}
+
+	}
+
+	@Override
+	public void close() {
 	}
 
 	@Override

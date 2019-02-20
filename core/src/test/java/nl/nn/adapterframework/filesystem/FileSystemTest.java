@@ -40,7 +40,9 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 
 	protected abstract InputStream _readFile(String filename) throws Exception;
 
-	public abstract void _createFolder(String filename) throws Exception;
+	protected abstract void _createFolder(String filename) throws Exception;
+
+	protected abstract void _deleteFolder(String folderName) throws Exception;
 
 	protected FS fileSystem;
 
@@ -118,7 +120,6 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		PrintWriter pw = new PrintWriter(out);
 		pw.println(contents);
 		pw.close();
-		//		out.close();
 
 		existsCheck(filename);
 		String actual = readFile(filename);
@@ -146,7 +147,6 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		PrintWriter pw = new PrintWriter(out);
 		pw.println(contents);
 		pw.close();
-		//		out.close();
 
 		existsCheck(filename);
 
@@ -191,7 +191,6 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		PrintWriter pw = new PrintWriter(out);
 		pw.println(regel2);
 		pw.close();
-		out.close();
 
 		existsCheck(filename);
 		String actual = readFile(filename);
@@ -301,6 +300,8 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 
 		deleteFile(FILE1);
 
+		fileSystem.close();
+		fileSystem.open();
 		it = fileSystem.listFiles();
 		for (int i = 0; i < count - 1; i++) {
 			assertTrue(it.hasNext());
@@ -309,6 +310,9 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		assertFalse(it.hasNext());
 
 		deleteFile(FILE2);
+		fileSystem.close();
+		fileSystem.open();
+
 		it = fileSystem.listFiles();
 		for (int i = 0; i < count - 2; i++) {
 			assertTrue(it.hasNext());
@@ -316,4 +320,5 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		}
 		assertFalse(it.hasNext());
 	}
+
 }

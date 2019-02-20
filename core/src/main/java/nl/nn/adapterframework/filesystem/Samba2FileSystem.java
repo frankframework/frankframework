@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.filesystem;
 
+import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -99,10 +101,12 @@ public class Samba2FileSystem implements IFileSystem<String> {
 		open();
 	}
 
+	@Override
 	public void open() {
 		SmbClient.getInstance(auth, domain, share);
 	}
 
+	@Override
 	public void close() {
 		SmbClient.close();
 	}
@@ -136,34 +140,66 @@ public class Samba2FileSystem implements IFileSystem<String> {
 
 		Set<SMB2CreateOptions> createOptions = new HashSet<SMB2CreateOptions>(EnumSet.of(
 				SMB2CreateOptions.FILE_NON_DIRECTORY_FILE, SMB2CreateOptions.FILE_WRITE_THROUGH));
-		OutputStream out = SmbClient.getDiskShare().openFile(f, accessMask, null,
-				SMB2ShareAccess.ALL, SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions)
-				.getOutputStream();
-		return out;
+		final File file = SmbClient.getDiskShare().openFile(f, accessMask, null,
+				SMB2ShareAccess.ALL, SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
+		OutputStream out = file.getOutputStream();
+
+		FilterOutputStream fos = new FilterOutputStream(out) {
+
+			@Override
+			public void close() throws IOException {
+				super.close();
+				file.close();
+			}
+
+		};
+		return fos;
 	}
 
 	@Override
 	public OutputStream appendFile(String f) throws FileSystemException, IOException {
 		Set<AccessMask> accessMask = new HashSet<AccessMask>(
 				EnumSet.of(AccessMask.FILE_APPEND_DATA));
-		File file = getFile(f, accessMask, SMB2CreateDisposition.FILE_OPEN_IF);
+		final File file = getFile(f, accessMask, SMB2CreateDisposition.FILE_OPEN_IF);
 
 		OutputStream out = file.getOutputStream();
-		return out;
+
+		FilterOutputStream fos = new FilterOutputStream(out) {
+
+			@Override
+			public void close() throws IOException {
+				super.close();
+				file.close();
+			}
+
+		};
+
+		return fos;
 	}
 
 	@Override
 	public InputStream readFile(String filename) throws FileSystemException, IOException {
 		Set<AccessMask> accessMask = new HashSet<AccessMask>();
 		accessMask.add(AccessMask.GENERIC_READ);
-		InputStream is = getFile(filename, accessMask, SMB2CreateDisposition.FILE_OPEN)
-				.getInputStream();
-		return is;
+		final File file = getFile(filename, accessMask, SMB2CreateDisposition.FILE_OPEN);
+		InputStream is = file.getInputStream();
+		FilterInputStream fis = new FilterInputStream(is) {
+
+			@Override
+			public void close() throws IOException {
+				super.close();
+				file.close();
+			}
+
+		};
+
+		return fis;
 	}
 
 	@Override
 	public void deleteFile(String f) throws FileSystemException {
 		SmbClient.getDiskShare().rm(f);
+
 	}
 
 	@Override

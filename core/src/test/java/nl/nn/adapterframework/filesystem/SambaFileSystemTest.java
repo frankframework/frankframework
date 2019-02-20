@@ -79,4 +79,9 @@ public class SambaFileSystemTest extends FileSystemTest<SmbFile, SambaFileSystem
 		return _fileExists(folderName);
 	}
 
+	@Override
+	protected void _deleteFolder(String folderName) throws Exception {
+		deleteFile(folderName);
+	}
+
 }

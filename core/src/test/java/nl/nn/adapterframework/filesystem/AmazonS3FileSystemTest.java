@@ -114,4 +114,9 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		return _fileExists(folderName);
 	}
 
+	@Override
+	protected void _deleteFolder(String folderName) throws Exception {
+		deleteFile(folderName);
+	}
+
 }

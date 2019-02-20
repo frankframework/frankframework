@@ -11,9 +11,4 @@ public class LocalFileSystemTest extends LocalFileSystemTestBase<File, LocalFile
 		return result;
 	}
 
-	@Override
-	protected boolean _folderExists(String folderName) throws Exception {
-		// TODO Auto-generated method stub
-		return false;
-	}
 }

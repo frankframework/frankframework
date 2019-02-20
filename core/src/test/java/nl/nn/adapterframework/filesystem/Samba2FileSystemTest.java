@@ -140,4 +140,10 @@ public class Samba2FileSystemTest extends FileSystemTest<String, IFileSystemBase
 		return client.folderExists(folderName);
 	}
 
+	@Override
+	protected void _deleteFolder(String folderName) throws Exception {
+		client.rmdir(folderName, true);
+
+	}
+
 }

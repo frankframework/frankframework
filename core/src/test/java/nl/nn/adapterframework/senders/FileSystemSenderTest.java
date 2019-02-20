@@ -142,6 +142,9 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>>
 	@Test
 	public void mkdirActionTest() throws Exception {
 		String filename = "mkdir" + DIR1;
+		if (_folderExists(filename)) {
+			_deleteFolder(filename);
+		}
 
 		fileSystemSender.setAction("mkdir");
 		fileSystemSender.configure();

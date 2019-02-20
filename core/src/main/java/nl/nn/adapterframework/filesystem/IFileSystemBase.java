@@ -13,6 +13,10 @@ public interface IFileSystemBase<F> {
 
 	public void configure() throws ConfigurationException;
 
+	public void open() throws Exception;
+
+	public void close();
+
 	public F toFile(String filename) throws FileSystemException;
 
 	public Iterator<F> listFiles() throws FileSystemException;

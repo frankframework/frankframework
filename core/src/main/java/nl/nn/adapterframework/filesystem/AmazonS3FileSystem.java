@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.filesystem;
 
+import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -77,15 +79,6 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 			throw new ConfigurationException(
 					" empty credential fields, please prodive aws credentials");
 
-		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getAccessKey(),
-				getSecretKey());
-		BasicAWSCredentials awsCreds = new BasicAWSCredentials(cf.getUsername(), cf.getPassword());
-		AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
-				.withChunkedEncodingDisabled(isChunkedEncodingDisabled())
-				.withForceGlobalBucketAccessEnabled(isForceGlobalBucketAccessEnabled())
-				.withRegion(getClientRegion())
-				.withCredentials(new AWSStaticCredentialsProvider(awsCreds));
-
 		if (StringUtils.isEmpty(getClientRegion())
 				|| !AVAILABLE_REGIONS.contains(getClientRegion()))
 			throw new ConfigurationException(" invalid region [" + getClientRegion()
@@ -96,8 +89,26 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 				|| !BucketNameUtils.isValidV2BucketName(getBucketName()))
 			throw new ConfigurationException(" invalid or empty bucketName [" + getBucketName()
 					+ "] please visit AWS to see correct bucket naming");
+		open();
 
+	}
+
+	@Override
+	public void open() {
+		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getAccessKey(),
+				getSecretKey());
+		BasicAWSCredentials awsCreds = new BasicAWSCredentials(cf.getUsername(), cf.getPassword());
+		AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
+				.withChunkedEncodingDisabled(isChunkedEncodingDisabled())
+				.withForceGlobalBucketAccessEnabled(isForceGlobalBucketAccessEnabled())
+				.withRegion(getClientRegion())
+				.withCredentials(new AWSStaticCredentialsProvider(awsCreds));
 		s3Client = s3ClientBuilder.build();
+	}
+
+	@Override
+	public void close() {
+		s3Client.shutdown();
 	}
 
 	@Override
@@ -166,8 +177,15 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 			}
 		});
 		putObjectThread.start();
+		FilterOutputStream fos = new FilterOutputStream(outputStream) {
 
-		return outputStream;
+			@Override
+			public void close() throws IOException {
+				super.close();
+			}
+		};
+
+		return fos;
 	}
 
 	@Override
@@ -181,8 +199,18 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 	public InputStream readFile(S3Object f) throws FileSystemException, IOException {
 		try {
 			GetObjectRequest getObjectrequest = new GetObjectRequest(bucketName, f.getKey());
-			S3Object file = s3Client.getObject(getObjectrequest);
+			final S3Object file = s3Client.getObject(getObjectrequest);
 			S3ObjectInputStream is = file.getObjectContent();
+
+			FilterInputStream fis = new FilterInputStream(is) {
+
+				@Override
+				public void close() throws IOException {
+					super.close();
+					file.close();
+				}
+			};
+
 			return is;
 		} catch (AmazonServiceException e) {
 			e.printStackTrace();

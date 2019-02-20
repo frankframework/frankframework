@@ -57,4 +57,14 @@ public abstract class LocalFileSystemTestBase<Ff, FS extends IFileSystem<Ff>>
 	public InputStream _readFile(String filename) throws FileNotFoundException {
 		return new FileInputStream(getFileHandle(filename));
 	}
+
+	@Override
+	protected boolean _folderExists(String folderName) throws Exception {
+		return _fileExists(folderName);
+	}
+
+	@Override
+	protected void _deleteFolder(String folderName) throws Exception {
+		deleteFile(folderName);
+	}
 }

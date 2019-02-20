@@ -18,7 +18,7 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 
 	private String username = "test";
 	private String password = "test";
-	private String host = "10.0.0.190";
+	private String host = "";
 	private String remoteDirectory;
 	private int port = 21;
 
@@ -138,5 +138,10 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 			e.printStackTrace();
 		}
 		return false;
+	}
+
+	@Override
+	protected void _deleteFolder(String folderName) throws Exception {
+		_deleteFile(folderName);
 	}
 }

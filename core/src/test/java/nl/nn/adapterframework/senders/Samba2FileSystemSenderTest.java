@@ -32,7 +32,6 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 	protected String username = "";
 	protected String password = "";
 	protected String domain = "localhost";
-	protected String share = "";
 	private DiskShare client = null;
 	private Session session = null;
 	private Connection connection = null;
@@ -146,6 +145,11 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 	@Override
 	protected boolean _folderExists(String folderName) throws Exception {
 		return client.folderExists(folderName);
+	}
+
+	@Override
+	protected void _deleteFolder(String folderName) {
+		client.rmdir(folderName, true);
 	}
 
 }

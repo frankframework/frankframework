@@ -82,4 +82,9 @@ public class SambaFileSystemSenderTest extends FileSystemSenderTest<SmbFile, Sam
 		return _fileExists(folderName);
 	}
 
+	@Override
+	protected void _deleteFolder(String folderName) throws Exception {
+		_deleteFile(folderName);
+	}
+
 }
