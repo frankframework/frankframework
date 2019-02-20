@@ -10,7 +10,7 @@ import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.filesystem.Samba2FileSystem;
+import nl.nn.adapterframework.filesystem.SambaFileSystem;
 
 /**
  *  To run this ignore should be removed if all fields are filled.
@@ -19,11 +19,11 @@ import nl.nn.adapterframework.filesystem.Samba2FileSystem;
  *
  */
 
-public class SambaFileSystemSenderTest extends FileSystemSenderTest<String, Samba2FileSystem> {
+public class SambaFileSystemSenderTest extends FileSystemSenderTest<SmbFile, SambaFileSystem> {
 	protected String shareName = "Shared"; // the path of smb network must start with "smb://"
 	protected String username = "";
 	protected String password = "";
-	protected String domain = "";
+	protected String domain = "localhost";
 	private SmbFile context;
 	protected String share = "smb://" + domain + "/Users/alisihab/Desktop/" + shareName + "/";
 
@@ -35,9 +35,9 @@ public class SambaFileSystemSenderTest extends FileSystemSenderTest<String, Samb
 	}
 
 	@Override
-	protected Samba2FileSystem getFileSystem() throws ConfigurationException {
-		Samba2FileSystem sfs = new Samba2FileSystem();
-		sfs.setShare(shareName);
+	protected SambaFileSystem getFileSystem() throws ConfigurationException {
+		SambaFileSystem sfs = new SambaFileSystem();
+		sfs.setShare(share);
 		sfs.setUsername(username);
 		sfs.setPassword(password);
 		sfs.setDomain(domain);
@@ -79,8 +79,12 @@ public class SambaFileSystemSenderTest extends FileSystemSenderTest<String, Samb
 
 	@Override
 	protected boolean _folderExists(String folderName) throws Exception {
-		// TODO Auto-generated method stub
-		return false;
+		return _fileExists(folderName);
+	}
+
+	@Override
+	protected void _deleteFolder(String folderName) throws Exception {
+		_deleteFile(folderName);
 	}
 
 }

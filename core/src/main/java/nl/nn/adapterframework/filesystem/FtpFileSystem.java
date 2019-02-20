@@ -48,11 +48,22 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 	@Override
 	public void configure() throws ConfigurationException {
 		ftpSession.configure();
+		open();
+	}
+
+	@Override
+	public void open() {
 		try {
 			ftpSession.openClient("");
 		} catch (FtpConnectException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void close() {
+		ftpSession.closeClient();
+
 	}
 
 	@Override
@@ -238,4 +249,5 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 			}
 		}
 	}
+
 }

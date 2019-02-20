@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.filesystem;
 
+import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -48,12 +50,12 @@ public class Samba2FileSystem implements IFileSystem<String> {
 		private static DiskShare share;
 		private static Session session;
 		private static Connection connection;
-		private static SMBClient smbclient = null;
+		private static SMBClient client = null;
 
 		private SmbClient(AuthenticationContext auth, String domain, String shareName) {
-			smbclient = new SMBClient();
+			client = new SMBClient();
 			try {
-				connection = smbclient.connect(domain);
+				connection = client.connect(domain);
 				session = connection.authenticate(auth);
 				share = (DiskShare) session.connectShare(shareName);
 			} catch (IOException e) {
@@ -62,15 +64,28 @@ public class Samba2FileSystem implements IFileSystem<String> {
 		}
 
 		public static SmbClient getInstance(AuthenticationContext auth, String domain,
-				String share) {
-			if (share == null) {
-				smbClient = new SmbClient(auth, domain, share);
+				String shareName) {
+			if (smbClient == null) {
+				smbClient = new SmbClient(auth, domain, shareName);
 			}
 			return smbClient;
 		}
 
-		public static DiskShare getInstance() {
+		public static DiskShare getDiskShare() {
 			return share;
+		}
+
+		public static void close() {
+			try {
+				share.close();
+				session.close();
+				connection.close();
+				client.close();
+				smbClient = null;
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
 		}
 	}
 
@@ -86,24 +101,14 @@ public class Samba2FileSystem implements IFileSystem<String> {
 		open();
 	}
 
+	@Override
 	public void open() {
 		SmbClient.getInstance(auth, domain, share);
-		//		if (smbClient == null) {
-		//			smbClient = new SMBClient();
-		//		}
-		//		try {
-		//			if (connection == null) {
-		//				connection = smbClient.connect(domain);
-		//			}
-		//			if (session == null) {
-		//				session = connection.authenticate(auth);
-		//			}
-		//			if (smbShare == null) {
-		//				smbShare = (DiskShare) session.connectShare(share);
-		//			}
-		//		} catch (IOException e) {
-		//			e.printStackTrace();
-		//		}
+	}
+
+	@Override
+	public void close() {
+		SmbClient.close();
 	}
 
 	@Override
@@ -113,19 +118,19 @@ public class Samba2FileSystem implements IFileSystem<String> {
 
 	@Override
 	public Iterator<String> listFiles() throws FileSystemException {
-		List<FileIdBothDirectoryInformation> list = SmbClient.getInstance().list("");
+		List<FileIdBothDirectoryInformation> list = SmbClient.getDiskShare().list("");
 		String[] arr = new String[list.size()];
 		int i = 0;
 		for (FileIdBothDirectoryInformation info : list) {
 			arr[i++] = info.getFileName();
 		}
-
 		return new FilesIterator(arr);
 	}
 
 	@Override
 	public boolean exists(String f) throws FileSystemException {
-		return SmbClient.getInstance().fileExists(f);
+		boolean exists = SmbClient.getDiskShare().fileExists(f);
+		return exists;
 	}
 
 	@Override
@@ -135,29 +140,66 @@ public class Samba2FileSystem implements IFileSystem<String> {
 
 		Set<SMB2CreateOptions> createOptions = new HashSet<SMB2CreateOptions>(EnumSet.of(
 				SMB2CreateOptions.FILE_NON_DIRECTORY_FILE, SMB2CreateOptions.FILE_WRITE_THROUGH));
+		final File file = SmbClient.getDiskShare().openFile(f, accessMask, null,
+				SMB2ShareAccess.ALL, SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
+		OutputStream out = file.getOutputStream();
 
-		return SmbClient.getInstance().openFile(f, accessMask, null, SMB2ShareAccess.ALL,
-				SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions).getOutputStream();
+		FilterOutputStream fos = new FilterOutputStream(out) {
+
+			@Override
+			public void close() throws IOException {
+				super.close();
+				file.close();
+			}
+
+		};
+		return fos;
 	}
 
 	@Override
 	public OutputStream appendFile(String f) throws FileSystemException, IOException {
 		Set<AccessMask> accessMask = new HashSet<AccessMask>(
 				EnumSet.of(AccessMask.FILE_APPEND_DATA));
-		File file = getFile(f, accessMask, SMB2CreateDisposition.FILE_OPEN_IF);
-		return file.getOutputStream();
+		final File file = getFile(f, accessMask, SMB2CreateDisposition.FILE_OPEN_IF);
+
+		OutputStream out = file.getOutputStream();
+
+		FilterOutputStream fos = new FilterOutputStream(out) {
+
+			@Override
+			public void close() throws IOException {
+				super.close();
+				file.close();
+			}
+
+		};
+
+		return fos;
 	}
 
 	@Override
 	public InputStream readFile(String filename) throws FileSystemException, IOException {
 		Set<AccessMask> accessMask = new HashSet<AccessMask>();
 		accessMask.add(AccessMask.GENERIC_READ);
-		return getFile(filename, accessMask, SMB2CreateDisposition.FILE_OPEN).getInputStream();
+		final File file = getFile(filename, accessMask, SMB2CreateDisposition.FILE_OPEN);
+		InputStream is = file.getInputStream();
+		FilterInputStream fis = new FilterInputStream(is) {
+
+			@Override
+			public void close() throws IOException {
+				super.close();
+				file.close();
+			}
+
+		};
+
+		return fis;
 	}
 
 	@Override
 	public void deleteFile(String f) throws FileSystemException {
-		SmbClient.getInstance().rm(f);
+		SmbClient.getDiskShare().rm(f);
+
 	}
 
 	@Override
@@ -166,6 +208,7 @@ public class Samba2FileSystem implements IFileSystem<String> {
 		accessMask.add(AccessMask.GENERIC_ALL);
 		File file = getFile(f, accessMask, SMB2CreateDisposition.FILE_OPEN);
 		file.rename(destination, true);
+		file.close();
 	}
 
 	@Override
@@ -175,26 +218,28 @@ public class Samba2FileSystem implements IFileSystem<String> {
 
 	@Override
 	public boolean isFolder(String f) throws FileSystemException {
-		return SmbClient.getInstance().getFileInformation(f).getStandardInformation().isDirectory();
+		boolean isFolder = SmbClient.getDiskShare().getFileInformation(f).getStandardInformation()
+				.isDirectory();
+		return isFolder;
 	}
 
 	@Override
 	public void createFolder(String f) throws FileSystemException {
-		if (SmbClient.getInstance().folderExists(f)) {
+		if (SmbClient.getDiskShare().folderExists(f)) {
 			throw new FileSystemException(
 					"Create directory for [" + f + "] has failed. Directory already exits.");
 		} else {
-			SmbClient.getInstance().mkdir(f);
+			SmbClient.getDiskShare().mkdir(f);
 		}
 	}
 
 	@Override
 	public void removeFolder(String f) throws FileSystemException {
-		if (!SmbClient.getInstance().folderExists(f)) {
+		if (!SmbClient.getDiskShare().folderExists(f)) {
 			throw new FileSystemException(
 					"Remove directory for [" + f + "] has failed. Directory does not exist.");
 		} else {
-			SmbClient.getInstance().rmdir(f, true);
+			SmbClient.getDiskShare().rmdir(f, true);
 		}
 	}
 
@@ -207,8 +252,9 @@ public class Samba2FileSystem implements IFileSystem<String> {
 		createOptions.add(SMB2CreateOptions.FILE_WRITE_THROUGH);
 		File file;
 
-		file = SmbClient.getInstance().openFile(filename, accessMask, null, shareAccess,
+		file = SmbClient.getDiskShare().openFile(filename, accessMask, null, shareAccess,
 				createDisposition, createOptions);
+
 		return file;
 	}
 
@@ -218,7 +264,7 @@ public class Samba2FileSystem implements IFileSystem<String> {
 		shareAccess.addAll(SMB2ShareAccess.ALL);
 
 		Directory file;
-		file = SmbClient.getInstance().openDirectory(filename, accessMask, null, shareAccess,
+		file = SmbClient.getDiskShare().openDirectory(filename, accessMask, null, shareAccess,
 				createDisposition, null);
 		return file;
 	}
@@ -227,12 +273,17 @@ public class Samba2FileSystem implements IFileSystem<String> {
 	public long getFileSize(String f, boolean isFolder) throws FileSystemException {
 		Set<AccessMask> accessMask = new HashSet<AccessMask>();
 		accessMask.add(AccessMask.FILE_READ_ATTRIBUTES);
+		long size;
 		if (isFolder) {
-			return getFolder(f, accessMask, SMB2CreateDisposition.FILE_OPEN).getFileInformation()
-					.getStandardInformation().getAllocationSize();
+			Directory dir = getFolder(f, accessMask, SMB2CreateDisposition.FILE_OPEN);
+			size = dir.getFileInformation().getStandardInformation().getAllocationSize();
+			dir.close();
+			return size;
 		} else {
-			return getFile(f, accessMask, SMB2CreateDisposition.FILE_OPEN).getFileInformation()
-					.getStandardInformation().getAllocationSize();
+			File file = getFile(f, accessMask, SMB2CreateDisposition.FILE_OPEN);
+			size = file.getFileInformation().getStandardInformation().getAllocationSize();
+			file.close();
+			return size;
 		}
 	}
 
@@ -250,15 +301,20 @@ public class Samba2FileSystem implements IFileSystem<String> {
 	public Date getModificationTime(String f, boolean isFolder) throws FileSystemException {
 		Set<AccessMask> accessMask = new HashSet<AccessMask>();
 		accessMask.add(AccessMask.FILE_READ_ATTRIBUTES);
+
 		if (isFolder) {
-			return getFolder(f, accessMask, SMB2CreateDisposition.FILE_OPEN).getFileInformation()
-					.getBasicInformation().getLastWriteTime().toDate();
+			Directory dir = getFolder(f, accessMask, SMB2CreateDisposition.FILE_OPEN);
+			Date date = dir.getFileInformation().getBasicInformation().getLastWriteTime().toDate();
+			dir.close();
+			return date;
 
 		} else {
-			return getFile(f, accessMask, SMB2CreateDisposition.FILE_OPEN).getFileInformation()
-					.getBasicInformation().getLastWriteTime().toDate();
-
+			File file = getFile(f, accessMask, SMB2CreateDisposition.FILE_OPEN);
+			Date date = file.getFileInformation().getBasicInformation().getLastWriteTime().toDate();
+			file.close();
+			return date;
 		}
+
 	}
 
 	public String getDomain() {

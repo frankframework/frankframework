@@ -139,4 +139,9 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 		}
 		return false;
 	}
+
+	@Override
+	protected void _deleteFolder(String folderName) throws Exception {
+		_deleteFile(folderName);
+	}
 }

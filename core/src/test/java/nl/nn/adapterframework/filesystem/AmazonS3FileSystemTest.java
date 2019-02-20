@@ -111,8 +111,12 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 
 	@Override
 	protected boolean _folderExists(String folderName) throws Exception {
-		// TODO Auto-generated method stub
-		return false;
+		return _fileExists(folderName);
+	}
+
+	@Override
+	protected void _deleteFolder(String folderName) throws Exception {
+		deleteFile(folderName);
 	}
 
 }

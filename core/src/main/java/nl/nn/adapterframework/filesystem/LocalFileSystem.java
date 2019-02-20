@@ -155,4 +155,16 @@ public class LocalFileSystem implements IFileSystem<File> {
 	public void augmentDirectoryInfo(XmlBuilder dirInfo, File f) {
 	}
 
+	@Override
+	public void open() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void close() {
+		// TODO Auto-generated method stub
+
+	}
+
 }

@@ -80,7 +80,9 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 				ifs.deleteFile(file);
 			} else if (action.equalsIgnoreCase("download")) {
 				InputStream is = new Base64InputStream(ifs.readFile(file), true);
-				return Misc.streamToString(is);
+				String result = Misc.streamToString(is);
+				is.close();
+				return result;
 			} else if (action.equalsIgnoreCase("list")) {
 				Iterator<F> fileList = ifs.listFiles();
 				int count = 0;

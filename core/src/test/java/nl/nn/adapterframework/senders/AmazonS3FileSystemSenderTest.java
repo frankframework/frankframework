@@ -5,6 +5,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.FileNotFoundException;
+import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -33,7 +35,6 @@ import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
-@Ignore
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AmazonS3FileSystemSenderTest
 		extends FileSystemSenderTest<S3Object, AmazonS3FileSystem> {
@@ -111,13 +112,28 @@ public class AmazonS3FileSystemSenderTest
 			}
 		});
 		putObjectThread.start();
-
-		return pos;
+		FilterOutputStream fos = new FilterOutputStream(pos) {
+			@Override
+			public void close() throws IOException {
+				super.close();
+			}
+		};
+		return fos;
 	}
 
 	@Override
 	protected InputStream _readFile(String filename) throws FileNotFoundException {
-		return s3Client.getObject(bucketName, filename).getObjectContent();
+		final S3Object file = s3Client.getObject(bucketName, filename);
+		InputStream is = file.getObjectContent();
+		FilterInputStream fos = new FilterInputStream(is) {
+			@Override
+			public void close() throws IOException {
+				super.close();
+				file.close();
+			}
+		};
+
+		return fos;
 	}
 
 	@Override
@@ -198,8 +214,12 @@ public class AmazonS3FileSystemSenderTest
 
 	@Override
 	protected boolean _folderExists(String folderName) throws Exception {
-		// TODO Auto-generated method stub
-		return false;
+		return _fileExists(folderName);
+	}
+
+	@Override
+	protected void _deleteFolder(String folderName) throws Exception {
+		deleteFile(folderName);
 	}
 
 }
