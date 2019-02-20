@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.senders;
 
-import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
@@ -12,6 +13,7 @@ import javax.activation.DataHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.impl.dv.util.Base64;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import com.sendgrid.Attachments;
 import com.sendgrid.Content;
@@ -36,21 +38,29 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class SendGridSender extends MailSenderBase {
 
+	private SendGrid sendGrid;
+	
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+	}
+
+	@Override
+	public void open() throws SenderException {
+		super.open();
+		sendGrid = new SendGrid(getCredentialFactory().getPassword());
 	}
 
 	@Override
 	public void sendEmail(MailSession mailSession) throws SenderException {
 		String result = null;
 
-		SendGrid sendGrid = new SendGrid(getCf().getPassword());
 		Mail mail = null;
 
 		try {
 			mail = createEmail(mailSession);
-		} catch (DomBuilderException e1) {
-			throw new SenderException("Exception occured while composing email", e1);
+		} catch (Exception e) {
+			throw new SenderException("Exception occured while composing email", e);
 		}
 
 		try {
@@ -74,8 +84,9 @@ public class SendGridSender extends MailSenderBase {
 	 * @return 
 	 * @throws SenderException
 	 * @throws DomBuilderException
+	 * @throws IOException 
 	 */
-	private Mail createEmail(MailSession mailSession) throws SenderException, DomBuilderException {
+	private Mail createEmail(MailSession mailSession) throws SenderException, DomBuilderException, IOException {
 		Mail mail = new Mail();
 		Personalization personalization = new Personalization();
 
@@ -95,7 +106,7 @@ public class SendGridSender extends MailSenderBase {
 		List<Attachment> attachmentList = mailSession.getAttachmentList();
 		setAttachments(mail, attachmentList);
 
-		Collection headers = mailSession.getHeaders();
+		Collection<Node> headers = mailSession.getHeaders();
 		setHeader(mail, headers);
 		mail.addPersonalization(personalization);
 		return mail;
@@ -106,9 +117,9 @@ public class SendGridSender extends MailSenderBase {
 	 * @param mail 
 	 * @param headers 
 	 */
-	private void setHeader(Mail mail, Collection headers) {
+	private void setHeader(Mail mail, Collection<Node> headers) {
 		if (headers != null && headers.size() > 0) {
-			Iterator iter = headers.iterator();
+			Iterator<Node> iter = headers.iterator();
 			while (iter.hasNext()) {
 				Element headerElement = (Element) iter.next();
 				String headerName = headerElement.getAttribute("name");
@@ -123,18 +134,18 @@ public class SendGridSender extends MailSenderBase {
 	 * @param mail 
 	 * @param attachmentList 
 	 * @throws SenderException 
+	 * @throws IOException 
 	 */
-	private void setAttachments(Mail mail, List<Attachment> attachmentList) throws SenderException {
+	private void setAttachments(Mail mail, List<Attachment> attachmentList) throws SenderException, IOException {
 		if (attachmentList != null) {
-			Iterator iter = attachmentList.iterator();
+			Iterator<Attachment> iter = attachmentList.iterator();
 			while (iter.hasNext()) {
-				Attachment attachmentElement = (Attachment) iter.next();
+				Attachment attachmentElement = iter.next();
 				Attachments attachment = new Attachments();
 				if (attachmentElement.getAttachmentText() instanceof DataHandler) {
 					try {
-						File file = new File(
-								new URL(attachmentElement.getAttachmentURL()).getPath());
-						attachmentElement.setAttachmentText(encodeFileToBase64Binary(file));
+						InputStream is = new URL(attachmentElement.getAttachmentURL()).openStream();
+						attachmentElement.setAttachmentText(encodeFileToBase64Binary(is));
 					} catch (MalformedURLException e) {
 						throw new SenderException("Exception occured while getting attachment. ",
 								e);

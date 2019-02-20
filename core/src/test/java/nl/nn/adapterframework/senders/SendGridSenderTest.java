@@ -31,9 +31,10 @@ public class SendGridSenderTest extends SenderTestBase<SendGridSender> {
 
 	public void completeXMLFile(String filePath)
 			throws SenderException, TimeOutException, ConfigurationException, IOException {
-		sender.setSmtpPassword(""); // should be apikey itself
-		if (!sender.getSmtpPassword().isEmpty()) {
+		sender.setPassword(""); // should be apikey itself
+		if (!sender.getPassword().isEmpty()) {
 			sender.configure();
+			sender.open();
 			Reader fileReader = new FileReader(getClass().getResource(filePath).getFile());
 			BufferedReader bufReader = new BufferedReader(fileReader);
 			StringBuilder sb = new StringBuilder();
@@ -42,6 +43,7 @@ public class SendGridSenderTest extends SenderTestBase<SendGridSender> {
 				sb.append(line).append("\n");
 				line = bufReader.readLine();
 			}
+			bufReader.close();
 			String xml2String = sb.toString();
 			String sampleMailXML = xml2String;
 			String input = "<dummy/>";

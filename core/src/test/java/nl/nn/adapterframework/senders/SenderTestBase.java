@@ -31,7 +31,7 @@ public abstract class SenderTestBase<S extends ISender> {
 	@Before
 	public void setup() throws ConfigurationException, PipeStartException, SenderException {
 		sender = createSender();
-		sender.open();
+//		sender.open();
 	}
 
 	@After

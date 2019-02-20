@@ -37,6 +37,7 @@ import javax.mail.internet.MimeMultipart;
 
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
@@ -194,8 +195,7 @@ public class MailSenderNew extends MailSenderBase {
 		if (session == null) {
 			session = Session.getInstance(properties, null);
 			session.setDebug(log.isDebugEnabled());
-			//			log.debug("MailSender [" + getName() + "] got session to ["
-			//					+ properties + "]");
+			//			log.debug("MailSender [" + getName() + "] got session to [" + properties + "]");
 		}
 		return session;
 	}
@@ -211,9 +211,7 @@ public class MailSenderNew extends MailSenderBase {
 			throws UnsupportedEncodingException, MessagingException, SenderException {
 		boolean recipientsFound = false;
 		List<EMail> emailList = mailSession.getRecipientList();
-		Iterator iter = emailList.iterator();
-		while (iter.hasNext()) {
-			EMail recipient = (EMail) iter.next();
+		for (EMail recipient : emailList) {
 			String value = recipient.getAddress();
 			String type = recipient.getType();
 			Message.RecipientType recipientType;
@@ -250,10 +248,8 @@ public class MailSenderNew extends MailSenderBase {
 			multipart.addBodyPart(messageBodyPart);
 
 			int counter = 0;
-			Iterator iter = attachmentList.iterator();
-			while (iter.hasNext()) {
+			for (Attachment attachment : attachmentList) {
 				counter++;
-				Attachment attachment = (Attachment) iter.next();
 				Object value = attachment.getAttachmentText();
 				String name = attachment.getAttachmentName();
 				if (StringUtils.isEmpty(name)) {
@@ -291,8 +287,7 @@ public class MailSenderNew extends MailSenderBase {
 				logBuffer.append("[base64=" + mailSession.getMessageBase64() + "]");
 				log.debug(logBuffer);
 			}
-			if ("true".equalsIgnoreCase(mailSession.getMessageBase64())
-					&& StringUtils.isNotEmpty(mailSession.getMessage())) {
+			if ("true".equalsIgnoreCase(mailSession.getMessageBase64()) && StringUtils.isNotEmpty(mailSession.getMessage())) {
 				mailSession.setMessage(decodeBase64ToString(mailSession.getMessage()));
 			}
 
@@ -311,8 +306,7 @@ public class MailSenderNew extends MailSenderBase {
 	private void checkRecipientsAndSetDefaults(MailSession mailSession) throws SenderException {
 		List<EMail> recipientList = mailSession.getRecipientList();
 		if (recipientList == null || recipientList.size() == 0) {
-			throw new SenderException(
-					"MailSender [" + getName() + "] has no recipients for message");
+			throw new SenderException("MailSender [" + getName() + "] has no recipients for message");
 		}
 		if (StringUtils.isEmpty(mailSession.getFrom().getAddress())) {
 			mailSession.getFrom().setAddress(getDefaultFrom());
@@ -320,8 +314,7 @@ public class MailSenderNew extends MailSenderBase {
 		if (StringUtils.isEmpty(mailSession.getSubject())) {
 			mailSession.setSubject(getDefaultSubject());
 		}
-		log.debug("MailSender [" + getName() + "] requested to send message from ["
-				+ mailSession.getFrom().getAddress() + "] subject [" + mailSession.getSubject()
+		log.debug("MailSender [" + getName() + "] requested to send message from [" + mailSession.getFrom().getAddress() + "] subject [" + mailSession.getSubject()
 				+ "] to #recipients [" + recipientList.size() + "]");
 		if (StringUtils.isEmpty(mailSession.getMessageType())) {
 			mailSession.setMessageType(getDefaultMessageType());
@@ -350,7 +343,7 @@ public class MailSenderNew extends MailSenderBase {
 			String messageTypeWithCharset = setCharSet(charSet, messageType);
 			setAttachments(mailSession, msg, messageTypeWithCharset);
 
-			Collection headers = mailSession.getHeaders();
+			Collection<Node> headers = mailSession.getHeaders();
 			setHeader(headers, msg);
 
 			log.debug(logBuffer.toString());
@@ -364,13 +357,11 @@ public class MailSenderNew extends MailSenderBase {
 		return msg;
 	}
 
-	private void setHeader(Collection headers, MimeMessage msg) throws MessagingException {
+	private void setHeader(Collection<Node> headers, MimeMessage msg) throws MessagingException {
 		if (headers != null && headers.size() > 0) {
-			Iterator iter = headers.iterator();
-			while (iter.hasNext()) {
-				Element headerElement = (Element) iter.next();
-				String headerName = headerElement.getAttribute("name");
-				String headerValue = XmlUtils.getStringValue(headerElement);
+			for (Node headerElement : headers) {
+				String headerName = ((Element) headerElement).getAttribute("name");
+				String headerValue = XmlUtils.getStringValue(((Element) headerElement));
 				msg.addHeader(headerName, headerValue);
 			}
 		}
@@ -399,7 +390,8 @@ public class MailSenderNew extends MailSenderBase {
 		Transport transport = null;
 		try {
 			transport = session.getTransport("smtp");
-			transport.connect(getSmtpHost(), getCf().getUsername(), getCf().getPassword());
+			transport.connect(getSmtpHost(), getCredentialFactory().getUsername(),
+					getCredentialFactory().getPassword());
 			if (log.isDebugEnabled()) {
 				log.debug("MailSender [" + getName() + "] connected transport to URL ["
 						+ transport.getURLName() + "]");

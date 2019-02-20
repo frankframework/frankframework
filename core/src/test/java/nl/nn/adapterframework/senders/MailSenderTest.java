@@ -38,10 +38,11 @@ public class MailSenderTest extends SenderTestBase<MailSenderNew> {
 	public void basic()
 			throws SenderException, TimeOutException, ConfigurationException, IOException {
 		sender.setSmtpHost(smtpHost);
-		sender.setSmtpUserId("");
-		sender.setSmtpPassword(""); // should be apikey itself if smtp.sendgrid.net is the hostname
-		if (!sender.getSmtpPassword().isEmpty()) {
+		sender.setUserId("");
+		sender.setPassword(""); // should be apikey itself if smtp.sendgrid.net is the hostname
+		if (!sender.getPassword().isEmpty()) {
 			sender.configure();
+			sender.open();
 			Reader fileReader = new FileReader(
 					getClass().getResource("/emailSamplesXML/emailSample.xml").getFile());
 			BufferedReader bufReader = new BufferedReader(fileReader);
@@ -51,6 +52,7 @@ public class MailSenderTest extends SenderTestBase<MailSenderNew> {
 				sb.append(line).append("\n");
 				line = bufReader.readLine();
 			}
+			bufReader.close();
 			String xml2String = sb.toString();
 			String sampleMailXML = xml2String;
 			String input = "<dummy/>";

@@ -1,8 +1,5 @@
 package nl.nn.adapterframework.senders;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -33,6 +30,7 @@ import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public abstract class MailSenderBase extends SenderWithParametersBase {
@@ -53,7 +51,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		cf = new CredentialFactory(getSmtpAuthAlias(), getSmtpUserId(), getSmtpPassword());
+		cf = new CredentialFactory(getAuthAlias(), getUserId(), getPassword());
 		super.configure();
 	}
 
@@ -87,7 +85,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	 */
 	public MailSession extract(String input, ParameterResolutionContext prc)
 			throws SenderException, DomBuilderException {
-		MailSession mailSession = new MailSession();
+		MailSession mailSession;
 		if (paramList == null) {
 			mailSession = parseXML(input, prc);
 		} else {
@@ -199,7 +197,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 	private List<EMail> retrieveRecipients(Collection<Node> recipientsNode) {
 		List<EMail> recipients = null;
-		Iterator iter = recipientsNode.iterator();
+		Iterator<Node> iter = recipientsNode.iterator();
 		if (iter.hasNext()) {
 			recipients = new LinkedList<EMail>();
 			while (iter.hasNext()) {
@@ -222,7 +220,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	private Collection<Attachment> retrieveAttachments(Collection<Node> attachmentsNode,
 			ParameterResolutionContext prc) throws SenderException {
 		Collection<Attachment> attachments = null;
-		Iterator iter = attachmentsNode.iterator();
+		Iterator<Node> iter = attachmentsNode.iterator();
 		if (iter.hasNext()) {
 			attachments = new LinkedList<Attachment>();
 			while (iter.hasNext()) {
@@ -317,7 +315,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 				: XmlUtils.getChildTags(attachmentsElement, "attachment");
 		replyTo = XmlUtils.getFirstChildTag(emailElement, "replyTo");
 		Element headersElement = XmlUtils.getFirstChildTag(emailElement, "headers");
-		Collection headers = headersElement == null ? null
+		Collection<Node> headers = headersElement == null ? null
 				: XmlUtils.getChildTags(headersElement, "header");
 
 		EMail emailFrom = getFrom(from);
@@ -383,18 +381,10 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return bytesDecoded;
 	}
 
-	protected static String encodeFileToBase64Binary(File file) {
+	protected String encodeFileToBase64Binary(InputStream inputStream) throws IOException {
 		String encodedfile = null;
-		try {
-			FileInputStream fileInputStreamReader = new FileInputStream(file);
-			byte[] bytes = new byte[(int) file.length()];
-			fileInputStreamReader.read(bytes);
-			encodedfile = new String(Base64.encode(bytes));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		byte[] bytes = StreamUtil.streamToByteArray(inputStream, false);
+		encodedfile = new String(Base64.encode(bytes));
 
 		return encodedfile;
 	}
@@ -402,36 +392,51 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	public boolean isSynchronous() {
 		return false;
 	}
-
-	public String getSmtpAuthAlias() {
+	
+	public String getAuthAlias() {
 		return authAlias;
 	}
 
-	public void setSmtpAuthAlias(String smtpAuthAlias) {
-		this.authAlias = smtpAuthAlias;
+	public void setAuthAlias(String authAlias) {
+		this.authAlias = authAlias;
 	}
 
-	public String getSmtpUserId() {
+	public String getUserId() {
 		return userId;
 	}
 
-	public void setSmtpUserId(String smtpUserId) {
-		this.userId = smtpUserId;
+	public void setUserId(String userId) {
+		this.userId = userId;
 	}
 
-	public String getSmtpPassword() {
+	public String getPassword() {
 		return password;
 	}
 
-	public void setSmtpPassword(String smtpPassword) {
-		this.password = smtpPassword;
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
-	public CredentialFactory getCf() {
+	@Deprecated
+	public void setSmtpAuthAlias(String smtpAuthAlias) {
+		setAuthAlias(smtpAuthAlias);
+	}
+
+	@Deprecated
+	public void setSmtpUserId(String smtpUserId) {
+		setUserId(smtpUserId);
+	}
+
+	@Deprecated
+	public void setSmtpPassword(String smtpPassword) {
+		setPassword(smtpPassword);
+	}
+
+	public CredentialFactory getCredentialFactory() {
 		return cf;
 	}
 
-	public void setCf(CredentialFactory cf) {
+	public void setCredentialFactory(CredentialFactory cf) {
 		this.cf = cf;
 	}
 
@@ -499,7 +504,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		protected String messageBase64 = null;
 		protected String charSet = null;
 		protected String threadTopic = null;
-		protected Collection headers;
+		protected Collection<Node> headers;
 
 		public EMail getFrom() {
 			return from;
@@ -581,11 +586,11 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			this.threadTopic = threadTopic;
 		}
 
-		public Collection getHeaders() {
+		public Collection<Node> getHeaders() {
 			return headers;
 		}
 
-		public void setHeaders(Collection headers) {
+		public void setHeaders(Collection<Node> headers) {
 			this.headers = headers;
 		}
 	}
@@ -686,4 +691,6 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			this.type = type;
 		}
 	}
+
+	
 }
