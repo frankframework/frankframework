@@ -16,19 +16,13 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.activation.URLDataSource;
 import javax.mail.BodyPart;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -40,25 +34,15 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.parameters.ParameterValue;
-import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.XmlUtils;
-
 import org.apache.commons.lang.StringUtils;
-import org.apache.soap.util.mime.ByteArrayDataSource;
-import org.apache.xerces.impl.dv.util.Base64;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * {@link nl.nn.adapterframework.core.ISender sender} that sends a mail specified by an XML message.
@@ -108,9 +92,12 @@ import org.w3c.dom.Node;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setSmtpHost(String) smtpHost}</td><td>name of the host by which the messages are to be send</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setAuthAlias(String) smtpAuthAlias}</td><td>alias used to obtain credentials for authentication to smtpHost</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setUserId(String) userId}</td><td>userId on the smtpHost</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPassword(String) password}</td><td>password of userId on the smtpHost</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSmtpAuthAlias(String) smtpAuthAlias}</td><td>alias used to obtain credentials for authentication to smtpHost</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSmtpUserid(String) smtpUserid}</td><td>userid on the smtpHost</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSmtpPassword(String) smtpPassword}</td><td>password of userid on the smtpHost</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSmtpUserid(String) userId}</td><td>userId on the smtpHost</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSmtpPassword(String) password}</td><td>password of userId on the smtpHost</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDefaultFrom(String) defaultFrom}</td><td>value of the From: header if not specified in message itself</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDefaultSubject(String) defaultSubject}</td><td>value of the Subject: header if not specified in message itself</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDefaultAttachmentName(String) defaultAttachmentName}</td><td>When this name is used, it will be followed by a number which is equal to the node's position</td><td>attachment</td></tr>
@@ -126,7 +113,7 @@ import org.w3c.dom.Node;
  * <tr><td>message</td><td>string</td><td>message itself. If absent, the complete input message is assumed to be the message</td></tr>
  * <tr><td>messageType</td><td>string</td><td>message MIME type (at this moment only available are text/plain and text/html - default: text/plain)</td></tr>
  * <tr><td>messageBase64</td><td>boolean</td><td>indicates whether the message content is base64 encoded (default: false)</td></tr>
- * <tr><td>charset</td><td>string</td><td>the character encoding (e.g. ISO-8859-1 or UTF-8) used to send the email (default: value of system property mail.mime.charset, when not present the value of system property file.encoding)</td></tr>
+ * <tr><td>charSet</td><td>string</td><td>the character encoding (e.g. ISO-8859-1 or UTF-8) used to send the email (default: value of system property mail.mime.charset, when not present the value of system property file.encoding)</td></tr>
  * <tr><td>recipients</td><td>xml</td><td>recipients of the message. must result in a structure like: <code><pre>
  *       &lt;recipient type="to"&gt;***@hotmail.com&lt;/recipient&gt;
  *       &lt;recipient type="cc"&gt;***@gmail.com&lt;/recipient&gt;
@@ -145,41 +132,31 @@ import org.w3c.dom.Node;
  * @author Johan Verrips/Gerrit van Brakel
  */
 
-public class MailSender extends SenderWithParametersBase {
+public class MailSender extends MailSenderBase {
 
 	private String smtpHost;
-	private String smtpAuthAlias;
-	private String smtpUserid;
-	private String smtpPassword;
-	private String defaultAttachmentName = "attachment";
-	private String defaultMessageType = "text/plain";
-	private String defaultMessageBase64 = "false";
-	
-	private int timeout=20000;
-
-	// defaults
-	private String defaultSubject;
-	private String defaultFrom;
 
 	private Session session;
 	private Properties properties;
 
-	
 	public void configure() throws ConfigurationException {
+		super.configure();
 		if (StringUtils.isEmpty(getSmtpHost())) {
-			throw new ConfigurationException("MailSender ["+getName()+"] has no smtpHost configured");
+			throw new ConfigurationException("MailSender [" + getName() + "] has no smtpHost configured");
 		}
- 		properties = System.getProperties();
-		try { 		
+		properties = System.getProperties();
+		try {
 			properties.put("mail.smtp.host", getSmtpHost());
 		} catch (Throwable t) {
-			throw new ConfigurationException("MailSender ["+getName()+"] cannot set smtpHost ["+getSmtpHost()+"] in properties");
+			throw new ConfigurationException(
+					"MailSender [" + getName() + "] cannot set smtpHost [" + getSmtpHost() + "] in properties");
 		}
-		properties.put("mail.smtp.connectiontimeout", getTimeout()+"");
-		properties.put("mail.smtp.timeout", getTimeout()+"");
-		if (paramList!=null) {
+		properties.put("mail.smtp.connectiontimeout", getTimeout() + "");
+		properties.put("mail.smtp.timeout", getTimeout() + "");
+		if (paramList != null) {
 			paramList.configure();
 		}
+
 	}
 
 	/**
@@ -215,379 +192,260 @@ public class MailSender extends SenderWithParametersBase {
 		return false;
 	}
 
-
 	protected Session getSession() {
 		if (session == null) {
 			session = Session.getInstance(properties, null);
 			session.setDebug(log.isDebugEnabled());
-//			log.debug("MailSender [" + getName() + "] got session to [" + properties + "]");
+			//			log.debug("MailSender [" + getName() + "] got session to [" + properties + "]");
 		}
 		return session;
 	}
 
+	@Override
+	public void sendEmail(MailSession mailSession) throws SenderException {
+		StringBuffer logBuffer = new StringBuffer();
+		MimeMessage msg = createMessage(mailSession, logBuffer);
+		sendEmail(mailSession, msg, logBuffer);
+	}
 
-
-	public String sendMessage(String correlationID,	String message,	ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		String from=null;
-		String subject=null;
-		String threadTopic=null;
-		String messageType=null;
-		String messageBase64=null;
-		String charset=null;
-		Collection<Recipient> recipients=null;
-		Collection<Attachment> attachments=null;
-		ParameterValueList pvl;
-		ParameterValue pv;
-		
-		String messageInMailSafeForm;
-		if (paramList==null) {
-			messageInMailSafeForm = sendEmail(message, prc);
-		} else {
-			try {
-				pvl = prc.getValues(paramList);
-				pv = pvl.getParameterValue("from");
-				if (pv != null) {
-					from = pv.asStringValue(null);  
-					log.debug("MailSender ["+getName()+"] retrieved from-parameter ["+from+"]");
-				}
-				pv = pvl.getParameterValue("subject");
-				if (pv != null) {
-					subject = pv.asStringValue(null);  
-					log.debug("MailSender ["+getName()+"] retrieved subject-parameter ["+subject+"]");
-				}
-				pv = pvl.getParameterValue("threadTopic");
-				if (pv != null) {
-					threadTopic = pv.asStringValue(null);  
-					log.debug("MailSender ["+getName()+"] retrieved threadTopic-parameter ["+threadTopic+"]");
-				}
-				pv = pvl.getParameterValue("message");
-				if (pv != null) {
-					message = pv.asStringValue(message);  
-					log.debug("MailSender ["+getName()+"] retrieved message-parameter ["+message+"]");
-				}
-				pv = pvl.getParameterValue("messageType");
-				if (pv != null) {
-					messageType = pv.asStringValue(null);  
-					log.debug("MailSender ["+getName()+"] retrieved messageType-parameter ["+messageType+"]");
-				}
-				pv = pvl.getParameterValue("messageBase64");
-				if (pv != null) {
-					messageBase64 = pv.asStringValue(null);  
-					log.debug("MailSender ["+getName()+"] retrieved messageBase64-parameter ["+messageBase64+"]");
-				}
-				pv = pvl.getParameterValue("charset");
-				if (pv != null) {
-					charset = pv.asStringValue(null);  
-					log.debug("MailSender ["+getName()+"] retrieved charset-parameter ["+charset+"]");
-				}
-				pv = pvl.getParameterValue("recipients");
-				if (pv != null) {
-					recipients = retrieveRecipients(pv.asCollection());
-					log.debug("MailSender ["+getName()+"] retrieved recipients-parameter ["+recipients+"]");
-				}
-				pv = pvl.getParameterValue("attachments");
-				if (pv != null) {
-					attachments = retrieveAttachments(pv.asCollection(), prc);
-					log.debug("MailSender ["+getName()+"] retrieved attachments-parameter ["+attachments+"]");
-				}
-			} catch (ParameterException e) {
-				throw new SenderException("MailSender ["+getName()+"] got exception determining parametervalues",e);
+	private void setRecipient(MailSession mailSession, MimeMessage msg, StringBuffer sb)
+			throws UnsupportedEncodingException, MessagingException, SenderException {
+		boolean recipientsFound = false;
+		List<EMail> emailList = mailSession.getRecipientList();
+		for (EMail recipient : emailList) {
+			String value = recipient.getAddress();
+			String type = recipient.getType();
+			Message.RecipientType recipientType;
+			if ("cc".equalsIgnoreCase(type)) {
+				recipientType = Message.RecipientType.CC;
+			} else if ("bcc".equalsIgnoreCase(type)) {
+				recipientType = Message.RecipientType.BCC;
+			} else {
+				recipientType = Message.RecipientType.TO;
 			}
-			messageInMailSafeForm = sendEmail(from, subject, threadTopic, message, messageType, messageBase64, charset, recipients, attachments);
-		}
-		prc.getSession().put("messageInMailSafeForm", messageInMailSafeForm);
-		return correlationID;
-	}
-	
-	public String sendMessage(String correlationID, String input) throws SenderException {
-		sendEmail(input, null);
-		return correlationID;
-	}
-	
-	private Collection<Recipient> retrieveRecipients(Collection<Node> recipientsNode) {
-		Collection<Recipient> recipients=null;
-		Iterator iter = recipientsNode.iterator();
-		if (iter.hasNext()) {
-			recipients = new LinkedList<Recipient>();
-			while (iter.hasNext()) {
-				Element recipientElement = (Element) iter.next();
-				String value = XmlUtils.getStringValue(recipientElement);
-				if (StringUtils.isNotEmpty(value)) {
-					String type = recipientElement.getAttribute("type");
-					Recipient recipient = new Recipient(value, type);
-					recipients.add(recipient);
-				} else {
-					log.debug("empty recipient found, ignoring");
-				}
-			}
-		}
-		return recipients;
-	}
-
-	private Collection<Attachment> retrieveAttachments(Collection<Node> attachmentsNode, ParameterResolutionContext prc) throws SenderException {
-		Collection<Attachment> attachments=null;
-		Iterator iter = attachmentsNode.iterator();
-		if (iter.hasNext()) {
-			attachments = new LinkedList<Attachment>();
-			while (iter.hasNext()) {
-				Element attachmentElement = (Element) iter.next();
-				String name = attachmentElement.getAttribute("name");
-				String sessionKey = attachmentElement.getAttribute("sessionKey");
-				String url = attachmentElement.getAttribute("url");
-				boolean base64 = Boolean.parseBoolean(attachmentElement.getAttribute("base64"));
-				Object value = null;
-				if (StringUtils.isNotEmpty(sessionKey)) {
-					Object object = prc.getSession().get(sessionKey);
-					if (object instanceof InputStream) {
-						DataSource attachmentDataSource;
-						try {
-							attachmentDataSource = new ByteArrayDataSource((InputStream)object, "application/octet-stream");
-						} catch (IOException e) {
-							throw new SenderException("error retrieving attachment from sessionkey", e);
-						}
-						value = new DataHandler(attachmentDataSource);
-					} else if (object instanceof String) {
-						String skValue = (String) object;
-						if (base64) {
-							value = decodeBase64(skValue);
-						} else {
-							value = skValue;
-						}
-					} else {
-						throw new SenderException("MailSender ["+getName()+"] received unknown attachment type ["+object.getClass().getName()+"] in sessionkey");
-					}
-				} else {
-					if (StringUtils.isNotEmpty(url)) {
-						DataSource attachmentDataSource;
-						try {
-							attachmentDataSource = new URLDataSource(new URL(url));
-						} catch (MalformedURLException e) {
-							throw new SenderException("error retrieving attachment from url", e);
-						}
-						value = new DataHandler(attachmentDataSource);
-					} else {
-						String nodeValue = XmlUtils.getStringValue(attachmentElement);
-						if (base64) {
-							value = decodeBase64(nodeValue);
-						} else {
-							value = nodeValue;
-						}
-					}
-				}
-				Attachment attachment = new Attachment(value, name);
-				attachments.add(attachment);
-			}
-		}
-		return attachments;
-	}
-
-	/**
-	 * Send a mail conforming to the XML input
-	 */
-	protected String sendEmail(String input, ParameterResolutionContext prc) throws SenderException {
-		// initialize this request
-		String from;
-		String subject;
-		String threadTopic;
-		String message;
-		String messageType;
-		String messageBase64;
-		String charset;
-		Collection<Recipient> recipients;
-		Collection<Attachment> attachments = null;
-		
-		Element emailElement;
-		try {
-			emailElement = XmlUtils.buildElement(input);
-
-			from = XmlUtils.getChildTagAsString(emailElement, "from");
-			subject = XmlUtils.getChildTagAsString(emailElement, "subject");
-			threadTopic = XmlUtils.getChildTagAsString(emailElement, "threadTopic");
-			message = XmlUtils.getChildTagAsString(emailElement, "message");
-			messageType = XmlUtils.getChildTagAsString(emailElement, "messageType");
-			messageBase64 = XmlUtils.getChildTagAsString(emailElement, "messageBase64");
-			charset = XmlUtils.getChildTagAsString(emailElement, "charset");
-
-			Element recipientsElement = XmlUtils.getFirstChildTag(emailElement, "recipients");
-			recipients = retrieveRecipients(XmlUtils.getChildTags(recipientsElement, "recipient"));
-
-			Element attachmentsElement = XmlUtils.getFirstChildTag(emailElement, "attachments");
-			if(attachmentsElement != null)
-				attachments = retrieveAttachments(XmlUtils.getChildTags(attachmentsElement, "attachment"), prc);
-
-		} catch (DomBuilderException e) {
-			throw new SenderException("exception parsing [" + input + "]", e);
-		}
-
-		return sendEmail(from, subject, threadTopic, message, messageType, messageBase64, charset, recipients, attachments);
-	}
-
-	protected String sendEmail(String from, String subject, String threadTopic, String message,
-			String messageType, String messageBase64, String charset,
-			Collection<Recipient> recipients, Collection<Attachment> attachments) throws SenderException {
-
-		StringBuffer sb = new StringBuffer();
-
-		if (recipients==null || recipients.size()==0) {
-			throw new SenderException("MailSender ["+getName()+"] has no recipients for message");
-		}
-		if (StringUtils.isEmpty(from)) {
-			from = defaultFrom;
-		}
-		if (StringUtils.isEmpty(subject)) {
-			subject = defaultSubject;
-		}
-		log.debug("MailSender ["+getName()+"] requested to send message from ["+from+"] subject ["+subject+"] to #recipients ["+recipients.size()+"]");
-
-		if (StringUtils.isEmpty(messageType)) {
-			messageType = defaultMessageType;
-		}
-
-		if (StringUtils.isEmpty(messageBase64)) {
-			messageBase64 = defaultMessageBase64;
-		}
-		
-		try {
+			msg.addRecipient(recipientType, new InternetAddress(value, recipient.getName()));
+			recipientsFound = true;
 			if (log.isDebugEnabled()) {
-				sb.append("MailSender [" + getName() + "] sending message ");
-				sb.append("[smtpHost=" + smtpHost);
-				sb.append("[from=" + from + "]");
-				sb.append("[subject=" + subject + "]");
-				sb.append("[threadTopic=" + threadTopic + "]");
-				sb.append("[text=" + message + "]");
-				sb.append("[type=" + messageType + "]");
-				sb.append("[base64=" + messageBase64 + "]");
+				sb.append("[recipient [" + recipient + "]]");
 			}
+		}
+		if (!recipientsFound) {
+			throw new SenderException("MailSender [" + getName() + "] did not find any valid recipients");
+		}
+	}
 
-			if ("true".equalsIgnoreCase(messageBase64) && StringUtils.isNotEmpty(message)) {
-				message=decodeBase64ToString(message);
-			}
+	private void setAttachments(MailSession mailSession, MimeMessage msg, String messageTypeWithCharset)
+			throws MessagingException {
+		List<Attachment> attachmentList = mailSession.getAttachmentList();
+		String message = mailSession.getMessage();
+		if (attachmentList == null || attachmentList.size() == 0) {
+			msg.setContent(message, messageTypeWithCharset);
+		} else {
+			Multipart multipart = new MimeMultipart();
+			BodyPart messageBodyPart = new MimeBodyPart();
+			messageBodyPart.setContent(message, messageTypeWithCharset);
+			multipart.addBodyPart(messageBodyPart);
 
-			// construct a message  
-			MimeMessage msg = new MimeMessage(session);
-			msg.setFrom(new InternetAddress(from));
-			msg.setSubject(subject, charset);
-			if (StringUtils.isNotEmpty(threadTopic)) {
-				msg.setHeader("Thread-Topic", threadTopic);
-			}
-			Iterator iter = recipients.iterator();
-			boolean recipientsFound=false;
-			while (iter.hasNext()) {
-				Recipient recipient = (Recipient) iter.next();
-				String value = recipient.value;
-				String type = recipient.type;
-				Message.RecipientType recipientType;
-				if ("cc".equalsIgnoreCase(type)) {
-					recipientType = Message.RecipientType.CC;
-				} else if ("bcc".equalsIgnoreCase(type)) {
-					recipientType = Message.RecipientType.BCC;
+			int counter = 0;
+			for (Attachment attachment : attachmentList) {
+				counter++;
+				Object value = attachment.getAttachmentText();
+				String name = attachment.getAttachmentName();
+				if (StringUtils.isEmpty(name)) {
+					name = getDefaultAttachmentName() + counter;
+				}
+				log.debug("found attachment [" + attachment + "]");
+
+				messageBodyPart = new MimeBodyPart();
+				messageBodyPart.setFileName(name);
+
+				if (value instanceof DataHandler) {
+					messageBodyPart.setDataHandler((DataHandler) value);
 				} else {
-					recipientType = Message.RecipientType.TO;
+					messageBodyPart.setText((String) value);
 				}
-				msg.addRecipient(recipientType, new InternetAddress(value));
-				recipientsFound = true;
-				if (log.isDebugEnabled()) {
-					sb.append("[recipient [" + recipient + "]]");
-				}
-			}
-			if (!recipientsFound) {
-				throw new SenderException("MailSender [" + getName() + "] did not find any valid recipients");
-			}
-
-			String messageTypeWithCharset;
-			if (charset == null) {
-				charset = System.getProperty("mail.mime.charset");
-				if (charset == null) {
-					charset = System.getProperty("file.encoding");
-				}
-			}
-			if (charset != null) {
-				messageTypeWithCharset = messageType + ";charset=" + charset;
-			} else {
-				messageTypeWithCharset = messageType;
-			}
-			log.debug("MailSender [" + getName() + "] uses encoding ["+messageTypeWithCharset+"]");
-
-			if (attachments==null || attachments.size()==0) {
-				//msg.setContent(message, messageType);
-				msg.setContent(message, messageTypeWithCharset);
-			} else {
-				Multipart multipart = new MimeMultipart();
-				BodyPart messageBodyPart = new MimeBodyPart();
-				//messageBodyPart.setContent(message, messageType);
-				messageBodyPart.setContent(message, messageTypeWithCharset);
 				multipart.addBodyPart(messageBodyPart);
-				
-				int counter = 0;
-				iter = attachments.iterator();
-				while (iter.hasNext()) {
-					counter++;
-					Attachment attachment = (Attachment) iter.next();
-					Object value = attachment.getValue();
-					String name = attachment.getName();
-					if (StringUtils.isEmpty(name)) {
-						name = getDefaultAttachmentName() + counter;
-					}
-					log.debug("found attachment ["+attachment+"]");
-					
-					messageBodyPart = new MimeBodyPart();
-					messageBodyPart.setFileName(name);
-
-					if (value instanceof DataHandler) {
-						messageBodyPart.setDataHandler((DataHandler) value);
-					} else {
-						messageBodyPart.setText((String) value);
-					}
-
-					multipart.addBodyPart(messageBodyPart);
-				}
-				msg.setContent(multipart);	
 			}
-			
+			msg.setContent(multipart);
+		}
+	}
 
-			log.debug(sb.toString());
-			msg.setSentDate(new Date());
-			msg.saveChanges();
-			// send the message
-			putOnTransport(msg);
-			// return the mail in mail-safe from
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
+	private String sendEmail(MailSession mailSession, MimeMessage msg, StringBuffer logBuffer) throws SenderException {
+		checkRecipientsAndSetDefaults(mailSession);
+
+		if (log.isDebugEnabled()) {
+			logBuffer.append("MailSender [" + getName() + "] sending message ");
+			logBuffer.append("[smtpHost=" + smtpHost);
+			logBuffer.append("[from=" + mailSession.getFrom() + "]");
+			logBuffer.append("[subject=" + mailSession.getSubject() + "]");
+			logBuffer.append("[threadTopic=" + mailSession.getThreadTopic() + "]");
+			logBuffer.append("[text=" + mailSession.getMessage() + "]");
+			logBuffer.append("[type=" + mailSession.getMessageType() + "]");
+			logBuffer.append("[base64=" + mailSession.getMessageBase64() + "]");
+			log.debug(logBuffer);
+		}
+		if ("true".equalsIgnoreCase(mailSession.getMessageBase64())
+				&& StringUtils.isNotEmpty(mailSession.getMessage())) {
+			mailSession.setMessage(decodeBase64ToString(mailSession.getMessage()));
+		}
+
+		// send the message
+		putOnTransport(msg);
+
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		try {
 			msg.writeTo(out);
 			byte[] byteArray = out.toByteArray();
-			return Misc.byteArrayToString(byteArray,"\n",false); 
+			return Misc.byteArrayToString(byteArray, "\n", false);
 		} catch (Exception e) {
-			throw new SenderException("MailSender got error", e);
+			throw new SenderException("Error occurred while sending email", e);
+		}
+
+	}
+
+	private void checkRecipientsAndSetDefaults(MailSession mailSession) throws SenderException {
+		List<EMail> recipientList = mailSession.getRecipientList();
+		if (recipientList == null || recipientList.size() == 0) {
+			throw new SenderException("MailSender [" + getName() + "] has no recipients for message");
+		}
+		if (StringUtils.isEmpty(mailSession.getFrom().getAddress())) {
+			mailSession.getFrom().setAddress(getDefaultFrom());
+		}
+		if (StringUtils.isEmpty(mailSession.getSubject())) {
+			mailSession.setSubject(getDefaultSubject());
+		}
+		log.debug("MailSender [" + getName() + "] requested to send message from [" + mailSession.getFrom().getAddress()
+				+ "] subject [" + mailSession.getSubject() + "] to #recipients [" + recipientList.size() + "]");
+		if (StringUtils.isEmpty(mailSession.getMessageType())) {
+			mailSession.setMessageType(getDefaultMessageType());
+		}
+		if (StringUtils.isEmpty(mailSession.getMessageBase64())) {
+			mailSession.setMessageBase64(getDefaultMessageBase64());
+		}
+
+	}
+
+	private MimeMessage createMessage(MailSession mailSession, StringBuffer logBuffer) throws SenderException {
+		MimeMessage msg = new MimeMessage(session);
+		try {
+			msg.setFrom(new InternetAddress(mailSession.getFrom().getAddress(), mailSession.getFrom().getName()));
+		} catch (Exception e) {
+			throw new SenderException("Error occurred while setting sender email", e);
+		}
+
+		try {
+			msg.setSubject(mailSession.getSubject(), mailSession.getCharSet());
+		} catch (MessagingException e) {
+			throw new SenderException("Error occurred while setting subject", e);
+		}
+
+		if (StringUtils.isNotEmpty(mailSession.getThreadTopic())) {
+			try {
+				msg.setHeader("Thread-Topic", mailSession.getThreadTopic());
+			} catch (MessagingException e) {
+				throw new SenderException("Error occurred while setting thread topic", e);
+			}
+		}
+
+		try {
+			setRecipient(mailSession, msg, logBuffer);
+		} catch (Exception e) {
+			throw new SenderException("Error occurred while processing recipients", e);
+		}
+
+		String charSet = mailSession.getCharSet();
+		String messageType = mailSession.getMessageType();
+		String messageTypeWithCharset = setCharSet(charSet, messageType);
+
+		try {
+			setAttachments(mailSession, msg, messageTypeWithCharset);
+		} catch (MessagingException e) {
+			throw new SenderException("Error occurred while processing attachments", e);
+		}
+
+		Collection<Node> headers = mailSession.getHeaders();
+		try {
+			setHeader(headers, msg);
+		} catch (MessagingException e) {
+			throw new SenderException("Error occurred while setting header", e);
+		}
+
+		log.debug(logBuffer.toString());
+		try {
+			msg.setSentDate(new Date());
+		} catch (MessagingException e) {
+			throw new SenderException("Error occurred while setting the date", e);
+		}
+		String message = mailSession.getMessage();
+		try {
+			setContent(msg, message, messageTypeWithCharset);
+		} catch (MessagingException e) {
+			throw new SenderException("Error occured while setting message content", e);
+		}
+
+		try {
+			msg.saveChanges();
+		} catch (MessagingException e) {
+			throw new SenderException("Error occurred while composing email", e);
+		}
+
+		return msg;
+	}
+
+	private void setContent(MimeMessage msg, String message, String messageTypeWithCharset) throws MessagingException {
+		if (message != null && !message.isEmpty()) {
+			msg.setContent(message, messageTypeWithCharset);
+		} else {
+			throw new MessagingException("Message content cannot be empty");
 		}
 	}
 
-	private DataHandler decodeBase64 (String str) {
-			byte[] bytesDecoded = Base64.decode(str);
-			String encodingType = "application/octet-stream";
-			DataSource ads = new ByteArrayDataSource(bytesDecoded, encodingType);
-			return new DataHandler(ads);
+	private void setHeader(Collection<Node> headers, MimeMessage msg) throws MessagingException {
+		if (headers != null && headers.size() > 0) {
+			for (Node headerElement : headers) {
+				String headerName = ((Element) headerElement).getAttribute("name");
+				String headerValue = XmlUtils.getStringValue(((Element) headerElement));
+				msg.addHeader(headerName, headerValue);
+			}
+		}
 	}
 
-	private String decodeBase64ToString (String str) {
-			byte[] bytesDecoded = Base64.decode(str);
-			return new String(bytesDecoded);
+	private String setCharSet(String charSet, String messageType) {
+		String messageTypeWithCharset;
+		String charset = charSet;
+		if (charset == null) {
+			charset = System.getProperty("mail.mime.charset");
+			if (charset == null) {
+				charset = System.getProperty("file.encoding");
+			}
+		}
+		if (charset != null) {
+			messageTypeWithCharset = messageType + ";charset=" + charset;
+		} else {
+			messageTypeWithCharset = messageType;
+		}
+		log.debug("MailSender [" + getName() + "] uses encoding [" + messageTypeWithCharset + "]");
+		return messageTypeWithCharset;
 	}
 
 	protected void putOnTransport(Message msg) throws SenderException {
 		// connect to the transport 
-		Transport transport=null;
+		Transport transport = null;
 		try {
-			CredentialFactory cf = new CredentialFactory(getSmtpAuthAlias(), getSmtpUserid(), getSmtpPassword());
 			transport = session.getTransport("smtp");
-			transport.connect(getSmtpHost(), cf.getUsername(), cf.getPassword());
+			transport.connect(getSmtpHost(), getCredentialFactory().getUsername(),
+					getCredentialFactory().getPassword());
 			if (log.isDebugEnabled()) {
-				log.debug("MailSender [" + getName() + "] connected transport to URL ["+transport.getURLName()+"]");
+				log.debug("MailSender [" + getName() + "] connected transport to URL [" + transport.getURLName() + "]");
 			}
 			transport.sendMessage(msg, msg.getAllRecipients());
 			transport.close();
 		} catch (Exception e) {
-			throw new SenderException("MailSender [" + getName() + "] cannot connect send message to smtpHost ["+getSmtpHost()+"]",e);
+			throw new SenderException(
+					"MailSender [" + getName() + "] cannot connect send message to smtpHost [" + getSmtpHost() + "]",
+					e);
 		} finally {
-			if (transport!=null) {
+			if (transport != null) {
 				try {
 					transport.close();
 				} catch (MessagingException e1) {
@@ -597,116 +455,20 @@ public class MailSender extends SenderWithParametersBase {
 		}
 	}
 
-
-	/**
-	 * Set the default for From
-	 */
-	@IbisDoc({"value of the from: header if not specified in message itself", ""})
-	public void setDefaultFrom(String newFrom) {
-		defaultFrom = newFrom;
-	}
-	/**
-	 * Set the default for Subject>
-	 */
-	@IbisDoc({"value of the subject: header if not specified in message itself", ""})
-	public void setDefaultSubject(String newSubject) {
-		defaultSubject = newSubject;
-	}
-	
 	/**
 	 * Name of the SMTP Host.
 	 */
-	@IbisDoc({"name of the host by which the messages are to be send", ""})
+	@IbisDoc({ "name of the host by which the messages are to be send", "" })
 	public void setSmtpHost(String newSmtpHost) {
 		smtpHost = newSmtpHost;
 	}
+
 	public String getSmtpHost() {
 		return smtpHost;
 	}
 
-	@IbisDoc({"alias used to obtain credentials for authentication to smtphost", ""})
-	public void setSmtpAuthAlias(String string) {
-		smtpAuthAlias = string;
-	}
-	public String getSmtpAuthAlias() {
-		return smtpAuthAlias;
-	}
-
-	@IbisDoc({"userid on the smtphost", ""})
-	public void setSmtpUserid(java.lang.String newSmtpUserid) {
-		smtpUserid = newSmtpUserid;
-	}
-	public String getSmtpUserid() {
-		return smtpUserid;
-	}
-	
-	@IbisDoc({"password of userid on the smtphost", ""})
-	public void setSmtpPassword(String newSmtpPassword) {
-		smtpPassword = newSmtpPassword;
-	}
-	public String getSmtpPassword() {
-		return smtpPassword;
-	}
-
-	@IbisDoc({"when this name is used, it will be followed by a number which is equal to the node's position", "attachment"})
-	public void setDefaultAttachmentName(String string) {
-		defaultAttachmentName = string;
-	}
-	public String getDefaultAttachmentName() {
-		return defaultAttachmentName;
-	}
-
-	public int getTimeout() {
-		return timeout;
-	}
-
-	@IbisDoc({"timeout (in milliseconds). used for socket connection timeout and socket i/o timeout", "20000"})
-	public void setTimeout(int timeout) {
-		this.timeout = timeout;
-	}
-	
-	private class Recipient {
-		String value;
-		String type;
-
-		Recipient(String value, String type) {
-			this.value = value;
-			this.type = type;
-		}
-		
-		public String toString() {
-			return "type ["+type+"] value ["+value+"]";
-		}
-		
-		public String getValue() {
-			return value;
-		}
-
-		public String getType() {
-			return type;
-		}
-	}
-
-	private class Attachment {
-		Object value;
-		String name;
-
-		Attachment(Object value, String name) {
-			this.value = value;
-			this.name = name;
-		}
-
-		public String toString() {
-			return "name ["+name+"] value ["+value+"]";
-		}
-
-		public Object getValue() {
-			return value;
-		}
-
-		public String getName() {
-			return name;
-		}
+	public void setProperties(Properties properties) {
+		this.properties = properties;
 	}
 
 }
