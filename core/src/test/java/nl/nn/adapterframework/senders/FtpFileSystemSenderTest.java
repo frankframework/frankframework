@@ -3,7 +3,10 @@ package nl.nn.adapterframework.senders;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.SocketException;
 
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPFile;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -18,9 +21,9 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 
 	private String username = "test";
 	private String password = "test";
-	private String host = "";
-	private String remoteDirectory;
-	private int port = 21;
+	private String host = "10.0.0.179";
+	private String remoteDirectory = "dummyFolder";
+	private int port = 22;
 
 	@Override
 	public void setup() throws ConfigurationException, IOException {
@@ -40,9 +43,20 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 		session.setPassword(password);
 		session.setHost(host);
 		session.setPort(port);
+		session.ftpClient = new FTPClient();
+		
+		try {
+			session.ftpClient.configure(new FTPClientConfig(FTPClientConfig.SYST_UNIX));
+			session.ftpClient.connect(host, port);
+			session.ftpClient.enterLocalPassiveMode();
+			session.ftpClient.login(username, password);
+		} catch (SocketException e) {
+			throw new ConfigurationException("Connection could not be made", e);
+		} catch (IOException e) {
+			throw new ConfigurationException("An I/O error occurred", e);
+		}
 
 		ffs.setRemoteDirectory(remoteDirectory);
-		ffs.configure();
 
 		return ffs;
 	}

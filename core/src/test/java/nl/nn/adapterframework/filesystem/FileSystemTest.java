@@ -47,9 +47,10 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	protected FS fileSystem;
 
 	@Before
-	public void setup() throws IOException, ConfigurationException {
+	public void setup() throws IOException, ConfigurationException, FileSystemException {
 		fileSystem = getFileSystem();
 		fileSystem.configure();
+		fileSystem.open();
 	}
 
 	public void deleteFile(String filename) throws Exception {
@@ -160,7 +161,6 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		} catch (Exception e) {
 			throw new Exception(e);
 		}
-
 	}
 
 	@Test
@@ -257,6 +257,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		F file = fileSystem.toFile(filename);
 		Date actual = fileSystem.getModificationTime(file, false);
 		long diff = actual.getTime() - date.getTime();
+		fileSystem.deleteFile(file);
 
 		assertFalse(diff > 10000);
 	}
@@ -281,20 +282,20 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		String contents2 = "maakt ook niet uit";
 		createFile(FILE1, contents1);
 		createFile(FILE2, contents2);
+		
 		Iterator<F> it = fileSystem.listFiles();
-		F file;
 		int count = 0;
 
 		// Count files
 		while (it.hasNext()) {
-			file = it.next();
+			it.next();
 			count++;
 		}
 
 		it = fileSystem.listFiles();
 		for (int i = 0; i < count; i++) {
 			assertTrue(it.hasNext());
-			file = it.next();
+			it.next();
 		}
 		assertFalse(it.hasNext());
 
@@ -305,7 +306,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		it = fileSystem.listFiles();
 		for (int i = 0; i < count - 1; i++) {
 			assertTrue(it.hasNext());
-			file = it.next();
+			it.next();
 		}
 		assertFalse(it.hasNext());
 
@@ -316,7 +317,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		it = fileSystem.listFiles();
 		for (int i = 0; i < count - 2; i++) {
 			assertTrue(it.hasNext());
-			file = it.next();
+			it.next();
 		}
 		assertFalse(it.hasNext());
 	}

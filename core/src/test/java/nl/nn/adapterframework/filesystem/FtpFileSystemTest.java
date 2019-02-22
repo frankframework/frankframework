@@ -1,137 +1,142 @@
+/*
+   Copyright 2019 Nationale-Nederlanden
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+<<<<<<< HEAD
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.filesystem;
 
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
 import org.apache.commons.net.ftp.FTPFile;
-import org.junit.Ignore;
+import org.junit.After;
+import org.junit.Before;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
 
-@Ignore
+/**
+ * To use this test class, set the local parameters and comment out the @Ignore tag.
+ * 
+ * @author Daniël Meyer
+ *
+ */
+
+// @Ignore
 public class FtpFileSystemTest extends FileSystemTest<FTPFile, FtpFileSystem> {
 
-	FtpFileSystem ffs = new FtpFileSystem();;
-	FtpSession ftpSession = new FtpSession();
+	private String username = "test";
+	private String password = "test";
+	private String host = "10.0.0.179";
+	private String remoteDirectory = "dummyFolder";
+	private int port = 22;
 
-	private String username = "";
-	private String password = "";
-	private String host = "";
-	private int port = 21;
-
-	@Override
-	public void setup() throws ConfigurationException, IOException {
-		super.setup();
-		ftpSession.setUsername(username);
-		ftpSession.setPassword(password);
-		ftpSession.setHost(host);
-		ftpSession.setPort(port);
-		ftpSession.configure();
-	}
-
+	private FtpSession referenceSession;
+	
 	@Override
 	protected FtpFileSystem getFileSystem() throws ConfigurationException {
-		FtpSession session = ffs.getFtpSession();
-		session.setUsername(username);
-		session.setPassword(password);
-		session.setHost(host);
-		session.setPort(port);
-		ffs.configure();
+		FtpFileSystem ffs = new FtpFileSystem();
+		
+		ffs.setUsername(username);
+		ffs.setPassword(password);
+		ffs.setHost(host);
+		ffs.setPort(port);
+		ffs.setRemoteDirectory(remoteDirectory);
+		
 		return ffs;
 	}
 
+	@Before
+	public void open() throws FtpConnectException, ConfigurationException {
+		referenceSession = new FtpSession();
+		referenceSession.setUsername(username);
+		referenceSession.setPassword(password);
+		referenceSession.setHost(host);
+		referenceSession.setPort(port);
+		
+		referenceSession.configure();
+		referenceSession.openClient("");
+	}
+
+	@After
+	public void close() {
+		if(referenceSession != null)
+			referenceSession.closeClient();
+	}
+	
 	@Override
-	protected boolean _fileExists(String filename) throws IOException {
-		try {
-			close();
-			open();
-			FTPFile[] files = ftpSession.ftpClient.listFiles();
-			for (FTPFile o : files) {
-				if (o.isDirectory()) {
-					if ((o.getName() + "/").equals(filename)) {
-						return true;
-					}
-				} else if (o.getName().equals(filename)) {
+	protected boolean _fileExists(String filename) throws IOException, FtpConnectException, ConfigurationException {
+		FTPFile[] files = referenceSession.ftpClient.listFiles();
+		for (FTPFile o : files) {
+			if (o.isDirectory()) {
+				if ((o.getName() + "/").equals(filename)) {
 					return true;
 				}
+			} else if (o.getName().equals(filename)) {
+				return true;
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 		return false;
 	}
 
-	private void close() {
-		ftpSession.closeClient();
-	}
 
-	private void open() {
-		try {
-			ftpSession.openClient("");
-		} catch (FtpConnectException e) {
-			e.printStackTrace();
-		}
+	@Override
+	protected void _deleteFile(String filename) throws FtpConnectException, IOException, ConfigurationException {
+		referenceSession.ftpClient.deleteFile(filename);
 	}
 
 	@Override
-	protected void _deleteFile(String filename) {
-		try {
-			close();
-			open();
-			ftpSession.ftpClient.deleteFile(filename);
-			close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	protected OutputStream _createFile(String filename) throws IOException, FtpConnectException, ConfigurationException {
+		OutputStream out = referenceSession.ftpClient.storeFileStream(filename);
+		return completePendingCommand(out);
+	}
+	
+	private FilterOutputStream completePendingCommand(OutputStream os) {
+		FilterOutputStream fos = new FilterOutputStream(os) {
+			@Override
+			public void close() throws IOException {
+				super.close();
+				referenceSession.ftpClient.completePendingCommand();
+			}
+		};
+		return fos;
 	}
 
 	@Override
-	protected OutputStream _createFile(String filename) throws IOException {
-		close();
-		open();
-		OutputStream out = ftpSession.ftpClient.storeFileStream(filename);
-		return out;
-	}
-
-	@Override
-	protected InputStream _readFile(String filename) throws IOException {
-		close();
-		open();
-		InputStream is = ftpSession.ftpClient.retrieveFileStream(filename);
+	protected InputStream _readFile(String filename) throws IOException, FtpConnectException, ConfigurationException {
+		InputStream is = referenceSession.ftpClient.retrieveFileStream(filename);
 		return is;
 	}
 
 	@Override
-	public void _createFolder(String filename) throws IOException {
-		try {
-			close();
-			open();
-			ftpSession.ftpClient.makeDirectory(filename);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void _createFolder(String filename) throws IOException, FtpConnectException, ConfigurationException {
+		referenceSession.ftpClient.makeDirectory(filename);
 	}
 
 	@Override
 	protected boolean _folderExists(String folderName) throws Exception {
-		try {
-			close();
-			open();
-			FTPFile[] files = ftpSession.ftpClient.listFiles();
-			for (FTPFile o : files) {
-				if (o.isDirectory()) {
-					if ((o.getName() + "/").equals(folderName)) {
-						return true;
-					}
-				} else if (o.getName().equals(folderName)) {
+		FTPFile[] files = referenceSession.ftpClient.listFiles();
+		for (FTPFile o : files) {
+			if (o.isDirectory()) {
+				if ((o.getName() + "/").equals(folderName)) {
 					return true;
 				}
+			} else if (o.getName().equals(folderName)) {
+				return true;
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 		return false;
 	}
