@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,6 +30,8 @@ import java.util.StringTokenizer;
 
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerConfigurationException;
+
+import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -51,8 +55,6 @@ import nl.nn.adapterframework.validation.SchemasProvider;
 import nl.nn.adapterframework.validation.XSD;
 import nl.nn.adapterframework.validation.XercesXmlValidator;
 import nl.nn.adapterframework.validation.XmlValidatorException;
-
-import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -837,7 +839,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	
 	protected void addRequestRootValidation(List<String> path) {
 		if (requestRootValidations == null) {
-			requestRootValidations = new HashSet<List<String>>();
+			requestRootValidations = new LinkedHashSet<List<String>>();
 		}
 		requestRootValidations.add(path);
 	}
@@ -848,7 +850,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	protected void addResponseRootValidation(List<String> path) {
 		if (responseRootValidations == null) {
-			responseRootValidations = new HashSet<List<String>>();
+			responseRootValidations = new LinkedHashSet<List<String>>();
 		}
 		responseRootValidations.add(path);
 	}
@@ -859,7 +861,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	public void addInvalidRootNamespaces(List<String> path, List<String> invalidRootNamespaces) {
 		if (this.invalidRootNamespaces == null) {
-			this.invalidRootNamespaces = new HashMap<List<String>, List<String>>();
+			this.invalidRootNamespaces = new LinkedHashMap<List<String>, List<String>>();
 		}
 		this.invalidRootNamespaces.put(path, invalidRootNamespaces);
 	}
