@@ -33,6 +33,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 import java.util.zip.ZipInputStream;
 
 import javax.servlet.ServletContext;
@@ -3138,6 +3139,35 @@ public class TestTool {
 		boolean ignoreContentBetweenKeysProcessed = false;
 		i = 1;
 		while (!ignoreContentBetweenKeysProcessed) {
+			Enumeration<String> enums = (Enumeration<String>) properties.propertyNames();
+		    while (enums.hasMoreElements()) {
+		      String key = enums.nextElement();
+		      if(key.startsWith("ignoreContentBetweenKeys.") && (key.contains(".key1") || key.contains(".key2"))) {
+		        	String id = key.split(Pattern.quote("."))[1];
+		        	String keyId= key.split(Pattern.quote("."))[2];
+		        	String otherKeyId = keyId.equalsIgnoreCase("key1") ? "key2" : "key1";
+		        	String currentKey = properties.getProperty(key);
+		        	
+		        	HashMap<String, String> ignore = ignores.get(id);
+		        	if(ignore == null) {
+		        		ignore = new HashMap<String, String>();
+		        		ignore.put(keyId, currentKey);
+		        		ignores.put(id, ignore);
+		        	}
+		        	else {
+		        		String otherKey = ignore.get(otherKeyId);
+		        		if(keyId.equalsIgnoreCase("key1")) {
+		        			preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, currentKey, otherKey);
+							preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, currentKey, otherKey);
+		        		}
+		        		else {
+		        			preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, otherKey, currentKey);
+							preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, otherKey, currentKey);
+		        		}
+		        	}
+		        }
+			}
+			
 			String key1 = properties.getProperty("ignoreContentBetweenKeys" + i + ".key1");
 			String key2 = properties.getProperty("ignoreContentBetweenKeys" + i + ".key2");
 			if (key1 != null && key2 != null) {
