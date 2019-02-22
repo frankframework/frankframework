@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -70,8 +71,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String input)
-			throws SenderException, TimeOutException {
+	public String sendMessage(String correlationID, String input) throws SenderException, TimeOutException {
 		return sendMessage(correlationID, input, null);
 	}
 
@@ -94,24 +94,22 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return mailSession;
 	}
 
-	private Collection<Attachment> retrieveAttachmentsFromParamList(ParameterValue pv,
-			ParameterResolutionContext prc) throws SenderException, ParameterException {
+	private Collection<Attachment> retrieveAttachmentsFromParamList(ParameterValue pv, ParameterResolutionContext prc)
+			throws SenderException, ParameterException {
 		Collection<Attachment> attachments = null;
 		if (pv != null) {
 			attachments = retrieveAttachments(pv.asCollection(), prc);
-			log.debug("MailSender [" + getName() + "] retrieved attachments-parameter ["
-					+ attachments + "]");
+			log.debug("MailSender [" + getName() + "] retrieved attachments-parameter [" + attachments + "]");
 		}
 		return attachments;
 	}
 
 	private Collection<EMail> retrieveRecipientsFromParameterList(ParameterValue pv)
-			throws ParameterException {
+			throws ParameterException, SenderException {
 		Collection<EMail> recipients = null;
 		if (pv != null) {
 			recipients = retrieveRecipients(pv.asCollection());
-			log.debug("MailSender [" + getName() + "] retrieved recipients-parameter [" + recipients
-					+ "]");
+			log.debug("MailSender [" + getName() + "] retrieved recipients-parameter [" + recipients + "]");
 		}
 		return recipients;
 	}
@@ -141,87 +139,93 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			pv = pvl.getParameterValue("subject");
 			if (pv != null) {
 				subject = pv.asStringValue(null);
-				log.debug("MailSender [" + getName() + "] retrieved subject-parameter [" + subject
-						+ "]");
+				log.debug("MailSender [" + getName() + "] retrieved subject-parameter [" + subject + "]");
 				mail.setSubject(subject);
 			}
 			pv = pvl.getParameterValue("threadTopic");
 			if (pv != null) {
 				threadTopic = pv.asStringValue(null);
-				log.debug("MailSender [" + getName() + "] retrieved threadTopic-parameter ["
-						+ threadTopic + "]");
+				log.debug("MailSender [" + getName() + "] retrieved threadTopic-parameter [" + threadTopic + "]");
 				mail.setThreadTopic(threadTopic);
 			}
 			pv = pvl.getParameterValue("message");
 			if (pv != null) {
 				String message = pv.asStringValue("message");
-				log.debug("MailSender [" + getName() + "] retrieved message-parameter [" + message
-						+ "]");
+				log.debug("MailSender [" + getName() + "] retrieved message-parameter [" + message + "]");
 				mail.setMessage(message);
 			}
 			pv = pvl.getParameterValue("messageType");
 			if (pv != null) {
 				messageType = pv.asStringValue(null);
-				log.debug("MailSender [" + getName() + "] retrieved messageType-parameter ["
-						+ messageType + "]");
+				log.debug("MailSender [" + getName() + "] retrieved messageType-parameter [" + messageType + "]");
 				mail.setMessageType(messageType);
 			}
 			pv = pvl.getParameterValue("messageBase64");
 			if (pv != null) {
 				messageBase64 = pv.asStringValue(null);
-				log.debug("MailSender [" + getName() + "] retrieved messageBase64-parameter ["
-						+ messageBase64 + "]");
+				log.debug("MailSender [" + getName() + "] retrieved messageBase64-parameter [" + messageBase64 + "]");
 				mail.setMessageBase64(messageBase64);
 			}
 			pv = pvl.getParameterValue("charset");
 			if (pv != null) {
 				charset = pv.asStringValue(null);
-				log.debug("MailSender [" + getName() + "] retrieved charset-parameter [" + charset
-						+ "]");
+				log.debug("MailSender [" + getName() + "] retrieved charset-parameter [" + charset + "]");
 				mail.setCharSet(charset);
 			}
 			pv = pvl.getParameterValue("recipients");
-			recipients = new ArrayList<EMail>(retrieveRecipientsFromParameterList(pv));
-			mail.setRecipientList(recipients);
+			Collection<EMail> recipientsCollection = retrieveRecipientsFromParameterList(pv);
+			if (recipientsCollection != null && !recipientsCollection.isEmpty()) {
+				recipients = new ArrayList<EMail>(recipientsCollection);
+				mail.setRecipientList(recipients);
+			} else {
+				throw new SenderException("Recipients cannot be empty. At least one recipient is required");
+			}
 
 			pv = pvl.getParameterValue("attachments");
-			attachments = new ArrayList<Attachment>(retrieveAttachmentsFromParamList(pv, prc));
-			mail.setAttachmentList(attachments);
+			Collection<Attachment> attachmentsCollection = retrieveAttachmentsFromParamList(pv, prc);
+			if (attachmentsCollection != null && !attachmentsCollection.isEmpty()) {
+				attachments = new ArrayList<Attachment>(attachmentsCollection);
+				mail.setAttachmentList(attachments);
+			}
 
 		} catch (ParameterException e) {
-			throw new SenderException(
-					"MailSender [" + getName() + "] got exception determining parametervalues", e);
+			throw new SenderException("MailSender [" + getName() + "] got exception determining parametervalues", e);
 		}
 		return mail;
 	}
 
-	private List<EMail> retrieveRecipients(Collection<Node> recipientsNode) {
+	private List<EMail> retrieveRecipients(Collection<Node> recipientsNode) throws SenderException {
 		List<EMail> recipients = null;
-		Iterator<Node> iter = recipientsNode.iterator();
-		if (iter.hasNext()) {
-			recipients = new LinkedList<EMail>();
-			while (iter.hasNext()) {
-				Element recipientElement = (Element) iter.next();
-				String value = XmlUtils.getStringValue(recipientElement);
-				if (StringUtils.isNotEmpty(value)) {
-					String type = recipientElement.getAttribute("type");
-					EMail email = new EMail();
-					email.setAddress(value);
-					email.setType(type);
-					recipients.add(email);
-				} else {
-					log.debug("empty recipient found, ignoring");
+		if (recipientsNode != null && !recipientsNode.isEmpty()) {
+			Iterator<Node> iter = recipientsNode.iterator();
+			if (iter.hasNext()) {
+				recipients = new LinkedList<EMail>();
+				while (iter.hasNext()) {
+					Element recipientElement = (Element) iter.next();
+					String value = XmlUtils.getStringValue(recipientElement);
+					if (StringUtils.isNotEmpty(value)) {
+						String type = recipientElement.getAttribute("type");
+						EMail email = new EMail();
+						email.setAddress(value);
+						email.setType(type);
+						recipients.add(email);
+					} else {
+						log.debug("empty recipient found, ignoring");
+					}
 				}
 			}
+		} else {
+			throw new SenderException("no recipients for message");
 		}
+
 		return recipients;
 	}
 
-	private Collection<Attachment> retrieveAttachments(Collection<Node> attachmentsNode,
-			ParameterResolutionContext prc) throws SenderException {
+	private Collection<Attachment> retrieveAttachments(Collection<Node> attachmentsNode, ParameterResolutionContext prc)
+			throws SenderException {
 		Collection<Attachment> attachments = null;
 		Iterator<Node> iter = attachmentsNode.iterator();
-		if (iter.hasNext()) {
+		if (iter != null && iter.hasNext()) {
 			attachments = new LinkedList<Attachment>();
 			while (iter.hasNext()) {
 				Element attachmentElement = (Element) iter.next();
@@ -238,8 +242,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 							attachmentDataSource = new ByteArrayDataSource((InputStream) object,
 									"application/octet-stream");
 						} catch (IOException e) {
-							throw new SenderException("error retrieving attachment from sessionkey",
-									e);
+							throw new SenderException("error retrieving attachment from sessionkey", e);
 						}
 						value = new DataHandler(attachmentDataSource);
 					} else if (object instanceof String) {
@@ -250,9 +253,8 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 							value = skValue;
 						}
 					} else {
-						throw new SenderException(
-								"MailSender [" + getName() + "] received unknown attachment type ["
-										+ object.getClass().getName() + "] in sessionkey");
+						throw new SenderException("MailSender [" + getName() + "] received unknown attachment type ["
+								+ object.getClass().getName() + "] in sessionkey");
 					}
 				} else {
 					if (StringUtils.isNotEmpty(url)) {
@@ -311,12 +313,10 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		recipientList = XmlUtils.getChildTags(recipientsElement, "recipient");
 
 		Element attachmentsElement = XmlUtils.getFirstChildTag(emailElement, "attachments");
-		attachments = attachmentsElement == null ? null
-				: XmlUtils.getChildTags(attachmentsElement, "attachment");
+		attachments = attachmentsElement == null ? null : XmlUtils.getChildTags(attachmentsElement, "attachment");
 		replyTo = XmlUtils.getFirstChildTag(emailElement, "replyTo");
 		Element headersElement = XmlUtils.getFirstChildTag(emailElement, "headers");
-		Collection<Node> headers = headersElement == null ? null
-				: XmlUtils.getChildTags(headersElement, "header");
+		Collection<Node> headers = headersElement == null ? null : XmlUtils.getChildTags(headersElement, "header");
 
 		EMail emailFrom = getFrom(from);
 		mailSession.setFrom(emailFrom);
@@ -332,9 +332,11 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 		List<EMail> recipients = retrieveRecipients(recipientList);
 		mailSession.setRecipientList(recipients);
+		if (attachments != null) {
+			List<Attachment> attachmentList = (List<Attachment>) retrieveAttachments(attachments, prc);
+			mailSession.setAttachmentList(attachmentList);
+		}
 
-		List<Attachment> attachmentList = (List<Attachment>) retrieveAttachments(attachments, prc);
-		mailSession.setAttachmentList(attachmentList);
 		return mailSession;
 	}
 
@@ -392,11 +394,12 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	public boolean isSynchronous() {
 		return false;
 	}
-	
+
 	public String getAuthAlias() {
 		return authAlias;
 	}
 
+	@IbisDoc({ "authAlias used to obtain credentials for authentication", "" })
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
@@ -405,6 +408,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return userId;
 	}
 
+	@IbisDoc({ "userId on the smtphost", "" })
 	public void setUserId(String userId) {
 		this.userId = userId;
 	}
@@ -413,20 +417,24 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return password;
 	}
 
+	@IbisDoc({ "password of userid", "" })
 	public void setPassword(String password) {
 		this.password = password;
 	}
 
+	@IbisDoc({ "alias used to obtain credentials for authentication to smtphost", "" })
 	@Deprecated
 	public void setSmtpAuthAlias(String smtpAuthAlias) {
 		setAuthAlias(smtpAuthAlias);
 	}
 
+	@IbisDoc({ "userId on the smtphost", "" })
 	@Deprecated
-	public void setSmtpUserId(String smtpUserId) {
+	public void setSmtpUserid(String smtpUserId) {
 		setUserId(smtpUserId);
 	}
 
+	@IbisDoc({ "password of userid on the smtphost", "" })
 	@Deprecated
 	public void setSmtpPassword(String smtpPassword) {
 		setPassword(smtpPassword);
@@ -444,6 +452,10 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return defaultSubject;
 	}
 
+	/**
+	 * Set the default for Subject>
+	 */
+	@IbisDoc({ "value of the subject: header if not specified in message itself", "" })
 	public void setDefaultSubject(String defaultSubject) {
 		this.defaultSubject = defaultSubject;
 	}
@@ -452,6 +464,10 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return defaultFrom;
 	}
 
+	/**
+	 * Set the default for From
+	 */
+	@IbisDoc({ "value of the from: header if not specified in message itself", "" })
 	public void setDefaultFrom(String defaultFrom) {
 		this.defaultFrom = defaultFrom;
 	}
@@ -460,6 +476,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return timeout;
 	}
 
+	@IbisDoc({ "timeout (in milliseconds). used for socket connection timeout and socket i/o timeout", "20000" })
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
 	}
@@ -468,6 +485,8 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return defaultAttachmentName;
 	}
 
+	@IbisDoc({ "when this name is used, it will be followed by a number which is equal to the node's position",
+			"attachment" })
 	public void setDefaultAttachmentName(String defaultAttachmentName) {
 		this.defaultAttachmentName = defaultAttachmentName;
 	}
@@ -476,6 +495,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return defaultMessageType;
 	}
 
+	@IbisDoc({ "when messageType is not specified defaultMessageType will be used", "text/plain" })
 	public void setDefaultMessageType(String defaultMessageType) {
 		this.defaultMessageType = defaultMessageType;
 	}
@@ -484,6 +504,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return defaultMessageBase64;
 	}
 
+	@IbisDoc({ "when messageBase64 is not specified defaultMessageBase64 will be used", "false" })
 	public void setDefaultMessageBase64(String defaultMessageBase64) {
 		this.defaultMessageBase64 = defaultMessageBase64;
 	}
@@ -494,17 +515,17 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	 *
 	 */
 	protected class MailSession {
-		protected EMail from = new EMail();
-		protected EMail replyto = new EMail();
-		protected List<EMail> recipients = new ArrayList<EMail>();
-		protected List<Attachment> attachmentList = new ArrayList<Attachment>();
-		protected String subject = null;
-		protected String message = null;
-		protected String messageType = null;
-		protected String messageBase64 = null;
-		protected String charSet = null;
-		protected String threadTopic = null;
-		protected Collection<Node> headers;
+		private EMail from = null;
+		private EMail replyto = null;
+		private List<EMail> recipients = new ArrayList<EMail>();
+		private List<Attachment> attachmentList = new ArrayList<Attachment>();
+		private String subject = null;
+		private String message = null;
+		private String messageType = null;
+		private String messageBase64 = null;
+		private String charSet = null;
+		private String threadTopic = null;
+		private Collection<Node> headers;
 
 		public EMail getFrom() {
 			return from;
@@ -601,12 +622,12 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	 *
 	 */
 	protected class Attachment {
-		protected String attachmentName;
-		protected String attachmentType;
-		protected String attachmentURL;
-		protected Object attachmentText;
-		protected String attachmentBase64;
-		protected String sessionKey;
+		private String attachmentName;
+		private String attachmentType;
+		private String attachmentURL;
+		private Object attachmentText;
+		private String attachmentBase64;
+		private String sessionKey;
 
 		public String getAttachmentName() {
 			return attachmentName;
@@ -663,9 +684,9 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	 *
 	 */
 	protected class EMail {
-		protected String address;
-		protected String name;
-		protected String type; //"cc", "to", "from", "bcc" 
+		private String address;
+		private String name;
+		private String type; //"cc", "to", "from", "bcc" 
 
 		public String getAddress() {
 			return address;
@@ -692,5 +713,4 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		}
 	}
 
-	
 }

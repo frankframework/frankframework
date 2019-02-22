@@ -1,9 +1,7 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -39,10 +37,13 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class SendGridSender extends MailSenderBase {
 
 	private SendGrid sendGrid;
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+		if (StringUtils.isEmpty(getCredentialFactory().getPassword())) {
+			throw new ConfigurationException("Please provide apikey");
+		}
 	}
 
 	@Override
@@ -72,8 +73,8 @@ public class SendGridSender extends MailSenderBase {
 			result = response.getBody();
 			log.debug("Mail send result" + result);
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix() + "exception sending mail with subject ["
-					+ mail.getSubject() + "]", e);
+			throw new SenderException(
+					getLogPrefix() + "exception sending mail with subject [" + mail.getSubject() + "]", e);
 		}
 	}
 
@@ -107,7 +108,7 @@ public class SendGridSender extends MailSenderBase {
 		setAttachments(mail, attachmentList);
 
 		Collection<Node> headers = mailSession.getHeaders();
-		setHeader(mail, headers);
+		setHeader(mail, personalization, headers);
 		mail.addPersonalization(personalization);
 		return mail;
 	}
@@ -115,15 +116,17 @@ public class SendGridSender extends MailSenderBase {
 	/**
 	 * Sets header of mail object if header exists
 	 * @param mail 
+	 * @param personalization 
 	 * @param headers 
 	 */
-	private void setHeader(Mail mail, Collection<Node> headers) {
+	private void setHeader(Mail mail, Personalization personalization, Collection<Node> headers) {
 		if (headers != null && headers.size() > 0) {
 			Iterator<Node> iter = headers.iterator();
 			while (iter.hasNext()) {
 				Element headerElement = (Element) iter.next();
 				String headerName = headerElement.getAttribute("name");
 				String headerValue = XmlUtils.getStringValue(headerElement);
+				personalization.addHeader(headerName, headerValue);
 				mail.addHeader(headerName, headerValue);
 			}
 		}
@@ -144,11 +147,11 @@ public class SendGridSender extends MailSenderBase {
 				Attachments attachment = new Attachments();
 				if (attachmentElement.getAttachmentText() instanceof DataHandler) {
 					try {
-						InputStream is = new URL(attachmentElement.getAttachmentURL()).openStream();
-						attachmentElement.setAttachmentText(encodeFileToBase64Binary(is));
+
+						attachmentElement.setAttachmentText(encodeFileToBase64Binary(
+								((DataHandler) attachmentElement.getAttachmentText()).getInputStream()));
 					} catch (MalformedURLException e) {
-						throw new SenderException("Exception occured while getting attachment. ",
-								e);
+						throw new SenderException("Exception occured while getting attachment. ", e);
 					}
 				} else {
 					byte[] aTextBytes;
@@ -195,10 +198,10 @@ public class SendGridSender extends MailSenderBase {
 	}
 
 	/**
-	 * Sets subject of mail object
-	 * @param personalization 
-	 * @param mail 
-	 * @param subject 
+	 * Sets subject to the mail address
+	 * @param mail
+	 * @param personalization
+	 * @param subject
 	 */
 	private void setSubject(Mail mail, Personalization personalization, String subject) {
 		if (StringUtils.isNotEmpty(subject)) {
@@ -218,42 +221,49 @@ public class SendGridSender extends MailSenderBase {
 	 * @param list 
 	 * @param replyTo 
 	 * @param from 
+	 * @throws SenderException 
 	 */
-	private void setEmailAddresses(Mail mail, Personalization personalization, List<EMail> list,
-			EMail from, EMail replyTo) {
-		for (EMail e : list) {
-			if ("cc".equalsIgnoreCase(e.getType())) {
-				Email cc = new Email();
-				cc.setName(e.getName());
-				cc.setEmail(e.getAddress());
-				personalization.addCc(cc);
-			} else if ("bcc".equalsIgnoreCase(e.getType())) {
-				Email bcc = new Email();
-				bcc.setName(e.getName());
-				bcc.setEmail(e.getAddress());
-				personalization.addBcc(bcc);
-			} else if ("to".equalsIgnoreCase(e.getType())) {
-				Email to = new Email();
-				to.setEmail(e.getAddress());
-				to.setName(e.getName());
-				personalization.addTo(to);
+	private void setEmailAddresses(Mail mail, Personalization personalization, List<EMail> list, EMail from,
+			EMail replyTo) throws SenderException {
+		if (list != null && !list.isEmpty()) {
+			for (EMail e : list) {
+				if ("cc".equalsIgnoreCase(e.getType())) {
+					Email cc = new Email();
+					cc.setName(e.getName());
+					cc.setEmail(e.getAddress());
+					personalization.addCc(cc);
+				} else if ("bcc".equalsIgnoreCase(e.getType())) {
+					Email bcc = new Email();
+					bcc.setName(e.getName());
+					bcc.setEmail(e.getAddress());
+					personalization.addBcc(bcc);
+				} else if ("to".equalsIgnoreCase(e.getType())) {
+					Email to = new Email();
+					to.setEmail(e.getAddress());
+					to.setName(e.getName());
+					personalization.addTo(to);
+				} else {
+					throw new SenderException("Recipients not found");
+				}
 			}
+		} else {
+			throw new SenderException("Recipients not found");
 		}
 		Email fromEmail = new Email();
-		if (from.getAddress().isEmpty()) {
+		if (from != null && from.getAddress() != null && !from.getAddress().isEmpty()) {
 			fromEmail.setEmail(from.getAddress());
-		} else {
 			fromEmail.setEmail(from.getAddress());
 			fromEmail.setName(from.getName());
+			mail.setFrom(fromEmail);
+		} else {
+			throw new SenderException("Sender mail address cannot be empty");
 		}
-		mail.setFrom(fromEmail);
+
 		if (replyTo != null && !replyTo.getAddress().isEmpty()) {
 			Email replyToEmail = new Email();
 			replyToEmail.setEmail(replyTo.getAddress());
 			replyToEmail.setName(replyTo.getName());
 			mail.setReplyTo(replyToEmail);
 		}
-
 	}
-
 }

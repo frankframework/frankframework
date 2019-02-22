@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.senders;
+package nl.nn.adapterframework.mailsenders;
 
 import java.io.BufferedReader;
 import java.io.IOException;
