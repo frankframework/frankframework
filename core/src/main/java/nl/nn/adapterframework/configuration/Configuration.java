@@ -157,9 +157,7 @@ public class Configuration {
 	}
 
     /**
-     * get a registered adapter by its name
-     * @param name  the adapter to retrieve
-     * @return IAdapter
+     * Get a registered adapter by its name
      */
     @Deprecated
     public IAdapter getRegisteredAdapter(String name) {
@@ -236,8 +234,7 @@ public class Configuration {
     }
 
     /**
-     * @param adapterName the adapter
-     * @param receiverName the receiver
+     * Performs a check to see if the receiver is known at the adapter
      * @return true if the receiver is known at the adapter
      */
     public boolean isRegisteredReceiver(String adapterName, String receiverName){
@@ -250,8 +247,6 @@ public class Configuration {
 
 	/**
 	 * Register an adapter with the configuration.
-	 * @param adapter
-	 * @throws ConfigurationException
 	 */
 	public void registerAdapter(IAdapter adapter) throws ConfigurationException {
 		if (adapter instanceof Adapter && !((Adapter)adapter).isActive()) {
@@ -304,7 +299,6 @@ public class Configuration {
 
 	/**
 	 * @deprecated replaced by setName(String)
-	 * @param name
 	 */
 	public void setConfigurationName(String name) {
 		this.name = name;

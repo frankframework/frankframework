@@ -535,8 +535,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	 * @param responseHandler {@link HttpResponseHandler} that contains the response information
 	 * @param prc ParameterResolutionContext
 	 * @return a string that will be passed to the pipeline
-	 * @throws SenderException
-	 * @throws IOException
 	 */
 	protected abstract String extractResult(HttpResponseHandler responseHandler, ParameterResolutionContext prc) throws SenderException, IOException;
 
@@ -703,7 +701,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * URL or base of URL to be used
-	 * @param string
 	 */
 	@IbisDoc({"url or base of url to be used ", ""})
 	public void setUrl(String string) {
@@ -715,7 +712,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * Parameter that is used to obtain url; overrides url-attribute
-	 * @param urlParam
 	 * @IbisDoc.default url
 	 */
 	@IbisDoc({"parameter that is used to obtain url; overrides url-attribute.", "url"})
@@ -740,7 +736,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * Content-Type of the request
-	 * @param string
 	 */
 	@IbisDoc({"content-type of the request, only for post and put methods", "text/html; charset=utf-8"})
 	public void setContentType(String string) {
@@ -752,7 +747,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * Default charset of the request
-	 * @param string
 	 * @IbisDoc.Default UTF-8
 	 */
 	public void setCharSet(String string) {
@@ -764,7 +758,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * Timeout in ms of obtaining a connection/result. 0 means no timeout
-	 * @param i
 	 * @IbisDoc.default 10000
 	 */
 	@IbisDoc({"timeout in ms of obtaining a connection/result. 0 means no timeout", "10000"})
@@ -784,7 +777,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * The maximum number of concurrent connections
-	 * @param i
 	 * @IbisDoc.default 10
 	 */
 	@IbisDoc({"the maximum number of concurrent connections", "10"})
@@ -797,7 +789,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * The maximum number of times the execution is retried
-	 * @param i
 	 * @IbisDoc.default 1
 	 */
 	@IbisDoc({"the maximum number of times it the execution is retried", "1"})
@@ -1017,7 +1008,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * Specifies whether messages will encoded, e.g. spaces will be replaced by '+'
-	 * @param b
 	 */
 	@IbisDoc({"specifies whether messages will encoded, e.g. spaces will be replaced by '+' etc.", "false"})
 	public void setEncodeMessages(boolean b) {
@@ -1029,7 +1019,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * Controls whether connections checked to be stale, i.e. appear open, but are not.	
-	 * @param b
 	 * @IbisDoc.default true
 	 */
 	@IbisDoc({"controls whether connections checked to be stale, i.e. appear open, but are not.", "true"})
@@ -1042,7 +1031,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * Used when StaleChecking=true. Timeout when stale connections should be closed.
-	 * @param timeout
 	 * @IbisDoc.default 5000
 	 */
 	public void setStaleTimeout(int timeout) {
@@ -1054,7 +1042,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * When true, a redirect request will be honored, e.g. to switch to https	
-	 * @param b
 	 * @IbisDoc.default true
 	 */
 	@IbisDoc({"when true, a redirect request will be honoured, e.g. to switch to https", "true"})
@@ -1081,7 +1068,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * Comma separated list of parameter names which should be set as http headers
-	 * @param headersParams
 	 */
 	@IbisDoc({"comma separated list of parameter names which should be set as http headers", ""})
 	public void setHeadersParams(String headersParams) {
@@ -1093,7 +1079,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * When true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful
-	 * @param b
 	 */
 	@IbisDoc({"when true, besides http status code 200 (ok) also the code 301 (moved_permanently), 302 (moved_temporarily) and 307 (temporary_redirect) are considered successful", "false"})
 	public void setIgnoreRedirects(boolean b) {
@@ -1105,7 +1090,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * The CertificateExpiredException is ignored when set to true
-	 * @param b
 	 * @IbisDoc.default false
 	 */
 	@IbisDoc({"when true, the certificateexpiredexception is ignored", "false"})
@@ -1118,7 +1102,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * When false and methodeType=POST, request parameters are put in the request body instead of in the url
-	 * @param b
 	 * @IbisDoc.default true
 	 */
 	@IbisDoc({"when false and <code>methodetype=post</code>, request parameters are put in the request body instead of in the url", "true"})
@@ -1131,7 +1114,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * Transformes the response to xhtml
-	 * @param xHtml
 	 * @IbisDoc.default false
 	 */
 	@IbisDoc({"when true, the html response is transformed to xhtml", "false"})
@@ -1156,7 +1138,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	/**
 	 * Secure socket protocol (such as "SSL" and "TLS") to use when a SSLContext object is generated.
-	 * @param protocol
 	 * @IbisDoc.default SSL
 	 */
 	@IbisDoc({"secure socket protocol (such as 'ssl' and 'tls') to use when a sslcontext object is generated. if empty the protocol 'ssl' is used", ""})

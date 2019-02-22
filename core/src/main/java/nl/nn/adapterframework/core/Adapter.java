@@ -138,8 +138,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private String composedHideRegex;
 
 	/**
-	 * Indicates wether the configuration succeeded.
-	 * @return boolean
+	 * Indicates whether the configuration succeeded.
 	 */
 	public boolean configurationSucceeded() {
 		return configurationSucceeded;
@@ -689,8 +688,6 @@ public class Adapter implements IAdapter, NamedBean {
 	/**
 	 * Register a PipeLine at this adapter. On registering, the adapter performs
 	 * a <code>Pipeline.configurePipes()</code>, as to configure the individual pipes.
-	  * @param pipeline
-	 * @throws ConfigurationException
 	 * @see PipeLine
 	 */
 	public void registerPipeLine(PipeLine pipeline) throws ConfigurationException {
@@ -701,7 +698,6 @@ public class Adapter implements IAdapter, NamedBean {
 
 	/**
 	 * Register a receiver for this Adapter
-	 * @param receiver
 	 * @see IReceiver
 	 */
 	public void registerReceiver(IReceiver receiver) {
@@ -730,7 +726,6 @@ public class Adapter implements IAdapter, NamedBean {
 	/**
 	 * Register a <code>ErrorMessageFormatter</code> as the formatter
 	 * for this <code>adapter</code>
-	 * @param errorMessageFormatter
 	 * @see IErrorMessageFormatter
 	 */
 	@IbisDoc({" ", ""})
@@ -739,7 +734,6 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 	/**
 	 * state to put in PipeLineResult when a PipeRunException occurs
-	 * @param newErrorState java.lang.String
 	 * @see PipeLineResult
 	 */
 	public void setErrorState(String newErrorState) {
@@ -753,7 +747,6 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 	/**
 	 * Set the number of messages that are kept on the screen.
-	 * @param size
 	 * @see MessageKeeper
 	 */
 	@IbisDoc({"number of message displayed in ibisconsole", "10"})

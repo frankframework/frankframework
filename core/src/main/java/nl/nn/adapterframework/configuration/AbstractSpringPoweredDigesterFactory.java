@@ -144,9 +144,6 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
      * from the XML converted to a Map. This is so that sub-classes
      * can override this method and change attributes in the map
      * before creating the object from the Spring factory.
-     *
-     * @param attrs
-     * @throws Exception
      */
     protected Object createObject(Map<String, String> attrs) throws Exception {
         String className = attrs.get("className");
@@ -257,12 +254,6 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
      * <code>null</code>, in which case the bean is created using the
      * bean-name returned by <code>getSuggestedBeanName()</code>, that is often
      * implemented by prefixing the element name with 'proto-'
-     *
-     * @param className
-     * @throws ClassNotFoundException
-     * @throws InstantiationException
-     * @throws IllegalAccessException
-     * @throws ConfigurationException
      */
     protected Object createBeanFromClassName(String className)
     	throws ClassNotFoundException, InstantiationException, IllegalAccessException, ConfigurationException {

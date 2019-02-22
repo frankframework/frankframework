@@ -407,13 +407,7 @@ public class FtpSession {
 	
 	/**
 	 * Transfers the contents of a stream to a file on the server.
-	 * 
-	 * @param contents
-	 * @param remoteDirectory
-	 * @param remoteFilenamePattern
-	 * @param closeAfterSend
 	 * @return name of the create remote file
-	 * @throws Exception
 	 */
 	private String _put(ParameterList params, IPipeLineSession session, String contents, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
 		openClient(remoteDirectory);
@@ -443,12 +437,7 @@ public class FtpSession {
 	}
 	
 	/**
-	 * @param filenames
-	 * @param remoteDirectory
-	 * @param remoteFilenamePattern
-	 * @param closeAfterSend
 	 * @return list of remotely created files
-	 * @throws Exception
 	 */
 	private List _put(ParameterList params, IPipeLineSession session, List filenames, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
 		openClient(remoteDirectory);
@@ -552,11 +541,7 @@ public class FtpSession {
 	}
 
 	/**
-	 * @param remoteDirectory
-	 * @param filenames
-	 * @param closeAfterGet
 	 * @return concatenation of the contents of all received files
-	 * @throws Exception
 	 */
 	private String _get(String remoteDirectory, List filenames, boolean closeAfterGet) throws Exception {
 		openClient(remoteDirectory);
@@ -594,11 +579,7 @@ public class FtpSession {
 	}
 	
 	/**
-	 * @param remoteDirectory
-	 * @param filenames
-	 * @param closeAfterGet
-	 * @return ; seperated string with filenames of locally created files 
-	 * @throws Exception
+	 * @return list; seperated string with filenames of locally created files 
 	 */
 	private List _get(ParameterList params, IPipeLineSession session, String localDirectory, String remoteDirectory, List filenames, String localFilenamePattern, boolean closeAfterGet) throws Exception {
 		openClient(remoteDirectory);

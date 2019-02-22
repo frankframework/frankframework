@@ -1139,8 +1139,6 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 
 	/**
 	 * Retrieves the DirContext from the JNDI environment and sets the <code>providerURL</code> back to <code>ldapProviderURL</code> if specified.
-	 * @throws ParameterException 
-	 * 
 	 */
 	protected synchronized DirContext loopkupDirContext(Map paramValueMap) throws NamingException, ParameterException {
 		DirContext dirContext;
