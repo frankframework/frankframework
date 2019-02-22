@@ -86,7 +86,7 @@ import org.custommonkey.xmlunit.XMLUnit;
 import org.dom4j.DocumentException;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockMultipartHttpServletRequest;
-
+import org.springframework.core.env.StandardEnvironment;
 import com.sun.syndication.io.XmlReader;
 
 /**
@@ -2455,6 +2455,7 @@ public class TestTool {
 	}
 	
 	private static int executeJmsSenderWrite(String stepDisplayName, Map queues, Map writers, String queueName, String fileContent) {
+		fileContent = new StandardEnvironment().resolvePlaceholders(fileContent);
 		int result = RESULT_ERROR;
 		
 		Map jmsSenderInfo = (Map)queues.get(queueName);
