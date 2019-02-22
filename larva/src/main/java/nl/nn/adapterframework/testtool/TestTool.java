@@ -1934,6 +1934,12 @@ public class TestTool {
 					fileSender.setDeletePath(deletePath);
 					debugMessage("Delete path set to '" + deletePath + "'", writers);
 				}
+				String deleteFileString = (String)properties.get(queueName + ".deleteFile");
+				if (deleteFileString != null) {
+					boolean deleteFile = Boolean.valueOf(deleteFileString).booleanValue();
+					fileSender.setDeleteFile(deleteFile);
+					debugMessage("Delete file set to '" + deleteFile + "'", writers);
+				}
 				String createPathString = (String)properties.get(queueName + ".createPath");
 				if (createPathString != null) {
 					boolean createPath = Boolean.valueOf(createPathString).booleanValue();

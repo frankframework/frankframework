@@ -25,6 +25,7 @@ public class FileSender {
 	private long interval = 100;
 	private boolean overwrite = false;
 	private boolean deletePath = false;
+	private boolean deleteFile = false;
 	private boolean createPath = false;
 	private boolean runAnt = false;
 	
@@ -45,6 +46,12 @@ public class FileSender {
 				File file = new File(filename);
 				if (file.exists()) {
 					recursiveDelete(filename);
+				}
+			} 
+			else if (deleteFile) {
+				File file = new File(filename);
+				if (file.exists()) {
+					file.delete();
 				}
 			} else {
 				if (createPath) {
@@ -182,5 +189,9 @@ public class FileSender {
 
 	public void setRunAnt(boolean runAnt) {
 		this.runAnt = runAnt;
+	}
+
+	public void setDeleteFile(boolean deleteFile) {
+		this.deleteFile = deleteFile;
 	}
 }
