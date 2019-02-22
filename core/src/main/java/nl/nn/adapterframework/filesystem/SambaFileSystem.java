@@ -72,16 +72,15 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 			auth = new NtlmPasswordAuthentication(getDomain(), cf.getUsername(), cf.getPassword());
 			log.debug("setting authentication to [" + auth.toString() + "]");
 		}
-		open();
 	}
 
 	@Override
-	public void open() throws ConfigurationException {
+	public void open() throws FileSystemException {
 		try {
 			smbContext = new SmbFile(getShare(), auth);
 			smbContext.connect();
 		} catch (IOException e) {
-			throw new ConfigurationException(e);
+			throw new FileSystemException(e);
 		}
 
 	}

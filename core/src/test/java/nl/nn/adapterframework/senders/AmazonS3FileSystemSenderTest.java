@@ -32,6 +32,7 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
+import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
@@ -54,7 +55,7 @@ public class AmazonS3FileSystemSenderTest
 
 	@Override
 	@Before
-	public void setup() throws ConfigurationException, IOException {
+	public void setup() throws ConfigurationException, IOException, FileSystemException {
 		s3FileSystemSender = new AmazonS3FileSystemSender();
 		s3FileSystemSender.setAccessKey(accessKey);
 		s3FileSystemSender.setSecretKey(secretKey);

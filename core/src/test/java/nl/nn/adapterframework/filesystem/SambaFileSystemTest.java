@@ -26,7 +26,7 @@ public class SambaFileSystemTest extends FileSystemTest<SmbFile, SambaFileSystem
 	private SmbFile context;
 
 	@Override
-	public void setup() throws ConfigurationException, IOException {
+	public void setup() throws ConfigurationException, IOException, FileSystemException {
 		NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication("", username, password);
 		context = new SmbFile(share, auth);
 		super.setup();

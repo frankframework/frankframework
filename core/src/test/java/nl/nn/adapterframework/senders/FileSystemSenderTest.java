@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.filesystem.FileSystemTest;
 import nl.nn.adapterframework.filesystem.IFileSystem;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -34,7 +35,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>>
 	}
 
 	@Before
-	public void setup() throws ConfigurationException, IOException {
+	public void setup() throws ConfigurationException, IOException, FileSystemException {
 		super.setup();
 		fileSystemSender = createFileSystemSender();
 	}
@@ -232,17 +233,17 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>>
 	//TODO : Configure this case for your sender structure (can be changed to fit every sender)
 	@Test
 	public void listActionTest() throws Exception {
-
 		fileSystemSender.setAction("list");
 		fileSystemSender.configure();
 		String result = fileSystemSender.sendMessage(null, "");
-		F file;
+		
 		Iterator<F> it = fileSystem.listFiles();
 		int count = 0;
 		while (it.hasNext()) {
-			file = it.next();
+			it.next();
 			count++;
 		}
+		
 		String[] resultArray = result.split("\"");
 		int resultCount = Integer.valueOf(resultArray[3]);
 		assertEquals(resultCount, count);

@@ -24,6 +24,7 @@ import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 
 public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Samba2FileSystem> {
@@ -39,7 +40,7 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 
 	@Before
 	@Override
-	public void setup() throws IOException, ConfigurationException {
+	public void setup() throws IOException, ConfigurationException, FileSystemException {
 		super.setup();
 
 		AuthenticationContext auth = new AuthenticationContext(username, password.toCharArray(),

@@ -10,6 +10,7 @@ import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.filesystem.SambaFileSystem;
 
 /**
@@ -28,7 +29,7 @@ public class SambaFileSystemSenderTest extends FileSystemSenderTest<SmbFile, Sam
 	protected String share = "smb://" + domain + "/Users/alisihab/Desktop/" + shareName + "/";
 
 	@Override
-	public void setup() throws ConfigurationException, IOException {
+	public void setup() throws ConfigurationException, IOException, FileSystemException {
 		NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication("", username, password);
 		context = new SmbFile(share, auth);
 		super.setup();

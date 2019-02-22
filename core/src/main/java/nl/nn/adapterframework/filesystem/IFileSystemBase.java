@@ -13,7 +13,7 @@ public interface IFileSystemBase<F> {
 
 	public void configure() throws ConfigurationException;
 
-	public void open() throws Exception;
+	public void open() throws FileSystemException;
 
 	public void close();
 

@@ -15,13 +15,17 @@
 */
 package nl.nn.adapterframework.filesystem;
 
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.SocketException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
 
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPFile;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -36,34 +40,48 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class FtpFileSystem implements IFileSystem<FTPFile> {
 
-	private FtpSession ftpSession;
+	private String username;
+	private String password;
+	private String host;
+	private int port = 21;
 
 	private String remoteDirectory;
 	private String remoteFilenamePattern = null;
 
-	public FtpFileSystem() {
-		ftpSession = new FtpSession();
-	}
+	private FtpSession ftpSession;
 
 	@Override
 	public void configure() throws ConfigurationException {
+		ftpSession = new FtpSession();
+		ftpSession.setUsername(getUsername());
+		ftpSession.setPassword(getPassword());
+		ftpSession.setHost(getHost());
+		ftpSession.setPort(getPort());
 		ftpSession.configure();
-		open();
 	}
 
 	@Override
-	public void open() {
+	public void open() throws FileSystemException {
+		ftpSession.ftpClient = new FTPClient();
+		FTPClient client = ftpSession.ftpClient;
+		
 		try {
+			client.connect(host, port);
+			client.enterLocalPassiveMode();
+			client.login(username, password);
 			ftpSession.openClient("");
+		} catch (SocketException e) {
+			throw new FileSystemException(e);
+		} catch (IOException e) {
+			throw new FileSystemException(e);
 		} catch (FtpConnectException e) {
-			e.printStackTrace();
+			throw new FileSystemException(e);
 		}
 	}
-
+	
 	@Override
 	public void close() {
 		ftpSession.closeClient();
-
 	}
 
 	@Override
@@ -94,16 +112,27 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 					return true;
 				}
 			}
+			return false;
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new FileSystemException("An I/O error occurred", e);
 		}
-		return false;
 	}
-
+	
+	private FilterOutputStream completePendingCommand(OutputStream os) {
+		FilterOutputStream fos = new FilterOutputStream(os) {
+			@Override
+			public void close() throws IOException {
+				super.close();
+				ftpSession.ftpClient.completePendingCommand();
+			}
+		};
+		return fos;
+	}
+	
 	@Override
 	public OutputStream createFile(FTPFile f) throws FileSystemException, IOException {
 		OutputStream outputStream = ftpSession.ftpClient.storeFileStream(f.getName());
-		return outputStream;
+		return completePendingCommand(outputStream);
 	}
 
 	@Override
@@ -123,7 +152,7 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 		try {
 			ftpSession.ftpClient.deleteFile(f.getName());
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new FileSystemException(e);
 		}
 	}
 
@@ -137,7 +166,7 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 		try {
 			ftpSession.ftpClient.makeDirectory(f.getName());
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new FileSystemException(e);
 		}
 	}
 
@@ -146,7 +175,7 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 		try {
 			ftpSession.ftpClient.removeDirectory(f.getName());
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new FileSystemException(e);
 		}
 	}
 
@@ -155,7 +184,7 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 		try {
 			ftpSession.ftpClient.rename(f.getName(), destination);
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new FileSystemException(e);
 		}
 	}
 
@@ -176,10 +205,13 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 
 	@Override
 	public Date getModificationTime(FTPFile f, boolean isFolder) throws FileSystemException {
-		if (f.getTimestamp() != null) {
-			return f.getTimestamp().getTime();
+		try {
+			return ftpSession.ftpClient.listFiles(f.getName())[0].getTimestamp().getTime();
+		} catch (IndexOutOfBoundsException oobe) {
+			throw new FileSystemException("File could not be found", oobe);
+		} catch (IOException e) {
+			throw new FileSystemException("Could not retrieve file", e);
 		}
-		return null;
 	}
 
 	@Override
@@ -245,9 +277,40 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 			try {
 				deleteFile(files[i++]);
 			} catch (FileSystemException e) {
-				e.printStackTrace();
+				throw new RuntimeException(e);
 			}
 		}
 	}
 
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getHost() {
+		return host;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
 }

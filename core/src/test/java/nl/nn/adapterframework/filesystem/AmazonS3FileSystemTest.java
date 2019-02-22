@@ -33,7 +33,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	AmazonS3 s3Client;
 
 	@Override
-	public void setup() throws IOException, ConfigurationException {
+	public void setup() throws IOException, ConfigurationException, FileSystemException {
 		super.setup();
 	}
 

@@ -112,6 +112,7 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 				out = ifs.createFile(file);
 				out.write(fileBytes);
 				out.close();
+				
 				return getFileAsXmlBuilder(file).toXML();
 			} else if (action.equalsIgnoreCase("mkdir")) {
 				ifs.createFolder(file);
