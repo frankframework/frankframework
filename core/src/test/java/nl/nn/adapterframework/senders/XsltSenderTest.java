@@ -22,7 +22,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	public void basic() throws SenderException, TimeOutException, ConfigurationException, IOException {
 		sender.setStyleSheetName("/Xslt/duplicateImport/root.xsl");
 		sender.configure();
-
+		sender.open();
 		String input=getFile("/Xslt/duplicateImport/in.xml");
 		log.debug("inputfile ["+input+"]");
 		String expected=getFile("/Xslt/duplicateImport/out.xml");
