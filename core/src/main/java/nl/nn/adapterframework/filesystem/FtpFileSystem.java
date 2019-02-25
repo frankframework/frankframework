@@ -19,13 +19,10 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.SocketException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
 
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPFile;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -58,27 +55,22 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 		ftpSession.setHost(getHost());
 		ftpSession.setPort(getPort());
 		ftpSession.configure();
+		try {
+			open();
+		} catch (FileSystemException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void open() throws FileSystemException {
-		ftpSession.ftpClient = new FTPClient();
-		FTPClient client = ftpSession.ftpClient;
-		
 		try {
-			client.connect(host, port);
-			client.enterLocalPassiveMode();
-			client.login(username, password);
 			ftpSession.openClient("");
-		} catch (SocketException e) {
-			throw new FileSystemException(e);
-		} catch (IOException e) {
-			throw new FileSystemException(e);
 		} catch (FtpConnectException e) {
 			throw new FileSystemException(e);
 		}
 	}
-	
+
 	@Override
 	public void close() {
 		ftpSession.closeClient();
@@ -86,8 +78,7 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 
 	@Override
 	public FTPFile toFile(String filename) throws FileSystemException {
-		FTPFile ftpFile;
-		ftpFile = new FTPFile();
+		FTPFile ftpFile = new FTPFile();
 		ftpFile.setName(filename);
 
 		return ftpFile;
@@ -117,7 +108,7 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 			throw new FileSystemException("An I/O error occurred", e);
 		}
 	}
-	
+
 	private FilterOutputStream completePendingCommand(OutputStream os) {
 		FilterOutputStream fos = new FilterOutputStream(os) {
 			@Override
@@ -128,7 +119,7 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 		};
 		return fos;
 	}
-	
+
 	@Override
 	public OutputStream createFile(FTPFile f) throws FileSystemException, IOException {
 		OutputStream outputStream = ftpSession.ftpClient.storeFileStream(f.getName());

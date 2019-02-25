@@ -41,19 +41,18 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 		if (getAction() == null)
 			throw new ConfigurationException(getLogPrefix() + "action must be specified");
 		if (!actions.contains(getAction()))
-			throw new ConfigurationException(getLogPrefix() + "unknown or invalid action ["
-					+ getAction() + "] supported actions are " + actions.toString() + "");
+			throw new ConfigurationException(getLogPrefix() + "unknown or invalid action [" + getAction()
+					+ "] supported actions are " + actions.toString() + "");
 
 		//Check if necessarily parameters are available
 		ParameterList parameterList = getParameterList();
-		if (getAction().equals("upload")
-				&& (parameterList == null || parameterList.findParameter("file") == null))
+		if (getAction().equals("upload") && (parameterList == null || parameterList.findParameter("file") == null))
 			throw new ConfigurationException(
 					getLogPrefix() + "the upload action requires the file parameter to be present");
 		if (getAction().equals("rename")
 				&& (parameterList == null || parameterList.findParameter("destination") == null))
-			throw new ConfigurationException(getLogPrefix()
-					+ "the rename action requires a destination parameter to be present");
+			throw new ConfigurationException(
+					getLogPrefix() + "the rename action requires a destination parameter to be present");
 	}
 
 	@Override
@@ -65,8 +64,8 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 				pvl = prc.getValues(paramList);
 			}
 		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix() + "Sender [" + getName()
-					+ "] caught exception evaluating parameters", e);
+			throw new SenderException(
+					getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
 		}
 		IFileSystem<F> ifs = getFileSystem();
 		F file;
@@ -112,7 +111,7 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 				out = ifs.createFile(file);
 				out.write(fileBytes);
 				out.close();
-				
+
 				return getFileAsXmlBuilder(file).toXML();
 			} else if (action.equalsIgnoreCase("mkdir")) {
 				ifs.createFolder(file);
@@ -125,8 +124,7 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 				ifs.renameTo(file, destination);
 			}
 		} catch (Exception e) {
-			throw new SenderException(
-					getLogPrefix() + "unable to process action for File [" + message + "]", e);
+			throw new SenderException(getLogPrefix() + "unable to process action for File [" + message + "]", e);
 		}
 
 		return correlationID;

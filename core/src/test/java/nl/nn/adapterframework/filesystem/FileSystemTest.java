@@ -77,7 +77,6 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		String filename = "testExists" + FILE1;
 		createFile(filename, "tja");
 		//		// test
-		F file = fileSystem.toFile(filename);
 		assertTrue("Expected file[" + filename + "] to be present", _fileExists(filename));
 
 	}
@@ -85,11 +84,10 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	@Test
 	public void testNotExists() throws Exception {
 		//setup negative
-		String filename = "testExists" + FILE1;
+		String filename = "testNotExists" + FILE1;
 		createFile(filename, "tja");
 		deleteFile(filename);
 		//		// test
-		F file = fileSystem.toFile(filename);
 		assertFalse("Expected file[" + filename + "] not to be present", _fileExists(filename));
 
 	}
@@ -179,7 +177,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 
 	@Test
 	public void testAppendFile() throws Exception {
-		String filename = FILE1;
+		String filename = "append" + FILE1;
 		String regel1 = "Eerste regel in de file";
 		String regel2 = "Tweede regel in de file";
 		String expected = regel1 + regel2;
@@ -217,8 +215,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	//		assertEquals(expectedContents.trim(),actual.trim());
 	//	}
 
-	public void testReadFile(F file, String expectedContents)
-			throws IOException, FileSystemException {
+	public void testReadFile(F file, String expectedContents) throws IOException, FileSystemException {
 		InputStream in = fileSystem.readFile(file);
 
 		String actual = StreamUtil.getReaderContents(new InputStreamReader(in));
@@ -282,7 +279,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		String contents2 = "maakt ook niet uit";
 		createFile(FILE1, contents1);
 		createFile(FILE2, contents2);
-		
+
 		Iterator<F> it = fileSystem.listFiles();
 		int count = 0;
 

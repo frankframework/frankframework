@@ -37,8 +37,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class AmazonS3FileSystemSenderTest
-		extends FileSystemSenderTest<S3Object, AmazonS3FileSystem> {
+public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object, AmazonS3FileSystem> {
 
 	private String accessKey = "";
 	private String secretKey = "";
@@ -52,6 +51,8 @@ public class AmazonS3FileSystemSenderTest
 	AmazonS3FileSystem s3;
 	AmazonS3 s3Client;
 	AmazonS3FileSystemSender s3FileSystemSender;
+
+	private long timeout = 3000;
 
 	@Override
 	@Before
@@ -68,11 +69,9 @@ public class AmazonS3FileSystemSenderTest
 		BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);
 
 		AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
-				.withChunkedEncodingDisabled(chunkedEncodingDisabled)
-				.withAccelerateModeEnabled(accelerateModeEnabled)
+				.withChunkedEncodingDisabled(chunkedEncodingDisabled).withAccelerateModeEnabled(accelerateModeEnabled)
 				.withForceGlobalBucketAccessEnabled(forceGlobalBucketAccessEnabled)
-				.withRegion(Regions.EU_WEST_1.getName())
-				.withCredentials(new AWSStaticCredentialsProvider(awsCreds));
+				.withRegion(Regions.EU_WEST_1.getName()).withCredentials(new AWSStaticCredentialsProvider(awsCreds));
 
 		s3Client = s3ClientBuilder.build();
 		s3 = new AmazonS3FileSystem();
@@ -96,7 +95,7 @@ public class AmazonS3FileSystemSenderTest
 	protected OutputStream _createFile(final String filename) throws IOException {
 		PipedOutputStream pos = new PipedOutputStream();
 		final PipedInputStream pis = new PipedInputStream(pos);
-		Thread putObjectThread = new Thread(new Runnable() {
+		final Thread putObjectThread = new Thread(new Runnable() {
 
 			@Override
 			public void run() {
@@ -105,17 +104,18 @@ public class AmazonS3FileSystemSenderTest
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				try {
-					pis.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
 			}
 		});
 		putObjectThread.start();
 		FilterOutputStream fos = new FilterOutputStream(pos) {
 			@Override
 			public void close() throws IOException {
+				try {
+					putObjectThread.join(timeout);
+				} catch (InterruptedException e) {
+					System.err.println(e);
+				}
+				pis.close();
 				super.close();
 			}
 		};
@@ -143,14 +143,12 @@ public class AmazonS3FileSystemSenderTest
 	}
 
 	@Test
-	public void atestCreateBucket()
-			throws SenderException, ConfigurationException, TimeOutException {
+	public void atestCreateBucket() throws SenderException, ConfigurationException, TimeOutException {
 		s3FileSystemSender.setAction("createBucket");
 
 		s3FileSystemSender.setBucketName(bucketNameTobeCreatedAndDeleted);
 		s3FileSystemSender.configure();
-		String result = s3FileSystemSender.sendMessage("<result>ok</result>",
-				bucketNameTobeCreatedAndDeleted);
+		String result = s3FileSystemSender.sendMessage("<result>ok</result>", bucketNameTobeCreatedAndDeleted);
 
 		boolean exists = s3Client.doesBucketExistV2(bucketNameTobeCreatedAndDeleted);
 		assertTrue(exists);
@@ -158,14 +156,12 @@ public class AmazonS3FileSystemSenderTest
 	}
 
 	@Test
-	public void btestRemoveBucket()
-			throws SenderException, ConfigurationException, TimeOutException {
+	public void btestRemoveBucket() throws SenderException, ConfigurationException, TimeOutException {
 		s3FileSystemSender.setAction("deleteBucket");
 
 		s3FileSystemSender.setBucketName(bucketNameTobeCreatedAndDeleted);
 		s3FileSystemSender.configure();
-		String result = s3FileSystemSender.sendMessage("<result>ok</result>",
-				bucketNameTobeCreatedAndDeleted);
+		String result = s3FileSystemSender.sendMessage("<result>ok</result>", bucketNameTobeCreatedAndDeleted);
 
 		boolean exists = s3Client.doesBucketExistV2(bucketNameTobeCreatedAndDeleted);
 		assertFalse(exists);
@@ -174,8 +170,7 @@ public class AmazonS3FileSystemSenderTest
 	}
 
 	@Test
-	public void copyObjectSuccess()
-			throws ConfigurationException, SenderException, TimeOutException {
+	public void copyObjectSuccess() throws ConfigurationException, SenderException, TimeOutException {
 
 		s3FileSystemSender.setBucketName(bucketName);
 		s3FileSystemSender.setDestinationBucketName(bucketName);
@@ -192,7 +187,9 @@ public class AmazonS3FileSystemSenderTest
 
 		ParameterResolutionContext prc = new ParameterResolutionContext();
 		prc.setSession(session);
-
+		if (_fileExists(dest)) {
+			_deleteFile(dest);
+		}
 		String fileName = "testcopy/testCopy.txt";
 
 		Parameter param = new Parameter();

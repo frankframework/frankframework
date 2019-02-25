@@ -52,19 +52,19 @@ public class Samba2FileSystem implements IFileSystem<String> {
 		private static Connection connection;
 		private static SMBClient client = null;
 
-		private SmbClient(AuthenticationContext auth, String domain, String shareName) {
+		private SmbClient(AuthenticationContext auth, String domain, String shareName) throws FileSystemException {
 			client = new SMBClient();
 			try {
 				connection = client.connect(domain);
 				session = connection.authenticate(auth);
 				share = (DiskShare) session.connectShare(shareName);
 			} catch (IOException e) {
-				e.printStackTrace();
+				throw new FileSystemException("Cannot connect to samba server", e);
 			}
 		}
 
-		public static SmbClient getInstance(AuthenticationContext auth, String domain,
-				String shareName) {
+		public static SmbClient getInstance(AuthenticationContext auth, String domain, String shareName)
+				throws FileSystemException {
 			if (smbClient == null) {
 				smbClient = new SmbClient(auth, domain, shareName);
 			}
@@ -85,7 +85,6 @@ public class Samba2FileSystem implements IFileSystem<String> {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
 		}
 	}
 
@@ -98,11 +97,15 @@ public class Samba2FileSystem implements IFileSystem<String> {
 		if (StringUtils.isNotEmpty(cf.getUsername())) {
 			auth = new AuthenticationContext(username, password.toCharArray(), domain);
 		}
-		open();
+		try {
+			open();
+		} catch (FileSystemException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
-	public void open() {
+	public void open() throws FileSystemException {
 		SmbClient.getInstance(auth, domain, share);
 	}
 
@@ -138,10 +141,10 @@ public class Samba2FileSystem implements IFileSystem<String> {
 		Set<AccessMask> accessMask = new HashSet<AccessMask>(
 				EnumSet.of(AccessMask.MAXIMUM_ALLOWED, AccessMask.FILE_ADD_FILE));
 
-		Set<SMB2CreateOptions> createOptions = new HashSet<SMB2CreateOptions>(EnumSet.of(
-				SMB2CreateOptions.FILE_NON_DIRECTORY_FILE, SMB2CreateOptions.FILE_WRITE_THROUGH));
-		final File file = SmbClient.getDiskShare().openFile(f, accessMask, null,
-				SMB2ShareAccess.ALL, SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
+		Set<SMB2CreateOptions> createOptions = new HashSet<SMB2CreateOptions>(
+				EnumSet.of(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE, SMB2CreateOptions.FILE_WRITE_THROUGH));
+		final File file = SmbClient.getDiskShare().openFile(f, accessMask, null, SMB2ShareAccess.ALL,
+				SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
 		OutputStream out = file.getOutputStream();
 
 		FilterOutputStream fos = new FilterOutputStream(out) {
@@ -158,8 +161,7 @@ public class Samba2FileSystem implements IFileSystem<String> {
 
 	@Override
 	public OutputStream appendFile(String f) throws FileSystemException, IOException {
-		Set<AccessMask> accessMask = new HashSet<AccessMask>(
-				EnumSet.of(AccessMask.FILE_APPEND_DATA));
+		Set<AccessMask> accessMask = new HashSet<AccessMask>(EnumSet.of(AccessMask.FILE_APPEND_DATA));
 		final File file = getFile(f, accessMask, SMB2CreateDisposition.FILE_OPEN_IF);
 
 		OutputStream out = file.getOutputStream();
@@ -218,16 +220,14 @@ public class Samba2FileSystem implements IFileSystem<String> {
 
 	@Override
 	public boolean isFolder(String f) throws FileSystemException {
-		boolean isFolder = SmbClient.getDiskShare().getFileInformation(f).getStandardInformation()
-				.isDirectory();
+		boolean isFolder = SmbClient.getDiskShare().getFileInformation(f).getStandardInformation().isDirectory();
 		return isFolder;
 	}
 
 	@Override
 	public void createFolder(String f) throws FileSystemException {
 		if (SmbClient.getDiskShare().folderExists(f)) {
-			throw new FileSystemException(
-					"Create directory for [" + f + "] has failed. Directory already exits.");
+			throw new FileSystemException("Create directory for [" + f + "] has failed. Directory already exits.");
 		} else {
 			SmbClient.getDiskShare().mkdir(f);
 		}
@@ -236,15 +236,13 @@ public class Samba2FileSystem implements IFileSystem<String> {
 	@Override
 	public void removeFolder(String f) throws FileSystemException {
 		if (!SmbClient.getDiskShare().folderExists(f)) {
-			throw new FileSystemException(
-					"Remove directory for [" + f + "] has failed. Directory does not exist.");
+			throw new FileSystemException("Remove directory for [" + f + "] has failed. Directory does not exist.");
 		} else {
 			SmbClient.getDiskShare().rmdir(f, true);
 		}
 	}
 
-	private File getFile(String filename, Set<AccessMask> accessMask,
-			SMB2CreateDisposition createDisposition) {
+	private File getFile(String filename, Set<AccessMask> accessMask, SMB2CreateDisposition createDisposition) {
 		Set<SMB2ShareAccess> shareAccess = new HashSet<SMB2ShareAccess>();
 		shareAccess.addAll(SMB2ShareAccess.ALL);
 
@@ -252,20 +250,18 @@ public class Samba2FileSystem implements IFileSystem<String> {
 		createOptions.add(SMB2CreateOptions.FILE_WRITE_THROUGH);
 		File file;
 
-		file = SmbClient.getDiskShare().openFile(filename, accessMask, null, shareAccess,
-				createDisposition, createOptions);
+		file = SmbClient.getDiskShare().openFile(filename, accessMask, null, shareAccess, createDisposition,
+				createOptions);
 
 		return file;
 	}
 
-	private Directory getFolder(String filename, Set<AccessMask> accessMask,
-			SMB2CreateDisposition createDisposition) {
+	private Directory getFolder(String filename, Set<AccessMask> accessMask, SMB2CreateDisposition createDisposition) {
 		Set<SMB2ShareAccess> shareAccess = new HashSet<SMB2ShareAccess>();
 		shareAccess.addAll(SMB2ShareAccess.ALL);
 
 		Directory file;
-		file = SmbClient.getDiskShare().openDirectory(filename, accessMask, null, shareAccess,
-				createDisposition, null);
+		file = SmbClient.getDiskShare().openDirectory(filename, accessMask, null, shareAccess, createDisposition, null);
 		return file;
 	}
 
@@ -314,7 +310,6 @@ public class Samba2FileSystem implements IFileSystem<String> {
 			file.close();
 			return date;
 		}
-
 	}
 
 	public String getDomain() {
@@ -391,7 +386,5 @@ public class Samba2FileSystem implements IFileSystem<String> {
 		public String next() {
 			return files[i++];
 		}
-
 	}
-
 }

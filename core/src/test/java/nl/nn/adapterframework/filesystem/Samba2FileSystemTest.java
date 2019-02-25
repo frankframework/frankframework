@@ -9,6 +9,8 @@ import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.mserref.NtStatus;
@@ -41,16 +43,14 @@ public class Samba2FileSystemTest extends FileSystemTest<String, IFileSystemBase
 		super.setup();
 		SMBClient smbClient = new SMBClient();
 
-		AuthenticationContext auth = new AuthenticationContext(username, password.toCharArray(),
-				domain);
+		AuthenticationContext auth = new AuthenticationContext(username, password.toCharArray(), domain);
 
 		try {
 			connection = smbClient.connect(domain);
 			session = connection.authenticate(auth);
 			client = (DiskShare) session.connectShare(shareName);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new FileSystemException("Cannot connect to samba server", e);
 		}
 	}
 
@@ -114,15 +114,9 @@ public class Samba2FileSystemTest extends FileSystemTest<String, IFileSystemBase
 		Set<SMB2ShareAccess> shareAccess = new HashSet<SMB2ShareAccess>();
 		shareAccess.addAll(SMB2ShareAccess.ALL);
 		File file;
-		file = client.openFile(filename, accessMask, null, shareAccess,
-				SMB2CreateDisposition.FILE_OPEN, null);
+		file = client.openFile(filename, accessMask, null, shareAccess, SMB2CreateDisposition.FILE_OPEN, null);
 
 		return file.getInputStream();
-
-		//		Set<SMB2CreateOptions> createOptions = new HashSet<SMB2CreateOptions>(
-		//				EnumSet.of(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE));
-		//		return client.openFile(filename, null, null, SMB2ShareAccess.ALL,
-		//				SMB2CreateDisposition.FILE_OPEN, createOptions).getInputStream();
 	}
 
 	@Override
@@ -131,8 +125,7 @@ public class Samba2FileSystemTest extends FileSystemTest<String, IFileSystemBase
 		accessMask.add(AccessMask.FILE_ADD_FILE);
 		Set<SMB2ShareAccess> shareAccess = new HashSet<SMB2ShareAccess>();
 		shareAccess.addAll(SMB2ShareAccess.ALL);
-		client.openDirectory(filename, accessMask, null, shareAccess,
-				SMB2CreateDisposition.FILE_OPEN_IF, null);
+		client.openDirectory(filename, accessMask, null, shareAccess, SMB2CreateDisposition.FILE_OPEN_IF, null);
 	}
 
 	@Override
@@ -143,7 +136,13 @@ public class Samba2FileSystemTest extends FileSystemTest<String, IFileSystemBase
 	@Override
 	protected void _deleteFolder(String folderName) throws Exception {
 		client.rmdir(folderName, true);
+	}
 
+	@Ignore("Samba V2 does not support append in this library")
+	@Test
+	@Override
+	public void testAppendFile() throws Exception {
+		super.testAppendFile();
 	}
 
 }

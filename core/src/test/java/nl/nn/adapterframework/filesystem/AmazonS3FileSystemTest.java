@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.filesystem;
 
 import java.io.FileNotFoundException;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,11 +17,11 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3Object;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
-@Ignore
 public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3FileSystem> {
 
 	private String accessKey = "";
@@ -31,6 +32,8 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	private String bucketName = "iaf.s3sender.ali.test";
 	AmazonS3FileSystem s3;
 	AmazonS3 s3Client;
+
+	private long timeout = 3000;
 
 	@Override
 	public void setup() throws IOException, ConfigurationException, FileSystemException {
@@ -43,11 +46,9 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);
 
 		AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
-				.withChunkedEncodingDisabled(chunkedEncodingDisabled)
-				.withAccelerateModeEnabled(accelerateModeEnabled)
+				.withChunkedEncodingDisabled(chunkedEncodingDisabled).withAccelerateModeEnabled(accelerateModeEnabled)
 				.withForceGlobalBucketAccessEnabled(forceGlobalBucketAccessEnabled)
-				.withRegion(Regions.EU_WEST_1.getName())
-				.withCredentials(new AWSStaticCredentialsProvider(awsCreds));
+				.withRegion(Regions.EU_WEST_1.getName()).withCredentials(new AWSStaticCredentialsProvider(awsCreds));
 
 		s3Client = s3ClientBuilder.build();
 		s3 = new AmazonS3FileSystem();
@@ -68,28 +69,33 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	}
 
 	@Override
-	protected OutputStream _createFile(final String filename) throws IOException {
+	protected OutputStream _createFile(final String filename) throws IOException, FileSystemException {
+		PutObjectResult result = null;
 		PipedOutputStream pos = new PipedOutputStream();
 		final PipedInputStream pis = new PipedInputStream(pos);
-		Thread putObjectThread = new Thread(new Runnable() {
+		final Thread putObjectThread = new Thread(new Runnable() {
 
 			@Override
 			public void run() {
-				try {
-					s3Client.putObject(bucketName, filename, pis, new ObjectMetadata());
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				try {
-					pis.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				s3Client.putObject(bucketName, filename, pis, new ObjectMetadata());
 			}
 		});
 		putObjectThread.start();
 
-		return pos;
+		FilterOutputStream fos = new FilterOutputStream(pos) {
+
+			@Override
+			public void close() throws IOException {
+				try {
+					putObjectThread.join(timeout);
+				} catch (InterruptedException e) {
+					System.err.println(e);
+				}
+				pis.close();
+				super.close();
+			}
+		};
+		return fos;
 	}
 
 	@Override
@@ -103,13 +109,6 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	}
 
 	@Override
-	@Ignore
-	@Test
-	public void testAppendFile() throws Exception {
-		super.testAppendFile();
-	}
-
-	@Override
 	protected boolean _folderExists(String folderName) throws Exception {
 		return _fileExists(folderName);
 	}
@@ -117,6 +116,13 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	@Override
 	protected void _deleteFolder(String folderName) throws Exception {
 		deleteFile(folderName);
+	}
+
+	@Override
+	@Ignore
+	@Test
+	public void testAppendFile() throws Exception {
+		super.testAppendFile();
 	}
 
 }

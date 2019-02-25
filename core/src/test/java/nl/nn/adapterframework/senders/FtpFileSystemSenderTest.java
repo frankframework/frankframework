@@ -3,13 +3,11 @@ package nl.nn.adapterframework.senders;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.SocketException;
 
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPFile;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.filesystem.FtpFileSystem;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
@@ -19,14 +17,14 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 	FtpFileSystem ffs = new FtpFileSystem();
 	private FtpSession ftpSession = new FtpSession();
 
-	private String username = "test";
-	private String password = "test";
-	private String host = "10.0.0.179";
-	private String remoteDirectory = "dummyFolder";
-	private int port = 22;
+	private String username = "";
+	private String password = "";
+	private String host = "";
+	private String remoteDirectory = "FTPTest";
+	private int port = 21;
 
 	@Override
-	public void setup() throws ConfigurationException, IOException {
+	public void setup() throws ConfigurationException, IOException, FileSystemException {
 		super.setup();
 		ftpSession.setUsername(username);
 		ftpSession.setPassword(password);
@@ -34,35 +32,23 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 		ftpSession.setPort(port);
 
 		ftpSession.configure();
+		open();
 	}
 
 	@Override
 	protected FtpFileSystem getFileSystem() throws ConfigurationException {
-		FtpSession session = ffs.getFtpSession();
-		session.setUsername(username);
-		session.setPassword(password);
-		session.setHost(host);
-		session.setPort(port);
-		session.ftpClient = new FTPClient();
-		
-		try {
-			session.ftpClient.configure(new FTPClientConfig(FTPClientConfig.SYST_UNIX));
-			session.ftpClient.connect(host, port);
-			session.ftpClient.enterLocalPassiveMode();
-			session.ftpClient.login(username, password);
-		} catch (SocketException e) {
-			throw new ConfigurationException("Connection could not be made", e);
-		} catch (IOException e) {
-			throw new ConfigurationException("An I/O error occurred", e);
-		}
-
+		ffs.setHost(host);
+		ffs.setUsername(username);
+		ffs.setPassword(password);
 		ffs.setRemoteDirectory(remoteDirectory);
+		ffs.setPort(port);
+		ffs.configure();
 
 		return ffs;
 	}
 
 	@Override
-	protected boolean _fileExists(String filename) throws IOException {
+	protected boolean _fileExists(String filename) throws IOException, FileSystemException {
 		try {
 			close();
 			open();
@@ -77,25 +63,25 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new FileSystemException(e);
 		}
 		return false;
 	}
 
 	@Override
-	protected void _deleteFile(String filename) {
+	protected void _deleteFile(String filename) throws FileSystemException {
 		try {
 			close();
 			open();
 			ftpSession.ftpClient.deleteFile(filename);
 			close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new FileSystemException("", e);
 		}
 	}
 
 	@Override
-	protected OutputStream _createFile(String filename) throws IOException {
+	protected OutputStream _createFile(String filename) throws IOException, FileSystemException {
 		close();
 		open();
 		OutputStream out = ftpSession.ftpClient.storeFileStream(filename);
@@ -103,7 +89,7 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 	}
 
 	@Override
-	protected InputStream _readFile(String filename) throws IOException {
+	protected InputStream _readFile(String filename) throws IOException, FileSystemException {
 		close();
 		open();
 		InputStream is = ftpSession.ftpClient.retrieveFileStream(filename);
@@ -111,13 +97,13 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 	}
 
 	@Override
-	public void _createFolder(String filename) throws IOException {
+	public void _createFolder(String filename) throws FileSystemException {
 		try {
 			close();
 			open();
 			ftpSession.ftpClient.makeDirectory(filename);
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new FileSystemException("Cannot create directory", e);
 		}
 	}
 
@@ -125,11 +111,11 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 		ftpSession.closeClient();
 	}
 
-	private void open() {
+	private void open() throws FileSystemException {
 		try {
 			ftpSession.openClient("");
 		} catch (FtpConnectException e) {
-			e.printStackTrace();
+			throw new FileSystemException("Cannot open connection", e);
 		}
 	}
 
@@ -149,7 +135,7 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new FileSystemException(e);
 		}
 		return false;
 	}

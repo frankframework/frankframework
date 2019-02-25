@@ -22,8 +22,7 @@ import nl.nn.adapterframework.filesystem.IFileSystem;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
-public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>>
-		extends FileSystemTest<F, FS> {
+public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends FileSystemTest<F, FS> {
 
 	public IFileSystemSender fileSystemSender;
 
@@ -45,7 +44,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>>
 		String filename = "sender" + FILE1;
 		String contents = "Tekst om te lezen";
 		createFile(filename, contents);
-		assertTrue("Expected file [" + filename + "] to be present", _fileExists(filename));
+		//		assertTrue("Expected file [" + filename + "] to be present", _fileExists(filename));
 
 		fileSystemSender.setAction("download");
 		fileSystemSender.configure();
@@ -59,8 +58,11 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>>
 	public void uploadActionTestWithString() throws Exception {
 		String filename = "uploadedwithString" + FILE1;
 		String contents = "Some text content to test upload action\n";
-		createFile(filename, contents);
-		assertTrue(_fileExists(filename));
+		if (_fileExists(filename)) {
+			_deleteFile(filename);
+		}
+		//		createFile(filename, contents);
+		//		assertTrue(_fileExists(filename));
 
 		PipeLineSessionBase session = new PipeLineSessionBase();
 		session.put("uploadActionTargetwString", contents.getBytes());
@@ -86,8 +88,11 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>>
 	public void uploadActionTestWithByteArray() throws Exception {
 		String filename = "uploadedwithByteArray" + FILE1;
 		String contents = "Some text content to test upload action\n";
-		createFile(filename, contents);
-		assertTrue(_fileExists(filename));
+		if (_fileExists(filename)) {
+			_deleteFile(filename);
+		}
+		//		createFile(filename, contents);
+		//		assertTrue(_fileExists(filename));
 
 		PipeLineSessionBase session = new PipeLineSessionBase();
 		session.put("uploadActionTargetwByteArray", contents.getBytes());
@@ -114,8 +119,11 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>>
 	public void uploadActionTestWithInputStream() throws Exception {
 		String filename = "uploadedwithInputStream" + FILE1;
 		String contents = "Some text content to test upload action\n";
-		createFile(filename, contents);
-		assertTrue(_fileExists(filename));
+		if (_fileExists(filename)) {
+			_deleteFile(filename);
+		}
+		//		createFile(filename, contents);
+		//		assertTrue(_fileExists(filename));
 
 		InputStream stream = new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8));
 
@@ -162,7 +170,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>>
 	@Test
 	public void rmdirActionTest() throws Exception {
 		String filename = DIR1;
-		if (!_fileExists(DIR1)) {
+		if (!_folderExists(DIR1)) {
 			_createFolder(filename);
 		}
 
@@ -236,14 +244,14 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>>
 		fileSystemSender.setAction("list");
 		fileSystemSender.configure();
 		String result = fileSystemSender.sendMessage(null, "");
-		
+
 		Iterator<F> it = fileSystem.listFiles();
 		int count = 0;
 		while (it.hasNext()) {
 			it.next();
 			count++;
 		}
-		
+
 		String[] resultArray = result.split("\"");
 		int resultCount = Integer.valueOf(resultArray[3]);
 		assertEquals(resultCount, count);

@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.senders;
 
+import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -9,6 +11,8 @@ import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.mserref.NtStatus;
@@ -20,6 +24,7 @@ import com.hierynomus.smbj.SMBClient;
 import com.hierynomus.smbj.auth.AuthenticationContext;
 import com.hierynomus.smbj.connection.Connection;
 import com.hierynomus.smbj.session.Session;
+import com.hierynomus.smbj.share.Directory;
 import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 
@@ -43,8 +48,7 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 	public void setup() throws IOException, ConfigurationException, FileSystemException {
 		super.setup();
 
-		AuthenticationContext auth = new AuthenticationContext(username, password.toCharArray(),
-				domain);
+		AuthenticationContext auth = new AuthenticationContext(username, password.toCharArray(), domain);
 		open(auth);
 	}
 
@@ -62,7 +66,7 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 
 	}
 
-	public void open(AuthenticationContext auth) {
+	public void open(AuthenticationContext auth) throws FileSystemException {
 		if (smbClient == null) {
 			smbClient = new SMBClient();
 		}
@@ -77,7 +81,7 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 				client = (DiskShare) session.connectShare(shareName);
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new FileSystemException("Cannot connect to samba server", e);
 		}
 	}
 
@@ -115,9 +119,19 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 		createOptions.add(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE);
 		Set<AccessMask> accessMask = new HashSet<AccessMask>(EnumSet.of(AccessMask.GENERIC_ALL));
 
-		File file = client.openFile(filename, accessMask, null, SMB2ShareAccess.ALL,
+		final File file = client.openFile(filename, accessMask, null, SMB2ShareAccess.ALL,
 				SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
-		return file.getOutputStream();
+
+		FilterOutputStream fos = new FilterOutputStream(file.getOutputStream()) {
+
+			@Override
+			public void close() throws IOException {
+				super.close();
+				file.close();
+			}
+
+		};
+		return fos;
 	}
 
 	@Override
@@ -126,10 +140,15 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 		accessMask.add(AccessMask.GENERIC_READ);
 		Set<SMB2ShareAccess> shareAccess = new HashSet<SMB2ShareAccess>();
 		shareAccess.addAll(SMB2ShareAccess.ALL);
-		File file;
-		file = client.openFile(filename, accessMask, null, shareAccess,
-				SMB2CreateDisposition.FILE_OPEN, null);
-
+		final File file;
+		file = client.openFile(filename, accessMask, null, shareAccess, SMB2CreateDisposition.FILE_OPEN, null);
+		FilterInputStream fos = new FilterInputStream(file.getInputStream()) {
+			@Override
+			public void close() throws IOException {
+				super.close();
+				file.close();
+			}
+		};
 		return file.getInputStream();
 	}
 
@@ -139,8 +158,9 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 		accessMask.add(AccessMask.FILE_ADD_FILE);
 		Set<SMB2ShareAccess> shareAccess = new HashSet<SMB2ShareAccess>();
 		shareAccess.addAll(SMB2ShareAccess.ALL);
-		client.openDirectory(filename, accessMask, null, shareAccess,
+		Directory dir = client.openDirectory(filename, accessMask, null, shareAccess,
 				SMB2CreateDisposition.FILE_OPEN_IF, null);
+		dir.close();
 	}
 
 	@Override
@@ -153,4 +173,10 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 		client.rmdir(folderName, true);
 	}
 
+	@Ignore("Samba V2 does not support append in this library")
+	@Test
+	@Override
+	public void testAppendFile() throws Exception {
+		super.testAppendFile();
+	}
 }
