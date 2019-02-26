@@ -2455,7 +2455,6 @@ public class TestTool {
 	}
 	
 	private static int executeJmsSenderWrite(String stepDisplayName, Map queues, Map writers, String queueName, String fileContent) {
-		fileContent = new StandardEnvironment().resolvePlaceholders(fileContent);
 		int result = RESULT_ERROR;
 		
 		Map jmsSenderInfo = (Map)queues.get(queueName);
@@ -2493,6 +2492,8 @@ public class TestTool {
 	}
 
 	private static int executeSenderWrite(String stepDisplayName, Map queues, Map writers, String queueName, String senderType, String fileContent) {
+		AppConstants appConstants = AppConstants.getInstance();
+		fileContent = StringResolver.substVars(fileContent, appConstants);
 		int result = RESULT_ERROR;
 		Map senderInfo = (Map)queues.get(queueName);
 		ISender sender = (ISender)senderInfo.get(senderType + "Sender");
