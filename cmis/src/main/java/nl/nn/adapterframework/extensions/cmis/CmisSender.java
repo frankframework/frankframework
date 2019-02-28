@@ -577,15 +577,7 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		} else {
 			throw new SenderException("expected InputStream, ByteArray or String but got ["+inputFromSessionKey.getClass().getName()+"] instead");
 		}
-//		if (StringUtils.isNotEmpty(fileInputStreamSessionKey)) {
-//			inputStream = (FileInputStream) prc.getSession().get(
-//					getFileInputStreamSessionKey());
-//		} else {
-//			String fileContent = (String) prc.getSession().get(
-//					getFileContentSessionKey());
-//			byte[] bytes = Base64.decodeBase64((String) fileContent);
-//			inputStream = new ByteArrayInputStream(bytes);
-//		}
+
 		long fileLength = 0;
 		try {
 			fileLength = inputStream.available();
