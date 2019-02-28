@@ -559,16 +559,33 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		String fileName = (String) prc.getSession()
 				.get(getFileNameSessionKey());
 
-		InputStream inputStream = null;
-		if (StringUtils.isNotEmpty(fileInputStreamSessionKey)) {
-			inputStream = (FileInputStream) prc.getSession().get(
+		Object inputFromSessionKey;
+		if(StringUtils.isNotEmpty(fileInputStreamSessionKey)) {
+			inputFromSessionKey = prc.getSession().get(
 					getFileInputStreamSessionKey());
-		} else {
-			String fileContent = (String) prc.getSession().get(
+		}else {
+			inputFromSessionKey = prc.getSession().get(
 					getFileContentSessionKey());
-			byte[] bytes = Base64.decodeBase64((String) fileContent);
-			inputStream = new ByteArrayInputStream(bytes);
+		}		
+		InputStream inputStream = null;	
+		if (inputFromSessionKey instanceof InputStream) {
+			inputStream = (InputStream)inputFromSessionKey;
+		} else if (inputFromSessionKey instanceof byte[]) {
+			inputStream = new ByteArrayInputStream((byte[])inputFromSessionKey);
+		} else if(inputFromSessionKey instanceof String){
+			inputStream = new ByteArrayInputStream(((String) inputFromSessionKey).getBytes());	
+		} else {
+			throw new SenderException("expected InputStream, ByteArray or String but got ["+inputFromSessionKey.getClass().getName()+"] instead");
 		}
+//		if (StringUtils.isNotEmpty(fileInputStreamSessionKey)) {
+//			inputStream = (FileInputStream) prc.getSession().get(
+//					getFileInputStreamSessionKey());
+//		} else {
+//			String fileContent = (String) prc.getSession().get(
+//					getFileContentSessionKey());
+//			byte[] bytes = Base64.decodeBase64((String) fileContent);
+//			inputStream = new ByteArrayInputStream(bytes);
+//		}
 		long fileLength = 0;
 		try {
 			fileLength = inputStream.available();
