@@ -17,7 +17,6 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3Object;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -33,11 +32,12 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	AmazonS3FileSystem s3;
 	AmazonS3 s3Client;
 
-	private long timeout = 3000;
+	private int waitMilis = 1000;
 
 	@Override
 	public void setup() throws IOException, ConfigurationException, FileSystemException {
 		super.setup();
+		setWaitMilis(waitMilis);
 	}
 
 	@Override
@@ -70,7 +70,6 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 
 	@Override
 	protected OutputStream _createFile(final String filename) throws IOException, FileSystemException {
-		PutObjectResult result = null;
 		PipedOutputStream pos = new PipedOutputStream();
 		final PipedInputStream pis = new PipedInputStream(pos);
 		final Thread putObjectThread = new Thread(new Runnable() {
@@ -81,17 +80,10 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 			}
 		});
 		putObjectThread.start();
-
 		FilterOutputStream fos = new FilterOutputStream(pos) {
 
 			@Override
 			public void close() throws IOException {
-				try {
-					putObjectThread.join(timeout);
-				} catch (InterruptedException e) {
-					System.err.println(e);
-				}
-				pis.close();
 				super.close();
 			}
 		};

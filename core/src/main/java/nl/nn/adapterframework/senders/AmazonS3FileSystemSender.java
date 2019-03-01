@@ -156,8 +156,4 @@ public class AmazonS3FileSystemSender extends FileSystemSender<S3Object, AmazonS
 		getFileSystem().setBucketCreationEnabled(bucketCreationEnabled);
 	}
 
-	public void setTimeout(long timeout) {
-		getFileSystem().setTimeout(timeout);
-	}
-
 }

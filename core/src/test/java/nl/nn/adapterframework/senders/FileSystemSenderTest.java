@@ -40,21 +40,6 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 	}
 
 	@Test
-	public void downloadActionTest() throws Exception {
-		String filename = "sender" + FILE1;
-		String contents = "Tekst om te lezen";
-		createFile(filename, contents);
-		//		assertTrue("Expected file [" + filename + "] to be present", _fileExists(filename));
-
-		fileSystemSender.setAction("download");
-		fileSystemSender.configure();
-		String actual;
-		actual = fileSystemSender.sendMessage("<result>ok</result>", filename);
-		String contentsBase64 = Base64.getEncoder().encodeToString(contents.getBytes());
-		assertEquals(contentsBase64.trim(), actual.trim());
-	}
-
-	@Test
 	public void uploadActionTestWithString() throws Exception {
 		String filename = "uploadedwithString" + FILE1;
 		String contents = "Some text content to test upload action\n";
@@ -79,7 +64,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 		prc.setSession(session);
 		String actual;
 		actual = fileSystemSender.sendMessage("<result>ok</result>", filename, prc);
-
+		waitForActionToFinish();
 		actual = readFile(filename);
 		assertEquals(contents.trim(), actual.trim());
 	}
@@ -110,7 +95,8 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 
 		String actual;
 		actual = fileSystemSender.sendMessage("<result>ok</result>", filename, prc);
-
+		waitForActionToFinish();
+		waitForActionToFinish();
 		actual = readFile(filename);
 		assertEquals(contents.trim(), actual.trim());
 	}
@@ -143,9 +129,26 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 
 		String actual;
 		actual = fileSystemSender.sendMessage("<result>ok</result>", filename, prc);
+		waitForActionToFinish();
 
 		actual = readFile(filename);
 		assertEquals(contents.trim(), actual.trim());
+	}
+
+	@Test
+	public void downloadActionTest() throws Exception {
+		String filename = "sender" + FILE1;
+		String contents = "Tekst om te lezen";
+		createFile(filename, contents);
+		waitForActionToFinish();
+		//		assertTrue("Expected file [" + filename + "] to be present", _fileExists(filename));
+
+		fileSystemSender.setAction("download");
+		fileSystemSender.configure();
+		String actual;
+		actual = fileSystemSender.sendMessage("<result>ok</result>", filename);
+		String contentsBase64 = Base64.getEncoder().encodeToString(contents.getBytes());
+		assertEquals(contentsBase64.trim(), actual.trim());
 	}
 
 	@Test
@@ -162,7 +165,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 		actual = fileSystemSender.sendMessage(message, filename);
 
 		assertEquals(message.trim(), actual.trim());
-
+		waitForActionToFinish();
 		boolean result = _folderExists(filename);
 		assertTrue("Expected file[" + filename + "] to be present", result);
 	}
@@ -180,7 +183,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 		String actual;
 		actual = fileSystemSender.sendMessage(message, filename);
 		assertEquals(message.trim(), actual.trim());
-
+		waitForActionToFinish();
 		boolean result = _fileExists(filename);
 		assertFalse("Expected file [" + filename + "] " + "not to be present", result);
 	}
@@ -198,7 +201,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 		String actual;
 		actual = fileSystemSender.sendMessage(message, filename);
 		assertEquals(message.trim(), actual.trim());
-
+		waitForActionToFinish();
 		boolean result = _fileExists(filename);
 		assertFalse("Expected file [" + filename + "] " + "not to be present", result);
 	}
@@ -238,7 +241,6 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 		assertTrue("Expected file [" + dest + "] " + "to be present", result);
 	}
 
-	//TODO : Configure this case for your sender structure (can be changed to fit every sender)
 	@Test
 	public void listActionTest() throws Exception {
 		fileSystemSender.setAction("list");

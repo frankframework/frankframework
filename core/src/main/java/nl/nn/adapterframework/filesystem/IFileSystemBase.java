@@ -15,7 +15,7 @@ public interface IFileSystemBase<F> {
 
 	public void open() throws FileSystemException;
 
-	public void close();
+	public void close() throws FileSystemException;
 
 	public F toFile(String filename) throws FileSystemException;
 
@@ -41,7 +41,5 @@ public interface IFileSystemBase<F> {
 
 	public Date getModificationTime(F f, boolean isFolder) throws FileSystemException;
 
-	//	public String getInfo(F f) throws FileSystemException;
-	//	public XmlBuilder getFileAsXmlBuilder(F f) throws FileSystemException;
 	public void augmentDirectoryInfo(XmlBuilder dirInfo, F f);
 }

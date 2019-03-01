@@ -18,8 +18,6 @@ package nl.nn.adapterframework.filesystem;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -99,7 +97,7 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 	}
 
 	@Override
-	public Iterator<SmbFile> listFiles() {
+	public Iterator<SmbFile> listFiles() throws FileSystemException {
 		try {
 			if (!isListHiddenFiles()) {
 				SmbFileFilter filter = new SmbFileFilter() {
@@ -113,9 +111,8 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 			}
 			return new SmbFileIterator(smbContext.listFiles());
 		} catch (SmbException e) {
-			e.printStackTrace();
+			throw new FileSystemException(e);
 		}
-		return null;
 	}
 
 	@Override
@@ -160,8 +157,8 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 			if (f.isFile()) {
 				f.delete();
 			} else {
-				throw new FileSystemException("trying to remove [" + f.getName()
-						+ "] which is a directory instead of a file");
+				throw new FileSystemException(
+						"trying to remove [" + f.getName() + "] which is a directory instead of a file");
 			}
 		} catch (SmbException e) {
 			throw new FileSystemException(e);
@@ -197,12 +194,11 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 				if (f.isDirectory()) {
 					f.delete();
 				} else {
-					throw new FileSystemException("trying to remove file [" + f.getName()
-							+ "] which is a file instead of a directory");
+					throw new FileSystemException(
+							"trying to remove file [" + f.getName() + "] which is a file instead of a directory");
 				}
 			} else {
-				throw new FileSystemException(
-						"trying to remove file [" + f.getName() + "] which does not exist");
+				throw new FileSystemException("trying to remove file [" + f.getName() + "] which does not exist");
 			}
 		} catch (SmbException e) {
 			throw new FileSystemException(e);
@@ -222,14 +218,9 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 				}
 			}
 			f.renameTo(dest);
-		} catch (SmbException e) {
+		} catch (Exception e) {
 			throw new FileSystemException(e);
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
 		}
-
 	}
 
 	private class SmbFileIterator implements Iterator<SmbFile> {

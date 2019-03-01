@@ -1,9 +1,12 @@
 package nl.nn.adapterframework.senders;
 
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPFile;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -15,23 +18,56 @@ import nl.nn.adapterframework.ftp.FtpSession;
 public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFileSystem> {
 
 	FtpFileSystem ffs = new FtpFileSystem();
-	private FtpSession ftpSession = new FtpSession();
 
 	private String username = "";
 	private String password = "";
 	private String host = "";
-	private String remoteDirectory = "FTPTest";
+	private String remoteDirectory = "";
 	private int port = 21;
+	private int waitMilis = 0;
+
+	private static class FTPConnection {
+		private static FTPConnection ftpConnection;
+		private static FtpSession ftpSession;
+
+		private FTPConnection(String userName, String password, String host, int port) throws ConfigurationException {
+			ftpSession = new FtpSession();
+			ftpSession.setUsername(userName);
+			ftpSession.setPassword(password);
+			ftpSession.setHost(host);
+			ftpSession.setPort(port);
+			ftpSession.configure();
+		}
+
+		public static FTPConnection getInstance(String userName, String password, String host, int port)
+				throws ConfigurationException {
+			if (ftpConnection == null) {
+				ftpConnection = new FTPConnection(userName, password, host, port);
+			}
+			return ftpConnection;
+
+		}
+
+		public static FTPClient getClient() throws FileSystemException {
+			if (ftpSession.ftpClient == null || !ftpSession.ftpClient.isConnected()) {
+				try {
+					ftpSession.closeClient();
+					ftpSession.openClient("");
+					ftpSession.ftpClient.configure(new FTPClientConfig(FTPClientConfig.SYST_UNIX));
+				} catch (FtpConnectException e) {
+					throw new FileSystemException(e);
+				}
+			}
+
+			return ftpSession.ftpClient;
+		}
+	}
 
 	@Override
 	public void setup() throws ConfigurationException, IOException, FileSystemException {
 		super.setup();
-		ftpSession.setUsername(username);
-		ftpSession.setPassword(password);
-		ftpSession.setHost(host);
-		ftpSession.setPort(port);
-
-		ftpSession.configure();
+		setWaitMilis(waitMilis);
+		FTPConnection.getInstance(username, password, host, port);
 		open();
 	}
 
@@ -50,9 +86,7 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 	@Override
 	protected boolean _fileExists(String filename) throws IOException, FileSystemException {
 		try {
-			close();
-			open();
-			FTPFile[] files = ftpSession.ftpClient.listFiles();
+			FTPFile[] files = FTPConnection.getClient().listFiles();
 			for (FTPFile o : files) {
 				if (o.isDirectory()) {
 					if ((o.getName() + "/").equals(filename)) {
@@ -71,60 +105,58 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 	@Override
 	protected void _deleteFile(String filename) throws FileSystemException {
 		try {
-			close();
-			open();
-			ftpSession.ftpClient.deleteFile(filename);
-			close();
+			FTPConnection.getClient().deleteFile(filename);
 		} catch (IOException e) {
 			throw new FileSystemException("", e);
 		}
 	}
 
+	private FilterOutputStream completePendingCommand(OutputStream os) {
+		FilterOutputStream fos = new FilterOutputStream(os) {
+			@Override
+			public void close() throws IOException {
+				super.close();
+				try {
+					FTPConnection.getClient().completePendingCommand();
+					System.err.println(FTPConnection.getClient().getReplyString());
+				} catch (FileSystemException e) {
+					System.err.println(e);
+				}
+			}
+		};
+		return fos;
+	}
+
 	@Override
 	protected OutputStream _createFile(String filename) throws IOException, FileSystemException {
-		close();
-		open();
-		OutputStream out = ftpSession.ftpClient.storeFileStream(filename);
-		return out;
+		OutputStream out = FTPConnection.getClient().storeFileStream(filename);
+		return completePendingCommand(out);
 	}
 
 	@Override
 	protected InputStream _readFile(String filename) throws IOException, FileSystemException {
-		close();
-		open();
-		InputStream is = ftpSession.ftpClient.retrieveFileStream(filename);
+		InputStream is = FTPConnection.getClient().retrieveFileStream(filename);
+		FTPConnection.getClient().completePendingCommand();
 		return is;
 	}
 
 	@Override
 	public void _createFolder(String filename) throws FileSystemException {
 		try {
-			close();
-			open();
-			ftpSession.ftpClient.makeDirectory(filename);
+			FTPConnection.getClient().makeDirectory(filename);
 		} catch (IOException e) {
 			throw new FileSystemException("Cannot create directory", e);
 		}
 	}
 
-	private void close() {
-		ftpSession.closeClient();
-	}
-
 	private void open() throws FileSystemException {
-		try {
-			ftpSession.openClient("");
-		} catch (FtpConnectException e) {
-			throw new FileSystemException("Cannot open connection", e);
-		}
+		FTPConnection.getClient();
 	}
 
 	@Override
 	protected boolean _folderExists(String folderName) throws Exception {
 		try {
-			close();
-			open();
-			FTPFile[] files = ftpSession.ftpClient.listFiles();
+			FTPFile[] files = FTPConnection.getClient().listFiles();
 			for (FTPFile o : files) {
 				if (o.isDirectory()) {
 					if ((o.getName() + "/").equals(folderName)) {
@@ -142,6 +174,6 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 
 	@Override
 	protected void _deleteFolder(String folderName) throws Exception {
-		_deleteFile(folderName);
+		FTPConnection.getClient().rmd(folderName);
 	}
 }

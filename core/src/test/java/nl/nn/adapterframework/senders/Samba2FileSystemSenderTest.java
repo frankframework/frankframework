@@ -34,20 +34,21 @@ import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 
 public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Samba2FileSystem> {
 
-	protected String shareName = "Shared";
+	protected String shareName = "Share";
 	protected String username = "";
 	protected String password = "";
-	protected String domain = "localhost";
+	protected String domain = "";
 	private DiskShare client = null;
 	private Session session = null;
 	private Connection connection = null;
 	private SMBClient smbClient = null;
+	private int waitMilis = 0;
 
 	@Before
 	@Override
 	public void setup() throws IOException, ConfigurationException, FileSystemException {
 		super.setup();
-
+		setWaitMilis(waitMilis);
 		AuthenticationContext auth = new AuthenticationContext(username, password.toCharArray(), domain);
 		open(auth);
 	}
@@ -142,14 +143,14 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 		shareAccess.addAll(SMB2ShareAccess.ALL);
 		final File file;
 		file = client.openFile(filename, accessMask, null, shareAccess, SMB2CreateDisposition.FILE_OPEN, null);
-		FilterInputStream fos = new FilterInputStream(file.getInputStream()) {
+		FilterInputStream fis = new FilterInputStream(file.getInputStream()) {
 			@Override
 			public void close() throws IOException {
 				super.close();
 				file.close();
 			}
 		};
-		return file.getInputStream();
+		return fis;
 	}
 
 	@Override

@@ -20,6 +20,7 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
 import org.apache.commons.net.ftp.FTPFile;
 import org.junit.After;
 import org.junit.Before;
@@ -35,27 +36,26 @@ import nl.nn.adapterframework.ftp.FtpSession;
  *
  */
 
-// @Ignore
 public class FtpFileSystemTest extends FileSystemTest<FTPFile, FtpFileSystem> {
 
-	private String username = "test";
-	private String password = "test";
-	private String host = "10.0.0.179";
+	private String username = "";
+	private String password = "";
+	private String host = "";
 	private String remoteDirectory = "dummyFolder";
-	private int port = 22;
+	private int port = 21;
 
 	private FtpSession referenceSession;
-	
+
 	@Override
 	protected FtpFileSystem getFileSystem() throws ConfigurationException {
 		FtpFileSystem ffs = new FtpFileSystem();
-		
+
 		ffs.setUsername(username);
 		ffs.setPassword(password);
 		ffs.setHost(host);
 		ffs.setPort(port);
 		ffs.setRemoteDirectory(remoteDirectory);
-		
+
 		return ffs;
 	}
 
@@ -66,17 +66,17 @@ public class FtpFileSystemTest extends FileSystemTest<FTPFile, FtpFileSystem> {
 		referenceSession.setPassword(password);
 		referenceSession.setHost(host);
 		referenceSession.setPort(port);
-		
+
 		referenceSession.configure();
 		referenceSession.openClient("");
 	}
 
 	@After
 	public void close() {
-		if(referenceSession != null)
+		if (referenceSession != null)
 			referenceSession.closeClient();
 	}
-	
+
 	@Override
 	protected boolean _fileExists(String filename) throws IOException, FtpConnectException, ConfigurationException {
 		FTPFile[] files = referenceSession.ftpClient.listFiles();
@@ -92,18 +92,18 @@ public class FtpFileSystemTest extends FileSystemTest<FTPFile, FtpFileSystem> {
 		return false;
 	}
 
-
 	@Override
 	protected void _deleteFile(String filename) throws FtpConnectException, IOException, ConfigurationException {
 		referenceSession.ftpClient.deleteFile(filename);
 	}
 
 	@Override
-	protected OutputStream _createFile(String filename) throws IOException, FtpConnectException, ConfigurationException {
+	protected OutputStream _createFile(String filename)
+			throws IOException, FtpConnectException, ConfigurationException {
 		OutputStream out = referenceSession.ftpClient.storeFileStream(filename);
 		return completePendingCommand(out);
 	}
-	
+
 	private FilterOutputStream completePendingCommand(OutputStream os) {
 		FilterOutputStream fos = new FilterOutputStream(os) {
 			@Override

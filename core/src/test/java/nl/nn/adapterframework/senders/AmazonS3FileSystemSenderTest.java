@@ -51,17 +51,17 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 	AmazonS3FileSystem s3;
 	AmazonS3 s3Client;
 	AmazonS3FileSystemSender s3FileSystemSender;
-
-	private long timeout = 3000;
+	private int waitMilis = 1000;
 
 	@Override
 	@Before
 	public void setup() throws ConfigurationException, IOException, FileSystemException {
+		super.setup();
 		s3FileSystemSender = new AmazonS3FileSystemSender();
 		s3FileSystemSender.setAccessKey(accessKey);
 		s3FileSystemSender.setSecretKey(secretKey);
 		s3FileSystemSender.setBucketName(bucketName);
-		super.setup();
+		setWaitMilis(waitMilis);
 	}
 
 	@Override
@@ -102,7 +102,7 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 				try {
 					s3Client.putObject(bucketName, filename, pis, new ObjectMetadata());
 				} catch (Exception e) {
-					e.printStackTrace();
+					System.err.println(e);
 				}
 			}
 		});
@@ -110,12 +110,7 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 		FilterOutputStream fos = new FilterOutputStream(pos) {
 			@Override
 			public void close() throws IOException {
-				try {
-					putObjectThread.join(timeout);
-				} catch (InterruptedException e) {
-					System.err.println(e);
-				}
-				pis.close();
+				//				pis.close();
 				super.close();
 			}
 		};

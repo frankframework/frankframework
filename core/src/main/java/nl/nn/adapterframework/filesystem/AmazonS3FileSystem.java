@@ -1,6 +1,5 @@
 package nl.nn.adapterframework.filesystem;
 
-import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +25,6 @@ import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.CreateBucketRequest;
 import com.amazonaws.services.s3.model.DeleteBucketRequest;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
-import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.RestoreObjectRequest;
@@ -71,8 +69,6 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 	private boolean storageClassEnabled = false;
 	private boolean bucketCreationEnabled = false;
 	private boolean bucketExistsThrowException = true;
-
-	private long timeout = 3000;
 
 	public void configure() throws ConfigurationException {
 
@@ -124,8 +120,7 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 				summaries.addAll(listing.getObjectSummaries());
 			}
 		} catch (AmazonServiceException e) {
-			e.printStackTrace();
-			throw new FileSystemException();
+			throw new FileSystemException("Cannot process requested action", e);
 		}
 
 		List<S3Object> list = new ArrayList<S3Object>();
@@ -165,22 +160,14 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 
 			@Override
 			public void close() throws IOException {
-				try {
-					putObjectThread.join(timeout);
-				} catch (InterruptedException e) {
-					System.err.println(e);
-				}
-				inputStream.close();
 				super.close();
 			}
 		};
-
 		return fos;
 	}
 
 	@Override
 	public OutputStream appendFile(S3Object f) throws FileSystemException, IOException {
-
 		// Amazon S3 doesn't support append operation
 		return null;
 	}
@@ -188,20 +175,10 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 	@Override
 	public InputStream readFile(S3Object f) throws FileSystemException, IOException {
 		try {
-			GetObjectRequest getObjectrequest = new GetObjectRequest(bucketName, f.getKey());
-			final S3Object file = s3Client.getObject(getObjectrequest);
-			S3ObjectInputStream is = file.getObjectContent();
+			final S3Object file = s3Client.getObject(bucketName, f.getKey());
+			final S3ObjectInputStream is = file.getObjectContent();
 
-			FilterInputStream fis = new FilterInputStream(is) {
-
-				@Override
-				public void close() throws IOException {
-					super.close();
-					file.close();
-				}
-			};
-
-			return fis;
+			return is;
 		} catch (AmazonServiceException e) {
 			throw new FileSystemException(e);
 		}
@@ -213,7 +190,7 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 			DeleteObjectRequest deleteObjectRequest = new DeleteObjectRequest(bucketName, f.getKey());
 			s3Client.deleteObject(deleteObjectRequest);
 		} catch (AmazonServiceException e) {
-			e.printStackTrace();
+			throw new FileSystemException(e);
 		}
 	}
 
@@ -597,14 +574,14 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 
 	@Override
 	public Date getModificationTime(S3Object f, boolean isFolder) throws FileSystemException {
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		S3Object file = s3Client.getObject(bucketName, f.getKey());
 		Date date = file.getObjectMetadata().getLastModified();
 		return date;
-	}
-
-	public void setTimeout(long timeout) {
-		this.timeout = timeout;
-
 	}
 
 }

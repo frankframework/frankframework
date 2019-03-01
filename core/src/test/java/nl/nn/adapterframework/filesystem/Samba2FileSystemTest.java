@@ -41,6 +41,7 @@ public class Samba2FileSystemTest extends FileSystemTest<String, IFileSystemBase
 	@Override
 	public void setup() throws IOException, ConfigurationException, FileSystemException {
 		super.setup();
+		@SuppressWarnings("resource")
 		SMBClient smbClient = new SMBClient();
 
 		AuthenticationContext auth = new AuthenticationContext(username, password.toCharArray(), domain);

@@ -23,6 +23,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
 
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPFile;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -45,35 +47,64 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 	private String remoteDirectory;
 	private String remoteFilenamePattern = null;
 
-	private FtpSession ftpSession;
+	private static class FTPConnection {
+		private static FTPConnection ftpConnection;
+		private static FtpSession ftpSession;
+
+		private FTPConnection(String userName, String password, String host, int port) throws ConfigurationException {
+			ftpSession = new FtpSession();
+			ftpSession.setUsername(userName);
+			ftpSession.setPassword(password);
+			ftpSession.setHost(host);
+			ftpSession.setPort(port);
+			ftpSession.configure();
+		}
+
+		public static FTPConnection getInstance(String userName, String password, String host, int port)
+				throws ConfigurationException {
+			if (ftpConnection == null) {
+				ftpConnection = new FTPConnection(userName, password, host, port);
+			}
+			return ftpConnection;
+
+		}
+
+		public static FtpSession getFtpSession() {
+			return ftpSession;
+		}
+
+		public static FTPClient getClient() throws FileSystemException {
+			if (ftpSession.ftpClient == null || !ftpSession.ftpClient.isConnected()) {
+				try {
+					ftpSession.closeClient();
+					ftpSession.openClient("");
+					ftpSession.ftpClient.configure(new FTPClientConfig(FTPClientConfig.SYST_UNIX));
+				} catch (FtpConnectException e) {
+					throw new FileSystemException(e);
+				}
+			}
+			return ftpSession.ftpClient;
+		}
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {
-		ftpSession = new FtpSession();
-		ftpSession.setUsername(getUsername());
-		ftpSession.setPassword(getPassword());
-		ftpSession.setHost(getHost());
-		ftpSession.setPort(getPort());
-		ftpSession.configure();
+		FTPConnection.getInstance(getUsername(), getPassword(), getHost(), getPort());
 		try {
 			open();
 		} catch (FileSystemException e) {
-			e.printStackTrace();
+			throw new ConfigurationException(e);
 		}
 	}
 
 	@Override
 	public void open() throws FileSystemException {
-		try {
-			ftpSession.openClient("");
-		} catch (FtpConnectException e) {
-			throw new FileSystemException(e);
-		}
+		FTPConnection.getClient();
 	}
 
 	@Override
 	public void close() {
-		ftpSession.closeClient();
+		FTPConnection.getFtpSession().closeClient();
 	}
 
 	@Override
@@ -87,17 +118,16 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 	@Override
 	public Iterator<FTPFile> listFiles() throws FileSystemException {
 		try {
-			return new FTPFilePathIterator(ftpSession.ftpClient.listFiles(remoteDirectory));
+			return new FTPFilePathIterator(FTPConnection.getClient().listFiles(remoteDirectory));
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new FileSystemException(e);
 		}
-		return null;
 	}
 
 	@Override
 	public boolean exists(FTPFile f) throws FileSystemException {
 		try {
-			FTPFile[] files = ftpSession.ftpClient.listFiles();
+			FTPFile[] files = FTPConnection.getClient().listFiles();
 			for (FTPFile o : files) {
 				if (o.getName().equals(f.getName())) {
 					return true;
@@ -114,7 +144,12 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 			@Override
 			public void close() throws IOException {
 				super.close();
-				ftpSession.ftpClient.completePendingCommand();
+				try {
+					FTPConnection.getClient().completePendingCommand();
+					System.err.println(FTPConnection.getClient().getReplyString());
+				} catch (FileSystemException e) {
+					System.err.println(e);
+				}
 			}
 		};
 		return fos;
@@ -122,26 +157,28 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 
 	@Override
 	public OutputStream createFile(FTPFile f) throws FileSystemException, IOException {
-		OutputStream outputStream = ftpSession.ftpClient.storeFileStream(f.getName());
+		OutputStream outputStream = FTPConnection.getClient().storeFileStream(f.getName());
 		return completePendingCommand(outputStream);
 	}
 
 	@Override
 	public OutputStream appendFile(FTPFile f) throws FileSystemException, IOException {
-		OutputStream outputStream = ftpSession.ftpClient.appendFileStream(f.getName());
-		return outputStream;
+		OutputStream outputStream = FTPConnection.getClient().appendFileStream(f.getName());
+		//		FTPConnection.getClient().completePendingCommand();
+		return completePendingCommand(outputStream);
 	}
 
 	@Override
 	public InputStream readFile(FTPFile f) throws FileSystemException, IOException {
-		InputStream inputStream = ftpSession.ftpClient.retrieveFileStream(f.getName());
+		InputStream inputStream = FTPConnection.getClient().retrieveFileStream(f.getName());
+		FTPConnection.getClient().completePendingCommand();
 		return inputStream;
 	}
 
 	@Override
 	public void deleteFile(FTPFile f) throws FileSystemException {
 		try {
-			ftpSession.ftpClient.deleteFile(f.getName());
+			FTPConnection.getClient().deleteFile(f.getName());
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
@@ -155,7 +192,7 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 	@Override
 	public void createFolder(FTPFile f) throws FileSystemException {
 		try {
-			ftpSession.ftpClient.makeDirectory(f.getName());
+			FTPConnection.getClient().makeDirectory(f.getName());
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
@@ -164,7 +201,7 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 	@Override
 	public void removeFolder(FTPFile f) throws FileSystemException {
 		try {
-			ftpSession.ftpClient.removeDirectory(f.getName());
+			FTPConnection.getClient().removeDirectory(f.getName());
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
@@ -173,7 +210,7 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 	@Override
 	public void renameTo(FTPFile f, String destination) throws FileSystemException {
 		try {
-			ftpSession.ftpClient.rename(f.getName(), destination);
+			FTPConnection.getClient().rename(f.getName(), destination);
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
@@ -197,7 +234,7 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 	@Override
 	public Date getModificationTime(FTPFile f, boolean isFolder) throws FileSystemException {
 		try {
-			return ftpSession.ftpClient.listFiles(f.getName())[0].getTimestamp().getTime();
+			return FTPConnection.getClient().listFiles(f.getName())[0].getTimestamp().getTime();
 		} catch (IndexOutOfBoundsException oobe) {
 			throw new FileSystemException("File could not be found", oobe);
 		} catch (IOException e) {
@@ -216,7 +253,7 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 	}
 
 	public FtpSession getFtpSession() {
-		return ftpSession;
+		return FTPConnection.getFtpSession();
 	}
 
 	public void setRemoteDirectory(String remoteDirectory) {

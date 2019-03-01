@@ -27,12 +27,14 @@ public class SambaFileSystemSenderTest extends FileSystemSenderTest<SmbFile, Sam
 	protected String domain = "localhost";
 	private SmbFile context;
 	protected String share = "smb://" + domain + "/Users/alisihab/Desktop/" + shareName + "/";
+	private int waitMilis = 0;
 
 	@Override
 	public void setup() throws ConfigurationException, IOException, FileSystemException {
+		super.setup();
 		NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication("", username, password);
 		context = new SmbFile(share, auth);
-		super.setup();
+		setWaitMilis(waitMilis);
 	}
 
 	@Override

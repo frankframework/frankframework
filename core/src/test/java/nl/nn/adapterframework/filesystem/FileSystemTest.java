@@ -27,9 +27,6 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 
 	protected abstract FS getFileSystem() throws ConfigurationException;
 
-	//	protected abstract F getFileHandle(String filename);
-	//	protected abstract String getFileInfo(F f); // expected to return a XML 
-
 	protected abstract boolean _fileExists(String filename) throws Exception;
 
 	protected abstract boolean _folderExists(String folderName) throws Exception;
@@ -45,6 +42,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	protected abstract void _deleteFolder(String folderName) throws Exception;
 
 	protected FS fileSystem;
+	private long waitMilis = 0;
 
 	@Before
 	public void setup() throws IOException, ConfigurationException, FileSystemException {
@@ -68,7 +66,17 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 
 	public String readFile(String filename) throws Exception {
 		InputStream in = _readFile(filename);
-		return StreamUtil.getReaderContents(new InputStreamReader(in));
+		String content = StreamUtil.getReaderContents(new InputStreamReader(in));
+		in.close();
+		return content;
+	}
+
+	public void waitForActionToFinish() {
+		try {
+			Thread.sleep(waitMilis);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Test
@@ -76,6 +84,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		//setup negative
 		String filename = "testExists" + FILE1;
 		createFile(filename, "tja");
+		waitForActionToFinish();
 		//		// test
 		assertTrue("Expected file[" + filename + "] to be present", _fileExists(filename));
 
@@ -86,7 +95,9 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		//setup negative
 		String filename = "testNotExists" + FILE1;
 		createFile(filename, "tja");
+		waitForActionToFinish();
 		deleteFile(filename);
+		waitForActionToFinish();
 		//		// test
 		assertFalse("Expected file[" + filename + "] not to be present", _fileExists(filename));
 
@@ -98,6 +109,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		// setup positive
 		F file = fileSystem.toFile(filename);
 		createFile(filename, "tja");
+		waitForActionToFinish();
 		// test
 		testExistsContinueCheck(file, filename);
 
@@ -112,14 +124,14 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		String filename = "create" + FILE1;
 		String contents = "regeltje tekst";
 		deleteFile(filename);
-
+		waitForActionToFinish();
 		F file = fileSystem.toFile(filename);
 		OutputStream out = fileSystem.createFile(file);
 
 		PrintWriter pw = new PrintWriter(out);
 		pw.println(contents);
 		pw.close();
-
+		waitForActionToFinish();
 		existsCheck(filename);
 		String actual = readFile(filename);
 		equalsCheck(contents.trim(), actual.trim());
@@ -138,6 +150,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	public void testCreateOverwriteFile() throws Exception {
 		String filename = "overwrited" + FILE1;
 		createFile(filename, "Eerste versie van de file");
+		waitForActionToFinish();
 		String contents = "Tweede versie van de file";
 
 		F file = fileSystem.toFile(filename);
@@ -146,7 +159,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		PrintWriter pw = new PrintWriter(out);
 		pw.println(contents);
 		pw.close();
-
+		waitForActionToFinish();
 		existsCheck(filename);
 
 		String actual = readFile(filename);
@@ -165,11 +178,11 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	public void testTruncateFile() throws Exception {
 		String filename = "truncated" + FILE1;
 		createFile(filename, "Eerste versie van de file");
-
+		waitForActionToFinish();
 		F file = fileSystem.toFile(filename);
 		OutputStream out = fileSystem.createFile(file);
 		out.close();
-
+		waitForActionToFinish();
 		existsCheck(filename);
 		String actual = readFile(filename);
 		equalsCheck("", actual.trim());
@@ -182,14 +195,14 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		String regel2 = "Tweede regel in de file";
 		String expected = regel1 + regel2;
 		createFile(filename, regel1);
-
+		waitForActionToFinish();
 		F file = fileSystem.toFile(filename);
 		OutputStream out = fileSystem.appendFile(file);
 
 		PrintWriter pw = new PrintWriter(out);
 		pw.println(regel2);
 		pw.close();
-
+		waitForActionToFinish();
 		existsCheck(filename);
 		String actual = readFile(filename);
 		equalsCheck(expected.trim(), actual.trim());
@@ -199,21 +212,14 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	public void testDelete() throws Exception {
 		String filename = "tobeDeleted" + FILE1;
 		createFile(filename, "maakt niet uit");
-
+		waitForActionToFinish();
 		existsCheck(filename);
 
 		F file = fileSystem.toFile(filename);
 		fileSystem.deleteFile(file);
-
+		waitForActionToFinish();
 		assertFalse("Expected file [" + filename + "] not to be present", _fileExists(filename));
 	}
-
-	//	public void assertFileEquals(String filename, String expectedContents) throws IOException {
-	//		InputStream in = new FileInputStream(filename);
-	//
-	//		String actual=StreamUtil.getReaderContents(new InputStreamReader(in));
-	//		assertEquals(expectedContents.trim(),actual.trim());
-	//	}
 
 	public void testReadFile(F file, String expectedContents) throws IOException, FileSystemException {
 		InputStream in = fileSystem.readFile(file);
@@ -227,6 +233,9 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		String filename = "read" + FILE1;
 		String contents = "Tekst om te lezen";
 		createFile(filename, contents);
+
+		waitForActionToFinish();
+
 		existsCheck(filename);
 
 		F file = fileSystem.toFile(filename);
@@ -239,8 +248,9 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		String contents = "Tekst om te lezen";
 		createFile(filename, contents);
 
+		waitForActionToFinish();
 		F file = fileSystem.toFile(filename);
-
+		waitForActionToFinish();
 		assertEquals(filename, fileSystem.getName(file));
 	}
 
@@ -250,36 +260,22 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		String contents = "Tekst om te lezen";
 		Date date = new Date();
 		createFile(filename, contents);
-
+		waitForActionToFinish();
 		F file = fileSystem.toFile(filename);
 		Date actual = fileSystem.getModificationTime(file, false);
 		long diff = actual.getTime() - date.getTime();
 		fileSystem.deleteFile(file);
-
+		waitForActionToFinish();
 		assertFalse(diff > 10000);
 	}
 
-	public void testFileInfo(F f) throws FileSystemException {
-		//		String fiString = fileSystem.getInfo(f);
-		//		assertThat(fiString, containsString("name"));
-		//		assertThat(fiString, containsString("lastModified"));
-	}
-
-	public void testFileInfo() throws FileSystemException {
-		testFileInfo(fileSystem.toFile(FILE1));
-		testFileInfo(fileSystem.toFile(FILE2));
-	}
-
 	@Test
-	/*
-	 * TODO 2019-01-04 GvB fix this test: order of files is not guaranteed! fails on travis
-	 */
 	public void testListFile() throws Exception {
 		String contents1 = "maakt niet uit";
 		String contents2 = "maakt ook niet uit";
 		createFile(FILE1, contents1);
 		createFile(FILE2, contents2);
-
+		waitForActionToFinish();
 		Iterator<F> it = fileSystem.listFiles();
 		int count = 0;
 
@@ -317,6 +313,10 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 			it.next();
 		}
 		assertFalse(it.hasNext());
+	}
+
+	public void setWaitMilis(long waitMilis) {
+		this.waitMilis = waitMilis;
 	}
 
 }

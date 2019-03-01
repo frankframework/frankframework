@@ -75,7 +75,7 @@ public class Samba2FileSystem implements IFileSystem<String> {
 			return share;
 		}
 
-		public static void close() {
+		public static void close() throws IOException {
 			try {
 				share.close();
 				session.close();
@@ -83,7 +83,7 @@ public class Samba2FileSystem implements IFileSystem<String> {
 				client.close();
 				smbClient = null;
 			} catch (IOException e) {
-				e.printStackTrace();
+				throw e;
 			}
 		}
 	}
@@ -100,7 +100,7 @@ public class Samba2FileSystem implements IFileSystem<String> {
 		try {
 			open();
 		} catch (FileSystemException e) {
-			e.printStackTrace();
+			throw new ConfigurationException(e);
 		}
 	}
 
@@ -110,8 +110,12 @@ public class Samba2FileSystem implements IFileSystem<String> {
 	}
 
 	@Override
-	public void close() {
-		SmbClient.close();
+	public void close() throws FileSystemException {
+		try {
+			SmbClient.close();
+		} catch (IOException e) {
+			throw new FileSystemException(e);
+		}
 	}
 
 	@Override
