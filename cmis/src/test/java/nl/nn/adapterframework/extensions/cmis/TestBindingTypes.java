@@ -1,0 +1,144 @@
+package nl.nn.adapterframework.extensions.cmis;
+
+import java.util.Arrays;
+import java.util.Collection;
+
+import javax.servlet.http.HttpServletResponse;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+
+import org.apache.chemistry.opencmis.client.api.CmisObject;
+import org.apache.chemistry.opencmis.client.api.Folder;
+import org.apache.chemistry.opencmis.client.api.ItemIterable;
+import org.apache.chemistry.opencmis.client.api.ObjectFactory;
+import org.apache.chemistry.opencmis.client.api.ObjectId;
+import org.apache.chemistry.opencmis.client.api.OperationContext;
+import org.apache.chemistry.opencmis.client.api.QueryResult;
+import org.apache.chemistry.opencmis.client.api.Session;
+import org.apache.chemistry.opencmis.client.runtime.FolderImpl;
+import org.apache.chemistry.opencmis.client.runtime.ObjectIdImpl;
+import org.apache.chemistry.opencmis.client.runtime.OperationContextImpl;
+import org.apache.chemistry.opencmis.client.runtime.repository.ObjectFactoryImpl;
+import org.apache.chemistry.opencmis.client.runtime.util.EmptyItemIterable;
+import org.apache.chemistry.opencmis.commons.enums.VersioningState;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
+import org.apache.commons.codec.binary.Base64;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+
+@RunWith(Parameterized.class)
+public class TestBindingTypes extends SenderBase<CmisSender>{
+
+	private final static String INPUT = "<cmis><objectId>dummy</objectId></cmis>";
+	private final static String FIND_RESULT = "<cmis>  <rowset /></cmis>";
+	private final static String FETCH_RESULT = "<cmis>  <properties />  <allowableActions />  <isExactAcl />  <policyIds />  <relationships /></cmis>";
+
+	@Parameters(name = "{0} - {1}")
+	public static Collection<Object[]> data() {
+		return Arrays.asList(new Object[][] {
+				{ "atompub", "create", INPUT, "dummy_id" },
+				{ "atompub", "get", INPUT, "dummy_stream" },
+				{ "atompub", "find", INPUT, FIND_RESULT },
+				{ "atompub", "update", INPUT, "dummy_id" },
+				{ "atompub", "fetch", INPUT, FETCH_RESULT },
+
+				{ "webservices", "create", INPUT, "dummy_id" },
+				{ "webservices", "get", INPUT, "dummy_stream" },
+				{ "webservices", "find", INPUT, FIND_RESULT },
+				{ "webservices", "update", INPUT, "dummy_id" },
+				{ "webservices", "fetch", INPUT, FETCH_RESULT },
+
+				{ "browser", "create", INPUT, "dummy_id" },
+				{ "browser", "get", INPUT, "dummy_stream" },
+				{ "browser", "find", INPUT, FIND_RESULT },
+				{ "browser", "update", INPUT, "dummy_id" },
+				{ "browser", "fetch", INPUT, FETCH_RESULT },
+		});
+	}
+
+	private String bindingType;
+	private String action;
+	private String input;
+	private String expectedResult;
+
+	public TestBindingTypes(String bindingType, String action, String input, String expected) {
+		this.bindingType = bindingType;
+		this.action = action;
+		this.input = input;
+		this.expectedResult = expected;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public CmisSender createSender() {
+		CmisSender sender = spy(new CmisSender());
+
+		sender.setUrl("http://dummy.url");
+		sender.setRepository("dummyRepository");
+		sender.setFileContentSessionKey("fileContent");
+		sender.setFileNameSessionKey("my-file");
+		sender.setUserName("test");
+		sender.setPassword("test");
+		sender.setKeepSession(false);
+
+		byte[] base64 = Base64.encodeBase64("dummy data".getBytes());
+		session.put("fileContent", new String(base64));
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		session.put(IPipeLineSession.HTTP_RESPONSE_KEY, response);
+
+		Session cmisSession = mock(Session.class);
+		ObjectFactory objectFactory = mock(ObjectFactoryImpl.class);
+		doReturn(objectFactory).when(cmisSession).getObjectFactory();
+
+//		GENERIC cmis object
+		ObjectId objectId = mock(ObjectIdImpl.class);
+		doReturn(objectId).when(cmisSession).createObjectId(anyString());
+		CmisObject cmisObject = spy(new CmisTestObject());
+		doReturn(cmisObject).when(cmisSession).getObject(any(ObjectId.class));
+		doReturn(cmisObject).when(cmisSession).getObject(any(ObjectId.class), any(OperationContext.class));
+
+//		GET
+		OperationContext operationContext = mock(OperationContextImpl.class);
+		doReturn(operationContext).when(cmisSession).createOperationContext();
+
+//		CREATE
+		Folder folder = mock(FolderImpl.class);
+		doReturn(cmisObject).when(folder).createDocument(anyMap(), any(ContentStreamImpl.class), any(VersioningState.class));
+		doReturn(folder).when(cmisSession).getRootFolder();
+
+//		FIND
+		ItemIterable<QueryResult> query = new EmptyItemIterable<QueryResult>();
+		doReturn(query).when(cmisSession).query(anyString(), anyBoolean(), any(OperationContext.class));
+
+		try {
+			doReturn(cmisSession).when(sender).getSession(any(ParameterResolutionContext.class));
+		} catch (SenderException e) {
+			//Since we stub the entire session it won't throw exceptions
+		}
+
+		return sender;
+	}
+
+	@Test
+	public void configure() throws ConfigurationException, SenderException, TimeOutException {
+		sender.setBindingType(bindingType);
+		sender.setAction(action);
+		sender.configure();
+	}
+
+	@Test
+	public void sendMessage() throws ConfigurationException, SenderException, TimeOutException {
+		configure();
+
+		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
+
+		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc);
+		assertEqualsIgnoreRN(expectedResult, actualResult);
+	}
+}

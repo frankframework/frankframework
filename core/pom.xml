@@ -31,6 +31,10 @@
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-api</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-simple</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -119,6 +123,11 @@
 				<groupId>commons-validator</groupId>
 				<artifactId>commons-validator</artifactId>
 				<version>1.4.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sendgrid</groupId>
+			<artifactId>sendgrid-java</artifactId>
+			<version>4.3.0</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-fileupload</groupId>

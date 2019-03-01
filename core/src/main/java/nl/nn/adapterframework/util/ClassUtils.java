@@ -115,8 +115,6 @@ public class ClassUtils {
 	 * Get a resource-URL from a ClassLoader
 	 * @param classLoader to retrieve the file from
 	 * @param resource name of the resource you are trying to fetch the URL from
-	 * @param getFileFromFilesystem specifies if when the file can't be found 
-	 * on the classpath, (and begins with 'file://' it can be retrieved from the filesystem instead.
 	 * @return URL of the resource or null if it can't be not found
 	 */
 	static public URL getResourceURL(ClassLoader classLoader, String resource, String allowedProtocols) {

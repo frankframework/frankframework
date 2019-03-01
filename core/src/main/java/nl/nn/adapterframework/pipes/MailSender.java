@@ -66,7 +66,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * @author Johan Verrips/Gerrit van Brakel
  * @deprecated Please replace with nl.nn.adapterframework.senders.MailSender
  */
-public class MailSender extends nl.nn.adapterframework.senders.MailSender {
+public class MailSender extends nl.nn.adapterframework.senders.MailSenderOld {
 
 	public void configure() throws ConfigurationException {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
