@@ -91,17 +91,14 @@ public class ParameterResolutionContext {
 	}
 
 	/**
-	 * @param p
-	 * @return value as a <link>ParameterValue<link> object
-	 * @throws IbisException
+	 * Get value as a <link>ParameterValue<link> object
 	 */
 	private ParameterValue getValue(ParameterValueList alreadyResolvedParameters, Parameter p) throws ParameterException {
 		return new ParameterValue(p, p.getValue(alreadyResolvedParameters, this));
 	}
 	
 	/**
-	 * @param parameters
-	 * @return arraylist of <link>ParameterValue<link> objects
+	 * This method returns an array list of <link>ParameterValue<link> objects
 	 */
 	public ParameterValueList getValues(ParameterList parameters) throws ParameterException {
 		if (parameters == null)
@@ -137,8 +134,7 @@ public class ParameterResolutionContext {
 	}
 
 	/**
-	 * @param parameters
-	 * @return map of value objects
+	 * This method returns a Map of value objects
 	 */
 	public Map<String,Object> getValueMap(ParameterList parameters) throws ParameterException {
 		if (parameters==null) {
@@ -185,13 +181,13 @@ public class ParameterResolutionContext {
 	}
 
 	/**
-	 * @return the (possibly xml formatted) input message
+	 * This method returns (possibly xml formatted) input message
 	 */
 	public String getInput() {
 		return input;
 	}
 	/**
-	 * @param input the (xml formatted) input message
+	 * This method sets as input, the (xml formatted) input message
 	 */
 	public void setInput(String input) {
 		this.input = input;
@@ -199,7 +195,7 @@ public class ParameterResolutionContext {
 	}
 
 	/**
-	 * @return hashtable with session variables
+	 * This method retyy hashtable with session variables
 	 */
 	public IPipeLineSession getSession() {
 		return session;

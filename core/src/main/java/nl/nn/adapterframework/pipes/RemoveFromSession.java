@@ -49,8 +49,7 @@ import org.apache.commons.lang.StringUtils;
 	}
     
 	/**
-     * checks wether the proper forward is defined.
-     * @throws ConfigurationException
+     * Checks whether the proper forward is defined.
      */
     public void configure() throws ConfigurationException {
 	    super.configure();
@@ -98,14 +97,14 @@ public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeR
 	return new PipeRunResult(getForward(), result);
 }
 /**
- * The name of the key in the <code>PipeLineSession</code> to store the input in
+ * This method gets the name of the key in the <code>PipeLineSession</code> to store the input in
  * {@link IPipeLineSession pipeLineSession}
  */
 public String getSessionKey() {
 	return sessionKey;
 }
 /**
- * The name of the key in the <code>PipeLineSession</code> to store the input in
+ * This method sets the name of the key in the <code>PipeLineSession</code> to store the input in
  * @see IPipeLineSession
  * 
  * @param newSessionKey String

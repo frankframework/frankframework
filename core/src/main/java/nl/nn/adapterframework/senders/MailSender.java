@@ -226,9 +226,7 @@ public class MailSender extends SenderWithParametersBase {
 	}
 
 	/**
-	 * Create a <code>Session</code> and <code>Transport</code> to the
-	 * smtp host.
-	  * @throws SenderException
+	 * Create a <code>Session</code> and <code>Transport</code> to the smtp host.
 	 */
 	public void open() throws SenderException {
 		try {

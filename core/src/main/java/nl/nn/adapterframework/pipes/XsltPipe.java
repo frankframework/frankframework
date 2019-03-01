@@ -62,7 +62,6 @@ public class XsltPipe extends FixedForwardPipe {
 	/**
 	 * The <code>configure()</code> method instantiates a transformer for the specified
 	 * XSL. If the stylesheetname cannot be accessed, a ConfigurationException is thrown.
-	 * @throws ConfigurationException
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
@@ -101,10 +100,6 @@ public class XsltPipe extends FixedForwardPipe {
 //		return new ParameterResolutionContext(input, session, isNamespaceAware());
 //	}
 
-	/**
-	 * @param input  
-	 * @param session  
-	 */
 	protected String getInputXml(Object input, IPipeLineSession session) throws TransformerException {
 		return (String)input;
 	}
@@ -191,7 +186,7 @@ public class XsltPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * The name of the key in the <code>PipeLineSession</code> to store the input in
+	 * This method sets the name of the key in the <code>PipeLineSession</code> to store the input in
 	 * @see IPipeLineSession
 	 */
 	public void setSessionKey(String newSessionKey) {

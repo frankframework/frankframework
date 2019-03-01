@@ -67,7 +67,6 @@ public class XsltSender extends SenderWithParametersBase {
 	/**
 	 * The <code>configure()</code> method instantiates a transformer for the specified
 	 * XSL. If the stylesheetname cannot be accessed, a ConfigurationException is thrown.
-	 * @throws ConfigurationException
 	 */
 	@Override
 	public void configure() throws ConfigurationException {

@@ -50,9 +50,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 	private boolean replaceNonXmlChars = true;
 	private boolean useCdataSection = true;
 	
-	/** 
-	 * @see nl.nn.adapterframework.core.IPipe#configure()
-	 */
+
 	public void configure() throws ConfigurationException {
 		super.configure();
 
@@ -63,7 +61,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 	
 	
 	/** 
-* @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
+	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
 	 */
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		if (isSplitLines() && input != null) {
@@ -109,14 +107,14 @@ public class Text2XmlPipe extends FixedForwardPipe {
 	}
 	
 	/**
-	 * @return the xml tag to encapsulate the text in
+	 * This method returns the xmltag to encapsulate the text in.
 	 */
 	public String getXmlTag() {
 		return xmlTag;
 	}
 
 	/**
-	 * @param xmlTag
+	 * This method sets the xmltag
 	 */
 	@IbisDoc({"the xml tag to encapsulate the text in", ""})
 	public void setXmlTag(String xmlTag) {

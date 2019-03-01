@@ -93,7 +93,7 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 	}
 
 	/**
-	 * return the Parameters
+	 * This method returns a ParameterList
 	 */
 	public ParameterList getParameterList() {
 		return paramList;

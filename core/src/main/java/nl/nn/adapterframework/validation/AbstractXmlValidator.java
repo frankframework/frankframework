@@ -269,8 +269,8 @@ public abstract class AbstractXmlValidator {
 	}
 
     /**
+     * This method sets schemas provider.
      * @since 5.0
-     * @param schemasProvider
      */
 	public void setSchemasProvider(SchemasProvider schemasProvider) {
 		this.schemasProvider = schemasProvider;

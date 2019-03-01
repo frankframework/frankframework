@@ -43,14 +43,14 @@ public class ParameterValue {
 	}
 	
 	/**
-	 * @return the type description of the parameter
+	 * This method returns the description of the parameter
 	 */
 	public Parameter getDefinition() {
 		return definition;
 	}
 
 	/**
-	 * @return the value
+	 * This method return the value of the parameter
 	 */
 	public Object getValue() {
 		return value;
@@ -61,7 +61,7 @@ public class ParameterValue {
 	}
 
 	/**
-	 * @param value
+	 * This method sets value for the parameter
 	 */
 	public void setValue(Object value) {
 		this.value = value;

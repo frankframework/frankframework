@@ -115,7 +115,6 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	}
 	/**
 	 * Change the order of the characters in a <code>String</code>
-	 * @param input
 	 */
 	protected String garbleString(String input){
 		List clist=new Vector();
@@ -140,7 +139,6 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * @param b
 	 */
 	@IbisDoc({"whether the securerandom algorithm is to be used (slower)", "true"})
 	public void setUseSecureRandom(boolean b) {
