@@ -49,9 +49,8 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 
 	private String bucketName = "iaf.s3sender.ali.test";
 	private String bucketNameTobeCreatedAndDeleted = "bucket-name-tobe-created-and-deleted";
-	AmazonS3FileSystem s3;
-	AmazonS3 s3Client;
-	AmazonS3FileSystemSender s3FileSystemSender;
+	private AmazonS3 s3Client;
+	private AmazonS3FileSystemSender s3FileSystemSender;
 	private int waitMilis = 1000;
 
 	@Override
@@ -75,7 +74,7 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 				.withRegion(Regions.EU_WEST_1.getName()).withCredentials(new AWSStaticCredentialsProvider(awsCreds));
 
 		s3Client = s3ClientBuilder.build();
-		s3 = new AmazonS3FileSystem();
+		AmazonS3FileSystem s3 = new AmazonS3FileSystem();
 		s3.setAccessKey(accessKey);
 		s3.setSecretKey(secretKey);
 		s3.setBucketName(bucketName);

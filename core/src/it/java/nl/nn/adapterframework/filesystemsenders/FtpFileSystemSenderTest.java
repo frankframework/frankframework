@@ -17,7 +17,7 @@ import nl.nn.adapterframework.ftp.FtpSession;
 
 public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFileSystem> {
 
-	FtpFileSystem ffs = new FtpFileSystem();
+	private FtpFileSystem ffs = new FtpFileSystem();
 
 	private String username = "";
 	private String password = "";

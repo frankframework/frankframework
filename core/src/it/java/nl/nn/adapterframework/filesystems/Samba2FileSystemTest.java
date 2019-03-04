@@ -38,7 +38,7 @@ public class Samba2FileSystemTest extends FileSystemTest<String, IFileSystemBase
 	private String domain = "";
 	private DiskShare client;
 	private Session session;
-	Connection connection;
+	private Connection connection;
 
 	@Before
 	@Override

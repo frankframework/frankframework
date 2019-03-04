@@ -136,7 +136,7 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 
 		String name = ifs.getName(f);
 		fileXml.addAttribute("name", name);
-		if (!name.equals(".") && !name.equals("..")) {
+		if (!".".equals(name) && !"..".equals(name)) {
 			boolean isFolder = ifs.isFolder(f);
 			long fileSize = ifs.getFileSize(f, isFolder);
 			fileXml.addAttribute("size", "" + fileSize);

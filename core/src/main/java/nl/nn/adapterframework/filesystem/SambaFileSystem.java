@@ -84,6 +84,7 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 
 	@Override
 	public void close() {
+		// Automatically closes
 	}
 
 	@Override

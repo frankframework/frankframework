@@ -274,13 +274,13 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 	private class FTPFilePathIterator implements Iterator<FTPFile> {
 
 		private FTPFile files[];
-		int i = 0;
+		private int i = 0;
 
 		FTPFilePathIterator(FTPFile files[]) {
 			Vector<FTPFile> fList = new Vector<FTPFile>();
 			for (int i = 0; i < files.length; i++) {
 				String filename = files[i].getName();
-				if (!filename.equals(".") && !filename.equals("..")) {
+				if (!".".equals(filename) && !"..".equals(filename)) {
 					fList.addElement(files[i]);
 				}
 			}
@@ -304,7 +304,7 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 			try {
 				deleteFile(files[i++]);
 			} catch (FileSystemException e) {
-				throw new RuntimeException(e);
+				System.err.println(e);
 			}
 		}
 	}

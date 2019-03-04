@@ -31,8 +31,8 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	private boolean accelerateModeEnabled = false; // this may involve some extra costs
 	private boolean forceGlobalBucketAccessEnabled = false;
 	private String bucketName = "iaf.s3sender.ali.test";
-	AmazonS3FileSystem s3;
-	AmazonS3 s3Client;
+	private AmazonS3FileSystem s3;
+	private AmazonS3 s3Client;
 
 	private int waitMilis = 1000;
 

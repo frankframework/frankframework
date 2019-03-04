@@ -27,6 +27,9 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	public String DIR1 = "testDirectory/";
 	public String DIR2 = "testDirectory2/";
 
+	protected FS fileSystem;
+	private long waitMilis = 0;
+
 	protected abstract FS getFileSystem() throws ConfigurationException;
 
 	protected abstract boolean _fileExists(String filename) throws Exception;
@@ -42,9 +45,6 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	protected abstract void _createFolder(String filename) throws Exception;
 
 	protected abstract void _deleteFolder(String folderName) throws Exception;
-
-	protected FS fileSystem;
-	private long waitMilis = 0;
 
 	@Before
 	public void setup() throws IOException, ConfigurationException, FileSystemException {
