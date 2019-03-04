@@ -207,7 +207,7 @@ public class Samba2FileSystem implements IFileSystem<String> {
 	}
 
 	@Override
-	public void deleteFile(String f) throws FileSystemException {
+	public void deleteFile(String f) {
 		SmbClient.getDiskShare().rm(f);
 
 	}
@@ -393,6 +393,11 @@ public class Samba2FileSystem implements IFileSystem<String> {
 		@Override
 		public String next() {
 			return files[i++];
+		}
+
+		@Override
+		public void remove() {
+			deleteFile(files[i++]);
 		}
 	}
 }

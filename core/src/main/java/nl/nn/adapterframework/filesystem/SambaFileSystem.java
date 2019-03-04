@@ -240,6 +240,15 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 		public SmbFile next() {
 			return files[i++];
 		}
+
+		@Override
+		public void remove() {
+			try {
+				deleteFile(files[i++]);
+			} catch (FileSystemException e) {
+				System.err.println(e);
+			}
+		}
 	}
 
 	@Override
