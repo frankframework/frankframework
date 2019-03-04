@@ -1,4 +1,7 @@
-package nl.nn.adapterframework.senders;
+package nl.nn.adapterframework.filesystemsenders;
+
+import nl.nn.adapterframework.senders.IFileSystemSender;
+import nl.nn.adapterframework.senders.SambaSenderOld;
 
 public class SambaSenderTest extends SambaFileSystemSenderTest {
 

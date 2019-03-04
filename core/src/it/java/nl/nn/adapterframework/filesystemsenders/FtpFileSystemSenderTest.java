@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.senders;
+package nl.nn.adapterframework.filesystemsenders;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -118,7 +118,6 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 				super.close();
 				try {
 					FTPConnection.getClient().completePendingCommand();
-					System.err.println(FTPConnection.getClient().getReplyString());
 				} catch (FileSystemException e) {
 					System.err.println(e);
 				}

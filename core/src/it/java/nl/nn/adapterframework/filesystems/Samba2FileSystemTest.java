@@ -1,7 +1,5 @@
-package nl.nn.adapterframework.senders;
+package nl.nn.adapterframework.filesystems;
 
-import java.io.FilterInputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -24,33 +22,40 @@ import com.hierynomus.smbj.SMBClient;
 import com.hierynomus.smbj.auth.AuthenticationContext;
 import com.hierynomus.smbj.connection.Connection;
 import com.hierynomus.smbj.session.Session;
-import com.hierynomus.smbj.share.Directory;
 import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.filesystem.FileSystemException;
+import nl.nn.adapterframework.filesystem.IFileSystemBase;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 
-public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Samba2FileSystem> {
+public class Samba2FileSystemTest extends FileSystemTest<String, IFileSystemBase<String>> {
 
-	protected String shareName = "Share";
-	protected String username = "";
-	protected String password = "";
-	protected String domain = "";
-	private DiskShare client = null;
-	private Session session = null;
-	private Connection connection = null;
-	private SMBClient smbClient = null;
-	private int waitMilis = 0;
+	private String shareName = "Shared";
+	private String username = "";
+	private String password = "";
+	private String domain = "";
+	private DiskShare client;
+	private Session session;
+	Connection connection;
 
 	@Before
 	@Override
 	public void setup() throws IOException, ConfigurationException, FileSystemException {
 		super.setup();
-		setWaitMilis(waitMilis);
+		@SuppressWarnings("resource")
+		SMBClient smbClient = new SMBClient();
+
 		AuthenticationContext auth = new AuthenticationContext(username, password.toCharArray(), domain);
-		open(auth);
+
+		try {
+			connection = smbClient.connect(domain);
+			session = connection.authenticate(auth);
+			client = (DiskShare) session.connectShare(shareName);
+		} catch (IOException e) {
+			throw new FileSystemException("Cannot connect to samba server", e);
+		}
 	}
 
 	@After
@@ -64,30 +69,10 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 		if (connection != null) {
 			connection.close();
 		}
-
-	}
-
-	public void open(AuthenticationContext auth) throws FileSystemException {
-		if (smbClient == null) {
-			smbClient = new SMBClient();
-		}
-		try {
-			if (connection == null) {
-				connection = smbClient.connect(domain);
-			}
-			if (session == null) {
-				session = connection.authenticate(auth);
-			}
-			if (client == null) {
-				client = (DiskShare) session.connectShare(shareName);
-			}
-		} catch (IOException e) {
-			throw new FileSystemException("Cannot connect to samba server", e);
-		}
 	}
 
 	@Override
-	protected Samba2FileSystem getFileSystem() throws ConfigurationException {
+	protected IFileSystemBase<String> getFileSystem() throws ConfigurationException {
 		Samba2FileSystem fileSystem = new Samba2FileSystem();
 		fileSystem.setDomain(domain);
 		fileSystem.setPassword(password);
@@ -100,6 +85,7 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 	@Override
 	protected boolean _fileExists(String filename) throws Exception {
 		try {
+
 			return client.fileExists(filename);
 		} catch (SMBApiException e) {
 			if (e.getStatus().equals(NtStatus.STATUS_DELETE_PENDING))
@@ -120,19 +106,9 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 		createOptions.add(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE);
 		Set<AccessMask> accessMask = new HashSet<AccessMask>(EnumSet.of(AccessMask.GENERIC_ALL));
 
-		final File file = client.openFile(filename, accessMask, null, SMB2ShareAccess.ALL,
+		File file = client.openFile(filename, accessMask, null, SMB2ShareAccess.ALL,
 				SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
-
-		FilterOutputStream fos = new FilterOutputStream(file.getOutputStream()) {
-
-			@Override
-			public void close() throws IOException {
-				super.close();
-				file.close();
-			}
-
-		};
-		return fos;
+		return file.getOutputStream();
 	}
 
 	@Override
@@ -141,16 +117,10 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 		accessMask.add(AccessMask.GENERIC_READ);
 		Set<SMB2ShareAccess> shareAccess = new HashSet<SMB2ShareAccess>();
 		shareAccess.addAll(SMB2ShareAccess.ALL);
-		final File file;
+		File file;
 		file = client.openFile(filename, accessMask, null, shareAccess, SMB2CreateDisposition.FILE_OPEN, null);
-		FilterInputStream fis = new FilterInputStream(file.getInputStream()) {
-			@Override
-			public void close() throws IOException {
-				super.close();
-				file.close();
-			}
-		};
-		return fis;
+
+		return file.getInputStream();
 	}
 
 	@Override
@@ -159,9 +129,7 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 		accessMask.add(AccessMask.FILE_ADD_FILE);
 		Set<SMB2ShareAccess> shareAccess = new HashSet<SMB2ShareAccess>();
 		shareAccess.addAll(SMB2ShareAccess.ALL);
-		Directory dir = client.openDirectory(filename, accessMask, null, shareAccess,
-				SMB2CreateDisposition.FILE_OPEN_IF, null);
-		dir.close();
+		client.openDirectory(filename, accessMask, null, shareAccess, SMB2CreateDisposition.FILE_OPEN_IF, null);
 	}
 
 	@Override
@@ -170,7 +138,7 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 	}
 
 	@Override
-	protected void _deleteFolder(String folderName) {
+	protected void _deleteFolder(String folderName) throws Exception {
 		client.rmdir(folderName, true);
 	}
 
@@ -180,4 +148,5 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 	public void testAppendFile() throws Exception {
 		super.testAppendFile();
 	}
+
 }

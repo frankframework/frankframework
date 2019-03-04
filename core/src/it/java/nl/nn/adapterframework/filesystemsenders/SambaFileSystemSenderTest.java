@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.senders;
+package nl.nn.adapterframework.filesystemsenders;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -14,19 +14,18 @@ import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.filesystem.SambaFileSystem;
 
 /**
- *  To run this ignore should be removed if all fields are filled.
  *  
  * @author alisihab
  *
  */
 
 public class SambaFileSystemSenderTest extends FileSystemSenderTest<SmbFile, SambaFileSystem> {
-	protected String shareName = "Shared"; // the path of smb network must start with "smb://"
+	protected String shareName = "Shared";
 	protected String username = "";
 	protected String password = "";
 	protected String domain = "localhost";
 	private SmbFile context;
-	protected String share = "smb://" + domain + "/Users/alisihab/Desktop/" + shareName + "/";
+	protected String share = "smb://" + domain + "" + shareName + "/"; // the path of smb network must start with "smb://"
 	private int waitMilis = 0;
 
 	@Override

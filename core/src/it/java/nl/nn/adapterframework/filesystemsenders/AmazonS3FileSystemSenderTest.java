@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.senders;
+package nl.nn.adapterframework.filesystemsenders;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -35,6 +35,7 @@ import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
 import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.senders.AmazonS3FileSystemSender;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object, AmazonS3FileSystem> {

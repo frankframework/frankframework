@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.filesystems;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -17,6 +17,8 @@ import org.junit.Test;
 
 import liquibase.util.StreamUtil;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.filesystem.FileSystemException;
+import nl.nn.adapterframework.filesystem.IFileSystemBase;
 
 public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 
@@ -71,11 +73,16 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		return content;
 	}
 
+	/** 
+	 * Pause current thread. Since creating an object takes a bit time 
+	 * this method can be used to make sure object is created in the server.
+	 * Added for Amazon S3 sender. 
+	 */
 	public void waitForActionToFinish() {
 		try {
 			Thread.sleep(waitMilis);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+
 		}
 	}
 

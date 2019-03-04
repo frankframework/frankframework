@@ -31,6 +31,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.XmlBuilder;
 
+/**
+ * @author alisihab
+ *
+ */
 public class Samba2FileSystem implements IFileSystem<String> {
 
 	private String domain = null;

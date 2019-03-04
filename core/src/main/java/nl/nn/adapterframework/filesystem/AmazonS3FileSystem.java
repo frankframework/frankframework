@@ -574,12 +574,18 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 
 	@Override
 	public Date getModificationTime(S3Object f, boolean isFolder) throws FileSystemException {
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+		S3Object file;
+		if (s3Client.doesObjectExist(bucketName, f.getKey())) {
+			file = s3Client.getObject(bucketName, f.getKey());
+		} else {
+			// This sleep is to make sure that the object is to be present in the server.
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				throw new FileSystemException(e);
+			}
 		}
-		S3Object file = s3Client.getObject(bucketName, f.getKey());
+		file = s3Client.getObject(bucketName, f.getKey());
 		Date date = file.getObjectMetadata().getLastModified();
 		return date;
 	}

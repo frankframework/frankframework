@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.filesystems;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -10,10 +10,11 @@ import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.filesystem.FileSystemException;
+import nl.nn.adapterframework.filesystem.SambaFileSystem;
 
 /**
- *  To run this ignore should be removed if all fields are filled.
- *  
+ * 
  * @author alisihab
  *
  */

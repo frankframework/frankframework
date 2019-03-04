@@ -14,7 +14,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.filesystems;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -26,11 +26,11 @@ import org.junit.After;
 import org.junit.Before;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.filesystem.FtpFileSystem;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
 
 /**
- * To use this test class, set the local parameters and comment out the @Ignore tag.
  * 
  * @author Daniël Meyer
  *
@@ -41,7 +41,7 @@ public class FtpFileSystemTest extends FileSystemTest<FTPFile, FtpFileSystem> {
 	private String username = "";
 	private String password = "";
 	private String host = "";
-	private String remoteDirectory = "dummyFolder";
+	private String remoteDirectory = "";
 	private int port = 21;
 
 	private FtpSession referenceSession;

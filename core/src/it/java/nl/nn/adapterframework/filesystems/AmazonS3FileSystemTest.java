@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.filesystems;
 
 import java.io.FileNotFoundException;
 import java.io.FilterOutputStream;
@@ -20,6 +20,8 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
+import nl.nn.adapterframework.filesystem.FileSystemException;
 
 public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3FileSystem> {
 

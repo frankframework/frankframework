@@ -164,7 +164,6 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 	@Override
 	public OutputStream appendFile(FTPFile f) throws FileSystemException, IOException {
 		OutputStream outputStream = FTPConnection.getClient().appendFileStream(f.getName());
-		//		FTPConnection.getClient().completePendingCommand();
 		return completePendingCommand(outputStream);
 	}
 
