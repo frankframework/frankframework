@@ -19,16 +19,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 
 /**
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>Expression to evaluate</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>If specified, the result is put 
- * in the PipeLineSession under the specified key, and the result of this pipe will be 
- * the same as the input (the xml). If NOT specified, the result of the xpath expression 
- * will be the result of this pipe</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>

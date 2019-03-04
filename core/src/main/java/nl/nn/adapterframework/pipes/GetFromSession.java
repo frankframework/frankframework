@@ -18,6 +18,7 @@ package nl.nn.adapterframework.pipes;
 import java.util.Iterator;
 import java.util.Map;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -27,24 +28,9 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
- * Gets the contents of the {@link nl.nn.adapterframework.core.IPipeLineSession pipeLineSession} by a key specified by
+ * Gets the contents of the {@link IPipeLineSession pipeLineSession} by a key specified by
  * <code>{@link #setSessionKey(String) sessionKey}</code>.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> to retrieve the output message from</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setType(String) type}</td><td>
- * <ul>
- * 	<li><code>string</code>: renders the contents</li>
- * 	<li><code>map</code>: converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name="..."&gt;...&lt;/item&gt;&lt;item name="..."&gt;...&lt;/item&gt;&lt;/items&gt;)</li>
- * </ul>
- * </td><td>string</td></tr>
- * </table>
- * </p>
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
@@ -97,7 +83,7 @@ public class GetFromSession  extends FixedForwardPipe {
 	}
 
 	/**
-	 * The name of the key in the {@link nl.nn.adapterframework.core.IPipeLineSession pipeLineSession} to retrieve the input from
+	 * The name of the key in the {@link IPipeLineSession pipeLineSession} to retrieve the input from
 	 * @return name of the key
 	 */
 	public String getSessionKey() {
@@ -106,10 +92,11 @@ public class GetFromSession  extends FixedForwardPipe {
 
 	/**
 	 * The name of the key in the <code>PipeLineSession</code> to store the input in
-	 * @see nl.nn.adapterframework.core.IPipeLineSession
+	 * @see IPipeLineSession
 	 * 
 	 * @param sessionKey String
 	 */
+	@IbisDoc({"name of the key in the <code>pipelinesession</code> to retrieve the output message from", ""})
 	public void setSessionKey(String sessionKey) {
 		this.sessionKey = sessionKey;
 	}

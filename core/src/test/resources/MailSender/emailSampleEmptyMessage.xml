@@ -1,0 +1,15 @@
+<email>
+	<recipients>
+		<recipient name="name" type="cc">dummy</recipient>	<!--Required-->
+		<recipient name="name" type="to">dummy</recipient>
+	</recipients>
+	<from name="name">dummy</from>	<!--Required-->
+	<replyTo name="name">dummy</replyTo>
+	<subject>Mail handler check subject</subject>			<!--Required min Length 1 -->
+	<message></message>	<!--Required-->
+	<messageType>text/plain</messageType>	<!-- Required -->
+	<messageBase64>false</messageBase64>	<!-- Optional -->
+	<attachments>	<!-- either name or type should contain file extension-->
+		<attachment name="test.txt">This is a test file.</attachment>
+	</attachments>
+ </email>

@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -36,18 +37,6 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 /**
  * QuerySender that writes each row in a ResultSet to a file.
- * 
- * <p><b>Configuration </b><i>(where deviating from FixedQuerySender)</i><b>:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.jdbc.ResultSet2FileSender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setQuery(String) query}</td><td>query that returns a row to be processed. Must contain a message field (1) which is written to a file and optionally a status field (2) and a group field (3)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStatusFieldType(String) statusFieldType}</td><td>type of the optional status field which is set after the row is written to the file: timestamp</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFileNameSessionKey(String) fileNameSessionKey}</td><td>the session key that contains the name of the file to use</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAppend(boolean) append}</td><td>when set <code>true</code> and the file already exists, the resultset rows are written to the end of the file</td><td>false</td></tr>
- * <tr><td>{@link #setMaxRecordsSessionKey(String) maxRecordsSessionKey}</td><td>when set (and &gt;=0), this session key contains the maximum number of records which are processed. If <code>query</code> contains a group field (3), then also following records with the same group field value as the last record are processed</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
  * 
  * @author  Peter Leeuwenburgh
  */
@@ -155,6 +144,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		fos.write(eolArray);
 	}
 	
+	@IbisDoc({"type of the optional status field which is set after the row is written to the file: timestamp", ""})
 	public void setStatusFieldType(String statusFieldType) {
 		this.statusFieldType = statusFieldType;
 	}
@@ -162,6 +152,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		return statusFieldType;
 	}
 
+	@IbisDoc({"the session key that contains the name of the file to use", ""})
 	public void setFileNameSessionKey(String filenameSessionKey) {
 		this.fileNameSessionKey = filenameSessionKey;
 	}
@@ -169,6 +160,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		return fileNameSessionKey;
 	}
 
+	@IbisDoc({"when set <code>true</code> and the file already exists, the resultset rows are written to the end of the file", "false"})
 	public void setAppend(boolean b) {
 		append = b;
 	}
@@ -176,6 +168,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		return append;
 	}
 
+	@IbisDoc({"when set (and &gt;=0), this session key contains the maximum number of records which are processed. if <code>query</code> contains a group field (3), then also following records with the same group field value as the last record are processed", ""})
 	public void setMaxRecordsSessionKey(String maxRecordsSessionKey) {
 		this.maxRecordsSessionKey = maxRecordsSessionKey;
 	}

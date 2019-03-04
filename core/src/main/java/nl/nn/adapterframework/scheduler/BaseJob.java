@@ -30,7 +30,7 @@ public abstract class BaseJob implements Job {
     protected Logger log=LogUtil.getLogger(this);
 
 	public String getLogPrefix(JobExecutionContext context) {
-		String instName = context.getJobDetail().getName();
+		String instName = context.getJobDetail().getKey().getName();
 		return "Job ["+instName+"] ";
 	}
 

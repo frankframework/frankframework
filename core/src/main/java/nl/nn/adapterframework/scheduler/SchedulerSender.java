@@ -18,31 +18,22 @@ package nl.nn.adapterframework.scheduler;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 
 import org.apache.commons.lang.StringUtils;
+import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import static org.quartz.JobBuilder.*;
 
 /**
  * Registers a trigger in the scheduler so that the message is send to a javalistener
  * at a scheduled time.
- * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.scheduler.SchedulerSender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJavaListener(String) javaListener}</td><td>Java listener to be called when scheduler trigger fires</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCronExpressionPattern(String) cronExpressionPattern}</td><td>Expression that generates the cron trigger</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJobGroup(String) jobGroup}</td><td>Job group in which the new trigger is to be created (optional)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJobNamePattern(String) jobNamePattern}</td><td>Pattern that leads to the name of the registered trigger(optional)</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
- * 
+ *
  * @author John Dekker
  */
 public class SchedulerSender extends SenderWithParametersBase {
@@ -115,29 +106,40 @@ public class SchedulerSender extends SenderWithParametersBase {
 	/*
 	 * Schedule the job
 	 */
-	private void schedule(String jobName, String cronExpression, String correlationId, String message) throws Exception {
-		JobDetail jobDetail = new JobDetail(jobName, jobGroup, ServiceJob.class);
-		jobDetail.getJobDataMap().put(JAVALISTENER, javaListener);
-		jobDetail.getJobDataMap().put(MESSAGE, message);
-		jobDetail.getJobDataMap().put(CORRELATIONID, correlationId);
+	void schedule(String jobName, String cronExpression, String correlationId, String message) throws Exception {
+		
+		JobDataMap jobDataMap = new JobDataMap();
+		jobDataMap.put(JAVALISTENER, javaListener);
+		jobDataMap.put(MESSAGE, message);
+		jobDataMap.put(CORRELATIONID, correlationId);
+		
+		JobDetail jobDetail = newJob(ServiceJob.class)
+				.withIdentity(jobName, jobGroup)
+				.usingJobData(jobDataMap) 
+				.build();
+		
 		schedulerHelper.scheduleJob(jobDetail, cronExpression, -1, false);
 		if (log.isDebugEnabled()) {
 			log.debug("SchedulerSender ["+ getName() +"] has send job [" + jobName + "] to the scheduler");
 		}
 	}
 
+	@IbisDoc({"expression that generates the cron trigger", ""})
 	public void setCronExpressionPattern(String string) {
 		cronExpressionPattern = string;
 	}
 
+	@IbisDoc({"job group in which the new trigger is to be created (optional)", ""})
 	public void setJobGroup(String string) {
 		jobGroup = string;
 	}
 
+	@IbisDoc({"pattern that leads to the name of the registered trigger(optional)", ""})
 	public void setJobNamePattern(String string) {
 		jobNamePattern = string;
 	}
 
+	@IbisDoc({"java listener to be called when scheduler trigger fires", ""})
 	public void setJavaListener(String string) {
 		javaListener = string;
 	}

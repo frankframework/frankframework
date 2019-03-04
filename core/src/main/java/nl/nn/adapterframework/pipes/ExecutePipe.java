@@ -21,6 +21,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.ProcessUtil;
 
 import org.apache.commons.lang.StringUtils;
@@ -28,13 +29,6 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Executes a command.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setCommand(String) command}</td><td>The command to execute (if command and commandSessionKey are empty, the command is taken from the input of the pipe)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCommandSessionKey(String) commandSessionKey}</td><td>The session key that holds the command to execute</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
  * 
  * @author Jaco de Groot (***@dynasol.nl)
  * @deprecated please use CommandSender
@@ -67,6 +61,7 @@ public class ExecutePipe extends FixedForwardPipe {
 		}
 	}
 
+	@IbisDoc({"the command to execute (if command and commandsessionkey are empty, the command is taken from the input of the pipe)", ""})
 	public void setCommand(String command) {
 		this.command = command;
 	}
@@ -74,6 +69,7 @@ public class ExecutePipe extends FixedForwardPipe {
 		return command;
 	}
 
+	@IbisDoc({"the session key that holds the command to execute", ""})
 	public void setCommandSessionKey(String commandSessionKey) {
 		this.commandSessionKey = commandSessionKey;
 	}

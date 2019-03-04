@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang.StringUtils;
 
@@ -46,21 +47,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
 /**
  * Samba Sender: The standard Windows interoperability suite for Linux and Unix.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setAction(String) action}</td><td>possible values: delete, download, list, mkdir, rename, rmdir, upload</td><td>&nbsp;</td></tr>
- * 
- * <tr><td>{@link #setShare(String) share}</td><td>The destination, aka smb://xxx/yyy share</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setForce(boolean) force}</td><td>Used when creating folders or overwriting existing files (when renaming or moving)</td><td>false</td></tr>
- * 
- * <tr><td>{@link #setAuthDomain(String) domain}</td><td>in case the user account is bound to a domain</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUsername(String) username}</td><td>the smb share username</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPassword(String) password}</td><td>the smb share password</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for the smb share</td><td>&nbsp;</td></tr>
- * 
- * </table>
- * </p>
  * 
  * <p><b>Parameters:</b></p>
  * <p>The <code>upload</code> action requires the file parameter to be set which should contain the fileContent to upload in either Stream, Bytes or String format</p>
@@ -258,6 +244,7 @@ public class SambaSender extends SenderWithParametersBase {
 		return fileXml;
 	}
 
+	@IbisDoc({"the destination, aka smb://xxx/yyy share", ""})
 	public void setShare(String share) {
 		if(!share.endsWith("/")) share += "/";
 		this.share = share;
@@ -266,6 +253,7 @@ public class SambaSender extends SenderWithParametersBase {
 		return share;
 	}
 
+	@IbisDoc({"possible values: delete, download, list, mkdir, rename, rmdir, upload", ""})
 	public void setAction(String action) {
 		this.action = action.toLowerCase();
 	}
@@ -273,6 +261,7 @@ public class SambaSender extends SenderWithParametersBase {
 		return action;
 	}
 
+	@IbisDoc({"used when creating folders or overwriting existing files (when renaming or moving)", "false"})
 	public void setForce(boolean force) {
 		this.force = force;
 	}
@@ -280,6 +269,7 @@ public class SambaSender extends SenderWithParametersBase {
 		return force;
 	}
 
+	@IbisDoc({"in case the user account is bound to a domain", ""})
 	public void setAuthDomain(String domain) {
 		this.domain = domain;
 	}
@@ -287,6 +277,7 @@ public class SambaSender extends SenderWithParametersBase {
 		return domain;
 	}
 
+	@IbisDoc({"the smb share username", ""})
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -294,6 +285,7 @@ public class SambaSender extends SenderWithParametersBase {
 		return username;
 	}
 
+	@IbisDoc({"the smb share password", ""})
 	public void setPassword(String password) {
 		this.password = password;
 	}
@@ -301,6 +293,7 @@ public class SambaSender extends SenderWithParametersBase {
 		return password;
 	}
 
+	@IbisDoc({"alias used to obtain credentials for the smb share", ""})
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}

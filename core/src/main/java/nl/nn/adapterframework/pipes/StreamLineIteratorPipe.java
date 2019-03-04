@@ -23,19 +23,11 @@ import java.util.Map;
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.ReaderLineIterator;
 
 /**
  * Sends a message to a Sender for each line of its input, that must be an InputStream.
- * 
- * <p><b>Configuration </b><i>(where deviating from IteratingPipe)</i><b>:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.StreamLineIteratorPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCloseInputstreamOnExit(boolean) closeInputstreamOnExit}</td><td>when set to <code>false</code>, the inputstream is not closed after it has been used</td><td>true</td></tr>
- * <tr><td>{@link #setEndOfLineString(String) endOfLineString}</td><td>when set, each line has to end with this string. If the line doesn't end with this string next lines are added (including line separators) until the total line ends with the given string</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
  * 
  * @author  Gerrit van Brakel
  * @since   4.7
@@ -69,6 +61,7 @@ public class StreamLineIteratorPipe extends IteratingPipe {
 		return item;
 	}
 
+	@IbisDoc({"when set to <code>false</code>, the inputstream is not closed after it has been used", "true"})
 	public void setCloseInputstreamOnExit(boolean b) {
 		setCloseIteratorOnExit(b);
 	}
@@ -76,6 +69,7 @@ public class StreamLineIteratorPipe extends IteratingPipe {
 		return isCloseIteratorOnExit();
 	}
 
+	@IbisDoc({"when set, each line has to end with this string. if the line doesn't end with this string next lines are added (including line separators) until the total line ends with the given string", ""})
 	public void setEndOfLineString(String string) {
 		endOfLineString = string;
 	}

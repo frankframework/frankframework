@@ -9,7 +9,7 @@ Ibis AdapterFramework release notes
 7.3-B1
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.1...HEAD)
+[Commits](https://github.com/ibissource/iaf/compare/v7.2...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
 - Generate IbisDoc and XSD and support beautiful configuration xml. The XSD can be used for code completion of beautiful Ibis configurations in Eclipse
@@ -18,18 +18,28 @@ Ibis AdapterFramework release notes
 - Add heath endpoints for individual adapters and entire application
 - Add Google's V8 JavaScript engine
 - Use VizJs to generate flow diagrams
+- Improve 'error' handling in Show Security Items
+- Upgrade Ladybug Test Tool to version 2.0.7
+    - Make it possible to specify a transformation per report
+    - Fix selecting root node on refresh at some parts of tree of Test tab
+    - Return to previous active tab after closing tab
+    - Show Compare button after run in Test tab
+    - Display run result error (if any) on run in Test tab
+    - Fix error on selecting checkpoint with null message
+    - Fix error on selecting different stub strategy
+- Add ability to use nullvalues on cmis properties
 
 
 
 7.2
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.1-B4...v7.1)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.1)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/ibissource/iaf/compare/v7.1...v7.2)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.2)](https://travis-ci.org/ibissource/iaf)
 
 - Fix NPE in BatchFileTransformerPipe when using an IbisLocalSender
 - Various bugfixes en performance improvements in SOAPProviders (WebServiceListener)
-- Update to latest Ladybug Test Tool version
+- Upgrade Ladybug Test Tool to version 2.0.6
     - Prevent error on reselect node after Delete and Replace
     - Refresh after upload
     - Limit the use of special chars in normalized path
