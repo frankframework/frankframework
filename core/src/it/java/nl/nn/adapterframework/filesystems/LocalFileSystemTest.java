@@ -1,6 +1,8 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.filesystems;
 
 import java.io.File;
+
+import nl.nn.adapterframework.filesystem.LocalFileSystem;
 
 public class LocalFileSystemTest extends LocalFileSystemTestBase<File, LocalFileSystem> {
 

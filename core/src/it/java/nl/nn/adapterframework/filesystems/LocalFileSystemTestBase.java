@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.filesystems;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,7 +12,8 @@ import org.junit.Before;
 import org.junit.rules.TemporaryFolder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.filesystems.FileSystemTest;
+import nl.nn.adapterframework.filesystem.FileSystemException;
+import nl.nn.adapterframework.filesystem.IFileSystem;
 
 public abstract class LocalFileSystemTestBase<Ff, FS extends IFileSystem<Ff>>
 		extends FileSystemTest<Ff, FS> {
