@@ -184,12 +184,6 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 	}
 
 	@Override
-	public String getInfo(SmbFile f) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public boolean isFolder(SmbFile f) throws FileSystemException {
 		try {
 			return f.isDirectory();
@@ -397,6 +391,53 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 	}
 	public String getAuthAlias() {
 		return authAlias;
+	}
+
+	@Override
+	public void open() throws FileSystemException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void close() throws FileSystemException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void renameTo(SmbFile f, String destination) throws FileSystemException {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public long getFileSize(SmbFile f, boolean isFolder) throws FileSystemException {
+		try {
+			return f.length();
+		} catch (SmbException e) {
+			throw new FileSystemException(e);
+		}
+	}
+
+	@Override
+	public String getName(SmbFile f) throws FileSystemException {
+		return f.getName();
+	}
+
+	@Override
+	public String getCanonicalName(SmbFile f, boolean isFolder) throws FileSystemException {
+		return f.getCanonicalPath();
+	}
+
+	@Override
+	public Date getModificationTime(SmbFile f, boolean isFolder) throws FileSystemException {
+		return new Date(f.getLastModified());
+	}
+
+	@Override
+	public void augmentDirectoryInfo(XmlBuilder dirInfo, SmbFile file) {
+		dirInfo.addAttribute("name", file.getName());
+		
 	}
 
 }
