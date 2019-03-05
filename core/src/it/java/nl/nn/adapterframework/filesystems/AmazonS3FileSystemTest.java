@@ -31,7 +31,6 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	private boolean accelerateModeEnabled = false; // this may involve some extra costs
 	private boolean forceGlobalBucketAccessEnabled = false;
 	private String bucketName = "iaf.s3sender.ali.test";
-	private AmazonS3FileSystem s3;
 	private AmazonS3 s3Client;
 
 	private int waitMilis = 1000;
@@ -53,7 +52,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 				.withRegion(Regions.EU_WEST_1.getName()).withCredentials(new AWSStaticCredentialsProvider(awsCreds));
 
 		s3Client = s3ClientBuilder.build();
-		s3 = new AmazonS3FileSystem();
+		AmazonS3FileSystem s3 = new AmazonS3FileSystem();
 		s3.setAccessKey(accessKey);
 		s3.setSecretKey(secretKey);
 		s3.setBucketName(bucketName);
