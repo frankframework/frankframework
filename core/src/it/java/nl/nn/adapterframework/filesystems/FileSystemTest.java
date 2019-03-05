@@ -32,6 +32,12 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 
 	protected abstract FS getFileSystem() throws ConfigurationException;
 
+	/**
+	 * 
+	 * @param filename
+	 * @return
+	 * @throws Exception
+	 */
 	protected abstract boolean _fileExists(String filename) throws Exception;
 
 	protected abstract boolean _folderExists(String folderName) throws Exception;

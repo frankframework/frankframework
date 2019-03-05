@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.filesystems;
+package nl.nn.adapterframework.filesystem;
 
 import java.io.File;
 
