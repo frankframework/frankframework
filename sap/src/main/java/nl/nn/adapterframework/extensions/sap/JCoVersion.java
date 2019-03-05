@@ -47,13 +47,13 @@ public class JCoVersion {
 				ClassUtils.loadClass(JCO3_CLASS);
 				jcoVersion = 3;
 			} catch (ClassNotFoundException e) {
-				LOG.debug("Could not find JCo 3 class (" + JCO3_CLASS + "), switching back to JCo 2");
+				LOG.debug("Could not find JCo 3 class (" + JCO3_CLASS + "), switching back to JCo 2", e);
 				try {
 					ClassUtils.loadClass(JCO2_CLASS);
 					jcoVersion = 2;
 				} catch (ClassNotFoundException e2) {
 					errorMessage = "Could not find JCo 3 class (" + JCO3_CLASS + ") or JCo 2 class (" + JCO2_CLASS + ")";
-					LOG.error(errorMessage);
+					LOG.error(errorMessage, e2);
 				}
 			}
 			self=new JCoVersion();
