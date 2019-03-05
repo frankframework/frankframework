@@ -57,7 +57,7 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 			"	<includeAllowableActions>true</includeAllowableActions>\n" + 
 			"	<includePolicies>true</includePolicies>\n" + 
 			"	<includeAcl>true</includeAcl> </query>";
-	private final static String FIND_RESULT = "<cmis>  <rowset /></cmis>";
+	private final static String FIND_RESULT = "<cmis totalNumItems=\"0\">  <rowset /></cmis>";
 	private final static String FETCH_RESULT = "<cmis>  <properties>    "
 			+ "<property name=\"cmis:name\">dummy</property>    "
 			+ "<property name=\"project:number\" type=\"integer\">123456789</property>    "
@@ -72,19 +72,19 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
 				{ "atompub", "create", INPUT, "dummy_id" },
-				{ "atompub", "get", INPUT, "dummy_stream" },
+				{ "atompub", "get", INPUT, "" },
 				{ "atompub", "find", FIND_INPUT, FIND_RESULT },
 				{ "atompub", "update", INPUT, "dummy_id" },
 				{ "atompub", "fetch", INPUT, FETCH_RESULT },
 
 				{ "webservices", "create", INPUT, "dummy_id" },
-				{ "webservices", "get", INPUT, "dummy_stream" },
+				{ "webservices", "get", INPUT, "" },
 				{ "webservices", "find", FIND_INPUT, FIND_RESULT },
 				{ "webservices", "update", INPUT, "dummy_id" },
 				{ "webservices", "fetch", INPUT, FETCH_RESULT },
 
 				{ "browser", "create", INPUT, "dummy_id" },
-				{ "browser", "get", INPUT, "dummy_stream" },
+				{ "browser", "get", INPUT, "" },
 				{ "browser", "find", FIND_INPUT, FIND_RESULT },
 				{ "browser", "update", INPUT, "dummy_id" },
 				{ "browser", "fetch", INPUT, FETCH_RESULT },
