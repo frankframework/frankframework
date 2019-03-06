@@ -152,8 +152,7 @@ public class LocalFileSystem implements IFileSystem<File> {
 	}
 
 	@Override
-	public void augmentDirectoryInfo(XmlBuilder dirInfo, File f) {
-		dirInfo.addAttribute("name", f.getName());
+	public void augmentFileInfo(XmlBuilder fileInfo, File f) {
 	}
 
 	@Override

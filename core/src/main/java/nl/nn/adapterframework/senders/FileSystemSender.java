@@ -90,13 +90,12 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 			} else if (action.equalsIgnoreCase("list")) {
 				Iterator<F> fileList = ifs.listFiles();
 				int count = 0;
-				XmlBuilder dirXml = new XmlBuilder("directory");
+				XmlBuilder dirXml = getFileAsXmlBuilder(file, "directory");
 				while (fileList.hasNext()) {
 					F fileObject = fileList.next();
-					dirXml.addSubElement(getFileAsXmlBuilder(fileObject));
+					dirXml.addSubElement(getFileAsXmlBuilder(fileObject, "file"));
 					count++;
 				}
-				ifs.augmentDirectoryInfo(dirXml, file);
 				dirXml.addAttribute("count", count);
 
 				return dirXml.toXML();
@@ -117,7 +116,7 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 				out.write(fileBytes);
 				out.close();
 
-				return getFileAsXmlBuilder(file).toXML();
+				return getFileAsXmlBuilder(file, "file").toXML();
 			} else if (action.equalsIgnoreCase("mkdir")) {
 				ifs.createFolder(file);
 			} else if (action.equalsIgnoreCase("rmdir")) {
@@ -135,9 +134,9 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 		return correlationID;
 	}
 
-	public XmlBuilder getFileAsXmlBuilder(F f) throws FileSystemException {
+	public XmlBuilder getFileAsXmlBuilder(F f, String elementName) throws FileSystemException {
 		IFileSystem<F> ifs = getFileSystem();
-		XmlBuilder fileXml = new XmlBuilder("file");
+		XmlBuilder fileXml = new XmlBuilder(elementName);
 
 		String name = ifs.getName(f);
 		fileXml.addAttribute("name", name);
@@ -165,7 +164,7 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 				fileXml.addAttribute("modificationTime", time);
 			}
 		}
-
+		ifs.augmentFileInfo(fileXml, f);
 		return fileXml;
 	}
 
