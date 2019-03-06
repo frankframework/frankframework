@@ -460,32 +460,26 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 			}
 		}
 
-//		Document document = (Document) object;
-//		ContentStream contentStream = document.getContentStream();
-		
 		try {
-//			InputStream inputStream = contentStream.getStream();
 			if (isStreamResultToServlet()) {
 				HttpServletResponse response = (HttpServletResponse) prc
 						.getSession().get(IPipeLineSession.HTTP_RESPONSE_KEY);
 				
-				if(isGetDocumentContent()) {
-					Document document = (Document) object;
-					ContentStream contentStream = document.getContentStream();
-					InputStream inputStream = contentStream.getStream();
-					String contentType = contentStream.getMimeType();
-					if (StringUtils.isNotEmpty(contentType)) {
-						log.debug(getLogPrefix() + "setting response Content-Type header [" + contentType + "]");
-						response.setHeader("Content-Type", contentType);
-					}
-					String contentDisposition = "attachment; filename=\"" + contentStream.getFileName() + "\"";
-					log.debug(getLogPrefix() + "setting response Content-Disposition header [" + contentDisposition + "]");
-					response.setHeader("Content-Disposition", contentDisposition);
-					OutputStream outputStream;
-					outputStream = response.getOutputStream();
-					Misc.streamToStream(inputStream, outputStream);
-					log.debug(getLogPrefix() + "copied document content input stream [" + inputStream + "] to output stream [" + outputStream + "]");
+				Document document = (Document) object;
+				ContentStream contentStream = document.getContentStream();
+				InputStream inputStream = contentStream.getStream();
+				String contentType = contentStream.getMimeType();
+				if (StringUtils.isNotEmpty(contentType)) {
+					log.debug(getLogPrefix() + "setting response Content-Type header [" + contentType + "]");
+					response.setHeader("Content-Type", contentType);
 				}
+				String contentDisposition = "attachment; filename=\"" + contentStream.getFileName() + "\"";
+				log.debug(getLogPrefix() + "setting response Content-Disposition header [" + contentDisposition + "]");
+				response.setHeader("Content-Disposition", contentDisposition);
+				OutputStream outputStream;
+				outputStream = response.getOutputStream();
+				Misc.streamToStream(inputStream, outputStream);
+				log.debug(getLogPrefix() + "copied document content input stream [" + inputStream + "] to output stream [" + outputStream + "]");
 				
 				return "";
 			} else if (isGetProperties()) {
@@ -513,13 +507,10 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 
 				return cmisXml.toXML();
 			} else {
-				if(isGetDocumentContent()) {
-					Document document = (Document) object;
-					ContentStream contentStream = document.getContentStream();
-					InputStream inputStream = contentStream.getStream();
-					return Misc.streamToString(inputStream, null, false);
-				}
-				return "";
+				Document document = (Document) object;
+				ContentStream contentStream = document.getContentStream();
+				InputStream inputStream = contentStream.getStream();
+				return Misc.streamToString(inputStream, null, false);
 			}
 		} catch (IOException e) {
 			throw new SenderException(e);
@@ -571,15 +562,15 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		}		
 		InputStream inputStream = null;	
 		if (inputFromSessionKey instanceof InputStream) {
-			inputStream = (InputStream)inputFromSessionKey;
+			inputStream = (InputStream) inputFromSessionKey;
 		} else if (inputFromSessionKey instanceof byte[]) {
-			inputStream = new ByteArrayInputStream((byte[])inputFromSessionKey);
+			inputStream = new ByteArrayInputStream((byte[]) inputFromSessionKey);
 		} else if(inputFromSessionKey instanceof String){
 			inputStream = new ByteArrayInputStream(((String) inputFromSessionKey).getBytes());	
 		} else {
 			throw new SenderException("expected InputStream, ByteArray or String but got ["+inputFromSessionKey.getClass().getName()+"] instead");
 		}
-
+		
 		long fileLength = 0;
 		try {
 			fileLength = inputStream.available();

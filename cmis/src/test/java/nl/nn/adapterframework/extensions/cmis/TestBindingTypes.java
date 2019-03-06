@@ -72,19 +72,19 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
 				{ "atompub", "create", INPUT, "dummy_id" },
-				{ "atompub", "get", INPUT, "" },
+				{ "atompub", "get", INPUT, "dummy_stream" },
 				{ "atompub", "find", FIND_INPUT, FIND_RESULT },
 				{ "atompub", "update", INPUT, "dummy_id" },
 				{ "atompub", "fetch", INPUT, FETCH_RESULT },
 
 				{ "webservices", "create", INPUT, "dummy_id" },
-				{ "webservices", "get", INPUT, "" },
+				{ "webservices", "get", INPUT, "dummy_stream" },
 				{ "webservices", "find", FIND_INPUT, FIND_RESULT },
 				{ "webservices", "update", INPUT, "dummy_id" },
 				{ "webservices", "fetch", INPUT, FETCH_RESULT },
 
 				{ "browser", "create", INPUT, "dummy_id" },
-				{ "browser", "get", INPUT, "" },
+				{ "browser", "get", INPUT, "dummy_stream" },
 				{ "browser", "find", FIND_INPUT, FIND_RESULT },
 				{ "browser", "update", INPUT, "dummy_id" },
 				{ "browser", "fetch", INPUT, FETCH_RESULT },

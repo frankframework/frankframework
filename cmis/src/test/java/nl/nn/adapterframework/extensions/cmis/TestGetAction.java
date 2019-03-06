@@ -41,7 +41,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 			+ "<property name=\"project:lastModified\" type=\"datetime\">2019-02-26 16:31:15</property>"
 			+ "<property name=\"project:onTime\" type=\"boolean\">true</property></properties></cmis>";
 	
-	private final static String GET_RESULT_FOR_INPUT= "";
+	private final static String GET_RESULT_FOR_INPUT= "dummy_stream";
 	
 	private final static String GET_RESULT_TO_SERVLET= "";
 	
