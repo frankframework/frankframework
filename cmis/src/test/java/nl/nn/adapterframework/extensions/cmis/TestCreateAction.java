@@ -15,6 +15,7 @@ import org.apache.chemistry.opencmis.client.runtime.ObjectIdImpl;
 import org.apache.chemistry.opencmis.client.runtime.repository.ObjectFactoryImpl;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
+import org.apache.commons.codec.binary.Base64;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -115,7 +116,7 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 	public void fileContentFromSessionKeyAsString() throws ConfigurationException, SenderException, TimeOutException {
 		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
 		sender.setGetProperties(true);
-		session.put("fileContent", "some content here for test fileContent as String");
+		session.put("fileContent", new String(Base64.encodeBase64("some content here for test FileContent as String".getBytes())));
 		sender.setFileContentSessionKey("fileContent");
 		sender.setUseRootFolder(false);
 		configure();
@@ -149,7 +150,7 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 	public void fileStreamFromSessionKeyAsString() throws ConfigurationException, SenderException, TimeOutException {
 		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
 		sender.setGetProperties(true);
-		session.put("fis", "some content here for test FileStream as String");
+		session.put("fis", new String(Base64.encodeBase64("some content here for test FileStream as String".getBytes())));
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
 		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc);
@@ -181,7 +182,7 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 	@Test
 	public void fileStreamFromSessionKeyWithIllegalType() throws ConfigurationException, SenderException, TimeOutException, IOException {
 		exception.expect(SenderException.class);
-		exception.expectMessage("expected InputStream, ByteArray or String but got");
+		exception.expectMessage("expected InputStream, ByteArray or Base64-String but got");
 		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
 		sender.setGetProperties(true);
 		session.put("fis", 1);
