@@ -277,7 +277,7 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 	}
 
 	@Override
-	public void augmentDirectoryInfo(XmlBuilder dirInfo, SmbFile file) {
+	public void augmentFileInfo(XmlBuilder dirInfo, SmbFile file) {
 		dirInfo.addAttribute("name", file.getName());
 	}
 

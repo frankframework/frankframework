@@ -152,7 +152,7 @@ public class LocalFileSystem implements IFileSystem<File> {
 	}
 
 	@Override
-	public void augmentDirectoryInfo(XmlBuilder dirInfo, File f) {
+	public void augmentFileInfo(XmlBuilder dirInfo, File f) {
 	}
 
 	@Override

@@ -242,7 +242,7 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 	}
 
 	@Override
-	public void augmentDirectoryInfo(XmlBuilder dirInfo, FTPFile f) {
+	public void augmentFileInfo(XmlBuilder dirInfo, FTPFile f) {
 		dirInfo.addAttribute("user", f.getUser());
 		dirInfo.addAttribute("group", f.getGroup());
 		dirInfo.addAttribute("type", f.getType());

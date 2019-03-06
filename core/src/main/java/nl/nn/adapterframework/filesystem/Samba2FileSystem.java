@@ -222,7 +222,7 @@ public class Samba2FileSystem implements IFileSystem<String> {
 	}
 
 	@Override
-	public void augmentDirectoryInfo(XmlBuilder dirInfo, String f) {
+	public void augmentFileInfo(XmlBuilder dirInfo, String f) {
 		dirInfo.addAttribute("name", f);
 	}
 

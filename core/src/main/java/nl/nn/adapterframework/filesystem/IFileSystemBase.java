@@ -30,5 +30,5 @@ public interface IFileSystemBase<F> {
 	public String getCanonicalName(F f, boolean isFolder) throws FileSystemException;
 	public Date getModificationTime(F f, boolean isFolder) throws FileSystemException;
 
-	public void augmentDirectoryInfo(XmlBuilder dirInfo, F f);
+	public void augmentFileInfo(XmlBuilder dirInfo, F f);
 }

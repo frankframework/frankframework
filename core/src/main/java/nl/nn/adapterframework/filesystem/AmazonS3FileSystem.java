@@ -251,7 +251,7 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 	}
 
 	@Override
-	public void augmentDirectoryInfo(XmlBuilder dirXml, S3Object f) {
+	public void augmentFileInfo(XmlBuilder dirXml, S3Object f) {
 		dirXml.addAttribute("name", bucketName);
 	}
 
