@@ -11,5 +11,4 @@ public class LocalFileSystemTest extends LocalFileSystemTestBase<File,LocalFileS
 		return result;
 	}
 
-
 }

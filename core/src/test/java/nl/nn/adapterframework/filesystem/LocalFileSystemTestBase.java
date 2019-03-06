@@ -14,7 +14,7 @@ import org.junit.rules.TemporaryFolder;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.filesystem.IFileSystem;
-import nl.nn.adapterframework.filesystem.FileSystemTest;
+import nl.nn.adapterframework.filesystems.FileSystemTest;
 
 public abstract class LocalFileSystemTestBase<F, FS extends IFileSystem<F>>
 		extends FileSystemTest<F, FS> {
