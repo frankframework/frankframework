@@ -112,7 +112,7 @@ public class LocalFileSystem implements IFileSystem<File> {
 	}
 
 	@Override
-	public void renameTo(File f, String destination) {
+	public void renameTo(File f, String destination) throws FileSystemException {
 		File dest;
 
 		dest = new File(destination);
@@ -120,7 +120,7 @@ public class LocalFileSystem implements IFileSystem<File> {
 			if (isForce)
 				dest.delete();
 			else {
-				return;
+				throw new FileSystemException("Cannot rename file. Destination file already exits.");
 			}
 		}
 		f.renameTo(dest);
@@ -157,14 +157,18 @@ public class LocalFileSystem implements IFileSystem<File> {
 
 	@Override
 	public void open() {
-		// TODO Auto-generated method stub
+		// No Action is required
 
 	}
 
 	@Override
 	public void close() {
-		// TODO Auto-generated method stub
+		// No Action is required
 
+	}
+
+	public void setIsForce(boolean force) {
+		this.isForce = force;
 	}
 
 }

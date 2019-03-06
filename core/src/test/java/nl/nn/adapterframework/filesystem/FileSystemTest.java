@@ -28,7 +28,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	public String DIR2 = "testDirectory2/";
 
 	protected FS fileSystem;
-	private long waitMilis = 0;
+	private long waitMillis = 0;
 	/**
 	 * Returns the file system 
 	 * @return fileSystem
@@ -121,121 +121,105 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	 * Pause current thread. Since creating an object takes a bit time 
 	 * this method can be used to make sure object is created in the server.
 	 * Added for Amazon S3 sender. 
+	 * @throws FileSystemException 
 	 */
-	public void waitForActionToFinish() {
+	public void waitForActionToFinish() throws FileSystemException {
 		try {
-			Thread.sleep(waitMilis);
+			Thread.sleep(waitMillis);
 		} catch (InterruptedException e) {
-
+			throw new FileSystemException("Cannot pause the thread. Be aware that there may be timing issue to check files on the server.", e);
 		}
 	}
 
 	@Test
 	public void testExists() throws Exception {
-		//setup negative
 		String filename = "testExists" + FILE1;
+		
 		createFile(filename, "tja");
 		waitForActionToFinish();
-		//		// test
+		// test
 		assertTrue("Expected file[" + filename + "] to be present", _fileExists(filename));
-
 	}
 
 	@Test
 	public void testNotExists() throws Exception {
-		//setup negative
 		String filename = "testNotExists" + FILE1;
-		createFile(filename, "tja");
-		waitForActionToFinish();
+		
 		deleteFile(filename);
 		waitForActionToFinish();
-		//		// test
-		assertFalse("Expected file[" + filename + "] not to be present", _fileExists(filename));
-
-	}
-
-	@Test
-	public void testExistsContinue() throws Exception {
-		String filename = "testExistsContinue" + FILE1;
-		// setup positive
-		F file = fileSystem.toFile(filename);
-		createFile(filename, "tja");
-		waitForActionToFinish();
 		// test
-		testExistsContinueCheck(file, filename);
-
-	}
-
-	private void testExistsContinueCheck(F file, String filename) throws FileSystemException {
-		assertTrue("Expected file[" + filename + "] to be present", fileSystem.exists(file));
+		assertFalse("Expected file[" + filename + "] not to be present", _fileExists(filename));
 	}
 
 	@Test
 	public void testCreateNewFile() throws Exception {
 		String filename = "create" + FILE1;
 		String contents = "regeltje tekst";
+		
 		deleteFile(filename);
 		waitForActionToFinish();
+		
 		F file = fileSystem.toFile(filename);
 		OutputStream out = fileSystem.createFile(file);
-
 		PrintWriter pw = new PrintWriter(out);
 		pw.println(contents);
 		pw.close();
 		waitForActionToFinish();
+		// test
 		existsCheck(filename);
+		
 		String actual = readFile(filename);
+		// test
 		equalsCheck(contents.trim(), actual.trim());
 
 	}
 
 	private void equalsCheck(String content, String actual) {
-		try {
-			assertEquals(content, actual);
-		} catch (Exception e) {
-
-		}
+		assertEquals(content, actual);
 	}
 
 	@Test
 	public void testCreateOverwriteFile() throws Exception {
 		String filename = "overwrited" + FILE1;
+		
 		createFile(filename, "Eerste versie van de file");
 		waitForActionToFinish();
+		
 		String contents = "Tweede versie van de file";
-
 		F file = fileSystem.toFile(filename);
 		OutputStream out = fileSystem.createFile(file);
-
 		PrintWriter pw = new PrintWriter(out);
 		pw.println(contents);
 		pw.close();
 		waitForActionToFinish();
+		// test
 		existsCheck(filename);
 
 		String actual = readFile(filename);
+		// test
 		equalsCheck(contents.trim(), actual.trim());
 	}
 
 	private void existsCheck(String filename) throws Exception {
-		try {
-			assertTrue("Expected file [" + filename + "] to be present", _fileExists(filename));
-		} catch (Exception e) {
-			throw new Exception(e);
-		}
+		assertTrue("Expected file [" + filename + "] to be present", _fileExists(filename));
 	}
 
 	@Test
 	public void testTruncateFile() throws Exception {
 		String filename = "truncated" + FILE1;
+		
 		createFile(filename, "Eerste versie van de file");
 		waitForActionToFinish();
+		
 		F file = fileSystem.toFile(filename);
 		OutputStream out = fileSystem.createFile(file);
 		out.close();
 		waitForActionToFinish();
+		// test
 		existsCheck(filename);
+		
 		String actual = readFile(filename);
+		// test
 		equalsCheck("", actual.trim());
 	}
 
@@ -245,37 +229,44 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		String regel1 = "Eerste regel in de file";
 		String regel2 = "Tweede regel in de file";
 		String expected = regel1 + regel2;
+		
 		createFile(filename, regel1);
 		waitForActionToFinish();
+		
 		F file = fileSystem.toFile(filename);
 		OutputStream out = fileSystem.appendFile(file);
-
 		PrintWriter pw = new PrintWriter(out);
 		pw.println(regel2);
 		pw.close();
 		waitForActionToFinish();
+		// test
 		existsCheck(filename);
+
 		String actual = readFile(filename);
+		// test
 		equalsCheck(expected.trim(), actual.trim());
 	}
 
 	@Test
 	public void testDelete() throws Exception {
 		String filename = "tobeDeleted" + FILE1;
+		
 		createFile(filename, "maakt niet uit");
 		waitForActionToFinish();
+		// test
 		existsCheck(filename);
 
 		F file = fileSystem.toFile(filename);
 		fileSystem.deleteFile(file);
 		waitForActionToFinish();
+		// test
 		assertFalse("Expected file [" + filename + "] not to be present", _fileExists(filename));
 	}
 
 	public void testReadFile(F file, String expectedContents) throws IOException, FileSystemException {
 		InputStream in = fileSystem.readFile(file);
-
 		String actual = StreamUtil.getReaderContents(new InputStreamReader(in));
+		// test
 		equalsCheck(expectedContents.trim(), actual.trim());
 	}
 
@@ -283,13 +274,14 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	public void testRead() throws Exception {
 		String filename = "read" + FILE1;
 		String contents = "Tekst om te lezen";
+
 		createFile(filename, contents);
-
 		waitForActionToFinish();
-
+		// test
 		existsCheck(filename);
 
 		F file = fileSystem.toFile(filename);
+		// test
 		testReadFile(file, contents);
 	}
 
@@ -297,11 +289,12 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	public void testGetName() throws Exception {
 		String filename = "readName" + FILE1;
 		String contents = "Tekst om te lezen";
+		
 		createFile(filename, contents);
-
 		waitForActionToFinish();
+		
 		F file = fileSystem.toFile(filename);
-		waitForActionToFinish();
+		// test
 		assertEquals(filename, fileSystem.getName(file));
 	}
 
@@ -310,13 +303,17 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		String filename = "readModificationTime" + FILE1;
 		String contents = "Tekst om te lezen";
 		Date date = new Date();
+
 		createFile(filename, contents);
 		waitForActionToFinish();
+
 		F file = fileSystem.toFile(filename);
 		Date actual = fileSystem.getModificationTime(file, false);
 		long diff = actual.getTime() - date.getTime();
+
 		fileSystem.deleteFile(file);
 		waitForActionToFinish();
+		// test
 		assertFalse(diff > 10000);
 	}
 
@@ -324,12 +321,13 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	public void testListFile() throws Exception {
 		String contents1 = "maakt niet uit";
 		String contents2 = "maakt ook niet uit";
+		
 		createFile(FILE1, contents1);
 		createFile(FILE2, contents2);
 		waitForActionToFinish();
+		
 		Iterator<F> it = fileSystem.listFiles();
 		int count = 0;
-
 		// Count files
 		while (it.hasNext()) {
 			it.next();
@@ -341,6 +339,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 			assertTrue(it.hasNext());
 			it.next();
 		}
+		// test
 		assertFalse(it.hasNext());
 
 		deleteFile(FILE1);
@@ -352,6 +351,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 			assertTrue(it.hasNext());
 			it.next();
 		}
+		// test
 		assertFalse(it.hasNext());
 
 		deleteFile(FILE2);
@@ -363,11 +363,12 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 			assertTrue(it.hasNext());
 			it.next();
 		}
+		// test
 		assertFalse(it.hasNext());
 	}
 
-	public void setWaitMilis(long waitMilis) {
-		this.waitMilis = waitMilis;
+	public void setWaitMillis(long waitMillis) {
+		this.waitMillis = waitMillis;
 	}
 
 }
