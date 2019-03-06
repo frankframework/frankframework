@@ -59,7 +59,7 @@ public class Configuration {
     private List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
     private boolean unloadInProgressOrDone = false;
 
-	private final Map jobTable = new Hashtable(); // TODO useless synchronization ?
+	private final Map<String, JobDef> jobTable = new Hashtable<String, JobDef>(); // TODO useless synchronization ?
     private final List<JobDef> scheduledJobs = new ArrayList<JobDef>();
 
     private URL configurationURL;
@@ -156,24 +156,21 @@ public class Configuration {
 		return autoStart;
 	}
 
-    /**
-     * get a registered adapter by its name
-     * @param name  the adapter to retrieve
-     * @return IAdapter
-     */
-    @Deprecated
-    public IAdapter getRegisteredAdapter(String name) {
-        return adapterService.getAdapter(name);
-    }
+	/**
+	 * Get a registered adapter by its name through {@link AdapterService#getAdapter(String)}
+	 * @param name the adapter to retrieve
+	 * @return IAdapter
+	 */
+	public IAdapter getRegisteredAdapter(String name) {
+		return adapterService.getAdapter(name);
+	}
 
-    @Deprecated
 	public IAdapter getRegisteredAdapter(int index) {
 		return getRegisteredAdapters().get(index);
 	}
 
-    @Deprecated
 	public List<IAdapter> getRegisteredAdapters() {
-        return new ArrayList<IAdapter>(adapterService.getAdapters().values());
+		return new ArrayList<IAdapter>(adapterService.getAdapters().values());
 	}
 
 	public List<String> getSortedStartedAdapterNames() {
@@ -188,7 +185,7 @@ public class Configuration {
 		Collections.sort(startedAdapters, String.CASE_INSENSITIVE_ORDER);
 		return startedAdapters;
 	}
-    
+
     //Returns a sorted list of registered adapter names as an <code>Iterator</code>
     @Deprecated
     public Iterator<IAdapter> getRegisteredAdapterNames() {
