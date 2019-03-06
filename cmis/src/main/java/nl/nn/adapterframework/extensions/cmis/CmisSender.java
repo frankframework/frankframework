@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 - 2018 Nationale-Nederlanden
+   Copyright 2016 - 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.extensions.cmis;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -69,7 +68,6 @@ import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.client.api.SessionFactory;
 import org.apache.chemistry.opencmis.client.runtime.SessionFactoryImpl;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
-import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
@@ -272,7 +270,7 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 	private String defaultMediaType = "application/octet-stream";
 	private boolean streamResultToServlet = false;
 	private boolean getProperties = false;
-	private boolean getDocumentContent = false;
+	private boolean getDocumentContent = true;
 	private boolean useRootFolder = true;
 	private String resultOnNotFound;
 	private boolean keepSession = true;
@@ -441,9 +439,7 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		}
 	}
 
-	private String sendMessageForActionGet(String correlationID,
-			String message, ParameterResolutionContext prc)
-			throws SenderException, TimeOutException {
+	private String sendMessageForActionGet(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		if (StringUtils.isEmpty(message)) {
 			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
 		}
@@ -460,12 +456,12 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 			}
 		}
 
+		Document document = (Document) object;
+
 		try {
 			if (isStreamResultToServlet()) {
-				HttpServletResponse response = (HttpServletResponse) prc
-						.getSession().get(IPipeLineSession.HTTP_RESPONSE_KEY);
-				
-				Document document = (Document) object;
+				HttpServletResponse response = (HttpServletResponse) prc.getSession().get(IPipeLineSession.HTTP_RESPONSE_KEY);
+
 				ContentStream contentStream = document.getContentStream();
 				InputStream inputStream = contentStream.getStream();
 				String contentType = contentStream.getMimeType();
@@ -480,34 +476,32 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 				outputStream = response.getOutputStream();
 				Misc.streamToStream(inputStream, outputStream);
 				log.debug(getLogPrefix() + "copied document content input stream [" + inputStream + "] to output stream [" + outputStream + "]");
-				
+
 				return "";
-			} else if (isGetProperties()) {
+			}
+			else if (isGetProperties()) {
 				if(isGetDocumentContent()) {
-					Document document = (Document) object;
 					ContentStream contentStream = document.getContentStream();
 					InputStream inputStream = contentStream.getStream();
 					if (StringUtils.isNotEmpty(fileInputStreamSessionKey)) {
-						prc.getSession().put(getFileInputStreamSessionKey(),
-								inputStream);
+						prc.getSession().put(getFileInputStreamSessionKey(), inputStream);
 					} else {
 						byte[] bytes = Misc.streamToBytes(inputStream);
-						prc.getSession().put(getFileContentSessionKey(),
-								Base64.encodeBase64String(bytes));
+						prc.getSession().put(getFileContentSessionKey(), Base64.encodeBase64String(bytes));
 					}
 				}
-				
+
 				XmlBuilder cmisXml = new XmlBuilder("cmis");
 				XmlBuilder propertiesXml = new XmlBuilder("properties");
-				for (Iterator<Property<?>> it = object.getProperties().iterator(); it.hasNext();) {
+				for (Iterator<Property<?>> it = document.getProperties().iterator(); it.hasNext();) {
 					Property<?> property = (Property<?>) it.next();
 					propertiesXml.addSubElement(getPropertyXml(property));
 				}
 				cmisXml.addSubElement(propertiesXml);
 
 				return cmisXml.toXML();
-			} else {
-				Document document = (Document) object;
+			}
+			else {
 				ContentStream contentStream = document.getContentStream();
 				InputStream inputStream = contentStream.getStream();
 				return Misc.streamToString(inputStream, null, false);
@@ -546,31 +540,28 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		return propertyXml;
 	}
 
-	private String sendMessageForActionCreate(String correlationID,
-			String message, ParameterResolutionContext prc)
-			throws SenderException, TimeOutException {
-		String fileName = (String) prc.getSession()
-				.get(getFileNameSessionKey());
+	private String sendMessageForActionCreate(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+		String fileName = (String) prc.getSession().get(getFileNameSessionKey());
 
 		Object inputFromSessionKey;
 		if(StringUtils.isNotEmpty(fileInputStreamSessionKey)) {
-			inputFromSessionKey = prc.getSession().get(
-					getFileInputStreamSessionKey());
-		}else {
-			inputFromSessionKey = prc.getSession().get(
-					getFileContentSessionKey());
-		}		
+			inputFromSessionKey = prc.getSession().get(getFileInputStreamSessionKey());
+		}
+		else {
+			inputFromSessionKey = prc.getSession().get(getFileContentSessionKey());
+		}
 		InputStream inputStream = null;	
 		if (inputFromSessionKey instanceof InputStream) {
 			inputStream = (InputStream) inputFromSessionKey;
 		} else if (inputFromSessionKey instanceof byte[]) {
 			inputStream = new ByteArrayInputStream((byte[]) inputFromSessionKey);
-		} else if(inputFromSessionKey instanceof String){
-			inputStream = new ByteArrayInputStream(((String) inputFromSessionKey).getBytes());	
+		} else if(inputFromSessionKey instanceof String) {
+			byte[] bytes = Base64.decodeBase64((String) inputFromSessionKey);
+			inputStream = new ByteArrayInputStream(bytes);
 		} else {
-			throw new SenderException("expected InputStream, ByteArray or String but got ["+inputFromSessionKey.getClass().getName()+"] instead");
+			throw new SenderException("expected InputStream, ByteArray or Base64-String but got ["+inputFromSessionKey.getClass().getName()+"] instead");
 		}
-		
+
 		long fileLength = 0;
 		try {
 			fileLength = inputStream.available();
@@ -886,12 +877,12 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 
 		if (getBindingType().equalsIgnoreCase("atompub")) {
 			parameterMap.setAtomPubBindingUrl(getUrl());
-			parameterMap.put(SessionParameter.AUTH_SOAP_USERNAMETOKEN, true);
+			parameterMap.setUsernameTokenAuthentication(false);
 		} else if (getBindingType().equalsIgnoreCase("browser")) {
-			parameterMap.put(SessionParameter.AUTH_HTTP_BASIC, true);
 			parameterMap.setBrowserBindingUrl(getUrl());
+			parameterMap.setBasicAuthentication();
 		} else {
-			parameterMap.put(SessionParameter.AUTH_SOAP_USERNAMETOKEN, true);
+			parameterMap.setUsernameTokenAuthentication(false);
 			// OpenCMIS requires an entrypoint url (wsdl), if this url has been secured and is not publicly accessible,
 			// we can manually override this wsdl by reading it from the classpath.
 			//TODO: Does this work with any binding type?
