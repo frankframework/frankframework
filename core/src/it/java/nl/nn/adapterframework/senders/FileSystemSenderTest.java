@@ -15,7 +15,6 @@ import java.util.Iterator;
 import org.junit.Before;
 import org.junit.Test;
 
-import net.sf.saxon.functions.IndexOf;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.filesystem.FileSystemException;
@@ -23,7 +22,6 @@ import nl.nn.adapterframework.filesystem.IFileSystem;
 import nl.nn.adapterframework.filesystems.FileSystemTest;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.senders.FileSystemSender;
 
 public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends FileSystemTest<F, FS> {
 

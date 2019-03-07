@@ -55,21 +55,17 @@ public class Samba2FileSystem implements IFileSystem<String> {
 		private static Connection connection;
 		private static SMBClient client = null;
 
-		private SmbClient(AuthenticationContext auth, String domain, String shareName) throws FileSystemException {
-			client = new SMBClient();
-			try {
-				connection = client.connect(domain);
-				session = connection.authenticate(auth);
-				share = (DiskShare) session.connectShare(shareName);
-			} catch (IOException e) {
-				throw new FileSystemException("Cannot connect to samba server", e);
-			}
-		}
-
 		public static SmbClient getInstance(AuthenticationContext auth, String domain, String shareName)
 				throws FileSystemException {
 			if (smbClient == null) {
-				smbClient = new SmbClient(auth, domain, shareName);
+				client = new SMBClient();
+				try {
+					connection = client.connect(domain);
+					session = connection.authenticate(auth);
+					share = (DiskShare) session.connectShare(shareName);
+				} catch (IOException e) {
+					throw new FileSystemException("Cannot connect to samba server", e);
+				}
 			}
 			return smbClient;
 		}
