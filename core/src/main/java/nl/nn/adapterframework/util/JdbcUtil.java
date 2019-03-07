@@ -166,6 +166,12 @@ public class JdbcUtil {
             case Types.REF :
             case Types.STRUCT :
                 return "undefined";
+			case Types.BOOLEAN :
+			case Types.BIT :
+			{
+				boolean value = rs.getBoolean(colNum);
+				return Boolean.toString(value);
+			}
 			// return as specified date format
 			case Types.TIMESTAMP :
 			case Types.DATE :
@@ -177,12 +183,6 @@ public class JdbcUtil {
 						return new SimpleDateFormat(DATEFORMAT).format(rs.getDate(colNum));
 				}
 				catch (Exception e) {} //Do nothing it will handle the default..
-			}
-			case Types.BOOLEAN :
-			case Types.BIT :
-			{
-				boolean value = rs.getBoolean(colNum);
-				return Boolean.toString(value);
 			}
             default :
             {
@@ -996,8 +996,10 @@ public class JdbcUtil {
 	}
 
 	public static synchronized void resetJdbcProperties() {
-		jdbcProperties.clear();
-		jdbcProperties = null;
+		if(jdbcProperties != null) {
+			jdbcProperties.clear();
+			jdbcProperties = null;
+		}
 		retrieveJdbcPropertiesFromDatabase();
 	}
 
@@ -1215,6 +1217,12 @@ public class JdbcUtil {
 				statement.setNull(parameterIndex, Types.INTEGER);
 			} else {
 				statement.setInt(parameterIndex, (Integer) value);
+			}
+		} else if (Parameter.TYPE_BOOLEAN.equals(paramType)) {
+			if (value == null) {
+				statement.setNull(parameterIndex, Types.BOOLEAN);
+			} else {
+				statement.setBoolean(parameterIndex, (Boolean) value);
 			}
 		} else if (Parameter.TYPE_INPUTSTREAM.equals(paramType)) {
 			if (value instanceof FileInputStream) {
