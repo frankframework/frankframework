@@ -8,12 +8,14 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Iterator;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import net.sf.saxon.functions.IndexOf;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.filesystem.FileSystemException;
@@ -282,8 +284,9 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 		}
 
 		String[] resultArray = result.split("\"");
-		int resultCount = Integer.valueOf(resultArray[3]);
+		
+		int resultCount = Integer.valueOf(resultArray[Arrays.asList(resultArray).indexOf(" count=")+1]);
 		// test
-		assertEquals(resultCount, count);
+		assertEquals(count, resultCount);
 	}
 }

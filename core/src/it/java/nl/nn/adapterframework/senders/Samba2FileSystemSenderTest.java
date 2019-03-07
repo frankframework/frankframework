@@ -34,7 +34,7 @@ import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 
 public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Samba2FileSystem> {
 
-	protected String shareName = "Share";
+	protected String shareName = "Shared";
 	protected String username = "";
 	protected String password = "";
 	protected String domain = "";
@@ -174,10 +174,10 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 		client.rmdir(folderName, true);
 	}
 
-	@Ignore("Samba V2 does not support append in this library")
 	@Test
 	@Override
 	public void testAppendFile() throws Exception {
+		// ("Samba V2 does not support append in this library")
 		super.testAppendFile();
 	}
 }

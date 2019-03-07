@@ -13,15 +13,20 @@ import java.util.Date;
 import java.util.Iterator;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import liquibase.util.StreamUtil;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.filesystem.FileSystemException;
-import nl.nn.adapterframework.filesystem.IFileSystemBase;
+import nl.nn.adapterframework.filesystem.IFileSystem;
 
-public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
+public abstract class FileSystemTest<F, FS extends IFileSystem<F>> {
 
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
+	
 	public String FILE1 = "file1.txt";
 	public String FILE2 = "file2.txt";
 	public String DIR1 = "testDirectory/";
@@ -316,6 +321,73 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		// test
 		assertFalse(diff > 10000);
 	}
+	
+	@Test
+	public void testCreateAndRemoveFolder() throws Exception {
+		String folderName = "dummyFolder";
+		
+		_createFolder(folderName);
+		waitForActionToFinish();
+		
+		assertTrue(_folderExists(folderName));
+		
+		F f = fileSystem.toFile(folderName);
+		fileSystem.removeFolder(f);
+		waitForActionToFinish();
+		
+		assertFalse(_folderExists(folderName));
+	}
+	
+	@Test
+	public void testRenameTo() throws Exception {
+		String fileName = "fileTobeRenamed.txt";
+		
+		_createFile(fileName);
+		waitForActionToFinish();
+		
+		assertTrue(_fileExists(fileName));
+		String destination = "fileRenamed.txt";
+		
+		F f = fileSystem.toFile(fileName);
+		fileSystem.renameTo(f, destination);
+		waitForActionToFinish();
+		
+		assertTrue(_fileExists(destination));
+		assertFalse(_fileExists(fileName));
+	}
+	
+	@Test
+	public void testRemovingNonExistingDirectory() throws Exception {
+		exception.expectMessage("Directory does not exist.");
+		String filename = "nonExistingFolder";
+		if(_folderExists(filename)) {
+			_deleteFolder(filename);
+		}
+		F f = fileSystem.toFile(filename);
+		fileSystem.removeFolder(f);
+	}
+	
+	@Test
+	public void testCreateExistingFolder() throws Exception {
+		exception.expectMessage("Directory already exits.");
+		String folderName = "existingFolder";
+		
+		_createFolder(folderName);
+		waitForActionToFinish();
+		F f = fileSystem.toFile(folderName);
+		fileSystem.createFolder(f);
+	}
+	
+	@Test
+	public void testExistsMethod() throws Exception {
+		String fileName = "fileExists.txt";
+		
+		_createFile(fileName);
+		waitForActionToFinish();
+		F f = fileSystem.toFile(fileName);
+		
+		assertTrue(fileSystem.exists(f));
+	}
 
 	@Test
 	public void testListFile() throws Exception {
@@ -343,9 +415,11 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		assertFalse(it.hasNext());
 
 		deleteFile(FILE1);
-
+		
 		fileSystem.close();
+		waitForActionToFinish();
 		fileSystem.open();
+		
 		it = fileSystem.listFiles();
 		for (int i = 0; i < count - 1; i++) {
 			assertTrue(it.hasNext());
@@ -356,6 +430,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 
 		deleteFile(FILE2);
 		fileSystem.close();
+		waitForActionToFinish();
 		fileSystem.open();
 
 		it = fileSystem.listFiles();

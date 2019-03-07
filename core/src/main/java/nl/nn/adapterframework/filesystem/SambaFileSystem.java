@@ -31,6 +31,7 @@ import jcifs.smb.SmbFileFilter;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -152,13 +153,13 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 	public void deleteFile(SmbFile f) throws FileSystemException {
 		try {
 			if (!f.exists()) {
-				throw new FileSystemException("file not found");
+				throw new FileSystemException("File ["+f.getName()+"] not found");
 			}
 			if (f.isFile()) {
 				f.delete();
 			} else {
 				throw new FileSystemException(
-						"trying to remove [" + f.getName() + "] which is a directory instead of a file");
+						"Trying to remove [" + f.getName() + "] which is a directory instead of a file");
 			}
 		} catch (SmbException e) {
 			throw new FileSystemException(e);
@@ -247,7 +248,7 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 			try {
 				deleteFile(files[i++]);
 			} catch (FileSystemException e) {
-				System.err.println(e);
+				log.warn(e);
 			}
 		}
 	}
@@ -291,7 +292,8 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 	public String getDomain() {
 		return domain;
 	}
-
+	
+	@IbisDoc({ "in case the user account is bound to a domain", "" })
 	public void setDomain(String domain) {
 		this.domain = domain;
 	}
@@ -299,7 +301,8 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 	public String getUsername() {
 		return username;
 	}
-
+	
+	@IbisDoc({ "the smb share username", "" })
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -307,7 +310,8 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 	public String getPassword() {
 		return password;
 	}
-
+	
+	@IbisDoc({ "the smb share password", "" })
 	public void setPassword(String password) {
 		this.password = password;
 	}
@@ -315,37 +319,26 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 	public String getAuthAlias() {
 		return authAlias;
 	}
-
+	
+	@IbisDoc({ "alias used to obtain credentials for the smb share", "" })
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
-	}
-
-	public NtlmPasswordAuthentication getAuth() {
-		return auth;
-	}
-
-	public void setAuth(NtlmPasswordAuthentication auth) {
-		this.auth = auth;
 	}
 
 	public String getShare() {
 		return share;
 	}
 
+	@IbisDoc({ "the destination, aka smb://xxx/yyy share", "" })
 	public void setShare(String share) {
 		this.share = share;
 	}
-
+	
+	@IbisDoc({
+		"used when creating folders or overwriting existing files (when renaming or moving)",
+		"false" })
 	public void setForce(boolean force) {
 		isForce = force;
-	}
-
-	public SmbFile getSmbContext() {
-		return smbContext;
-	}
-
-	public void setSmbContext(SmbFile smbContext) {
-		this.smbContext = smbContext;
 	}
 
 }

@@ -90,16 +90,20 @@ public class LocalFileSystem implements IFileSystem<File> {
 	}
 
 	@Override
-	public void createFolder(File f) {
+	public void createFolder(File f) throws FileSystemException {
 		if (!f.exists()) {
 			f.mkdir();
+		}else {
+			throw new FileSystemException("Create directory for [" + f + "] has failed. Directory already exits.");
 		}
 	}
 
 	@Override
-	public void removeFolder(File f) {
+	public void removeFolder(File f) throws FileSystemException {
 		if (f.exists()) {
 			f.delete();
+		}else {
+			throw new FileSystemException("Remove directory for [" + f.getName() + "] has failed. Directory does not exist.");
 		}
 	}
 

@@ -9,7 +9,6 @@ import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.hierynomus.msdtyp.AccessMask;
@@ -27,12 +26,12 @@ import com.hierynomus.smbj.share.File;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.filesystem.FileSystemException;
-import nl.nn.adapterframework.filesystem.IFileSystemBase;
+import nl.nn.adapterframework.filesystem.IFileSystem;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 
-public class Samba2FileSystemTest extends FileSystemTest<String, IFileSystemBase<String>> {
+public class Samba2FileSystemTest extends FileSystemTest<String, IFileSystem<String>> {
 
-	private String shareName = "Shared";
+	private String share = "Shared";
 	private String username = "";
 	private String password = "";
 	private String domain = "";
@@ -52,7 +51,8 @@ public class Samba2FileSystemTest extends FileSystemTest<String, IFileSystemBase
 		try {
 			connection = smbClient.connect(domain);
 			session = connection.authenticate(auth);
-			client = (DiskShare) session.connectShare(shareName);
+			client = (DiskShare) session.connectShare(share);
+			
 		} catch (IOException e) {
 			throw new FileSystemException("Cannot connect to samba server", e);
 		}
@@ -72,13 +72,13 @@ public class Samba2FileSystemTest extends FileSystemTest<String, IFileSystemBase
 	}
 
 	@Override
-	protected IFileSystemBase<String> getFileSystem() throws ConfigurationException {
+	protected IFileSystem<String> getFileSystem() throws ConfigurationException {
 		Samba2FileSystem fileSystem = new Samba2FileSystem();
 		fileSystem.setDomain(domain);
 		fileSystem.setPassword(password);
 		fileSystem.setUsername(username);
-		fileSystem.setShare(shareName);
-
+		fileSystem.setShare(share);
+		
 		return fileSystem;
 	}
 
@@ -134,7 +134,13 @@ public class Samba2FileSystemTest extends FileSystemTest<String, IFileSystemBase
 
 	@Override
 	protected boolean _folderExists(String folderName) throws Exception {
-		return client.folderExists(folderName);
+		try {
+			return client.folderExists(folderName);
+		} catch (SMBApiException e) {
+			if (e.getStatus().equals(NtStatus.STATUS_DELETE_PENDING))
+				return false;
+			throw e;
+		}
 	}
 
 	@Override
@@ -142,10 +148,10 @@ public class Samba2FileSystemTest extends FileSystemTest<String, IFileSystemBase
 		client.rmdir(folderName, true);
 	}
 
-	@Ignore("Samba V2 does not support append in this library")
 	@Test
 	@Override
 	public void testAppendFile() throws Exception {
+		// ("Samba V2 does not support append in this library")
 		super.testAppendFile();
 	}
 
