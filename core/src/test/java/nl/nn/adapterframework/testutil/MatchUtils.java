@@ -1,8 +1,10 @@
 package nl.nn.adapterframework.testutil;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +14,8 @@ import java.util.TreeMap;
 
 import javax.json.Json;
 import javax.json.JsonStructure;
+
+import nl.nn.adapterframework.util.Misc;
 
 public class MatchUtils {
 	
@@ -58,4 +62,14 @@ public class MatchUtils {
 		//assertEquals(description,inputJson,jsonOut);
 	}
 
+	public static void assertTestFileEquals(String file1, InputStream fileStream) throws IOException {
+		assertTestFileEquals(file1, Misc.streamToString(fileStream));
+	}
+
+	public static void assertTestFileEquals(String file1, String file2) throws IOException {
+		String testFile = TestFileUtils.getTestFile(file1);
+		assertNotNull(testFile);
+
+		assertEquals(testFile.trim(), file2.trim());
+	}
 }
