@@ -28,6 +28,9 @@ Ibis AdapterFramework release notes
     - Fix error on selecting checkpoint with null message
     - Fix error on selecting different stub strategy
 - Add ability to use nullvalues on cmis properties
+- Possibility to add new domains independently of ear file
+    - UploadConfigService adapter
+    - Facility to (de)activate configs
 
 
 

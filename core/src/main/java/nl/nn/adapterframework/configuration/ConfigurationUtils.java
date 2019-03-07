@@ -15,16 +15,24 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -39,6 +47,8 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
+
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -222,11 +232,15 @@ public class ConfigurationUtils {
 			stmt.setString(2, version);
 			stmt.setString(3, fileName);
 			stmt.setBinaryStream(4, file);
-			stmt.setString(5, ruser);
+			if (StringUtils.isEmpty(ruser)) {
+				stmt.setNull(5, Types.VARCHAR);
+			} else {
+				stmt.setString(5, ruser);
+			}
 			stmt.setObject(6, qs.getDbmsSupport().getBooleanValue(activate_config));
 			stmt.setObject(7, qs.getDbmsSupport().getBooleanValue(automatic_reload));
 
-			return stmt.execute();
+			return stmt.executeUpdate() > 0;
 		} catch (SenderException e) {
 			throw new ConfigurationException(e);
 		} catch (JdbcException e) {
@@ -315,5 +329,91 @@ public class ConfigurationUtils {
 			}
 		}
 		return false;
+	}
+
+	public static List<String> getConfigNamesFromDatabase(IbisContext ibisContext, String jmsRealm) throws ConfigurationException {
+		if (StringUtils.isEmpty(jmsRealm)) {
+			jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
+			if (StringUtils.isEmpty(jmsRealm)) {
+				return null;
+			}
+		}
+
+		Connection conn = null;
+		ResultSet rs = null;
+		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		qs.setJmsRealm(jmsRealm);
+		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
+		qs.configure();
+		try {
+			qs.open();
+			conn = qs.getConnection();
+			String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG='"+(qs.getDbmsSupport().getBooleanValue(true))+"'";
+			PreparedStatement stmt = conn.prepareStatement(query);
+			rs = stmt.executeQuery();
+			List<String> stringList = new ArrayList<String>();
+			while (rs.next()) {
+				stringList.add(rs.getString(1));
+			}
+			return stringList;
+		} catch (SenderException e) {
+			throw new ConfigurationException(e);
+		} catch (JdbcException e) {
+			throw new ConfigurationException(e);
+		} catch (SQLException e) {
+			throw new ConfigurationException(e);
+		} finally {
+			qs.close();
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					log.warn("Could not close resultset", e);
+				}
+			}
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					log.warn("Could not close connection", e);
+				}
+			}
+		}
+	}
+
+	public static String[] retrieveBuildInfo(InputStream inputStream)
+			throws IOException {
+		ZipInputStream zipInputStream = new ZipInputStream(
+				new BufferedInputStream(inputStream));
+		ZipEntry zipEntry;
+		String name = null;
+		String version = null;
+		boolean buildInfoFound = false;
+		while ((zipEntry = zipInputStream.getNextEntry()) != null
+				&& !buildInfoFound) {
+			if (!zipEntry.isDirectory()) {
+				String entryName = zipEntry.getName();
+				String entryNameMinusPath = FilenameUtils.getName(entryName);
+				if ("BuildInfo_SC.properties".equals(entryNameMinusPath)) {
+					name = FilenameUtils.getPathNoEndSeparator(entryName);
+					byte[] b = new byte[4096];
+					int rb = 0;
+					int direct;
+					while ((direct = zipInputStream.read(b, 0,
+							b.length)) >= 0) {
+						rb = rb + direct;
+					}
+					String buildInfoContent = new String(b, 0, rb);
+					Properties props = new Properties();
+					props.load(new StringReader(buildInfoContent));
+					version = props.getProperty("configuration.version") + "_"
+							+ props.getProperty("configuration.timestamp");
+					buildInfoFound = true;
+				}
+			}
+			zipInputStream.closeEntry();
+		}
+		zipInputStream.close();
+		return new String[] { name, version };
 	}
 }

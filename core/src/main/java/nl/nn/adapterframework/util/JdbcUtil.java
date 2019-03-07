@@ -178,6 +178,12 @@ public class JdbcUtil {
 				}
 				catch (Exception e) {} //Do nothing it will handle the default..
 			}
+			case Types.BOOLEAN :
+			case Types.BIT :
+			{
+				boolean value = rs.getBoolean(colNum);
+				return Boolean.toString(value);
+			}
             default :
             {
                 String value = rs.getString(colNum);
@@ -990,10 +996,8 @@ public class JdbcUtil {
 	}
 
 	public static synchronized void resetJdbcProperties() {
-		if(jdbcProperties != null) {
-			jdbcProperties.clear();
-			jdbcProperties = null;
-		}
+		jdbcProperties.clear();
+		jdbcProperties = null;
 		retrieveJdbcPropertiesFromDatabase();
 	}
 
@@ -1211,12 +1215,6 @@ public class JdbcUtil {
 				statement.setNull(parameterIndex, Types.INTEGER);
 			} else {
 				statement.setInt(parameterIndex, (Integer) value);
-			}
-		} else if (Parameter.TYPE_BOOLEAN.equals(paramType)) {
-			if (value == null) {
-				statement.setNull(parameterIndex, Types.BOOLEAN);
-			} else {
-				statement.setBoolean(parameterIndex, (Boolean) value);
 			}
 		} else if (Parameter.TYPE_INPUTSTREAM.equals(paramType)) {
 			if (value instanceof FileInputStream) {
