@@ -77,16 +77,13 @@ public class Samba2FileSystem implements IFileSystem<String> {
 			}
 			session = connection.authenticate(auth);
 			if(session == null) {
-				log.debug("Cannot create session for user ["+username+"] on domain ["+domain+"]");
 				throw new FileSystemException("Cannot create session for user ["+username+"] on domain ["+domain+"]");
 			}
 			diskShare = (DiskShare) session.connectShare(shareName);
 			if(diskShare == null) {
-				log.debug("Cannot connect to the share ["+ shareName +"]");
 				throw new FileSystemException("Cannot connect to the share ["+ shareName +"]");
 			}
 		} catch (IOException e) {
-			log.debug("Cannot connect to samba server" + e.getMessage());
 			throw new FileSystemException("Cannot connect to samba server", e);
 		}
 	}
@@ -122,8 +119,7 @@ public class Samba2FileSystem implements IFileSystem<String> {
 
 	@Override
 	public OutputStream createFile(String f) throws FileSystemException, IOException {
-		Set<AccessMask> accessMask = new HashSet<AccessMask>(
-				EnumSet.of(AccessMask.FILE_ADD_FILE));
+		Set<AccessMask> accessMask = new HashSet<AccessMask>(EnumSet.of(AccessMask.FILE_ADD_FILE));
 		Set<SMB2CreateOptions> createOptions = new HashSet<SMB2CreateOptions>(
 				EnumSet.of(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE, SMB2CreateOptions.FILE_WRITE_THROUGH));
 		
@@ -230,9 +226,7 @@ public class Samba2FileSystem implements IFileSystem<String> {
 		accessMaskSet.add(accessMask);
 		File file;
 
-		file = diskShare.openFile(filename, accessMaskSet, null, shareAccess, createDisposition,
-				createOptions);
-
+		file = diskShare.openFile(filename, accessMaskSet, null, shareAccess, createDisposition, createOptions);
 		return file;
 	}
 
@@ -347,10 +341,10 @@ public class Samba2FileSystem implements IFileSystem<String> {
 
 	class FilesIterator implements Iterator<String> {
 
-		private Object[] files;
+		private FileIdBothDirectoryInformation[] files;
 		private int i = 0;
 
-		public FilesIterator(Object[] objects) {
+		public FilesIterator(FileIdBothDirectoryInformation[] objects) {
 			files = objects;
 		}
 
@@ -361,12 +355,12 @@ public class Samba2FileSystem implements IFileSystem<String> {
 
 		@Override
 		public String next() {
-			return ((FileIdBothDirectoryInformation)files[i++]).getFileName();
+			return files[i++].getFileName();
 		}
 
 		@Override
 		public void remove() {
-			deleteFile(((FileIdBothDirectoryInformation)files[i++]).getFileName());
+			deleteFile(files[i++].getFileName());
 		}
 	}
 }
