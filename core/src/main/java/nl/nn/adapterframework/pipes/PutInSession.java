@@ -63,26 +63,15 @@ public class PutInSession extends FixedForwardPipe {
 		log.debug(getLogPrefix(session)+"stored ["+v.toString()+"] in pipeLineSession under key ["+getSessionKey()+"]");
 		return new PipeRunResult(getForward(), input);
 	}
-	/**
-	 * Gets the name of the key in the <code>PipeLineSession</code> to store the input in
-	 * @see IPipeLineSession
-	 */
-	public String getSessionKey() {
-		return sessionKey;
-	}
-	/**
-	 * Sets name of the key in the <code>PipeLineSession</code> to store the input in
-	 * @see IPipeLineSession
-	 */
+
 	@IbisDoc({"name of the key in the <code>pipelinesession</code> to store the input in", ""})
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
+	public String getSessionKey() {
+		return sessionKey;
+	}
 
-	/**
-	 * Sets value to store in the <code>PipeLineSession</code>
-	 * @see IPipeLineSession
-	 */
 	@IbisDoc({"the value to store the in the <code>pipelinesession</code>. if not set, the input of the pipe is stored", ""})
 	public void setValue(String value) {
 		this.value = value;
