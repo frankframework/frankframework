@@ -97,14 +97,14 @@ public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeR
 	return new PipeRunResult(getForward(), result);
 }
 /**
- * This method gets the name of the key in the <code>PipeLineSession</code> to store the input in
+ * Gets the name of the key in the <code>PipeLineSession</code> to store the input in
  * {@link IPipeLineSession pipeLineSession}
  */
 public String getSessionKey() {
 	return sessionKey;
 }
 /**
- * This method sets the name of the key in the <code>PipeLineSession</code> to store the input in
+ * Sets the name of the key in the <code>PipeLineSession</code> to store the input in
  * @see IPipeLineSession
  * 
  * @param newSessionKey String

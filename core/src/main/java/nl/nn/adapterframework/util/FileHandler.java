@@ -659,7 +659,7 @@ public class FileHandler {
 	}
 
 	/**
-	 * This method sets actions the pipe has to do. Possible actions are "read", "write", "write_append", "encode", "decode", "delete" and "read_delete"
+	 * Sets actions the pipe has to do. Possible actions are "read", "write", "write_append", "encode", "decode", "delete" and "read_delete"
 	 * You can also define combinations, like "read encode write".
 	 */
 	public void setActions(String actions) {
@@ -670,7 +670,7 @@ public class FileHandler {
 	}
 
 	/**
-	 * This method sets the directory in which the file resides or has to be created
+	 * Sets the directory in which the file resides or has to be created
 	 */
 	@IbisDoc({"base directory where files are stored in or read from", ""})
 	public void setDirectory(String directory) {
@@ -681,7 +681,7 @@ public class FileHandler {
 	}
 
 	/**
-	 * This method sets suffix of the file that is written
+	 * Sets suffix of the file that is written
 	 */
 	@IbisDoc({"suffix of the file to be created (only used if filename and filenamesession are not set)", ""})
 	public void setWriteSuffix(String suffix) {
@@ -692,7 +692,7 @@ public class FileHandler {
 	}
 
 	/**
-	 * This method sets filename of the file that is written
+	 * Sets filename of the file that is written
 	 */
 	@IbisDoc({"the name of the file to use", ""})
 	public void setFileName(String filename) {
@@ -703,7 +703,7 @@ public class FileHandler {
 	}
 
 	/**
-	 * This method sets filenameSessionKey the session key that contains the name of the file to be created
+	 * Sets filenameSessionKey the session key that contains the name of the file to be created
 	 */
 	@IbisDoc({"the session key that contains the name of the file to use (only used if filename is not set)", ""})
 	public void setFileNameSessionKey(String filenameSessionKey) {

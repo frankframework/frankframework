@@ -83,14 +83,14 @@ public class GetFromSession  extends FixedForwardPipe {
 	}
 
 	/**
-	 * This method returns the name of the key in the {@link IPipeLineSession pipeLineSession} to retrieve the input from
+	 * Returns the name of the key in the {@link IPipeLineSession pipeLineSession} to retrieve the input from
 	 */
 	public String getSessionKey() {
 		return sessionKey;
 	}
 
 	/**
-	 * This method sets the name of the key in the <code>PipeLineSession</code> to store the input in
+	 * Sets the name of the key in the <code>PipeLineSession</code> to store the input in
 	 * @see IPipeLineSession
 	 */
 	@IbisDoc({"name of the key in the <code>pipelinesession</code> to retrieve the output message from", ""})

@@ -186,7 +186,7 @@ public class XsltPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * This method sets the name of the key in the <code>PipeLineSession</code> to store the input in
+	 * Sets the name of the key in the <code>PipeLineSession</code> to store the input in
 	 * @see IPipeLineSession
 	 */
 	public void setSessionKey(String newSessionKey) {

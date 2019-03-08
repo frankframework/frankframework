@@ -98,7 +98,7 @@ public class ParameterResolutionContext {
 	}
 	
 	/**
-	 * This method returns an array list of <link>ParameterValue<link> objects
+	 * Returns an array list of <link>ParameterValue<link> objects
 	 */
 	public ParameterValueList getValues(ParameterList parameters) throws ParameterException {
 		if (parameters == null)
@@ -134,7 +134,7 @@ public class ParameterResolutionContext {
 	}
 
 	/**
-	 * This method returns a Map of value objects
+	 * Returns a Map of value objects
 	 */
 	public Map<String,Object> getValueMap(ParameterList parameters) throws ParameterException {
 		if (parameters==null) {
@@ -181,13 +181,13 @@ public class ParameterResolutionContext {
 	}
 
 	/**
-	 * This method returns (possibly xml formatted) input message
+	 * Returns (possibly xml formatted) input message
 	 */
 	public String getInput() {
 		return input;
 	}
 	/**
-	 * This method sets as input, the (xml formatted) input message
+	 * Sets as input, the (xml formatted) input message
 	 */
 	public void setInput(String input) {
 		this.input = input;
@@ -195,7 +195,7 @@ public class ParameterResolutionContext {
 	}
 
 	/**
-	 * This method retyy hashtable with session variables
+	 * Returns hashtable with session variables
 	 */
 	public IPipeLineSession getSession() {
 		return session;

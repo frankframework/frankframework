@@ -135,14 +135,14 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 	}
 	
 	/**
-	 * This method gets the name of the key in the <code>PipeLineSession</code> to store the systemdate in
+	 * Gets the name of the key in the <code>PipeLineSession</code> to store the systemdate in
 	 * @see IPipeLineSession
 	 */
 	public String getSessionKey() {
 		return sessionKey;
 	}
 	/**
-	 * This method sets the name of the key in the <code>PipeLineSession</code> to store the systemdate in
+	 * Sets the name of the key in the <code>PipeLineSession</code> to store the systemdate in
 	 * @see IPipeLineSession
 	 */
 	@IbisDoc({"key of session variable to store result in", "systemdate"})

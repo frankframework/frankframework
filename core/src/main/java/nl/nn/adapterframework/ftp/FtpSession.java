@@ -579,7 +579,7 @@ public class FtpSession {
 	}
 	
 	/**
-	 * @return list; seperated string with filenames of locally created files 
+	 * Returns a list as seperated string of filenames of locally created files 
 	 */
 	private List _get(ParameterList params, IPipeLineSession session, String localDirectory, String remoteDirectory, List filenames, String localFilenamePattern, boolean closeAfterGet) throws Exception {
 		openClient(remoteDirectory);

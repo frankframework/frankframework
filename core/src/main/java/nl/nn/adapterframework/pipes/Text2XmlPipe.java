@@ -107,14 +107,14 @@ public class Text2XmlPipe extends FixedForwardPipe {
 	}
 	
 	/**
-	 * This method returns the xmltag to encapsulate the text in.
+	 * Returns the xmltag to encapsulate the text in.
 	 */
 	public String getXmlTag() {
 		return xmlTag;
 	}
 
 	/**
-	 * This method sets the xmltag
+	 * Sets the xmltag
 	 */
 	@IbisDoc({"the xml tag to encapsulate the text in", ""})
 	public void setXmlTag(String xmlTag) {

@@ -79,7 +79,7 @@ public class GlobalListItem implements INamedObject {
         return sortedKeys.iterator();
     }
     /**
-     * This method gets a list with system names.
+     * Gets a list with system names.
      */
     public static List getRegisteredNamesAsList() {
         Iterator it = getRegisteredNames();

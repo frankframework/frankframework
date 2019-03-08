@@ -166,7 +166,7 @@ public class DateUtils {
 
 
 	/**
-	 * This method makes it possible to convert date format
+	 * Convert date format
 	 * 
 	 * @param 	from	String	date format from.
 	 * @param 	to		String	date format to.

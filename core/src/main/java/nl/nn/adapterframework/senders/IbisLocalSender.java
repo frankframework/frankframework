@@ -250,7 +250,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 	
 	/**
-	 * This method sets a serviceName under which the JavaListener or WebServiceListener is registered.
+	 * Sets a serviceName under which the JavaListener or WebServiceListener is registered.
 	 */
 	@IbisDoc({"name of the {@link nl.nn.adapterframework.http.webservicelistener webservicelistener} that should be called", ""})
 	public void setServiceName(String serviceName) {

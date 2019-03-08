@@ -269,7 +269,7 @@ public abstract class AbstractXmlValidator {
 	}
 
     /**
-     * This method sets schemas provider.
+     * Sets schemas provider.
      * @since 5.0
      */
 	public void setSchemasProvider(SchemasProvider schemasProvider) {
