@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.filesystems;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -329,22 +329,6 @@ public abstract class FileSystemTest<F, FS extends IFileSystem<F>> {
 	}
 	
 	@Test
-	public void fileSystemTestCreateAndRemoveFolder() throws Exception {
-		String folderName = "dummyFolder";
-		
-		_createFolder(folderName);
-		waitForActionToFinish();
-		
-		assertTrue(_folderExists(folderName));
-		
-		F f = fileSystem.toFile(folderName);
-		fileSystem.removeFolder(f);
-		waitForActionToFinish();
-		
-		assertFalse(_folderExists(folderName));
-	}
-	
-	@Test
 	public void fileSystemTestRenameTo() throws Exception {
 		String fileName = "fileTobeRenamed.txt";
 		
@@ -355,6 +339,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystem<F>> {
 		
 		String destination = "fileRenamed.txt";
 		deleteFile(destination);
+		waitForActionToFinish();
 		
 		F f = fileSystem.toFile(fileName);
 		fileSystem.renameTo(f, destination);
