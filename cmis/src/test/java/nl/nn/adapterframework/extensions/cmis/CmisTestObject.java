@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,8 +47,28 @@ public class CmisTestObject extends Mockito implements Document {
 	@Override
 	public List<Property<?>> getProperties() {
 		List<Property<?>> list = new ArrayList<Property<?>>();
+		
+		Property<String> pName = mock(Property.class);
+		when(pName.getId()).thenReturn("cmis:name");
+		when(pName.getFirstValue()).thenReturn("dummy");
+		list.add(pName);
+		
+		Property<BigInteger> pProjectNumber = mock(Property.class);
+		when(pProjectNumber.getId()).thenReturn("project:number");
+		when(pProjectNumber.getFirstValue()).thenReturn(new BigInteger("123456789"));
+		list.add(pProjectNumber);
+		
+		Property<GregorianCalendar> pLastModified = mock(Property.class);
+		when(pLastModified.getId()).thenReturn("project:lastModified");
+		when(pLastModified.getFirstValue()).thenReturn(new GregorianCalendar(2019, 1, 26, 16, 31, 15));
+		list.add(pLastModified);
+		
+		Property<Boolean> pOnTime = mock(Property.class);
+		when(pOnTime.getId()).thenReturn("project:onTime");
+		when(pOnTime.getFirstValue()).thenReturn(true);
+		list.add(pOnTime);
+		
 		// TODO Fill this list
-//		list.add(e);
 
 		return list;
 	}
@@ -67,7 +88,7 @@ public class CmisTestObject extends Mockito implements Document {
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
-		return null;
+		return "dummy";
 	}
 
 	@Override
@@ -139,7 +160,10 @@ public class CmisTestObject extends Mockito implements Document {
 	@Override
 	public AllowableActions getAllowableActions() {
 		AllowableActions actions = mock(AllowableActions.class);
-		// TODO fill this
+		Set<Action> actionSet = new HashSet<Action>() {} ;
+		Action action = Action.CAN_CREATE_DOCUMENT;
+		actionSet.add(action);
+		when(actions.getAllowableActions()).thenReturn(actionSet);
 		return actions;
 	}
 
@@ -151,14 +175,17 @@ public class CmisTestObject extends Mockito implements Document {
 
 	@Override
 	public List<Relationship> getRelationships() {
-		// TODO Auto-generated method stub
-		return null;
+		List<Relationship> list = new ArrayList<Relationship>();
+		Relationship relationship = mock(Relationship.class);
+		when(relationship.getId()).thenReturn("dummyId");
+		list.add(relationship);
+		return list;
 	}
 
 	@Override
 	public Acl getAcl() {
-		// TODO Auto-generated method stub
-		return null;
+		Acl acl = mock(Acl.class);
+		return acl;
 	}
 
 	@Override
@@ -247,8 +274,11 @@ public class CmisTestObject extends Mockito implements Document {
 
 	@Override
 	public List<ObjectId> getPolicyIds() {
-		// TODO Auto-generated method stub
-		return null;
+		List<ObjectId> policies = new ArrayList<ObjectId>();
+		ObjectId objectId = mock(ObjectId.class);
+		when(objectId.getId()).thenReturn("dummyObjectId");
+		policies.add(objectId);
+		return policies;
 	}
 
 	@Override
@@ -507,7 +537,7 @@ public class CmisTestObject extends Mockito implements Document {
 			@Override
 			public String getMimeType() {
 				// TODO Auto-generated method stub
-				return null;
+				return "text/xml";
 			}
 
 			@Override

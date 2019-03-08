@@ -11,10 +11,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.mockito.Mock;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.pipes.XmlValidator;
 
@@ -26,17 +24,17 @@ public abstract class SenderTestBase<S extends ISender> {
 	@Mock
 	protected IPipeLineSession session;
 
-	public abstract S createSender();
+	public abstract S createSender() throws Exception;
 
 	@Before
-	public void setup() throws ConfigurationException, PipeStartException, SenderException {
+	public void setup() throws Exception {
 		sender = createSender();
-		sender.open();
+		//		sender.open();
 	}
 
 	@After
 	public void setdown() throws SenderException {
-		if (sender!=null) {
+		if (sender != null) {
 			sender.close();
 		}
 	}
@@ -48,11 +46,11 @@ public abstract class SenderTestBase<S extends ISender> {
 		while (line != null) {
 			string.append(line);
 			line = buf.readLine();
-			if (line!=null) {
+			if (line != null) {
 				string.append("\n");
 			}
 		}
-		return string.toString();	
+		return string.toString();
 	}
 
 	protected String getFile(String file) throws IOException {
