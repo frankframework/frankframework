@@ -23,10 +23,10 @@ public abstract class LocalFileSystemTestBase<F, FS extends IFileSystem<F>>
 
 	@Override
 	@Before
-	public void setup() throws IOException, ConfigurationException, FileSystemException {
+	public void setUp() throws IOException, ConfigurationException, FileSystemException {
 		folder = new TemporaryFolder();
 		folder.create();
-		super.setup();
+		super.setUp();
 	}
 
 	protected File getFileHandle(String filename) {

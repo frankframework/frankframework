@@ -42,8 +42,7 @@ public class PutInSession extends FixedForwardPipe {
 	private String value;
 	
 	/**
-     * checks wether the proper forward is defined.
-     * @throws ConfigurationException
+     * Checks whether the proper forward is defined.
      */
     public void configure() throws ConfigurationException {
 	    super.configure();
@@ -64,26 +63,15 @@ public class PutInSession extends FixedForwardPipe {
 		log.debug(getLogPrefix(session)+"stored ["+v.toString()+"] in pipeLineSession under key ["+getSessionKey()+"]");
 		return new PipeRunResult(getForward(), input);
 	}
-	/**
-	 * The name of the key in the <code>PipeLineSession</code> to store the input in
-	 * @see IPipeLineSession
-	 */
-	public String getSessionKey() {
-		return sessionKey;
-	}
-	/**
-	 * The name of the key in the <code>PipeLineSession</code> to store the input in
-	 * @see IPipeLineSession
-	 */
+
 	@IbisDoc({"name of the key in the <code>pipelinesession</code> to store the input in", ""})
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
+	public String getSessionKey() {
+		return sessionKey;
+	}
 
-	/**
-	 * The value to store the in the <code>PipeLineSession</code>
-	 * @see IPipeLineSession
-	 */
 	@IbisDoc({"the value to store the in the <code>pipelinesession</code>. if not set, the input of the pipe is stored", ""})
 	public void setValue(String value) {
 		this.value = value;

@@ -53,6 +53,24 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 			throw new ConfigurationException(
 					getLogPrefix() + "the rename action requires a destination parameter to be present");
 	}
+	
+	@Override
+	public void open() throws SenderException {
+		try {
+			getFileSystem().open();
+		} catch (FileSystemException e) {
+			throw new SenderException("Cannot open fileSystem",e);
+		}
+	}
+	
+	@Override
+	public void close() throws SenderException {
+		try {
+			getFileSystem().close();
+		} catch (FileSystemException e) {
+			throw new SenderException("Cannot close fileSystem",e);
+		}
+	}
 
 	@Override
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc)
@@ -80,7 +98,6 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 		try {
 			if (action.equalsIgnoreCase("delete")) {
 				ifs.deleteFile(file);
-				
 			} else if (action.equalsIgnoreCase("download")) {
 				InputStream is = new Base64InputStream(ifs.readFile(file), true);
 				String result = Misc.streamToString(is);
@@ -128,7 +145,7 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 				ifs.renameTo(file, destination);
 			}
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix() + "unable to process action for File [" + message + "]", e);
+			throw new SenderException(getLogPrefix() + "unable to process ["+action+"] action for File [" + message + "]", e);
 		}
 
 		return correlationID;

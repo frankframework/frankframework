@@ -38,7 +38,6 @@ public interface IRecordHandler extends INamedObject {
 	 * Parse the line into an array of fields.
 	 * 
 	 * @return List with String values for each inputfield
-	 * @throws Exception
 	 */
 	List parse(IPipeLineSession session, String record) throws Exception;
 
@@ -46,7 +45,6 @@ public interface IRecordHandler extends INamedObject {
 	 * Perform an action on the array of fields.
 	 * 
 	 * @return transformed result
-	 * @throws Exception
 	 */	
 	Object handleRecord(IPipeLineSession session, List parsedRecord, ParameterResolutionContext prc) throws Exception;
 	

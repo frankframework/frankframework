@@ -148,7 +148,6 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	 * path never ends with a slash '/'.
 	 * @param path to append to the root
 	 * @return full path to use as endpoint
-	 * @throws SenderException
 	 */
 	private URIBuilder buildUri(String path) throws SenderException {
 		if (!path.startsWith("/")) path = "/" + path;

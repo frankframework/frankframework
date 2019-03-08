@@ -356,7 +356,6 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
 	/**
 	 * Helper class for testing certificates that are not verified by an 
 	 * authorized organization
-	 * 
 	 */
 	class AuthSslTrustManager implements X509TrustManager {
 		private X509TrustManager trustManager = null;

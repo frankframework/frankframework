@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.util;
 
-import static org.hamcrest.CoreMatchers.endsWith;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.startsWith;

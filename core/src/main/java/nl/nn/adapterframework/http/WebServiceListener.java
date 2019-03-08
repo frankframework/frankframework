@@ -41,7 +41,6 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
  * to receive messages as a web-service.
- * </table>
  * 
  * @author Gerrit van Brakel
  * @author Jaco de Groot
@@ -197,6 +196,7 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 		setApplicationFaultsAsExceptions(b);
 	}
 
+	@IbisDoc({ "The address to listen to, e.g the part <address> in https://mydomain.com/ibis4something/services/<address>, where mydomain.com and ibis4something refer to 'your ibis'","" })
 	public void setAddress(String address) {
 		this.address = address;
 	}

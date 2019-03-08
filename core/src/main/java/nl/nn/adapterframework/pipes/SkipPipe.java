@@ -73,7 +73,7 @@ public class SkipPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * @param skip  the number of bytes to skip
+	 * Sets the number of bytes to skip
 	 */
 	@IbisDoc({"number of bytes (for byte array input) or characters (for string input) to skip. an empty byte array or string is returned when skip is larger then the length of the input", "0"})
 	public void setSkip(int skip) {
