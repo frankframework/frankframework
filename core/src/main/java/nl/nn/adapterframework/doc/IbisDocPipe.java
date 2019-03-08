@@ -578,10 +578,12 @@ public class IbisDocPipe extends FixedForwardPipe {
 						}
 						beanComplexType.addSubElement(attribute);
 					}
-					if (beanHtml != null) {
-						beanHtml.append("<tr><td>" + property + "</td>");
-					}
 					Method method = beanProperties.get(property);
+					if (beanHtml != null) {
+						beanHtml.append("<tr>");
+						beanHtml.append("<td>" + method.getDeclaringClass().getSimpleName() + "</td>");
+						beanHtml.append("<td>" + property + "</td>");
+					}
 					IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
 					if (ibisDoc != null) {
 						String[] ibisDocValues = ibisDoc.value();
@@ -738,7 +740,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 					StringBuffer result = new StringBuffer();
 					result.append(beanName);
 					result.append("<table border='1'>");
-					result.append("<tr><th>attributes</th><th>description</th><th>default</th></tr>");
+					result.append("<tr><th>class</th><th>attribute</th><th>description</th><th>default</th></tr>");
 					addPropertiesToSchemaOrHtml(ibisBean, null, result);
 					result.append("</table>");
 					return result.toString();
