@@ -108,7 +108,7 @@ public class Samba2FileSystem implements IFileSystem<String> {
 
 	@Override
 	public Iterator<String> listFiles() throws FileSystemException {
-		return new FilesIterator(diskShare.list("").toArray());
+		return new FilesIterator((FileIdBothDirectoryInformation[])diskShare.list("").toArray());
 	}
 
 	@Override
