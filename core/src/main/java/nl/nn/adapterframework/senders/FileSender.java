@@ -92,9 +92,6 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 		paramList.add(p);
 	}
 
-	/**
-	 * return the Parameters
-	 */
 	public ParameterList getParameterList() {
 		return paramList;
 	}

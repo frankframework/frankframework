@@ -343,9 +343,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 	/**
 	 * Utilitiy function to retrieve a Destination from a jndi.
-	 * @param destinationName
-	 * @return javax.jms.Destination
-	 * @throws NamingException
 	 */
 	public Destination getDestination(String destinationName) throws JmsException, NamingException {
 		return getJmsMessagingSource().lookupDestination(destinationName);
@@ -353,14 +350,8 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 	/**
 	 * Gets a MessageConsumer object for either Topics or Queues.
-	 * @param session the Session object
-	 * @param destination a Destination object
-	 * @param correlationId the Correlation ID as a String value
 	 * @return a MessageConsumer with the right filter (messageSelector)
-	 * @throws NamingException
-	 * @throws JMSException
 	 */
-
 	public MessageConsumer getMessageConsumerForCorrelationId(Session session, Destination destination, String correlationId) throws NamingException, JMSException {
 		if (correlationId==null)
 			return getMessageConsumer(session, destination, null);
@@ -373,13 +364,11 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * This ensures that listeners (or other extensions of this class) do not influence how the selector
 	 * is used: when a correlationID should be in the filter the  <code>getMessageConsumerForCorrelationId</code>
 	 * should be used, other wise the <code>getMessageConsumer</code> function which has no attribute for
-	 * <code>selector</code>. Whe a MessageSelector is set, it will be used when no correlation id is required.
+	 * <code>selector</code>. When a MessageSelector is set, it will be used when no correlation id is required.
 	 * @param session the Session
 	 * @param destination the Destination
 	 * @param selector the MessageSelector
 	 * @return MessageConsumer
-	 * @throws NamingException
-	 * @throws JMSException
 	 */
 	public MessageConsumer getMessageConsumer(Session session, Destination destination, String selector) throws NamingException, JMSException {
 		if (useTopicFunctions) {
@@ -403,8 +392,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * @param session the Session
 	 * @param destination the Destination
 	 * @return the MessageConsumer
-	 * @throws NamingException
-	 * @throws JMSException
 	 */
 	public MessageConsumer getMessageConsumer(Session session, Destination destination) throws NamingException, JMSException {
 		return getMessageConsumer(session, destination, getMessageSelector());
@@ -474,22 +461,18 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 
     /**
-     *  Gets a queueReceiver
+     * Gets a queueReceiver value
      * @see QueueReceiver
-     * @return                                   The queueReceiver value
-     * @exception  NamingException  Description of the Exception
-     * @exception  JMSException                  Description of the Exception
      */
 	private QueueReceiver getQueueReceiver(QueueSession session, Queue destination, String selector) throws NamingException, JMSException {
 	    QueueReceiver queueReceiver = session.createReceiver(destination, selector);
 	    return queueReceiver;
 	}
+	
 	/**
-	  *  Gets the queueSender for a specific queue, not the one in <code>destination</code>
+	  * Gets the queueSender for a specific queue, not the one in <code>destination</code>
 	  * @see QueueSender
-	  * @return                                   The queueReceiver value
-	  * @exception  NamingException  Description of the Exception
-	  * @exception  JMSException
+	  * @return The queueReceiver value
 	  */
 	private QueueSender getQueueSender(QueueSession session, Queue destination) throws NamingException, JMSException {
 		return session.createSender(destination);
@@ -596,8 +579,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * @param messageProducer
 	 * @param message
 	 * @return messageID of the sent message
-	 * @throws NamingException
-	 * @throws JMSException
 	 */
 	public String send(MessageProducer messageProducer, Message message)
 			throws NamingException, JMSException {
@@ -643,8 +624,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * @param dest destination
 	 * @param message
 	 * @return message ID of the sent message
-	 * @throws NamingException
-	 * @throws JMSException
 	 */
 	public String send(Session session, Destination dest, Message message)
 		throws NamingException, JMSException {

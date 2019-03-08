@@ -279,7 +279,6 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	/**
 	 * Register a PipeForward object to this Pipe. Global Forwards are added
 	 * by the PipeLine. If a forward is already registered, it logs a warning.
-	 * @param forward
 	 * @see PipeLine
 	 * @see PipeForward
 	 */

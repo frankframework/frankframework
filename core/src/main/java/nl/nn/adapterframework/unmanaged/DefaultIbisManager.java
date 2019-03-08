@@ -148,7 +148,6 @@ public class DefaultIbisManager implements IbisManager {
 
 	/**
 	 * Utility function to give commands to Adapters and Receivers
-	 *
 	 */
 	public void handleAdapter(String action, String configurationName,
 			String adapterName, String receiverName, String commandIssuedBy,

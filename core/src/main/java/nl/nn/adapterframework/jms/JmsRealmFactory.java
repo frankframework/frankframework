@@ -61,8 +61,7 @@ public class JmsRealmFactory {
 
     }
     /**
-     * Get a realm by name
-     * @return JmsRealm the requested realm or null if none was found under that name
+     * Get a requested Jmsrealm with the given name, null is returned if no realm under given name
      */
     public JmsRealm getJmsRealm(String jmsRealmName) {
         JmsRealm jmsRealm = (JmsRealm) jmsRealms.get(jmsRealmName);
@@ -73,7 +72,6 @@ public class JmsRealmFactory {
     }
     /**
      * Get the realmnames as an Iterator, alphabetically sorted
-     * @return Iterator with the realm names, alphabetically sorted
      */
     public Iterator getRegisteredRealmNames() {
         SortedSet sortedKeys = new TreeSet(jmsRealms.keySet());
@@ -81,7 +79,6 @@ public class JmsRealmFactory {
     }
     /**
      * Get the names as a list
-     * @return List with the realm names
      */
     public List<String> getRegisteredRealmNamesAsList() {
         Iterator it = getRegisteredRealmNames();
@@ -92,8 +89,7 @@ public class JmsRealmFactory {
         return result;
     }
     /**
-     * register a Realm
-     * @param jmsRealm
+     * Register a Realm
      */
     public void registerJmsRealm(JmsRealm jmsRealm) {
         jmsRealms.put(jmsRealm.getRealmName(), jmsRealm);

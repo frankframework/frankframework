@@ -171,8 +171,6 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	 * 
 	 * Must push all nodes through validatorhandler, recursively, respecting the alignment request.
 	 * Must set current=node before calling validatorHandler.startElement(), in order to get the right argument for the onStartElement / performAlignment callbacks.
-
-	 * @throws SAXException 
 	 */
 	public void handleNode(C container, String name, String nodeNamespace) throws SAXException {
 		if (DEBUG) log.debug("handleNode() name ["+name+"] namespace ["+nodeNamespace+"]");
