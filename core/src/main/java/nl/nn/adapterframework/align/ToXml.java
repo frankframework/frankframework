@@ -106,47 +106,45 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		return null; 
 	}
 
-//	public N getRootNode(C container) {
-//		return (N)container;
-//	}
 	
 	private class XmlAlignerInputSource extends InputSource {
-		C root;
-		XmlAlignerInputSource(C root) {
+		C container;
+		XmlAlignerInputSource(C container) {
 			super();
-			this.root=root;
+			this.container=container;
 		}
 	}
 	
 	/**
-	 * Obtain a the XmlAligner as a {@link Source} that can be used as input of a {@link Transformer}.
+	 * Obtain the XmlAligner as a {@link Source} that can be used as input of a {@link Transformer}.
 	 */
-	public Source asSource(C root) {
-		return new SAXSource(this,root==null?null:new XmlAlignerInputSource(root));
+	public Source asSource(C container) {
+		return new SAXSource(this,container==null?null:new XmlAlignerInputSource(container));
 	}
 
 	/**
-	 * start the parse, obtain the root node from the InputSource when its a {@link XmlAlignerInputSource}.
+	 * Start the parse, obtain the container to parse from the InputSource when set by {@link #asSource(Object)}. 
+	 * Normally, the parse is started via {#startParse(C container)}, but this implementation allows {@link #asSource(Object)} to function.
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public void parse(InputSource input) throws SAXException, IOException {
-		C root=null;
+		C container=null;
 		if (input!=null && (input instanceof ToXml.XmlAlignerInputSource)) {
-			root= ((XmlAlignerInputSource)input).root;
+			container= ((XmlAlignerInputSource)input).container;
 		}
-		if (DEBUG) log.debug("parse(InputSource) root ["+root+"]");
-		startParse(root);
+		if (DEBUG) log.debug("parse(InputSource) container ["+container+"]");
+		startParse(container);
 	}
 
 	/**
 	 * Align the XML according to the schema. 
 	 */
-	public void startParse(C root) throws SAXException {
+	public void startParse(C container) throws SAXException {
 		//if (DEBUG) log.debug("startParse() rootNode ["+node.toString()+"]"); // result of node.toString() is confusing. Do not log this.
 		try {
 			validatorHandler.startDocument();
-			handleNode(root, getRootElement(), getTargetNamespace());
+			handleNode(container, getRootElement(), getTargetNamespace());
 			validatorHandler.endDocument();
 		} catch (SAXException e) {
 			handleError(e);
