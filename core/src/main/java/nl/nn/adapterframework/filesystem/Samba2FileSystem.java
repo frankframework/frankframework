@@ -49,11 +49,11 @@ public class Samba2FileSystem implements IFileSystem<String> {
 	private boolean isForce;
 	private boolean listHiddenFiles = true;
 
-	private DiskShare diskShare;
-	private Session session;
-	private Connection connection;
-	private SMBClient client = null;
 	private AuthenticationContext auth;
+	private SMBClient client = null;
+	private Connection connection;
+	private Session session;
+	private DiskShare diskShare;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -78,10 +78,12 @@ public class Samba2FileSystem implements IFileSystem<String> {
 			session = connection.authenticate(auth);
 			if(session == null) {
 				log.debug("Cannot create session for user ["+username+"] on domain ["+domain+"]");
+				throw new FileSystemException("Cannot create session for user ["+username+"] on domain ["+domain+"]");
 			}
 			diskShare = (DiskShare) session.connectShare(shareName);
 			if(diskShare == null) {
 				log.debug("Cannot connect to the share ["+ shareName +"]");
+				throw new FileSystemException("Cannot connect to the share ["+ shareName +"]");
 			}
 		} catch (IOException e) {
 			log.debug("Cannot connect to samba server" + e.getMessage());

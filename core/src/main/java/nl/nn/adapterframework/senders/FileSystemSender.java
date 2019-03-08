@@ -59,7 +59,7 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 		try {
 			getFileSystem().open();
 		} catch (FileSystemException e) {
-			throw new SenderException("Cannot open connection",e);
+			throw new SenderException("Cannot open fileSystem",e);
 		}
 	}
 	
@@ -68,7 +68,7 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 		try {
 			getFileSystem().close();
 		} catch (FileSystemException e) {
-			throw new SenderException("Cannot close connection",e);
+			throw new SenderException("Cannot close fileSystem",e);
 		}
 	}
 
