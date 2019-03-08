@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -108,7 +109,7 @@ public class Samba2FileSystem implements IFileSystem<String> {
 
 	@Override
 	public Iterator<String> listFiles() throws FileSystemException {
-		return new FilesIterator((FileIdBothDirectoryInformation[])diskShare.list("").toArray());
+		return new FilesIterator(diskShare.list(""));
 	}
 
 	@Override
@@ -341,26 +342,26 @@ public class Samba2FileSystem implements IFileSystem<String> {
 
 	class FilesIterator implements Iterator<String> {
 
-		private FileIdBothDirectoryInformation[] files;
+		private List<FileIdBothDirectoryInformation> files;
 		private int i = 0;
 
-		public FilesIterator(FileIdBothDirectoryInformation[] objects) {
-			files = objects;
+		public FilesIterator(List<FileIdBothDirectoryInformation> list) {
+			files = list;
 		}
 
 		@Override
 		public boolean hasNext() {
-			return files != null && i < files.length;
+			return files != null && i < files.size();
 		}
 
 		@Override
 		public String next() {
-			return files[i++].getFileName();
+			return files.get(i++).getFileName();
 		}
 
 		@Override
 		public void remove() {
-			deleteFile(files[i++].getFileName());
+			deleteFile(files.get(i++).getFileName());
 		}
 	}
 }
