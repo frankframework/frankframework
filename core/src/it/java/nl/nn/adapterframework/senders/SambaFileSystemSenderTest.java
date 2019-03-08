@@ -14,26 +14,30 @@ import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.filesystem.SambaFileSystem;
 
 /**
- *  
+ *  This test class is created to test both SambaFileSystem and SambaFileSystemSender classes.
  * @author alisihab
  *
  */
 
 public class SambaFileSystemSenderTest extends FileSystemSenderTest<SmbFile, SambaFileSystem> {
-	protected String shareName = "Shared";
-	protected String username = "";
-	protected String password = "";
-	protected String domain = "localhost";
+	private String shareName = "Share";
+	private String username = "";
+	private String password = "";
+	private String domain = "";
 	private SmbFile context;
-	protected String share = "smb://" + domain + "" + shareName + "/"; // the path of smb network must start with "smb://"
+	private String share = "smb://" + domain + "/" + shareName + "/"; // the path of smb network must start with "smb://"
 	private int waitMillis = 0;
 
-	@Override
-	public void setup() throws ConfigurationException, IOException, FileSystemException {
-		super.setup();
-		NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication("", username, password);
-		context = new SmbFile(share, auth);
+	{
 		setWaitMillis(waitMillis);
+	};
+	
+	@Override
+	public void setUp() throws ConfigurationException, IOException, FileSystemException {
+		super.setUp();
+		NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(domain, username, password);
+		context = new SmbFile(share, auth);
+		
 	}
 
 	@Override
@@ -73,6 +77,9 @@ public class SambaFileSystemSenderTest extends FileSystemSenderTest<SmbFile, Sam
 	@Override
 	public void _createFolder(String filename) throws IOException {
 		try {
+			if(_folderExists(filename)) {
+				throw new FileSystemException("Create directory for [" + filename + "] has failed. Directory already exists.");
+			}
 			new SmbFile(context, filename).mkdir();
 		} catch (Exception e) {
 			throw new IOException(e);
@@ -86,7 +93,9 @@ public class SambaFileSystemSenderTest extends FileSystemSenderTest<SmbFile, Sam
 
 	@Override
 	protected void _deleteFolder(String folderName) throws Exception {
+		if(!folderName.endsWith("/")) {
+			folderName += "/";
+		}
 		_deleteFile(folderName);
 	}
-
 }

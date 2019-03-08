@@ -178,6 +178,9 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 	@Override
 	public void createFolder(SmbFile f) throws FileSystemException {
 		try {
+			if(f.exists()) {
+				throw new FileSystemException("Create directory for [" + f.getName() + "] has failed. Directory already exists.");
+			}
 			if (isForce) {
 				f.mkdirs();
 			} else {
@@ -199,7 +202,7 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 							"trying to remove file [" + f.getName() + "] which is a file instead of a directory");
 				}
 			} else {
-				throw new FileSystemException("trying to remove file [" + f.getName() + "] which does not exist");
+				throw new FileSystemException("Remove directory for [" + f.getName() + "] has failed. Directory does not exist.");
 			}
 		} catch (SmbException e) {
 			throw new FileSystemException(e);
@@ -211,11 +214,11 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 		SmbFile dest;
 		try {
 			dest = new SmbFile(smbContext, destination);
-			if (dest.exists()) {
+			if (exists(dest)) {
 				if (isForce)
 					dest.delete();
 				else {
-					return;
+					throw new FileSystemException("Cannot rename file. Destination file already exists.");
 				}
 			}
 			f.renameTo(dest);

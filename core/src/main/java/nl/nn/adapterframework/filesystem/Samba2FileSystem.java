@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation;
@@ -28,6 +29,7 @@ import com.hierynomus.smbj.share.File;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -36,61 +38,28 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class Samba2FileSystem implements IFileSystem<String> {
 
+	protected Logger log = LogUtil.getLogger(this);
+	
 	private String domain = null;
 	private String username = null;
 	private String password = null;
 	private String authAlias = null;
 	/** Share name is required*/
-	private String share = null;
+	private String shareName = null;
 	private boolean isForce;
 	private boolean listHiddenFiles = true;
 
+	private DiskShare diskShare;
+	private Session session;
+	private Connection connection;
+	private SMBClient client = null;
 	private AuthenticationContext auth;
-
-	private static class SmbClient {
-
-		private static SmbClient smbClient;
-		private static DiskShare share;
-		private static Session session;
-		private static Connection connection;
-		private static SMBClient client = null;
-
-		public static SmbClient getInstance(AuthenticationContext auth, String domain, String shareName)
-				throws FileSystemException {
-			if (smbClient == null) {
-				client = new SMBClient();
-				try {
-					connection = client.connect(domain);
-					session = connection.authenticate(auth);
-					share = (DiskShare) session.connectShare(shareName);
-				} catch (IOException e) {
-					throw new FileSystemException("Cannot connect to samba server", e);
-				}
-			}
-			return smbClient;
-		}
-
-		public static DiskShare getDiskShare() {
-			return share;
-		}
-
-		public static void close() throws IOException {
-			try {
-				share.close();
-				session.close();
-				connection.close();
-				client.close();
-				smbClient = null;
-			} catch (IOException e) {
-				throw e;
-			}
-		}
-	}
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isEmpty(getShare()))
+		if (StringUtils.isEmpty(getShare())) {
 			throw new ConfigurationException("server share endpoint is required");
+		}
 
 		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		if (StringUtils.isNotEmpty(cf.getUsername())) {
@@ -100,13 +69,34 @@ public class Samba2FileSystem implements IFileSystem<String> {
 
 	@Override
 	public void open() throws FileSystemException {
-		SmbClient.getInstance(auth, domain, share);
+		try {
+			client = new SMBClient();
+			connection = client.connect(domain);
+			if(connection.isConnected()) {
+				log.debug("successfully created connection to ["+connection.getRemoteHostname()+"]");
+			}
+			session = connection.authenticate(auth);
+			if(session == null) {
+				log.debug("Cannot create session for user ["+username+"] on domain ["+domain+"]");
+			}
+			diskShare = (DiskShare) session.connectShare(shareName);
+			if(diskShare == null) {
+				log.debug("Cannot connect to the share ["+ shareName +"]");
+			}
+		} catch (IOException e) {
+			log.debug("Cannot connect to samba server" + e.getMessage());
+			throw new FileSystemException("Cannot connect to samba server", e);
+		}
 	}
 
 	@Override
 	public void close() throws FileSystemException {
 		try {
-			SmbClient.close();
+			diskShare.close();
+			diskShare = null;
+			session.close();
+			connection.close();
+			client.close();
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
@@ -119,23 +109,23 @@ public class Samba2FileSystem implements IFileSystem<String> {
 
 	@Override
 	public Iterator<String> listFiles() throws FileSystemException {
-		return new FilesIterator(SmbClient.getDiskShare().list("").toArray());
+		return new FilesIterator(diskShare.list("").toArray());
 	}
 
 	@Override
 	public boolean exists(String f) throws FileSystemException {
-		boolean exists = SmbClient.getDiskShare().fileExists(f);
+		boolean exists = diskShare.fileExists(f);
 		return exists;
 	}
 
 	@Override
 	public OutputStream createFile(String f) throws FileSystemException, IOException {
 		Set<AccessMask> accessMask = new HashSet<AccessMask>(
-				EnumSet.of(AccessMask.MAXIMUM_ALLOWED, AccessMask.FILE_ADD_FILE));
-
+				EnumSet.of(AccessMask.FILE_ADD_FILE));
 		Set<SMB2CreateOptions> createOptions = new HashSet<SMB2CreateOptions>(
 				EnumSet.of(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE, SMB2CreateOptions.FILE_WRITE_THROUGH));
-		final File file = SmbClient.getDiskShare().openFile(f, accessMask, null, SMB2ShareAccess.ALL,
+		
+		final File file = diskShare.openFile(f, accessMask, null, SMB2ShareAccess.ALL,
 				SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
 		OutputStream out = file.getOutputStream();
 
@@ -186,43 +176,44 @@ public class Samba2FileSystem implements IFileSystem<String> {
 
 	@Override
 	public void deleteFile(String f) {
-		SmbClient.getDiskShare().rm(f);
-
+		diskShare.rm(f);
 	}
 
 	@Override
 	public void renameTo(String f, String destination) throws FileSystemException {
 		File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN);
-		file.rename(destination, true);
+		if (exists(destination) && !isForce) {
+			throw new FileSystemException("Cannot rename file. Destination file already exists.");
+		}
+		file.rename(destination, isForce);
 		file.close();
 	}
 
 	@Override
 	public void augmentFileInfo(XmlBuilder fileInfo, String f) {
-		fileInfo.addAttribute("name", f);
 	}
 
 	@Override
 	public boolean isFolder(String f) throws FileSystemException {
-		boolean isFolder = SmbClient.getDiskShare().getFileInformation(f).getStandardInformation().isDirectory();
+		boolean isFolder = diskShare.getFileInformation(f).getStandardInformation().isDirectory();
 		return isFolder;
 	}
 
 	@Override
 	public void createFolder(String f) throws FileSystemException {
-		if (SmbClient.getDiskShare().folderExists(f)) {
-			throw new FileSystemException("Create directory for [" + f + "] has failed. Directory already exits.");
+		if (diskShare.folderExists(f)) {
+			throw new FileSystemException("Create directory for [" + f + "] has failed. Directory already exists.");
 		} else {
-			SmbClient.getDiskShare().mkdir(f);
+			diskShare.mkdir(f);
 		}
 	}
 
 	@Override
 	public void removeFolder(String f) throws FileSystemException {
-		if (!SmbClient.getDiskShare().folderExists(f)) {
+		if (!diskShare.folderExists(f)) {
 			throw new FileSystemException("Remove directory for [" + f + "] has failed. Directory does not exist.");
 		} else {
-			SmbClient.getDiskShare().rmdir(f, true);
+			diskShare.rmdir(f, true);
 		}
 	}
 
@@ -237,7 +228,7 @@ public class Samba2FileSystem implements IFileSystem<String> {
 		accessMaskSet.add(accessMask);
 		File file;
 
-		file = SmbClient.getDiskShare().openFile(filename, accessMaskSet, null, shareAccess, createDisposition,
+		file = diskShare.openFile(filename, accessMaskSet, null, shareAccess, createDisposition,
 				createOptions);
 
 		return file;
@@ -251,7 +242,7 @@ public class Samba2FileSystem implements IFileSystem<String> {
 		accessMaskSet.add(accessMask);
 		
 		Directory file;
-		file = SmbClient.getDiskShare().openDirectory(filename, accessMaskSet, null, shareAccess, createDisposition, null);
+		file = diskShare.openDirectory(filename, accessMaskSet, null, shareAccess, createDisposition, null);
 		return file;
 	}
 
@@ -329,11 +320,11 @@ public class Samba2FileSystem implements IFileSystem<String> {
 	}
 
 	public String getShare() {
-		return share;
+		return shareName;
 	}
 
 	public void setShare(String share) {
-		this.share = share;
+		this.shareName = share;
 	}
 
 	public boolean isForce() {

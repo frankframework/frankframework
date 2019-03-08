@@ -94,7 +94,7 @@ public class LocalFileSystem implements IFileSystem<File> {
 		if (!f.exists()) {
 			f.mkdir();
 		}else {
-			throw new FileSystemException("Create directory for [" + f + "] has failed. Directory already exits.");
+			throw new FileSystemException("Create directory for [" + f + "] has failed. Directory already exists.");
 		}
 	}
 
@@ -124,7 +124,7 @@ public class LocalFileSystem implements IFileSystem<File> {
 			if (isForce)
 				dest.delete();
 			else {
-				throw new FileSystemException("Cannot rename file. Destination file already exits.");
+				throw new FileSystemException("Cannot rename file. Destination file already exists.");
 			}
 		}
 		f.renameTo(dest);

@@ -30,30 +30,41 @@ import com.hierynomus.smbj.share.File;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
-
+/**
+ * This test class is created to test both Samba2FileSystem and Samba2FileSystemSender classes.
+ * 
+ * @author alisihab
+ *
+ */
 public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Samba2FileSystem> {
 
-	protected String shareName = "Shared";
-	protected String username = "";
-	protected String password = "";
-	protected String domain = "";
+	private String shareName = "Shared";
+	private String username = "";
+	private String password = "";
+	private String domain = "";
+	
 	private DiskShare client = null;
 	private Session session = null;
 	private Connection connection = null;
 	private SMBClient smbClient = null;
+	
 	private int waitMillis = 0;
 
+	{
+		setWaitMillis(waitMillis);
+	};
+	
 	@Before
 	@Override
-	public void setup() throws IOException, ConfigurationException, FileSystemException {
-		super.setup();
-		setWaitMillis(waitMillis);
+	public void setUp() throws IOException, ConfigurationException, FileSystemException {
+		super.setUp();
 		AuthenticationContext auth = new AuthenticationContext(username, password.toCharArray(), domain);
 		open(auth);
 	}
-
+	
+	@Override
 	@After
-	public void tearDown() throws IOException {
+	public void tearDown() throws Exception {
 		if (client != null) {
 			client.close();
 		}
@@ -63,7 +74,7 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 		if (connection != null) {
 			connection.close();
 		}
-
+		super.tearDown();
 	}
 
 	public void open(AuthenticationContext auth) throws FileSystemException {
@@ -165,18 +176,24 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 
 	@Override
 	protected boolean _folderExists(String folderName) throws Exception {
-		return client.folderExists(folderName);
+		try {
+			return client.folderExists(folderName);
+		} catch (SMBApiException e) {
+			if (e.getStatus().equals(NtStatus.STATUS_DELETE_PENDING))
+				return false;
+			throw e;
+		}
 	}
 
 	@Override
-	protected void _deleteFolder(String folderName) {
+	protected void _deleteFolder(String folderName) throws Exception {
 		client.rmdir(folderName, true);
 	}
 
 	@Test
 	@Override
-	public void testAppendFile() throws Exception {
-		// ("Samba V2 does not support append in this library")
-		super.testAppendFile();
+	public void fileSystemTestAppendFile() throws Exception {
+		// ("Smbj library does not support append at the moment: 3/8/2019")
+		super.fileSystemTestAppendFile();
 	}
 }

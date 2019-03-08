@@ -17,8 +17,19 @@ public class LocalFileSystemTest extends LocalFileSystemTestBase<File,LocalFileS
 	@Ignore
 	@Override
 	@Test
-	public void testRenameTo() throws Exception {
-		// TODO Auto-generated method stub
-		super.testRenameTo();
+	public void fileSystemTestRenameTo() throws Exception {
+		// Ignored because cannot rename temporary file
+		super.fileSystemTestRenameTo();
+	}
+	
+	@Ignore
+	@Override
+	@Test
+	public void fileSystemTestRenameToExisting() throws Exception {
+		// Ignored because foreach test different temp folder is created
+		// create file creates destination file in different folder 
+		// so that renameTo method returns false in exists file check
+		// and does not throw the exception. 
+		super.fileSystemTestRenameToExisting();
 	}
 }

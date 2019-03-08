@@ -34,13 +34,13 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 	}
 
 	@Before
-	public void setup() throws ConfigurationException, IOException, FileSystemException {
-		super.setup();
+	public void setUp() throws ConfigurationException, IOException, FileSystemException {
+		super.setUp();
 		fileSystemSender = createFileSystemSender();
 	}
 
 	@Test
-	public void uploadActionTestWithString() throws Exception {
+	public void fileSystemSenderUploadActionTestWithString() throws Exception {
 		String filename = "uploadedwithString" + FILE1;
 		String contents = "Some text content to test upload action\n";
 		
@@ -72,7 +72,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 	}
 
 	@Test
-	public void uploadActionTestWithByteArray() throws Exception {
+	public void fileSystemSenderUploadActionTestWithByteArray() throws Exception {
 		String filename = "uploadedwithByteArray" + FILE1;
 		String contents = "Some text content to test upload action\n";
 		
@@ -105,7 +105,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 	}
 
 	@Test
-	public void uploadActionTestWithInputStream() throws Exception {
+	public void fileSystemSenderUploadActionTestWithInputStream() throws Exception {
 		String filename = "uploadedwithInputStream" + FILE1;
 		String contents = "Some text content to test upload action\n";
 		
@@ -138,7 +138,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 	}
 
 	@Test
-	public void downloadActionTest() throws Exception {
+	public void fileSystemSenderDownloadActionTest() throws Exception {
 		String filename = "sender" + FILE1;
 		String contents = "Tekst om te lezen";
 		
@@ -157,7 +157,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 	}
 
 	@Test
-	public void mkdirActionTest() throws Exception {
+	public void fileSystemSenderMkdirActionTest() throws Exception {
 		String filename = "mkdir" + DIR1;
 		
 		if (_folderExists(filename)) {
@@ -181,7 +181,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 	}
 
 	@Test
-	public void rmdirActionTest() throws Exception {
+	public void fileSystemSenderRmdirActionTest() throws Exception {
 		String filename = DIR1;
 		
 		if (!_folderExists(DIR1)) {
@@ -205,7 +205,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 	}
 
 	@Test
-	public void deleteActionTest() throws Exception {
+	public void fileSystemSenderDeleteActionTest() throws Exception {
 		String filename = "tobedeleted" + FILE1;
 		
 		if (!_fileExists(filename)) {
@@ -228,7 +228,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 	}
 
 	@Test
-	public void renameActionTest() throws Exception {
+	public void fileSystemSenderRenameActionTest() throws Exception {
 		String filename = "toberenamed" + FILE1;
 		String dest = "renamed" + FILE1;
 		
@@ -267,7 +267,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 	}
 
 	@Test
-	public void listActionTest() throws Exception {
+	public void fileSystemSenderListActionTest() throws Exception {
 
 		fileSystemSender.setAction("list");
 		fileSystemSender.configure();
