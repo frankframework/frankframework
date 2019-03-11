@@ -7,6 +7,7 @@ import java.io.OutputStream;
 
 import org.apache.commons.net.ftp.FTPFile;
 import org.junit.After;
+import org.junit.Before;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.filesystem.FileSystemException;
@@ -14,6 +15,11 @@ import nl.nn.adapterframework.filesystem.FtpFileSystem;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
 
+/**
+ *  This test class is created to test both FtpFileSystem and FtpFileSystemSender classes.
+ * @author alisihab
+ *
+ */
 public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFileSystem> {
 
 	private String username = "";
@@ -31,6 +37,7 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 	}
 
 	@Override
+	@Before
 	public void setUp() throws ConfigurationException, IOException, FileSystemException {
 		super.setUp();
 		open();
