@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -81,22 +81,44 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
 	}
 
-	/**
-	 * Looks for the sender's default data source through the sender's configured proxied data sources,
-	 * then through the sender's JNDI context, and returns it when found.
-	 * 
-	 * @return The data source with matching name.
-	 * @throws JdbcException
-	 */
+	Map<String, DataSource> getProxiedDataSources() {
+		return proxiedDataSources;
+	}
+
+	public void setProxiedDataSources(Map<String, DataSource> proxiedDataSources) {
+		this.proxiedDataSources = proxiedDataSources;
+	}
+
+	public String getDataSourceNameToUse() throws JdbcException {
+		String result = getDatasourceName();
+		if (StringUtils.isEmpty(result)) {
+			throw new JdbcException(getLogPrefix()+"no datasourceName specified");
+		}
+		return result;
+	}
+
 	protected DataSource getDatasource() throws JdbcException {
 		if (datasource==null) {
 			String dsName = getDataSourceNameToUse();
-			
-			datasource = lookupDatasource(dsName);
+			if (proxiedDataSources != null && proxiedDataSources.containsKey(dsName)) {
+				log.debug(getLogPrefix()+"looking up proxied Datasource ["+dsName+"]");
+				datasource = (DataSource)proxiedDataSources.get(dsName);
+			} else {
+				String prefixedDsName=getJndiContextPrefix()+dsName;
+				log.debug(getLogPrefix()+"looking up Datasource ["+prefixedDsName+"]");
+				if (StringUtils.isNotEmpty(getJndiContextPrefix())) {
+					log.debug(getLogPrefix()+"using JNDI context prefix ["+getJndiContextPrefix()+"]");
+				}
+				try {
+					datasource =(DataSource) getContext().lookup( prefixedDsName );
+				} catch (NamingException e) {
+					throw new JdbcException("Could not find Datasource ["+prefixedDsName+"]", e);
+				}
+			}
 			if (datasource==null) {
 				throw new JdbcException("Could not find Datasource ["+dsName+"]");
 			}
-			String dsinfo=getDatasourceInfo(dsName);
+			String dsinfo=getDatasourceInfo();
 			if (dsinfo==null) {
 				dsinfo=datasource.toString();
 			}
@@ -104,47 +126,12 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		}
 		return datasource;
 	}
-	
-	/**
-	 * Searches through the sender's configured proxied data sources, then through the sender's JNDI context,
-	 * for a data source with a name that matches the given parameter.
-	 * 
-	 * @param dsName The name of the data source.
-	 * @return The data source with matching name.
-	 * @throws JdbcException
-	 */
-	public DataSource getDatasource(String dsName) throws JdbcException {
-		return lookupDatasource(dsName);
-	}
-	
-	private DataSource lookupDatasource(String dsName) throws JdbcException {
-		if (proxiedDataSources != null && proxiedDataSources.containsKey(dsName)) {
-			log.debug(getLogPrefix()+"looking up proxied Datasource ["+dsName+"]");
-			datasource = (DataSource)proxiedDataSources.get(dsName);
-		} else {
-			String prefixedDsName=getJndiContextPrefix()+dsName;
-			log.debug(getLogPrefix()+"looking up Datasource ["+prefixedDsName+"]");
-			if (StringUtils.isNotEmpty(getJndiContextPrefix())) {
-				log.debug(getLogPrefix()+"using JNDI context prefix ["+getJndiContextPrefix()+"]");
-			}
-			try {
-				datasource = (DataSource) getContext().lookup( prefixedDsName );
-			} catch (NamingException e) {
-				throw new JdbcException("Could not find Datasource ["+prefixedDsName+"]", e);
-			}
-		}
-		return datasource;
-	}
 
 	public String getDatasourceInfo() throws JdbcException {
-		return getDatasourceInfo(getDataSourceNameToUse());
-	}
-	
-	public String getDatasourceInfo(String dsName) throws JdbcException {
 		String dsinfo=null;
 		Connection conn=null;
 		try {
-			conn=getConnection(dsName);
+			conn=getConnection();
 			DatabaseMetaData md=conn.getMetaData();
 			String product=md.getDatabaseProductName();
 			String productVersion=md.getDatabaseProductVersion();
@@ -152,10 +139,10 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 			String driverVersion=md.getDriverVersion();
 			String url=md.getURL();
 			String user=md.getUserName();
-			if (getDatabaseType(dsName) == DbmsSupportFactory.DBMS_DB2
+			if (getDatabaseType() == DbmsSupportFactory.DBMS_DB2
 					&& "WAS".equals(IbisContext.getApplicationServerType())
 					&& md.getResultSetHoldability() != ResultSet.HOLD_CURSORS_OVER_COMMIT) {
-				// For (some?) combinations of WebSphere and DB2 this seems to be
+				// For (some?) combinations of WebShere and DB2 this seems to be
 				// the default and result in the following exception when (for
 				// example?) a ResultSetIteratingPipe is calling next() on the
 				// ResultSet after it's sender has called a pipeline which
@@ -184,21 +171,13 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return dsinfo;
 	}
 
-	/**
-	 * 
-	 * @param dsName The name of the data source to retrieve the database type of.
-	 * @return The type of the specified database.
-	 */
-	public int getDatabaseType(String dsName) {
-		IDbmsSupport dbms=getDbmsSupport(dsName);
+	
+	public int getDatabaseType() {
+		IDbmsSupport dbms=getDbmsSupport();
 		if (dbms==null) {
 			return -1;
 		}
 		return dbms.getDatabaseType();
-	}
-	
-	public int getDatabaseType() throws JdbcException {
-		return getDatabaseType(getDataSourceNameToUse());
 	}
 
 	public IDbmsSupportFactory getDbmsSupportFactoryDefault() {
@@ -224,20 +203,12 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	public void setDbmsSupport(IDbmsSupport dbmsSupport) {
 		this.dbmsSupport=dbmsSupport;
 	}
-	
-	public IDbmsSupport getDbmsSupport() {
-		try {
-			return getDbmsSupport(getDataSourceNameToUse());
-		} catch (Exception e) {
-			throw new RuntimeException("Cannot obtain connection to determine dbmssupport", e);
-		}
-	}
 		
-	public IDbmsSupport getDbmsSupport(String dsName) {
+	public IDbmsSupport getDbmsSupport() {
 		if (dbmsSupport==null) {
 			Connection conn=null;
 			try {
-				conn=getConnection(dsName);
+				conn=getConnection();
 			} catch (Exception e) {
 				throw new RuntimeException("Cannot obtain connection to determine dbmssupport", e);
 			}
@@ -263,31 +234,22 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		}
 		return dbmsSupport;
 	}
-	
 	/**
-	 * Obtains a connection to the default data source. 
+	 * Obtains a connection to the datasource. 
 	 */
 	// TODO: consider making this one protected.
 	public Connection getConnection() throws JdbcException {
-		return getConnection(getDataSourceNameToUse());
-	}
-	
-	/**
-	 * Attempts to obtain a connection to a data source with the specified name.
-	 */
-	// TODO: consider making this one protected.
-	public Connection getConnection(String datasourceName) throws JdbcException {
-		DataSource ds = getDatasource(datasourceName);
+		DataSource ds=getDatasource();
 		try {
-			if(StringUtils.isNotEmpty(getUsername())) {
+			if (StringUtils.isNotEmpty(getUsername())) {
 				return ds.getConnection(getUsername(),getPassword());
 			}
 			return ds.getConnection();
 		} catch (SQLException e) {
-			throw new JdbcException(getLogPrefix()+"cannot open connection on datasource ["+datasourceName+"]", e);
+			throw new JdbcException(getLogPrefix()+"cannot open connection on datasource ["+getDataSourceNameToUse()+"]", e);
 		}
 	}
-	
+
 	public Connection getConnectionWithTimeout(int timeout) throws JdbcException, TimeOutException {
 		if (timeout<=0) {
 			return getConnection();
@@ -302,7 +264,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 			} 
 		}
 	}
-	
+
 	/**
 	 * Returns the name and location of the database that this objects operates on.
 	 *  
@@ -335,7 +297,8 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 							pv.getDefinition().getType(), pv.getValue()),
 					i + 1);
 		}
-	}
+	}	
+
 
 	/**
 	 * Sets the name of the object.
@@ -409,19 +372,4 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		connectionsArePooled = b;
 	}
 	
-	public Map<String, DataSource> getProxiedDataSources() {
-		return proxiedDataSources;
-	}
-
-	public void setProxiedDataSources(Map<String, DataSource> proxiedDataSources) {
-		this.proxiedDataSources = proxiedDataSources;
-	}
-
-	public String getDataSourceNameToUse() throws JdbcException {
-		String result = getDatasourceName();
-		if (StringUtils.isEmpty(result)) {
-			throw new JdbcException(getLogPrefix()+"no datasourceName specified");
-		}
-		return result;
-	}
 }
