@@ -96,6 +96,7 @@ import org.w3c.dom.Node;
  * <li><code>find</code>: perform a query that returns properties</li>
  * <li><code>update</code>: update the properties of an existing document</li>
  * <li><code>fetch</code>: get the (meta)data of a folder or document</li>
+ * <li><code>delete</code>: delete a document</li>
  * </ul></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
@@ -107,6 +108,7 @@ import org.w3c.dom.Node;
  * <tr><td>{@link #setDefaultMediaType(String) defaultMediaType}</td><td>(only used when <code>action=create</code>) The MIME type used to store the document when it's not set in the input message by a property</td><td>"application/octet-stream"</td></tr>
  * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>(only used when <code>action=get</code>) if true, the content of the document is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as a String)</td><td>false</td></tr>
  * <tr><td>{@link #setGetProperties(boolean) getProperties}</td><td>(only used when <code>action=get</code>) if true, the content of the document is streamed to <code>fileInputStreamSessionKey</code> and all document properties are put in the result as a xml string</td><td>false</td></tr>
+ * <tr><td>{@link #setGetDocumentContent(boolean) getDocumentContent}</td><td>(only used when <code>action=get</code>) if true, the attachment for the document is streamed to <code>fileInputStreamSessionKey</code> otherwise only the properties are returned</td><td>true</td></tr>
  * <tr><td>{@link #setUseRootFolder(boolean) useRootFolder}</td><td>(only used when <code>action=create</code>) if true, the document is created in the root folder of the repository. Otherwise the document is created in the repository</td><td>true</td></tr>
  * <tr><td>{@link #setResultOnNotFound(String) resultOnNotFound}</td><td>(only used when <code>action=get</code>) result returned when no document was found for the given id (e.g. "[NOT_FOUND]"). If empty an exception is thrown</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeepSession(boolean) keepSession}</td><td>if true, the session is not closed at the end and it will be used in the next call</td><td>true</td></tr>
@@ -155,6 +157,21 @@ import org.w3c.dom.Node;
  * 
  * <p>
  * When <code>action=get</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
+ * </p>
+ * <p>
+ * <b>example:</b>
+ * <code>
+ * <pre>
+ *   &lt;cmis&gt;
+ *      &lt;id&gt;
+ *         documentId
+ *      &lt;/id&gt;
+ *   &lt;/cmis&gt;
+ * </pre>
+ * </code>
+ * </p>
+ * <p>
+ * When <code>action=delete</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
  * </p>
  * <p>
  * <b>example:</b>
@@ -299,7 +316,7 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 	private String proxyPassword;
 	private String proxyRealm = null;
 
-	List<String> actions = Arrays.asList("create", "get", "find", "update", "fetch");
+	List<String> actions = Arrays.asList("create", "delete", "get", "find", "update", "fetch");
 	List<String> bindingTypes = Arrays.asList("atompub", "webservices", "browser");
 	private AbstractPipe pipe = null;
 	private boolean isBridgeSender = false;
@@ -334,7 +351,7 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 			}
 		}
 		if (getAction().equalsIgnoreCase("get")) {
-			if (isGetProperties()) {
+			if (isGetProperties() && isGetDocumentContent()) {
 				if (StringUtils.isEmpty(getFileInputStreamSessionKey()) && StringUtils.isEmpty(getFileContentSessionKey())) {
 					throw new ConfigurationException("fileInputStreamSessionKey or fileContentSessionKey should be specified");
 				}
@@ -422,6 +439,8 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 				return sendMessageForActionGet(correlationID, message, prc);
 			} else if (getAction().equalsIgnoreCase("create")) {
 				return sendMessageForActionCreate(correlationID, message, prc);
+			} else if (getAction().equalsIgnoreCase("delete")) {
+				return sendMessageForActionDelete(correlationID, message, prc);
 			} else if (getAction().equalsIgnoreCase("find")) {
 				return sendMessageForActionFind(correlationID, message, prc);
 			} else if (getAction().equalsIgnoreCase("update")) {
@@ -675,6 +694,32 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 			} else {
 				log.debug(getLogPrefix() + "empty property found, ignoring");
 			}
+		}
+	}
+	
+	private String sendMessageForActionDelete(String correlationID, String message, ParameterResolutionContext prc)
+			throws SenderException, TimeOutException {
+		if (StringUtils.isEmpty(message)) {
+			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
+		}
+		CmisObject object = null;
+		try {
+			object = getCmisObject(message);
+		} catch (CmisObjectNotFoundException e) {
+			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
+				log.info(getLogPrefix() + "document with id [" + message + "] not found", e);
+				return getResultOnNotFound();
+			} else {
+				throw new SenderException(e);
+			}
+		}
+		if (object.hasAllowableAction(Action.CAN_DELETE_OBJECT)) { //// You can delete 
+			Document suppDoc = (Document) object;
+			suppDoc.delete(true);
+			return "Document Deleted";
+	
+		} else {  //// You can't delete 
+			throw new SenderException(getLogPrefix() + "Document cannot be deleted");
 		}
 	}
 	
