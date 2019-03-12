@@ -23,10 +23,12 @@ import java.util.Date;
 import java.util.Iterator;
 
 import org.apache.commons.net.ftp.FTPFile;
+import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -36,6 +38,8 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class FtpFileSystem implements IFileSystem<FTPFile> {
 
+	protected Logger log = LogUtil.getLogger(this);
+	
 	private String username;
 	private String password;
 	private String host;
@@ -267,7 +271,7 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 			try {
 				deleteFile(files[i++]);
 			} catch (FileSystemException e) {
-				System.err.println(e);
+				log.warn(e);
 			}
 		}
 	}
