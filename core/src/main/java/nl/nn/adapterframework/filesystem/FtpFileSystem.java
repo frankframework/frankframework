@@ -41,7 +41,7 @@ public class FtpFileSystem implements IFileSystem<FTPFile> {
 	private String host;
 	private int port = 21;
 
-	private String remoteDirectory;
+	private String remoteDirectory = "";
 
 	private FtpSession ftpSession = new FtpSession();
 
