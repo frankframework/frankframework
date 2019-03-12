@@ -535,8 +535,6 @@ public class XmlUtils {
 	/**
 	 * Convert an XML string to a Document
 	 * Creation date: (20-02-2003 8:12:52)
-	 * @return org.w3c.dom.Document
-	 * @exception nl.nn.adapterframework.util.DomBuilderException The exception description.
 	 */
 	public static Document buildDomDocument(String s) throws DomBuilderException {
 		StringReader sr = new StringReader(s);
@@ -557,9 +555,6 @@ public class XmlUtils {
 
 	/**
 	 * Build a Document from a URL
-	 * @param url
-	 * @return Document
-	 * @throws DomBuilderException
 	 */
 	public static Document buildDomDocument(URL url)
 		throws DomBuilderException {
@@ -1569,9 +1564,7 @@ public class XmlUtils {
 
 	/**
 	 * Performs an Identity-transform, with resolving entities with the content files in the classpath
-	 * @param input
 	 * @return String (the complete and xml)
-	 * @throws DomBuilderException
 	 */
 	static public String identityTransform(ClassLoader classLoader, String input)
 		throws DomBuilderException {
@@ -1809,10 +1802,6 @@ public class XmlUtils {
 	/**
 	 * Like {@link javanet.staxutils.XMLStreamUtils#mergeAttributes} but it can
 	 * also merge namespaces
-	 * 
-	 * @param tag
-	 * @param attrs
-	 * @param nsps
 	 */
 	public static StartElement mergeAttributes(StartElement tag,
 			Iterator<? extends Attribute> attrs,

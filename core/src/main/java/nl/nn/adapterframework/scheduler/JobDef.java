@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 */
 package nl.nn.adapterframework.scheduler;
 
-import java.sql.Connection;
+import static org.quartz.JobBuilder.newJob;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -70,11 +71,6 @@ import org.quartz.Scheduler;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
-
-import static org.quartz.TriggerBuilder.*;
-import static org.quartz.JobBuilder.*;
-import static org.quartz.DateBuilder.*;
-import static org.quartz.SimpleScheduleBuilder.*;
 
 /**
  * Definition / configuration of scheduler jobs.
@@ -211,7 +207,7 @@ import static org.quartz.SimpleScheduleBuilder.*;
  * results.</p>
  *
  * <p>The '#' character is allowed for the day-of-week field.  This character
- * is used to specify "the nth" XXX day of the month.  For example, the value
+ * is used to specify "the nth" XX day of the month.  For example, the value
  * of "6#3" in the day-of-week field means the third Friday of the month
  * (day 6 = Friday and "#3" = the 3rd one in the month). Other
  * examples: "2#1" = the first Monday of the month and  "4#5" = the fifth
@@ -675,7 +671,6 @@ public class JobDef {
 		List<String> jmsRealmNames = new ArrayList<String>();
 
 		for (Configuration configuration : ibisManager.getConfigurations()) {
-			List<JobDef> scheduledJobs = configuration.getScheduledJobs();
 			for (JobDef jobdef : configuration.getScheduledJobs()) {
 				if (jobdef.getLocker()!=null) {
 					String jmsRealmName = jobdef.getLocker().getJmsRealmName();
@@ -705,8 +700,8 @@ public class JobDef {
 			}
 		}
 
-		for (Iterator iter = jmsRealmNames.iterator(); iter.hasNext();) {
-			String jmsRealmName = (String) iter.next();
+		for (Iterator<String> iter = jmsRealmNames.iterator(); iter.hasNext();) {
+			String jmsRealmName = iter.next();
 			setJmsRealm(jmsRealmName);
 			DirectQuerySender qs;
 			qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
@@ -722,7 +717,7 @@ public class JobDef {
 			executeQueryJob(ibisManager);
 		}
 
-		List messageLogs = new ArrayList();
+		List<MessageLogObject> messageLogs = new ArrayList<MessageLogObject>();
 		for(IAdapter iadapter : ibisManager.getRegisteredAdapters()) {
 			Adapter adapter = (Adapter)iadapter;
 			PipeLine pipeline = adapter.getPipeLine();
@@ -749,8 +744,7 @@ public class JobDef {
 			}
 		}
 
-		for (Iterator iter = messageLogs.iterator(); iter.hasNext();) {
-			MessageLogObject mlo = (MessageLogObject) iter.next();
+		for (MessageLogObject mlo: messageLogs) {
 			setJmsRealm(mlo.getJmsRealmName());
 			DirectQuerySender qs;
 			qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
@@ -766,7 +760,8 @@ public class JobDef {
 						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER
 						+ "') AND " + mlo.getExpiryDateField()
 						+ " < CONVERT(datetime, '" + formattedDate + "', 120))";
-			} else {
+			}
+			else {
 				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE "
 						+ mlo.getTypeField() + " IN ('"
 						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','"
@@ -783,8 +778,7 @@ public class JobDef {
 	}
 
 	private void cleanupFileSystem(IbisManager ibisManager) {
-		for (Iterator it=directoryCleaners.iterator();it.hasNext();) {
-			DirectoryCleaner directoryCleaner = (DirectoryCleaner)it.next();
+		for (DirectoryCleaner directoryCleaner: directoryCleaners) {
 			directoryCleaner.cleanup();
 		}
 	}
@@ -963,10 +957,10 @@ public class JobDef {
 				} else {
 					heartbeatLog.warn(message);
 				}
-				for (Iterator receiverIt = adapter.getReceiverIterator();
-						receiverIt.hasNext();) {
+				for (Iterator<IReceiver> receiverIt = adapter.getReceiverIterator(); receiverIt.hasNext();) {
+					IReceiver iReceiver = receiverIt.next();
 					countReceiver++;
-					IReceiver iReceiver = (IReceiver) receiverIt.next();
+
 					if (iReceiver instanceof ReceiverBase) {
 						ReceiverBase receiver = (ReceiverBase) iReceiver;
 					

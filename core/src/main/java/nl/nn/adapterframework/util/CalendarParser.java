@@ -100,8 +100,6 @@ class ParserState
 
     /**
      * Get day of month.
-     *
-     * @return day of month
      */
     int getDate() {
         return day;
@@ -109,8 +107,6 @@ class ParserState
 
     /**
      * Get hour.
-     *
-     * @return hour
      */
     int getHour() {
         return hour;
@@ -118,8 +114,6 @@ class ParserState
 
     /**
      * Get millisecond.
-     *
-     * @return millisecond
      */
     int getMillisecond() {
         return milli;
@@ -127,8 +121,6 @@ class ParserState
 
     /**
      * Get minute.
-     *
-     * @return minute
      */
     int getMinute() {
         return minute;
@@ -136,8 +128,6 @@ class ParserState
 
     /**
      * Get month.
-     *
-     * @return month
      */
     int getMonth() {
         return month;
@@ -145,17 +135,13 @@ class ParserState
 
     /**
      * Get second.
-     *
-     * @return second
      */
     int getSecond() {
         return second;
     }
 
     /**
-     * Get time zone.
-     *
-     * @return time zone (<tt>null</tt> if none was specified)
+     * Get time zone. Returns (<tt>null</tt> if none was specified)
      */
     TimeZone getTimeZone() {
         return timeZone;
@@ -163,8 +149,6 @@ class ParserState
 
     /**
      * Get year.
-     *
-     * @return year
      */
     int getYear() {
         return year;
@@ -328,10 +312,6 @@ class ParserState
 
     /**
      * Set the day of month value.
-     *
-     * @param val day of month value
-     *
-     * @throws CalendarParserException if the value is not a valid day of month
      */
     void setDate(int val) throws CalendarParserException {
         if (val < 1 || val > 31) {
@@ -343,10 +323,6 @@ class ParserState
 
     /**
      * Set the hour value.
-     *
-     * @param val hour value
-     *
-     * @throws CalendarParserException if the value is not a valid hour
      */
     void setHour(int val) throws CalendarParserException {
         final int tmpHour;
@@ -366,10 +342,6 @@ class ParserState
 
     /**
      * Set the millisecond value.
-     *
-     * @param val millisecond value
-     *
-     * @throws CalendarParserException if the value is not a valid millisecond
      */
     void setMillisecond(int val) throws CalendarParserException {
         if (val < 0 || val > 999) {
@@ -381,10 +353,6 @@ class ParserState
 
     /**
      * Set the minute value.
-     *
-     * @param val minute value
-     *
-     * @throws CalendarParserException if the value is not a valid minute
      */
     void setMinute(int val) throws CalendarParserException {
         if (val < 0 || val > 59) {
@@ -396,10 +364,6 @@ class ParserState
 
     /**
      * Set the month value.
-     *
-     * @param val month value
-     *
-     * @throws CalendarParserException if the value is not a valid month
      */
     void setMonth(int val) throws CalendarParserException {
         if (val < 1 || val > 12) {
@@ -411,10 +375,6 @@ class ParserState
 
     /**
      * Set the second value.
-     *
-     * @param val second value
-     *
-     * @throws CalendarParserException if the value is not a valid second
      */
     void setSecond(int val) throws CalendarParserException {
         if (val < 0 || val > 59) {
@@ -435,8 +395,6 @@ class ParserState
 
     /**
      * Set the time zone.
-     *
-     * @param tz time zone
      */
     void setTimeZone(TimeZone tz) {
         timeZone = tz;
@@ -444,10 +402,6 @@ class ParserState
 
     /**
      * Set the year value.
-     *
-     * @param val year value
-     *
-     * @throws CalendarParserException if the value is not a valid year
      */
     void setYear(int val) throws CalendarParserException {
         if (val < 0) {
@@ -628,10 +582,6 @@ public class CalendarParser {
 
     /**
      * Return a string representation of the order value.
-     *
-     * @param order order
-     *
-     * @return order string
      */
     public static final String getOrderString(int order) {
         switch (order) {

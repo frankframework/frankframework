@@ -93,7 +93,6 @@ public class ServiceDispatcher  {
 	
 	/**
 	 * Check whether a serviceName is registered at the <code>ServiceDispatcher</code>.
-	 * @param name
 	 * @return true if the service is registered at this dispatcher, otherwise false
 	 */
 	public boolean isRegisteredServiceListener(String name) {

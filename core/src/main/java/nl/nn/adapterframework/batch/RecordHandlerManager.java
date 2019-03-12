@@ -83,9 +83,8 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 	/**
 	 * Determines the recordhandler to use, based on key.
 	 * Key is "*" by default, but can be changed by descendant implementations.
-	 * @param recordKey
+	 *
 	 * @return RecordHandlingFlow element to be used for handling records of type recordkey
-	 * @throws Exception
 	 */
 	public RecordHandlingFlow getRecordHandlerByKey(String recordKey) throws Exception {
 		RecordHandlingFlow rhf =(RecordHandlingFlow)valueHandlersMap.get(recordKey);

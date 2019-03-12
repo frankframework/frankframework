@@ -232,8 +232,6 @@ public class FixedResult extends FixedForwardPipe {
     /**
      * Sets the name of the filename. The fileName should not be specified
      * as an absolute path, but as a resource in the classpath.
-     *
-     * @param fileName the name of the file to return the contents from
      */
 	@IbisDoc({"name of the file containing the resultmessage", ""})
     public void setFileName(String fileName) {

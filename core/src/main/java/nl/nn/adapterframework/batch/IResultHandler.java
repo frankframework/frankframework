@@ -64,7 +64,6 @@ public interface IResultHandler extends INamedObject {
 	/**
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
-	 * @throws Exception
 	 */
 	void openRecordType(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception;
 	

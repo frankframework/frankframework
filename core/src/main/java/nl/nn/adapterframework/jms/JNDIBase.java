@@ -123,9 +123,6 @@ public class JNDIBase {
      *  <b>Notice:</b> you can set the parameters on the commandline with <br/>
      *  java -Djava.naming.factory.initial= xxx -Djava.naming.provider.url=xxx
      * <br/><br/>
-     *
-     * @return                                   The context value
-     * @exception  NamingException  Description of the Exception
      */
     public Context getContext() throws NamingException {
 
@@ -146,17 +143,13 @@ public class JNDIBase {
         return credentials;
     }
     /**
-     *  Gets the initialContextFactoryName
-     *
-     * @return    The initialContextFactoryName value
+     *  Gets the value of initialContextFactoryName
      */
     public String getInitialContextFactoryName() {
         return initialContextFactoryName;
     }
     /**
-     *  Gets the providerURL
-     *
-     * @return    The providerURL value
+     *  Gets the value of providerURL
      */
     public String getProviderURL() {
         return providerURL;
@@ -178,18 +171,14 @@ public class JNDIBase {
         credentials = newCredentials;
     }
     /**
-     *  Sets the initialContextFactoryName
-     *
-     * @param  value  The new initialContextFactoryName value
+     *  Sets the value of initialContextFactoryName
      */
 	@IbisDoc({"class to use as initial context factory", ""})
     public void setInitialContextFactoryName(String value) {
         initialContextFactoryName = value;
     }
     /**
-     *  Sets the providerURL
-     *
-     * @param  value  The new providerURL value
+     *  Sets the value of providerURL
      */
 	@IbisDoc({"", " "})
     public void setProviderURL(String value) {
@@ -203,7 +192,6 @@ public class JNDIBase {
     /**
      * Setter for <code>Context.URL_PKG_PREFIXES</code><br/>
      * Creation date: (03-04-2003 8:50:36)
-     * @param newUrlPkgPrefixes java.lang.String
      */
 	@IbisDoc({"maps to the field context.url_pkg_prefixes", ""})
     public void setUrlPkgPrefixes(String newUrlPkgPrefixes) {

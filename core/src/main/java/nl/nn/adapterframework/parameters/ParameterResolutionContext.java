@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2017 Nationale-Nederlanden
+   Copyright 2013, 2016-2017,2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,21 +16,17 @@
 package nl.nn.adapterframework.parameters;
 
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 
 import org.apache.log4j.Logger;
-import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -91,17 +87,14 @@ public class ParameterResolutionContext {
 	}
 
 	/**
-	 * @param p
-	 * @return value as a <link>ParameterValue<link> object
-	 * @throws IbisException
+	 * Get value as a <link>ParameterValue<link> object
 	 */
 	private ParameterValue getValue(ParameterValueList alreadyResolvedParameters, Parameter p) throws ParameterException {
 		return new ParameterValue(p, p.getValue(alreadyResolvedParameters, this));
 	}
 	
 	/**
-	 * @param parameters
-	 * @return arraylist of <link>ParameterValue<link> objects
+	 * Returns an array list of <link>ParameterValue<link> objects
 	 */
 	public ParameterValueList getValues(ParameterList parameters) throws ParameterException {
 		if (parameters == null)
@@ -111,15 +104,16 @@ public class ParameterResolutionContext {
 		for (Iterator<Parameter> parmIterator= parameters.iterator(); parmIterator.hasNext(); ) {
 			Parameter parm = parmIterator.next();
 			String parmSessionKey = parm.getSessionKey();
+			// if a parameter has sessionKey="*", then a list is generated with a synthetic parameter referring to 
+			// each session variable whose name starts with the name of the original parameter
 			if ("*".equals(parmSessionKey)) {
 				String parmName = parm.getName();
-				for (Iterator<String> keyIterator = session.keySet().iterator(); keyIterator.hasNext();) {
-					String key = keyIterator.next();
-					if (!PipeLineSessionBase.tsReceivedKey.equals(key)) {
-						if ((key.startsWith(parmName) || "*".equals(parmName))) {
+				for (String sessionKey: session.keySet()) {
+					if (!PipeLineSessionBase.tsReceivedKey.equals(sessionKey) && !PipeLineSessionBase.tsSentKey.equals(sessionKey)) {
+						if ((sessionKey.startsWith(parmName) || "*".equals(parmName))) {
 							Parameter newParm = new Parameter();
-							newParm.setName(key);
-							newParm.setSessionKey(key);
+							newParm.setName(sessionKey);
+							newParm.setSessionKey(sessionKey); // TODO: Should also set the parameter.type, based on the type of the session key.
 							try {
 								newParm.configure();
 							} catch (ConfigurationException e) {
@@ -137,8 +131,7 @@ public class ParameterResolutionContext {
 	}
 
 	/**
-	 * @param parameters
-	 * @return map of value objects
+	 * Returns a Map of value objects
 	 */
 	public Map<String,Object> getValueMap(ParameterList parameters) throws ParameterException {
 		if (parameters==null) {
@@ -185,13 +178,13 @@ public class ParameterResolutionContext {
 	}
 
 	/**
-	 * @return the (possibly xml formatted) input message
+	 * Returns (possibly xml formatted) input message
 	 */
 	public String getInput() {
 		return input;
 	}
 	/**
-	 * @param input the (xml formatted) input message
+	 * Sets as input, the (xml formatted) input message
 	 */
 	public void setInput(String input) {
 		this.input = input;
@@ -199,7 +192,7 @@ public class ParameterResolutionContext {
 	}
 
 	/**
-	 * @return hashtable with session variables
+	 * Returns hashtable with session variables
 	 */
 	public IPipeLineSession getSession() {
 		return session;

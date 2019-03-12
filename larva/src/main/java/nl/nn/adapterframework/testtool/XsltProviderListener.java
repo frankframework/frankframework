@@ -69,8 +69,6 @@ public class XsltProviderListener {
 
 	/**
 	 * Set namespace aware.
-	 *  
-	 * @param namespaceAware
 	 */
 	public void setNamespaceAware(boolean namespaceAware) {
 		this.namespaceAware = namespaceAware;

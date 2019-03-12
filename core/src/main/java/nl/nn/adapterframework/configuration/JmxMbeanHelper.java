@@ -50,9 +50,6 @@ public class JmxMbeanHelper {
 
     /**
      * Hooks an {@link nl.nn.adapterframework.core.Adapter Adapter} to the MBean server
-     *
-     * @param adapter the adapter
-     * @throws ConfigurationException when something goes wrong
      */
     public static void hookupAdapter(IAdapter adapter) throws ConfigurationException {
         try {
@@ -98,10 +95,6 @@ public class JmxMbeanHelper {
     /**
      * Registers an mBean at an MBeanServer. If there is already an mbean registered
      * under the specified name, it is first de-registered.
-     *
-     * @param name  the objectName
-     * @param mbean the modelMbean to register
-     * @throws ConfigurationException
      */
     private static void registerMBean(ObjectName name, RequiredModelMBean mbean) throws ConfigurationException {
         MBeanServer server = getMBeanServer();
@@ -143,9 +136,6 @@ public class JmxMbeanHelper {
 
     /**
      * Creates ModelMBeanInfo object of an {@link nl.nn.adapterframework.core.Adapter adapter}
-     *
-     * @param adapter
-     * @return the ModelMBeanInfo object
      */
     private static ModelMBeanInfo createMBeanInfo(IAdapter adapter) {
 

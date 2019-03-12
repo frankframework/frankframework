@@ -83,12 +83,10 @@ public class RhinoPipe extends FixedForwardPipe {
 	private boolean lookupAtRuntime = false;
 	private boolean debug=false;
 	/**
-	 * checks for correct configuration, and translates the fileName to a file,
+	 * Checks for correct configuration, and translates the fileName to a file,
 	 * to check existence. If a fileName was specified, the contents of the file
 	 * is used as java-script function library. After evaluation the result is returned via
 	 * <code>Pipeline</code>.
-	 * 
-	 * @throws ConfigurationException
 	 */
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -230,11 +228,6 @@ public class RhinoPipe extends FixedForwardPipe {
 			}
 	}
 
-/**
- * Sets the name of the filename. The fileName should not be specified as an
- * absolute path, but as a resource in the classpath.
- * 
- */
 	@IbisDoc({"when set <code>true</code> or set to something else then \"true\", (even set to the empty string), the debugging is not active", "true"})
 	public void setDebug(boolean b) {
 		debug = b;

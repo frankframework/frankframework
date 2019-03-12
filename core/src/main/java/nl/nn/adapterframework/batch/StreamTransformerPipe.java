@@ -204,9 +204,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 
 	
 	/**
-	 * register a uniquely named manager.
-	 * @param manager
-	 * @throws Exception
+	 * Register a uniquely named manager.
 	 * @deprecated please use registerManager
 	 */
 	public void registerChild(IRecordHandlerManager manager) throws Exception {
@@ -216,9 +214,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		registerManager(manager);
 	}
 	/**
-	 * register a uniquely named manager.
-	 * @param manager
-	 * @throws Exception
+	 * Register a uniquely named manager.
 	 */
 	public void registerManager(IRecordHandlerManager manager) throws Exception {
 		registeredManagers.put(manager.getName(), manager);
@@ -235,9 +231,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	}
 	
 	/**
-	 * register a flow element that contains the handlers for a specific record type (key)
-	 * @param flowEl
-	 * @throws Exception
+	 * Register a flow element that contains the handlers for a specific record type (key)
 	 * @deprecated please use manager.addFlow()
 	 */
 	public void registerChild(RecordHandlingFlow flowEl) throws Exception {
@@ -253,9 +247,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	}
 	
 	/**
-	 * register a uniquely named record manager.
-	 * @param handler
-	 * @throws Exception
+	 * Register a uniquely named record manager.
 	 * @deprecated please use registerRecordHandler()
 	 */
 	public void registerChild(IRecordHandler handler) throws Exception {
@@ -265,9 +257,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		registerRecordHandler(handler);
 	}
 	/**
-	 * register a uniquely named record manager.
-	 * @param handler
-	 * @throws Exception
+	 * Register a uniquely named record manager.
 	 */
 	public void registerRecordHandler(IRecordHandler handler) throws Exception {
 		registeredRecordHandlers.put(handler.getName(), handler);
@@ -279,9 +269,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 
 	
 	/**
-	 * register a uniquely named result manager.
-	 * @param handler
-	 * @throws Exception
+	 * Register a uniquely named result manager.
 	 * @deprecated Please use registerResultHandler()
 	 */
 	public void registerChild(IResultHandler handler) throws Exception {
@@ -291,9 +279,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		registerResultHandler(handler);
 	}
 	/**
-	 * register a uniquely named result manager.
-	 * @param handler
-	 * @throws Exception
+	 * Register a uniquely named result manager.
 	 */
 	public void registerResultHandler(IResultHandler handler) throws Exception {
 		handler.setPipe(this);
