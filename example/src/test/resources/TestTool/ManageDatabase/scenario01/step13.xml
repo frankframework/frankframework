@@ -1,4 +1,4 @@
-<manageDatabaseREQ datasourceName="jdbc">
+<manageDatabaseREQ datasourceName="jdbc/ibis4example">
 	<sql>
 		<type>create</type>
 		<query>create table tempTable (mycolumn int)</query>

@@ -60,7 +60,7 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		XmlBuilder xbRoot = new XmlBuilder("manageDatabaseREQ");
 		
 		XmlBuilder xSql = new XmlBuilder("sql");
-		xSql.addAttribute("datasourceName", form_datasourceName);
+		xSql.addAttribute("datasourceName", form_datasourceName.split("] ")[1]);
 		xSql.addAttribute("expectResultSet", form_expectResultSet);
 		xbRoot.addSubElement(xSql);
 
