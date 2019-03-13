@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.webcontrol.pipes;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -9,6 +9,15 @@ import java.net.URL;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
+
+import org.custommonkey.xmlunit.Diff;
+import org.custommonkey.xmlunit.XMLUnit;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -24,15 +33,6 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.custommonkey.xmlunit.Diff;
-import org.custommonkey.xmlunit.XMLUnit;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.xml.sax.SAXException;
 
 public class IbisConsoleTest {
 	private static String SHOW_CONFIGURATION_STATUS_XSLT = "webcontrol/pipes/xsl/ShowConfigurationStatus.xsl";
@@ -59,10 +59,8 @@ public class IbisConsoleTest {
 		System.setProperty("configurations.names", "${instance.name},NotExistingConfig");
 
 		ibisTester.initTest();
-		if (ibisTester.testStartAdapters()) {
-			ibisContext = ibisTester.getIbisContext();
-		}
-		assertEquals(true, ibisContext != null);
+		assertNull(ibisTester.testStartAdapters());
+		ibisContext = ibisTester.getIbisContext();
 
 		URL showConfigurationStatusUrl = ClassUtils.getResourceURL(IbisConsoleTest.class,
 				SHOW_CONFIGURATION_STATUS_XSLT);
