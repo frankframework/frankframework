@@ -118,7 +118,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 	private boolean lockRows=false;
 	private int lockWait=-1;
 	
-	private HashMap<String, DirectQuerySender> usedQuerySenders = new HashMap<String, DirectQuerySender>();
+	private HashMap<String, DirectQuerySender> subQuerySenders = new HashMap<String, DirectQuerySender>();
 	
 	public class Column {
 		private String name = null;
@@ -307,20 +307,19 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				if(!datasourceName.equals(getDataSourceNameToUse())) {
 					DirectQuerySender dqs;
 					
-					if(!usedQuerySenders.keySet().contains(datasourceName)) {
+					if(!subQuerySenders.keySet().contains(datasourceName)) {
 						dqs = new DirectQuerySender();
 						
 						dqs.setProxiedDataSources(getProxiedDataSources());
 						dqs.setDatasourceName(datasourceName);
-						dqs.setQueryType(XmlUtils.getChildTagAsString(queryElement, "type"));
 						dqs.configure();
 						
-						usedQuerySenders.put(datasourceName, dqs);
+						subQuerySenders.put(datasourceName, dqs);
 					} else {
-						dqs = usedQuerySenders.get(datasourceName);
-						dqs.setQueryType(XmlUtils.getChildTagAsString(queryElement, "type"));
+						dqs = subQuerySenders.get(datasourceName);
 					}
-					
+
+					dqs.setQueryType(XmlUtils.getChildTagAsString(queryElement, "type"));
 					String query = XmlUtils.getChildTagAsString(queryElement, "query");
 					return dqs.sendMessage(correlationID, query, prc);
 				}
@@ -673,5 +672,13 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 
 	public int getLockWait() {
 		return lockWait;
+	}
+
+	@Override
+	public void close() {
+		for(DirectQuerySender dqs : subQuerySenders.values()) {
+			dqs.close();
+		}
+		super.close();
 	}
 }
