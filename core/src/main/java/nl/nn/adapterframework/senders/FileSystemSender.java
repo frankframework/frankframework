@@ -15,6 +15,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.filesystem.IFileSystem;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -197,6 +198,7 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 		return action;
 	}
 
+	@IbisDoc({ "possible values: delete, download, list, mkdir, rename, rmdir, upload", "" })
 	public void setAction(String action) {
 		this.action = action;
 	}
