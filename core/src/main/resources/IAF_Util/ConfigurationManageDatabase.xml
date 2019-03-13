@@ -8,7 +8,7 @@
 			<listener className="nl.nn.adapterframework.http.WebServiceListener" name="ManageDatabase-ws" serviceNamespaceURI="http://managedatabase.ibissource.org/" />
 		</receiver>
 		<!-- <pipeline firstPipe="PutParamsInSession" transactionAttribute="Required"> -->
-		<pipeline firstPipe="ApplyJmsRealms" transactionAttribute="Required">
+		<pipeline firstPipe="PassOnDatasourceName" transactionAttribute="Required">
 			<inputValidator className="nl.nn.adapterframework.pipes.XmlValidator" schema="ManageDatabase/xsd/ManageDatabase.xsd" root="manageDatabaseREQ">
 				<forward name="failure" path="InputValidateFailure" />
 				<forward name="parserError" path="InputValidateError" />
@@ -20,9 +20,9 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="ApplyJmsRealms"
+			<pipe name="PassOnDatasourceName"
 				className="nl.nn.adapterframework.pipes.XsltPipe"
-				styleSheetName="ManageDatabase/xsl/ApplyDatasourceNameAttribute.xsl"
+				styleSheetName="ManageDatabase/xsl/PassOnDatasourceName.xsl"
 				>
 				<forward name="success" path="Query"/>
 			</pipe>

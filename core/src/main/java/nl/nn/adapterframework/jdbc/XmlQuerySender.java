@@ -28,6 +28,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -45,6 +46,7 @@ import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -115,6 +117,8 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 
 	private boolean lockRows=false;
 	private int lockWait=-1;
+	
+	private HashMap<String, DirectQuerySender> usedQuerySenders = new HashMap<String, DirectQuerySender>();
 	
 	public class Column {
 		private String name = null;
@@ -299,21 +303,29 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			String datasourceName = queryElement.getAttribute("datasourceName");
 			if(datasourceName.isEmpty())
 				datasourceName = getDataSourceNameToUse();
-			
-			if(!datasourceName.equals(getDataSourceNameToUse())) {			
-				DirectQuerySender dqs = new DirectQuerySender();
-				dqs.setProxiedDataSources(getProxiedDataSources());
-				dqs.setDatasourceName(datasourceName);
-				dqs.setQueryType(XmlUtils.getChildTagAsString(queryElement, "type"));
-				try {
-					dqs.configure();
-					dqs.open();
-				} catch (ConfigurationException e) {
-					throw new SenderException("Failed to configure DirectQuerySender for the specified data source", e);
+			try {
+				if(!datasourceName.equals(getDataSourceNameToUse())) {
+					DirectQuerySender dqs;
+					
+					if(!usedQuerySenders.keySet().contains(datasourceName)) {
+						dqs = new DirectQuerySender();
+						
+						dqs.setProxiedDataSources(getProxiedDataSources());
+						dqs.setDatasourceName(datasourceName);
+						dqs.setQueryType(XmlUtils.getChildTagAsString(queryElement, "type"));
+						dqs.configure();
+						
+						usedQuerySenders.put(datasourceName, dqs);
+					} else {
+						dqs = usedQuerySenders.get(datasourceName);
+						dqs.setQueryType(XmlUtils.getChildTagAsString(queryElement, "type"));
+					}
+					
+					String query = XmlUtils.getChildTagAsString(queryElement, "query");
+					return dqs.sendMessage(correlationID, query, prc);
 				}
-
-				String query = XmlUtils.getChildTagAsString(queryElement, "query");
-				return dqs.sendMessage(correlationID, query, prc);
+			} catch(ConfigurationException e) {
+				throw new SenderException("Could not configure DirectQuerySender with the specified data source");
 			}
 			
 			if (root.equalsIgnoreCase("select")) {
@@ -644,7 +656,8 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			}
 		}
 	}
-
+	
+	@IbisDoc({"when set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the select statement (by appending ' for update nowait skip locked' to the end of the query)", "false"})
 	public void setLockRows(boolean b) {
 		lockRows = b;
 	}
@@ -653,6 +666,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		return lockRows;
 	}
 
+	@IbisDoc({"when set and >=0, ' for update wait #' is used instead of ' for update nowait skip locked'", "-1"})
 	public void setLockWait(int i) {
 		lockWait = i;
 	}
