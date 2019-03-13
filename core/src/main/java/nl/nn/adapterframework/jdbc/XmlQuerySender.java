@@ -272,6 +272,22 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 	}
 
 	@Override
+	public void open() throws SenderException {
+		super.open();
+		for(DirectQuerySender dqs : subQuerySenders.values()) {
+			dqs.open();
+		}
+	}
+
+	@Override
+	public void close() {
+		for(DirectQuerySender dqs : subQuerySenders.values()) {
+			dqs.close();
+		}
+		super.close();
+	}
+
+	@Override
 	protected PreparedStatement getStatement(Connection con, String correlationID, String message, boolean updateable) throws SQLException, JdbcException {
 		String qry = message;
 		if (lockRows) {
@@ -313,15 +329,18 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 						dqs.setProxiedDataSources(getProxiedDataSources());
 						dqs.setDatasourceName(datasourceName);
 						dqs.configure();
+						dqs.open();
 						
 						subQuerySenders.put(datasourceName, dqs);
 					} else {
 						dqs = subQuerySenders.get(datasourceName);
 					}
 
-					dqs.setQueryType(XmlUtils.getChildTagAsString(queryElement, "type"));
-					String query = XmlUtils.getChildTagAsString(queryElement, "query");
-					return dqs.sendMessage(correlationID, query, prc);
+					synchronized(dqs) {
+						dqs.setQueryType(XmlUtils.getChildTagAsString(queryElement, "type"));
+						String query = XmlUtils.getChildTagAsString(queryElement, "query");
+						return dqs.sendMessage(correlationID, query, prc);
+					}
 				}
 			} catch(ConfigurationException e) {
 				throw new SenderException("Could not configure DirectQuerySender with the specified data source");
@@ -672,13 +691,5 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 
 	public int getLockWait() {
 		return lockWait;
-	}
-
-	@Override
-	public void close() {
-		for(DirectQuerySender dqs : subQuerySenders.values()) {
-			dqs.close();
-		}
-		super.close();
 	}
 }
