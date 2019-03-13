@@ -9,9 +9,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.util.XmlBuilder;
 
 public class LocalFileSystem implements IFileSystem<File> {
 
@@ -156,7 +156,8 @@ public class LocalFileSystem implements IFileSystem<File> {
 	}
 
 	@Override
-	public void augmentFileInfo(XmlBuilder fileInfo, File f) {
+	public Map<String, Object> getAdditionalFileProperties(File f) {
+		return null;
 	}
 
 	@Override

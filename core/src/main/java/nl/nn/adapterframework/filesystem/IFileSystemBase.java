@@ -5,9 +5,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.util.XmlBuilder;
 
 
 public interface IFileSystemBase<F> {
@@ -18,7 +18,7 @@ public interface IFileSystemBase<F> {
 
 	public F toFile(String filename) throws FileSystemException;
 	public Iterator<F> listFiles() throws FileSystemException;
-	
+
 	public boolean exists(F f) throws FileSystemException;
 	public OutputStream createFile(F f) throws FileSystemException, IOException;
 	public OutputStream appendFile(F f) throws FileSystemException, IOException;
@@ -31,6 +31,6 @@ public interface IFileSystemBase<F> {
 	public String getCanonicalName(F f, boolean isFolder) throws FileSystemException;
 	public Date getModificationTime(F f, boolean isFolder) throws FileSystemException;
 
-	public void augmentFileInfo(XmlBuilder fileInfo, F f);
-	
+	public Map<String, Object> getAdditionalFileProperties(F f);
+
 }
