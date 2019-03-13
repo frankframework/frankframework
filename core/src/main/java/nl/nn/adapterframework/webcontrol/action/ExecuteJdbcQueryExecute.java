@@ -171,7 +171,10 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		List<String> realmNames = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
 		List<String> datasourceNames = new ArrayList<String>();
 		for(String s : realmNames) {
-			datasourceNames.add("["+s+"] " + JmsRealmFactory.getInstance().getJmsRealm(s).getDatasourceName());
+			String dsName = JmsRealmFactory.getInstance().getJmsRealm(s).getDatasourceName();
+			if(!datasourceNames.contains(dsName)) {
+				datasourceNames.add("["+s+"] " + dsName);
+			}
 		}
 		if (datasourceNames.size() == 0)
 			datasourceNames.add("no data sources defined");
