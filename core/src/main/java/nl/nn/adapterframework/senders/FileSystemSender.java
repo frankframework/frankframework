@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 
@@ -182,7 +183,14 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 				fileXml.addAttribute("modificationTime", time);
 			}
 		}
-		ifs.augmentFileInfo(fileXml, f);
+		
+		Map<String, Object> additionalParameters = ifs.getAdditionalFileProperties(f);
+		if(additionalParameters != null) {
+			for (Map.Entry<String, Object> attribute : additionalParameters.entrySet()) {
+				fileXml.addAttribute(attribute.getKey(), String.valueOf(attribute.getValue()));
+			}
+		}
+
 		return fileXml;
 	}
 

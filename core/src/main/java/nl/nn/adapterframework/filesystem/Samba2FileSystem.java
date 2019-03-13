@@ -10,6 +10,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -31,7 +32,6 @@ import com.hierynomus.smbj.share.File;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * @author alisihab
@@ -189,7 +189,8 @@ public class Samba2FileSystem implements IFileSystem<String> {
 	}
 
 	@Override
-	public void augmentFileInfo(XmlBuilder fileInfo, String f) {
+	public Map<String, Object> getAdditionalFileProperties(String f) {
+		return null;
 	}
 
 	@Override
