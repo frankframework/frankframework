@@ -12,10 +12,22 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 
+/**
+ * Sender to work with Amazon S3. 
+ * 
+ * <p><b>S3 File System specific Actions:</b></p>
+ * <p>The <code>createBucket</code> action requires bucket name as input. Bucket region must be specified.</p>
+ * <p>The <code>deleteBucket</code> action requires bucket name as input. </p>
+ * <p>The <code>copy</code> action requires the destinationFileName parameter to be set which should contain the name of the destination file. Destination bucket name must be specified. </p>
+ * <p>The <code>restore</code> action restores an archived copy of an object back into Amazon S3, requires object name as input. Tier must be specified. </p>
+ * 
+ * <br/>
+ */
 public class AmazonS3FileSystemSender extends FileSystemSender<S3Object, AmazonS3FileSystem> {
 
 	private List<String> specificActions = Arrays.asList("createBucket", "deleteBucket", "copy", "restore");
@@ -29,11 +41,12 @@ public class AmazonS3FileSystemSender extends FileSystemSender<S3Object, AmazonS
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if (getAction().equalsIgnoreCase("createBucket") && getFileSystem().isForceGlobalBucketAccessEnabled()
+		if (getAction().equalsIgnoreCase("createBucket") && getFileSystem().isForceGlobalBucketAccessEnabled() 
 				&& (StringUtils.isEmpty(getFileSystem().getBucketRegion())
-						|| !AmazonS3FileSystem.AVAILABLE_REGIONS.contains(getFileSystem().getBucketRegion())))
+						|| !AmazonS3FileSystem.AVAILABLE_REGIONS.contains(getFileSystem().getBucketRegion()))) {
 			throw new ConfigurationException(" invalid bucketRegion [" + getFileSystem().getBucketRegion()
 					+ "] please use following supported regions " + AmazonS3FileSystem.AVAILABLE_REGIONS.toString());
+		}
 		else if (getAction().equalsIgnoreCase("copy")) {
 			if (StringUtils.isEmpty(getFileSystem().getDestinationBucketName())
 					|| !BucketNameUtils.isValidV2BucketName(getFileSystem().getDestinationBucketName()))
@@ -94,61 +107,79 @@ public class AmazonS3FileSystemSender extends FileSystemSender<S3Object, AmazonS
 		
 		return result;
 	}
-
+	
+	@IbisDoc({ "access key to access to the AWS resources owned by the account", "" })
 	public void setAccessKey(String accessKey) {
 		getFileSystem().setAccessKey(accessKey);
 	}
 
+	@IbisDoc({ "secret key to access to the AWS resources owned by the account", "" })
 	public void setSecretKey(String secretKey) {
 		getFileSystem().setSecretKey(secretKey);
 	}
 
+	@IbisDoc({ "alias used to obtain AWS credentials ", "" })
 	public void setAuthAlias(String authAlias) {
 		getFileSystem().setAuthAlias(authAlias);
 	}
 
+	@IbisDoc({ "setting this flag will result in disabling chunked encoding for all requests.", "false" })
 	public void setChunkedEncodingDisabled(boolean chunkedEncodingDisabled) {
 		getFileSystem().setChunkedEncodingDisabled(chunkedEncodingDisabled);
 	}
 
+	@IbisDoc({ "set whether the client should be configured with global bucket access enabled.", "false" }) 
 	public void setForceGlobalBucketAccessEnabled(boolean forceGlobalBucketAccessEnabled) {
 		getFileSystem().setForceGlobalBucketAccessEnabled(forceGlobalBucketAccessEnabled);
 	}
 
+	@IbisDoc({ "name of the region that the client will be created from", "eu-west-1" }) 
 	public void setClientRegion(String clientRegion) {
 		getFileSystem().setClientRegion(clientRegion);
 	}
 
+	@IbisDoc({ "name of the bucket to access", "" }) 
 	public void setBucketName(String bucketName) {
 		getFileSystem().setBucketName(bucketName);
 	}
-
+	
+	@IbisDoc({ "name of the destination bucket name can be used for copy action", "" }) 
 	public void setDestinationBucketName(String destinationBucketName) {
 		getFileSystem().setDestinationBucketName(destinationBucketName);
 	}
 
+	@IbisDoc({ "name of the bucket region for create action", "" }) 
 	public void setBucketRegion(String bucketRegion) {
 		getFileSystem().setBucketRegion(bucketRegion);
 	}
 
+	@IbisDoc({ "name of the storage class for copy action. If storage class is enabled must be specified", "" }) 
 	public void setStorageClass(String storageClass) {
 		getFileSystem().setStorageClass(storageClass);
 	}
-
+	
+	@IbisDoc({ "name of tier for restore action", "" }) 
 	public void setTier(String tier) {
 		getFileSystem().setTier(tier);
 	}
 
-	public void setExperationInDays(int experationInDays) {
-		getFileSystem().setExperationInDays(experationInDays);
+	@IbisDoc({ "the time, in days, between when an object is restored to thebucket and when it expires", "" }) 
+	public void setExpirationInDays(int expirationInDays) {
+		getFileSystem().setExpirationInDays(expirationInDays);
 	}
-
+	
+	@IbisDoc({ "enables storage class for copy action", "false" }) 
 	public void setStorageClassEnabled(boolean storageClassEnabled) {
 		getFileSystem().setStorageClassEnabled(storageClassEnabled);
 	}
 
+	@IbisDoc({ "enables creating bucket by upload and copy action if the bucket does not exist", "false" }) 
 	public void setBucketCreationEnabled(boolean bucketCreationEnabled) {
 		getFileSystem().setBucketCreationEnabled(bucketCreationEnabled);
+	}
+	
+	public void setTimeout(long timeout) {
+		getFileSystem().setTimeout(timeout);
 	}
 
 }

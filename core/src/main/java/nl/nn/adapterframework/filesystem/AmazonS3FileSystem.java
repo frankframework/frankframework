@@ -1,3 +1,18 @@
+/*
+   Copyright 2018-2019 Integration Partners
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.filesystem;
 
 import java.io.FilterOutputStream;
@@ -39,9 +54,7 @@ import com.amazonaws.services.s3.model.Tier;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.XmlBuilder;
 
 public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 
@@ -66,11 +79,13 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 
 	private String storageClass;
 	private String tier = Tier.Standard.toString();
-	private int experationInDays = -1;
+	private int expirationInDays = -1;
 
 	private boolean storageClassEnabled = false;
 	private boolean bucketCreationEnabled = false;
 	private boolean bucketExistsThrowException = true;
+	
+	private long timeout = 1000;
 
 	public void configure() throws ConfigurationException {
 
@@ -161,6 +176,11 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 			@Override
 			public void close() throws IOException {
 				super.close();
+				try {
+					putObjectThread.join(timeout);
+				} catch (InterruptedException e) {
+					throw new IOException("Put Object thread has been interrupted.",e);
+				}
 			}
 		};
 		return fos;
@@ -192,10 +212,6 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 		} catch (AmazonServiceException e) {
 			throw new FileSystemException(e);
 		}
-	}
-
-	public String getInfo(S3Object f) throws FileSystemException {
-		return getFileAsXmlBuilder(f).toXML();
 	}
 
 	@Override
@@ -232,25 +248,7 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 		s3Client.deleteObject(bucketName, f.getKey());
 	}
 
-	public XmlBuilder getFileAsXmlBuilder(S3Object f) throws FileSystemException {
-		S3Object fObject = s3Client.getObject(bucketName, f.getKey());
-		XmlBuilder fileXml = new XmlBuilder("file");
-		fileXml.addAttribute("bucketName", fObject.getBucketName());
-		fileXml.addAttribute("name", fObject.getKey());
-		fileXml.addAttribute("size", fObject.getObjectMetadata().getContentLength());
-
-		// Get the modification date of the file
-		Date modificationDate = fObject.getObjectMetadata().getLastModified();
-		//add date
-		String date = DateUtils.format(modificationDate, DateUtils.FORMAT_DATE);
-		fileXml.addAttribute("modificationDate", date);
-
-		// add the time
-		String time = DateUtils.format(modificationDate, DateUtils.FORMAT_TIME_HMS);
-		fileXml.addAttribute("modificationTime", time);
-		return fileXml;
-	}
-
+	
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(S3Object f) {
 		Map<String, Object> attributes = new HashMap<String, Object>();
@@ -279,16 +277,6 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 		if(f.getKey().isEmpty()) {
 			return null;
 		}
-		if (s3Client.doesObjectExist(bucketName, f.getKey())) {
-			file = s3Client.getObject(bucketName, f.getKey());
-		} else {
-			// This sleep is to make sure that the object is present in the server.
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				throw new FileSystemException(e);
-			}
-		}
 		file = s3Client.getObject(bucketName, f.getKey());
 		Date date = file.getObjectMetadata().getLastModified();
 		return date;
@@ -301,7 +289,7 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 	*            The desired name for a bucket that is about to be created. The class {@link BucketNameUtils} 
 	*            provides a method that can check if the bucketName is valid. This is done just before the bucketName is used here.
 	* @param bucketExistsThrowException
-	* 			  This parameter is used for controlling the behavior for weather an exception has to be thrown or not. 
+	* 			  This parameter is used for controlling the behavior for whether an exception has to be thrown or not. 
 	* 			  In case of upload action being configured to be able to create a bucket, an exception will not be thrown when a bucket with assigned bucketName already exists.
 	*/
 	public String createBucket(String bucketName, boolean bucketExistsThrowException) throws SenderException {
@@ -353,8 +341,8 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 	 */
 	public String copyObject(String fileName, String destinationFileName) throws SenderException {
 		try {
-			bucketDoesNotExist(bucketName); //if bucket does not exists this method throws and exception
-			fileDoesNotExist(bucketName, fileName); //if object does not exists this method throws and exception
+			bucketDoesNotExist(bucketName); //if bucket does not exists this method throws an exception
+			fileDoesNotExist(bucketName, fileName); //if object does not exists this method throws an exception
 			if (!s3Client.doesBucketExistV2(destinationBucketName))
 				bucketCreationWithObjectAction(destinationBucketName);
 			if (!s3Client.doesObjectExist(destinationBucketName, destinationFileName)) {
@@ -380,7 +368,7 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 		try {
 			bucketDoesNotExist(bucketName);
 			fileDoesNotExist(bucketName, fileName);
-			RestoreObjectRequest requestRestore = new RestoreObjectRequest(bucketName, fileName, experationInDays).withTier(tier);
+			RestoreObjectRequest requestRestore = new RestoreObjectRequest(bucketName, fileName, expirationInDays).withTier(tier);
 			s3Client.restoreObjectV2(requestRestore);
 			log.debug("Object with fileName [" + fileName + "] and bucketName [" + bucketName + "] restored from Amazon S3 Glacier");
 
@@ -555,12 +543,12 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 		this.tier = tier;
 	}
 
-	public int getExperationInDays() {
-		return experationInDays;
+	public int getExpirationInDays() {
+		return expirationInDays;
 	}
 
-	public void setExperationInDays(int experationInDays) {
-		this.experationInDays = experationInDays;
+	public void setExpirationInDays(int experationInDays) {
+		this.expirationInDays = experationInDays;
 	}
 
 	public boolean isStorageClassEnabled() {
@@ -581,5 +569,9 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 
 	public boolean isBucketExistsThrowException() {
 		return bucketExistsThrowException;
+	}
+	
+	public void setTimeout(long timeout) {
+		this.timeout = timeout;
 	}
 }

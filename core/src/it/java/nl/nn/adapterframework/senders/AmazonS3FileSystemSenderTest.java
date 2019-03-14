@@ -57,6 +57,7 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 	private AmazonS3 s3Client;
 	private AmazonS3FileSystemSender s3FileSystemSender;
 	
+	private long timeout = 1000;
 	private int waitMilis = 1000;
 
 	{
@@ -130,6 +131,12 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 			@Override
 			public void close() throws IOException {
 				super.close();
+				try {
+					putObjectThread.join(timeout);
+				} catch (InterruptedException e) {
+					throw new IOException("Put Object thread has been interrupted.",e);
+				}
+				
 			}
 		};
 		return fos;

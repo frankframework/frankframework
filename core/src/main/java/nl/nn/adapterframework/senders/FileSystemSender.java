@@ -26,6 +26,22 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
+/**
+ * FileSystem Sender: Base class for all file system senders
+ * 
+ * 
+ * <p><b>Actions:</b></p>
+ * <p>The <code>upload</code> action requires the file parameter to be set which should contain the fileContent to upload in either Stream, Bytes or String format</p>
+ * <p>The <code>rename</code> action requires the destination parameter to be set which should contain the full path </p>
+ * <p>The <code>delete</code> action requires the filename as input </p>
+ * <p>The <code>mkdir</code> action for creating a directory requires directory name to be created as input. </p>
+ * <p>The <code>rmdir</code> action for removing a directory requires directory name to be removed as input. </p>
+ * <p>The <code>download</code> action for downloading a file, requires filename as input. Returns a base64 encoded string containing the file content </p>
+ * <p>The <code>list</code> action for listing a directory content or single file</p>
+ * 
+ * <br/>
+ */
+
 public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithParametersBase {
 
 	private String action;
