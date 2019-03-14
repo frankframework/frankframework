@@ -716,7 +716,7 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		if (object.hasAllowableAction(Action.CAN_DELETE_OBJECT)) { //// You can delete 
 			Document suppDoc = (Document) object;
 			suppDoc.delete(true);
-			return "Document Deleted";
+			return correlationID;
 	
 		} else {  //// You can't delete 
 			throw new SenderException(getLogPrefix() + "Document cannot be deleted");
