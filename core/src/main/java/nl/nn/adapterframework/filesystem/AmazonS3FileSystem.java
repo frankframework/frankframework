@@ -29,9 +29,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.junit.rules.TemporaryFolder;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
@@ -161,10 +161,7 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 
 	@Override
 	public OutputStream createFile(final S3Object f) throws FileSystemException, IOException {
-		TemporaryFolder folder = new TemporaryFolder();
-		folder.create();
-		
-		String fileName = folder.getRoot().getAbsolutePath() + "tempFile";
+		String fileName = FileUtils.getTempDirectory().getAbsolutePath() + "tempFile";
 		
 		final File file = new File(fileName);
 		final FileOutputStream fos = new FileOutputStream(file);
