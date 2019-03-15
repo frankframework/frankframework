@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.configuration.classloader;
+package nl.nn.adapterframework.configuration.classloaders;
 
 import static org.junit.Assert.*;
 
@@ -21,19 +21,39 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.LinkedList;
+
+import nl.nn.adapterframework.configuration.ClassLoaderManager;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.configuration.classloaders.IClassLoader;
+import nl.nn.adapterframework.configuration.classloaders.IClassLoader.ReportLevel;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.Misc;
+
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
-public abstract class ClassLoaderTestBase<C extends ClassLoader> {
+public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito {
 
 	private ClassLoader C = null;
+	IbisContext ibisContext = spy(new IbisContext());
+	protected String scheme = "file";
+	protected AppConstants appConstants;
+	private String configurationName = null;
 
 	abstract C createClassLoader(ClassLoader parent) throws Exception;
 
 	@Before
 	public void init() throws Exception {
 		ClassLoader parent = new ClassLoaderMock();
+		appConstants = AppConstants.getInstance();
 		C = createClassLoader(parent);
+
+		if(C instanceof IClassLoader) {
+			appConstants.put("configurations."+getConfigurationName()+".classLoaderType", C.getClass().getSimpleName());
+			((IClassLoader) C).configure(ibisContext, getConfigurationName());
+		}
 	}
 
 	/**
@@ -41,7 +61,18 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> {
 	 * @return scheme to test against
 	 */
 	protected String getScheme() {
-		return "file";
+		return scheme;
+	}
+
+	/**
+	 * Returns a dummy configuration name
+	 * @return name of the configuration
+	 */
+	protected String getConfigurationName() {
+		if(configurationName == null)
+			configurationName = "dummyConfigurationName"+Misc.createRandomUUID();
+
+		return configurationName;
 	}
 
 	public void resourceExists(String resource) {
@@ -67,7 +98,7 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> {
 	}
 
 	/**
-	 * ORDER MATTERS HERE!
+	 * In which resources are retrieved matters!
 	 * @param name
 	 * @param schemes
 	 * @throws IOException
@@ -128,5 +159,47 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> {
 	@Test
 	public void parentOnlyFolder() {
 		resourceExists("folder/parent_only.xml", "file");
+	}
+
+	//Not only test through setters and getters but also properties
+	@Test
+	public void testClassLoaderManager() throws ConfigurationException {
+		ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
+		ClassLoader config = manager.get(getConfigurationName());
+		URL resource = config.getResource("file.xml");
+
+		assertNotNull("resource [file.xml] must be found", resource);
+		assertTrue("resource name must start with scheme ["+getScheme()+"]", resource.toString().startsWith(getScheme()));
+		assertTrue("resource name must end with [file.xml]", resource.toString().endsWith("file.xml"));
+	}
+
+	// make sure default level is always error
+	@Test
+	public void testReportLevelERROR() {
+		if(C instanceof IClassLoader) {
+			IClassLoader c = (IClassLoader) C;
+			c.setReportLevel("dummy");
+			c.getReportLevel().equals(ReportLevel.ERROR);
+		}
+	}
+
+	// test lowercase level
+	@Test
+	public void testReportLeveldebug() {
+		if(C instanceof IClassLoader) {
+			IClassLoader c = (IClassLoader) C;
+			c.setReportLevel("debug");
+			c.getReportLevel().equals(ReportLevel.DEBUG);
+		}
+	}
+
+	// test uppercase level
+	@Test
+	public void testReportLevelDEBUG() {
+		if(C instanceof IClassLoader) {
+			IClassLoader c = (IClassLoader) C;
+			c.setReportLevel("DEBUG");
+			c.getReportLevel().equals(ReportLevel.DEBUG);
+		}
 	}
 }

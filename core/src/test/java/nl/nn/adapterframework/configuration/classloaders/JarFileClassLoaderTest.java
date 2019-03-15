@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.configuration.classloader;
+package nl.nn.adapterframework.configuration.classloaders;
 
 import java.net.URL;
 import java.util.jar.JarFile;
@@ -39,7 +39,10 @@ public class JarFileClassLoaderTest extends ClassLoaderTestBase<JarFileClassLoad
 		JarFile jarFile = new JarFile(file.getFile());
 		assertNotNull("jar file not found",jarFile);
 
-		return new JarFileClassLoader(file.getFile(), "dummy", parent);
+		JarFileClassLoader cl = new JarFileClassLoader(parent);
+		cl.setJar(file.getFile());
+		appConstants.put("configurations."+getConfigurationName()+".jar", file.getFile());
+		return cl;
 	}
 
 	/* test files that are only present in the JAR_FILE zip */

@@ -22,7 +22,7 @@ package nl.nn.adapterframework.configuration.classloaders;
  * @author Niels Meijer
  */
 
-public class WebAppClassLoader extends ClassLoader {
+public class WebAppClassLoader extends ClassLoaderBase {
 
 	public WebAppClassLoader(ClassLoader parent) {
 		super(parent);

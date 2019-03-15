@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2018 Nationale-Nederlanden
+   Copyright 2016, 2018 - 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,28 +18,35 @@ package nl.nn.adapterframework.configuration.classloaders;
 import java.rmi.server.UID;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.util.AppConstants;
 
 public class ServiceClassLoader extends JarBytesClassLoader {
 	private IbisManager ibisManager;
 	private String adapterName;
 	private String configurationName;
 
-
-	public ServiceClassLoader(IbisManager ibisManager, String adapterName, String configurationName) throws ConfigurationException {
-		this(ibisManager, adapterName, configurationName, ServiceClassLoader.class.getClassLoader());
+	public ServiceClassLoader(ClassLoader parent) {
+		super(parent);
 	}
 
-	public ServiceClassLoader(IbisManager ibisManager, String adapterName, String configurationName, ClassLoader parent) throws ConfigurationException {
-		super(parent);
-		this.ibisManager = ibisManager;
-		this.adapterName = adapterName;
-		this.configurationName = configurationName;
+	@Override
+	public void configure(IbisContext ibisContext, String configurationName) throws ConfigurationException {
+		super.configure(ibisContext, configurationName);
+
+		this.configurationName = this.getConfigurationName();
+		this.ibisManager = getIbisContext().getIbisManager();
+
 		reload();
+	}
+
+	public void setAdapterName(String adapterName) {
+		this.adapterName = adapterName;
 	}
 
 	@Override
@@ -52,6 +59,7 @@ public class ServiceClassLoader extends JarBytesClassLoader {
 		if (adapter != null) {
 			IPipeLineSession pipeLineSession = new PipeLineSessionBase();
 			PipeLineResult processResult = adapter.processMessage(getCorrelationId(), configurationName, pipeLineSession);
+			//TODO check result of pipeline
 			Object object = pipeLineSession.get("configurationJar");
 			if (object != null) {
 				if (object instanceof byte[]) {

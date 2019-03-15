@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.configuration.classloader;
+package nl.nn.adapterframework.configuration.classloaders;
 
 import java.net.URL;
 
@@ -26,7 +26,11 @@ public class DirectoryClassLoaderTest extends ClassLoaderTestBase<DirectoryClass
 	@Override
 	DirectoryClassLoader createClassLoader(ClassLoader parent) throws Exception {
 		URL file = this.getClass().getResource("/classLoader");
-		return new DirectoryClassLoader(file.getFile(), parent);
+
+		DirectoryClassLoader cl = new DirectoryClassLoader(parent);
+		cl.setDirectory(file.getFile());
+		appConstants.put("configurations."+getConfigurationName()+".directory", file.getFile());
+		return cl;
 	}
 
 	/* test files that are only present in the JAR_FILE zip */
