@@ -15,12 +15,13 @@
 */
 package nl.nn.adapterframework.filesystem;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.junit.rules.TemporaryFolder;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
@@ -85,8 +87,6 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 	private boolean bucketCreationEnabled = false;
 	private boolean bucketExistsThrowException = true;
 	
-	private long timeout = 1000;
-
 	public void configure() throws ConfigurationException {
 
 		if (StringUtils.isEmpty(getAccessKey()) || StringUtils.isEmpty(getSecretKey()))
@@ -161,29 +161,28 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 
 	@Override
 	public OutputStream createFile(final S3Object f) throws FileSystemException, IOException {
-		PipedOutputStream outputStream = new PipedOutputStream();
-		final PipedInputStream inputStream = new PipedInputStream(outputStream);
-		final Thread putObjectThread = new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				s3Client.putObject(bucketName, f.getKey(), inputStream, f.getObjectMetadata());
-			}
-		});
-		putObjectThread.start();
-		FilterOutputStream fos = new FilterOutputStream(outputStream) {
-
+		TemporaryFolder folder = new TemporaryFolder();
+		folder.create();
+		
+		String fileName = folder.getRoot().getAbsolutePath() + "tempFile";
+		
+		final File file = new File(fileName);
+		final FileOutputStream fos = new FileOutputStream(file);
+		
+		FilterOutputStream filterOutputStream = new FilterOutputStream(fos) {
 			@Override
 			public void close() throws IOException {
 				super.close();
-				try {
-					putObjectThread.join(timeout);
-				} catch (InterruptedException e) {
-					throw new IOException("Put Object thread has been interrupted.",e);
-				}
+				fos.close();
+				FileInputStream fis = new FileInputStream(file);
+				ObjectMetadata metaData = new ObjectMetadata();
+				metaData.setContentLength(file.length());
+				s3Client.putObject(bucketName, f.getKey(), fis, metaData);
+				fis.close();
+				file.delete();
 			}
 		};
-		return fos;
+		return filterOutputStream;
 	}
 
 	@Override
@@ -571,7 +570,4 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 		return bucketExistsThrowException;
 	}
 	
-	public void setTimeout(long timeout) {
-		this.timeout = timeout;
-	}
 }

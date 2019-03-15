@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -172,9 +171,8 @@ public abstract class FileSystemTest<F, FS extends IFileSystem<F>> {
 		
 		F file = fileSystem.toFile(filename);
 		OutputStream out = fileSystem.createFile(file);
-		PrintWriter pw = new PrintWriter(out);
-		pw.println(contents);
-		pw.close();
+		out.write(contents.getBytes());
+		out.close();
 		waitForActionToFinish();
 		// test
 		existsCheck(filename);
@@ -199,9 +197,8 @@ public abstract class FileSystemTest<F, FS extends IFileSystem<F>> {
 		String contents = "Tweede versie van de file";
 		F file = fileSystem.toFile(filename);
 		OutputStream out = fileSystem.createFile(file);
-		PrintWriter pw = new PrintWriter(out);
-		pw.println(contents);
-		pw.close();
+		out.write(contents.getBytes());
+		out.close();
 		waitForActionToFinish();
 		// test
 		existsCheck(filename);
@@ -246,9 +243,8 @@ public abstract class FileSystemTest<F, FS extends IFileSystem<F>> {
 		
 		F file = fileSystem.toFile(filename);
 		OutputStream out = fileSystem.appendFile(file);
-		PrintWriter pw = new PrintWriter(out);
-		pw.println(regel2);
-		pw.close();
+		out.write(regel2.getBytes());
+		out.close();
 		waitForActionToFinish();
 		// test
 		existsCheck(filename);

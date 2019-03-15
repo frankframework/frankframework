@@ -4,18 +4,20 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -57,7 +59,6 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 	private AmazonS3 s3Client;
 	private AmazonS3FileSystemSender s3FileSystemSender;
 	
-	private long timeout = 1000;
 	private int waitMilis = 1000;
 
 	{
@@ -113,33 +114,28 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 
 	@Override
 	protected OutputStream _createFile(final String filename) throws IOException {
-		PipedOutputStream pos = new PipedOutputStream();
-		final PipedInputStream pis = new PipedInputStream(pos);
-		final Thread putObjectThread = new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					s3Client.putObject(bucketName, filename, pis, new ObjectMetadata());
-				} catch (Exception e) {
-					System.err.println(e);
-				}
-			}
-		});
-		putObjectThread.start();
-		FilterOutputStream fos = new FilterOutputStream(pos) {
+		TemporaryFolder folder = new TemporaryFolder();
+		folder.create();
+		
+		String fileName = folder.getRoot().getAbsolutePath()+"tempFile";
+		
+		final File file = new File(fileName);
+		final FileOutputStream fos = new FileOutputStream(file);
+		
+		FilterOutputStream filterOutputStream = new FilterOutputStream(fos) {
 			@Override
 			public void close() throws IOException {
 				super.close();
-				try {
-					putObjectThread.join(timeout);
-				} catch (InterruptedException e) {
-					throw new IOException("Put Object thread has been interrupted.",e);
-				}
-				
+				fos.close();
+				FileInputStream fis = new FileInputStream(file);
+				ObjectMetadata metaData = new ObjectMetadata();
+				metaData.setContentLength(file.length());
+				s3Client.putObject(bucketName, filename, fis, metaData);
+				fis.close();
+				file.delete();
 			}
 		};
-		return fos;
+		return filterOutputStream;
 	}
 
 	@Override
