@@ -33,7 +33,7 @@ public class JarFileClassLoaderTest extends ClassLoaderTestBase<JarFileClassLoad
 	}
 
 	@Override
-	JarFileClassLoader createClassLoader(ClassLoader parent) throws Exception {
+	public JarFileClassLoader createClassLoader(ClassLoader parent) throws Exception {
 		URL file = this.getClass().getResource(JAR_FILE);
 		assertNotNull("jar url not found", file);
 		JarFile jarFile = new JarFile(file.getFile());

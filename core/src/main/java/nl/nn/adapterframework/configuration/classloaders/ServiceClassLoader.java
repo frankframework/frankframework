@@ -24,7 +24,6 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.util.AppConstants;
 
 public class ServiceClassLoader extends JarBytesClassLoader {
 	private IbisManager ibisManager;

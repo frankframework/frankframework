@@ -51,6 +51,12 @@ public class ClassLoaderManagerTest extends Mockito {
 	private final static String CONFIG_5_NAME = "config5";
 	private final static String CONFIG_6_NAME = "config6";
 
+	// declarations for parameterized tests
+	private String type = null;
+	private boolean skip = false;
+	private String configurationName;
+	private AppConstants appConstants;
+
 	@Parameters(name = "{0} - {1}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
@@ -71,11 +77,6 @@ public class ClassLoaderManagerTest extends Mockito {
 		});
 	}
 
-	private String type = null;
-	private boolean skip = false;
-	private String configurationName;
-	private AppConstants appConstants;
-
 	public ClassLoaderManagerTest(String type, String configurationName) throws Exception {
 		appConstants = AppConstants.getInstance();
 
@@ -87,17 +88,17 @@ public class ClassLoaderManagerTest extends Mockito {
 		this.type = type;
 		this.configurationName = configurationName;
 
-		if(type.equals("DirectoryClassLoader")) {
+		if("DirectoryClassLoader".equals(type)) {
 			String directory = getTestClassesLocation()+"classLoader/";
 			appConstants.put("configurations."+configurationName+".directory", directory);
 		}
 
-		if(type.equals("JarFileClassLoader")) {
+		if("JarFileClassLoader".equals(type)) {
 			URL file = this.getClass().getResource(JARFILE);
 			appConstants.put("configurations."+configurationName+".jar", file.getFile());
 		}
 
-		if(type.equals("ServiceClassLoader")) {
+		if("ServiceClassLoader".equals(type)) {
 			appConstants.put("configurations."+configurationName+".adapterName", ADAPTER_SERVICE_NAME);
 		}
 	}
@@ -114,7 +115,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	}
 
 	@Before
-	public void setup() throws ConfigurationException, Exception {
+	public void setUp() throws ConfigurationException, Exception {
 		String configurationsNames = "";
 		for(Object[] o: data()) {
 			configurationsNames += o[1]+",";

@@ -44,7 +44,7 @@ import nl.nn.adapterframework.util.Misc;
 public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLoader> {
 
 	@Override
-	DatabaseClassLoader createClassLoader(ClassLoader parent) throws Exception {
+	public DatabaseClassLoader createClassLoader(ClassLoader parent) throws Exception {
 		mockJMS();
 		mockDatabase();
 

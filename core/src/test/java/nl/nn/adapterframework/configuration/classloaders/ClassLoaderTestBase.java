@@ -37,7 +37,7 @@ import org.mockito.Mockito;
 public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito {
 
 	private ClassLoader C = null;
-	IbisContext ibisContext = spy(new IbisContext());
+	protected IbisContext ibisContext = spy(new IbisContext());
 	protected String scheme = "file";
 	protected AppConstants appConstants;
 	private String configurationName = null;
@@ -179,7 +179,7 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 		if(C instanceof IClassLoader) {
 			IClassLoader c = (IClassLoader) C;
 			c.setReportLevel("dummy");
-			c.getReportLevel().equals(ReportLevel.ERROR);
+			assertTrue(c.getReportLevel().equals(ReportLevel.ERROR));
 		}
 	}
 
@@ -189,7 +189,7 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 		if(C instanceof IClassLoader) {
 			IClassLoader c = (IClassLoader) C;
 			c.setReportLevel("debug");
-			c.getReportLevel().equals(ReportLevel.DEBUG);
+			assertTrue(c.getReportLevel().equals(ReportLevel.DEBUG));
 		}
 	}
 
@@ -199,7 +199,7 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 		if(C instanceof IClassLoader) {
 			IClassLoader c = (IClassLoader) C;
 			c.setReportLevel("DEBUG");
-			c.getReportLevel().equals(ReportLevel.DEBUG);
+			assertTrue(c.getReportLevel().equals(ReportLevel.DEBUG));
 		}
 	}
 }

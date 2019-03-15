@@ -24,7 +24,7 @@ import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
 public class DirectoryClassLoaderTest extends ClassLoaderTestBase<DirectoryClassLoader> {
 
 	@Override
-	DirectoryClassLoader createClassLoader(ClassLoader parent) throws Exception {
+	public DirectoryClassLoader createClassLoader(ClassLoader parent) throws Exception {
 		URL file = this.getClass().getResource("/classLoader");
 
 		DirectoryClassLoader cl = new DirectoryClassLoader(parent);

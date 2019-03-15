@@ -22,7 +22,6 @@ import java.util.jar.JarFile;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
 
 public class JarFileClassLoader extends BytesClassLoader {
