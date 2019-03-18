@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -116,21 +117,25 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 	protected OutputStream _createFile(final String filename) throws IOException {
 		TemporaryFolder folder = new TemporaryFolder();
 		folder.create();
-		
+
 		String fileName = folder.getRoot().getAbsolutePath()+"tempFile";
-		
+
 		final File file = new File(fileName);
 		final FileOutputStream fos = new FileOutputStream(file);
+		final BufferedOutputStream bos = new BufferedOutputStream(fos);
 		
-		FilterOutputStream filterOutputStream = new FilterOutputStream(fos) {
+		FilterOutputStream filterOutputStream = new FilterOutputStream(bos) {
 			@Override
 			public void close() throws IOException {
 				super.close();
-				fos.close();
+				bos.close();
+
 				FileInputStream fis = new FileInputStream(file);
 				ObjectMetadata metaData = new ObjectMetadata();
 				metaData.setContentLength(file.length());
+				
 				s3Client.putObject(bucketName, filename, fis, metaData);
+				
 				fis.close();
 				file.delete();
 			}

@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.filesystem;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -162,19 +163,23 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 	@Override
 	public OutputStream createFile(final S3Object f) throws FileSystemException, IOException {
 		String fileName = FileUtils.getTempDirectory().getAbsolutePath() + "tempFile";
-		
+
 		final File file = new File(fileName);
 		final FileOutputStream fos = new FileOutputStream(file);
-		
-		FilterOutputStream filterOutputStream = new FilterOutputStream(fos) {
+		final BufferedOutputStream bos = new BufferedOutputStream(fos);
+
+		FilterOutputStream filterOutputStream = new FilterOutputStream(bos) {
 			@Override
 			public void close() throws IOException {
 				super.close();
-				fos.close();
+				bos.close();
+
 				FileInputStream fis = new FileInputStream(file);
 				ObjectMetadata metaData = new ObjectMetadata();
 				metaData.setContentLength(file.length());
+
 				s3Client.putObject(bucketName, f.getKey(), fis, metaData);
+
 				fis.close();
 				file.delete();
 			}
