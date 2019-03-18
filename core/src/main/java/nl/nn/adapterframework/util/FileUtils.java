@@ -464,16 +464,16 @@ public class FileUtils {
 		return null;
 	}
 
-	public static List getListFromNames(String names, char seperator) {
+	public static List<String> getListFromNames(String names, char seperator) {
 		StringTokenizer st = new StringTokenizer(names, "" + seperator);
-		LinkedList list = new LinkedList();
+		LinkedList<String> list = new LinkedList<String>();
 		while (st.hasMoreTokens()) {
 			list.add(st.nextToken());
 		}
 		return list;
 	}
 
-	public static List getListFromNames(String[] names) {
+	public static List<String> getListFromNames(String[] names) {
 		if (names == null) {
 			return null;
 		}
@@ -491,12 +491,12 @@ public class FileUtils {
 		return result.toString();
 	}
 	
-	public static String getNamesFromList(List filenames, char seperator) {
+	public static String getNamesFromList(List<String> filenames, char seperator) {
 		if (filenames == null)
 			return "";
 			
 		StringBuffer result = new StringBuffer();
-		for (Iterator nameIterator = filenames.iterator(); nameIterator.hasNext();) {
+		for (Iterator<String> nameIterator = filenames.iterator(); nameIterator.hasNext();) {
 			String name = (String)nameIterator.next();
 			if (result.length() > 0)
 				result.append(seperator);

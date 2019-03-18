@@ -111,11 +111,11 @@ public class IbisTester {
 		}
 	}
 
-	public boolean doTest() {
+	public String doTest() {
 		initTest();
 		try {
-			boolean result = testStartAdapters();
-			if (result) {
+			String result = testStartAdapters();
+			if (result==null) {
 				result = testLarva();
 			}
 			return result;
@@ -153,7 +153,7 @@ public class IbisTester {
 		debug("***end***");
 	}
 
-	public boolean testStartAdapters() {
+	public String testStartAdapters() {
 		BasicConfigurator.configure();
 		Logger.getRootLogger().setLevel(Level.INFO);
 		// remove AppConstants because it can be present from another JUnit test
@@ -218,14 +218,13 @@ public class IbisTester {
 				+ adaptersCount + "]";
 		if (adaptersCount == adaptersStarted) {
 			debug(msg);
-			return true;
+			return null;
 		} else {
-			error(msg);
-			return false;
+			return error(msg);
 		}
 	}
 
-	public boolean testLarva() {
+	public String testLarva() {
 		debug("***start larva***");
 		Result result;
 		try {
@@ -236,24 +235,22 @@ public class IbisTester {
 		}
 
 		if (result == null) {
-			error("First call to get scenarios failed");
-			return false;
+			return error("First call to get scenarios failed");
 		} else {
 			Double countScenariosRootDirs = evaluateXPathNumber(
 					result.resultString,
 					"count(html/body//select[@name='scenariosrootdirectory']/option)");
 			if (countScenariosRootDirs == 0) {
-				error("No scenarios root directories found");
-				return false;
+				return error("No scenarios root directories found");
 			}
 
 			Collection<String> scenariosRootDirsUnselected = evaluateXPath(
 					result.resultString,
 					"(html/body//select[@name='scenariosrootdirectory'])[1]/option[not(@selected)]/@value");
 
-			boolean runScenariosResult = runScenarios(result.resultString);
-			if (!runScenariosResult) {
-				return false;
+			String runScenariosResult = runScenarios(result.resultString);
+			if (runScenariosResult!=null) {
+				return runScenariosResult;
 			}
 			if (scenariosRootDirsUnselected != null
 					&& scenariosRootDirsUnselected.size() > 0) {
@@ -267,28 +264,26 @@ public class IbisTester {
 					}
 
 					if (result == null) {
-						error("Call to get scenarios from ["
+						return error("Call to get scenarios from ["
 								+ scenariosRootDirUnselected + "] failed");
-						return false;
 					}
 
 					runScenariosResult = runScenarios(result.resultString);
-					if (!runScenariosResult) {
-						return false;
+					if (runScenariosResult!=null) {
+						return runScenariosResult;
 					}
 				}
 			}
 		}
-		return true;
+		return null;
 	}
 
-	private boolean runScenarios(String xhtml) {
+	private String runScenarios(String xhtml) {
 		Collection<String> scenarios = evaluateXPath(
 				xhtml,
 				"(html/body//select[@name='execute'])[1]/option/@value[ends-with(.,'.properties')]");
 		if (scenarios == null || scenarios.size() == 0) {
-			error("No scenarios found");
-			return false;
+			return error("No scenarios found");
 		} else {
 			String scenariosRootDir = evaluateXPathFirst(
 					xhtml,
@@ -351,11 +346,10 @@ public class IbisTester {
 			if (scenariosCount == scenariosPassed) {
 				debug(msg);
 			} else {
-				error(msg);
-				return false;
+				return error(msg);
 			}
 		}
-		return true;
+		return null;
 	}
 
 	private Result runScenario(String scenariosRootDir, String scenario,
@@ -395,9 +389,10 @@ public class IbisTester {
 				+ string);
 	}
 
-	private static void error(String string) {
+	private static String error(String string) {
 		System.err.println(getIsoTimeStamp() + " " + getMemoryInfo() + " "
 				+ string);
+		return string;
 	}
 
 	private static String getIsoTimeStamp() {
