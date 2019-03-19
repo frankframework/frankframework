@@ -316,24 +316,24 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			where = XmlUtils.getChildTagAsString(queryElement, "where");
 			order = XmlUtils.getChildTagAsString(queryElement, "order");
 
-			String datasourceName = queryElement.getAttribute("datasourceName");
-			if(datasourceName.isEmpty())
-				datasourceName = getDataSourceNameToUse();
+			String dsName = queryElement.getAttribute("datasourceName");
+			if(dsName.isEmpty())
+				dsName = getDataSourceNameToUse();
 			try {
-				if(!datasourceName.equals(getDataSourceNameToUse())) {
+				if(!dsName.equals(getDataSourceNameToUse())) {
 					DirectQuerySender dqs;
 					
-					if(!subQuerySenders.keySet().contains(datasourceName)) {
+					if(!subQuerySenders.keySet().contains(dsName)) {
 						dqs = new DirectQuerySender();
 						
 						dqs.setProxiedDataSources(getProxiedDataSources());
-						dqs.setDatasourceName(datasourceName);
+						dqs.setDatasourceName(dsName);
 						dqs.configure();
 						dqs.open();
 						
-						subQuerySenders.put(datasourceName, dqs);
+						subQuerySenders.put(dsName, dqs);
 					} else {
-						dqs = subQuerySenders.get(datasourceName);
+						dqs = subQuerySenders.get(dsName);
 					}
 
 					synchronized(dqs) {
