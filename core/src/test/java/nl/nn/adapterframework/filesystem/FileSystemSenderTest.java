@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Base64;
+import org.apache.commons.codec.binary.Base64;
 import java.util.Iterator;
 
 import org.junit.Before;
@@ -151,7 +151,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 		String actual;
 		actual = fileSystemSender.sendMessage("<result>ok</result>", filename);
 		
-		String contentsBase64 = Base64.getEncoder().encodeToString(contents.getBytes());
+		String contentsBase64 = Base64.encodeBase64String(contents.getBytes());
 		// test
 		assertEquals(contentsBase64.trim(), actual.trim());
 	}
