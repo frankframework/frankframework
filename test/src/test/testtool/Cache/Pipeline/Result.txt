@@ -1,0 +1,4 @@
+<result>
+	<input><test1/>
+	</input>
+</result>

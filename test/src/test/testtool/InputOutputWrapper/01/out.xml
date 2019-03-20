@@ -1,0 +1,32 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" ><soapenv:Header><MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
+   <From>
+      <Id>Ibis4TestIAF</Id>
+   </From>
+   <To>
+      <Location>ESB.PropertyAndCasualtyRetail.BS.Policy.PolicyPropertyAndCasualtyRetail.1.WrapMessage.1.Response</Location>
+   </To>
+   <HeaderFields>
+      <CPAId>cpid</CPAId>
+      <ConversationId>ConversationId</ConversationId>
+      <MessageId>LPAB00000003980_0a4a9a1c-5a8bf11d_14b3a301c76_-7db3</MessageId>
+      <CorrelationId>MessageId</CorrelationId>
+      <ExternalRefToMessageId>ExternalRefToMessageId</ExternalRefToMessageId>
+      <Timestamp>2015-01-30T10:51:05</Timestamp>
+   </HeaderFields>
+   <Service>
+      <Name>Policy</Name>
+      <Context>PolicyPropertyAndCasualtyRetail</Context>
+      <Action>
+         <Paradigm>Response</Paradigm>
+         <Name>WrapMessage</Name>
+         <Version>1</Version>
+      </Action>
+   </Service>
+</MessageHeader>
+</soapenv:Header><soapenv:Body><Response xmlns="http://www.nn.nl/InputOutputWrapper">
+			<Body>text</Body>
+			<Result xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
+				  <Status>OK</Status>
+			</Result>
+		</Response>
+</soapenv:Body></soapenv:Envelope>

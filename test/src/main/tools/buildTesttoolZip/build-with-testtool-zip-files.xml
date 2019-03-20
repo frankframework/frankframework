@@ -1,0 +1,22 @@
+<project default="all">
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+		<classpath>
+			<pathelement location="ant-contrib-1.0b3.jar" />
+		</classpath>
+	</taskdef>
+	<!-- ===================================== -->
+	<target name="init">
+		<!-- Allow properties to be overwritten by location specific properties -->
+		<property name="src" value="${basedir}/../../.." />
+		<property name="testtool.dir" value="${src}/test/testtool" />
+		<echo message="Found testtool dir: ${testtool.dir}"/>
+	</target>
+	<!-- ===================================== -->
+	<target name="all" depends="init">
+		<!-- Read BuildInfo.properties after they are updated by build.xml -->
+		<property file="${src}/main/resources/BuildInfo.properties" prefix="bi"/>
+		<ant antfile="testtoolWAS.xml" />
+		<!-- <ant antfile="testtoolWLP.xml" /> -->
+		<!-- <ant antfile="testtoolTomcat.xml" /> -->
+	</target>
+</project>

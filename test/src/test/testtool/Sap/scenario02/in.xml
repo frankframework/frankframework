@@ -1,0 +1,5 @@
+<request function="RFC_TRUSTED_CHECK">
+	<INPUT>
+		<RFCDEST>IBISNO_ENCRPT</RFCDEST>
+	</INPUT>
+</request>

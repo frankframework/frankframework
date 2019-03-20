@@ -1,0 +1,9 @@
+<root>
+<input>dummy</input>
+<sessionKeys>
+<value>dummyValue</value>
+<sessionkey>Yaay I'm working!!!</sessionkey>
+<sessionkeyWithValue>Yaay I'm working!!!</sessionkeyWithValue>
+<sessionkeyWithSessionKey>used</sessionkeyWithSessionKey>
+</sessionKeys>
+</root>

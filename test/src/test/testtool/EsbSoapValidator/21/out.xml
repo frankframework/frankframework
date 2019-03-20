@@ -1,0 +1,93 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Header><MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
+   <From>
+      <Id>Ibis4TestIAF</Id>
+   </From>
+   <To>
+      <Location>ESB.HumanResources.BS.AccessRightsManagement.AccessRightsManagement.1.GetUserAndOfficeDataIntermediary.1.Response</Location>
+   </To>
+   <HeaderFields>
+      <CPAId>cpid</CPAId>
+      <ConversationId>ConversationId</ConversationId>
+      <MessageId>LPAB00000003980_0a5deb96--14c3c15c_14d2ddd4f0a_-7ff1</MessageId>
+      <CorrelationId>MessageId</CorrelationId>
+      <ExternalRefToMessageId>ExternalRefToMessageId</ExternalRefToMessageId>
+      <Timestamp>2015-05-07T12:13:51</Timestamp>
+   </HeaderFields>
+   <Service>
+      <Name>AccessRightsManagement</Name>
+      <Context>AccessRightsManagement</Context>
+      <Action>
+         <Paradigm>Response</Paradigm>
+         <Name>GetUserAndOfficeDataIntermediary</Name>
+         <Version>1</Version>
+      </Action>
+   </Service>
+</MessageHeader>
+</soapenv:Header><soapenv:Body><GetUserAndOfficeDataIntermediary_Response xmlns="http://nn.nl/XSD/HumanResources/AccessRightsManagement/AccessRightsManagement/1/GetUserAndOfficeDataIntermediary/1">
+	  <Body>
+		    <ReturnCode>1</ReturnCode>
+		    <TP>
+			      <TPnummer>950</TPnummer>
+			      <TPnaam>ToevgMedDt</TPnaam>
+			      <Werkmap>Mijn Map</Werkmap>
+			      <Postadres>
+				        <Straat>Weena post</Straat>
+				        <Huisnummer/>
+				        <Postcode>1234AA</Postcode>
+				        <Plaats>Rotterdam</Plaats>
+			      </Postadres>
+			      <Bezoekadres>
+				        <Straat>Weena bezoek</Straat>
+				        <Huisnummer/>
+				        <Postcode>1234AB</Postcode>
+				        <Plaats>Rotterdam</Plaats>
+			      </Bezoekadres>
+			      <Telefoonnummer>0104567890</Telefoonnummer>
+			      <Faxnummer>0100987654</Faxnummer>
+			      <Regio>
+				        <Naam>tst_gfmeddet_rn</Naam>
+				        <Emailadres>email@dr.es</Emailadres>
+			      </Regio>
+			      <IncassocodeSchade>5</IncassocodeSchade>
+			      <IncassocodeLeven>3</IncassocodeLeven>
+			      <FeitelijkLeider>De leider</FeitelijkLeider>
+			      <Bedrijfsvorm>NV</Bedrijfsvorm>
+			      <Eigenaar>De eigenaar</Eigenaar>
+			      <HoofdfiliaalSchade>Schade</HoofdfiliaalSchade>
+			      <HoofdfiliaalLeven>Leven</HoofdfiliaalLeven>
+			      <Medewerker>
+				        <Voornaam>Meneer</Voornaam>
+				        <Tussenvoegsels/>
+				        <Achternaam>Email</Achternaam>
+				        <Emailadres>email@dr.es</Emailadres>
+				        <Verkopernummer>1234</Verkopernummer>
+				        <Kantoornummer>6789</Kantoornummer>
+				        <Kantoornaam>Kantoornaam test</Kantoornaam>
+				        <Geslacht>M</Geslacht>
+			      </Medewerker>
+			      <ADNPostbusNummer/>
+			      <BeschikbareTPs>
+				        <TP>
+					          <TPnummer>950</TPnummer>
+					          <TPnaam>ToevgMedDt</TPnaam>
+				        </TP>
+				        <TP>
+					          <TPnummer>951</TPnummer>
+					          <TPnaam>ToevgMedDt2</TPnaam>
+				        </TP>
+				        <TP>
+					          <TPnummer>952</TPnummer>
+					          <TPnaam>ToevgMedDt3</TPnaam>
+				        </TP>
+				        <TP>
+					          <TPnummer>953</TPnummer>
+					          <TPnaam>ToevgMedDt4</TPnaam>
+				        </TP>
+			      </BeschikbareTPs>
+		    </TP>
+	  </Body>
+   <Result xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
+      <Status>OK</Status>
+   </Result>
+</GetUserAndOfficeDataIntermediary_Response>
+</soapenv:Body></soapenv:Envelope>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<profile>
+<entity instancename="kenmerken_0" instanceid="0" name="kenmerken">
+<attribute name="kenmerken.ALG_RTN_CD">1</attribute>
+</entity>
+<entity instancename="fouten_1" instanceid="1" name="fouten">
+<attribute name="fouten.FOUT_CD">1001</attribute>
+<attribute name="fouten.FOUT_OMSR_NL">Het verwerken van uw verzoek duurde te lang</attribute>
+<attribute name="fouten.FOUT_OMSR_EN">The processing of your request took too long</attribute>
+</entity>
+</profile>

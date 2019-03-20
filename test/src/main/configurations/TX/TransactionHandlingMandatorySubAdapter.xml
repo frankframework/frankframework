@@ -1,0 +1,67 @@
+<module>
+	<adapter
+		name="TransactionHandlingMandatory"
+		description="Adapter for testing transaction handling, multiple adapters are being called with different transaction attributes"
+	>
+		<receiver
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			transactionTimeout="2"
+			transactionAttribute="Required"
+		>
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="TransactionHandlingMultiAdapter"
+				serviceName="ibis4testiaf-TransactionHandlingMandatory"
+			/>
+			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+				jmsRealm="jdbc" 
+				slotId="${applicationId}/GenericReceiverTransactionHandlingMandatory"
+			/>
+		</receiver>
+
+		<pipeline firstPipe="Send transacted message to mandatory subadapter" transactionAttribute="Required">
+			<exits>
+				<exit path="EXIT" state="success"/>
+			</exits>
+
+			<!-- This should create (or reuse) it's transaction when calling this subadapter -->
+			<pipe name="Send transacted message to mandatory subadapter"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				getInputFromFixedValue="tralala"
+			>
+				<sender
+					className="nl.nn.adapterframework.senders.IbisLocalSender"
+					javaListener="TransactionHandlingMandatorySubAdapter"
+				/>
+				<forward name="success" path="EXIT"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+
+	<adapter
+		name="TransactionHandlingMandatorySubAdapter"
+		description="First SubAdapter for Transaction Handling">
+	
+		<receiver
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			transactionAttribute="Mandatory"
+		>
+			<listener 
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="TransactionHandlingMandatorySubAdapter"
+			/>
+		</receiver>
+
+		<pipeline firstPipe="Continue if this call was transacted" transactionAttribute="Mandatory">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+
+			<pipe name="Continue if this call was transacted" className="nl.nn.adapterframework.pipes.EchoPipe"
+				getInputFromFixedValue="&lt;transacted&gt;true&lt;/transacted&gt;">
+				
+				<forward name="success" path="EXIT"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>

@@ -1,0 +1,25 @@
+<!DOCTYPE IOS-Adaptering [
+	<!ENTITY TransactionTimeoutHandling SYSTEM "./TransactionTimeoutHandling.xml">
+	<!ENTITY TransactionTimeoutFxfListener SYSTEM "./TransactionTimeoutFxfListener.xml">
+
+	<!ENTITY TransactionHandlingMandatorySubAdapter SYSTEM "./TransactionHandlingMandatorySubAdapter.xml">
+	<!ENTITY TransactionHandlingNotSupportedSubAdapter SYSTEM "./TransactionHandlingNotSupportedSubAdapter.xml">
+
+	<!ENTITY TransactionHandlingNotSupportedSubAdapterException SYSTEM "./TransactionHandlingNotSupportedSubAdapterException.xml">
+	<!ENTITY TransactionHandlingRequiredSubAdapterException SYSTEM "./TransactionHandlingRequiredSubAdapterException.xml">
+
+	<!ENTITY TransactionHandlingMultiAdapter SYSTEM "./TransactionHandlingMultiAdapter.xml">
+]>
+
+<IOS-Adaptering configurationName="TX">
+	&TransactionTimeoutHandling;
+	&TransactionTimeoutFxfListener;
+
+	&TransactionHandlingMandatorySubAdapter;
+	&TransactionHandlingNotSupportedSubAdapter;
+
+	&TransactionHandlingNotSupportedSubAdapterException;
+	&TransactionHandlingRequiredSubAdapterException;
+
+	&TransactionHandlingMultiAdapter;
+</IOS-Adaptering>

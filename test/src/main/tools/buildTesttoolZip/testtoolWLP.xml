@@ -1,0 +1,38 @@
+<project default="testtoolWLP">
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+		<classpath>
+			<pathelement location="../ant-contrib-1.0b3.jar" />
+		</classpath>
+	</taskdef>
+	<!-- ===================================== -->
+	<target name="init">
+		<property name="work.dir" value="${temp.dir}/ibis4testiaf/build-testtool/WLP" />
+	</target>
+	<!-- ===================================== -->
+	<target name="testtoolWLP" depends="init">
+		<delete dir="${work.dir}" />
+
+		<copy todir="${work.dir}" includeEmptyDirs="false">
+			<fileset dir="${testtool.dir}" />
+		</copy>
+		
+		<replaceregexp match="c:\\temp\\ibis4testiaf\\(.*)\\(.*)" replace="c:/temp/ibis4testiaf/\1/\2" flags="gi">
+			<fileset dir="${work.dir}" includes="**/*" />
+		</replaceregexp>
+
+		<replaceregexp match="c:\\temp\\ibis4testiaf\\(.*)" replace="c:/temp/ibis4testiaf/\1" flags="gi">
+			<fileset dir="${work.dir}" includes="**/*" />
+		</replaceregexp>
+
+		<!-- Use line beneath for WLP (cloud) -->
+		<replace dir="${work.dir}" token="c:/temp/ibis4testiaf" value="/opt/wlp/usr/servers/server1/ibis">
+			<include name="**/*" />
+		</replace>
+
+		<zip destfile="${basedir}/../../../Ibis4TestIAFWasbak/${bi.instance.version}_${bi.instance.build_id}/testtoolWLP-${bi.instance.version}_${bi.instance.build_id}.zip">
+			<fileset dir="${work.dir}" casesensitive="no" defaultexcludes="false">
+				<include name="**/*" />
+			</fileset>
+		</zip>
+	</target>
+</project>

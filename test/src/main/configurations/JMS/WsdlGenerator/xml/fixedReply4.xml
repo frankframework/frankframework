@@ -1,0 +1,9 @@
+<GetPaymentReferenceAndPayLink_Response xmlns="http://nn.nl/XSD/AccountInformation/1/GetPaymentReferenceAndPayLink/1">
+   <PaymentDetails>
+      <PaymentId>987</PaymentId>
+      <PaymentURL>paymentulr</PaymentURL>
+   </PaymentDetails>
+   <Result xmlns="http://nn.nl/XSD/Generic/MessageHeader/2">
+      <Status>OK</Status>
+   </Result>
+</GetPaymentReferenceAndPayLink_Response>

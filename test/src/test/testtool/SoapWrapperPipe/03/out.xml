@@ -1,0 +1,16 @@
+<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope" >
+  <soapenv:Header>
+    <UsernameToken xmlns="http://siebel.com/webservices" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">user</UsernameToken>
+    <PasswordText xmlns="http://siebel.com/webservices" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">hello123</PasswordText>
+    <SessionType xmlns="http://siebel.com/webservices" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">None</SessionType>
+  </soapenv:Header>
+  <soapenv:Body>
+    <wrappedRoot xmlns="http://siebel.com/CustomUI">
+      <ListOfTestAccount xmlns="http://www.siebel.com/xml/Test%20Account/Query" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+        <Account>
+          <Name>A*</Name>
+        </Account>
+      </ListOfTestAccount>
+    </wrappedRoot>
+  </soapenv:Body>
+</soapenv:Envelope>

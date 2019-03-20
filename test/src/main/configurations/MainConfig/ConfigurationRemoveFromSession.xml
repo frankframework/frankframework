@@ -1,0 +1,39 @@
+<ibis>
+	<adapter name="RemoveFromSession" description="Test the functioning of the RemoveFromSession">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="RemoveFromSession">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4testiaf-RemoveFromSession" />
+		</receiver>
+		<pipeline firstPipe="SwitchAction">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="request/@action" />
+			<!-- putAndRemoveOneKey -->
+			<pipe name="putAndRemoveOneKey" className="nl.nn.adapterframework.pipes.PutInSession" sessionKey="request">
+				<forward name="success" path="removeOneKey" />
+			</pipe>
+			<!-- removeOneKey -->
+			<pipe name="removeOneKey" className="nl.nn.adapterframework.pipes.RemoveFromSession" sessionKey="request" preserveInput="false">
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<!-- putAndRemoveMultipleKeys -->
+			<pipe name="putAndRemoveMultipleKeys" className="nl.nn.adapterframework.pipes.PutInSession" sessionKey="request1">
+				<forward name="success" path="putAndRemoveMultipleKeys2" />
+			</pipe>
+			<pipe name="putAndRemoveMultipleKeys2" className="nl.nn.adapterframework.pipes.PutInSession" sessionKey="request3">
+				<forward name="success" path="removeMultipleKeys" />
+			</pipe>
+			<!-- removeMultipleKeys -->
+			<pipe name="removeMultipleKeys" className="nl.nn.adapterframework.pipes.RemoveFromSession" sessionKey="request1,request2,request3" preserveInput="false">
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<!-- removeFromInput -->
+			<pipe name="removeFromInput" className="nl.nn.adapterframework.pipes.XsltPipe" xpathExpression="request">
+				<forward name="success" path="removeFromInput2" />
+			</pipe>
+			<pipe name="removeFromInput2" className="nl.nn.adapterframework.pipes.RemoveFromSession">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</ibis>

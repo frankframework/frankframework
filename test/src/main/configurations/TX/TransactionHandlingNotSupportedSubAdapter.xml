@@ -1,0 +1,100 @@
+<module>
+	<adapter
+		name="TransactionHandlingNotSupported"
+		description="Adapter for testing transaction handling, multiple adapters are being called with different transaction attributes"
+	>
+		<receiver
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			transactionTimeout="2"
+			transactionAttribute="Required"
+		>
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="TransactionHandlingMultiAdapter"
+				serviceName="ibis4testiaf-TransactionHandlingNotSupported"
+			/>
+			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+				jmsRealm="jdbc" 
+				slotId="${applicationId}/GenericReceiverTransactionHandlingNotSupported"
+			/>
+		</receiver>
+
+		<pipeline firstPipe="Send transacted message to not supported subadapter" transactionAttribute="Required">
+			<exits>
+				<exit path="EXIT" state="success"/>
+			</exits>
+
+			<!-- The pipeline should have a TX, this subadapter should removed it -->
+			<pipe name="Send transacted message to not supported subadapter"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				getInputFromFixedValue="tralala"
+			>
+				<sender
+					className="nl.nn.adapterframework.senders.IbisLocalSender"
+					javaListener="TransactionHandlingNotSupportedSubAdapter"
+				/>
+				<forward name="success" path="EXIT"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+
+	<adapter
+		name="TransactionHandlingNotSupportedSubAdapter"
+		description="First SubAdapter for Transaction Handling">
+	
+		<receiver
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			transactionAttribute="NotSupported"
+		>
+			<listener 
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="TransactionHandlingNotSupportedSubAdapter"
+			/>
+		</receiver>
+
+		<pipeline firstPipe="Send transacted message to never subadapter" transactionAttribute="NotSupported">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+
+			<!-- Make sure there is no TX -->
+			<pipe name="Send transacted message to never subadapter"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				getInputFromFixedValue="tralala"
+			>
+				<sender
+					className="nl.nn.adapterframework.senders.IbisLocalSender"
+					javaListener="TransactionHandlingNeverSubAdapter"
+				/>
+				<forward name="success" path="EXIT"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+
+	<adapter
+		name="TransactionHandlingNeverSubAdapter"
+		description="First SubAdapter for Transaction Handling">
+	
+		<receiver
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			transactionAttribute="NotSupported"
+		>
+			<listener 
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="TransactionHandlingNeverSubAdapter"
+			/>
+		</receiver>
+
+		<pipeline firstPipe="Continue if this call was not transacted" transactionAttribute="NotSupported">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+
+			<pipe name="Continue if this call was not transacted" className="nl.nn.adapterframework.pipes.EchoPipe"
+				getInputFromFixedValue="&lt;transacted&gt;never&lt;/transacted&gt;">
+				
+				<forward name="success" path="EXIT"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>

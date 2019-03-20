@@ -99,6 +99,27 @@
 					</systemProperties>
 				</configuration>
 			</plugin>
+			
+			<plugin>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-war-plugin</artifactId>
+				<version>0.2</version>
+				<extensions>true</extensions>
+				<configuration>
+					<enableSecurityConstraints>false</enableSecurityConstraints>
+					
+					<webResources>
+						<resource>
+							<directory>${project.build.sourceDirectory}</directory>
+							<targetPath>WEB-INF/classes</targetPath>
+						</resource>
+						<resource>
+							<directory>src/main/configurations</directory>
+							<targetPath>WEB-INF/classes/configurations</targetPath>
+						</resource>
+					</webResources>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 

@@ -1,0 +1,51 @@
+<manageDatabaseRLY>
+<completionInformation>
+<returnCode>OK</returnCode>
+</completionInformation>
+<results count="1">
+<result item="1">
+<result>
+  <fielddefinition>
+    <field columnClassName="java.math.BigDecimal" columnDisplaySize="22" columnTypeName="NUMBER" isCurrency="true" name="MESSAGEKEY" precision="38" scale="0" type="NUMERIC"/>
+    <field columnClassName="java.lang.String" columnDisplaySize="1" columnTypeName="CHAR" isCurrency="false" name="TYPE" precision="1" scale="0" type="CHAR"/>
+    <field columnClassName="java.lang.String" columnDisplaySize="100" columnTypeName="VARCHAR2" isCurrency="false" name="SLOTID" precision="100" scale="0" type="VARCHAR"/>
+    <field columnClassName="java.lang.String" columnDisplaySize="100" columnTypeName="VARCHAR2" isCurrency="false" name="HOST" precision="100" scale="0" type="VARCHAR"/>
+    <field columnClassName="java.lang.String" columnDisplaySize="100" columnTypeName="VARCHAR2" isCurrency="false" name="MESSAGEID" precision="100" scale="0" type="VARCHAR"/>
+    <field columnClassName="java.lang.String" columnDisplaySize="256" columnTypeName="VARCHAR2" isCurrency="false" name="CORRELATIONID" precision="256" scale="0" type="VARCHAR"/>
+    <field columnClassName="oracle.sql.TIMESTAMP" columnDisplaySize="11" columnTypeName="TIMESTAMP" isCurrency="false" name="MESSAGEDATE" precision="0" scale="6" type="TIMESTAMP"/>
+    <field columnClassName="java.lang.String" columnDisplaySize="1000" columnTypeName="VARCHAR2" isCurrency="false" name="COMMENTS" precision="1000" scale="0" type="VARCHAR"/>
+    <field columnClassName="oracle.sql.BLOB" columnDisplaySize="4000" columnTypeName="BLOB" isCurrency="false" name="MESSAGE" precision="-1" scale="0" type="BLOB"/>
+    <field columnClassName="oracle.sql.TIMESTAMP" columnDisplaySize="11" columnTypeName="TIMESTAMP" isCurrency="false" name="EXPIRYDATE" precision="0" scale="6" type="TIMESTAMP"/>
+    <field columnClassName="java.lang.String" columnDisplaySize="100" columnTypeName="VARCHAR2" isCurrency="false" name="LABEL" precision="100" scale="0" type="VARCHAR"/>
+  </fielddefinition>
+  <rowset>
+    <row number="0">
+      <field name="MESSAGEKEY">13499</field>
+      <field name="TYPE">L</field>
+      <field name="SLOTID">IFSA://NLIBIS4TESTIAF/FxF3InSender</field>
+      <field name="HOST">LPAB00000018345</field>
+      <field name="MESSAGEID">ID:LPAB00000018345-49524-1531481830794-3:14:3:1:1</field>
+      <field name="CORRELATIONID">Test Tool correlation id</field>
+      <field name="MESSAGEDATE">2018-07-13 13:38:09</field>
+      <field name="COMMENTS">no audit trail</field>
+      <field name="MESSAGE">&lt;soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/OnCompletedTransferNotify/1"&gt;&#13;
+	&lt;soap:Header/&gt;&#13;
+	&lt;soap:Body&gt;&#13;
+		&lt;ns:OnCompletedTransferNotify_Action&gt;&#13;
+			&lt;ns:TransferFlowId&gt;NNL01234&lt;/ns:TransferFlowId&gt;&#13;
+			&lt;ns:UserData&gt;UserData&lt;/ns:UserData&gt;&#13;
+			&lt;ns:ClientFilename&gt;/PathOnIUFState/file.txt&lt;/ns:ClientFilename&gt;&#13;
+			&lt;ns:ServerFilename&gt;ServerFilename&lt;/ns:ServerFilename&gt;&#13;
+			&lt;ns:LocalTransactionID&gt;LocalTransactionID&lt;/ns:LocalTransactionID&gt;&#13;
+		&lt;/ns:OnCompletedTransferNotify_Action&gt;&#13;
+	&lt;/soap:Body&gt;&#13;
+&lt;/soap:Envelope&gt;</field>
+      <field name="EXPIRYDATE">2018-08-12 13:38:09</field>
+      <field name="LABEL" null="true"/>
+    </row>
+  </rowset>
+</result>
+
+</result>
+</results>
+</manageDatabaseRLY>

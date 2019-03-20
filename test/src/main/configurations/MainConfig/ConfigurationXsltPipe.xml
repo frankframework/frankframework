@@ -1,0 +1,57 @@
+<ibis>
+	<adapter name="XsltPipe" description="Test the XsltPipe">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="GenericFunctions">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4testiaf-XsltPipe" />
+		</receiver>
+		<pipeline firstPipe="SwitchAction">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+
+			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
+				xpathExpression="request/@action" notFoundForwardName="copy" />
+
+			<pipe name="genericFunctions" className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="XsltPipe/TransformGenericFunctions.xsl">
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<pipe name="Xalan" className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="XsltPipe/TransformXSLT1.xsl">
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<pipe name="Saxon_XSLT1" className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="XsltPipe/TransformXSLT1.xsl" xslt2="true">
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<pipe name="Saxon_XSLT2" className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="XsltPipe/TransformXSLT2.xsl" xslt2="true">
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<pipe name="copyNamespace" className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="XsltPipe/copyNamespace.xsl">
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<pipe name="multipleSelects" className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="XsltPipe/multipleSelects.xsl">
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<pipe name="namespaceAware" className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="XsltPipe/namespaceAware.xsl" namespaceAware="true">
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<pipe name="copy" className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="XsltPipe/copy.xsl">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</ibis>

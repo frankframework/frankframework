@@ -1,0 +1,31 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" ><soapenv:Header><MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
+   <From>
+      <Id>Ibis4TestIAF</Id>
+   </From>
+   <To>
+      <Location>ESB.Publishing.BS.Document.SalesDocument.1.GetDocuments.1.Response</Location>
+   </To>
+   <HeaderFields>
+      <CPAId>n/a</CPAId>
+      <ConversationId>LPAB00000003980_0a4a9a1c-5a8bf11d_14b3a301c76_-7ffb</ConversationId>
+      <MessageId>LPAB00000003980_0a4a9a1c-5a8bf11d_14b3a301c76_-7f93</MessageId>
+      <Timestamp>2015-01-30T10:37:32</Timestamp>
+   </HeaderFields>
+   <Service>
+      <Name>Document</Name>
+      <Context>SalesDocument</Context>
+      <Action>
+         <Paradigm>Response</Paradigm>
+         <Name>GetDocuments</Name>
+         <Version>1</Version>
+      </Action>
+   </Service>
+</MessageHeader>
+</soapenv:Header><soapenv:Body><CalculationResponse xmlns="http://www.ibissource.org/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
+	  <SystemCode>L76HB000</SystemCode>
+	  <CalculationData>1:RS_INFO;835:ILIAS;645:ANP_VRH_3;</CalculationData>
+   <Result xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
+      <Status>OK</Status>
+   </Result>
+</CalculationResponse>
+</soapenv:Body></soapenv:Envelope>

@@ -1,0 +1,499 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:sfun="http://www.ibissource.com/sfun" targetNamespace="http://www.ibissource.org/sfun" elementFormDefault="qualified" sfun:agent="sfun" sfun:package="com.ibissource.sfun">
+	<xsd:annotation>
+		<xsd:documentation>EM - Savings Investment Accounts - V1.0</xsd:documentation>
+		<xsd:appinfo>V1.0</xsd:appinfo>
+	</xsd:annotation>
+	<xsd:complexType name="pensionAdministration.PensionParticipation">
+		<xsd:all>
+			<xsd:element name="PolicyNumber" type="sfun:dcfStr20"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="investmentAccount">
+		<xsd:all>
+			<xsd:element name="AccountNumber" type="sfun:dcfInt9"/>
+			<xsd:element name="InterestValue" type="sfun:dcfDec9_2"/>
+			<xsd:element name="PercentageBonds" type="sfun:dcfDec3_2"/>
+			<xsd:element name="PercentageShares" type="sfun:dcfDec3_2"/>
+			<xsd:element name="SavingsBalance" type="sfun:dcfDec9_2"/>
+			<xsd:element name="SavingsPercentageDistribution" type="sfun:dcfDec3_2"/>
+			<xsd:element name="SavingsPercentagePortfolio" type="sfun:dcfDec3_2"/>
+			<xsd:element name="Status" type="sfun:status"/>
+			<xsd:element name="TotalInvestmentPercentage" type="sfun:dcfDec3_2"/>
+			<xsd:element name="TotalInvestmentValue" type="sfun:dcfDec9_2"/>
+			<xsd:element name="TotalreturnPercentage" type="sfun:dcfDec3_2"/>
+			<xsd:element name="TotalReturnValue" type="sfun:dcfDec9_2"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="investmentProfile">
+		<xsd:all>
+			<xsd:element name="RiskType" type="sfun:riskType"/>
+			<xsd:element name="PercentageBondsChosen" type="sfun:dcfDec3_2"/>
+			<xsd:element name="PercentageSharesChosen" type="sfun:dcfDec3_2"/>
+			<xsd:element name="PercentageBondsTarget" type="sfun:dcfDec3_2"/>
+			<xsd:element name="PercentageSharesTarget" type="sfun:dcfDec3_2"/>
+			<xsd:element name="RiskProfileDescription" type="sfun:riskProfileDescription"/>
+			<xsd:element name="RiskProfileStatus" type="sfun:dcfOptYesNo"/>
+			<xsd:element name="TargetDate" type="sfun:dcfDate"/>
+			<xsd:element name="WarningMessage" type="sfun:warningMessage"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="investmentComposition">
+		<xsd:all>
+			<xsd:element name="FundId" type="sfun:dcfStr20"/>
+			<xsd:element name="investmentPercentage" type="sfun:dcfDec3_2"/>
+			<xsd:element name="InvestmentValue" type="sfun:dcfDec9_2"/>
+			<xsd:element name="ReturnPercentage" type="sfun:dcfDec3_2"/>
+			<xsd:element name="ReturnValue" type="sfun:dcfDec9_2"/>
+			<xsd:element name="TotalUnits" type="sfun:dcfDec9_4"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="fundPackage">
+		<xsd:all>
+			<xsd:element name="ProductId" type="sfun:productId"/>
+			<xsd:element name="ProductDescription" type="sfun:productDescription"/>
+			<xsd:element name="ChangeCode" type="sfun:changeCode"/>
+			<xsd:element name="ProductFee" type="sfun:dcfDec3_2"/>
+			<xsd:element name="RebalanceCode" type="sfun:dcfOptYesNo"/>
+			<xsd:element name="Type" type="sfun:fundPackagechangeType"/>
+			<xsd:element name="Status" type="sfun:status"/>
+			<xsd:element name="StatusDate" type="sfun:dcfDate"/>
+			<xsd:element name="AcceptanceId" type="sfun:dcfStr20"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="fund">
+		<xsd:all>
+			<xsd:element name="FundId" type="sfun:dcfStr20"/>
+			<xsd:element name="AssetType" type="sfun:assetType"/>
+			<xsd:element name="Status" type="sfun:fundStatus"/>
+			<xsd:element name="TransactionCostsBuy" type="sfun:dcfDec3_2"/>
+			<xsd:element name="TransactionCostsSell" type="sfun:dcfDec3_2"/>
+			<xsd:element name="TransactionCostsSwitch" type="sfun:dcfDec3_2"/>
+			<xsd:element name="PercentageBonds" type="sfun:dcfDec3_2"/>
+			<xsd:element name="PercentageShares" type="sfun:dcfDec3_2"/>
+			<xsd:element name="ShortName" type="sfun:dcfStr100"/>
+			<xsd:element name="Value" type="sfun:dcfDec9_2"/>
+			<xsd:element name="ValueDate" type="sfun:dcfDate"/>
+			<xsd:element name="MonthReturnOnInvestment" type="sfun:dcfDec9_2"/>
+			<xsd:element name="ThreeMonthsReturnOnInvestment" type="sfun:dcfDec9_2"/>
+			<xsd:element name="SixMonthsReturnOnInvestment" type="sfun:dcfDec9_2"/>
+			<xsd:element name="YearReturnOnInvestment" type="sfun:dcfDec9_2"/>
+			<xsd:element name="ThreeYearsReturnOnInvestment" type="sfun:dcfDec9_2"/>
+			<xsd:element name="FiveYearsReturnOnInvestment" type="sfun:dcfDec9_2"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="employer">
+		<xsd:all>
+			<xsd:element name="EmployerId" type="sfun:dcfInt10"/>
+			<xsd:element name="InterestRate" type="sfun:dcfDec3_2"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="distributionCode">
+		<xsd:all>
+			<xsd:element name="FundId" type="sfun:dcfStr20"/>
+			<xsd:element name="DistributionPercentage" type="sfun:dcfDec3_2"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="modelDistribution">
+		<xsd:all>
+			<xsd:element name="DistributionPercentage" type="sfun:dcfDec3_2"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="modelPortfolio">
+		<xsd:all>
+			<xsd:element name="ModelId" type="sfun:dcfInt9"/>
+			<xsd:element name="PercentageBonds" type="sfun:dcfDec3_2"/>
+			<xsd:element name="PercentageShares" type="sfun:dcfDec3_2"/>
+			<xsd:element name="RiskType" type="sfun:riskType"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="order">
+		<xsd:all>
+			<xsd:element name="Number" type="sfun:dcfInt9"/>
+			<xsd:element name="CreationDate" type="sfun:dcfDate"/>
+			<xsd:element name="Amount" type="sfun:dcfDec9_2"/>
+			<xsd:element name="Costs" type="sfun:dcfDec9_2"/>
+			<xsd:element name="Description" type="sfun:dcfStr100"/>
+			<xsd:element name="InvestmentValue"/>
+			<xsd:element name="StatusCode" type="sfun:orderStatusCode"/>
+			<xsd:element name="Status" type="sfun:orderStatus"/>
+			<xsd:element name="Type" type="sfun:orderType"/>
+			<xsd:element name="Source" type="sfun:dcfStr20"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="TBM-return">
+		<xsd:all>
+			<xsd:element name="ReturnPeriod" type="sfun:dcfStr20"/>
+			<xsd:element name="ReturnPercentage" type="sfun:dcfDec9_4"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="riskProfile">
+		<xsd:all>
+			<xsd:element name="QuestionDate" type="sfun:dcfDate"/>
+			<xsd:element name="QuestionTime" type="sfun:dcfDate"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="riskProfileAnswer">
+		<xsd:all>
+			<xsd:element name="QuestionNumber" type="sfun:dcfInt9"/>
+			<xsd:element name="QuestionText" type="sfun:dcfStr1000"/>
+			<xsd:element name="Answer" type="sfun:dcfStr1"/>
+			<xsd:element name="AnswerText" type="sfun:dcfStr1000"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="riskProfilePossibleAnswer">
+		<xsd:all>
+			<xsd:element name="Answer" type="sfun:dcfStr1"/>
+			<xsd:element name="AnswerText" type="sfun:dcfStr1000"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="riskProfileQuestion">
+		<xsd:all>
+			<xsd:element name="QuestionNumber" type="sfun:dcfInt9"/>
+			<xsd:element name="QuestionText" type="sfun:dcfStr1000"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="savingsMutations">
+		<xsd:all>
+			<xsd:element name="Number" type="sfun:dcfInt9"/>
+			<xsd:element name="Date" type="sfun:dcfDate"/>
+			<xsd:element name="Description" type="sfun:dcfStr100"/>
+			<xsd:element name="Type" type="sfun:mutationType"/>
+			<xsd:element name="Value" type="sfun:dcfDec9_2"/>
+			<xsd:element name="Sign" type="sfun:mutationSign"/>
+			<xsd:element name="TransactionId" type="sfun:dcfInt9"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="TBM-sector">
+		<xsd:all>
+			<xsd:element name="FundNameSector" type="sfun:dcfStr100"/>
+			<xsd:element name="MaxLoss-3yr" type="sfun:dcfDec9_4"/>
+			<xsd:element name="MaxLoss-5yr" type="sfun:dcfDec9_4"/>
+			<xsd:element name="SharpRatio-1mth" type="sfun:dcfDec9_4"/>
+			<xsd:element name="SharpRatio-3mth" type="sfun:dcfDec9_4"/>
+			<xsd:element name="Volatility" type="sfun:dcfDec9_4"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="TBM-Data">
+		<xsd:all>
+			<xsd:element name="FundName" type="sfun:dcfStr100"/>
+			<xsd:element name="AssetType" type="sfun:assetType"/>
+			<xsd:element name="Region" type="sfun:dcfStr16"/>
+			<xsd:element name="Sector" type="sfun:dcfStr16"/>
+			<xsd:element name="LastValue" type="sfun:dcfDec9_2"/>
+			<xsd:element name="HighestValue" type="sfun:dcfDec9_2"/>
+			<xsd:element name="LowestValue" type="sfun:dcfDec9_2"/>
+			<xsd:element name="WebsiteLink" type="sfun:dcfStr100"/>
+			<xsd:element name="Intention" type="sfun:dcfStr2000"/>
+			<xsd:element name="ManagementFee" type="sfun:dcfStr60"/>
+			<xsd:element name="DescriptionTransactionCosts" type="sfun:dcfStr100"/>
+			<xsd:element name="BuyCosts" type="sfun:dcfStr100"/>
+			<xsd:element name="SellCosts" type="sfun:dcfStr100"/>
+			<xsd:element name="FoundationDate" type="sfun:dcfDate"/>
+			<xsd:element name="ExchangeListing" type="sfun:dcfStr50"/>
+			<xsd:element name="InvestmentCapital" type="sfun:dcfDec12_3"/>
+			<xsd:element name="ManagementName" type="sfun:dcfStr100"/>
+			<xsd:element name="InvestmentInstitutionName" type="sfun:dcfStr100"/>
+			<xsd:element name="InvestmentInstitutionAdress" type="sfun:dcfStr100"/>
+			<xsd:element name="InvestmentInstitutionZipcode" type="sfun:dcfStr40"/>
+			<xsd:element name="InvestmentInstitutionCity" type="sfun:dcfStr100"/>
+			<xsd:element name="InvestmentInstitutionPhone" type="sfun:dcfStr60"/>
+			<xsd:element name="OrderExecution" type="sfun:dcfStr100"/>
+			<xsd:element name="OrderConfirmation" type="sfun:dcfStr200"/>
+			<xsd:element name="MinimumOrderAmount" type="sfun:dcfStr100"/>
+			<xsd:element name="FundStructure" type="sfun:dcfStr100"/>
+			<xsd:element name="ReferenceDate" type="sfun:dcfDate"/>
+			<xsd:element name="AverageSectorReturnPercentage" type="sfun:dcfDec3_2"/>
+			<xsd:element name="AverageSectorSharpratio-1mth" type="sfun:dcfDec3_2"/>
+			<xsd:element name="AverageSectorSharpratio-3mth" type="sfun:dcfDec3_2"/>
+			<xsd:element name="AverageSectorVolatility" type="sfun:dcfDec3_2"/>
+			<xsd:element name="AverageSectorMaxLoss-3yr" type="sfun:dcfDec3_2"/>
+			<xsd:element name="AverageSectorMaxLoss-5yr" type="sfun:dcfDec3_2"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="Transaction">
+		<xsd:all>
+			<xsd:element name="FundId" type="sfun:dcfStr20"/>
+			<xsd:element name="Number" type="sfun:dcfInt9"/>
+			<xsd:element name="Type" type="sfun:transactionType"/>
+			<xsd:element name="ExecutionDate" type="sfun:dcfDate"/>
+			<xsd:element name="Description" type="sfun:dcfStr100"/>
+			<xsd:element name="InvestmentValue" type="sfun:dcfDec9_2"/>
+			<xsd:element name="Units" type="sfun:dcfDec9_4"/>
+			<xsd:element name="Value" type="sfun:dcfDec9_2"/>
+			<xsd:element name="Costs" type="sfun:dcfDec9_2"/>
+			<xsd:element name="Amount" type="sfun:dcfDec9_2"/>
+			<xsd:element name="CreationDate" type="sfun:dcfDate" minOccurs="0"/>
+			<xsd:element name="CreationTime" type="sfun:dcfDate" minOccurs="0"/>
+			<xsd:element name="Comments" type="sfun:dcfStr100"/>
+			<xsd:element name="Status" type="sfun:orderStatus" minOccurs="0"/>
+			<xsd:element name="StatusCode" type="sfun:orderStatusCode" minOccurs="0"/>
+			<xsd:element name="TransactionId" type="sfun:dcfInt9"/>
+			<xsd:element name="Source" type="sfun:dcfStr20"/>
+		</xsd:all>
+	</xsd:complexType>
+	<!-- Added version 1.0 release 0.8) -->
+	<xsd:complexType name="standardFundDistribution">
+		<xsd:all>
+			<xsd:element name="Id" type="sfun:dcfInt15"/>
+			<xsd:element name="LongName" type="sfun:dcfStr500"/>
+			<xsd:element name="ShortName" type="sfun:dcfStr100"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="standardFundDistributionItem">
+		<xsd:all>
+			<xsd:element name="Percentage" type="sfun:dcfDec3_2"/>
+		</xsd:all>
+	</xsd:complexType>
+	<!-- uptil here - version 1.0 release 0.8) -->
+	<!--******************************* Simple Types *******************************************************-->
+	<!-- Added unique simply types. -->
+	<!-- String -->
+	<xsd:simpleType name="dcfStr1">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="dcfStr16">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="16"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ivyStr20">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="dcfStr40">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="40"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="dcfStr50">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="50"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="dcfStr60">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="60"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="dcfStr100">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="100"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="dcfStr200">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="200"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Added version 1.0 release 0.8) -->
+	<xsd:simpleType name="dcfStr500">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="500"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- uptil here - version 1.0 release 0.8) -->
+	<xsd:simpleType name="dcfStr1000">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="1000"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="dcfStr2000">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="2000"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Date -->
+	<xsd:simpleType name="dcfDate">
+		<xsd:restriction base="xsd:date">
+			<xsd:pattern value="\d{4}\-\d{2}\-\d{2}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="dcfTime">
+		<xsd:restriction base="xsd:time">
+			<xsd:pattern value="hh:mm:ss.sss"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Decimal -->
+	<!-- unrestricted -->
+	<xsd:simpleType name="dcfDecUnrestricted">
+		<xsd:restriction base="xsd:decimal"/>
+	</xsd:simpleType>
+	<!-- 3,2 -->
+	<xsd:simpleType name="dcfDec3_2">
+		<xsd:restriction base="xsd:decimal"/>
+	</xsd:simpleType>
+	<!-- 9,2 -->
+	<xsd:simpleType name="dcfDec9_2">
+		<xsd:restriction base="xsd:decimal"/>
+	</xsd:simpleType>
+	<!-- 11,2 -->
+	<xsd:simpleType name="dcfDec11_2">
+		<xsd:restriction base="xsd:decimal"/>
+	</xsd:simpleType>
+	<!-- 9,4 -->
+	<xsd:simpleType name="dcfDec9_4">
+		<xsd:restriction base="xsd:decimal"/>
+	</xsd:simpleType>
+	<!-- 9,6 -->
+	<xsd:simpleType name="dcfDec9_6">
+		<xsd:restriction base="xsd:decimal"/>
+	</xsd:simpleType>
+	<!-- 12,3 -->
+	<xsd:simpleType name="dcfDec12_3">
+		<xsd:restriction base="xsd:decimal"/>
+	</xsd:simpleType>
+	<!-- Id fields -->
+	<xsd:simpleType name="dcfInt10">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="1"/>
+			<xsd:maxInclusive value="9999999999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Added version 1.0 release 0.8) -->
+	<xsd:simpleType name="dcfInt15">
+		<xsd:restriction base="xsd:integer">
+			<xsd:totalDigits value="15"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- uptil here - version 1.0 release 0.8) -->
+	<xsd:simpleType name="dcfStr20">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Integer -->
+	<xsd:simpleType name="dcfInt9">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="999999999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Option YesNo -->
+	<xsd:simpleType name="dcfOptYesNo">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="1"/>
+			<xsd:enumeration value="Y"/>
+			<xsd:enumeration value="N"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Specific fields -->
+	<xsd:simpleType name="warningMessage">
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="assetType">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="50"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="fundStatus">
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="1"/>
+			<xsd:enumeration value="2"/>
+			<xsd:enumeration value="3"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="productId">
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="1"/>
+			<xsd:enumeration value="2"/>
+			<xsd:enumeration value="3"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="productDescription">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="50"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- HIERO -->
+	<xsd:simpleType name="changeCode">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="1"/>
+			<xsd:enumeration value="Y"/>
+			<xsd:enumeration value="N"/>
+			<xsd:enumeration value="E"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="rebalanceCode">
+		<xsd:annotation>
+			<xsd:documentation>rebalance allowed (Y/N)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="1"/>
+			<xsd:enumeration value="Y"/>
+			<xsd:enumeration value="N"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="queueCompatible">
+		<xsd:annotation>
+			<xsd:documentation>is queueing compatible (Y/N)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="1"/>
+			<xsd:enumeration value="Y"/>
+			<xsd:enumeration value="N"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="status">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="50"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="riskType">
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="0"/>
+			<xsd:enumeration value="1"/>
+			<xsd:enumeration value="2"/>
+			<xsd:enumeration value="3"/>
+			<xsd:enumeration value="4"/>
+			<xsd:enumeration value="5"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="riskProfileDescription">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="40"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="orderStatusCode">
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="1"/>
+			<xsd:enumeration value="2"/>
+			<xsd:enumeration value="3"/>
+			<xsd:enumeration value="4"/>
+			<xsd:enumeration value="5"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="orderStatus">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="80"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="orderType">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="100"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="mutationType">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="80"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="mutationSign">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="40"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="transactionType">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="80"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="fundPackagechangeType">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="40"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

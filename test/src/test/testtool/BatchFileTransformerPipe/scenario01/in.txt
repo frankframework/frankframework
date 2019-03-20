@@ -1,0 +1,1 @@
+c:/temp/ibis4testiaf/bftp/in/EDIFACT.TXT

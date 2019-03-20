@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<xsd:complexType name="result">
+		<xsd:all>
+			<xsd:element name="GlobalIdentifier" type="pbl:category"/>
+			<xsd:element name="Application" type="pbl:name"/>
+			<xsd:element name="Key" type="pbl:category"/>
+			<xsd:element name="Category" type="pbl:category"/>
+			<xsd:element name="ResultName" type="pbl:name"/>
+			<xsd:element name="ResultExtension" type="pbl:name"/>
+			<xsd:element name="Description" type="pbl:describtion"/>
+			<xsd:element name="Data" type="pbl:data"/>
+			<xsd:element name="ExpirationTimeStamp" type="xsd:dateTime"/>
+			<xsd:element name="Overwrite" type="pbl:optionYesNo"/>
+			<xsd:element name="Label" type="pbl:category"/>
+			<xsd:element name="Owner" type="pbl:category"/>
+			<xsd:element name="ProductionGroup" type="pbl:category"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:simpleType name="category">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="256"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="describtion">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="512"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="name">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="128"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="data">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="1024000"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="optionYesNo">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Y"/>
+			<xsd:enumeration value="N"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

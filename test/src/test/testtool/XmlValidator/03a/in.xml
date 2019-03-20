@@ -1,0 +1,18 @@
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+	<Body>
+		<MessageHeader xmlns="http://www.ibissource.org/CSP/XSD/General/Message_2">
+			<From>
+				<Id>sdf</Id>
+			</From>
+			<HeaderFields>
+				<ConversationId>asdf2</ConversationId>
+				<MessageId>asdf2</MessageId>
+				<Timestamp>2010-12-28T17:01:01.504+01:00</Timestamp>
+			</HeaderFields>
+		</MessageHeader>
+		<LogPolicyRequest xmlns="http://www.ibissource.org/nl/pcretail/ts/migrationauditdata_01">
+			<FORECAST>Y</FORECAST>
+			<RVS_PARTY_ID>900</RVS_PARTY_ID>
+		</LogPolicyRequest>
+	</Body>
+</Envelope>

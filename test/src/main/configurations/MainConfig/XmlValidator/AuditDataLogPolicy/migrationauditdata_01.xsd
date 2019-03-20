@@ -1,0 +1,330 @@
+<xs:schema xmlns="http://www.ibissource.org/nl/pcretail/ts/migrationauditdata_01" targetNamespace="http://www.ibissource.org/nl/pcretail/ts/migrationauditdata_01" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="http://www.ibissource.org/NL/PCRetail/TS/MigrationAuditData_01_SetPolicyDetails_01/SetPolicyDetailsImpl/MigrationAuditData__01" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:jms="http://ibissource.org/soap/binding/JMS" xmlns:jndi="http://ibissource.org/soap/apis/jndi" xmlns:ns0="http://www.ibissource.org/CSP/XSD/General/Message_2" xmlns:ns1="http://www.ibissource.org/nl/pcretail/ts/migrationauditdata_01" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:annotation>
+		<xs:documentation>Analysis schema version 1.9. Date last change: 14-04-2011. NV. Added CONVERSION_DATE, COMPANY_CODE, FORECAST.</xs:documentation>
+		<xs:documentation>Analysis schema version 1.11. Date last change: 05-05-2011. NV. Added RVS_POLICY_VERSION RVS_POLICY_SEQ_NUM. Removed unused tags in LopPolicy</xs:documentation>
+		<xs:documentation>Analysis schema version 1.12. Date last change: 11-05-2011. NV created RVS_ POLICY group to reflect database change and multiple policies per party. Added LogPolicyStatus.</xs:documentation>
+		<xs:documentation>Analysis schema version 1.13. Date last change: 16-05-2011. NV Added STATUS and ERROR_REASON to RVS_ POLICY group </xs:documentation>
+		<xs:documentation>Analysis schema version 2. Date last change: 18-05-2011. NV Final after review MN</xs:documentation>
+	</xs:annotation>
+	<xs:element name="LogPolicyRequest" type="ns1:ct_LogPolicyRequest"/>
+	<xs:element name="GetRequest">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="PolicyDetails" type="ns1:ct_GetPolicyDetailsRequest"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="GetResponse" type="ns1:ct_GetPolicyDetailsReply"/>
+	<xs:complexType name="ct_SetPolicyRequest">
+		<xs:sequence>
+			<xs:element name="FORECAST">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="RVS_PARTY_ID">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+						<xs:maxLength value="35"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="COMPANY_CODE" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+						<xs:maxLength value="35"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="RVS_PAYLOAD" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="NN_NOTIFY_PAYLOAD" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="NN_COMPRODOC_PAYLOAD" type="xs:string" minOccurs="0"/>
+			<xs:element name="NN_POLICY_NUMBER" type="xs:string" minOccurs="0"/>
+			<xs:element name="NN_POLICY_START_DATE" type="xs:date" minOccurs="0"/>
+			<xs:element name="NN_PARTY_ID" type="xs:string" minOccurs="0"/>
+			<xs:element name="STATUS" type="xs:string" minOccurs="0"/>
+			<xs:element name="ERROR_REASON" type="xs:string" minOccurs="0"/>
+			<xs:element name="BRE_PAYLOAD" type="xs:string" minOccurs="0"/>
+			<xs:element name="NN_PREMIUM" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:decimal">
+						<xs:fractionDigits value="2"/>
+						<xs:totalDigits value="12"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="RVS_POLICY" minOccurs="0" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="RVS_POLICY_NUMBER" minOccurs="0">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:minLength value="1"/>
+									<xs:maxLength value="30"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+						<xs:element name="RVS_POLICY_SEQNUM" minOccurs="0">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:minLength value="1"/>
+									<xs:maxLength value="10"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+						<xs:element name="RVS_POLICY_VERSION" minOccurs="0">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:minLength value="1"/>
+									<xs:maxLength value="10"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+						<xs:element name="RVS_BRANCH_CODE" minOccurs="0">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:minLength value="1"/>
+									<xs:maxLength value="30"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+						<xs:element name="RVS_POLICY_TYPE" minOccurs="0">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:minLength value="1"/>
+									<xs:maxLength value="35"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+						<xs:element name="RVS_PREMIUM" minOccurs="0">
+							<xs:simpleType>
+								<xs:restriction base="xs:decimal">
+									<xs:totalDigits value="12"/>
+									<xs:fractionDigits value="2"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+						<xs:element name="STATUS" type="xs:string" minOccurs="0"/>
+						<xs:element name="ERROR_REASON" type="xs:string" minOccurs="0"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ct_LogPolicyRequest">
+		<xs:sequence>
+			<xs:element name="FORECAST">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="RVS_PARTY_ID">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+						<xs:maxLength value="35"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ct_GetPolicyDetailsRequest">
+		<xs:sequence>
+			<xs:element name="FORECAST">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="RVS_PARTY_ID" type="xs:string" minOccurs="0"/>
+			<xs:element name="COMPANY_CODE" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+						<xs:maxLength value="35"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="RVS_POLICY_NUMBER" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+						<xs:maxLength value="35"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="RVS_POLICY_SEQNUM" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+						<xs:maxLength value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="RVS_BRANCH_CODE" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+						<xs:maxLength value="35"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="STATUS" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+						<xs:maxLength value="30"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ct_GetPolicyDetailsReply">
+		<xs:sequence>
+			<xs:element name="PolicyDetails" minOccurs="0" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="RVS_PARTY_ID">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:minLength value="1"/>
+									<xs:maxLength value="35"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+						<xs:element name="COMPANY_CODE" minOccurs="0">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:minLength value="1"/>
+									<xs:maxLength value="35"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+						<xs:element name="STATUS" type="xs:string"/>
+						<xs:element name="NN_POLICY_NUMBER" type="xs:string" minOccurs="0"/>
+						<xs:element name="NN_PARTY_ID" type="xs:string" minOccurs="0"/>
+						<xs:element name="NN_POLICY_START_DATE" type="xs:date" minOccurs="0"/>
+						<xs:element name="RVS_POLICY" minOccurs="0" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="RVS_POLICY_NUMBER">
+										<xs:simpleType>
+											<xs:restriction base="xs:string">
+												<xs:minLength value="1"/>
+												<xs:maxLength value="35"/>
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:element>
+									<xs:element name="RVS_POLICY_SEQNUM" minOccurs="0">
+										<xs:simpleType>
+											<xs:restriction base="xs:string">
+												<xs:minLength value="1"/>
+												<xs:maxLength value="10"/>
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:element>
+									<xs:element name="RVS_POLICY_VERSION" minOccurs="0">
+										<xs:simpleType>
+											<xs:restriction base="xs:string">
+												<xs:minLength value="1"/>
+												<xs:maxLength value="10"/>
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:element>
+									<xs:element name="RVS_BRANCH_CODE">
+										<xs:simpleType>
+											<xs:restriction base="xs:string">
+												<xs:minLength value="1"/>
+												<xs:maxLength value="35"/>
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="SetRequest">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="PolicyDetail" type="ns1:ct_SetPolicyRequest" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="LogCSExtractRun" type="ns1:ct_LogCSExtractRun"/>
+	<xs:complexType name="ct_LogCSExtractRun">
+		<xs:all>
+			<xs:element name="FORECAST">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="EXTRACT_FILENAME" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="NUMBER_OF_POLICIES" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:integer">
+						<xs:totalDigits value="12"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="POLICY_TYPE" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="30"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="RUN_TYPE" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="50"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="CONVERSION_DATE" type="xs:date" minOccurs="0"/>
+		</xs:all>
+	</xs:complexType>
+	<xs:element name="LogPolicyStatus" type="ns1:ct_LogPolicyStatus"/>
+	<xs:complexType name="ct_LogPolicyStatus">
+		<xs:sequence>
+			<xs:element name="STATUS">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+						<xs:maxLength value="30"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

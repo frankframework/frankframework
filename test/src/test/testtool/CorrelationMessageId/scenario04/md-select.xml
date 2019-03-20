@@ -1,0 +1,15 @@
+<manageDatabaseREQ>
+	<select>
+		<tableName>IBISSTORE</tableName>
+		<columns>
+			<column>
+				<name>MESSAGEID</name>
+			</column>
+			<column>
+				<name>CORRELATIONID</name>
+			</column>
+		</columns>
+		<where>SLOTID='IFSA://NLIBIS4TESTIAF/CorrelationMessageIdXPath2'</where>
+		<order>MESSAGEKEY</order>
+	</select>
+</manageDatabaseREQ>

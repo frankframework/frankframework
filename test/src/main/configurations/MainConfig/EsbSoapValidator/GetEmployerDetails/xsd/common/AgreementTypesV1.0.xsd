@@ -1,0 +1,487 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://www.ibissource.org/agm" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:agm="http://www.ibissource.org/agm" elementFormDefault="qualified" agm:agent="agm" agm:package="com.ibissource.agm">
+	<xsd:annotation>
+		<xsd:documentation>EM - Employee Benefits - Agreements V10</xsd:documentation>
+		<xsd:appinfo>V1.0</xsd:appinfo>
+	</xsd:annotation>
+	<xsd:complexType name="accountRight">
+		<xsd:all>
+			<xsd:element name="EditRights" type="agm:editRights"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="externalReference">
+		<xsd:all>
+			<xsd:element name="Type" type="agm:refType"/>
+			<xsd:element name="Reference" type="agm:reference"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="portalMutation">
+		<xsd:all>
+			<xsd:element name="Id" type="agm:id"/>
+			<xsd:element name="EventCode" type="agm:refType"/>
+			<xsd:element name="StatusCode" type="agm:statusCode"/>
+			<xsd:element name="Source" type="agm:mutationSource"/>
+			<xsd:element name="MutationDate" type="xsd:date"/>
+			<xsd:element name="CreateDateTime" type="xsd:dateTime"/>
+			<xsd:element name="SendDateTime" type="xsd:dateTime"/>
+			<xsd:element name="ProcessedDateTime" type="xsd:dateTime"/>
+			<xsd:element name="UserName" type="agm:userName"/>
+			<xsd:element name="IsChangeable" type="agm:optionYesNo"/>
+			<xsd:element name="IsRemovable" type="agm:optionYesNo"/>
+			<xsd:element name="IsEventAllowed" type="agm:optionYesNo"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="portalMutationDetail">
+		<xsd:all>
+			<xsd:element name="Label" type="agm:label"/>
+			<xsd:element name="Value" type="agm:value"/>
+			<xsd:element name="IsModified" type="agm:optionYesNo"/>
+			<xsd:element name="IsReadOnly" type="agm:optionYesNo"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="portalOrganisation">
+		<xsd:all>
+			<xsd:element name="Id" type="agm:id"/>
+			<xsd:element name="AddressingCode" type="agm:addressingCode"/>
+			<xsd:element name="FirstPensionNorm" type="agm:pensionNorm"/>
+			<xsd:element name="FirstPensionAge" type="agm:age"/>
+			<xsd:element name="SecondPensionNorm" type="agm:pensionNorm"/>
+			<xsd:element name="SecondPensionAge" type="agm:age"/>
+			<xsd:element name="EarlyRetirementNorm" type="agm:pensionNorm"/>
+			<xsd:element name="EarlyRetirementAge" type="agm:age"/>
+			<xsd:element name="DisabledNorm" type="agm:pensionNorm"/>
+			<xsd:element name="SurvivorPensionNorm" type="agm:pensionNorm"/>
+			<xsd:element name="MinVariableSimAge" type="agm:age"/>
+			<xsd:element name="MaxVariableSimAge" type="agm:age"/>
+			<xsd:element name="ContinuationMonth" type="agm:month"/>
+			<xsd:element name="MinSinglePremiumCapitalPolicy" type="agm:premium"/>
+			<xsd:element name="MinPremiumCapitalPolicy" type="agm:premium"/>
+			<xsd:element name="MinSinglePremiumInvestmentPolicy" type="agm:premium"/>
+			<xsd:element name="InvestmentPolicyPerformance" type="agm:policyPerformance"/>
+			<xsd:element name="CapitalPolicyPerformance" type="agm:policyPerformance"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="portalOrganisationUnit">
+		<xsd:all>
+			<xsd:element name="Id" type="agm:id"/>
+			<xsd:element name="UnitName" type="agm:unitName"/>
+			<xsd:element name="MainContractNr" type="agm:contractNumber"/>
+			<xsd:element name="EcNr" type="agm:ecNr"/>
+			<xsd:element name="EcRelNr" type="agm:ecRelNr"/>
+			<xsd:element name="EndDate" type="xsd:date"/>
+			<xsd:element name="YearlySalaryMutationDate" type="agm:yearlySalaryMutationDate"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="portalPerson">
+		<xsd:all>
+			<xsd:element name="Id" type="agm:id"/>
+			<xsd:element name="AddressCheckInd" type="agm:optionYesNo"/>
+			<xsd:element name="PartnerSalary" type="agm:salary"/>
+			<xsd:element name="PartnerBefore1950Flag" type="agm:optionYesNo"/>
+			<xsd:element name="TotalMonthsAbroad" type="agm:totalMonthsAbroad"/>
+			<xsd:element name="PortalPermittanceStartDate" type="xsd:date"/>
+			<xsd:element name="WNPVisibilityFlag" type="agm:optionYesNo"/>
+			<xsd:element name="ChildUnder18Flag" type="agm:optionYesNo"/>
+			<xsd:element name="ChildBirthDate" type="xsd:date"/>
+			<xsd:element name="ChildFirstName" type="agm:firstName"/>
+			<xsd:element name="UserName" type="agm:userName"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="wgpAccount">
+		<xsd:all>
+			<xsd:element name="Id" type="agm:id"/>
+			<xsd:element name="Name" type="agm:name"/>
+			<xsd:element name="ContactPerson" type="agm:name"/>
+			<xsd:element name="ContactPhoneNumber" type="agm:phoneNumber"/>
+			<xsd:element name="CreateDate" type="xsd:date"/>
+			<xsd:element name="EndDate" type="xsd:date"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="portalEmployment">
+		<xsd:all>
+			<xsd:element name="Id" type="agm:id"/>
+			<xsd:element name="ModificationDateTime" type="agm:lockDateTime"/>
+			<xsd:element name="PeriodicSalaryExpected" type="agm:optionYesNo"/>
+			<xsd:element name="IsRemovable" type="agm:optionYesNo"/>
+			<xsd:element name="totalExpectedSalaryMutaions" type="agm:refType"/>
+			<xsd:element name="expectedSalaryMutaions" type="agm:refType"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="insuranceBase">
+		<xsd:all>
+			<xsd:element name="PolicyNumber" type="agm:policyNumber"/>
+			<xsd:element name="Amount" type="agm:money"/>
+			<xsd:element name="VirtualAgreementNumber" type="agm:contractNumber"/>
+			<xsd:element name="VirtualPlanNumber" type="agm:virtualPlanNumber"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="insuranceBaseType">
+		<xsd:all>
+			<xsd:element name="Type" type="agm:refType"/>
+			<xsd:element name="InsuranceBaseDescription" type="agm:typeDescription"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="thirdPartyClaim">
+		<xsd:all>
+			<xsd:element name="BeginPaymentDate" type="xsd:date"/>
+			<xsd:element name="EndPaymentDate" type="xsd:date"/>
+			<xsd:element name="StartDate" type="xsd:date"/>
+			<xsd:element name="EndDate" type="xsd:date"/>
+			<xsd:element name="PolicyType" type="agm:refType"/>
+			<xsd:element name="PremiumAmount" type="agm:money"/>
+			<xsd:element name="PaymentTerm" type="agm:refType"/>
+			<xsd:element name="DepositDate" type="xsd:date"/>
+			<xsd:element name="TargetCapital" type="agm:money"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="employerSalaryComponent">
+		<xsd:all>
+			<xsd:element name="Id" type="agm:id"/>
+			<xsd:element name="Term" type="agm:term"/>
+			<xsd:element name="Factor" type="agm:factor"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="agreementPart">
+		<xsd:all>
+			<xsd:element name="Id" type="agm:id"/>
+			<xsd:element name="ContractNumber" type="agm:contractNumber"/>
+			<xsd:element name="ContractPartStart" type="agm:contractPart"/>
+			<xsd:element name="ContractPartEnd" type="agm:contractPart"/>
+			<xsd:element name="AgreementType" type="agm:refType"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="employeeBenefitsParticipation">
+		<xsd:all>
+			<xsd:element name="AgreementType" type="agm:refType"/>
+			<xsd:element name="PlanNumber" type="agm:planNumber"/>
+			<xsd:element name="PolicyNumber" type="agm:policyNumber"/>
+			<xsd:element name="ContractNumber" type="agm:contractNumber"/>
+			<xsd:element name="Status" type="agm:refType"/>
+			<xsd:element name="Salary" type="agm:money"/>
+			<xsd:element name="StartDate" type="xsd:date"/>
+			<xsd:element name="EndDate" type="xsd:date"/>
+			<xsd:element name="LastMutationDate" type="xsd:date"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="genericClaim">
+		<xsd:all>
+			<xsd:element name="Id" type="agm:id"/>
+			<xsd:element name="ThemeType" type="agm:refType"/>
+			<xsd:element name="Type" type="agm:refType"/>
+			<xsd:element name="TypeDescription" type="agm:typeDescription"/>
+			<xsd:element name="NameOrganisation" type="agm:nameOrganisation"/>
+			<xsd:element name="Description" type="agm:description"/>
+			<xsd:element name="StartAge" type="agm:age"/>
+			<xsd:element name="EndAge" type="agm:age"/>
+			<xsd:element name="MinStartAge" type="agm:age"/>
+			<xsd:element name="MaxStartAge" type="agm:age"/>
+			<xsd:element name="MinEndAge" type="agm:age"/>
+			<xsd:element name="MaxEndAge" type="agm:age"/>
+			<xsd:element name="Amount" type="agm:money"/>
+			<xsd:element name="StartEventType" type="agm:refType"/>
+			<xsd:element name="EndEventType" type="agm:refType"/>
+			<xsd:element name="YearPremium" type="agm:money"/>
+			<xsd:element name="ExpectedAmount" type="agm:money"/>
+			<xsd:element name="ExpectedPercentage" type="agm:percentage"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="simulationIncome">
+		<xsd:all>
+			<xsd:element name="SimulationAge" type="agm:age"/>
+			<xsd:element name="TotalSimulationIncome" type="agm:money"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="labelValue">
+		<xsd:all>
+			<xsd:element name="Label" type="agm:labelVal"/>
+			<xsd:element name="IncomeAmount" type="agm:money"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="incomeStorage">
+		<xsd:all>
+			<xsd:element name="StartPaymentAge" type="agm:age"/>
+			<xsd:element name="EndPaymentAge" type="agm:age"/>
+			<xsd:element name="StartEventType" type="agm:refType"/>
+			<xsd:element name="EndEventType" type="agm:refType"/>
+			<xsd:element name="TargetIncome" type="agm:money"/>
+			<xsd:element name="TotalSimulationHome" type="agm:money"/>
+			<xsd:element name="IncomeShortage" type="agm:money"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="calculateClaim">
+		<xsd:all>
+			<xsd:element name="PaymentNumberOfYears" type="agm:age"/>
+			<xsd:element name="IsPaymentForLife" type="agm:optionYesNo"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="portalFootnote">
+		<xsd:all>
+			<xsd:element name="Footnote" type="agm:footNote"/>
+		</xsd:all>
+	</xsd:complexType>
+	<!--********************************agm Simple Types General***********************-->
+	<xsd:simpleType name="id">
+		<xsd:restriction base="xsd:integer">
+			<xsd:totalDigits value="15"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="age">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="refType">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="userName">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="256"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="phoneNumber">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="15"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="name">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="50"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="money">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="10"/>
+			<xsd:fractionDigits value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="salary">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="12"/>
+			<xsd:fractionDigits value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="percentage">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="3"/>
+			<xsd:fractionDigits value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="contractNumber">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="1"/>
+			<xsd:maxInclusive value="9999999999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="typeDescription">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="policyNumber">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************* agm Simple Types AccountRight *************************-->
+	<xsd:simpleType name="editRights">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="U">
+				<!-- Update Possible -->
+			</xsd:enumeration>
+			<xsd:enumeration value="R">
+				<!-- Read Only -->
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************* agm Simple Types ExternalReference ******************-->
+	<xsd:simpleType name="reference">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="35"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************* agm Simple Types PortalMutation ************************-->
+	<xsd:simpleType name="statusCode">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="9"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="mutationSource">
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="1">
+				<!-- Employer -->
+			</xsd:enumeration>
+			<xsd:enumeration value="2">
+				<!-- Employee -->
+			</xsd:enumeration>
+			<xsd:enumeration value="3">
+				<!-- NN-GBA -->
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************* agm Simple Types PortalMutationDetail *****************-->
+	<xsd:simpleType name="label">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="30"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="value">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="200"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************* agm Simple Types PortalOrganisation *******************-->
+	<xsd:simpleType name="addressingCode">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="9"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="pensionNorm">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="8"/>
+			<xsd:fractionDigits value="4"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="premium">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="10"/>
+			<xsd:fractionDigits value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="month">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="policyPerformance">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="8"/>
+			<xsd:fractionDigits value="4"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************* agm Simple Types PortalOrganisationUnit *************-->
+	<xsd:simpleType name="unitName">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="150"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ecNr">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="1"/>
+			<xsd:maxInclusive value="999999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ecRelNr">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="1"/>
+			<xsd:maxInclusive value="999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="yearlySalaryMutationDate">
+		<xsd:restriction base="xsd:date"/>
+	</xsd:simpleType>
+	<!--******************************* agm Simple Types PortalPerson *************************-->
+	<xsd:simpleType name="totalMonthsAbroad">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="1"/>
+			<xsd:maxInclusive value="999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="firstName">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="24"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************* agm Simple Types WGPAccount ************************-->
+	<!--******************************* agm Simple Types PortalEmployment ***********************-->
+	<xsd:simpleType name="lockDateTime">
+		<xsd:restriction base="xsd:dateTime">
+			<xsd:pattern value="CCYY-MM-DDThh:mm:ss.sss"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************* agm Simple Types InsuranceBase ****************-->
+	<xsd:simpleType name="virtualPlanNumber">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="1"/>
+			<xsd:maxInclusive value="999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************* agm Simple Types InsuranceBaseType ****************-->
+	<!--******************************* agm Simple Types ThirdPartyClaim **********************-->
+	<!--******************************* agm Simple Types EmployerSalaryComponent ********-->
+	<xsd:simpleType name="term">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="1"/>
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="factor">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="8"/>
+			<xsd:fractionDigits value="4"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************* agm Simple Types AgreementPart **********************-->
+	<xsd:simpleType name="contractPart">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="1"/>
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************* agm Simple Types EBParticipation********-->
+	<xsd:simpleType name="planNumber">
+		<xsd:restriction base="xsd:integer">
+			<xsd:totalDigits value="15"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************* agm Simple Types GenericClaim ********-->
+	<xsd:simpleType name="nameOrganisation">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="description">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="100"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************* agm Simple Types SimulationIncome ********-->
+	<!--******************************* agm Simple Types LabelValue ********-->
+	<xsd:simpleType name="labelVal">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************* agm Simple Types IncomeShortage ********-->
+	<!--******************************* agm Simple Types CalculateClaim ********-->
+	<!--******************************* agm Simple Types PortalFootnote ********-->
+	<xsd:simpleType name="footNote">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="1500"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************* agm Simple Types Enumeration *****************************-->
+	<xsd:simpleType name="optionYesNo">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Y">
+				<!-- Y | Yes -->
+			</xsd:enumeration>
+			<xsd:enumeration value="N">
+				<!-- N | No -->
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="optionYesNoUnknown">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Y"/>
+			<xsd:enumeration value="N"/>
+			<xsd:enumeration value="U"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

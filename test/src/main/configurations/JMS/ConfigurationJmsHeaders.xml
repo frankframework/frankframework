@@ -1,0 +1,81 @@
+<module>
+	<adapter name="read message of queue" active="${active.jms}">
+		<receiver
+			name="test_esb_receiver"
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			>
+			<listener
+				name="test_esb_listener"
+				className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
+				destinationName="jms/GetMessageRequest"
+				jmsRealm="qcf_tibco_esb_rr"
+				messageProtocol="RR"
+				messageSelector="SOURCE='${hostname}_jmsHeaderTest'"
+				>
+				<param name="value" value="dummyValue" />
+				<param name="sessionkey" sessionKey="mySessKey" />
+				<param name="sessionkeyWithValue" value="unused" sessionKey="mySessKey" />
+				<param name="sessionkeyWithSessionKey" value="used" sessionKey="unused" />
+			</listener>
+		</receiver>
+
+		<pipeline firstPipe="SendMessage">
+			<exits>
+				<exit state="success" path="EXIT" />
+			</exits>
+
+			<pipe name="SendMessage"
+				getInputFromFixedValue="Yaay I'm working!!!"
+				className="nl.nn.adapterframework.pipes.EchoPipe"
+				storeResultInSessionKey="mySessKey"
+				preserveInput="true"
+			>
+			</pipe>
+
+		</pipeline>
+	</adapter>
+	<adapter name="put message on queue" active="${active.jms}">
+		<receiver
+			name="Put On"
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			>
+			<listener
+				name="Queue"
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4testiaf-EsbJmsRRHeaderSender" 
+			/>
+		</receiver>
+
+		<pipeline firstPipe="SendMessage">
+			<exits>
+				<exit state="success" path="EXIT" />
+			</exits>
+
+			<pipe name="SendMessage"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				>
+				<sender
+					className="nl.nn.adapterframework.extensions.esb.EsbJmsSender"
+					destinationName="jms/GetMessageRequest"
+					jmsRealm="qcf_tibco_esb_rr"
+					messageProtocol="RR"
+					responseHeadersToSessionKeys="value,sessionkey,sessionkeyWithValue,sessionkeyWithSessionKey"
+					/>
+					<param name="SOURCE" value="${hostname}_jmsHeaderTest" />
+				<forward name="success" path="makeReply"/>
+			</pipe>
+
+			<pipe name="makeReply" className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="JmsHeader/xsl/consolidateSessionKeys.xsl"
+				>
+				<param name="value" sessionKey="value" />
+				<param name="sessionkey" sessionKey="sessionkey" />
+				<param name="sessionkeyWithValue" sessionKey="sessionkeyWithValue" />
+				<param name="sessionkeyWithSessionKey" sessionKey="sessionkeyWithSessionKey" />
+
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+		</pipeline>
+	</adapter>
+</module>

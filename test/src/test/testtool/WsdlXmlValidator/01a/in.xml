@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+   <Header>
+      <MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
+         <From>
+            <Id>Ibis4Toegang</Id>
+         </From>
+         <To>
+            <Location>ESB.BankSavings.TS.Customer.BankSavingsCustomer.1.GetPartyBasicDataBanking.1.Request</Location>
+         </To>
+         <HeaderFields>
+            <CPAId>n/a</CPAId>
+            <ConversationId>ID:0000000000000000000001420000001E</ConversationId>
+            <MessageId>marrie.simsom.biz_0ace08f2--3689beb9_14e49ea948d_-73f4</MessageId>
+            <ExternalRefToMessageId>1</ExternalRefToMessageId>
+            <Timestamp>2015-07-03T14:43:52</Timestamp>
+         </HeaderFields>
+         <Service>
+            <Name>Customer</Name>
+            <Context>BankSavingsCustomer</Context>
+            <Action>
+               <Paradigm>Request</Paradigm>
+               <Name>GetPartyBasicDataBanking</Name>
+               <Version>1</Version>
+            </Action>
+         </Service>
+      </MessageHeader>
+   </Header>
+   <Body>
+      <GetPartyBasicDataBanking_Request xmlns="http://nn.nl/XSD/BankSavings/Customer/BankSavingsCustomer/1/GetPartyBasicDataBanking/1">
+         <BankSparen xmlns="http://nn.nl/XSD/BankSavings/Customer/BankSavingsCustomer/1/GetPartyBasicDataBanking/1/Request">
+            <PRD>
+               <KLT>
+                  <KLT_NA_RELNUM>&amp;cVtg.</KLT_NA_RELNUM>
+               </KLT>
+            </PRD>
+         </BankSparen>
+      </GetPartyBasicDataBanking_Request>
+   </Body>
+</Envelope>

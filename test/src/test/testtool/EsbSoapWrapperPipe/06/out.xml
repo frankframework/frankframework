@@ -1,0 +1,33 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" >
+  <soapenv:Header>
+    <MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
+      <From>
+        <Id>Ibis4TestIAF</Id>
+      </From>
+      <To>
+        <Location>ESB.CustomerAdministration.TS.Party.PartyY01_RSL.1.DeleteInsurancePartyAgreementRole.1.Request</Location>
+      </To>
+      <HeaderFields>
+        <CPAId>n/a</CPAId>
+        <ConversationId>DPAB00000003730_0a4ae88e-50126f16_13e7a3aa796_-7fff</ConversationId>
+        <MessageId>DPAB00000003730_0a4ae88e-50126f16_13e7a3aa796_-7ffe</MessageId>
+        <Timestamp>2013-05-06T16:24:24</Timestamp>
+      </HeaderFields>
+      <Service>
+        <Name>Party</Name>
+        <Context>PartyY01_RSL</Context>
+        <Action>
+          <Paradigm>Request</Paradigm>
+          <Name>DeleteInsurancePartyAgreementRole</Name>
+          <Version>1</Version>
+        </Action>
+      </Service>
+    </MessageHeader>
+  </soapenv:Header>
+  <soapenv:Body>
+    <CalculationRequest xmlns="http://nn.nl/XSD/CustomerAdministration/Party/PartyY01_RSL/1/DeleteInsurancePartyAgreementRole/1">
+      <SystemCode>L76HB000</SystemCode>
+      <CalculationData>1:RS_INFO;835:ILIAS;645:ANP_VRH_3;</CalculationData>
+    </CalculationRequest>
+  </soapenv:Body>
+</soapenv:Envelope>

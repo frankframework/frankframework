@@ -1,0 +1,5 @@
+<project default="copy.files">
+	<target name="copy.files">
+		<copy file="GPOA.xml" tofile="c:/temp/ibis4testiaf/xfeip/GPOA.xml" overwrite="true" />
+	</target>
+</project>

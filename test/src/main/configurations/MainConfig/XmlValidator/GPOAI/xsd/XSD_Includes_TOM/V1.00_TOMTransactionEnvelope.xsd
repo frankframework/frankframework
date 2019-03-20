@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+	<xsd:complexType name="AuditTrail">
+		<xsd:all>
+			<xsd:element name="from" type="xsd:string"/>
+			<xsd:element name="messageId" type="xsd:string"/>
+			<xsd:element name="messageVersion" type="xsd:string"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="RequestEnvelope">
+		<xsd:all>
+			<xsd:element name="AuditTrail" type="AuditTrail"/>
+			<xsd:element name="language" type="LstLanguage" minOccurs="0"/>
+			<xsd:element name="transactionDate" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="timeStamp" type="xsd:dateTime"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="ReplyEnvelope">
+		<xsd:all>
+			<xsd:element name="AuditTrail" type="AuditTrail"/>
+			<xsd:element name="timeStamp" type="xsd:dateTime"/>
+			<xsd:element name="returnCode" type="xsd:string"/>
+			<xsd:element name="returnCodeExtension" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="errorMessage" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="language" type="LstLanguage" minOccurs="0"/>
+		</xsd:all>
+	</xsd:complexType>
+</xsd:schema>

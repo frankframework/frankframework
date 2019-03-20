@@ -1,0 +1,32 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Header><MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/2">
+   <From>
+      <Id>Ibis4TestIAF</Id>
+   </From>
+   <To>
+      <Location>ESB.Infrastructure.US.Transfer.FileTransfer.1.StartTransfer.2.Action</Location>
+   </To>
+   <HeaderFields>
+      <CPAId>n/a</CPAId>
+      <ConversationId>LPAB00000003980_0a4a961d--7a4e159b_14f977fc944_-7ff1</ConversationId>
+      <MessageId>LPAB00000003980_0a4a961d--7a4e159b_14f977fc944_-7ff0</MessageId>
+      <Timestamp>2015-09-04T10:36:50</Timestamp>
+   </HeaderFields>
+   <Service>
+      <Name>Transfer</Name>
+      <Context>FileTransfer</Context>
+      <Action>
+         <Paradigm>Action</Paradigm>
+         <Name>StartTransfer</Name>
+         <Version>2</Version>
+      </Action>
+   </Service>
+</MessageHeader>
+</soapenv:Header><soapenv:Body><StartTransfer_Action xmlns="http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/StartTransfer/2">
+	  <TransferDetails>
+		    <SenderApplication>Ibis4TestIAF</SenderApplication>
+		    <RecipientApplication/>
+		    <Filename>/opt/data/FXF/ibis4testiaf/NNX01234/out/test.txt</Filename>
+		    <TransferFlowId>NNL01234</TransferFlowId>
+	  </TransferDetails>
+</StartTransfer_Action>
+</soapenv:Body></soapenv:Envelope>

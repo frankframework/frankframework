@@ -1,0 +1,61 @@
+<xsd:schema xmlns:doc="http://www.ibissource.org/doc" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.ibissource.org/doc" elementFormDefault="qualified" doc:agent="doc" doc:package="com.ibissource.doc">
+	<xsd:complexType name="Document">
+		<xsd:all>
+			<xsd:element name="DocumentType" type="doc:DocumentType"/>
+			<xsd:element name="ArchivingKey" type="doc:ArchivingKeyType"/>
+			<xsd:element name="ArchivingDate" type="doc:ArchivingDateType"/>
+			<xsd:element name="PensionContract" type="doc:PensionContractType" minOccurs="0"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="DocumentType">
+		<xsd:all>
+			<xsd:element name="Id" type="doc:DocumentTypeType"/>
+			<xsd:element name="LogicalName" type="doc:LogicalNameType"/>
+			<xsd:element name="Source" type="doc:SourceType"/>
+			<xsd:element name="FileType" type="doc:FileTypeType"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="PensionContractType">
+		<xsd:all>
+			<xsd:element name="Number" type="doc:NumberType"/>
+		</xsd:all>
+	</xsd:complexType>
+	<!--*************************** Simple element types **********************************     -->
+	<xsd:simpleType name="DocumentTypeType">
+		<xsd:restriction base="xsd:integer">
+			<xsd:totalDigits value="4"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ArchivingKeyType">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="80"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ArchivingDateType">
+		<xsd:restriction base="xsd:date">
+			<xsd:pattern value="[1-2][0-9]{3}-(0[0-9]|1[0-2])-([0-2][0-9]|3[0-1])"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="LogicalNameType">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="150"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="SourceType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="EA"/>
+			<xsd:enumeration value="EANEW"/>			
+			<xsd:enumeration value="BACO"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="FileTypeType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="PDF"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="NumberType">
+		<xsd:restriction base="xsd:integer">
+			<xsd:totalDigits value="15"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

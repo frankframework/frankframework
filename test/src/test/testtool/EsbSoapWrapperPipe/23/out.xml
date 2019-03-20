@@ -1,0 +1,24 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+	<soapenv:Header>
+		<MessageHeader xmlns="http://www.ing.com/CSP/XSD/General/Message_2">
+			<From>
+				<Id>Ibis4TestIAF</Id>
+			</From>
+			<HeaderFields>
+				<ConversationId>ConversationId</ConversationId>
+				<MessageId>WPNLD9313348_0a4aba76-73c83091_132671f0df9_-7fde</MessageId>
+				<ExternalRefToMessageId>MessageId</ExternalRefToMessageId>
+				<Timestamp>2011-09-14T11:22:28</Timestamp>
+			</HeaderFields>
+		</MessageHeader>
+	</soapenv:Header>
+	<soapenv:Body>
+		<CalculationRequest xmlns="http://www.ing.com/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply" xmlns:SOAPENV="http://schemas.xmlsoap.org/soap/envelope/">
+			<SystemCode>L76HB000</SystemCode>
+			<CalculationData>1:RS_INFO;835:ILIAS;645:ANP_VRH_3;</CalculationData>
+			<Result xmlns="http://www.ing.com/CSP/XSD/General/Message_2">
+				<Status>OK</Status>
+			</Result>
+		</CalculationRequest>
+	</soapenv:Body>
+</soapenv:Envelope>

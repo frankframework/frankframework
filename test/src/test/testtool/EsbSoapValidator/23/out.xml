@@ -1,0 +1,34 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Header><MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/2">
+   <From>
+      <Id>Ibis4TestIAF</Id>
+   </From>
+   <To>
+      <Location>ESB.AccountInformation.BS.AccountInformation.1.GetPaymentReferenceAndPayLink.1.Response</Location>
+   </To>
+   <HeaderFields>
+      <CPAId>n/a</CPAId>
+      <ConversationId>lies.simsom.biz_0ace007f--7325aadd_152f455fd17_-7ccf</ConversationId>
+      <MessageId>MYHOST000012345_0a1b234c--56de7fa8_9012345678b_-9cd0</MessageId>
+      <CorrelationId>lies.simsom.biz_0ace007f--7325aadd_152f455fd17_-7cce</CorrelationId>
+      <Timestamp>2001-12-17T09:30:47</Timestamp>
+   </HeaderFields>
+   <Service>
+      <Name>CollectionsDisbursements</Name>
+      <Context/>
+      <Action>
+         <Paradigm>Response</Paradigm>
+         <Name>GetPaymentReferenceAndPayLink</Name>
+         <Version>1</Version>
+      </Action>
+   </Service>
+</MessageHeader>
+</soapenv:Header><soapenv:Body><GetPaymentReferenceAndPayLink_Response xmlns="http://nn.nl/XSD/AccountInformation/1/GetPaymentReferenceAndPayLink/1">
+   <PaymentDetails>
+      <PaymentId>987</PaymentId>
+      <PaymentURL>paymentulr</PaymentURL>
+   </PaymentDetails>
+   <Result xmlns="http://nn.nl/XSD/Generic/MessageHeader/2">
+      <Status>OK</Status>
+   </Result>
+</GetPaymentReferenceAndPayLink_Response>
+</soapenv:Body></soapenv:Envelope>

@@ -1,0 +1,21 @@
+<project default="create.database">
+	<target name="create.database">
+		<exec executable="sqlcmd">
+			<arg value="-S"/>
+			<arg value="localhost"/>
+<!--
+			<arg value="-d"/>
+			<arg value="testiaf"/>
+			<arg value="-U"/>
+			<arg value="testiaf_user"/>
+			<arg value="-P"/>
+			<arg value="testiaf_user00"/>
+-->			
+			<arg value="-i"/>
+			<arg value="create_database.sql"/>
+		</exec>
+	</target>
+</project>
+
+
+

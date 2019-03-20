@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:lpa="http://www.ibissource.org/lpa" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.ibissource.org/lpa" elementFormDefault="qualified" lpa:agent="lpa" lpa:package="com.ibissource.lpa">
+	<xsd:annotation>
+		<xsd:documentation>EM - Life - PensionAdministration LC V10</xsd:documentation>
+		<xsd:appinfo>V1.0</xsd:appinfo>
+	</xsd:annotation>
+	<xsd:complexType name="pensionContract">
+		<xsd:all>
+			<xsd:element name="Number" type="lpa:number"/>
+			<xsd:element name="Name" type="lpa:contractname"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="pensionContractPart">
+		<xsd:all>
+			<xsd:element name="Description" type="lpa:description"/>
+			<xsd:element name="Number" type="lpa:number"/>
+			<xsd:element name="ProductName" type="lpa:description"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="pensionParticipation">
+		<xsd:all>
+			<xsd:element name="PensionBase" type="lpa:money"/>
+			<xsd:element name="Franchise" type="lpa:money"/>
+			<xsd:element name="ContributionPercentage" type="lpa:percentage"/>
+			<xsd:element name="ContributionAmount" type="lpa:money"/>
+			<xsd:element name="RetirementDate" type="xsd:date"/>
+			<xsd:element name="ServiceYearsIncludedStartDate" type="lpa:years"/>
+			<xsd:element name="DeliveryDate" type="xsd:date"/>
+			<xsd:element name="ReliveryNumber" type="lpa:accumulation"/>
+			<xsd:element name="RiscType" type="lpa:status"/>
+			<xsd:element name="RiscCoverageAmount" type="lpa:money"/>
+			<xsd:element name="RiscCoveragePercentage" type="lpa:percentage"/>
+			<xsd:element name="WaiverDisabilityAmount" type="lpa:money"/>
+			<xsd:element name="WaiverDisabilityPercentage" type="lpa:percentage"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="pensionPlan">
+		<xsd:all>
+			<xsd:element name="Number" type="lpa:number20"/>
+			<xsd:element name="Name" type="lpa:name"/>
+			<xsd:element name="ParticipantsCategory" type="lpa:description"/>
+			<xsd:element name="Type" type="lpa:refType"/>
+			<xsd:element name="RetirementAge" type="lpa:age"/>
+			<xsd:element name="RealisationType" type="lpa:refType"/>
+			<xsd:element name="PensionSalaryDefinition" type="lpa:pensionSalaryDefinition"/>
+			<xsd:element name="WaiverOfPremiumDisabilityCode" type="lpa:optionYesNo"/>
+			<xsd:element name="PremiumTerm" type="lpa:premiumTerm"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="pensionBenefit">
+		<xsd:all>
+			<xsd:element name="BenefitType" type="lpa:refType"/>
+			<xsd:element name="PercentPerServiceYear" type="lpa:percentage"/>
+			<xsd:element name="InexchangebleTotal" type="lpa:money"/>
+			<xsd:element name="PurchasedTotal" type="lpa:money"/>
+			<xsd:element name="InsuredTotal" type="lpa:money"/>
+			<xsd:element name="MaximumNonContributoryYield" type="lpa:money"/>
+			<xsd:element name="YearlyPurchasePriceContribution" type="lpa:money"/>
+			<xsd:element name="GrossPremiumTerm" type="lpa:money"/>
+			<xsd:element name="ContributionYearlyRisc" type="lpa:money"/>
+			<xsd:element name="PremiumTermCode" type="lpa:number"/>
+			<xsd:element name="AvailablePremiumPlan" type="lpa:money"/>
+			<xsd:element name="AvailablePremiumExtra" type="lpa:money"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="pensionClaim">
+		<xsd:all>
+			<xsd:element name="BenefitType" type="lpa:refType"/>
+			<xsd:element name="CommutedUntilDate" type="xsd:date"/>
+			<xsd:element name="ClaimStartDate" type="xsd:date"/>
+			<xsd:element name="ClaimEndDate" type="xsd:date"/>
+			<xsd:element name="UpoAmountDate" type="xsd:date"/>
+			<xsd:element name="CurrentAmount" type="lpa:money"/>
+			<xsd:element name="IsCalculable" type="lpa:optionYesNo"/>
+		</xsd:all>
+	</xsd:complexType>
+	<!--********************************agm Simple Types General***********************-->
+	<xsd:simpleType name="optionYesNo">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Y">
+				<!-- Y | Yes -->
+			</xsd:enumeration>
+			<xsd:enumeration value="N">
+				<!-- N | No -->
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="age">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="years">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="accumulation">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="refType">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="premiumTerm">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="description">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="100"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="pensionSalaryDefinition">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="200"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="money">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="10"/>
+			<xsd:fractionDigits value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="number">
+		<xsd:restriction base="xsd:integer">
+			<xsd:totalDigits value="15"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="number20">
+		<xsd:restriction base="xsd:integer">
+			<xsd:totalDigits value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="policyNumber">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="name">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="60"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="contractname">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="100"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="status">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="percentage">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="3"/>
+			<xsd:fractionDigits value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="percentage4">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="5"/>
+			<xsd:fractionDigits value="4"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="version">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

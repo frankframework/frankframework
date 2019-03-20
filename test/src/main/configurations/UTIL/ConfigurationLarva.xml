@@ -1,0 +1,97 @@
+<module>
+	<adapter name="Larva" active="${larva.adapter.active}">
+		<receiver
+			name="Larva"
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			>
+			<listener
+				name="Larva"
+				className="nl.nn.adapterframework.receivers.JavaListener"
+			/>
+		</receiver>
+		<receiver
+			name="Larva"
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			>
+			<listener
+				name="Larva"
+				className="nl.nn.adapterframework.http.RestListener"
+				uriPattern="larva"
+				method="GET"
+			/>
+		</receiver>
+		<pipeline firstPipe="Larva">
+			<pipe
+				name="Larva"
+				className="nl.nn.adapterframework.pipes.LarvaPipe"
+				writeToLog="${larva.adapter.writeToLog}"
+				writeToSystemOut="${larva.adapter.writeToSystemOut}"
+				execute="${larva.adapter.execute}"
+				storeResultInSessionKey="message"
+				logLevel="scenario failed"
+				>
+				<forward name="success" path="SwitchMethod" />
+			</pipe>
+			<pipe
+				name="SwitchMethod"
+				className="nl.nn.adapterframework.pipes.XmlSwitch"
+				getInputFromFixedValue="&lt;dummy/&gt;"
+				preserveInput="true"
+				notFoundForwardName="CreateMail"
+				sessionKey="method"
+				>
+				<forward name="GET" path="SetContentType" />
+			</pipe>
+			<pipe
+				name="SetContentType"
+				className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="contentType"
+				value="text/plain"
+				>
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe
+				name="CreateMail"
+				className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="/Larva/xsl/CreateMail.xsl"
+				xslt2="true"
+				getInputFromFixedValue="&lt;dummy/&gt;"
+				>
+				<param name="hostname" value="${hostname}" />
+				<param name="message" sessionKey="message" />
+				<forward name="success" path="SendMail" />
+			</pipe>
+			<pipe
+				name="SendMail"
+				className="nl.nn.adapterframework.pipes.EchoPipe"
+				active="!${larva.adapter.mail.active}"
+				>
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe
+				name="SendMail"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				active="${larva.adapter.mail.active}"
+				>
+				<sender
+					className="nl.nn.adapterframework.senders.MailSender"
+					smtpHost="${smtp.host}"
+				/>
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+		</pipeline>
+	</adapter>
+	<scheduler>
+		<job
+			name="Larva"
+			adapterName="Larva"
+			receiverName="Larva"
+			interval="86400000"
+			function="sendMessage"
+			active="${larva.adapter.scheduler.active}"
+		/>
+	</scheduler>
+</module>

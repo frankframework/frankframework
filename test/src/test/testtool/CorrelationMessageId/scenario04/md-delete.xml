@@ -1,0 +1,6 @@
+<manageDatabaseREQ>
+	<delete>
+		<tableName>IBISSTORE</tableName>
+		<where>SLOTID='IFSA://NLIBIS4TESTIAF/CorrelationMessageIdXPath2'</where>
+	</delete>
+</manageDatabaseREQ>

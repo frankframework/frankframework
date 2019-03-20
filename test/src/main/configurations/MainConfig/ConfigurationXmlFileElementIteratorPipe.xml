@@ -1,0 +1,59 @@
+<ibis>
+	<adapter name="XmlFileElementIteratorPipe">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="XmlFileElementIteratorPipe">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4testiaf-XmlFileElementIteratorPipe" />
+		</receiver>
+		<pipeline firstPipe="getRequest">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+
+			<pipe name="getRequest" className="nl.nn.adapterframework.pipes.XsltPipe"
+				xpathExpression="request" sessionKey="originalRequest">
+				<forward name="success" path="switchMode" />
+			</pipe>
+
+			<pipe name="switchMode" className="nl.nn.adapterframework.pipes.XmlSwitch"
+				xpathExpression="request/@mode">
+				<forward name="name" path="iterate_name" />
+				<forward name="chain" path="iterate_chain" />
+			</pipe>
+
+			<pipe name="iterate_name"
+				className="nl.nn.adapterframework.pipes.XmlFileElementIteratorPipe"
+				elementName="Person" getInputFromSessionKey="originalRequest">
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender"
+					javaListener="XmlFileElementIteratorPipe_node" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<pipe name="iterate_chain"
+				className="nl.nn.adapterframework.pipes.XmlFileElementIteratorPipe"
+				elementChain="GetPartiesOnAgreementRLY;PartyAgreementRole;PartyInternalAgreementRole;Party;Person"
+				getInputFromSessionKey="originalRequest">
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender"
+					javaListener="XmlFileElementIteratorPipe_node" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="XmlFileElementIteratorPipe_node">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="XmlFileElementIteratorPipe_node">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				name="XmlFileElementIteratorPipe_node" />
+		</receiver>
+		<pipeline firstPipe="echo">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+
+			<pipe name="echo" className="nl.nn.adapterframework.pipes.XsltPipe"
+				xpathExpression="concat(Person/PersonName/Id,'_',Person/Demographics/Gender)">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</ibis>

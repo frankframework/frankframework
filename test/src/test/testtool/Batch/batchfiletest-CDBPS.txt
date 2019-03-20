@@ -1,0 +1,32 @@
+Header h1
+docid        xxx1
+filler            
+filler            
+body   b1-1
+body   b1-2
+body   b1-3
+start            
+body   r1-1-1
+body   r1-1-2
+end            
+start            
+body   r1-2-1
+body   r1-2-2
+end            
+filler            
+Header h2            
+docid        xxx2
+filler            
+filler            
+body   b2-1
+body   b2-2
+body   b2-3
+start            
+body   r2-1-1
+body   r2-1-2
+end            
+start            
+body   r2-2-1
+body   r2-2-2
+end            
+filler            

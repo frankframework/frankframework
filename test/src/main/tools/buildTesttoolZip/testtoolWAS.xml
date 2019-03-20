@@ -1,0 +1,41 @@
+<project default="testtoolWAS">
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+		<classpath>
+			<pathelement location="ant-contrib-1.0b3.jar" />
+		</classpath>
+	</taskdef>
+	<!-- ===================================== -->
+	<target name="init">
+		<property name="work.dir" value="${basedir}/../target/testtoolBuildDir/WAS" />
+		<echo message="Found work directory: ${work.dir}" />
+	</target>
+	<!-- ===================================== -->
+	<target name="testtoolWAS" depends="init">
+		<delete dir="${work.dir}" />
+
+		<copy todir="${work.dir}" includeEmptyDirs="false">
+			<fileset dir="${testtool.dir}" />
+		</copy>
+		
+		<replaceregexp match="c:\\temp\\ibis4testiaf\\(.*)\\(.*)" replace="c:/temp/ibis4testiaf/\1/\2" flags="gi">
+			<fileset dir="${work.dir}" includes="**/*" />
+		</replaceregexp>
+
+		<replaceregexp match="c:\\temp\\ibis4testiaf\\(.*)" replace="c:/temp/ibis4testiaf/\1" flags="gi">
+			<fileset dir="${work.dir}" includes="**/*" />
+		</replaceregexp>
+
+		<!-- Use line beneath for WAS -->
+		<replace dir="${work.dir}" token="c:/temp/ibis4testiaf" value="/opt/data/WAS/wasap18/log/ibis4testiaf">
+			<include name="**/*" />
+		</replace>
+
+		<property name="zip.name" value="${bi.instance.version}_${bi.instance.build_id}/testtoolWAS-${bi.instance.version}_${bi.instance.build_id}.zip" />
+
+		<zip destfile="${basedir}/../../../../target/${zip.name}">
+			<fileset dir="${work.dir}" casesensitive="no" defaultexcludes="false">
+				<include name="**/*" />
+			</fileset>
+		</zip>
+	</target>
+</project>

@@ -1,0 +1,9 @@
+<project default="create.user">
+	<target name="create.user">
+		<exec executable="sqlplus">
+			<arg value="sys/system"/>
+			<arg value="as SYSDBA"/>
+			<arg value="@create_user.sql"/>
+		</exec>
+	</target>
+</project>

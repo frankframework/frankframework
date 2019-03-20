@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:agm="http://www.ibissource.org/agm" xmlns:lpa="http://www.ibissource.org/lpa" xmlns:sfun="http://www.ibissource.org/sfun" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:import namespace="http://www.ibissource.org/agm" schemaLocation="EmployeeBenefitsAgreementsTypesV1.0.xsd"/>
+	<xsd:import namespace="http://www.ibissource.org/lpa" schemaLocation="LifePensionAdministrationV1.0.xsd"/>
+	<xsd:import namespace="http://www.ibissource.org/sfun" schemaLocation="InvestmentAccounts_V1.0.xsd"/>
+	<xsd:include schemaLocation="ProcesItemsV10.xsd"/>
+	<!--****************************************************************************************************************-->
+	<!--*************************** agm Service Elements ***********************************************************-->
+	<xsd:element name="GetQuestionsForMutationPensionsREQ" type="getQuestionsForMutationPensionsREQ"/>
+	<xsd:element name="GetQuestionsForMutationPensionsRLY" type="getQuestionsForMutationPensionsRLY"/>
+	<!--**********************************************************************-->
+	<!--*************************** REQUEST ******************************-->
+	<!--**********************************************************************-->
+	<xsd:complexType name="getQuestionsForMutationPensionsREQ">
+		<xsd:sequence>
+			<xsd:element name="PortalEmployment" type="portalEmploymentREQ"/>
+			<xsd:element name="PortalMutation" type="portalMutationREQ"/>
+			<xsd:element name="PortalMutationDetail" type="portalMutationDetailRLY" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="PensionParticipation" type="pensionParticipationREQ" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="portalEmploymentREQ">
+		<xsd:all>
+			<xsd:element name="Id" type="agm:id"/>
+			<xsd:element name="EmployeeCategory1" minOccurs="0">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="5"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="EmployeeCategory2" minOccurs="0">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="5"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="EmployeeCategory3" minOccurs="0">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="5"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="EmployeeCategory4" minOccurs="0">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="5"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="EmployeeCategory5" minOccurs="0">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="5"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="portalMutationREQ">
+		<xsd:all>
+			<xsd:element name="EventCode" type="lpa:refType"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="pensionParticipationREQ">
+		<xsd:sequence>
+			<xsd:element name="PolicyNumber" type="lpa:policyNumber" minOccurs="0"/>
+			<xsd:element name="PensionContract" type="pensionContractREQ"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="pensionContractREQ">
+		<xsd:all>
+			<xsd:element name="Number" type="lpa:number"/>
+			<xsd:element name="PensionPlan" type="pensionPlanREQ" minOccurs="0"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="pensionPlanREQ">
+		<xsd:sequence>
+			<xsd:element name="Number" type="lpa:number"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--**********************************************************************-->
+	<!--*************************** REPLY ******************************-->
+	<!--**********************************************************************-->
+	<xsd:complexType name="getQuestionsForMutationPensionsRLY">
+		<xsd:sequence>
+			<xsd:element name="CompletionInformation" type="completionInformationRLY"/>
+			<xsd:element name="DebuggingInformation" type="debuggingInformationRLY" minOccurs="0"/>
+			<xsd:element name="PortalMutationDetail" type="portalMutationDetailRLY" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="PensionParticipation" type="pensionParticipationRLY" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="portalMutationDetailRLY">
+		<xsd:all>
+			<xsd:element name="Label" type="LabelType"/>
+			<xsd:element name="Value" type="ValueType"/>
+			<xsd:element name="IsReadOnly" type="lpa:optionYesNo"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="pensionParticipationRLY">
+		<xsd:sequence>
+			<xsd:element name="PolicyNumber" type="lpa:policyNumber" minOccurs="0"/>
+			<xsd:element name="AgreementType" type="lpa:refType"/>
+			<xsd:element name="PensionContract" type="pensionContractRLY"/>
+			<xsd:element name="PortalMutationDetail" type="portalMutationDetailRLY" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="pensionContractRLY">
+		<xsd:sequence>
+			<xsd:element name="Number" type="lpa:number"/>
+			<xsd:element name="Name" type="lpa:name"/>
+			<xsd:element name="PensionPlan" type="pensionPlanRLY" minOccurs="0"/>
+			<xsd:element name="PensionContractPart" type="pensionContractPartRLY" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="standardFundDistribution" type="standardFundDistributionRLY" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="pensionPlanRLY">
+		<xsd:sequence>
+			<xsd:element name="Number" type="lpa:number"/>
+			<xsd:element name="Name" type="lpa:name"/>
+			<xsd:element name="ParticipantsCatagory" type="lpa:name"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="pensionContractPartRLY">
+		<xsd:sequence>
+			<xsd:element name="Number" type="lpa:number"/>
+			<xsd:element name="Description" type="lpa:description"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="standardFundDistributionRLY">
+		<xsd:sequence>
+			<xsd:element name="Id" type="sfun:dcfInt15"/>
+			<xsd:element name="ShortName" type="sfun:dcfStr100" minOccurs="0"/>
+			<xsd:element name="StandardFundDistributionItem" type="standardFundDistributionItemRLY" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="standardFundDistributionItemRLY">
+		<xsd:all>
+			<xsd:element name="Percentage" type="sfun:dcfDec3_2" minOccurs="0"/>
+			<xsd:element name="Fund" type="fundRLY"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="fundRLY">
+		<xsd:all>
+			<xsd:element name="FundId" type="sfun:dcfStr20"/>
+			<xsd:element name="ShortName" type="sfun:dcfStr100"/>
+		</xsd:all>
+	</xsd:complexType>
+</xsd:schema>

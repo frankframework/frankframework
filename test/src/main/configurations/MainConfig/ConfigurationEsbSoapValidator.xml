@@ -1,0 +1,151 @@
+<ibis>
+	<adapter name="EsbSoapValidator" description="Test the functioning of the EsbSoapValidator">
+
+		<errorMessageFormatter
+			className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
+
+		<receiver name="EsbSoapValidator"
+			className="nl.nn.adapterframework.receivers.GenericReceiver">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4testiaf-EsbSoapValidator" throwException="false" />
+		</receiver>
+
+		<pipeline firstPipe="make reply">
+			<exits>
+				<exit path="READY" state="success" />
+			</exits>
+
+			<inputValidator
+				className="nl.nn.adapterframework.extensions.esb.EsbSoapValidator"
+				schemaLocation="http://policymanagement.nn.nl/TestEsbValidator EsbSoapValidator/xsd/Service_request.xsd"
+				soapBody="ServiceRequest" addNamespaceToSchema="true" mode="i2t">
+				<forward name="failure" path="InvalidXml" />
+				<forward name="parserError" path="InvalidXml" />
+			</inputValidator>
+
+			<inputWrapper
+				className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+				mode="i2t" direction="unwrap" removeOutputNamespaces="true">
+			</inputWrapper>
+
+			<pipe name="make reply" className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="EsbSoapValidator/xsl/reply.xsl">
+				<param name="returncode" value="0" />
+				<param name="reasoncode" value="OK" />
+				<forward name="success" path="READY" />
+			</pipe>
+
+			<outputWrapper
+				className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+				mode="i2t" outputNamespace="http://policymanagement.nn.nl/TestEsbValidator">
+				<param name="destination"
+					value="ESB.TestIAF.BS.Document.SalesDocument.1.GetDocuments.1.Request" />
+			</outputWrapper>
+
+			<outputValidator
+				className="nl.nn.adapterframework.extensions.esb.EsbSoapValidator"
+				schemaLocation="http://policymanagement.nn.nl/TestEsbValidator EsbSoapValidator/xsd/service_reply.xsd"
+				addNamespaceToSchema="true" soapBody="ServiceResponse" mode="i2t">
+				<forward name="failure" path="InvalidXml" />
+				<forward name="parserError" path="InvalidXml" />
+			</outputValidator>
+
+			<pipe name="InvalidXml" className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="EsbSoapValidator/xsl/reply.xsl">
+				<param name="returncode" value="1" />
+				<param name="reasoncode" value="NOT_OK" />
+				<forward name="success" path="READY" />
+			</pipe>
+
+		</pipeline>
+	</adapter>
+	<adapter name="EsbSoapValidator2">
+		<receiver name="EsbSoapValidator2"
+			className="nl.nn.adapterframework.receivers.GenericReceiver">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4testiaf-EsbSoapValidator2" />
+		</receiver>
+		<pipeline firstPipe="SetPolicyDetails_Request">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="SetPolicyDetails_Request"
+				className="nl.nn.adapterframework.extensions.esb.EsbSoapValidator"
+				schemaLocation="http://nn.nl/XSD/PropertyCasualtyRetail/Log/LogConversion/1/SetPolicyDetails/1 /EsbSoapValidator/SetPolicyDetails/PropertyCasualtyRetail_Log_LogConversion_1_SetPolicyDetails_1.xsd"
+				soapBody="SetPolicyDetails_Request">
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<!-- ERRORS -->
+			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="failure"
+				styleSheetName="/xsl/ErrorMessage.xsl"
+				getInputFromFixedValue="&lt;dummy/&gt;">
+				<param name="errorCode" value="FAILURE" />
+				<param name="failureReason" sessionKey="failureReason" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="parserError"
+				styleSheetName="/xsl/ErrorMessage.xsl"
+				getInputFromFixedValue="&lt;dummy/&gt;">
+				<param name="errorCode" value="PARSER_ERROR" />
+				<param name="failureReason" sessionKey="failureReason" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="illegalRoot"
+				styleSheetName="/xsl/ErrorMessage.xsl"
+				getInputFromFixedValue="&lt;dummy/&gt;">
+				<param name="errorCode" value="ILLEGAL_ROOT" />
+				<param name="failureReason" sessionKey="failureReason" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="EsbSoapValidator3">
+		<receiver name="EsbSoapValidator3"
+			className="nl.nn.adapterframework.receivers.GenericReceiver">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4testiaf-EsbSoapValidator3" />
+		</receiver>
+		<pipeline firstPipe="Switch">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="Switch" className="nl.nn.adapterframework.pipes.XmlSwitch" sessionKey="switch" />
+			<!-- request -->
+			<pipe name="request"
+				className="nl.nn.adapterframework.extensions.esb.EsbSoapValidator"
+				schemaLocation="http://nn.nl/XSD/PensionsCorporate/Employer/EmployerBACO/1/GetEmployerDetails/1 /EsbSoapValidator/GetEmployerDetails/xsd/baco/PensionsCorporate_Employer_EmployerBACO_1_GetEmployerDetails_1.xsd"
+				soapBody="GetEmployerDetails_Request" addNamespaceToSchema="true">
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<!-- response -->
+			<pipe name="response"
+				className="nl.nn.adapterframework.extensions.esb.EsbSoapValidator"
+				schemaLocation="http://nn.nl/XSD/PensionsCorporate/Employer/EmployerBACO/1/GetEmployerDetails/1 /EsbSoapValidator/GetEmployerDetails/xsd/baco/PensionsCorporate_Employer_EmployerBACO_1_GetEmployerDetails_1.xsd"
+				soapBody="GetEmployerDetails_Response" addNamespaceToSchema="true">
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<!-- ERRORS -->
+			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="failure"
+				styleSheetName="/xsl/ErrorMessage.xsl"
+				getInputFromFixedValue="&lt;dummy/&gt;">
+				<param name="errorCode" value="FAILURE" />
+				<param name="failureReason" sessionKey="failureReason" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="parserError"
+				styleSheetName="/xsl/ErrorMessage.xsl"
+				getInputFromFixedValue="&lt;dummy/&gt;">
+				<param name="errorCode" value="PARSER_ERROR" />
+				<param name="failureReason" sessionKey="failureReason" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="illegalRoot"
+				styleSheetName="/xsl/ErrorMessage.xsl"
+				getInputFromFixedValue="&lt;dummy/&gt;">
+				<param name="errorCode" value="ILLEGAL_ROOT" />
+				<param name="failureReason" sessionKey="failureReason" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</ibis>

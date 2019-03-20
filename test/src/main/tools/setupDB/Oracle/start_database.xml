@@ -1,0 +1,9 @@
+<project default="start.database">
+	<target name="start.database">
+		<exec executable="sqlplus">
+			<arg value="sys/system"/>
+			<arg value="as SYSDBA"/>
+			<arg value="@start_database.sql"/>
+		</exec>
+	</target>
+</project>

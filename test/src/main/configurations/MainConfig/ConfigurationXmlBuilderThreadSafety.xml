@@ -1,0 +1,78 @@
+<module>
+	<adapter name="XmlBuilderThreadSafety">
+		<receiver
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			>
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4testiaf-XmlBuilderThreadSafety"
+			/>
+		</receiver>
+		<pipeline firstPipe="Parallel processing">
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+			<pipe
+				name="Parallel processing"
+				getInputFromSessionKey="originalMessage"
+				>
+				<sender className="nl.nn.adapterframework.senders.ParallelSenders">
+					<sender
+						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
+						queryType="select"
+						jmsRealm="jdbc"
+					/>
+					<sender
+						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
+						queryType="select"
+						jmsRealm="jdbc"
+					/>
+					<sender
+						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
+						queryType="select"
+						jmsRealm="jdbc"
+					/>
+					<sender
+						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
+						queryType="select"
+						jmsRealm="jdbc"
+					/>
+					<sender
+						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
+						queryType="select"
+						jmsRealm="jdbc"
+					/>
+					<sender
+						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
+						queryType="select"
+						jmsRealm="jdbc"
+					/>
+					<sender
+						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
+						queryType="select"
+						jmsRealm="jdbc"
+					/>
+					<sender
+						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
+						queryType="select"
+						jmsRealm="jdbc"
+					/>
+					<sender
+						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
+						queryType="select"
+						jmsRealm="jdbc"
+					/>
+					<sender
+						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
+						queryType="select"
+						jmsRealm="jdbc"
+					/>
+				</sender>	
+	        	<forward name="success" path="Echo"/>
+	        </pipe>
+			<pipe name="Echo" className="nl.nn.adapterframework.pipes.EchoPipe">
+				<forward name="success" path="READY"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>

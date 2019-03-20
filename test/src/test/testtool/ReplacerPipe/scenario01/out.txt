@@ -1,0 +1,5 @@
+[replace]
+	<bonjour>Dit is een tekst met 'bonjour'</bonjour>
+	<hello>Dit is een tekst met 'hello'</hello>
+	<invalidXml>abcx123x</invalidXml>
+[/replace]

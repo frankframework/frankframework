@@ -1,0 +1,34 @@
+<throwable>
+  <class>nl.nn.adapterframework.core.SenderException</class>
+  <message>[nl.nn.adapterframework.senders.IbisJavaSender] [Test Tool IbisJavaSender] exception processing message using request processor [ibis4testiaf-WebServiceSenderError]: (RequestProcessorException) RequestProcessor [ibis4testiaf-WebServiceSenderError] caught exception: Pipe [Send2WS] msgId [Test Tool correlation id] caught exception: nl.nn.adapterframework.core.SenderException: WebServiceSender [Send2WS-sender] to [http://localhost:80/ibis4testiaf/servlet/rpcrouter] httpstatus 500: Internal Server Error body: &lt;soap:Envelope xmlns:soap=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;&gt;&lt;soap:Body&gt;&lt;soap:Fault&gt;&lt;faultcode&gt;soap:Server&lt;/faultcode&gt;&lt;faultstring&gt;Could not process SOAP message: &amp;lt;WebServiceListerSenderREQ xmlns=&quot;urn:ws_error&quot; xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;/&amp;gt;&lt;/faultstring&gt;&lt;/soap:Fault&gt;&lt;/soap:Body&gt;&lt;/soap:Envelope&gt;</message>
+  <cause>
+    <throwable>
+      <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>
+      <message>RequestProcessor [ibis4testiaf-WebServiceSenderError] caught exception</message>
+      <cause>
+        <throwable>
+          <class>nl.nn.adapterframework.core.ListenerException</class>
+          <message>Pipe [Send2WS] msgId [Test Tool correlation id] caught exception: nl.nn.adapterframework.core.SenderException: WebServiceSender [Send2WS-sender] to [http://localhost:80/ibis4testiaf/servlet/rpcrouter] httpstatus 500: Internal Server Error body: &lt;soap:Envelope xmlns:soap=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;&gt;&lt;soap:Body&gt;&lt;soap:Fault&gt;&lt;faultcode&gt;soap:Server&lt;/faultcode&gt;&lt;faultstring&gt;Could not process SOAP message: &amp;lt;WebServiceListerSenderREQ xmlns=&quot;urn:ws_error&quot; xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;/&amp;gt;&lt;/faultstring&gt;&lt;/soap:Fault&gt;&lt;/soap:Body&gt;&lt;/soap:Envelope&gt;</message>
+          <cause>
+            <throwable>
+              <class>nl.nn.adapterframework.core.PipeRunException</class>
+              <message>Pipe [Send2WS] msgId [Test Tool correlation id] caught exception: nl.nn.adapterframework.core.SenderException: WebServiceSender [Send2WS-sender] to [http://localhost:80/ibis4testiaf/servlet/rpcrouter] httpstatus 500: Internal Server Error body: &lt;soap:Envelope xmlns:soap=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;&gt;&lt;soap:Body&gt;&lt;soap:Fault&gt;&lt;faultcode&gt;soap:Server&lt;/faultcode&gt;&lt;faultstring&gt;Could not process SOAP message: &amp;lt;WebServiceListerSenderREQ xmlns=&quot;urn:ws_error&quot; xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;/&amp;gt;&lt;/faultstring&gt;&lt;/soap:Fault&gt;&lt;/soap:Body&gt;&lt;/soap:Envelope&gt;</message>
+              <cause>
+                <throwable>
+                  <class>nl.nn.adapterframework.core.SenderException</class>
+                  <message>nl.nn.adapterframework.core.SenderException: WebServiceSender [Send2WS-sender] to [http://localhost:80/ibis4testiaf/servlet/rpcrouter] httpstatus 500: Internal Server Error body: &lt;soap:Envelope xmlns:soap=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;&gt;&lt;soap:Body&gt;&lt;soap:Fault&gt;&lt;faultcode&gt;soap:Server&lt;/faultcode&gt;&lt;faultstring&gt;Could not process SOAP message: &amp;lt;WebServiceListerSenderREQ xmlns=&quot;urn:ws_error&quot; xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;/&amp;gt;&lt;/faultstring&gt;&lt;/soap:Fault&gt;&lt;/soap:Body&gt;&lt;/soap:Envelope&gt;</message>
+                  <cause>
+                    <throwable>
+                      <class>nl.nn.adapterframework.core.SenderException</class>
+                      <message>WebServiceSender [Send2WS-sender] to [http://localhost:80/ibis4testiaf/servlet/rpcrouter] httpstatus 500: Internal Server Error body: &lt;soap:Envelope xmlns:soap=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;&gt;&lt;soap:Body&gt;&lt;soap:Fault&gt;&lt;faultcode&gt;soap:Server&lt;/faultcode&gt;&lt;faultstring&gt;Could not process SOAP message: &amp;lt;WebServiceListerSenderREQ xmlns=&quot;urn:ws_error&quot; xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;/&amp;gt;&lt;/faultstring&gt;&lt;/soap:Fault&gt;&lt;/soap:Body&gt;&lt;/soap:Envelope&gt;</message>
+                    </throwable>
+                  </cause>
+                </throwable>
+              </cause>
+            </throwable>
+          </cause>
+        </throwable>
+      </cause>
+    </throwable>
+  </cause>
+</throwable>

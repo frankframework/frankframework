@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:agm="http://www.ibissource.org/agm" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:annotation>
+		<xsd:documentation>EM - Employee Benefits - EmployeeBenefitsAgreements V10</xsd:documentation>
+		<xsd:appinfo>V1.0</xsd:appinfo>
+	</xsd:annotation>
+	<xsd:include schemaLocation="EBAgreementsSimpleTypesV1.0.xsd"/>
+	<!-- ********************************** Complex Types (Classes) ********************************** -->
+	<xsd:complexType name="AccountRightsType">
+		<xsd:sequence>
+			<xsd:element name="EditRights" type="EditRightsType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ExternalReferenceType">
+		<xsd:sequence>
+			<xsd:element name="Type" type="TypeType"/>
+			<xsd:element name="Reference" type="ReferenceType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PortalMutationType">
+		<xsd:sequence>
+			<xsd:element name="Id" type="IdType"/>
+			<xsd:element name="EventCode" type="EventCodeType"/>
+			<xsd:element name="StatusCode" type="StatusCodeType"/>
+			<xsd:element name="Source" type="SourceType"/>
+			<xsd:element name="MutationDate" type="MutationDateType"/>
+			<xsd:element name="UpdateDateTime" type="UpdateDateTimeType"/>
+			<xsd:element name="SendDateTime" type="SendDateTimeType"/>
+			<xsd:element name="ProcessedDateTime" type="ProcessedDateTimeType"/>
+			<xsd:element name="ApprovedDateTime" type="ApprovedDateTimeType"/>
+			<xsd:element name="UserName" type="UserNameType"/>
+			<xsd:element name="MutationApprovedUsername" type="MutationApprovedUsernameType"/>
+			<xsd:element name="MutationSentUsername" type="MutationSentUsernameType"/>
+			<xsd:element name="IsModifiable" type="IsModifiableType"/>
+			<xsd:element name="IsRemovable" type="IsRemovableType"/>
+			<xsd:element name="IsApprovable" type="IsApprovableType"/>
+			<xsd:element name="IsEventAllowed" type="IsEventAllowedType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PortalMutationDetailType">
+		<xsd:sequence>
+			<xsd:element name="Label" type="LabelType"/>
+			<xsd:element name="value" type="ValueType"/>
+			<xsd:element name="IsModified" type="IsModifiedType"/>
+			<xsd:element name="IsReadOnly" type="IsReadOnlyType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PortalNoteType">
+		<xsd:sequence>
+			<xsd:element name="Id" type="IdType"/>
+			<xsd:element name="DiaryDate" type="DiaryDateType"/>
+			<xsd:element name="CompletedDate" type="CompletedDateType"/>
+			<xsd:element name="Type" type="TitleType"/>
+			<xsd:element name="Text" type="NoteTextType"/>
+			<xsd:element name="Status" type="StatusCodeType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PortalOrganisationType">
+		<xsd:sequence>
+			<xsd:element name="Id" type="IdType"/>
+			<xsd:element name="ContinuationMonth" type="ContinuationMonthType"/>
+			<xsd:element name="MinSinglePremiumCapitalPolicy" type="MinSinglePremiumCapitalPolicyType"/>
+			<xsd:element name="MinSinglePremiumInvestmentPolicy" type="MinSinglePremiumInvestmentPolicyType"/>
+			<xsd:element name="InvestmentPolicyPerformance" type="InvestmentPolicyPerformanceType"/>
+			<xsd:element name="CapitalPolicyPerformance" type="CapitalPolicyPerformanceType"/>
+			<xsd:element name="AnnuityPolicyPerformance" type="AnnuityPolicyPerformanceType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PortalOrganisationUnitType">
+		<xsd:sequence>
+			<xsd:element name="Id" type="IdType"/>
+			<xsd:element name="UnitName" type="UnitNameType"/>
+			<xsd:element name="MainContractNr" type="MainContractNrType"/>
+			<xsd:element name="EcNr" type="EcNrType"/>
+			<xsd:element name="EndDate" type="EndDateType"/>
+			<xsd:element name="YearlySalaryMutationDate" type="YearlySalaryMutationDateType"/>
+			<xsd:element name="TotalExpectedSalaryMutations" type="TotalExpectedSalaryMutationsType"/>
+			<xsd:element name="ExpectedSalaryMutations" type="ExpectedSalaryMutationsType"/>
+			<xsd:element name="NumberNotesToExecute" type="NumberNotesToExecuteType"/>
+			<xsd:element name="NumberMutationsToApprove" type="NumberMutationsToApproveType"/>
+			<xsd:element name="NumberMutationsToSend" type="NumberMutationsToSendType"/>
+			<xsd:element name="BusinessUnit" type="BusinessUnitType"/>
+			<xsd:element name="WNPVersion" type="WNPVersionType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PortalPersonType">
+		<xsd:sequence>
+			<xsd:element name="Id" type="IdType"/>
+			<xsd:element name="AddressCheckInd" type="AddressCheckIndType"/>
+			<xsd:element name="TotalMonthsAbroad" type="TotalMonthsAbroadType"/>
+			<xsd:element name="PortalPermittanceStartDate" type="PortalPermittanceStartDateType"/>
+			<xsd:element name="WnpVisibilityFlag" type="WnpVisibilityFlagType"/>
+			<xsd:element name="UserName" type="UserNameType"/>
+			<xsd:element name="DisabilitySalaryAmount" type="DisabilitySalaryAmountType"/>
+			<xsd:element name="RecoverageChange" type="RecoverageChangeType"/>
+			<xsd:element name="ChildPresent" type="ChildPresentType"/>
+			<xsd:element name="youngestChildBirthDate" type="YoungestChildBirthDateType"/>
+			<xsd:element name="partnerBirthDate" type="PartnerBirthDateType"/>
+			<xsd:element name="partnerDisabilityOver45Flag" type="PartnerDisabilityOver45FlagType"/>
+			<xsd:element name="partnerWorkMonthWage" type="PartnerWorkMonthWageType"/>
+			<xsd:element name="partnerSocialMonthIncome" type="PartnerSocialMonthIncomeType"/>
+			<xsd:element name="partnerRetirementMonthIncome" type="PartnerRetirementMonthIncomeType"/>
+			<!-- BEGIN ____ FIELDS ADDED TO BE BACKWARDS COMPATIBLE -->
+			<xsd:element name="ChildUnder18Flag" type="ChildUnder18FlagType"/>
+			<xsd:element name="PartnerBefore1950Flag" type="PartnerBefore1950FlagType"/>
+			<!-- END ______ FIELDS ADDED TO BE BACKWARDS COMPATIBLE -->
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="WGPAccountType">
+		<xsd:sequence>
+			<xsd:element name="Id" type="IdType"/>
+			<xsd:element name="Name" type="NameType"/>
+			<xsd:element name="ContactPerson" type="ContactPersonType"/>
+			<xsd:element name="ContactPhoneNumber" type="ContactPhoneNumberType"/>
+			<xsd:element name="CreateDate" type="CreateDateType"/>
+			<xsd:element name="EndDate" type="EndDateType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PortalEmploymentType">
+		<xsd:sequence>
+			<xsd:element name="Id" type="IdType"/>
+			<xsd:element name="ModificationDateTime" type="ModificationDateTimeType"/>
+			<xsd:element name="PeriodicSalaryExpected" type="PeriodicSalaryExpectedType"/>
+			<xsd:element name="IsRemovable" type="IsRemovableType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="InsuranceBaseType">
+		<xsd:sequence>
+			<xsd:element name="Amount" type="AmountType"/>
+			<xsd:element name="SalaryTerm" type="SalaryTermType"/>
+			<xsd:element name="ParttimeIncExclIndicator" type="ParttimeIncExclIndicatorType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="InsuranceBaseTypeType">
+		<xsd:sequence>
+			<xsd:element name="Name" type="NameType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ThirdPartyClaimType">
+		<xsd:sequence>
+			<xsd:element name="BeginPaymentDate" type="BeginPaymentDateType"/>
+			<xsd:element name="EndPaymentDate" type="EndPaymentDateType"/>
+			<xsd:element name="StartDate" type="StartDateType"/>
+			<xsd:element name="EndDate" type="EndDateType"/>
+			<xsd:element name="PoliyType" type="PolicyTypeType"/>
+			<xsd:element name="PremiumAmount" type="PremiumAmountType"/>
+			<xsd:element name="PaymentTerm" type="PaymentTermType"/>
+			<xsd:element name="TargetCapital" type="TargetCapitalType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="AgreementPartType">
+		<xsd:sequence>
+			<xsd:element name="Id" type="IdType"/>
+			<xsd:element name="ContractNumber" type="ContractNumberType"/>
+			<xsd:element name="ContractPartStart" type="ContractPartStartType"/>
+			<xsd:element name="ContractPartEnd" type="ContractPartEndType"/>
+			<xsd:element name="AgreementType" type="AgreementTypeType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="EmployeeBenefitsDocumentType">
+		<xsd:sequence>
+			<xsd:element name="Id" type="IdType"/>
+			<xsd:element name="Type" type="TypeType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="FinancialDataType">
+		<xsd:all>
+			<xsd:element name="EventName" type="EventNameType"/>
+			<xsd:element name="Encoded" type="EncodedType"/>
+			<xsd:element name="Message" type="LongMessageType"/>
+		</xsd:all>
+	</xsd:complexType>
+</xsd:schema>

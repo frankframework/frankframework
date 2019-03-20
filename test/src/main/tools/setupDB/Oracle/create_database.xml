@@ -1,0 +1,11 @@
+<project default="create.database">
+	<target name="create.database">
+		<exec executable="sqlplus">
+			<arg value="testiaf_user/testiaf_user"/>
+			<arg value="@create_database.sql"/>
+		</exec>
+	</target>
+</project>
+
+
+

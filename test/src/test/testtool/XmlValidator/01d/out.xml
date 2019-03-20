@@ -1,0 +1,7 @@
+<Error>
+  <errorCode>FAILURE</errorCode>
+  <errorMessage>Validation using XmlValidator with '/XmlValidator/HandleCollectionDisbursementAccount/HandleCollectionDisbursementAccount3_v3.0.xsd' failed:
+/: at (1,39): cvc-elt.1.a: Cannot find the declaration of element 'HandleCollectionDisbursementAccount2'.
+/: Illegal element 'HandleCollectionDisbursementAccount2'. Element(s) 'HandleCollectionDisbursementAccount' expected.
+/: Element(s) 'HandleCollectionDisbursementAccount' not found</errorMessage>
+</Error>

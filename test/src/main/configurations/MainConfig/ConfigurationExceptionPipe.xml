@@ -1,0 +1,30 @@
+<module>
+	<adapter name="ExceptionPipe" description="ExceptionPipe">
+		<receiver
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="GenericReceiverExceptionPipe"
+			>
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="ExceptionPipe"
+				serviceName="ibis4testiaf-ExceptionPipe"
+			/>
+		</receiver>
+		<pipeline firstPipe="Generate timestamp">
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+			<pipe
+				name="Generate timestamp"
+				className="nl.nn.adapterframework.pipes.PutSystemDateInSession"
+				sessionKey="timestamp"
+				dateFormat="yyyyMMdd HH:mm:ss"
+				>
+				<forward name="success" path="Generate exception"/>
+			</pipe>
+			<pipe name="Generate exception" className="nl.nn.adapterframework.pipes.ExceptionPipe">
+				<forward name="success" path="Generate timestamp"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>

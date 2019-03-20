@@ -1,0 +1,21 @@
+<manageDatabaseRLY>
+<completionInformation>
+<returnCode>OK</returnCode>
+</completionInformation>
+<results count="1">
+<result item="1">
+<result>
+	<fielddefinition>
+		<field columnClassName="java.lang.String" columnDisplaySize="100" columnTypeName="VARCHAR2" isCurrency="false" name="MESSAGEID" precision="100" scale="0" type="VARCHAR"/>
+		<field columnClassName="java.lang.String" columnDisplaySize="256" columnTypeName="VARCHAR2" isCurrency="false" name="CORRELATIONID" precision="256" scale="0" type="VARCHAR"/>
+	</fielddefinition>
+	<rowset>
+		<row number="0">
+			<field name="MESSAGEID">CorrelationMessageIdXPath-3d1a6e2f_1276c49be07_-7f6b</field>
+			<field name="CORRELATIONID">nameOfRequest</field>
+		</row>
+	</rowset>
+</result>
+</result>
+</results>
+</manageDatabaseRLY>

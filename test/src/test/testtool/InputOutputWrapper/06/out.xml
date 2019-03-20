@@ -1,0 +1,59 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+  <soapenv:Header>
+    <MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
+      <From>
+        <Id>Ibis4TestIAF</Id>
+      </From>
+      <To>
+        <Location>ESB.PropertyAndCasualtyRetail.BS.Policy.PolicyPropertyAndCasualtyRetail.1.WrapMessage.1.Response</Location>
+      </To>
+      <HeaderFields>
+        <CPAId>cpid</CPAId>
+        <ConversationId>ConversationId</ConversationId>
+        <MessageId>LPAB00000018345_0a5df019--12291c89_15ea482da85_-7e5a</MessageId>
+        <CorrelationId>MessageId</CorrelationId>
+        <ExternalRefToMessageId>ExternalRefToMessageId</ExternalRefToMessageId>
+        <Timestamp>2017-09-21T14:59:56</Timestamp>
+      </HeaderFields>
+      <Service>
+        <Name>Policy</Name>
+        <Context>PolicyPropertyAndCasualtyRetail</Context>
+        <Action>
+          <Paradigm>Response</Paradigm>
+          <Name>WrapMessage</Name>
+          <Version>1</Version>
+        </Action>
+      </Service>
+    </MessageHeader>
+  </soapenv:Header>
+  <soapenv:Body>
+    <Response xmlns="http://www.nn.nl/InputOutputWrapper" xmlns:cmh="http://nn.nl/XSD/Generic/MessageHeader/1">
+      <Result xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
+        <Status>ERROR</Status>
+        <ErrorList>
+          <Error>
+            <Code>SEND_XSD_ERROR</Code>
+            <Reason/>
+            <Service>
+              <Name>Policy</Name>
+              <Context>PolicyPropertyAndCasualtyRetail</Context>
+              <Action>
+                <Paradigm>Response</Paradigm>
+                <Name>WrapMessage</Name>
+                <Version>1</Version>
+              </Action>
+            </Service>
+            <DetailList>
+              <Detail>
+                <Code>Validation using XmlValidator with 'http://www.nn.nl/InputOutputWrapper InputOutputWrapper/rr.xsd' failed:
+/: at (1,173): cvc-elt.1.a: Cannot find the declaration of element 'InvalidResponse'.
+/: Illegal element 'InvalidResponse'. Element(s) 'Response' expected.
+/: Element(s) 'Response' not found</Code>
+              </Detail>
+            </DetailList>
+          </Error>
+        </ErrorList>
+      </Result>
+    </Response>
+  </soapenv:Body>
+</soapenv:Envelope>

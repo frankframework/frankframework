@@ -1,0 +1,16 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+	<soap:Header>
+		<UsernameToken xmlns="http://siebel.com/webservices">user</UsernameToken>
+		<PasswordText xmlns="http://siebel.com/webservices">hello123</PasswordText>
+		<SessionType xmlns="http://siebel.com/webservices">None</SessionType>
+	</soap:Header>
+	<soap:Body>
+		<Account_spcService_Account_spcServiceQueryPage_Input xmlns="http://siebel.com/CustomUI">
+			<ListOfTestAccount xmlns="http://www.siebel.com/xml/Test%20Account/Query">
+				<Account>
+					<Name>A*</Name>
+				</Account>
+			</ListOfTestAccount>
+		</Account_spcService_Account_spcServiceQueryPage_Input>
+	</soap:Body>
+</soap:Envelope>

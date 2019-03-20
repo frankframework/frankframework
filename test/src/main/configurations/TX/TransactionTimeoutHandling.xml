@@ -1,0 +1,138 @@
+<module>
+	<adapter
+		name="TransactionTimeoutHandlingTransacted"
+		description="Adapter for testing transactionTimeout handling. (Transacted)"
+	>
+		<receiver
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="GenericReceiverTransactionTimeoutHandlingTransacted"
+			transactionTimeout="2"
+			transactionAttribute="Required"
+		>
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="TransactionTimeoutHandlingTransacted"
+				serviceName="ibis4testiaf-TransactionTimeoutHandlingTransacted"
+			/>
+			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+				jmsRealm="jdbc" 
+				slotId="${applicationId}/GenericReceiverTransactionTimeoutHandlingTransacted"
+			/>
+		</receiver>
+
+		<pipeline firstPipe="set start index">
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+
+			<pipe name="set start index"
+				className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="index"
+				getInputFromFixedValue="1"
+			>
+				<forward name="success" path="set endIndex"/>
+			</pipe>
+
+			<pipe name="set endIndex"
+				className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="endIndex"
+				getInputFromFixedValue="3"
+			>
+				<forward name="success" path="delay"/>
+			</pipe>
+			
+			<!-- put dummy looping and waiting code here... -->
+			<pipe name="delay"
+				className="nl.nn.adapterframework.pipes.DelayPipe"
+				delayTime="3000"
+			>
+				<forward name="success" path="increment index"/>
+			</pipe>			
+
+			<pipe name="increment index"
+				className="nl.nn.adapterframework.pipes.IncreaseIntegerPipe"
+				sessionKey="index"
+			>
+				<forward name="success" path="compare values"/>
+			</pipe>
+			<!-- /put dummy looping and waiting code here... -->
+
+			<pipe name="compare values"
+				className="nl.nn.adapterframework.pipes.CompareIntegerPipe"
+				sessionKey1="index"
+				sessionKey2="endIndex"
+			>
+				<forward name="lessthan" path="delay"/>
+				<forward name="equals" path="READY"/>
+				<forward name="greaterthan" path="READY"/>
+			</pipe>
+
+		</pipeline>
+	</adapter>
+
+	<adapter
+		name="TransactionTimeoutHandlingNonTransacted"
+		description="Adapter for testing transactionTimeout handling. (Non transacted)"
+	>
+		<receiver
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="GenericReceiverTransactionTimeoutHandlingNonTransacted"
+			transactionTimeout="2"
+		>
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="TransactionTimeoutHandlingNonTransacted"
+				serviceName="ibis4testiaf-TransactionTimeoutHandlingNonTransacted"
+			/>
+		</receiver>
+
+		<pipeline firstPipe="set start index">
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+
+			<pipe name="set start index"
+				className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="index"
+				getInputFromFixedValue="1"
+			>
+				<forward name="success" path="set endIndex"/>
+			</pipe>
+
+			<pipe name="set endIndex"
+				className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="endIndex"
+				getInputFromFixedValue="3"
+			>
+				<forward name="success" path="delay"/>
+			</pipe>
+			
+			<!-- put dummy looping and waiting code here... -->
+			<pipe name="delay"
+				className="nl.nn.adapterframework.pipes.DelayPipe"
+				delayTime="3000"
+			>
+				<forward name="success" path="increment index"/>
+			</pipe>
+
+			<pipe name="increment index"
+				className="nl.nn.adapterframework.pipes.IncreaseIntegerPipe"
+				sessionKey="index"
+			>
+				<forward name="success" path="compare values"/>
+			</pipe>
+			<!-- /put dummy looping and waiting code here... -->
+			
+			<pipe name="compare values"
+				className="nl.nn.adapterframework.pipes.CompareIntegerPipe"
+				sessionKey1="index"
+				sessionKey2="endIndex"
+			>
+				<forward name="lessthan" path="delay"/>
+				<forward name="equals" path="READY"/>
+				<forward name="greaterthan" path="READY"/>
+			</pipe>
+
+		</pipeline>
+	</adapter>
+</module>

@@ -1,0 +1,33 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" >
+  <soapenv:Header>
+    <MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
+      <From>
+        <Id>Ibis4TestIAF</Id>
+      </From>
+      <To>
+        <Location>P2P.Migration.Ibis4JuiceMig.CalculateQuoteAndPolicyValues.Request</Location>
+      </To>
+      <HeaderFields>
+        <CPAId>n/a</CPAId>
+        <ConversationId>DPAB00000003730_0a4ae88e-3266daad_13e7a35778d_-7fff</ConversationId>
+        <MessageId>DPAB00000003730_0a4ae88e-3266daad_13e7a35778d_-7ffe</MessageId>
+        <Timestamp>2013-05-06T16:18:44</Timestamp>
+      </HeaderFields>
+      <Service>
+        <Name/>
+        <Context/>
+        <Action>
+          <Paradigm>Request</Paradigm>
+          <Name/>
+          <Version>1</Version>
+        </Action>
+      </Service>
+    </MessageHeader>
+  </soapenv:Header>
+  <soapenv:Body>
+    <CalculationRequest xmlns="http://nn.nl/XSD/Migration/Ibis4JuiceMig/CalculateQuoteAndPolicyValues">
+      <SystemCode>L76HB000</SystemCode>
+      <CalculationData>1:RS_INFO;835:ILIAS;645:ANP_VRH_3;</CalculationData>
+    </CalculationRequest>
+  </soapenv:Body>
+</soapenv:Envelope>

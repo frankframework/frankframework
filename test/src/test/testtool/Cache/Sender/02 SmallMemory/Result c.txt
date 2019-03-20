@@ -1,0 +1,3 @@
+<result>
+	<input><SmallMemory tag="c"/></input>
+</result>

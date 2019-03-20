@@ -1,0 +1,35 @@
+<result>
+	<items count="1">
+		<item>
+			<timestamp>Mon Jul 18 09:13:16 CEST 2016</timestamp>
+			<messageId>ID:LPAB00000018703-64916-1468825850617-3:11:7:1:1</messageId>
+			<correlationId>Test Tool correlation id</correlationId>
+			<message><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Header><MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
+   <From>
+      <Id>Ibis4TestIAF</Id>
+   </From>
+   <To>
+      <Location>ESB.Infrastructure.TS.Test.TestIAF.1.UpdateMessage.1.Action</Location>
+   </To>
+   <HeaderFields>
+      <CPAId>n/a</CPAId>
+      <ConversationId>LPAB00000018703_0a4544bd-385e6bf8_155fcd7d1e0_-7fe9</ConversationId>
+      <MessageId>LPAB00000018703_0a4544bd-385e6bf8_155fcd7d1e0_-7fe8</MessageId>
+      <Timestamp>2016-07-18T09:13:16</Timestamp>
+   </HeaderFields>
+   <Service>
+      <Name>Test</Name>
+      <Context>TestIAF</Context>
+      <Action>
+         <Paradigm>Action</Paradigm>
+         <Name>UpdateMessage</Name>
+         <Version>1</Version>
+      </Action>
+   </Service>
+</MessageHeader>
+</soapenv:Header><soapenv:Body><request xmlns="http://nn.nl/XSD/Infrastructure/Test/TestIAF/1/UpdateMessage/1" action="echo">
+	<value>test</value>
+</request></soapenv:Body></soapenv:Envelope>]]></message>
+		</item>
+	</items>
+</result>

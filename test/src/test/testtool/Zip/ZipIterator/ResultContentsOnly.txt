@@ -1,0 +1,32 @@
+<results count="3">
+<result item="1">
+<results count="3">
+<result item="1">
+3-c.txt
+</result>
+<result item="2">
+3-a.txt
+</result>
+<result item="3">
+3-b.txt
+</result>
+</results>
+</result>
+<result item="2">
+<results count="1">
+<result item="1">
+1-a.txt
+</result>
+</results>
+</result>
+<result item="3">
+<results count="2">
+<result item="1">
+2-b.txt
+</result>
+<result item="2">
+2-a.txt
+</result>
+</results>
+</result>
+</results>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://nn.nl/XSD/PropertyCasualtyRetail/Log/LogConversion/1/SetPolicyDetails/1" xmlns:cmh="http://nn.nl/XSD/Generic/MessageHeader/1" targetNamespace="http://nn.nl/XSD/PropertyCasualtyRetail/Log/LogConversion/1/SetPolicyDetails/1" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:import namespace="http://nn.nl/XSD/Generic/MessageHeader/1" schemaLocation="CommonMessageHeader.xsd"/>
+	<xsd:element name="SetPolicyDetails_Request">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="PolicyDetail" type="SetPolicyDetails_RequestType" maxOccurs="unbounded"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:complexType name="SetPolicyDetails_RequestType">
+		<xsd:sequence>
+			<xsd:element name="FORECAST">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="1"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="RVS_PARTY_ID">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:minLength value="1"/>
+						<xsd:maxLength value="35"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="COMPANY_CODE" minOccurs="0">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:minLength value="1"/>
+						<xsd:maxLength value="35"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="RVS_PAYLOAD" minOccurs="0">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:minLength value="1"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="NN_NOTIFY_PAYLOAD" minOccurs="0">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:minLength value="1"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="NN_COMPRODOC_PAYLOAD" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="NN_POLICY_NUMBER" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="NN_POLICY_START_DATE" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="NN_PARTY_ID" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="STATUS" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="ERROR_REASON" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="BRE_PAYLOAD" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="NN_PREMIUM" minOccurs="0">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:decimal">
+						<xsd:fractionDigits value="2"/>
+						<xsd:totalDigits value="12"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="RVS_POLICY" minOccurs="0" maxOccurs="unbounded">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="RVS_POLICY_NUMBER" minOccurs="0">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:minLength value="1"/>
+									<xsd:maxLength value="30"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="RVS_POLICY_SEQNUM" minOccurs="0">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:minLength value="1"/>
+									<xsd:maxLength value="10"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="RVS_POLICY_VERSION" minOccurs="0">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:minLength value="1"/>
+									<xsd:maxLength value="10"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="RVS_BRANCH_CODE" minOccurs="0">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:minLength value="1"/>
+									<xsd:maxLength value="30"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="RVS_POLICY_TYPE" minOccurs="0">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:minLength value="1"/>
+									<xsd:maxLength value="35"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="RVS_PREMIUM" minOccurs="0">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:decimal">
+									<xsd:totalDigits value="12"/>
+									<xsd:fractionDigits value="2"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="STATUS" type="xsd:string" minOccurs="0"/>
+						<xsd:element name="ERROR_REASON" type="xsd:string" minOccurs="0"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="SetPolicyDetails_Response" type="SetPolicyDetails_ResponseType"/>
+	<xsd:complexType name="SetPolicyDetails_ResponseType">
+		<xsd:sequence>
+			<xsd:element ref="cmh:Result"/>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

@@ -1,0 +1,110 @@
+<module>
+	<adapter name="BatchFileTransformerPipe" description="Test the functioning of the BatchFileTransformerPipe">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="BatchFileTransformerPipe">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4testiaf-BatchFileTransformerPipe" />
+		</receiver>
+		<pipeline firstPipe="processFile" transactionAttribute="Required">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="processFile" className="nl.nn.adapterframework.batch.BatchFileTransformerPipe" storeOriginalBlock="true" delete="true">
+				<manager name="rhmBody" className="nl.nn.adapterframework.batch.FieldPositionRecordHandlerManager" separator="+" fieldNr="1" initial="true">
+					<flow recordKey="UNA:" openBlockBeforeLine="UNA_block" recordHandlerRef="rhWriteUNA" />
+					<flow recordKey="UNB" openBlockBeforeLine="UNB_block" recordHandlerRef="rhWriteUNB" />
+					<flow recordKey="UNZ" recordHandlerRef="rhWriteUNZ" />
+					<flow recordKey="UNH" openBlockBeforeLine="UNH_block" recordHandlerRef="rhWriteUNH" />
+					<flow recordKey="UNT" recordHandlerRef="rhWriteUNT" />
+					<flow recordKey="ENT" openBlockBeforeLine="ENT_block" recordHandlerRef="rhWriteENT" />
+					<flow recordKey="LBW" recordHandlerRef="rhWriteLBW" />
+					<flow recordKey="*" />
+				</manager>
+				<recordHandler name="rhWriteUNA" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator="+" endOfRecord="'" rootTag="UNA" />
+				<recordHandler name="rhWriteUNB" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator="+" endOfRecord="'" rootTag="UNB" outputFields="recordSoort,filler,filler,geadresseerde,aanmaakDatumTijd,filler,filler,filler,filler,filler,filler,testAanduiding" />
+				<recordHandler name="rhWriteUNZ" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator="+" endOfRecord="'" rootTag="UNZ" outputFields="recordSoort,aantalBerichten,filler" />
+				<recordHandler name="rhWriteUNH" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator="+" endOfRecord="'" rootTag="UNH" outputFields="recordSoort,filler,soortBericht" />
+				<recordHandler name="rhWriteUNT" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator="+" endOfRecord="'" rootTag="UNT" outputFields="recordSoort,aantalSegmenten,filler" />
+				<recordHandler name="rhWriteENT" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator="+" endOfRecord="'" rootTag="ENT" outputFields="recordSoort,entiteit,volgNummer" />
+				<recordHandler name="rhWriteLBW" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator="+" endOfRecord="'" rootTag="LBW" outputFields="recordSoort,label,waarde" />
+				<resultHandler name="BatchFileTransformerPipe_Block" className="nl.nn.adapterframework.batch.ResultBlock2Sender" default="true">
+					<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="BatchFileTransformerPipe_Block">
+						<param name="originalBlock" sessionKey="originalBlock" />
+					</sender>
+				</resultHandler>
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+
+	<adapter name="BatchFileTransformerPipe_Block">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="BatchFileTransformerPipe_Block">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="BatchFileTransformerPipe_Block" />
+		</receiver>
+		<pipeline firstPipe="InsertData1" transactionAttribute="Required">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<!--
+				INPUT (in de vorm van sessionKeys):
+				- originalBlock
+			-->
+			<pipe name="InsertData1" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" storeResultInSessionKey="dataKey">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISDATA (DATAKEY, DATA) VALUES (SEQ_IBISDATA.NEXTVAL, EMPTY_BLOB())" resultQuery="SELECT SEQ_IBISDATA.CURRVAL FROM DUAL" scalar="true" queryType="insert" jmsRealm="jdbc" />
+				<forward name="success" path="InsertData2" />
+			</pipe>
+
+			<pipe name="InsertData2" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" getInputFromSessionKey="originalMessage">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT DATA FROM IBISDATA WHERE DATAKEY=? FOR UPDATE" queryType="updateBlob" jmsRealm="jdbc">
+					<param name="dataKey" sessionKey="dataKey" />
+				</sender>
+				<forward name="success" path="InsertData3" />
+			</pipe>
+			<pipe name="InsertData3" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" storeResultInSessionKey="dataKey">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISDATA (DATAKEY, DATA) VALUES (SEQ_IBISDATA.NEXTVAL, EMPTY_BLOB())" resultQuery="SELECT SEQ_IBISDATA.CURRVAL FROM DUAL" scalar="true" queryType="insert" jmsRealm="jdbc" />
+				<forward name="success" path="InsertData4" />
+			</pipe>
+
+			<pipe name="InsertData4" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" getInputFromSessionKey="originalBlock">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT DATA FROM IBISDATA WHERE DATAKEY=? FOR UPDATE" queryType="updateBlob" jmsRealm="jdbc">
+					<param name="dataKey" sessionKey="dataKey" />
+				</sender>
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+
+	<adapter name="BatchFileTransformerPipe2">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="BatchFileTransformerPipe2">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4testiaf-BatchFileTransformerPipe2" />
+		</receiver>
+		<pipeline firstPipe="processFile">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="processFile" className="nl.nn.adapterframework.batch.BatchFileTransformerPipe" delete="true">
+				<manager className="nl.nn.adapterframework.batch.FieldPositionRecordHandlerManager" fieldNr="1" initial="true" name="allRecords" separator=";">
+					<flow recordHandlerRef="rhAllRecords" recordKey="*" openBlockBeforeLine="records" openBlockBeforeLineNumber="3" />
+				</manager>
+				<recordHandler name="rhAllRecords" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator=";" outputFields="NAAM,VOORLETT,VOORV" />
+				<resultHandler name="BatchFileTransformerPipe_Block" className="nl.nn.adapterframework.batch.ResultBlock2Sender" default="true">
+					<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="BatchFileTransformerPipe2_Block" />
+				</resultHandler>
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+
+	<adapter name="BatchFileTransformerPipe2_Block">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="BatchFileTransformerPipe2_Block">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="BatchFileTransformerPipe2_Block" />
+		</receiver>
+		<pipeline firstPipe="echo" transactionAttribute="Required">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe">
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+		</pipeline>
+	</adapter>
+</module>
