@@ -77,8 +77,6 @@ public abstract class ClientFactoryUtils {
 	/**
 	 * Obtain a TID String that is synchronized with the current transaction, if any.
 	 * @param sapSystem the SapSystem to obtain a TID for
-	 * @param existingCon the existing JCO.Client to obtain a String for
-	 * (may be <code>null</code>)
 	 * @param synchedLocalTransactionAllowed whether to allow for a local JMS transaction
 	 * that is synchronized with a Spring-managed transaction (where the main transaction
 	 * might be a JDBC-based one for a specific DataSource, for example), with the JMS
@@ -139,11 +137,7 @@ public abstract class ClientFactoryUtils {
 	 * (used as TransactionSynchronizationManager key)
 	 * @param resourceFactory the ResourceFactory to use for extracting or creating
 	 * JMS resources
-	 * @param startClient whether the underlying JMS JCO.Client approach should be
-	 * started in order to allow for receiving messages. Note that a reused JCO.Client
-	 * may already have been started before, even if this flag is <code>false</code>.
 	 * @return the transactional String, or <code>null</code> if none found
-	 * @throws JMSException in case of JMS failure
 	 */
 	public static String doGetTransactionalTid(SapSystem sapSystem, ResourceFactory resourceFactory)
 			throws SapException {
@@ -208,7 +202,6 @@ public abstract class ClientFactoryUtils {
 	 * @param resourceFactory the ResourceFactory to use for extracting or creating
 	 * JMS resources
 	 * @return the transactional JCO.Client, or <code>null</code> if none found
-	 * @throws JMSException in case of JMS failure
 	 */
 	public static JCO.Client doGetTransactionalClient(SapSystem sapSystem, ResourceFactory resourceFactory) throws SapException
 			{
@@ -292,7 +285,6 @@ public abstract class ClientFactoryUtils {
 		 * Create a new Tid for registration with a JcoResourceHolder.
 		 * @param client the JCO.Client to create a String for
 		 * @return the new Tid
-		 * @throws JMSException if thrown by API methods
 		 */
 		String createTid(JCO.Client client) throws SapException;
 

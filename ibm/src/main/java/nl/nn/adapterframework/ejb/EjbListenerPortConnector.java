@@ -215,7 +215,6 @@ public class EjbListenerPortConnector implements IListenerConnector {
      * Check if the Listener is supposed to be open, or closed.
      * This attribute basically indicates what IBIS <i>thinks</i>
      * should be the state of the WebSphere ListenerPort.
-     * @return
      */
     public boolean isClosed() {
         return closed;
