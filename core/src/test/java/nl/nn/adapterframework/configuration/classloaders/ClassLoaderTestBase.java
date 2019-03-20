@@ -25,8 +25,7 @@ import java.util.LinkedList;
 import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.configuration.classloaders.IClassLoader;
-import nl.nn.adapterframework.configuration.classloaders.IClassLoader.ReportLevel;
+import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader.ReportLevel;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
 
@@ -50,9 +49,9 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 		appConstants = AppConstants.getInstance();
 		C = createClassLoader(parent);
 
-		if(C instanceof IClassLoader) {
+		if(C instanceof IConfigurationClassLoader) {
 			appConstants.put("configurations."+getConfigurationName()+".classLoaderType", C.getClass().getSimpleName());
-			((IClassLoader) C).configure(ibisContext, getConfigurationName());
+			((IConfigurationClassLoader) C).configure(ibisContext, getConfigurationName());
 		}
 	}
 
@@ -176,8 +175,8 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 	// make sure default level is always error
 	@Test
 	public void testReportLevelERROR() {
-		if(C instanceof IClassLoader) {
-			IClassLoader c = (IClassLoader) C;
+		if(C instanceof IConfigurationClassLoader) {
+			IConfigurationClassLoader c = (IConfigurationClassLoader) C;
 			c.setReportLevel("dummy");
 			assertTrue(c.getReportLevel().equals(ReportLevel.ERROR));
 		}
@@ -186,8 +185,8 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 	// test lowercase level
 	@Test
 	public void testReportLeveldebug() {
-		if(C instanceof IClassLoader) {
-			IClassLoader c = (IClassLoader) C;
+		if(C instanceof IConfigurationClassLoader) {
+			IConfigurationClassLoader c = (IConfigurationClassLoader) C;
 			c.setReportLevel("debug");
 			assertTrue(c.getReportLevel().equals(ReportLevel.DEBUG));
 		}
@@ -196,8 +195,8 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 	// test uppercase level
 	@Test
 	public void testReportLevelDEBUG() {
-		if(C instanceof IClassLoader) {
-			IClassLoader c = (IClassLoader) C;
+		if(C instanceof IConfigurationClassLoader) {
+			IConfigurationClassLoader c = (IConfigurationClassLoader) C;
 			c.setReportLevel("DEBUG");
 			assertTrue(c.getReportLevel().equals(ReportLevel.DEBUG));
 		}

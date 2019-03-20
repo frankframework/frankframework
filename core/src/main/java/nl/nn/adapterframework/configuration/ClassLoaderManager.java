@@ -24,7 +24,7 @@ import java.util.TreeMap;
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.classloaders.BasePathClassLoader;
-import nl.nn.adapterframework.configuration.classloaders.IClassLoader;
+import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.ReloadAware;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -71,11 +71,11 @@ public class ClassLoaderManager {
 		LOG.debug("successfully instantiated classloader ["+classLoader.toString()+"] with parent classloader ["+parentClassLoader.toString()+"]");
 
 		//If the classLoader implements IClassLoader, configure it
-		if(classLoader instanceof IClassLoader) {
-			IClassLoader loader = (IClassLoader) classLoader;
+		if(classLoader instanceof IConfigurationClassLoader) {
+			IConfigurationClassLoader loader = (IConfigurationClassLoader) classLoader;
 
 			String parentProperty = "configurations." + configurationName + ".";
-			Properties props = APP_CONSTANTS.getChildProperties(parentProperty);
+			Properties props = APP_CONSTANTS.getAppConstants(parentProperty);
 			for(Object objKey: props.keySet()) {
 				String key = (String) objKey;
 				if(key.endsWith("classLoaderType") || key.endsWith("parentConfig"))

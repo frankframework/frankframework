@@ -25,6 +25,13 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 
+/**
+ * ClassLoader that retrieves a configuration jar from an IBIS adapter
+ * The jar must be put in the sessionkey 'configurationJar'
+ * 
+ * @author Jaco de Groot
+ *
+ */
 public class ServiceClassLoader extends JarBytesClassLoader {
 	private IbisManager ibisManager;
 	private String adapterName;

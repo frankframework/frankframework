@@ -202,19 +202,18 @@ public final class AppConstants extends Properties implements Serializable{
 	    return new StringTokenizer(list, ",");
 	}
 
-	public Properties getChildProperties(String parentKey) {
-		return getChildProperties(getInstance(), parentKey);
-	}
-
-	public Properties getChildProperties(Properties props, String parentKey) {
-		if(!parentKey.endsWith("."))
-			parentKey +=".";
+	/**
+	 * Returns a list of {@link AppConstants#getInstance() AppConstants} which names begin with the keyBase
+	 */
+	public Properties getAppConstants(String keyBase) {
+		if(!keyBase.endsWith("."))
+			keyBase +=".";
 
 		Properties properties = new Properties();
-		for(Object objKey: props.keySet()) {
+		for(Object objKey: getInstance().keySet()) {
 			String key = (String) objKey;
-			if(key.startsWith(parentKey)) {
-				properties.put(key, getResolvedProperty(key));
+			if(key.startsWith(keyBase)) {
+				properties.put(key, getInstance().getResolvedProperty(key));
 			}
 		}
 
