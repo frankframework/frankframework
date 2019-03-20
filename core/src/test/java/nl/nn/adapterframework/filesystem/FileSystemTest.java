@@ -12,16 +12,22 @@ import java.io.PrintWriter;
 import java.util.Date;
 import java.util.Iterator;
 
+import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import liquibase.util.StreamUtil;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.filesystem.FileSystemException;
-import nl.nn.adapterframework.filesystem.IFileSystemBase;
+import nl.nn.adapterframework.filesystem.IFileSystem;
 
-public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
+public abstract class FileSystemTest<F, FS extends IFileSystem<F>> {
 
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
+	
 	public String FILE1 = "file1.txt";
 	public String FILE2 = "file2.txt";
 	public String DIR1 = "testDirectory/";
@@ -91,10 +97,15 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	protected abstract void _deleteFolder(String folderName) throws Exception;
 
 	@Before
-	public void setup() throws IOException, ConfigurationException, FileSystemException {
+	public void setUp() throws IOException, ConfigurationException, FileSystemException {
 		fileSystem = getFileSystem();
 		fileSystem.configure();
 		fileSystem.open();
+	}
+	
+	@After 
+	public void tearDown() throws Exception {
+		fileSystem.close();
 	}
 
 	public void deleteFile(String filename) throws Exception {
@@ -132,7 +143,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	}
 
 	@Test
-	public void testExists() throws Exception {
+	public void fileSystemTestExists() throws Exception {
 		String filename = "testExists" + FILE1;
 		
 		createFile(filename, "tja");
@@ -142,7 +153,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	}
 
 	@Test
-	public void testNotExists() throws Exception {
+	public void fileSystemTestNotExists() throws Exception {
 		String filename = "testNotExists" + FILE1;
 		
 		deleteFile(filename);
@@ -152,7 +163,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	}
 
 	@Test
-	public void testCreateNewFile() throws Exception {
+	public void fileSystemTestCreateNewFile() throws Exception {
 		String filename = "create" + FILE1;
 		String contents = "regeltje tekst";
 		
@@ -179,7 +190,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	}
 
 	@Test
-	public void testCreateOverwriteFile() throws Exception {
+	public void fileSystemTestCreateOverwriteFile() throws Exception {
 		String filename = "overwrited" + FILE1;
 		
 		createFile(filename, "Eerste versie van de file");
@@ -205,7 +216,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	}
 
 	@Test
-	public void testTruncateFile() throws Exception {
+	public void fileSystemTestTruncateFile() throws Exception {
 		String filename = "truncated" + FILE1;
 		
 		createFile(filename, "Eerste versie van de file");
@@ -224,7 +235,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	}
 
 	@Test
-	public void testAppendFile() throws Exception {
+	public void fileSystemTestAppendFile() throws Exception {
 		String filename = "append" + FILE1;
 		String regel1 = "Eerste regel in de file";
 		String regel2 = "Tweede regel in de file";
@@ -248,7 +259,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	}
 
 	@Test
-	public void testDelete() throws Exception {
+	public void fileSystemTestDelete() throws Exception {
 		String filename = "tobeDeleted" + FILE1;
 		
 		createFile(filename, "maakt niet uit");
@@ -271,7 +282,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	}
 
 	@Test
-	public void testRead() throws Exception {
+	public void fileSystemTestRead() throws Exception {
 		String filename = "read" + FILE1;
 		String contents = "Tekst om te lezen";
 
@@ -286,7 +297,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	}
 
 	@Test
-	public void testGetName() throws Exception {
+	public void fileSystemTestGetName() throws Exception {
 		String filename = "readName" + FILE1;
 		String contents = "Tekst om te lezen";
 		
@@ -299,7 +310,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 	}
 
 	@Test
-	public void testModificationTime() throws Exception {
+	public void fileSystemTestModificationTime() throws Exception {
 		String filename = "readModificationTime" + FILE1;
 		String contents = "Tekst om te lezen";
 		Date date = new Date();
@@ -316,9 +327,99 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		// test
 		assertFalse(diff > 10000);
 	}
+	
+	@Test
+	public void fileSystemTestCreateAndRemoveFolder() throws Exception {
+		String folderName = "dummyFolder";
+		
+		_createFolder(folderName);
+		waitForActionToFinish();
+		
+		assertTrue(_folderExists(folderName));
+		
+		F f = fileSystem.toFile(folderName);
+		fileSystem.removeFolder(f);
+		waitForActionToFinish();
+		
+		assertFalse(_folderExists(folderName));
+	}
+	
+	@Test
+	public void fileSystemTestRenameTo() throws Exception {
+		String fileName = "fileTobeRenamed.txt";
+		
+		_createFile(fileName);
+		waitForActionToFinish();
+		
+		assertTrue(_fileExists(fileName));
+		
+		String destination = "fileRenamed.txt";
+		deleteFile(destination);
+		
+		F f = fileSystem.toFile(fileName);
+		fileSystem.renameTo(f, destination);
+		waitForActionToFinish();
+		
+		assertTrue(_fileExists(destination));
+		assertFalse(_fileExists(fileName));
+	}
+	
+	@Test
+	public void fileSystemTestRenameToExisting() throws Exception {
+		exception.expectMessage("Cannot rename file. Destination file already exists.");
+		String fileName = "fileToBeRenamedExisting.txt";
+		
+		_createFile(fileName);
+		waitForActionToFinish();
+		
+		assertTrue(_fileExists(fileName));
+		
+		String destination = "fileRenamedExists.txt";
+		_createFile(destination);
+		waitForActionToFinish();
+		
+		F f = fileSystem.toFile(fileName);
+		fileSystem.renameTo(f, destination);
+		waitForActionToFinish();
+		
+		assertTrue(_fileExists(fileName));
+	}
+	
+	@Test
+	public void fileSystemTestRemovingNonExistingDirectory() throws Exception {
+		exception.expectMessage("Directory does not exist.");
+		String filename = "nonExistingFolder";
+		if(_folderExists(filename)) {
+			_deleteFolder(filename);
+		}
+		F f = fileSystem.toFile(filename);
+		fileSystem.removeFolder(f);
+	}
+	
+	@Test
+	public void fileSystemTestCreateExistingFolder() throws Exception {
+		exception.expectMessage("Directory already exists.");
+		String folderName = "existingFolder";
+		
+		_createFolder(folderName);
+		waitForActionToFinish();
+		F f = fileSystem.toFile(folderName);
+		fileSystem.createFolder(f);
+	}
+	
+	@Test
+	public void fileSystemTestExistsMethod() throws Exception {
+		String fileName = "fileExists.txt";
+
+		_createFile(fileName);
+		waitForActionToFinish();
+		F f = fileSystem.toFile(fileName);
+
+		assertTrue(fileSystem.exists(f));
+	}
 
 	@Test
-	public void testListFile() throws Exception {
+	public void fileSystemTestListFile() throws Exception {
 		String contents1 = "maakt niet uit";
 		String contents2 = "maakt ook niet uit";
 		
@@ -343,9 +444,11 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 		assertFalse(it.hasNext());
 
 		deleteFile(FILE1);
-
+		
 		fileSystem.close();
+		waitForActionToFinish();
 		fileSystem.open();
+		
 		it = fileSystem.listFiles();
 		for (int i = 0; i < count - 1; i++) {
 			assertTrue(it.hasNext());
@@ -356,6 +459,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystemBase<F>> {
 
 		deleteFile(FILE2);
 		fileSystem.close();
+		waitForActionToFinish();
 		fileSystem.open();
 
 		it = fileSystem.listFiles();

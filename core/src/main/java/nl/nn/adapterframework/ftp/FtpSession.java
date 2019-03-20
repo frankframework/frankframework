@@ -122,15 +122,10 @@ public class FtpSession {
 	private boolean allowSelfSignedCertificates = false;
 	private boolean protP = false;
 	
-	
-	
-	// private members
 	private SshClient sshClient;
 	private SftpClient sftpClient;
 	public FTPClient ftpClient;
 	
-
-	// configure
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(ftpTypeDescription)) {
 			throw new ConfigurationException("Attribute [ftpTypeDescription] is not set");
@@ -203,13 +198,13 @@ public class FtpSession {
 				sshProp.setPrefCSEncryption(prefCSEncryption);
 			if (StringUtils.isNotEmpty(prefSCEncryption))
 				sshProp.setPrefCSEncryption(prefSCEncryption);
-			
+
 			if (! StringUtils.isEmpty(proxyHost)) {
 				sshProp.setTransportProvider(proxyTransportType);
 				sshProp.setProxyHost(proxyHost);
 				sshProp.setProxyPort(proxyPort);
 				CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), proxyUsername, proxyPassword);
-	
+
 				if (! StringUtils.isEmpty(pcf.getUsername())) {
 					sshProp.setProxyUsername(pcf.getUsername());
 					sshProp.setProxyPassword(pcf.getPassword());
@@ -237,7 +232,6 @@ public class FtpSession {
 				// pass the authentication information
 				sac = getSshAuthentication();
 			} else {
-				
 				// TODO: detecteren dat sshClient.getAvailableAuthMethods("ftpmsg")
 				// wel keyboard-interactive terug geeft, maar geen password en dan deze methode
 				// gebruiken
@@ -401,19 +395,13 @@ public class FtpSession {
 		if (messageIsContent) {
 			return _put(params, session, message, remoteDirectory, remoteFilenamePattern, closeAfterSend);
 		}
-		List remoteFilenames = _put(params, session, FileUtils.getListFromNames(message, ';'), remoteDirectory, remoteFilenamePattern, closeAfterSend);
+		List<String> remoteFilenames = _put(params, session, FileUtils.getListFromNames(message, ';'), remoteDirectory, remoteFilenamePattern, closeAfterSend);
 		return FileUtils.getNamesFromList(remoteFilenames, ';');	
 	}
 	
 	/**
 	 * Transfers the contents of a stream to a file on the server.
-	 * 
-	 * @param contents
-	 * @param remoteDirectory
-	 * @param remoteFilenamePattern
-	 * @param closeAfterSend
 	 * @return name of the create remote file
-	 * @throws Exception
 	 */
 	private String _put(ParameterList params, IPipeLineSession session, String contents, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
 		openClient(remoteDirectory);
@@ -443,19 +431,14 @@ public class FtpSession {
 	}
 	
 	/**
-	 * @param filenames
-	 * @param remoteDirectory
-	 * @param remoteFilenamePattern
-	 * @param closeAfterSend
 	 * @return list of remotely created files
-	 * @throws Exception
 	 */
-	private List _put(ParameterList params, IPipeLineSession session, List filenames, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
+	private List<String> _put(ParameterList params, IPipeLineSession session, List<String> filenames, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
 		openClient(remoteDirectory);
 		
 		try {
-			LinkedList remoteFilenames = new LinkedList();
-			for (Iterator filenameIt = filenames.iterator(); filenameIt.hasNext(); ) {
+			LinkedList<String> remoteFilenames = new LinkedList<String>();
+			for (Iterator<String> filenameIt = filenames.iterator(); filenameIt.hasNext(); ) {
 				String localFilename = (String)filenameIt.next();
 				File localFile = new File(localFilename);
 				
@@ -493,14 +476,14 @@ public class FtpSession {
 		}
 	}
 
-	public List ls(String remoteDirectory, boolean filesOnly, boolean closeAfterSend) throws Exception {
+	public List<String> ls(String remoteDirectory, boolean filesOnly, boolean closeAfterSend) throws Exception {
 		openClient(remoteDirectory);
 
 		try {
 			if (ftpType == SFTP) {
-				List result = new LinkedList();
-				List listOfSftpFiles = sftpClient.ls();
-				for (Iterator sftpFileIt = listOfSftpFiles.iterator(); sftpFileIt.hasNext();) {
+				List<String> result = new LinkedList<String>();
+				List<?> listOfSftpFiles = sftpClient.ls();
+				for (Iterator<?> sftpFileIt = listOfSftpFiles.iterator(); sftpFileIt.hasNext();) {
 					SftpFile file = (SftpFile)sftpFileIt.next();
 					String filename = file.getFilename();
 					if (filesOnly || (! file.isDirectory())) {
@@ -521,7 +504,7 @@ public class FtpSession {
 	}
 	
 	public String lsAsString(String remoteDirectory, boolean filesOnly, boolean closeAfterSend) throws Exception {
-		List result = ls(remoteDirectory, filesOnly, closeAfterSend);
+		List<String> result = ls(remoteDirectory, filesOnly, closeAfterSend);
 		return FileUtils.getNamesFromList(result, ';');
 	}
 	
@@ -529,7 +512,7 @@ public class FtpSession {
 		if (messageIsContent) {
 			return _get(remoteDirectory, FileUtils.getListFromNames(filenames, ';'), closeAfterGet);
 		}
-		List result = _get(params, session, localDirectory, remoteDirectory, FileUtils.getListFromNames(filenames, ';'), localFilenamePattern, closeAfterGet);
+		List<String> result = _get(params, session, localDirectory, remoteDirectory, FileUtils.getListFromNames(filenames, ';'), localFilenamePattern, closeAfterGet);
 		return FileUtils.getNamesFromList(result, ';');	
 	}
 	
@@ -552,18 +535,14 @@ public class FtpSession {
 	}
 
 	/**
-	 * @param remoteDirectory
-	 * @param filenames
-	 * @param closeAfterGet
 	 * @return concatenation of the contents of all received files
-	 * @throws Exception
 	 */
-	private String _get(String remoteDirectory, List filenames, boolean closeAfterGet) throws Exception {
+	private String _get(String remoteDirectory, List<String> filenames, boolean closeAfterGet) throws Exception {
 		openClient(remoteDirectory);
 		
 		try {
 			StringBuffer result = new StringBuffer();
-			for (Iterator filenameIt = filenames.iterator(); filenameIt.hasNext(); ) {
+			for (Iterator<String> filenameIt = filenames.iterator(); filenameIt.hasNext(); ) {
 				String remoteFilename = (String)filenameIt.next();
 				OutputStream os = null;
 
@@ -594,18 +573,14 @@ public class FtpSession {
 	}
 	
 	/**
-	 * @param remoteDirectory
-	 * @param filenames
-	 * @param closeAfterGet
-	 * @return ; seperated string with filenames of locally created files 
-	 * @throws Exception
+	 * Returns a list as seperated string of filenames of locally created files 
 	 */
-	private List _get(ParameterList params, IPipeLineSession session, String localDirectory, String remoteDirectory, List filenames, String localFilenamePattern, boolean closeAfterGet) throws Exception {
+	private List<String> _get(ParameterList params, IPipeLineSession session, String localDirectory, String remoteDirectory, List<String> filenames, String localFilenamePattern, boolean closeAfterGet) throws Exception {
 		openClient(remoteDirectory);
 		
 		try {
-			LinkedList remoteFilenames = new LinkedList();
-			for (Iterator filenameIt = filenames.iterator(); filenameIt.hasNext(); ) {
+			LinkedList<String> remoteFilenames = new LinkedList<String>();
+			for (Iterator<String> filenameIt = filenames.iterator(); filenameIt.hasNext(); ) {
 				String remoteFilename = (String)filenameIt.next();
 
 				String localFilename = remoteFilename;
@@ -646,29 +621,29 @@ public class FtpSession {
 		}
 	}
 
-
 	@IbisDoc({"name or ip adres of remote host", ""})
 	public void setHost(String string) {
 		host = string;
 	}
-	String getHost() {
+
+	public String getHost() {
 		return host;
 	}
-	
+
 	@IbisDoc({"portnumber of remote host", "21"})
 	public void setPort(int i) {
 		port = i;
 	}
-	int getPort() {
+
+	public int getPort() {
 		return port;
 	}
-
-
 
 	@IbisDoc({"name of the alias to obtain credentials to authenticatie on remote server", ""})
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
+
 	public String getAuthAlias() {
 		return authAlias;
 	}
@@ -677,7 +652,8 @@ public class FtpSession {
 	public void setUsername(String string) {
 		username = string;
 	}
-	String getUsername() {
+
+	public String getUsername() {
 		return username;
 	}
 
@@ -685,17 +661,17 @@ public class FtpSession {
 	public void setPassword(String string) {
 		password = string;
 	}
-	String getPassword() {
+
+	public String getPassword() {
 		return password;
 	}
-	
 
-	
 	@IbisDoc({"proxy host name", ""})
 	public void setProxyHost(String string) {
 		proxyHost = string;
 	}
-	String getProxyHost() {
+
+	public String getProxyHost() {
 		return proxyHost;
 	}
 
@@ -703,7 +679,8 @@ public class FtpSession {
 	public void setProxyPort(int i) {
 		proxyPort = i;
 	}
-	int getProxyPort() {
+
+	public int getProxyPort() {
 		return proxyPort;
 	}
 
@@ -711,6 +688,7 @@ public class FtpSession {
 	public void setProxyAuthAlias(String string) {
 		proxyAuthAlias = string;
 	}
+
 	public String getProxyAuthAlias() {
 		return proxyAuthAlias;
 	}
@@ -719,7 +697,8 @@ public class FtpSession {
 	public void setProxyUsername(String string) {
 		proxyUsername = string;
 	}
-	String getProxyUsername() {
+
+	public String getProxyUsername() {
 		return proxyUsername;
 	}
 
@@ -727,12 +706,12 @@ public class FtpSession {
 	public void setProxyPassword(String string) {
 		proxyPassword = string;
 	}
-	String getProxyPassword() {
+
+	public String getProxyPassword() {
 		return proxyPassword;
 	}
 
-
-	int getFtpType() {
+	public int getFtpType() {
 		return ftpType;
 	}
 
@@ -740,10 +719,10 @@ public class FtpSession {
 	public void setFtpTypeDescription(String string) {
 		ftpTypeDescription = string;
 	}
-	String getFtpTypeDescription() {
+
+	public String getFtpTypeDescription() {
 		return ftpTypeDescription;
 	}
-
 
 	@IbisDoc({"file type, one of ascii, binary", ""})
 	public void setFileType(String string) {
@@ -754,7 +733,8 @@ public class FtpSession {
 	public void setMessageIsContent(boolean b) {
 		messageIsContent = b;
 	}
-	boolean isMessageIsContent() {
+
+	public boolean isMessageIsContent() {
 		return messageIsContent;
 	}
 
@@ -762,26 +742,26 @@ public class FtpSession {
 	public void setPassive(boolean b) {
 		passive = b;
 	}
+
 	public boolean isPassive() {
 		return passive;
 	}
-
-
 
 	@IbisDoc({"(sftp) transport type in case of sftp (1=standard, 2=http, 3=socks4, 4=socks5)", "4"})
 	public void setProxyTransportType(int i) {
 		proxyTransportType = i;
 	}
-	int getProxyTransportType() {
+
+	public int getProxyTransportType() {
 		return proxyTransportType;
 	}
-
 
 	@IbisDoc({"(sftp) optional preferred encryption from client to server for sftp protocol", ""})
 	public void setPrefCSEncryption(String string) {
 		prefCSEncryption = string;
 	}
-	String getPrefCSEncryption() {
+
+	public String getPrefCSEncryption() {
 		return prefCSEncryption;
 	}
 
@@ -789,19 +769,20 @@ public class FtpSession {
 	public void setPrefSCEncryption(String string) {
 		prefSCEncryption = string;
 	}
-	String getPrefSCEncryption() {
+
+	public String getPrefSCEncryption() {
 		return prefSCEncryption;
 	}
-
 
 	@IbisDoc({"(sftp) path to private key file for sftp authentication", ""})
 	public void setPrivateKeyFilePath(String string) {
 		privateKeyFilePath = string;
 	}
-	String getPrivateKeyFilePath() {
+
+	public String getPrivateKeyFilePath() {
 		return privateKeyFilePath;
 	}
-	
+
 	@IbisDoc({"(sftp) name of the alias to obtain credentials for passphrase of private key file", ""})
 	public void setPrivateKeyAuthAlias(String string) {
 		privateKeyAuthAlias = string;
@@ -814,16 +795,17 @@ public class FtpSession {
 	public void setPrivateKeyPassword(String password) {
 		privateKeyPassword = password;
 	}
-	String getPrivateKeyPassword() {
+
+	public String getPrivateKeyPassword() {
 		return privateKeyPassword;
 	}
-
 
 	@IbisDoc({"(sftp) path to file with knownhosts", ""})
 	public void setKnownHostsPath(String string) {
 		knownHostsPath = string;
 	}
-	String getKnownHostsPath() {
+
+	public String getKnownHostsPath() {
 		return knownHostsPath;
 	}
 
@@ -831,19 +813,17 @@ public class FtpSession {
 	public void setConsoleKnownHostsVerifier(boolean b) {
 		consoleKnownHostsVerifier = b;
 	}
+
 	public boolean isConsoleKnownHostsVerifier() {
 		return consoleKnownHostsVerifier;
 	}
-
-
-
-
 
 	@IbisDoc({"(ftps) resource url to certificate to be used for authentication", ""})
 	public void setCertificate(String string) {
 		certificate = string;
 	}
-	String getCertificate() {
+
+	public String getCertificate() {
 		return certificate;
 	}
 
@@ -851,7 +831,8 @@ public class FtpSession {
 	public void setCertificateType(String string) {
 		certificateType = string;
 	}
-	String getCertificateType() {
+
+	public String getCertificateType() {
 		return certificateType;
 	}
 
@@ -859,6 +840,7 @@ public class FtpSession {
 	public void setCertificateAuthAlias(String string) {
 		certificateAuthAlias = string;
 	}
+
 	public String getCertificateAuthAlias() {
 		return certificateAuthAlias;
 	}
@@ -867,7 +849,8 @@ public class FtpSession {
 	public void setCertificatePassword(String string) {
 		certificatePassword = string;
 	}
-	String getCertificatePassword() {
+
+	public String getCertificatePassword() {
 		return certificatePassword;
 	}
 
@@ -880,12 +863,12 @@ public class FtpSession {
 		this.keyManagerAlgorithm = keyManagerAlgorithm;
 	}
 
-
 	@IbisDoc({"(ftps) resource url to truststore to be used for authentication", ""})
 	public void setTruststore(String string) {
 		truststore = string;
 	}
-	String getTruststore() {
+
+	public String getTruststore() {
 		return truststore;
 	}
 
@@ -893,7 +876,8 @@ public class FtpSession {
 	public void setTruststoreType(String string) {
 		truststoreType = string;
 	}
-	String getTruststoreType() {
+
+	public String getTruststoreType() {
 		return truststoreType;
 	}
 
@@ -901,6 +885,7 @@ public class FtpSession {
 	public void setTruststoreAuthAlias(String string) {
 		truststoreAuthAlias = string;
 	}
+
 	public String getTruststoreAuthAlias() {
 		return truststoreAuthAlias;
 	}
@@ -909,7 +894,8 @@ public class FtpSession {
 	public void setTruststorePassword(String string) {
 		truststorePassword = string;
 	}
-	String getTruststorePassword() {
+
+	public String getTruststorePassword() {
 		return truststorePassword;
 	}
 
@@ -922,13 +908,12 @@ public class FtpSession {
 		this.trustManagerAlgorithm = trustManagerAlgorithm;
 	}
 
-
-
 	@IbisDoc({"(ftps) enables the use of certificates on jdk 1.3.x. the sun reference implementation jsse 1.0.3 is included for convenience", "false"})
 	public void setJdk13Compatibility(boolean b) {
 		jdk13Compatibility = b;
 	}
-	boolean isJdk13Compatibility() {
+
+	public boolean isJdk13Compatibility() {
 		return jdk13Compatibility;
 	}
 
@@ -936,7 +921,8 @@ public class FtpSession {
 	public void setVerifyHostname(boolean b) {
 		verifyHostname = b;
 	}
-	boolean isVerifyHostname() {
+
+	public boolean isVerifyHostname() {
 		return verifyHostname;
 	}
 
@@ -944,16 +930,17 @@ public class FtpSession {
 	public void setAllowSelfSignedCertificates(boolean b) {
 		allowSelfSignedCertificates = b;
 	}
-	boolean isAllowSelfSignedCertificates() {
+
+	public boolean isAllowSelfSignedCertificates() {
 		return allowSelfSignedCertificates;
 	}
-
 
 	@IbisDoc({"(ftps) if true, the server returns data via another socket", "false"})
 	public void setProtP(boolean b) {
 		protP = b;
 	}
-	boolean isProtp() {
+
+	public boolean isProtp() {
 		return protP;
 	}
 
@@ -965,5 +952,4 @@ public class FtpSession {
 	public void setKeyboardInteractive(boolean keyboardInteractive) {
 		this.keyboardInteractive = keyboardInteractive;
 	}
-
 }

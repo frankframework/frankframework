@@ -410,9 +410,6 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
 
 	/**
 	 * Added to completely implement the SocketFactory interface 
-	 * @param adress
-	 * @param port
-	 * @throws IOException
 	 */
 	public abstract Socket createSocket(InetAddress adress, int port) throws IOException;
 

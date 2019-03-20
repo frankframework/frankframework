@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 
@@ -15,6 +16,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.filesystem.IFileSystem;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -23,6 +25,22 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
+
+/**
+ * FileSystem Sender: Base class for all file system senders
+ * 
+ * 
+ * <p><b>Actions:</b></p>
+ * <p>The <code>upload</code> action requires the file parameter to be set which should contain the fileContent to upload in either Stream, Bytes or String format</p>
+ * <p>The <code>rename</code> action requires the destination parameter to be set which should contain the full path </p>
+ * <p>The <code>delete</code> action requires the filename as input </p>
+ * <p>The <code>mkdir</code> action for creating a directory requires directory name to be created as input. </p>
+ * <p>The <code>rmdir</code> action for removing a directory requires directory name to be removed as input. </p>
+ * <p>The <code>download</code> action for downloading a file, requires filename as input. Returns a base64 encoded string containing the file content </p>
+ * <p>The <code>list</code> action for listing a directory content or single file</p>
+ * 
+ * <br/>
+ */
 
 public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithParametersBase {
 
@@ -53,6 +71,24 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 			throw new ConfigurationException(
 					getLogPrefix() + "the rename action requires a destination parameter to be present");
 	}
+	
+	@Override
+	public void open() throws SenderException {
+		try {
+			getFileSystem().open();
+		} catch (FileSystemException e) {
+			throw new SenderException("Cannot open fileSystem",e);
+		}
+	}
+	
+	@Override
+	public void close() throws SenderException {
+		try {
+			getFileSystem().close();
+		} catch (FileSystemException e) {
+			throw new SenderException("Cannot close fileSystem",e);
+		}
+	}
 
 	@Override
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc)
@@ -80,7 +116,6 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 		try {
 			if (action.equalsIgnoreCase("delete")) {
 				ifs.deleteFile(file);
-				
 			} else if (action.equalsIgnoreCase("download")) {
 				InputStream is = new Base64InputStream(ifs.readFile(file), true);
 				String result = Misc.streamToString(is);
@@ -128,7 +163,7 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 				ifs.renameTo(file, destination);
 			}
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix() + "unable to process action for File [" + message + "]", e);
+			throw new SenderException(getLogPrefix() + "unable to process ["+action+"] action for File [" + message + "]", e);
 		}
 
 		return correlationID;
@@ -164,7 +199,14 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 				fileXml.addAttribute("modificationTime", time);
 			}
 		}
-		ifs.augmentFileInfo(fileXml, f);
+		
+		Map<String, Object> additionalParameters = ifs.getAdditionalFileProperties(f);
+		if(additionalParameters != null) {
+			for (Map.Entry<String, Object> attribute : additionalParameters.entrySet()) {
+				fileXml.addAttribute(attribute.getKey(), String.valueOf(attribute.getValue()));
+			}
+		}
+
 		return fileXml;
 	}
 
@@ -180,6 +222,7 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 		return action;
 	}
 
+	@IbisDoc({ "possible values: delete, download, list, mkdir, rename, rmdir, upload", "" })
 	public void setAction(String action) {
 		this.action = action;
 	}

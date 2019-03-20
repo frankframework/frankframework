@@ -28,6 +28,8 @@ Ibis AdapterFramework release notes
     - Fix error on selecting checkpoint with null message
     - Fix error on selecting different stub strategy
 - Add ability to use nullvalues on cmis properties
+- Show class in IbisDoc html
+- Show FileHandler properties in IbisDoc for FilePipe
 
 
 

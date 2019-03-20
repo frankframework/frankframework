@@ -293,10 +293,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	}
 
 	/**
-	 * sets the JMS message properties as descriped in the msgProperties arraylist
-	 * @param msg
-	 * @param msgProperties
-	 * @throws JMSException
+	 * Sets the JMS message properties as described in the msgProperties arraylist
 	 */
 	private void setProperties(Message msg, ParameterValueList msgProperties) throws JMSException {
 		for (int i=0; i<msgProperties.size(); i++) {

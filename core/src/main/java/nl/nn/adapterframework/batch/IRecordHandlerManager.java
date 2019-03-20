@@ -41,14 +41,11 @@ public interface IRecordHandlerManager extends INamedObject {
 	void addHandler(RecordHandlingFlow flow);
 	
 	/**
-	 * @param record 
 	 * @return the RecordHandlingFlow element to be used to handle the record
-	 * @throws Exception
 	 */
 	RecordHandlingFlow getRecordHandler(IPipeLineSession session, String record) throws Exception;
 	
 	/**
-	 * @param filename
 	 * @return the IRecordHandlingManager to be used initially based on the name of the input file 
 	 */
 	IRecordHandlerManager getRecordFactoryUsingFilename(IPipeLineSession session, String filename);

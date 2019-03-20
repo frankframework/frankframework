@@ -28,7 +28,6 @@ public interface IParameterHandler {
 	 * Methods is called for each resolved parameter in the order in which they are defined
 	 * @param paramName name of the parameter
 	 * @param paramValue value of the parameter
-	 * @throws ParameterException
 	 */
 	void handleParam(String paramName, Object paramValue) throws ParameterException;
 }

@@ -34,8 +34,6 @@ public class FileSender {
 	 * (detect reading of the file).
 	 * 
 	 * @param message  the message to write to file
-	 * @throws TimeOutException
-	 * @throws SenderException
 	 */
 	public void sendMessage(String message) throws TimeOutException, SenderException {
 		if (runAnt) {
@@ -122,8 +120,6 @@ public class FileSender {
 
 	/**
 	 * Set the filename to write the message to.
-	 * 
-	 * @param filename
 	 */
 	public void setFilename(String filename) {
 		this.filename = filename;
@@ -131,8 +127,6 @@ public class FileSender {
 
 	/**
 	 * Set the encoding to use when writing the file.
-	 * 
-	 * @param encoding
 	 */
 	public void setEncoding(String encoding) {
 		this.encoding = encoding;
@@ -140,8 +134,6 @@ public class FileSender {
 
 	/**
 	 * Set check delete.
-	 *  
-	 * @param checkDelete
 	 */
 	public void setCheckDelete(boolean checkDelete) {
 		this.checkDelete = checkDelete;
@@ -149,8 +141,6 @@ public class FileSender {
 
 	/**
 	 * Set the time out in milliseconds waiting for deletion of the file.
-	 *  
-	 * @param timeOut
 	 */
 	public void setTimeOut(long timeOut) {
 		this.timeOut = timeOut;
@@ -158,7 +148,6 @@ public class FileSender {
 
 	/**
 	 * Set the interval time in milliseconds between checks for file deletion.
-	 * @param interval
 	 */
 	public void setInterval(long interval) {
 		this.interval = interval;
@@ -166,7 +155,6 @@ public class FileSender {
 
 	/**
 	 * Set the overwrite file.
-	 * @param overwrite
 	 */
 	public void setOverwrite(boolean overwrite) {
 		this.overwrite = overwrite;
