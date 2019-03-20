@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -172,9 +171,8 @@ public abstract class FileSystemTest<F, FS extends IFileSystem<F>> {
 		
 		F file = fileSystem.toFile(filename);
 		OutputStream out = fileSystem.createFile(file);
-		PrintWriter pw = new PrintWriter(out);
-		pw.println(contents);
-		pw.close();
+		out.write(contents.getBytes());
+		out.close();
 		waitForActionToFinish();
 		// test
 		existsCheck(filename);
@@ -199,9 +197,8 @@ public abstract class FileSystemTest<F, FS extends IFileSystem<F>> {
 		String contents = "Tweede versie van de file";
 		F file = fileSystem.toFile(filename);
 		OutputStream out = fileSystem.createFile(file);
-		PrintWriter pw = new PrintWriter(out);
-		pw.println(contents);
-		pw.close();
+		out.write(contents.getBytes());
+		out.close();
 		waitForActionToFinish();
 		// test
 		existsCheck(filename);
@@ -246,9 +243,8 @@ public abstract class FileSystemTest<F, FS extends IFileSystem<F>> {
 		
 		F file = fileSystem.toFile(filename);
 		OutputStream out = fileSystem.appendFile(file);
-		PrintWriter pw = new PrintWriter(out);
-		pw.println(regel2);
-		pw.close();
+		out.write(regel2.getBytes());
+		out.close();
 		waitForActionToFinish();
 		// test
 		existsCheck(filename);
@@ -332,7 +328,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystem<F>> {
 	public void fileSystemTestRenameTo() throws Exception {
 		String fileName = "fileTobeRenamed.txt";
 		
-		_createFile(fileName);
+		createFile(fileName,"");
 		waitForActionToFinish();
 		
 		assertTrue(_fileExists(fileName));
@@ -354,13 +350,13 @@ public abstract class FileSystemTest<F, FS extends IFileSystem<F>> {
 		exception.expectMessage("Cannot rename file. Destination file already exists.");
 		String fileName = "fileToBeRenamedExisting.txt";
 		
-		_createFile(fileName);
+		createFile(fileName, "");
 		waitForActionToFinish();
 		
 		assertTrue(_fileExists(fileName));
 		
 		String destination = "fileRenamedExists.txt";
-		_createFile(destination);
+		createFile(destination, "");
 		waitForActionToFinish();
 		
 		F f = fileSystem.toFile(fileName);
@@ -384,7 +380,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystem<F>> {
 	@Test
 	public void fileSystemTestCreateExistingFolder() throws Exception {
 		exception.expectMessage("Directory already exists.");
-		String folderName = "existingFolder";
+		String folderName = "existingFolder/";
 		
 		_createFolder(folderName);
 		waitForActionToFinish();
@@ -396,7 +392,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystem<F>> {
 	public void fileSystemTestExistsMethod() throws Exception {
 		String fileName = "fileExists.txt";
 
-		_createFile(fileName);
+		createFile(fileName, "");
 		waitForActionToFinish();
 		F f = fileSystem.toFile(fileName);
 

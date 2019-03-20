@@ -1,7 +1,5 @@
 package nl.nn.adapterframework.filesystem;
 
-import java.io.FilterInputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -128,49 +126,23 @@ public class Samba2FileSystem implements IFileSystem<String> {
 				SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
 		OutputStream out = file.getOutputStream();
 
-		FilterOutputStream fos = new FilterOutputStream(out) {
-
-			@Override
-			public void close() throws IOException {
-				super.close();
-				file.close();
-			}
-
-		};
-		return fos;
+		return out;
 	}
 
 	@Override
 	public OutputStream appendFile(String f) throws FileSystemException, IOException {
 		final File file = getFile(f, AccessMask.FILE_APPEND_DATA, SMB2CreateDisposition.FILE_OPEN_IF);
 		OutputStream out = file.getOutputStream();
-		
-		FilterOutputStream fos = new FilterOutputStream(out) {
-			@Override
-			public void close() throws IOException {
-				super.close();
-				file.close();
-			}
-		};
 
-		return fos;
+		return out;
 	}
 
 	@Override
 	public InputStream readFile(String filename) throws FileSystemException, IOException {
 		final File file = getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN);
 		InputStream is = file.getInputStream();
-		FilterInputStream fis = new FilterInputStream(is) {
 
-			@Override
-			public void close() throws IOException {
-				super.close();
-				file.close();
-			}
-
-		};
-
-		return fis;
+		return is;
 	}
 
 	@Override
