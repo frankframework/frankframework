@@ -181,6 +181,7 @@ public final class AppConstants extends Properties implements Serializable{
             return null;
         }
 	}
+
 	/**
 	 * Creates a tokenizer from the values of this key.  As a sepearator the "," is used.
 	 * Uses the {@link #getResolvedProperty(String)} method.
@@ -199,6 +200,24 @@ public final class AppConstants extends Properties implements Serializable{
 		if (list==null)
 		  list = defaults;
 	    return new StringTokenizer(list, ",");
+	}
+
+	/**
+	 * Returns a list of {@link AppConstants#getInstance() AppConstants} which names begin with the keyBase
+	 */
+	public Properties getAppConstants(String keyBase) {
+		if(!keyBase.endsWith("."))
+			keyBase +=".";
+
+		Properties properties = new Properties();
+		for(Object objKey: getInstance().keySet()) {
+			String key = (String) objKey;
+			if(key.startsWith(keyBase)) {
+				properties.put(key, getInstance().getResolvedProperty(key));
+			}
+		}
+
+		return properties;
 	}
 
 	/**

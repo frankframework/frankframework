@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,9 +19,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLStreamHandler;
 
-import org.apache.log4j.Logger;
-
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -36,37 +33,27 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Peter Leeuwenburgh
  */
 
-public class DummyClassLoader extends ClassLoader {
-	protected Logger log = LogUtil.getLogger(this);
+public class DummyClassLoader extends ClassLoaderBase {
 
-	private String configurationName;
-	private String configurationFileName;
-
-	public DummyClassLoader(String configurationName,
-			String configurationFileName) {
-		super(DummyClassLoader.class.getClassLoader());
-		this.configurationName = configurationName;
-		this.configurationFileName = configurationFileName;
+	public DummyClassLoader(ClassLoader parent) {
+		super(parent);
 	}
 
 	@Override
 	public URL getResource(String name) {
-		if (name.equals(configurationFileName)) {
-			String config = "<configuration name=\""
-					+ XmlUtils.encodeChars(configurationName) + "\" />";
+		if (name.equals(getConfigurationFile())) {
+			String config = "<configuration name=\"" + XmlUtils.encodeChars(getConfigurationName()) + "\" />";
 			byte[] bytes = config.getBytes();
 			if (bytes != null) {
-				URLStreamHandler urlStreamHandler = new BytesURLStreamHandler(
-						bytes);
+				URLStreamHandler urlStreamHandler = new BytesURLStreamHandler(bytes);
 				try {
-					return new URL(null, BytesClassLoader.PROTOCOL + ":" + name,
-							urlStreamHandler);
+					return new URL(null, BytesClassLoader.PROTOCOL + ":" + name, urlStreamHandler);
 				} catch (MalformedURLException e) {
 					log.error("Could not create url", e);
 				}
 			}
-
 		}
+
 		return super.getResource(name);
 	}
 }
