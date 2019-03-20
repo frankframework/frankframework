@@ -21,21 +21,28 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.Misc;
 
 public class JarFileClassLoader extends BytesClassLoader {
 	private String jarFileName;
-	private String configurationName;
 
-	public JarFileClassLoader(String jarFileName, String configurationName) throws ConfigurationException {
-		this(jarFileName, configurationName, JarFileClassLoader.class.getClassLoader());
+	public JarFileClassLoader(ClassLoader parent) {
+		super(parent);
 	}
 
-	public JarFileClassLoader(String jarFileName, String configurationName, ClassLoader parent) throws ConfigurationException {
-		super(parent);
-		this.jarFileName = jarFileName;
-		this.configurationName = configurationName;
+	@Override
+	public void configure(IbisContext ibisContext, String configurationName) throws ConfigurationException {
+		super.configure(ibisContext, configurationName);
+
+		if(jarFileName == null)
+			throw new ConfigurationException("jar file not set");
+
 		reload();
+	}
+
+	public void setJar(String jar) {
+		this.jarFileName = jar;
 	}
 
 	@Override
@@ -52,14 +59,14 @@ public class JarFileClassLoader extends BytesClassLoader {
 		} catch (IOException e) {
 			throw new ConfigurationException(
 					"Could not read resources from jar '" + jarFileName
-					+ "' for configuration '" + configurationName + "'");
+					+ "' for configuration '" + getConfigurationName() + "'");
 		} finally {
 			if (jarFile != null) {
 				try {
 					jarFile.close();
 				} catch (IOException e) {
 					log.warn("Could not close jar '" + jarFileName
-							+ "' for configuration '" + configurationName + "'", e);
+							+ "' for configuration '" + getConfigurationName() + "'", e);
 				}
 			}
 		}
