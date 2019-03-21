@@ -4,6 +4,10 @@
 
 	<xsl:param name="hostname"/>
 	<xsl:param name="message"/>
+	
+	<xsl:variable name="from" select="dummy@dummy.dummy"/>
+	<xsl:variable name="to" select="dummy@dummy.dummy"/>
+	<xsl:variable name="cc" select="dummy@dummy.dummy,dummy@dummy.dummy,dummy@dummy.dummy"/>
 
 	<xsl:variable name="passed">
 		<xsl:choose>
@@ -15,12 +19,12 @@
 	<xsl:template match="/">
 		<email>
 			<recipients>
-				<recipient type="cc">Jaco.de.Groot@ibissource.org</recipient>
-				<recipient type="to">Niels.Meijer@ibissource.org</recipient>
-				<recipient type="cc">Bastiaan.Udo@ibissource.org</recipient>
-				<recipient type="cc">Gerrit.van.Brakel@ibissource.org</recipient>
+				<recipient type="to"><xsl:value-of select="$to"/></recipient>
+				<xsl:for-each select="tokenize($cc,',')">
+					<recipient type="cc"><xsl:value-of select="."/></recipient>
+				</xsl:for-each>
 			</recipients>
-			<from>Jaco.de.Groot@ibissource.org</from>
+			<from><xsl:value-of select="$from"/></from>
 			<subject>
 				<xsl:value-of select="$passed"/>
 				<xsl:value-of select="concat('Larva run results on ', $hostname, ' (')"/>

@@ -60,7 +60,7 @@
 				<forward name="success" path="fixedInsertRollback2" />
 			</pipe>
 			<pipe name="fixedInsertRollback2" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME','Peter',NULL,NULL)" queryType="insert" jmsRealm="jdbc" />
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME',?,NULL,NULL)" queryType="insert" jmsRealm="jdbc" />
 				<forward name="success" path="fixedInsertRollback3" />
 			</pipe>
 			<pipe name="fixedInsertRollback3" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
