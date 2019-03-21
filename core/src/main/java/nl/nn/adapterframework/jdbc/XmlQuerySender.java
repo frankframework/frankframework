@@ -317,10 +317,10 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			order = XmlUtils.getChildTagAsString(queryElement, "order");
 
 			String dsName = queryElement.getAttribute("datasourceName");
-			if(dsName.isEmpty())
+			if(dsName.isEmpty()) {
 				dsName = getDataSourceNameToUse();
-			try {
-				if(!dsName.equals(getDataSourceNameToUse())) {
+			} else {
+				try {
 					DirectQuerySender dqs;
 					
 					if(!subQuerySenders.keySet().contains(dsName)) {
@@ -341,9 +341,9 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 						String query = XmlUtils.getChildTagAsString(queryElement, "query");
 						return dqs.sendMessage(correlationID, query, prc);
 					}
+				} catch(ConfigurationException e) {
+					throw new SenderException("Could not configure DirectQuerySender with the specified data source");
 				}
-			} catch(ConfigurationException e) {
-				throw new SenderException("Could not configure DirectQuerySender with the specified data source");
 			}
 			
 			if (root.equalsIgnoreCase("select")) {
@@ -380,8 +380,6 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			throw new SenderException(getLogPrefix() + "got exception parsing [" + message + "]", e);
 		} catch (JdbcException e) {
 			throw new SenderException(getLogPrefix() + "got exception preparing [" + message + "]", e);
-//		} catch (ParameterException e) {
-//			// TODO Auto-generated catch block
 		}
 
 		return result;
