@@ -28,29 +28,21 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import javax.sql.DataSource;
-
-import org.apache.axis.utils.BeanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -201,7 +193,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 					} catch (ParseException e) {
 						throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] to Date using formatString [" + formatString + "]", e);
 					}
-					parameter = new java.sql.Timestamp(nDate.getTime());
+					parameter = new Timestamp(nDate.getTime());
 				} else {
 					if (type.equalsIgnoreCase(TYPE_XMLDATETIME)) {
 						java.util.Date nDate;

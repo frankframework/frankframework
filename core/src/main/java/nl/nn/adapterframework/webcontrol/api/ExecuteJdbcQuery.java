@@ -96,8 +96,14 @@ public final class ExecuteJdbcQuery extends Base {
 	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
 		initBase(servletConfig);
 		
-		String datasourceName = null, resultType = null, query = null, queryType = null, expectResultSet = null, result = "", returnType = MediaType.APPLICATION_XML;
+		String datasourceName = null;
+		String resultType = null;
+		String query = null;
+		String expectResultSet = null;
+		String result = "";
+		String returnType = MediaType.APPLICATION_XML;
 		Object returnEntity = null;
+		
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			if(key.equalsIgnoreCase("datasourceName")) {
