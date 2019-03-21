@@ -5,9 +5,9 @@
 	<xsl:param name="hostname"/>
 	<xsl:param name="message"/>
 	
-	<xsl:variable name="from" select="dummy@dummy.dummy"/>
-	<xsl:variable name="to" select="dummy@dummy.dummy"/>
-	<xsl:variable name="cc" select="dummy@dummy.dummy,dummy@dummy.dummy,dummy@dummy.dummy"/>
+	<xsl:variable name="from" select="'dummy@dummy.com'"/>
+	<xsl:variable name="to" select="'dummy@dummy.com'"/>
+	<xsl:variable name="cc" select="'dummy@dummy.com,dummy@dummy.com,dummy@dummy.com'"/>
 
 	<xsl:variable name="passed">
 		<xsl:choose>
