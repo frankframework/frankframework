@@ -123,7 +123,6 @@ public final class ExecuteJdbcQuery extends Base {
 			}
 			if(key.equalsIgnoreCase("query")) {
 				query = entry.getValue().toString();
-				queryType = entry.getValue().toString().split(" ")[0];
 			}
 			if(key.equalsIgnoreCase("expectResultSet")) {
 				expectResultSet = entry.getValue().toString();
