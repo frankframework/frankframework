@@ -19,7 +19,7 @@ public class MockFileSystem implements IFileSystem<MockFile> {
 	private boolean configured=false;
 	private boolean opened=false;
 	
-	Map<String,MockFile> files = new HashMap<String,MockFile>();
+	private Map<String,MockFile> files = new HashMap<String,MockFile>();
 	
 	@Override
 	public void configure() throws ConfigurationException {
@@ -188,5 +188,9 @@ public class MockFileSystem implements IFileSystem<MockFile> {
 		checkOpen();
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public Map<String, MockFile> getFiles() {
+		return files;
 	}
 }

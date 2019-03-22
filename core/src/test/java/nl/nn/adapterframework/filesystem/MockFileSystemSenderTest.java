@@ -18,24 +18,24 @@ public class MockFileSystemSenderTest extends FileSystemSenderTest <MockFile,Moc
 
 	@Override
 	protected boolean _fileExists(String filename) throws Exception {
-		return fileSystem.files.containsKey(filename);
+		return fileSystem.getFiles().containsKey(filename);
 	}
 
 	@Override
 	protected boolean _folderExists(String folderName) throws Exception {
-		MockFile mf = fileSystem.files.get(folderName);
+		MockFile mf = fileSystem.getFiles().get(folderName);
 		return (mf!=null && mf instanceof MockFolder);
 	}
 
 	@Override
 	protected void _deleteFile(String filename) throws Exception {
-		fileSystem.files.remove(filename);	
+		fileSystem.getFiles().remove(filename);	
 	}
 
 	@Override
 	protected OutputStream _createFile(String filename) throws Exception {
 		final MockFile mf = new MockFile(filename);
-		fileSystem.files.put(filename, mf);
+		fileSystem.getFiles().put(filename, mf);
 		
 		return new ByteArrayOutputStream() {
 
@@ -50,7 +50,7 @@ public class MockFileSystemSenderTest extends FileSystemSenderTest <MockFile,Moc
 
 	@Override
 	protected InputStream _readFile(String filename) throws Exception {
-		MockFile mf = fileSystem.files.get(filename);
+		MockFile mf = fileSystem.getFiles().get(filename);
 		if (mf==null || mf.getContents()==null) {
 			return null;
 		}
@@ -60,13 +60,13 @@ public class MockFileSystemSenderTest extends FileSystemSenderTest <MockFile,Moc
 	@Override
 	protected void _createFolder(String filename) throws Exception {
 		MockFolder mf = new MockFolder(filename);
-		fileSystem.files.put(filename,mf);
+		fileSystem.getFiles().put(filename,mf);
 		
 	}
 
 	@Override
 	protected void _deleteFolder(String folderName) throws Exception {
-		fileSystem.files.remove(folderName);
+		fileSystem.getFiles().remove(folderName);
 	}
 
 }
