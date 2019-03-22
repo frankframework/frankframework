@@ -1,6 +1,6 @@
 <SOAPENV:Envelope xmlns:SOAPENV="http://schemas.xmlsoap.org/soap/envelope/">
 	<SOAPENV:Header>
-		<ns0:MessageHeader xmlns:ns0="http://www.ibissource.org/CSP/XSD/General/Message_2">
+		<ns0:MessageHeader xmlns:ns0="http://www.ing.com/CSP/XSD/General/Message_2">
 			<ns0:From>
 				<ns0:Id>portal</ns0:Id>
 			</ns0:From>

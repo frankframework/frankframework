@@ -1,4 +1,4 @@
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" ><soapenv:Header><MessageHeader xmlns="http://www.ibissource.org/csp/xsd/general/message_2">
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" ><soapenv:Header><MessageHeader xmlns="http://www.ing.com/CSP/xsd/general/message_2">
    <From>
       <Id>Ibis4Tryout</Id>
    </From>
@@ -9,7 +9,7 @@
    </HeaderFields>
 </MessageHeader></soapenv:Header><soapenv:Body><CalculationRequest xmlns:SOAPENV="http://schemas.xmlsoap.org/soap/envelope/"
                     xmlns="http://www.ibissource.org/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
-   <Result xmlns="http://www.ibissource.org/csp/xsd/general/message_2">
+   <Result xmlns="http://www.ing.com/CSP/xsd/general/message_2">
       <Status>ERROR</Status>
       <ErrorList>
          <Error>

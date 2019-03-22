@@ -14,7 +14,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- wrap -->
-			<pipe name="wrap" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" mode="i2t" outputNamespace="http://www.ibissource.org/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
+			<pipe name="wrap" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" mode="i2t" outputNamespace="http://www.ing.com/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
 				<param name="businessDomain" value="Publishing" />
 				<param name="serviceName" value="Document" />
 				<param name="serviceContext" value="SalesDocument" />
@@ -30,7 +30,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- wrap2 -->
-			<pipe name="wrap2" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" mode="i2t" outputNamespace="http://www.ibissource.org/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
+			<pipe name="wrap2" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" mode="i2t" outputNamespace="http://www.ing.com/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
 				<param name="destination" value="ESB.Publishing.BS.Document.SalesDocument.1.GetDocuments.1.Request" />
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -48,7 +48,7 @@
 			<pipe name="unwrap_wrap" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" mode="i2t" direction="unwrap" removeOutputNamespaces="true" soapHeaderSessionKey="soapHeader">
 				<forward name="success" path="unwrap_wrap2" />
 			</pipe>
-			<pipe name="unwrap_wrap2" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" mode="i2t" outputNamespace="http://www.ibissource.org/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
+			<pipe name="unwrap_wrap2" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" mode="i2t" outputNamespace="http://www.ing.com/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
 				<param name="businessDomain" value="BusinessDomain" />
 				<param name="serviceName" value="ServiceName" />
 				<param name="serviceContext" value="ServiceContext" />
@@ -61,7 +61,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- wrap & unwrap -->
-			<pipe name="wrap_unwrap" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" mode="i2t" outputNamespace="http://www.ibissource.org/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
+			<pipe name="wrap_unwrap" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" mode="i2t" outputNamespace="http://www.ing.com/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
 				<param name="businessDomain" value="Publishing" />
 				<param name="serviceName" value="Document" />
 				<param name="serviceContext" value="SalesDocument" />
@@ -111,7 +111,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- wrap2 -->
-			<pipe name="wrap2" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" outputNamespace="http://www.ibissource.org/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply" cmhVersion="1">
+			<pipe name="wrap2" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" outputNamespace="http://www.ing.com/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply" cmhVersion="1">
 				<param name="destination" value="ESB.Publishing.BS.Document.SalesDocument.1.GetDocuments.1.Response" />
 				<param name="namespace" value="http://www.ibis.com/iaf" />
 				<param name="errorCode" value="ERROR1234" />
@@ -120,7 +120,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- wrap3 -->
-			<pipe name="wrap3" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" outputNamespace="http://www.ibissource.org/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply" cmhVersion="1">
+			<pipe name="wrap3" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" outputNamespace="http://www.ing.com/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply" cmhVersion="1">
 				<param name="destination" value="ESB.Publishing.BS.Document.SalesDocument.1.GetDocuments.1.Response" />
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -210,7 +210,7 @@
 			</pipe>
 			<!-- wrap_error -->
 			<pipe name="wrap_error" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" mode="bis">
-				<param name="namespace" value="http://www.ibissource.org/csp/xsd/general/message_2" />
+				<param name="namespace" value="http://www.ing.com/CSP/xsd/general/message_2" />
 				<param name="errorCode" value="ERROR1234" />
 				<param name="errorDetailCode" value="errorDetailCode" />
 				<param name="errorDetailText" value="errorDetailText" />
@@ -236,7 +236,7 @@
 			</exits>
 			<pipe name="switch" className="nl.nn.adapterframework.pipes.XmlSwitch" sessionKey="action" />
 			<!-- wrap2 -->
-			<pipe name="wrap2" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" cmhVersion="2" outputNamespace="http://www.ibissource.org/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
+			<pipe name="wrap2" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" cmhVersion="2" outputNamespace="http://www.ing.com/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
 				<param name="destination" value="ESB.Publishing.BS.Document.SalesDocument.1.GetDocuments.1.Response" />
 				<param name="namespace" value="http://www.ibis.com/iaf" />
 				<param name="errorCode" value="ERROR1234" />
@@ -278,7 +278,7 @@
 			</exits>
 			<pipe name="switch" className="nl.nn.adapterframework.pipes.XmlSwitch" sessionKey="action" />
 			<!-- wrap2 -->
-			<pipe name="wrap2" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" cmhVersion="2" outputNamespace="http://www.ibissource.org/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
+			<pipe name="wrap2" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" cmhVersion="2" outputNamespace="http://www.ing.com/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
 				<param name="destination" value="ESB.Publishing.BS.SalesDocument.1.GetDocuments.1.Response" />
 				<param name="namespace" value="http://www.ibis.com/iaf" />
 				<param name="errorCode" value="ERROR1234" />

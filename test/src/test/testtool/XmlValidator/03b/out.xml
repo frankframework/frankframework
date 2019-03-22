@@ -1,6 +1,6 @@
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
 	<Header>
-		<MessageHeader xmlns="http://www.ibissource.org/CSP/XSD/General/Message_2">
+		<MessageHeader xmlns="http://www.ing.com/CSP/XSD/General/Message_2">
 			<From>
 				<Id>sf</Id>
 			</From>
@@ -12,7 +12,7 @@
 		</MessageHeader>
 	</Header>
 	<Body>
-		<SetRequest xmlns="http://www.ibissource.org/nl/pcretail/ts/migrationcasedata_01">
+		<SetRequest xmlns="http://www.ing.com/nl/pcretail/ts/migrationcasedata_01">
 			<CaseData>
 				<RVS_PARTY_ID>60</RVS_PARTY_ID>
 				<COMPANY_CODE>NN1</COMPANY_CODE>

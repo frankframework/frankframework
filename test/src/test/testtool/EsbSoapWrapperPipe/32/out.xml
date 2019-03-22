@@ -21,7 +21,7 @@
       </Action>
    </Service>
 </MessageHeader>
-</soapenv:Header><soapenv:Body><CalculationResponse xmlns="http://www.ibissource.org/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
+</soapenv:Header><soapenv:Body><CalculationResponse xmlns="http://www.ing.com/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
    <Result xmlns="http://www.ibis.com/iaf">
       <Status>ERROR</Status>
       <ErrorList>

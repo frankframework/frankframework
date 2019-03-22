@@ -64,7 +64,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
 				name="Send2WS">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
-					url="${web.protocol}://${web.host}:${web.port}/ibis4testiaf/services/urn/ws/address"
+					url="${web.protocol}://${web.host}:${web.port}/iaf-test/services/urn/ws/address"
 					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -84,7 +84,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
 				name="Send2WS">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
-					url="${web.protocol}://${web.host}:${web.port}/ibis4testiaf/services/urn/ws_error/address" 
+					url="${web.protocol}://${web.host}:${web.port}/iaf-test/services/urn/ws_error/address" 
 					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -110,7 +110,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
 				name="send2ws_no_forwards">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
-					url="${web.protocol}://${web.host}:${web.port}/ibis4testiaf/services/urn/ws_timeout/address"
+					url="${web.protocol}://${web.host}:${web.port}/iaf-test/services/urn/ws_timeout/address"
 					timeout="1000" 
 					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="success" path="EXIT" />
@@ -119,7 +119,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
 				name="send2ws_forward_timeout">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
-					url="${web.protocol}://${web.host}:${web.port}/ibis4testiaf/services/urn/ws_timeout/address"
+					url="${web.protocol}://${web.host}:${web.port}/iaf-test/services/urn/ws_timeout/address"
 					timeout="1000" 
 					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="timeout" path="error_timeout" />
@@ -160,7 +160,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
 				name="send2ws_no_forwards">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
-					url="${web.protocol}://${web.host}:${web.port}/ibis4testiaf/services/urn/ws_timeout/address"
+					url="${web.protocol}://${web.host}:${web.port}/iaf-test/services/urn/ws_timeout/address"
 					timeout="1000" 
 					allowSelfSignedCertificates="true" verifyHostname="false"/>
 				<forward name="success" path="EXIT" />
@@ -169,7 +169,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
 				name="send2ws_forward_timeout">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
-					url="${web.protocol}://${web.host}:${web.port}/ibis4testiaf/services/urn/ws_timeout/address"
+					url="${web.protocol}://${web.host}:${web.port}/iaf-test/services/urn/ws_timeout/address"
 					timeout="1000" 
 					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="timeout" path="error_timeout" />
@@ -179,7 +179,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
 				name="send2ws_forward_exception">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
-					url="${web.protocol}://${web.host}:${web.port}/ibis4testiaf/services/urn/ws_timeout/address"
+					url="${web.protocol}://${web.host}:${web.port}/iaf-test/services/urn/ws_timeout/address"
 					timeout="1000"
 					allowSelfSignedCertificates="true" verifyHostname="false"  />
 				<forward name="exception" path="error_exception" />
@@ -189,7 +189,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
 				name="send2ws_with_forwards">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
-					url="${web.protocol}://${web.host}:${web.port}/ibis4testiaf/services/urn/ws_timeout/address"
+					url="${web.protocol}://${web.host}:${web.port}/iaf-test/services/urn/ws_timeout/address"
 					timeout="1000" 
 					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="timeout" path="error_timeout" />
@@ -200,7 +200,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe"
 				name="send2ws_multiple_with_forwards" removeXmlDeclarationInResults="true">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
-					url="${web.protocol}://${web.host}:${web.port}/ibis4testiaf/services/urn/ws_timeout/address"
+					url="${web.protocol}://${web.host}:${web.port}/iaf-test/services/urn/ws_timeout/address"
 					timeout="1000" 
 					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="timeout" path="error_timeout" />
@@ -211,7 +211,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
 				name="send2ws_no_forwards_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
-					url="${web.protocol}://${web.host}:${web.port}/ibis4testiaf/services/urn/ws_timeout/address"
+					url="${web.protocol}://${web.host}:${web.port}/iaf-test/services/urn/ws_timeout/address"
 					timeout="1000" 
 					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="success" path="EXIT" />
@@ -220,7 +220,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
 				name="send2ws_forward_timeout_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
-					url="${web.protocol}://${web.host}:${web.port}/ibis4testiaf/services/urn/ws_timeout/address"
+					url="${web.protocol}://${web.host}:${web.port}/iaf-test/services/urn/ws_timeout/address"
 					timeout="1000" 
 					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="timeout" path="error_timeout" />
@@ -230,7 +230,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
 				name="send2ws_forward_exception_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
-					url="${web.protocol}://${web.host}:${web.port}/ibis4testiaf/services/urn/ws_timeout/address"
+					url="${web.protocol}://${web.host}:${web.port}/iaf-test/services/urn/ws_timeout/address"
 					timeout="1000" 
 					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="exception" path="error_exception" />
@@ -240,7 +240,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
 				name="send2ws_with_forwards_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
-					url="${web.protocol}://${web.host}:${web.port}/ibis4testiaf/services/urn/ws_timeout/address"
+					url="${web.protocol}://${web.host}:${web.port}/iaf-test/services/urn/ws_timeout/address"
 					timeout="1000" 
 					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="timeout" path="error_timeout" />

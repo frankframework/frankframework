@@ -1,6 +1,6 @@
 <Envelope xmlns="http://www.w3.org/2003/05/soap-envelope">
 	<Header>
-		<MessageHeader xmlns="http://www.ibissource.org/CSP/XSD/General/Message_2">
+		<MessageHeader xmlns="http://www.ing.com/CSP/XSD/General/Message_2">
 			<From>
 				<Id>sf</Id>
 			</From>
@@ -12,7 +12,7 @@
 		</MessageHeader>
 	</Header>
 	<Body>
-		<GetVehicleTypeDetailsREQ xmlns="http://www.ibissource.org/nl/pcretail/ts/getvehicledetails_01">
+		<GetVehicleTypeDetailsREQ xmlns="http://www.ing.com/nl/pcretail/ts/getvehicledetails_01">
 			<Body>
 				<bouwmnd>3</bouwmnd>
 				<bouwjr>2008</bouwjr>

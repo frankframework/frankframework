@@ -43,12 +43,12 @@
 			<pipe name="soap_schemaLocation" className="nl.nn.adapterframework.pipes.XmlSwitch"
 				xpathExpression="name(Envelope/Body/*[name()!='MessageHeader'])" />
 			<pipe name="LogPolicyRequest" className="nl.nn.adapterframework.pipes.XmlValidator"
-				schemaLocation="http://schemas.xmlsoap.org/soap/envelope/ /XmlValidator/soap/envelope.xsd http://www.ibissource.org/CSP/XSD/General/Message_2 /XmlValidator/bis/Message_2.xsd http://www.ibissource.org/nl/pcretail/ts/migrationauditdata_01 /XmlValidator/AuditDataLogPolicy/migrationauditdata_01.xsd"
+				schemaLocation="http://schemas.xmlsoap.org/soap/envelope/ /XmlValidator/soap/envelope.xsd http://www.ing.com/CSP/XSD/General/Message_2 /XmlValidator/bis/Message_2.xsd http://www.ing.com/nl/pcretail/ts/migrationauditdata_01 /XmlValidator/AuditDataLogPolicy/migrationauditdata_01.xsd"
 				root="Envelope">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="SetRequest" className="nl.nn.adapterframework.pipes.XmlValidator"
-				schemaLocation="http://schemas.xmlsoap.org/soap/envelope/ /XmlValidator/soap/envelope.xsd http://www.ibissource.org/CSP/XSD/General/Message_2 /XmlValidator/bis/Message_2.xsd http://www.ibissource.org/nl/pcretail/ts/migrationcasedata_01 /XmlValidator/CaseDataSetCase/migrationcasedata_01.xsd"
+				schemaLocation="http://schemas.xmlsoap.org/soap/envelope/ /XmlValidator/soap/envelope.xsd http://www.ing.com/CSP/XSD/General/Message_2 /XmlValidator/bis/Message_2.xsd http://www.ing.com/nl/pcretail/ts/migrationcasedata_01 /XmlValidator/CaseDataSetCase/migrationcasedata_01.xsd"
 				root="Envelope">
 				<forward name="success" path="EXIT" />
 			</pipe>
