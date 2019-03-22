@@ -44,7 +44,8 @@ public class TesttoolRunner {
 //		System.setProperty("configurations.names", "${instance.name}");
 
 		ibisTester.initTest();
-		assertNull(ibisTester.testStartAdapters());
+		String testResult=ibisTester.testStartAdapters();
+		assertNull(testResult,testResult);
 		ibisContext = ibisTester.getIbisContext();
 
 		assertEquals(true, ibisContext != null);
