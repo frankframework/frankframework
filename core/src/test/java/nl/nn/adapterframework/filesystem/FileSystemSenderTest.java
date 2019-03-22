@@ -7,7 +7,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import org.apache.commons.codec.binary.Base64;
 import java.util.Iterator;
@@ -113,7 +112,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 			_deleteFile(filename);
 		}
 
-		InputStream stream = new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8));
+		InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
 		PipeLineSessionBase session = new PipeLineSessionBase();
 		session.put("uploadActionTarget", stream);
 
