@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2018 Nationale-Nederlanden
+   Copyright 2016, 2018 - 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,21 +23,21 @@ import java.util.Arrays;
 import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.log4j.Logger;
-
-public class DirectoryClassLoader extends ClassLoader {
-	private Logger log = LogUtil.getLogger(this);
+public class DirectoryClassLoader extends ClassLoaderBase {
 	private List<File> directories;
+	private String directory = null;
 
-	public DirectoryClassLoader(String directory) throws ConfigurationException {
-		this(directory, DirectoryClassLoader.class.getClassLoader());
+	public DirectoryClassLoader(ClassLoader parent) throws ConfigurationException {
+		super(parent);
 	}
 
-	public DirectoryClassLoader(String directory, ClassLoader parent) throws ConfigurationException {
-		super(parent);
+	@Override
+	public void configure(IbisContext ibisContext, String configurationName) throws ConfigurationException {
+		super.configure(ibisContext, configurationName);
+
 		if (directory == null) {
 			AppConstants appConstants = AppConstants.getInstance();
 			String configurationsDirectory = appConstants.getResolvedProperty("configurations.directory");
@@ -48,6 +48,10 @@ public class DirectoryClassLoader extends ClassLoader {
 		} else {
 			retrieveDirectories(directory);
 		}
+	}
+
+	public void setDirectory(String directory) {
+		this.directory = directory;
 	}
 
 	private void retrieveDirectories(String directoriesString) throws ConfigurationException {

@@ -27,6 +27,7 @@ import com.hierynomus.smbj.share.File;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.filesystem.FileSystemException;
+import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 /**
  * This test class is created to test both Samba2FileSystem and Samba2FileSystemSender classes.
