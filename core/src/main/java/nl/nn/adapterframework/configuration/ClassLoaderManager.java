@@ -18,7 +18,6 @@ package nl.nn.adapterframework.configuration;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.Properties;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
@@ -75,24 +74,24 @@ public class ClassLoaderManager {
 			IConfigurationClassLoader loader = (IConfigurationClassLoader) classLoader;
 
 			String parentProperty = "configurations." + configurationName + ".";
-			Properties props = APP_CONSTANTS.getAppConstants(parentProperty);
-			for(Object objKey: props.keySet()) {
-				String key = (String) objKey;
-				if(key.endsWith("classLoaderType") || key.endsWith("parentConfig"))
+
+			for(Method method: loader.getClass().getMethods()) {
+				if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
 					continue;
 
-				String setter = key.substring(parentProperty.length());
-				String value = props.getProperty(key);
-				LOG.debug("trying to set property ["+setter+"] with value ["+value+"] on ["+classLoader.toString()+"]");
+				String setter = firstCharToLower(method.getName().substring(3));
+				String value = APP_CONSTANTS.getProperty(parentProperty+setter);
+				if(value == null)
+					continue;
+
+				//Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
+				Object castValue = getCastValue(method.getParameterTypes()[0], value);
+				LOG.debug("trying to set property ["+parentProperty+setter+"] with value ["+value+"] of type ["+castValue.getClass().getCanonicalName()+"] on ["+classLoader.toString()+"]");
+
 				try {
-					Method methodcall = loader.getClass().getMethod(getMethod(setter), String.class);
-					methodcall.invoke(loader, value);
-				}
-				catch (NoSuchMethodException e) {
-					throw new ConfigurationException("property ["+parentProperty+setter+"] does not exist in classloader ["+classLoader.toString()+"]", e);
-				}
-				catch (Exception e) {
-					throw new ConfigurationException("error while calling method ["+getMethod(setter)+"] on classloader ["+classLoader.toString()+"]", e);
+					method.invoke(loader, castValue);
+				} catch (Exception e) {
+					throw new ConfigurationException("error while calling method ["+setter+"] on classloader ["+classLoader.toString()+"]", e);
 				}
 			}
 
@@ -125,13 +124,22 @@ public class ClassLoaderManager {
 		return classLoader;
 	}
 
-	private String getMethod(String input) {
-		return "set" + input.substring(0, 1).toUpperCase() + input.substring(1);
+	private Object getCastValue(Class<?> class1, String value) {
+		String className = class1.getName().toLowerCase();
+		if("boolean".equals(className))
+			return Boolean.parseBoolean(value);
+		else if("int".equals(className) || "integer".equals(className))
+			return Integer.parseInt(value);
+		else
+			return value;
+	}
+
+	private String firstCharToLower(String input) {
+		return input.substring(0, 1).toLowerCase() + input.substring(1);
 	}
 
 	public ClassLoader init(String configurationName) throws ConfigurationException {
-		String parentConfig = APP_CONSTANTS.getString(
-				"configurations." + configurationName + ".parentConfig", null);
+		String parentConfig = APP_CONSTANTS.getString("configurations." + configurationName + ".parentConfig", null);
 		return init(configurationName, parentConfig);
 	}
 
