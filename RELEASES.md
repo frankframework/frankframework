@@ -30,6 +30,9 @@ Ibis AdapterFramework release notes
 - Add ability to use nullvalues on cmis properties
 - Show class in IbisDoc html
 - Show FileHandler properties in IbisDoc for FilePipe
+- Possibility to add new domains independently of ear file
+    - UploadConfigService adapter
+    - Facility to (de)activate configs
 
 
 
