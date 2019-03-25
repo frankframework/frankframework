@@ -42,18 +42,13 @@ public class ClassLoaderManager {
 		this.ibisContext = ibisContext;
 	}
 
-	private ClassLoader createClassloader(String configurationName, String configurationFile, String classLoaderType) throws ConfigurationException {
-		return createClassloader(configurationName, configurationFile, Thread.currentThread().getContextClassLoader(), classLoaderType);
+	private ClassLoader createClassloader(String configurationName, String configurationFile) throws ConfigurationException {
+		return createClassloader(configurationName, configurationFile, Thread.currentThread().getContextClassLoader());
 	}
 
-	private ClassLoader createClassloader(String configurationName, String configurationFile, ClassLoader parentClassLoader, String clazzLoaderType) throws ConfigurationException {
-		String classLoaderType;
-		if (clazzLoaderType == null) {
-			classLoaderType = APP_CONSTANTS.getString("configurations." + configurationName + ".classLoaderType", "");
-		} else {
-			classLoaderType = clazzLoaderType;
-		}
+	private ClassLoader createClassloader(String configurationName, String configurationFile, ClassLoader parentClassLoader) throws ConfigurationException {
 
+		String classLoaderType = APP_CONSTANTS.getString("configurations." + configurationName + ".classLoaderType", "");
 		//It is possible that no ClassLoader has been defined, use default ClassLoader (wrapped in a WebAppClassLoader)
 		if(classLoaderType == null || classLoaderType.isEmpty())
 			classLoaderType = "WebAppClassLoader";
@@ -141,10 +136,6 @@ public class ClassLoaderManager {
 	}
 
 	public ClassLoader init(String configurationName, String parentConfig) throws ConfigurationException {
-		return init(configurationName, parentConfig, null);
-	}
-
-	public ClassLoader init(String configurationName, String parentConfig, String classLoaderType) throws ConfigurationException {
 		if(contains(configurationName))
 			throw new ConfigurationException("unable to add configuration with duplicate name ["+configurationName+"]");
 
@@ -156,11 +147,11 @@ public class ClassLoaderManager {
 			if(!contains(parentConfig))
 				throw new ConfigurationException("failed to locate parent configuration ["+parentConfig+"]");
 
-			classLoader = createClassloader(configurationName, configurationFile, get(parentConfig), classLoaderType);
+			classLoader = createClassloader(configurationName, configurationFile, get(parentConfig));
 			LOG.debug("wrapped classLoader ["+classLoader.toString()+"] in parentConfig ["+parentConfig+"]");
 		}
 		else
-			classLoader = createClassloader(configurationName, configurationFile, classLoaderType);
+			classLoader = createClassloader(configurationName, configurationFile);
 
 		if(classLoader == null) {
 			//A databaseClassloader error occurred, cancel, break, abort (but don't throw a ConfigurationException!
@@ -187,19 +178,11 @@ public class ClassLoaderManager {
 	 * @throws ConfigurationException when a ClassLoader failed to initialize
 	 */
 	public ClassLoader get(String configurationName) throws ConfigurationException {
-		return get(configurationName, null);
-	}
-
-	public ClassLoader get(String configurationName, String classLoaderType) throws ConfigurationException {
 		LOG.debug("get configuration ClassLoader ["+configurationName+"]");
 		ClassLoader classLoader = classLoaders.get(configurationName);
-		if (classLoader == null) {
-			if (classLoaderType == null) {
-				classLoader = init(configurationName);
-			} else {
-				classLoader = init(configurationName, null, classLoaderType);
-			}
-		}
+		if (classLoader == null)
+			classLoader = init(configurationName);
+
 		return classLoader;
 	}
 
