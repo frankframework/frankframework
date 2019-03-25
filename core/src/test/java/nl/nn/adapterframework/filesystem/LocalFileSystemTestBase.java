@@ -12,26 +12,27 @@ import org.junit.Before;
 import org.junit.rules.TemporaryFolder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.filesystem.FileSystemException;
+import nl.nn.adapterframework.filesystem.IFileSystem;
+import nl.nn.adapterframework.filesystem.FileSystemTest;
 
-public abstract class LocalFileSystemTestBase<Ff,FS extends IFileSystem<Ff>> extends FileSystemTest<Ff,FS> {
+public abstract class LocalFileSystemTestBase<F, FS extends IFileSystem<F>>
+		extends FileSystemTest<F, FS> {
 
 	public TemporaryFolder folder;
-	
+
 	@Override
 	@Before
-	public void setup() throws IOException, ConfigurationException {
+	public void setUp() throws IOException, ConfigurationException, FileSystemException {
 		folder = new TemporaryFolder();
 		folder.create();
-		super.setup();
+		super.setUp();
 	}
-
 
 	protected File getFileHandle(String filename) {
-		return new File(folder.getRoot().getAbsolutePath(),filename);
+		return new File(folder.getRoot().getAbsolutePath(), filename);
 	}
 
-	
-	
 	@Override
 	public boolean _fileExists(String filename) {
 		return getFileHandle(filename).exists();
@@ -47,7 +48,12 @@ public abstract class LocalFileSystemTestBase<Ff,FS extends IFileSystem<Ff>> ext
 		File f = getFileHandle(filename);
 		f.createNewFile();
 		return new FileOutputStream(f);
-		
+	}
+
+	@Override
+	public void _createFolder(String filename) throws IOException {
+		File f = getFileHandle(filename);
+		f.mkdir();
 	}
 
 	@Override
@@ -55,6 +61,13 @@ public abstract class LocalFileSystemTestBase<Ff,FS extends IFileSystem<Ff>> ext
 		return new FileInputStream(getFileHandle(filename));
 	}
 
+	@Override
+	protected boolean _folderExists(String folderName) throws Exception {
+		return _fileExists(folderName);
+	}
 
-
+	@Override
+	protected void _deleteFolder(String folderName) throws Exception {
+		deleteFile(folderName);
+	}
 }

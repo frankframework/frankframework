@@ -139,6 +139,12 @@ public class IbisDocPipe extends FixedForwardPipe {
 		sortWeight.put("setOutputValidator", 30);
 		sortWeight.put("setOutputWrapper", 20);
 	}
+	private static Map<String, String> copyPropterties = new HashMap<String, String>();
+	static {
+		// FileSender extends FileHandler which FilePipe cannot because it already extends FixedForwardPipe.
+		// Might be a good idea to specify this with an annotation.
+		copyPropterties.put("FilePipe", "FileSender");
+	}
 	// Cache groups for better performance, don't use it directly, use getGroups()
 	private static Map<String, TreeSet<IbisBean>> cachedGroups;
 	private static Map<String, String> errors = new HashMap<String, String>();
@@ -437,6 +443,10 @@ public class IbisDocPipe extends FixedForwardPipe {
 		return ibisBeans;
 	}
 
+	private static Set<IbisBean> getIbisBeans() {
+		return getIbisBeans(getGroups());
+	}
+
 	private static List<IbisMethod> getIbisMethods(IPipe pipe) throws PipeRunException {
 		DigesterXmlHandler digesterXmlHandler = new DigesterXmlHandler();
 		try {
@@ -555,6 +565,13 @@ public class IbisDocPipe extends FixedForwardPipe {
 	private static void addPropertiesToSchemaOrHtml(IbisBean ibisBean, XmlBuilder beanComplexType,
 			StringBuffer beanHtml) {
 		Map<String, Method> beanProperties = getBeanProperties(ibisBean.getClazz());
+		if (copyPropterties.containsKey(ibisBean.getName())) {
+			for (IbisBean ibisBean2 : getIbisBeans()) {
+				if (copyPropterties.get(ibisBean.getName()).equals(ibisBean2.getName())) {
+					beanProperties.putAll(getBeanProperties(ibisBean2.getClazz()));
+				}
+			}
+		}
 		if (beanProperties != null) {
 			Iterator<String> iterator = new TreeSet<String>(beanProperties.keySet()).iterator();
 			while (iterator.hasNext()) {
@@ -652,7 +669,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 		getBeanProperties(clazz, "get", getMethods);
 		getBeanProperties(clazz, "is", getMethods);
 		for (String name : result.keySet()) {
-			if (!getMethods.containsKey(name)) {
+			if (!getMethods.containsKey(name) && !result.get(name).isAnnotationPresent(IbisDoc.class)) {
 				remove.add(name);
 			}
 		}
@@ -734,17 +751,15 @@ public class IbisDocPipe extends FixedForwardPipe {
 
 	private static String getBeanHtml(String beanName) {
 		Map<String, TreeSet<IbisBean>> groups = getGroups();
-		for (String group : groups.keySet()) {
-			for (IbisBean ibisBean : groups.get(group)) {
-				if (beanName.equals(ibisBean.getName())) {
-					StringBuffer result = new StringBuffer();
-					result.append(beanName);
-					result.append("<table border='1'>");
-					result.append("<tr><th>class</th><th>attribute</th><th>description</th><th>default</th></tr>");
-					addPropertiesToSchemaOrHtml(ibisBean, null, result);
-					result.append("</table>");
-					return result.toString();
-				}
+		for (IbisBean ibisBean : getIbisBeans()) {
+			if (beanName.equals(ibisBean.getName())) {
+				StringBuffer result = new StringBuffer();
+				result.append(beanName);
+				result.append("<table border='1'>");
+				result.append("<tr><th>class</th><th>attribute</th><th>description</th><th>default</th></tr>");
+				addPropertiesToSchemaOrHtml(ibisBean, null, result);
+				result.append("</table>");
+				return result.toString();
 			}
 		}
 		return null;

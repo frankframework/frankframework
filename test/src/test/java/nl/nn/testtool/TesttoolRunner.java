@@ -2,6 +2,7 @@ package nl.nn.testtool;
 
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 
@@ -43,9 +44,10 @@ public class TesttoolRunner {
 //		System.setProperty("configurations.names", "${instance.name}");
 
 		ibisTester.initTest();
-		if (ibisTester.testStartAdapters()) {
-			ibisContext = ibisTester.getIbisContext();
-		}
+		String testResult=ibisTester.testStartAdapters();
+		assertNull(testResult,testResult);
+		ibisContext = ibisTester.getIbisContext();
+
 		assertEquals(true, ibisContext != null);
 	}
 

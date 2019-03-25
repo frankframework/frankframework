@@ -84,8 +84,15 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		PipeLine pipeLine;
 		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 		try {
-			DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(tempDir.getPath());
+			// TODO why is this using a DirectoryClassloader?
+			// can't we use the current classloader? FixedForwardPipe#classLoader
+			// or even the configuration classloader? getAdapter().getConfiguration().getClassLoader()
+
+			DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(originalClassLoader);
+			directoryClassLoader.setDirectory(tempDir.getPath());
+			directoryClassLoader.configure(getAdapter().getConfiguration().getIbisManager().getIbisContext(), "dummy");
 			Thread.currentThread().setContextClassLoader(directoryClassLoader);
+
 			if (propertiesFile.exists()) {
 				pipeLine = createPipeLineFromPropertiesFile(propertiesFile);
 			} else {

@@ -79,8 +79,7 @@ public class GlobalListItem implements INamedObject {
         return sortedKeys.iterator();
     }
     /**
-     * Get the names as a list
-     * @return List with the system names
+     * Gets a list with system names.
      */
     public static List getRegisteredNamesAsList() {
         Iterator it = getRegisteredNames();
@@ -119,7 +118,6 @@ public class GlobalListItem implements INamedObject {
 
 	/**
 	 * If this attribute is set, the item is only an alias for another item.
-	 * @param string
 	 */
 	public void setAliasFor(String string) {
 		aliasFor = string;

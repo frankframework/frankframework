@@ -203,9 +203,8 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 //	}
 
 	/**
-	 * Returns the {@link Schema} associated with this validator. This ia an XSD schema containing knowledge about the
+	 * Returns the {@link Schema} associated with this validator. This is an XSD schema containing knowledge about the
 	 * schema source as returned by {@link #getSchemaSources(List)}
-	 * @throws ConfigurationException
 	 */
 	protected synchronized Schema getSchemaObject(String schemasId, List<nl.nn.adapterframework.validation.Schema> schemas) throws  ConfigurationException {
 		Schema schema = javaxSchemas.get(schemasId);

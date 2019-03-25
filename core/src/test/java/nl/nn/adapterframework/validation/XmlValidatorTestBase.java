@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.validation;
 
 
-import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;

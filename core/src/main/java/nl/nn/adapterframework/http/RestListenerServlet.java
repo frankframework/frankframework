@@ -130,8 +130,6 @@ public class RestListenerServlet extends HttpServlet {
 			int statusCode = 0;
 			if(messageContext.containsKey("exitcode"))
 				statusCode = Integer.parseInt( ""+ messageContext.get("exitcode"));
-			if(statusCode==0 && messageContext.containsKey("httpStatusCode"))
-				statusCode = Integer.parseInt( ""+ messageContext.get("httpStatusCode"));
 			if(statusCode > 0)
 				response.setStatus(statusCode);
 

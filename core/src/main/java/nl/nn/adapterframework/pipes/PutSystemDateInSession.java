@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013,2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -52,8 +52,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 	private String previousFormattedDate;
 
 	/**
-	 * checks wether the proper forward is defined, a dateformat is specified and the dateformat is valid.
-	 * @throws ConfigurationException
+	 * Checks whether the proper forward is defined, a dateFormat is specified and the dateFormat is valid.
 	 */
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -135,27 +134,14 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 		return new PipeRunResult(getForward(), input);
 	}
 	
-	/**
-	 * The name of the key in the <code>PipeLineSession</code> to store the systemdate in
-	 * @see IPipeLineSession
-	 */
-	public String getSessionKey() {
-		return sessionKey;
-	}
-	/**
-	 * The name of the key in the <code>PipeLineSession</code> to store the systemdate in
-	 * @see IPipeLineSession
-	 */
-	@IbisDoc({"key of session variable to store result in", "systemdate"})
+	@IbisDoc({"key of session variable to store systemdate in", "systemdate"})
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
-
+	public String getSessionKey() {
+		return sessionKey;
+	}
 	
-	/**
-	 * The String for the DateFormat.
-	 * @see SimpleDateFormat
-	 */
 	@IbisDoc({"format to store date in", "fullisoformat: yyyy-mm-dd't'hh:mm:sszzz"})
 	public void setDateFormat(String rhs) {
 		dateFormat = rhs;

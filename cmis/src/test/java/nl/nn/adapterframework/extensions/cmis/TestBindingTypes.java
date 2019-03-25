@@ -35,28 +35,57 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class TestBindingTypes extends SenderBase<CmisSender>{
 
-	private final static String INPUT = "<cmis><objectId>dummy</objectId></cmis>";
-	private final static String FIND_RESULT = "<cmis>  <rowset /></cmis>";
-	private final static String FETCH_RESULT = "<cmis>  <properties />  <allowableActions />  <isExactAcl />  <policyIds />  <relationships /></cmis>";
+	private final static String INPUT = "<cmis><id>id</id><objectId>dummy</objectId><objectTypeId>cmis:document</objectTypeId>"
+			+ "<fileName>fileInput.txt</fileName>" + 
+			" <properties><property name=\"project:number\" type=\"integer\">123456789</property>" + 
+			"<property name=\"project:lastModified\" type=\"datetime\">2019-02-26 16:31:15</property>" + 
+			"<property name=\"project:onTime\" type=\"boolean\">true</property></properties></cmis>";
+	private final static String FIND_INPUT = "<query><name>dummy</name>\n" + 
+			"	<objectId>dummy</objectId>\n" + 
+			"	<objectTypeId>dummy</objectTypeId>\n" + 
+			"	<maxItems>15</maxItems>\n" + 
+			"	<skipCount>0</skipCount>\n" + 
+			"	<searchAllVersions>true</searchAllVersions>\n" + 
+			"	<properties>\n" + 
+			"		<property name=\"cmis:name\">dummy</property>\n" + 
+			"		<property name=\"project:number\" type=\"integer\">123456789</property>\n" + 
+			"		<property name=\"project:onTime\" type=\"boolean\">true</property>\n" + 
+			"		<property name=\"project:lastModified\" type=\"datetime\">2019-02-26 16:29:46</property>\n" + 
+			"	</properties>\n" + 
+			"	<statement>SELECT * from cmis:document</statement>\n" + 
+			"	<filter>cmis:objectId</filter>\n" + 
+			"	<includeAllowableActions>true</includeAllowableActions>\n" + 
+			"	<includePolicies>true</includePolicies>\n" + 
+			"	<includeAcl>true</includeAcl> </query>";
+	private final static String FIND_RESULT = "<cmis totalNumItems=\"0\">  <rowset /></cmis>";
+	private final static String FETCH_RESULT = "<cmis>  <properties>    "
+			+ "<property name=\"cmis:name\">dummy</property>    "
+			+ "<property name=\"project:number\" type=\"integer\">123456789</property>    "
+			+ "<property name=\"project:lastModified\" type=\"datetime\">2019-02-26 16:31:15</property>    "
+			+ "<property name=\"project:onTime\" type=\"boolean\">true</property>  "
+			+ "</properties>  <allowableActions>    <action>canCreateDocument</action>  </allowableActions>  <isExactAcl>false</isExactAcl>  "
+			+ "<policyIds>    <policyId>dummyObjectId</policyId>  </policyIds>  "
+			+ "<relationships>    <relation>dummyId</relation>  </relationships>"
+			+ "</cmis>";
 
 	@Parameters(name = "{0} - {1}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
 				{ "atompub", "create", INPUT, "dummy_id" },
 				{ "atompub", "get", INPUT, "dummy_stream" },
-				{ "atompub", "find", INPUT, FIND_RESULT },
+				{ "atompub", "find", FIND_INPUT, FIND_RESULT },
 				{ "atompub", "update", INPUT, "dummy_id" },
 				{ "atompub", "fetch", INPUT, FETCH_RESULT },
 
 				{ "webservices", "create", INPUT, "dummy_id" },
 				{ "webservices", "get", INPUT, "dummy_stream" },
-				{ "webservices", "find", INPUT, FIND_RESULT },
+				{ "webservices", "find", FIND_INPUT, FIND_RESULT },
 				{ "webservices", "update", INPUT, "dummy_id" },
 				{ "webservices", "fetch", INPUT, FETCH_RESULT },
 
 				{ "browser", "create", INPUT, "dummy_id" },
 				{ "browser", "get", INPUT, "dummy_stream" },
-				{ "browser", "find", INPUT, FIND_RESULT },
+				{ "browser", "find", FIND_INPUT, FIND_RESULT },
 				{ "browser", "update", INPUT, "dummy_id" },
 				{ "browser", "fetch", INPUT, FETCH_RESULT },
 		});

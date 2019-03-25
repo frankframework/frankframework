@@ -86,12 +86,8 @@ public class ProcessUtil {
 		return executeCommand(splitUpCommandString(command),timeout);
 	}
 	/**
-	 * Execute a command as a process in the operating system.
-	 *  
-	 * @param timeout timeout in seconds, or 0 to wait indefinetely until the process ends
-	 * @param command 
-	 * @throws TimeOutException
-	 * @throws SenderException
+	 * Execute a command as a process in the operating system. 
+	 * Timeout is passed in seconds, or 0 to wait indefinitely until the process ends
 	 */
 	public static String executeCommand(List command, int timeout) throws TimeOutException, SenderException {
 		String output;

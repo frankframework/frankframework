@@ -66,4 +66,7 @@ public abstract class SenderBase<S extends ISender> extends Mockito {
 	protected void assertEqualsIgnoreRN(String a, String b) {
 		assertEquals(a.replaceAll("\r\n", ""), b.replaceAll("\r\n", ""));
 	}
+	protected void assertEqualsIgnoreRNTSpace(String a, String b) {
+		assertEquals(a.replaceAll("[\\n\\t\\r ]", ""), b.replaceAll("[\\n\\t\\r ]", ""));
+	}
 }

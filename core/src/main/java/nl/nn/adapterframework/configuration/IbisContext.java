@@ -384,7 +384,9 @@ public class IbisContext {
 	 * Destroys the Spring context
 	 */
 	private void destroyApplicationContext() {
-		((ConfigurableApplicationContext)applicationContext).close();
+		if (applicationContext!=null) {
+			((ConfigurableApplicationContext)applicationContext).close();
+		}
 	}
 
 	/**

@@ -13,20 +13,36 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.configuration.classloader;
+package nl.nn.adapterframework.configuration.classloaders;
 
 import java.net.URL;
+import java.util.jar.JarFile;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
+import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
+import static org.junit.Assert.*;
 
-public class DirectoryClassLoaderTest extends ClassLoaderTestBase<DirectoryClassLoader> {
+public class JarFileClassLoaderTest extends ClassLoaderTestBase<JarFileClassLoader> {
+
+	private final String JAR_FILE = "/classLoader-test.zip";
 
 	@Override
-	DirectoryClassLoader createClassLoader(ClassLoader parent) throws Exception {
-		URL file = this.getClass().getResource("/classLoader");
-		return new DirectoryClassLoader(file.getFile(), parent);
+	protected String getScheme() {
+		return "bytesclassloader";
+	}
+
+	@Override
+	public JarFileClassLoader createClassLoader(ClassLoader parent) throws Exception {
+		URL file = this.getClass().getResource(JAR_FILE);
+		assertNotNull("jar url not found", file);
+		JarFile jarFile = new JarFile(file.getFile());
+		assertNotNull("jar file not found",jarFile);
+
+		JarFileClassLoader cl = new JarFileClassLoader(parent);
+		cl.setJar(file.getFile());
+		appConstants.put("configurations."+getConfigurationName()+".jar", file.getFile());
+		return cl;
 	}
 
 	/* test files that are only present in the JAR_FILE zip */

@@ -243,7 +243,6 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 	/**
 	 * Create a MessageFactory singleton
 	 * @return previously initialized or newly created MessageFactory
-	 * @throws SOAPException
 	 */
 	private synchronized MessageFactory getMessageFactory() throws SOAPException {
 		if(factory == null) {
@@ -257,7 +256,6 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 	/**
 	 * Add log prefix to make it easier to debug
 	 * @param correlationId message identifier
-	 * @return
 	 */
 	protected String getLogPrefix(String correlationId) {
 		return "correlationId["+correlationId+"] ";
@@ -269,7 +267,6 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 	 * @param message message that was received
 	 * @param pipelineSession messageContext (containing attachments if available)
 	 * @return response to send back
-	 * @throws ListenerException
 	 */
 	abstract String processRequest(String correlationId, String message, IPipeLineSession pipelineSession) throws ListenerException;
 

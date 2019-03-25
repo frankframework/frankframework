@@ -66,4 +66,9 @@ public class BasePathClassLoader extends ClassLoader implements ReloadAware {
 			((ReloadAware)getParent()).reload();
 		}
 	}
+
+	@Override
+	public String toString() {
+		return getParent().toString() +" wrapped in "+ super.toString();
+	}
 }
