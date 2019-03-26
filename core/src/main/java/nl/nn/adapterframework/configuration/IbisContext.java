@@ -53,6 +53,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.StringPair;
 
 /**
  * Main entry point for creating and starting Ibis instances from
@@ -428,24 +429,19 @@ public class IbisContext {
 			}
 		}
 
-		if (CONFIG_AUTO_DB_CLASSLOADER) {
-			List<String> dbConfigNames = null;
-			try {
-				dbConfigNames = ConfigurationUtils.getConfigNamesFromDatabase(
-						ibisManager.getIbisContext(), null);
-			} catch (ConfigurationException e) {
-				log("*ALL*", null,
-						"error retrieving configuration names from database",
-						MessageKeeperMessage.WARN_LEVEL, e);
-			}
-			if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
-				for (String currentDbConfigurationName : dbConfigNames) {
-					if (!configNames.contains(currentDbConfigurationName)) {
-						if (loadConfiguration(configurationDigester,
-								configurationName, currentDbConfigurationName,
-								"DatabaseClassLoader")) {
-							configFound = true;
-						}
+		List<StringPair> allConfigNames = null;
+		try {
+			allConfigNames = ConfigurationUtils.retrieveAllConfigNames(ibisManager.getIbisContext());
+		} catch (ConfigurationException e) {
+			log("*ALL*", null, "error retrieving all configuration names", MessageKeeperMessage.WARN_LEVEL, e);
+		}
+		if (allConfigNames != null && !allConfigNames.isEmpty()) {
+			for (StringPair currentConfigName : allConfigNames) {
+				// currentConfigName.getFirst() => classLoaderType
+				// currentConfigName.getSecond() => configName
+				if (!configNames.contains(currentConfigName.getSecond())) {
+					if (loadConfiguration(configurationDigester, configurationName, currentConfigName.getSecond(), currentConfigName.getFirst())) {
+						configFound = true;
 					}
 				}
 			}

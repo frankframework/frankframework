@@ -38,6 +38,10 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
@@ -46,11 +50,8 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StringPair;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 
 /**
  * Functions to manipulate the configuration. 
@@ -66,9 +67,11 @@ public class ConfigurationUtils {
 	private static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
 	private static final String ACTIVE_XSLT = "/xml/xsl/active.xsl";
 	private static final String UGLIFY_XSLT = "/xml/xsl/uglify.xsl";
+	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.autoDatabaseClassLoader", false);
 
 	public static boolean stubConfiguration() {
-		return AppConstants.getInstance().getBoolean(STUB4TESTTOOL_CONFIGURATION_KEY, false);
+		return APP_CONSTANTS.getBoolean(STUB4TESTTOOL_CONFIGURATION_KEY, false);
 	}
 
 	public static String getStubbedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
@@ -331,7 +334,23 @@ public class ConfigurationUtils {
 		return false;
 	}
 
-	public static List<String> getConfigNamesFromDatabase(IbisContext ibisContext, String jmsRealm) throws ConfigurationException {
+	public static List<StringPair> retrieveAllConfigNames(IbisContext ibisContext) throws ConfigurationException {
+		// For now only database configurations are returned, but also
+		// configuration from other resources (like file system directories) can
+		// be added
+		List<StringPair> allConfigNames = new ArrayList<StringPair>();
+		if (CONFIG_AUTO_DB_CLASSLOADER) {
+			List<String> dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisContext, null);
+			if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
+				for (String dbConfigName : dbConfigNames) {
+					allConfigNames.add(new StringPair("DatabaseClassLoader", dbConfigName));
+				}
+			}
+		}
+		return allConfigNames;
+	}
+
+	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, String jmsRealm) throws ConfigurationException {
 		if (StringUtils.isEmpty(jmsRealm)) {
 			jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 			if (StringUtils.isEmpty(jmsRealm)) {

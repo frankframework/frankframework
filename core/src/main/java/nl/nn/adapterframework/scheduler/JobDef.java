@@ -874,7 +874,7 @@ public class JobDef {
 				List<String> dbConfigNames = null;
 				try {
 					dbConfigNames = ConfigurationUtils
-							.getConfigNamesFromDatabase(
+							.retrieveConfigNamesFromDatabase(
 									ibisManager.getIbisContext(), configJmsRealm);
 				} catch (ConfigurationException e) {
 					String msg = "error while retrieving configuration names from database: "
