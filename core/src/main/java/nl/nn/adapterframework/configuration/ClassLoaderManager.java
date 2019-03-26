@@ -41,11 +41,11 @@ public class ClassLoaderManager {
 		this.ibisContext = ibisContext;
 	}
 
-	private ClassLoader createClassloader(String configurationName, String configurationFile, String classLoaderType) throws ConfigurationException {
-		return createClassloader(configurationName, configurationFile, Thread.currentThread().getContextClassLoader(), classLoaderType);
+	private ClassLoader createClassloader(String configurationName, String classLoaderType) throws ConfigurationException {
+		return createClassloader(configurationName, Thread.currentThread().getContextClassLoader(), classLoaderType);
 	}
 
-	private ClassLoader createClassloader(String configurationName, String configurationFile, ClassLoader parentClassLoader, String clazzLoaderType) throws ConfigurationException {
+	private ClassLoader createClassloader(String configurationName, ClassLoader parentClassLoader, String clazzLoaderType) throws ConfigurationException {
 		String classLoaderType;
 		if (clazzLoaderType == null) {
 			classLoaderType = APP_CONSTANTS.getString("configurations." + configurationName + ".classLoaderType", "");
@@ -164,11 +164,11 @@ public class ClassLoaderManager {
 			if(!contains(parentConfig))
 				throw new ConfigurationException("failed to locate parent configuration ["+parentConfig+"]");
 
-			classLoader = createClassloader(configurationName, configurationFile, get(parentConfig), classLoaderType);
+			classLoader = createClassloader(configurationName, get(parentConfig), classLoaderType);
 			LOG.debug("wrapped classLoader ["+classLoader.toString()+"] in parentConfig ["+parentConfig+"]");
 		}
 		else
-			classLoader = createClassloader(configurationName, configurationFile, classLoaderType);
+			classLoader = createClassloader(configurationName, classLoaderType);
 
 		if(classLoader == null) {
 			//A databaseClassloader error occurred, cancel, break, abort (but don't throw a ConfigurationException!

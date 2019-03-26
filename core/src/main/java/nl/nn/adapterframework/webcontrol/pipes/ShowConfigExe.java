@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
  */
 
 public class ShowConfigExe extends TimeoutGuardPipe {
-	IbisContext ibisContext;
+	private IbisContext ibisContext;
 
 	@Override
 	public void configure() throws ConfigurationException {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2018 Nationale-Nederlanden
+   Copyright 2013, 2016-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -125,9 +125,10 @@ public class ConfigurationUtils {
 	}
 
 	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name, String jmsRealm, String version) throws ConfigurationException {
-		if (StringUtils.isEmpty(jmsRealm)) {
-			jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-			if (StringUtils.isEmpty(jmsRealm)) {
+		String workJmsRealm = jmsRealm;
+		if (StringUtils.isEmpty(workJmsRealm)) {
+			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
+			if (StringUtils.isEmpty(workJmsRealm)) {
 				return null;
 			}
 		}
@@ -138,7 +139,7 @@ public class ConfigurationUtils {
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-		qs.setJmsRealm(jmsRealm);
+		qs.setJmsRealm(workJmsRealm);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 		try {
@@ -197,9 +198,10 @@ public class ConfigurationUtils {
 	}
 
 	public static boolean addConfigToDatabase(IbisContext ibisContext, String jmsRealm, boolean activate_config, boolean automatic_reload, String name, String version, String fileName, InputStream file, String ruser) throws ConfigurationException {
-		if (StringUtils.isEmpty(jmsRealm)) {
-			jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-			if (StringUtils.isEmpty(jmsRealm)) {
+		String workJmsRealm = jmsRealm;
+		if (StringUtils.isEmpty(workJmsRealm)) {
+			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
+			if (StringUtils.isEmpty(workJmsRealm)) {
 				return false;
 			}
 		}
@@ -207,7 +209,7 @@ public class ConfigurationUtils {
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-		qs.setJmsRealm(jmsRealm);
+		qs.setJmsRealm(workJmsRealm);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 		try {
@@ -270,9 +272,10 @@ public class ConfigurationUtils {
 	}
 
 	public static boolean makeConfigActive(IbisContext ibisContext, String name, String version, String jmsRealm) throws ConfigurationException {
-		if (StringUtils.isEmpty(jmsRealm)) {
-			jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-			if (StringUtils.isEmpty(jmsRealm)) {
+		String workJmsRealm = jmsRealm;
+		if (StringUtils.isEmpty(workJmsRealm)) {
+			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
+			if (StringUtils.isEmpty(workJmsRealm)) {
 				return false;
 			}
 		}
@@ -280,7 +283,7 @@ public class ConfigurationUtils {
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-		qs.setJmsRealm(jmsRealm);
+		qs.setJmsRealm(workJmsRealm);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 
@@ -334,26 +337,27 @@ public class ConfigurationUtils {
 		return false;
 	}
 
-	public static List<StringPair> retrieveAllConfigNames(IbisContext ibisContext) throws ConfigurationException {
+	public static List<StringPair> retrieveAllConfigNameItems(IbisContext ibisContext) throws ConfigurationException {
 		// For now only database configurations are returned, but also
 		// configuration from other resources (like file system directories) can
 		// be added
-		List<StringPair> allConfigNames = new ArrayList<StringPair>();
+		List<StringPair> allConfigNameItems = new ArrayList<StringPair>();
 		if (CONFIG_AUTO_DB_CLASSLOADER) {
 			List<String> dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisContext, null);
 			if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
 				for (String dbConfigName : dbConfigNames) {
-					allConfigNames.add(new StringPair("DatabaseClassLoader", dbConfigName));
+					allConfigNameItems.add(new StringPair("DatabaseClassLoader", dbConfigName));
 				}
 			}
 		}
-		return allConfigNames;
+		return allConfigNameItems;
 	}
 
 	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, String jmsRealm) throws ConfigurationException {
-		if (StringUtils.isEmpty(jmsRealm)) {
-			jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-			if (StringUtils.isEmpty(jmsRealm)) {
+		String workJmsRealm = jmsRealm;
+		if (StringUtils.isEmpty(workJmsRealm)) {
+			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
+			if (StringUtils.isEmpty(workJmsRealm)) {
 				return null;
 			}
 		}
@@ -361,7 +365,7 @@ public class ConfigurationUtils {
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-		qs.setJmsRealm(jmsRealm);
+		qs.setJmsRealm(workJmsRealm);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 		try {

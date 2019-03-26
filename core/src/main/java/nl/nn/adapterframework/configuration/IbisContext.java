@@ -76,7 +76,6 @@ public class IbisContext {
 	private static final String CONFIGURATIONS = APP_CONSTANTS.getResolvedProperty("configurations.names.application");
 	private static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
 	private static final long UPTIME = System.currentTimeMillis();
-	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.autoDatabaseClassLoader", false);
 
 	static {
 		String applicationServerType = System.getProperty(
@@ -429,20 +428,18 @@ public class IbisContext {
 			}
 		}
 
-		List<StringPair> allConfigNames = null;
+		List<StringPair> allConfigNamesItems = null;
 		try {
-			allConfigNames = ConfigurationUtils.retrieveAllConfigNames(ibisManager.getIbisContext());
+			allConfigNamesItems = ConfigurationUtils.retrieveAllConfigNameItems(ibisManager.getIbisContext());
 		} catch (ConfigurationException e) {
 			log("*ALL*", null, "error retrieving all configuration names", MessageKeeperMessage.WARN_LEVEL, e);
 		}
-		if (allConfigNames != null && !allConfigNames.isEmpty()) {
-			for (StringPair currentConfigName : allConfigNames) {
-				// currentConfigName.getFirst() => classLoaderType
-				// currentConfigName.getSecond() => configName
-				if (!configNames.contains(currentConfigName.getSecond())) {
-					if (loadConfiguration(configurationDigester, configurationName, currentConfigName.getSecond(), currentConfigName.getFirst())) {
-						configFound = true;
-					}
+		if (allConfigNamesItems != null && !allConfigNamesItems.isEmpty()) {
+			for (StringPair currentConfigNameItem : allConfigNamesItems) {
+				String classLoaderType = currentConfigNameItem.getFirst();
+				String configName = currentConfigNameItem.getSecond();
+				if (!configNames.contains(configName) && loadConfiguration(configurationDigester, configurationName, configName, classLoaderType)) {
+					configFound = true;
 				}
 			}
 		}
