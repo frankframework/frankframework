@@ -52,8 +52,9 @@ public class SambaFileSystemSenderTest extends FileSystemSenderTest<SmbFile, Sam
 	}
 
 	@Override
-	protected boolean _fileExists(String filename) throws Exception {
-		return new SmbFile(context, filename).exists();
+	protected boolean _fileExists(String folder, String filename) throws Exception {
+		String path=folder==null?filename:folder+"/"+filename;
+		return new SmbFile(context, path).exists();
 	}
 
 	@Override

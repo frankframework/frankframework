@@ -31,10 +31,16 @@ public abstract class LocalFileSystemTestBase<F, FS extends IFileSystem<F>> exte
 	protected File getFileHandle(String filename) {
 		return new File(folder.getRoot().getAbsolutePath(), filename);
 	}
+	protected File getFileHandle(String subfolder, String filename) {
+		if (subfolder==null) {
+			return getFileHandle(filename);
+		}
+		return new File(folder.getRoot().getAbsolutePath()+"/"+subfolder, filename);
+	}
 
 	@Override
-	public boolean _fileExists(String filename) {
-		return getFileHandle(filename).exists();
+	public boolean _fileExists(String subfolder, String filename) {
+		return getFileHandle(subfolder,filename).exists();
 	}
 
 	@Override

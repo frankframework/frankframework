@@ -44,11 +44,12 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> {
 
 	/**
 	 * Checks if a file with the specified name exists.
+	 * @param folder to search in for the file, set to null for root folder. 
 	 * @param filename
 	 * @return
 	 * @throws Exception
 	 */
-	protected abstract boolean _fileExists(String filename) throws Exception;
+	protected abstract boolean _fileExists(String folder, String filename) throws Exception;
 	
 	/**
 	 * Checks if a folder with the specified name exists.
@@ -95,6 +96,10 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> {
 	 * @throws Exception
 	 */
 	protected abstract void _deleteFolder(String folderName) throws Exception;
+
+	protected boolean _fileExists(String filename) throws Exception {
+		return _fileExists(null, filename);
+	}
 
 	@Before
 	public void setUp() throws IOException, ConfigurationException, FileSystemException {
@@ -257,41 +262,21 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> {
 		String destinationFolder = "destinationFolder";
 		_createFolder(destinationFolder);
 		waitForActionToFinish();
-		
+
+		assertTrue(_fileExists(fileName));
+		assertTrue(_fileExists(destinationFolder));
+
 		F f = fileSystem.toFile(fileName);
 		fileSystem.moveFile(f, destinationFolder);
 		waitForActionToFinish();
 		
-		assertTrue("Destination must exist",_fileExists(destinationFolder+"/"+fileName));
+		
+		assertTrue("Destination must exist",_fileExists(destinationFolder, fileName));
 		assertFalse("Origin must have disappeared",_fileExists(fileName));
 	}
 
 
-	@Test
-	public void fileSystemTestMoveTo() throws Exception {
-//		if (!(fileSystem instanceof IFileSystem2)) {
-//			throw new NotImplementedException("FileSystem class ["+this.getClass().getName()+"] does not implement IFileSystem2");
-//		}
-		String fileName = "fileTobeMoved.txt";
-		String folderName = "targetFolderForMove";
-		
-		createFile(fileName,"");
-		_createFolder(folderName);
-		waitForActionToFinish();
-		
-		assertTrue(_fileExists(fileName));
-		assertTrue(_fileExists(folderName));
-		
-		F f = fileSystem.toFile(fileName);
-		fileSystem.moveFile(f, folderName);
-		waitForActionToFinish();
-		
-//		assertTrue("Destination must exist",_fileExists(destination));
-		assertFalse("Origin must have disappeared",_fileExists(fileName));
-		fail("must be able to see file in folder");
-	}
 
-	
 	
 	@Test
 	public void fileSystemTestExistsMethod() throws Exception {
