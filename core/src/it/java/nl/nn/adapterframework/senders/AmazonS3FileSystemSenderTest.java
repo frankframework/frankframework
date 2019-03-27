@@ -105,8 +105,9 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 	}
 
 	@Override
-	protected boolean _fileExists(String filename) {
-		return s3Client.doesObjectExist(bucketName, filename);
+	protected boolean _fileExists(String folder, String filename) {
+		String objectName=folder==null?filename:folder+"/"+filename;
+		return s3Client.doesObjectExist(bucketName, objectName);
 	}
 
 	@Override
@@ -204,7 +205,7 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 	}
 
 	@Test
-	public void amazonS3SenderTestCopyObjectSuccess() throws ConfigurationException, SenderException, TimeOutException {
+	public void amazonS3SenderTestCopyObjectSuccess() throws Exception {
 
 		s3FileSystemSender.setBucketName(bucketName);
 		s3FileSystemSender.setDestinationBucketName(bucketName);

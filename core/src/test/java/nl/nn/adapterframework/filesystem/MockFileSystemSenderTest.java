@@ -17,8 +17,12 @@ public class MockFileSystemSenderTest extends FileSystemSenderTest <MockFile,Moc
 	}
 
 	@Override
-	protected boolean _fileExists(String filename) throws Exception {
-		return fileSystem.getFiles().containsKey(filename);
+	protected boolean _fileExists(String folder, String filename) throws Exception {
+		if (folder==null) {
+			return fileSystem.getFiles().containsKey(filename);
+		}
+		MockFolder mf = (MockFolder)fileSystem.getFiles().get(folder);
+		return mf.getFiles().containsKey(filename);
 	}
 
 	@Override

@@ -132,19 +132,19 @@ public class LocalFileSystem implements IFileSystem<File> {
 	}
 	@Override
 	public void moveFile(File f, String destinationFolder) throws FileSystemException {
-		File to = toFile(destinationFolder);
-		if (to.exists()) {
-			if (!to.isDirectory()) {
-				throw new FileSystemException("Cannot move file. Destination file ["+to.getName()+"] is not a folder.");
+		File toFolder = toFile(destinationFolder);
+		if (toFolder.exists()) {
+			if (!toFolder.isDirectory()) {
+				throw new FileSystemException("Cannot move file. Destination file ["+toFolder.getName()+"] is not a folder.");
 			}
 		} else {
 			if (isForce)
-				createFolder(to);
+				createFolder(toFolder);
 			else {
-				throw new FileSystemException("Cannot move file. Destination folder ["+to.getName()+"] does not exist.");
+				throw new FileSystemException("Cannot move file. Destination folder ["+toFolder.getName()+"] does not exist.");
 			}
 		}
-		f.renameTo(to);
+		f.renameTo(new File(toFolder,f.getName()));
 
 	}
 

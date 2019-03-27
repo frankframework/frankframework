@@ -80,7 +80,8 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 	}
 
 	@Override
-	protected boolean _fileExists(String filename) throws IOException, FileSystemException {
+	protected boolean _fileExists(String folder, String filename) throws IOException, FileSystemException {
+		// TODO: must implement folder searching, probably via change-directory
 		try {
 			FTPFile[] files = ftpSession.ftpClient.listFiles();
 			for (FTPFile o : files) {

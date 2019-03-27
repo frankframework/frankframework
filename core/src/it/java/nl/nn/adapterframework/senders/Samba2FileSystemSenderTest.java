@@ -107,9 +107,10 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 	}
 
 	@Override
-	protected boolean _fileExists(String filename) throws Exception {
+	protected boolean _fileExists(String folder, String filename) throws Exception {
+		String path=folder==null?filename:folder+"/"+filename;
 		try {
-			return client.fileExists(filename);
+			return client.fileExists(path);
 		} catch (SMBApiException e) {
 			if (e.getStatus().equals(NtStatus.STATUS_DELETE_PENDING))
 				return false;

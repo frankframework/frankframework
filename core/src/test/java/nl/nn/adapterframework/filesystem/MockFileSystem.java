@@ -143,8 +143,9 @@ public class MockFileSystem extends MockFolder implements IFileSystem<MockFile> 
 		if (!(to instanceof MockFolder)) {
 			throw new IllegalStateException("Destination folder ["+destinationFolder+"] is not a Folder");
 		}
-		
-		
+		MockFolder folder=(MockFolder)to;
+		f.setOwner(folder);
+		folder.getFiles().put(f.getName(), getFiles().remove(f.getName()));
 	}
 
 	@Override
