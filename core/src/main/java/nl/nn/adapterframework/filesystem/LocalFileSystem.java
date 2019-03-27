@@ -116,10 +116,10 @@ public class LocalFileSystem implements IFileSystem<File> {
 	}
 
 	@Override
-	public void renameTo(File f, String destination) throws FileSystemException {
+	public void renameFile(File f, String newName) throws FileSystemException {
 		File dest;
 
-		dest = new File(destination);
+		dest = new File(newName);
 		if (dest.exists()) {
 			if (isForce)
 				dest.delete();
@@ -130,6 +130,24 @@ public class LocalFileSystem implements IFileSystem<File> {
 		f.renameTo(dest);
 
 	}
+	@Override
+	public void moveFile(File f, String destinationFolder) throws FileSystemException {
+		File to = toFile(destinationFolder);
+		if (to.exists()) {
+			if (!to.isDirectory()) {
+				throw new FileSystemException("Cannot move file. Destination file ["+to.getName()+"] is not a folder.");
+			}
+		} else {
+			if (isForce)
+				createFolder(to);
+			else {
+				throw new FileSystemException("Cannot move file. Destination folder ["+to.getName()+"] does not exist.");
+			}
+		}
+		f.renameTo(to);
+
+	}
+
 
 	@Override
 	public long getFileSize(File f, boolean isFolder) throws FileSystemException {

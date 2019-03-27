@@ -167,17 +167,34 @@ public class FtpFileSystem extends FtpSession implements IFileSystem<FTPFile> {
 	}
 
 	@Override
-	public void renameTo(FTPFile f, String destination) throws FileSystemException {
-		if(exists(toFile(destination))) {
+	public void renameFile(FTPFile f, String newName) throws FileSystemException {
+		if(exists(toFile(newName))) {
 			throw new FileSystemException("Cannot rename file. Destination file already exists.");
 		}
 		try {
-			ftpClient.rename(f.getName(), destination);
+			ftpClient.rename(f.getName(), newName);
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
 	}
 
+	@Override
+	public void moveFile(FTPFile f, String destinationFolder) throws FileSystemException {
+		FTPFile d=toFile(destinationFolder);
+		if(!exists(d)) {
+			throw new FileSystemException("Cannot move file. Destination folder ["+destinationFolder+"] does not exist.");
+		}
+		if (!isFolder(d)) {
+			throw new FileSystemException("Cannot move file. Destination ["+destinationFolder+"] if not a folder.");
+		}
+		try {
+			ftpClient.rename(f.getName(), destinationFolder+"/"+f.getName());
+		} catch (IOException e) {
+			throw new FileSystemException(e);
+		}
+	}
+	
+	
 	@Override
 	public long getFileSize(FTPFile f, boolean isFolder) throws FileSystemException {
 		return f.getSize();

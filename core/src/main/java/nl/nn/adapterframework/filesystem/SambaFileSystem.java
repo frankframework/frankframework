@@ -210,16 +210,33 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 	}
 
 	@Override
-	public void renameTo(SmbFile f, String destination) throws FileSystemException {
+	public void renameFile(SmbFile f, String newName) throws FileSystemException {
 		SmbFile dest;
 		try {
-			dest = new SmbFile(smbContext, destination);
+			dest = new SmbFile(smbContext, newName);
 			if (exists(dest)) {
 				if (isForce)
 					dest.delete();
 				else {
 					throw new FileSystemException("Cannot rename file. Destination file already exists.");
 				}
+			}
+			f.renameTo(dest);
+		} catch (Exception e) {
+			throw new FileSystemException(e);
+		}
+	}
+
+	@Override
+	public void moveFile(SmbFile f, String destinationFolder) throws FileSystemException {
+		SmbFile dest;
+		try {
+			dest = new SmbFile(smbContext, destinationFolder);
+			if (!exists(dest)) {
+				throw new FileSystemException("Cannot move file. Destination folder ["+destinationFolder+"] does not exists.");
+			}
+			if (!isFolder(dest)) {
+				throw new FileSystemException("Cannot move file. Destination folder ["+destinationFolder+"] is not a folder.");
 			}
 			f.renameTo(dest);
 		} catch (Exception e) {

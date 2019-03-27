@@ -2,12 +2,13 @@ package nl.nn.adapterframework.senders;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 
@@ -18,6 +19,7 @@ import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.FileSystemException;
+import nl.nn.adapterframework.filesystem.IBasicFileSystem;
 import nl.nn.adapterframework.filesystem.IFileSystem;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -42,11 +44,11 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * <br/>
  */
 
-public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithParametersBase {
+public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderWithParametersBase {
 
 	private String action;
-	private List<String> actions = new ArrayList<String>(
-			Arrays.asList("delete", "upload", "mkdir", "rmdir", "rename", "download", "list"));
+	private Set<String> actions = new LinkedHashSet<String>(
+			Arrays.asList("delete", "download", "list", "move"));
 
 	private FS fileSystem;
 
@@ -54,6 +56,9 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 	public void configure() throws ConfigurationException {
 		super.configure();
 		getFileSystem().configure();
+		if (getFileSystem() instanceof IFileSystem) {
+			actions.addAll(Arrays.asList("upload", "mkdir", "rmdir", "rename"));
+		}
 
 		if (getAction() == null)
 			throw new ConfigurationException(getLogPrefix() + "action must be specified");
@@ -104,7 +109,7 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 					getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
 		}
 
-		IFileSystem<F> ifs = getFileSystem();
+		IBasicFileSystem<F> ifs = getFileSystem();
 		F file;
 		
 		try {
@@ -147,20 +152,27 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 					throw new SenderException("expected InputStream, ByteArray or String but got ["
 							+ paramValue.getClass().getName() + "] instead");
 				OutputStream out = null;
-				out = ifs.createFile(file);
+				out = ((IFileSystem)ifs).createFile(file);
 				out.write(fileBytes);
 				out.close();
 
 				return getFileAsXmlBuilder(file, "file").toXML();
 			} else if (action.equalsIgnoreCase("mkdir")) {
-				ifs.createFolder(file);
+				((IFileSystem)ifs).createFolder(file);
 			} else if (action.equalsIgnoreCase("rmdir")) {
-				ifs.removeFolder(file);
+				((IFileSystem)ifs).removeFolder(file);
 			} else if (action.equalsIgnoreCase("rename")) {
 				String destination = (String) pvl.getParameterValue("destination").getValue();
-				if (destination == null)
-					throw new SenderException("unknown destination[" + destination + "]");
-				ifs.renameTo(file, destination);
+				if (destination == null) {
+					throw new SenderException("unknown destination [" + destination + "]");
+				}
+				((IFileSystem)ifs).renameFile(file, destination);
+			} else if (action.equalsIgnoreCase("move")) {
+				String destination = (String) pvl.getParameterValue("destination").getValue();
+				if (destination == null) {
+					throw new SenderException("destination folder not specified");
+				}
+				ifs.moveFile(file, destination);
 			}
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix() + "unable to process ["+action+"] action for File [" + message + "]", e);
@@ -170,7 +182,7 @@ public class FileSystemSender<F, FS extends IFileSystem<F>> extends SenderWithPa
 	}
 
 	public XmlBuilder getFileAsXmlBuilder(F f, String elementName) throws FileSystemException {
-		IFileSystem<F> ifs = getFileSystem();
+		IBasicFileSystem<F> ifs = getFileSystem();
 		XmlBuilder fileXml = new XmlBuilder(elementName);
 
 		String name = ifs.getName(f);

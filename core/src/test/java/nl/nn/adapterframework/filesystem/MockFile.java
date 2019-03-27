@@ -14,9 +14,10 @@ public class MockFile {
 	private byte[] contents;
 	private Date lastModified=new Date();
 	
-	public MockFile(String name) {
+	public MockFile(String name, MockFolder owner) {
 		super();
 		this.name = name;
+		this.owner=owner;
 	}
 
 	public String getName() {
