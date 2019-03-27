@@ -34,7 +34,7 @@ public class MockFileSystemSenderTest extends FileSystemSenderTest <MockFile,Moc
 
 	@Override
 	protected OutputStream _createFile(String filename) throws Exception {
-		final MockFile mf = new MockFile(filename);
+		final MockFile mf = new MockFile(filename,fileSystem);
 		fileSystem.getFiles().put(filename, mf);
 		
 		return new ByteArrayOutputStream() {
@@ -59,7 +59,7 @@ public class MockFileSystemSenderTest extends FileSystemSenderTest <MockFile,Moc
 
 	@Override
 	protected void _createFolder(String filename) throws Exception {
-		MockFolder mf = new MockFolder(filename);
+		MockFolder mf = new MockFolder(filename,fileSystem);
 		fileSystem.getFiles().put(filename,mf);
 		
 	}

@@ -151,12 +151,30 @@ public class Samba2FileSystem implements IFileSystem<String> {
 	}
 
 	@Override
-	public void renameTo(String f, String destination) throws FileSystemException {
+	public void renameFile(String f, String newName) throws FileSystemException {
 		File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN);
-		if (exists(destination) && !isForce) {
+		if (exists(newName) && !isForce) {
 			throw new FileSystemException("Cannot rename file. Destination file already exists.");
 		}
-		file.rename(destination, isForce);
+		file.rename(newName, isForce);
+		file.close();
+	}
+
+	@Override
+	public void moveFile(String f, String to) throws FileSystemException {
+		File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN);
+		if (exists(to)) {
+			if (!isFolder(to)) {
+				throw new FileSystemException("Cannot move file. Destination file ["+to+"] is not a folder.");
+			}
+		} else {
+			if (isForce) {
+				createFolder(to);
+			} else {
+				throw new FileSystemException("Cannot move file. Destination folder ["+to+"] does not exist.");
+			}
+		}
+		file.rename(to, isForce);
 		file.close();
 	}
 
@@ -337,4 +355,5 @@ public class Samba2FileSystem implements IFileSystem<String> {
 			deleteFile(files.get(i++).getFileName());
 		}
 	}
+
 }

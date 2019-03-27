@@ -242,13 +242,17 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 	}
 
 	@Override
-	public void renameTo(S3Object f, String destination) throws FileSystemException {
-		if(s3Client.doesObjectExist(bucketName, destination))
+	public void renameFile(S3Object f, String newName) throws FileSystemException {
+		if(s3Client.doesObjectExist(bucketName, newName))
 			throw new FileSystemException("Cannot rename file. Destination file already exists.");
-		s3Client.copyObject(bucketName, f.getKey(), bucketName, destination);
+		s3Client.copyObject(bucketName, f.getKey(), bucketName, newName);
 		s3Client.deleteObject(bucketName, f.getKey());
 	}
 
+	@Override
+	public void moveFile(S3Object f, String destination) throws FileSystemException {
+		renameFile(f,destination+"/"+f.getKey());
+	}
 	
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(S3Object f) {

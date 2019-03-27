@@ -16,8 +16,7 @@ import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.filesystem.IFileSystem;
 import nl.nn.adapterframework.filesystem.FileSystemTest;
 
-public abstract class LocalFileSystemTestBase<F, FS extends IFileSystem<F>>
-		extends FileSystemTest<F, FS> {
+public abstract class LocalFileSystemTestBase<F, FS extends IFileSystem<F>> extends FileSystemTest<F, FS> {
 
 	public TemporaryFolder folder;
 
