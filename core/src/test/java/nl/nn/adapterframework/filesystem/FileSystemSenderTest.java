@@ -17,12 +17,11 @@ import org.junit.Test;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.filesystem.FileSystemException;
-import nl.nn.adapterframework.filesystem.IFileSystem;
+import nl.nn.adapterframework.filesystem.IWritableFileSystem;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.senders.FileSystemSender;
 
-public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends FileSystemTest<F, FS> {
+public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>> extends FileSystemTest<F, FS> {
 
 	private FileSystemSender<F, FS> fileSystemSender;
 

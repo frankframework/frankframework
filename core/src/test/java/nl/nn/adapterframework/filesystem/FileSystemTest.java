@@ -8,7 +8,7 @@ import java.io.PrintWriter;
 
 import org.junit.Test;
 
-public abstract class FileSystemTest<F, FS extends IFileSystem<F>> extends BasicFileSystemTest<F,FS> {
+public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> extends BasicFileSystemTest<F,FS> {
 
 	@Test
 	public void fileSystemTestCreateNewFile() throws Exception {

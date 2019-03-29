@@ -37,7 +37,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author Daniël Meyer
  *
  */
-public class FtpFileSystem extends FtpSession implements IFileSystem<FTPFile> {
+public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTPFile> {
 
 	protected Logger log = LogUtil.getLogger(this);
 

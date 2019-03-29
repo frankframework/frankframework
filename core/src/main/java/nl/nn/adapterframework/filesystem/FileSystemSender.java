@@ -1,4 +1,19 @@
-package nl.nn.adapterframework.senders;
+/*
+   Copyright 2019 Integration Partners
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+package nl.nn.adapterframework.filesystem;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -13,14 +28,12 @@ import java.util.Set;
 import org.apache.commons.codec.binary.Base64InputStream;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.filesystem.FileSystemException;
-import nl.nn.adapterframework.filesystem.IBasicFileSystem;
-import nl.nn.adapterframework.filesystem.IFileSystem;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -56,7 +69,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 	public void configure() throws ConfigurationException {
 		super.configure();
 		getFileSystem().configure();
-		if (getFileSystem() instanceof IFileSystem) {
+		if (getFileSystem() instanceof IWritableFileSystem) {
 			actions.addAll(Arrays.asList("upload", "mkdir", "rmdir", "rename"));
 		}
 
@@ -152,21 +165,21 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 					throw new SenderException("expected InputStream, ByteArray or String but got ["
 							+ paramValue.getClass().getName() + "] instead");
 				OutputStream out = null;
-				out = ((IFileSystem)ifs).createFile(file);
+				out = ((IWritableFileSystem)ifs).createFile(file);
 				out.write(fileBytes);
 				out.close();
 
 				return getFileAsXmlBuilder(file, "file").toXML();
 			} else if (action.equalsIgnoreCase("mkdir")) {
-				((IFileSystem)ifs).createFolder(file);
+				((IWritableFileSystem)ifs).createFolder(file);
 			} else if (action.equalsIgnoreCase("rmdir")) {
-				((IFileSystem)ifs).removeFolder(file);
+				((IWritableFileSystem)ifs).removeFolder(file);
 			} else if (action.equalsIgnoreCase("rename")) {
 				String destination = (String) pvl.getParameterValue("destination").getValue();
 				if (destination == null) {
 					throw new SenderException("unknown destination [" + destination + "]");
 				}
-				((IFileSystem)ifs).renameFile(file, destination);
+				((IWritableFileSystem)ifs).renameFile(file, destination);
 			} else if (action.equalsIgnoreCase("move")) {
 				String destination = (String) pvl.getParameterValue("destination").getValue();
 				if (destination == null) {
@@ -220,6 +233,13 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 		}
 
 		return fileXml;
+	}
+
+	public String getPhysicalDestinationName() {
+		if (getFileSystem() instanceof HasPhysicalDestination) {
+			return ((HasPhysicalDestination)getFileSystem()).getPhysicalDestinationName();
+		}
+		return null;
 	}
 
 	public FS getFileSystem() {

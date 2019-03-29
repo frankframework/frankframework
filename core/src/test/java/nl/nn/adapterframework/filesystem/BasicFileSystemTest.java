@@ -2,18 +2,18 @@ package nl.nn.adapterframework.filesystem;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -298,14 +298,27 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> {
 		createFile(FILE2, contents2);
 		waitForActionToFinish();
 		
+		Set<F> files = new HashSet<F>();
+		Set<String> filenames = new HashSet<String>();
 		Iterator<F> it = fileSystem.listFiles();
 		int count = 0;
 		// Count files
 		while (it.hasNext()) {
-			it.next();
+			F f=it.next();
+			files.add(f);
+			filenames.add(fileSystem.getName(f));
 			count++;
 		}
 
+		assertEquals("Size of set of files", count, files.size());
+		assertEquals("Size of set of filenames", count, filenames.size());
+		
+		for (String filename:filenames) {
+			F f=fileSystem.toFile(filename);
+			assertNotNull("file must be found by filename ["+filename+"]",f);
+			assertTrue("file must exist when referred to by filename ["+filename+"]",fileSystem.exists(f));
+		}
+		
 		it = fileSystem.listFiles();
 		for (int i = 0; i < count; i++) {
 			assertTrue(it.hasNext());

@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class MockFileSystem extends MockFolder implements IFileSystem<MockFile> {
+public class MockFileSystem extends MockFolder implements IWritableFileSystem<MockFile> {
 	
 	protected Logger log = LogUtil.getLogger(this);
 

@@ -59,7 +59,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class AmazonS3FileSystem implements IFileSystem<S3Object> {
+public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 
 	protected Logger log = LogUtil.getLogger(this);
 

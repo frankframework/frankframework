@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author alisihab
  *
  */
-public class SambaFileSystem implements IFileSystem<SmbFile> {
+public class SambaFileSystem implements IWritableFileSystem<SmbFile> {
 
 	protected Logger log = LogUtil.getLogger(this);
 
