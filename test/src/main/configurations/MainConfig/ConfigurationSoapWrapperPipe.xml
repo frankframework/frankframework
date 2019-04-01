@@ -40,41 +40,35 @@
 			</pipe>
 <!-- unwrap 1.2 -->
 			<pipe name="unwrap_1_2" className="nl.nn.adapterframework.soap.SoapWrapperPipe" 
-			direction="unwrap" soapHeaderSessionKey="soapHeader"
-			soapVersion="any">
+			direction="unwrap" soapHeaderSessionKey="soapHeader">
 				<forward name="success" path="EXIT" />
 			</pipe>
 <!-- wrap 1.2 -->
 			<pipe name="wrap_1_2" className="nl.nn.adapterframework.soap.SoapWrapperPipe"
- 			soapHeaderSessionKey="soapHeader"
-			soapVersion="1.2">
+ 			soapHeaderSessionKey="soapHeader">
 				<forward name="success" path="EXIT" />
 			</pipe>
 <!-- unwrap & wrap 1.2 -->
 			<pipe name="unwrap_wrap_1_2" className="nl.nn.adapterframework.soap.SoapWrapperPipe" 
-			direction="unwrap"  soapHeaderSessionKey="soapHeader"
-			soapVersion="1.2">
+			direction="unwrap"  soapHeaderSessionKey="soapHeader">
 				<forward name="success" path="unwrap_wrap2_1.2" />
 			</pipe>
 			<pipe name="unwrap_wrap2_1.2" className="nl.nn.adapterframework.soap.SoapWrapperPipe" 
-			soapHeaderSessionKey="soapHeader" soapVersion="any">
+			soapHeaderSessionKey="soapHeader">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- wrap & unwrap 1.2 -->
 			<pipe name="wrap_unwrap_1_2" className="nl.nn.adapterframework.soap.SoapWrapperPipe" 
- 			soapHeaderSessionKey="soapHeader"
-			soapVersion="1.2">
+ 			soapHeaderSessionKey="soapHeader">
 				<forward name="success" path="wrap_unwrap2_1.2" />
 			</pipe>
 			<pipe name="wrap_unwrap2_1.2" className="nl.nn.adapterframework.soap.SoapWrapperPipe" direction="unwrap" 
-			soapHeaderSessionKey="soapHeader" root="unwrappedRoot"
-			soapVersion="1.2">
+			soapHeaderSessionKey="soapHeader" root="unwrappedRoot">
 				<forward name="success" path="EXIT" />
 			</pipe>
 <!-- unwrap_replace 1.2 -->
 			<pipe name="unwrap_replace_1_2" className="nl.nn.adapterframework.soap.SoapWrapperPipe" 
-			direction="unwrap" soapHeaderSessionKey="soapHeader"
-			soapVersion="1.2">
+			direction="unwrap" soapHeaderSessionKey="soapHeader">
 				<forward name="success" path="unwrap_replace2_1.2" />
 			</pipe>
 			<pipe name="unwrap_replace2_1.2" className="nl.nn.adapterframework.pipes.ReplacerPipe" find="  " replace="_">
