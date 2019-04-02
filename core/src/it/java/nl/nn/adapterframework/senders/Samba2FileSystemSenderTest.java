@@ -1,7 +1,5 @@
 package nl.nn.adapterframework.senders;
 
-import java.io.FilterInputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,6 +27,7 @@ import com.hierynomus.smbj.share.File;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.filesystem.FileSystemException;
+import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 /**
  * This test class is created to test both Samba2FileSystem and Samba2FileSystemSender classes.
@@ -133,16 +132,7 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 		final File file = client.openFile(filename, accessMask, null, SMB2ShareAccess.ALL,
 				SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
 
-		FilterOutputStream fos = new FilterOutputStream(file.getOutputStream()) {
-
-			@Override
-			public void close() throws IOException {
-				super.close();
-				file.close();
-			}
-
-		};
-		return fos;
+		return file.getOutputStream();
 	}
 
 	@Override
@@ -153,14 +143,8 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 		shareAccess.addAll(SMB2ShareAccess.ALL);
 		final File file;
 		file = client.openFile(filename, accessMask, null, shareAccess, SMB2CreateDisposition.FILE_OPEN, null);
-		FilterInputStream fis = new FilterInputStream(file.getInputStream()) {
-			@Override
-			public void close() throws IOException {
-				super.close();
-				file.close();
-			}
-		};
-		return fis;
+
+		return file.getInputStream();
 	}
 
 	@Override

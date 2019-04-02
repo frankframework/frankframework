@@ -1735,7 +1735,9 @@ public class TestTool {
 				try {
 					// Use directoryClassLoader to make it possible to specify
 					// styleSheetName relative to the scenarioDirectory.
-					DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(scenarioDirectory);
+					DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(originalClassLoader);
+					directoryClassLoader.setDirectory(scenarioDirectory);
+					directoryClassLoader.configure(ibisContext, "dummy");
 					Thread.currentThread().setContextClassLoader(directoryClassLoader);
 					httpSender = new HttpSender();
 					httpSender.setName("Test Tool HttpSender");

@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 - 2017 Nationale-Nederlanden
+   Copyright 2016 - 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,33 +23,31 @@ import nl.nn.adapterframework.configuration.IbisContext;
 
 public class DatabaseClassLoader extends JarBytesClassLoader {
 
-	private IbisContext ibisContext;
-	private String configurationName;
 	private Map<String, Object> configuration;
 
-	public DatabaseClassLoader(IbisContext ibisContext, String configurationName) throws ConfigurationException {
-		this(ibisContext, configurationName, DatabaseClassLoader.class.getClassLoader());
+	public DatabaseClassLoader(ClassLoader parent) {
+		super(parent);
 	}
 
-	public DatabaseClassLoader(IbisContext ibisContext, String configurationName, ClassLoader parent) throws ConfigurationException {
-		super(parent);
-		this.ibisContext = ibisContext;
-		this.configurationName = configurationName;
+	@Override
+	public void configure(IbisContext ibisContext, String configurationName) throws ConfigurationException {
+		super.configure(ibisContext, configurationName);
+
 		reload();
-	}
+	};
 
 	@Override
 	public void reload() throws ConfigurationException {
 		super.reload();
 		Map<String, Object> configuration = null;
-		configuration = ConfigurationUtils.getConfigFromDatabase(ibisContext, configurationName, null);
+		configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), getConfigurationName(), null);
 		if (configuration == null) {
-			throw new ConfigurationException("Could not get config '" + configurationName + "' from database");
+			throw new ConfigurationException("Could not get config '" + getConfigurationName() + "' from database");
 		} else {
 			byte[] jarBytes = (byte[]) configuration.get("CONFIG");
 			configuration.remove("CONFIG");
 			this.configuration = configuration;
-			readResources(jarBytes, configurationName);
+			readResources(jarBytes, getConfigurationName());
 		}
 	}
 

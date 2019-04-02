@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,34 +15,30 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.classloaders.BasePathClassLoader;
-import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
-import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
-import nl.nn.adapterframework.configuration.classloaders.DummyClassLoader;
-import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
+import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.ReloadAware;
-import nl.nn.adapterframework.configuration.classloaders.ServiceClassLoader;
-import nl.nn.adapterframework.configuration.classloaders.WebAppClassLoader;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class ClassLoaderManager {
 
-	private static final Logger LOG = LogUtil.getLogger(IbisContext.class);
+	private static final Logger LOG = LogUtil.getLogger(ClassLoaderManager.class);
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private Map<String, ClassLoader> classLoaders = new TreeMap<String, ClassLoader>();
 
 	private IbisContext ibisContext;
-	private IbisManager ibisManager;
 
 	public ClassLoaderManager(IbisContext ibisContext) {
 		this.ibisContext = ibisContext;
-		this.ibisManager = ibisContext.getIbisManager();
 	}
 
 	private ClassLoader createClassloader(String configurationName, String configurationFile) throws ConfigurationException {
@@ -51,68 +47,99 @@ public class ClassLoaderManager {
 
 	private ClassLoader createClassloader(String configurationName, String configurationFile, ClassLoader parentClassLoader) throws ConfigurationException {
 
-		String classLoaderType = APP_CONSTANTS.getString(
-				"configurations." + configurationName + ".classLoaderType", "WebAppClassLoader");
+		String classLoaderType = APP_CONSTANTS.getString("configurations." + configurationName + ".classLoaderType", "");
+		//It is possible that no ClassLoader has been defined, use default ClassLoader (wrapped in a WebAppClassLoader)
+		if(classLoaderType == null || classLoaderType.isEmpty())
+			classLoaderType = "WebAppClassLoader";
+
+		String className = classLoaderType;
+		if(classLoaderType.indexOf(".") == -1)
+			className = "nl.nn.adapterframework.configuration.classloaders."+classLoaderType;
+
+		LOG.debug("trying to create classloader of type["+className+"]");
 
 		ClassLoader classLoader = null;
-		if ("DirectoryClassLoader".equals(classLoaderType)) {
-			String directory = APP_CONSTANTS.getResolvedProperty(
-					"configurations." + configurationName + ".directory");
-			classLoader = new DirectoryClassLoader(directory, parentClassLoader);
-		} else if ("JarFileClassLoader".equals(classLoaderType)) {
-			String jar = APP_CONSTANTS.getResolvedProperty(
-					"configurations." + configurationName + ".jar");
-			classLoader = new JarFileClassLoader(jar, configurationName, parentClassLoader);
-		} else if ("ServiceClassLoader".equals(classLoaderType)) {
-			String adapterName = APP_CONSTANTS.getResolvedProperty(
-					"configurations." + configurationName + ".adapterName");
-			classLoader = new ServiceClassLoader(ibisManager, adapterName, configurationName, parentClassLoader);
-		} else if ("DatabaseClassLoader".equals(classLoaderType)) {
+		try {
+			Class<?> clas = ClassUtils.loadClass(className);
+			Constructor<?> con = ClassUtils.getConstructorOnType(clas, new Class[] {ClassLoader.class});
+			classLoader = (ClassLoader) con.newInstance(new Object[] {parentClassLoader});
+		}
+		catch (Exception e) {
+			throw new ConfigurationException("invalid classLoaderType ["+className+"]", e);
+		}
+		LOG.debug("successfully instantiated classloader ["+classLoader.toString()+"] with parent classloader ["+parentClassLoader.toString()+"]");
+
+		//If the classLoader implements IClassLoader, configure it
+		if(classLoader instanceof IConfigurationClassLoader) {
+			IConfigurationClassLoader loader = (IConfigurationClassLoader) classLoader;
+
+			String parentProperty = "configurations." + configurationName + ".";
+
+			for(Method method: loader.getClass().getMethods()) {
+				if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
+					continue;
+
+				String setter = firstCharToLower(method.getName().substring(3));
+				String value = APP_CONSTANTS.getProperty(parentProperty+setter);
+				if(value == null)
+					continue;
+
+				//Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
+				Object castValue = getCastValue(method.getParameterTypes()[0], value);
+				LOG.debug("trying to set property ["+parentProperty+setter+"] with value ["+value+"] of type ["+castValue.getClass().getCanonicalName()+"] on ["+classLoader.toString()+"]");
+
+				try {
+					method.invoke(loader, castValue);
+				} catch (Exception e) {
+					throw new ConfigurationException("error while calling method ["+setter+"] on classloader ["+classLoader.toString()+"]", e);
+				}
+			}
+
 			try {
-				classLoader = new DatabaseClassLoader(ibisContext, configurationName, parentClassLoader);
+				loader.configure(ibisContext, configurationName);
 			}
 			catch (ConfigurationException ce) {
-				String configNotFoundReportLevel = APP_CONSTANTS.getString(
-						"configurations." + configurationName + ".configNotFoundReportLevel", "ERROR").toUpperCase();
-
 				String msg = "Could not get config '" + configurationName + "' from database, skipping";
-				if(configNotFoundReportLevel.equals("DEBUG")) {
-					LOG.debug(msg);
-				}
-				else if(configNotFoundReportLevel.equals("INFO")) {
-					ibisContext.log(msg);
-				}
-				else if(configNotFoundReportLevel.equals("WARN")) {
-					ConfigurationWarnings.getInstance().add(LOG, msg);
-				}
-				else {
-					if(!configNotFoundReportLevel.equals("ERROR"))
-						ConfigurationWarnings.getInstance().add(LOG, "Invalid configNotFoundReportLevel ["+configNotFoundReportLevel+"], using default [ERROR]");
-					throw ce;
+				switch(loader.getReportLevel()) {
+					case DEBUG:
+						LOG.debug(msg);
+						break;
+					case INFO:
+						ibisContext.log(msg);
+						break;
+					case WARN:
+						ConfigurationWarnings.getInstance().add(LOG, msg);
+						break;
+					case ERROR:
+					default:
+						throw ce;
 				}
 
 				//Break here, we cannot continue when there are ConfigurationExceptions!
 				return null;
 			}
-		} else if ("DummyClassLoader".equals(classLoaderType)) {
-			classLoader = new DummyClassLoader(configurationName, configurationFile);
-		} else if ("WebAppClassLoader".equals(classLoaderType) || "".equals(classLoaderType)) {
-			classLoader = new WebAppClassLoader(parentClassLoader);
-		} else if (classLoaderType != null) {
-			throw new ConfigurationException("Invalid classLoaderType: " + classLoaderType);
+			LOG.info("configured classloader ["+classLoader.toString()+"] for configuration ["+configurationName+"]");
 		}
 
-		//It is possible that no classloader has been defined, use default contextClassloader.
-		if (classLoader == null) {
-			classLoader = parentClassLoader;
-		}
-		LOG.debug(configurationName + " created classloader [" + classLoader.getClass().getSimpleName() + "]");
 		return classLoader;
 	}
 
+	private Object getCastValue(Class<?> class1, String value) {
+		String className = class1.getName().toLowerCase();
+		if("boolean".equals(className))
+			return Boolean.parseBoolean(value);
+		else if("int".equals(className) || "integer".equals(className))
+			return Integer.parseInt(value);
+		else
+			return value;
+	}
+
+	private String firstCharToLower(String input) {
+		return input.substring(0, 1).toLowerCase() + input.substring(1);
+	}
+
 	public ClassLoader init(String configurationName) throws ConfigurationException {
-		String parentConfig = APP_CONSTANTS.getString(
-				"configurations." + configurationName + ".parentConfig", null);
+		String parentConfig = APP_CONSTANTS.getString("configurations." + configurationName + ".parentConfig", null);
 		return init(configurationName, parentConfig);
 	}
 
@@ -121,7 +148,7 @@ public class ClassLoaderManager {
 			throw new ConfigurationException("unable to add configuration with duplicate name ["+configurationName+"]");
 
 		String configurationFile = ibisContext.getConfigurationFile(configurationName);
-		LOG.info("attempting to create new configurationClassLoader for configuration ["+configurationName+"] with file ["+configurationFile+"]");
+		LOG.info("attempting to create new ClassLoader for configuration ["+configurationName+"] with configurationFile ["+configurationFile+"]");
 
 		ClassLoader classLoader;
 		if(parentConfig != null) {
@@ -129,7 +156,7 @@ public class ClassLoaderManager {
 				throw new ConfigurationException("failed to locate parent configuration ["+parentConfig+"]");
 
 			classLoader = createClassloader(configurationName, configurationFile, get(parentConfig));
-			LOG.debug("wrapped configuration ["+configurationName+"] in parentConfig ["+parentConfig+"]");
+			LOG.debug("wrapped classLoader ["+classLoader.toString()+"] in parentConfig ["+parentConfig+"]");
 		}
 		else
 			classLoader = createClassloader(configurationName, configurationFile);

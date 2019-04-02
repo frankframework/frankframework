@@ -175,6 +175,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystem<F>> {
 		PrintWriter pw = new PrintWriter(out);
 		pw.println(contents);
 		pw.close();
+		out.close();
 		waitForActionToFinish();
 		// test
 		existsCheck(filename);
@@ -202,6 +203,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystem<F>> {
 		PrintWriter pw = new PrintWriter(out);
 		pw.println(contents);
 		pw.close();
+		out.close();
 		waitForActionToFinish();
 		// test
 		existsCheck(filename);
@@ -249,6 +251,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystem<F>> {
 		PrintWriter pw = new PrintWriter(out);
 		pw.println(regel2);
 		pw.close();
+		out.close();
 		waitForActionToFinish();
 		// test
 		existsCheck(filename);
@@ -335,33 +338,34 @@ public abstract class FileSystemTest<F, FS extends IFileSystem<F>> {
 		_createFolder(folderName);
 		waitForActionToFinish();
 		
-		assertTrue(_folderExists(folderName));
+		assertTrue("folder does not exist after creation",_folderExists(folderName));
 		
 		F f = fileSystem.toFile(folderName);
 		fileSystem.removeFolder(f);
 		waitForActionToFinish();
 		
-		assertFalse(_folderExists(folderName));
+		assertFalse("folder still exists after removal", _folderExists(folderName));
 	}
 	
 	@Test
 	public void fileSystemTestRenameTo() throws Exception {
 		String fileName = "fileTobeRenamed.txt";
 		
-		_createFile(fileName);
+		createFile(fileName,"");
 		waitForActionToFinish();
 		
 		assertTrue(_fileExists(fileName));
 		
 		String destination = "fileRenamed.txt";
 		deleteFile(destination);
+		waitForActionToFinish();
 		
 		F f = fileSystem.toFile(fileName);
 		fileSystem.renameTo(f, destination);
 		waitForActionToFinish();
 		
-		assertTrue(_fileExists(destination));
-		assertFalse(_fileExists(fileName));
+		assertTrue("Destination must exist",_fileExists(destination));
+		assertFalse("Origin must have disappeared",_fileExists(fileName));
 	}
 	
 	@Test
@@ -369,20 +373,21 @@ public abstract class FileSystemTest<F, FS extends IFileSystem<F>> {
 		exception.expectMessage("Cannot rename file. Destination file already exists.");
 		String fileName = "fileToBeRenamedExisting.txt";
 		
-		_createFile(fileName);
+		createFile(fileName, "");
 		waitForActionToFinish();
 		
 		assertTrue(_fileExists(fileName));
 		
 		String destination = "fileRenamedExists.txt";
-		_createFile(destination);
+		createFile(destination, "");
 		waitForActionToFinish();
 		
 		F f = fileSystem.toFile(fileName);
 		fileSystem.renameTo(f, destination);
 		waitForActionToFinish();
 		
-		assertTrue(_fileExists(fileName));
+		assertTrue("Origin must still exist",_fileExists(fileName));
+		assertTrue("Destination must exist",_fileExists(destination));
 	}
 	
 	@Test
@@ -411,7 +416,7 @@ public abstract class FileSystemTest<F, FS extends IFileSystem<F>> {
 	public void fileSystemTestExistsMethod() throws Exception {
 		String fileName = "fileExists.txt";
 
-		_createFile(fileName);
+		createFile(fileName, "");
 		waitForActionToFinish();
 		F f = fileSystem.toFile(fileName);
 

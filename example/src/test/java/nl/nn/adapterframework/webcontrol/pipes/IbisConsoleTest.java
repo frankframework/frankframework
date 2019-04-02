@@ -59,7 +59,8 @@ public class IbisConsoleTest {
 		System.setProperty("configurations.names", "${instance.name},NotExistingConfig");
 
 		ibisTester.initTest();
-		assertNull(ibisTester.testStartAdapters());
+		String testResult=ibisTester.testStartAdapters();
+		assertNull(testResult,testResult);
 		ibisContext = ibisTester.getIbisContext();
 
 		URL showConfigurationStatusUrl = ClassUtils.getResourceURL(IbisConsoleTest.class,

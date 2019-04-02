@@ -181,6 +181,7 @@ public final class AppConstants extends Properties implements Serializable{
             return null;
         }
 	}
+
 	/**
 	 * Creates a tokenizer from the values of this key.  As a sepearator the "," is used.
 	 * Uses the {@link #getResolvedProperty(String)} method.
@@ -199,6 +200,44 @@ public final class AppConstants extends Properties implements Serializable{
 		if (list==null)
 		  list = defaults;
 	    return new StringTokenizer(list, ",");
+	}
+
+	/**
+	 * Returns a list of {@link AppConstants#getInstance() AppConstants} which names begin with the keyBase
+	 */
+	public Properties getAppConstants(String keyBase) {
+		return getAppConstants(keyBase, true, true);
+	}
+	
+
+	/**
+	 * Returns a list of {@link AppConstants#getInstance() AppConstants} which names begin with the keyBase
+	 */
+	public Properties getAppConstants(String keyBase, boolean useSystemProperties, boolean useEnvironmentVariables) {
+		if(!keyBase.endsWith("."))
+			keyBase +=".";
+
+		AppConstants constants = new AppConstants();
+		constants.putAll(getInstance());
+		if(useSystemProperties)
+			constants.putAll(System.getProperties());
+		if(useEnvironmentVariables) {
+			try {
+				constants.putAll(Misc.getEnvironmentVariables());
+			} catch (IOException e) {
+				log.warn("unable to retrieve environment variables", e);
+			}
+		}
+
+		Properties filteredProperties = new Properties();
+		for(Object objKey: constants.keySet()) {
+			String key = (String) objKey;
+			if(key.startsWith(keyBase)) {
+				filteredProperties.put(key, getInstance().getResolvedProperty(key));
+			}
+		}
+
+		return filteredProperties;
 	}
 
 	/**
