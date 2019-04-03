@@ -39,4 +39,19 @@ public class SambaSender extends FileSystemSender<String, Samba2FileSystem> {
 		getFileSystem().setShare(share);
 	}
 
+	@IbisDoc({ "Type of the authentication either 'NTLM' or 'SPNEGO' ", "SPNEGO" })
+	public void setAuthType(String authType) {
+		getFileSystem().setAuthType(authType);
+	}
+
+	@IbisDoc({ "If authentication type specified as SPNEGO and realm is specified then this field must be filled.", "" })
+	public void setKdc(String kdc) {
+		getFileSystem().setKdc(kdc);
+	}
+
+	@IbisDoc({ "If authentication type specified as SPNEGO this field must be filled. If not filled then default realm is used", "" })
+	public void setRealm(String realm) {
+		getFileSystem().setRealm(realm);
+	}
+
 }
