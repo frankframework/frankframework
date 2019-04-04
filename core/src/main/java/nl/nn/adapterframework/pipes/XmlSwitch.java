@@ -66,6 +66,10 @@ public class XmlSwitch extends AbstractPipe {
     private String emptyForwardName=null;
 	private boolean xslt2=false;
 
+	{
+		setNamespaceAware(false);
+	}
+	
 	/**
 	 * If no {@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename} is specified, the
 	 * switch uses the root node. 
@@ -166,7 +170,7 @@ public class XmlSwitch extends AbstractPipe {
 					parameterList =  getParameterList();
 					parametervalues = prc.getValueMap(parameterList);
 				}
-	           	forward = transformerPool.transform(prc.getInputSource(), parametervalues);
+	           	forward = transformerPool.transform(prc.getInputSource(isNamespaceAware()), parametervalues);
 			}
 		    catch (Throwable e) {
 		   	    throw new PipeRunException(this, getLogPrefix(session)+"got exception on transformation", e);

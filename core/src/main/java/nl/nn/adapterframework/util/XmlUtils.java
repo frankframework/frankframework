@@ -179,7 +179,7 @@ public class XmlUtils {
 		TransformerPool result = utilityTPs.get(fullKey);
 		if (result==null) {
 			try {
-				TransformerPool newtp=TransformerPool.getInstance(xslt, xsltVersion);
+				TransformerPool newtp=TransformerPool.getInstance(xslt, key, xsltVersion);
 				result=utilityTPs.put(fullKey, newtp);
 				if (result==null) {
 					result=newtp;
@@ -745,11 +745,13 @@ public class XmlUtils {
 	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of, and enables use of parameters.
 	 */
 	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List params, boolean stripSpace, String separator) throws TransformerConfigurationException {
-		if (StringUtils.isEmpty(XPathExpression))
+		if (StringUtils.isEmpty(XPathExpression)) {
 			throw new TransformerConfigurationException("XPathExpression must be filled");
-
+		}
+		boolean namespaceAware=false;
 		String namespaceClause = "";
-		if (namespaceDefs != null) {
+		if (StringUtils.isNotEmpty(namespaceDefs)) {
+			namespaceAware=true;
 			StringTokenizer st1 = new StringTokenizer(namespaceDefs,", \t\r\n\f");
 			while (st1.hasMoreTokens()) {
 				String namespaceDef = st1.nextToken();
@@ -782,7 +784,7 @@ public class XmlUtils {
 		}
 		String xsl =
 			// "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-			"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
+			"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\""+(namespaceAware?"2.0":"1.0")+"\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
 			"<xsl:output method=\""+outputMethod+"\" omit-xml-declaration=\""+ (includeXmlDeclaration ? "no": "yes") +"\"/>" +
 			(stripSpace?"<xsl:strip-space elements=\"*\"/>":"") +
 			paramsString +
