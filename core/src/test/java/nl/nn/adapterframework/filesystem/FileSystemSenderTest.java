@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.senders;
+package nl.nn.adapterframework.filesystem;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -7,9 +7,8 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Base64;
+import org.apache.commons.codec.binary.Base64;
 import java.util.Iterator;
 
 import org.junit.Before;
@@ -19,9 +18,9 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.filesystem.IFileSystem;
-import nl.nn.adapterframework.filesystems.FileSystemTest;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.senders.FileSystemSender;
 
 public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends FileSystemTest<F, FS> {
 
@@ -113,7 +112,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 			_deleteFile(filename);
 		}
 
-		InputStream stream = new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8));
+		InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
 		PipeLineSessionBase session = new PipeLineSessionBase();
 		session.put("uploadActionTarget", stream);
 
@@ -151,7 +150,7 @@ public abstract class FileSystemSenderTest<F, FS extends IFileSystem<F>> extends
 		String actual;
 		actual = fileSystemSender.sendMessage("<result>ok</result>", filename);
 		
-		String contentsBase64 = Base64.getEncoder().encodeToString(contents.getBytes());
+		String contentsBase64 = Base64.encodeBase64String(contents.getBytes());
 		// test
 		assertEquals(contentsBase64.trim(), actual.trim());
 	}

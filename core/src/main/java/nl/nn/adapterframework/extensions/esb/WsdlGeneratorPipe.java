@@ -84,8 +84,15 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		PipeLine pipeLine;
 		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 		try {
-			DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(tempDir.getPath());
+			// TODO why is this using a DirectoryClassloader?
+			// can't we use the current classloader? FixedForwardPipe#classLoader
+			// or even the configuration classloader? getAdapter().getConfiguration().getClassLoader()
+
+			DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(originalClassLoader);
+			directoryClassLoader.setDirectory(tempDir.getPath());
+			directoryClassLoader.configure(getAdapter().getConfiguration().getIbisManager().getIbisContext(), "dummy");
 			Thread.currentThread().setContextClassLoader(directoryClassLoader);
+
 			if (propertiesFile.exists()) {
 				pipeLine = createPipeLineFromPropertiesFile(propertiesFile);
 			} else {
@@ -131,8 +138,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			wsdl.setUseIncludes(true);
 			wsdl.zip(zipOut, null);
 			// full wsdl (without includes)
-			File fullWsdlOutFile = new File(wsdlDir, wsdl.getFilename()
-					+ ".wsdl");
+			File fullWsdlOutFile = new File(wsdlDir, wsdl.getFilename()+ ".wsdl");
 			fullWsdlOutFile.deleteOnExit();
 			fullWsdlOut = new FileOutputStream(fullWsdlOutFile);
 			wsdl.setUseIncludes(false);
@@ -218,10 +224,8 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		String countRoot = null;
 		try {
 			String countRootXPath = "count(*/*[local-name()='element'])";
-			TransformerPool tp = TransformerPool.getInstance(
-					XmlUtils.createXPathEvaluatorSource(countRootXPath, "text"));
-			countRoot = tp
-					.transform(Misc.fileToString(xsdFile.getPath()), null);
+			TransformerPool tp = XmlUtils.getXPathTransformerPool(null, countRootXPath, "text", false, null);
+			countRoot = tp.transform(Misc.fileToString(xsdFile.getPath()), null);
 			if (StringUtils.isNotEmpty(countRoot)) {
 				log.debug("counted [" + countRoot
 						+ "] root elements in xsd file [" + xsdFile.getName()
@@ -249,9 +253,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			if (StringUtils.isEmpty(namespace)) {
 				String xsdTargetNamespace = null;
 				try {
-					TransformerPool tp = TransformerPool.getInstance(
-							XmlUtils.createXPathEvaluatorSource(
-									"*/@targetNamespace", "text"));
+					TransformerPool tp = XmlUtils.getXPathTransformerPool(null, "*/@targetNamespace", "text", false, null);
 					xsdTargetNamespace = tp.transform(
 							Misc.fileToString(xsdFile.getPath()), null);
 					if (StringUtils.isNotEmpty(xsdTargetNamespace)) {
@@ -286,11 +288,8 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			if (StringUtils.isEmpty(root)) {
 				String xsdRoot = null;
 				try {
-					String rootXPath = "*/*[local-name()='element']["
-							+ rootPosition + "]/@name";
-					TransformerPool tp = TransformerPool.getInstance(
-							XmlUtils.createXPathEvaluatorSource(rootXPath,
-									"text"));
+					String rootXPath = "*/*[local-name()='element']["+ rootPosition + "]/@name";
+					TransformerPool tp = XmlUtils.getXPathTransformerPool(null, rootXPath, "text", false, null);
 					xsdRoot = tp.transform(
 							Misc.fileToString(xsdFile.getPath()), null);
 					if (StringUtils.isNotEmpty(xsdRoot)) {
