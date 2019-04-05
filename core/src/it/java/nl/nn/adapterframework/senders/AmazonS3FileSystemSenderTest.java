@@ -111,12 +111,12 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 	}
 
 	@Override
-	protected void _deleteFile(String filename) {
+	protected void _deleteFile(String folder, String filename) {
 		s3Client.deleteObject(bucketName, filename);
 	}
 
 	@Override
-	protected OutputStream _createFile(final String filename) throws IOException {
+	protected OutputStream _createFile(String foldername, final String filename) throws IOException {
 		TemporaryFolder folder = new TemporaryFolder();
 		folder.create();
 
@@ -146,7 +146,7 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 	}
 
 	@Override
-	protected InputStream _readFile(String filename) throws FileNotFoundException {
+	protected InputStream _readFile(String folder, String filename) throws FileNotFoundException {
 		final S3Object file = s3Client.getObject(bucketName, filename);
 		InputStream is = file.getObjectContent();
 		FilterInputStream fos = new FilterInputStream(is) {
@@ -172,7 +172,7 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 
 	@Override
 	protected void _deleteFolder(String folderName) throws Exception {
-		deleteFile(folderName);
+		deleteFile(null, folderName);
 	}
 
 	@Test
@@ -223,7 +223,7 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 		ParameterResolutionContext prc = new ParameterResolutionContext();
 		prc.setSession(session);
 		if (_fileExists(dest)) {
-			_deleteFile(dest);
+			_deleteFile(null, dest);
 		}
 		String fileName = "testcopy/testCopy.txt";
 
@@ -238,11 +238,11 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 		assertEquals(dest, result);
 	}
 
-	@Override
-	@Test
-	public void fileSystemTestAppendFile() throws Exception {
-		// Ignored because S3 does not support append.
-		super.fileSystemTestAppendFile();
-	}
+//	@Override
+//	@Test
+//	public void fileSystemTestAppendFile() throws Exception {
+//		// Ignored because S3 does not support append.
+//		super.fileSystemTestAppendFile();
+//	}
 
 }

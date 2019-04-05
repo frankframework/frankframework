@@ -23,8 +23,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -32,12 +33,12 @@ import org.apache.log4j.Logger;
 
 import microsoft.exchange.webservices.data.core.ExchangeService;
 import microsoft.exchange.webservices.data.core.PropertySet;
+import microsoft.exchange.webservices.data.core.WebProxy;
 import microsoft.exchange.webservices.data.core.enumeration.misc.ExchangeVersion;
 import microsoft.exchange.webservices.data.core.enumeration.property.WellKnownFolderName;
 import microsoft.exchange.webservices.data.core.enumeration.search.SortDirection;
 import microsoft.exchange.webservices.data.core.enumeration.service.DeleteMode;
 import microsoft.exchange.webservices.data.core.exception.service.local.ServiceLocalException;
-import microsoft.exchange.webservices.data.core.service.folder.Folder;
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import microsoft.exchange.webservices.data.core.service.item.Item;
 import microsoft.exchange.webservices.data.core.service.schema.EmailMessageSchema;
@@ -45,6 +46,7 @@ import microsoft.exchange.webservices.data.core.service.schema.FolderSchema;
 import microsoft.exchange.webservices.data.core.service.schema.ItemSchema;
 import microsoft.exchange.webservices.data.credential.ExchangeCredentials;
 import microsoft.exchange.webservices.data.credential.WebCredentials;
+import microsoft.exchange.webservices.data.credential.WebProxyCredentials;
 import microsoft.exchange.webservices.data.property.complex.Attachment;
 import microsoft.exchange.webservices.data.property.complex.AttachmentCollection;
 import microsoft.exchange.webservices.data.property.complex.EmailAddress;
@@ -57,7 +59,6 @@ import microsoft.exchange.webservices.data.property.complex.ItemId;
 import microsoft.exchange.webservices.data.property.complex.Mailbox;
 import microsoft.exchange.webservices.data.property.complex.MessageBody;
 import microsoft.exchange.webservices.data.property.complex.MimeContent;
-import microsoft.exchange.webservices.data.property.definition.PropertyDefinition;
 import microsoft.exchange.webservices.data.search.FindFoldersResults;
 import microsoft.exchange.webservices.data.search.FindItemsResults;
 import microsoft.exchange.webservices.data.search.FolderView;
@@ -65,9 +66,11 @@ import microsoft.exchange.webservices.data.search.ItemView;
 import microsoft.exchange.webservices.data.search.filter.SearchFilter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.filesystem.ExchangeWebServicesSender.RedirectionUrlCallback;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -104,7 +107,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * <tr><td>{@link #setMailAddress(String) mailAddress}</td><td>mail address (also used for auto discovery)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUrl(String) url}</td><td>(only used when mailAddress is empty) url of the service</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to exchange mail server</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to exchange mail server</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setUsername(String) username}</td><td>username used in authentication to exchange mail server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setInputFolder(String) inputFolder}</td><td>folder (subfolder of inbox) to look for mails. If empty, the inbox folder is used</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFilter(String) filter}</td><td>If empty, all mails are retrieved. If 'NDR' only Non-Delivery Report mails ('bounces') are retrieved</td><td>&nbsp;</td></tr>
@@ -118,30 +121,76 @@ public class ExchangeFileSystem implements IBasicFileSystem<Item>, HasPhysicalDe
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String mailAddress;
+	private boolean validateAllRedirectUrls=true;
 	private String url;
 	private String authAlias;
-	private String userName;
+	private String username;
 	private String password;
 	private String inputFolder;
 	private String filter;
 	private boolean simple = false;
+	private boolean readMimeContents=false;
+	private int maxNumberOfMessagesToList=10;
+
+	private String proxyHost = null;
+	private int proxyPort = 8080;
+	private String proxyAuthAlias = null;
+	private String proxyUsername = null;
+	private String proxyPassword = null;
+	private String proxyDomain = null;
 
 	private ExchangeService exchangeService;
-	private Folder folderIn;
+	private FolderId folderId;
 
 
+	@Override
 	public void configure() throws ConfigurationException {
+		if (StringUtils.isNotEmpty(getFilter())) {
+			if (!getFilter().equalsIgnoreCase("NDR")) {
+				throw new ConfigurationException("illegal value for filter [" + getFilter()	+ "], must be 'NDR' or empty");
+			}
+		}
+	}
+	
+	
+	@Override
+	public void open() throws FileSystemException {
 		try {
 			exchangeService = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
-			CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
+			String usernameToUse=StringUtils.isNotEmpty(getUsername())?getUsername():getMailAddress();
+			CredentialFactory cf = new CredentialFactory(getAuthAlias(), usernameToUse, getPassword());
 			ExchangeCredentials credentials = new WebCredentials(cf.getUsername(), cf.getPassword());
 			exchangeService.setCredentials(credentials);
+
+			if (StringUtils.isNotEmpty(getProxyHost()) && (StringUtils.isNotEmpty(getProxyAuthAlias()) || StringUtils.isNotEmpty(getProxyUsername()) || StringUtils.isNotEmpty(getProxyPassword()))) {
+				CredentialFactory proxyCf = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
+				WebProxyCredentials webProxyCredentials = new WebProxyCredentials(proxyCf.getUsername(), proxyCf.getPassword(), getProxyDomain());
+				WebProxy webProxy = new WebProxy(getProxyHost(), getProxyPort(), webProxyCredentials);
+				exchangeService.setWebProxy(webProxy);
+			}
+
+			RedirectionUrlCallback redirectionUrlCallback = new RedirectionUrlCallback() {
+
+				@Override
+				public boolean autodiscoverRedirectionUrlValidationCallback(String redirectionUrl) {
+					if (isValidateAllRedirectUrls()) {
+						log.debug("validated redirection url ["+redirectionUrl+"]");
+						return true;
+					}
+					log.debug("did not validate redirection url ["+redirectionUrl+"]");
+					return super.autodiscoverRedirectionUrlValidationCallback(redirectionUrl);
+				}
+				
+			};
+
 			if (StringUtils.isNotEmpty(getMailAddress())) {
-				exchangeService.autodiscoverUrl(getMailAddress());
+				log.debug("performing autodiscovery for ["+getMailAddress()+"]");
+				exchangeService.autodiscoverUrl(getMailAddress(),redirectionUrlCallback);
 			} else {
 				exchangeService.setUrl(new URI(getUrl()));
 			}
 
+			log.debug("searching inbox");
 			FolderId inboxId;
 			if (StringUtils.isNotEmpty(getMailAddress())) {
 				Mailbox mailbox = new Mailbox(getMailAddress());
@@ -149,7 +198,8 @@ public class ExchangeFileSystem implements IBasicFileSystem<Item>, HasPhysicalDe
 			} else {
 				inboxId = new FolderId(WellKnownFolderName.Inbox);
 			}
-
+			log.debug("determined inbox ["+inboxId+"]");
+	
 			FindFoldersResults findFoldersResultsIn;
 			FolderView folderViewIn = new FolderView(10);
 			if (StringUtils.isNotEmpty(getInputFolder())) {
@@ -163,25 +213,20 @@ public class ExchangeFileSystem implements IBasicFileSystem<Item>, HasPhysicalDe
 			} else {
 				findFoldersResultsIn = exchangeService.findFolders(inboxId,	folderViewIn);
 			}
-			folderIn = findFoldersResultsIn.getFolders().get(0);
-
-			if (StringUtils.isNotEmpty(getFilter())) {
-				if (!getFilter().equalsIgnoreCase("NDR")) {
-					throw new ConfigurationException("illegal value for filter [" + getFilter()	+ "], must be 'NDR' or empty");
-				}
+			if (findFoldersResultsIn.getFolders().isEmpty()) {
+				folderId=inboxId;
+			} else {
+				folderId =findFoldersResultsIn.getFolders().get(0).getId();
 			}
-
 		} catch (Exception e) {
-			throw new ConfigurationException(e);
+			throw new FileSystemException(e);
 		}
 	}
 	
-	
-	@Override
-	public void open() throws FileSystemException {
-	}
+
 	@Override
 	public void close() throws FileSystemException {
+		exchangeService.close();
 	}
 	
 	
@@ -198,20 +243,29 @@ public class ExchangeFileSystem implements IBasicFileSystem<Item>, HasPhysicalDe
 
 	@Override
 	public boolean exists(Item f) throws FileSystemException {
-		return true; // TODO: how to determine if an mail exists? Search for it?
+		try {
+			ItemView view = new ItemView(1);
+			view.getOrderBy().add(ItemSchema.DateTimeReceived, SortDirection.Ascending);
+			SearchFilter searchFilter =  new SearchFilter.IsEqualTo(ItemSchema.Id, f.getId().toString());
+			FindItemsResults<Item> findResults;
+			findResults = exchangeService.findItems(folderId,searchFilter, view);
+			return findResults.getTotalCount()!=0;
+		} catch (Exception e) {
+			throw new FileSystemException(e);
+		}
 	}
 
 	@Override
-	public Iterator<Item> listFiles() throws FileSystemException {
+	public Iterator<Item> listFiles(String folder) throws FileSystemException {
 		try {
-			ItemView view = new ItemView(1);
+			ItemView view = new ItemView(getMaxNumberOfMessagesToList());
 			view.getOrderBy().add(ItemSchema.DateTimeReceived, SortDirection.Ascending);
 			FindItemsResults<Item> findResults;
 			if ("NDR".equalsIgnoreCase(getFilter())) {
 				SearchFilter searchFilterBounce = new SearchFilter.IsEqualTo(ItemSchema.ItemClass, "REPORT.IPM.Note.NDR");
-				findResults = exchangeService.findItems(folderIn.getId(),searchFilterBounce, view);
+				findResults = exchangeService.findItems(folderId,searchFilterBounce, view);
 			} else {
-				findResults = exchangeService.findItems(folderIn.getId(), view);
+				findResults = exchangeService.findItems(folderId, view);
 			}
 			if (findResults.getTotalCount() == 0) {
 				return null;
@@ -240,9 +294,15 @@ public class ExchangeFileSystem implements IBasicFileSystem<Item>, HasPhysicalDe
 //		
 		try {
 			emailMessage = EmailMessage.bind(exchangeService, f.getId(), ps);
-			emailMessage.load(new PropertySet(ItemSchema.MimeContent));
-			MimeContent mc = emailMessage.getMimeContent();
-			ByteArrayInputStream bis = new ByteArrayInputStream(mc.getContent());
+			if (isReadMimeContents()) {
+				emailMessage.load(new PropertySet(ItemSchema.MimeContent));
+				MimeContent mc = emailMessage.getMimeContent();
+				ByteArrayInputStream bis = new ByteArrayInputStream(mc.getContent());
+				return bis;
+			}
+			emailMessage.load(new PropertySet(ItemSchema.Body));
+			String body =MessageBody.getStringFromMessageBody(emailMessage.getBody());
+			ByteArrayInputStream bis = new ByteArrayInputStream(body.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
 			return bis;
 		} catch (Exception e) {
 			throw new FileSystemException(e);
@@ -258,12 +318,12 @@ public class ExchangeFileSystem implements IBasicFileSystem<Item>, HasPhysicalDe
 		}
 	}
 	@Override
-	public void moveFile(Item f, String destinationFolder) throws FileSystemException {
-		throw new NotImplementedException("Exchange does not support rename");
+	public Item moveFile(Item f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		throw new NotImplementedException("Must implement move");
 	}
 
 	@Override
-	public long getFileSize(Item f, boolean isFolder) throws FileSystemException {
+	public long getFileSize(Item f) throws FileSystemException {
 		try {
 			return f.getSize();
 		} catch (ServiceLocalException e) {
@@ -271,15 +331,15 @@ public class ExchangeFileSystem implements IBasicFileSystem<Item>, HasPhysicalDe
 		}
 	}
 	@Override
-	public String getName(Item f) throws FileSystemException {
+	public String getName(Item f) {
 		try {
 			return f.getId().toString();
 		} catch (ServiceLocalException e) {
-			throw new FileSystemException("Could not determine name",e);
+			throw new RuntimeException("Could not determine name",e);
 		}
 	}
 	@Override
-	public String getCanonicalName(Item f, boolean isFolder) throws FileSystemException {
+	public String getCanonicalName(Item f) throws FileSystemException {
 		try {
 			return f.getId().getUniqueId();
 		} catch (ServiceLocalException e) {
@@ -287,27 +347,50 @@ public class ExchangeFileSystem implements IBasicFileSystem<Item>, HasPhysicalDe
 		}
 	}
 	@Override
-	public Date getModificationTime(Item f, boolean isFolder) throws FileSystemException {
+	public Date getModificationTime(Item f) throws FileSystemException {
 		try {
 			return f.getLastModifiedTime();
 		} catch (ServiceLocalException e) {
 			throw new FileSystemException("Could not determine modification time",e);
 		}
 	}
+	
+	private List<String> makeListOfAdresses(EmailAddressCollection addresses) {
+		List<String> adressList = new LinkedList<String>();
+		for (EmailAddress emailAddress : addresses) {
+			adressList.add(emailAddress.getAddress());
+		}	
+		return adressList;
+	}
+	
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(Item f) throws FileSystemException {
 		EmailMessage emailMessage;
-		PropertySet ps = new PropertySet(EmailMessageSchema.DateTimeReceived,
-				EmailMessageSchema.From, EmailMessageSchema.Subject,
-				EmailMessageSchema.Body,
-				EmailMessageSchema.DateTimeSent);
-		
+//		PropertySet ps = new PropertySet(EmailMessageSchema.DateTimeReceived,
+//				EmailMessageSchema.From, EmailMessageSchema.Subject,
+//				EmailMessageSchema.Body,
+//				EmailMessageSchema.DateTimeSent);
+		PropertySet ps=PropertySet.FirstClassProperties;
 		try {
 			emailMessage = EmailMessage.bind(exchangeService, f.getId(), ps);
 			Map<String, Object> result=new LinkedHashMap<String,Object>();
-			for (Entry<PropertyDefinition, Object> entry:emailMessage.getPropertyBag().getProperties().entrySet()) {
-				result.put(entry.getKey().getName(), entry.getValue());
+			result.put("mailId", emailMessage.getInternetMessageId());
+			result.put("toRecipients", makeListOfAdresses(emailMessage.getToRecipients()));
+			result.put("ccRecipients", makeListOfAdresses(emailMessage.getCcRecipients()));
+			result.put("bccRecipients", makeListOfAdresses(emailMessage.getBccRecipients()));
+			result.put("from", emailMessage.getFrom().getAddress());
+			result.put("subject", emailMessage.getSubject());
+			result.put("dateTimeSent", emailMessage.getDateTimeSent());
+			result.put("dateTimeReceived", emailMessage.getDateTimeReceived());
+			Map<String,String> headers = new LinkedHashMap<String,String>();
+			for(InternetMessageHeader internetMessageHeader : emailMessage.getInternetMessageHeaders()) {
+				headers.put(internetMessageHeader.getName(), internetMessageHeader.getValue());
 			}
+			result.put("headers", headers);
+			
+//			for (Entry<PropertyDefinition, Object> entry:emailMessage.getPropertyBag().getProperties().entrySet()) {
+//				result.put(entry.getKey().getName(), entry.getValue());
+//			}
 			return result;
 		} catch (Exception e) {
 			throw new FileSystemException(e);
@@ -334,8 +417,7 @@ public class ExchangeFileSystem implements IBasicFileSystem<Item>, HasPhysicalDe
 	/*
 	 * addEmailInfo copied from ExchangListener, to have ideas what could be useful for getAdditionalFileProperties()
 	 */
-	private void addEmailInfo(EmailMessage emailMessage, XmlBuilder emailXml)
-			throws Exception {
+	private void addEmailInfo(EmailMessage emailMessage, XmlBuilder emailXml) throws Exception {
 		XmlBuilder recipientsXml = new XmlBuilder("recipients");
 		EmailAddressCollection eacTo = emailMessage.getToRecipients();
 		if (eacTo != null) {
@@ -430,6 +512,7 @@ public class ExchangeFileSystem implements IBasicFileSystem<Item>, HasPhysicalDe
 	}
 
 
+	@Override
 	public String getPhysicalDestinationName() {
 		if (exchangeService != null) {
 			return "url [" + exchangeService.getUrl() + "]";
@@ -439,36 +522,43 @@ public class ExchangeFileSystem implements IBasicFileSystem<Item>, HasPhysicalDe
 
 
 
-	public void setMailAddress(String string) {
-		mailAddress = string;
+	public void setMailAddress(String mailAddress) {
+		this.mailAddress = mailAddress;
 	}
 	public String getMailAddress() {
 		return mailAddress;
 	}
 
-	public void setUrl(String string) {
-		url = string;
+	public boolean isValidateAllRedirectUrls() {
+		return validateAllRedirectUrls;
+	}
+	public void setValidateAllRedirectUrls(boolean validateAllRedirectUrls) {
+		this.validateAllRedirectUrls = validateAllRedirectUrls;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
 	}
 	public String getUrl() {
 		return url;
 	}
 
-	public void setAuthAlias(String string) {
-		authAlias = string;
+	public void setAuthAlias(String authAlias) {
+		this.authAlias = authAlias;
 	}
 	public String getAuthAlias() {
 		return authAlias;
 	}
 
-	public void setUserName(String string) {
-		userName = string;
+	public void setUsername(String username) {
+		this.username = username;
 	}
-	public String getUserName() {
-		return userName;
+	public String getUsername() {
+		return username;
 	}
 
-	public void setPassword(String string) {
-		password = string;
+	public void setPassword(String password) {
+		this.password = password;
 	}
 	public String getPassword() {
 		return password;
@@ -481,8 +571,8 @@ public class ExchangeFileSystem implements IBasicFileSystem<Item>, HasPhysicalDe
 		return inputFolder;
 	}
 
-	public void setFilter(String string) {
-		filter = string;
+	public void setFilter(String filter) {
+		this.filter = filter;
 	}
 	public String getFilter() {
 		return filter;
@@ -496,4 +586,64 @@ public class ExchangeFileSystem implements IBasicFileSystem<Item>, HasPhysicalDe
 	}
 
 
+	public boolean isReadMimeContents() {
+		return readMimeContents;
+	}
+
+
+	public void setReadMimeContents(boolean readMimeContents) {
+		this.readMimeContents = readMimeContents;
+	}
+
+
+	public int getMaxNumberOfMessagesToList() {
+		return maxNumberOfMessagesToList;
+	}
+
+
+	public void setMaxNumberOfMessagesToList(int maxNumberOfMessagesToList) {
+		this.maxNumberOfMessagesToList = maxNumberOfMessagesToList;
+	}
+
+	public void setProxyHost(String proxyHost) {
+		this.proxyHost = proxyHost;
+	}
+	public String getProxyHost() {
+		return proxyHost;
+	}
+
+	public void setProxyPort(int proxyPort) {
+		this.proxyPort = proxyPort;
+	}
+	public int getProxyPort() {
+		return proxyPort;
+	}
+
+	public void setProxyAuthAlias(String proxyAuthAlias) {
+		this.proxyAuthAlias = proxyAuthAlias;
+	}
+	public String getProxyAuthAlias() {
+		return proxyAuthAlias;
+	}
+
+	public void setProxyUsername(String proxyUsername) {
+		this.proxyUsername = proxyUsername;
+	}
+	public String getProxyUsername() {
+		return proxyUsername;
+	}
+
+	public void setProxyPassword(String proxyPassword) {
+		this.proxyPassword = proxyPassword;
+	}
+	public String getProxyPassword() {
+		return proxyPassword;
+	}
+
+	public void setProxyDomain(String proxyDomain) {
+		this.proxyDomain = proxyDomain;
+	}
+	public String getProxyDomain() {
+		return proxyDomain;
+	}
 }

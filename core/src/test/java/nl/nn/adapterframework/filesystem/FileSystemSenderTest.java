@@ -3,21 +3,21 @@ package nl.nn.adapterframework.filesystem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import org.apache.commons.codec.binary.Base64;
 import java.util.Iterator;
 
+import org.apache.commons.codec.binary.Base64;
 import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.filesystem.FileSystemException;
-import nl.nn.adapterframework.filesystem.IWritableFileSystem;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.extensions.graphviz.GraphvizException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
@@ -31,10 +31,24 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		return fileSystemSender;
 	}
 
+	@Override
 	@Before
 	public void setUp() throws ConfigurationException, IOException, FileSystemException {
 		super.setUp();
 		fileSystemSender = createFileSystemSender();
+	}
+
+	@Test
+	public void fileSenderTestConfigure() throws Exception {
+		fileSystemSender.setAction("list");
+		fileSystemSender.configure();
+	}
+
+	@Test
+	public void fileSenderTestOpen() throws Exception {
+		fileSystemSender.setAction("list");
+		fileSystemSender.configure();
+		fileSystemSender.open();
 	}
 
 	@Test
@@ -43,7 +57,7 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		String contents = "Some text content to test upload action\n";
 		
 		if (_fileExists(filename)) {
-			_deleteFile(filename);
+			_deleteFile(null, filename);
 		}
 
 		PipeLineSessionBase session = new PipeLineSessionBase();
@@ -56,6 +70,7 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		fileSystemSender.addParameter(p);
 		fileSystemSender.setAction("upload");
 		fileSystemSender.configure();
+		fileSystemSender.open();
 
 		ParameterResolutionContext prc = new ParameterResolutionContext();
 		prc.setSession(session);
@@ -64,7 +79,7 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		actual = fileSystemSender.sendMessage("<result>ok</result>", filename, prc);
 		waitForActionToFinish();
 		
-		actual = readFile(filename);
+		actual = readFile(null, filename);
 		// test
 		assertEquals(contents.trim(), actual.trim());
 	}
@@ -75,7 +90,7 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		String contents = "Some text content to test upload action\n";
 		
 		if (_fileExists(filename)) {
-			_deleteFile(filename);
+			_deleteFile(null, filename);
 		}
 
 		PipeLineSessionBase session = new PipeLineSessionBase();
@@ -88,6 +103,7 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		fileSystemSender.addParameter(p);
 		fileSystemSender.setAction("upload");
 		fileSystemSender.configure();
+		fileSystemSender.open();
 
 		ParameterResolutionContext prc = new ParameterResolutionContext();
 		prc.setSession(session);
@@ -97,7 +113,7 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		waitForActionToFinish();
 		waitForActionToFinish();
 		
-		actual = readFile(filename);
+		actual = readFile(null, filename);
 		// test
 		assertEquals(contents.trim(), actual.trim());
 	}
@@ -108,7 +124,7 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		String contents = "Some text content to test upload action\n";
 		
 		if (_fileExists(filename)) {
-			_deleteFile(filename);
+			_deleteFile(null, filename);
 		}
 
 		InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
@@ -122,6 +138,7 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		fileSystemSender.addParameter(p);
 		fileSystemSender.setAction("upload");
 		fileSystemSender.configure();
+		fileSystemSender.open();
 
 		ParameterResolutionContext prc = new ParameterResolutionContext();
 		prc.setSession(session);
@@ -130,7 +147,7 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		actual = fileSystemSender.sendMessage("<result>ok</result>", filename, prc);
 		waitForActionToFinish();
 
-		actual = readFile(filename);
+		actual = readFile(null, filename);
 		// test
 		assertEquals(contents.trim(), actual.trim());
 	}
@@ -140,11 +157,12 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		String filename = "sender" + FILE1;
 		String contents = "Tekst om te lezen";
 		
-		createFile(filename, contents);
+		createFile(null, filename, contents);
 		waitForActionToFinish();
 
 		fileSystemSender.setAction("download");
 		fileSystemSender.configure();
+		fileSystemSender.open();
 		
 		String actual;
 		actual = fileSystemSender.sendMessage("<result>ok</result>", filename);
@@ -164,6 +182,7 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 
 		fileSystemSender.setAction("mkdir");
 		fileSystemSender.configure();
+		fileSystemSender.open();
 		
 		String message = "<result>ok</result>";
 		String actual;
@@ -188,6 +207,7 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 
 		fileSystemSender.setAction("rmdir");
 		fileSystemSender.configure();
+		fileSystemSender.open();
 		
 		String message = "<result>ok</result>";
 		String actual;
@@ -207,11 +227,12 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		String filename = "tobedeleted" + FILE1;
 		
 		if (!_fileExists(filename)) {
-			createFile(filename, "is not empty");
+			createFile(null, filename, "is not empty");
 		}
 
 		fileSystemSender.setAction("delete");
 		fileSystemSender.configure();
+		fileSystemSender.open();
 		
 		String message = "<result>ok</result>";
 		String actual;
@@ -231,7 +252,7 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		String dest = "renamed" + FILE1;
 		
 		if (!_fileExists(filename)) {
-			createFile(filename, "is not empty");
+			createFile(null, filename, "is not empty");
 		}
 
 		Parameter p = new Parameter();
@@ -241,12 +262,13 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		fileSystemSender.addParameter(p);
 		fileSystemSender.setAction("rename");
 		fileSystemSender.configure();
+		fileSystemSender.open();
 
 		PipeLineSessionBase session = new PipeLineSessionBase();
 		ParameterResolutionContext prc = new ParameterResolutionContext();
 		prc.setSession(session);
 
-		deleteFile(dest);
+		deleteFile(null, dest);
 
 		String message = "<result>ok</result>";
 		String actual;
@@ -264,25 +286,71 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		assertTrue("Expected file [" + dest + "] " + "to be present", result);
 	}
 
-	@Test
-	public void fileSystemSenderListActionTest() throws Exception {
+	public void fileSystemSenderListActionTest(String inputFolder) throws Exception {
 
 		fileSystemSender.setAction("list");
+		if (inputFolder!=null) {
+			fileSystemSender.setInputFolder(inputFolder);
+		}
 		fileSystemSender.configure();
+		fileSystemSender.open();
 
 		String result = fileSystemSender.sendMessage(null, "");
 
-		Iterator<F> it = fileSystem.listFiles();
+		log.debug(result);
+		
+		Iterator<F> it = fileSystem.listFiles(inputFolder);
 		int count = 0;
 		while (it.hasNext()) {
 			it.next();
 			count++;
 		}
-
-		String[] resultArray = result.split("\"");
 		
-		int resultCount = Integer.valueOf(resultArray[Arrays.asList(resultArray).indexOf(" count=")+1]);
+		String anchor=" count=\"";
+		int posCount=result.indexOf(anchor);
+		if (posCount<0) {
+			fail("result does not contain anchor ["+anchor+"]");
+		}
+		int posQuote=result.indexOf('"',posCount+anchor.length());
+		
+		int resultCount = Integer.valueOf(result.substring(posCount+anchor.length(), posQuote));
 		// test
-		assertEquals(count, resultCount);
+		assertEquals("count mismatch",count, resultCount);
 	}
+
+	@Test
+	public void fileSystemSenderListActionTestInRoot() throws Exception {
+		fileSystemSenderListActionTest(null);
+	}
+
+	@Test
+	public void fileSystemSenderListActionTestInFolder() throws Exception {
+		_createFolder("folder");
+		fileSystemSenderListActionTest("folder");
+	}
+	
+	@Test(expected = SenderException.class)
+	public void fileSystemSenderTestForFolderExistenceWithNonExistingFolder() throws Exception {
+		fileSystemSender.setAction("list");
+		fileSystemSender.setInputFolder("NonExistentFolder");
+		fileSystemSender.configure();
+		fileSystemSender.open();
+	}
+
+	@Test
+	public void fileSystemSenderTestForFolderExistenceWithExistingFolder() throws Exception {
+		_createFolder("folder");
+		fileSystemSender.setAction("list");
+		fileSystemSender.setInputFolder("folder");
+		fileSystemSender.configure();
+		fileSystemSender.open();
+	}
+
+	@Test()
+	public void fileSystemSenderTestForFolderExistenceWithRoot() throws Exception {
+		fileSystemSender.setAction("list");
+		fileSystemSender.configure();
+		fileSystemSender.open();
+	}
+	
 }

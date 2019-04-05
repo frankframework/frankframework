@@ -30,9 +30,10 @@ public interface IWritableFileSystem<F> extends IBasicFileSystem<F> {
 	public OutputStream createFile(F f) throws FileSystemException, IOException;
 	public OutputStream appendFile(F f) throws FileSystemException, IOException;
 	/**
-	 * Renames the file to a new name in the same folder.
+	 * Renames the file to a new name in the same folder, returns the 'new' file.
+	 * @param force when true, overwrites existing file, eventually
 	 */
-	public void renameFile(F f, String newName) throws FileSystemException;
+	public F renameFile(F f, String newName, boolean force) throws FileSystemException;
 
 	public void createFolder(F f) throws FileSystemException;
 	public void removeFolder(F f) throws FileSystemException;

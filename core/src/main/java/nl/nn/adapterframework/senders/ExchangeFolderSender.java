@@ -30,7 +30,7 @@ import nl.nn.adapterframework.filesystem.FileSystemSender;
  * <tr><td>{@link #setMailAddress(String) mailAddress}</td><td>mail address (also used for auto discovery)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUrl(String) url}</td><td>(only used when mailAddress is empty) url of the service</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to exchange mail server</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to exchange mail server</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setUsername(String) username}</td><td>username used in authentication to exchange mail server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFilter(String) filter}</td><td>If empty, all mails are retrieved. If 'NDR' only Non-Delivery Report mails ('bounces') are retrieved</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setInputFolder(String) inputFolder}</td><td>folder (subfolder of inbox) to look for mails. If empty, the inbox folder is used</td><td>&nbsp;</td></tr>
@@ -47,28 +47,28 @@ public class ExchangeFolderSender extends FileSystemSender<Item,ExchangeFileSyst
 	}
 
 	@IbisDoc({ "mail address (also used for auto discovery)", "" })
-	public void setMailAddress(String string) {
-		getFileSystem().setMailAddress(string);
+	public void setMailAddress(String mailaddress) {
+		getFileSystem().setMailAddress(mailaddress);
 	}
 
 	@IbisDoc({ "(only used when mailAddress is empty) url of the service", "" })
-	public void setUrl(String string) {
-		getFileSystem().setUrl(string);
+	public void setUrl(String url) {
+		getFileSystem().setUrl(url);
 	}
 
 	@IbisDoc({ "alias used to obtain credentials for authentication to exchange mail server", "" })
-	public void setAuthAlias(String string) {
-		getFileSystem().setAuthAlias(string);
+	public void setAuthAlias(String authAlias) {
+		getFileSystem().setAuthAlias(authAlias);
 	}
 
 	@IbisDoc({ "username used in authentication to exchange mail server", "" })
-	public void setUserName(String string) {
-		getFileSystem().setUserName(string);
+	public void setUsername(String username) {
+		getFileSystem().setUsername(username);
 	}
 
 	@IbisDoc({ "password used in authentication to exchange mail server", "" })
-	public void setPassword(String string) {
-		getFileSystem().setPassword(string);
+	public void setPassword(String password) {
+		getFileSystem().setPassword(password);
 	}
 
 

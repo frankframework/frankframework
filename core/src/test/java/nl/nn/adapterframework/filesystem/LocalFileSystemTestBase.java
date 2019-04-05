@@ -44,13 +44,13 @@ public abstract class LocalFileSystemTestBase<F, FS extends IWritableFileSystem<
 	}
 
 	@Override
-	public void _deleteFile(String filename) {
-		getFileHandle(filename).delete();
+	public void _deleteFile(String folder, String filename) {
+		getFileHandle(folder, filename).delete();
 	}
 
 	@Override
-	public OutputStream _createFile(String filename) throws IOException {
-		File f = getFileHandle(filename);
+	public OutputStream _createFile(String folder, String filename) throws IOException {
+		File f = getFileHandle(folder, filename);
 		f.createNewFile();
 		return new FileOutputStream(f);
 	}
@@ -62,8 +62,8 @@ public abstract class LocalFileSystemTestBase<F, FS extends IWritableFileSystem<
 	}
 
 	@Override
-	public InputStream _readFile(String filename) throws FileNotFoundException {
-		return new FileInputStream(getFileHandle(filename));
+	public InputStream _readFile(String folder, String filename) throws FileNotFoundException {
+		return new FileInputStream(getFileHandle(folder, filename));
 	}
 
 	@Override
@@ -73,6 +73,6 @@ public abstract class LocalFileSystemTestBase<F, FS extends IWritableFileSystem<
 
 	@Override
 	protected void _deleteFolder(String folderName) throws Exception {
-		deleteFile(folderName);
+		deleteFile(null, folderName);
 	}
 }

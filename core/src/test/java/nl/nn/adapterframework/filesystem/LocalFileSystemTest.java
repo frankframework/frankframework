@@ -10,7 +10,7 @@ public class LocalFileSystemTest extends LocalFileSystemTestBase<File,LocalFileS
 	@Override
 	protected LocalFileSystem getFileSystem() {
 		LocalFileSystem result=new LocalFileSystem();
-		result.setDirectory(folder.getRoot().getAbsolutePath());
+		result.setRoot(folder.getRoot().getAbsolutePath());
 		return result;
 	}
 	
@@ -25,11 +25,11 @@ public class LocalFileSystemTest extends LocalFileSystemTestBase<File,LocalFileS
 	@Ignore
 	@Override
 	@Test
-	public void fileSystemTestRenameToExisting() throws Exception {
+	public void writableFileSystemTestRenameToExisting() throws Exception {
 		// Ignored because foreach test different temp folder is created
 		// create file creates destination file in different folder 
 		// so that renameTo method returns false in exists file check
 		// and does not throw the exception. 
-		super.fileSystemTestRenameToExisting();
+		super.writableFileSystemTestRenameToExisting();
 	}
 }

@@ -121,7 +121,7 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	}
 
 	@Override
-	public Iterator<String> listFiles() throws FileSystemException {
+	public Iterator<String> listFiles(String folder) throws FileSystemException {
 		return new FilesIterator(diskShare.list(""));
 	}
 
@@ -166,17 +166,18 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	}
 
 	@Override
-	public void renameFile(String f, String newName) throws FileSystemException {
+	public String renameFile(String f, String newName, boolean force) throws FileSystemException {
 		File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN);
 		if (exists(newName) && !isForce) {
 			throw new FileSystemException("Cannot rename file. Destination file already exists.");
 		}
 		file.rename(newName, isForce);
 		file.close();
+		return newName;
 	}
 
 	@Override
-	public void moveFile(String f, String to) throws FileSystemException {
+	public String moveFile(String f, String to, boolean createFolder) throws FileSystemException {
 		File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN);
 		if (exists(to)) {
 			if (!isFolder(to)) {
@@ -191,6 +192,7 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 		}
 		file.rename(to, isForce);
 		file.close();
+		return to+"/"+file.getFileName();
 	}
 
 	@Override
@@ -250,44 +252,44 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	}
 
 	@Override
-	public long getFileSize(String f, boolean isFolder) throws FileSystemException {
+	public long getFileSize(String f) throws FileSystemException {
 		long size;
-		if (isFolder) {
-			Directory dir = getFolder(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN);
-			size = dir.getFileInformation().getStandardInformation().getAllocationSize();
-			dir.close();
-			return size;
-		} else {
+//		if (isFolder) {
+//			Directory dir = getFolder(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN);
+//			size = dir.getFileInformation().getStandardInformation().getAllocationSize();
+//			dir.close();
+//			return size;
+//		} else {
 			File file = getFile(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN);
 			size = file.getFileInformation().getStandardInformation().getAllocationSize();
 			file.close();
 			return size;
-		}
+//		}
 	}
 
 	@Override
-	public String getName(String f) throws FileSystemException {
+	public String getName(String f) {
 		return f;
 	}
 
 	@Override
-	public String getCanonicalName(String f, boolean isFolder) throws FileSystemException {
+	public String getCanonicalName(String f) throws FileSystemException {
 		return f;
 	}
 
 	@Override
-	public Date getModificationTime(String f, boolean isFolder) throws FileSystemException {
-		if (isFolder) {
-			Directory dir = getFolder(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN);
-			Date date = dir.getFileInformation().getBasicInformation().getLastWriteTime().toDate();
-			dir.close();
-			return date;
-		} else {
+	public Date getModificationTime(String f) throws FileSystemException {
+//		if (isFolder) {
+//			Directory dir = getFolder(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN);
+//			Date date = dir.getFileInformation().getBasicInformation().getLastWriteTime().toDate();
+//			dir.close();
+//			return date;
+//		} else {
 			File file = getFile(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN);
 			Date date = file.getFileInformation().getBasicInformation().getLastWriteTime().toDate();
 			file.close();
 			return date;
-		}
+//		}
 	}
 
 	public String getDomain() {

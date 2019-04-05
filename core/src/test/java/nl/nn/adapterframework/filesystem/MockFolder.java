@@ -10,9 +10,14 @@ public class MockFolder extends MockFile {
 	}
 
 	private Map<String,MockFile> files = new HashMap<String,MockFile>();
+	private Map<String,MockFolder> folders = new HashMap<String,MockFolder>();
 
 	public Map<String, MockFile> getFiles() {
 		return files;
+	}
+
+	public Map<String, MockFolder> getFolders() {
+		return folders;
 	}
 
 }

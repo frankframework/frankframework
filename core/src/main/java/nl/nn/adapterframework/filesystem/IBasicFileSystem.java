@@ -38,16 +38,18 @@ public interface IBasicFileSystem<F> {
 	public void open() throws FileSystemException;
 	public void close() throws FileSystemException;
 
+	
 	/**
-	 * Lists all files in the 'root' of the filesystem. 
-	 * Implementations can provide a way to set the 'root' at another point then the physical root.
+	 * Lists all files in 'folder' or in the 'root' of the filesystem (when folder is null). 
+	 * Should list only 'files', no folders.
 	 */
-	public Iterator<F> listFiles() throws FileSystemException;
+	public Iterator<F> listFiles(String folder) throws FileSystemException;
+	
 	/**
 	 * Get a string representation of an identification of a file, expected to be in the 'root' folder. 
 	 * Must pair up with the implementation of {@link #toFile(String)}.
 	 */
-	public String getName(F f) throws FileSystemException;
+	public String getName(F f);
 	/**
 	 * Get a file 'F' representation of an identification of a file. 
 	 * Must pair up with the implementation of {@link #getName(Object)}.
@@ -58,14 +60,12 @@ public interface IBasicFileSystem<F> {
 	public boolean isFolder(F f) throws FileSystemException;
 	public InputStream readFile(F f) throws FileSystemException, IOException;
 	public void deleteFile(F f) throws FileSystemException;
-	public void moveFile(F f, String destinationFolder) throws FileSystemException;
+	public F moveFile(F f, String destinationFolder, boolean createFolder) throws FileSystemException;
 
-	public long getFileSize(F f, boolean isFolder) throws FileSystemException;
-	public String getCanonicalName(F f, boolean isFolder) throws FileSystemException;
-	public Date getModificationTime(F f, boolean isFolder) throws FileSystemException;
+	public long getFileSize(F f) throws FileSystemException;
+	public String getCanonicalName(F f) throws FileSystemException;
+	public Date getModificationTime(F f) throws FileSystemException;
 
 	public Map<String, Object> getAdditionalFileProperties(F f) throws FileSystemException;
-
-	
 
 }

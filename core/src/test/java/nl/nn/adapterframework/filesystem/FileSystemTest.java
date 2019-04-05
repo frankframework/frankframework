@@ -11,11 +11,14 @@ import org.junit.Test;
 public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> extends BasicFileSystemTest<F,FS> {
 
 	@Test
-	public void fileSystemTestCreateNewFile() throws Exception {
+	public void writableFileSystemTestCreateNewFile() throws Exception {
 		String filename = "create" + FILE1;
 		String contents = "regeltje tekst";
 		
-		deleteFile(filename);
+		fileSystem.configure();
+		fileSystem.open();
+
+		deleteFile(null, filename);
 		waitForActionToFinish();
 		
 		F file = fileSystem.toFile(filename);
@@ -28,17 +31,20 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		// test
 		existsCheck(filename);
 		
-		String actual = readFile(filename);
+		String actual = readFile(null, filename);
 		// test
 		equalsCheck(contents.trim(), actual.trim());
 
 	}
 
 	@Test
-	public void fileSystemTestCreateOverwriteFile() throws Exception {
+	public void writableFileSystemTestCreateOverwriteFile() throws Exception {
 		String filename = "overwrited" + FILE1;
 		
-		createFile(filename, "Eerste versie van de file");
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFile(null, filename, "Eerste versie van de file");
 		waitForActionToFinish();
 		
 		String contents = "Tweede versie van de file";
@@ -52,17 +58,20 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		// test
 		existsCheck(filename);
 
-		String actual = readFile(filename);
+		String actual = readFile(null, filename);
 		// test
 		equalsCheck(contents.trim(), actual.trim());
 	}
 
 
 	@Test
-	public void fileSystemTestTruncateFile() throws Exception {
+	public void writableFileSystemTestTruncateFile() throws Exception {
 		String filename = "truncated" + FILE1;
 		
-		createFile(filename, "Eerste versie van de file");
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFile(null, filename, "Eerste versie van de file");
 		waitForActionToFinish();
 		
 		F file = fileSystem.toFile(filename);
@@ -72,19 +81,22 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		// test
 		existsCheck(filename);
 		
-		String actual = readFile(filename);
+		String actual = readFile(null, filename);
 		// test
 		equalsCheck("", actual.trim());
 	}
 
 	@Test
-	public void fileSystemTestAppendFile() throws Exception {
+	public void writableFileSystemTestAppendFile() throws Exception {
 		String filename = "append" + FILE1;
 		String regel1 = "Eerste regel in de file";
 		String regel2 = "Tweede regel in de file";
 		String expected = regel1 + regel2;
 		
-		createFile(filename, regel1);
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFile(null, filename, regel1);
 		waitForActionToFinish();
 		
 		F file = fileSystem.toFile(filename);
@@ -97,7 +109,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		// test
 		existsCheck(filename);
 
-		String actual = readFile(filename);
+		String actual = readFile(null, filename);
 		// test
 		equalsCheck(expected.trim(), actual.trim());
 	}
@@ -106,6 +118,9 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	public void fileSystemTestCreateAndRemoveFolder() throws Exception {
 		String folderName = "dummyFolder";
 		
+		fileSystem.configure();
+		fileSystem.open();
+
 		_createFolder(folderName);
 		waitForActionToFinish();
 		
@@ -122,17 +137,20 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	public void fileSystemTestRenameTo() throws Exception {
 		String fileName = "fileTobeRenamed.txt";
 		
-		createFile(fileName,"");
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFile(null,fileName, "");
 		waitForActionToFinish();
 		
 		assertTrue(_fileExists(fileName));
 		
 		String destination = "fileRenamed.txt";
-		deleteFile(destination);
+		deleteFile(null, destination);
 		waitForActionToFinish();
 		
 		F f = fileSystem.toFile(fileName);
-		fileSystem.renameFile(f, destination);
+		fileSystem.renameFile(f, destination, false);
 		waitForActionToFinish();
 		
 		assertTrue("Destination must exist",_fileExists(destination));
@@ -140,21 +158,24 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	}
 	
 	@Test
-	public void fileSystemTestRenameToExisting() throws Exception {
+	public void writableFileSystemTestRenameToExisting() throws Exception {
 		exception.expectMessage("Cannot rename file. Destination file already exists.");
 		String fileName = "fileToBeRenamedExisting.txt";
 		
-		createFile(fileName, "");
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFile(null, fileName, "");
 		waitForActionToFinish();
 		
 		assertTrue(_fileExists(fileName));
 		
 		String destination = "fileRenamedExists.txt";
-		createFile(destination, "");
+		createFile(null, destination, "");
 		waitForActionToFinish();
 		
 		F f = fileSystem.toFile(fileName);
-		fileSystem.renameFile(f, destination);
+		fileSystem.renameFile(f, destination, false);
 		waitForActionToFinish();
 		
 		assertTrue("Origin must still exist",_fileExists(fileName));
@@ -162,9 +183,13 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	}
 
 	@Test
-	public void fileSystemTestRemovingNonExistingDirectory() throws Exception {
+	public void writableFileSystemTestRemovingNonExistingDirectory() throws Exception {
 		exception.expectMessage("Directory does not exist.");
 		String filename = "nonExistingFolder";
+
+		fileSystem.configure();
+		fileSystem.open();
+
 		if(_folderExists(filename)) {
 			_deleteFolder(filename);
 		}
@@ -173,10 +198,13 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	}
 	
 	@Test
-	public void fileSystemTestCreateExistingFolder() throws Exception {
+	public void writableFileSystemTestCreateExistingFolder() throws Exception {
 		exception.expectMessage("Directory already exists.");
 		String folderName = "existingFolder";
 		
+		fileSystem.configure();
+		fileSystem.open();
+
 		_createFolder(folderName);
 		waitForActionToFinish();
 		F f = fileSystem.toFile(folderName);

@@ -71,7 +71,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public Iterator<FTPFile> listFiles() throws FileSystemException {
+	public Iterator<FTPFile> listFiles(String folder) throws FileSystemException {
 		try {
 			return new FTPFilePathIterator(ftpClient.listFiles(remoteDirectory));
 		} catch (IOException e) {
@@ -167,7 +167,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public void renameFile(FTPFile f, String newName) throws FileSystemException {
+	public FTPFile renameFile(FTPFile f, String newName, boolean force) throws FileSystemException {
 		if(exists(toFile(newName))) {
 			throw new FileSystemException("Cannot rename file. Destination file already exists.");
 		}
@@ -176,10 +176,11 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
+		return toFile(newName);
 	}
 
 	@Override
-	public void moveFile(FTPFile f, String destinationFolder) throws FileSystemException {
+	public FTPFile moveFile(FTPFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		FTPFile d=toFile(destinationFolder);
 		if(!exists(d)) {
 			throw new FileSystemException("Cannot move file. Destination folder ["+destinationFolder+"] does not exist.");
@@ -187,31 +188,33 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		if (!isFolder(d)) {
 			throw new FileSystemException("Cannot move file. Destination ["+destinationFolder+"] if not a folder.");
 		}
+		String destinationFilename=destinationFolder+"/"+f.getName();
 		try {
-			ftpClient.rename(f.getName(), destinationFolder+"/"+f.getName());
+			ftpClient.rename(f.getName(), destinationFilename);
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
+		return toFile(destinationFilename);
 	}
 	
 	
 	@Override
-	public long getFileSize(FTPFile f, boolean isFolder) throws FileSystemException {
+	public long getFileSize(FTPFile f) throws FileSystemException {
 		return f.getSize();
 	}
 
 	@Override
-	public String getName(FTPFile f) throws FileSystemException {
+	public String getName(FTPFile f) {
 		return f.getName();
 	}
 
 	@Override
-	public String getCanonicalName(FTPFile f, boolean isFolder) throws FileSystemException {
+	public String getCanonicalName(FTPFile f) throws FileSystemException {
 		return f.getName();
 	}
 
 	@Override
-	public Date getModificationTime(FTPFile f, boolean isFolder) throws FileSystemException {
+	public Date getModificationTime(FTPFile f) throws FileSystemException {
 		try {
 			return ftpClient.listFiles(f.getName())[0].getTimestamp().getTime();
 		} catch (IndexOutOfBoundsException oobe) {

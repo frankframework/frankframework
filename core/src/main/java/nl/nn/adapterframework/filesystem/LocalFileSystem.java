@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.filesystem;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -26,12 +27,13 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
 public class LocalFileSystem implements IWritableFileSystem<File> {
 
-	private String directory;
-	private boolean isForce;
+	private String root;
 
 	private class FilePathIterator implements Iterator<File> {
 
@@ -61,17 +63,44 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 
 	@Override
 	public void configure() throws ConfigurationException {
+		// No Action is required
+	}
+
+	@Override
+	public void open() {
+		// No Action is required
+	}
+
+	@Override
+	public void close() {
+		// No Action is required
 	}
 
 	@Override
 	public File toFile(String filename) {
-		return new File(getDirectory(), filename);
+		return new File(getRoot(), filename);
 	}
 
 	@Override
-	public Iterator<File> listFiles() {
-		File dir = new File(getDirectory());
-		return new FilePathIterator(dir.listFiles());
+	public Iterator<File> listFiles(String folder) {
+		String path=getRoot();
+		if (StringUtils.isEmpty(path)) {
+			path=folder;
+		} else {
+			if (StringUtils.isNotEmpty(folder)) {
+				path+="/"+folder;
+			}
+		}
+		File dir = StringUtils.isNotEmpty(path)?new File(path):new File("/");
+		FileFilter filter = new FileFilter() {
+
+			@Override
+			public boolean accept(File pathname) {
+				return pathname.isFile();
+			}
+			
+		};
+		return new FilePathIterator(dir.listFiles(filter));
 	}
 
 	@Override
@@ -122,60 +151,64 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 		}
 	}
 
-	public String getDirectory() {
-		return directory;
+	public String getRoot() {
+		return root;
 	}
 
-	public void setDirectory(String directory) {
-		this.directory = directory;
+	public void setRoot(String root) {
+		this.root = root;
 	}
 
 	@Override
-	public void renameFile(File f, String newName) throws FileSystemException {
+	public File renameFile(File f, String newName, boolean force) throws FileSystemException {
 		File dest;
 
 		dest = new File(newName);
 		if (dest.exists()) {
-			if (isForce)
+			if (force)
 				dest.delete();
 			else {
 				throw new FileSystemException("Cannot rename file. Destination file already exists.");
 			}
 		}
 		f.renameTo(dest);
-
+		return dest;
 	}
 	@Override
-	public void moveFile(File f, String destinationFolder) throws FileSystemException {
+	public File moveFile(File f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		File toFolder = toFile(destinationFolder);
 		if (toFolder.exists()) {
 			if (!toFolder.isDirectory()) {
 				throw new FileSystemException("Cannot move file. Destination file ["+toFolder.getName()+"] is not a folder.");
 			}
 		} else {
-			if (isForce)
+			if (createFolder)
 				createFolder(toFolder);
 			else {
 				throw new FileSystemException("Cannot move file. Destination folder ["+toFolder.getName()+"] does not exist.");
 			}
 		}
-		f.renameTo(new File(toFolder,f.getName()));
+		File target=new File(toFolder,f.getName());
+		if (!f.renameTo(target)) {
+			return f;
+		}
+		return target;
 
 	}
 
 
 	@Override
-	public long getFileSize(File f, boolean isFolder) throws FileSystemException {
+	public long getFileSize(File f) throws FileSystemException {
 		return f.length();
 	}
 
 	@Override
-	public String getName(File f) throws FileSystemException {
+	public String getName(File f) {
 		return f.getName();
 	}
 
 	@Override
-	public String getCanonicalName(File f, boolean isFolder) throws FileSystemException {
+	public String getCanonicalName(File f) throws FileSystemException {
 		try {
 			return f.getCanonicalPath();
 		} catch (IOException e) {
@@ -184,29 +217,13 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 	}
 
 	@Override
-	public Date getModificationTime(File f, boolean isFolder) throws FileSystemException {
+	public Date getModificationTime(File f) throws FileSystemException {
 		return new Date(f.lastModified());
 	}
 
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(File f) {
 		return null;
-	}
-
-	@Override
-	public void open() {
-		// No Action is required
-
-	}
-
-	@Override
-	public void close() {
-		// No Action is required
-
-	}
-
-	public void setIsForce(boolean force) {
-		this.isForce = force;
 	}
 
 }
