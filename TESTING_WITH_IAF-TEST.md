@@ -2,11 +2,13 @@
 
 To ensure that your contribution doesn't break any logic, we would like you to run the test scenario's within the iaf-test module before committing your changes. To do this, you'll have to download a handful of JARs and adjust your Tomcat server configuration.
 
-This guide was written with the assertion that you have successfully run the iaf-example module before. If this is not the case, please follow the steps as described on our [CONTRIBUTING](https://github.com/ibissource/iaf/blob/master/CONTRIBUTING.md#developing-with-eclipse) page.
+This guide was written with the assertion that you are A) using Eclipse, and B) have successfully run the iaf-example module before. If this is not the case, please follow the steps as described on our [CONTRIBUTING](https://github.com/ibissource/iaf/blob/master/CONTRIBUTING.md#developing-with-eclipse) page.
 
-To prevent problems with data transactionality, we will be using an Oracle database rather than an H2 database. If you don't have Oracle Database Express Edition installed on your system, download it [here](https://www.oracle.com/technetwork/database/enterprise-edition/downloads/index.html).
+To prevent problems with data transactionality, we will be using an Oracle database rather than an H2 database. If you don't have Oracle Database Express Edition installed on your system, download it [here](https://www.oracle.com/technetwork/database/enterprise-edition/downloads/index.html). (Express Edition downloads can be found a bit further down on the page)
 
-## 1. JAR dependencies
+## 1. Proprietary modules and JAR dependencies
+
+Some parts of the iaf-test module rely on proprietary modules. To tell Maven that it should download these modules, go to Window > Preferences > Maven > User Settings. If you already have a _settings.xml_ file, press the "Open file" link. Otherwise, browse to _C:/Users/<your name>/.m2/_ and create a _settings.xml_ file. Edit the file following [these instructions](https://knowhow.interpar.nl/?epkb_post_type_1=how-to-add-proprietary-to-your-settings-xml-of-maven).
 
 Download the following JARs, and place them in your Tomcat server's lib folder. If you do not yet have a lib folder, you can create one directly under your Tomcat server's root directory.
 * [activemq-core-5.6.0.jar](https://mvnrepository.com/artifact/org.apache.activemq/activemq-core/5.6.0)
@@ -28,7 +30,7 @@ The module's test scenarios can be run manually with the Larva testtool. This wi
 ######
 
     <Resource
-        name="jdbc/ibis4testiaf"
+        name="jdbc/ibis4test"
         factory="org.apache.naming.factory.BeanFactory"
         type="oracle.jdbc.xa.client.OracleXADataSource"
         URL="jdbc:oracle:thin:@localhost:1521:xe"
@@ -40,6 +42,7 @@ The module's test scenarios can be run manually with the Larva testtool. This wi
 4. In the same window, go to the Modules tab at the bottom and add "/iaf-test" as a web module.
 5. Make sure `-Dotap.stage=LOC` is included in the VM Arguments of your server's launch configuration.
 6. In the Project Explorer, right-click the iaf-test module and select Properties. Go to Deployment Assembly, press [ Add... ]. Select Folder, press [ Next ]. Select the src/main/configurations folder, and press Finish. In the text field right of your new src/main/configurations item, enter `WEB-INF/classes/configurations`.
+7. Do the same for the src/test/testtool folder. For that, enter `testtool` as deploy path.
 
 ## 3. Ant builds
 
@@ -63,3 +66,4 @@ Press [ Start ], sit back, relax, do some stretches, and let's hope for the best
 We're currently looking into fixing two bugs that occasionally cause testing trouble. If you happen to run into them, here are some workarounds:
 * The JdbcQueryListener occasionally has trouble during its configuration. A quick fix is to re-run the ant build of **create_database.xml** and restart the server.
 * Likewise, if the Configuration Status page is spammed with JdbcTransactionalStorage warnings, re-running the ant builds of **create_user.xml**  and **create_database.xml**  (in order) should solve these warnings.
+* If the ant builds don't work due to a missing class error, try running it with another version of Java (by pressing "Ant Build..." instead of "Ant Build").
