@@ -21,11 +21,12 @@ import java.util.Map;
 
 /**
  * Base-interface for IPullingListener and IPushingListener.
+ * @param <M> the raw message type 
  * 
  * @author  Gerrit van Brakel
  * @since   4.2
  */
-public interface IListener extends INamedObject {
+public interface IListener<M> extends INamedObject {
 
 	/**
 	 * <code>configure()</code> is called once at startup of the framework in the <code>configure()</code> method 
@@ -62,19 +63,19 @@ public interface IListener extends INamedObject {
 	 * 
 	 * @return Correlation ID string.
 	 */
-	String getIdFromRawMessage(Object rawMessage, Map<String,Object> context) throws ListenerException;
+	String getIdFromRawMessage(M rawMessage, Map<String,Object> context) throws ListenerException;
 	
 	/**
 	 * Extracts string from message obtained from {@link nl.nn.adapterframework.core.IPullingListener#getRawMessage(Map)}. May also extract
 	 * other parameters from the message and put those in the threadContext.
 	 * @return input message for adapter.
 	 */
-	String getStringFromRawMessage(Object rawMessage, Map<String,Object> context) throws ListenerException;
+	String getStringFromRawMessage(M rawMessage, Map<String,Object> context) throws ListenerException;
 	
 	/**
 	 * Called to perform actions (like committing or sending a reply) after a message has been processed by the 
 	 * Pipeline. 
 	 */
-	void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map<String,Object> context) throws ListenerException;
+	void afterMessageProcessed(PipeLineResult processResult, M rawMessage, Map<String,Object> context) throws ListenerException;
 
 }
