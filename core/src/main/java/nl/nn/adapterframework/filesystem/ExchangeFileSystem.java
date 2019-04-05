@@ -31,6 +31,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.log4j.Logger;
 
+import microsoft.exchange.webservices.data.autodiscover.IAutodiscoverRedirectionUrl;
 import microsoft.exchange.webservices.data.core.ExchangeService;
 import microsoft.exchange.webservices.data.core.PropertySet;
 import microsoft.exchange.webservices.data.core.WebProxy;
@@ -66,7 +67,6 @@ import microsoft.exchange.webservices.data.search.ItemView;
 import microsoft.exchange.webservices.data.search.filter.SearchFilter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.filesystem.ExchangeWebServicesSender.RedirectionUrlCallback;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
@@ -646,4 +646,11 @@ public class ExchangeFileSystem implements IBasicFileSystem<Item>, HasPhysicalDe
 	public String getProxyDomain() {
 		return proxyDomain;
 	}
+	
+	static class RedirectionUrlCallback implements IAutodiscoverRedirectionUrl {
+		public boolean autodiscoverRedirectionUrlValidationCallback(String redirectionUrl) {
+			return redirectionUrl.toLowerCase().startsWith("https://");
+		}
+	}
+
 }
