@@ -27,6 +27,8 @@ import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> {
 	protected Logger log = LogUtil.getLogger(this);
+	
+	protected boolean doTimingTests=false;
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
@@ -392,8 +394,8 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> {
 			F f=it.next();
 			log.debug("found file ["+fileSystem.getName(f)+"]");
 			long modTime=fileSystem.getModificationTime(f).getTime();
-			assertTrue("modtime ["+modTime+"] not after t0 ["+beforeFilesCreated+"]", modTime>=beforeFilesCreated);
-			assertTrue("modtime ["+modTime+"] not before t1 ["+afterFilesCreated+"]", modTime<=afterFilesCreated);
+			if (doTimingTests) assertTrue("modtime ["+modTime+"] not after t0 ["+beforeFilesCreated+"]", modTime>=beforeFilesCreated);
+			if (doTimingTests) assertTrue("modtime ["+modTime+"] not before t1 ["+afterFilesCreated+"]", modTime<=afterFilesCreated);
 		}
 		// test
 		assertFalse("after a delete the number of files should be one less",it.hasNext());
@@ -404,8 +406,8 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> {
 			assertTrue(it.hasNext());
 			F f=it.next();
 			long modTime=fileSystem.getModificationTime(f).getTime();
-			assertTrue("modtime ["+modTime+"] not after t0 ["+beforeFilesCreated+"]", modTime>=beforeFilesCreated);
-			assertTrue("modtime ["+modTime+"] not before t1 ["+afterFilesCreated+"]", modTime<=afterFilesCreated);
+			if (doTimingTests) assertTrue("modtime ["+modTime+"] not after t0 ["+beforeFilesCreated+"]", modTime>=beforeFilesCreated);
+			if (doTimingTests) assertTrue("modtime ["+modTime+"] not before t1 ["+afterFilesCreated+"]", modTime<=afterFilesCreated);
 		}
 
 		deleteFile(folder, FILE2);
