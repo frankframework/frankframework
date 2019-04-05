@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.codec.binary.Base64InputStream;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -46,13 +47,14 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * 
  * 
  * <p><b>Actions:</b></p>
+ * <p>The <code>list</code> action for listing a directory content or single file</p>
+ * <p>The <code>download</code> action for downloading a file, requires filename as input. Returns a base64 encoded string containing the file content </p>
+ * <p>The <code>move</code> action for moving a file to another folder</p>
+ * <p>The <code>delete</code> action requires the filename as input </p>
  * <p>The <code>upload</code> action requires the file parameter to be set which should contain the fileContent to upload in either Stream, Bytes or String format</p>
  * <p>The <code>rename</code> action requires the destination parameter to be set which should contain the full path </p>
- * <p>The <code>delete</code> action requires the filename as input </p>
  * <p>The <code>mkdir</code> action for creating a directory requires directory name to be created as input. </p>
  * <p>The <code>rmdir</code> action for removing a directory requires directory name to be removed as input. </p>
- * <p>The <code>download</code> action for downloading a file, requires filename as input. Returns a base64 encoded string containing the file content </p>
- * <p>The <code>list</code> action for listing a directory content or single file</p>
  * 
  * <br/>
  */
@@ -60,8 +62,10 @@ import nl.nn.adapterframework.util.XmlBuilder;
 public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderWithParametersBase {
 
 	private String action;
+	private String inputFolder;
+
 	private Set<String> actions = new LinkedHashSet<String>(
-			Arrays.asList("delete", "download", "list", "move"));
+			Arrays.asList("list", "download", "move", "delete"));
 
 	private FS fileSystem;
 
@@ -70,7 +74,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 		super.configure();
 		getFileSystem().configure();
 		if (getFileSystem() instanceof IWritableFileSystem) {
-			actions.addAll(Arrays.asList("upload", "mkdir", "rmdir", "rename"));
+			actions.addAll(Arrays.asList("upload", "rename", "mkdir", "rmdir"));
 		}
 
 		if (getAction() == null)
@@ -93,7 +97,17 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 	@Override
 	public void open() throws SenderException {
 		try {
-			getFileSystem().open();
+			FS fileSystem=getFileSystem();
+			fileSystem.open();
+			if (StringUtils.isNotEmpty(getInputFolder())) {
+				F folder=fileSystem.toFile(getInputFolder());
+				if (!fileSystem.exists(folder)) {
+					throw new SenderException("inputFolder ["+getInputFolder()+"] does not exist");
+				}
+				if (!fileSystem.isFolder(folder)) {
+					throw new SenderException("inputFolder ["+getInputFolder()+"] is not a folder");
+				}
+			}
 		} catch (FileSystemException e) {
 			throw new SenderException("Cannot open fileSystem",e);
 		}
@@ -141,9 +155,9 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 
 				return result;
 			} else if (action.equalsIgnoreCase("list")) {
-				Iterator<F> fileList = ifs.listFiles();
+				Iterator<F> fileList = ifs.listFiles(getInputFolder());
 				int count = 0;
-				XmlBuilder dirXml = getFileAsXmlBuilder(file, "directory");
+				XmlBuilder dirXml = new XmlBuilder("directory");
 				while (fileList.hasNext()) {
 					F fileObject = fileList.next();
 					dirXml.addSubElement(getFileAsXmlBuilder(fileObject, "file"));
@@ -165,27 +179,27 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 					throw new SenderException("expected InputStream, ByteArray or String but got ["
 							+ paramValue.getClass().getName() + "] instead");
 				OutputStream out = null;
-				out = ((IWritableFileSystem)ifs).createFile(file);
+				out = ((IWritableFileSystem<F>)ifs).createFile(file);
 				out.write(fileBytes);
 				out.close();
 
 				return getFileAsXmlBuilder(file, "file").toXML();
 			} else if (action.equalsIgnoreCase("mkdir")) {
-				((IWritableFileSystem)ifs).createFolder(file);
+				((IWritableFileSystem<F>)ifs).createFolder(file);
 			} else if (action.equalsIgnoreCase("rmdir")) {
-				((IWritableFileSystem)ifs).removeFolder(file);
+				((IWritableFileSystem<F>)ifs).removeFolder(file);
 			} else if (action.equalsIgnoreCase("rename")) {
 				String destination = (String) pvl.getParameterValue("destination").getValue();
 				if (destination == null) {
 					throw new SenderException("unknown destination [" + destination + "]");
 				}
-				((IWritableFileSystem)ifs).renameFile(file, destination);
+				((IWritableFileSystem<F>)ifs).renameFile(file, destination, false);
 			} else if (action.equalsIgnoreCase("move")) {
 				String destination = (String) pvl.getParameterValue("destination").getValue();
 				if (destination == null) {
 					throw new SenderException("destination folder not specified");
 				}
-				ifs.moveFile(file, destination);
+				ifs.moveFile(file, destination, false);
 			}
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix() + "unable to process ["+action+"] action for File [" + message + "]", e);
@@ -202,18 +216,18 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 		fileXml.addAttribute("name", name);
 		if (!".".equals(name) && !"..".equals(name)) {
 			boolean isFolder = ifs.isFolder(f);
-			long fileSize = ifs.getFileSize(f, isFolder);
+			long fileSize = ifs.getFileSize(f);
 			fileXml.addAttribute("size", "" + fileSize);
 			fileXml.addAttribute("fSize", "" + Misc.toFileSize(fileSize, true));
 			fileXml.addAttribute("directory", "" + isFolder);
 			try {
-				fileXml.addAttribute("canonicalName", fileSystem.getCanonicalName(f, isFolder));
+				fileXml.addAttribute("canonicalName", fileSystem.getCanonicalName(f));
 			} catch (Exception e) {
 				log.warn("cannot get canonicalName for file [" + name + "]", e);
 				fileXml.addAttribute("canonicalName", name);
 			}
 			// Get the modification date of the file
-			Date modificationDate = ifs.getModificationTime(f, isFolder);
+			Date modificationDate = ifs.getModificationTime(f);
 			//add date
 			if (modificationDate != null) {
 				String date = DateUtils.format(modificationDate, DateUtils.FORMAT_DATE);
@@ -250,17 +264,24 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 		this.fileSystem = fileSystem;
 	}
 
+	protected void addActions(List<String> specificActions) {
+		actions.addAll(specificActions);
+	}
+
+	@IbisDoc({ "possible values: list, download, delete, upload, rename, move, mkdir, rmdir", "" })
+	public void setAction(String action) {
+		this.action = action;
+	}
 	public String getAction() {
 		return action;
 	}
 
-	@IbisDoc({ "possible values: delete, download, list, mkdir, rename, rmdir, upload", "" })
-	public void setAction(String action) {
-		this.action = action;
+	@IbisDoc({"folder that is scanned for files when action=list. When not set, the root is scanned", ""})
+	public void setInputFolder(String inputFolder) {
+		this.inputFolder = inputFolder;
 	}
-
-	protected void addActions(List<String> specificActions) {
-		actions.addAll(specificActions);
+	public String getInputFolder() {
+		return inputFolder;
 	}
 
 }
