@@ -412,12 +412,12 @@
       </activation>
       <modules>
         <module>core</module>
-        <module>example</module>
+<!--         <module>example</module> -->
         <module>larva</module>
         <module>akamai</module>
         <module>cmis</module>
         <module>webapp</module>
-        <module>test</module>
+<!--         <module>test</module> -->
         <module>ladybug</module>
         <module>ear-example</module>
       </modules>
