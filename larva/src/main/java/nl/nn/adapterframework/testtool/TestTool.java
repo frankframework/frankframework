@@ -35,8 +35,26 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.zip.ZipInputStream;
 
+import javax.jms.Message;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.multipart.FilePart;
+import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
+import org.apache.commons.httpclient.methods.multipart.Part;
+import org.apache.commons.httpclient.methods.multipart.StringPart;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.custommonkey.xmlunit.Diff;
+import org.custommonkey.xmlunit.XMLUnit;
+import org.dom4j.DocumentException;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockMultipartHttpServletRequest;
+
+import com.sun.syndication.io.XmlReader;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -70,23 +88,6 @@ import nl.nn.adapterframework.util.ProcessUtil;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
-import org.apache.commons.httpclient.methods.multipart.StringPart;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.custommonkey.xmlunit.Diff;
-import org.custommonkey.xmlunit.XMLUnit;
-import org.dom4j.DocumentException;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockMultipartHttpServletRequest;
-
-import com.sun.syndication.io.XmlReader;
 
 /**
  * @author Jaco de Groot
@@ -2379,7 +2380,7 @@ public class TestTool {
 		pullingJmsListener.setTimeOut(10);
 		boolean empty = false;
 		while (!empty) {
-			Object rawMessage = null;
+			Message rawMessage = null;
 			String message = null;
 			Map threadContext = null;
 			try {
@@ -2585,7 +2586,7 @@ public class TestTool {
 		String message = null;
 		try {
 			threadContext = pullingJmsListener.openThread();
-			Object rawMessage = pullingJmsListener.getRawMessage(threadContext);
+			Message rawMessage = pullingJmsListener.getRawMessage(threadContext);
 			if (rawMessage != null) {
 				message = pullingJmsListener.getStringFromRawMessage(rawMessage, threadContext);
 				String correlationId = pullingJmsListener.getIdFromRawMessage(rawMessage, threadContext);
