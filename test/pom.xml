@@ -7,12 +7,9 @@
 		<version>7.3-B1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>Ibis4Test</artifactId>
-	<version>1.0.1</version>
+	<artifactId>ibis-adapterframework-test</artifactId>
+	<name>Ibis AdapterFramework Test</name>
 	<packaging>war</packaging>
-	<name>Ibis4Test</name>
-	<description>test project</description>
-	<url>ibis4test.ibissource.org</url>
 
 	<properties>
 		<m2eclipse.wtp.contextRoot>ibis4test</m2eclipse.wtp.contextRoot>
@@ -31,14 +28,14 @@
 	</repositories>
 
 	<dependencies>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-larva</artifactId>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.ibissource</groupId> -->
+<!-- 			<artifactId>ibis-adapterframework-core</artifactId> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.ibissource</groupId> -->
+<!-- 			<artifactId>ibis-adapterframework-larva</artifactId> -->
+<!-- 		</dependency> -->
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-webapp</artifactId>
