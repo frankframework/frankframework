@@ -289,7 +289,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 	}
 	
 	@Override
-	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		Element queryElement;
 		String tableName = null;
 		Vector<Column> columns = null;
@@ -309,12 +309,11 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			order = XmlUtils.getChildTagAsString(queryElement, "order");
 
 			String dsName = queryElement.getAttribute("datasourceName");
+			DirectQuerySender dqs;
 			if(dsName.isEmpty()) {
-				dsName = getDataSourceNameToUse();
+				throw new SenderException("No datasource was configured");
 			} else {
-				try {
-					DirectQuerySender dqs;
-					
+				try {					
 					if(!subQuerySenders.keySet().contains(dsName)) {
 						dqs = new DirectQuerySender();
 						
@@ -330,8 +329,6 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 
 					synchronized(dqs) {
 						dqs.setQueryType(XmlUtils.getChildTagAsString(queryElement, "type"));
-						String query = XmlUtils.getChildTagAsString(queryElement, "query");
-						return dqs.sendMessage(correlationID, query, prc);
 					}
 				} catch(ConfigurationException e) {
 					throw new SenderException("Could not configure DirectQuerySender with the specified data source");
@@ -339,27 +336,27 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			}
 			
 			if (root.equalsIgnoreCase("select")) {
-				result = selectQuery(connection, correlationID, tableName, columns, where, order);
+				result = selectQuery(dqs, correlationID, tableName, columns, where, order);
 			} else {
 				if (root.equalsIgnoreCase("insert")) {
-					result = insertQuery(connection, correlationID, prc, tableName, columns);
+					result = insertQuery(dqs, correlationID, prc, tableName, columns);
 				} else {
 					if (root.equalsIgnoreCase("delete")) {
-						result = deleteQuery(connection, correlationID, tableName, where);
+						result = deleteQuery(dqs, correlationID, tableName, where);
 					} else {
 						if (root.equalsIgnoreCase("update")) {
-							result = updateQuery(connection, correlationID, tableName, columns, where);
+							result = updateQuery(dqs, correlationID, tableName, columns, where);
 						} else {
 							if (root.equalsIgnoreCase("alter")) {
 								String sequenceName = XmlUtils.getChildTagAsString(queryElement, "sequenceName");
 								int startWith = Integer.parseInt(XmlUtils.getChildTagAsString(queryElement, "startWith"));
-								result = alterQuery(connection, sequenceName, startWith);
+								result = alterQuery(dqs, sequenceName, startWith);
 							} else {
 								if (root.equalsIgnoreCase("sql")) {
 									String type = XmlUtils.getChildTagAsString(queryElement, "type");
 									String query = XmlUtils.getChildTagAsString(queryElement, "query");
 									String expectResultSet = queryElement.getAttribute("expectResultSet");
-									result = sql(connection, correlationID, query, type, expectResultSet);
+									result = sql(dqs, correlationID, query, type, expectResultSet);
 								} else {
 									throw new SenderException(getLogPrefix() + "unknown root element [" + root + "]");
 								}
@@ -377,7 +374,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		return result;
 	}
 
-	private String selectQuery(Connection connection, String correlationID, String tableName, Vector<Column> columns, String where, String order) throws SenderException, JdbcException {
+	private String selectQuery(DirectQuerySender dqs, String correlationID, String tableName, Vector<Column> columns, String where, String order) throws SenderException, JdbcException {
 		try {
 			String query = "SELECT ";
 			if (columns != null) {
@@ -402,7 +399,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			if (order != null) {
 				query = query + " ORDER BY " + order;
 			}
-			PreparedStatement statement = getStatement(connection, correlationID, query, false);
+			PreparedStatement statement = getStatement(dqs.getConnection(), correlationID, query, false);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
 			return executeSelectQuery(statement,null,null);
@@ -411,7 +408,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		}
 	}
 
-	private String insertQuery(Connection connection, String correlationID, ParameterResolutionContext prc, String tableName, Vector<Column> columns) throws SenderException {
+	private String insertQuery(DirectQuerySender dqs, String correlationID, ParameterResolutionContext prc, String tableName, Vector<Column> columns) throws SenderException {
 		try {
 			String query = "INSERT INTO " + tableName + " (";
 			Iterator<Column> iter = columns.iterator();
@@ -431,27 +428,27 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				}
 			}
 			query = query + queryColumns + ") VALUES (" + queryValues + ")";
-			return executeUpdate(connection, correlationID, tableName, query, columns);
+			return executeUpdate(dqs, correlationID, tableName, query, columns);
 		} catch (SenderException t) {
 			throw new SenderException(getLogPrefix() + "got exception executing an INSERT SQL command", t);
 		}
 	}
 
-	private String deleteQuery(Connection connection, String correlationID, String tableName, String where) throws SenderException, JdbcException {
+	private String deleteQuery(DirectQuerySender dqs, String correlationID, String tableName, String where) throws SenderException, JdbcException {
 		try {
 			String query = "DELETE FROM " + tableName;
 			if (where != null) {
 				query = query + " WHERE " + where;
 			}
-			PreparedStatement statement = getStatement(connection, correlationID, query, false);
+			PreparedStatement statement = getStatement(dqs.getConnection(), correlationID, query, false);
 			statement.setQueryTimeout(getTimeout());
-			return executeOtherQuery(connection, correlationID, statement, query, null, null);
+			return executeOtherQuery(dqs.getConnection(), correlationID, statement, query, null, null);
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a DELETE SQL command", e);
 		}
 	}
 
-	private String updateQuery(Connection connection, String correlationID, String tableName, Vector<Column> columns, String where) throws SenderException {
+	private String updateQuery(DirectQuerySender dqs, String correlationID, String tableName, Vector<Column> columns, String where) throws SenderException {
 		try {
 			String query = "UPDATE " + tableName + " SET ";
 			Iterator<Column> iter = columns.iterator();
@@ -469,15 +466,15 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			if (where != null) {
 				query = query + " WHERE " + where;
 			}
-			return executeUpdate(connection, correlationID, tableName, query, columns);
+			return executeUpdate(dqs, correlationID, tableName, query, columns);
 		} catch (SenderException t) {
 			throw new SenderException(getLogPrefix() + "got exception executing an UPDATE SQL command", t);
 		}
 	}
 
-	private String sql(Connection connection, String correlationID, String query, String type, String expectResultSetArg) throws SenderException, JdbcException {
+	private String sql(DirectQuerySender dqs, String correlationID, String query, String type, String expectResultSetArg) throws SenderException, JdbcException {
 		try {
-			PreparedStatement statement = getStatement(connection, correlationID, query, false);
+			PreparedStatement statement = getStatement(dqs.getConnection(), correlationID, query, false);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
 			
@@ -496,26 +493,26 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				StringTokenizer stringTokenizer = new StringTokenizer(query, ";");
 				while (stringTokenizer.hasMoreTokens()) {
 					String q = stringTokenizer.nextToken();
-					statement = getStatement(connection, correlationID, q, false);
+					statement = getStatement(dqs.getConnection(), correlationID, q, false);
 					if (q.trim().toLowerCase().startsWith("select")) {
 						result.append(executeSelectQuery(statement,null,null));
 					} else {
-						result.append(executeOtherQuery(connection, correlationID, statement, q, null, null));
+						result.append(executeOtherQuery(dqs.getConnection(), correlationID, statement, q, null, null));
 					}
 				}
 				return result.toString();
 			} else {
-				return executeOtherQuery(connection, correlationID, statement, query, null, null);
+				return executeOtherQuery(dqs.getConnection(), correlationID, statement, query, null, null);
 			}
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SQL command", e);
 		}
 	}
 
-	private String executeUpdate(Connection connection, String correlationID, String tableName, String query, Vector<Column> columns) throws SenderException {
+	private String executeUpdate(DirectQuerySender dqs, String correlationID, String tableName, String query, Vector<Column> columns) throws SenderException {
 		try {
 			if (existLob(columns)) {
-				CallableStatement callableStatement = getCallWithRowIdReturned(connection, correlationID, query);
+				CallableStatement callableStatement = getCallWithRowIdReturned(dqs.getConnection(), correlationID, query);
 				applyParameters(callableStatement, columns);
 				int ri = 1 + countParameters(columns);
 				callableStatement.registerOutParameter(ri, Types.VARCHAR);
@@ -529,7 +526,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 					Column column = (Column) iter.next();
 					if (column.getType().equalsIgnoreCase(TYPE_BLOB) || column.getType().equalsIgnoreCase(TYPE_CLOB)) {
 						query = "SELECT " + column.getName() + " FROM " + tableName + " WHERE ROWID=?" + " FOR UPDATE";
-						PreparedStatement statement = getStatement(connection, correlationID, query, true);
+						PreparedStatement statement = getStatement(dqs.getConnection(), correlationID, query, true);
 						statement.setString(1, rowId);
 						statement.setQueryTimeout(getTimeout());
 						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
@@ -541,10 +538,10 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				}
 				return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
 			}
-			PreparedStatement statement = getStatement(connection, correlationID, query, false);
+			PreparedStatement statement = getStatement(dqs.getConnection(), correlationID, query, false);
 			applyParameters(statement, columns);
 			statement.setQueryTimeout(getTimeout());
-			return executeOtherQuery(connection, correlationID, statement, query, null, null);
+			return executeOtherQuery(dqs.getConnection(), correlationID, statement, query, null, null);
 		} catch (Throwable t) {
 			throw new SenderException(t);
 		}
@@ -573,7 +570,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		return parameterCount;
 	}
 
-	private String alterQuery(Connection connection, String sequenceName, int startWith) throws SenderException {
+	private String alterQuery(DirectQuerySender dqs, String sequenceName, int startWith) throws SenderException {
 		try {
 			String callQuery = "declare" + " pragma autonomous_transaction;" + " ln_increment number;" + " ln_curr_val number;" + " ln_reset_increment number;" + " ln_reset_val number;" + "begin" + " select increment_by into ln_increment from user_sequences where sequence_name = '" + sequenceName + "';" + " select " + (startWith - 2) + " - " + sequenceName + ".nextval into ln_reset_increment from dual;" + " select " + sequenceName + ".nextval into ln_curr_val from dual;" + " EXECUTE IMMEDIATE 'alter sequence " + sequenceName + " increment by '|| ln_reset_increment ||' minvalue 0';" + " select " + sequenceName + ".nextval into ln_reset_val from dual;" + " EXECUTE IMMEDIATE 'alter sequence " + sequenceName + " increment by '|| ln_increment;" + "end;";
 			log.debug(getLogPrefix() + "preparing procedure for query [" + callQuery + "]");
