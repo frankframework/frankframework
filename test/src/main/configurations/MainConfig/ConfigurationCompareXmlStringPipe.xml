@@ -1,7 +1,7 @@
 <ibis>
 	<adapter name="CompareXmlStringPipe" description="Test the functioning of the CompareXmlStringPipe">
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="CompareXmlStringPipe">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="CompareXmlStringPipe" serviceName="ibis4testiaf-CompareXmlStringPipe" />
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="CompareXmlStringPipe" serviceName="ibis4test-CompareXmlStringPipe" />
 		</receiver>
 		<pipeline firstPipe="FillSessionKey2">
 			<exits>

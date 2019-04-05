@@ -1,7 +1,7 @@
 <ibis>
 	<adapter name="ReplacerPipe" description="Test the functioning of the ReplacerPipe">
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="ReplacerPipe">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4testiaf-ReplacerPipe" />
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ReplacerPipe" />
 		</receiver>
 		<pipeline firstPipe="Replace">
 			<exits>

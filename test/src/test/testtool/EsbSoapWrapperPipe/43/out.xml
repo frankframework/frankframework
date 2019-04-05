@@ -1,6 +1,6 @@
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Header><MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/2">
    <From>
-      <Id>Ibis4TestIAF</Id>
+      <Id>ibis4test</Id>
    </From>
    <To>
       <Location>ESB.Publishing.BS.SalesDocument.1.GetDocuments.1.Response</Location>

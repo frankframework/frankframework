@@ -5,7 +5,7 @@
 			>
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-XmlBuilderThreadSafety"
+				serviceName="ibis4test-XmlBuilderThreadSafety"
 			/>
 		</receiver>
 		<pipeline firstPipe="Parallel processing">

@@ -3,7 +3,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="Text2Xml">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-Text2Xml" />
+				serviceName="ibis4test-Text2Xml" />
 		</receiver>
 		<pipeline firstPipe="text2xml">
 			<exits>

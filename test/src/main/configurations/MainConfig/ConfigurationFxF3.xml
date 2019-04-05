@@ -2,7 +2,7 @@
 	<adapter name="FxF3In">
 		<receiver name="FxF3In">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-FxF3In" />
+				serviceName="ibis4test-FxF3In" />
 		</receiver>
 		<pipeline firstPipe="EchoPipe">
 			<exits>
@@ -20,7 +20,7 @@
 	<adapter name="FxF3Out">
 		<receiver name="FxF3Out">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-FxF3Out" />
+				serviceName="ibis4test-FxF3Out" />
 		</receiver>
 		<pipeline firstPipe="EchoSender">
 			<exits>
@@ -41,7 +41,7 @@
 	<adapter name="FxF3v2Out">
 		<receiver name="FxF3v2Out">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-FxF3v2Out" />
+				serviceName="ibis4test-FxF3v2Out" />
 		</receiver>
 		<pipeline firstPipe="EchoSender">
 			<exits>

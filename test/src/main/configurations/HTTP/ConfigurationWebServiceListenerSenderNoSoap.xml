@@ -20,7 +20,7 @@
 	</adapter>
 	<adapter name="WebServiceSenderNoSoap" description="Test the functioning of the WebServiceSender">
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="WebServiceSenderNoSoap">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4testiaf-WebServiceSenderNoSoap" />
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-WebServiceSenderNoSoap" />
 		</receiver>
 		<pipeline firstPipe="wrap">
 			<exits>

@@ -6,7 +6,7 @@
 			<correlationId>Test Tool correlation id</correlationId>
 			<message><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Header><MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
    <From>
-      <Id>Ibis4TestIAF</Id>
+      <Id>ibis4test</Id>
    </From>
    <To>
       <Location>ESB.Infrastructure.TS.Test.TestIAF.1.UpdateMessage.1.Action</Location>

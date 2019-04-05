@@ -3,7 +3,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="XmlFileElementIteratorPipe">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-XmlFileElementIteratorPipe" />
+				serviceName="ibis4test-XmlFileElementIteratorPipe" />
 		</receiver>
 		<pipeline firstPipe="getRequest">
 			<exits>

@@ -1,7 +1,7 @@
 <ibis>
 	<adapter name="CorrelationMessageId">
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="CorrelationMessageId">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4testiaf-CorrelationMessageId" />
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-CorrelationMessageId" />
 			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/CorrelationMessageId" />
 		</receiver>
 		<pipeline firstPipe="ResolveString">
@@ -15,7 +15,7 @@
 	</adapter>
 	<adapter name="CorrelationMessageIdXPath">
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="CorrelationMessageIdXPath" correlationIDXPath="request/@name">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4testiaf-CorrelationMessageIdXPath" />
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-CorrelationMessageIdXPath" />
 			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/CorrelationMessageIdXPath" />
 		</receiver>
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="CorrelationMessageIdXPath2" correlationIDXPath="request/@name">

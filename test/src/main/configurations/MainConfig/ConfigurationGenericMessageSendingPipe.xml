@@ -1,7 +1,7 @@
 <module>
 	<adapter name="GenericMessageSendingPipe" description="Test the functioning of the GenericMessageSendingPipe">
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="GenericMessageSendingPipe">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4testiaf-GenericMessageSendingPipe" />
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-GenericMessageSendingPipe" />
 		</receiver>
 		<pipeline firstPipe="sendMessage">
 			<exits>

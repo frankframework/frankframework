@@ -1,6 +1,6 @@
 <project default="setup.input.directories">
 	<target name="setup.input.directories">
-		<property name="root.dir" value="c:/temp/ibis4testiaf/"/>
+		<property name="root.dir" value="c:/temp/ibis4test/"/>
 		<delete dir="${root.dir}"/>
 		<mkdir dir="${root.dir}"/>
 		<mkdir dir="${root.dir}/b64"/>

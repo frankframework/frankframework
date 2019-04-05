@@ -7,7 +7,7 @@
 		<receiver name="EsbSoapValidator"
 			className="nl.nn.adapterframework.receivers.GenericReceiver">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-EsbSoapValidator" throwException="false" />
+				serviceName="ibis4test-EsbSoapValidator" throwException="false" />
 		</receiver>
 
 		<pipeline firstPipe="make reply">
@@ -63,7 +63,7 @@
 		<receiver name="EsbSoapValidator2"
 			className="nl.nn.adapterframework.receivers.GenericReceiver">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-EsbSoapValidator2" />
+				serviceName="ibis4test-EsbSoapValidator2" />
 		</receiver>
 		<pipeline firstPipe="SetPolicyDetails_Request">
 			<exits>
@@ -103,7 +103,7 @@
 		<receiver name="EsbSoapValidator3"
 			className="nl.nn.adapterframework.receivers.GenericReceiver">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-EsbSoapValidator3" />
+				serviceName="ibis4test-EsbSoapValidator3" />
 		</receiver>
 		<pipeline firstPipe="Switch">
 			<exits>

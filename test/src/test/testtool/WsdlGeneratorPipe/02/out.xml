@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:jms="http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS" xmlns:jndi="http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi" xmlns:tns="http://nn.nl/WSDL/Account/Infor/Mation/1/GetAccountInformationOnPolicy/2" xmlns:ns1="http://nn.nl/XSD/Account/Infor/Mation/1/GetAccountInformationOnPolicy/2" xmlns:ns2="http://nn.nl/XSD/Generic/MessageHeader/2" targetNamespace="http://nn.nl/WSDL/Account/Infor/Mation/1/GetAccountInformationOnPolicy/2">
-	<wsdl:documentation>Generated as Account_Infor_Mation_1_GetAccountInformationOnPolicy_2_concrete.wsdl by Ibis4TestIAF on 2015-10-28T14:18:21CET.</wsdl:documentation>
+	<wsdl:documentation>Generated as Account_Infor_Mation_1_GetAccountInformationOnPolicy_2_concrete.wsdl by ibis4test on 2015-10-28T14:18:21CET.</wsdl:documentation>
 	<wsdl:types>
 		<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://nn.nl/XSD/Account/Infor/Mation/1/GetAccountInformationOnPolicy/2" targetNamespace="http://nn.nl/XSD/Account/Infor/Mation/1/GetAccountInformationOnPolicy/2" attributeFormDefault="unqualified" elementFormDefault="qualified">
 	<xs:element name="GetAccountInformationRequest">

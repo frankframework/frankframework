@@ -12,7 +12,7 @@
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="TransactionTimeoutHandlingTransacted"
-				serviceName="ibis4testiaf-TransactionTimeoutHandlingTransacted"
+				serviceName="ibis4test-TransactionTimeoutHandlingTransacted"
 			/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
 				jmsRealm="jdbc" 
@@ -82,7 +82,7 @@
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="TransactionTimeoutHandlingNonTransacted"
-				serviceName="ibis4testiaf-TransactionTimeoutHandlingNonTransacted"
+				serviceName="ibis4test-TransactionTimeoutHandlingNonTransacted"
 			/>
 		</receiver>
 

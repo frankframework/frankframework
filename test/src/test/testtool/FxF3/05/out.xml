@@ -1,6 +1,6 @@
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Header><MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/2">
    <From>
-      <Id>Ibis4TestIAF</Id>
+      <Id>ibis4test</Id>
    </From>
    <To>
       <Location>ESB.Infrastructure.US.Transfer.FileTransfer.1.StartTransfer.2.Action</Location>
@@ -23,9 +23,9 @@
 </MessageHeader>
 </soapenv:Header><soapenv:Body><StartTransfer_Action xmlns="http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/StartTransfer/2">
 	  <TransferDetails>
-		    <SenderApplication>Ibis4TestIAF</SenderApplication>
+		    <SenderApplication>ibis4test</SenderApplication>
 		    <RecipientApplication/>
-		    <Filename>/opt/data/FXF/ibis4testiaf/NNX01234/out/test.txt</Filename>
+		    <Filename>/opt/data/FXF/ibis4test/NNX01234/out/test.txt</Filename>
 		    <TransferFlowId>NNL01234</TransferFlowId>
 	  </TransferDetails>
 </StartTransfer_Action>

@@ -6,7 +6,7 @@
 				transactionAttribute="Required"
 				pollInterval="1"
 				transactionTimeout="30">
-			<listener name="JdbcQueryListener for Ibis4TestIAF"
+			<listener name="JdbcQueryListener for ibis4test"
 						className="nl.nn.adapterframework.jdbc.JdbcQueryListener"
 						jmsRealm="jdbc"
 						selectQuery="SELECT TKEY
@@ -54,7 +54,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="JdbcQueryListenerDatabaseMiddleware">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-JdbcQueryListenerDatabaseMiddleware" />
+				serviceName="ibis4test-JdbcQueryListenerDatabaseMiddleware" />
 		</receiver>
 		<pipeline firstPipe="SwitchAction">
 			<exits>
@@ -72,7 +72,7 @@
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" jmsRealm="jdbc" 
 					query="DELETE FROM IBISSTORE WHERE SLOTID = ?" 
 				/>
-					<param name="slotid" value="IFSA://NLIBIS4TESTIAF/JdbcQueryListener"/>
+					<param name="slotid" value="IFSA://NLibis4test/JdbcQueryListener"/>
 				<forward name="success" path="do_success" />
 			</pipe>
 			<pipe name="InsertIbistempError" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">

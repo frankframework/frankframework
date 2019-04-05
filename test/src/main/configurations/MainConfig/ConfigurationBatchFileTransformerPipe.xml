@@ -1,7 +1,7 @@
 <module>
 	<adapter name="BatchFileTransformerPipe" description="Test the functioning of the BatchFileTransformerPipe">
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="BatchFileTransformerPipe">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4testiaf-BatchFileTransformerPipe" />
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-BatchFileTransformerPipe" />
 		</receiver>
 		<pipeline firstPipe="processFile" transactionAttribute="Required">
 			<exits>
@@ -74,7 +74,7 @@
 
 	<adapter name="BatchFileTransformerPipe2">
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="BatchFileTransformerPipe2">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4testiaf-BatchFileTransformerPipe2" />
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-BatchFileTransformerPipe2" />
 		</receiver>
 		<pipeline firstPipe="processFile">
 			<exits>

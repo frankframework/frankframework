@@ -1,7 +1,7 @@
 <ibis>
 	<adapter name="ResultSetIteratingPipe">
 		<receiver name="ResultSetIteratingPipe" className="nl.nn.adapterframework.receivers.GenericReceiver">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4testiaf-ResultSetIteratingPipe" />
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ResultSetIteratingPipe" />
 		</receiver>
 		<pipeline firstPipe="SelectRecords-A" transactionAttribute="RequiresNew">
 			<exits>

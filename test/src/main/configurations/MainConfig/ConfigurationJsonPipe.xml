@@ -3,7 +3,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="JsonPipe">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-JsonPipe" />
+				serviceName="ibis4test-JsonPipe" />
 		</receiver>
 		<pipeline firstPipe="xml2json">
 			<exits>

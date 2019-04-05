@@ -11,7 +11,7 @@
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="TransactionHandlingMultiAdapter"
-				serviceName="ibis4testiaf-TransactionHandlingNotSupported"
+				serviceName="ibis4test-TransactionHandlingNotSupported"
 			/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
 				jmsRealm="jdbc" 

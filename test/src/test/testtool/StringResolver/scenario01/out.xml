@@ -1,6 +1,6 @@
 <root>
 	<item>application.name=[IAF_ss9]</item>
-	<item>instance.name=[Ibis4TestIAF]</item>
+	<item>instance.name=[ibis4test]</item>
 	<item>browse.messages.max=[89]</item>
 	<item>Statistics.boundaries=[100,1000,2000,10000]</item>
 </root>

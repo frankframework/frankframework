@@ -55,7 +55,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="WebServiceSenderAddress">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-WebServiceSenderAddress" />
+				serviceName="ibis4test-WebServiceSenderAddress" />
 		</receiver>
 		<pipeline firstPipe="Send2WS">
 			<exits>
@@ -75,7 +75,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="WebServiceSenderErrorAddress">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-WebServiceSenderErrorAddress" />
+				serviceName="ibis4test-WebServiceSenderErrorAddress" />
 		</receiver>
 		<pipeline firstPipe="Send2WS">
 			<exits>
@@ -95,7 +95,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="WebServiceSenderTimeoutGlobalForwardAddress">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-WebServiceSenderTimeoutGlobalForwardAddress" />
+				serviceName="ibis4test-WebServiceSenderTimeoutGlobalForwardAddress" />
 		</receiver>
 		<pipeline firstPipe="SwitchAction">
 			<exits>
@@ -148,7 +148,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="WebServiceSenderTimeoutAddress">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-WebServiceSenderTimeoutAddress" />
+				serviceName="ibis4test-WebServiceSenderTimeoutAddress" />
 		</receiver>
 		<pipeline firstPipe="SwitchAction">
 			<exits>

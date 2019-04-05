@@ -1,5 +1,5 @@
 <root>
-	<queueName>ABC.Infrastructure.Ibis4TestIAF.Test001.Request</queueName>
-	<principal>HUMUR8008135</principal>
+	<queueName>ABC.Infrastructure.ibis4test.Test001.Request</queueName>
+	<principal>HUMMUS8008135</principal>
 	<permissions>receive,send</permissions>
 </root>

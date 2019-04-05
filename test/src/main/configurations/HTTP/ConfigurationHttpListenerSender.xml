@@ -18,7 +18,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="HttpSender">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-HttpSender" />
+				serviceName="ibis4test-HttpSender" />
 		</receiver>
 		<pipeline firstPipe="LocalHttp">
 			<exits>
@@ -53,7 +53,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="HttpSenderTimeout">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-HttpSenderTimeout" />
+				serviceName="ibis4test-HttpSenderTimeout" />
 		</receiver>
 		<pipeline firstPipe="LocalHttp">
 			<exits>

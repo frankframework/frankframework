@@ -3,7 +3,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="Base64Pipe">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-Base64Pipe" />
+				serviceName="ibis4test-Base64Pipe" />
 		</receiver>
 		<pipeline firstPipe="Read">
 			<exits>

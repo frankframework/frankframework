@@ -4,7 +4,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="JmsRRSender">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-JmsRRSender" />
+				serviceName="ibis4test-JmsRRSender" />
 		</receiver>
 		<pipeline firstPipe="Send2Jms">
 			<exits>
@@ -48,7 +48,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="JmsFFSender">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-JmsFFSender" />
+				serviceName="ibis4test-JmsFFSender" />
 		</receiver>
 		<pipeline firstPipe="send2Jms" transactionAttribute="Required">
 			<exits>
@@ -78,7 +78,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="JmsFFSenderWithDatasource">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-JmsFFSenderWithDatasource" />
+				serviceName="ibis4test-JmsFFSenderWithDatasource" />
 		</receiver>
 		<pipeline firstPipe="send2Jms" transactionAttribute="Required">
 			<exits>
@@ -128,7 +128,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="JmsFFSenderWithRead">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-JmsFFSenderWithRead" />
+				serviceName="ibis4test-JmsFFSenderWithRead" />
 		</receiver>
 		<pipeline firstPipe="send2Jms" transactionAttribute="Required">
 			<exits>
@@ -191,13 +191,13 @@
 			<pipe name="subcall_java_echo"
 				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
 				<sender className="nl.nn.adapterframework.senders.IbisJavaSender"
-					serviceName="ibis4testiaf-JmsFFListener_subcall" />
+					serviceName="ibis4test-JmsFFListener_subcall" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="subcall_java_exception"
 				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
 				<sender className="nl.nn.adapterframework.senders.IbisJavaSender"
-					serviceName="ibis4testiaf-JmsFFListener_subcall" />
+					serviceName="ibis4test-JmsFFListener_subcall" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -206,7 +206,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="JmsFFListener_subcall">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				name="JmsFFListener_subcall" serviceName="ibis4testiaf-JmsFFListener_subcall" />
+				name="JmsFFListener_subcall" serviceName="ibis4test-JmsFFListener_subcall" />
 		</receiver>
 		<pipeline firstPipe="switchAction" transactionAttribute="Required">
 			<exits>
@@ -234,7 +234,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="XmlJmsBrowserSender">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-XmlJmsBrowserSender" />
+				serviceName="ibis4test-XmlJmsBrowserSender" />
 		</receiver>
 		<pipeline firstPipe="switchAction">
 			<exits>

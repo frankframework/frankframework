@@ -42,7 +42,7 @@
 			<listener
 				name="Queue"
 				className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-EsbJmsRRHeaderSender" 
+				serviceName="ibis4test-EsbJmsRRHeaderSender" 
 			/>
 		</receiver>
 

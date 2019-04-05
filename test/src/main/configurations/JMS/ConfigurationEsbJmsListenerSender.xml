@@ -4,7 +4,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="EsbJmsRRSender">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-EsbJmsRRSender" />
+				serviceName="ibis4test-EsbJmsRRSender" />
 		</receiver>
 		<pipeline firstPipe="Send2EsbJms">
 			<exits>
@@ -62,7 +62,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="EsbJmsFFSender">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-EsbJmsFFSender" />
+				serviceName="ibis4test-EsbJmsFFSender" />
 		</receiver>
 		<pipeline firstPipe="Send2EsbJms" transactionAttribute="Required">
 			<exits>
@@ -97,7 +97,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="EsbJmsFFSenderWithDatasource">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-EsbJmsFFSenderWithDatasource" />
+				serviceName="ibis4test-EsbJmsFFSenderWithDatasource" />
 		</receiver>
 		<pipeline firstPipe="send2EsbJms" transactionAttribute="Required">
 			<exits>
@@ -151,7 +151,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="EsbJmsFFSenderWithRead">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-EsbJmsFFSenderWithRead" />
+				serviceName="ibis4test-EsbJmsFFSenderWithRead" />
 		</receiver>
 		<pipeline firstPipe="Send2EsbJms" transactionAttribute="Required">
 			<exits>
@@ -219,13 +219,13 @@
 			<pipe name="subcall_java_echo"
 				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
 				<sender className="nl.nn.adapterframework.senders.IbisJavaSender"
-					serviceName="ibis4testiaf-EsbJmsFFListener_subcall" />
+					serviceName="ibis4test-EsbJmsFFListener_subcall" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="subcall_java_exception"
 				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
 				<sender className="nl.nn.adapterframework.senders.IbisJavaSender"
-					serviceName="ibis4testiaf-EsbJmsFFListener_subcall" />
+					serviceName="ibis4test-EsbJmsFFListener_subcall" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -234,7 +234,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="EsbJmsFFListener_subcall">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				name="EsbJmsFFListener_subcall" serviceName="ibis4testiaf-EsbJmsFFListener_subcall" />
+				name="EsbJmsFFListener_subcall" serviceName="ibis4test-EsbJmsFFListener_subcall" />
 		</receiver>
 		<pipeline firstPipe="switchAction" transactionAttribute="Required">
 			<exits>

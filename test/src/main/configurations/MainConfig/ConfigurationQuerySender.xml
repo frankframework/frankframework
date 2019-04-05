@@ -1,7 +1,7 @@
 <ibis>
 	<adapter name="QuerySender" description="Test the functioning of the FixedQuerySender and DirectQuerySender">
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="QuerySender">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4testiaf-QuerySender" />
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-QuerySender" />
 		</receiver>
 		<pipeline firstPipe="SwitchAction" transactionAttribute="Required">
 			<exits>
@@ -74,7 +74,7 @@
 	</adapter>
 	<adapter name="XmlQuerySender" description="Test the functioning of the XmlQuerySender">
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="XmlQuerySender">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4testiaf-XmlQuerySender" />
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-XmlQuerySender" />
 		</receiver>
 		<pipeline firstPipe="Query">
 			<exits>

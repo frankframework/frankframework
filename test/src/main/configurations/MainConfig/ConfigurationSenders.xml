@@ -10,7 +10,7 @@
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="SendersExceptionInSenderWithExceptionForward"
-				serviceName="ibis4testiaf-SendersExceptionInSenderWithExceptionForward"
+				serviceName="ibis4test-SendersExceptionInSenderWithExceptionForward"
 			/>
 		</receiver>
 
@@ -57,7 +57,7 @@
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="SendersExceptionInSubAdapter"
-				serviceName="ibis4testiaf-SendersExceptionInSubAdapter"
+				serviceName="ibis4test-SendersExceptionInSubAdapter"
 			/>
 		</receiver>
 
@@ -103,7 +103,7 @@
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="SendersParallelSenders"
-				serviceName="ibis4testiaf-SendersParallelSenders"
+				serviceName="ibis4test-SendersParallelSenders"
 			/>
 		</receiver>
 
@@ -181,7 +181,7 @@
 							/>
 							<sender
 								className="nl.nn.adapterframework.senders.IbisJavaSender"
-								serviceName="ibis4testiaf-CompareStringPipe"
+								serviceName="ibis4test-CompareStringPipe"
 							/>
 							<sender
 								className="nl.nn.adapterframework.senders.LogSender"
@@ -228,7 +228,7 @@
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="SendersIsolated"
-				serviceName="ibis4testiaf-SendersIsolated"
+				serviceName="ibis4test-SendersIsolated"
 			/>
 		</receiver>
 

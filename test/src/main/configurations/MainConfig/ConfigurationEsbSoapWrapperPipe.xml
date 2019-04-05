@@ -2,7 +2,7 @@
 	<adapter name="EsbSoapWrapperPipe (mode='i2t')" description="Test the functioning of the EsbSoapWrapperPipe">
 		<errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="EsbSoapWrapperPipe">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4testiaf-EsbSoapWrapperPipe" throwException="false" />
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-EsbSoapWrapperPipe" throwException="false" />
 		</receiver>
 		<pipeline firstPipe="switch">
 			<exits>
@@ -83,7 +83,7 @@
 	<adapter name="EsbSoapWrapperPipe (mode='reg')">
 		<errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="EsbSoapWrapperPipe2">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4testiaf-EsbSoapWrapperPipe2" throwException="false" />
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-EsbSoapWrapperPipe2" throwException="false" />
 		</receiver>
 		<pipeline firstPipe="switch">
 			<exits>
@@ -173,7 +173,7 @@
 	<adapter name="EsbSoapWrapperPipe (mode='bis')">
 		<errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="EsbSoapWrapperPipe3">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4testiaf-EsbSoapWrapperPipe3" throwException="false" />
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-EsbSoapWrapperPipe3" throwException="false" />
 		</receiver>
 		<pipeline firstPipe="switch">
 			<exits>
@@ -228,7 +228,7 @@
 	<adapter name="EsbSoapWrapperPipe (mode='reg', version=2)">
 		<errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="EsbSoapWrapperPipe4">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4testiaf-EsbSoapWrapperPipe4" throwException="false" />
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-EsbSoapWrapperPipe4" throwException="false" />
 		</receiver>
 		<pipeline firstPipe="switch">
 			<exits>
@@ -270,7 +270,7 @@
 	<adapter name="EsbSoapWrapperPipe (mode='reg', version=2, no ServiceContext)">
 		<errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="EsbSoapWrapperPipe5">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4testiaf-EsbSoapWrapperPipe5" throwException="false" />
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-EsbSoapWrapperPipe5" throwException="false" />
 		</receiver>
 		<pipeline firstPipe="switch">
 			<exits>

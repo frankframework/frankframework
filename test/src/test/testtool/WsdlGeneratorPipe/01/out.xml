@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:jms="http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS" xmlns:jndi="http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi" xmlns:tns="http://nn.nl/WSDL/CustomerAdministration/Party/Party/1/FindBPPensions/1" xmlns:ns1="http://nn.nl/XSD/CustomerAdministration/Party/Party/1/FindBPPensions/1" xmlns:ns2="http://nn.nl/XSD/Generic/MessageHeader/1" targetNamespace="http://nn.nl/WSDL/CustomerAdministration/Party/Party/1/FindBPPensions/1">
-	<wsdl:documentation>Generated as CustomerAdministration_Party_Party_1_FindBPPensions_1_concrete.wsdl by Ibis4TestIAF on 2015-10-28T14:18:20CET.</wsdl:documentation>
+	<wsdl:documentation>Generated as CustomerAdministration_Party_Party_1_FindBPPensions_1_concrete.wsdl by ibis4test on 2015-10-28T14:18:20CET.</wsdl:documentation>
 	<wsdl:types>
 		<xsd:schema xmlns="http://nn.nl/XSD/CustomerAdministration/Party/Party/1/FindBPPensions/1" xmlns:ns1="http://nn.nl/XSD/Generic/MessageHeader/1" xmlns:cmh="http://nn.nl/XSD/Generic/MessageHeader/1" targetNamespace="http://nn.nl/XSD/CustomerAdministration/Party/Party/1/FindBPPensions/1" attributeFormDefault="unqualified" elementFormDefault="qualified">
 			<xsd:import namespace="http://nn.nl/XSD/Generic/MessageHeader/1"/>

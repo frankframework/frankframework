@@ -1,7 +1,7 @@
 <ibis>
 	<adapter name="RemoveFromSession" description="Test the functioning of the RemoveFromSession">
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="RemoveFromSession">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4testiaf-RemoveFromSession" />
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-RemoveFromSession" />
 		</receiver>
 		<pipeline firstPipe="SwitchAction">
 			<exits>

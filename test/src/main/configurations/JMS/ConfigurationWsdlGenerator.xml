@@ -12,7 +12,7 @@
 		<receiver name="WsdlGenerator-java"
 			className="nl.nn.adapterframework.receivers.GenericReceiver">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-WsdlGenerator" />
+				serviceName="ibis4test-WsdlGenerator" />
 		</receiver>
 		<pipeline firstPipe="FixedReply">
 			<exits>
@@ -113,7 +113,7 @@
 		<receiver name="WsdlGenerator3-java"
 			className="nl.nn.adapterframework.receivers.GenericReceiver">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-WsdlGenerator3" />
+				serviceName="ibis4test-WsdlGenerator3" />
 		</receiver>
 		<pipeline firstPipe="FixedReply">
 			<exits>
@@ -161,7 +161,7 @@
 		<receiver name="WsdlGenerator4-java"
 			className="nl.nn.adapterframework.receivers.GenericReceiver">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-WsdlGenerator4" />
+				serviceName="ibis4test-WsdlGenerator4" />
 		</receiver>
 		<pipeline firstPipe="FixedReply">
 			<exits>

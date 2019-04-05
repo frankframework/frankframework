@@ -9,7 +9,7 @@
 				<name>CORRELATIONID</name>
 			</column>
 		</columns>
-		<where>SLOTID='IFSA://NLIBIS4TESTIAF/CorrelationMessageId'</where>
+		<where>SLOTID='IFSA://NLibis4test/CorrelationMessageId'</where>
 		<order>MESSAGEKEY</order>
 	</select>
 </manageDatabaseREQ>

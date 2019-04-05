@@ -3,7 +3,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="WsdlXmlValidator">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-WsdlXmlValidator" />
+				serviceName="ibis4test-WsdlXmlValidator" />
 		</receiver>
 		<pipeline firstPipe="Switch">
 			<exits>

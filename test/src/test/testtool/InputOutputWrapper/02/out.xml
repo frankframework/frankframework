@@ -2,7 +2,7 @@
   <soapenv:Header>
     <MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
       <From>
-        <Id>Ibis4TestIAF</Id>
+        <Id>ibis4test</Id>
       </From>
       <To>
         <Location>ESB.PropertyAndCasualtyRetail.BS.Policy.PolicyPropertyAndCasualtyRetail.1.WrapMessage.1.Response</Location>

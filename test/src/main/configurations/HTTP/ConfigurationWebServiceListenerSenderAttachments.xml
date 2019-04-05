@@ -99,7 +99,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="WebServiceSenderAddress">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-WebServiceSenderAddressAttachmentsWithParam" />
+				serviceName="ibis4test-WebServiceSenderAddressAttachmentsWithParam" />
 		</receiver>
 		<pipeline firstPipe="Send2WS">
 			<exits>
@@ -121,7 +121,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="WebServiceSenderAddress">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-WebServiceSenderAddressAttachmentsMultipart" />
+				serviceName="ibis4test-WebServiceSenderAddressAttachmentsMultipart" />
 		</receiver>
 		<pipeline firstPipe="GetAttachment1">
 			<exits>
@@ -160,7 +160,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="WebServiceSenderAddress">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-WebServiceSenderAddressAttachmentsReturning" />
+				serviceName="ibis4test-WebServiceSenderAddressAttachmentsReturning" />
 		</receiver>
 		<pipeline firstPipe="Send2WS">
 			<exits>
@@ -193,7 +193,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="WebServiceSenderAddress">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-WebServiceSenderAddressAttachmentsReturningSessionKey" />
+				serviceName="ibis4test-WebServiceSenderAddressAttachmentsReturningSessionKey" />
 		</receiver>
 		<pipeline firstPipe="Send2WS">
 			<exits>

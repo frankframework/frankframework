@@ -3,7 +3,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="FxF3InSender">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-FxF3InSender" />
+				serviceName="ibis4test-FxF3InSender" />
 		</receiver>
 		<pipeline firstPipe="Send2Jms" transactionAttribute="Required">
 			<exits>

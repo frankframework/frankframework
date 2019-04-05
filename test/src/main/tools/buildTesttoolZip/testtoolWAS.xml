@@ -17,16 +17,16 @@
 			<fileset dir="${testtool.dir}" />
 		</copy>
 		
-		<replaceregexp match="c:\\temp\\ibis4testiaf\\(.*)\\(.*)" replace="c:/temp/ibis4testiaf/\1/\2" flags="gi">
+		<replaceregexp match="c:\\temp\\ibis4test\\(.*)\\(.*)" replace="c:/temp/ibis4test/\1/\2" flags="gi">
 			<fileset dir="${work.dir}" includes="**/*" />
 		</replaceregexp>
 
-		<replaceregexp match="c:\\temp\\ibis4testiaf\\(.*)" replace="c:/temp/ibis4testiaf/\1" flags="gi">
+		<replaceregexp match="c:\\temp\\ibis4test\\(.*)" replace="c:/temp/ibis4test/\1" flags="gi">
 			<fileset dir="${work.dir}" includes="**/*" />
 		</replaceregexp>
 
 		<!-- Use line beneath for WAS -->
-		<replace dir="${work.dir}" token="c:/temp/ibis4testiaf" value="/opt/data/WAS/wasap18/log/ibis4testiaf">
+		<replace dir="${work.dir}" token="c:/temp/ibis4test" value="/opt/data/WAS/wasap18/log/ibis4test">
 			<include name="**/*" />
 		</replace>
 

@@ -3,7 +3,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="ResultSet2FileSender">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-ResultSet2FileSender" />
+				serviceName="ibis4test-ResultSet2FileSender" />
 		</receiver>
 		<pipeline firstPipe="setFileName">
 			<exits>

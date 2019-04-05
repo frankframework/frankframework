@@ -2,7 +2,7 @@
 	<adapter name="SoapWrapperPipe" description="Test the functioning of the SoapWrapperPipe">
 		<errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="SoapWrapperPipe">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4testiaf-SoapWrapperPipe" throwException="false" />
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-SoapWrapperPipe" throwException="false" />
 		</receiver>
 		<pipeline firstPipe="switch">
 			<exits>

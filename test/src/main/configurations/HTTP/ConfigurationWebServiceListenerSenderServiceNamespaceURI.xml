@@ -56,7 +56,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="WebServiceSenderServiceNamespaceURI">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-WebServiceSenderServiceNamespaceURI" />
+				serviceName="ibis4test-WebServiceSenderServiceNamespaceURI" />
 		</receiver>
 		<pipeline firstPipe="Send2WS">
 			<exits>
@@ -78,7 +78,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="WebServiceSenderErrorServiceNamespaceURI">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-WebServiceSenderErrorServiceNamespaceURI" />
+				serviceName="ibis4test-WebServiceSenderErrorServiceNamespaceURI" />
 		</receiver>
 		<pipeline firstPipe="Send2WS">
 			<exits>
@@ -99,7 +99,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="WebServiceSenderTimeoutGlobalForwardServiceNamespaceURI">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-WebServiceSenderTimeoutGlobalForwardServiceNamespaceURI" />
+				serviceName="ibis4test-WebServiceSenderTimeoutGlobalForwardServiceNamespaceURI" />
 		</receiver>
 		<pipeline firstPipe="SwitchAction">
 			<exits>
@@ -154,7 +154,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="WebServiceSenderTimeoutServiceNamespaceURI">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4testiaf-WebServiceSenderTimeoutServiceNamespaceURI" />
+				serviceName="ibis4test-WebServiceSenderTimeoutServiceNamespaceURI" />
 		</receiver>
 		<pipeline firstPipe="SwitchAction">
 			<exits>

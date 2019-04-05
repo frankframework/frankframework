@@ -7,7 +7,7 @@
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="ExceptionPipe"
-				serviceName="ibis4testiaf-ExceptionPipe"
+				serviceName="ibis4test-ExceptionPipe"
 			/>
 		</receiver>
 		<pipeline firstPipe="Generate timestamp">
