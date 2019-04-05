@@ -13,7 +13,12 @@ public class CustomLoginConfiguration extends Configuration{
 
 	private AppConfigurationEntry configEntry = new AppConfigurationEntry("com.sun.security.auth.module.Krb5LoginModule",
 			AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, params);
+// For websphere customize this
+//	private AppConfigurationEntry configEntry = new AppConfigurationEntry("com.ibm.security.auth.module.Krb5LoginModule",
+//			AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, params);
 
+	
+	
 	public CustomLoginConfiguration(Map<String, String> params) {
 		this.params.putAll(params);
 	}
