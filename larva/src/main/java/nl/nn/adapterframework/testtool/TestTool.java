@@ -172,9 +172,9 @@ public class TestTool {
 			autoScroll = "false";
 		}
 
-		Map writers = null;
+		Map<String, Object> writers = null;
 		if (!silent) {
-			writers = new HashMap();
+			writers = new HashMap<String, Object>();
 			writers.put("out", out);
 			writers.put("htmlbuffer", new StringWriter());
 			writers.put("logbuffer", new StringWriter());
@@ -194,8 +194,8 @@ public class TestTool {
 			autoSaveDiffs = Boolean.parseBoolean(asd);
 		}
 		debugMessage("Initialize scenarios root directories", writers);
-		List scenariosRootDirectories = new ArrayList();
-		List scenariosRootDescriptions = new ArrayList();
+		List<String> scenariosRootDirectories = new ArrayList<String>();
+		List<String> scenariosRootDescriptions = new ArrayList<String>();
 		String currentScenariosRootDirectory = initScenariosRootDirectories(
 				appConstants, realPath,
 				paramScenariosRootDirectory, scenariosRootDirectories,
@@ -219,7 +219,7 @@ public class TestTool {
 			}
 		}
 		debugMessage("Read scenarios from directory '" + currentScenariosRootDirectory + "'", writers);
-		List allScenarioFiles = readScenarioFiles(appConstants, currentScenariosRootDirectory, writers);
+		List<File> allScenarioFiles = readScenarioFiles(appConstants, currentScenariosRootDirectory, writers);
 		debugMessage("Initialize 'wait before cleanup' variable", writers);
 		int waitBeforeCleanUp = 100;
 		if (paramWaitBeforeCleanUp != null) {
@@ -254,10 +254,10 @@ public class TestTool {
 				XMLUnit.setIgnoreWhitespace(true);
 				debugMessage("Initialize 'scenario files' variable", writers);
 				debugMessage("Param execute: " + paramExecute, writers);
-				List scenarioFiles;
+				List<File> scenarioFiles;
 				if (paramExecute.endsWith(".properties")) {
 					debugMessage("Read one scenario", writers);
-					scenarioFiles = new ArrayList();
+					scenarioFiles = new ArrayList<File>();
 					scenarioFiles.add(new File(paramExecute));
 				} else {
 					debugMessage("Read all scenarios from directory '" + paramExecute + "'", writers);
@@ -269,7 +269,7 @@ public class TestTool {
 				int scenariosAutosaved = 0;
 				long startTime = System.currentTimeMillis();
 				debugMessage("Execute scenario('s)", writers);
-				Iterator scenarioFilesIterator = scenarioFiles.iterator();
+				Iterator<File> scenarioFilesIterator = scenarioFiles.iterator();
 				while (scenarioFilesIterator.hasNext()) {
 					int scenarioPassed = RESULT_ERROR;
 					File scenarioFile = (File)scenarioFilesIterator.next();
@@ -287,7 +287,7 @@ public class TestTool {
 					}
 					debugMessage("Read property file " + scenarioFile.getName(), writers);
 					Properties properties = readProperties(appConstants, scenarioFile, writers);
-					List steps = null;
+					List<String> steps = null;
 
 					if (properties != null) {
 						debugMessage("Read steps from property file", writers);
@@ -295,12 +295,12 @@ public class TestTool {
 						if (steps != null) {
 							synchronized(STEP_SYNCHRONIZER) {
 								debugMessage("Open queues", writers);
-								Map queues = openQueues(scenarioDirectory, steps, properties, ibisContext, appConstants, writers);
+								Map<String, Map<String, Object>> queues = openQueues(scenarioDirectory, steps, properties, ibisContext, appConstants, writers);
 								if (queues != null) {
 									debugMessage("Execute steps", writers);
 									boolean allStepsPassed = true;
 									boolean autoSaved = false;
-									Iterator iterator = steps.iterator();
+									Iterator<String> iterator = steps.iterator();
 									while (allStepsPassed && iterator.hasNext()) {
 										if (evenStep) {
 											writeHtml("<div class='even'>", writers, false);
@@ -445,7 +445,7 @@ public class TestTool {
 		return scenariosFailed;
 	}
 
-	public static void printHtmlForm(List scenariosRootDirectories, List scenariosRootDescriptions, String scenariosRootDirectory, AppConstants appConstants, List scenarioFiles, int waitBeforeCleanUp, String paramExecute, String autoScroll, Map writers) {
+	public static void printHtmlForm(List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions, String scenariosRootDirectory, AppConstants appConstants, List<File> scenarioFiles, int waitBeforeCleanUp, String paramExecute, String autoScroll, Map<String, Object> writers) {
 		if (writers!=null) {
 			writeHtml("<form action=\"index.jsp\" method=\"post\">", writers, false);
 
@@ -457,8 +457,8 @@ public class TestTool {
 			writeHtml("<td>", writers, false);
 			writeHtml("<select name=\"execute\">", writers, false);
 			debugMessage("Fill execute select box.", writers);
-			Set addedDirectories = new HashSet();
-			Iterator scenarioFilesIterator = scenarioFiles.iterator();
+			Set<String> addedDirectories = new HashSet<String>();
+			Iterator<File> scenarioFilesIterator = scenarioFiles.iterator();
 			while (scenarioFilesIterator.hasNext()) {
 				File scenarioFile = (File)scenarioFilesIterator.next();
 				String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
@@ -516,8 +516,8 @@ public class TestTool {
 			writeHtml("<tr>", writers, false);
 			writeHtml("<td>", writers, false);
 			writeHtml("<select name=\"scenariosrootdirectory\">", writers, false);
-			Iterator scenariosRootDirectoriesIterator = scenariosRootDirectories.iterator();
-			Iterator scenariosRootDescriptionsIterator = scenariosRootDescriptions.iterator();
+			Iterator<String> scenariosRootDirectoriesIterator = scenariosRootDirectories.iterator();
+			Iterator<String> scenariosRootDescriptionsIterator = scenariosRootDescriptions.iterator();
 			while (scenariosRootDirectoriesIterator.hasNext()) {
 				String directory = (String)scenariosRootDirectoriesIterator.next();
 				String description = (String)scenariosRootDescriptionsIterator.next();
@@ -603,7 +603,7 @@ public class TestTool {
 		}
 	}
 
-	public static void write(String html, String type, String method, Map writers, boolean scroll) {
+	public static void write(String html, String type, String method, Map<String, Object> writers, boolean scroll) {
 		if (writers!=null) {
 			String useBuffer = (String)writers.get("use" + type + "buffer");
 			if (useBuffer.equals("start")) {
@@ -640,21 +640,21 @@ public class TestTool {
 		}
 	}
 
-	public static void writeHtml(String html, Map writers, boolean scroll) {
+	public static void writeHtml(String html, Map<String, Object> writers, boolean scroll) {
 		write(html, "html", null, writers, scroll);
 	}
 
-	public static void writeLog(String html, String method, Map writers, boolean scroll) {
+	public static void writeLog(String html, String method, Map<String, Object> writers, boolean scroll) {
 		write(html, "log", method, writers, scroll);
 	}
 
-	public static void debugMessage(String message, Map writers) {
+	public static void debugMessage(String message, Map<String, Object> writers) {
 		String method = "debug";
 		logger.debug(message);
 		writeLog(XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters(message)) + "<br/>", method, writers, false);
 	}
 
-	public static void debugPipelineMessage(String stepDisplayName, String message, String pipelineMessage, Map writers) {
+	public static void debugPipelineMessage(String stepDisplayName, String message, String pipelineMessage, Map<String, Object> writers) {
 		if (writers!=null) {
 			String method = "pipeline messages";
 			int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
@@ -671,7 +671,7 @@ public class TestTool {
 		}
 	}
 
-	public static void debugPipelineMessagePreparedForDiff(String stepDisplayName, String message, String pipelineMessage, Map writers) {
+	public static void debugPipelineMessagePreparedForDiff(String stepDisplayName, String message, String pipelineMessage, Map<String, Object> writers) {
 		if (writers!=null) {
 			String method = "pipeline messages prepared for diff";
 			int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
@@ -688,7 +688,7 @@ public class TestTool {
 		}
 	}
 
-	public static void wrongPipelineMessage(String message, String pipelineMessage, Map writers) {
+	public static void wrongPipelineMessage(String message, String pipelineMessage, Map<String, Object> writers) {
 		if (writers!=null) {
 			String method = "wrong pipeline messages";
 			int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
@@ -704,7 +704,7 @@ public class TestTool {
 		}
 	}
 
-	public static void wrongPipelineMessage(String stepDisplayName, String message, String pipelineMessage, String pipelineMessageExpected, Map writers) {
+	public static void wrongPipelineMessage(String stepDisplayName, String message, String pipelineMessage, String pipelineMessageExpected, Map<String, Object> writers) {
 		if (writers!=null) {
 			String method = "wrong pipeline messages";
 			int scenarioCounter = ((Integer)writers.get("scenariocounter")).intValue();
@@ -775,7 +775,7 @@ public class TestTool {
 		}
 	}
 
-	public static void wrongPipelineMessagePreparedForDiff(String stepDisplayName, String pipelineMessagePreparedForDiff, String pipelineMessageExpectedPreparedForDiff, Map writers) {
+	public static void wrongPipelineMessagePreparedForDiff(String stepDisplayName, String pipelineMessagePreparedForDiff, String pipelineMessageExpectedPreparedForDiff, Map<String, Object> writers) {
 		if (writers!=null) {
 			String method = "wrong pipeline messages prepared for diff";
 			int scenarioCounter = ((Integer)writers.get("scenariocounter")).intValue();
@@ -846,37 +846,37 @@ public class TestTool {
 		return commands;
 	}
 
-	public static void stepPassedMessage(String message, Map writers) {
+	public static void stepPassedMessage(String message, Map<String, Object> writers) {
 		String method = "step passed/failed";
 		writeLog("<h3 class='passed'>" + XmlUtils.encodeChars(message) + "</h3>", method, writers, true);
 	}
 
-	public static void stepAutosavedMessage(String message, Map writers) {
+	public static void stepAutosavedMessage(String message, Map<String, Object> writers) {
 		String method = "step passed/failed";
 		writeLog("<h3 class='autosaved'>" + XmlUtils.encodeChars(message) + "</h3>", method, writers, true);
 	}
 
-	public static void stepFailedMessage(String message, Map writers) {
+	public static void stepFailedMessage(String message, Map<String, Object> writers) {
 		String method = "step passed/failed";
 		writeLog("<h3 class='failed'>" + XmlUtils.encodeChars(message) + "</h3>", method, writers, true);
 	}
 
-	public static void scenarioPassedMessage(String message, Map writers) {
+	public static void scenarioPassedMessage(String message, Map<String, Object> writers) {
 		String method = "scenario passed/failed";
 		writeLog("<h2 class='passed'>" + XmlUtils.encodeChars(message) + "</h2>", method, writers, true);
 	}
 
-	public static void scenarioAutosavedMessage(String message, Map writers) {
+	public static void scenarioAutosavedMessage(String message, Map<String, Object> writers) {
 		String method = "scenario passed/failed";
 		writeLog("<h2 class='autosaved'>" + XmlUtils.encodeChars(message) + "</h2>", method, writers, true);
 	}
 
-	public static void scenarioFailedMessage(String message, Map writers) {
+	public static void scenarioFailedMessage(String message, Map<String, Object> writers) {
 		String method = "scenario failed";
 		writeLog("<h2 class='failed'>" + XmlUtils.encodeChars(message) + "</h2>", method, writers, true);
 	}
 
-	public static void scenariosTotalMessage(String message, Map writers, Writer out, boolean silent) {
+	public static void scenariosTotalMessage(String message, Map<String, Object> writers, Writer out, boolean silent) {
 		if (silent) {
 			try {
 				out.write(message);
@@ -888,7 +888,7 @@ public class TestTool {
 		}
 	}
 
-	public static void scenariosPassedTotalMessage(String message, Map writers, Writer out, boolean silent) {
+	public static void scenariosPassedTotalMessage(String message, Map<String, Object> writers, Writer out, boolean silent) {
 		if (silent) {
 			try {
 				out.write(message);
@@ -900,7 +900,7 @@ public class TestTool {
 		}
 	}
 
-	public static void scenariosAutosavedTotalMessage(String message, Map writers, Writer out, boolean silent) {
+	public static void scenariosAutosavedTotalMessage(String message, Map<String, Object> writers, Writer out, boolean silent) {
 		if (silent) {
 			try {
 				out.write(message);
@@ -912,7 +912,7 @@ public class TestTool {
 		}
 	}
 
-	public static void scenariosFailedTotalMessage(String message, Map writers, Writer out, boolean silent) {
+	public static void scenariosFailedTotalMessage(String message, Map<String, Object> writers, Writer out, boolean silent) {
 		if (silent) {
 			try {
 				out.write(message);
@@ -924,7 +924,7 @@ public class TestTool {
 		}
 	}
 
-	public static void errorMessage(String message, Map writers) {
+	public static void errorMessage(String message, Map<String, Object> writers) {
 		String method = "error";
 		writeLog("<h1 class='error'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
 		if (silentOut!=null) {
@@ -935,7 +935,7 @@ public class TestTool {
 		}
 	}
 
-	public static void errorMessage(String message, Exception exception, Map writers) {
+	public static void errorMessage(String message, Exception exception, Map<String, Object> writers) {
 		errorMessage(message, writers);
 		if (writers!=null) {
 			String method = "error";
@@ -961,8 +961,8 @@ public class TestTool {
 	public static String initScenariosRootDirectories(
 			AppConstants appConstants, String realPath,
 			String paramScenariosRootDirectory,
-			List scenariosRootDirectories, List scenariosRootDescriptions,
-			Map writers) {
+			List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions,
+			Map<String, Object> writers) {
 		String currentScenariosRootDirectory = null;
 		if (realPath == null) {
 			errorMessage("Could not read webapp real path", writers);
@@ -1003,9 +1003,9 @@ public class TestTool {
 				directory = appConstants.getResolvedProperty("scenariosroot" + j + ".directory");
 				description = appConstants.getResolvedProperty("scenariosroot" + j + ".description");
 			}
-			TreeSet treeSet = new TreeSet(new CaseInsensitiveComparator());
+			TreeSet<String> treeSet = new TreeSet<String>(new CaseInsensitiveComparator());
 			treeSet.addAll(scenariosRoots.keySet());
-			Iterator iterator = treeSet.iterator();
+			Iterator<String> iterator = treeSet.iterator();
 			while (iterator.hasNext()) {
 				description = (String)iterator.next();
 				scenariosRootDescriptions.add(description);
@@ -1037,8 +1037,8 @@ public class TestTool {
 		return currentScenariosRootDirectory;
 	}
 
-	public static List readScenarioFiles(AppConstants appConstants, String scenariosDirectory, Map writers) {
-		List scenarioFiles = new ArrayList();
+	public static List<File> readScenarioFiles(AppConstants appConstants, String scenariosDirectory, Map<String, Object> writers) {
+		List<File> scenarioFiles = new ArrayList<File>();
 		debugMessage("List all files in directory '" + scenariosDirectory + "'", writers);
 		File[] files = new File(scenariosDirectory).listFiles();
 		if (files == null) {
@@ -1066,11 +1066,11 @@ public class TestTool {
 		return scenarioFiles;
 	}
 
-	public static Properties readProperties(AppConstants appConstants, File propertiesFile, Map writers) {
+	public static Properties readProperties(AppConstants appConstants, File propertiesFile, Map<String, Object> writers) {
 		return readProperties(appConstants, propertiesFile, true, writers);
 	}
 
-	public static Properties readProperties(AppConstants appConstants, File propertiesFile, boolean root, Map writers) {
+	public static Properties readProperties(AppConstants appConstants, File propertiesFile, boolean root, Map<String, Object> writers) {
 		String directory = new File(propertiesFile.getAbsolutePath()).getParent();
 		Properties properties = new Properties();
 		FileInputStream fileInputStreamPropertiesFile = null;
@@ -1147,7 +1147,7 @@ public class TestTool {
 
 	public static void addAbsolutePathProperties(String propertiesDirectory, Properties properties) {
 		Properties absolutePathProperties = new Properties();
-		Iterator iterator = properties.keySet().iterator();
+		Iterator<?> iterator = properties.keySet().iterator();
 		while (iterator.hasNext()) {
 			String property = (String)iterator.next();
 			if(property.equalsIgnoreCase("configurations.directory"))
@@ -1168,13 +1168,13 @@ public class TestTool {
 		properties.putAll(absolutePathProperties);
 	}
 
-	public static List getSteps(Properties properties, Map writers) {
-		List steps = new ArrayList();
+	public static List<String> getSteps(Properties properties, Map<String, Object> writers) {
+		List<String> steps = new ArrayList<String>();
 		int i = 1;
 		boolean lastStepFound = false;
 		while (!lastStepFound) {
 			boolean stepFound = false;
-			Enumeration enumeration = properties.propertyNames();
+			Enumeration<?> enumeration = properties.propertyNames();
 			while (enumeration.hasMoreElements()) {
 				String key = (String)enumeration.nextElement();
 				if (key.startsWith("step" + i + ".") && (key.endsWith(".read") || key.endsWith(".write"))) {
@@ -1196,24 +1196,24 @@ public class TestTool {
 		return steps;
 	}
 
-	public static Map openQueues(String scenarioDirectory, List steps,
+	public static Map<String, Map<String, Object>> openQueues(String scenarioDirectory, List<String> steps,
 			Properties properties, IbisContext ibisContext,
-			AppConstants appConstants, Map writers) {
-		Map queues = new HashMap();
+			AppConstants appConstants, Map<String, Object> writers) {
+		Map<String, Map<String, Object>> queues = new HashMap<String, Map<String, Object>>();
 		debugMessage("Get all queue names", writers);
-		List jmsSenders = new ArrayList();
-		List jmsListeners = new ArrayList();
-		List jdbcFixedQuerySenders = new ArrayList();
-		List ibisWebServiceSenders = new ArrayList();
-		List webServiceSenders = new ArrayList();
-		List webServiceListeners = new ArrayList();
-		List httpSenders = new ArrayList();
-		List ibisJavaSenders = new ArrayList();
-		List delaySenders = new ArrayList();
-		List javaListeners = new ArrayList();
-		List fileSenders = new ArrayList();
-		List fileListeners = new ArrayList();
-		List xsltProviderListeners = new ArrayList();
+		List<String> jmsSenders = new ArrayList<String>();
+		List<String> jmsListeners = new ArrayList<String>();
+		List<String> jdbcFixedQuerySenders = new ArrayList<String>();
+		List<String> ibisWebServiceSenders = new ArrayList<String>();
+		List<String> webServiceSenders = new ArrayList<String>();
+		List<String> webServiceListeners = new ArrayList<String>();
+		List<String> httpSenders = new ArrayList<String>();
+		List<String> ibisJavaSenders = new ArrayList<String>();
+		List<String> delaySenders = new ArrayList<String>();
+		List<String> javaListeners = new ArrayList<String>();
+		List<String> fileSenders = new ArrayList<String>();
+		List<String> fileListeners = new ArrayList<String>();
+		List<String> xsltProviderListeners = new ArrayList<String>();
 				
 		Iterator iterator = properties.keySet().iterator();
 		while (iterator.hasNext()) {
@@ -1325,7 +1325,7 @@ public class TestTool {
 					debugMessage("Set replyToName to " + replyToName, writers);
 					jmsSender.setReplyToName(replyToName);
 				}
-				Map jmsSenderInfo = new HashMap();
+				Map<String, Object> jmsSenderInfo = new HashMap<String, Object>();
 				jmsSenderInfo.put("jmsSender", jmsSender);
 				jmsSenderInfo.put("useCorrelationIdFrom", useCorrelationIdFrom);
 				String correlationId = properties.getProperty(queueName + ".jmsCorrelationId");
@@ -1387,7 +1387,7 @@ public class TestTool {
 				if ("true".equals(setForceMessageIdAsCorrelationId)) {
 					pullingJmsListener.setForceMessageIdAsCorrelationId(true);
 				}
-				Map jmsListenerInfo = new HashMap();
+				Map<String, Object> jmsListenerInfo = new HashMap<String, Object>();
 				jmsListenerInfo.put("jmsListener", pullingJmsListener);
 				queues.put(queueName, jmsListenerInfo);
 				debugMessage("Opened jms listener '" + queueName + "'", writers);
@@ -1418,7 +1418,7 @@ public class TestTool {
 				queues = null;
 				errorMessage("Could not find datasourceName property for " + name, writers);
 			} else {
-				Map querySendersInfo = new HashMap();
+				Map<String, Object> querySendersInfo = new HashMap<String, Object>();
 				while (!allFound && queues != null) {
 					preDelete = (String)properties.get(name + ".preDel" + preDeleteIndex);
 					if (preDelete != null) {
@@ -1587,7 +1587,7 @@ public class TestTool {
 					errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
 				}
 				if (queues != null) {
-					Map ibisWebServiceSenderInfo = new HashMap();
+					Map<String, Object> ibisWebServiceSenderInfo = new HashMap<String, Object>();
 					ibisWebServiceSenderInfo.put("ibisWebServiceSender", ibisWebServiceSender);
 					ibisWebServiceSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
 					queues.put(name, ibisWebServiceSenderInfo);
@@ -1646,7 +1646,7 @@ public class TestTool {
 						errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
 					}
 					if (queues != null) {
-						Map webServiceSenderInfo = new HashMap();
+						Map<String, Object> webServiceSenderInfo = new HashMap<String, Object>();
 						webServiceSenderInfo.put("webServiceSender", webServiceSender);
 						webServiceSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
 						queues.put(name, webServiceSenderInfo);
@@ -1693,7 +1693,7 @@ public class TestTool {
 					queues = null;
 					errorMessage("Could not open web service listener '" + name + "': " + e.getMessage(), e, writers);
 				}
-				Map webServiceListenerInfo = new HashMap();
+				Map<String, Object> webServiceListenerInfo = new HashMap<String, Object>();
 				webServiceListenerInfo.put("webServiceListener", webServiceListener);
 				webServiceListenerInfo.put("listenerMessageHandler", listenerMessageHandler);
 				queues.put(name, webServiceListenerInfo);
@@ -1765,8 +1765,8 @@ public class TestTool {
 					}
 					parameterResolutionContext = new ParameterResolutionContext();
 					parameterResolutionContext.setSession(new PipeLineSessionBase());
-					Map paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, parameterResolutionContext);
-					Iterator parameterNameIterator = paramPropertiesMap.keySet().iterator();
+					Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, parameterResolutionContext);
+					Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
 					while (parameterNameIterator.hasNext()) {
 						String parameterName = (String)parameterNameIterator.next();
 						Parameter parameter = (Parameter)paramPropertiesMap.get(parameterName);
@@ -1791,7 +1791,7 @@ public class TestTool {
 						errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
 					}
 					if (queues != null) {
-						Map httpSenderInfo = new HashMap();
+						Map<String, Object> httpSenderInfo = new HashMap<String, Object>();
 						httpSenderInfo.put("httpSender", httpSender);
 						httpSenderInfo.put("parameterResolutionContext", parameterResolutionContext);
 						httpSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
@@ -1818,8 +1818,8 @@ public class TestTool {
 				ibisJavaSender.setServiceName(serviceName);
 				ParameterResolutionContext parameterResolutionContext = new ParameterResolutionContext();
 				parameterResolutionContext.setSession(new PipeLineSessionBase());
-				Map paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, parameterResolutionContext);
-				Iterator parameterNameIterator = paramPropertiesMap.keySet().iterator();
+				Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, parameterResolutionContext);
+				Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
 				while (parameterNameIterator.hasNext()) {
 					String parameterName = (String)parameterNameIterator.next();
 					Parameter parameter = (Parameter)paramPropertiesMap.get(parameterName);
@@ -1841,7 +1841,7 @@ public class TestTool {
 						errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
 					}
 					if (queues != null) {
-						Map ibisJavaSenderInfo = new HashMap();
+						Map<String, Object> ibisJavaSenderInfo = new HashMap<String, Object>();
 						ibisJavaSenderInfo.put("ibisJavaSender", ibisJavaSender);
 						ibisJavaSenderInfo.put("parameterResolutionContext", parameterResolutionContext);
 						ibisJavaSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
@@ -1863,7 +1863,7 @@ public class TestTool {
 				delaySender.setDelayTime(Long.parseLong(delayTime));
 			}
 			delaySender.setName("Test Tool DelaySender");
-			Map delaySenderInfo = new HashMap();
+			Map<String, Object> delaySenderInfo = new HashMap<String, Object>();
 			delaySenderInfo.put("delaySender", delaySender);
 			delaySenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
 			queues.put(name, delaySenderInfo);
@@ -1899,7 +1899,7 @@ public class TestTool {
 				javaListener.setHandler(listenerMessageHandler);
 				try {
 					javaListener.open();
-					Map javaListenerInfo = new HashMap();
+					Map<String, Object> javaListenerInfo = new HashMap<String, Object>();
 					javaListenerInfo.put("javaListener", javaListener);
 					javaListenerInfo.put("listenerMessageHandler", listenerMessageHandler);
 					queues.put(name, javaListenerInfo);
@@ -1982,7 +1982,7 @@ public class TestTool {
 					}
 				} catch(Exception e) {
 				}
-				Map fileSenderInfo = new HashMap();
+				Map<String, Object> fileSenderInfo = new HashMap<String, Object>();
 				fileSenderInfo.put("fileSender", fileSender);
 				queues.put(queueName, fileSenderInfo);
 				debugMessage("Opened file sender '" + queueName + "'", writers);
@@ -2040,7 +2040,7 @@ public class TestTool {
 				if (filename2!=null) {
 					fileListener.setFilename2(filename2);
 				}
-				Map fileListenerInfo = new HashMap();
+				Map<String, Object> fileListenerInfo = new HashMap<String, Object>();
 				fileListenerInfo.put("fileListener", fileListener);
 				queues.put(queueName, fileListenerInfo);
 				debugMessage("Opened file listener '" + queueName + "'", writers);
@@ -2087,7 +2087,7 @@ public class TestTool {
 				}
 				try {
 					xsltProviderListener.init();
-					Map xsltProviderListenerInfo = new HashMap();
+					Map<String, Object> xsltProviderListenerInfo = new HashMap<String, Object>();
 					xsltProviderListenerInfo.put("xsltProviderListener", xsltProviderListener);
 					queues.put(queueName, xsltProviderListenerInfo);
 					debugMessage("Opened xslt provider listener '" + queueName + "'", writers);
@@ -2104,15 +2104,15 @@ public class TestTool {
 
 
 
-	public static boolean closeQueues(Map queues, Properties properties, Map writers) {
+	public static boolean closeQueues(Map<String, Map<String, Object>> queues, Properties properties, Map<String, Object> writers) {
 		boolean remainingMessagesFound = false;
-		Iterator iterator;
+		Iterator<String> iterator;
 		debugMessage("Close jms senders", writers);
 		iterator = queues.keySet().iterator();
 		while (iterator.hasNext()) {
 			String queueName = (String)iterator.next();
 			if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
-				JmsSender jmsSender = (JmsSender)((Map)queues.get(queueName)).get("jmsSender");
+				JmsSender jmsSender = (JmsSender)((Map<?, ?>)queues.get(queueName)).get("jmsSender");
 				jmsSender.close();
 				debugMessage("Closed jms sender '" + queueName + "'", writers);
 			}
@@ -2122,7 +2122,7 @@ public class TestTool {
 		while (iterator.hasNext()) {
 			String queueName = (String)iterator.next();
 			if ("nl.nn.adapterframework.jms.JmsListener".equals(properties.get(queueName + ".className"))) {
-				PullingJmsListener pullingJmsListener = (PullingJmsListener)((Map)queues.get(queueName)).get("jmsListener");
+				PullingJmsListener pullingJmsListener = (PullingJmsListener)((Map<?, ?>)queues.get(queueName)).get("jmsListener");
 				if (jmsCleanUp(queueName, pullingJmsListener, writers)) {
 					remainingMessagesFound = true;
 				}
@@ -2135,7 +2135,7 @@ public class TestTool {
 		while (iterator.hasNext()) {
 			String name = (String)iterator.next();
 			if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(name + ".className"))) {
-				Map querySendersInfo = (Map)queues.get(name);
+				Map<?, ?> querySendersInfo = (Map<?, ?>)queues.get(name);
 				FixedQuerySender prePostFixedQuerySender = (FixedQuerySender)querySendersInfo.get("prePostQueryFixedQuerySender");
 				if (prePostFixedQuerySender != null) {
 					try {
@@ -2180,8 +2180,8 @@ public class TestTool {
 		while (iterator.hasNext()) {
 			String queueName = (String)iterator.next();
 			if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))) {
-				IbisWebServiceSender ibisWebServiceSender = (IbisWebServiceSender)((Map)queues.get(queueName)).get("ibisWebServiceSender");
-				Map ibisWebServiceSenderInfo = (Map)queues.get(queueName);
+				IbisWebServiceSender ibisWebServiceSender = (IbisWebServiceSender)((Map<?, ?>)queues.get(queueName)).get("ibisWebServiceSender");
+				Map<?, ?> ibisWebServiceSenderInfo = (Map<?, ?>)queues.get(queueName);
 				SenderThread senderThread = (SenderThread)ibisWebServiceSenderInfo.remove("ibisWebServiceSenderThread");
 				if (senderThread != null) {
 					debugMessage("Found remaining SenderThread", writers);
@@ -2213,8 +2213,8 @@ public class TestTool {
 		while (iterator.hasNext()) {
 			String queueName = (String)iterator.next();
 			if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))) {
-				WebServiceSender webServiceSender = (WebServiceSender)((Map)queues.get(queueName)).get("webServiceSender");
-				Map webServiceSenderInfo = (Map)queues.get(queueName);
+				WebServiceSender webServiceSender = (WebServiceSender)((Map<?, ?>)queues.get(queueName)).get("webServiceSender");
+				Map<?, ?> webServiceSenderInfo = (Map<?, ?>)queues.get(queueName);
 				SenderThread senderThread = (SenderThread)webServiceSenderInfo.remove("webServiceSenderThread");
 				if (senderThread != null) {
 					debugMessage("Found remaining SenderThread", writers);
@@ -2241,7 +2241,7 @@ public class TestTool {
 		while (iterator.hasNext()) {
 			String queueName = (String)iterator.next();
 			if ("nl.nn.adapterframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))) {
-				Map webServiceListenerInfo = (Map)queues.get(queueName);
+				Map<?, ?> webServiceListenerInfo = (Map<?, ?>)queues.get(queueName);
 				WebServiceListener webServiceListener = (WebServiceListener)webServiceListenerInfo.get("webServiceListener");
 				webServiceListener.close();
 				debugMessage("Closed web service listener '" + queueName + "'", writers);
@@ -2270,9 +2270,9 @@ public class TestTool {
 		while (iterator.hasNext()) {
 			String queueName = (String)iterator.next();
 			if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(properties.get(queueName + ".className"))) {
-				IbisJavaSender ibisJavaSender = (IbisJavaSender)((Map)queues.get(queueName)).get("ibisJavaSender");
+				IbisJavaSender ibisJavaSender = (IbisJavaSender)((Map<?, ?>)queues.get(queueName)).get("ibisJavaSender");
 
-				Map ibisJavaSenderInfo = (Map)queues.get(queueName);
+				Map<?, ?> ibisJavaSenderInfo = (Map<?, ?>)queues.get(queueName);
 				SenderThread ibisJavaSenderThread = (SenderThread)ibisJavaSenderInfo.remove("ibisJavaSenderThread");
 				if (ibisJavaSenderThread != null) {
 					debugMessage("Found remaining SenderThread", writers);
@@ -2304,7 +2304,7 @@ public class TestTool {
 		while (iterator.hasNext()) {
 			String queueName = (String)iterator.next();
 			if ("nl.nn.adapterframework.senders.DelaySender".equals(properties.get(queueName + ".className"))) {
-				DelaySender delaySender = (DelaySender)((Map)queues.get(queueName)).get("delaySender");
+				DelaySender delaySender = (DelaySender)((Map<?, ?>)queues.get(queueName)).get("delaySender");
 				try {
 					delaySender.close();
 					debugMessage("Closed delay sender '" + queueName + "'", writers);
@@ -2319,7 +2319,7 @@ public class TestTool {
 		while (iterator.hasNext()) {
 			String queueName = (String)iterator.next();
 			if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
-				Map javaListenerInfo = (Map)queues.get(queueName);
+				Map<?, ?> javaListenerInfo = (Map<?, ?>)queues.get(queueName);
 				JavaListener javaListener = (JavaListener)javaListenerInfo.get("javaListener");
 				try {
 					javaListener.close();
@@ -2352,7 +2352,7 @@ public class TestTool {
 		while (iterator.hasNext()) {
 			String queueName = (String)iterator.next();
 			if ("nl.nn.adapterframework.testtool.FileListener".equals(properties.get(queueName + ".className"))) {
-				FileListener fileListener = (FileListener)((Map)queues.get(queueName)).get("fileListener");
+				FileListener fileListener = (FileListener)((Map<?, ?>)queues.get(queueName)).get("fileListener");
 				fileListenerCleanUp(queueName, fileListener, writers);
 				debugMessage("Closed file listener '" + queueName + "'", writers);
 			}
@@ -2363,7 +2363,7 @@ public class TestTool {
 		while (iterator.hasNext()) {
 			String queueName = (String)iterator.next();
 			if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
-				XsltProviderListener xsltProviderListener = (XsltProviderListener)((Map)queues.get(queueName)).get("xsltProviderListener");
+				XsltProviderListener xsltProviderListener = (XsltProviderListener)((Map<?, ?>)queues.get(queueName)).get("xsltProviderListener");
 				xsltProviderListenerCleanUp(queues, queueName, writers);
 				debugMessage("Closed xslt provider listener '" + queueName + "'", writers);
 			}
@@ -2372,7 +2372,7 @@ public class TestTool {
 		return remainingMessagesFound;
 	}
 
-	public static boolean jmsCleanUp(String queueName, PullingJmsListener pullingJmsListener, Map writers) {
+	public static boolean jmsCleanUp(String queueName, PullingJmsListener pullingJmsListener, Map<String, Object> writers) {
 		boolean remainingMessagesFound = false;
 		debugMessage("Check for remaining messages on '" + queueName + "'", writers);
 		long oldTimeOut = pullingJmsListener.getTimeOut();
@@ -2381,7 +2381,7 @@ public class TestTool {
 		while (!empty) {
 			Object rawMessage = null;
 			String message = null;
-			Map threadContext = null;
+			Map<String, Object> threadContext = null;
 			try {
 				threadContext = pullingJmsListener.openThread();
 				rawMessage = pullingJmsListener.getRawMessage(threadContext);
@@ -2413,7 +2413,7 @@ public class TestTool {
 		return remainingMessagesFound;
 	}
 
-	public static boolean fileListenerCleanUp(String queueName, FileListener fileListener, Map writers) {
+	public static boolean fileListenerCleanUp(String queueName, FileListener fileListener, Map<String, Object> writers) {
 		boolean remainingMessagesFound = false;
 		debugMessage("Check for remaining messages on '" + queueName + "'", writers);
 		if (fileListener.getFilename2()!=null) {
@@ -2437,9 +2437,9 @@ public class TestTool {
 		return remainingMessagesFound;
 	}
 
-	public static boolean xsltProviderListenerCleanUp(Map queues, String queueName, Map writers) {
+	public static boolean xsltProviderListenerCleanUp(Map<String, Map<String, Object>> queues, String queueName, Map<String, Object> writers) {
 		boolean remainingMessagesFound = false;
-		Map xsltProviderListenerInfo = (Map)queues.get(queueName);
+		Map<?, ?> xsltProviderListenerInfo = (Map<?, ?>)queues.get(queueName);
 		XsltProviderListener xsltProviderListener = (XsltProviderListener)xsltProviderListenerInfo.get("xsltProviderListener");
 		String message = xsltProviderListener.getResult();
 		if (message != null) {
@@ -2449,16 +2449,16 @@ public class TestTool {
 		return remainingMessagesFound;
 	}
 	
-	private static int executeJmsSenderWrite(String stepDisplayName, Map queues, Map writers, String queueName, String fileContent) {
+	private static int executeJmsSenderWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent) {
 		int result = RESULT_ERROR;
 		
-		Map jmsSenderInfo = (Map)queues.get(queueName);
+		Map<?, ?> jmsSenderInfo = (Map<?, ?>)queues.get(queueName);
 		JmsSender jmsSender = (JmsSender)jmsSenderInfo.get("jmsSender");
 		try {
 			String correlationId = null;
 			String useCorrelationIdFrom = (String)jmsSenderInfo.get("useCorrelationIdFrom");
 			if (useCorrelationIdFrom != null) {
-				Map listenerInfo = (Map)queues.get(useCorrelationIdFrom);
+				Map<?, ?> listenerInfo = (Map<?, ?>)queues.get(useCorrelationIdFrom);
 				if (listenerInfo == null) {
 					errorMessage("Could not find listener '" + useCorrelationIdFrom + "' to use correlation id from", writers);
 				} else {
@@ -2486,7 +2486,7 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeSenderWrite(String stepDisplayName, Map queues, Map writers, String queueName, String senderType, String fileContent) {
+	private static int executeSenderWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String senderType, String fileContent) {
 		int result = RESULT_ERROR;
 		Map senderInfo = (Map)queues.get(queueName);
 		ISender sender = (ISender)senderInfo.get(senderType + "Sender");
@@ -2506,16 +2506,16 @@ public class TestTool {
 		return result;
 	}
 	
-	private static int executeJavaOrWebServiceListenerWrite(String stepDisplayName, Map queues, Map writers, String queueName, String fileContent) {
+	private static int executeJavaOrWebServiceListenerWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent) {
 		int result = RESULT_ERROR;
 
-		Map listenerInfo = (Map)queues.get(queueName);
+		Map<?, ?> listenerInfo = (Map<?, ?>)queues.get(queueName);
 		ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)listenerInfo.get("listenerMessageHandler");
 		if (listenerMessageHandler == null) {
 			errorMessage("No ListenerMessageHandler found", writers);
 		} else {
 			String correlationId = null;
-			Map context = new HashMap();
+			Map<?, ?> context = new HashMap<Object, Object>();
 			ListenerMessage requestListenerMessage = (ListenerMessage)listenerInfo.get("listenerMessage");
 			if (requestListenerMessage != null) {
 				correlationId = requestListenerMessage.getCorrelationId();
@@ -2531,9 +2531,9 @@ public class TestTool {
 		return result;
 	}
 	
-	private static int executeFileSenderWrite(String stepDisplayName, Map queues, Map writers, String queueName, String fileContent) {
+	private static int executeFileSenderWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent) {
 		int result = RESULT_ERROR;
-		Map fileSenderInfo = (Map)queues.get(queueName);
+		Map<?, ?> fileSenderInfo = (Map<?, ?>)queues.get(queueName);
 		FileSender fileSender = (FileSender)fileSenderInfo.get("fileSender");
 		try {
 			fileSender.sendMessage(fileContent);
@@ -2545,9 +2545,9 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeDelaySenderWrite(String stepDisplayName, Map queues, Map writers, String queueName, String fileContent) {
+	private static int executeDelaySenderWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent) {
 		int result = RESULT_ERROR;
-		Map delaySenderInfo = (Map)queues.get(queueName);
+		Map<?, ?> delaySenderInfo = (Map<?, ?>)queues.get(queueName);
 		DelaySender delaySender = (DelaySender)delaySenderInfo.get("delaySender");
 		try {
 			delaySender.sendMessage(null, fileContent);
@@ -2559,9 +2559,9 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeXsltProviderListenerWrite(String step, String stepDisplayName, Map queues, Map writers, String queueName, String fileName, String fileContent, Properties properties) {
+	private static int executeXsltProviderListenerWrite(String step, String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, Properties properties) {
 		int result = RESULT_ERROR;
-		Map xsltProviderListenerInfo = (Map)queues.get(queueName);
+		Map<?, ?> xsltProviderListenerInfo = (Map<?, ?>)queues.get(queueName);
 		XsltProviderListener xsltProviderListener = (XsltProviderListener)xsltProviderListenerInfo.get("xsltProviderListener");
 		String message = xsltProviderListener.getResult();
 		if (message == null) {
@@ -2576,7 +2576,7 @@ public class TestTool {
 		return result;
 	}
 	
-	private static int executeJmsListenerRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
+	private static int executeJmsListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
 
 		Map jmsListenerInfo = (Map)queues.get(queueName);
@@ -2618,10 +2618,10 @@ public class TestTool {
 		return result;	
 	}
 
-	private static int executeSenderRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String senderType, String fileName, String fileContent) {
+	private static int executeSenderRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String senderType, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
 	
-		Map senderInfo = (Map)queues.get(queueName);
+		Map<?, ?> senderInfo = (Map<?, ?>)queues.get(queueName);
 		SenderThread senderThread = (SenderThread)senderInfo.remove(senderType + "SenderThread");
 		if (senderThread == null) {
 			errorMessage("No SenderThread found, no " + senderType + "Sender.write request?", writers);
@@ -2655,7 +2655,7 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
+	private static int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
 
 		Map listenerInfo = (Map)queues.get(queueName);
@@ -2684,7 +2684,7 @@ public class TestTool {
 						// Send a clean up reply because there is probably a
 						// thread waiting for a reply
 						String correlationId = null;
-						Map context = new HashMap();
+						Map<?, ?> context = new HashMap<Object, Object>();
 						listenerMessage = new ListenerMessage(correlationId, TESTTOOL_CLEAN_UP_REPLY, context);
 						listenerMessageHandler.putResponseMessage(listenerMessage);
 					}
@@ -2695,7 +2695,7 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeFixedQuerySenderRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
+	private static int executeFixedQuerySenderRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
 		
 		Map querySendersInfo = (Map)queues.get(queueName);
@@ -2756,9 +2756,9 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeFileListenerRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
+	private static int executeFileListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
-		Map fileListenerInfo = (Map)queues.get(queueName);
+		Map<?, ?> fileListenerInfo = (Map<?, ?>)queues.get(queueName);
 		FileListener fileListener = (FileListener)fileListenerInfo.get("fileListener");
 		String message = null;
 		try {
@@ -2780,9 +2780,9 @@ public class TestTool {
 		return result;	
 	}
 
-	private static int executeFileSenderRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
+	private static int executeFileSenderRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
-		Map fileSenderInfo = (Map)queues.get(queueName);
+		Map<?, ?> fileSenderInfo = (Map<?, ?>)queues.get(queueName);
 		FileSender fileSender = (FileSender)fileSenderInfo.get("fileSender");
 		String message = null;
 		try {
@@ -2804,9 +2804,9 @@ public class TestTool {
 		return result;	
 	}
 
-	private static int executeXsltProviderListenerRead(String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileContent, Map xsltParameters) {
+	private static int executeXsltProviderListenerRead(String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileContent, Map<String, Object> xsltParameters) {
 		int result = RESULT_ERROR;
-		Map xsltProviderListenerInfo = (Map)queues.get(queueName);
+		Map<?, ?> xsltProviderListenerInfo = (Map<?, ?>)queues.get(queueName);
 		if (xsltProviderListenerInfo == null) {
 			errorMessage("No info found for xslt provider listener '" + queueName + "'", writers);
 		} else {
@@ -2826,7 +2826,7 @@ public class TestTool {
 		return result;	
 	}
 
-	public static int executeStep(String step, Properties properties, String stepDisplayName, Map queues, Map writers) {
+	public static int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers) {
 		int stepPassed = RESULT_ERROR;
 		String fileName = properties.getProperty(step);
 		String fileNameAbsolutePath = properties.getProperty(step + ".absolutepath");
@@ -2906,7 +2906,7 @@ public class TestTool {
 		return stepPassed;
 	}
 
-	public static String readFile(String fileName, Map writers) {
+	public static String readFile(String fileName, Map<String, Object> writers) {
 		String result = null;
 		String encoding = null;
 		if (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")) {
@@ -2967,8 +2967,8 @@ public class TestTool {
 			String servletPath = request.getServletPath();
 			int i = servletPath.lastIndexOf('/');
 			String realPath = application.getRealPath(servletPath.substring(0, i));
-			List scenariosRootDirectories = new ArrayList();
-			List scenariosRootDescriptions = new ArrayList();
+			List<String> scenariosRootDirectories = new ArrayList<String>();
+			List<String> scenariosRootDescriptions = new ArrayList<String>();
 			String currentScenariosRootDirectory = TestTool.initScenariosRootDirectories(
 					appConstants, realPath,
 					null, scenariosRootDirectories,
@@ -3047,7 +3047,7 @@ public class TestTool {
 		return encoding;
 	}
 
-	public static int compareResult(String step, String stepDisplayName, String fileName, String expectedResult, String actualResult, Properties properties, Map writers, String queueName) {
+	public static int compareResult(String step, String stepDisplayName, String fileName, String expectedResult, String actualResult, Properties properties, Map<String, Object> writers, String queueName) {
 		int ok = RESULT_ERROR;
 		String printableExpectedResult = XmlUtils.replaceNonValidXmlCharacters(expectedResult);
 		String printableActualResult = XmlUtils.replaceNonValidXmlCharacters(actualResult);
@@ -3452,7 +3452,7 @@ public class TestTool {
 		return result;
 	}
 
-	public static String decodeUnzipContentBetweenKeys(String string, String key1, String key2, boolean replaceNewlines, Map writers) {
+	public static String decodeUnzipContentBetweenKeys(String string, String key1, String key2, boolean replaceNewlines, Map<String, Object> writers) {
 		String result = string;
 		int i = result.indexOf(key1);
 		while (i != -1 && result.length() > i + key1.length()) {
@@ -3501,7 +3501,7 @@ public class TestTool {
 		return result;
 	}
 
-	public static String canonicaliseFilePathContentBetweenKeys(String string, String key1, String key2, Map writers) {
+	public static String canonicaliseFilePathContentBetweenKeys(String string, String key1, String key2, Map<String, Object> writers) {
 		String result = string;
 		if (key1.equals("*") && key2.equals("*")) {
 			File file = new File(result);
@@ -3534,7 +3534,7 @@ public class TestTool {
 		return result;
 	}
 	
-	public static String ignoreCurrentTimeBetweenKeys(String string, String key1, String key2, String pattern, String margin, boolean errorMessageOnRemainingString, boolean isControlString, Map writers) {
+	public static String ignoreCurrentTimeBetweenKeys(String string, String key1, String key2, String pattern, String margin, boolean errorMessageOnRemainingString, boolean isControlString, Map<String, Object> writers) {
 		String result = string;
 		String ignoreText = "IGNORE_CURRENT_TIME";
 		int i = result.indexOf(key1);
@@ -3651,9 +3651,9 @@ public class TestTool {
 	 * @param writers
 	 * @return A map with parameters
 	 */
-	private static Map createParametersMapFromParamProperties(Properties properties, String property, Map writers, boolean createParameterObjects, ParameterResolutionContext parameterResolutionContext) {
+	private static Map<String, Object> createParametersMapFromParamProperties(Properties properties, String property, Map<String, Object> writers, boolean createParameterObjects, ParameterResolutionContext parameterResolutionContext) {
 		debugMessage("Search parameters for property '" + property + "'", writers);
-		Map result = new HashMap();
+		Map<String, Object> result = new HashMap<String, Object>();
 		boolean processed = false;
 		int i = 1;
 		while (!processed) {
@@ -3777,14 +3777,14 @@ public class TestTool {
 						}
 					} else if ("list".equals(properties.getProperty(property + ".param" + i + ".type"))) {
 						List<String> parts = new ArrayList<String>(Arrays.asList(((String)value).split("\\s*(,\\s*)+")));
-						List list = new LinkedList<String>();
+						List<String> list = new LinkedList<String>();
 						for (String part : parts) {
 							list.add(part);
 						}
 						value = list;
 					} else if ("map".equals(properties.getProperty(property + ".param" + i + ".type"))) {
 						List<String> parts = new ArrayList<String>(Arrays.asList(((String)value).split("\\s*(,\\s*)+")));
-						Map map = new LinkedHashMap<String, String>();
+						Map<String, String> map = new LinkedHashMap<String, String>();
 						for (String part : parts) {
 							String[] splitted = part.split("\\s*(=\\s*)+", 2);
 							if (splitted.length==2) {
@@ -3834,7 +3834,7 @@ public class TestTool {
 		return result;
 	}
 
-	public static String formatString(String string, Map writers) {
+	public static String formatString(String string, Map<String, Object> writers) {
 		StringBuffer sb = new StringBuffer();
 		try {
 			Reader reader = new StringReader(string);
