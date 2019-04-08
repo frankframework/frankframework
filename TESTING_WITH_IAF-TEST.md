@@ -63,7 +63,4 @@ Press [ Start ], sit back, relax, do some stretches, and let's hope for the best
 
 ### Troubleshooting
 
-We're currently looking into fixing two bugs that occasionally cause testing trouble. If you happen to run into them, here are some workarounds:
-* The JdbcQueryListener occasionally has trouble during its configuration. A quick fix is to re-run the ant build of **create_database.xml** and restart the server.
-* Likewise, if the Configuration Status page is spammed with JdbcTransactionalStorage warnings, re-running the ant builds of **create_user.xml**  and **create_database.xml**  (in order) should solve these warnings.
 * If the ant builds don't work due to a missing class error, try running it with another version of Java (by pressing "Ant Build..." instead of "Ant Build").

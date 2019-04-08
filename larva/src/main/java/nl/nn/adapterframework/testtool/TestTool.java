@@ -1053,7 +1053,8 @@ public class TestTool {
 					Properties properties = readProperties(appConstants, file, writers);
 					if (properties != null && properties.get("scenario.description") != null) {
 						String active = properties.getProperty("scenario.active", "true");
-						if (active.equalsIgnoreCase("true")) {
+						String unstable = properties.getProperty("adapter.unstable", "false");
+						if (active.equalsIgnoreCase("true") && unstable.equalsIgnoreCase("false")) {
 							scenarioFiles.add(file);
 						}
 					}
