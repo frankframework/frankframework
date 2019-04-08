@@ -29,26 +29,6 @@
 
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-ifsa</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-tibco</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-sap</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-coolgen</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-ibm</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-akamai</artifactId>
 		</dependency>
 
@@ -65,7 +45,6 @@
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-jms_1.1_spec</artifactId>
 			<scope>provided</scope>
-			<version>1.1</version>
 		</dependency>
 		<dependency>
 			<artifactId>servlet-api</artifactId>
