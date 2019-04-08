@@ -64,3 +64,4 @@ Press [ Start ], sit back, relax, do some stretches, and let's hope for the best
 ### Troubleshooting
 
 * If the ant builds don't work due to a missing class error, try running it with another version of Java (by pressing "Ant Build..." instead of "Ant Build").
+* If the JdbcQueryListener has trouble starting due to a "table [ibisstore] does not exist" error, try restarting the server.

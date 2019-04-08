@@ -20,22 +20,7 @@
 		<iaf.proprietary.version>7.3-B1-20181213.102433</iaf.proprietary.version>
 	</properties>
 
-	<repositories>
-		<repository>
-			<id>proprietary</id>
-			<url>https://nexus.ibissource.org/content/repositories/private/</url>
-		</repository>
-	</repositories>
-
 	<dependencies>
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.ibissource</groupId> -->
-<!-- 			<artifactId>ibis-adapterframework-core</artifactId> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.ibissource</groupId> -->
-<!-- 			<artifactId>ibis-adapterframework-larva</artifactId> -->
-<!-- 		</dependency> -->
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-webapp</artifactId>
