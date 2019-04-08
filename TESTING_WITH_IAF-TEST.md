@@ -8,7 +8,7 @@ To prevent problems with data transactionality, we will be using an Oracle datab
 
 ## 1. Proprietary modules and JAR dependencies
 
-Some parts of the iaf-test module rely on proprietary modules. To tell Maven that it should download these modules, go to Window > Preferences > Maven > User Settings. If you already have a _settings.xml_ file, press the "Open file" link. Otherwise, browse to _C:/Users/<your name>/.m2/_ and create a _settings.xml_ file. Edit the file following [these instructions](https://knowhow.interpar.nl/?epkb_post_type_1=how-to-add-proprietary-to-your-settings-xml-of-maven).
+Some parts of the iaf-test module rely on proprietary modules. To tell Maven that it should download these modules, go to Window > Preferences > Maven > User Settings. If you already have a _settings.xml_ file, press the "Open file" link. Otherwise, browse to _C:/Users/(your name)/.m2/_ and create a _settings.xml_ file. Edit the file following [these instructions](https://knowhow.interpar.nl/?epkb_post_type_1=how-to-add-proprietary-to-your-settings-xml-of-maven).
 
 Download the following JARs, and place them in your Tomcat server's lib folder. If you do not yet have a lib folder, you can create one directly under your Tomcat server's root directory.
 * [activemq-core-5.6.0.jar](https://mvnrepository.com/artifact/org.apache.activemq/activemq-core/5.6.0)
