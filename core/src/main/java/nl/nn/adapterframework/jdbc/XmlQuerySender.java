@@ -38,6 +38,7 @@ import org.w3c.dom.Node;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -94,7 +95,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  * @author  Peter Leeuwenburgh
  */
-public class XmlQuerySender extends JdbcQuerySenderBase {
+public class XmlQuerySender extends SenderWithParametersBase {
 
 	public static final String TYPE_STRING = "string";
 	public static final String TYPE_NUMBER = "number";
@@ -276,16 +277,6 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		for(DirectQuerySender dqs : subQuerySenders.values()) {
 			dqs.close();
 		}
-		super.close();
-	}
-
-	@Override
-	protected PreparedStatement getStatement(Connection con, String correlationID, String message, boolean updateable) throws SQLException, JdbcException {
-		String qry = message;
-		if (lockRows) {
-			qry = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, qry, lockWait);
-		}
-		return prepareQuery(con, qry, updateable);
 	}
 	
 	@Override
@@ -310,29 +301,36 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 
 			String dsName = queryElement.getAttribute("datasourceName");
 			DirectQuerySender dqs;
-			if(dsName.isEmpty()) {
-				throw new SenderException("No datasource was configured");
-			} else {
-				try {					
-					if(!subQuerySenders.keySet().contains(dsName)) {
-						dqs = new DirectQuerySender();
-						
-						dqs.setProxiedDataSources(getProxiedDataSources());
-						dqs.setDatasourceName(dsName);
-						dqs.configure();
-						dqs.open();
-						
-						subQuerySenders.put(dsName, dqs);
+			try {					
+				if(!subQuerySenders.keySet().contains(dsName)) {
+					dqs = new DirectQuerySender();
+					
+					String str = "Proxied data sources found: ";
+					for(String s : dqs.getProxiedDataSources().keySet()) {
+						str += s + ", ";
+					}
+					if(!dqs.getProxiedDataSources().isEmpty()) {
+						throw new SenderException(str);
+					}
+					
+					if(dsName.isEmpty()) {
+						dqs.setDatasourceName(dqs.getDataSourceNameToUse());
 					} else {
-						dqs = subQuerySenders.get(dsName);
+						dqs.setDatasourceName(dsName);
 					}
-
-					synchronized(dqs) {
-						dqs.setQueryType(XmlUtils.getChildTagAsString(queryElement, "type"));
-					}
-				} catch(ConfigurationException e) {
-					throw new SenderException("Could not configure DirectQuerySender with the specified data source");
+					dqs.configure();
+					dqs.open();
+					
+					subQuerySenders.put(dsName, dqs);
+				} else {
+					dqs = subQuerySenders.get(dsName);
 				}
+
+				synchronized(dqs) {
+					dqs.setQueryType(XmlUtils.getChildTagAsString(queryElement, "type"));
+				}
+			} catch(ConfigurationException e) {
+				throw new SenderException("Could not configure DirectQuerySender with the specified data source");
 			}
 			
 			if (root.equalsIgnoreCase("select")) {
@@ -399,10 +397,10 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			if (order != null) {
 				query = query + " ORDER BY " + order;
 			}
-			PreparedStatement statement = getStatement(dqs.getConnection(), correlationID, query, false);
-			statement.setQueryTimeout(getTimeout());
-			setBlobSmartGet(true);
-			return executeSelectQuery(statement,null,null);
+			PreparedStatement statement = dqs.getStatement(dqs.getConnection(), correlationID, query, false);
+			statement.setQueryTimeout(dqs.getTimeout());
+			dqs.setBlobSmartGet(true);
+			return dqs.executeSelectQuery(statement,null,null);
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command", e);
 		}
@@ -440,9 +438,9 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			if (where != null) {
 				query = query + " WHERE " + where;
 			}
-			PreparedStatement statement = getStatement(dqs.getConnection(), correlationID, query, false);
-			statement.setQueryTimeout(getTimeout());
-			return executeOtherQuery(dqs.getConnection(), correlationID, statement, query, null, null);
+			PreparedStatement statement = dqs.getStatement(dqs.getConnection(), correlationID, query, false);
+			statement.setQueryTimeout(dqs.getTimeout());
+			return dqs.executeOtherQuery(dqs.getConnection(), correlationID, statement, query, null, null);
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a DELETE SQL command", e);
 		}
@@ -474,9 +472,9 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 
 	private String sql(DirectQuerySender dqs, String correlationID, String query, String type, String expectResultSetArg) throws SenderException, JdbcException {
 		try {
-			PreparedStatement statement = getStatement(dqs.getConnection(), correlationID, query, false);
-			statement.setQueryTimeout(getTimeout());
-			setBlobSmartGet(true);
+			PreparedStatement statement = dqs.getStatement(dqs.getConnection(), correlationID, query, false);
+			statement.setQueryTimeout(dqs.getTimeout());
+			dqs.setBlobSmartGet(true);
 			
 			boolean expectResultSet = false;
 			if(expectResultSetArg.equalsIgnoreCase("yes")
@@ -486,23 +484,23 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			}
 			
 			if (expectResultSet) {
-				return executeSelectQuery(statement,null,null);
+				return dqs.executeSelectQuery(statement,null,null);
 			} else if (StringUtils.isNotEmpty(type) && type.equalsIgnoreCase("ddl")) {
 				//TODO: alles tussen -- en newline nog weggooien
 				StringBuffer result = new StringBuffer();
 				StringTokenizer stringTokenizer = new StringTokenizer(query, ";");
 				while (stringTokenizer.hasMoreTokens()) {
 					String q = stringTokenizer.nextToken();
-					statement = getStatement(dqs.getConnection(), correlationID, q, false);
+					statement = dqs.getStatement(dqs.getConnection(), correlationID, q, false);
 					if (q.trim().toLowerCase().startsWith("select")) {
-						result.append(executeSelectQuery(statement,null,null));
+						result.append(dqs.executeSelectQuery(statement,null,null));
 					} else {
-						result.append(executeOtherQuery(dqs.getConnection(), correlationID, statement, q, null, null));
+						result.append(dqs.executeOtherQuery(dqs.getConnection(), correlationID, statement, q, null, null));
 					}
 				}
 				return result.toString();
 			} else {
-				return executeOtherQuery(dqs.getConnection(), correlationID, statement, query, null, null);
+				return dqs.executeOtherQuery(dqs.getConnection(), correlationID, statement, query, null, null);
 			}
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SQL command", e);
@@ -512,11 +510,11 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 	private String executeUpdate(DirectQuerySender dqs, String correlationID, String tableName, String query, Vector<Column> columns) throws SenderException {
 		try {
 			if (existLob(columns)) {
-				CallableStatement callableStatement = getCallWithRowIdReturned(dqs.getConnection(), correlationID, query);
+				CallableStatement callableStatement = dqs.getCallWithRowIdReturned(dqs.getConnection(), correlationID, query);
 				applyParameters(callableStatement, columns);
 				int ri = 1 + countParameters(columns);
 				callableStatement.registerOutParameter(ri, Types.VARCHAR);
-				callableStatement.setQueryTimeout(getTimeout());
+				callableStatement.setQueryTimeout(dqs.getTimeout());
 				int numRowsAffected = callableStatement.executeUpdate();
 				String rowId = callableStatement.getString(ri);
 				log.debug(getLogPrefix() + "returning ROWID [" + rowId + "]");
@@ -526,22 +524,22 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 					Column column = (Column) iter.next();
 					if (column.getType().equalsIgnoreCase(TYPE_BLOB) || column.getType().equalsIgnoreCase(TYPE_CLOB)) {
 						query = "SELECT " + column.getName() + " FROM " + tableName + " WHERE ROWID=?" + " FOR UPDATE";
-						PreparedStatement statement = getStatement(dqs.getConnection(), correlationID, query, true);
+						PreparedStatement statement = dqs.getStatement(dqs.getConnection(), correlationID, query, true);
 						statement.setString(1, rowId);
-						statement.setQueryTimeout(getTimeout());
+						statement.setQueryTimeout(dqs.getTimeout());
 						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
-							executeUpdateBlobQuery(statement, column.getValue());
+							dqs.executeUpdateBlobQuery(statement, column.getValue());
 						} else {
-							executeUpdateClobQuery(statement, column.getValue());
+							dqs.executeUpdateClobQuery(statement, column.getValue());
 						}
 					}
 				}
 				return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
 			}
-			PreparedStatement statement = getStatement(dqs.getConnection(), correlationID, query, false);
+			PreparedStatement statement = dqs.getStatement(dqs.getConnection(), correlationID, query, false);
 			applyParameters(statement, columns);
-			statement.setQueryTimeout(getTimeout());
-			return executeOtherQuery(dqs.getConnection(), correlationID, statement, query, null, null);
+			statement.setQueryTimeout(dqs.getTimeout());
+			return dqs.executeOtherQuery(dqs.getConnection(), correlationID, statement, query, null, null);
 		} catch (Throwable t) {
 			throw new SenderException(t);
 		}
@@ -574,7 +572,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		try {
 			String callQuery = "declare" + " pragma autonomous_transaction;" + " ln_increment number;" + " ln_curr_val number;" + " ln_reset_increment number;" + " ln_reset_val number;" + "begin" + " select increment_by into ln_increment from user_sequences where sequence_name = '" + sequenceName + "';" + " select " + (startWith - 2) + " - " + sequenceName + ".nextval into ln_reset_increment from dual;" + " select " + sequenceName + ".nextval into ln_curr_val from dual;" + " EXECUTE IMMEDIATE 'alter sequence " + sequenceName + " increment by '|| ln_reset_increment ||' minvalue 0';" + " select " + sequenceName + ".nextval into ln_reset_val from dual;" + " EXECUTE IMMEDIATE 'alter sequence " + sequenceName + " increment by '|| ln_increment;" + "end;";
 			log.debug(getLogPrefix() + "preparing procedure for query [" + callQuery + "]");
-			CallableStatement callableStatement = connection.prepareCall(callQuery);
+			CallableStatement callableStatement = dqs.connection.prepareCall(callQuery);
 			int numRowsAffected = callableStatement.executeUpdate();
 			return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
 		} catch (SQLException e) {
