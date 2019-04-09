@@ -40,10 +40,10 @@ import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.filesystem.CustomLoginConfiguration;
+import nl.nn.adapterframework.filesystem.KerberosLoginConfiguration;
 import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
-import nl.nn.adapterframework.filesystem.KerberosCallbackHandler;
+import nl.nn.adapterframework.filesystem.UsernameAndPasswordCallbackHandler;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 /**
  * This test class is created to test both Samba2FileSystem and Samba2FileSystemSender classes.
@@ -94,8 +94,8 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 			LoginContext lc;
 			try {
 				lc = new LoginContext(username, null, 
-						new KerberosCallbackHandler(username, password),
-						new CustomLoginConfiguration(loginParams));
+						new UsernameAndPasswordCallbackHandler(username, password),
+						new KerberosLoginConfiguration(loginParams));
 				lc.login();
 				
 				Subject subject = lc.getSubject();

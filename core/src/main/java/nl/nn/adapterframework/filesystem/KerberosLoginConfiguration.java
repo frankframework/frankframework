@@ -6,7 +6,7 @@ import java.util.Map;
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.Configuration;
 
-public class CustomLoginConfiguration extends Configuration{
+public class KerberosLoginConfiguration extends Configuration{
 
 	//define a map of params you wish to pass and fill them up
 	Map<String, String> params = new HashMap<String, String>();
@@ -19,7 +19,7 @@ public class CustomLoginConfiguration extends Configuration{
 
 	
 	
-	public CustomLoginConfiguration(Map<String, String> params) {
+	public KerberosLoginConfiguration(Map<String, String> params) {
 		this.params.putAll(params);
 	}
 

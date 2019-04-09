@@ -8,12 +8,12 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
-public class KerberosCallbackHandler implements CallbackHandler {
+public class UsernameAndPasswordCallbackHandler implements CallbackHandler {
 
 	private final String user;
 	private final String password;
 
-	public KerberosCallbackHandler(String user, String password) {
+	public UsernameAndPasswordCallbackHandler(String user, String password) {
 		this.user = user;
 		this.password = password;
 	}

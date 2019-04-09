@@ -135,8 +135,8 @@ public class Samba2FileSystem implements IFileSystem<String> {
 				LoginContext lc;
 				try {
 					lc = new LoginContext(getUsername(), null, 
-							new KerberosCallbackHandler(getUsername(), getPassword()),
-							new CustomLoginConfiguration(loginParams));
+							new UsernameAndPasswordCallbackHandler(getUsername(), getPassword()),
+							new KerberosLoginConfiguration(loginParams));
 					lc.login();
 
 					Subject subject = lc.getSubject();
@@ -171,7 +171,7 @@ public class Samba2FileSystem implements IFileSystem<String> {
 
 				} catch (Exception e) {
 					if(e.getMessage().contains("Cannot locate default realm")) {
-						throw new FileSystemException("Please fill the kdc and realm field or provide krb5.conf file path",e);
+						throw new FileSystemException("Please fill the kdc and realm field or provide krb5.conf file including realm",e);
 					}
 					throw new FileSystemException(e);
 				}
