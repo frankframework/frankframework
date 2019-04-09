@@ -4,7 +4,7 @@
 </completionInformation>
 <results count="1">
 <result item="1">
-<exception>[nl.nn.adapterframework.jdbc.XmlQuerySender] [Query-sender] got exception executing a SQL command: (JdbcSQLException) SQLState [42S02], errorCode [42102]: Table "MYTABLE" not found; SQL statement:
+<exception>[nl.nn.adapterframework.jdbc.DirectQuerySender] [Query-sender] got exception executing a SQL command: (JdbcSQLException) SQLState [42S02], errorCode [42102]: Table "MYTABLE" not found; SQL statement:
 drop table mytable [42102-162]</exception>
 </result>
 </results>

@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.jdbc;
 
 import java.sql.CallableStatement;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -29,8 +28,11 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
+
+import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
@@ -41,6 +43,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -112,6 +115,16 @@ public class XmlQuerySender extends SenderWithParametersBase {
 	private int lockWait=-1;
 	
 	private HashMap<String, DirectQuerySender> subQuerySenders = new HashMap<String, DirectQuerySender>();
+	
+	private String defaultDsName;
+	public void setDatasourceName(String datasourceName) {
+		defaultDsName = datasourceName;
+	}
+
+	private Map<String, DataSource> proxiedDataSources = null;
+	public void setProxiedDataSources(Map<String, DataSource> proxiedDataSources) {
+		this.proxiedDataSources = proxiedDataSources;
+	}
 	
 	public class Column {
 		private String name = null;
@@ -298,26 +311,24 @@ public class XmlQuerySender extends SenderWithParametersBase {
 			}
 			where = XmlUtils.getChildTagAsString(queryElement, "where");
 			order = XmlUtils.getChildTagAsString(queryElement, "order");
-
+			
 			String dsName = queryElement.getAttribute("datasourceName");
+			if(dsName.isEmpty()) {
+				if(!defaultDsName.isEmpty()) {
+					dsName = defaultDsName;
+				} else {
+					JmsRealmFactory jrf = JmsRealmFactory.getInstance();
+					dsName = jrf.getJmsRealm(jrf.getFirstDatasourceJmsRealm()).getDatasourceName();
+				}
+			}
+			
 			DirectQuerySender dqs;
 			try {					
 				if(!subQuerySenders.keySet().contains(dsName)) {
 					dqs = new DirectQuerySender();
-					
-					String str = "Proxied data sources found: ";
-					for(String s : dqs.getProxiedDataSources().keySet()) {
-						str += s + ", ";
-					}
-					if(!dqs.getProxiedDataSources().isEmpty()) {
-						throw new SenderException(str);
-					}
-					
-					if(dsName.isEmpty()) {
-						dqs.setDatasourceName(dqs.getDataSourceNameToUse());
-					} else {
-						dqs.setDatasourceName(dsName);
-					}
+					dqs.setName("Query-sender");
+					dqs.setProxiedDataSources(proxiedDataSources);
+					dqs.setDatasourceName(dsName);
 					dqs.configure();
 					dqs.open();
 					
@@ -330,7 +341,7 @@ public class XmlQuerySender extends SenderWithParametersBase {
 					dqs.setQueryType(XmlUtils.getChildTagAsString(queryElement, "type"));
 				}
 			} catch(ConfigurationException e) {
-				throw new SenderException("Could not configure DirectQuerySender with the specified data source");
+				throw new SenderException("Could not configure DirectQuerySender with the specified datasource");
 			}
 			
 			if (root.equalsIgnoreCase("select")) {
