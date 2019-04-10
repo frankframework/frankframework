@@ -50,7 +50,7 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  */
 
-public class Samba2FileSystem implements IFileSystem<String> {
+public class Samba2FileSystem implements IWritableFileSystem<String> {
 
 	protected Logger log = LogUtil.getLogger(this);
 
