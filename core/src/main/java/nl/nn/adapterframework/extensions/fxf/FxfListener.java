@@ -18,6 +18,8 @@ package nl.nn.adapterframework.extensions.fxf;
 import java.io.File;
 import java.util.Map;
 
+import javax.jms.Message;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IReceiver;
@@ -57,6 +59,7 @@ public class FxfListener extends EsbJmsListener {
 	private String processedSiblingDirectory = "processed";
 	private boolean createProcessedDirectory = false;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getJmsRealName())) {
 			setJmsRealm("qcf_tibco_p2p_ff");
@@ -70,8 +73,8 @@ public class FxfListener extends EsbJmsListener {
 		super.configure();
 	}
 
-	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage,
-			Map threadContext) throws ListenerException {
+	@Override
+	public void afterMessageProcessed(PipeLineResult plr, Message rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		super.afterMessageProcessed(plr, rawMessage, threadContext);
 
 		//TODO plr.getState() may return null when there is an error.

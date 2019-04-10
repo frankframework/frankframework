@@ -17,18 +17,19 @@ package nl.nn.adapterframework.core;
 
 /**
  * Defines listening behaviour of message driven receivers.
+ * @param <M> the raw message type 
  * 
  * @author Gerrit van Brakel
  * @since 4.2
  */
-public interface IPushingListener extends IListener {
+public interface IPushingListener<M> extends IListener<M> {
 
 
 	/**
 	 * Set the handler that will do the processing of the message.
 	 * Each of the received messages must be pushed through handler.processMessage()
 	 */
-	void setHandler(IMessageHandler handler);
+	void setHandler(IMessageHandler<M> handler);
 	
 	/**
 	 * Set a (single) listener that will be notified of any exceptions.

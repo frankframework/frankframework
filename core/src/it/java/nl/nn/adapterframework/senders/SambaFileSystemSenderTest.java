@@ -52,24 +52,25 @@ public class SambaFileSystemSenderTest extends FileSystemSenderTest<SmbFile, Sam
 	}
 
 	@Override
-	protected boolean _fileExists(String filename) throws Exception {
-		return new SmbFile(context, filename).exists();
+	protected boolean _fileExists(String folder, String filename) throws Exception {
+		String path=folder==null?filename:folder+"/"+filename;
+		return new SmbFile(context, path).exists();
 	}
 
 	@Override
-	protected void _deleteFile(String filename) throws Exception {
+	protected void _deleteFile(String folder, String filename) throws Exception {
 		SmbFile f = null;
 		f = new SmbFile(context, filename);
 		f.delete();
 	}
 
 	@Override
-	protected OutputStream _createFile(String filename) throws Exception {
+	protected OutputStream _createFile(String folder, String filename) throws Exception {
 		return new SmbFileOutputStream(new SmbFile(context, filename));
 	}
 
 	@Override
-	protected InputStream _readFile(String filename) throws FileNotFoundException, Exception {
+	protected InputStream _readFile(String folder, String filename) throws FileNotFoundException, Exception {
 		SmbFileInputStream is = null;
 		is = new SmbFileInputStream(new SmbFile(context, filename));
 		return is;
@@ -97,6 +98,6 @@ public class SambaFileSystemSenderTest extends FileSystemSenderTest<SmbFile, Sam
 		if(!folderName.endsWith("/")) {
 			folderName += "/";
 		}
-		_deleteFile(folderName);
+		_deleteFile(null, folderName);
 	}
 }

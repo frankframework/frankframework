@@ -23,7 +23,7 @@ import java.util.Map;
  *
  * @author  John Dekker
   */
-public interface IPostboxListener extends IPullingListener {
+public interface IPostboxListener<M> extends IPullingListener<M> {
 	/**
 	 * Retrieves the first message found from queue or other channel, that matches the 
 	 * specified <code>messageSelector</code>.
@@ -33,6 +33,6 @@ public interface IPostboxListener extends IPullingListener {
 	 * changes per listener, for example a JMSListener's messageSelector follows the JMS specification.
 	 * @param threadContext context in which the method is called 
 	 */ 
-	Object retrieveRawMessage(String messageSelector, Map<String,Object> threadContext) throws ListenerException, TimeOutException;
+	M retrieveRawMessage(String messageSelector, Map<String,Object> threadContext) throws ListenerException, TimeOutException;
 
 }

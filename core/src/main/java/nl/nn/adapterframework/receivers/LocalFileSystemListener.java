@@ -13,16 +13,16 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.senders;
+package nl.nn.adapterframework.receivers;
 
 import java.io.File;
 
-import nl.nn.adapterframework.filesystem.FileSystemSender;
+import nl.nn.adapterframework.filesystem.FileSystemListener;
 import nl.nn.adapterframework.filesystem.LocalFileSystem;
 
-public class LocalFileSystemSender extends FileSystemSender<File, LocalFileSystem>{
+public class LocalFileSystemListener extends FileSystemListener<File, LocalFileSystem>{
 
-	public LocalFileSystemSender() {
+	public LocalFileSystemListener() {
 		setFileSystem(new LocalFileSystem());
 	}
 	

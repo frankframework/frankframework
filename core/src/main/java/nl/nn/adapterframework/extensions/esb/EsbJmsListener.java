@@ -33,6 +33,8 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * ESB (Enterprise Service Bus) extension of JmsListener.
@@ -134,8 +136,26 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		return id;
 	}
 
+	protected String getResultFromxPath(String message, String xPathExpression) {
+		String found = "";
+		if(message != null && message.length() > 0) {
+			if(XmlUtils.isWellFormed(message)) {
+				try {
+					TransformerPool test = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("", xPathExpression, "text", false));
+					found = test.transform(message, null);
+					
+					//xPath not found and message length is 0 but not null nor ""
+					if(found.length() == 0) found = "";
+				} catch (Exception e) {
+					log.debug("could not evaluate xpath expression",e);
+				}
+			}
+		}
+		return found;
+	}
+
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult plr, Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		super.afterMessageProcessed(plr, rawMessage, threadContext);
 		if (getMessageProtocol().equalsIgnoreCase(REQUEST_REPLY)) {
 			Destination replyTo = (Destination) threadContext.get("replyTo");

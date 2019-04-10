@@ -82,7 +82,7 @@ import org.apache.commons.lang.StringUtils;
  * @author Gerrit van Brakel
  * @since 4.0.1
  */
-public class PullingJmsListener extends JmsListenerBase implements IPostboxListener, ICorrelatedPullingListener, HasSender, RunStateEnquiring {
+public class PullingJmsListener extends JmsListenerBase implements IPostboxListener<Message>, ICorrelatedPullingListener<Message>, HasSender, RunStateEnquiring {
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 	private final static String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
@@ -92,7 +92,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 		setTimeOut(20000);
 	}
 
-	protected Session getSession(Map threadContext) throws ListenerException {
+	protected Session getSession(Map<String,Object> threadContext) throws ListenerException {
 		if (isSessionsArePooled()) {
 			try {
 				return createSession();
@@ -110,7 +110,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 		}
 	}
 
-	protected MessageConsumer getReceiver(Map threadContext, Session session, String correlationId) throws ListenerException {
+	protected MessageConsumer getReceiver(Map<String,Object> threadContext, Session session, String correlationId) throws ListenerException {
 		try {
 			if (StringUtils.isNotEmpty(correlationId)) {
 				return getMessageConsumerForCorrelationId(session, getDestination(), correlationId);
@@ -137,8 +137,9 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 		}
 	}
 
-	public Map openThread() throws ListenerException {
-		Map threadContext = new HashMap();
+	@Override
+	public Map<String,Object> openThread() throws ListenerException {
+		Map<String,Object> threadContext = new HashMap<String,Object>();
 	
 		try {
 			if (!isSessionsArePooled()) { 
@@ -155,7 +156,8 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	}
 	
 	
-	public void closeThread(Map threadContext) throws ListenerException {
+	@Override
+	public void closeThread(Map<String,Object> threadContext) throws ListenerException {
 		try {
 			if (!isSessionsArePooled()) {
 				MessageConsumer mc = (MessageConsumer) threadContext.remove(THREAD_CONTEXT_MESSAGECONSUMER_KEY);
@@ -172,7 +174,8 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 
 
 
-	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map threadContext) throws ListenerException {
+	@Override
+	public void afterMessageProcessed(PipeLineResult plr, Message rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		String cid = (String) threadContext.get(IPipeLineSession.technicalCorrelationIdKey);
 
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in PullingJmsListener.afterMessageProcessed()");
@@ -270,12 +273,14 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	/**
 	 * Retrieves messages from queue or other channel, but does no processing on it.
 	 */
-	public Object getRawMessage(Map threadContext) throws ListenerException {
+	@Override
+	public Message getRawMessage(Map<String,Object> threadContext) throws ListenerException {
 		return getRawMessageFromDestination(null, threadContext);
 	}
 	
-	public Object getRawMessage(String correlationId, Map threadContext) throws ListenerException, TimeOutException {
-		Object msg = getRawMessageFromDestination(correlationId, threadContext);
+	@Override
+	public Message getRawMessage(String correlationId, Map<String,Object> threadContext) throws ListenerException, TimeOutException {
+		Message msg = getRawMessageFromDestination(correlationId, threadContext);
 		if (msg==null) {
 			throw new TimeOutException(getLogPrefix()+" timed out waiting for message with correlationId ["+correlationId+"]");
 		}
@@ -286,8 +291,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	}
 
 
-	private boolean sessionNeedsToBeSavedForAfterProcessMessage(Object result)
-	{
+	private boolean sessionNeedsToBeSavedForAfterProcessMessage(Object result) {
 		return isJmsTransacted() &&
 				!isTransacted() && 
 				isSessionsArePooled()&&
@@ -297,9 +301,9 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	/**
 	 * Retrieves messages from queue or other channel under transaction control, but does no processing on it.
 	 */
-	private Object getRawMessageFromDestination(String correlationId, Map threadContext) throws ListenerException {
+	private Message getRawMessageFromDestination(String correlationId, Map<String,Object> threadContext) throws ListenerException {
 		Session session=null;
-		Object msg = null;
+		Message msg = null;
 		try {
 			session = getSession(threadContext);
 			MessageConsumer mc=null;
@@ -327,14 +331,15 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	/** 
 	 * @see IPostboxListener#retrieveRawMessage(String, Map)
 	 */
-	public Object retrieveRawMessage(String messageSelector, Map threadContext) throws ListenerException {
+	@Override
+	public Message retrieveRawMessage(String messageSelector, Map<String,Object> threadContext) throws ListenerException {
 		Session session=null;
 		try {
 			session = getSession(threadContext);
 			MessageConsumer mc=null;
 			try {
 				mc = getMessageConsumer(session, getDestination(), messageSelector);
-				Object result = (getTimeOut()<0) ? mc.receiveNoWait() : mc.receive(getTimeOut());
+				Message result = (getTimeOut()<0) ? mc.receiveNoWait() : mc.receive(getTimeOut());
 				return result;
 			} finally {
 				if (mc != null) { 
@@ -358,6 +363,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 		return runStateEnquirer!=null && runStateEnquirer.isInState(RunStateEnum.STARTED);
 	}
 
+	@Override
 	public void SetRunStateEnquirer(RunStateEnquirer enquirer) {
 		runStateEnquirer=enquirer;
 	}
