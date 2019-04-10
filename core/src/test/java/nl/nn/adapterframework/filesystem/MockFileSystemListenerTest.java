@@ -8,7 +8,7 @@ import java.io.OutputStream;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
-public class MockFileSystemSenderTest extends FileSystemSenderTest <MockFile,MockFileSystem>{
+public class MockFileSystemListenerTest extends FileSystemListenerTest <MockFile,MockFileSystem>{
 
 	
 	@Override

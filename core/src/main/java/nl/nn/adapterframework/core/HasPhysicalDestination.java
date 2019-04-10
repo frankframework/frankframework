@@ -22,6 +22,6 @@ package nl.nn.adapterframework.core;
  * 
  * @author Gerrit van Brakel
  */
-public interface HasPhysicalDestination extends INamedObject {
+public interface HasPhysicalDestination {
 	public String getPhysicalDestinationName();
 }

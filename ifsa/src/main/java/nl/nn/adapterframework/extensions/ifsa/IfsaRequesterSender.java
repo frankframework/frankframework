@@ -32,7 +32,6 @@ package nl.nn.adapterframework.extensions.ifsa;
  *   <li>"FF": Fire & Forget protocol</li>
  *   <li>"RR": Request-Reply protocol</li>
  * </ul></td><td><td>&nbsp;</td></td></tr>
- * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>must be set <code>true</code> for FF senders in transacted mode</td><td>false</td></tr>
  * </table>
  * <table border="1">
  * <p><b>Parameters:</b>

@@ -26,11 +26,11 @@ package nl.nn.adapterframework.core;
  * @author Tim van der Leeuw
  *
  */
-public interface IPortConnectedListener extends IPushingListener {
+public interface IPortConnectedListener<M> extends IPushingListener<M> {
 
     public IbisExceptionListener getExceptionListener();
     String getListenerPort();
-	IMessageHandler getHandler();
+	IMessageHandler<M> getHandler();
 
     void setReceiver(IReceiver receiver);
     IReceiver getReceiver();

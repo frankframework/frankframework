@@ -80,7 +80,8 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 	}
 
 	@Override
-	protected boolean _fileExists(String filename) throws IOException, FileSystemException {
+	protected boolean _fileExists(String folder, String filename) throws IOException, FileSystemException {
+		// TODO: must implement folder searching, probably via change-directory
 		try {
 			FTPFile[] files = ftpSession.ftpClient.listFiles();
 			for (FTPFile o : files) {
@@ -99,7 +100,7 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 	}
 
 	@Override
-	protected void _deleteFile(String filename) throws FileSystemException {
+	protected void _deleteFile(String folder, String filename) throws FileSystemException {
 		try {
 			ftpSession.ftpClient.deleteFile(filename);
 		} catch (IOException e) {
@@ -119,13 +120,13 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 	}
 
 	@Override
-	protected OutputStream _createFile(String filename) throws IOException, FileSystemException {
+	protected OutputStream _createFile(String folder, String filename) throws IOException, FileSystemException {
 		OutputStream out = ftpSession.ftpClient.storeFileStream(filename);
 		return completePendingCommand(out);
 	}
 
 	@Override
-	protected InputStream _readFile(String filename) throws IOException, FileSystemException {
+	protected InputStream _readFile(String folder, String filename) throws IOException, FileSystemException {
 		InputStream is = ftpSession.ftpClient.retrieveFileStream(filename);
 		ftpSession.ftpClient.completePendingCommand();
 		return is;

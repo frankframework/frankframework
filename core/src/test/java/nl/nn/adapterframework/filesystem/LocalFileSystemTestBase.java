@@ -13,11 +13,10 @@ import org.junit.rules.TemporaryFolder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.filesystem.FileSystemException;
-import nl.nn.adapterframework.filesystem.IFileSystem;
+import nl.nn.adapterframework.filesystem.IWritableFileSystem;
 import nl.nn.adapterframework.filesystem.FileSystemTest;
 
-public abstract class LocalFileSystemTestBase<F, FS extends IFileSystem<F>>
-		extends FileSystemTest<F, FS> {
+public abstract class LocalFileSystemTestBase<F, FS extends IWritableFileSystem<F>> extends FileSystemTest<F, FS> {
 
 	public TemporaryFolder folder;
 
@@ -32,20 +31,26 @@ public abstract class LocalFileSystemTestBase<F, FS extends IFileSystem<F>>
 	protected File getFileHandle(String filename) {
 		return new File(folder.getRoot().getAbsolutePath(), filename);
 	}
-
-	@Override
-	public boolean _fileExists(String filename) {
-		return getFileHandle(filename).exists();
+	protected File getFileHandle(String subfolder, String filename) {
+		if (subfolder==null) {
+			return getFileHandle(filename);
+		}
+		return new File(folder.getRoot().getAbsolutePath()+"/"+subfolder, filename);
 	}
 
 	@Override
-	public void _deleteFile(String filename) {
-		getFileHandle(filename).delete();
+	public boolean _fileExists(String subfolder, String filename) {
+		return getFileHandle(subfolder,filename).exists();
 	}
 
 	@Override
-	public OutputStream _createFile(String filename) throws IOException {
-		File f = getFileHandle(filename);
+	public void _deleteFile(String folder, String filename) {
+		getFileHandle(folder, filename).delete();
+	}
+
+	@Override
+	public OutputStream _createFile(String folder, String filename) throws IOException {
+		File f = getFileHandle(folder, filename);
 		f.createNewFile();
 		return new FileOutputStream(f);
 	}
@@ -57,8 +62,8 @@ public abstract class LocalFileSystemTestBase<F, FS extends IFileSystem<F>>
 	}
 
 	@Override
-	public InputStream _readFile(String filename) throws FileNotFoundException {
-		return new FileInputStream(getFileHandle(filename));
+	public InputStream _readFile(String folder, String filename) throws FileNotFoundException {
+		return new FileInputStream(getFileHandle(folder, filename));
 	}
 
 	@Override
@@ -68,6 +73,6 @@ public abstract class LocalFileSystemTestBase<F, FS extends IFileSystem<F>>
 
 	@Override
 	protected void _deleteFolder(String folderName) throws Exception {
-		deleteFile(folderName);
+		deleteFile(null, folderName);
 	}
 }

@@ -184,9 +184,10 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 	}
 
 	@Override
-	protected boolean _fileExists(String filename) throws Exception {
+	protected boolean _fileExists(String folder, String filename) throws Exception {
+		String path=folder==null?filename:folder+"/"+filename;
 		try {
-			return client.fileExists(filename);
+			return client.fileExists(path);
 		} catch (SMBApiException e) {
 			if (e.getStatus().equals(NtStatus.STATUS_DELETE_PENDING))
 				return false;
@@ -195,13 +196,13 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 	}
 
 	@Override
-	protected void _deleteFile(String filename) throws Exception {
+	protected void _deleteFile(String folder, String filename) throws Exception {
 		client.rm(filename);
 
 	}
 
 	@Override
-	protected OutputStream _createFile(String filename) throws Exception {
+	protected OutputStream _createFile(String folder, String filename) throws Exception {
 		Set<SMB2CreateOptions> createOptions = new HashSet<SMB2CreateOptions>();
 		createOptions.add(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE);
 		Set<AccessMask> accessMask = new HashSet<AccessMask>(EnumSet.of(AccessMask.GENERIC_ALL));
@@ -213,7 +214,7 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 	}
 
 	@Override
-	protected InputStream _readFile(String filename) throws Exception {
+	protected InputStream _readFile(String folder, String filename) throws Exception {
 		Set<AccessMask> accessMask = new HashSet<AccessMask>();
 		accessMask.add(AccessMask.GENERIC_READ);
 		Set<SMB2ShareAccess> shareAccess = new HashSet<SMB2ShareAccess>();
@@ -251,10 +252,10 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 		client.rmdir(folderName, true);
 	}
 
-	@Test
-	@Override
-	public void fileSystemTestAppendFile() throws Exception {
-		// ("Smbj library does not support append at the moment: 3/8/2019")
-		super.fileSystemTestAppendFile();
-	}
+//	@Test
+//	@Override
+//	public void fileSystemTestAppendFile() throws Exception {
+//		// ("Smbj library does not support append at the moment: 3/8/2019")
+//		super.fileSystemTestAppendFile();
+//	}
 }

@@ -59,7 +59,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class AmazonS3FileSystem implements IFileSystem<S3Object> {
+public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -126,7 +126,7 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 	}
 
 	@Override
-	public Iterator<S3Object> listFiles() throws FileSystemException {
+	public Iterator<S3Object> listFiles(String folder) throws FileSystemException {
 		List<S3ObjectSummary> summaries = null;
 		try {
 			ObjectListing listing = s3Client.listObjects(bucketName);
@@ -242,13 +242,18 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 	}
 
 	@Override
-	public void renameTo(S3Object f, String destination) throws FileSystemException {
-		if(s3Client.doesObjectExist(bucketName, destination))
+	public S3Object renameFile(S3Object f, String newName, boolean force) throws FileSystemException {
+		if(s3Client.doesObjectExist(bucketName, newName))
 			throw new FileSystemException("Cannot rename file. Destination file already exists.");
-		s3Client.copyObject(bucketName, f.getKey(), bucketName, destination);
+		s3Client.copyObject(bucketName, f.getKey(), bucketName, newName);
 		s3Client.deleteObject(bucketName, f.getKey());
+		return toFile(newName);
 	}
 
+	@Override
+	public S3Object moveFile(S3Object f, String destination, boolean createFolder) throws FileSystemException {
+		return renameFile(f,destination+"/"+f.getKey(), false);
+	}
 	
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(S3Object f) {
@@ -258,22 +263,22 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 	}
 	
 	@Override
-	public long getFileSize(S3Object f, boolean isFolder) throws FileSystemException {
+	public long getFileSize(S3Object f) throws FileSystemException {
 		return f.getObjectMetadata().getContentLength();
 	}
 
 	@Override
-	public String getName(S3Object f) throws FileSystemException {
+	public String getName(S3Object f) {
 		return f.getKey();
 	}
 
 	@Override
-	public String getCanonicalName(S3Object f, boolean isFolder) throws FileSystemException {
+	public String getCanonicalName(S3Object f) throws FileSystemException {
 		return f.getBucketName() + f.getKey();
 	}
 
 	@Override
-	public Date getModificationTime(S3Object f, boolean isFolder) throws FileSystemException {
+	public Date getModificationTime(S3Object f) throws FileSystemException {
 		S3Object file;
 		if(f.getKey().isEmpty()) {
 			return null;

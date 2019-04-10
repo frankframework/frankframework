@@ -1,3 +1,18 @@
+/*
+   Copyright 2019 Integration Partners
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.filesystem;
 
 import java.io.IOException;
@@ -49,7 +64,6 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author alisihab
  *
  */
-
 public class Samba2FileSystem implements IWritableFileSystem<String> {
 
 	protected Logger log = LogUtil.getLogger(this);
@@ -186,7 +200,7 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	}
 
 	@Override
-	public Iterator<String> listFiles() throws FileSystemException {
+	public Iterator<String> listFiles(String folder) throws FileSystemException {
 		return new FilesIterator(diskShare.list(""));
 	}
 
@@ -231,13 +245,33 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	}
 
 	@Override
-	public void renameTo(String f, String destination) throws FileSystemException {
+	public String renameFile(String f, String newName, boolean force) throws FileSystemException {
 		File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN);
-		if (exists(destination) && !isForce) {
+		if (exists(newName) && !isForce) {
 			throw new FileSystemException("Cannot rename file. Destination file already exists.");
 		}
-		file.rename(destination, isForce);
+		file.rename(newName, isForce);
 		file.close();
+		return newName;
+	}
+
+	@Override
+	public String moveFile(String f, String to, boolean createFolder) throws FileSystemException {
+		File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN);
+		if (exists(to)) {
+			if (!isFolder(to)) {
+				throw new FileSystemException("Cannot move file. Destination file ["+to+"] is not a folder.");
+			}
+		} else {
+			if (isForce) {
+				createFolder(to);
+			} else {
+				throw new FileSystemException("Cannot move file. Destination folder ["+to+"] does not exist.");
+			}
+		}
+		file.rename(to, isForce);
+		file.close();
+		return to+"/"+file.getFileName();
 	}
 
 	@Override
@@ -297,44 +331,44 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	}
 
 	@Override
-	public long getFileSize(String f, boolean isFolder) throws FileSystemException {
+	public long getFileSize(String f) throws FileSystemException {
 		long size;
-		if (isFolder) {
-			Directory dir = getFolder(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN);
-			size = dir.getFileInformation().getStandardInformation().getAllocationSize();
-			dir.close();
-			return size;
-		} else {
+//		if (isFolder) {
+//			Directory dir = getFolder(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN);
+//			size = dir.getFileInformation().getStandardInformation().getAllocationSize();
+//			dir.close();
+//			return size;
+//		} else {
 			File file = getFile(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN);
 			size = file.getFileInformation().getStandardInformation().getAllocationSize();
 			file.close();
 			return size;
-		}
+//		}
 	}
 
 	@Override
-	public String getName(String f) throws FileSystemException {
+	public String getName(String f) {
 		return f;
 	}
 
 	@Override
-	public String getCanonicalName(String f, boolean isFolder) throws FileSystemException {
+	public String getCanonicalName(String f) throws FileSystemException {
 		return f;
 	}
 
 	@Override
-	public Date getModificationTime(String f, boolean isFolder) throws FileSystemException {
-		if (isFolder) {
-			Directory dir = getFolder(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN);
-			Date date = dir.getFileInformation().getBasicInformation().getLastWriteTime().toDate();
-			dir.close();
-			return date;
-		} else {
+	public Date getModificationTime(String f) throws FileSystemException {
+//		if (isFolder) {
+//			Directory dir = getFolder(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN);
+//			Date date = dir.getFileInformation().getBasicInformation().getLastWriteTime().toDate();
+//			dir.close();
+//			return date;
+//		} else {
 			File file = getFile(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN);
 			Date date = file.getFileInformation().getBasicInformation().getLastWriteTime().toDate();
 			file.close();
 			return date;
-		}
+//		}
 	}
 
 	public String getDomain() {
@@ -441,4 +475,5 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 			deleteFile(files.get(i++).getFileName());
 		}
 	}
+
 }
