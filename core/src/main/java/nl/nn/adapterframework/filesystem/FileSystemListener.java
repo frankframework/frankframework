@@ -90,6 +90,11 @@ public class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IP
 				if (!fileSystem.isFolder(dir)) {
 					throw new ListenerException("The value for inProcessFolder [" + getInProcessFolder() + "] is invalid. It is not a folder.");
 				}
+			} else {
+				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+				String msg = ClassUtils.nameOf(this) +"["+getName()+"]: attribute 'inProcessFolder' has not been set. This listener can only run in a single thread";
+				configWarnings.add(log, msg);
+				
 			}
 			if (StringUtils.isNotEmpty(getProcessedFolder())) {
 				F dir = fileSystem.toFile(getProcessedFolder());
@@ -137,7 +142,7 @@ public class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IP
 	}
 
 	/**
-	 * Retrieves a single record from a file. If the file is empty or fully processed, it looks wether there
+	 * Retrieves a single record from a file. If the file is empty or fully processed, it looks whether there
 	 * is a new file to process and returns the first record.
 	 */
 	@Override

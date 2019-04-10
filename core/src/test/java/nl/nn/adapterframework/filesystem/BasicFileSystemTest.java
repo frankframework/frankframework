@@ -449,6 +449,12 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> {
 	}
 
 	@Test
+	public void basicFileSystemTestListFileShouldNotReadFromRootWhenReadingFromFolder() throws Exception {
+		_createFolder("folder");
+		createFile(null, "otherfile", "maakt niet uit");
+		basicFileSystemTestListFile("folder");
+	}
+	@Test
 	public void basicFileSystemTestListFileShouldNotReadFolders() throws Exception {
 		String contents1 = "maakt niet uit";
 		String contents2 = "maakt ook niet uit";

@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class MockFile {
 
@@ -13,6 +15,7 @@ public class MockFile {
 	private MockFolder owner;
 	private byte[] contents;
 	private Date lastModified=new Date();
+	private Map<String,Object> additionalProperties;
 	
 	public MockFile(String name, MockFolder owner) {
 		super();
@@ -77,6 +80,20 @@ public class MockFile {
 
 	public void setContents(byte[] contents) {
 		this.contents = contents;
+	}
+
+	public void addProperties(String key, Object value) {
+		if (additionalProperties==null) {
+			additionalProperties=new LinkedHashMap<String,Object>();
+		}
+		additionalProperties.put(key, value);
+	}
+
+	public Map<String, Object> getAdditionalProperties() {
+		return additionalProperties;
+	}
+	public void setAdditionalProperties(Map<String, Object> additionalProperties) {
+		this.additionalProperties = additionalProperties;
 	}
 
 

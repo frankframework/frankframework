@@ -217,8 +217,7 @@ public class MockFileSystem extends MockFolder implements IWritableFileSystem<Mo
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(MockFile f) {
 		checkOpen();
-		// TODO Auto-generated method stub
-		return null;
+		return f.getAdditionalProperties();
 	}
 
 
