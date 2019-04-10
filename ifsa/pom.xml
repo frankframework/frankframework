@@ -77,6 +77,11 @@
       <version>1.0.0</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+    	<groupId>org.ibissource</groupId>
+    	<artifactId>ibis-adapterframework-ibm</artifactId>
+    	<scope>provided</scope>
+    </dependency>
   </dependencies>
 
 </project>
