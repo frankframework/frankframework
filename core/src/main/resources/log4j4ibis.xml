@@ -93,9 +93,6 @@
 		<level value="INFO"/>
 		<appender-ref ref="heartbeat"/>
 	</logger>
-	<logger name="nl.nn.adapterframework.extensions.test.IbisTester">
-		<level value="TRACE"/>
-	</logger>
 
 	<!-- Debug JMS polling on local development machine -->
 	<!-- appender name="stdout-local-development" class="org.apache.log4j.ConsoleAppender">

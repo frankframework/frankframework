@@ -13,11 +13,6 @@
 
 	<properties>
 		<m2eclipse.wtp.contextRoot>ibis4test</m2eclipse.wtp.contextRoot>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<timestamp>${maven.build.timestamp}</timestamp>
-		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
-		<iaf.version>7.3-B1-20181213.102433</iaf.version>
-		<iaf.proprietary.version>7.3-B1-20181213.102433</iaf.proprietary.version>
 	</properties>
 
 	<dependencies>

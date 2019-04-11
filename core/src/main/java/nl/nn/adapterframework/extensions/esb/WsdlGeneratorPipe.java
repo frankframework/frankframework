@@ -138,7 +138,8 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			wsdl.setUseIncludes(true);
 			wsdl.zip(zipOut, null);
 			// full wsdl (without includes)
-			File fullWsdlOutFile = new File(wsdlDir, wsdl.getFilename()+ ".wsdl");
+			File fullWsdlOutFile = new File(wsdlDir, wsdl.getFilename()
+					+ ".wsdl");
 			fullWsdlOutFile.deleteOnExit();
 			fullWsdlOut = new FileOutputStream(fullWsdlOutFile);
 			wsdl.setUseIncludes(false);
@@ -224,8 +225,10 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		String countRoot = null;
 		try {
 			String countRootXPath = "count(*/*[local-name()='element'])";
-			TransformerPool tp = XmlUtils.getXPathTransformerPool(null, countRootXPath, "text", false, null);
-			countRoot = tp.transform(Misc.fileToString(xsdFile.getPath()), null);
+			TransformerPool tp = TransformerPool.getInstance(
+					XmlUtils.createXPathEvaluatorSource(countRootXPath, "text"));
+			countRoot = tp
+					.transform(Misc.fileToString(xsdFile.getPath()), null);
 			if (StringUtils.isNotEmpty(countRoot)) {
 				log.debug("counted [" + countRoot
 						+ "] root elements in xsd file [" + xsdFile.getName()
@@ -253,7 +256,9 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			if (StringUtils.isEmpty(namespace)) {
 				String xsdTargetNamespace = null;
 				try {
-					TransformerPool tp = XmlUtils.getXPathTransformerPool(null, "*/@targetNamespace", "text", false, null);
+					TransformerPool tp = TransformerPool.getInstance(
+							XmlUtils.createXPathEvaluatorSource(
+									"*/@targetNamespace", "text"));
 					xsdTargetNamespace = tp.transform(
 							Misc.fileToString(xsdFile.getPath()), null);
 					if (StringUtils.isNotEmpty(xsdTargetNamespace)) {
@@ -288,8 +293,11 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			if (StringUtils.isEmpty(root)) {
 				String xsdRoot = null;
 				try {
-					String rootXPath = "*/*[local-name()='element']["+ rootPosition + "]/@name";
-					TransformerPool tp = XmlUtils.getXPathTransformerPool(null, rootXPath, "text", false, null);
+					String rootXPath = "*/*[local-name()='element']["
+							+ rootPosition + "]/@name";
+					TransformerPool tp = TransformerPool.getInstance(
+							XmlUtils.createXPathEvaluatorSource(rootXPath,
+									"text"));
 					xsdRoot = tp.transform(
 							Misc.fileToString(xsdFile.getPath()), null);
 					if (StringUtils.isNotEmpty(xsdRoot)) {

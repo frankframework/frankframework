@@ -71,11 +71,7 @@ public class XsltSender extends SenderWithParametersBase {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-
-		if (isXslt2() && StringUtils.isNotEmpty(getXpathExpression()) && StringUtils.isEmpty(getNamespaceDefs())) {
-			setNamespaceDefs("dummy=dummy");
-		}
-		
+	
 		transformerPool = TransformerPool.configureTransformer0(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), isXslt2()?2:1);
 		if (isSkipEmptyTags()) {
 			transformerPoolSkipEmptyTags = XmlUtils.getSkipEmptyTagsTransformerPool(isOmitXmlDeclaration(),isIndentXml());

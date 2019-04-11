@@ -221,5 +221,5 @@
     <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory"/>
     <set-properties-rule/>
     <set-next-rule methodname="registerCache"/>
-  </pattern>  
+  </pattern>
 </digester-rules>
