@@ -420,5 +420,11 @@ public class ClassUtils {
 			}).toString();
 		return result;
 	}
+    public static String getCleanedFilePath(String path) {
+        if(path.contains("wsjar:")) {
+            return path.replace("wsjar:", "jar:");
+        }
+        return path;
+    }
 
 }
