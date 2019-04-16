@@ -42,10 +42,12 @@ import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
 
 import com.hierynomus.msdtyp.AccessMask;
+import com.hierynomus.mserref.NtStatus;
 import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation;
 import com.hierynomus.mssmb2.SMB2CreateDisposition;
 import com.hierynomus.mssmb2.SMB2CreateOptions;
 import com.hierynomus.mssmb2.SMB2ShareAccess;
+import com.hierynomus.mssmb2.SMBApiException;
 import com.hierynomus.smbj.SMBClient;
 import com.hierynomus.smbj.auth.AuthenticationContext;
 import com.hierynomus.smbj.auth.GSSAuthenticationContext;
@@ -201,12 +203,12 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 
 	@Override
 	public Iterator<String> listFiles(String folder) throws FileSystemException {
-		return new FilesIterator(diskShare.list(""));
+		return new FilesIterator(diskShare.list(folder));
 	}
 
 	@Override
 	public boolean exists(String f) throws FileSystemException {
-		boolean exists = diskShare.fileExists(f);
+		boolean exists = isFolder(f) ? diskShare.folderExists(f) : diskShare.fileExists(f);
 		return exists;
 	}
 
@@ -281,8 +283,15 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 
 	@Override
 	public boolean isFolder(String f) throws FileSystemException {
-		boolean isFolder = diskShare.getFileInformation(f).getStandardInformation().isDirectory();
-		return isFolder;
+		try {
+			return diskShare.getFileInformation(f).getStandardInformation().isDirectory();
+		}catch(SMBApiException e) {
+			if(NtStatus.valueOf(e.getStatusCode()).equals(NtStatus.STATUS_OBJECT_NAME_NOT_FOUND)) {
+				return false;
+			}
+			throw new FileSystemException(e);
+		}
+		
 	}
 
 	@Override
@@ -333,17 +342,17 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	@Override
 	public long getFileSize(String f) throws FileSystemException {
 		long size;
-//		if (isFolder) {
-//			Directory dir = getFolder(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN);
-//			size = dir.getFileInformation().getStandardInformation().getAllocationSize();
-//			dir.close();
-//			return size;
-//		} else {
+		if (isFolder(f)) {
+			Directory dir = getFolder(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN);
+			size = dir.getFileInformation().getStandardInformation().getAllocationSize();
+			dir.close();
+			return size;
+		} else {
 			File file = getFile(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN);
 			size = file.getFileInformation().getStandardInformation().getAllocationSize();
 			file.close();
 			return size;
-//		}
+		}
 	}
 
 	@Override
@@ -358,17 +367,17 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 
 	@Override
 	public Date getModificationTime(String f) throws FileSystemException {
-//		if (isFolder) {
-//			Directory dir = getFolder(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN);
-//			Date date = dir.getFileInformation().getBasicInformation().getLastWriteTime().toDate();
-//			dir.close();
-//			return date;
-//		} else {
+		if (isFolder(f)) {
+			Directory dir = getFolder(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN);
+			Date date = dir.getFileInformation().getBasicInformation().getLastWriteTime().toDate();
+			dir.close();
+			return date;
+		} else {
 			File file = getFile(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN);
 			Date date = file.getFileInformation().getBasicInformation().getLastWriteTime().toDate();
 			file.close();
 			return date;
-//		}
+		}
 	}
 
 	public String getDomain() {
