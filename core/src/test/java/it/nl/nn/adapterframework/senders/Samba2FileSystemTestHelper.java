@@ -1,4 +1,6 @@
-package nl.nn.adapterframework.senders;
+package it.nl.nn.adapterframework.senders;
+
+import static com.hierynomus.msfscc.FileAttributes.FILE_ATTRIBUTE_DIRECTORY;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,6 +10,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.security.auth.Subject;
@@ -24,10 +27,12 @@ import org.junit.After;
 
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.mserref.NtStatus;
+import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation;
 import com.hierynomus.mssmb2.SMB2CreateDisposition;
 import com.hierynomus.mssmb2.SMB2CreateOptions;
 import com.hierynomus.mssmb2.SMB2ShareAccess;
 import com.hierynomus.mssmb2.SMBApiException;
+import com.hierynomus.protocol.commons.EnumWithValue;
 import com.hierynomus.smbj.SMBClient;
 import com.hierynomus.smbj.auth.AuthenticationContext;
 import com.hierynomus.smbj.auth.GSSAuthenticationContext;
@@ -45,8 +50,8 @@ import nl.nn.adapterframework.filesystem.UsernameAndPasswordCallbackHandler;
 
 public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 
-	private String authType = "SPNEGO";
-	private String shareName = "Share";
+	private String authType = "NTLM";
+	private String shareName = "Shared";
 	private String username = "";
 	private String password = "";
 	private String domain = "";
@@ -71,6 +76,33 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	public void setUp() throws IOException, ConfigurationException, FileSystemException {
 		AuthenticationContext auth = authenticate();
 		open(auth);
+		
+		List<FileIdBothDirectoryInformation> list = client.list("");
+        for (FileIdBothDirectoryInformation fi : list) {
+            if (fi.getFileName().equals(".") || fi.getFileName().equals("..")) {
+                continue;
+            }
+            String childPath = fi.getFileName();
+            if (!EnumWithValue.EnumUtils.isSet(fi.getFileAttributes(), FILE_ATTRIBUTE_DIRECTORY)) {
+                client.rm(childPath);
+            } else {
+                client.rmdir(childPath, true);
+            }
+        }
+	}
+	
+	@Override
+	@After
+	public void tearDown() throws Exception {
+		if (client != null) {
+			client.close();
+		}
+		if (session != null) {
+			session.close();
+		}
+		if (connection != null) {
+			connection.close();
+		}
 	}
 
 	private AuthenticationContext authenticate() throws FileSystemException {
@@ -127,20 +159,6 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 		return null;
 	}
 
-	@Override
-	@After
-	public void tearDown() throws Exception {
-		if (client != null) {
-			client.close();
-		}
-		if (session != null) {
-			session.close();
-		}
-		if (connection != null) {
-			connection.close();
-		}
-	}
-
 	public void open(AuthenticationContext auth) throws FileSystemException {
 		if (smbClient == null) {
 			smbClient = new SMBClient();
@@ -161,7 +179,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	}
 	@Override
 	public boolean _fileExists(String folder, String filename) throws Exception {
-		String path=folder==null?filename:folder+"/"+filename;
+		String path = folder != null ? folder + "\\" + filename : filename;
 		try {
 			return client.fileExists(path);
 		} catch (SMBApiException e) {
@@ -173,7 +191,8 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public void _deleteFile(String folder, String filename) throws Exception {
-		client.rm(filename);
+		String path = folder != null ? folder + "\\" + filename : filename;
+		client.rm(path);
 
 	}
 
@@ -182,8 +201,8 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 		Set<SMB2CreateOptions> createOptions = new HashSet<SMB2CreateOptions>();
 		createOptions.add(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE);
 		Set<AccessMask> accessMask = new HashSet<AccessMask>(EnumSet.of(AccessMask.GENERIC_ALL));
-
-		final File file = client.openFile(filename, accessMask, null, SMB2ShareAccess.ALL,
+		String path = folder != null ? folder + "\\" + filename : filename;
+		final File file = client.openFile(path, accessMask, null, SMB2ShareAccess.ALL,
 				SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
 
 		return file.getOutputStream();
