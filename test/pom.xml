@@ -63,6 +63,11 @@
 			<artifactId>geronimo-jms_1.1_spec</artifactId>
 			<scope>runtime</scope><!-- Overwrite <scope>provided</scope> in parent pom. -->
 		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
 		<!-- Test scoped dependencies -->
 		<dependency>
 			<groupId>junit</groupId>

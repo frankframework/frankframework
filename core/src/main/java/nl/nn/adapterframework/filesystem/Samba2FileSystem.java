@@ -178,7 +178,7 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 					GSSCredential creds = Subject.doAs(subject, new PrivilegedExceptionAction<GSSCredential>() {
 						@Override
 						public GSSCredential run() throws GSSException {
-							return manager.createCredential(name, GSSCredential.DEFAULT_LIFETIME, mech, GSSCredential.INITIATE_AND_ACCEPT);
+							return manager.createCredential(name, GSSCredential.DEFAULT_LIFETIME, mech, GSSCredential.INITIATE_ONLY);
 						}
 					});
 
