@@ -39,13 +39,18 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> {
 	public String DIR2 = "testDirectory2/";
 
 	protected FS fileSystem;
+	protected IFileSystemTestHelper helper;
+	
 	private long waitMillis = 0;
+	
+	
 	/**
 	 * Returns the file system 
 	 * @return fileSystem
 	 * @throws ConfigurationException
 	 */
-	protected abstract FS getFileSystem() throws ConfigurationException;
+	protected abstract FS getFileSystem();
+	protected abstract IFileSystemTestHelper getFileSystemTestHelper();
 
 	/**
 	 * Checks if a file with the specified name exists.
@@ -54,7 +59,9 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> {
 	 * @return
 	 * @throws Exception
 	 */
-	protected abstract boolean _fileExists(String folder, String filename) throws Exception;
+	protected boolean _fileExists(String folder, String filename) throws Exception {
+		return helper._fileExists(folder,filename);
+	}
 	
 	/**
 	 * Checks if a folder with the specified name exists.
@@ -62,7 +69,9 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> {
 	 * @return
 	 * @throws Exception
 	 */
-	protected abstract boolean _folderExists(String folderName) throws Exception;
+	protected boolean _folderExists(String folderName) throws Exception {
+		return helper._folderExists(folderName);
+	}
 	
 	/**
 	 * Deletes the file with the specified name
@@ -70,7 +79,9 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> {
 	 * @param filename
 	 * @throws Exception
 	 */
-	protected abstract void _deleteFile(String folder, String filename) throws Exception;
+	protected void _deleteFile(String folder, String filename) throws Exception {
+		helper._deleteFile(folder, filename);
+	}
 	
 	/**
 	 * Creates a file with the specified name and returns output stream 
@@ -80,7 +91,9 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> {
 	 * @return
 	 * @throws Exception
 	 */
-	protected abstract OutputStream _createFile(String folder, String filename) throws Exception;
+	protected OutputStream _createFile(String folder, String filename) throws Exception {
+		return helper._createFile(folder, filename);
+	}
 
 	/**
 	 * Returns an input stream of the file 
@@ -89,33 +102,42 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> {
 	 * @return
 	 * @throws Exception
 	 */
-	protected abstract InputStream _readFile(String folder, String filename) throws Exception;
+	protected InputStream _readFile(String folder, String filename) throws Exception {
+		return helper._readFile(folder, filename);
+	}
 	
 	/**
 	 * Creates a folder 
 	 * @param filename
 	 * @throws Exception
 	 */
-	protected abstract void _createFolder(String filename) throws Exception;
+	protected void _createFolder(String foldername) throws Exception {
+		helper._createFolder(foldername);
+	}
 
 	/**
 	 * Deletes the folder 
 	 * @param filename
 	 * @throws Exception
 	 */
-	protected abstract void _deleteFolder(String folderName) throws Exception;
+	protected void _deleteFolder(String folderName) throws Exception {
+		helper._deleteFolder(folderName);
+	}
 
 	protected boolean _fileExists(String filename) throws Exception {
 		return _fileExists(null, filename);
 	}
 
 	@Before
-	public void setUp() throws IOException, ConfigurationException, FileSystemException {
+	public void setUp() throws Exception {
 		fileSystem = getFileSystem();
+		helper = getFileSystemTestHelper();
+		helper.setUp();
 	}
 	
 	@After 
 	public void tearDown() throws Exception {
+		helper.tearDown();
 		fileSystem.close();
 	}
 

@@ -6,15 +6,14 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 
 import org.apache.commons.codec.binary.Base64;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -32,9 +31,18 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 
 	@Override
 	@Before
-	public void setUp() throws ConfigurationException, IOException, FileSystemException {
+	public void setUp() throws Exception {
 		super.setUp();
 		fileSystemSender = createFileSystemSender();
+	}
+
+	@Override
+	@After
+	public void tearDown() throws Exception {
+		super.tearDown();
+		if (fileSystemSender!=null) {
+			fileSystemSender.close();
+		};
 	}
 
 	@Test
@@ -75,7 +83,7 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		prc.setSession(session);
 		String actual;
 		
-		actual = fileSystemSender.sendMessage("<result>ok</result>", filename, prc);
+		actual = fileSystemSender.sendMessage("fakecorrelationid", filename, prc);
 		waitForActionToFinish();
 		
 		actual = readFile(null, filename);
@@ -108,7 +116,7 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		prc.setSession(session);
 
 		String actual;
-		actual = fileSystemSender.sendMessage("<result>ok</result>", filename, prc);
+		actual = fileSystemSender.sendMessage("fakecorrelationid", filename, prc);
 		waitForActionToFinish();
 		waitForActionToFinish();
 		
@@ -143,7 +151,7 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		prc.setSession(session);
 
 		String actual;
-		actual = fileSystemSender.sendMessage("<result>ok</result>", filename, prc);
+		actual = fileSystemSender.sendMessage("fakecorrelationid", filename, prc);
 		waitForActionToFinish();
 
 		actual = readFile(null, filename);
@@ -164,12 +172,58 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		fileSystemSender.open();
 		
 		String actual;
-		actual = fileSystemSender.sendMessage("<result>ok</result>", filename);
+		actual = fileSystemSender.sendMessage("fakecorrelationid", filename);
 		
 		String contentsBase64 = Base64.encodeBase64String(contents.getBytes());
 		// test
 		assertEquals(contentsBase64.trim(), actual.trim());
 	}
+
+	public void fileSystemSenderMoveActionTest(String folder1, String folder2) throws Exception {
+		String filename = "sendermove" + FILE1;
+		String contents = "Tekst om te lezen";
+		
+		if (folder1!=null) {
+			_createFolder(folder1);
+		}
+		if (folder2!=null) {
+			_createFolder(folder2);
+		}
+		createFile(folder1, filename, contents);
+//		deleteFile(folder2, filename);
+		waitForActionToFinish();
+
+		fileSystemSender.setAction("move");
+		Parameter p = new Parameter();
+		p.setName("destination");
+		p.setValue(folder2);
+		fileSystemSender.addParameter(p);
+		fileSystemSender.configure();
+		fileSystemSender.open();
+		
+		String actual;
+		ParameterResolutionContext prc = new ParameterResolutionContext(filename,new PipeLineSessionBase());
+		actual = fileSystemSender.sendMessage("fakecorrelationid", filename,prc);
+		
+		assertTrue("file should exist in destination folder ["+folder2+"]", _fileExists(folder2, filename));
+		assertFalse("file should not exist anymore in original folder ["+folder1+"]", _fileExists(folder1, filename));
+//		String contentsBase64 = Base64.encodeBase64String(contents.getBytes());
+//		// test
+//		assertEquals(contentsBase64.trim(), actual.trim());
+	}
+
+	@Test
+	public void fileSystemSenderMoveActionTestRootToFolder() throws Exception {
+		fileSystemSenderMoveActionTest(null,"folder");
+	}
+//	@Test
+//	public void fileSystemSenderMoveActionTestFolderToRoot() throws Exception {
+//		fileSystemSenderMoveActionTest("folder",null);
+//	}
+//	@Test
+//	public void fileSystemSenderMoveActionTestFolderToFolder() throws Exception {
+//		fileSystemSenderMoveActionTest("folder1","folder2");
+//	}
 
 	@Test
 	public void fileSystemSenderMkdirActionTest() throws Exception {
@@ -183,7 +237,7 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		String message = "<result>ok</result>";
+		String message = "fakecorrelationid";
 		String actual;
 		
 		actual = fileSystemSender.sendMessage(message, filename);
@@ -208,7 +262,7 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		String message = "<result>ok</result>";
+		String message = "fakecorrelationid";
 		String actual;
 		
 		actual = fileSystemSender.sendMessage(message, filename);
@@ -233,7 +287,7 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		String message = "<result>ok</result>";
+		String message = "fakecorrelationid";
 		String actual;
 		actual = fileSystemSender.sendMessage(message, filename);
 		// test
@@ -269,7 +323,7 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 
 		deleteFile(null, dest);
 
-		String message = "<result>ok</result>";
+		String message = "huh?";
 		String actual;
 		actual = fileSystemSender.sendMessage(message, filename, prc);
 		// test
@@ -285,8 +339,17 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		assertTrue("Expected file [" + dest + "] " + "to be present", result);
 	}
 
-	public void fileSystemSenderListActionTest(String inputFolder) throws Exception {
+	public void fileSystemSenderListActionTest(String inputFolder, int numberOfFiles) throws Exception {
 
+		
+		for (int i=0; i<numberOfFiles; i++) {
+			String filename = "tobelisted"+i + FILE1;
+			
+			if (!_fileExists(filename)) {
+				createFile(inputFolder, filename, "is not empty");
+			}
+		}
+		
 		fileSystemSender.setAction("list");
 		if (inputFolder!=null) {
 			fileSystemSender.setInputFolder(inputFolder);
@@ -314,18 +377,29 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		
 		int resultCount = Integer.valueOf(result.substring(posCount+anchor.length(), posQuote));
 		// test
-		assertEquals("count mismatch",count, resultCount);
+		assertEquals("count mismatch",numberOfFiles, resultCount);
+		assertEquals("mismatch in number of files",numberOfFiles, resultCount);
 	}
 
 	@Test
+	public void fileSystemSenderListActionTestInRootNoFiles() throws Exception {
+		fileSystemSenderListActionTest(null,0);
+	}
+	@Test
 	public void fileSystemSenderListActionTestInRoot() throws Exception {
-		fileSystemSenderListActionTest(null);
+		fileSystemSenderListActionTest(null,2);
+	}
+
+	@Test
+	public void fileSystemSenderListActionTestInFolderNoFiles() throws Exception {
+		_createFolder("folder");
+		fileSystemSenderListActionTest("folder",0);
 	}
 
 	@Test
 	public void fileSystemSenderListActionTestInFolder() throws Exception {
 		_createFolder("folder");
-		fileSystemSenderListActionTest("folder");
+		fileSystemSenderListActionTest("folder",2);
 	}
 	
 	@Test(expected = SenderException.class)

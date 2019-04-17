@@ -8,26 +8,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.junit.Before;
 import org.junit.rules.TemporaryFolder;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.filesystem.FileSystemException;
-import nl.nn.adapterframework.filesystem.IWritableFileSystem;
-import nl.nn.adapterframework.filesystem.FileSystemTest;
-
-public abstract class LocalFileSystemTestBase<F, FS extends IWritableFileSystem<F>> extends FileSystemTest<F, FS> {
+public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 
 	public TemporaryFolder folder;
 
-	@Override
-	@Before
-	public void setUp() throws IOException, ConfigurationException, FileSystemException {
-		folder = new TemporaryFolder();
-		folder.create();
-		super.setUp();
+
+	public LocalFileSystemTestHelper(TemporaryFolder folder) {
+		this.folder=folder;
 	}
 
+	@Override
+	public void setUp() throws Exception {
+		// not necessary
+	}
+
+	@Override
+	public void tearDown() throws Exception {
+		// not necessary
+	}
+	
 	protected File getFileHandle(String filename) {
 		return new File(folder.getRoot().getAbsolutePath(), filename);
 	}
@@ -67,12 +68,12 @@ public abstract class LocalFileSystemTestBase<F, FS extends IWritableFileSystem<
 	}
 
 	@Override
-	protected boolean _folderExists(String folderName) throws Exception {
-		return _fileExists(folderName);
+	public boolean _folderExists(String folderName) throws Exception {
+		return _fileExists(null,folderName);
 	}
 
 	@Override
-	protected void _deleteFolder(String folderName) throws Exception {
-		deleteFile(null, folderName);
+	public void _deleteFolder(String folderName) throws Exception {
+		_deleteFile(null, folderName);
 	}
 }
