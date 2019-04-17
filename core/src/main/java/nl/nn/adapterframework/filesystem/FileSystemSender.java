@@ -60,21 +60,23 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 
 public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderWithParametersBase {
+	
+	public final String[] ACTIONS_BASIC= {"list", "download", "move", "delete"};
+	public final String[] ACTIONS_WRITABLE_FS= {"upload", "rename", "mkdir", "rmdir"};
 
 	private String action;
 	private String inputFolder;
 
-	private Set<String> actions = new LinkedHashSet<String>(
-			Arrays.asList("list", "download", "move", "delete"));
+	private Set<String> actions = new LinkedHashSet<String>(Arrays.asList(ACTIONS_BASIC));
 
 	private FS fileSystem;
-
+	
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		getFileSystem().configure();
 		if (getFileSystem() instanceof IWritableFileSystem) {
-			actions.addAll(Arrays.asList("upload", "rename", "mkdir", "rmdir"));
+			actions.addAll(Arrays.asList(ACTIONS_WRITABLE_FS));
 		}
 
 		if (getAction() == null)
@@ -199,7 +201,8 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 				if (destination == null) {
 					throw new SenderException("destination folder not specified");
 				}
-				ifs.moveFile(file, destination, false);
+				F moved=ifs.moveFile(file, destination, false);
+				return getFileSystem().getName(moved);
 			}
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix() + "unable to process ["+action+"] action for File [" + message + "]", e);
