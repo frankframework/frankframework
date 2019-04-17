@@ -68,7 +68,7 @@ public class MockFileSystem extends MockFolder implements IWritableFileSystem<Mo
 			throw new FileSystemException("file ["+f.getName()+"] has no owner");
 		}
 		if (!folder.getFiles().containsKey(f.getName())) {
-			throw new FileSystemException("file ["+f.getName()+"] does not exist in filesystem");
+			throw new FileSystemException("file ["+f.getName()+"] does not exist in folder ["+folderName+"]");
 		}
 	}
 
@@ -92,7 +92,9 @@ public class MockFileSystem extends MockFolder implements IWritableFileSystem<Mo
 	@Override
 	public boolean exists(MockFile f) throws FileSystemException {
 		checkOpen();
-		return f.getOwner()!=null && (f.getOwner().getFiles().containsKey(f.getName()) || f.getOwner().getFolders().containsKey(f.getName()));
+		return f.getOwner()!=null 
+				&& (f.getOwner().getFiles().containsKey(f.getName()) 
+						|| f.getOwner().getFolders().containsKey(f.getName()));
 	}
 
 	@Override
@@ -107,9 +109,9 @@ public class MockFileSystem extends MockFolder implements IWritableFileSystem<Mo
 	public OutputStream appendFile(MockFile f) throws FileSystemException, IOException {
 		checkOpen();
 		if (getOwner()!=null && getOwner().getFiles().containsKey(f.getName())) {
-			f=getFiles().get(f.getName());
+			f=getFiles().get(f.getName()); // append to existing file
 		} else {
-			getFiles().put(f.getName(), f);
+			getFiles().put(f.getName(), f); // create new file
 			f.setOwner(this);
 		}
 		return f.getOutputStream(false);
@@ -142,17 +144,17 @@ public class MockFileSystem extends MockFolder implements IWritableFileSystem<Mo
 
 	@Override
 	public MockFile moveFile(MockFile f, String destinationFolderName, boolean createFolder) throws FileSystemException {
-		checkOpenAndExists(null,f);
-		MockFolder folder= getFolders().get(destinationFolderName);
-		if (folder==null) {
+		//checkOpenAndExists(f.getOwner().getName(),f);
+		MockFolder destFolder= destinationFolderName==null?this:getFolders().get(destinationFolderName);
+		if (destFolder==null) {
 			if (!createFolder) {
 				throw new FileSystemException("folder ["+destinationFolderName+"] does not exist");
 			} 
-			folder = new MockFolder(destinationFolderName,this);
-			getFolders().put(destinationFolderName,folder);
+			destFolder = new MockFolder(destinationFolderName,this);
+			getFolders().put(destinationFolderName,destFolder);
 		}
-		f.setOwner(folder);
-		folder.getFiles().put(f.getName(), getFiles().remove(f.getName()));
+		destFolder.getFiles().put(f.getName(), f.getOwner().getFiles().remove(f.getName()));
+		f.setOwner(destFolder);
 		return f;
 	}
 

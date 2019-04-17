@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.filesystem;
 
-public class MockFileSystemSenderTest extends FileSystemSenderTest <MockFile,MockFileSystem>{
+public class MockFileSystemTest extends FileSystemTest <MockFile,MockFileSystem>{
 
 	
 	@Override
@@ -12,6 +12,5 @@ public class MockFileSystemSenderTest extends FileSystemSenderTest <MockFile,Moc
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
 		return new MockFileSystemTestHelper(fileSystem);
 	}
-
 
 }
