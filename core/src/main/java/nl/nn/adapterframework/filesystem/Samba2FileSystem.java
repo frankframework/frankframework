@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.EnumSet;
@@ -43,11 +44,15 @@ import org.ietf.jgss.Oid;
 
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.mserref.NtStatus;
+import com.hierynomus.msfscc.FileAttributes;
+import com.hierynomus.msfscc.fileinformation.FileAllInformation;
 import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation;
+import com.hierynomus.msfscc.fileinformation.FileStandardInformation;
 import com.hierynomus.mssmb2.SMB2CreateDisposition;
 import com.hierynomus.mssmb2.SMB2CreateOptions;
 import com.hierynomus.mssmb2.SMB2ShareAccess;
 import com.hierynomus.mssmb2.SMBApiException;
+import com.hierynomus.protocol.commons.EnumWithValue;
 import com.hierynomus.smbj.SMBClient;
 import com.hierynomus.smbj.auth.AuthenticationContext;
 import com.hierynomus.smbj.auth.GSSAuthenticationContext;
@@ -82,7 +87,7 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	/** Share name is required*/
 	private String shareName = null;
 	private boolean isForce;
-	private boolean listHiddenFiles = true;
+	private boolean listHiddenFiles = false;
 
 	private SMBClient client = null;
 	private Connection connection;
@@ -124,11 +129,19 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	@Override
 	public void close() throws FileSystemException {
 		try {
-			diskShare.close();
+			if(diskShare != null) {
+				diskShare.close();
+			}
+			if(session != null) {
+				session.close();		
+			}
+			if(connection != null) {
+				connection.close();
+			}
+			if(client != null) {
+				client.close();
+			}
 			diskShare = null;
-			session.close();
-			connection.close();
-			client.close();
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
@@ -203,7 +216,7 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 
 	@Override
 	public Iterator<String> listFiles(String folder) throws FileSystemException {
-		return new FilesIterator(diskShare.list(folder));
+		return new FilesIterator(folder, diskShare.list(folder));
 	}
 
 	@Override
@@ -271,9 +284,10 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 				throw new FileSystemException("Cannot move file. Destination folder ["+to+"] does not exist.");
 			}
 		}
-		file.rename(to, isForce);
+		String destination = to+"\\"+f;
+		file.rename(destination, isForce);
 		file.close();
-		return to+"/"+file.getFileName();
+		return destination;
 	}
 
 	@Override
@@ -288,7 +302,11 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 		}catch(SMBApiException e) {
 			if(NtStatus.valueOf(e.getStatusCode()).equals(NtStatus.STATUS_OBJECT_NAME_NOT_FOUND)) {
 				return false;
+			} 
+			if(NtStatus.valueOf(e.getStatusCode()).equals(NtStatus.STATUS_DELETE_PENDING)) {
+				return false;
 			}
+			
 			throw new FileSystemException(e);
 		}
 		
@@ -464,9 +482,40 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 
 		private List<FileIdBothDirectoryInformation> files;
 		private int i = 0;
+		private String prefix;
 
-		public FilesIterator(List<FileIdBothDirectoryInformation> list) {
-			files = list;
+		public FilesIterator(String parent, List<FileIdBothDirectoryInformation> list) {
+			prefix = parent != null ? parent + "\\" : "";
+            files = new ArrayList<FileIdBothDirectoryInformation>();
+            for (FileIdBothDirectoryInformation info : list) {
+            	if(!StringUtils.equals(".", info.getFileName()) && !StringUtils.equals("..", info.getFileName())) {
+            		boolean isHidden = EnumWithValue.EnumUtils.isSet( info.getFileAttributes(), FileAttributes.FILE_ATTRIBUTE_HIDDEN );
+                    try {
+                    	FileStandardInformation fai = diskShare.getFileInformation(prefix+info.getFileName()).getStandardInformation();
+                    	boolean accessible = !fai.isDeletePending();
+                    	boolean isDirectory = fai.isDirectory();
+                		if(accessible && !isDirectory) {
+                        	if(isListHiddenFiles()) {
+                                files.add(info);
+                            }else {
+                                if(!isHidden) {
+                                	System.err.println(info.getFileName());
+                                	
+                                    files.add(info);
+                                }
+                            }
+                        }
+					} catch (SMBApiException e) {
+						if(NtStatus.valueOf(e.getStatusCode()).equals(NtStatus.STATUS_DELETE_PENDING)) {
+							log.debug("delete pending for file ["+ info.getFileName()+"]");
+						}
+						else {
+							throw e;
+						}
+					}
+            		
+            	}
+            }
 		}
 
 		@Override
@@ -476,12 +525,12 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 
 		@Override
 		public String next() {
-			return files.get(i++).getFileName();
+			return prefix + files.get(i++).getFileName();
 		}
 
 		@Override
 		public void remove() {
-			deleteFile(files.get(i++).getFileName());
+			deleteFile(prefix + files.get(i++).getFileName());
 		}
 	}
 

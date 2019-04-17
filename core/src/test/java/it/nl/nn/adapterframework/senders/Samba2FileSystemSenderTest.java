@@ -1,10 +1,17 @@
-package nl.nn.adapterframework.senders;
+package it.nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 /**
  * This test class is created to test both Samba2FileSystem and Samba2FileSystemSender classes.
+ * 
+ * Instructions to create a share on a windows system:
+ * - First create a directory you want to share (location doesn't matter)
+ * - Right click to that directory -> properties -> Sharing Tab -> Advanced Sharing Options -> Check Share this Folder option -> 
+ * Click Permissions -> Set users to be shared if necessary -> Set permissions(Full Control, read, write) -> Click Apply.
+ * To verify share:
+ * - open file explorer -> write \\localhost on address bar. You will see the share.
  * 
  * @author alisihab
  *
