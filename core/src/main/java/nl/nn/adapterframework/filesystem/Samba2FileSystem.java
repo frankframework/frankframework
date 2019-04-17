@@ -18,16 +18,28 @@ package nl.nn.adapterframework.filesystem;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.PrivilegedExceptionAction;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.security.auth.Subject;
+import javax.security.auth.kerberos.KerberosPrincipal;
+import javax.security.auth.login.LoginContext;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ietf.jgss.GSSCredential;
+import org.ietf.jgss.GSSException;
+import org.ietf.jgss.GSSManager;
+import org.ietf.jgss.GSSName;
+import org.ietf.jgss.Oid;
 
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation;
@@ -36,6 +48,7 @@ import com.hierynomus.mssmb2.SMB2CreateOptions;
 import com.hierynomus.mssmb2.SMB2ShareAccess;
 import com.hierynomus.smbj.SMBClient;
 import com.hierynomus.smbj.auth.AuthenticationContext;
+import com.hierynomus.smbj.auth.GSSAuthenticationContext;
 import com.hierynomus.smbj.connection.Connection;
 import com.hierynomus.smbj.session.Session;
 import com.hierynomus.smbj.share.Directory;
@@ -47,23 +60,28 @@ import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
+ * 
  * @author alisihab
  *
  */
 public class Samba2FileSystem implements IWritableFileSystem<String> {
 
 	protected Logger log = LogUtil.getLogger(this);
-	
+
+	private String authType = "SPNEGO";
+	private List<String> authTypes = Arrays.asList("NTLM", "SPNEGO");
+	private String kdc = null;
+	private String realm = null;
 	private String domain = null;
 	private String username = null;
 	private String password = null;
 	private String authAlias = null;
+
 	/** Share name is required*/
 	private String shareName = null;
 	private boolean isForce;
 	private boolean listHiddenFiles = true;
 
-	private AuthenticationContext auth;
 	private SMBClient client = null;
 	private Connection connection;
 	private Session session;
@@ -74,16 +92,15 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 		if (StringUtils.isEmpty(getShare())) {
 			throw new ConfigurationException("server share endpoint is required");
 		}
-
-		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
-		if (StringUtils.isNotEmpty(cf.getUsername())) {
-			auth = new AuthenticationContext(username, password.toCharArray(), domain);
+		if(!authTypes.contains(authType)) {
+			throw new ConfigurationException("Invalid authType please provide one of the values "+authTypes);
 		}
 	}
 
 	@Override
 	public void open() throws FileSystemException {
 		try {
+			AuthenticationContext auth = authenticate();
 			client = new SMBClient();
 			connection = client.connect(domain);
 			if(connection.isConnected()) {
@@ -115,6 +132,68 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 		}
 	}
 
+	private AuthenticationContext authenticate() throws FileSystemException {
+		CredentialFactory credentialFactory = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+		if (StringUtils.isNotEmpty(credentialFactory.getUsername())) {
+			if(StringUtils.equalsIgnoreCase(authType, "NTLM")) {
+				return new AuthenticationContext(getUsername(), password.toCharArray(), getDomain());
+			}else if(StringUtils.equalsIgnoreCase(authType, "SPNEGO")) {
+
+				if(!StringUtils.isEmpty(getKdc()) && !StringUtils.isEmpty(getRealm())) {
+					System.setProperty("java.security.krb5.kdc", getKdc());
+					System.setProperty("java.security.krb5.realm", getRealm());
+				}
+
+				HashMap<String, String> loginParams = new HashMap<String, String>();
+				loginParams.put("principal", getUsername());
+				LoginContext lc;
+				try {
+					lc = new LoginContext(getUsername(), null, 
+							new UsernameAndPasswordCallbackHandler(getUsername(), getPassword()),
+							new KerberosLoginConfiguration(loginParams));
+					lc.login();
+
+					Subject subject = lc.getSubject();
+					KerberosPrincipal krbPrincipal = subject.getPrincipals(KerberosPrincipal.class).iterator().next();
+
+					Oid spnego = new Oid("1.3.6.1.5.5.2");
+					Oid kerberos5 = new Oid("1.2.840.113554.1.2.2");
+
+					final GSSManager manager = GSSManager.getInstance();
+
+					final GSSName name = manager.createName(krbPrincipal.toString(), GSSName.NT_USER_NAME);
+					Set<Oid> mechs = new HashSet<Oid>(Arrays.asList(manager.getMechsForName(name.getStringNameType())));
+					final Oid mech;
+
+					if (mechs.contains(kerberos5)) {
+						mech = kerberos5;
+					} else if (mechs.contains(spnego)) {
+						mech = spnego;
+					} else {
+						throw new IllegalArgumentException("No mechanism found");
+					}
+
+					GSSCredential creds = Subject.doAs(subject, new PrivilegedExceptionAction<GSSCredential>() {
+						@Override
+						public GSSCredential run() throws GSSException {
+							return manager.createCredential(name, GSSCredential.DEFAULT_LIFETIME, mech, GSSCredential.INITIATE_ONLY);
+						}
+					});
+
+					GSSAuthenticationContext auth = new GSSAuthenticationContext(krbPrincipal.getName(), krbPrincipal.getRealm(), subject, creds);
+					return auth;
+
+				} catch (Exception e) {
+					if(e.getMessage().contains("Cannot locate default realm")) {
+						throw new FileSystemException("Please fill the kdc and realm field or provide krb5.conf file including realm",e);
+					}
+					throw new FileSystemException(e);
+				}
+			}
+		}
+		return null;
+	}
+	
 	@Override
 	public String toFile(String filename) throws FileSystemException {
 		return filename;
@@ -330,6 +409,30 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 
 	public void setShare(String share) {
 		this.shareName = share;
+	}
+
+	public String getAuthType() {
+		return authType;
+	}
+
+	public void setAuthType(String authType) {
+		this.authType = authType;
+	}
+	
+	public String getKdc() {
+		return kdc;
+	}
+
+	public void setKdc(String kdc) {
+		this.kdc = kdc;
+	}
+	
+	public String getRealm() {
+		return realm;
+	}
+
+	public void setRealm(String realm) {
+		this.realm = realm;
 	}
 
 	public boolean isForce() {

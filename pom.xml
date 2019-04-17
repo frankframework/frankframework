@@ -426,6 +426,7 @@
         <module>webapp</module>
         <module>test</module>
         <module>ladybug</module>
+        <module>ear-example</module>
       </modules>
     </profile>
   </profiles>
