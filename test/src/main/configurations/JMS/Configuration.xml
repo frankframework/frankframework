@@ -1,4 +1,4 @@
-<!DOCTYPE IOS-Adaptering [
+<!DOCTYPE configuration [
 	<!ENTITY ConfigurationBatch SYSTEM "./ConfigurationBatch.xml">
 	<!ENTITY ConfigurationCompactMessage SYSTEM "./ConfigurationCompactMessage.xml">
 	<!ENTITY ConfigurationEsbJmsListenerSender SYSTEM "./ConfigurationEsbJmsListenerSender.xml">
@@ -7,15 +7,7 @@
 	<!ENTITY ConfigurationWsdlGenerator SYSTEM "./ConfigurationWsdlGenerator.xml">
 	<!ENTITY ConfigurationJmsHeaders SYSTEM "./ConfigurationJmsHeaders.xml">
 ]>
-<IOS-Adaptering configurationName="JMS">
-	<jmsRealms>
-		<jmsRealm realmName="jdbc" datasourceName="jdbc/ibis4test"/>
-		<jmsRealm realmName="qcf" queueConnectionFactoryName="jms/qcf" active="${active.jms}"/>
-		<jmsRealm realmName="fxf" queueConnectionFactoryName="jms/qcf_fxf" active="${active.fxf}"/>
-		<jmsRealm realmName="qcf_tibco_esb_rr" queueConnectionFactoryName="jms/qcf_tibco_esb_rr" active="${active.tibco}"/>
-		<jmsRealm realmName="qcf_tibco_esb_ff" queueConnectionFactoryName="jms/qcf_tibco_esb_ff" active="${active.tibco}"/>
-	</jmsRealms>
-
+<configuration name="JMS">
 	&ConfigurationBatch;
 	&ConfigurationCompactMessage;
 	&ConfigurationEsbJmsListenerSender;
@@ -23,4 +15,4 @@
 	&ConfigurationJmsListenerSender;
 	&ConfigurationWsdlGenerator;
 	&ConfigurationJmsHeaders;
-</IOS-Adaptering>
+</configuration>

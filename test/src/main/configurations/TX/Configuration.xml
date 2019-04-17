@@ -1,4 +1,4 @@
-<!DOCTYPE IOS-Adaptering [
+<!DOCTYPE configuration [
 	<!ENTITY TransactionTimeoutHandling SYSTEM "./TransactionTimeoutHandling.xml">
 	<!ENTITY TransactionTimeoutFxfListener SYSTEM "./TransactionTimeoutFxfListener.xml">
 
@@ -11,7 +11,7 @@
 	<!ENTITY TransactionHandlingMultiAdapter SYSTEM "./TransactionHandlingMultiAdapter.xml">
 ]>
 
-<IOS-Adaptering configurationName="TX">
+<configuration name="TX">
 	&TransactionTimeoutHandling;
 	&TransactionTimeoutFxfListener;
 
@@ -22,4 +22,4 @@
 	&TransactionHandlingRequiredSubAdapterException;
 
 	&TransactionHandlingMultiAdapter;
-</IOS-Adaptering>
+</configuration>

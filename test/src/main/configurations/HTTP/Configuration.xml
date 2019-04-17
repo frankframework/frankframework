@@ -1,4 +1,4 @@
-<!DOCTYPE IOS-Adaptering [
+<!DOCTYPE configuration [
 	<!ENTITY WebServiceListenerSender SYSTEM "./ConfigurationWebServiceListenerSender.xml">
 	<!ENTITY WebServiceListenerSenderAddress SYSTEM "./ConfigurationWebServiceListenerSenderAddress.xml">
 	<!ENTITY WebServiceListenerSenderAttachments SYSTEM "./ConfigurationWebServiceListenerSenderAttachments.xml">
@@ -7,7 +7,7 @@
 	<!ENTITY HttpListenerSender SYSTEM "./ConfigurationHttpListenerSender.xml">
 	<!ENTITY RestListener SYSTEM "./ConfigurationRestListener.xml">
 ]>
-<IOS-Adaptering configurationName="HTTP">
+<configuration name="HTTP">
 	&WebServiceListenerSender;
 	&WebServiceListenerSenderAddress;
 	&WebServiceListenerSenderAttachments;
@@ -15,4 +15,4 @@
 	&WebServiceListenerSenderNoSoap;
 	&HttpListenerSender;
 	&RestListener;
-</IOS-Adaptering>
+</configuration>

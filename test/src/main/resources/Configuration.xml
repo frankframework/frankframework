@@ -1,11 +1,11 @@
-<!DOCTYPE IOS-Adaptering [
+<!DOCTYPE configuration [
 ]>
-<IOS-Adaptering configurationName="ibis4test">
+<configuration name="Ibis4Test">
 	<jmsRealms>
-		<jmsRealm realmName="jdbc" datasourceName="jdbc/ibis4test"/>
+		<jmsRealm realmName="jdbc" datasourceName="jdbc/${instance.name.lc}"/>
 		<jmsRealm realmName="qcf" queueConnectionFactoryName="jms/qcf" active="${active.jms}"/>
 		<jmsRealm realmName="fxf" queueConnectionFactoryName="jms/qcf_fxf" active="${active.fxf}"/>
 		<jmsRealm realmName="qcf_tibco_esb_rr" queueConnectionFactoryName="jms/qcf_tibco_esb_rr" active="${active.tibco}"/>
 		<jmsRealm realmName="qcf_tibco_esb_ff" queueConnectionFactoryName="jms/qcf_tibco_esb_ff" active="${active.tibco}"/>
 	</jmsRealms>
-</IOS-Adaptering>
+</configuration>

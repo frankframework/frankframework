@@ -1,4 +1,4 @@
-<!DOCTYPE IOS-Adaptering [
+<!DOCTYPE configuration [
     <!ENTITY Authentication SYSTEM "./ConfigurationAuthentication.xml">
     <!ENTITY Cache SYSTEM "./ConfigurationCache.xml">
     <!ENTITY Checksum SYSTEM "./ConfigurationChecksum.xml">
@@ -44,7 +44,7 @@
 	<!ENTITY JsonPipe SYSTEM "./ConfigurationJsonPipe.xml">
 	<!ENTITY MultipleSessionKeys SYSTEM "./ConfigurationMultipleSessionKeys.xml">
 ]>
-<IOS-Adaptering configurationName="MainConfig">
+<configuration name="MainConfig">
 	&Authentication;
 	&Cache;
 	&Checksum;
@@ -90,4 +90,4 @@
 	&Text2Xml;
 	&JsonPipe;
 	&MultipleSessionKeys;
-</IOS-Adaptering>
+</configuration>

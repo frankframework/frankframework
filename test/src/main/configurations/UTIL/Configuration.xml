@@ -1,12 +1,12 @@
-<!DOCTYPE IOS-Adaptering [
+<!DOCTYPE configuration [
 	<!ENTITY Larva SYSTEM "./ConfigurationLarva.xml">
 	<!ENTITY UploadFiles SYSTEM "./ConfigurationUploadFiles.xml">
 ]>
-<IOS-Adaptering configurationName="UTIL">
+<configuration name="UTIL">
 
 	<!-- running larva scenario's (on startup and once a day scheduled) -->
 	&Larva;
 
 	<!-- include configuration for console functions -->
 	&UploadFiles;
-</IOS-Adaptering>
+</configuration>

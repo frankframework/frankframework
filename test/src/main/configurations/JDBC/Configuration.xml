@@ -1,6 +1,6 @@
-<!DOCTYPE IOS-Adaptering [
+<!DOCTYPE configuration [
 	<!ENTITY JdbcQueryListener SYSTEM "./ConfigurationJdbcQueryListener.xml">
 ]>
-<IOS-Adaptering configurationName="JDBC">
+<configuration name="JDBC">
 	&JdbcQueryListener;
-</IOS-Adaptering>
+</configuration>
