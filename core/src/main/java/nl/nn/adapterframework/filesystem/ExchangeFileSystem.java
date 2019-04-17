@@ -19,7 +19,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -28,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.log4j.Logger;
 
 import microsoft.exchange.webservices.data.autodiscover.IAutodiscoverRedirectionUrl;
@@ -40,6 +38,7 @@ import microsoft.exchange.webservices.data.core.enumeration.property.WellKnownFo
 import microsoft.exchange.webservices.data.core.enumeration.search.SortDirection;
 import microsoft.exchange.webservices.data.core.enumeration.service.DeleteMode;
 import microsoft.exchange.webservices.data.core.exception.service.local.ServiceLocalException;
+import microsoft.exchange.webservices.data.core.exception.service.local.ServiceVersionException;
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import microsoft.exchange.webservices.data.core.service.item.Item;
 import microsoft.exchange.webservices.data.core.service.schema.EmailMessageSchema;
@@ -52,10 +51,9 @@ import microsoft.exchange.webservices.data.property.complex.Attachment;
 import microsoft.exchange.webservices.data.property.complex.AttachmentCollection;
 import microsoft.exchange.webservices.data.property.complex.EmailAddress;
 import microsoft.exchange.webservices.data.property.complex.EmailAddressCollection;
+import microsoft.exchange.webservices.data.property.complex.FileAttachment;
 import microsoft.exchange.webservices.data.property.complex.FolderId;
 import microsoft.exchange.webservices.data.property.complex.InternetMessageHeader;
-import microsoft.exchange.webservices.data.property.complex.InternetMessageHeaderCollection;
-import microsoft.exchange.webservices.data.property.complex.ItemAttachment;
 import microsoft.exchange.webservices.data.property.complex.ItemId;
 import microsoft.exchange.webservices.data.property.complex.Mailbox;
 import microsoft.exchange.webservices.data.property.complex.MessageBody;
@@ -71,36 +69,9 @@ import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
- * Implementation of a {@link nl.nn.adapterframework.core.IPullingListener
- * IPullingListener} that enables a
- * {@link nl.nn.adapterframework.receivers.GenericReceiver} to look in a folder
- * for received mails. When a mail is found, it is moved to an output folder (or
- * it's deleted), so that it isn't found more then once. A xml string with
- * information about the mail is passed to the pipeline.
- * 
- * <p>
- * <b>example:</b> <code><pre>
- *   &lt;email&gt;
- *      &lt;recipients&gt;
- *         &lt;recipient type="to"&gt;***@nn.nl&lt;/recipient&gt;
- *         &lt;recipient type="cc"&gt;***@nn.nl&lt;/recipient&gt;
- *      &lt;/recipients&gt;
- *      &lt;from&gt;***@nn.nl&lt;/from&gt;
- *      &lt;subject&gt;this is the subject&lt;/subject&gt;
- *      &lt;headers&gt;
- *         &lt;header name="prop1"&gt;<i>value of first header property</i>&lt;/header&gt;
- *         &lt;header name="prop2"&gt;<i>value of second header property</i>&lt;/header&gt;
- *      &lt;/headers&gt;
- *      &lt;dateTimeSent&gt;2015-11-18T11:40:19.000+0100&lt;/dateTimeSent&gt;
- *      &lt;dateTimeReceived&gt;2015-11-18T11:41:04.000+0100&lt;/dateTimeReceived&gt;
- *   &lt;/email&gt;
- * </pre></code>
- * </p>
- * 
- * <p>
+ * Implementation of a {@link IBasicFileSystem} of an Exchange Mail Inbox.
  * <b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
@@ -117,7 +88,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * 
  * @author Gerrit van Brakel, after {@link ExchangeMailListener} by Peter Leeuwenburgh
  */
-public class ExchangeFileSystem implements IBasicFileSystem<Item>, HasPhysicalDestination {
+public class ExchangeFileSystem implements IWithAttachments<Item,FileAttachment>, HasPhysicalDestination {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String mailAddress;
@@ -319,7 +290,14 @@ public class ExchangeFileSystem implements IBasicFileSystem<Item>, HasPhysicalDe
 	}
 	@Override
 	public Item moveFile(Item f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		throw new NotImplementedException("Must implement move");
+		EmailMessage emailMessage;
+		try {
+			emailMessage = EmailMessage.bind(exchangeService, f.getId());
+			emailMessage = (EmailMessage) emailMessage.move(getFolderIdByFolderName(destinationFolder));
+			return emailMessage;
+		} catch (Exception e) {
+			throw new FileSystemException(e);
+		}
 	}
 
 	@Override
@@ -397,6 +375,85 @@ public class ExchangeFileSystem implements IBasicFileSystem<Item>, HasPhysicalDe
 		}
 	}
 
+	@Override
+	public Iterator<FileAttachment> listAttachments(Item f) throws FileSystemException {
+		List<FileAttachment> result=new LinkedList<FileAttachment>();
+		try {
+			EmailMessage emailMessage;
+			PropertySet ps = new PropertySet(EmailMessageSchema.Attachments);
+			emailMessage = EmailMessage.bind(exchangeService, f.getId(), ps);
+			AttachmentCollection attachmentCollection = emailMessage.getAttachments();
+			emailMessage = EmailMessage.bind(exchangeService, f.getId(), ps);
+			for (Attachment attachment : attachmentCollection) {
+				FileAttachment fileAttachment = (FileAttachment) attachment;
+				result.add(fileAttachment);
+			}
+			return result.iterator();
+		} catch (ServiceLocalException e) {
+			throw new FileSystemException("cannot read attachments",e);
+		} catch (Exception e) {
+			throw new FileSystemException("cannot read attachments",e);
+		}
+	}
+
+
+	@Override
+	public String getAttachmentName(Item f, FileAttachment a) {
+		return a.getName();
+	}
+
+
+	@Override
+	public InputStream readAttachment(Item f, FileAttachment a) throws FileSystemException, IOException {
+		InputStream binaryInputStream = new ByteArrayInputStream(a.getContent());
+		return binaryInputStream;
+	}
+
+
+	@Override
+	public long getAttachmentSize(Item f, FileAttachment a) throws FileSystemException {
+		try {
+			return a.getSize();
+		} catch (ServiceVersionException e) {
+			throw new FileSystemException(e);
+		}
+	}
+
+
+	@Override
+	public String getAttachmentContentType(Item f, FileAttachment a) throws FileSystemException {
+		return a.getContentType();
+	}
+
+	@Override
+	public String getAttachmentFileName(Item f, FileAttachment a) throws FileSystemException {
+		return a.getFileName();
+	}
+
+
+	@Override
+	public Map<String, Object> getAdditionalAttachmentProperties(Item f, FileAttachment a) throws FileSystemException {
+		Map<String, Object> result = new LinkedHashMap<String,Object>();
+		result.put("id", a.getId());
+		result.put("contentId", a.getContentId());
+		result.put("contentLocation", a.getContentLocation());
+		return result;
+	}
+
+	
+	
+	public FolderId getFolderIdByFolderName(String folderName) throws Exception{
+		FindFoldersResults findResults;
+		findResults = exchangeService.findFolders(new FolderId(WellKnownFolderName.Inbox, new Mailbox(getMailAddress())), new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName), new FolderView(Integer.MAX_VALUE));
+		if (log.isDebugEnabled()) {
+			log.debug("amount of folders with name: " + folderName + " = " + findResults.getTotalCount());
+			log.debug("found folder with name: " + findResults.getFolders().get(0).getDisplayName());
+		}
+		FolderId folderId = findResults.getFolders().get(0).getId();
+		return folderId;
+	}
+
+	
 //	
 //	
 //	@Override
@@ -414,102 +471,102 @@ public class ExchangeFileSystem implements IBasicFileSystem<Item>, HasPhysicalDe
 //		throw new NotImplementedException("Exchange does not support rename");
 //	}
 
-	/*
-	 * addEmailInfo copied from ExchangListener, to have ideas what could be useful for getAdditionalFileProperties()
-	 */
-	private void addEmailInfo(EmailMessage emailMessage, XmlBuilder emailXml) throws Exception {
-		XmlBuilder recipientsXml = new XmlBuilder("recipients");
-		EmailAddressCollection eacTo = emailMessage.getToRecipients();
-		if (eacTo != null) {
-			for (Iterator it = eacTo.iterator(); it.hasNext();) {
-				XmlBuilder recipientXml = new XmlBuilder("recipient");
-				EmailAddress ea = (EmailAddress) it.next();
-				recipientXml.addAttribute("type", "to");
-				recipientXml.setValue(ea.getAddress());
-				recipientsXml.addSubElement(recipientXml);
-			}
-		}
-		EmailAddressCollection eacCc = emailMessage.getCcRecipients();
-		if (eacCc != null) {
-			for (Iterator it = eacCc.iterator(); it.hasNext();) {
-				XmlBuilder recipientXml = new XmlBuilder("recipient");
-				EmailAddress ea = (EmailAddress) it.next();
-				recipientXml.addAttribute("type", "cc");
-				recipientXml.setValue(ea.getAddress());
-				recipientsXml.addSubElement(recipientXml);
-			}
-		}
-		EmailAddressCollection eacBcc = emailMessage.getBccRecipients();
-		if (eacBcc != null) {
-			for (Iterator it = eacBcc.iterator(); it.hasNext();) {
-				XmlBuilder recipientXml = new XmlBuilder("recipient");
-				EmailAddress ea = (EmailAddress) it.next();
-				recipientXml.addAttribute("type", "bcc");
-				recipientXml.setValue(ea.getAddress());
-				recipientsXml.addSubElement(recipientXml);
-			}
-		}
-		emailXml.addSubElement(recipientsXml);
-		XmlBuilder fromXml = new XmlBuilder("from");
-		fromXml.setValue(emailMessage.getFrom().getAddress());
-		emailXml.addSubElement(fromXml);
-		XmlBuilder subjectXml = new XmlBuilder("subject");
-		subjectXml.setCdataValue(emailMessage.getSubject());
-		emailXml.addSubElement(subjectXml);
-		XmlBuilder messageXml = new XmlBuilder("message");
-		messageXml.setCdataValue(MessageBody
-				.getStringFromMessageBody(emailMessage.getBody()));
-		emailXml.addSubElement(messageXml);
-		XmlBuilder attachmentsXml = new XmlBuilder("attachments");
-		AttachmentCollection ac = emailMessage.getAttachments();
-		if (ac != null) {
-			for (Iterator it = ac.iterator(); it.hasNext();) {
-				XmlBuilder attachmentXml = new XmlBuilder("attachment");
-				Attachment att = (Attachment) it.next();
-				att.load();
-				attachmentXml.addAttribute("name", att.getName());
-				if (att instanceof ItemAttachment) {
-					ItemAttachment ia = (ItemAttachment) att;
-					Item aItem = ia.getItem();
-					if (aItem instanceof EmailMessage) {
-						EmailMessage em;
-						em = (EmailMessage) aItem;
-						addEmailInfo(em, attachmentXml);
-					}
-				}
-				attachmentsXml.addSubElement(attachmentXml);
-			}
-		}
-		emailXml.addSubElement(attachmentsXml);
-		XmlBuilder headersXml = new XmlBuilder("headers");
-		InternetMessageHeaderCollection imhc = null;
-		try {
-			imhc = emailMessage.getInternetMessageHeaders();
-		} catch (Exception e) {
-			log.info("error occurred during getting internet message headers: "
-					+ e.getMessage());
-		}
-		if (imhc != null) {
-			for (Iterator it = imhc.iterator(); it.hasNext();) {
-				XmlBuilder headerXml = new XmlBuilder("header");
-				InternetMessageHeader imh = (InternetMessageHeader) it.next();
-				headerXml.addAttribute("name", imh.getName());
-				headerXml.setCdataValue(imh.getValue());
-				headersXml.addSubElement(headerXml);
-			}
-		}
-		emailXml.addSubElement(headersXml);
-		SimpleDateFormat sdf = new SimpleDateFormat(
-				"yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-		Date dateTimeSend = emailMessage.getDateTimeSent();
-		XmlBuilder dateTimeSentXml = new XmlBuilder("dateTimeSent");
-		dateTimeSentXml.setValue(sdf.format(dateTimeSend));
-		emailXml.addSubElement(dateTimeSentXml);
-		Date dateTimeReceived = emailMessage.getDateTimeReceived();
-		XmlBuilder dateTimeReceivedXml = new XmlBuilder("dateTimeReceived");
-		dateTimeReceivedXml.setValue(sdf.format(dateTimeReceived));
-		emailXml.addSubElement(dateTimeReceivedXml);
-	}
+//	/*
+//	 * addEmailInfo copied from ExchangListener, to have ideas what could be useful for getAdditionalFileProperties()
+//	 */
+//	private void addEmailInfo(EmailMessage emailMessage, XmlBuilder emailXml) throws Exception {
+//		XmlBuilder recipientsXml = new XmlBuilder("recipients");
+//		EmailAddressCollection eacTo = emailMessage.getToRecipients();
+//		if (eacTo != null) {
+//			for (Iterator it = eacTo.iterator(); it.hasNext();) {
+//				XmlBuilder recipientXml = new XmlBuilder("recipient");
+//				EmailAddress ea = (EmailAddress) it.next();
+//				recipientXml.addAttribute("type", "to");
+//				recipientXml.setValue(ea.getAddress());
+//				recipientsXml.addSubElement(recipientXml);
+//			}
+//		}
+//		EmailAddressCollection eacCc = emailMessage.getCcRecipients();
+//		if (eacCc != null) {
+//			for (Iterator it = eacCc.iterator(); it.hasNext();) {
+//				XmlBuilder recipientXml = new XmlBuilder("recipient");
+//				EmailAddress ea = (EmailAddress) it.next();
+//				recipientXml.addAttribute("type", "cc");
+//				recipientXml.setValue(ea.getAddress());
+//				recipientsXml.addSubElement(recipientXml);
+//			}
+//		}
+//		EmailAddressCollection eacBcc = emailMessage.getBccRecipients();
+//		if (eacBcc != null) {
+//			for (Iterator it = eacBcc.iterator(); it.hasNext();) {
+//				XmlBuilder recipientXml = new XmlBuilder("recipient");
+//				EmailAddress ea = (EmailAddress) it.next();
+//				recipientXml.addAttribute("type", "bcc");
+//				recipientXml.setValue(ea.getAddress());
+//				recipientsXml.addSubElement(recipientXml);
+//			}
+//		}
+//		emailXml.addSubElement(recipientsXml);
+//		XmlBuilder fromXml = new XmlBuilder("from");
+//		fromXml.setValue(emailMessage.getFrom().getAddress());
+//		emailXml.addSubElement(fromXml);
+//		XmlBuilder subjectXml = new XmlBuilder("subject");
+//		subjectXml.setCdataValue(emailMessage.getSubject());
+//		emailXml.addSubElement(subjectXml);
+//		XmlBuilder messageXml = new XmlBuilder("message");
+//		messageXml.setCdataValue(MessageBody
+//				.getStringFromMessageBody(emailMessage.getBody()));
+//		emailXml.addSubElement(messageXml);
+//		XmlBuilder attachmentsXml = new XmlBuilder("attachments");
+//		AttachmentCollection ac = emailMessage.getAttachments();
+//		if (ac != null) {
+//			for (Iterator it = ac.iterator(); it.hasNext();) {
+//				XmlBuilder attachmentXml = new XmlBuilder("attachment");
+//				Attachment att = (Attachment) it.next();
+//				att.load();
+//				attachmentXml.addAttribute("name", att.getName());
+//				if (att instanceof ItemAttachment) {
+//					ItemAttachment ia = (ItemAttachment) att;
+//					Item aItem = ia.getItem();
+//					if (aItem instanceof EmailMessage) {
+//						EmailMessage em;
+//						em = (EmailMessage) aItem;
+//						addEmailInfo(em, attachmentXml);
+//					}
+//				}
+//				attachmentsXml.addSubElement(attachmentXml);
+//			}
+//		}
+//		emailXml.addSubElement(attachmentsXml);
+//		XmlBuilder headersXml = new XmlBuilder("headers");
+//		InternetMessageHeaderCollection imhc = null;
+//		try {
+//			imhc = emailMessage.getInternetMessageHeaders();
+//		} catch (Exception e) {
+//			log.info("error occurred during getting internet message headers: "
+//					+ e.getMessage());
+//		}
+//		if (imhc != null) {
+//			for (Iterator it = imhc.iterator(); it.hasNext();) {
+//				XmlBuilder headerXml = new XmlBuilder("header");
+//				InternetMessageHeader imh = (InternetMessageHeader) it.next();
+//				headerXml.addAttribute("name", imh.getName());
+//				headerXml.setCdataValue(imh.getValue());
+//				headersXml.addSubElement(headerXml);
+//			}
+//		}
+//		emailXml.addSubElement(headersXml);
+//		SimpleDateFormat sdf = new SimpleDateFormat(
+//				"yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+//		Date dateTimeSend = emailMessage.getDateTimeSent();
+//		XmlBuilder dateTimeSentXml = new XmlBuilder("dateTimeSent");
+//		dateTimeSentXml.setValue(sdf.format(dateTimeSend));
+//		emailXml.addSubElement(dateTimeSentXml);
+//		Date dateTimeReceived = emailMessage.getDateTimeReceived();
+//		XmlBuilder dateTimeReceivedXml = new XmlBuilder("dateTimeReceived");
+//		dateTimeReceivedXml.setValue(sdf.format(dateTimeReceived));
+//		emailXml.addSubElement(dateTimeReceivedXml);
+//	}
 
 
 	@Override
@@ -652,5 +709,7 @@ public class ExchangeFileSystem implements IBasicFileSystem<Item>, HasPhysicalDe
 			return redirectionUrl.toLowerCase().startsWith("https://");
 		}
 	}
+
+
 
 }

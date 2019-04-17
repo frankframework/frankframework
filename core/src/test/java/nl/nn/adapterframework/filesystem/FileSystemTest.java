@@ -1,7 +1,9 @@
 package nl.nn.adapterframework.filesystem;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -87,7 +89,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	}
 
 	@Test
-	public void writableFileSystemTestAppendFile() throws Exception {
+	public void writableFileSystemTestAppendExistingFile() throws Exception {
 		String filename = "append" + FILE1;
 		String regel1 = "Eerste regel in de file";
 		String regel2 = "Tweede regel in de file";
@@ -115,7 +117,35 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	}
 
 	@Test
-	public void fileSystemTestCreateAndRemoveFolder() throws Exception {
+	public void writableFileSystemTestAppendNewFile() throws Exception {
+		String filename = "create" + FILE1;
+		String contents = "regeltje tekst";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		deleteFile(null, filename);
+		waitForActionToFinish();
+		
+		F file = fileSystem.toFile(filename);
+		OutputStream out = fileSystem.appendFile(file);
+		PrintWriter pw = new PrintWriter(out);
+		pw.println(contents);
+		pw.close();
+		out.close();
+		waitForActionToFinish();
+		// test
+		existsCheck(filename);
+		
+		String actual = readFile(null, filename);
+		// test
+		equalsCheck(contents.trim(), actual.trim());
+
+	}
+
+
+	@Test
+	public void writableFileSystemTestCreateAndRemoveFolder() throws Exception {
 		String folderName = "dummyFolder";
 		
 		fileSystem.configure();
@@ -134,7 +164,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	}
 	
 	@Test
-	public void fileSystemTestRenameTo() throws Exception {
+	public void writableFileSystemTestRenameTo() throws Exception {
 		String fileName = "fileTobeRenamed.txt";
 		
 		fileSystem.configure();
@@ -211,5 +241,40 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		fileSystem.createFolder(f);
 	}
 	
+	@Test
+	public void writableFileSystemTestFileSize() throws Exception {
+		String filename = "create" + FILE1;
+		String contents = "regeltje tekst";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+		
+		F file = fileSystem.toFile(filename);
+		long size=fileSystem.getFileSize(file);
+		
+		if (size< contents.length()/2 || size> contents.length()*2) {
+			fail("fileSize ["+size+"] out of range compared to ["+contents.length()+"]");
+		}
+	}
+
+	@Test
+	public void writableFileSystemTestGetCanonicalName() throws Exception {
+		String filename = "create" + FILE1;
+		String contents = "regeltje tekst";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+		
+		F file = fileSystem.toFile(filename);
+		String canonicalName=fileSystem.getCanonicalName(file);
+		
+		assertNotNull("Canonical name should not be null", canonicalName);
+	}
 
 }

@@ -2,10 +2,15 @@ package nl.nn.adapterframework.filesystem;
 
 import java.io.File;
 
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
-public class LocalFileSystemTest extends LocalFileSystemTestBase<File,LocalFileSystem> {
+public class LocalFileSystemTest extends FileSystemTest<File, LocalFileSystem>{
+
+	public TemporaryFolder folder;
+
 
 	@Override
 	protected LocalFileSystem getFileSystem() {
@@ -13,13 +18,26 @@ public class LocalFileSystemTest extends LocalFileSystemTestBase<File,LocalFileS
 		result.setRoot(folder.getRoot().getAbsolutePath());
 		return result;
 	}
+
+	@Override
+	@Before
+	public void setUp() throws Exception {
+		folder = new TemporaryFolder();
+		folder.create();
+		super.setUp();
+	}
+
+	@Override
+	protected IFileSystemTestHelper getFileSystemTestHelper() {
+		return new LocalFileSystemTestHelper(folder);
+	}
 	
 	@Ignore
 	@Override
 	@Test
-	public void fileSystemTestRenameTo() throws Exception {
+	public void writableFileSystemTestRenameTo() throws Exception {
 		// Ignored because cannot rename temporary file
-		super.fileSystemTestRenameTo();
+		super.writableFileSystemTestRenameTo();
 	}
 	
 	@Ignore
@@ -32,4 +50,5 @@ public class LocalFileSystemTest extends LocalFileSystemTestBase<File,LocalFileS
 		// and does not throw the exception. 
 		super.writableFileSystemTestRenameToExisting();
 	}
+
 }

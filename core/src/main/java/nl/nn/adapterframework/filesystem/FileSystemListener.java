@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.filesystem;
 
-import java.io.File;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -197,7 +196,7 @@ public class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IP
 			}
 			return newFile;
 		} catch(FileSystemException e) {
-			throw new ListenerException(getName() + " was unable to move file [" + filename + "] to [" + getInProcessFolder() + "]", e);
+			throw new ListenerException(getName() + " was unable to move file [" + filename + "] to [" + destinationFolder + "]", e);
 		}
 	}
 
