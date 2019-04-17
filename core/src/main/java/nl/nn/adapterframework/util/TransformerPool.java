@@ -297,7 +297,8 @@ public class TransformerPool {
 
 	private void initTransformerPool(Source source, String sysId) throws TransformerConfigurationException {
 		if (StringUtils.isNotEmpty(sysId)) {
-			source.setSystemId(ClassUtils.getCleanedFilePath(sysId));
+			sysId=ClassUtils.getCleanedFilePath(sysId); // fix websphere classpath references
+			source.setSystemId(sysId);
 			log.debug("setting systemId to ["+sysId+"]");
 		}
 		templates=tFactory.newTemplates(source);
