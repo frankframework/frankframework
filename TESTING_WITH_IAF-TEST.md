@@ -21,9 +21,9 @@ Download the following JARs, and place them in your Tomcat server's lib folder. 
 
 In Tomcat's launch configuration (found in the Tomcat Overview window), go to the Classpath tab. Click on the User Entries item and click on the [ Add JARs... ] button. Select all JARs in the lib folder, press OK, and press OK again.
 
-## 2. Preparing for launch
+## 2. Tomcat configuration
 
-The module's test scenarios can be run manually with the Larva testtool. This will be done within an iaf-test instance running on your Tomcat server. Let's configure some configurations.
+The module's test scenarios can be run manually with the Larva testtool. This will be done within an iaf-test instance running on your Tomcat server. To make this possible...
 
 1. In the Project Explorer, go to your Tomcat's _catalina.properties_ file. At the bottom, add the lines `log.dir=c:/temp` and `otap.stage=LOC`.
 2. In the Tomcat Overview window, set the port number for HTTP/1.1 to 80, or another if 80 is already taken. Oracle will be using port 8080.
