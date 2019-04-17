@@ -2,7 +2,7 @@
   <soapenv:Header>
     <MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
       <From>
-        <Id>ibis4test</Id>
+        <Id>Ibis4Test</Id>
       </From>
       <To>
         <Location>P2P.Migration.Ibis4JuiceMig.CalculateQuoteAndPolicyValues.Request</Location>

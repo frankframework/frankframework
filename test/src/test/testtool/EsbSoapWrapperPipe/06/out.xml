@@ -2,7 +2,7 @@
   <soapenv:Header>
     <MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
       <From>
-        <Id>ibis4test</Id>
+        <Id>Ibis4Test</Id>
       </From>
       <To>
         <Location>ESB.CustomerAdministration.TS.Party.PartyY01_RSL.1.DeleteInsurancePartyAgreementRole.1.Request</Location>

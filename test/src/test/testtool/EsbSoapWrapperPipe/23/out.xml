@@ -2,7 +2,7 @@
 	<soapenv:Header>
 		<MessageHeader xmlns="http://www.ing.com/CSP/XSD/General/Message_2">
 			<From>
-				<Id>ibis4test</Id>
+				<Id>Ibis4Test</Id>
 			</From>
 			<HeaderFields>
 				<ConversationId>ConversationId</ConversationId>
