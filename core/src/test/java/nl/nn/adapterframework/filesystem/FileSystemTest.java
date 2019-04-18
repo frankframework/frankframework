@@ -28,7 +28,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		PrintWriter pw = new PrintWriter(out);
 		pw.println(contents);
 		pw.close();
-		out.close();
+//		out.close();
 		waitForActionToFinish();
 		// test
 		existsCheck(filename);
@@ -55,7 +55,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		PrintWriter pw = new PrintWriter(out);
 		pw.println(contents);
 		pw.close();
-		out.close();
+//		out.close();
 		waitForActionToFinish();
 		// test
 		existsCheck(filename);
@@ -106,7 +106,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		PrintWriter pw = new PrintWriter(out);
 		pw.println(regel2);
 		pw.close();
-		out.close();
+//		out.close();
 		waitForActionToFinish();
 		// test
 		existsCheck(filename);
@@ -132,7 +132,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		PrintWriter pw = new PrintWriter(out);
 		pw.println(contents);
 		pw.close();
-		out.close();
+//		out.close();
 		waitForActionToFinish();
 		// test
 		existsCheck(filename);

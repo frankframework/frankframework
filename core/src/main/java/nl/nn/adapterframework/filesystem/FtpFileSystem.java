@@ -19,9 +19,11 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.net.ftp.FTPFile;
@@ -51,7 +53,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	@Override
 	public void open() throws FileSystemException {
 		try {
-			openClient("");
+			openClient(remoteDirectory);
 		} catch (FtpConnectException e) {
 			throw new FileSystemException("Cannot connect to the FTP server with domain ["+getHost()+"]", e);
 		}
@@ -64,16 +66,29 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public FTPFile toFile(String filename) throws FileSystemException {
+		boolean isDirectory = false;
+		long size = 0;
+		try {
+			FTPFile[] files = ftpClient.listFiles(filename);
+			if(files.length > 1) {
+				isDirectory = true;
+			}else if(files.length == 1){
+				size = files[0].getSize();
+			}
+		} catch (IOException e) {
+			throw new FileSystemException(e);
+		}
 		FTPFile ftpFile = new FTPFile();
 		ftpFile.setName(filename);
-
+		ftpFile.setType(isDirectory ? FTPFile.DIRECTORY_TYPE : FTPFile.UNKNOWN_TYPE);
+		ftpFile.setSize(size);
 		return ftpFile;
 	}
 
 	@Override
 	public Iterator<FTPFile> listFiles(String folder) throws FileSystemException {
 		try {
-			return new FTPFilePathIterator(ftpClient.listFiles(remoteDirectory));
+			return new FTPFilePathIterator(folder, ftpClient.listFiles(folder));
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
@@ -186,7 +201,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 			throw new FileSystemException("Cannot move file. Destination folder ["+destinationFolder+"] does not exist.");
 		}
 		if (!isFolder(d)) {
-			throw new FileSystemException("Cannot move file. Destination ["+destinationFolder+"] if not a folder.");
+			throw new FileSystemException("Cannot move file. Destination ["+destinationFolder+"] is not a folder.");
 		}
 		String destinationFilename=destinationFolder+"/"+f.getName();
 		try {
@@ -196,7 +211,6 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		}
 		return toFile(destinationFilename);
 	}
-	
 	
 	@Override
 	public long getFileSize(FTPFile f) throws FileSystemException {
@@ -242,27 +256,35 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	private class FTPFilePathIterator implements Iterator<FTPFile> {
 
-		private FTPFile files[];
+		private List<FTPFile> files;
+		private String prefix;
 		private int i = 0;
 
-		FTPFilePathIterator(FTPFile files[]) {
-			this.files = files;
+		FTPFilePathIterator(String folder, FTPFile filesArr[]) {
+			prefix = folder != null ? folder + "/" : "";
+			files = new ArrayList<FTPFile>();
+			for (FTPFile ftpFile : filesArr) {
+				if(!ftpFile.isDirectory()) {
+					ftpFile.setName(prefix + ftpFile.getName());
+					files.add(ftpFile);
+				}
+			}
 		}
 
 		@Override
 		public boolean hasNext() {
-			return files != null && i < files.length;
+			return files != null && i < files.size();
 		}
 
 		@Override
 		public FTPFile next() {
-			return files[i++];
+			return files.get(i++);
 		}
 
 		@Override
 		public void remove() {
 			try {
-				deleteFile(files[i++]);
+				deleteFile(files.get(i++));
 			} catch (FileSystemException e) {
 				log.warn(e);
 			}

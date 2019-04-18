@@ -35,8 +35,8 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> {
 	
 	public String FILE1 = "file1.txt";
 	public String FILE2 = "file2.txt";
-	public String DIR1 = "testDirectory/";
-	public String DIR2 = "testDirectory2/";
+	public String DIR1 = "testDirectory";
+	public String DIR2 = "testDirectory2";
 
 	protected FS fileSystem;
 	protected IFileSystemTestHelper helper;
