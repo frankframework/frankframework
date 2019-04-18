@@ -32,7 +32,7 @@
                         <name>slotid</name>
                     </column>
                 </columns>
-                <where>slotid='IFSA://NLibis4test/JdbcQueryListener'</where>
+                <where>slotid='IFSA://NLIBIS4TEST/JdbcQueryListener'</where>
                 <order>MESSAGEKEY</order>
             </select>
         </manageDatabaseREQ>

@@ -72,7 +72,7 @@
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" jmsRealm="jdbc" 
 					query="DELETE FROM IBISSTORE WHERE SLOTID = ?" 
 				/>
-					<param name="slotid" value="IFSA://NLibis4test/JdbcQueryListener"/>
+					<param name="slotid" value="IFSA://NLIBIS4TEST/JdbcQueryListener"/>
 				<forward name="success" path="do_success" />
 			</pipe>
 			<pipe name="InsertIbistempError" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">

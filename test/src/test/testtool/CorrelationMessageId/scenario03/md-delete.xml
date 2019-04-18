@@ -1,6 +1,6 @@
 <manageDatabaseREQ>
 	<delete>
 		<tableName>IBISSTORE</tableName>
-		<where>SLOTID='IFSA://NLibis4test/CorrelationMessageIdXPath'</where>
+		<where>SLOTID='IFSA://NLIBIS4TEST/CorrelationMessageIdXPath'</where>
 	</delete>
 </manageDatabaseREQ>
