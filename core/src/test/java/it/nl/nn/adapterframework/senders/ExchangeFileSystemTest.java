@@ -8,9 +8,9 @@ import nl.nn.adapterframework.filesystem.ExchangeFileSystem;
 
 public class ExchangeFileSystemTest extends BasicFileSystemTestBase<Item, ExchangeFileSystem>{
 
-	private String mailaddress = "gerrit@integrationpartners.nl";
+	private String mailaddress = "";
 	private String username    = mailaddress;
-	private String password    = "fFDH7fBnUj";
+	private String password    = "";
 	
 	private String nonExistingFileName = "AAMkAGNmZTczMWUwLWQ1MDEtNDA3Ny1hNjU4LTlmYTQzNjE0NjJmYgBGAAAAAAALFKqetECyQKQyuRBrRSzgBwDx14SZku4LS5ibCBco+nmXAAAAAAEMAADx14SZku4LS5ibCBco+nmXAABMFuwsAAA=";
 	
