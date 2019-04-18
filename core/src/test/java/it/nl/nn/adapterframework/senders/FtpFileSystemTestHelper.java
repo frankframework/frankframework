@@ -20,8 +20,9 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 	private String username = "";
 	private String password = "";
 	private String host = "";
+	private String remoteDirectory = "";
 	private int port = 21;
-
+	
 	private FtpSession ftpSession;
 	
 	public FtpFileSystemTestHelper(String username, String password, String host, String remoteDirectory,
@@ -73,7 +74,7 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 		ftpSession.configure();
 		
 		try {
-			ftpSession.openClient("");
+			ftpSession.openClient(remoteDirectory);
 		} catch (FtpConnectException e) {
 			throw new FileSystemException("Cannot connect to the FTP server with domain [" + host + "]", e);
 		}
