@@ -184,7 +184,7 @@
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;BIJLSMA&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;HAKKERT&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
@@ -239,7 +239,7 @@ LBW+TASS+0'&#xD;
 LBW+TTOT+0.00'&#xD;
 LBW+TAP+1923.63'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+BIJLSMA'&#xD;
+LBW+ANAAM+HAKKERT'&#xD;
 LBW+VOORL+JB'&#xD;
 UNT+28+PMB0000158-026'&#xD;
 UNZ+1+PMB0000018-026'</field>
@@ -424,13 +424,13 @@ UNZ+1+PMB0000018-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;SCHELLEKENS&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;SCHEELKUIKEN&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;LC&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;BTW&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -479,8 +479,8 @@ LBW+TASS+0'&#xD;
 LBW+TTOT+0.00'&#xD;
 LBW+TAP+609.25'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+SCHELLEKENS'&#xD;
-LBW+VOORL+LC'&#xD;
+LBW+ANAAM+SCHEELKUIKEN'&#xD;
+LBW+VOORL+BTW'&#xD;
 UNT+28+PMB0001165-026'&#xD;
 UNZ+1+PMB0000267-026'</field>
     </row>
@@ -670,7 +670,7 @@ UNZ+1+PMB0000267-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;PRAGT&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;VAN TASTIES&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
@@ -726,7 +726,7 @@ LBW+TTOT+0.00'&#xD;
 LBW+TAC+02'&#xD;
 LBW+TAP+0.00'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+PRAGT'&#xD;
+LBW+ANAAM+VAN TASTIES'&#xD;
 LBW+VOORL+RMJ'&#xD;
 UNT+29+PMB0001178-026'&#xD;
 UNZ+1+PMB0000272-026'</field>
@@ -917,13 +917,13 @@ UNZ+1+PMB0000272-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;LODOWICA&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;KLEEFKREEFT&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;JL&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;LV&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -973,8 +973,8 @@ LBW+TTOT+0.00'&#xD;
 LBW+TAC+02'&#xD;
 LBW+TAP+0.00'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+LODOWICA'&#xD;
-LBW+VOORL+JL'&#xD;
+LBW+ANAAM+KLEEFKREEFT'&#xD;
+LBW+VOORL+LV'&#xD;
 UNT+29+PMB0002017-026'&#xD;
 UNZ+1+PMB0000317-026'</field>
     </row>
@@ -1164,7 +1164,7 @@ UNZ+1+PMB0000317-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;KOGELS&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;VAN MORA&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
@@ -1220,7 +1220,7 @@ LBW+TTOT+0.00'&#xD;
 LBW+TAC+02'&#xD;
 LBW+TAP+0.00'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+KOGELS'&#xD;
+LBW+ANAAM+VAN MORA'&#xD;
 LBW+VOORL+MMM'&#xD;
 UNT+29+PMB0002028-026'&#xD;
 UNZ+1+PMB0000322-026'</field>
@@ -1405,13 +1405,13 @@ UNZ+1+PMB0000322-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;VAN DUN&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;JAAGHEK&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;MJG&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;MMG&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -1460,8 +1460,8 @@ LBW+TASS+0'&#xD;
 LBW+TTOT+66.61'&#xD;
 LBW+TAP+396.34'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+VAN DUN'&#xD;
-LBW+VOORL+MJG'&#xD;
+LBW+ANAAM+JAAGHEK'&#xD;
+LBW+VOORL+MMG'&#xD;
 UNT+28+PMB0002087-026'&#xD;
 UNZ+1+PMB0000339-026'</field>
     </row>
@@ -1651,13 +1651,13 @@ UNZ+1+PMB0000339-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;MEINEN&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;JAUWEN&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;JN&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;KB&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -1827,13 +1827,13 @@ UNZ+1+PMB0000339-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;BIJL&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;HOUWEEL&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;EP&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;PK&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -2009,13 +2009,13 @@ UNZ+1+PMB0000339-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;VAN DER VELDEN&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;VAN MAGISCH REALISME&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;JJC&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;L&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -2191,7 +2191,7 @@ UNZ+1+PMB0000339-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;VELDBERG BV&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;BIBS BV&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
@@ -2247,8 +2247,8 @@ LBW+TTOT+0.00'&#xD;
 LBW+TAC+02'&#xD;
 LBW+TAP+0.00'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+MEINEN'&#xD;
-LBW+VOORL+JN'&#xD;
+LBW+ANAAM+JAUWEN'&#xD;
+LBW+VOORL+KB'&#xD;
 UNT+29+PMB0002485-026'&#xD;
 UNH+PMB0002486-026+INSLBW:1:0:IN:PMB'&#xD;
 ENT+AL+0'&#xD;
@@ -2275,8 +2275,8 @@ LBW+TASS+0'&#xD;
 LBW+TTOT+0.00'&#xD;
 LBW+TAP+0.00'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+BIJL'&#xD;
-LBW+VOORL+EP'&#xD;
+LBW+ANAAM+HOUWEEL'&#xD;
+LBW+VOORL+PK'&#xD;
 UNT+28+PMB0002486-026'&#xD;
 UNH+PMB0002487-026+INSLBW:1:0:IN:PMB'&#xD;
 ENT+AL+0'&#xD;
@@ -2304,8 +2304,8 @@ LBW+TTOT+0.00'&#xD;
 LBW+TAC+02'&#xD;
 LBW+TAP+0.00'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+VAN DER VELDEN'&#xD;
-LBW+VOORL+JJC'&#xD;
+LBW+ANAAM+VAN MAGISCH REALISME'&#xD;
+LBW+VOORL+L'&#xD;
 UNT+29+PMB0002487-026'&#xD;
 UNH+PMB0002488-026+INSLBW:1:0:IN:PMB'&#xD;
 ENT+AL+0'&#xD;
@@ -2333,7 +2333,7 @@ LBW+TTOT+0.00'&#xD;
 LBW+TAC+02'&#xD;
 LBW+TAP+0.00'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+VELDBERG BV'&#xD;
+LBW+ANAAM+BIBS BV'&#xD;
 LBW+VOORL+0'&#xD;
 UNT+29+PMB0002488-026'&#xD;
 UNZ+4+PMB0000449-026'</field>
@@ -2518,13 +2518,13 @@ UNZ+4+PMB0000449-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;BULTHUIS&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;POEN&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;MH&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;POM&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -2573,8 +2573,8 @@ LBW+TASS+0'&#xD;
 LBW+TTOT+0.00'&#xD;
 LBW+TAP+847.36'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+BULTHUIS'&#xD;
-LBW+VOORL+MH'&#xD;
+LBW+ANAAM+POEN'&#xD;
+LBW+VOORL+POM'&#xD;
 UNT+28+PMB0002681-026'&#xD;
 UNZ+1+PMB0000496-026'</field>
     </row>
@@ -2764,7 +2764,7 @@ UNZ+1+PMB0000496-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;ARGOS GROEP BV&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;SOEP GROEP BV&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
@@ -2820,7 +2820,7 @@ LBW+TTOT+4819.00'&#xD;
 LBW+TAC+02'&#xD;
 LBW+TAP+3337.29'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+ARGOS GROEP BV'&#xD;
+LBW+ANAAM+SOEP GROEP BV'&#xD;
 LBW+VOORL+0'&#xD;
 UNT+29+PMB0002737-026'&#xD;
 UNZ+1+PMB0000515-026'</field>
@@ -3011,13 +3011,13 @@ UNZ+1+PMB0000515-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;VAN DER PLAS&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;PLUNDERVAAS&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;P&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;RK&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -3067,8 +3067,8 @@ LBW+TTOT+0.00'&#xD;
 LBW+TAC+02'&#xD;
 LBW+TAP+0.00'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+VAN DER PLAS'&#xD;
-LBW+VOORL+P'&#xD;
+LBW+ANAAM+PLUNDERVAAS'&#xD;
+LBW+VOORL+RK'&#xD;
 UNT+29+PMB0003079-026'&#xD;
 UNZ+1+PMB0000583-026'</field>
     </row>
@@ -3258,13 +3258,13 @@ UNZ+1+PMB0000583-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;MOFERS&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;FEAU&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;PF&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;MO&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -3314,8 +3314,8 @@ LBW+TTOT+0.00'&#xD;
 LBW+TAC+02'&#xD;
 LBW+TAP+0.00'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+MOFERS'&#xD;
-LBW+VOORL+PF'&#xD;
+LBW+ANAAM+FEAU'&#xD;
+LBW+VOORL+MO'&#xD;
 UNT+29+PMB0003275-026'&#xD;
 UNZ+1+PMB0000635-026'</field>
     </row>
@@ -3505,13 +3505,13 @@ UNZ+1+PMB0000635-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;VAN DER HEIJDEN&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;NEUTRAAL&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;PHB&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;PH&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -3687,13 +3687,13 @@ UNZ+1+PMB0000635-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;OOST&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;TWEE&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;K&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;CO&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -3869,13 +3869,13 @@ UNZ+1+PMB0000635-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;JANSEN&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;JANSSEN&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;JB&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;J&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -4045,13 +4045,13 @@ UNZ+1+PMB0000635-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;BLOM VAN DER POST&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;DEEG&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;HJ&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;JAN&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -4221,13 +4221,13 @@ UNZ+1+PMB0000635-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;VAN AURICH&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;LINGO&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;R&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;JP&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -4397,13 +4397,13 @@ UNZ+1+PMB0000635-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;DEN HOLLANDER&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;KINETES&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;RP&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;P&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -4579,7 +4579,7 @@ UNZ+1+PMB0000635-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;DJ&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;PE&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -4629,8 +4629,8 @@ LBW+TTOT+0.00'&#xD;
 LBW+TAC+02'&#xD;
 LBW+TAP+0.00'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+VAN DER HEIJDEN'&#xD;
-LBW+VOORL+PHB'&#xD;
+LBW+ANAAM+NEUTRAAL'&#xD;
+LBW+VOORL+PH'&#xD;
 UNT+29+PMB0003394-026'&#xD;
 UNH+PMB0003395-026+INSLBW:1:0:IN:PMB'&#xD;
 ENT+AL+0'&#xD;
@@ -4658,8 +4658,8 @@ LBW+TTOT+0.00'&#xD;
 LBW+TAC+02'&#xD;
 LBW+TAP+1654.16'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+OOST'&#xD;
-LBW+VOORL+K'&#xD;
+LBW+ANAAM+TWEE'&#xD;
+LBW+VOORL+CO'&#xD;
 UNT+29+PMB0003395-026'&#xD;
 UNH+PMB0003396-026+INSLBW:1:0:IN:PMB'&#xD;
 ENT+AL+0'&#xD;
@@ -4687,8 +4687,8 @@ LBW+TTOT+0.00'&#xD;
 LBW+TAC+02'&#xD;
 LBW+TAP+0.00'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+JANSEN'&#xD;
-LBW+VOORL+JB'&#xD;
+LBW+ANAAM+JANSSEN'&#xD;
+LBW+VOORL+J'&#xD;
 UNT+29+PMB0003396-026'&#xD;
 UNH+PMB0003397-026+INSLBW:1:0:IN:PMB'&#xD;
 ENT+AL+0'&#xD;
@@ -4715,8 +4715,8 @@ LBW+TASS+0'&#xD;
 LBW+TTOT+0.00'&#xD;
 LBW+TAP+0.00'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+BLOM VAN DER POST'&#xD;
-LBW+VOORL+HJ'&#xD;
+LBW+ANAAM+DEEG'&#xD;
+LBW+VOORL+JAN'&#xD;
 UNT+28+PMB0003397-026'&#xD;
 UNH+PMB0003398-026+INSLBW:1:0:IN:PMB'&#xD;
 ENT+AL+0'&#xD;
@@ -4743,8 +4743,8 @@ LBW+TASS+0'&#xD;
 LBW+TTOT+0.00'&#xD;
 LBW+TAP+335.28'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+VAN AURICH'&#xD;
-LBW+VOORL+R'&#xD;
+LBW+ANAAM+LINGO'&#xD;
+LBW+VOORL+JP'&#xD;
 UNT+28+PMB0003398-026'&#xD;
 UNH+PMB0003399-026+INSLBW:1:0:IN:PMB'&#xD;
 ENT+AL+0'&#xD;
@@ -4771,8 +4771,8 @@ LBW+TASS+0'&#xD;
 LBW+TTOT+0.00'&#xD;
 LBW+TAP+1796.91'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+DEN HOLLANDER'&#xD;
-LBW+VOORL+RP'&#xD;
+LBW+ANAAM+KINETES'&#xD;
+LBW+VOORL+P'&#xD;
 UNT+28+PMB0003399-026'&#xD;
 UNH+PMB0003400-026+INSLBW:1:0:IN:PMB'&#xD;
 ENT+AL+0'&#xD;
@@ -4800,7 +4800,7 @@ LBW+TTOT+0.00'&#xD;
 LBW+TAP+146.58'&#xD;
 ENT+VP+0'&#xD;
 LBW+ANAAM+VAN DIJK'&#xD;
-LBW+VOORL+DJ'&#xD;
+LBW+VOORL+PE'&#xD;
 UNT+28+PMB0003400-026'&#xD;
 UNZ+7+PMB0000659-026'</field>
     </row>
@@ -4990,13 +4990,13 @@ UNZ+7+PMB0000659-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;VAN ROON&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;HEERDE&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;CJA&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;DHR&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -5046,8 +5046,8 @@ LBW+TTOT+0.00'&#xD;
 LBW+TAC+02'&#xD;
 LBW+TAP+172.15'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+VAN ROON'&#xD;
-LBW+VOORL+CJA'&#xD;
+LBW+ANAAM+HEERDE'&#xD;
+LBW+VOORL+DHR'&#xD;
 UNT+29+PMB0004006-026'&#xD;
 UNZ+1+PMB0000785-026'</field>
     </row>
@@ -5231,13 +5231,13 @@ UNZ+1+PMB0000785-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;SCHELLEKENS&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;SCHEELKUIKEN&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;MFC&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;KFC&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -5407,13 +5407,13 @@ UNZ+1+PMB0000785-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;SCHELLEKENS&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;SCHEELKUIKEN&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;MFC&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;KFC&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -5462,8 +5462,8 @@ LBW+TASS+0'&#xD;
 LBW+TTOT+0.00'&#xD;
 LBW+TAP+0.00'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+SCHELLEKENS'&#xD;
-LBW+VOORL+MFC'&#xD;
+LBW+ANAAM+SCHEELKUIKEN'&#xD;
+LBW+VOORL+KFC'&#xD;
 UNT+28+PMB0004502-026'&#xD;
 UNH+PMB0004503-026+INSLBW:1:0:IN:PMB'&#xD;
 ENT+AL+0'&#xD;
@@ -5490,8 +5490,8 @@ LBW+TASS+0'&#xD;
 LBW+TTOT+0.00'&#xD;
 LBW+TAP+0.00'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+SCHELLEKENS'&#xD;
-LBW+VOORL+MFC'&#xD;
+LBW+ANAAM+SCHEELKUIKEN'&#xD;
+LBW+VOORL+KFC'&#xD;
 UNT+28+PMB0004503-026'&#xD;
 UNZ+2+PMB0000878-026'</field>
     </row>
@@ -5675,13 +5675,13 @@ UNZ+2+PMB0000878-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;VAN HOESEL&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;WOENSEL&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;HMA&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;YK&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -5730,8 +5730,8 @@ LBW+TASS+0'&#xD;
 LBW+TTOT+0.00'&#xD;
 LBW+TAP+0.00'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+VAN HOESEL'&#xD;
-LBW+VOORL+HMA'&#xD;
+LBW+ANAAM+WOENSEL'&#xD;
+LBW+VOORL+YK'&#xD;
 UNT+28+PMB0004514-026'&#xD;
 UNZ+1+PMB0000887-026'</field>
     </row>
@@ -5921,13 +5921,13 @@ UNZ+1+PMB0000887-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;SCHUTZ&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;BRAU&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;DSM&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;ST&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -5977,8 +5977,8 @@ LBW+TTOT+0.00'&#xD;
 LBW+TAC+02'&#xD;
 LBW+TAP+0.00'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+SCHUTZ'&#xD;
-LBW+VOORL+DSM'&#xD;
+LBW+ANAAM+BRAU'&#xD;
+LBW+VOORL+ST'&#xD;
 UNT+29+PMB0004808-026'&#xD;
 UNZ+1+PMB0000951-026'</field>
     </row>
@@ -6162,13 +6162,13 @@ UNZ+1+PMB0000951-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;STEYGER&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;MOEN&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;MA&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;LEE&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -6338,13 +6338,13 @@ UNZ+1+PMB0000951-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;DE LOUW&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;GEDZI&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;FAH&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;BAH&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -6514,7 +6514,7 @@ UNZ+1+PMB0000951-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;KINDEREN DE LOUW&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;KINDEREN GEDZI&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
@@ -6696,7 +6696,7 @@ UNZ+1+PMB0000951-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;THEO VAN DEN BERG FOTO BV&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;FOTO BV&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
@@ -6751,8 +6751,8 @@ LBW+TASS+0'&#xD;
 LBW+TTOT+0.00'&#xD;
 LBW+TAP+2076.17'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+STEYGER'&#xD;
-LBW+VOORL+MA'&#xD;
+LBW+ANAAM+MOEN'&#xD;
+LBW+VOORL+LEE'&#xD;
 UNT+28+PMB0005060-026'&#xD;
 UNH+PMB0005061-026+INSLBW:1:0:IN:PMB'&#xD;
 ENT+AL+0'&#xD;
@@ -6779,8 +6779,8 @@ LBW+TASS+0'&#xD;
 LBW+TTOT+0.00'&#xD;
 LBW+TAP+2096.50'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+DE LOUW'&#xD;
-LBW+VOORL+FAH'&#xD;
+LBW+ANAAM+GEDZI'&#xD;
+LBW+VOORL+BAH'&#xD;
 UNT+28+PMB0005061-026'&#xD;
 UNH+PMB0005062-026+INSLBW:1:0:IN:PMB'&#xD;
 ENT+AL+0'&#xD;
@@ -6807,7 +6807,7 @@ LBW+TASS+0'&#xD;
 LBW+TTOT+0.00'&#xD;
 LBW+TAP+105.20'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+KINDEREN DE LOUW'&#xD;
+LBW+ANAAM+KINDEREN GEDZI'&#xD;
 LBW+VOORL+0'&#xD;
 UNT+28+PMB0005062-026'&#xD;
 UNH+PMB0005063-026+INSLBW:1:0:IN:PMB'&#xD;
@@ -6836,7 +6836,7 @@ LBW+TTOT+5804.00'&#xD;
 LBW+TAC+02'&#xD;
 LBW+TAP+0.00'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+THEO VAN DEN BERG FOTO BV'&#xD;
+LBW+ANAAM+FOTO BV'&#xD;
 LBW+VOORL+0'&#xD;
 UNT+29+PMB0005063-026'&#xD;
 UNZ+4+PMB0001036-026'</field>
@@ -7021,13 +7021,13 @@ UNZ+4+PMB0001036-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;SPEEK-BESSELING&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;BOSBES&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;PHM&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;MM&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -7076,8 +7076,8 @@ LBW+TASS+0'&#xD;
 LBW+TTOT+0.00'&#xD;
 LBW+TAP+0.00'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+SPEEK-BESSELING'&#xD;
-LBW+VOORL+PHM'&#xD;
+LBW+ANAAM+BOSBES'&#xD;
+LBW+VOORL+MM'&#xD;
 UNT+28+PMB0005167-026'&#xD;
 UNZ+1+PMB0001053-026'</field>
     </row>
@@ -7267,13 +7267,13 @@ UNZ+1+PMB0001053-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;VAN DER SLUIS-BAR EPHRAIM&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;DRESSING&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;SG&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;SLA&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -7323,8 +7323,8 @@ LBW+TTOT+0.00'&#xD;
 LBW+TAC+02'&#xD;
 LBW+TAP+195.00'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+VAN DER SLUIS-BAR EPHRAIM'&#xD;
-LBW+VOORL+SG'&#xD;
+LBW+ANAAM+DRESSING'&#xD;
+LBW+VOORL+SLA'&#xD;
 UNT+29+PMB0005213-026'&#xD;
 UNZ+1+PMB0001065-026'</field>
     </row>
@@ -7508,13 +7508,13 @@ UNZ+1+PMB0001065-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;RIEPMA&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;PRIEM&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;JF&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;NZI&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -7563,8 +7563,8 @@ LBW+TASS+0'&#xD;
 LBW+TTOT+14.70'&#xD;
 LBW+TAP+37.50'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+RIEPMA'&#xD;
-LBW+VOORL+JF'&#xD;
+LBW+ANAAM+PRIEM'&#xD;
+LBW+VOORL+NZI'&#xD;
 UNT+28+PMB0005281-026'&#xD;
 UNZ+1+PMB0001091-026'</field>
     </row>
@@ -7754,13 +7754,13 @@ UNZ+1+PMB0001091-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;WEISS&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;WESTEIS&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;PJ&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;MB&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -7936,13 +7936,13 @@ UNZ+1+PMB0001091-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;WEISS&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;WESTEIS&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;VOORL&lt;/label&gt;&#xD;
-  &lt;waarde&gt;S&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;RY&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;UNT&gt;&#xD;
@@ -7992,8 +7992,8 @@ LBW+TTOT+50.00'&#xD;
 LBW+TAC+02'&#xD;
 LBW+TAP+135.47'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+WEISS'&#xD;
-LBW+VOORL+PJ'&#xD;
+LBW+ANAAM+WESTEIS'&#xD;
+LBW+VOORL+MB'&#xD;
 UNT+29+PMB0005293-026'&#xD;
 UNH+PMB0005294-026+INSLBW:1:0:IN:PMB'&#xD;
 ENT+AL+0'&#xD;
@@ -8021,8 +8021,8 @@ LBW+TTOT+75.00'&#xD;
 LBW+TAC+02'&#xD;
 LBW+TAP+377.22'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+WEISS'&#xD;
-LBW+VOORL+S'&#xD;
+LBW+ANAAM+WESTEIS'&#xD;
+LBW+VOORL+RY'&#xD;
 UNT+29+PMB0005294-026'&#xD;
 UNZ+2+PMB0001099-026'</field>
     </row>
@@ -8206,7 +8206,7 @@ UNZ+2+PMB0001099-026'</field>
 &lt;LBW&gt;&#xD;
   &lt;recordSoort&gt;LBW&lt;/recordSoort&gt;&#xD;
   &lt;label&gt;ANAAM&lt;/label&gt;&#xD;
-  &lt;waarde&gt;IBC BV&lt;/waarde&gt;&#xD;
+  &lt;waarde&gt;BIJV BV&lt;/waarde&gt;&#xD;
 &lt;/LBW&gt;&#xD;
 
 &lt;LBW&gt;&#xD;
@@ -8261,7 +8261,7 @@ LBW+TASS+0'&#xD;
 LBW+TTOT+0.00'&#xD;
 LBW+TAP+63.97'&#xD;
 ENT+VP+0'&#xD;
-LBW+ANAAM+IBC BV'&#xD;
+LBW+ANAAM+BIJV BV'&#xD;
 LBW+VOORL+0'&#xD;
 UNT+28+PMB0005305-026'&#xD;
 UNZ+1+PMB0001104-026'</field>
