@@ -31,6 +31,7 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 		this.password = password;
 		this.host = host;
 		this.port = port;
+		this.remoteDirectory = remoteDirectory;
 	}
 
 	@Override
