@@ -152,9 +152,12 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		}
 	}
 
-	@Override
 	public boolean isFolder(FTPFile f) throws FileSystemException {
 		return f.isDirectory();
+	}
+	@Override
+	public boolean folderExists(String folder) throws FileSystemException {
+		return isFolder(toFile(folder));
 	}
 
 	@Override

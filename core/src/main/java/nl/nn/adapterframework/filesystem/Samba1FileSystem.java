@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author alisihab
  *
  */
-public class SambaFileSystem implements IWritableFileSystem<SmbFile> {
+public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -166,13 +166,16 @@ public class SambaFileSystem implements IWritableFileSystem<SmbFile> {
 		}
 	}
 
-	@Override
 	public boolean isFolder(SmbFile f) throws FileSystemException {
 		try {
 			return f.isDirectory();
 		} catch (SmbException e) {
 			throw new FileSystemException(e);
 		}
+	}
+	@Override
+	public boolean folderExists(String folder) throws FileSystemException {
+		return isFolder(toFile(folder));
 	}
 
 	@Override

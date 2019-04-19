@@ -128,9 +128,12 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 		f.delete();
 	}
 
-	@Override
 	public boolean isFolder(File f) {
 		return f.isDirectory();
+	}
+	@Override
+	public boolean folderExists(String folder) throws FileSystemException {
+		return isFolder(toFile(folder));
 	}
 
 	@Override

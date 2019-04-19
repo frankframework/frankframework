@@ -184,9 +184,8 @@ public class MockFileSystem extends MockFolder implements IWritableFileSystem<Mo
 	}
 
 	@Override
-	public boolean isFolder(MockFile f) throws FileSystemException {
-//		checkOpenAndExists(f);
-		return f.getOwner()!=null && f.getOwner().getFolders().containsKey(f.getName());
+	public boolean folderExists(String folder) throws FileSystemException {
+		return getFolders().containsKey(folder);
 	}
 
 	@Override
@@ -221,6 +220,7 @@ public class MockFileSystem extends MockFolder implements IWritableFileSystem<Mo
 		checkOpen();
 		return f.getAdditionalProperties();
 	}
+
 
 
 }

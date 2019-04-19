@@ -1,10 +1,11 @@
 package it.nl.nn.adapterframework.senders;
 
-import nl.nn.adapterframework.filesystem.FileSystemSender;
-import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import nl.nn.adapterframework.filesystem.FileSystemTest;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
-import nl.nn.adapterframework.senders.Samba2Sender;
 /**
  * This test class is created to test both Samba2FileSystem and Samba2FileSystemSender classes.
  * 
@@ -18,7 +19,7 @@ import nl.nn.adapterframework.senders.Samba2Sender;
  * @author alisihab
  *
  */
-public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Samba2FileSystem> {
+public class Samba2FileSystemTest extends FileSystemTest<String, Samba2FileSystem> {
 
 	private String authType = "SPNEGO";
 	private String realm = "";
@@ -33,10 +34,9 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 		return new Samba2FileSystemTestHelper(shareName, username, password, domain, realm, kdc);
 	}
 
-
 	@Override
-	public FileSystemSender<String, Samba2FileSystem> createFileSystemSender() {
-		Samba2Sender result = new Samba2Sender();
+	public Samba2FileSystem createFileSystem() {
+		Samba2FileSystem result = new Samba2FileSystem();
 		result.setShare(shareName);
 		result.setUsername(username);
 		result.setPassword(password);
@@ -46,11 +46,13 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 		result.setRealm(realm);
 		return result;
 	}
-
-//	@Test
-//	@Override
-//	public void fileSystemTestAppendFile() throws Exception {
-//		// ("Smbj library does not support append at the moment: 3/8/2019")
-//		super.fileSystemTestAppendFile();
-//	}
+	
+	@Ignore
+	@Test
+	@Override
+	public void writableFileSystemTestAppendExistingFile() throws Exception {
+		// ("Smbj.0.9.1 version does not support append at the moment: 3/8/2019")
+		// append operation will probably be in next release
+		super.writableFileSystemTestAppendExistingFile();
+	}
 }

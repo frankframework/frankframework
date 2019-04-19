@@ -215,9 +215,12 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 		}
 	}
 
-	@Override
 	public boolean isFolder(S3Object f) throws FileSystemException {
 		return f.getKey().endsWith("/");
+	}
+	@Override
+	public boolean folderExists(String folder) throws FileSystemException {
+		return isFolder(toFile(folder));
 	}
 
 	@Override

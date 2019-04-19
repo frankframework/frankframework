@@ -10,8 +10,8 @@ public class MockFileSystemTestHelper implements IFileSystemTestHelper {
 
 	private MockFileSystem fileSystem;
 	
-	public MockFileSystemTestHelper(MockFileSystem fileSystem) {
-		this.fileSystem=fileSystem;
+	public MockFileSystemTestHelper() {
+		fileSystem=new MockFileSystem();
 	}
 
 	@Override
@@ -97,6 +97,8 @@ public class MockFileSystemTestHelper implements IFileSystemTestHelper {
 		fileSystem.getFolders().remove(folderName);
 	}
 
-
+	public MockFileSystem getFileSystem() {
+		return fileSystem;
+	}
 
 }
