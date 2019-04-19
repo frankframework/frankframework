@@ -19,12 +19,6 @@ public class FtpFileSystemTest extends FileSystemTest<FTPFile, FtpFileSystem> {
 	private String remoteDirectory = "";
 	private int port = 21;
 
-	private int waitMillis = 0;
-
-	{
-		setWaitMillis(waitMillis);
-	}
-
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
 		return new FtpFileSystemTestHelper(username, password, host, remoteDirectory, port);
