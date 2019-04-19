@@ -183,7 +183,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.configure();
 		fileSystem.open();
 
-		createFile(null,fileName, "");
+		createFile(null,fileName, "tja");
 		waitForActionToFinish();
 		
 		assertTrue(_fileExists(fileName));
@@ -196,12 +196,14 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		assertTrue(_folderExists(destinationFolder));
 
 		F f = fileSystem.toFile(fileName);
-		fileSystem.moveFile(f, destinationFolder, false);
+		F movedFile =fileSystem.moveFile(f, destinationFolder, false);
 		waitForActionToFinish();
 		
 		
 		assertTrue("Destination folder must exist",_folderExists(destinationFolder));
-		assertTrue("Destination must exist",_fileExists(destinationFolder, fileName));
+		assertTrue("Destination must exist",fileSystem.exists(movedFile));
+		//TODO: test that contents of file has remained the same
+		//TODO: test that file timestamp has not changed
 		assertFalse("Origin must have disappeared",_fileExists(fileName));
 	}
 
