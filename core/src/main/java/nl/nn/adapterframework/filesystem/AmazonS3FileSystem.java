@@ -151,10 +151,8 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 			object.setBucketName(summary.getBucketName());
 			object.setKey(summary.getKey());
 			object.setObjectMetadata(metadata);
-			if(!object.getKey().endsWith("/") ) {
-				if( !(prefix.isEmpty() && object.getKey().contains("/"))) {
-					list.add(object);
-				}
+			if(!object.getKey().endsWith("/") && !(prefix.isEmpty() && object.getKey().contains("/"))) {
+				list.add(object);
 			} 
 		}
 

@@ -44,7 +44,6 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 	private Regions clientRegion = Regions.EU_WEST_1;
 	
 	private AmazonS3 s3Client;
-	private AmazonS3FileSystemSender s3FileSystemSender;
 	
 	public AmazonS3FileSystemTestHelper(String accessKey, String secretKey, boolean chunkedEncodingDisabled,
 			boolean accelerateModeEnabled, boolean forceGlobalBucketAccessEnabled, String bucketName,
@@ -61,9 +60,6 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 	@Override
 	@Before
 	public void setUp() throws ConfigurationException, IOException, FileSystemException {
-		s3FileSystemSender = new AmazonS3FileSystemSender();
-		s3FileSystemSender.setAccessKey(accessKey);
-		s3FileSystemSender.setSecretKey(secretKey);
 		open();
 		s3Client.createBucket(bucketName);
 	}
