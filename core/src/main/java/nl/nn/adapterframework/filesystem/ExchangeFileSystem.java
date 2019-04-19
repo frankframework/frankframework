@@ -249,7 +249,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,FileAttachment>
 	}
 
 	@Override
-	public boolean isFolder(Item f) throws FileSystemException {
+	public boolean folderExists(String folder) throws FileSystemException {
 		return false;
 	}
 

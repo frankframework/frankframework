@@ -295,7 +295,6 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 		return null;
 	}
 
-	@Override
 	public boolean isFolder(String f) throws FileSystemException {
 		try {
 			return diskShare.getFileInformation(f).getStandardInformation().isDirectory();
@@ -310,6 +309,10 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 			throw new FileSystemException(e);
 		}
 		
+	}
+	@Override
+	public boolean folderExists(String folder) throws FileSystemException {
+		return isFolder(toFile(folder));
 	}
 
 	@Override

@@ -102,12 +102,8 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 			FS fileSystem=getFileSystem();
 			fileSystem.open();
 			if (StringUtils.isNotEmpty(getInputFolder())) {
-				F folder=fileSystem.toFile(getInputFolder());
-				if (!fileSystem.exists(folder)) {
+				if (!fileSystem.folderExists(getInputFolder())) {
 					throw new SenderException("inputFolder ["+getInputFolder()+"] does not exist");
-				}
-				if (!fileSystem.isFolder(folder)) {
-					throw new SenderException("inputFolder ["+getInputFolder()+"] is not a folder");
 				}
 			}
 		} catch (FileSystemException e) {
@@ -218,11 +214,9 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 		String name = ifs.getName(f);
 		fileXml.addAttribute("name", name);
 		if (!".".equals(name) && !"..".equals(name)) {
-			boolean isFolder = ifs.isFolder(f);
 			long fileSize = ifs.getFileSize(f);
 			fileXml.addAttribute("size", "" + fileSize);
 			fileXml.addAttribute("fSize", "" + Misc.toFileSize(fileSize, true));
-			fileXml.addAttribute("directory", "" + isFolder);
 			try {
 				fileXml.addAttribute("canonicalName", fileSystem.getCanonicalName(f));
 			} catch (Exception e) {
