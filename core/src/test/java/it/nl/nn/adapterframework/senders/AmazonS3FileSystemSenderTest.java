@@ -8,7 +8,9 @@ import java.io.OutputStream;
 import java.util.UUID;
 
 import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -37,6 +39,9 @@ import nl.nn.adapterframework.senders.AmazonS3FileSystemSender;
  */
 public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object, AmazonS3FileSystem> {
 
+	@Rule
+	public TestName name = new TestName();
+	
 	private String accessKey = "";
 	private String secretKey = "";
 
@@ -60,6 +65,11 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 	@Override
 	@After
 	public void tearDown() throws Exception {
+		if(name.getMethodName().equals("amazonS3SenderTestCopyObjectSuccess")){
+			s3Client.deleteObject(bucketName, "testcopy/testCopy.txt");
+			s3Client.deleteObject(bucketName, "copiedObject.txt");
+			s3Client.deleteBucket(bucketName);
+		}
 		s3Client.shutdown();
 		super.tearDown();
 	}
@@ -154,9 +164,6 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 		out.close();
 		String result = s3FileSystemSender.sendMessage("", fileName, prc);
 		assertEquals(dest, result);
-		s3Client.deleteObject(bucketName, fileName);
-		s3Client.deleteObject(bucketName, dest);
-		s3Client.deleteBucket(bucketName);
 	}
 
 //	@Override

@@ -32,15 +32,15 @@ import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 
 public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 
-	private String accessKey = "";
-	private String secretKey = "";
+	private String accessKey;
+	private String secretKey;
 
-	private boolean chunkedEncodingDisabled = false;
-	private boolean accelerateModeEnabled = false; // this may involve some extra costs
-	private boolean forceGlobalBucketAccessEnabled = false;
+	private boolean chunkedEncodingDisabled;
+	private boolean accelerateModeEnabled; // this may involve some extra costs
+	private boolean forceGlobalBucketAccessEnabled;
 
-	private String bucketName = "iaf.s3sender.ali.test";
-	private Regions clientRegion = Regions.EU_WEST_1;
+	private String bucketName;
+	private Regions clientRegion;
 	
 	private AmazonS3 s3Client;
 	
