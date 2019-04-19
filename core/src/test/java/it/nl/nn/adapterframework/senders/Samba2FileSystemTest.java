@@ -1,5 +1,8 @@
 package it.nl.nn.adapterframework.senders;
 
+import org.junit.Ignore;
+import org.junit.Test;
+
 import nl.nn.adapterframework.filesystem.FileSystemTest;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
@@ -31,7 +34,6 @@ public class Samba2FileSystemTest extends FileSystemTest<String, Samba2FileSyste
 		return new Samba2FileSystemTestHelper(shareName, username, password, domain, realm, kdc);
 	}
 
-
 	@Override
 	public Samba2FileSystem createFileSystem() {
 		Samba2FileSystem result = new Samba2FileSystem();
@@ -44,5 +46,13 @@ public class Samba2FileSystemTest extends FileSystemTest<String, Samba2FileSyste
 		result.setRealm(realm);
 		return result;
 	}
-
+	
+	@Ignore
+	@Test
+	@Override
+	public void writableFileSystemTestAppendExistingFile() throws Exception {
+		// ("Smbj.0.9.1 version does not support append at the moment: 3/8/2019")
+		// append operation will probably be in next release
+		super.writableFileSystemTestAppendExistingFile();
+	}
 }
