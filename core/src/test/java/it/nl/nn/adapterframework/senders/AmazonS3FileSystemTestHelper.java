@@ -29,7 +29,6 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
-import nl.nn.adapterframework.senders.AmazonS3FileSystemSender;
 
 public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 
