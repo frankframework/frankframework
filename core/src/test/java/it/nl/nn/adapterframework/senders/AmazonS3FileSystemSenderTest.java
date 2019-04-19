@@ -1,31 +1,20 @@
-package nl.nn.adapterframework.senders;
+package it.nl.nn.adapterframework.senders;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FilterInputStream;
-import java.io.FilterOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.UUID;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -33,10 +22,11 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
-import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
+import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.senders.AmazonS3FileSystemSender;
 
 
 /**
@@ -54,7 +44,7 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 	private boolean accelerateModeEnabled = false; // this may involve some extra costs
 	private boolean forceGlobalBucketAccessEnabled = false;
 
-	private String bucketName = "iaf.s3sender.ali.test";
+	private String bucketName = UUID.randomUUID().toString();//"iaf.s3sender.ali.test";
 	private String bucketNameTobeCreatedAndDeleted = "bucket-name-tobe-created-and-deleted";
 	private Regions clientRegion = Regions.EU_WEST_1;
 	
@@ -68,23 +58,17 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 	}
 	
 	@Override
-	@Before
-	public void setUp() throws ConfigurationException, IOException, FileSystemException {
-		super.setUp();
-		s3FileSystemSender = new AmazonS3FileSystemSender();
-		s3FileSystemSender.setAccessKey(accessKey);
-		s3FileSystemSender.setSecretKey(secretKey);
-		open();
-	}
-
-	@Override
 	@After
 	public void tearDown() throws Exception {
 		s3Client.shutdown();
 		super.tearDown();
 	}
 	
-	private void open() {
+	@Override
+	protected IFileSystemTestHelper getFileSystemTestHelper() {
+		s3FileSystemSender = new AmazonS3FileSystemSender();
+		s3FileSystemSender.setAccessKey(accessKey);
+		s3FileSystemSender.setSecretKey(secretKey);
 		BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);
 
 		AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
@@ -93,86 +77,16 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 				.withRegion(clientRegion.getName()).withCredentials(new AWSStaticCredentialsProvider(awsCreds));
 
 		s3Client = s3ClientBuilder.build();
+		return new AmazonS3FileSystemTestHelper(accessKey, secretKey, chunkedEncodingDisabled, accelerateModeEnabled, forceGlobalBucketAccessEnabled, bucketName, clientRegion);
 	}
 	
 	@Override
-	protected AmazonS3FileSystem getFileSystem() throws ConfigurationException {
-		AmazonS3FileSystem s3 = new AmazonS3FileSystem();
+	public AmazonS3FileSystemSender createFileSystemSender(){
+		AmazonS3FileSystemSender s3 = new AmazonS3FileSystemSender();
 		s3.setAccessKey(accessKey);
 		s3.setSecretKey(secretKey);
 		s3.setBucketName(bucketName);
 		return s3;
-	}
-
-	@Override
-	protected boolean _fileExists(String folder, String filename) {
-		String objectName=folder==null?filename:folder+"/"+filename;
-		return s3Client.doesObjectExist(bucketName, objectName);
-	}
-
-	@Override
-	protected void _deleteFile(String folder, String filename) {
-		s3Client.deleteObject(bucketName, filename);
-	}
-
-	@Override
-	protected OutputStream _createFile(String foldername, final String filename) throws IOException {
-		TemporaryFolder folder = new TemporaryFolder();
-		folder.create();
-
-		String fileName = folder.getRoot().getAbsolutePath()+"tempFile";
-
-		final File file = new File(fileName);
-		final FileOutputStream fos = new FileOutputStream(file);
-		final BufferedOutputStream bos = new BufferedOutputStream(fos);
-		
-		FilterOutputStream filterOutputStream = new FilterOutputStream(bos) {
-			@Override
-			public void close() throws IOException {
-				super.close();
-				bos.close();
-
-				FileInputStream fis = new FileInputStream(file);
-				ObjectMetadata metaData = new ObjectMetadata();
-				metaData.setContentLength(file.length());
-				
-				s3Client.putObject(bucketName, filename, fis, metaData);
-				
-				fis.close();
-				file.delete();
-			}
-		};
-		return filterOutputStream;
-	}
-
-	@Override
-	protected InputStream _readFile(String folder, String filename) throws FileNotFoundException {
-		final S3Object file = s3Client.getObject(bucketName, filename);
-		InputStream is = file.getObjectContent();
-		FilterInputStream fos = new FilterInputStream(is) {
-			@Override
-			public void close() throws IOException {
-				super.close();
-				file.close();
-			}
-		};
-
-		return fos;
-	}
-
-	@Override
-	public void _createFolder(String filename) throws IOException {
-		s3Client.putObject(bucketName, filename, "");
-	}
-	
-	@Override
-	protected boolean _folderExists(String folderName) throws Exception {
-		return _fileExists(folderName);
-	}
-
-	@Override
-	protected void _deleteFolder(String folderName) throws Exception {
-		deleteFile(null, folderName);
 	}
 
 	@Test
@@ -229,13 +143,20 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 
 		Parameter param = new Parameter();
 		param.setName("destinationFileName");
-		param.setValue("copiedObject.txt");
+		param.setValue(dest);
 		s3FileSystemSender.addParameter(param);
-
+		
 		s3FileSystemSender.configure();
 		s3FileSystemSender.getFileSystem().open();
+		S3Object objectTobeCopied = new S3Object();
+		objectTobeCopied.setKey(fileName);
+		OutputStream out = s3FileSystemSender.getFileSystem().createFile(objectTobeCopied);
+		out.close();
 		String result = s3FileSystemSender.sendMessage("", fileName, prc);
 		assertEquals(dest, result);
+		s3Client.deleteObject(bucketName, fileName);
+		s3Client.deleteObject(bucketName, dest);
+		s3Client.deleteBucket(bucketName);
 	}
 
 //	@Override

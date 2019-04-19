@@ -4,7 +4,6 @@ import jcifs.smb.SmbFile;
 import nl.nn.adapterframework.filesystem.FileSystemTest;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 import nl.nn.adapterframework.filesystem.Samba1FileSystem;
-import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 /**
  * This test class is created to test both Samba2FileSystem and Samba2FileSystemSender classes.
  * 
