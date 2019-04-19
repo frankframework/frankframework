@@ -26,16 +26,16 @@ import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.senders.AmazonS3FileSystemSender;
+import nl.nn.adapterframework.senders.AmazonS3Sender;
 
 
 /**
- * This test class is created to test both AmazonS3FileSystem and AmazonS3FileSystemSender classes.
+ * AmazonS3Sender tests.
  * 
  * @author alisihab
  *
  */
-public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object, AmazonS3FileSystem> {
+public class AmazonS3SenderTest extends FileSystemSenderTest<S3Object, AmazonS3FileSystem> {
 
 	private String accessKey = "";
 	private String secretKey = "";
@@ -49,7 +49,7 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 	private Regions clientRegion = Regions.EU_WEST_1;
 	
 	private AmazonS3 s3Client;
-	private AmazonS3FileSystemSender s3FileSystemSender;
+	private AmazonS3Sender s3FileSystemSender;
 	
 	private int waitMilis = 1000;
 
@@ -66,7 +66,7 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 	
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		s3FileSystemSender = new AmazonS3FileSystemSender();
+		s3FileSystemSender = new AmazonS3Sender();
 		s3FileSystemSender.setAccessKey(accessKey);
 		s3FileSystemSender.setSecretKey(secretKey);
 		BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);
@@ -81,8 +81,8 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 	}
 	
 	@Override
-	public AmazonS3FileSystemSender createFileSystemSender(){
-		AmazonS3FileSystemSender s3 = new AmazonS3FileSystemSender();
+	public AmazonS3Sender createFileSystemSender(){
+		AmazonS3Sender s3 = new AmazonS3Sender();
 		s3.setAccessKey(accessKey);
 		s3.setSecretKey(secretKey);
 		s3.setBucketName(bucketName);
@@ -158,12 +158,5 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 		s3Client.deleteObject(bucketName, dest);
 		s3Client.deleteBucket(bucketName);
 	}
-
-//	@Override
-//	@Test
-//	public void fileSystemTestAppendFile() throws Exception {
-//		// Ignored because S3 does not support append.
-//		super.fileSystemTestAppendFile();
-//	}
 
 }
