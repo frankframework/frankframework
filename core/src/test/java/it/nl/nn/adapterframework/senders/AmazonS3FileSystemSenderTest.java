@@ -81,8 +81,8 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 	}
 	
 	@Override
-	protected AmazonS3FileSystem getFileSystem(){
-		AmazonS3FileSystem s3 = new AmazonS3FileSystem();
+	public AmazonS3FileSystemSender createFileSystemSender(){
+		AmazonS3FileSystemSender s3 = new AmazonS3FileSystemSender();
 		s3.setAccessKey(accessKey);
 		s3.setSecretKey(secretKey);
 		s3.setBucketName(bucketName);

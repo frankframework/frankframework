@@ -122,33 +122,16 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 
 	@Override
 	public S3Object toFile(String filename) throws FileSystemException {
-		ObjectListing objectListing = s3Client.listObjects(bucketName);
-        Iterator<S3ObjectSummary> objIter = objectListing.getObjectSummaries().iterator();
-        String objectKey = null;
-        long contentLength = 0;
-        while (objIter.hasNext()) {
-        	S3ObjectSummary s3ObjectSummary = objIter.next();
-        	String key = s3ObjectSummary.getKey();
-            if(key.endsWith("/") && key.equals(filename+"/")){
-            	objectKey = key;
-            } else if(key.equals(filename)) {
-            	contentLength = s3ObjectSummary.getSize();
-            }
-        }
 		S3Object object = new S3Object();
-		filename = objectKey == null ? filename : objectKey;
 		object.setKey(filename);
-		ObjectMetadata metadata = new ObjectMetadata();
-		metadata.setContentLength(contentLength);
-		object.setObjectMetadata(metadata);
 		return object;
 	}
 
 	@Override
 	public Iterator<S3Object> listFiles(String folder) throws FileSystemException {
 		List<S3ObjectSummary> summaries = null;
+		String prefix = folder != null ? folder + "/" : "";
 		try {
-			String prefix = folder != null ? folder + "/" : "";
 			ObjectListing listing = s3Client.listObjects(bucketName, prefix);
 			summaries = listing.getObjectSummaries();
 			while (listing.isTruncated()) {
@@ -168,9 +151,11 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 			object.setBucketName(summary.getBucketName());
 			object.setKey(summary.getKey());
 			object.setObjectMetadata(metadata);
-			if(!object.getKey().endsWith("/")) {
-				list.add(object);
-			}
+			if(!object.getKey().endsWith("/") ) {
+				if( !(prefix.isEmpty() && object.getKey().contains("/"))) {
+					list.add(object);
+				}
+			} 
 		}
 
 		return list.iterator();
@@ -190,19 +175,22 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 		final BufferedOutputStream bos = new BufferedOutputStream(fos);
 
 		FilterOutputStream filterOutputStream = new FilterOutputStream(bos) {
+			boolean isClosed = false;
 			@Override
 			public void close() throws IOException {
 				super.close();
 				bos.close();
+				if(!isClosed) {
+					FileInputStream fis = new FileInputStream(file);
+					ObjectMetadata metaData = new ObjectMetadata();
+					metaData.setContentLength(file.length());
 
-				FileInputStream fis = new FileInputStream(file);
-				ObjectMetadata metaData = new ObjectMetadata();
-				metaData.setContentLength(file.length());
+					s3Client.putObject(bucketName, f.getKey(), fis, metaData);
 
-				s3Client.putObject(bucketName, f.getKey(), fis, metaData);
-
-				fis.close();
-				file.delete();
+					fis.close();
+					file.delete();
+					isClosed = true;
+				}
 			}
 		};
 		return filterOutputStream;
@@ -236,12 +224,18 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 		}
 	}
 
-	public boolean isFolder(S3Object f) throws FileSystemException {
-		return f.getKey().endsWith("/");
-	}
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
-		return isFolder(toFile(folder));
+		ObjectListing objectListing = s3Client.listObjects(bucketName);
+		Iterator<S3ObjectSummary> objIter = objectListing.getObjectSummaries().iterator();
+		while (objIter.hasNext()) {
+			S3ObjectSummary s3ObjectSummary = objIter.next();
+			String key = s3ObjectSummary.getKey();
+			if(key.endsWith("/") && key.equals(folder+"/")){
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -257,6 +251,7 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 	@Override
 	public void removeFolder(String folder) throws FileSystemException {
 		if (folderExists(folder)) {
+			folder = folder.endsWith("/") ? folder : folder + "/";
 			s3Client.deleteObject(bucketName, folder);
 		} else {
 			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
