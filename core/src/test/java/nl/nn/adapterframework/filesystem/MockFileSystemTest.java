@@ -4,13 +4,13 @@ public class MockFileSystemTest extends FileSystemTest <MockFile,MockFileSystem>
 
 	
 	@Override
-	protected MockFileSystem getFileSystem() {
-		return new MockFileSystem();
+	protected IFileSystemTestHelper getFileSystemTestHelper() {
+		return new MockFileSystemTestHelper();
 	}
 
 	@Override
-	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new MockFileSystemTestHelper(fileSystem);
+	protected MockFileSystem getFileSystem() {
+		return ((MockFileSystemTestHelper)helper).getFileSystem();
 	}
 
 }

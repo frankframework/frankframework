@@ -8,171 +8,36 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import liquibase.util.StreamUtil;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.util.LogUtil;
 
-public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> {
-	protected Logger log = LogUtil.getLogger(this);
-	
-	protected boolean doTimingTests=false;
-
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
-	
-	public String FILE1 = "file1.txt";
-	public String FILE2 = "file2.txt";
-	public String DIR1 = "testDirectory/";
-	public String DIR2 = "testDirectory2/";
+public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> extends FileSystemTestBase {
 
 	protected FS fileSystem;
-	protected IFileSystemTestHelper helper;
-	
-	private long waitMillis = 0;
-	
-	
 	/**
 	 * Returns the file system 
 	 * @return fileSystem
 	 * @throws ConfigurationException
 	 */
 	protected abstract FS getFileSystem();
-	protected abstract IFileSystemTestHelper getFileSystemTestHelper();
 
-	/**
-	 * Checks if a file with the specified name exists.
-	 * @param folder to search in for the file, set to null for root folder. 
-	 * @param filename
-	 * @return
-	 * @throws Exception
-	 */
-	protected boolean _fileExists(String folder, String filename) throws Exception {
-		return helper._fileExists(folder,filename);
-	}
-	
-	/**
-	 * Checks if a folder with the specified name exists.
-	 * @param folderName
-	 * @return
-	 * @throws Exception
-	 */
-	protected boolean _folderExists(String folderName) throws Exception {
-		return helper._folderExists(folderName);
-	}
-	
-	/**
-	 * Deletes the file with the specified name
-	 * @param folder TODO
-	 * @param filename
-	 * @throws Exception
-	 */
-	protected void _deleteFile(String folder, String filename) throws Exception {
-		helper._deleteFile(folder, filename);
-	}
-	
-	/**
-	 * Creates a file with the specified name and returns output stream 
-	 * to be able to write that file.
-	 * @param folder TODO
-	 * @param filename
-	 * @return
-	 * @throws Exception
-	 */
-	protected OutputStream _createFile(String folder, String filename) throws Exception {
-		return helper._createFile(folder, filename);
-	}
-
-	/**
-	 * Returns an input stream of the file 
-	 * @param folder TODO
-	 * @param filename
-	 * @return
-	 * @throws Exception
-	 */
-	protected InputStream _readFile(String folder, String filename) throws Exception {
-		return helper._readFile(folder, filename);
-	}
-	
-	/**
-	 * Creates a folder 
-	 * @param filename
-	 * @throws Exception
-	 */
-	protected void _createFolder(String foldername) throws Exception {
-		helper._createFolder(foldername);
-	}
-
-	/**
-	 * Deletes the folder 
-	 * @param filename
-	 * @throws Exception
-	 */
-	protected void _deleteFolder(String folderName) throws Exception {
-		helper._deleteFolder(folderName);
-	}
-
-	protected boolean _fileExists(String filename) throws Exception {
-		return _fileExists(null, filename);
-	}
-
-	@Before
+	@Override
 	public void setUp() throws Exception {
+		super.setUp();
 		fileSystem = getFileSystem();
-		helper = getFileSystemTestHelper();
-		helper.setUp();
 	}
 	
-	@After 
+	@Override
 	public void tearDown() throws Exception {
-		helper.tearDown();
 		fileSystem.close();
-	}
-
-	public void deleteFile(String folder, String filename) throws Exception {
-		if (_fileExists(folder,filename)) {
-			_deleteFile(folder, filename);
-		}
-	}
-
-	public void createFile(String folder, String filename, String contents) throws Exception {
-		OutputStream out = _createFile(folder, filename);
-		if (contents != null)
-			out.write(contents.getBytes());
-		out.close();
-	}
-
-	public String readFile(String folder, String filename) throws Exception {
-		InputStream in = _readFile(folder, filename);
-		String content = StreamUtil.getReaderContents(new InputStreamReader(in));
-		in.close();
-		return content;
-	}
-
-	/** 
-	 * Pause current thread. Since creating an object takes a bit time 
-	 * this method can be used to make sure object is created in the server.
-	 * Added for Amazon S3 sender. 
-	 * @throws FileSystemException 
-	 */
-	public void waitForActionToFinish() throws FileSystemException {
-		try {
-			Thread.sleep(waitMillis);
-		} catch (InterruptedException e) {
-			throw new FileSystemException("Cannot pause the thread. Be aware that there may be timing issue to check files on the server.", e);
-		}
+		super.tearDown();
 	}
 
 	@Test
@@ -505,11 +370,6 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> {
 		assertEquals("Size of set of files, should not contain folders", 2, files.size());
 		assertEquals("Size of set of filenames, should not contain folders", 2, filenames.size());
 		
-	}
-
-
-	public void setWaitMillis(long waitMillis) {
-		this.waitMillis = waitMillis;
 	}
 
 }

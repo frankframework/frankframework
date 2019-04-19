@@ -19,15 +19,11 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
-public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>> extends FileSystemTest<F, FS> {
+public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>> extends FileSystemTestBase {
 
 	private FileSystemSender<F, FS> fileSystemSender;
 
-	public FileSystemSender<F, FS> createFileSystemSender() {
-		FileSystemSender<F, FS> fileSystemSender = new FileSystemSender<F, FS>();
-		fileSystemSender.setFileSystem(fileSystem);
-		return fileSystemSender;
-	}
+	public abstract FileSystemSender<F, FS> createFileSystemSender();
 
 	@Override
 	@Before
@@ -39,10 +35,10 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 	@Override
 	@After
 	public void tearDown() throws Exception {
-		super.tearDown();
 		if (fileSystemSender!=null) {
 			fileSystemSender.close();
 		};
+		super.tearDown();
 	}
 
 	@Test
@@ -81,13 +77,15 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 
 		ParameterResolutionContext prc = new ParameterResolutionContext();
 		prc.setSession(session);
-		String actual;
-		
-		actual = fileSystemSender.sendMessage("fakecorrelationid", filename, prc);
+		String correlationId="fakecorrelationid";
+		String message=filename;
+		String result = fileSystemSender.sendMessage(correlationId, message, prc);
 		waitForActionToFinish();
 		
-		actual = readFile(null, filename);
+		String actual = readFile(null, filename);
 		// test
+		// TODO: evaluate 'result'
+		//assertEquals("result of sender should be input message",result,message);
 		assertEquals(contents.trim(), actual.trim());
 	}
 
@@ -114,14 +112,16 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 
 		ParameterResolutionContext prc = new ParameterResolutionContext();
 		prc.setSession(session);
+		String correlationId="fakecorrelationid";
+		String message=filename;
+		String result = fileSystemSender.sendMessage(correlationId, message, prc);
+		waitForActionToFinish();
 
-		String actual;
-		actual = fileSystemSender.sendMessage("fakecorrelationid", filename, prc);
-		waitForActionToFinish();
-		waitForActionToFinish();
-		
-		actual = readFile(null, filename);
+
+		String actual = readFile(null, filename);
 		// test
+		// TODO: evaluate 'result'
+		//assertEquals("result of sender should be input message",result,message);
 		assertEquals(contents.trim(), actual.trim());
 	}
 
@@ -149,13 +149,15 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 
 		ParameterResolutionContext prc = new ParameterResolutionContext();
 		prc.setSession(session);
-
-		String actual;
-		actual = fileSystemSender.sendMessage("fakecorrelationid", filename, prc);
+		String correlationId="fakecorrelationid";
+		String message=filename;
+		String result = fileSystemSender.sendMessage(correlationId, message, prc);
 		waitForActionToFinish();
 
-		actual = readFile(null, filename);
+		String actual = readFile(null, filename);
 		// test
+		// TODO: evaluate 'result'
+		//assertEquals("result of sender should be input message",result,message);
 		assertEquals(contents.trim(), actual.trim());
 	}
 
@@ -171,12 +173,15 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		String actual;
-		actual = fileSystemSender.sendMessage("fakecorrelationid", filename);
+		ParameterResolutionContext prc = new ParameterResolutionContext();
+		prc.setSession(new PipeLineSessionBase());
+		String correlationId="fakecorrelationid";
+		String message=filename;
+		String result = fileSystemSender.sendMessage(correlationId, message, prc);
 		
 		String contentsBase64 = Base64.encodeBase64String(contents.getBytes());
 		// test
-		assertEquals(contentsBase64.trim(), actual.trim());
+		assertEquals("result should be base64 of file content", contentsBase64.trim(), result.trim());
 	}
 
 	public void fileSystemSenderMoveActionTest(String folder1, String folder2) throws Exception {
@@ -201,15 +206,17 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		String actual;
-		ParameterResolutionContext prc = new ParameterResolutionContext(filename,new PipeLineSessionBase());
-		actual = fileSystemSender.sendMessage("fakecorrelationid", filename,prc);
+		ParameterResolutionContext prc = new ParameterResolutionContext();
+		prc.setSession(new PipeLineSessionBase());
+		String correlationId="fakecorrelationid";
+		String message=filename;
+		String result = fileSystemSender.sendMessage(correlationId, message, prc);
+		
+		// test
+		assertEquals("result of sender should be filename",result,message);
 		
 		assertTrue("file should exist in destination folder ["+folder2+"]", _fileExists(folder2, filename));
 		assertFalse("file should not exist anymore in original folder ["+folder1+"]", _fileExists(folder1, filename));
-//		String contentsBase64 = Base64.encodeBase64String(contents.getBytes());
-//		// test
-//		assertEquals(contentsBase64.trim(), actual.trim());
 	}
 
 	@Test
@@ -237,17 +244,19 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		String message = "fakecorrelationid";
-		String actual;
-		
-		actual = fileSystemSender.sendMessage(message, filename);
-		// test
-		assertEquals(message.trim(), actual.trim());
+		ParameterResolutionContext prc = new ParameterResolutionContext();
+		prc.setSession(new PipeLineSessionBase());
+		String correlationId="fakecorrelationid";
+		String message=filename;
+		String result = fileSystemSender.sendMessage(correlationId, message, prc);
 		waitForActionToFinish();
-		
-		boolean result = _folderExists(filename);
+
 		// test
-		assertTrue("Expected file[" + filename + "] to be present", result);
+		
+		boolean actual = _folderExists(filename);
+		// test
+		assertEquals("result of sender should be input message",result,message);
+		assertTrue("Expected file[" + filename + "] to be present", actual);
 	}
 
 	@Test
@@ -262,17 +271,19 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		String message = "fakecorrelationid";
-		String actual;
-		
-		actual = fileSystemSender.sendMessage(message, filename);
+		ParameterResolutionContext prc = new ParameterResolutionContext();
+		prc.setSession(new PipeLineSessionBase());
+		String correlationId="fakecorrelationid";
+		String message=filename;
+		String result = fileSystemSender.sendMessage(correlationId, message, prc);
+
 		// test
-		assertEquals(message.trim(), actual.trim());
+		assertEquals("result of sender should be input message",result,message);
 		waitForActionToFinish();
 		
-		boolean result = _fileExists(filename);
+		boolean actual = _fileExists(filename);
 		// test
-		assertFalse("Expected file [" + filename + "] " + "not to be present", result);
+		assertFalse("Expected file [" + filename + "] " + "not to be present", actual);
 	}
 
 	@Test
@@ -287,16 +298,18 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		String message = "fakecorrelationid";
-		String actual;
-		actual = fileSystemSender.sendMessage(message, filename);
-		// test
-		assertEquals(message.trim(), actual.trim());
+		ParameterResolutionContext prc = new ParameterResolutionContext();
+		prc.setSession(new PipeLineSessionBase());
+		String correlationId="fakecorrelationid";
+		String message=filename;
+		String result = fileSystemSender.sendMessage(correlationId, message, prc);
+
 		waitForActionToFinish();
 		
-		boolean result = _fileExists(filename);
+		boolean actual = _fileExists(filename);
 		// test
-		assertFalse("Expected file [" + filename + "] " + "not to be present", result);
+		assertEquals("result of sender should be input message",result,message);
+		assertFalse("Expected file [" + filename + "] " + "not to be present", actual);
 	}
 
 	@Test
@@ -317,26 +330,24 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(session);
-
 		deleteFile(null, dest);
 
-		String message = "huh?";
-		String actual;
-		actual = fileSystemSender.sendMessage(message, filename, prc);
-		// test
-		assertEquals(message.trim(), actual.trim());
+		ParameterResolutionContext prc = new ParameterResolutionContext();
+		prc.setSession(new PipeLineSessionBase());
+		String correlationId="fakecorrelationid";
+		String message=filename;
+		String result = fileSystemSender.sendMessage(correlationId, message, prc);
 
-		boolean result;
-		result = _fileExists(filename);
 		// test
-		assertFalse("Expected file [" + filename + "] " + "not to be present", result);
+		assertEquals("result of sender should be input message",result,message);
 
-		result = _fileExists(dest);
+		boolean actual = _fileExists(filename);
 		// test
-		assertTrue("Expected file [" + dest + "] " + "to be present", result);
+		assertFalse("Expected file [" + filename + "] " + "not to be present", actual);
+
+		actual = _fileExists(dest);
+		// test
+		assertTrue("Expected file [" + dest + "] " + "to be present", actual);
 	}
 
 	public void fileSystemSenderListActionTest(String inputFolder, int numberOfFiles) throws Exception {
@@ -357,16 +368,21 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
-		String result = fileSystemSender.sendMessage(null, "");
+		ParameterResolutionContext prc = new ParameterResolutionContext();
+		prc.setSession(new PipeLineSessionBase());
+		String correlationId="fakecorrelationid";
+		String message="";
+		String result = fileSystemSender.sendMessage(correlationId, message, prc);
 
 		log.debug(result);
 		
-		Iterator<F> it = fileSystem.listFiles(inputFolder);
-		int count = 0;
-		while (it.hasNext()) {
-			it.next();
-			count++;
-		}
+		// TODO test that the fileSystemSender has returned the an XML with the details of the file
+//		Iterator<F> it = result;
+//		int count = 0;
+//		while (it.hasNext()) {
+//			it.next();
+//			count++;
+//		}
 		
 		String anchor=" count=\"";
 		int posCount=result.indexOf(anchor);

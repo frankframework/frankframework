@@ -208,7 +208,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 			throw new SenderException(getLogPrefix() + "unable to process ["+action+"] action for File [" + message + "]", e);
 		}
 
-		return correlationID;
+		return message;
 	}
 
 	public XmlBuilder getFileAsXmlBuilder(F f, String elementName) throws FileSystemException {

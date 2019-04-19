@@ -1,10 +1,10 @@
 package it.nl.nn.adapterframework.senders;
 
-import nl.nn.adapterframework.filesystem.FileSystemSender;
-import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
+import nl.nn.adapterframework.filesystem.FileSystemListener;
+import nl.nn.adapterframework.filesystem.FileSystemListenerTest;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
-import nl.nn.adapterframework.senders.Samba2Sender;
+import nl.nn.adapterframework.receivers.Samba2Listener;
 /**
  * This test class is created to test both Samba2FileSystem and Samba2FileSystemSender classes.
  * 
@@ -18,7 +18,7 @@ import nl.nn.adapterframework.senders.Samba2Sender;
  * @author alisihab
  *
  */
-public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Samba2FileSystem> {
+public class Samba2ListenerTest extends FileSystemListenerTest<String, Samba2FileSystem> {
 
 	private String authType = "SPNEGO";
 	private String realm = "";
@@ -35,8 +35,8 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 
 
 	@Override
-	public FileSystemSender<String, Samba2FileSystem> createFileSystemSender() {
-		Samba2Sender result = new Samba2Sender();
+	public FileSystemListener<String, Samba2FileSystem> createFileSystemListener() {
+		Samba2Listener result = new Samba2Listener();
 		result.setShare(shareName);
 		result.setUsername(username);
 		result.setPassword(password);
@@ -47,10 +47,4 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 		return result;
 	}
 
-//	@Test
-//	@Override
-//	public void fileSystemTestAppendFile() throws Exception {
-//		// ("Smbj library does not support append at the moment: 3/8/2019")
-//		super.fileSystemTestAppendFile();
-//	}
 }
