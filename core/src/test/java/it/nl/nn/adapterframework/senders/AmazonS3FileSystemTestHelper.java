@@ -10,6 +10,7 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Iterator;
 
 import org.junit.After;
 import org.junit.Before;
@@ -20,13 +21,14 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
-import nl.nn.adapterframework.filesystem.IWritableFileSystem;
 import nl.nn.adapterframework.senders.AmazonS3FileSystemSender;
 
 public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
@@ -63,11 +65,32 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 		s3FileSystemSender.setAccessKey(accessKey);
 		s3FileSystemSender.setSecretKey(secretKey);
 		open();
+		s3Client.createBucket(bucketName);
 	}
 
 	@Override
 	@After
 	public void tearDown() throws Exception {
+		if(s3Client.doesBucketExistV2(bucketName)) {
+			 ObjectListing objectListing = s3Client.listObjects(bucketName);
+	            while (true) {
+	                Iterator<S3ObjectSummary> objIter = objectListing.getObjectSummaries().iterator();
+	                while (objIter.hasNext()) {
+	                    s3Client.deleteObject(bucketName, objIter.next().getKey());
+	                }
+	    
+	                // If the bucket contains many objects, the listObjects() call
+	                // might not return all of the objects in the first listing. Check to
+	                // see whether the listing was truncated. If so, retrieve the next page of objects 
+	                // and delete them.
+	                if (objectListing.isTruncated()) {
+	                    objectListing = s3Client.listNextBatchOfObjects(objectListing);
+	                } else {
+	                    break;
+	                }
+	            }
+			s3Client.deleteBucket(bucketName);
+		}
 		if(s3Client != null) {
 			s3Client.shutdown();
 		}
@@ -86,17 +109,23 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 	
 	@Override
 	public boolean _fileExists(String folder, String filename) {
-		String objectName=folder==null?filename:folder+"/"+filename;
+		String objectName;
+		if(filename == null) {
+			objectName = folder;
+		}else {
+			objectName = folder == null ? filename : folder +"/"+ filename;
+		}
 		return s3Client.doesObjectExist(bucketName, objectName);
 	}
 
 	@Override
 	public void _deleteFile(String folder, String filename) {
-		s3Client.deleteObject(bucketName, filename);
+		String filePath = folder == null ? filename : folder +"/" + filename; 
+		s3Client.deleteObject(bucketName, filePath);
 	}
 
 	@Override
-	public OutputStream _createFile(String foldername, final String filename) throws IOException {
+	public OutputStream _createFile(final String foldername, final String filename) throws IOException {
 		TemporaryFolder folder = new TemporaryFolder();
 		folder.create();
 
@@ -115,8 +144,8 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 				FileInputStream fis = new FileInputStream(file);
 				ObjectMetadata metaData = new ObjectMetadata();
 				metaData.setContentLength(file.length());
-				
-				s3Client.putObject(bucketName, filename, fis, metaData);
+				String filePath = foldername == null ? filename : foldername + "/" + filename;
+				s3Client.putObject(bucketName, filePath, fis, metaData);
 				
 				fis.close();
 				file.delete();
@@ -141,17 +170,20 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 	}
 
 	@Override
-	public void _createFolder(String filename) throws IOException {
-		s3Client.putObject(bucketName, filename, "");
+	public void _createFolder(String folderName) throws IOException {
+		String foldername = folderName.endsWith("/") ? folderName : folderName +"/"; 
+		s3Client.putObject(bucketName, foldername, "");
 	}
 	
 	@Override
 	public boolean _folderExists(String folderName) throws Exception {
-		return _fileExists(folderName, folderName);
+		String foldername = folderName.endsWith("/") ? folderName : folderName + "/";
+		return _fileExists(foldername, null);
 	}
 
 	@Override
 	public void _deleteFolder(String folderName) throws Exception {
-		_deleteFile(null, folderName);
+		String foldername = folderName.endsWith("/") ? folderName : folderName + "/";
+		_deleteFile(null, foldername);
 	}
 }

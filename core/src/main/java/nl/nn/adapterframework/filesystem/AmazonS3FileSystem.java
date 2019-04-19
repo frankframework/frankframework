@@ -115,13 +115,32 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 
 	@Override
 	public void close() {
-		s3Client.shutdown();
+		if(s3Client != null) {
+			s3Client.shutdown();
+		}
 	}
 
 	@Override
 	public S3Object toFile(String filename) throws FileSystemException {
+		ObjectListing objectListing = s3Client.listObjects(bucketName);
+        Iterator<S3ObjectSummary> objIter = objectListing.getObjectSummaries().iterator();
+        String objectKey = null;
+        long contentLength = 0;
+        while (objIter.hasNext()) {
+        	S3ObjectSummary s3ObjectSummary = objIter.next();
+        	String key = s3ObjectSummary.getKey();
+            if(key.endsWith("/") && key.equals(filename+"/")){
+            	objectKey = key;
+            } else if(key.equals(filename)) {
+            	contentLength = s3ObjectSummary.getSize();
+            }
+        }
 		S3Object object = new S3Object();
+		filename = objectKey == null ? filename : objectKey;
 		object.setKey(filename);
+		ObjectMetadata metadata = new ObjectMetadata();
+		metadata.setContentLength(contentLength);
+		object.setObjectMetadata(metadata);
 		return object;
 	}
 
@@ -129,7 +148,8 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 	public Iterator<S3Object> listFiles(String folder) throws FileSystemException {
 		List<S3ObjectSummary> summaries = null;
 		try {
-			ObjectListing listing = s3Client.listObjects(bucketName);
+			String prefix = folder != null ? folder + "/" : "";
+			ObjectListing listing = s3Client.listObjects(bucketName, prefix);
 			summaries = listing.getObjectSummaries();
 			while (listing.isTruncated()) {
 				listing = s3Client.listNextBatchOfObjects(listing);
@@ -148,8 +168,9 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 			object.setBucketName(summary.getBucketName());
 			object.setKey(summary.getKey());
 			object.setObjectMetadata(metadata);
-
-			list.add(object);
+			if(!object.getKey().endsWith("/")) {
+				list.add(object);
+			}
 		}
 
 		return list.iterator();
