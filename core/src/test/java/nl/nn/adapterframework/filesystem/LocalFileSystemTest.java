@@ -13,7 +13,7 @@ public class LocalFileSystemTest extends FileSystemTest<File, LocalFileSystem>{
 
 
 	@Override
-	protected LocalFileSystem getFileSystem() {
+	protected LocalFileSystem createFileSystem() {
 		LocalFileSystem result=new LocalFileSystem();
 		result.setRoot(folder.getRoot().getAbsolutePath());
 		return result;

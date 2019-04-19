@@ -26,12 +26,12 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	 * @return fileSystem
 	 * @throws ConfigurationException
 	 */
-	protected abstract FS getFileSystem();
+	protected abstract FS createFileSystem();
 
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();
-		fileSystem = getFileSystem();
+		fileSystem = createFileSystem();
 	}
 	
 	@Override

@@ -9,7 +9,7 @@ public class MockFileSystemTest extends FileSystemTest <MockFile,MockFileSystem>
 	}
 
 	@Override
-	protected MockFileSystem getFileSystem() {
+	protected MockFileSystem createFileSystem() {
 		return ((MockFileSystemTestHelper)helper).getFileSystem();
 	}
 
