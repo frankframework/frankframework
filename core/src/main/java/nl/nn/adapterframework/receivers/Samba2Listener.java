@@ -45,11 +45,6 @@ public class Samba2Listener extends FileSystemListener<String, Samba2FileSystem>
 		getFileSystem().setAuthAlias(authAlias);
 	}
 
-	@IbisDoc({ "used when creating folders or overwriting existing files (when renaming or moving)", "false" })
-	public void setForce(boolean force) {
-		getFileSystem().setForce(force);
-	}
-
 	@IbisDoc({ "Shared folder name in the samba server", "" })
 	public void setShare(String share) {
 		getFileSystem().setShare(share);

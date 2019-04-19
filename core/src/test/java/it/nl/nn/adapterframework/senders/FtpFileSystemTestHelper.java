@@ -148,21 +148,16 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 
 	@Override
 	public boolean _folderExists(String folderName) throws Exception {
+		boolean isDirectory = false;
 		try {
-			FTPFile[] files = ftpSession.ftpClient.listFiles();
-			for (FTPFile o : files) {
-				if (o.isDirectory()) {
-					if ((o.getName()).equals(folderName)) {
-						return true;
-					}
-				} else if (o.getName().equals(folderName)) {
-					return true;
-				}
-			}
+			FTPFile[] files = ftpSession.ftpClient.listFiles(folderName);
+			if(files.length > 1) 
+				isDirectory = true;
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
-		return false;
+		
+		return isDirectory;
 	}
 
 	@Override

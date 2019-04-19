@@ -183,9 +183,9 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 
 				return getFileAsXmlBuilder(file, "file").toXML();
 			} else if (action.equalsIgnoreCase("mkdir")) {
-				((IWritableFileSystem<F>)ifs).createFolder(file);
+				((IWritableFileSystem<F>)ifs).createFolder(message);
 			} else if (action.equalsIgnoreCase("rmdir")) {
-				((IWritableFileSystem<F>)ifs).removeFolder(file);
+				((IWritableFileSystem<F>)ifs).removeFolder(message);
 			} else if (action.equalsIgnoreCase("rename")) {
 				String destination = (String) pvl.getParameterValue("destination").getValue();
 				if (destination == null) {
