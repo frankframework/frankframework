@@ -201,7 +201,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		
 		
 		assertTrue("Destination folder must exist",_folderExists(destinationFolder));
-		assertTrue("Destination must exist",fileSystem.exists(movedFile));
+		assertTrue("Destination must exist ["+fileSystem.getName(movedFile)+"]",fileSystem.exists(movedFile));
 		//TODO: test that contents of file has remained the same
 		//TODO: test that file timestamp has not changed
 		assertFalse("Origin must have disappeared",_fileExists(fileName));

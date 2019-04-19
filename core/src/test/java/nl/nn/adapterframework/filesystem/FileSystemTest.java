@@ -7,6 +7,7 @@ import static org.junit.Assert.fail;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Iterator;
 
 import org.junit.Test;
 
@@ -156,8 +157,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		
 		assertTrue("folder does not exist after creation",_folderExists(folderName));
 		
-		F f = fileSystem.toFile(folderName);
-		fileSystem.removeFolder(f);
+		fileSystem.removeFolder(folderName);
 		waitForActionToFinish();
 		
 		assertFalse("folder still exists after removal", _folderExists(folderName));
@@ -215,16 +215,15 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	@Test
 	public void writableFileSystemTestRemovingNonExistingDirectory() throws Exception {
 		exception.expectMessage("Directory does not exist.");
-		String filename = "nonExistingFolder";
+		String foldername = "nonExistingFolder";
 
 		fileSystem.configure();
 		fileSystem.open();
 
-		if(_folderExists(filename)) {
-			_deleteFolder(filename);
+		if(_folderExists(foldername)) {
+			_deleteFolder(foldername);
 		}
-		F f = fileSystem.toFile(filename);
-		fileSystem.removeFolder(f);
+		fileSystem.removeFolder(foldername);
 	}
 	
 	@Test
@@ -237,8 +236,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 
 		_createFolder(folderName);
 		waitForActionToFinish();
-		F f = fileSystem.toFile(folderName);
-		fileSystem.createFolder(f);
+		fileSystem.createFolder(folderName);
 	}
 	
 	@Test
@@ -252,8 +250,15 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		createFile(null, filename, contents);
 		waitForActionToFinish();
 		
-		F file = fileSystem.toFile(filename);
-		long size=fileSystem.getFileSize(file);
+		Iterator<F> files = fileSystem.listFiles(null);
+		F f = null;
+		if(files.hasNext()) {
+			f = files.next();
+		}
+		else {
+			fail("File not found");
+		}
+		long size=fileSystem.getFileSize(f);
 		
 		if (size< contents.length()/2 || size> contents.length()*2) {
 			fail("fileSize ["+size+"] out of range compared to ["+contents.length()+"]");
