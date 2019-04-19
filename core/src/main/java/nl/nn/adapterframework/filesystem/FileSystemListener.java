@@ -79,14 +79,12 @@ public class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IP
 			getFileSystem().open();
 			// folders can only be checked at 'open()', because the checks need an opened file system.
 			if (StringUtils.isNotEmpty(getInputFolder())) {
-				F dir = fileSystem.toFile(getInputFolder());
-				if (!fileSystem.isFolder(dir)) {
+				if (!fileSystem.folderExists(getInputFolder())) {
 					throw new ListenerException("The value for inputFolder [" + getInputFolder() + "] is invalid. It is not a folder.");
 				}
 			}
 			if (StringUtils.isNotEmpty(getInProcessFolder())) {
-				F dir = fileSystem.toFile(getInProcessFolder());
-				if (!fileSystem.isFolder(dir)) {
+				if (!fileSystem.folderExists(getInProcessFolder())) {
 					throw new ListenerException("The value for inProcessFolder [" + getInProcessFolder() + "] is invalid. It is not a folder.");
 				}
 			} else {
@@ -96,8 +94,7 @@ public class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IP
 				
 			}
 			if (StringUtils.isNotEmpty(getProcessedFolder())) {
-				F dir = fileSystem.toFile(getProcessedFolder());
-				if (!fileSystem.isFolder(dir)) {
+				if (!fileSystem.folderExists(getProcessedFolder())) {
 					throw new ListenerException("The value for processedFolder [" + getProcessedFolder() + "] is invalid. It is not a folder.");
 				}
 			}

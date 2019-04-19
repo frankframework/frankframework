@@ -2,9 +2,11 @@ package it.nl.nn.adapterframework.senders;
 
 import org.apache.commons.net.ftp.FTPFile;
 
+import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
 import nl.nn.adapterframework.filesystem.FtpFileSystem;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
+import nl.nn.adapterframework.senders.FtpFileSystemSender;
 
 /**
  *  This test class is created to test both FtpFileSystem and FtpFileSystemSender classes.
@@ -31,14 +33,14 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 	}
 
 	@Override
-	protected FtpFileSystem getFileSystem() {
-		FtpFileSystem fileSystem = new FtpFileSystem();
-		fileSystem.setHost(host);
-		fileSystem.setUsername(username);
-		fileSystem.setPassword(password);
-		fileSystem.setRemoteDirectory(remoteDirectory);
-		fileSystem.setPort(port);
+	public FileSystemSender<FTPFile, FtpFileSystem> createFileSystemSender() {
+		FtpFileSystemSender fileSystemSender = new FtpFileSystemSender();
+		fileSystemSender.setHost(host);
+		fileSystemSender.setUsername(username);
+		fileSystemSender.setPassword(password);
+		fileSystemSender.setRemoteDirectory(remoteDirectory);
+		fileSystemSender.setPort(port);
 
-		return fileSystem;
+		return fileSystemSender;
 	}
 }

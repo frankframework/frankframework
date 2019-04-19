@@ -102,12 +102,8 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 			FS fileSystem=getFileSystem();
 			fileSystem.open();
 			if (StringUtils.isNotEmpty(getInputFolder())) {
-				F folder=fileSystem.toFile(getInputFolder());
-				if (!fileSystem.exists(folder)) {
+				if (!fileSystem.folderExists(getInputFolder())) {
 					throw new SenderException("inputFolder ["+getInputFolder()+"] does not exist");
-				}
-				if (!fileSystem.isFolder(folder)) {
-					throw new SenderException("inputFolder ["+getInputFolder()+"] is not a folder");
 				}
 			}
 		} catch (FileSystemException e) {
@@ -187,9 +183,9 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 
 				return getFileAsXmlBuilder(file, "file").toXML();
 			} else if (action.equalsIgnoreCase("mkdir")) {
-				((IWritableFileSystem<F>)ifs).createFolder(file);
+				((IWritableFileSystem<F>)ifs).createFolder(message);
 			} else if (action.equalsIgnoreCase("rmdir")) {
-				((IWritableFileSystem<F>)ifs).removeFolder(file);
+				((IWritableFileSystem<F>)ifs).removeFolder(message);
 			} else if (action.equalsIgnoreCase("rename")) {
 				String destination = (String) pvl.getParameterValue("destination").getValue();
 				if (destination == null) {
@@ -208,7 +204,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 			throw new SenderException(getLogPrefix() + "unable to process ["+action+"] action for File [" + message + "]", e);
 		}
 
-		return correlationID;
+		return message;
 	}
 
 	public XmlBuilder getFileAsXmlBuilder(F f, String elementName) throws FileSystemException {
@@ -218,11 +214,9 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 		String name = ifs.getName(f);
 		fileXml.addAttribute("name", name);
 		if (!".".equals(name) && !"..".equals(name)) {
-			boolean isFolder = ifs.isFolder(f);
 			long fileSize = ifs.getFileSize(f);
 			fileXml.addAttribute("size", "" + fileSize);
 			fileXml.addAttribute("fSize", "" + Misc.toFileSize(fileSize, true));
-			fileXml.addAttribute("directory", "" + isFolder);
 			try {
 				fileXml.addAttribute("canonicalName", fileSystem.getCanonicalName(f));
 			} catch (Exception e) {

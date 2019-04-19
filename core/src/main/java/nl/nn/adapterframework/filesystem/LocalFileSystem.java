@@ -128,26 +128,29 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 		f.delete();
 	}
 
-	@Override
 	public boolean isFolder(File f) {
 		return f.isDirectory();
 	}
+	@Override
+	public boolean folderExists(String folder) throws FileSystemException {
+		return isFolder(toFile(folder));
+	}
 
 	@Override
-	public void createFolder(File f) throws FileSystemException {
-		if (!f.exists()) {
-			f.mkdir();
+	public void createFolder(String folder) throws FileSystemException {
+		if (!folderExists(folder)) {
+			toFile(folder).mkdir();
 		}else {
-			throw new FileSystemException("Create directory for [" + f + "] has failed. Directory already exists.");
+			throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
 		}
 	}
 
 	@Override
-	public void removeFolder(File f) throws FileSystemException {
-		if (f.exists()) {
-			f.delete();
+	public void removeFolder(String folder) throws FileSystemException {
+		if (folderExists(folder)) {
+			toFile(folder).delete();
 		}else {
-			throw new FileSystemException("Remove directory for [" + f.getName() + "] has failed. Directory does not exist.");
+			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
 		}
 	}
 
@@ -183,7 +186,7 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 			}
 		} else {
 			if (createFolder)
-				createFolder(toFolder);
+				createFolder(destinationFolder);
 			else {
 				throw new FileSystemException("Cannot move file. Destination folder ["+toFolder.getName()+"] does not exist.");
 			}

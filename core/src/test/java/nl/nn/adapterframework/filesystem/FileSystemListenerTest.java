@@ -13,16 +13,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> extends BasicFileSystemTest<F, FS> {
+public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> extends FileSystemTestBase {
 
 	private FileSystemListener<F, FS> fileSystemListener;
 	private Map<String,Object> threadContext;
 
-	public FileSystemListener<F, FS> createFileSystemListener() {
-		FileSystemListener<F, FS> fileSystemListener = new FileSystemListener<F, FS>();
-		fileSystemListener.setFileSystem(fileSystem);
-		return fileSystemListener;
-	}
+	public abstract FileSystemListener<F, FS> createFileSystemListener();
 
 	@Override
 	@Before
@@ -35,10 +31,10 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	@Override
 	@After
 	public void tearDown() throws Exception {
-		super.tearDown();
 		if (fileSystemListener!=null) {
 			fileSystemListener.close();
 		};
+		super.tearDown();
 	}
 	
 
@@ -118,10 +114,6 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		log.debug("afterSleep ["+afterSleep+"]");
 		
 		F rawMessage=fileSystemListener.getRawMessage(threadContext);
-		if (rawMessage!=null) {
-			long fileModTime=fileSystem.getModificationTime(rawMessage).getTime();
-			log.debug("fileModTime ["+fileModTime+"]");
-		}
 		assertNull("raw message must be null when not yet stable for 100ms",rawMessage);
 		
 		Thread.sleep(100);
@@ -199,6 +191,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	public void fileListenerTestAfterMessageProcessedDelete() throws Exception {
 		String filename = "AfterMessageProcessedDelete" + FILE1;
 		
+		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.setDelete(true);
 		fileSystemListener.configure();
 		fileSystemListener.open();
@@ -208,8 +201,9 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		// test
 		existsCheck(filename);
 
-		F file = fileSystem.toFile(filename);
-		fileSystemListener.afterMessageProcessed(null, file, null);
+		F rawMessage=fileSystemListener.getRawMessage(threadContext);
+		assertNotNull(rawMessage);
+		fileSystemListener.afterMessageProcessed(null, rawMessage, null);
 		waitForActionToFinish();
 		// test
 		assertFalse("Expected file [" + filename + "] not to be present", _fileExists(filename));
@@ -229,6 +223,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		_createFolder(processedFolder);
 		waitForActionToFinish();
 
+		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.setProcessedFolder(processedFolder);
 		fileSystemListener.configure();
 		fileSystemListener.open();
@@ -237,8 +232,9 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		assertTrue(_fileExists(fileName));
 		assertTrue(_folderExists(processedFolder));
 
-		F file= fileSystem.toFile(fileName);
-		fileSystemListener.afterMessageProcessed(null, file, null);
+		F rawMessage=fileSystemListener.getRawMessage(threadContext);
+		assertNotNull(rawMessage);
+		fileSystemListener.afterMessageProcessed(null, rawMessage, null);
 		waitForActionToFinish();
 		
 		

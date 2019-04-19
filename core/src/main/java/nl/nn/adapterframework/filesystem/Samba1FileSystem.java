@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author alisihab
  *
  */
-public class SambaFileSystem implements IWritableFileSystem<SmbFile> {
+public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -166,7 +166,6 @@ public class SambaFileSystem implements IWritableFileSystem<SmbFile> {
 		}
 	}
 
-	@Override
 	public boolean isFolder(SmbFile f) throws FileSystemException {
 		try {
 			return f.isDirectory();
@@ -174,17 +173,21 @@ public class SambaFileSystem implements IWritableFileSystem<SmbFile> {
 			throw new FileSystemException(e);
 		}
 	}
+	@Override
+	public boolean folderExists(String folder) throws FileSystemException {
+		return isFolder(toFile(folder));
+	}
 
 	@Override
-	public void createFolder(SmbFile f) throws FileSystemException {
+	public void createFolder(String folder) throws FileSystemException {
 		try {
-			if(f.exists()) {
-				throw new FileSystemException("Create directory for [" + f.getName() + "] has failed. Directory already exists.");
+			if(folderExists(folder)) {
+				throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
 			}
 			if (isForce) {
-				f.mkdirs();
+				toFile(folder).mkdirs();
 			} else {
-				f.mkdir();
+				toFile(folder).mkdir();
 			}
 		} catch (SmbException e) {
 			throw new FileSystemException(e);
@@ -192,17 +195,12 @@ public class SambaFileSystem implements IWritableFileSystem<SmbFile> {
 	}
 
 	@Override
-	public void removeFolder(SmbFile f) throws FileSystemException {
+	public void removeFolder(String folder) throws FileSystemException {
 		try {
-			if (exists(f)) {
-				if (f.isDirectory()) {
-					f.delete();
-				} else {
-					throw new FileSystemException(
-							"trying to remove file [" + f.getName() + "] which is a file instead of a directory");
-				}
+			if (folderExists(folder)) {
+				toFile(folder).delete();
 			} else {
-				throw new FileSystemException("Remove directory for [" + f.getName() + "] has failed. Directory does not exist.");
+				throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
 			}
 		} catch (SmbException e) {
 			throw new FileSystemException(e);

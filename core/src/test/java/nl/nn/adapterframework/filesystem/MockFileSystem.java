@@ -184,36 +184,35 @@ public class MockFileSystem extends MockFolder implements IWritableFileSystem<Mo
 	}
 
 	@Override
-	public boolean isFolder(MockFile f) throws FileSystemException {
-//		checkOpenAndExists(f);
-		return f.getOwner()!=null && f.getOwner().getFolders().containsKey(f.getName());
+	public boolean folderExists(String folder) throws FileSystemException {
+		return getFolders().containsKey(folder);
 	}
 
 	@Override
-	public void createFolder(MockFile f) throws FileSystemException {
+	public void createFolder(String folder) throws FileSystemException {
 		checkOpen();
-		MockFolder cur = getFolders().get(f.getName());
+		MockFolder cur = getFolders().get(folder);
 		if (cur!=null) {
 			if (cur instanceof MockFolder) {
 				throw new FileSystemException("Directory already exists.");
 			}
 			throw new FileSystemException("Entry already exists.");
 		}
-		MockFolder d = new MockFolder(f.getName(),this);
-		getFolders().put(f.getName(), d);
+		MockFolder d = new MockFolder(folder,this);
+		getFolders().put(folder, d);
 	}
 
 	@Override
-	public void removeFolder(MockFile f) throws FileSystemException {
+	public void removeFolder(String folder) throws FileSystemException {
 		checkOpen();
-		MockFolder cur = getFolders().get(f.getName());
+		MockFolder cur = getFolders().get(folder);
 		if (cur==null) {
 			throw new FileSystemException("Directory does not exist.");
 		}
 		if (!(cur instanceof MockFolder)) {
 				throw new FileSystemException("Entry is not a directory");
 		}
-		getFolders().remove(f.getName());
+		getFolders().remove(folder);
 	}
 
 	@Override
@@ -221,6 +220,7 @@ public class MockFileSystem extends MockFolder implements IWritableFileSystem<Mo
 		checkOpen();
 		return f.getAdditionalProperties();
 	}
+
 
 
 }

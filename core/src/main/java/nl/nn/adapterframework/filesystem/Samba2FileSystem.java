@@ -85,7 +85,6 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 
 	/** Share name is required*/
 	private String shareName = null;
-	private boolean isForce;
 	private boolean listHiddenFiles = false;
 
 	private SMBClient client = null;
@@ -264,10 +263,10 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	@Override
 	public String renameFile(String f, String newName, boolean force) throws FileSystemException {
 		File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN);
-		if (exists(newName) && !isForce) {
+		if (exists(newName) && !force) {
 			throw new FileSystemException("Cannot rename file. Destination file already exists.");
 		}
-		file.rename(newName, isForce);
+		file.rename(newName, force);
 		file.close();
 		return newName;
 	}
@@ -280,14 +279,14 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 				throw new FileSystemException("Cannot move file. Destination file ["+to+"] is not a folder.");
 			}
 		} else {
-			if (isForce) {
+			if (createFolder) {
 				createFolder(to);
 			} else {
 				throw new FileSystemException("Cannot move file. Destination folder ["+to+"] does not exist.");
 			}
 		}
 		String destination = to+"\\"+f;
-		file.rename(destination, isForce);
+		file.rename(destination, createFolder);
 		file.close();
 		return destination;
 	}
@@ -297,7 +296,6 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 		return null;
 	}
 
-	@Override
 	public boolean isFolder(String f) throws FileSystemException {
 		try {
 			return diskShare.getFileInformation(f).getStandardInformation().isDirectory();
@@ -313,22 +311,26 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 		}
 		
 	}
+	@Override
+	public boolean folderExists(String folder) throws FileSystemException {
+		return isFolder(toFile(folder));
+	}
 
 	@Override
-	public void createFolder(String f) throws FileSystemException {
-		if (diskShare.folderExists(f)) {
-			throw new FileSystemException("Create directory for [" + f + "] has failed. Directory already exists.");
+	public void createFolder(String folder) throws FileSystemException {
+		if (folderExists(folder)) {
+			throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
 		} else {
-			diskShare.mkdir(f);
+			diskShare.mkdir(folder);
 		}
 	}
 
 	@Override
-	public void removeFolder(String f) throws FileSystemException {
-		if (!diskShare.folderExists(f)) {
-			throw new FileSystemException("Remove directory for [" + f + "] has failed. Directory does not exist.");
+	public void removeFolder(String folder) throws FileSystemException {
+		if (!folderExists(folder)) {
+			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
 		} else {
-			diskShare.rmdir(f, true);
+			diskShare.rmdir(folder, true);
 		}
 	}
 
@@ -462,14 +464,6 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 
 	public void setRealm(String realm) {
 		this.realm = realm;
-	}
-
-	public boolean isForce() {
-		return isForce;
-	}
-
-	public void setForce(boolean isForce) {
-		this.isForce = isForce;
 	}
 
 	public boolean isListHiddenFiles() {

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPReply;
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -66,22 +67,8 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public FTPFile toFile(String filename) throws FileSystemException {
-		boolean isDirectory = false;
-		long size = 0;
-		try {
-			FTPFile[] files = ftpClient.listFiles(filename);
-			if(files.length > 1) {
-				isDirectory = true;
-			}else if(files.length == 1){
-				size = files[0].getSize();
-			}
-		} catch (IOException e) {
-			throw new FileSystemException(e);
-		}
 		FTPFile ftpFile = new FTPFile();
 		ftpFile.setName(filename);
-		ftpFile.setType(isDirectory ? FTPFile.DIRECTORY_TYPE : FTPFile.UNKNOWN_TYPE);
-		ftpFile.setSize(size);
 		return ftpFile;
 	}
 
@@ -97,15 +84,9 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	@Override
 	public boolean exists(FTPFile f) throws FileSystemException {
 		try {
-			FTPFile[] files = ftpClient.listFiles();
-			for (FTPFile o : files) {
-				if (o.isDirectory()) {
-					if ((f.getName().endsWith("/") ? o.getName() + "/" : o.getName()).equals(f.getName())) {
-						return true;
-					}
-				} else if (o.getName().equals(f.getName())) {
-					return true;
-				}
+			FTPFile[] files = ftpClient.listFiles(f.getName());
+			if(files.length > 0) {
+				return true;
 			}
 		} catch (IOException e) {
 			throw new FileSystemException(e);
@@ -118,7 +99,9 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 			@Override
 			public void close() throws IOException {
 				super.close();
-				ftpClient.completePendingCommand();
+				if(ftpClient.getReplyCode() == FTPReply.CODE_150) {
+					ftpClient.completePendingCommand();
+				}
 			}
 		};
 		return fos;
@@ -152,30 +135,40 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		}
 	}
 
+	
 	@Override
-	public boolean isFolder(FTPFile f) throws FileSystemException {
-		return f.isDirectory();
+	public boolean folderExists(String folder) throws FileSystemException {
+		boolean isDirectory = false;
+		try {
+			FTPFile[] files = ftpClient.listFiles(folder);
+			if(files.length > 1) 
+				isDirectory = true;
+		} catch (IOException e) {
+			throw new FileSystemException(e);
+		}
+		
+		return isDirectory;
 	}
 
 	@Override
-	public void createFolder(FTPFile f) throws FileSystemException {
-		if(exists(f)) {
-			throw new FileSystemException("Create directory for [" + f.getName() + "] has failed. Directory already exists.");
+	public void createFolder(String folder) throws FileSystemException {
+		if(folderExists(folder)) {
+			throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
 		}
 		try {
-			ftpClient.makeDirectory(f.getName());
+			ftpClient.makeDirectory(folder);
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
 	}
 
 	@Override
-	public void removeFolder(FTPFile f) throws FileSystemException {
-		if(!exists(f)) {
-			throw new FileSystemException("Remove directory for [" + f.getName() + "] has failed. Directory does not exist.");
+	public void removeFolder(String folder) throws FileSystemException {
+		if(!folderExists(folder)) {
+			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
 		}
 		try {
-			ftpClient.removeDirectory(f.getName());
+			ftpClient.removeDirectory(folder);
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
@@ -196,12 +189,11 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public FTPFile moveFile(FTPFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		FTPFile d=toFile(destinationFolder);
-		if(!exists(d)) {
+		if(!folderExists(destinationFolder)) {
+			if(createFolder) {
+				createFolder(destinationFolder);
+			}
 			throw new FileSystemException("Cannot move file. Destination folder ["+destinationFolder+"] does not exist.");
-		}
-		if (!isFolder(d)) {
-			throw new FileSystemException("Cannot move file. Destination ["+destinationFolder+"] is not a folder.");
 		}
 		String destinationFilename=destinationFolder+"/"+f.getName();
 		try {

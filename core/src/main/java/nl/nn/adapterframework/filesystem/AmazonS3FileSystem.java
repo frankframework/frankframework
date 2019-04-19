@@ -236,29 +236,30 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 		}
 	}
 
-	@Override
 	public boolean isFolder(S3Object f) throws FileSystemException {
 		return f.getKey().endsWith("/");
 	}
-
 	@Override
-	public void createFolder(S3Object f) throws FileSystemException {
-		String folderName = isFolder(f) ? f.getKey() : f.getKey() + "/";
-		if(s3Client.doesObjectExist(bucketName, folderName))
-			throw new FileSystemException("Create directory for [" + folderName + "] has failed. Directory already exists.");
-		s3Client.putObject(bucketName, folderName, "");
+	public boolean folderExists(String folder) throws FileSystemException {
+		return isFolder(toFile(folder));
 	}
 
 	@Override
-	public void removeFolder(S3Object f) throws FileSystemException {
-		if (exists(f)) {
-			if (isFolder(f)) {
-				s3Client.deleteObject(bucketName, f.getKey());
-			} else {
-				throw new FileSystemException("trying to remove file [" + f.getKey() + "] which is a file instead of a directory");
-			}
+	public void createFolder(String folder) throws FileSystemException {
+		String folderName = folder.endsWith("/") ? folder : folder + "/";
+		if (!folderExists(folder)) {
+			s3Client.putObject(bucketName, folderName, "");
 		} else {
-			throw new FileSystemException("Remove directory for [" + f.getKey() + "] has failed. Directory does not exist.");
+			throw new FileSystemException("Create directory for [" + folderName + "] has failed. Directory already exists.");
+		}
+	}
+
+	@Override
+	public void removeFolder(String folder) throws FileSystemException {
+		if (folderExists(folder)) {
+			s3Client.deleteObject(bucketName, folder);
+		} else {
+			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
 		}
 	}
 

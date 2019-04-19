@@ -57,7 +57,7 @@ public interface IBasicFileSystem<F> {
 	public F toFile(String filename) throws FileSystemException;
 	public boolean exists(F f) throws FileSystemException;
 
-	public boolean isFolder(F f) throws FileSystemException;
+	public boolean folderExists(String folder) throws FileSystemException;
 	public InputStream readFile(F f) throws FileSystemException, IOException;
 	public void deleteFile(F f) throws FileSystemException;
 	public F moveFile(F f, String destinationFolder, boolean createFolder) throws FileSystemException;

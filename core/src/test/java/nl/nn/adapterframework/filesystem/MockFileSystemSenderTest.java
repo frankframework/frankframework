@@ -4,13 +4,15 @@ public class MockFileSystemSenderTest extends FileSystemSenderTest <MockFile,Moc
 
 	
 	@Override
-	protected MockFileSystem getFileSystem() {
-		return new MockFileSystem();
+	protected IFileSystemTestHelper getFileSystemTestHelper() {
+		return new MockFileSystemTestHelper();
 	}
 
 	@Override
-	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new MockFileSystemTestHelper(fileSystem);
+	public FileSystemSender<MockFile, MockFileSystem> createFileSystemSender() {
+		FileSystemSender<MockFile,MockFileSystem> result=new FileSystemSender<MockFile,MockFileSystem>();
+		result.setFileSystem(((MockFileSystemTestHelper)helper).getFileSystem());
+		return result;
 	}
 
 
