@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.util.UUID;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -63,30 +64,35 @@ public class AmazonS3FileSystemSenderTest extends FileSystemSenderTest<S3Object,
 	}
 	
 	@Override
+	@Before
+	public void setUp() throws Exception {
+		if (name.getMethodName().startsWith("amazonS3Sender")) {
+			s3FileSystemSender = new AmazonS3FileSystemSender();
+			s3FileSystemSender.setAccessKey(accessKey);
+			s3FileSystemSender.setSecretKey(secretKey);
+			BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);
+	
+			AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
+					.withChunkedEncodingDisabled(chunkedEncodingDisabled).withAccelerateModeEnabled(accelerateModeEnabled)
+					.withForceGlobalBucketAccessEnabled(forceGlobalBucketAccessEnabled)
+					.withRegion(clientRegion.getName()).withCredentials(new AWSStaticCredentialsProvider(awsCreds));
+	
+			s3Client = s3ClientBuilder.build();
+		}
+		super.setUp();
+	}
+	
+	@Override
 	@After
 	public void tearDown() throws Exception {
-		if(name.getMethodName().equals("amazonS3SenderTestCopyObjectSuccess")){
-			s3Client.deleteObject(bucketName, "testcopy/testCopy.txt");
-			s3Client.deleteObject(bucketName, "copiedObject.txt");
-			s3Client.deleteBucket(bucketName);
+		if(s3Client != null) {
+			((AmazonS3FileSystemTestHelper)helper).cleanUpBucketAndShutDown(s3Client);
 		}
-		s3Client.shutdown();
 		super.tearDown();
 	}
 	
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		s3FileSystemSender = new AmazonS3FileSystemSender();
-		s3FileSystemSender.setAccessKey(accessKey);
-		s3FileSystemSender.setSecretKey(secretKey);
-		BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);
-
-		AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
-				.withChunkedEncodingDisabled(chunkedEncodingDisabled).withAccelerateModeEnabled(accelerateModeEnabled)
-				.withForceGlobalBucketAccessEnabled(forceGlobalBucketAccessEnabled)
-				.withRegion(clientRegion.getName()).withCredentials(new AWSStaticCredentialsProvider(awsCreds));
-
-		s3Client = s3ClientBuilder.build();
 		return new AmazonS3FileSystemTestHelper(accessKey, secretKey, chunkedEncodingDisabled, accelerateModeEnabled, forceGlobalBucketAccessEnabled, bucketName, clientRegion);
 	}
 	
