@@ -30,6 +30,7 @@ Ibis AdapterFramework release notes
 - Add ability to use nullvalues on cmis properties
 - Show class in IbisDoc html
 - Show FileHandler properties in IbisDoc for FilePipe
+- Add springIbisTestToolIgnoreReport.xml to ignore reports in Ladybug based on a session key
 
 
 
