@@ -2,7 +2,7 @@
   <Header>
     <MessageHeader>
       <From>
-        <Id>ibis4test</Id>
+        <Id>Ibis4Test</Id>
       </From>
       <To>
         <Location>*** character data size [96] exceeds [50] and is chomped ***ESB.PropertyAndCasualtyRetail.BS.Policy.PolicyProp...(46 characters more)</Location>

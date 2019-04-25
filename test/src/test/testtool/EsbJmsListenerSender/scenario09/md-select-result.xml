@@ -30,7 +30,7 @@
       <field name="COMMENTS">no audit trail</field>
       <field name="MESSAGE">&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"&gt;&lt;soapenv:Header&gt;&lt;MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1"&gt;
    &lt;From&gt;
-      &lt;Id&gt;ibis4test&lt;/Id&gt;
+      &lt;Id&gt;Ibis4Test&lt;/Id&gt;
    &lt;/From&gt;
    &lt;To&gt;
       &lt;Location&gt;ESB.Infrastructure.TS.Test.TestIAF.1.UpdateMessage.1.Action&lt;/Location&gt;
@@ -68,7 +68,7 @@
       <field name="COMMENTS">too many retries; ERROR</field>
       <field name="MESSAGE">&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"&gt;&lt;soapenv:Header&gt;&lt;MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1"&gt;
    &lt;From&gt;
-      &lt;Id&gt;ibis4test&lt;/Id&gt;
+      &lt;Id&gt;Ibis4Test&lt;/Id&gt;
    &lt;/From&gt;
    &lt;To&gt;
       &lt;Location&gt;ESB.Infrastructure.TS.Test.TestIAF.1.UpdateMessage.1.Action&lt;/Location&gt;
