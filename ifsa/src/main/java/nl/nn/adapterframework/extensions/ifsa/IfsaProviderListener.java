@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.extensions.ifsa;
 
+import nl.nn.adapterframework.core.IPullingListener;
+
 /**
  * Implementation of {@link IPullingListener} that acts as an IFSA-service.
  * 
@@ -32,7 +34,6 @@ package nl.nn.adapterframework.extensions.ifsa;
  *   <li>"FF": Fire & Forget protocol</li>
  *   <li>"RR": Request-Reply protocol</li>
  * </ul></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>must be set <code>true</true> for FF listeners in transacted mode</td><td>false</td></tr>
  * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>3000</td></tr>
  * </table>
  * The following session keys are set for each message:

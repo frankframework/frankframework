@@ -420,5 +420,15 @@ public class ClassUtils {
 			}).toString();
 		return result;
 	}
+	
+	/**
+	 * clean up file path, to replace websphere specific classpath references with generic ones.
+	 */
+	public static String getCleanedFilePath(String path) {
+		if(path.contains("wsjar:")) {
+			return path.replace("wsjar:", "jar:");
+		}
+		return path;
+	}
 
 }
