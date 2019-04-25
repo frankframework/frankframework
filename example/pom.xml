@@ -118,6 +118,14 @@
         </dependency>
         <dependency>
           <groupId>org.ibissource</groupId>
+          <artifactId>ibis-adapterframework-akamai</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.ibissource</groupId>
+          <artifactId>ibis-adapterframework-cmis</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.ibissource</groupId>
           <artifactId>ibis-adapterframework-ladybug</artifactId>
         </dependency>
       </dependencies>
@@ -137,6 +145,26 @@
         </file>
       </activation>
       <dependencies>
+        <dependency>
+          <groupId>org.ibissource</groupId>
+          <artifactId>ibis-adapterframework-ifsa</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.ibissource</groupId>
+          <artifactId>ibis-adapterframework-tibco</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.ibissource</groupId>
+          <artifactId>ibis-adapterframework-sap</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.ibissource</groupId>
+          <artifactId>ibis-adapterframework-coolgen</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.ibissource</groupId>
+          <artifactId>ibis-adapterframework-ibm</artifactId>
+        </dependency>
       </dependencies>
     </profile>
   </profiles>
