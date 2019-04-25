@@ -158,7 +158,7 @@
 								className="nl.nn.adapterframework.senders.IbisLocalSender"
 								javaListener="CompareStringPipe"
 							/>
-						</sender>					
+						</sender>
 					</sender>
 					<sender className="nl.nn.adapterframework.senders.SenderWrapper">
 						<sender className="nl.nn.adapterframework.senders.SenderSeries">
@@ -200,16 +200,13 @@
 								schemaLocation="test test.xsd"
 							/-->
 							<sender
-								className="nl.nn.adapterframework.senders.CommandSender"
-								command="whoami"
+								className="nl.nn.adapterframework.senders.EchoSender"
 							/>
-
-
 						</sender>
-					</sender>					
-				</sender>	
-	        	<forward name="success" path="Echo"/>
-	        </pipe>
+					</sender>
+				</sender>
+				<forward name="success" path="Echo"/>
+			</pipe>
 
 			<pipe name="Echo" className="nl.nn.adapterframework.pipes.EchoPipe">
 				<forward name="success" path="READY"/>
