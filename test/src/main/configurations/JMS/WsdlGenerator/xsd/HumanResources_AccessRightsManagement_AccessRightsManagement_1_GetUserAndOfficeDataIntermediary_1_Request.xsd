@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:types="http://ibis4userandofficedetails.nn.nl" xmlns="http://nn.nl/XSD/HumanResources/AccessRightsManagement/AccessRightsManagement/1/GetUserAndOfficeDataIntermediary/1" targetNamespace="http://nn.nl/XSD/HumanResources/AccessRightsManagement/AccessRightsManagement/1/GetUserAndOfficeDataIntermediary/1" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:import namespace="http://ibis4userandofficedetails.nn.nl" schemaLocation="GetUserAndOfficeData_TYPES.xsd"/>
+	<xsd:element name="GetUserAndOfficeDataIntermediary_Request">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="Username" type="types:text50"/>
+				<xsd:element name="Producttype" type="types:text2" minOccurs="0"/>
+				<xsd:element name="BuitendienstFunctionaris" type="xsd:boolean" minOccurs="0"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+</xsd:schema>

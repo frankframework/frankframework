@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:agm="http://www.ibissource.org/agm" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:annotation>
+		<xsd:documentation>EM - Employee Benefits - EmployeeBenefitsAgreements V10</xsd:documentation>
+		<xsd:appinfo>V1.0</xsd:appinfo>
+	</xsd:annotation>
+	<xsd:include schemaLocation="EBAgreementsSimpleTypesV1.0.xsd"/>
+	<!-- ######################  Complex Types (Classes) ###################### -->
+	<!--********************************Complex Types completionInformation***********************-->
+	<xsd:complexType name="completionInformationRLY">
+		<xsd:all>
+			<xsd:element name="ReturnCode" type="ReturnCodeType"/>
+			<xsd:element name="ReasonCode" type="ReasonCodeType" minOccurs="0"/>
+			<xsd:element name="LanguageCode" type="LanguageCodeType" minOccurs="0"/>
+			<xsd:element name="Message" type="MessageType" minOccurs="0"/>
+		</xsd:all>
+	</xsd:complexType>
+	<!--********************************Complex Types debuggingInformation***********************-->
+	<xsd:complexType name="debuggingInformationRLY">
+		<xsd:all>
+			<xsd:element name="DateTime" type="DateTimeType"/>
+			<xsd:element name="ExceptionCode" type="ExceptionCodeType"/>
+			<xsd:element name="ExceptionMessage" type="ExceptionMessageType"/>
+		</xsd:all>
+	</xsd:complexType>
+	<!--********************************Complex Types pagingRequest***********************-->
+	<xsd:complexType name="pagingREQ">
+		<xsd:all>
+			<xsd:element name="PageNumber" type="PageNumberType"/>
+			<xsd:element name="ItemsPerPage" type="ItemsPerPageType"/>
+		</xsd:all>
+	</xsd:complexType>
+	<!--********************************Complex Types pagingReply***********************-->
+	<xsd:complexType name="pagingRLY">
+		<xsd:all>
+			<xsd:element name="NumberOfPages" type="NumberOfPagesType"/>
+		</xsd:all>
+	</xsd:complexType>
+	<!--********************************Complex Types Sorting***********************-->
+	<xsd:complexType name="sortingREQ">
+		<xsd:all>
+			<xsd:element name="FieldName" type="FieldNameType"/>
+			<xsd:element name="SortOrder" type="SortOrderType"/>
+		</xsd:all>
+	</xsd:complexType>
+	<!--********************************Complex Types User***********************-->
+	<xsd:complexType name="UserREQ">
+		<xsd:sequence>
+			<xsd:element name="UserName" type="UserNameType"/>
+			<xsd:element name="Authorization" type="AuthorizationType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--********************************Complex Types Locking***********************-->
+	<xsd:complexType name="lockingREQ">
+		<xsd:all>
+			<xsd:element name="LockUserName" type="LockUserNameType"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="lockingRLY">
+		<xsd:all>
+			<xsd:element name="LockDateTime" type="LockDateTimeType"/>
+			<xsd:element name="LockUserName" type="LockUserNameType"/>
+		</xsd:all>
+	</xsd:complexType>
+	<!--********************************Complex Type Miscellaneous***********************-->
+	<xsd:complexType name="Miscellaneous">
+		<xsd:all>
+			<xsd:element name="ViewTimeStamp" type="ViewTimeStampType"/>
+			<xsd:element name="CalculateFlag" type="CalculateFlagType"/>
+			<xsd:element name="SelectionSetType" type="SelectionSetTypeType"/>
+			<xsd:element name="DestinationType" type="DestinationTypeType"/>
+			<xsd:element name="TotalObjects" type="TotalObjectsType"/>
+			<xsd:element name="AcceptedObjects" type="AcceptedObjectsType"/>
+			<xsd:element name="RejectedObjects" type="RejectedObjectsType"/>
+			<xsd:element name="Action" type="ActionType"/>
+		</xsd:all>
+	</xsd:complexType>
+	<!-- ###################### Complex Types (Attributes) ###################### -->
+</xsd:schema>

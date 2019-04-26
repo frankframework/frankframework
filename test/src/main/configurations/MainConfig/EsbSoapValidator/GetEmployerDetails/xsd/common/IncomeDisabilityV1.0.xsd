@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ig="http://www.ibissource.org/ig" targetNamespace="http://www.ibissource.org/ig" elementFormDefault="qualified" ig:agent="ig" ig:package="com.ibissource.ig">
+	<xsd:annotation>
+		<xsd:documentation>Exchange model General Insurance, Income (Disability)</xsd:documentation>
+		<xsd:appinfo>V0.1</xsd:appinfo>
+	</xsd:annotation>
+	<xsd:complexType name="incomeContract">
+		<xsd:all>
+			<xsd:element name="Number" type="ig:number"/>
+			<xsd:element name="Name" type="ig:name"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="incomeContractPart">
+		<xsd:all>
+			<xsd:element name="Number" type="ig:number"/>
+			<xsd:element name="Description" type="ig:description"/>
+			<xsd:element name="ProductName" type="ig:productName"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="incomePlan">
+		<xsd:all>
+			<xsd:element name="Number" type="ig:number"/>
+			<xsd:element name="Name" type="ig:name"/>
+			<xsd:element name="ParticipationCategory" type="ig:participationCategory"/>
+			<xsd:element name="Type" type="ig:type"/>
+			<xsd:element name="SalaryDefinition" type="ig:salaryDefinition"/>
+			<xsd:element name="WaitingTime" type="ig:waitingTime"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="incomeParticipation">
+		<xsd:all>
+			<xsd:element name="Status" type="ig:status"/>
+			<xsd:element name="StartDate" type="ig:startDate"/>
+			<xsd:element name="EndDate" type="ig:endDate"/>
+			<xsd:element name="CancellationDate" type="ig:cancellationDate" minOccurs="0"/>
+			<xsd:element name="YearlySalary" type="ig:yearlySalary"/>
+			<xsd:element name="RenewalPremium" type="ig:renewalPremium"/>
+			<xsd:element name="ClaimId" type="ig:claimId" minOccurs="0"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="insuredBenefit">
+		<xsd:all>
+			<xsd:element name="YearOfDisability" type="ig:yearOfDisability"/>
+			<xsd:element name="InsuredAmount" type="ig:insuredAmount"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="incomeClaim">
+		<xsd:all>
+			<xsd:element name="BenefitType" type="ig:benifitType"/>
+			<xsd:element name="CoverPercentage" type="ig:coverPercentage"/>
+		</xsd:all>
+	</xsd:complexType>
+	<!--******************************* GI Simple Types *****************************-->
+	<xsd:simpleType name="number">
+		<xsd:restriction base="xsd:integer">
+			<xsd:totalDigits value="15"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="name">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="30"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="description">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="100"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="productName">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="100"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="participationCategory">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="35"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="salaryDefinition">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="35"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="status">
+		<xsd:restriction base="xsd:integer">
+			<xsd:totalDigits value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="startDate">
+		<xsd:restriction base="xsd:date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="endDate">
+		<xsd:restriction base="xsd:date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="cancellationDate">
+		<xsd:restriction base="xsd:date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="yearlySalary">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="10"/>
+			<xsd:fractionDigits value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="yearOfDisability">
+		<xsd:restriction base="xsd:integer">
+			<xsd:totalDigits value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="insuredAmount">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="10"/>
+			<xsd:fractionDigits value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="renewalPremium">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="10"/>
+			<xsd:fractionDigits value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="claimId">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="8"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="coverPercentage">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="3"/>
+			<xsd:fractionDigits value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="waitingTime">
+		<xsd:restriction base="xsd:integer">
+			<xsd:totalDigits value="3"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************* EB enumeration Types *****************************-->
+	<xsd:simpleType name="benifitType">
+		<xsd:restriction base="xsd:integer">
+			<xsd:totalDigits value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="type">
+		<xsd:restriction base="xsd:integer">
+			<xsd:totalDigits value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

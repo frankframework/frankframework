@@ -1,0 +1,3 @@
+<request action="echo">
+	<value>test</value>
+</request>

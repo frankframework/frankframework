@@ -1,0 +1,7 @@
+<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope"><soapenv:Body><Account_spcService_Account_spcServiceQueryPage_Input xmlns="http://siebel.com/CustomUI" xmlns:soap="http://www.w3.org/2003/05/soap-envelope">
+	<ListOfTestAccount xmlns="http://www.siebel.com/xml/Test%20Account/Query">
+		<Account>
+			<Name>A*</Name>
+		</Account>
+	</ListOfTestAccount>
+</Account_spcService_Account_spcServiceQueryPage_Input></soapenv:Body></soapenv:Envelope>

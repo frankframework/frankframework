@@ -1,0 +1,138 @@
+<module>
+	<adapter name="Cache-Pipeline" >
+		<receiver 
+			name="Cache-Pipeline-Java">
+            <listener
+	            className="nl.nn.adapterframework.receivers.JavaListener"
+	            serviceName="ibis4test-cache-pipeline"
+	        />
+		</receiver>
+		<pipeline firstPipe="Delay">
+			<cache />
+			<exits>
+				<exit path="READY" state="success"/>
+				<exit path="ERROR" state="error"/>
+			</exits>
+
+			<pipe
+				name="Delay"
+				className="nl.nn.adapterframework.pipes.DelayPipe" >
+				<forward name="success" path="fixedresult"/>
+			</pipe>
+            <pipe 
+                className="nl.nn.adapterframework.pipes.FixedResult"
+                name="fixedresult" 
+                fileName="cache/resultTemplate.xml"
+            >
+				<param name="input" />
+                 <forward name="success" path="READY"/>
+            </pipe>
+
+		</pipeline>
+	</adapter>
+	<adapter name="Cache-Internal Helper" >
+		<receiver 
+			name="Cache-Sender-Java">
+            <listener
+	            className="nl.nn.adapterframework.receivers.JavaListener"
+	            name="ibis4test-cache-helper"
+	        />
+		</receiver>
+		<pipeline firstPipe="Delay">
+			<exits>
+				<exit path="READY" state="success"/>
+				<exit path="ERROR" state="error"/>
+			</exits>
+
+			<pipe
+				name="Delay"
+				className="nl.nn.adapterframework.pipes.DelayPipe" >
+				<forward name="success" path="fixedresult"/>
+			</pipe>
+            <pipe 
+                className="nl.nn.adapterframework.pipes.FixedResult"
+                name="fixedresult" 
+                fileName="cache/resultTemplate.xml"
+            >
+				<param name="input" />
+                 <forward name="success" path="READY"/>
+            </pipe>
+
+		</pipeline>
+	</adapter>
+	<adapter name="Cache-Sender" >
+		<receiver 
+			name="Cache-Sender-Java">
+            <listener
+	            className="nl.nn.adapterframework.receivers.JavaListener"
+	            serviceName="ibis4test-cache-sender"
+	        />
+		</receiver>
+		<pipeline firstPipe="selectSenderBasedOnRootNode">
+			<exits>
+				<exit path="READY" state="success"/>
+				<exit path="ERROR" state="error"/>
+			</exits>
+
+			<pipe
+				name="selectSenderBasedOnRootNode"
+				className="nl.nn.adapterframework.pipes.XmlSwitch" >
+			</pipe>
+
+			<pipe name="Basic" >
+				<sender className="nl.nn.adapterframework.senders.SenderWrapper" >
+					<cache />
+					<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ibis4test-cache-helper" />
+				</sender>
+				<forward name="success" path="READY"/>
+			</pipe>
+			<pipe name="SmallMemory" >
+				<sender className="nl.nn.adapterframework.senders.SenderWrapper" >
+					<cache maxElementsInMemory="2"/>
+					<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ibis4test-cache-helper" />
+				</sender>
+				<forward name="success" path="READY"/>
+			</pipe>
+			<pipe name="SmallMemoryXPath" >
+				<sender className="nl.nn.adapterframework.senders.SenderWrapper" >
+					<cache maxElementsInMemory="2" keyXPath="*/@tag" />
+					<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ibis4test-cache-helper" />
+				</sender>
+				<forward name="success" path="READY"/>
+			</pipe>
+			<pipe name="OverflowToDisk" >
+				<sender className="nl.nn.adapterframework.senders.SenderWrapper" >
+					<cache maxElementsInMemory="2" overflowToDisk="true" keyXPath="*/@tag" />
+					<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ibis4test-cache-helper" />
+				</sender>
+				<forward name="success" path="READY"/>
+			</pipe>
+			<pipe name="PersistentOverflowToDisk" >
+				<sender className="nl.nn.adapterframework.senders.SenderWrapper" >
+					<cache maxElementsInMemory="2" overflowToDisk="true" diskPersistent="true" keyXPath="*/@tag" />
+					<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ibis4test-cache-helper" />
+				</sender>
+				<forward name="success" path="READY"/>
+			</pipe>
+			<pipe name="XPath" >
+				<sender className="nl.nn.adapterframework.senders.SenderWrapper" >
+					<cache keyXPath="*/key" valueXPath="*/value[text()]" />
+					<sender className="nl.nn.adapterframework.senders.EchoSender" />
+				</sender>
+				<forward name="success" path="READY"/>
+			</pipe>
+			<pipe name="XPath-storeEmtpy" >
+				<sender className="nl.nn.adapterframework.senders.SenderWrapper" >
+					<cache keyXPath="*/key" valueXPath="*/value[text()]" cacheEmptyKeys="true" cacheEmptyValues="true" />
+					<sender className="nl.nn.adapterframework.senders.EchoSender" />
+				</sender>
+				<forward name="success" path="READY"/>
+			</pipe>
+			<pipe name="Delay" >
+				<sender className="nl.nn.adapterframework.senders.DelaySender" delayTime="500" />
+				<forward name="success" path="READY"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+	
+</module>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServiceResponse>
+  <Body>
+    <Party>
+      <partyRef>35053738</partyRef>
+      <partyTypeCD>10</partyTypeCD>
+      <Person>
+        <dob>2020-02-26</dob>
+        <forename>L</forename>
+        <sexCD>10</sexCD>
+        <surname>Oreal</surname>
+      </Person>
+      <Address>
+        <addressRef>76463338</addressRef>
+        <addressTypeCD>90</addressTypeCD>
+        <countryCD>NL</countryCD>
+        <line1>Plantsoen</line1>
+        <line2>56</line2>
+        <line3>Stad</line3>
+        <postcode>5086FB</postcode>
+      </Address>
+    </Party>
+  </Body>
+</ServiceResponse>

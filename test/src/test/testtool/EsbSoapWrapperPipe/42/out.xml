@@ -1,0 +1,50 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Header><MessageHeader xmlns="http://www.ibis.com/iaf">
+   <From>
+      <Id>Ibis4Test</Id>
+   </From>
+   <To>
+      <Location>ESB.Publishing.BS.SalesDocument.1.GetDocuments.1.Response</Location>
+   </To>
+   <HeaderFields>
+      <CPAId>n/a</CPAId>
+      <ConversationId>LPAB00000003980_0a4a9a9e-7ca9eef2_152f953bf59_-7fb3</ConversationId>
+      <MessageId>LPAB00000003980_0a4a9a9e-7ca9eef2_152f953bf59_-7fb2</MessageId>
+      <Timestamp>2016-02-19T12:40:37</Timestamp>
+   </HeaderFields>
+   <Service>
+      <Name>SalesDocument</Name>
+      <Context/>
+      <Action>
+         <Paradigm>Response</Paradigm>
+         <Name>GetDocuments</Name>
+         <Version>1</Version>
+      </Action>
+   </Service>
+</MessageHeader>
+</soapenv:Header><soapenv:Body><CalculationResponse xmlns="http://www.ing.com/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
+   <Result xmlns="http://www.ibis.com/iaf">
+      <Status>ERROR</Status>
+      <ErrorList>
+         <Error>
+            <Code>ERROR1234</Code>
+            <Reason/>
+            <Service>
+               <Name>SalesDocument</Name>
+               <Context/>
+               <Action>
+                  <Paradigm>Response</Paradigm>
+                  <Name>GetDocuments</Name>
+                  <Version>1</Version>
+               </Action>
+            </Service>
+            <DetailList>
+               <Detail>
+                  <Code>errorDetailCode</Code>
+                  <Text><![CDATA[errorDetailText]]></Text>
+               </Detail>
+            </DetailList>
+         </Error>
+      </ErrorList>
+   </Result>
+</CalculationResponse>
+</soapenv:Body></soapenv:Envelope>

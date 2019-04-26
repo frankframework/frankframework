@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://www.ibissource.org/tom" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tom="http://www.ibissource.org/tom" elementFormDefault="qualified" tom:agent="TOM" tom:package="com.ibissource.tom">
+	<!--******************************************TOM PersonNameComplexTypes**********************************-->
+	<xsd:complexType name="OrganisationName">
+		<xsd:sequence>
+			<xsd:element name="Id" type="tom:PartyNameId" minOccurs="0"/>
+			<xsd:element name="Use" type="tom:PartyNameUseEnum" minOccurs="0"/>
+			<xsd:element name="Name" type="tom:Name" minOccurs="0"/>
+			<xsd:element name="Language" type="tom:LanguageEnum" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

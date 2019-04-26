@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:rt="http://nn.nl/root" xmlns:s01="http://nn.nl/sub01" xmlns:s03="http://nn.nl/sub03"
+	xmlns:s04="http://nn.nl/sub04" xmlns:s05="http://nn.nl/sub05"
+	elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<!--
+		#################################################
+	 	| like "root.xsd" but without default namespace	|
+	 	| and without targetNamespace					|
+		#################################################
+	-->
+	<xs:include schemaLocation="sub01.xsd" />
+	<xs:import namespace="http://nn.nl/root" schemaLocation="sub02.xsd" />
+	<xs:import namespace="http://nn.nl/sub03" schemaLocation="sub03.xsd" />
+	<xs:import namespace="http://nn.nl/sub04" schemaLocation="sub04.xsd" />
+	<xs:element name="root">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="string" type="xs:string" />
+				<xs:element ref="sub01" />
+				<xs:element ref="rt:sub02" />
+				<xs:element ref="s03:sub03" />
+				<xs:element ref="s04:sub04" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

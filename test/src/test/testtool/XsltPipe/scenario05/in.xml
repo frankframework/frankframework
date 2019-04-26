@@ -1,0 +1,14 @@
+<request xmlns="http://www.ibissource.org/tom" action="copyNamespace">
+  <Agreement>
+    <InternalExternalIndicator>01</InternalExternalIndicator>
+    <InternalAgreement>
+      <Id>aaaaaaaaaaaaaaaaaaaa01</Id>
+      <AgreementType>EURO_POLICY_LABORA</AgreementType>
+      <SalesOrganisation>
+        <SalesOrgRole>23</SalesOrgRole>
+        <Id>001004</Id>
+      </SalesOrganisation>
+    </InternalAgreement>
+  </Agreement>
+  <AsIsDate>2001-12-17</AsIsDate>
+</request>

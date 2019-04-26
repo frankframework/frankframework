@@ -1,0 +1,5 @@
+<browse>
+	<jmsRealm>qcf_tibco_esb_ff</jmsRealm>
+	<destinationName>jms/UpdateMessageAction</destinationName>
+	<destinationType>QUEUE</destinationType>
+</browse>

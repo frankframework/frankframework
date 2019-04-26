@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+xmlns="http://nn.nl/XSD/AccountInformation/DomainValues" 
+targetNamespace="http://nn.nl/XSD/AccountInformation/DomainValues"
+ elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:simpleType name="InvoiceNumberType">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="50"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="InvoiceDateType">
+		<xs:restriction base="DateType"/>
+	</xs:simpleType>
+	<xs:simpleType name="InvoiceDescriptionType">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="32"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="InvoiceAmountType">
+		<xs:restriction base="AmountType"/>
+	</xs:simpleType>
+	<xs:simpleType name="InvoiceDueDateType">
+		<xs:restriction base="DateType"/>
+	</xs:simpleType>
+	<xs:simpleType name="InvoiceIBANType">
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="34"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="BatchIdType">
+		<xs:annotation>
+			<xs:documentation>BatchId is used to group payments together in the MailToPay administrator interface</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="50"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ConcerningType">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="35"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ExpirationDateType">
+		<xs:annotation>
+			<xs:documentation>ExpirationDate is the date after which the Payment URL expires</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="DateType"/>
+	</xs:simpleType>
+	<xs:simpleType name="PaymentReferenceType">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="35"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ReturnURLType">
+		<xs:annotation>
+			<xs:documentation>ReturnURL is the URL to which the customer should be send after completing the transaction</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="255"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="StatusCodeType">
+		<xs:restriction base="xs:int"/>
+	</xs:simpleType>
+	<xs:simpleType name="StatusDateType">
+		<xs:restriction base="DateType"/>
+	</xs:simpleType>
+	<xs:simpleType name="StatusDescriptionType">
+		<xs:restriction base="xs:string"/>
+	</xs:simpleType>
+	<xs:simpleType name="PaymentIdType">
+		<xs:restriction base="xs:int"/>
+	</xs:simpleType>
+	<xs:simpleType name="PaymentURLType">
+		<xs:restriction base="xs:string"/>
+	</xs:simpleType>
+	<xs:simpleType name="FirstNameType">
+		<xs:annotation>
+			<xs:documentation>FirstName restriction is based on restrictions in the MailToPay API</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="50"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="LastNameType">
+		<xs:annotation>
+			<xs:documentation>LastName restriction is based on restrictions in the MailToPay API</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="50"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="DateType">
+		<xs:restriction base="xs:date"/>
+	</xs:simpleType>
+	<xs:simpleType name="AmountType">
+		<xs:annotation>
+			<xs:documentation>Amount format</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:decimal">
+			<xs:totalDigits value="13"/>
+			<xs:fractionDigits value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

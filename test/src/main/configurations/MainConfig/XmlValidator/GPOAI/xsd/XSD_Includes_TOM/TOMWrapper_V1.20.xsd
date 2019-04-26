@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:V1.00TOMProxy="http://www.bom.com" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.ibissource.org/tom">
+	<xsd:include schemaLocation="../XSD_Includes_TOM/V1.00_TOMDemographicTypes.xsd"/>
+	<xsd:include schemaLocation="../XSD_Includes_TOM/V1.00_TOMIndustryTypes.xsd"/>
+	<xsd:include schemaLocation="../XSD_Includes_TOM/V1.00_TOMOccupationTypes.xsd"/>
+	<xsd:include schemaLocation="../XSD_Includes_TOM/V1.00_TOMOrganisationNameComplexTypes.xsd"/>
+	<xsd:include schemaLocation="../XSD_Includes_TOM/V1.00_TOMPartyAgreementRoleSimpleTypes.xsd"/>
+	<xsd:include schemaLocation="../XSD_Includes_TOM/V1.11_TOMNameSimpleTypes.xsd"/>
+	<xsd:include schemaLocation="../XSD_Includes_TOM/V1.11_TOMPersonNameComplexTypes.xsd"/>
+	<xsd:include schemaLocation="../XSD_Includes_TOM/V1.20_TOMAgreementSimpleTypes.xsd"/>
+	<xsd:include schemaLocation="../XSD_Includes_TOM/V1.21_TOMGenericSimpleTypes.xsd"/>
+	<xsd:include schemaLocation="../XSD_Includes_TOM/V1.30_TOMContactPointComplexTypes.xsd"/>
+	<xsd:include schemaLocation="../XSD_Includes_TOM/V1.42_TOMContactPointSimpleTypes.xsd"/>
+	<xsd:include schemaLocation="../XSD_Includes_TOM/V1.00_TOMTransactionEnvelope.xsd"/>
+	<xsd:include schemaLocation="../XSD_Includes_TOM/V1.01_TOMLists.xsd"/>
+</xsd:schema>

@@ -1,0 +1,141 @@
+<results count="2">
+<result item="1">
+<result>
+	<fielddefinition>
+		<field name="TKEY" type="NUMERIC" columnDisplaySize="22" precision="10" scale="0" isCurrency="true" columnTypeName="NUMBER" columnClassName="java.math.BigDecimal"/>
+		<field name="TCHAR" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHAR" columnClassName="java.lang.String"/>
+		<field name="TVARCHAR" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
+		<field name="TNUMBER" type="NUMERIC" columnDisplaySize="22" precision="17" scale="5" isCurrency="true" columnTypeName="NUMBER" columnClassName="java.math.BigDecimal"/>
+		<field name="TTIMESTAMP" type="TIMESTAMP" columnDisplaySize="11" precision="0" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="oracle.sql.TIMESTAMP"/>
+		<field name="TDATE" type="TIMESTAMP" columnDisplaySize="7" precision="0" scale="0" isCurrency="false" columnTypeName="DATE" columnClassName="java.sql.Timestamp"/>
+		<field name="TBLOB1" type="BLOB" columnDisplaySize="4000" precision="-1" scale="0" isCurrency="false" columnTypeName="BLOB" columnClassName="oracle.sql.BLOB"/>
+		<field name="TCLOB" type="CLOB" columnDisplaySize="4000" precision="-1" scale="0" isCurrency="false" columnTypeName="CLOB" columnClassName="oracle.sql.CLOB"/>
+		<field name="TBLOB2" type="BLOB" columnDisplaySize="4000" precision="-1" scale="0" isCurrency="false" columnTypeName="BLOB" columnClassName="oracle.sql.BLOB"/>
+	</fielddefinition>
+	<rowset>
+		<row number="0">
+			<field name="TKEY">100</field>
+			<field name="TCHAR">Y</field>
+			<field name="TVARCHAR" null="true"></field>
+			<field name="TNUMBER" null="true"></field>
+			<field name="TTIMESTAMP">2015-3-11 11:2:10. 474000000</field>
+			<field name="TDATE" null="true"></field>
+			<field name="TBLOB1" null="true"/>
+			<field name="TCLOB">hallo---------1</field>
+			<field name="TBLOB2" null="true"/>
+		</row>
+		<row number="1">
+			<field name="TKEY">101</field>
+			<field name="TCHAR">Y</field>
+			<field name="TVARCHAR" null="true"></field>
+			<field name="TNUMBER" null="true"></field>
+			<field name="TTIMESTAMP">2015-3-11 11:2:10. 344000000</field>
+			<field name="TDATE" null="true"></field>
+			<field name="TBLOB1" null="true"/>
+			<field name="TCLOB">hallo---------2</field>
+			<field name="TBLOB2" null="true"/>
+		</row>
+		<row number="2">
+			<field name="TKEY">102</field>
+			<field name="TCHAR">Y</field>
+			<field name="TVARCHAR" null="true"></field>
+			<field name="TNUMBER" null="true"></field>
+			<field name="TTIMESTAMP">2015-3-11 11:2:10. 474000000</field>
+			<field name="TDATE" null="true"></field>
+			<field name="TBLOB1" null="true"/>
+			<field name="TCLOB">hallo---------3</field>
+			<field name="TBLOB2" null="true"/>
+		</row>
+		<row number="3">
+			<field name="TKEY">103</field>
+			<field name="TCHAR">Y</field>
+			<field name="TVARCHAR" null="true"></field>
+			<field name="TNUMBER" null="true"></field>
+			<field name="TTIMESTAMP">2015-3-11 11:2:10. 474000000</field>
+			<field name="TDATE" null="true"></field>
+			<field name="TBLOB1" null="true"/>
+			<field name="TCLOB">hallo---------4</field>
+			<field name="TBLOB2" null="true"/>
+		</row>
+		<row number="4">
+			<field name="TKEY">104</field>
+			<field name="TCHAR">X</field>
+			<field name="TVARCHAR" null="true"></field>
+			<field name="TNUMBER" null="true"></field>
+			<field name="TTIMESTAMP">2015-3-11 11:2:10. 454000000</field>
+			<field name="TDATE" null="true"></field>
+			<field name="TBLOB1" null="true"/>
+			<field name="TCLOB">hallo---------5</field>
+			<field name="TBLOB2" null="true"/>
+		</row>
+		<row number="5">
+			<field name="TKEY">105</field>
+			<field name="TCHAR">Y</field>
+			<field name="TVARCHAR" null="true"></field>
+			<field name="TNUMBER" null="true"></field>
+			<field name="TTIMESTAMP">2015-3-11 11:2:10. 474000000</field>
+			<field name="TDATE" null="true"></field>
+			<field name="TBLOB1" null="true"/>
+			<field name="TCLOB">hallo---------6</field>
+			<field name="TBLOB2" null="true"/>
+		</row>
+		<row number="6">
+			<field name="TKEY">106</field>
+			<field name="TCHAR">Y</field>
+			<field name="TVARCHAR" null="true"></field>
+			<field name="TNUMBER" null="true"></field>
+			<field name="TTIMESTAMP">2015-3-11 11:2:10. 484000000</field>
+			<field name="TDATE" null="true"></field>
+			<field name="TBLOB1" null="true"/>
+			<field name="TCLOB">hallo---------7</field>
+			<field name="TBLOB2" null="true"/>
+		</row>
+		<row number="7">
+			<field name="TKEY">107</field>
+			<field name="TCHAR">Y</field>
+			<field name="TVARCHAR" null="true"></field>
+			<field name="TNUMBER" null="true"></field>
+			<field name="TTIMESTAMP">2015-3-11 11:2:10. 484000000</field>
+			<field name="TDATE" null="true"></field>
+			<field name="TBLOB1" null="true"/>
+			<field name="TCLOB">hallo---------8</field>
+			<field name="TBLOB2" null="true"/>
+		</row>
+		<row number="8">
+			<field name="TKEY">108</field>
+			<field name="TCHAR">Y</field>
+			<field name="TVARCHAR" null="true"></field>
+			<field name="TNUMBER" null="true"></field>
+			<field name="TTIMESTAMP">2015-3-11 11:2:10. 484000000</field>
+			<field name="TDATE" null="true"></field>
+			<field name="TBLOB1" null="true"/>
+			<field name="TCLOB">hallo---------9</field>
+			<field name="TBLOB2" null="true"/>
+		</row>
+		<row number="9">
+			<field name="TKEY">109</field>
+			<field name="TCHAR">Z</field>
+			<field name="TVARCHAR" null="true"></field>
+			<field name="TNUMBER" null="true"></field>
+			<field name="TTIMESTAMP" null="true"></field>
+			<field name="TDATE" null="true"></field>
+			<field name="TBLOB1" null="true"/>
+			<field name="TCLOB">hallo---------10</field>
+			<field name="TBLOB2" null="true"/>
+		</row>
+	</rowset>
+</result>
+</result>
+<result item="2">
+<result>
+	<fielddefinition>
+		<field name="COUNT(*)" type="NUMERIC" columnDisplaySize="22" precision="0" scale="0" isCurrency="true" columnTypeName="NUMBER" columnClassName="java.math.BigDecimal"/>
+	</fielddefinition>
+	<rowset>
+		<row number="0">
+			<field name="COUNT(*)">1</field>
+		</row>
+	</rowset>
+</result>
+</result>
+</results>

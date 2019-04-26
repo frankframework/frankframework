@@ -1,0 +1,4 @@
+<attachments xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+<first>thisisatextfile</first>
+<second>thisisatextfile</second>
+</attachments>

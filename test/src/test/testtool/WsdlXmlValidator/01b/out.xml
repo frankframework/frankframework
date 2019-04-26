@@ -1,0 +1,5 @@
+<Error>
+<errorCode>FAILURE</errorCode>
+<errorMessage>Validation using WsdlXmlValidator with '/WsdlXmlValidator/GetPartyBasicDataBanking/Customer_BankSavingsCustomer_1.wsdl' failed:
+/Envelope/Body/GetPartyBasicDataBanking_Request/BankSparen/PRD/KLT: at (34,35): cvc-complex-type.2.4.a: Invalid content was found starting with element '{"http://nn.nl/XSD/BankSavings/Customer/BankSavingsCustomer/1/GetPartyBasicDataBanking/1/Request":KLT_NA_RELNUM2}'. One of '{"http://nn.nl/XSD/BankSavings/Customer/BankSavingsCustomer/1/GetPartyBasicDataBanking/1/Request":KLT_NA_RELNUM}' is expected.</errorMessage>
+</Error>

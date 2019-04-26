@@ -1,0 +1,68 @@
+<module>
+	<adapter name="MultipleSessionKeys_Child">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="MultipleSessionKeys_Child">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				name="MultipleSessionKeys_Child" />
+		</receiver>
+		<pipeline firstPipe="echo">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="echo" className="nl.nn.adapterframework.pipes.XsltPipe"
+				xpathExpression="concat($sk, '_', $sk2, '_', $sk3, '_', $sk4, '_', $sk5)"
+				getInputFromFixedValue="&lt;dummy/&gt;">
+				<param name="sk" sessionKey="sessionkey" defaultValue="[NA]" />
+				<param name="sk2" sessionKey="sessionkey2" defaultValue="[NA]" />
+				<param name="sk3" sessionKey="sessionkie3" defaultValue="[NA]" />
+				<param name="sk4" sessionKey="sessionkey4" defaultValue="[NA]" />
+				<param name="sk5" sessionKey="sessionkey5" defaultValue="[NA]" />
+				<forward name="success" path="text2xml" />
+			</pipe>
+			<pipe name="text2xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe"
+				xmlTag="xml">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="MultipleSessionKeys">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="MultipleSessionKeys">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4test-MultipleSessionKeys" />
+		</receiver>
+		<pipeline firstPipe="put">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="put" className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="sessionkey" value="hallo">
+				<forward name="success" path="put2" />
+			</pipe>
+			<pipe name="put2" className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="sessionkey2" value="goodbye">
+				<forward name="success" path="put3" />
+			</pipe>
+			<pipe name="put3" className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="sessionkie3" value="morning">
+				<forward name="success" path="put4" />
+			</pipe>
+			<pipe name="put4" className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="sessionkey4" value="bientot">
+				<forward name="success" path="put5" />
+			</pipe>
+			<pipe name="put5" className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="sessionkey5" value="hello">
+				<forward name="success" path="child" />
+			</pipe>
+			<pipe name="child"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender"
+					javaListener="MultipleSessionKeys_Child">
+					<param name="sessionkey" sessionKey="*" />
+				</sender>
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>

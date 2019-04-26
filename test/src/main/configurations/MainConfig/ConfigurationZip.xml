@@ -1,0 +1,237 @@
+<module>
+	<adapter name="Zip - Main" >
+		<receiver 
+			name="Zip - Main" 
+            maxRetries="0">
+			<listener 
+				className="nl.nn.adapterframework.receivers.JavaListener" 
+				serviceName="ibis4test-unzip"
+			/>
+		</receiver>
+		<pipeline firstPipe="selectSenderBasedOnRootElement">
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+			<pipe
+				name="selectSenderBasedOnRootElement"
+				getInputFromSessionKey="originalMessage"
+				className="nl.nn.adapterframework.pipes.XmlSwitch"  >
+			</pipe>
+
+			<pipe
+				name="UnZip"
+				className="nl.nn.adapterframework.pipes.UnzipPipe" 
+				directory="${i4ti.dir}/zip"
+				>
+				<forward name="success" path="READY"/>
+			</pipe>
+			
+			<pipe
+				name="NestedZipRead"
+				getInputFromSessionKey="stream"
+				className="nl.nn.adapterframework.compression.ZipIteratorPipe" 
+				
+				>
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ibis4test-unzipNested" >
+					<param name="zipdata" sessionKey="zipdata" />
+				</sender>
+				<forward name="success" path="READY"/>
+			</pipe>
+
+			<pipe
+				name="ReCreateZip"
+				className="nl.nn.adapterframework.pipes.FixedResult" 
+				returnString="${i4ti.dir}/zip/recreated.zip"
+				>
+				<forward name="success" path="ReCreateZip2"/>
+			</pipe>
+							
+			<pipe
+				name="ReCreateZip2"
+				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
+				action="open"
+				>
+					<param name="filename" value="${i4ti.dir}/zip/out.zip" />
+				<forward name="success" path="ReCreateZip3"/>
+			</pipe>
+			<pipe
+				name="ReCreateZip3"
+				getInputFromSessionKey="stream"
+				className="nl.nn.adapterframework.compression.ZipIteratorPipe" 
+				
+				>
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ibis4test-RecreateZip" >
+					<param name="zipdata" sessionKey="zipdata" />
+					<param name="zipwriterhandle" sessionKey="zipwriterhandle" />
+				</sender>
+				<forward name="success" path="ReCreateZip4"/>
+			</pipe>
+			<pipe
+				name="ReCreateZip4"
+				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
+				action="close"
+				>
+				<forward name="success" path="READY"/>
+			</pipe>
+
+			<pipe
+				name="SimpleZip"
+				className="nl.nn.adapterframework.pipes.FixedResult" 
+				returnString="${i4ti.dir}/zip/simple.zip"
+				>
+				<forward name="success" path="SimpleZip2"/>
+			</pipe>
+			<pipe
+				name="SimpleZip2"
+				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
+				action="open"
+				>
+				<forward name="success" path="SimpleZip3"/>
+			</pipe>
+			<pipe
+				name="SimpleZip3"
+				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
+				action="write"
+				getInputFromSessionKey="originalMessage"
+				>
+					<param name="filename" value="zipentry.txt" />
+				<forward name="success" path="SimpleZip4"/>
+			</pipe>
+			<pipe
+				name="SimpleZip4"
+				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
+				action="close"
+				>
+				<forward name="success" path="READY"/>
+			</pipe>
+
+			<pipe
+				name="SimpleZipX"
+				className="nl.nn.adapterframework.pipes.FixedResult" 
+				returnString="${i4ti.dir}/zip/simple.zip"
+				>
+				<forward name="success" path="SimpleZipX2"/>
+			</pipe>
+			<pipe
+				name="SimpleZipX2"
+				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
+				action="open"
+				>
+				<forward name="success" path="SimpleZipX3"/>
+			</pipe>
+			<pipe
+				name="SimpleZipX3"
+				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
+				action="write" completeFileHeader="true"
+				getInputFromSessionKey="originalMessage"
+				>
+					<param name="filename" value="zipentry.xml" />
+				<forward name="success" path="SimpleZipX4"/>
+			</pipe>
+			<pipe
+				name="SimpleZipX4"
+				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
+				action="close"
+				>
+				<forward name="success" path="READY"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+
+	<adapter name="Zip-UnZipNested" >
+
+		<receiver
+			name="Java UnZipNested"
+            maxRetries="0">
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="ibis4test-unzipNested"
+			/>
+		</receiver>
+
+		<pipeline firstPipe="ReadOuterZipEntry">
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+			
+			<pipe
+				name="ReadOuterZipEntry"
+				getInputFromSessionKey="zipdata"
+				className="nl.nn.adapterframework.compression.ZipIteratorPipe" 
+				streamingContents="false"
+				contentsSessionKey="nestedZipData"
+				charset="ISO-8859-1"
+				closeInputstreamOnExit="false" 
+				>
+				<sender className="nl.nn.adapterframework.senders.FixedResultSender" 
+					fileName="zip/NameAndContents.txt"
+				 >
+					<param name="name"  />
+					<param name="contents" sessionKey="nestedZipData" />
+				</sender>
+				<forward name="success" path="READY"/>
+			</pipe>
+			
+		</pipeline>
+	</adapter>
+
+
+	<adapter name="Zip-Recreate 1" >
+		<receiver 
+			name="Zip-Recreate 1" 
+            maxRetries="0">
+			<listener 
+				className="nl.nn.adapterframework.receivers.JavaListener" 
+				name="ibis4test-RecreateZip"
+			/>
+		</receiver>
+		<pipeline firstPipe="make entry">
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+			
+			<pipe
+				name="make entry"
+				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
+				action="stream"
+				>
+				<param name="filename" />
+				<forward name="success" path="start nested zip"/>
+			</pipe>
+			<pipe
+				name="start nested zip"
+				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
+				action="open" 
+				zipWriterHandle="zipwriter2"
+				closeOutputstreamOnExit="false" 
+				>
+				<forward name="success" path="ZipRead"/>
+			</pipe>
+			<pipe
+				name="ZipRead"
+				getInputFromSessionKey="zipdata"
+				className="nl.nn.adapterframework.compression.ZipIteratorPipe" 
+				streamingContents="false"
+				charset="ISO-8859-1"
+				contentsSessionKey="nestedZipData"
+				closeInputstreamOnExit="false" 
+				>
+				<sender className="nl.nn.adapterframework.compression.ZipWriterSender" 
+					zipWriterHandle="zipwriter2"
+				>
+					<param name="contents" sessionKey="nestedZipData" />
+				</sender>
+				<forward name="success" path="close nested zip"/>
+			</pipe>
+			<pipe
+				name="close nested zip"
+				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
+				action="close" 
+				zipWriterHandle="zipwriter2"
+				>
+				<forward name="success" path="READY"/>
+			</pipe>
+			
+		</pipeline>
+	</adapter>
+</module>

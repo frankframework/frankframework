@@ -1,0 +1,1 @@
+<xml xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">I just sent some text! :)</xml>

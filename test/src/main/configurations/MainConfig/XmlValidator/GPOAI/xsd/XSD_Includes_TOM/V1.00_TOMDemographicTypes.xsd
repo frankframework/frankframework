@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://www.ibissource.org/tom" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tom="http://www.ibissource.org/tom" elementFormDefault="qualified" tom:agent="TOM" tom:package="com.ibissource.tom">
+	<!--******************************************TOM Demographic Types**********************************-->
+	<xsd:complexType name="LegalForm">
+		<xsd:sequence>
+			<xsd:element name="LegalFormEnum" type="tom:LegalFormEnum" minOccurs="0"/>
+			<xsd:element name="Occurrence" type="tom:Occurrence" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="MaritalStatus">
+		<xsd:sequence>
+			<xsd:element name="MaritalStatusEnum" type="tom:MaritalStatusEnum" minOccurs="0"/>
+			<xsd:element name="Occurrence" type="tom:Occurrence" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="LiquidationReason">
+		<xsd:sequence>
+			<xsd:element name="LiquidationReasonEnum" type="tom:LiquidationReasonEnum" minOccurs="0"/>
+			<xsd:element name="Occurrence" type="tom:Occurrence" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="GenderEnum">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+		
+			<xsd:maxInclusive value="9"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="LiquidationReasonEnum">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+		
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="LegalFormEnum">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			
+			<xsd:maxInclusive value="99"/>
+			
+			
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="MaritalStatusEnum">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

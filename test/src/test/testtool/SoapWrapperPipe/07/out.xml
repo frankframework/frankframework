@@ -1,0 +1,7 @@
+<Request xmlns="http://www.nn.nl/SoapWrapperPipe" action="sendMessage">
+			<a>test</a>
+			<b>_</b>
+			<c/>
+			<d> te st </d>
+			<e>_____</e>
+		</Request>

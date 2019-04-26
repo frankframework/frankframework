@@ -1,0 +1,44 @@
+<results count="3">
+<result item="1">
+<results count="3">
+<result item="1">
+name: 3-c.txt
+contents: 
+file 3 c
+</result>
+<result item="2">
+name: 3-a.txt
+contents: 
+file 3 a
+</result>
+<result item="3">
+name: 3-b.txt
+contents: 
+file 3 b
+</result>
+</results>
+</result>
+<result item="2">
+<results count="1">
+<result item="1">
+name: 1-a.txt
+contents: 
+file 1 a
+</result>
+</results>
+</result>
+<result item="3">
+<results count="2">
+<result item="1">
+name: 2-b.txt
+contents: 
+file 2 b
+</result>
+<result item="2">
+name: 2-a.txt
+contents: 
+file 2 a
+</result>
+</results>
+</result>
+</results>

@@ -1,0 +1,23 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" ><soapenv:Header><MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
+   <From>
+      <Id>Ibis4Test</Id>
+   </From>
+   <To>
+      <Location>ESB.TestIAF.BS.Document.SalesDocument.1.GetDocuments.1.Request</Location>
+   </To>
+   <HeaderFields>
+      <CPAId>n/a</CPAId>
+      <ConversationId>wpnld9313333_0a4abac3--2258d207_1370e2dc3da_-7ff0</ConversationId>
+      <MessageId>wpnld9313333_0a4abac3--2258d207_1370e2dc3da_-7fef</MessageId>
+      <Timestamp>2012-05-02T17:32:56</Timestamp>
+   </HeaderFields>
+   <Service>
+      <Name>Document</Name>
+      <Context>SalesDocument</Context>
+      <Action>
+         <Paradigm>Request</Paradigm>
+         <Name>GetDocuments</Name>
+         <Version>1</Version>
+      </Action>
+   </Service>
+</MessageHeader></soapenv:Header><soapenv:Body><ServiceResponse xmlns="http://policymanagement.nn.nl/TestEsbValidator"><Body><returnCode>1</returnCode><reasonCode>NOT_OK</reasonCode></Body></ServiceResponse></soapenv:Body></soapenv:Envelope>

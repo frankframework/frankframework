@@ -1,0 +1,6 @@
+<Response xmlns="http://www.nn.nl/InputOutputWrapper" xmlns:cmh="http://nn.nl/XSD/Generic/MessageHeader/1">
+	<Body>text</Body>
+	<cmh:Result>
+		<cmh:Status>ERROR</cmh:Status>
+	</cmh:Result>
+</Response>

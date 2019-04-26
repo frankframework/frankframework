@@ -1,0 +1,10 @@
+<result>
+	<rowset>
+		<row number="0">
+			<field name="NAME">CITY</field>
+			<field name="VALUE">Rotterdam</field>
+			<field name="LASTMODDATE" null="true"></field>
+			<field name="LASTMODBY" null="true"></field>
+		</row>
+	</rowset>
+</result>

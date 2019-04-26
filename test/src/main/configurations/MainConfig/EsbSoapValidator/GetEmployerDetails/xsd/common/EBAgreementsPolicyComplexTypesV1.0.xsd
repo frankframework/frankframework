@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:agm="http://www.ibissource.org/agm" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:annotation>
+		<xsd:documentation>EM - Employee Benefits - EmployeeBenefitsAgreements V10</xsd:documentation>
+		<xsd:appinfo>V1.0</xsd:appinfo>
+	</xsd:annotation>
+	<xsd:include schemaLocation="EBAgreementsSimpleTypesV1.0.xsd"/>
+	<!-- ********************************** Complex Types (Classes) ********************************** -->
+	<xsd:complexType name="EmployeeBenefitsParticipationType">
+		<xsd:sequence>
+			<xsd:element name="AgreementType" type="AgreementTypeType"/>
+			<xsd:element name="PlanNumber" type="PlanNumberType"/>
+			<xsd:element name="PolicyNumber" type="PolicyNumberType"/>
+			<xsd:element name="ContractNumber" type="ContractNumberType"/>
+			<xsd:element name="Status" type="StatusType"/>
+			<xsd:element name="Salary" type="SalaryType"/>
+			<xsd:element name="StartDate" type="StartDateType"/>
+			<xsd:element name="EndDate" type="EndDateType"/>
+			<xsd:element name="LastMutationDate" type="LastMutationDateType"/>
+			<xsd:element name="AdmissionDate" type="AdmissionDateType"/>
+			<xsd:element name="WeightedParttimePercentage" type="WeightedParttimePercentageType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GenericClaimType">
+		<xsd:sequence>
+			<xsd:element name="Id" type="IdType"/>
+			<xsd:element name="ThemeType" type="ThemeTypeType"/>
+			<xsd:element name="Type" type="TypeType"/>
+			<xsd:element name="TypeDescription" type="TypeDescriptionType"/>
+			<xsd:element name="NameOrganisation" type="NameOrganisationType"/>
+			<xsd:element name="Description" type="DescriptionType"/>
+			<xsd:element name="StartAge" type="StartAgeType"/>
+			<xsd:element name="EndAge" type="EndAgeType"/>
+			<xsd:element name="MinStartAge" type="MinStartAgeType"/>
+			<xsd:element name="MaxStartAge" type="MaxStartAgeType"/>
+			<xsd:element name="MinEndAge" type="MinEndAgeType"/>
+			<xsd:element name="MaxEndAge" type="MaxEndAgeType"/>
+			<xsd:element name="Amount" type="AmountType"/>
+			<xsd:element name="StartEventType" type="StartEventTypeType"/>
+			<xsd:element name="EndEventType" type="EndEventTypeType"/>
+			<xsd:element name="YearPremium" type="YearPremiumType"/>
+			<xsd:element name="ExpectedAmount" type="ExpectedAmountType"/>
+			<xsd:element name="ExpectedPercentage" type="ExpectedPercentageType"/>
+			<xsd:element name="Duration" type="DurationType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="FurtherTermType">
+		<xsd:sequence>
+			<xsd:element name="Text" type="TextType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PensionParticipationMutationType">
+		<xsd:sequence>
+			<xsd:element name="MutationNumber" type="MutationNumberType"/>
+			<xsd:element name="OrderDate" type="OrderDateType"/>
+			<xsd:element name="MutationDate" type="MutationDateType"/>
+			<xsd:element name="MutationType" type="MutationTypeType"/>
+			<xsd:element name="ProcessedDateTime" type="ProcessedDateTimeType"/>
+			<xsd:element name="TotalGrossAmount" type="TotalGrossAmountType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PolicyEntryBookingType">
+		<xsd:sequence>
+			<xsd:element name="BookingNumber" type="BookingNumberType"/>
+			<xsd:element name="BookingType" type="BookingTypeType"/>
+			<xsd:element name="DueDate" type="DueDateType"/>
+			<xsd:element name="DueEnddate" type="DueEnddateType"/>
+			<xsd:element name="GrossAmount" type="GrossAmountType"/>
+			<xsd:element name="IsCosts" type="IsCostsType"/>
+			<xsd:element name="ContinuousCosts" type="ContinuousCostsType"/>
+			<xsd:element name="CommissionCosts" type="CommissionCostsType"/>
+			<xsd:element name="TransactionCosts" type="TransactionCostsType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

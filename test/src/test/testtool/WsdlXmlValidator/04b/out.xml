@@ -1,0 +1,5 @@
+<Error>
+<errorCode>FAILURE</errorCode>
+<errorMessage>Validation using WsdlXmlValidator with '/WsdlXmlValidator/NoDefaultNamespace/NoDefaultNamespace.wsdl' failed:
+/Envelope/Body/Request: Unknown namespace 'http://wrongTargetNamespace'</errorMessage>
+</Error>
