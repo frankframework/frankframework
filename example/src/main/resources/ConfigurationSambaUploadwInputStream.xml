@@ -1,0 +1,34 @@
+<module>
+	<adapter name="SambaSenderUploadwInputStream" active="true">
+		<receiver name="NotifyPostedAmount-Receiver"
+			className="nl.nn.adapterframework.receivers.GenericReceiver">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"	name="SambaSender" />
+		</receiver>	
+		<pipeline firstPipe="fileRead">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="fileRead" className="nl.nn.adapterframework.pipes.FilePipe" 
+			actions="read" outputType="stream" 
+			fileName="C:\Users\ali\Desktop\Share\dummyFileStream.txt" 
+			storeResultInSessionKey="stream" 
+			preserveInput="true">
+				<forward name="success" path="sambaSender" />	
+			</pipe>
+			<pipe name="sambaSender" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				<sender className="nl.nn.adapterframework.senders.Samba2Sender"
+				     action="upload"
+				     domain="LAPTOP-1"
+				     authType="SPNEGO"
+				     kdc="${samba.kdcAndRealm}" 
+				     realm="${samba.kdcAndRealm}"
+				     username="${samba.username}"
+				     password="${samba.password}"
+				     share="Share">
+				</sender>
+				<param name="file" sessionKey="stream"/>
+				<forward name="success" path="EXIT" />	
+			</pipe>	
+		</pipeline>
+	</adapter>
+</module>

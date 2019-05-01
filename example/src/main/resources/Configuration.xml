@@ -2,6 +2,16 @@
 	<!ENTITY HelloWorld SYSTEM "ConfigurationHelloWorld.xml">
 	<!ENTITY HelloWorlds SYSTEM "ConfigurationHelloWorlds.xml">
 	<!ENTITY HelloBeautifulWorld SYSTEM "ConfigurationHelloBeautifulWorld.xml">
+	<!ENTITY SambaSenderUploadwString SYSTEM "ConfigurationSambaUploadwString.xml">
+	<!ENTITY SambaSenderRmdirAction SYSTEM "ConfigurationSambaRmdirAction.xml">
+	<!ENTITY SambaSenderMkdirAction SYSTEM "ConfigurationSambaMkdirAction.xml">
+	<!ENTITY SambaSenderDeleteAction SYSTEM "ConfigurationSambaDeleteAction.xml">
+	<!ENTITY SambaSenderDownloadAction SYSTEM "ConfigurationSambaDownloadAction.xml">
+	<!ENTITY SambaSenderListAction SYSTEM "ConfigurationSambaListAction.xml">
+	<!ENTITY SambaSenderRenameAction SYSTEM "ConfigurationSambaRenameAction.xml">
+	<!ENTITY SambaSenderMoveAction SYSTEM "ConfigurationSambaMoveAction.xml">
+	<!ENTITY SambaSenderUploadwByteArray SYSTEM "ConfigurationSambaUploadwByteArray.xml">
+	<!ENTITY SambaSenderUploadwInputStream SYSTEM "ConfigurationSambaUploadwInputStream.xml">
 ]>
 <configuration name="Ibis4Example">
 	<jmsRealms>
@@ -11,4 +21,14 @@
 	&HelloWorld;
 	&HelloWorlds;
 	&HelloBeautifulWorld;
+	&SambaSenderUploadwString;
+	&SambaSenderMkdirAction;
+	&SambaSenderRmdirAction;
+	&SambaSenderDeleteAction;
+	&SambaSenderDownloadAction;
+	&SambaSenderListAction;
+	&SambaSenderRenameAction;
+	&SambaSenderMoveAction;
+	&SambaSenderUploadwByteArray;
+	&SambaSenderUploadwInputStream;
 </configuration>
