@@ -17,8 +17,8 @@ public class KerberosLoginConfiguration extends Configuration{
 	//define a map of params you wish to pass and fill them up
 	private Map<String, String> params = new HashMap<String, String>();
 	
-	private String ibmJavaKrb5LoginModuleClass = "com.sun.security.auth.module.Krb5LoginModule";
-	private String oracleJavaKrb5LoginModuleClass = "com.ibm.security.auth.module.Krb5LoginModule";
+	private String ibmJavaKrb5LoginModuleClass = "com.ibm.security.auth.module.Krb5LoginModule";
+	private String oracleJavaKrb5LoginModuleClass = "com.sun.security.auth.module.Krb5LoginModule";
 	private AppConfigurationEntry configEntry = null;
 	
 	public KerberosLoginConfiguration(Map<String, String> params) {
