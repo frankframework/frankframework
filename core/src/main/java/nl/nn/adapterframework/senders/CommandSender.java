@@ -23,7 +23,6 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.ProcessUtil;
@@ -32,7 +31,6 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * Sender that executes either its input or a fixed line, with all parametervalues appended, as a command.
- *
  * <table border="1">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
@@ -45,69 +43,66 @@ import org.apache.commons.lang.StringUtils;
  */
 public class CommandSender extends SenderWithParametersBase {
 
-    private String command;
-    private int timeOut = 0;
-    private boolean commandWithArguments = false;
-    private boolean synchronous=true;
+	private String command;
+	private int timeOut = 0;
+	private boolean commandWithArguments = false;
+	private boolean synchronous=true;
 
-    public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-        List commandline;
-        if (StringUtils.isNotEmpty(getCommand())) {
-            commandline = commandToList(getCommand());
-        } else {
-            commandline = commandToList(message);
-        }
-        if (paramList!=null) {
-            ParameterValueList pvl;
-            try {
-                pvl = prc.getValues(paramList);
-            } catch (ParameterException e) {
-                throw new SenderException("Could not extract parametervalues",e);
-            }
-            for (int i=0; i<pvl.size(); i++) {
-                commandline.add(pvl.getParameterValue(i).getValue());
-            }
-        }
-        return ProcessUtil.executeCommand(commandline, timeOut);
-    }
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+		List commandline;
+		if (StringUtils.isNotEmpty(getCommand())) {
+			commandline = commandToList(getCommand());
+		} else {
+			commandline = commandToList(message);
+		}
+		if (paramList!=null) {
+			ParameterValueList pvl;
+			try {
+				pvl = prc.getValues(paramList);
+			} catch (ParameterException e) {
+				throw new SenderException("Could not extract parametervalues",e);
+			}
+			for (int i=0; i<pvl.size(); i++) {
+				commandline.add(pvl.getParameterValue(i).getValue());
+			}
+		}
+		return ProcessUtil.executeCommand(commandline, timeOut);
+	}
 
-    private List commandToList(String command) {
-        List list;
-        if (commandWithArguments) {
-            list=ProcessUtil.splitUpCommandString(command);
-        } else {
-            list = new ArrayList();
-            list.add(command);
-        }
-        return list;
-    }
+	private List commandToList(String command) {
+		List list;
+		if (commandWithArguments) {
+			list=ProcessUtil.splitUpCommandString(command);
+		} else {
+			list = new ArrayList();
+			list.add(command);
+		}
+		return list;
+	}
 
-    public boolean isSynchronous() {
-        return synchronous;
-    }
+	public boolean isSynchronous() {
+		return synchronous;
+	}
 
-    @IbisDoc({"the command to execute. when not specified the input message is supposed to be the command", ""})
-    public void setCommand(String string) {
-        command = string;
-    }
-    public String getCommand() {
-        return command;
-    }
+	public void setCommand(String string) {
+		command = string;
+	}
+	public String getCommand() {
+		return command;
+	}
 
-    @IbisDoc({"timeout in seconds. to disable the timeout and keep waiting until the process in completely finished, set this value to 0", "0"})
-    public void setTimeOut(int timeOut) {
-        this.timeOut = timeOut;
-    }
-    public int getTimeOut() {
-        return timeOut;
-    }
+	public void setTimeOut(int timeOut) {
+		this.timeOut = timeOut;
+	}
+	public int getTimeOut() {
+		return timeOut;
+	}
 
-    @IbisDoc({"whether the command is supposed to contain arguments or not. when the command contains arguments but is executed as a command without arguments you probably get an error=123", "false"})
-    public void setCommandWithArguments(boolean commandWithArguments) {
-        this.commandWithArguments = commandWithArguments;
-    }
-    public boolean getCommandWithArguments() {
-        return commandWithArguments;
-    }
+	public void setCommandWithArguments(boolean commandWithArguments) {
+		this.commandWithArguments = commandWithArguments;
+	}
+	public boolean getCommandWithArguments() {
+		return commandWithArguments;
+	}
 
 }
