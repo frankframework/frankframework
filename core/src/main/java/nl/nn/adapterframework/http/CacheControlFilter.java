@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2018 Integration Partners B.V.
+Copyright 2016-2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -33,13 +33,17 @@ import java.util.Date;
 
 public class CacheControlFilter implements Filter {
 
-	private Logger log = LogUtil.getLogger(this);
+	private Logger log = null;
 
+	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
-		log.debug("initializing CacheControl");
+		//We have nothing to initialize
 	}
 
+	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+		if(log == null)
+			log = LogUtil.getLogger(this);
 
 		HttpServletResponse resp = (HttpServletResponse) response;
 		HttpServletRequest req = (HttpServletRequest) request;
@@ -51,7 +55,8 @@ public class CacheControlFilter implements Filter {
 		chain.doFilter(request, response);
 	}
 
+	@Override
 	public void destroy() {
-		log.debug("destroying CacheControl");
+		//We have nothing to destroy
 	}
 }

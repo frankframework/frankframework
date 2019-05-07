@@ -8,7 +8,6 @@
   </configurations>
   <registeredAdapters all="true">
       <configurationMessages>
-         <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Application [Ibis4Example] startup /springContext.xml in 0 ms</configurationMessage>
          <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Configuration [IAF_WebControl] LiquiBase applied [5] change(s) and added tag [IAF_Util:5:Niels Meijer]</configurationMessage>
          <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Configuration [IAF_WebControl] startup in 0 ms</configurationMessage>
          <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Configuration [Ibis4Example] LiquiBase applying change [Ibis4Example:1:Niels Meijer] description [insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE] tag [Ibis4Example:1:Niels Meijer]</configurationMessage>
