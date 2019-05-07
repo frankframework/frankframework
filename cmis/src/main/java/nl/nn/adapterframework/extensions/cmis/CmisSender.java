@@ -1316,7 +1316,8 @@ public class CmisSender extends SenderWithParametersBase {
 
 	@Deprecated
 	public void setBridgeSender(boolean isBridgeSender) {
-		setAction("bridge");
+		if(isBridgeSender)
+			setAction("bridge");
 	}
 
 	@Deprecated
