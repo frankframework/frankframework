@@ -1035,6 +1035,7 @@ public class Adapter implements IAdapter, NamedBean {
 		return name;
 	}
 
+	@IbisDoc({"defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties. Possible values are: <table border='1'><tr><th>msgLogLevel</th><th>messages which are logged</th></tr><tr><td colspan='1'>None</td> <td>none</td></tr><tr><td colspan='1'>Terse</td><td>at adapter level</td></tr><tr><td colspan='1'>Basic</td><td>at adapter and sending pipe level (not yet available; only at adapter level)</td></tr><tr><td colspan='1'>Full</td> <td>at adapter and pipe level (not yet available; only at adapter level)</td></tr></table>", "application default (None)"})
 	public void setMsgLogLevel(String level) throws ConfigurationException {
 		msgLogLevel = MsgLogUtil.getMsgLogLevelNum(level);
 		if (msgLogLevel<0) {

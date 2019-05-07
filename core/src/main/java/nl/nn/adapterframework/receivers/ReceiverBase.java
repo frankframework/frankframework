@@ -1803,6 +1803,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				txAtt==TransactionDefinition.PROPAGATION_MANDATORY;
 	}
 
+	@IbisDoc({"Defines transaction and isolation behaviour. Equal to <A href='http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494'>EJB transaction attribute</a>. Possible values are:<table border='1'><tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipe excecuted in Transaction</th></tr><tr><td colspan='1' rowspan='2'>Required</td>    <td>none</td><td>T2</td></tr><tr><td>T1</td>  <td>T1</td></tr><tr><td colspan='1' rowspan='2'>RequiresNew</td> <td>none</td><td>T2</td></tr> <tr><td>T1</td>  <td>T2</td></tr><tr><td colspan='1' rowspan='2'>Mandatory</td>   <td>none</td><td>error</td></tr><tr><td>T1</td>  <td>T1</td></tr><tr><td colspan='1' rowspan='2'>NotSupported</td><td>none</td><td>none</td></tr><tr><td>T1</td>  <td>none</td></tr><tr><td colspan='1' rowspan='2'>Supports</td><td>none</td><td>none</td></tr><tr><td>T1</td>  <td>T1</td></tr><tr><td colspan='1' rowspan='2'>Never</td><td>none</td><td>none</td></tr><tr><td>T1</td>  <td>error</td></tr></table>", "Supports"})
 	public void setTransactionAttribute(String attribute) throws ConfigurationException {
 		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
 		if (transactionAttribute<0) {
