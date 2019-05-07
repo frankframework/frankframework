@@ -45,8 +45,6 @@ import nl.nn.adapterframework.extensions.cmis.server.CmisServletDispatcher;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.pipes.AbstractPipe;
-import nl.nn.adapterframework.pipes.PipeAware;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -274,7 +272,7 @@ import org.w3c.dom.Node;
  * @author	Peter Leeuwenburgh
  * @author	Niels Meijer
  */
-public class CmisSender extends SenderWithParametersBase implements PipeAware {
+public class CmisSender extends SenderWithParametersBase {
 
 	private String action;
 	private String url;
@@ -320,7 +318,6 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 
 	List<String> actions = Arrays.asList("create", "delete", "get", "find", "update", "fetch", "bridge");
 	List<String> bindingTypes = Arrays.asList("atompub", "webservices", "browser");
-	private AbstractPipe pipe = null;
 
 	public final static String FORMATSTRING_BY_DEFAULT = "yyyy-MM-dd HH:mm:ss";
 
@@ -1326,16 +1323,4 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 	public boolean isBridgeSender() {
 		return "bridge".equals(getAction());
 	}
-
-	@Override
-	public void setPipe(AbstractPipe pipe) {
-		this.pipe  = pipe;
-	}
-
-	@Override
-	public AbstractPipe getPipe() {
-		return pipe;
-	}
-
-	
 }
