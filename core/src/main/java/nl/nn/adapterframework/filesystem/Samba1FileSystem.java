@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author alisihab
  *
  */
-public class SambaFileSystem implements IFileSystem<SmbFile> {
+public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -98,7 +98,7 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 	}
 
 	@Override
-	public Iterator<SmbFile> listFiles() throws FileSystemException {
+	public Iterator<SmbFile> listFiles(String folder) throws FileSystemException {
 		try {
 			if (!isListHiddenFiles()) {
 				SmbFileFilter filter = new SmbFileFilter() {
@@ -166,7 +166,6 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 		}
 	}
 
-	@Override
 	public boolean isFolder(SmbFile f) throws FileSystemException {
 		try {
 			return f.isDirectory();
@@ -174,17 +173,21 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 			throw new FileSystemException(e);
 		}
 	}
+	@Override
+	public boolean folderExists(String folder) throws FileSystemException {
+		return isFolder(toFile(folder));
+	}
 
 	@Override
-	public void createFolder(SmbFile f) throws FileSystemException {
+	public void createFolder(String folder) throws FileSystemException {
 		try {
-			if(f.exists()) {
-				throw new FileSystemException("Create directory for [" + f.getName() + "] has failed. Directory already exists.");
+			if(folderExists(folder)) {
+				throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
 			}
 			if (isForce) {
-				f.mkdirs();
+				toFile(folder).mkdirs();
 			} else {
-				f.mkdir();
+				toFile(folder).mkdir();
 			}
 		} catch (SmbException e) {
 			throw new FileSystemException(e);
@@ -192,17 +195,12 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 	}
 
 	@Override
-	public void removeFolder(SmbFile f) throws FileSystemException {
+	public void removeFolder(String folder) throws FileSystemException {
 		try {
-			if (exists(f)) {
-				if (f.isDirectory()) {
-					f.delete();
-				} else {
-					throw new FileSystemException(
-							"trying to remove file [" + f.getName() + "] which is a file instead of a directory");
-				}
+			if (folderExists(folder)) {
+				toFile(folder).delete();
 			} else {
-				throw new FileSystemException("Remove directory for [" + f.getName() + "] has failed. Directory does not exist.");
+				throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
 			}
 		} catch (SmbException e) {
 			throw new FileSystemException(e);
@@ -210,10 +208,10 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 	}
 
 	@Override
-	public void renameTo(SmbFile f, String destination) throws FileSystemException {
+	public SmbFile renameFile(SmbFile f, String newName, boolean force) throws FileSystemException {
 		SmbFile dest;
 		try {
-			dest = new SmbFile(smbContext, destination);
+			dest = new SmbFile(smbContext, newName);
 			if (exists(dest)) {
 				if (isForce)
 					dest.delete();
@@ -222,6 +220,25 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 				}
 			}
 			f.renameTo(dest);
+			return dest;
+		} catch (Exception e) {
+			throw new FileSystemException(e);
+		}
+	}
+
+	@Override
+	public SmbFile moveFile(SmbFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		SmbFile dest;
+		try {
+			dest = new SmbFile(smbContext, destinationFolder+"/"+f.getName());
+			if (!exists(dest)) {
+				throw new FileSystemException("Cannot move file. Destination folder ["+destinationFolder+"] does not exists.");
+			}
+			if (!isFolder(dest)) {
+				throw new FileSystemException("Cannot move file. Destination folder ["+destinationFolder+"] is not a folder.");
+			}
+			f.renameTo(dest);
+			return dest;
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}
@@ -257,7 +274,7 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 	}
 
 	@Override
-	public long getFileSize(SmbFile f, boolean isFolder) throws FileSystemException {
+	public long getFileSize(SmbFile f) throws FileSystemException {
 		try {
 			return f.length();
 		} catch (SmbException e) {
@@ -266,17 +283,17 @@ public class SambaFileSystem implements IFileSystem<SmbFile> {
 	}
 
 	@Override
-	public String getName(SmbFile f) throws FileSystemException {
+	public String getName(SmbFile f) {
 		return f.getName();
 	}
 
 	@Override
-	public String getCanonicalName(SmbFile f, boolean isFolder) throws FileSystemException {
+	public String getCanonicalName(SmbFile f) throws FileSystemException {
 		return f.getCanonicalPath();
 	}
 
 	@Override
-	public Date getModificationTime(SmbFile f, boolean isFolder) throws FileSystemException {
+	public Date getModificationTime(SmbFile f) throws FileSystemException {
 		return new Date(f.getLastModified());
 	}
 

@@ -1,1 +1,1 @@
-{"root":{"principal":"HUMMUS8008135","permissions":"receive,send","queueName":"ABC.Infrastructure.ibis4test.Test001.Request"}}
+{"root":{"principal":"HUMMUS8008135","permissions":"receive,send","queueName":"ABC.Infrastructure.Ibis4Test.Test001.Request"}}

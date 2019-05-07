@@ -14,6 +14,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
+import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 
@@ -28,11 +29,11 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
  * 
  * <br/>
  */
-public class AmazonS3FileSystemSender extends FileSystemSender<S3Object, AmazonS3FileSystem> {
+public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSystem> {
 
 	private List<String> specificActions = Arrays.asList("createBucket", "deleteBucket", "copy", "restore");
 
-	public AmazonS3FileSystemSender() {
+	public AmazonS3Sender() {
 		setFileSystem(new AmazonS3FileSystem());
 		addActions(specificActions);
 	}

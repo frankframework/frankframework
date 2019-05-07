@@ -96,72 +96,18 @@ import org.apache.log4j.Logger;
  * <p>
  * <b>Configuration:</b>
  * <table border="1">
- * <tr>
- * <th>attributes</th>
- * <th>description</th>
- * <th>default</th>
- * </tr>
- * <tr>
- * <td>{@link #setName(String) name}</td>
- * <td>name of the listener</td>
- * <td>&nbsp;</td>
- * </tr>
- * <tr>
- * <td>{@link #setInputFolder(String) inputFolder}</td>
- * <td>folder (subfolder of inbox) to look for mails. If empty, the inbox folder
- * is used</td>
- * <td>&nbsp;</td>
- * </tr>
- * <tr>
- * <td>{@link #setFilter(String) filter}</td>
- * <td>If empty, all mails are retrieved. If 'NDR' only Non-Delivery Report
- * mails ('bounces') are retrieved</td>
- * <td>&nbsp;</td>
- * </tr>
- * <tr>
- * <td>{@link #setOutputFolder(String) outputFolder}</td>
- * <td>folder (subfolder of inbox) where mails are stored after being processed.
- * If empty, processed mails are deleted</td>
- * <td>&nbsp;</td>
- * </tr>
- * <tr>
- * <td>{@link #setAuthAlias(String) authAlias}</td>
- * <td>alias used to obtain credentials for authentication to exchange mail
- * server</td>
- * <td>&nbsp;</td>
- * </tr>
- * <tr>
- * <td>{@link #setUserName(String) userName}</td>
- * <td>username used in authentication to exchange mail server</td>
- * <td>&nbsp;</td>
- * </tr>
- * <tr>
- * <td>{@link #setPassword(String) password}</td>
- * <td>&nbsp;</td>
- * <td>&nbsp;</td>
- * </tr>
- * <tr>
- * <td>{@link #setMailAddress(String) mailAddress}</td>
- * <td>mail address (also used for auto discovery)</td>
- * <td>&nbsp;</td>
- * </tr>
- * <tr>
- * <td>{@link #setUrl(String) url}</td>
- * <td>(only used when mailAddress is empty) url of the service</td>
- * <td>&nbsp;</td>
- * </tr>
- * <tr>
- * <td>{@link #setStoreEmailAsStreamInSessionKey(String)
- * storeEmailAsStreamInSessionKey}</td>
- * <td>if set, the mail is streamed to a file (eml)</td>
- * <td>&nbsp;</td>
- * </tr>
- * <tr>
- * <td>{@link #setSimple(boolean) simple}</td>
- * <td>when set to <code>true</code>, the xml string passed to the pipeline
- * contains minimum information about the mail (to save memory)</td>
- * <td>false</td>
- * </tr>
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>name of the listener</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setInputFolder(String) inputFolder}</td><td>folder (subfolder of inbox) to look for mails. If empty, the inbox folder is used</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setFilter(String) filter}</td><td>If empty, all mails are retrieved. If 'NDR' only Non-Delivery Report mails ('bounces') are retrieved</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setOutputFolder(String) outputFolder}</td><td>folder (subfolder of inbox) where mails are stored after being processed. If empty, processed mails are deleted</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to exchange mail server</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to exchange mail server</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMailAddress(String) mailAddress}</td><td>mail address (also used for auto discovery)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setUrl(String) url}</td><td>(only used when mailAddress is empty) url of the service</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStoreEmailAsStreamInSessionKey(String) storeEmailAsStreamInSessionKey}</td><td>if set, the mail is streamed to a file (eml)</td><td>&nbsp;</td> * </tr>
+ * <tr><td>{@link #setSimple(boolean) simple}</td><td>when set to <code>true</code>, the xml string passed to the pipeline contains minimum information about the mail (to save memory)</td><td>false</td></tr>
  * </table>
  * </p>
  * 

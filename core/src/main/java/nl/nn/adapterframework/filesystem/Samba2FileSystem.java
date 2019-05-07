@@ -1,26 +1,60 @@
+/*
+   Copyright 2019 Integration Partners
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.filesystem;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.security.auth.Subject;
+import javax.security.auth.kerberos.KerberosPrincipal;
+import javax.security.auth.login.LoginContext;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ietf.jgss.GSSCredential;
+import org.ietf.jgss.GSSException;
+import org.ietf.jgss.GSSManager;
+import org.ietf.jgss.GSSName;
+import org.ietf.jgss.Oid;
 
 import com.hierynomus.msdtyp.AccessMask;
+import com.hierynomus.mserref.NtStatus;
+import com.hierynomus.msfscc.FileAttributes;
 import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation;
+import com.hierynomus.msfscc.fileinformation.FileStandardInformation;
 import com.hierynomus.mssmb2.SMB2CreateDisposition;
 import com.hierynomus.mssmb2.SMB2CreateOptions;
 import com.hierynomus.mssmb2.SMB2ShareAccess;
+import com.hierynomus.mssmb2.SMBApiException;
+import com.hierynomus.protocol.commons.EnumWithValue;
 import com.hierynomus.smbj.SMBClient;
 import com.hierynomus.smbj.auth.AuthenticationContext;
+import com.hierynomus.smbj.auth.GSSAuthenticationContext;
 import com.hierynomus.smbj.connection.Connection;
 import com.hierynomus.smbj.session.Session;
 import com.hierynomus.smbj.share.Directory;
@@ -32,23 +66,27 @@ import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
+ * 
  * @author alisihab
  *
  */
-public class Samba2FileSystem implements IFileSystem<String> {
+public class Samba2FileSystem implements IWritableFileSystem<String> {
 
 	protected Logger log = LogUtil.getLogger(this);
-	
+
+	private String authType = "SPNEGO";
+	private List<String> authTypes = Arrays.asList("NTLM", "SPNEGO");
+	private String kdc = null;
+	private String realm = null;
 	private String domain = null;
 	private String username = null;
 	private String password = null;
 	private String authAlias = null;
+
 	/** Share name is required*/
 	private String shareName = null;
-	private boolean isForce;
-	private boolean listHiddenFiles = true;
+	private boolean listHiddenFiles = false;
 
-	private AuthenticationContext auth;
 	private SMBClient client = null;
 	private Connection connection;
 	private Session session;
@@ -59,16 +97,15 @@ public class Samba2FileSystem implements IFileSystem<String> {
 		if (StringUtils.isEmpty(getShare())) {
 			throw new ConfigurationException("server share endpoint is required");
 		}
-
-		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
-		if (StringUtils.isNotEmpty(cf.getUsername())) {
-			auth = new AuthenticationContext(username, password.toCharArray(), domain);
+		if(!authTypes.contains(authType)) {
+			throw new ConfigurationException("Invalid authType please provide one of the values "+authTypes);
 		}
 	}
 
 	@Override
 	public void open() throws FileSystemException {
 		try {
+			AuthenticationContext auth = authenticate();
 			client = new SMBClient();
 			connection = client.connect(domain);
 			if(connection.isConnected()) {
@@ -90,29 +127,102 @@ public class Samba2FileSystem implements IFileSystem<String> {
 	@Override
 	public void close() throws FileSystemException {
 		try {
-			diskShare.close();
+			if(diskShare != null) {
+				diskShare.close();
+			}
+			if(session != null) {
+				session.close();		
+			}
+			if(connection != null) {
+				connection.close();
+			}
+			if(client != null) {
+				client.close();
+			}
 			diskShare = null;
-			session.close();
-			connection.close();
-			client.close();
+			session = null;
+			connection = null;
+			client = null;
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
 	}
 
+	private AuthenticationContext authenticate() throws FileSystemException {
+		CredentialFactory credentialFactory = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+		if (StringUtils.isNotEmpty(credentialFactory.getUsername())) {
+			if(StringUtils.equalsIgnoreCase(authType, "NTLM")) {
+				return new AuthenticationContext(getUsername(), password.toCharArray(), getDomain());
+			}else if(StringUtils.equalsIgnoreCase(authType, "SPNEGO")) {
+
+				if(!StringUtils.isEmpty(getKdc()) && !StringUtils.isEmpty(getRealm())) {
+					System.setProperty("java.security.krb5.kdc", getKdc());
+					System.setProperty("java.security.krb5.realm", getRealm());
+				}
+
+				HashMap<String, String> loginParams = new HashMap<String, String>();
+				loginParams.put("principal", getUsername());
+				LoginContext lc;
+				try {
+					lc = new LoginContext(getUsername(), null, 
+							new UsernameAndPasswordCallbackHandler(getUsername(), getPassword()),
+							new KerberosLoginConfiguration(loginParams));
+					lc.login();
+
+					Subject subject = lc.getSubject();
+					KerberosPrincipal krbPrincipal = subject.getPrincipals(KerberosPrincipal.class).iterator().next();
+
+					Oid spnego = new Oid("1.3.6.1.5.5.2");
+					Oid kerberos5 = new Oid("1.2.840.113554.1.2.2");
+
+					final GSSManager manager = GSSManager.getInstance();
+
+					final GSSName name = manager.createName(krbPrincipal.toString(), GSSName.NT_USER_NAME);
+					Set<Oid> mechs = new HashSet<Oid>(Arrays.asList(manager.getMechsForName(name.getStringNameType())));
+					final Oid mech;
+
+					if (mechs.contains(kerberos5)) {
+						mech = kerberos5;
+					} else if (mechs.contains(spnego)) {
+						mech = spnego;
+					} else {
+						throw new IllegalArgumentException("No mechanism found");
+					}
+
+					GSSCredential creds = Subject.doAs(subject, new PrivilegedExceptionAction<GSSCredential>() {
+						@Override
+						public GSSCredential run() throws GSSException {
+							return manager.createCredential(name, GSSCredential.DEFAULT_LIFETIME, mech, GSSCredential.INITIATE_ONLY);
+						}
+					});
+
+					GSSAuthenticationContext auth = new GSSAuthenticationContext(krbPrincipal.getName(), krbPrincipal.getRealm(), subject, creds);
+					return auth;
+
+				} catch (Exception e) {
+					if(e.getMessage().contains("Cannot locate default realm")) {
+						throw new FileSystemException("Please fill the kdc and realm field or provide krb5.conf file including realm",e);
+					}
+					throw new FileSystemException(e);
+				}
+			}
+		}
+		return null;
+	}
+	
 	@Override
 	public String toFile(String filename) throws FileSystemException {
 		return filename;
 	}
 
 	@Override
-	public Iterator<String> listFiles() throws FileSystemException {
-		return new FilesIterator(diskShare.list(""));
+	public Iterator<String> listFiles(String folder) throws FileSystemException {
+		return new FilesIterator(folder, diskShare.list(folder));
 	}
 
 	@Override
 	public boolean exists(String f) throws FileSystemException {
-		boolean exists = diskShare.fileExists(f);
+		boolean exists = isFolder(f) ? diskShare.folderExists(f) : diskShare.fileExists(f);
 		return exists;
 	}
 
@@ -151,13 +261,34 @@ public class Samba2FileSystem implements IFileSystem<String> {
 	}
 
 	@Override
-	public void renameTo(String f, String destination) throws FileSystemException {
+	public String renameFile(String f, String newName, boolean force) throws FileSystemException {
 		File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN);
-		if (exists(destination) && !isForce) {
+		if (exists(newName) && !force) {
 			throw new FileSystemException("Cannot rename file. Destination file already exists.");
 		}
-		file.rename(destination, isForce);
+		file.rename(newName, force);
 		file.close();
+		return newName;
+	}
+
+	@Override
+	public String moveFile(String f, String to, boolean createFolder) throws FileSystemException {
+		File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN);
+		if (exists(to)) {
+			if (!isFolder(to)) {
+				throw new FileSystemException("Cannot move file. Destination file ["+to+"] is not a folder.");
+			}
+		} else {
+			if (createFolder) {
+				createFolder(to);
+			} else {
+				throw new FileSystemException("Cannot move file. Destination folder ["+to+"] does not exist.");
+			}
+		}
+		String destination = to+"\\"+f;
+		file.rename(destination, createFolder);
+		file.close();
+		return destination;
 	}
 
 	@Override
@@ -165,27 +296,41 @@ public class Samba2FileSystem implements IFileSystem<String> {
 		return null;
 	}
 
-	@Override
 	public boolean isFolder(String f) throws FileSystemException {
-		boolean isFolder = diskShare.getFileInformation(f).getStandardInformation().isDirectory();
-		return isFolder;
+		try {
+			return diskShare.getFileInformation(f).getStandardInformation().isDirectory();
+		}catch(SMBApiException e) {
+			if(NtStatus.valueOf(e.getStatusCode()).equals(NtStatus.STATUS_OBJECT_NAME_NOT_FOUND)) {
+				return false;
+			} 
+			if(NtStatus.valueOf(e.getStatusCode()).equals(NtStatus.STATUS_DELETE_PENDING)) {
+				return false;
+			}
+			
+			throw new FileSystemException(e);
+		}
+		
+	}
+	@Override
+	public boolean folderExists(String folder) throws FileSystemException {
+		return isFolder(toFile(folder));
 	}
 
 	@Override
-	public void createFolder(String f) throws FileSystemException {
-		if (diskShare.folderExists(f)) {
-			throw new FileSystemException("Create directory for [" + f + "] has failed. Directory already exists.");
+	public void createFolder(String folder) throws FileSystemException {
+		if (folderExists(folder)) {
+			throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
 		} else {
-			diskShare.mkdir(f);
+			diskShare.mkdir(folder);
 		}
 	}
 
 	@Override
-	public void removeFolder(String f) throws FileSystemException {
-		if (!diskShare.folderExists(f)) {
-			throw new FileSystemException("Remove directory for [" + f + "] has failed. Directory does not exist.");
+	public void removeFolder(String folder) throws FileSystemException {
+		if (!folderExists(folder)) {
+			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
 		} else {
-			diskShare.rmdir(f, true);
+			diskShare.rmdir(folder, true);
 		}
 	}
 
@@ -217,9 +362,9 @@ public class Samba2FileSystem implements IFileSystem<String> {
 	}
 
 	@Override
-	public long getFileSize(String f, boolean isFolder) throws FileSystemException {
+	public long getFileSize(String f) throws FileSystemException {
 		long size;
-		if (isFolder) {
+		if (isFolder(f)) {
 			Directory dir = getFolder(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN);
 			size = dir.getFileInformation().getStandardInformation().getAllocationSize();
 			dir.close();
@@ -233,18 +378,18 @@ public class Samba2FileSystem implements IFileSystem<String> {
 	}
 
 	@Override
-	public String getName(String f) throws FileSystemException {
+	public String getName(String f) {
 		return f;
 	}
 
 	@Override
-	public String getCanonicalName(String f, boolean isFolder) throws FileSystemException {
+	public String getCanonicalName(String f) throws FileSystemException {
 		return f;
 	}
 
 	@Override
-	public Date getModificationTime(String f, boolean isFolder) throws FileSystemException {
-		if (isFolder) {
+	public Date getModificationTime(String f) throws FileSystemException {
+		if (isFolder(f)) {
 			Directory dir = getFolder(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN);
 			Date date = dir.getFileInformation().getBasicInformation().getLastWriteTime().toDate();
 			dir.close();
@@ -297,12 +442,28 @@ public class Samba2FileSystem implements IFileSystem<String> {
 		this.shareName = share;
 	}
 
-	public boolean isForce() {
-		return isForce;
+	public String getAuthType() {
+		return authType;
 	}
 
-	public void setForce(boolean isForce) {
-		this.isForce = isForce;
+	public void setAuthType(String authType) {
+		this.authType = authType;
+	}
+	
+	public String getKdc() {
+		return kdc;
+	}
+
+	public void setKdc(String kdc) {
+		this.kdc = kdc;
+	}
+	
+	public String getRealm() {
+		return realm;
+	}
+
+	public void setRealm(String realm) {
+		this.realm = realm;
 	}
 
 	public boolean isListHiddenFiles() {
@@ -317,9 +478,38 @@ public class Samba2FileSystem implements IFileSystem<String> {
 
 		private List<FileIdBothDirectoryInformation> files;
 		private int i = 0;
+		private String prefix;
 
-		public FilesIterator(List<FileIdBothDirectoryInformation> list) {
-			files = list;
+		public FilesIterator(String parent, List<FileIdBothDirectoryInformation> list) {
+			prefix = parent != null ? parent + "\\" : "";
+            files = new ArrayList<FileIdBothDirectoryInformation>();
+            for (FileIdBothDirectoryInformation info : list) {
+            	if(!StringUtils.equals(".", info.getFileName()) && !StringUtils.equals("..", info.getFileName())) {
+            		boolean isHidden = EnumWithValue.EnumUtils.isSet( info.getFileAttributes(), FileAttributes.FILE_ATTRIBUTE_HIDDEN );
+                    try {
+                    	FileStandardInformation fai = diskShare.getFileInformation(prefix+info.getFileName()).getStandardInformation();
+                    	boolean accessible = !fai.isDeletePending();
+                    	boolean isDirectory = fai.isDirectory();
+                		if(accessible && !isDirectory) {
+                        	if(isListHiddenFiles()) {
+                                files.add(info);
+                            }else {
+                                if(!isHidden) {
+                                    files.add(info);
+                                }
+                            }
+                        }
+					} catch (SMBApiException e) {
+						if(NtStatus.valueOf(e.getStatusCode()).equals(NtStatus.STATUS_DELETE_PENDING)) {
+							log.debug("delete pending for file ["+ info.getFileName()+"]");
+						}
+						else {
+							throw e;
+						}
+					}
+            		
+            	}
+            }
 		}
 
 		@Override
@@ -329,12 +519,13 @@ public class Samba2FileSystem implements IFileSystem<String> {
 
 		@Override
 		public String next() {
-			return files.get(i++).getFileName();
+			return prefix + files.get(i++).getFileName();
 		}
 
 		@Override
 		public void remove() {
-			deleteFile(files.get(i++).getFileName());
+			deleteFile(prefix + files.get(i++).getFileName());
 		}
 	}
+
 }
