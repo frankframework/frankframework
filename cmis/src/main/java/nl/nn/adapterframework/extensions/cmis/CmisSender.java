@@ -68,10 +68,12 @@ import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.client.api.SessionFactory;
 import org.apache.chemistry.opencmis.client.runtime.SessionFactoryImpl;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
+import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.enums.Action;
+import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.commons.codec.binary.Base64;
@@ -316,10 +318,9 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 	private String proxyPassword;
 	private String proxyRealm = null;
 
-	List<String> actions = Arrays.asList("create", "delete", "get", "find", "update", "fetch");
+	List<String> actions = Arrays.asList("create", "delete", "get", "find", "update", "fetch", "bridge");
 	List<String> bindingTypes = Arrays.asList("atompub", "webservices", "browser");
 	private AbstractPipe pipe = null;
-	private boolean isBridgeSender = false;
 
 	public final static String FORMATSTRING_BY_DEFAULT = "yyyy-MM-dd HH:mm:ss";
 
@@ -344,13 +345,13 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		if (!actions.contains(getAction())) {
 			throw new ConfigurationException("illegal value for action [" + getAction() + "], must be " + actions.toString());
 		}
-		if (getAction().equalsIgnoreCase("create")) {
+		if (getAction().equals("create")) {
 			if (StringUtils.isEmpty(getFileInputStreamSessionKey())
 					&& StringUtils.isEmpty(getFileContentSessionKey())) {
 				throw new ConfigurationException("fileInputStreamSessionKey or fileContentSessionKey should be specified");
 			}
 		}
-		if (getAction().equalsIgnoreCase("get")) {
+		if (getAction().equals("get")) {
 			if (isGetProperties() && isGetDocumentContent()) {
 				if (StringUtils.isEmpty(getFileInputStreamSessionKey()) && StringUtils.isEmpty(getFileContentSessionKey())) {
 					throw new ConfigurationException("fileInputStreamSessionKey or fileContentSessionKey should be specified");
@@ -358,7 +359,7 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 			}
 		}
 
-		if(isBridgeSender()) {
+		if (getAction().equals("bridge")) {
 			CmisServletDispatcher.getInstance().registerServiceClient(this);
 		}
 	}
@@ -446,6 +447,8 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 			} else if (getAction().equalsIgnoreCase("update")) {
 				return sendMessageForActionUpdate(correlationID, message, prc);
 			} else if (getAction().equalsIgnoreCase("fetch")) {
+				return sendMessageForActionFetch(correlationID, message, prc);
+			} else if (getAction().equalsIgnoreCase("bridge")) {
 				return sendMessageForActionFetch(correlationID, message, prc);
 			} else {
 				throw new SenderException(getLogPrefix() + "unknown action [" + getAction() + "]");
@@ -672,16 +675,17 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 						formatStringAttr = FORMATSTRING_BY_DEFAULT;
 					}
 					DateFormat df = new SimpleDateFormat(formatStringAttr);
-					Date date;
+					GregorianCalendar calendar = new GregorianCalendar();
 					try {
-						date = df.parse(property);
+						Date date = df.parse(property);
+						calendar.setTime(date);
 					} catch (ParseException e) {
 						throw new SenderException(getLogPrefix()
 								+ "exception parsing date [" + property
 								+ "] using formatString [" + formatStringAttr
 								+ "]", e);
 					}
-					props.put(nameAttr, date);
+					props.put(nameAttr, calendar);
 				} else {
 					log.warn(getLogPrefix() + "unknown type [" + typeAttr
 							+ "], assuming 'string'");
@@ -945,6 +949,17 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 			}
 			else {
 				parameterMap.setWebServicesBindingUrl(getUrl());
+
+				parameterMap.put(SessionParameter.BINDING_TYPE, BindingType.WEBSERVICES.value());
+				parameterMap.put(SessionParameter.WEBSERVICES_REPOSITORY_SERVICE, getUrl() + "/RepositoryService.svc?wsdl");
+				parameterMap.put(SessionParameter.WEBSERVICES_NAVIGATION_SERVICE, getUrl() + "/NavigationService.svc?wsdl");
+				parameterMap.put(SessionParameter.WEBSERVICES_OBJECT_SERVICE, getUrl() + "/ObjectService.svc?wsdl");
+				parameterMap.put(SessionParameter.WEBSERVICES_VERSIONING_SERVICE, getUrl() + "/VersioningService.svc?wsdl");
+				parameterMap.put(SessionParameter.WEBSERVICES_DISCOVERY_SERVICE, getUrl() + "/DiscoveryService.svc?wsdl");
+				parameterMap.put(SessionParameter.WEBSERVICES_RELATIONSHIP_SERVICE, getUrl() + "/RelationshipService.svc?wsdl");
+				parameterMap.put(SessionParameter.WEBSERVICES_MULTIFILING_SERVICE, getUrl() + "/MultiFilingService.svc?wsdl");
+				parameterMap.put(SessionParameter.WEBSERVICES_POLICY_SERVICE, getUrl() + "/PolicyService.svc?wsdl");
+				parameterMap.put(SessionParameter.WEBSERVICES_ACL_SERVICE, getUrl() + "/ACLService.svc?wsdl");
 			}
 		}
 		parameterMap.setRepositoryId(getRepository());
@@ -1302,12 +1317,14 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		return keepSession;
 	}
 
+	@Deprecated
 	public void setBridgeSender(boolean isBridgeSender) {
-		this.isBridgeSender  = isBridgeSender;
+		setAction("bridge");
 	}
 
+	@Deprecated
 	public boolean isBridgeSender() {
-		return isBridgeSender;
+		return "bridge".equals(getAction());
 	}
 
 	@Override
