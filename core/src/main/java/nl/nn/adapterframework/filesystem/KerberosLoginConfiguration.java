@@ -19,7 +19,6 @@ public class KerberosLoginConfiguration extends Configuration{
 	
 	private String ibmJavaKrb5LoginModuleClass = "com.ibm.security.auth.module.Krb5LoginModule";
 	private String oracleJavaKrb5LoginModuleClass = "com.sun.security.auth.module.Krb5LoginModule";
-	private AppConfigurationEntry configEntry = null;
 	
 	public KerberosLoginConfiguration(Map<String, String> params) {
 		this.params.putAll(params);
@@ -27,6 +26,7 @@ public class KerberosLoginConfiguration extends Configuration{
 
 	@Override
 	public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
+		AppConfigurationEntry configEntry = null;
 		try {
 			ClassUtils.loadClass(oracleJavaKrb5LoginModuleClass);
 			configEntry = new AppConfigurationEntry(oracleJavaKrb5LoginModuleClass,
