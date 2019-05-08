@@ -31,7 +31,7 @@ public class Samba2FileSystemTest extends FileSystemTest<String, Samba2FileSyste
 	
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new Samba2FileSystemTestHelper(shareName, username, password, domain, realm, kdc);
+		return new Samba2FileSystemTestHelper(shareName, username, password, domain, realm, kdc, authType);
 	}
 
 	@Override

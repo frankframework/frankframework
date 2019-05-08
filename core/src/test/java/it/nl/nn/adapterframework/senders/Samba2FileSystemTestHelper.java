@@ -63,13 +63,14 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	private Connection connection = null;
 	private SMBClient smbClient = null;
 		
-	public Samba2FileSystemTestHelper(String shareName, String username, String password, String domain, String realm, String kdc) {
+	public Samba2FileSystemTestHelper(String shareName, String username, String password, String domain, String realm, String kdc, String authType) {
 		this.shareName=shareName;
 		this.username=username;
 		this.password=password;
 		this.domain=domain;
 		this.realm=realm;
 		this.kdc=kdc;
+		this.authType = authType;
 	}
 	
 	@Override
