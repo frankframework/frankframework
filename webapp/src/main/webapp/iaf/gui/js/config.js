@@ -297,9 +297,20 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 			url: ''
 		},
 		controller: function($scope, Misc, $state, $window){
-			$scope.url = Misc.getServerPath() + $state.params.url;
-			if($scope.url == Misc.getServerPath()){
-				$window.history.back();
+			if($state.params.url.length == 0){
+				$scope.$watch("webapps", function(o,n){
+					if(angular.isDefined(o)){
+						if($scope.webapps && $scope.webapps.length > 0){
+							$scope.url = Misc.getServerPath() + $scope.webapps[0].uriPattern;
+						}
+						else {
+							$window.history.back();
+						}
+					}
+				})
+			}
+			else {
+				$scope.url = Misc.getServerPath() + $state.params.url;
 			}
 		}
 	})
