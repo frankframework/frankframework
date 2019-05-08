@@ -64,6 +64,10 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 
 	private boolean validateEtag = false;
 	private boolean generateEtag = false;
+	
+	private boolean customWebapp = false;
+	private boolean visibleInMenu = false;
+	private boolean visibleInWebservices = true;
 
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
@@ -306,4 +310,30 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public boolean getGenerateEtag() {
 		return generateEtag;
 	}
+	
+	public void setCustomWebapp(Boolean isCustomWebApp){
+		customWebapp = isCustomWebApp;
+	}
+
+	public Boolean isCustomWebapp(){
+		return customWebapp;
+	}
+	
+	public void setVisibleInMenu(boolean b) {
+		visibleInMenu = b;
+	}
+	
+	public Boolean isVisibleInMenu() {
+		return visibleInMenu;
+	}
+	
+	public void setVisibleInWebservices(boolean b) {
+		visibleInWebservices = b;
+	}
+	
+	public Boolean isVisibleInWebservices() {
+		return visibleInWebservices;
+	}
+	
+	
 }

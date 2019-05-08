@@ -285,6 +285,24 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 			breadcrumbs: 'JDBC > Ibisstore Summary'
 		}
 	})
+	.state('pages.webapp', {
+		url: "/webapp",
+		templateUrl: "views/iFrame.html",
+		data: {
+			pageTitle: 'Custom Webapp',
+			breadcrumbs: 'Custom Webapp',
+			iframe: true
+		},
+		params: {
+			url: ''
+		},
+		controller: function($scope, Misc, $state, $window){
+			$scope.url = Misc.getServerPath() + $state.params.url;
+			if($scope.url == Misc.getServerPath()){
+				$window.history.back();
+			}
+		}
+	})
 	.state('pages.larva', {
 		url: "/testing/larva",
 		templateUrl: "views/iFrame.html",

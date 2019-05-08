@@ -1,0 +1,18 @@
+<module>
+	<adapter name="MyWebapp">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="MyWebapp">
+			<listener className="nl.nn.adapterframework.http.RestListener"
+				name="MyWebapp" method="GET" uriPattern="myWebapp" view="true" restPath="/" customWebapp="true" visibleInMenu="true" visibleInWebservices="false"/>
+		</receiver>
+		<pipeline firstPipe="OK">
+			<exits>
+				<exit state="success" path="EXIT" />
+			</exits>
+			<pipe name="OK" className="nl.nn.adapterframework.pipes.FixedResult"
+				returnString="OK">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>

@@ -39,27 +39,26 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.soap.Wsdl;
 
 /**
- * Shows all monitors.
+ * GET Endpoint used to retrieve all registered custom web app extensions.
  * 
- * @since	7.0-B1
- * @author	Niels Meijer
+ * @author	Laurens Mäkel
  */
 
 @Path("/")
-public final class Webservices extends Base {
+public final class CustomWebapps extends Base {
 	@Context ServletConfig servletConfig;
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/webservices")
-	@Relation("webservices")
+	@Path("/webapps")
+	@Relation("webapps")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getLogDirectory() throws ApiException {
+	public Response getWebApps() throws ApiException {
 		initBase(servletConfig);
 
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 
-		List<Map<String, Object>> webServices = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> webapps = new ArrayList<Map<String, Object>>();
 		for (IAdapter a : ibisManager.getRegisteredAdapters()) {
 			Adapter adapter = (Adapter) a;
 			Iterator<IReceiver> recIt = adapter.getReceiverIterator();
@@ -70,43 +69,21 @@ public final class Webservices extends Base {
 					IListener listener = rb.getListener();
 					if (listener instanceof RestListener) {
 						RestListener rl = (RestListener) listener;
-						if (rl.isView() && !rl.isCustomWebapp()) {
-							Map<String, Object> service = new HashMap<String, Object>(2);
-							service.put("name", rb.getName());
-							service.put("uriPattern", rl.getUriPattern());
-							webServices.add(service);
+						if (rl.isView() && rl.isCustomWebapp()) {
+							Map<String, Object> webapp = new HashMap<String, Object>(2);
+							webapp.put("name", rb.getName());
+							webapp.put("uriPattern", rl.getUriPattern());
+							webapp.put("showInMenu", rl.isVisibleInMenu());
+							webapp.put("showInWebservices", rl.isVisibleInWebservices());
+                            webapps.add(webapp);
 						}
 					}
 				}
-			}
-		}
-		returnMap.put("services", webServices);
+            }
+        }
 
-		List<Map<String, Object>> wsdls = new ArrayList<Map<String, Object>>();
-		for (IAdapter a : ibisManager.getRegisteredAdapters()) {
-			Map<String, Object> wsdlMap = new HashMap<String, Object>(2);
-			try {
-				Adapter adapter = (Adapter) a;
-				Wsdl wsdl = new Wsdl(adapter.getPipeLine());
-				wsdlMap.put("name", wsdl.getName());
-				wsdlMap.put("extention", getWsdlExtention());
-			} catch (Exception e) {
-				wsdlMap.put("name", a.getName());
-
-				if (e.getMessage() != null) {
-					wsdlMap.put("error", e.getMessage());
-				} else {
-					wsdlMap.put("error", e.toString());
-				}
-			}
-			wsdls.add(wsdlMap);
-		}
-		returnMap.put("wsdls", wsdls);
+        returnMap.put("webapps", webapps);
 
 		return Response.status(Response.Status.OK).entity(returnMap).build();
-	}
-
-	private String getWsdlExtention() {
-		return ".wsdl";
 	}
 }

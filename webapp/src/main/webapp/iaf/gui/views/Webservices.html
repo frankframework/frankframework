@@ -23,6 +23,27 @@
 			</div>
 		</div>
 	</div>
+	<div class="row" ng-if="webapps.length > 0 && hasWebappsToDisplay">
+		<div class="col-lg-12">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title">
+					<h4>Available GUI Extensions</h4>
+				</div>
+				<div class="ibox-content">
+					<div class="col-md-12">
+						<table class="table table-striped">
+							<tbody>
+								<tr ng-repeat="webapp in webapps" ng-if="webapp.showInWebservices">
+									<td>{{$index}}</td>
+									<td><a ui-sref="pages.webapp({url: webapp.uriPattern})">{{webapp.name}}</a></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 	<div class="row" ng-if="wsdls.length > 0">
 		<div class="col-lg-12">
 			<div class="ibox float-e-margins">

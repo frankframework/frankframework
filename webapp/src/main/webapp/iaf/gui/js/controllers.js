@@ -70,6 +70,9 @@ angular.module('iaf.beheerconsole')
 					}
 				}
 			});
+			Api.Get("webapps", function(data) {
+				$.extend($scope, data);
+			});
 		}
 	});
 
@@ -974,6 +977,19 @@ angular.module('iaf.beheerconsole')
 	Api.Get("webservices", function(data) {
 		$.extend($scope, data);
 	});
+
+	$scope.hasWebappsToDisplay = false;
+	$scope.$watch('webapps', function(){
+		var webapps = $scope.webapps;
+		if(angular.isDefined(webapps)){
+			for(var i; i < webapps.length; i++){
+				if(webapps[i].showInWebservices){
+					$scope.hasWebappsToDisplay = true;
+					break;
+				}
+			}
+		}
+	})
 }])
 
 .controller('SecurityItemsCtrl', ['$scope', 'Api', '$rootScope', function($scope, Api, $rootScope) {
