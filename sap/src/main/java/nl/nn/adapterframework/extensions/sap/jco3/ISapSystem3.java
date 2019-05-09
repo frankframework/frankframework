@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,20 +13,16 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.extensions.sap.jco2;
+package nl.nn.adapterframework.extensions.sap.jco3;
+import nl.nn.adapterframework.extensions.sap.ISapSystem;
 
-import nl.nn.adapterframework.extensions.sap.SapException;
+public interface ISapSystem3 extends ISapSystem, ISncEnabled {
 
-import com.sap.mw.jco.JCO;
-import com.sap.mw.idoc.IDoc;
-
-/**
- * The interface clients (users) of a SAP function must implement.
- *
- * @author  Gerrit van Brakel
- */
-public interface SapFunctionHandler {
-
-	public void processFunctionCall(JCO.Function function) throws SapException;
-	public void processIDoc(IDoc.Document idoc) throws SapException;
+	public void setAshost(String string);
+	public void setGroup(String string);
+	public void setGwservOffset(int i);
+	public void setHost(String string);
+	public void setMshost(String string);
+	public void setMsservOffset(int i);
+	public void setR3name(String string);
 }

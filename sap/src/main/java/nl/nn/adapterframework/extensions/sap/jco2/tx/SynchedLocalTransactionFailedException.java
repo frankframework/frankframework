@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco2.tx;
 
-import nl.nn.adapterframework.extensions.sap.jco2.SapException;
+import nl.nn.adapterframework.extensions.sap.SapException;
 
 /**
  * Exception thrown when a synchronized local transaction failed to complete
@@ -25,6 +25,8 @@ import nl.nn.adapterframework.extensions.sap.jco2.SapException;
  * @since  4.8
  */
 public class SynchedLocalTransactionFailedException extends RuntimeException {
+
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * Create a new SynchedLocalTransactionFailedException.

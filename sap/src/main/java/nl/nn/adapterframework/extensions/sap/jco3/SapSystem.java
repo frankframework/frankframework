@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,11 +18,14 @@ package nl.nn.adapterframework.extensions.sap.jco3;
 import java.lang.reflect.Field;
 import java.util.Iterator;
 
+import nl.nn.adapterframework.extensions.sap.ISapSystem;
+import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.GlobalListItem;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+
 import com.sap.conn.idoc.IDocRepository;
 import com.sap.conn.idoc.jco.JCoIDoc;
 import com.sap.conn.jco.JCo;
@@ -69,7 +72,7 @@ import com.sap.conn.jco.JCoRepository;
  * @author  Niels Meijer
  * @since   5.0
  */
-public class SapSystem extends GlobalListItem {
+public class SapSystem extends GlobalListItem implements ISapSystem3 {
 
 	private String host;
 	private String ashost;
@@ -99,6 +102,11 @@ public class SapSystem extends GlobalListItem {
 	private String partnerName;
 	private String authMethod = "0";
 	private String sncSSO2 = "1";
+
+	@Override
+	public void configure() {
+		super.configure();
+	}
 
 	/**
 	 * Retrieve a SapSystem from the list of systems.
@@ -398,5 +406,11 @@ public class SapSystem extends GlobalListItem {
 	}
 	public String getSncSSO2() {
 		return sncSSO2;
+	}
+
+	@Override
+	@Deprecated
+	public void setServiceOffset(int i) {
+		setGwservOffset(i);
 	}
 }

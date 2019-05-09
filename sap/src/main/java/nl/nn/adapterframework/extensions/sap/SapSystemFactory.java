@@ -27,8 +27,6 @@ import nl.nn.adapterframework.util.LogUtil;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
-import com.sap.conn.jco.JCoException;
-
 /**
  * Singleton that has the different sapSystems. <br/>
  * Typical use: SapSystemFactory.getInstance().&lt;method to execute&gt;
@@ -61,7 +59,7 @@ public class SapSystemFactory {
 			nl.nn.adapterframework.extensions.sap.jco3.SapSystem sapSystem3 = (nl.nn.adapterframework.extensions.sap.jco3.SapSystem) sapSystem;
 			try {
 				return sapSystem3.getDestination().toString();
-			} catch (JCoException e) {
+			} catch (Exception e) {
 				log.warn("Exception determining sapsytem info", e);
 				return null;
 			}

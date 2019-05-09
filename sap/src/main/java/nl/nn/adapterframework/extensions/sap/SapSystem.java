@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,12 @@
 */
 package nl.nn.adapterframework.extensions.sap;
 
+import java.lang.reflect.Constructor;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.extensions.sap.jco3.ISapSystem3;
+import nl.nn.adapterframework.extensions.sap.jco3.ISncEnabled;
+import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * Depending on the JCo version found (see {@link JCoVersion}) delegate to
@@ -30,207 +35,159 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  */
 public class SapSystem {
 	private int jcoVersion = -1;
-	private nl.nn.adapterframework.extensions.sap.jco3.SapSystem sapSystem3;
-	private nl.nn.adapterframework.extensions.sap.jco2.SapSystem sapSystem2;
+	private ISapSystem sapSystem;
 
 	public SapSystem() throws ConfigurationException {
 		jcoVersion = JCoVersion.getInstance().getJCoVersion();
 		if (jcoVersion == -1) {
 			throw new ConfigurationException(JCoVersion.getInstance().getErrorMessage());
-		} else if (jcoVersion == 3) {
-			sapSystem3 = new nl.nn.adapterframework.extensions.sap.jco3.SapSystem();
-		} else {
-			sapSystem2 = new nl.nn.adapterframework.extensions.sap.jco2.SapSystem();
+		}
+		try {
+			Class<?> clazz = ClassUtils.loadClass("nl.nn.adapterframework.extensions.sap.jco"+jcoVersion+".SapSystem");
+			Constructor<?> con = clazz.getConstructor();
+			sapSystem = (ISapSystem) con.newInstance();
+		}
+		catch (Exception e) {
+			throw new ConfigurationException("failed to load SapSystem version ["+jcoVersion+"]", e);
 		}
 	}
 
 	public void setName(String string) {
-		if (jcoVersion == 3) {
-			sapSystem3.setName(string);
-		} else {
-			sapSystem2.setName(string);
-		}
+		sapSystem.setName(string);
 	}
 
 	public void registerItem(Object dummyParent) {
-		if (jcoVersion == 3) {
-			sapSystem3.registerItem(dummyParent);
-			SapSystemFactory.getInstance().registerSapSystem(sapSystem3, sapSystem3.getName());
-		} else {
-			sapSystem2.registerItem(dummyParent);
-			SapSystemFactory.getInstance().registerSapSystem(sapSystem2, sapSystem2.getName());
-		}
+		sapSystem.registerItem(dummyParent);
+		SapSystemFactory.getInstance().registerSapSystem(sapSystem, sapSystem.getName());
 	}
 
 	public void setHost(String string) {
-		if (jcoVersion == 3) {
-			sapSystem3.setHost(string);
+		if(sapSystem instanceof ISapSystem3) {
+			((ISapSystem3) sapSystem).setHost(string);
 		}
 	}
 
 	public void setAshost(String string) {
-		if (jcoVersion == 3) {
-			sapSystem3.setAshost(string);
+		if(sapSystem instanceof ISapSystem3) {
+			((ISapSystem3) sapSystem).setAshost(string);
 		}
 	}
 
 	public void setSystemnr(String string) {
-		if (jcoVersion == 3) {
-			sapSystem3.setSystemnr(string);
-		} else {
-			sapSystem2.setSystemnr(string);
-		}
+		sapSystem.setSystemnr(string);
 	}
 
 	public void setGroup(String string) {
-		if (jcoVersion == 3) {
-			sapSystem3.setGroup(string);
+		if(sapSystem instanceof ISapSystem3) {
+			((ISapSystem3) sapSystem).setGroup(string);
 		}
 	}
 
 	public void setR3name(String string) {
-		if (jcoVersion == 3) {
-			sapSystem3.setR3name(string);
+		if(sapSystem instanceof ISapSystem3) {
+			((ISapSystem3) sapSystem).setR3name(string);
 		}
 	}
 
 	public void setMshost(String string) {
-		if (jcoVersion == 3) {
-			sapSystem3.setMshost(string);
+		if(sapSystem instanceof ISapSystem3) {
+			((ISapSystem3) sapSystem).setMshost(string);
 		}
 	}
 
 	public void setMsservOffset(int i) {
-		if (jcoVersion == 3) {
-			sapSystem3.setMsservOffset(i);
+		if(sapSystem instanceof ISapSystem3) {
+			((ISapSystem3) sapSystem).setMsservOffset(i);
 		}
 	}
 
 	public void setGwhost(String string) {
-		if (jcoVersion == 3) {
-			sapSystem3.setGwhost(string);
-		} else {
-			sapSystem2.setGwhost(string);
-		}
+		sapSystem.setGwhost(string);
 	}
 
 	public void setGwservOffset(int i) {
-		if (jcoVersion == 3) {
-			sapSystem3.setGwservOffset(i);
+		if(sapSystem instanceof ISapSystem3) {
+			((ISapSystem3) sapSystem).setGwservOffset(i);
 		}
 	}
 
 	public void setMandant(String string) {
-		if (jcoVersion == 3) {
-			sapSystem3.setMandant(string);
-		} else {
-			sapSystem2.setMandant(string);
-		}
+		sapSystem.setMandant(string);
 	}
 
 	public void setAuthAlias(String string) {
-		if (jcoVersion == 3) {
-			sapSystem3.setAuthAlias(string);
-		} else {
-			sapSystem2.setAuthAlias(string);
-		}
+		sapSystem.setAuthAlias(string);
 	}
 
 	public void setUserid(String string) {
-		if (jcoVersion == 3) {
-			sapSystem3.setUserid(string);
-		} else {
-			sapSystem2.setUserid(string);
-		}
+		sapSystem.setUserid(string);
 	}
 
 	public void setPasswd(String string) {
-		if (jcoVersion == 3) {
-			sapSystem3.setPasswd(string);
-		} else {
-			sapSystem2.setPasswd(string);
-		}
+		sapSystem.setPasswd(string);
 	}
 
 	public void setLanguage(String string) {
-		if (jcoVersion == 3) {
-			sapSystem3.setLanguage(string);
-		} else {
-			sapSystem2.setLanguage(string);
-		}
+		sapSystem.setLanguage(string);
 	}
 
 	public void setUnicode(boolean b) {
-		if (jcoVersion == 3) {
-			sapSystem3.setUnicode(b);
-		} else {
-			sapSystem2.setUnicode(b);
-		}
+		sapSystem.setUnicode(b);
 	}
 
 	public void setMaxConnections(int i) {
-		if (jcoVersion == 3) {
-			sapSystem3.setMaxConnections(i);
-		} else {
-			sapSystem2.setMaxConnections(i);
-		}
+		sapSystem.setMaxConnections(i);
 	}
 
 	public void setTraceLevel(int i) {
-		if (jcoVersion == 3) {
-			sapSystem3.setTraceLevel(i);
-		} else {
-			sapSystem2.setTraceLevel(i);
-		}
+		sapSystem.setTraceLevel(i);
 	}
 
 	public void setServiceOffset(int i) {
-		if (jcoVersion == 2) {
-			sapSystem2.setServiceOffset(i);
-		}
+		sapSystem.setServiceOffset(i);
 	}
 
 	public void setSncEnabled(boolean sncEnabled) {
-		if (jcoVersion == 3) {
-			sapSystem3.setSncEnabled(sncEnabled);
+		if (sapSystem instanceof ISncEnabled) {
+			((ISncEnabled) sapSystem).setSncEnabled(sncEnabled);
 		}
 	}
 
 	public void setSncLibrary(String sncLibPath) {
-		if (jcoVersion == 3) {
-			sapSystem3.setSncLibrary(sncLibPath);
+		if (sapSystem instanceof ISncEnabled) {
+			((ISncEnabled) sapSystem).setSncLibrary(sncLibPath);
 		}
 	}
 
 	public void setSncQop(int qop) throws ConfigurationException {
-		if (jcoVersion == 3) {
+		if (sapSystem instanceof ISncEnabled) {
 			if(qop < 1 || qop > 9)
 				throw new ConfigurationException("SNC QOP cannot be smaller then 0 or larger then 9");
-			sapSystem3.setSncQop(qop);
+			((ISncEnabled) sapSystem).setSncQop(qop);
 		}
 	}
 
 	public void setMyName(String myName) {
-		if (jcoVersion == 3) {
-			sapSystem3.setMyName(myName);
+		if (sapSystem instanceof ISncEnabled) {
+			((ISncEnabled) sapSystem).setMyName(myName);
 		}
 	}
 
 	public void setPartnerName(String partnerName) {
-		if (jcoVersion == 3) {
-			sapSystem3.setPartnerName(partnerName);
+		if (sapSystem instanceof ISncEnabled) {
+			((ISncEnabled) sapSystem).setPartnerName(partnerName);
 		}
 	}
 
 	public void setSncAuthMethod(String sncAuthMethod) {
-		if (jcoVersion == 3) {
-			sapSystem3.setSncAuthMethod(sncAuthMethod);
+		if (sapSystem instanceof ISncEnabled) {
+			((ISncEnabled) sapSystem).setSncAuthMethod(sncAuthMethod);
 		}
 	}
 
 	public void setSncSSO2(String sncSSO2) {
-		if (jcoVersion == 3) {
-			sapSystem3.setSncSSO2(sncSSO2);
+		if (sapSystem instanceof ISncEnabled) {
+			((ISncEnabled) sapSystem).setSncSSO2(sncSSO2);
 		}
 	}
 

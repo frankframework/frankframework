@@ -16,9 +16,10 @@
 package nl.nn.adapterframework.extensions.sap.jco3;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.extensions.sap.ISapSender;
+import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -65,7 +66,7 @@ import com.sap.conn.jco.JCoFunction;
  * @author  Jaco de Groot
  * @since   5.0
  */
-public class SapSender extends SapSenderBase {
+public class SapSender extends SapSenderBase implements ISapSender {
 	
 	private String functionName=null;
 	private String functionNameParam="functionName";

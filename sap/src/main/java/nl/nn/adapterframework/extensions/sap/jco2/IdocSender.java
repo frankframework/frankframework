@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -62,8 +62,6 @@ public class IdocSender extends SapSenderBase {
 		}
 	}
 
-
-	
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		String tid=null;
 		try {
@@ -100,5 +98,4 @@ public class IdocSender extends SapSenderBase {
 			throw new SenderException(e);
 		}
 	}
-
 }

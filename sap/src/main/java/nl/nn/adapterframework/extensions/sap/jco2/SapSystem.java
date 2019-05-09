@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,19 +16,15 @@
 package nl.nn.adapterframework.extensions.sap.jco2;
 
 import java.lang.reflect.Field;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
 import java.util.Iterator;
 
-import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.extensions.sap.ISapSystem;
+import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.GlobalListItem;
 
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
-
 import com.sap.mw.idoc.IDoc;
 import com.sap.mw.idoc.jco.JCoIDoc;
 import com.sap.mw.jco.IRepository;
@@ -55,7 +51,7 @@ import com.sap.mw.jco.JCO;
  * @author Gerrit van Brakel
  * @since 4.1.1
  */
-public class SapSystem extends GlobalListItem  implements JCO.ServerStateChangedListener  {
+public class SapSystem extends GlobalListItem implements ISapSystem, JCO.ServerStateChangedListener {
 
 	private int maxConnections = 10;
 
@@ -83,7 +79,7 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 	 * Retrieve a SapSystem from the list of systems.
 	 */
 	public static SapSystem getSystem(String name) {
-		return (SapSystem)getItem(name);
+		return (SapSystem) getItem(name);
 	}
 
 	private void clearSystem() {
@@ -148,16 +144,16 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 			system.configure();
 		}
 	}
-  
-  	public synchronized void openSystem() throws SapException {
-  		if (referenceCount++<=0) {
+
+	public synchronized void openSystem() throws SapException {
+		if (referenceCount++<=0) {
 			referenceCount=1;
 			log.debug(getLogPrefix()+"opening system");
 			initSystem(); 
 			log.debug(getLogPrefix()+"opened system");
-  		}
-  	}
-  
+		}
+	}
+
 	public synchronized void closeSystem() {
 		if (--referenceCount<=0) {
 			log.debug(getLogPrefix()+"reference count ["+referenceCount+"], closing system");
@@ -256,7 +252,6 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 		return mandant;
 	}
 
-
 	public String getSystemnr() {
 		return systemnr;
 	}
@@ -292,12 +287,9 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 		mandant = string;
 	}
 
-
-
 	public void setSystemnr(String string) {
 		systemnr = string;
 	}
-
 
 	public int getMaxConnections() {
 		return maxConnections;

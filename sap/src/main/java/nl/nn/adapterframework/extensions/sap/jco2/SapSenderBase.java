@@ -20,6 +20,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.extensions.sap.jco2.tx.ClientFactoryUtils;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -59,8 +60,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 	private boolean synchronous=false;
 
 	protected ParameterList paramList = null;
-	
-	
+
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (paramList!=null) {
@@ -112,7 +112,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		if (result==null) {
 			log.warn(getLogPrefix()+"could not find a SapSystem ["+SapSystemName+"] from Parameter ["+getSapSystemNameParam()+"]");
 		}
-		return getSapSystem(SapSystemName);
+		return result;
 	}
 
 	public JCO.Client getClient(IPipeLineSession session, SapSystem sapSystem) throws SenderException, SapException {
@@ -175,7 +175,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		return sapSystemNameParam;
 	}
 
-	protected void setSynchronous(boolean b) {
+	public void setSynchronous(boolean b) {
 		synchronous = b;
 	}
 	public boolean isSynchronous() {

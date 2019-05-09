@@ -21,7 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import nl.nn.adapterframework.extensions.sap.jco3.SapException;
+import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.extensions.sap.jco3.SapSystem;
 
 import org.springframework.transaction.support.ResourceHolderSupport;

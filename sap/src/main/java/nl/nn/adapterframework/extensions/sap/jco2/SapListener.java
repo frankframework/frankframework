@@ -19,10 +19,11 @@ import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
-import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.extensions.sap.ISapListener;
+import nl.nn.adapterframework.extensions.sap.SapException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -56,14 +57,15 @@ import com.sap.mw.jco.JCO;
  * @since   4.2
  * @see   "http://help.sap.com/saphelp_nw04/helpdata/en/09/c88442a07b0e53e10000000a155106/frameset.htm"
  */
-public class SapListener extends SapFunctionFacade implements IPushingListener, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
+public class SapListener extends SapFunctionFacade implements ISapListener<JCO.Function>, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
 
 	private String progid;	 // progid of the RFC-destination
-        	
+
 	private SapServer sapServer;
-	private IMessageHandler handler;
+	private IMessageHandler<JCO.Function> handler;
 	private IbisExceptionListener exceptionListener;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getProgid())) {
 			throw new ConfigurationException("attribute progid must be specified");
@@ -71,7 +73,7 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 		super.configure();
 	}
 
-
+	@Override
 	public void open() throws ListenerException {
 		try {
 			openFacade();
@@ -93,7 +95,8 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 			throw new ListenerException(getLogPrefix()+"could not start", e);
 		}
 	}
-	
+
+	@Override
 	public void close() throws ListenerException {
 		try {
 			if (sapServer!=null) {
@@ -107,22 +110,26 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 		}
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		return "progid ["+getProgid()+"] on "+super.getPhysicalDestinationName();
 	}
 
 
-	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
+	@Override
+	public String getIdFromRawMessage(JCO.Function rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		log.debug("SapListener.getCorrelationIdFromField");
 		return getCorrelationIdFromField((JCO.Function) rawMessage);
 	}
 
-	public String getStringFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
+	@Override
+	public String getStringFromRawMessage(JCO.Function rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		log.debug("SapListener.getStringFromRawMessage");
 		return functionCall2message((JCO.Function) rawMessage);
 	}
 
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map threadContext) throws ListenerException {
+	@Override
+	public void afterMessageProcessed(PipeLineResult processResult, JCO.Function rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		try {
 			log.debug("SapListener.afterMessageProcessed");
 			message2FunctionResult((JCO.Function) rawMessage, processResult.getResult());
@@ -171,15 +178,17 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 		return progid;
 	}
 
+	@Override
 	public void setProgid(String string) {
 		progid = string;
 	}
 
-
-	public void setHandler(IMessageHandler handler) {
+	@Override
+	public void setHandler(IMessageHandler<JCO.Function> handler) {
 		this.handler=handler;
 	}
 
+	@Override
 	public void setExceptionListener(IbisExceptionListener listener) {
 		exceptionListener = listener;
 		JCO.addServerExceptionListener(this);
@@ -196,6 +205,11 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 		if (exceptionListener!=null) {
 			exceptionListener.exceptionThrown(this, new SapException(getLogPrefix()+"error in SapServer ["+server.getProgID()+"]",e));
 		}
+	}
+
+	@Override
+	public void setConnectionCount(String connectionCount) {
+		//Unused
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package nl.nn.adapterframework.extensions.sap.jco2;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.extensions.sap.ISapSender;
+import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -62,7 +64,7 @@ import com.sap.mw.jco.JCO;
  * @author  Gerrit van Brakel
  * @since   4.2
  */
-public class SapSender extends SapSenderBase {
+public class SapSender extends SapSenderBase implements ISapSender {
 	
 	private String functionName=null;
 	private String functionNameParam="functionName";

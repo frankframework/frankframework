@@ -23,6 +23,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 
 import org.apache.commons.lang.StringUtils;
@@ -60,9 +61,8 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 	private String luwHandleSessionKey;
 	private String action;
 	private String sapSystemName;
-	
-	private SapSystem sapSystem;
 
+	private SapSystem sapSystem;
 
 	public void configure(PipeLine pipeline) throws ConfigurationException {
 		super.configure(pipeline);

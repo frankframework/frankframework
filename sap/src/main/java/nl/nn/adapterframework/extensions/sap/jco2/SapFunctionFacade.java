@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,13 +21,13 @@ import java.util.Map;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import org.apache.commons.digester.Digester;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -68,9 +68,8 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 
 	private IFunctionTemplate ftemplate;
 	private SapSystem sapSystem;
-	private boolean fieldIndicesCalculated=false;
 
-	static Map extractors = new HashMap();
+	static Map<String, TransformerPool> extractors = new HashMap<String, TransformerPool>();
 
 	protected String getLogPrefix() {
 		return this.getClass().getName()+" ["+getName()+"] ";
@@ -97,7 +96,6 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 				ftemplate = getFunctionTemplate(sapSystem, getFunctionName());
 				try {
 					calculateStaticFieldIndices(ftemplate);
-					fieldIndicesCalculated=true;
 				} catch (Exception e) {
 					throw new SapException(getLogPrefix()+"Exception calculation field-indices ["+getFunctionName()+"]", e);
 				}
@@ -113,7 +111,7 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 		} else {
 			SapSystem.closeSystems();
 		}
-		fieldIndicesCalculated=false;
+
 		ftemplate = null;
 	}
 
@@ -161,7 +159,7 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 	static protected void setTables(JCO.ParameterList tableParams, String message) throws SapException {
 		if (tableParams != null && StringUtils.isNotEmpty(message)) {
 			String paramsName=tableParams.getName();
-			TransformerPool tp = (TransformerPool)extractors.get(paramsName);
+			TransformerPool tp = extractors.get(paramsName);
 			if (tp==null) {
 				try {
 //					log.debug("creating evaluator for parameter ["+paramName+"]");
@@ -439,7 +437,7 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 		sapSystemName = string;
 	}
 
-	protected String getFunctionName() {
+	public String getFunctionName() {
 		return null;
 	}
 

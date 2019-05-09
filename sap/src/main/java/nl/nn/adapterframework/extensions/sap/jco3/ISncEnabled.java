@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,28 +13,25 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.extensions.sap.jco2;
+package nl.nn.adapterframework.extensions.sap.jco3;
 
-import nl.nn.adapterframework.core.IbisException;
+public interface ISncEnabled {
 
-/**
- * Exception thrown by classes in the sap-package (implementation) to notify
- * various problems.
- * 
- * @author  Gerrit van Brakel
- */
-public class SapException extends IbisException {
-		
-	public SapException() {
-		super();
-	}
-	public SapException(String errMsg) {
-		super(errMsg);
-	}
-	public SapException(String errMsg, Throwable t) {
-		super(errMsg, t);
-	}
-	public SapException(Throwable t) {
-		super(t);
-	}
+	/**
+	 * Enables SNC security
+	 * @param sncEnabled
+	 */
+	public void setSncEnabled(boolean sncEnabled);
+
+	public void setSncSSO2(String sncSSO2);
+
+	public void setSncAuthMethod(String sncAuthMethod);
+
+	public void setPartnerName(String partnerName);
+
+	public void setMyName(String myName);
+
+	public void setSncQop(int qop);
+
+	public void setSncLibrary(String sncLibPath);
 }

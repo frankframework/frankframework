@@ -23,10 +23,12 @@ import java.util.Map;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.extensions.sap.jco3.handlers.Handler;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -72,9 +74,8 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 
 	private JCoFunctionTemplate ftemplate;
 	private SapSystem sapSystem;
-	private boolean fieldIndicesCalculated=false;
 
-	static Map extractors = new HashMap();
+	static Map<String, TransformerPool> extractors = new HashMap<String, TransformerPool>();
 
 	protected String getLogPrefix() {
 		return this.getClass().getName()+" ["+getName()+"] ";
@@ -101,7 +102,6 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 				ftemplate = getFunctionTemplate(sapSystem, getFunctionName());
 				try {
 					calculateStaticFieldIndices(ftemplate);
-					fieldIndicesCalculated=true;
 				} catch (Exception e) {
 					throw new SapException(getLogPrefix()+"Exception calculation field-indices ["+getFunctionName()+"]", e);
 				}
@@ -117,7 +117,7 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 		} else {
 			SapSystem.closeSystems();
 		}
-		fieldIndicesCalculated=false;
+
 		ftemplate = null;
 	}
 
@@ -399,7 +399,7 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 		sapSystemName = string;
 	}
 
-	protected String getFunctionName() {
+	public String getFunctionName() {
 		return null;
 	}
 

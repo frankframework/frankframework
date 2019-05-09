@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.extensions.sap.jco3;
+package nl.nn.adapterframework.extensions.sap;
 
 import nl.nn.adapterframework.core.IbisException;
 
@@ -22,20 +22,23 @@ import nl.nn.adapterframework.core.IbisException;
  * various problems.
  * 
  * @author  Gerrit van Brakel
- * @author  Jaco de Groot
- * @since   5.0
  */
 public class SapException extends IbisException {
-		
+
+	private static final long serialVersionUID = 1L;
+
 	public SapException() {
 		super();
 	}
+
 	public SapException(String errMsg) {
 		super(errMsg);
 	}
+
 	public SapException(String errMsg, Throwable t) {
 		super(errMsg, t);
 	}
+
 	public SapException(Throwable t) {
 		super(t);
 	}
