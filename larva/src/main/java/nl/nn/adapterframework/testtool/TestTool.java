@@ -3207,7 +3207,7 @@ public class TestTool {
 		}
 		debugMessage("Check replaceKey properties", writers);
 		boolean replaceKeyProcessed = false;
-		i = 1;
+		i = 0;
 		while (!replaceKeyProcessed) {
 			String key1 = properties.getProperty("replaceKey" + i + ".key1");
 			String key2 = properties.getProperty("replaceKey" + i + ".key2");
@@ -3216,7 +3216,9 @@ public class TestTool {
 				preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
 				preparedActualResult = replaceKey(preparedActualResult, key1, key2);
 				i++;
-			} else {
+			} else if (i == 0) {
+				i++;
+			} else if (i > 0) {
 				replaceKeyProcessed = true;
 			}
 		}
