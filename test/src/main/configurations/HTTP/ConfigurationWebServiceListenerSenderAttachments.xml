@@ -108,7 +108,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" paramsInUrl="false" inputMessageParam="file"
-					url="${web.protocol}://${web.host}:${web.port}/iaf-test/services/urn/ws/address/attachments" multipart="true"
+					url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/services/urn/ws/address/attachments" multipart="true"
 					allowSelfSignedCertificates="true" verifyHostname="false" mtomEnabled="true"
 				/>
 				<param name='file' value="&lt;xml&gt;I just sent some text! :)&lt;/xml&gt;"/>
@@ -146,7 +146,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" paramsInUrl="false" inputMessageParam="file"
-					url="${web.protocol}://${web.host}:${web.port}/iaf-test/services/urn/ws/address/attachments/multipart" multipart="true"
+					url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/services/urn/ws/address/attachments/multipart" multipart="true"
 					allowSelfSignedCertificates="true" verifyHostname="false" mtomEnabled="true" multipartXmlSessionKey="multipart"
 				/>
 				<forward name="success" path="EXIT" />
@@ -169,7 +169,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" 
-					url="${web.protocol}://${web.host}:${web.port}/iaf-test/services/urn/ws/address/attachments/returning"
+					url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/services/urn/ws/address/attachments/returning"
 					allowSelfSignedCertificates="true" verifyHostname="false" multipartResponse="true"
 				/>
 				<forward name="success" path="WriteStream" />
@@ -202,7 +202,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" 
-					url="${web.protocol}://${web.host}:${web.port}/iaf-test/services/urn/ws/address/attachments/returning/sessionkey"
+					url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/services/urn/ws/address/attachments/returning/sessionkey"
 					allowSelfSignedCertificates="true" verifyHostname="false" multipartResponse="true"
 				/>
 				<forward name="success" path="WriteStream" />
