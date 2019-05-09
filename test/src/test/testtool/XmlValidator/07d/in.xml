@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rt:root xmlns:p="http://nn.nl/sub03" xmlns:p1="http://nn.nl/sub04" xmlns:rt="http://nn.nl/root" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://nn.nl/root root2.xsd ">
+  <rt:string>rt:string</rt:string>
+  <rt:sub01>
+    <rt:string>rt:string</rt:string>
+  </rt:sub01>
+  <sub01a>
+    <string>string</string>
+  </sub01a>
+  <rt:sub02>
+    <rt:string>rt:string</rt:string>
+  </rt:sub02>
+  <p:sub03>
+    <p:string>p:string</p:string>
+  </p:sub03>
+  <p1:sub04>
+    <p1:string>p1:string</p1:string>
+  </p1:sub04>
+  <sub05>
+    <string>string</string>
+  </sub05>
+  <rt:dummy>p:dummy</rt:dummy>
+</rt:root>

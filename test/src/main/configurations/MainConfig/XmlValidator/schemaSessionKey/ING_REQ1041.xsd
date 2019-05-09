@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ufsa="http://unisys.financial.framework/UDTSchema">
+	<xs:import namespace="http://unisys.financial.framework/UDTSchema" schemaLocation="UDTSchema.xsd"/>
+	<xs:redefine schemaLocation="RequestSchema.xsd">
+		<xs:complexType name="BodyType">
+			<xs:complexContent>
+				<xs:extension base="BodyType">
+					<xs:sequence>
+						<xs:element ref="XdsCommissionsAgencyPolicy" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:extension>
+			</xs:complexContent>
+		</xs:complexType>	
+	</xs:redefine>
+
+	<xs:element name="XdsCommissionsAgencySingleCoverage" type="XdsCommissionsAgencySingleCoverageType"/>
+	<xs:complexType name="XdsCommissionsAgencySingleCoverageType">
+		<xs:sequence>
+			<xs:element name="premiumCurrencyCD" type="ufsa:LSTValue" minOccurs="0" maxOccurs="1"><!--LSTCurrency--></xs:element>
+			<xs:element name="ref" type="ufsa:UDTReference" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="singlePremiumAmt" type="ufsa:UDTMonetaryAmount" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="XdsCommissionsAgencyRegularCoverage" type="XdsCommissionsAgencyRegularCoverageType"/>
+	<xs:complexType name="XdsCommissionsAgencyRegularCoverageType">
+		<xs:sequence>
+			<xs:element name="ref" type="ufsa:UDTReference" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="XdsCommissionsAgencyCommission" type="XdsCommissionsAgencyCommissionType"/>
+	<xs:complexType name="XdsCommissionsAgencyCommissionType">
+		<xs:sequence>
+			<xs:element name="sacrificeEntryTypeCD" type="ufsa:LSTValue" minOccurs="0" maxOccurs="1"><!--LSTCommissionSacrificeEntryType--></xs:element>
+			<xs:element name="sacrificeRate" type="ufsa:UDTNumber5" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="typeCD" type="ufsa:LSTValue" minOccurs="0" maxOccurs="1"><!--LSTCommissionType--></xs:element>
+			<xs:element name="waivedAmount" type="ufsa:UDTMonetaryAmount" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="XdsCommissionsAgencyContributorPremium" type="XdsCommissionsAgencyContributorPremiumType"/>
+	<xs:complexType name="XdsCommissionsAgencyContributorPremiumType">
+		<xs:sequence>
+			<xs:element name="typeCD" type="ufsa:LSTValue" minOccurs="0" maxOccurs="1"><!--LSTContributorPremiumTypes--></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="XdsCommissionsAgencyProduct" type="XdsCommissionsAgencyProductType"/>
+	<xs:complexType name="XdsCommissionsAgencyProductType">
+		<xs:sequence>
+			<xs:element name="ref" type="ufsa:UDTReference" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="serviceCompanyRef" type="ufsa:UDTReference" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="XdsCommissionsAgencyIncrement" type="XdsCommissionsAgencyIncrementType"/>
+	<xs:complexType name="XdsCommissionsAgencyIncrementType">
+		<xs:sequence>
+			<xs:element name="ref" type="ufsa:UDTReference" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="seqNumber" type="ufsa:UDTInteger5" minOccurs="0" maxOccurs="1"/>
+			<xs:element ref="XdsCommissionsAgencyRegularCoverage" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element ref="XdsCommissionsAgencySingleCoverage" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="XdsCommissionsAgencyClient" type="XdsCommissionsAgencyClientType"/>
+	<xs:complexType name="XdsCommissionsAgencyClientType">
+		<xs:sequence>
+			<xs:element name="clientForename" type="ufsa:UDTText50" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="clientMiddleName" type="ufsa:UDTText50" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="clientRef" type="ufsa:UDTReference" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="clientRoleSequenceNo" type="ufsa:UDTInteger5" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="clientRoleTypeCD" type="ufsa:LSTValue" minOccurs="0" maxOccurs="1"><!--LSTClientRoleType--></xs:element>
+			<xs:element name="clientSurname" type="ufsa:UDTText50" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="dob" type="ufsa:UDTDate" minOccurs="0" maxOccurs="1"/>
+			<xs:element ref="XdsCommissionsAgencyCommission" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element ref="XdsCommissionsAgencyContributorPremium" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="XdsCommissionsAgencyCommissionLayer" type="XdsCommissionsAgencyCommissionLayerType"/>
+	<xs:complexType name="XdsCommissionsAgencyCommissionLayerType">
+		<xs:sequence>
+			<xs:element name="amendDate" type="ufsa:UDTDate" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="amount" type="ufsa:UDTMonetaryAmount" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="categoryCD" type="ufsa:LSTValue" minOccurs="0" maxOccurs="1"><!--LSTCommissionLayerCategoryCD--></xs:element>
+			<xs:element name="commissionCapital" type="ufsa:UDTMonetaryAmount" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="commissionLayerCD" type="ufsa:LSTValue" minOccurs="0" maxOccurs="1"><!--LSTCommissionLayerCD--></xs:element>
+			<xs:element name="endDate" type="ufsa:UDTDate" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="ref" type="ufsa:UDTReference" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="singlePremiumAmt" type="ufsa:UDTMonetaryAmount" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="startDate" type="ufsa:UDTDate" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="typeCD" type="ufsa:LSTValue" minOccurs="0" maxOccurs="1"><!--LSTCommissionLayerTypeCD--></xs:element>
+			<xs:element name="unPaidAmt" type="ufsa:UDTMonetaryAmount" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="XdsCommissionsAgencyPolicy" type="XdsCommissionsAgencyPolicyType"/>
+	<xs:complexType name="XdsCommissionsAgencyPolicyType">
+		<xs:sequence>
+			<xs:element name="commencementDate" type="ufsa:UDTDate" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="commissionCalculationMethodCD" type="ufsa:LSTValue" minOccurs="0" maxOccurs="1"><!--LSTCommissionCalculationMethod--></xs:element>
+			<xs:element name="currencyCD" type="ufsa:LSTValue" minOccurs="0" maxOccurs="1"><!--LSTCurrency--></xs:element>
+			<xs:element name="endDate" type="ufsa:UDTDate" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="fiscalAssurancePurposeCD" type="ufsa:LSTValue" minOccurs="0" maxOccurs="1"><!--LSTFiscalAssurancePurpose--></xs:element>
+			<xs:element name="fiscalRegimeCD" type="ufsa:LSTValue" minOccurs="0" maxOccurs="1"><!--LSTFiscalRegime--></xs:element>
+			<xs:element name="flexPeriodStartDate" type="ufsa:UDTDate" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="fullPolicySurrenderValue" type="ufsa:UDTMonetaryAmount" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="grossSurrenderAmt" type="ufsa:UDTMonetaryAmount" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="guaranteePeriodCD" type="ufsa:LSTValue" minOccurs="0" maxOccurs="1"><!--LSTGuaranteePeriod--></xs:element>
+			<xs:element name="initialPremiumEndDate" type="ufsa:UDTDate" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="lastAccessedBy" type="ufsa:UDTText50" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="netSurrenderAmt" type="ufsa:UDTMonetaryAmount" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="premiumCollectionDayMonth" type="ufsa:UDTDate" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="premiumPaymentEndDate" type="ufsa:UDTDate" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="ref" type="ufsa:UDTReference" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="regularPremiumCurrencyCD" type="ufsa:LSTValue" minOccurs="0" maxOccurs="1"><!--LSTCurrency--></xs:element>
+			<xs:element name="regularPremiumFrequencyCD" type="ufsa:LSTValue" minOccurs="0" maxOccurs="1"><!--LSTPremiumFrequency--></xs:element>
+			<xs:element name="staffCasesCD" type="ufsa:LSTValue" minOccurs="0" maxOccurs="1"><!--LSTStaffCases--></xs:element>
+			<xs:element name="surrenderEffectiveDate" type="ufsa:UDTDate" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="surrenderTypeCD" type="ufsa:LSTValue" minOccurs="0" maxOccurs="1"><!--LSTPolicySurrenderType--></xs:element>
+			<xs:element name="totalInitialPremiumAmt" type="ufsa:UDTMonetaryAmount" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="totalRegularPremiumAmt" type="ufsa:UDTMonetaryAmount" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="totalSubsequentPremiumAmt" type="ufsa:UDTMonetaryAmount" minOccurs="0" maxOccurs="1"/>
+			<xs:element ref="XdsCommissionsAgencyClient" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element ref="XdsCommissionsAgencyCommissionLayer" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element ref="XdsCommissionsAgencyIncrement" minOccurs="1" maxOccurs="unbounded"/>
+			<xs:element ref="XdsCommissionsAgencyProduct" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+</xs:schema>

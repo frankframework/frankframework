@@ -1,0 +1,32 @@
+<module>
+	<adapter name="TransactionTimeoutFxfListener" active="${active.fxf}" >
+		<receiver 
+			name="TransactionTimeoutFxfListener" 
+			maxRetries="0"
+			transactionAttribute="Required"
+			transactionTimeout="2">
+			<listener 
+				className="nl.nn.adapterframework.extensions.fxf.FxfListener" 
+				destinationName="jms/fxf_request" 
+				script="${FXF_init}"
+				applicationId="TIMEOUTFXF"
+				jmsRealm="fxf" 
+				delete="true"
+				workDirectory="yyyy" 
+				fxfDestinationName="zzzz" 
+			/>
+			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+				jmsRealm="jdbc" 
+				slotId="${applicationId}/TransactionTimeoutFxfListener" />
+		</receiver>
+
+		<pipeline firstPipe="delay">
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+			<pipe name="delay" className="nl.nn.adapterframework.pipes.DelayPipe" delayTime="3000">
+					<forward name="success" path="READY" />
+				</pipe>
+			</pipeline>
+	</adapter>
+</module>

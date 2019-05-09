@@ -1,0 +1,56 @@
+<module>
+	<adapter name="CompactMessage-JavaListener">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="CompactMessage-JavaListener" chompCharSize="50"
+			elementToMoveChain="AuditLog_Action;Message;Text">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4test-CompactMessage-JavaListener" />
+		</receiver>
+		<pipeline firstPipe="echo">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe"
+				restoreMovedElements="true">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="CompactMessage-JavaListener2">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="CompactMessage-JavaListener2" chompCharSize="50"
+			elementToMove="Location">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4test-CompactMessage-JavaListener2" />
+		</receiver>
+		<pipeline firstPipe="echo">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<outputValidator className="nl.nn.adapterframework.pipes.XmlValidator"
+				schema="xsd/any.xsd"
+				root="Envelope" throwException="true" restoreMovedElements="true">
+			</outputValidator>
+			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="CompactMessage-JavaListener3">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="CompactMessage-JavaListener3" chompCharSize="50"
+			elementToMoveChain="Location" removeCompactMsgNamespaces="false">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4test-CompactMessage-JavaListener3" />
+		</receiver>
+		<pipeline firstPipe="echo">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe"
+				restoreMovedElements="true">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>

@@ -71,12 +71,20 @@
 		<servlet-name>action</servlet-name>
 	</filter-mapping>
 
-	<!-- Configuration servlet. -->
+	<!-- Configuration servlet -->
 	<servlet>
-		<description>Initializes the configuration</description>
-		<display-name>Configuration Servlet</display-name>
+		<description>Legacy Reload Page</description>
+		<display-name>Ibis Configuration Servlet</display-name>
 		<servlet-name>ConfigurationServlet</servlet-name>
 		<servlet-class>nl.nn.adapterframework.webcontrol.ConfigurationServlet</servlet-class>
+	</servlet>
+
+	<!-- Starting the application through IbisApplicationServlet -->
+	<servlet>
+		<description>Initializes the configuration</description>
+		<display-name>Ibis Application Servlet</display-name>
+		<servlet-name>IbisApplicationServlet</servlet-name>
+		<servlet-class>nl.nn.adapterframework.webcontrol.IbisApplicationServlet</servlet-class>
 		<load-on-startup>0</load-on-startup>
 	</servlet>
 
@@ -196,31 +204,15 @@
 	</servlet-mapping>
 	<!-- END CMIS -->
 
-	<!-- START Soap Router -->
-	<servlet>
-		<display-name>Apache CXF Endpoint</display-name>
-		<servlet-name>jaxwsRouter</servlet-name>
-		<servlet-class>nl.nn.adapterframework.extensions.cxf.CXFServlet</servlet-class>
-		<init-param>
-			<param-name>hide-service-list-page</param-name>
-			<param-value>true</param-value>
-		</init-param>
-		<load-on-startup>2</load-on-startup>
-	</servlet>
-
 	<servlet-mapping>
-		<servlet-name>jaxwsRouter</servlet-name>
+		<servlet-name>IbisApplicationServlet</servlet-name>
 		<url-pattern>/services/*</url-pattern>
 	</servlet-mapping>
 
 	<!-- legacy; to be removed in the year 2020 -->
 	<servlet-mapping>
-		<servlet-name>jaxwsRouter</servlet-name>
-		<url-pattern>/servlet/rpcrouter/*</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>jaxwsRouter</servlet-name>
-		<url-pattern>/servlet/messagerouter</url-pattern>
+		<servlet-name>IbisApplicationServlet</servlet-name>
+		<url-pattern>/servlet/*</url-pattern>
 	</servlet-mapping>
 	<!-- END Soap Router -->
 

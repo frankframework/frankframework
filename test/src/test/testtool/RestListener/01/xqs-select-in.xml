@@ -1,0 +1,20 @@
+<root>
+	<select>
+		<tableName>IBISSTORE</tableName>
+		<columns>
+			<column>
+				<name>SLOTID</name>
+			</column>
+			<column>
+				<name>COMMENTS</name>
+			</column>
+			<column>
+				<name>LENGTH(MESSAGE)</name>
+			</column>
+			<column>
+				<name>LABEL</name>
+			</column>
+		</columns>
+		<order>MESSAGEKEY</order>
+	</select>
+</root>

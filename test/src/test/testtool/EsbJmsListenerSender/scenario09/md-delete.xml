@@ -1,0 +1,9 @@
+<manageDatabaseREQ>
+	<delete>
+		<tableName>IBISSTORE</tableName>
+	</delete>
+<!-- 	<alter>
+		<sequenceName>SEQ_IBISSTORE</sequenceName>
+		<startWith>100</startWith>
+	</alter>
+ --></manageDatabaseREQ>

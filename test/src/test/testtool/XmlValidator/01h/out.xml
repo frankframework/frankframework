@@ -1,0 +1,5 @@
+<Error>
+  <errorCode>FAILURE</errorCode>
+  <errorMessage>Validation using XmlValidator with '/XmlValidator/REQ1000/REQ1000.xsd' failed:
+/: at (1,67): cvc-elt.1.a: Cannot find the declaration of element 'ServiceRequest'.</errorMessage>
+</Error>

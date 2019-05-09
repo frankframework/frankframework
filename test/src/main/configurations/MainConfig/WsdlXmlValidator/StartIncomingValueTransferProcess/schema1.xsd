@@ -1,0 +1,448 @@
+        <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://nn.nl/XSD/Generic/MessageHeader/1" elementFormDefault="qualified" attributeFormDefault="unqualified">
+            <xs:import namespace="http://nn.nl/XSD/PensionsSMB/ValueTransfer/ValueTransferLegacy/1/StartIncomingValueTransferProcess/1" schemaLocation="schema2.xsd"/>
+            <xs:complexType name="ActionType">
+                <xs:sequence>
+                    <xs:element name="Paradigm">
+                        <xs:annotation>
+                            <xs:documentation>
+      Identification of the paradigm, can be Request, Response, Event, Action, Solicit, Notification
+     </xs:documentation>
+                        </xs:annotation>
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="Request"/>
+                                <xs:enumeration value="Response"/>
+                                <xs:enumeration value="Event"/>
+                                <xs:enumeration value="Action"/>
+                                <xs:enumeration value="Solicit"/>
+                                <xs:enumeration value="Notification"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:element>
+                    <xs:element name="Name" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>
+      The name of the operation being invoked.
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="Version" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>
+      The major version of the operation being invoked.
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="ConnectionInfoType">
+                <xs:annotation>
+                    <xs:documentation/>
+                </xs:annotation>
+                <xs:sequence>
+                    <xs:element name="Principal" type="xs:string" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+      ID or name of the front-end system or application
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="RemoteAddress" type="xs:string" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+      System name, Full Qualified Domain Name (FQDN) or IP address of the front-end system. Typically used for black-listing or for some investigation purposed.
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="ConsumingEndpointType">
+                <xs:sequence>
+                    <xs:element name="Id" type="xs:string" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+      Unique identification of the endpoint being invoked.
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="Location" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>
+      Destination of the endpoint being invoked.
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="DetailListType">
+                <xs:sequence>
+                    <xs:element name="Detail" type="ns1:DetailType" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="DetailType">
+                <xs:sequence>
+                    <xs:element name="Code" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>
+      Service specific error code
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="SubCode" type="xs:string" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+      Application specific error code
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="Text" type="ns1:TextType" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+      Detailed description of the error that occurred.
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="ErrorListType">
+                <xs:sequence>
+                    <xs:element name="Error" type="ns1:ErrorType" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="ErrorType">
+                <xs:sequence>
+                    <xs:element name="Code" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>
+      Canonical error code with fixed value. 
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="Reason" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>
+      Canonical reason description of the canonical error. It provides the reason why an error has occurred.
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="Service" type="ns1:ServiceType">
+                        <xs:annotation>
+                            <xs:documentation>
+      Description in which service and operation the error occurred.
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="DetailList" type="ns1:DetailListType" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+      List of specific non canonical errors.
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="HeaderFieldType">
+                <xs:sequence>
+                    <xs:element name="CPAId" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>
+      Collaboration Protocol Agreement ID provided by the initiator of the business value chain of Transactions.
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="ConversationId" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>
+      Global Unique IDdentifier (GUID) for the one particular Conversation a message participates in.
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="MessageId" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>
+      Global Unique Identifier (GUID) for this message within the scope of the Conversation (see above).
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="CorrelationId" type="xs:string" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+      Contains the request MessageId as part of the response in order to correlate two messages as part of the same MEP.
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="ExternalRefToMessageId" type="xs:string" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+      Unique identifier referring to an id passed from an external (front-end) system. This often uniquely identifies the Transaction as known with the initiator.
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="Timestamp" type="xs:dateTime">
+                        <xs:annotation>
+                            <xs:documentation>
+      Date and time message was sent, including the time zone.
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="HeaderProperties" type="ns1:PropertiesType" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+      Used as extension on the HeaderFields for future use without backwards compatibility issues in existing implementations.
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="HeaderPropertyType">
+                <xs:attribute name="Name" use="required" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+     Attribute describing the name of the property
+    </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="Value" use="required" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+     Attribute describing the value of the property
+    </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:complexType>
+            <xs:complexType name="MessageDataType">
+                <xs:sequence>
+                    <xs:element name="MessageId" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>
+      Unique Identifier for this message within the scope of the Conversation (see above). This is a copy of.
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="Timestamp" type="xs:dateTime">
+                        <xs:annotation>
+                            <xs:documentation>
+      Date and time message was sent, including the time zone. This is a copy of.
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="RefToMessageId" type="xs:string" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+      Unique identifier referring to an id passed from an external (front-end) system. This is a copy of.
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="Status" type="ns1:StatusType"/>
+                    <xs:element name="Retry_Option" type="xs:boolean" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+      A boolean indicating if the invocation can be retried
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="MessageHeaderType">
+                <xs:sequence>
+                    <xs:element name="From" type="ns1:ProducingEndpointType"/>
+                    <xs:element name="To" type="ns1:ConsumingEndpointType"/>
+                    <xs:element name="HeaderFields" type="ns1:HeaderFieldType"/>
+                    <xs:element name="ConnectionInfo" type="ns1:ConnectionInfoType" minOccurs="0"/>
+                    <xs:element name="Service" type="ns1:ServiceType"/>
+                    <xs:element name="TraceHeaderList" type="ns1:TraceHeaderListType" minOccurs="0"/>
+                    <xs:element name="TransactionList" type="ns1:TransactionListType" minOccurs="0"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="ProducingEndpointType">
+                <xs:sequence>
+                    <xs:element name="Id" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>
+      Unique identification of the initiator.
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="Location" type="xs:string" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+      Destination of the endpoint of the initiator. Use when discriminating the Id with an location is of importance.
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="PropertiesType">
+                <xs:sequence>
+                    <xs:element name="HeaderProperty" type="ns1:HeaderPropertyType" maxOccurs="unbounded">
+                        <xs:annotation>
+                            <xs:documentation>
+      Repeating structure to accommodate extra properties
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="ResultType">
+                <xs:sequence>
+                    <xs:element name="Status" type="ns1:StatusType"/>
+                    <xs:element name="ErrorList" type="ns1:ErrorListType" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+      Element which is the parent of all errors elements. Will only be present if the status equals ERROR
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="ServiceType">
+                <xs:sequence>
+                    <xs:element name="Name" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>
+      The name of the service being invoked
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="Context" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>
+      The name of the service context being invoked.
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="Action" type="ns1:ActionType">
+                        <xs:annotation>
+                            <xs:documentation>
+      Identification of the action being performed
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:simpleType name="StatusType">
+                <xs:annotation>
+                    <xs:documentation>
+    A string indicating if the invocation was successful or not. The field may have the value OK or ERROR
+   </xs:documentation>
+                </xs:annotation>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="OK"/>
+                    <xs:enumeration value="ERROR"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:complexType name="TextType">
+                <xs:attribute name="language" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+     Detailing the language of the error based on ISO 639-1 Code.
+    </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:complexType>
+            <xs:complexType name="TraceHeaderListType">
+                <xs:annotation>
+                    <xs:documentation>
+    The ?raceHeaderList?part of the message is used to carry over parts of the header while invoking another operation or service. When a service is composed of multiple other services each header that is received will make up one element in the TraceHeaderList. A new TraceHeader entry is added to the bottom of the list. The newest entry is the lowest entry in a list. 
+   </xs:documentation>
+                </xs:annotation>
+                <xs:sequence>
+                    <xs:element name="TraceHeader" type="ns1:TraceHeaderType" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="TraceHeaderType">
+                <xs:sequence>
+                    <xs:element name="Sender" type="ns1:ProducingEndpointType">
+                        <xs:annotation>
+                            <xs:documentation>
+      This is a copy of the From element
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="Receiver" type="ns1:ConsumingEndpointType">
+                        <xs:annotation>
+                            <xs:documentation>
+      This is a copy of the To element
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="Service" type="ns1:ServiceType">
+                        <xs:annotation>
+                            <xs:documentation>
+      This is a copy of the Service element
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="MessageData" type="ns1:MessageDataType">
+                        <xs:annotation>
+                            <xs:documentation>
+      This element contains a copy of certain fields of the HeaderFields element
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="TransactionListType">
+                <xs:annotation>
+                    <xs:documentation>
+    The TransactionList part of the message holds information regarding the transaction the message is part of. This part should ONLY be used for SOx or other regulatory compliance requirements that have been identified for a certain service or system interface. A new Transaction entry is added to the bottom of the list. The newest entry is the lowest entry in a list.
+   </xs:documentation>
+                </xs:annotation>
+                <xs:sequence>
+                    <xs:element name="Transaction" type="ns1:TransactionType" maxOccurs="unbounded">
+                        <xs:annotation>
+                            <xs:documentation>
+      For each transaction a new Transaction is added to bottom of the TransactionList.
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="TransactionType">
+                <xs:sequence>
+                    <xs:element name="Interaction">
+                        <xs:annotation>
+                            <xs:documentation>
+      When a system is called that is not part of the ESB or SOA platform, this field will hold the value Frontend or Backend respective to the type of system that is called
+     </xs:documentation>
+                        </xs:annotation>
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="Frontend"/>
+                                <xs:enumeration value="Backend"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:element>
+                    <xs:element name="TransactionId" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>
+      The unique identification used as reference when a Transaction enters or leaves the ESB.
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="MessageId" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>
+      The identification of the message. Must be unique within the TransactionList when multiple calls to external system 
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="SystemId" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>
+      The unique identification of the external system
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="Timestamp" type="xs:dateTime">
+                        <xs:annotation>
+                            <xs:documentation>
+      Date and time the message was sent to or received from the external system
+     </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="MessageHeader" type="ns1:MessageHeaderType"/>
+            <xs:element name="Result" type="ns1:ResultType"/>
+        </xs:schema>

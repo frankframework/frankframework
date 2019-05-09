@@ -1,0 +1,36 @@
+<project default="setup.input.directories">
+	<target name="setup.input.directories">
+		<property name="root.dir" value="c:/temp/ibis4test/"/>
+		<delete dir="${root.dir}"/>
+		<mkdir dir="${root.dir}"/>
+		<mkdir dir="${root.dir}/b64"/>
+		<mkdir dir="${root.dir}/batch"/>
+		<mkdir dir="${root.dir}/batch/in"/>
+		<mkdir dir="${root.dir}/batch/out"/>
+		<mkdir dir="${root.dir}/bftp"/>
+		<mkdir dir="${root.dir}/bftp/in"/>
+		<mkdir dir="${root.dir}/fp"/>
+		<mkdir dir="${root.dir}/fp2"/>
+		<mkdir dir="${root.dir}/fxf"/>
+		<mkdir dir="${root.dir}/fxf/NNX01234"/>
+		<mkdir dir="${root.dir}/fxf/NNX01234/in"/>
+		<mkdir dir="${root.dir}/generateWsdl"/>
+		<mkdir dir="${root.dir}/mfp"/>
+		<mkdir dir="${root.dir}/mfp/sub"/>
+		<mkdir dir="${root.dir}/mfp2"/>
+		<mkdir dir="${root.dir}/rest"/>
+		<mkdir dir="${root.dir}/rs2fs"/>
+		<mkdir dir="${root.dir}/webservices"/>
+		<mkdir dir="${root.dir}/xfeip"/>
+		<mkdir dir="${root.dir}/zip"/>
+
+		<property name="zip.name" value="folders.zip" />
+
+		<zip destfile="${basedir}/../../../../target/${zip.name}">
+			<fileset dir="${root.dir}" casesensitive="no" defaultexcludes="false">
+				<include name="**/*" />
+			</fileset>
+		</zip>
+	</target>
+</project>
+

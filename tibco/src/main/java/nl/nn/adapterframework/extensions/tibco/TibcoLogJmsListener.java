@@ -1,12 +1,9 @@
 /*
    Copyright 2013 Nationale-Nederlanden
-
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
-
        http://www.apache.org/licenses/LICENSE-2.0
-
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
@@ -38,9 +36,9 @@ import com.tibco.tibjms.TibjmsMapMessage;
 public class TibcoLogJmsListener extends JmsListener {
 
 	private final static int[] LOGLEVELS = { 5, 10, 30, 50, 70, 90 };
-	private final static String[] LOGLEVELS_TEXT = { "TRACE", "DEBUG", "INFO",
-			"WARN", "ERROR", "FATAL" };
+	private final static String[] LOGLEVELS_TEXT = { "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL" };
 
+	@Override
 	public String getStringFromRawMessage(Object rawMessage, Map context,
 			boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper)
 			throws JMSException, DomBuilderException, TransformerException,
@@ -117,8 +115,8 @@ public class TibcoLogJmsListener extends JmsListener {
 				+ sb.toString();
 	}
 
-	public String getIdFromRawMessage(Object rawMessage, Map threadContext)
-			throws ListenerException {
+	@Override
+	public String getIdFromRawMessage(Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		TibjmsMapMessage tjmMessage;
 		try {
 			tjmMessage = (TibjmsMapMessage) rawMessage;

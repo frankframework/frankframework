@@ -1,0 +1,39 @@
+<ibis>
+	<adapter name="ResultSet2FileSender">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="ResultSet2FileSender">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4test-ResultSet2FileSender" />
+		</receiver>
+		<pipeline firstPipe="setFileName">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+
+			<pipe name="setFileName" className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="fileName" value="${i4ti.dir}/rs2fs/file.txt">
+				<forward name="success" path="setMaxRecords" />
+			</pipe>
+
+			<pipe name="setMaxRecords" className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="maxRecords" value="7">
+				<forward name="success" path="selectRecordIds" />
+			</pipe>
+
+			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				name="selectRecordIds">
+				<sender className="nl.nn.adapterframework.jdbc.ResultSet2FileSender"
+					fileNameSessionKey="fileName" jmsRealm="jdbc" lockRows="true"
+					maxRecordsSessionKey="maxRecords"
+					query="SELECT TCLOB, TTIMESTAMP, TCHAR FROM IBISTEMP WHERE TTIMESTAMP IS NULL ORDER BY TCHAR, TKEY"
+					statusFieldType="timestamp" />
+				<forward name="success" path="readFile" />
+			</pipe>
+
+			<pipe name="readFile" className="nl.nn.adapterframework.pipes.FilePipe"
+				actions="read" fileNameSessionKey="fileName">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</ibis>

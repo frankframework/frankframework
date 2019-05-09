@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+	<SOAP-ENV:Header>
+		<ns0:MessageHeader xmlns:ns0="http://nn.nl/XSD/Generic/MessageHeader/2">
+			<ns0:From>
+				<ns0:Id>portal</ns0:Id>
+			</ns0:From>
+			<ns0:To>
+				<ns0:Location>TIBCO Service</ns0:Location>
+			</ns0:To>
+			<ns0:HeaderFields>
+				<ns0:CPAId>cpid</ns0:CPAId>
+				<ns0:ConversationId>ConversationId</ns0:ConversationId>
+				<ns0:MessageId>MessageId</ns0:MessageId>
+				<ns0:ExternalRefToMessageId>ExternalRefToMessageId</ns0:ExternalRefToMessageId>
+				<ns0:Timestamp>2010-10-20T12:19:35</ns0:Timestamp>
+				<ns0:TransactionId>TransactionId</ns0:TransactionId>
+			</ns0:HeaderFields>
+			<ns0:Service>
+				<ns0:Name>Document</ns0:Name>
+				<ns0:Context>SalesDocument</ns0:Context>
+				<ns0:Action>
+					<ns0:Paradigm>Request</ns0:Paradigm>
+					<ns0:Name>GetDocuments</ns0:Name>
+					<ns0:Version>1</ns0:Version>
+				</ns0:Action>
+			</ns0:Service>
+		</ns0:MessageHeader>
+	</SOAP-ENV:Header>
+	<SOAP-ENV:Body>
+		<n1:RequestFindBPPensionsREQ xmlns:n1="http://nn.nl/XSD/CustomerAdministration/Party/Party/1/FindBPPensions/1">
+			<n1:SearchParameter>
+				<n1:SocialSecurityNumber>12345</n1:SocialSecurityNumber>
+			</n1:SearchParameter>
+			<n1:IgnoreGBAFlag>x</n1:IgnoreGBAFlag>
+		</n1:RequestFindBPPensionsREQ>
+	</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

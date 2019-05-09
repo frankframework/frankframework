@@ -50,7 +50,6 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.StringPair;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -337,16 +336,16 @@ public class ConfigurationUtils {
 		return false;
 	}
 
-	public static List<StringPair> retrieveAllConfigNameItems(IbisContext ibisContext) throws ConfigurationException {
+	public static Map<String, String> retrieveAllConfigNameItems(IbisContext ibisContext) throws ConfigurationException {
 		// For now only database configurations are returned, but also
 		// configuration from other resources (like file system directories) can
 		// be added
-		List<StringPair> allConfigNameItems = new ArrayList<StringPair>();
+		Map<String, String> allConfigNameItems = new HashMap<String, String>();
 		if (CONFIG_AUTO_DB_CLASSLOADER) {
 			List<String> dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisContext, null);
 			if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
 				for (String dbConfigName : dbConfigNames) {
-					allConfigNameItems.add(new StringPair("DatabaseClassLoader", dbConfigName));
+					allConfigNameItems.put("DatabaseClassLoader", dbConfigName);
 				}
 			}
 		}

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:agm="http://www.ibissource.org/agm" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.ibissource.org/agm" elementFormDefault="qualified" agm:agent="agm" agm:package="com.ibissource.agm">
+	<xsd:annotation>
+		<xsd:documentation>EM - Employee Benefits - EmployeeBenefitsAgreements V10</xsd:documentation>
+		<xsd:appinfo>V1.0</xsd:appinfo>
+	</xsd:annotation>
+	<xsd:include schemaLocation="EBAgreementsSimpleTypesV1.0.xsd"/>	
+	<xsd:include schemaLocation="EBAgreementsPortalComplexTypesV1.0.xsd"/>	
+	<xsd:include schemaLocation="EBAgreementsPolicyComplexTypesV1.0.xsd"/>	
+</xsd:schema>

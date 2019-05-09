@@ -59,7 +59,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class AmazonS3FileSystem implements IFileSystem<S3Object> {
+public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -115,7 +115,9 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 
 	@Override
 	public void close() {
-		s3Client.shutdown();
+		if(s3Client != null) {
+			s3Client.shutdown();
+		}
 	}
 
 	@Override
@@ -126,10 +128,11 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 	}
 
 	@Override
-	public Iterator<S3Object> listFiles() throws FileSystemException {
+	public Iterator<S3Object> listFiles(String folder) throws FileSystemException {
 		List<S3ObjectSummary> summaries = null;
+		String prefix = folder != null ? folder + "/" : "";
 		try {
-			ObjectListing listing = s3Client.listObjects(bucketName);
+			ObjectListing listing = s3Client.listObjects(bucketName, prefix);
 			summaries = listing.getObjectSummaries();
 			while (listing.isTruncated()) {
 				listing = s3Client.listNextBatchOfObjects(listing);
@@ -148,8 +151,9 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 			object.setBucketName(summary.getBucketName());
 			object.setKey(summary.getKey());
 			object.setObjectMetadata(metadata);
-
-			list.add(object);
+			if(!object.getKey().endsWith("/") && !(prefix.isEmpty() && object.getKey().contains("/"))) {
+				list.add(object);
+			} 
 		}
 
 		return list.iterator();
@@ -169,19 +173,22 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 		final BufferedOutputStream bos = new BufferedOutputStream(fos);
 
 		FilterOutputStream filterOutputStream = new FilterOutputStream(bos) {
+			boolean isClosed = false;
 			@Override
 			public void close() throws IOException {
 				super.close();
 				bos.close();
+				if(!isClosed) {
+					FileInputStream fis = new FileInputStream(file);
+					ObjectMetadata metaData = new ObjectMetadata();
+					metaData.setContentLength(file.length());
 
-				FileInputStream fis = new FileInputStream(file);
-				ObjectMetadata metaData = new ObjectMetadata();
-				metaData.setContentLength(file.length());
+					s3Client.putObject(bucketName, f.getKey(), fis, metaData);
 
-				s3Client.putObject(bucketName, f.getKey(), fis, metaData);
-
-				fis.close();
-				file.delete();
+					fis.close();
+					file.delete();
+					isClosed = true;
+				}
 			}
 		};
 		return filterOutputStream;
@@ -216,39 +223,52 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 	}
 
 	@Override
-	public boolean isFolder(S3Object f) throws FileSystemException {
-		return f.getKey().endsWith("/");
-	}
-
-	@Override
-	public void createFolder(S3Object f) throws FileSystemException {
-		String folderName = isFolder(f) ? f.getKey() : f.getKey() + "/";
-		if(s3Client.doesObjectExist(bucketName, folderName))
-			throw new FileSystemException("Create directory for [" + folderName + "] has failed. Directory already exists.");
-		s3Client.putObject(bucketName, folderName, "");
-	}
-
-	@Override
-	public void removeFolder(S3Object f) throws FileSystemException {
-		if (exists(f)) {
-			if (isFolder(f)) {
-				s3Client.deleteObject(bucketName, f.getKey());
-			} else {
-				throw new FileSystemException("trying to remove file [" + f.getKey() + "] which is a file instead of a directory");
+	public boolean folderExists(String folder) throws FileSystemException {
+		ObjectListing objectListing = s3Client.listObjects(bucketName);
+		Iterator<S3ObjectSummary> objIter = objectListing.getObjectSummaries().iterator();
+		while (objIter.hasNext()) {
+			S3ObjectSummary s3ObjectSummary = objIter.next();
+			String key = s3ObjectSummary.getKey();
+			if(key.endsWith("/") && key.equals(folder+"/")){
+				return true;
 			}
+		}
+		return false;
+	}
+
+	@Override
+	public void createFolder(String folder) throws FileSystemException {
+		String folderName = folder.endsWith("/") ? folder : folder + "/";
+		if (!folderExists(folder)) {
+			s3Client.putObject(bucketName, folderName, "");
 		} else {
-			throw new FileSystemException("Remove directory for [" + f.getKey() + "] has failed. Directory does not exist.");
+			throw new FileSystemException("Create directory for [" + folderName + "] has failed. Directory already exists.");
 		}
 	}
 
 	@Override
-	public void renameTo(S3Object f, String destination) throws FileSystemException {
-		if(s3Client.doesObjectExist(bucketName, destination))
-			throw new FileSystemException("Cannot rename file. Destination file already exists.");
-		s3Client.copyObject(bucketName, f.getKey(), bucketName, destination);
-		s3Client.deleteObject(bucketName, f.getKey());
+	public void removeFolder(String folder) throws FileSystemException {
+		if (folderExists(folder)) {
+			folder = folder.endsWith("/") ? folder : folder + "/";
+			s3Client.deleteObject(bucketName, folder);
+		} else {
+			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
+		}
 	}
 
+	@Override
+	public S3Object renameFile(S3Object f, String newName, boolean force) throws FileSystemException {
+		if(s3Client.doesObjectExist(bucketName, newName))
+			throw new FileSystemException("Cannot rename file. Destination file already exists.");
+		s3Client.copyObject(bucketName, f.getKey(), bucketName, newName);
+		s3Client.deleteObject(bucketName, f.getKey());
+		return toFile(newName);
+	}
+
+	@Override
+	public S3Object moveFile(S3Object f, String destination, boolean createFolder) throws FileSystemException {
+		return renameFile(f,destination+"/"+f.getKey(), false);
+	}
 	
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(S3Object f) {
@@ -258,22 +278,22 @@ public class AmazonS3FileSystem implements IFileSystem<S3Object> {
 	}
 	
 	@Override
-	public long getFileSize(S3Object f, boolean isFolder) throws FileSystemException {
+	public long getFileSize(S3Object f) throws FileSystemException {
 		return f.getObjectMetadata().getContentLength();
 	}
 
 	@Override
-	public String getName(S3Object f) throws FileSystemException {
+	public String getName(S3Object f) {
 		return f.getKey();
 	}
 
 	@Override
-	public String getCanonicalName(S3Object f, boolean isFolder) throws FileSystemException {
+	public String getCanonicalName(S3Object f) throws FileSystemException {
 		return f.getBucketName() + f.getKey();
 	}
 
 	@Override
-	public Date getModificationTime(S3Object f, boolean isFolder) throws FileSystemException {
+	public Date getModificationTime(S3Object f) throws FileSystemException {
 		S3Object file;
 		if(f.getKey().isEmpty()) {
 			return null;

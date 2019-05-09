@@ -1,0 +1,10 @@
+<FindVehicleTypeRLY>
+	<returnCode>1</returnCode>
+	<Body>
+		<MerkNamen>
+			<merkNaam>BMW</merkNaam>
+			<merkNaam>OPEL</merkNaam>
+			<merkNaam>MAZDA</merkNaam>
+		</MerkNamen>
+	</Body>
+</FindVehicleTypeRLY>

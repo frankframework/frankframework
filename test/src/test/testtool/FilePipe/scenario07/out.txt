@@ -1,0 +1,2 @@
+<request action="delete file that does not exists">
+</request>

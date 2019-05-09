@@ -1,0 +1,5 @@
+<root>
+	<item>cid=[${cid}]</item>
+	<item>messageId=[${messageId}]</item>
+	<item>tcid=[${tcid}]</item>
+</root>

@@ -114,7 +114,7 @@ import com.ing.ifsa.IFSAServicesProvided;
  * @author  Gerrit van Brakel
  * @since   4.2
  */
-public class PushingIfsaProviderListener extends IfsaFacade implements IPortConnectedListener, IThreadCountControllable, IKnowsDeliveryCount, ITransactionRequirements {
+public class PushingIfsaProviderListener extends IfsaFacade implements IPortConnectedListener<IFSAMessage>, IThreadCountControllable, IKnowsDeliveryCount, ITransactionRequirements {
 
 	public final static String THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY = "originalRawMessage";
 	public final static String THREAD_CONTEXT_BIFNAME_KEY="IfsaBif";
@@ -124,7 +124,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	private String cacheMode; // default is set in spring container
 
 	private IListenerConnector jmsConnector;
-	private IMessageHandler handler;
+	private IMessageHandler<IFSAMessage> handler;
 	private IReceiver receiver;
 	private IbisExceptionListener exceptionListener;
 
@@ -134,6 +134,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	}
 
 	
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (jmsConnector==null) {
@@ -164,6 +165,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 
 
 
+	@Override
 	public void open() throws ListenerException {
 		try {
 			openService();
@@ -183,6 +185,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	}
 	
 
+	@Override
 	public void close() throws ListenerException {
 		try {
 			jmsConnector.stop();
@@ -192,15 +195,18 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		}
 	}
 	
+	@Override
 	public boolean transactionalRequired() {
 		return this.getMessageProtocolEnum()==IfsaMessageProtocolEnum.FIRE_AND_FORGET;
 	}
 
+	@Override
 	public boolean transactionalAllowed() {
 		return true;
 	}
 
-	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map threadContext) throws ListenerException {	
+	@Override
+	public void afterMessageProcessed(PipeLineResult plr, IFSAMessage rawMessage, Map<String,Object> threadContext) throws ListenerException {	
 		QueueSession session= (QueueSession) threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
 			    		    
 	    // on request-reply send the reply.
@@ -237,16 +243,16 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	}
 	
 
-	protected String getIdFromWrapper(IMessageWrapper wrapper, Map threadContext)  {
-		for (Iterator it=wrapper.getContext().keySet().iterator(); it.hasNext();) {
-			String key = (String)it.next();
+	protected String getIdFromWrapper(IMessageWrapper wrapper, Map<String,Object> threadContext)  {
+		for (Iterator<String> it=wrapper.getContext().keySet().iterator(); it.hasNext();) {
+			String key = it.next();
 			Object value = wrapper.getContext().get(key);
 			log.debug(getLogPrefix()+"setting variable ["+key+"] to ["+value+"]");
 			threadContext.put(key, value);
 		}
 		return wrapper.getId();
 	}
-	protected String getStringFromWrapper(IMessageWrapper wrapper, Map threadContext)  {
+	protected String getStringFromWrapper(IMessageWrapper wrapper, Map<String,Object> threadContext)  {
 		return wrapper.getText();
 	}
 
@@ -254,7 +260,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 
 	
 	/**
-	 * Extracts ID-string from message obtained from {@link #getRawMessage(Map)}. 
+	 * Extracts ID-string from message obtained from raw message}. 
 	 * Puts also the following parameters  in the threadContext:
 	 * <ul>
 	 *   <li>id</li>
@@ -272,7 +278,8 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	 * </ul>
 	 * @return ID-string of message for adapter.
 	 */
-	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
+	@Override
+	public String getIdFromRawMessage(IFSAMessage rawMessage, Map<String,Object> threadContext) throws ListenerException {
 	
 		IFSAMessage message = null;
 	 
@@ -461,11 +468,12 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	
 	
 	/**
-	 * Extracts string from message obtained from {@link #getRawMessage(Map)}. May also extract
+	 * Extracts message string from raw message. May also extract
 	 * other parameters from the message and put those in the threadContext.
 	 * @return input message for adapter.
 	 */
-	public String getStringFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
+	@Override
+	public String getStringFromRawMessage(IFSAMessage rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		if (rawMessage instanceof IMessageWrapper) {
 			return getStringFromWrapper((IMessageWrapper)rawMessage,threadContext);
 		}
@@ -508,21 +516,26 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	public IListenerConnector getJmsConnector() {
 		return jmsConnector;
 	}
+	@Override
 	public IListenerConnector getListenerPortConnector() {
 		return jmsConnector;
 	}
 
+	@Override
 	public void setExceptionListener(IbisExceptionListener listener) {
 		this.exceptionListener = listener;
 	}
+	@Override
 	public IbisExceptionListener getExceptionListener() {
 		return exceptionListener;
 	}
 
-	public void setHandler(IMessageHandler handler) {
+	@Override
+	public void setHandler(IMessageHandler<IFSAMessage> handler) {
 		this.handler = handler;
 	}
-	public IMessageHandler getHandler() {
+	@Override
+	public IMessageHandler<IFSAMessage> getHandler() {
 		return handler;
 	}
 

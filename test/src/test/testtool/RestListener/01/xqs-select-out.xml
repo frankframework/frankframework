@@ -1,0 +1,20 @@
+<results count="1">
+  <result item="1">
+    <result>
+      <fielddefinition>
+        <field name="SLOTID" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
+        <field name="COMMENTS" type="VARCHAR" columnDisplaySize="1000" precision="1000" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
+        <field name="LENGTH(MESSAGE)" type="NUMERIC" columnDisplaySize="22" precision="0" scale="0" isCurrency="true" columnTypeName="NUMBER" columnClassName="java.math.BigDecimal"/>
+        <field name="LABEL" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
+      </fielddefinition>
+      <rowset>
+        <row number="0">
+          <field name="SLOTID">sample.pdf</field>
+          <field name="COMMENTS">&lt;RestListerREQ&gt;OK&lt;/RestListerREQ&gt;</field>
+          <field name="LENGTH(MESSAGE)">324338</field>
+          <field name="LABEL">every cloud has a silver lining</field>
+        </row>
+      </rowset>
+    </result>
+  </result>
+</results>

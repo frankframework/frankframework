@@ -20,6 +20,8 @@ Some example XML configurations:
 
 See them in action: http://ibis4example.ibissource.org/
 
+[![Maven Central](https://img.shields.io/maven-central/v/org.ibissource/ibis-adapterframework-parent.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:org.ibissource)
+
 
 Releases
 ========

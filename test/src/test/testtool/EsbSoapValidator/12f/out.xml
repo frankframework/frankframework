@@ -1,0 +1,5 @@
+<Error>
+<errorCode>FAILURE</errorCode>
+<errorMessage>Validation using EsbSoapValidator with 'http://nn.nl/XSD/PropertyCasualtyRetail/Log/LogConversion/1/SetPolicyDetails/1 /EsbSoapValidator/SetPolicyDetails/PropertyCasualtyRetail_Log_LogConversion_1_SetPolicyDetails_1.xsd' failed:
+/Envelope/Header: at (3,18): cvc-complex-type.2.4.a: Invalid content was found starting with element 'MessageHeader'. One of '{WC[##other:"http://schemas.xmlsoap.org/soap/envelope/"]}' is expected.</errorMessage>
+</Error>

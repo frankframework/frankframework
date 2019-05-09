@@ -1,0 +1,11 @@
+<FindPartyREQ xmlns="http://www.w3.org/2001/XMLSchema-instance">
+	<Selection24>
+		<PartyType>01</PartyType>
+		<Use>99</Use>
+		<LastName>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</LastName>
+		<LastNamePrefix>aaaaaaaaaa</LastNamePrefix>
+		<BasicLastName>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</BasicLastName>
+		<FirstName>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</FirstName>
+		<Initials>aaaaaaaaaaaaaaaaaaaaaaaa</Initials>
+	</Selection24>
+</FindPartyREQ>

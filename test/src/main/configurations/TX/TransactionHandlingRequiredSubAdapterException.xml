@@ -1,0 +1,77 @@
+<module>
+	<adapter
+		name="TransactionHandlingRequiredSubAdapterException"
+		description="Adapter for testing transaction handling, multiple adapters are being called with different transaction attributes"
+	>
+		<receiver
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			transactionTimeout="2"
+			transactionAttribute="Required"
+		>
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="TransactionHandlingMultiAdapter"
+				serviceName="ibis4test-TransactionHandlingRequiredSubAdapterException"
+			/>
+			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+				jmsRealm="jdbc" 
+				slotId="${applicationId}/GenericReceiverTransactionHandlingRequiredSubAdapterException"
+			/>
+		</receiver>
+
+		<pipeline firstPipe="Send transacted message to required subadapter with exception" transactionAttribute="Required">
+			<exits>
+				<exit path="EXIT" state="success"/>
+				<exit path="ERROR" state="error"/>
+			</exits>
+
+			<!-- This subadapter throws an exception -->
+			<pipe name="Send transacted message to required subadapter with exception"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				getInputFromFixedValue="tralala"
+			>
+				<sender
+					className="nl.nn.adapterframework.senders.IbisLocalSender"
+					javaListener="TransactionHandlingRequiredSubAdapterThrowException"
+				/>
+				<forward name="success" path="fixedInsertRollback2"/>
+				<forward name="exception" path="fixedInsertRollback2"/>
+			</pipe>
+
+			<!-- This should rollback -->
+			<pipe name="fixedInsertRollback2" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME',?,NULL,NULL)" queryType="insert" jmsRealm="jdbc" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+
+	<adapter
+		name="TransactionHandlingRequiredSubAdapterThrowException"
+		description="First SubAdapter for Transaction Handling"
+	>
+		<receiver
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			transactionAttribute="Required"
+		>
+			<listener 
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="TransactionHandlingRequiredSubAdapterThrowException"
+			/>
+		</receiver>
+
+		<pipeline firstPipe="Return Exception" transactionAttribute="Required">
+			<exits>
+				<exit path="EXIT" state="success" />
+				<exit path="EXCEPTION" state="error" />
+			</exits>
+
+			<pipe name="Return Exception" className="nl.nn.adapterframework.pipes.ExceptionPipe"
+				getInputFromFixedValue="&lt;transacted&gt;exception&lt;/transacted&gt;">
+
+				<forward name="success" path="EXIT"/>
+				<forward name="exception" path="EXCEPTION"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>

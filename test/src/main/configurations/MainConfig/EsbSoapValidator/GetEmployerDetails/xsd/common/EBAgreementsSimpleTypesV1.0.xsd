@@ -1,0 +1,944 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:agm="http://www.ibissource.org/agm" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:annotation>
+		<xsd:documentation>EM - Employee Benefits - EmployeeBenefitsAgreements V10</xsd:documentation>
+		<xsd:appinfo>V1.0</xsd:appinfo>
+	</xsd:annotation>
+	<!--***************************************************************************************************** -->
+	<!-- ###################### agm Complex Types (Attributes) ###################### -->
+	<!-- **********************************                  General                    ********************************** -->
+	<xsd:simpleType name="IdType">
+		<xsd:restriction base="id"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="TypeType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="UserNameType">
+		<xsd:restriction base="text256"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="StartDateType">
+		<xsd:restriction base="date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="EndDateType">
+		<xsd:restriction base="date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="NameType">
+		<xsd:restriction base="text50"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ContractNumberType">
+		<xsd:restriction base="number10"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="AgreementTypeType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="AmountType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="StatusCodeType">
+		<xsd:restriction base="number1"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ToBeDeletedType">
+		<xsd:restriction base="yesno"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="INRProductTypeType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PensionPlanNumber">
+		<xsd:restriction base="number4"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="INRStatusType">
+		<xsd:restriction base="number1"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="INRTypeType">
+		<xsd:restriction base="number1"/>
+	</xsd:simpleType>
+	<!-- **********************************             AccountRights              ********************************** -->
+	<xsd:simpleType name="EditRightsType">
+		<xsd:restriction base="number1"/>
+	</xsd:simpleType>
+	<!-- **********************************       ExternalReference             ********************************** -->
+	<xsd:simpleType name="ReferenceType">
+		<xsd:restriction base="text35"/>
+	</xsd:simpleType>
+	<!-- **********************************            PortalMutation               ********************************** -->
+	<xsd:simpleType name="EventCodeType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="SourceType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="MutationDateType">
+		<xsd:restriction base="date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="UpdateDateTimeType">
+		<xsd:restriction base="datetime"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="SendDateTimeType">
+		<xsd:restriction base="datetime"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ProcessedDateTimeType">
+		<xsd:restriction base="datetime"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ApprovedDateTimeType">
+		<xsd:restriction base="datetime"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="MutationApprovedUsernameType">
+		<xsd:restriction base="text256"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="MutationSentUsernameType">
+		<xsd:restriction base="text256"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="IsModifiableType">
+		<xsd:restriction base="yesno"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="IsRemovableType">
+		<xsd:restriction base="yesno"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="IsApprovableType">
+		<xsd:restriction base="yesno"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="IsEventAllowedType">
+		<xsd:restriction base="yesno"/>
+	</xsd:simpleType>
+	<!-- **********************************        PortalMutationDetail          ********************************** -->
+	<xsd:simpleType name="LabelType">
+		<xsd:restriction base="text50"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ValueType">
+		<xsd:restriction base="text1000"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="IsModifiedType">
+		<xsd:restriction base="yesno"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="IsReadOnlyType">
+		<xsd:restriction base="yesno"/>
+	</xsd:simpleType>
+	<!-- **********************************          PortalNoteDetail           ********************************** -->
+	<xsd:simpleType name="DiaryDateType">
+		<xsd:restriction base="date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="CompletedDateType">
+		<xsd:restriction base="date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="TitleType">
+		<xsd:restriction base="text30"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="NoteTextType">
+		<xsd:restriction base="text1000"/>
+	</xsd:simpleType>
+	<!-- **********************************         PortalOrganisation        ********************************** -->
+	<xsd:simpleType name="CompanyNameType">
+		<xsd:restriction base="text150"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ContinuationMonthType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="MinSinglePremiumCapitalPolicyType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="MinPremiumCapitalPolicyType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="MinSinglePremiumInvestmentPolicyType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="InvestmentPolicyPerformanceType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="CapitalPolicyPerformanceType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="AnnuityPolicyPerformanceType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<!-- **********************************      PortalOrganisationUnit        ********************************** -->
+	<xsd:simpleType name="UnitNameType">
+		<xsd:restriction base="text150"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="MainContractNrType">
+		<xsd:restriction base="number10"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="EcNrType">
+		<xsd:restriction base="number6"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="EcRelNrType">
+		<xsd:restriction base="number3"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="YearlySalaryMutationDateType">
+		<xsd:restriction base="date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="TotalExpectedSalaryMutationsType">
+		<xsd:restriction base="number6"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ExpectedSalaryMutationsType">
+		<xsd:restriction base="number6"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="NumberNotesToExecuteType">
+		<xsd:restriction base="number6"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="NumberMutationsToApproveType">
+		<xsd:restriction base="number6"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="NumberMutationsToSendType">
+		<xsd:restriction base="number6"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="BusinessUnitType">
+		<xsd:restriction base="number1"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="WNPVersionType">
+		<xsd:restriction base="number1"/>
+	</xsd:simpleType>
+	<!-- **********************************              PortalPerson              ********************************** -->
+	<xsd:simpleType name="AddressCheckIndType">
+		<xsd:restriction base="number1"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="CorrespondenceTypeType">
+		<xsd:restriction base="number1"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="TotalMonthsAbroadType">
+		<xsd:restriction base="number3"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PortalPermittanceStartDateType">
+		<xsd:restriction base="date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="WnpVisibilityFlagType">
+		<xsd:restriction base="yesno"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="DisabilitySalaryAmountType">
+		<xsd:restriction base="decimal12_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="RecoverageChangeType">
+		<xsd:restriction base="decimal3_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ChildPresentType">
+		<xsd:restriction base="yesno"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="YoungestChildBirthDateType">
+		<xsd:restriction base="date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PartnerBirthDateType">
+		<xsd:restriction base="date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PartnerDisabilityOver45FlagType">
+		<xsd:restriction base="yesno"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PartnerWorkMonthWageType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PartnerSocialMonthIncomeType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PartnerRetirementMonthIncomeType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PostalCode">
+		<xsd:restriction base="text10"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="BusinessPartnerIdType">
+		<xsd:restriction base="number10"/>
+	</xsd:simpleType>
+	<!-- BEGIN ____ FIELDS ADDED TO BE BACKWARDS COMPATIBLE -->
+	<xsd:simpleType name="ChildUnder18FlagType">
+		<xsd:restriction base="yesno"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PartnerBefore1950FlagType">
+		<xsd:restriction base="yesno"/>
+	</xsd:simpleType>
+	<!-- END _____ FIELDS ADDED TO BE BACKWARDS COMPATIBLE -->
+	<!-- **********************************              WGPAccount            ********************************** -->
+	<xsd:simpleType name="ContactPersonType">
+		<xsd:restriction base="text50"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ContactPhoneNumberType">
+		<xsd:restriction base="text15"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="CreateDateType">
+		<xsd:restriction base="date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ContactEMailType">
+		<xsd:restriction base="text120"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="IsIntermediairyType">
+		<xsd:restriction base="yesno"/>
+	</xsd:simpleType>
+	<!-- **********************************                  AdministratesAgreementMutation          		********************************** -->
+	<xsd:simpleType name="ContractPartMinType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ContractPartMaxType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="activeInactiveType">
+		<xsd:restriction base="yesno"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ContractNameType">
+		<xsd:restriction base="text100"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="NewContractType">
+		<xsd:restriction base="yesno"/>
+	</xsd:simpleType>
+	<!-- **********************************              PensionContract            ********************************** -->
+	<xsd:simpleType name="ContractName">
+		<xsd:restriction base="text100"/>
+	</xsd:simpleType>
+	<!-- **********************************              PortalSetUpMutation            ********************************** -->
+	<!--	<xsd:simpleType name="OfferDateTimeType">
+		<xsd:restriction base="datetime"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="RejectDateTimeType">
+		<xsd:restriction base="datetime"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ReleaseDateTimeType">
+		<xsd:restriction base="datetime"/>
+	</xsd:simpleType> -->
+	<xsd:simpleType name="ReasonType">
+		<xsd:restriction base="text500"/>
+	</xsd:simpleType>
+	<!-- **********************************              PortalOrganisationUnitMutationId            ********************************** -->
+	<xsd:simpleType name="YearlySalaryMutationMonthType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="YearlySalaryMutationTermType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="AllowCreationWnpAccountType">
+		<xsd:restriction base="yesno"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="NwRelType">
+		<xsd:restriction base="yesno"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ReloadType">
+		<xsd:restriction base="yesno"/>
+	</xsd:simpleType>
+	<!-- **********************************              ContractEbDocumentLinkMutation            ********************************** -->
+	<xsd:simpleType name="LinkIdTpe">
+		<xsd:restriction base="number10"/>
+	</xsd:simpleType>
+	<!-- **********************************       PortalEmployment         ********************************** -->
+	<xsd:simpleType name="ModificationDateTimeType">
+		<xsd:restriction base="datetime"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PeriodicSalaryExpectedType">
+		<xsd:restriction base="yesno"/>
+	</xsd:simpleType>
+	<!-- **********************************          InsuranceBase            ********************************** -->
+	<xsd:simpleType name="SalaryTermType">
+		<xsd:restriction base="number1"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ParttimeIncExclIndicatorType">
+		<xsd:restriction base="number1"/>
+	</xsd:simpleType>
+	<!-- **********************************           ThirdPartyclaim              ********************************** -->
+	<xsd:simpleType name="BeginPaymentDateType">
+		<xsd:restriction base="date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="EndPaymentDateType">
+		<xsd:restriction base="date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PolicyTypeType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PremiumAmountType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PaymentTermType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="TargetCapitalType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ClaimTypeType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<!-- **********************************           AgreementPart           ********************************** -->
+	<xsd:simpleType name="ContractPartStartType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ContractPartEndType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<!-- ******************************* EmployeeBenefitsParticipation ******************************** -->
+	<xsd:simpleType name="PlanNumberType">
+		<xsd:restriction base="number15"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PolicyNumberType">
+		<xsd:restriction base="text20"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="StatusType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="SalaryType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="LastMutationDateType">
+		<xsd:restriction base="date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="AdmissionDateType">
+		<xsd:restriction base="date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="WeightedParttimePercentageType">
+		<xsd:restriction base="decimal3_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ProductNameType">
+		<xsd:restriction base="text100"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ProductTypeType">
+		<xsd:restriction base="text100"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="BackOfficeSystemIdType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="CalculateClaimNameType">
+		<xsd:restriction base="text100"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="RiskProfileStatusType">
+		<xsd:restriction base="xsd:boolean"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PensionClickAllowedType">
+		<xsd:restriction base="xsd:boolean"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="DistributionCodeAllowedType">
+		<xsd:restriction base="xsd:boolean"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PensionAlertAllowedType">
+		<xsd:restriction base="xsd:boolean"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ClickConceptAllowedType">
+		<xsd:restriction base="xsd:boolean"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="AssuranceCodeType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<!-- **********************************            GenericClaim            ********************************** -->
+	<xsd:simpleType name="ThemeTypeType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="TypeDescriptionType">
+		<xsd:restriction base="text20"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="NameOrganisationType">
+		<xsd:restriction base="text20"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="DescriptionType">
+		<xsd:restriction base="text100"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="StartAgeType">
+		<xsd:restriction base="number3"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="EndAgeType">
+		<xsd:restriction base="number3"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="MinStartAgeType">
+		<xsd:restriction base="number3"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="MaxStartAgeType">
+		<xsd:restriction base="number3"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="MinEndAgeType">
+		<xsd:restriction base="number3"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="MaxEndAgeType">
+		<xsd:restriction base="number3"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="StartEventTypeType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="EndEventTypeType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="InsurerType">
+		<xsd:restriction base="text50"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="EmploymentStartDateType">
+		<xsd:restriction base="date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="EmploymentEndDateType">
+		<xsd:restriction base="date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="YearPremiumType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ExpectedAmountType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ExpectedPercentageType">
+		<xsd:restriction base="decimal3_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="DurationType">
+		<xsd:restriction base="decimal3_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PensionregisterIndicatorType">
+		<xsd:restriction base="number1"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PensionAccrualType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PensionAccrualDateType">
+		<xsd:restriction base="date"/>
+	</xsd:simpleType>
+	<!-- **********************************            PensionParticipationMutation   ********************************** -->
+	<xsd:simpleType name="MutationNumberType">
+		<xsd:restriction base="number3"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="OrderDateType">
+		<xsd:restriction base="date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="MutationTypeType">
+		<xsd:restriction base="text50"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="TotalGrossAmountType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<!-- **********************************            PolicyEntryBooking        ********************************** -->
+	<xsd:simpleType name="BookingNumberType">
+		<xsd:restriction base="number3"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="BookingTypeType">
+		<xsd:restriction base="text50"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="DueDateType">
+		<xsd:restriction base="date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="DueEnddateType">
+		<xsd:restriction base="date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="GrossAmountType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="IsCostsType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ContinuousCostsType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="CommissionCostsType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="TransactionCostsType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<!-- **********************************              FinancialData             ********************************** -->
+	<xsd:simpleType name="EventNameType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Pensioen"/>
+			<xsd:enumeration value="Overlijden"/>
+			<xsd:enumeration value="Arbeidsongeschiktheid"/>
+			<xsd:enumeration value="Langleven"/>
+			<xsd:enumeration value="Ontslag"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="EncodedType">
+		<xsd:restriction base="yesno"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="LongMessageType">
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<!-- **********************************              InvestmentData             ********************************** -->
+	<xsd:simpleType name="FundIdType">
+		<xsd:restriction base="text15"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="InvestmentValueType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<!-- **********************************              FurtherTerm             ********************************** -->
+	<xsd:simpleType name="TextType">
+		<xsd:restriction base="text1500"/>
+	</xsd:simpleType>
+	<!-- **********************************              LegalPensionParameters             ********************************** -->
+	<xsd:simpleType name="EventType">
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="1"/>
+			<xsd:enumeration value="2"/>
+			<xsd:enumeration value="3"/>
+			<xsd:enumeration value="4"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="SurvivorStatePnChildAmountType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="SurvivorStatePnNoChildAmountType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="SurvivorStatePnEndAgeType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="RetireStatePnSingleAmountType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="RetireStatePnMarriedAmountNewType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="RetireStatePnMarriedAmountOldType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="RetireStatePnStartAgeType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="WiaWageLimitType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="DisabledMaxYearIncomeType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="MinDayWageType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PaymentPercentageIvaType">
+		<xsd:restriction base="decimal7_4"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PaymentPercentageWgaType">
+		<xsd:restriction base="decimal7_4"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="MaxDayWageType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="DisabledPaymentPercentageType">
+		<xsd:restriction base="decimal10_2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="Calculatebox190VersionType">
+		<xsd:restriction base="text10"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="NormFileVersionType">
+		<xsd:restriction base="text10"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="AppManagementEmailType">
+		<xsd:restriction base="text120"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PolicyPerformanceType">
+		<xsd:restriction base="decimal7_4"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="RetirementAgeType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="Factor3PercentType">
+		<xsd:restriction base="decimal7_4"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="Factor4PercentType">
+		<xsd:restriction base="decimal7_4"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="DisabilityPercentageType">
+		<xsd:restriction base="decimal7_4"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PercentageWIAType">
+		<xsd:restriction base="decimal7_4"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PercentageWGAType">
+		<xsd:restriction base="decimal7_4"/>
+	</xsd:simpleType>
+	<!-- **********************************     CompletionInformation   ********************************** -->
+	<xsd:simpleType name="ReturnCodeType">
+		<xsd:restriction base="returnCode"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ReasonCodeType">
+		<xsd:restriction base="text100"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="LanguageCodeType">
+		<xsd:restriction base="text3"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="MessageType">
+		<xsd:restriction base="text100"/>
+	</xsd:simpleType>
+	<!-- **********************************     DebuggingInformation    ********************************** -->
+	<xsd:simpleType name="DateTimeType">
+		<xsd:restriction base="datetime"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ExceptionCodeType">
+		<xsd:restriction base="text10"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ExceptionMessageType">
+		<xsd:restriction base="text150"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="SystemIdType">
+		<xsd:restriction base="text15"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ActingComponentType">
+		<xsd:restriction base="text15"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ContextInformationType">
+		<xsd:restriction base="text30"/>
+	</xsd:simpleType>
+	<!-- **********************************                 Paging                    ********************************** -->
+	<xsd:simpleType name="ItemsPerPageType">
+		<xsd:restriction base="number3pos"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="NumberOfPagesType">
+		<xsd:restriction base="number4"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="PageNumberType">
+		<xsd:restriction base="number4"/>
+	</xsd:simpleType>
+	<!-- **********************************                 Locking                   ********************************** -->
+	<xsd:simpleType name="LockDateTimeType">
+		<xsd:restriction base="datetime"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="LockUserNameType">
+		<xsd:restriction base="text256"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="AuthorizationType">
+		<xsd:restriction base="number1"/>
+	</xsd:simpleType>
+	<!-- **********************************                 Sorting                    ********************************** -->
+	<xsd:simpleType name="FieldNameType">
+		<xsd:restriction base="text25"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="SortOrderType">
+		<xsd:restriction base="order"/>
+	</xsd:simpleType>
+	<!-- **********************************          Miscellaneous             ********************************** -->
+	<xsd:simpleType name="ViewTimeStampType">
+		<xsd:restriction base="datetime"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="CalculateFlagType">
+		<xsd:restriction base="yesno"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="SelectionSetTypeType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="DestinationTypeType">
+		<xsd:restriction base="text32"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="TotalObjectsType">
+		<xsd:restriction base="number6"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="AcceptedObjectsType">
+		<xsd:restriction base="number6"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="RejectedObjectsType">
+		<xsd:restriction base="number6"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ActionType">
+		<xsd:restriction base="number2"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="portalSourceType">
+		<xsd:restriction base="number1"/>
+	</xsd:simpleType>
+	<!-- ############################  agm Simple Types ########################## -->
+	<xsd:simpleType name="yesno">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Y">
+				<!-- Y | Yes -->
+			</xsd:enumeration>
+			<xsd:enumeration value="N">
+				<!-- N | No -->
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="returnCode">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="OK">
+				<!-- OK -->
+			</xsd:enumeration>
+			<xsd:enumeration value="NOT_OK">
+				<!-- NOT_OK -->
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="order">
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="1">
+				<!-- 1 = Ascending -->
+			</xsd:enumeration>
+			<xsd:enumeration value="2">
+				<!-- 2 = Descending -->
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="id">
+		<xsd:restriction base="xsd:integer">
+			<xsd:totalDigits value="15"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="number1">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="9"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="number2">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="number3">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="number3pos">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="1"/>
+			<xsd:maxInclusive value="999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="number4">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="9999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="number6">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="999999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="number10">
+		<xsd:restriction base="xsd:integer">
+			<xsd:totalDigits value="10"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="number15">
+		<xsd:restriction base="xsd:integer">
+			<xsd:totalDigits value="15"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="decimal3_2">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="3"/>
+			<xsd:fractionDigits value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="decimal6_4">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="6"/>
+			<xsd:fractionDigits value="4"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="decimal7_4">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="7"/>
+			<xsd:fractionDigits value="4"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="decimal10_2">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="10"/>
+			<xsd:fractionDigits value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="decimal10_10">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="10"/>
+			<xsd:fractionDigits value="10"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="decimal12_2">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="12"/>
+			<xsd:fractionDigits value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="text2">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="text3">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="3"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="text7">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="7"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="text10">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="10"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="text15">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="15"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="text20">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="text25">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="25"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="text30">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="30"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="text32">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="32"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="text35">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="35"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="text50">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="50"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="text100">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="100"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="text120">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="120"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="text150">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="150"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="text200">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="200"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="text256">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="256"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="text500">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="500"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="text1000">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="1000"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="text1500">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="1500"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="date">
+		<xsd:restriction base="xsd:date">
+			<xsd:pattern value="[1-2][0-9]{3}-(0[0-9]|1[0-2])-([0-2][0-9]|3[0-1])"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="datetime">
+		<xsd:restriction base="xsd:dateTime">
+			<xsd:pattern value="[1-2][0-9]{3}-(0[0-9]|1[0-2])-([0-2][0-9]|3[0-1])T([0-1][0-9]|2[0-4]):[0-5][0-9]:[0-5][0-9]\.\d{3}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- datetime_wo_ms (datetime_without_milliseconds) -->
+	<xsd:simpleType name="datetime_wo_ms">
+		<xsd:restriction base="xsd:dateTime">
+			<xsd:pattern value="[1-2][0-9]{3}-(0[0-9]|1[0-2])-([0-2][0-9]|3[0-1])T([0-1][0-9]|2[0-4]):[0-5][0-9]:[0-5][0-9]"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

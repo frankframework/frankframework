@@ -41,11 +41,15 @@ public class CmisServletRouter extends HttpServlet {
 		String servletClass = config.getInitParameter("servlet-class");
 		String version = config.getInitParameter("cmisVersion");
 
+		if(version == null && "cmisbrowser".equals(config.getServletName()))
+			version = "1.1";
+
 		try {
 			servlet = (HttpServlet) ClassUtils.newInstance(servletClass);
+
 			servlet.init(config);
 
-			log.debug("initialize CMIS servlet class[" + servletClass + "] version[" + version + "] name[" +config.getServletName()+"]");
+			log.debug("initialize CMIS servlet class["+servletClass+"] version["+version+"] name["+config.getServletName()+"]");
 		} catch (ClassNotFoundException e) {
 			log.debug("CMIS not found, skipping cmis servlet ["+servletClass+"]");
 		} catch (UnsupportedClassVersionError e) {

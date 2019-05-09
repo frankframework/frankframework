@@ -1,0 +1,18 @@
+<manageDatabaseRLY>
+  <completionInformation>
+    <returnCode>OK</returnCode>
+  </completionInformation>
+  <results count="1">
+    <result item="1">
+      <result>
+        <fielddefinition>
+          <field columnClassName="java.lang.String" columnDisplaySize="100" columnTypeName="VARCHAR2" isCurrency="false" name="NAME" precision="100" scale="0" type="VARCHAR"/>
+          <field columnClassName="java.lang.String" columnDisplaySize="100" columnTypeName="VARCHAR2" isCurrency="false" name="VALUE" precision="100" scale="0" type="VARCHAR"/>
+          <field columnClassName="oracle.sql.TIMESTAMP" columnDisplaySize="11" columnTypeName="TIMESTAMP" isCurrency="false" name="LASTMODDATE" precision="0" scale="6" type="TIMESTAMP"/>
+          <field columnClassName="java.lang.String" columnDisplaySize="100" columnTypeName="VARCHAR2" isCurrency="false" name="LASTMODBY" precision="100" scale="0" type="VARCHAR"/>
+        </fielddefinition>
+        <rowset/>
+      </result>
+    </result>
+  </results>
+</manageDatabaseRLY>

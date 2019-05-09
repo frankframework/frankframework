@@ -1,0 +1,3 @@
+<request action="subcall_local_echo">
+	<value>test</value>
+</request>

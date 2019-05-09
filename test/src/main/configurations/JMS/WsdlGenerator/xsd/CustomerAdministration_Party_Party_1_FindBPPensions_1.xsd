@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:cmh="http://nn.nl/XSD/Generic/MessageHeader/2" xmlns="http://nn.nl/XSD/CustomerAdministration/Party/Party/1/FindBPPensions/1" xmlns:ns1="http://nn.nl/XSD/Generic/MessageHeader/2" targetNamespace="http://nn.nl/XSD/CustomerAdministration/Party/Party/1/FindBPPensions/1" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<!--xsd:import namespace="http://nn.nl/XSD/Generic/MessageHeader/2" schemaLocation="CommonMessageHeader_2.xsd"/-->
+	<xsd:import namespace="http://nn.nl/XSD/Generic/MessageHeader/2"/>
+	<!--Request-->
+	<xsd:element name="RequestFindBPPensionsREQ" type="RequestFindBPPensionsREQ"/>
+	<xsd:complexType name="RequestFindBPPensionsREQ">
+		<xsd:sequence>
+			<xsd:element name="SearchParameter">
+				<xsd:complexType>
+					<xsd:choice>
+						<xsd:element name="SocialSecurityNumber">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="9"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="GoldenRecordID">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="10"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="SilverRecordID">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="10"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+					</xsd:choice>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="IgnoreGBAFlag" minOccurs="0">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="1"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--Reply-->
+	<xsd:element name="ReplyFindBPPensionsRLY">
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="ReplyFindBPPensionsRLY"/>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:complexType name="ReplyFindBPPensionsRLY">
+		<xsd:sequence>
+			<xsd:element ref="cmh:Result"/>
+			<xsd:element name="GoldenRecordID">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="10"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="SilverRecordID">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="10"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="SocialSecurityNumber" minOccurs="0"/>
+			<xsd:element name="Addresses" type="AddressesType" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="GBAGeneral" type="GBAGeneralType" minOccurs="0"/>
+			<xsd:element name="GBAAddress" type="GBAAddressType" minOccurs="0"/>
+			<xsd:element name="GBAPerson" type="GBAPersonType" minOccurs="0"/>
+			<xsd:element name="GBAPartner" type="GBAPartnerType" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--Reply complex types-->
+	<xsd:complexType name="AddressesType">
+		<xsd:sequence>
+			<xsd:element name="BestAddress" minOccurs="0">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="1"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="AddressType" minOccurs="0">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="10"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="StartDate" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="EndDate" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="Street" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="PostalCode" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="HouseNumber" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="HouseNumberAddition" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="POBox" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="City" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="Country" type="xsd:string" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GBAGeneralType">
+		<xsd:sequence>
+			<xsd:element name="ANumber" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="SecrecyCode" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="GBAFlag" minOccurs="0">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="1"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="InvestigationGroup" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="InvestigationArea" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="InvestigationStart" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="InvestigationEnd" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="GBAFlagRemovalDate" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="GBAStatus" type="xsd:string" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GBAAddressType">
+		<xsd:sequence>
+			<xsd:element name="City" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="Street" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="HouseNumber" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="HouseLetter" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="HouseNumberAddition" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="HouseNumberIndicator" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="PostalCode" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="Location" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="CommunityPart" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="AddressStartDate" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="EmigrationCountry" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="EmigrationDate" type="xsd:date" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GBAPersonType">
+		<xsd:sequence>
+			<xsd:element name="BSN" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="FirstName" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="Prefix" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="LastName" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="Gender" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="BirthDate" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="DeathDate" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="NameFormattingCode" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="FullName" type="xsd:string" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GBAPartnerType">
+		<xsd:sequence>
+			<xsd:element name="ANumber" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="BSN" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="FirstName" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="Prefix" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="LastName" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="BirthDate" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="MarriageDate" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="DivorceDate" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="DivorceReason" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="HistoricMarriageDate" type="xsd:date" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

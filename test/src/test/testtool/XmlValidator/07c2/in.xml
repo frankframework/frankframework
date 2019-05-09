@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root xmlns="http://nn.nl/root" xmlns:s03="http://nn.nl/sub03" xmlns:s04="http://nn.nl/sub04" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://nn.nl/root root2.xsd">
+	<string>String</string>
+	<sub01>
+		<string>String</string>
+	</sub01>
+	<sub01a xmlns="">
+		<string>String</string>
+	</sub01a>
+	<sub02>
+		<string>String</string>
+	</sub02>
+	<s03:sub03>
+		<s03:string>String</s03:string>
+	</s03:sub03>
+	<s04:sub04>
+		<s04:string>String</s04:string>
+	</s04:sub04>
+	<sub05 xmlns="">
+		<string>String</string>
+	</sub05>
+</root>

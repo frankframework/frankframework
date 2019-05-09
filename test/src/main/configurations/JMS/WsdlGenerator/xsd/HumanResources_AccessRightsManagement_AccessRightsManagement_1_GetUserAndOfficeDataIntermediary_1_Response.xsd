@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:types="http://ibis4userandofficedetails.nn.nl" xmlns:cmh="http://nn.nl/XSD/Generic/MessageHeader/1" xmlns="http://nn.nl/XSD/HumanResources/AccessRightsManagement/AccessRightsManagement/1/GetUserAndOfficeDataIntermediary/1" targetNamespace="http://nn.nl/XSD/HumanResources/AccessRightsManagement/AccessRightsManagement/1/GetUserAndOfficeDataIntermediary/1" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:import namespace="http://ibis4userandofficedetails.nn.nl" schemaLocation="GetUserAndOfficeData_TYPES.xsd"/>
+	<!--xsd:import namespace="http://nn.nl/XSD/Generic/MessageHeader/1" schemaLocation="CommonMessageHeader.xsd"/-->
+	<xsd:import namespace="http://nn.nl/XSD/Generic/MessageHeader/1"/>
+	<xsd:element name="GetUserAndOfficeDataIntermediary_Response">
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="GetUserAndOfficeDataIntermediary_ResponseType"/>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:complexType name="GetUserAndOfficeDataIntermediary_ResponseType">
+		<xsd:sequence>
+			<xsd:element name="Body" type="BodyType" minOccurs="0"/>
+			<xsd:element ref="cmh:Result"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="BodyType">		
+					<xsd:sequence>
+						<xsd:element name="ReturnCode" type="xsd:string"/>
+						<xsd:element name="ReturnCodeExtension" type="xsd:string" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>Conditioneel verplicht indien ReturnCode ongelijk is aan 1</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="TP" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>Conditioneel verplicht indien ReturnCode gelijk is aan 1</xsd:documentation>
+							</xsd:annotation>
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="TPnummer" type="types:int10"/>
+									<xsd:element name="TPnaam" type="types:text35"/>
+									<xsd:element name="Werkmap" type="types:text35" nillable="true" minOccurs="0"/>
+									<xsd:element name="Postadres">
+										<xsd:complexType>
+											<xsd:sequence>
+												<xsd:element name="Straat" type="types:text35"/>
+												<xsd:element name="Huisnummer" type="types:text10"/>
+												<xsd:element name="Postcode" type="types:text6"/>
+												<xsd:element name="Plaats" type="types:text35"/>
+											</xsd:sequence>
+										</xsd:complexType>
+									</xsd:element>
+									<xsd:element name="Bezoekadres">
+										<xsd:complexType>
+											<xsd:sequence>
+												<xsd:element name="Straat" type="types:text35"/>
+												<xsd:element name="Huisnummer" type="types:text10"/>
+												<xsd:element name="Postcode" type="types:text6"/>
+												<xsd:element name="Plaats" type="types:text35"/>
+											</xsd:sequence>
+										</xsd:complexType>
+									</xsd:element>
+									<xsd:element name="Telefoonnummer" type="types:text10"/>
+									<xsd:element name="Faxnummer" type="types:text10"/>
+									<xsd:element name="Regio">
+										<xsd:complexType>
+											<xsd:sequence>
+												<xsd:element name="Naam" type="types:text50"/>
+												<xsd:element name="Emailadres" type="types:text300"/>
+											</xsd:sequence>
+										</xsd:complexType>
+									</xsd:element>
+									<xsd:element name="IncassocodeSchade" type="types:text1"/>
+									<xsd:element name="IncassocodeLeven" type="types:text1"/>
+									<xsd:element name="FeitelijkLeider" type="types:text35"/>
+									<xsd:element name="Bedrijfsvorm" type="types:text3"/>
+									<xsd:element name="Eigenaar" type="types:text35"/>
+									<xsd:element name="HoofdfiliaalSchade" type="types:text35"/>
+									<xsd:element name="HoofdfiliaalLeven" type="types:text35"/>
+									<xsd:element name="Medewerker">
+										<xsd:complexType>
+											<xsd:sequence>
+												<xsd:element name="Voornaam" type="types:text15"/>
+												<xsd:element name="Tussenvoegsels" type="types:text10"/>
+												<xsd:element name="Achternaam" type="types:text35"/>
+												<xsd:element name="Emailadres" type="types:text300"/>
+												<xsd:element name="Verkopernummer" type="types:text4"/>
+												<xsd:element name="Kantoornummer" type="types:text6"/>
+												<xsd:element name="Kantoornaam" type="types:text100"/>
+												<xsd:element name="Geslacht" type="types:text1"/>
+											</xsd:sequence>
+										</xsd:complexType>
+									</xsd:element>
+									<xsd:element name="ADNPostbusNummer" type="types:text16" minOccurs="0"/>
+									<xsd:element name="BuitendienstFunctionaris" minOccurs="0">
+										<xsd:complexType>
+											<xsd:sequence>
+												<xsd:element name="Leven">
+													<xsd:complexType>
+														<xsd:sequence>
+															<xsd:element name="Nummer" type="types:text4"/>
+															<xsd:element name="Telefoonnummer" type="types:text10"/>
+															<xsd:element name="Fax" type="types:text10"/>
+															<xsd:element name="Naam" type="types:text35"/>
+														</xsd:sequence>
+													</xsd:complexType>
+												</xsd:element>
+												<xsd:element name="Schade">
+													<xsd:complexType>
+														<xsd:sequence>
+															<xsd:element name="Nummer" type="types:text4"/>
+															<xsd:element name="Telefoonnummer" type="types:text10"/>
+															<xsd:element name="Fax" type="types:text10"/>
+															<xsd:element name="Naam" type="types:text35"/>
+														</xsd:sequence>
+													</xsd:complexType>
+												</xsd:element>
+												<xsd:element name="EBA">
+													<xsd:complexType>
+														<xsd:sequence>
+															<xsd:element name="Nummer" type="types:text4"/>
+															<xsd:element name="Telefoonnummer" type="types:text10"/>
+															<xsd:element name="Fax" type="types:text10"/>
+															<xsd:element name="Naam" type="types:text35"/>
+														</xsd:sequence>
+													</xsd:complexType>
+												</xsd:element>
+												<xsd:element name="PABZ">
+													<xsd:complexType>
+														<xsd:sequence>
+															<xsd:element name="Nummer" type="types:text4"/>
+															<xsd:element name="Telefoonnummer" type="types:text10"/>
+															<xsd:element name="Fax" type="types:text10"/>
+															<xsd:element name="Naam" type="types:text35"/>
+														</xsd:sequence>
+													</xsd:complexType>
+												</xsd:element>
+											</xsd:sequence>
+										</xsd:complexType>
+									</xsd:element>
+									<xsd:element name="BeschikbareTPs">
+										<xsd:complexType>
+											<xsd:sequence>
+												<xsd:element name="TP" maxOccurs="unbounded">
+													<xsd:complexType>
+														<xsd:sequence>
+															<xsd:element name="TPnummer" type="types:int10"/>
+															<xsd:element name="TPnaam" type="types:text35"/>
+														</xsd:sequence>
+													</xsd:complexType>
+												</xsd:element>
+											</xsd:sequence>
+										</xsd:complexType>
+									</xsd:element>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

@@ -30,6 +30,10 @@ Ibis AdapterFramework release notes
 - Add ability to use nullvalues on cmis properties
 - Show class in IbisDoc html
 - Show FileHandler properties in IbisDoc for FilePipe
+- Add springIbisTestToolIgnoreReport.xml to ignore reports in Ladybug based on a session key
+- Change IBIS startup servlet to CXF and register it with Spring
+- Fix date issue where time properties are converted to GMT
+- Revert old CMIS WS endpoints to register each service's WSDL individually
 - Possibility to add new domains independently of ear file
     - UploadConfigService adapter
     - Facility to (de)activate configs

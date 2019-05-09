@@ -1,0 +1,5 @@
+<request action="multipleSelects">
+	<id>id1</id>
+	<id>id2</id>
+	<id>id3</id>
+</request>

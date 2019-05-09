@@ -1,0 +1,39 @@
+<module>
+	<adapter name="ForEachChildElementPipe" description="Test the functioning of the ForEachChildElementPipe">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="ForEachChildElementPipe">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ForEachChildElementPipe" />
+		</receiver>
+		<pipeline firstPipe="ForEachChildElementPipe_Record">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe_Record" elementXPathExpression="requests/request">
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ForEachChildElementPipe_Record" />
+				<forward name="success" path="echo" />
+			</pipe>
+			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="ForEachChildElementPipe_Record">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="ForEachChildElementPipe_Record">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ForEachChildElementPipe_Record" />
+		</receiver>
+		<pipeline firstPipe="switch">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="switch" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="request" />
+			<pipe name="hello" className="nl.nn.adapterframework.pipes.FixedResult" returnString="&lt;reply&gt;goodbey&lt;/reply&gt;">
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe name="hi" className="nl.nn.adapterframework.pipes.FixedResult" returnString="&lt;reply&gt;ha&lt;/reply&gt;">
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe name="error" className="nl.nn.adapterframework.pipes.ExceptionPipe">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>

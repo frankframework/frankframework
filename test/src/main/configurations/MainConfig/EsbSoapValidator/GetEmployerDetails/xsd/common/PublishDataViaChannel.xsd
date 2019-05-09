@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:pbl="http://www.ibissource.org/pbl">
+	<xsd:import namespace="http://www.ibissource.org/pbl" schemaLocation="PublishDataTypes.xsd"/>
+	<xsd:element name="PublishDataViaChannelREQ" type="PublishDataViaChannelREQ"/>
+	<!-- REQUEST -->
+	<xsd:complexType name="PublishDataViaChannelREQ">
+		<xsd:annotation>
+			<xsd:documentation>Puts a specific document put into the ResultatenService database</xsd:documentation>
+		</xsd:annotation>
+		<xsd:all>
+			<xsd:element name="Result" type="resultREQ"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="resultREQ">
+		<xsd:all>
+			<xsd:element name="GlobalIdentifier" type="pbl:category"/>
+			<xsd:element name="Application" type="pbl:name"/>
+			<xsd:element name="Key" type="pbl:category"/>
+			<xsd:element name="Category" type="pbl:category" minOccurs="0"/>
+			<xsd:element name="ResultName" type="pbl:name" minOccurs="0"/>
+			<xsd:element name="ResultExtension" type="pbl:name"/>
+			<xsd:element name="Description" type="pbl:describtion" minOccurs="0"/>
+			<xsd:element name="Data" type="pbl:data"/>
+			<xsd:element name="ExpirationTimeStamp" type="xsd:dateTime"/>
+			<xsd:element name="Overwrite" type="pbl:optionYesNo" minOccurs="0"/>
+			<xsd:element name="Label" type="pbl:category"/>
+			<xsd:element name="Owner" type="pbl:category"/>
+			<xsd:element name="ProductGroup" type="pbl:category"/>
+		</xsd:all>
+	</xsd:complexType>
+</xsd:schema>

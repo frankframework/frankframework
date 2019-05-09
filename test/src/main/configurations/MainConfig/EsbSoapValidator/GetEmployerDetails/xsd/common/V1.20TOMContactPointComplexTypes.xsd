@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://www.ibissource.org/tom" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tom="http://www.ibissource.org/tom" elementFormDefault="qualified" tom:agent="TOM" tom:package="com.ibissource.tom">
+	<!--******************************************TOM Contact Point Usage Complex Type**********************************-->
+	<xsd:complexType name="PostalAddressContactPointUsage">
+		<xsd:sequence>
+			<xsd:element name="ContactPointUsageType" type="tom:ContactPointUsageTypeEnum" minOccurs="0"/>
+			<xsd:element name="PreferredLanguage" type="tom:LanguageEnum" minOccurs="0"/>
+			<xsd:element name="PostalAddress" type="tom:PostalAddress" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="TelephoneNumberContactPointUsage">
+		<xsd:sequence>
+			<xsd:element name="ContactPointUsageType" type="tom:ContactPointUsageTypeEnum" minOccurs="0"/>
+			<xsd:element name="TelephoneNumber" type="tom:TelephoneNumber" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="MobilePhoneContactPointUsage">
+		<xsd:sequence>
+			<xsd:element name="ContactPointUsageType" type="tom:ContactPointUsageTypeEnum" minOccurs="0"/>
+			<xsd:element name="MobilePhone" type="tom:MobilePhone" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="FaxNumberContactPointUsage">
+		<xsd:sequence>
+			<xsd:element name="ContactPointUsageType" type="tom:ContactPointUsageTypeEnum" minOccurs="0"/>
+			<xsd:element name="FaxNumber" type="tom:FaxNumber" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="EmailAddressContactPointUsage">
+		<xsd:sequence>
+			<xsd:element name="ContactPointUsageType" type="tom:ContactPointUsageTypeEnum" minOccurs="0"/>
+			<xsd:element name="EmailAddress" type="tom:EmailAddress" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ElectronicAddressContactPointUsage">
+		<xsd:sequence>
+			<xsd:element name="ContactPointUsageType" type="tom:ContactPointUsageTypeEnum" minOccurs="0"/>
+			<xsd:element name="ElectronicAddress" type="tom:ElectronicAddress" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SWIFTAddressContactPointUsage">
+		<xsd:sequence>
+			<xsd:element name="ContactPointUsageType" type="tom:ContactPointUsageTypeEnum" minOccurs="0"/>
+			<xsd:element name="SWIFTAddress" type="tom:SWIFTAddress" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--*********************************TOM Contact Point Complex Type**********************************-->
+	<xsd:complexType name="PostalAddress">
+		<xsd:sequence>
+			<xsd:element name="Id" type="tom:ContactPointId" minOccurs="0"/>
+			<xsd:element name="PostalAddressInformation" type="tom:PostalAddressInformation" minOccurs="0"/>
+			<xsd:element name="AddressLines" type="tom:AddressLines" minOccurs="0"/>
+			<xsd:element name="Street" type="tom:Street" minOccurs="0"/>
+			<xsd:element name="HouseNumber" type="tom:HouseNumber" minOccurs="0"/>
+			<xsd:element name="HouseNumberAddition" type="tom:HouseNumberAddition" minOccurs="0"/>
+			<xsd:element name="Postalcode" type="tom:PostalCode" minOccurs="0"/>
+			<xsd:element name="OnBoardtype" type="tom:OnBoardTypeEnum" minOccurs="0"/>
+			<xsd:element name="Addressformat" type="tom:AddressFormatEnum" minOccurs="0"/>
+			<xsd:element name="City" type="tom:City" minOccurs="0"/>
+			<xsd:element name="Region" type="tom:Region" minOccurs="0"/>
+			<xsd:element name="POBox" type="tom:POBox" minOccurs="0"/>
+			<xsd:element name="CountryCode" type="tom:CountryCodeEnum" minOccurs="0"/>
+			<xsd:element name="CareOfName" type="tom:CareOfName" minOccurs="0"/>
+			<xsd:element name="StartDate" type="tom:Date" minOccurs="0"/>
+			<xsd:element name="EndDate" type="tom:Date" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="TelephoneNumber">
+		<xsd:sequence>
+			<xsd:element name="Id" type="tom:ContactPointId" minOccurs="0"/>
+			<xsd:element name="TelephoneNumberInformation" type="tom:TelephoneNumberInformation" minOccurs="0"/>
+			<xsd:element name="StartDate" type="tom:Date" minOccurs="0"/>
+			<xsd:element name="EndDate" type="tom:Date" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="FaxNumber">
+		<xsd:sequence>
+			<xsd:element name="Id" type="tom:ContactPointId" minOccurs="0"/>
+			<xsd:element name="FaxNumberInformation" type="tom:FaxNumberInformation" minOccurs="0"/>
+			<xsd:element name="StartDate" type="tom:Date" minOccurs="0"/>
+			<xsd:element name="EndDate" type="tom:Date" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="MobilePhone">
+		<xsd:sequence>
+			<xsd:element name="Id" type="tom:ContactPointId" minOccurs="0"/>
+			<xsd:element name="MobilePhoneInformation" type="tom:MobilePhoneInformation" minOccurs="0"/>
+			<xsd:element name="StartDate" type="tom:Date" minOccurs="0"/>
+			<xsd:element name="EndDate" type="tom:Date" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SWIFTAddress">
+		<xsd:sequence>
+			<xsd:element name="Id" type="tom:ContactPointId" minOccurs="0"/>
+			<xsd:element name="SWIFTAddressInformation" type="tom:SWIFTAddressInformation" minOccurs="0"/>
+			<xsd:element name="StartDate" type="tom:Date" minOccurs="0"/>
+			<xsd:element name="EndDate" type="tom:Date" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="EmailAddress">
+		<xsd:sequence>
+			<xsd:element name="Id" type="tom:ContactPointId" minOccurs="0"/>
+			<xsd:element name="EmailAddressInformation" type="tom:EmailAddressInformation" minOccurs="0"/>
+			<xsd:element name="StartDate" type="tom:Date" minOccurs="0"/>
+			<xsd:element name="EndDate" type="tom:Date" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ElectronicAddress">
+		<xsd:sequence>
+			<xsd:element name="Id" type="tom:ContactPointId" minOccurs="0"/>
+			<xsd:element name="ElectronicAddressType" type="tom:ElectronicAddressType" minOccurs="0"/>
+			<xsd:element name="ElectronicAddressInformation" type="tom:ElectronicAddressInformation" minOccurs="0"/>
+			<xsd:element name="StartDate" type="tom:Date" minOccurs="0"/>
+			<xsd:element name="EndDate" type="tom:Date" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

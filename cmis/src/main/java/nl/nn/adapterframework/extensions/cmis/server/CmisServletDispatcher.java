@@ -31,7 +31,7 @@ public class CmisServletDispatcher {
 	}
 
 	public void registerServiceClient(CmisSender cmisSender) throws ConfigurationException {
-		if(listener != null)
+		if(sender != null)
 			throw new ConfigurationException("only one cmisSender can be registered as default");
 
 		this.sender = cmisSender;
