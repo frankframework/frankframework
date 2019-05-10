@@ -38,7 +38,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 	private final static String INPUT_WITH_PROPERTIES = "<cmis><id>id</id><objectId>dummy</objectId>"
 			+ "<objectTypeId>cmis:document</objectTypeId><fileName>fileInput.txt</fileName>"
 			+ "<properties><property name=\"project:number\" type=\"integer\">123456789</property>"
-			+ "<property name=\"project:lastModified\" type=\"datetime\">2019-02-26 16:31:15</property>"
+			+ "<property name=\"project:lastModified\" type=\"datetime\">2019-02-26T16:31:15</property>"
 			+ "<property name=\"project:onTime\" type=\"boolean\">true</property></properties></cmis>";
 	
 	private final static String GET_RESULT_FOR_INPUT= "dummy_stream";
@@ -48,7 +48,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 	private final static String GET_RESULT_FOR_GET_PROPERTIES = "<cmis><properties>"
 			+ "<property name=\"cmis:name\">dummy</property>"
 			+ "<property name=\"project:number\" type=\"integer\">123456789</property>"
-			+ "<property name=\"project:lastModified\" type=\"datetime\">2019-02-26 16:31:15</property>"
+			+ "<property name=\"project:lastModified\" type=\"datetime\">2019-02-26T16:31:15</property>"
 			+ "<property name=\"project:onTime\" type=\"boolean\">true</property></properties></cmis>";
 	
 	@Parameters(name = "{0} - {1} - toServlet = {4} - getProperties = {5}")
