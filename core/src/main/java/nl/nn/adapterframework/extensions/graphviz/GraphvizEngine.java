@@ -25,6 +25,7 @@ import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
 
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -87,7 +88,10 @@ public class GraphvizEngine {
 		if (env == null) {
 			log.debug("creating new VizJs engine");
 			String visJsSource = getVizJsSource(graphvizVersion);
-			ENVS.set(new Env(getVisJsWrapper(), visJsSource));
+			String tempDir = AppConstants.getInstance().getString("log.dir", null);
+			if(tempDir != null && tempDir.isEmpty()) //Make sure to not pass an empty directory
+				tempDir = null;
+			ENVS.set(new Env(getVisJsWrapper(), visJsSource, "GraphvizJS", tempDir));
 		}
 
 		String call = jsVizExec(src, options);
@@ -142,12 +146,16 @@ public class GraphvizEngine {
 		final V8 v8;
 		final ResultHandler resultHandler = new ResultHandler();
 
-		Env(String init, String viz) {
+		/**
+		 * It's important to register the JS scripts under the same alias so it can be cached
+		 * Use the log.dir to extract the SO/DLL files into, make sure this is using an absolute path and not a relative one!!
+		 */
+		Env(String initScript, String graphvisJsLibrary, String alias, String tempDirectory) {
 			log.info("starting V8 runtime...");
-			v8 = V8.createV8Runtime();
+			v8 = V8.createV8Runtime(alias, tempDirectory);
 			log.info("started V8 runtime. Initializing graphviz...");
-			v8.executeVoidScript(viz);
-			v8.executeVoidScript(init);
+			v8.executeVoidScript(graphvisJsLibrary);
+			v8.executeVoidScript(initScript);
 			v8.registerJavaMethod(new JavaVoidCallback() {
 				@Override
 				public void invoke(V8Object receiver, V8Array parameters) {
