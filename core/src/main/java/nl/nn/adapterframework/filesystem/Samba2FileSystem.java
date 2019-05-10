@@ -562,7 +562,7 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 			try {
 				deleteFile(prefix + files.get(i++).getFileName());
 			} catch (FileSystemException e) {
-				log.error("Unable to close disk share after deleting the file");
+				log.error("Unable to close disk share after deleting the file",e);
 			}
 		}
 	}
