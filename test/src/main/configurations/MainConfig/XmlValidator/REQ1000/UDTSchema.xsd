@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+<xs:schema targetNamespace="http://unisys.financial.framework/UDTSchema" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:simpleType name="UDTBoolean">
+		<xs:restriction base="xs:boolean"/>
+	</xs:simpleType>
+	<xs:simpleType name="UDTText">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTTextVar">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="28000"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTText20">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="20"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTText50">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="50"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTText80">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="80"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTText100">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="100"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTText200">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="200"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTText250">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="250"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTText300">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="300"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTText500">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="500"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTText2000">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="2000"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTText4000">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="4000"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTReference">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="20"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTInteger5">
+		<xs:restriction base="xs:int">
+			<xs:totalDigits value="5"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTInteger9">
+		<xs:restriction base="xs:int">
+			<xs:totalDigits value="9"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTInteger18">
+		<xs:restriction base="xs:long">
+			<xs:totalDigits value="18"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTNumber5">
+		<xs:restriction base="xs:decimal">
+			<xs:totalDigits value="10"/>
+			<xs:fractionDigits value="5" fixed="false"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTNumber10">
+		<xs:restriction base="xs:decimal">
+			<xs:totalDigits value="15"/>
+			<xs:fractionDigits value="5" fixed="false"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTNumber20">
+		<xs:restriction base="xs:decimal">
+			<xs:totalDigits value="30"/>
+			<xs:fractionDigits value="10" fixed="false"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTMonetaryAmount">
+		<xs:restriction base="xs:decimal">
+			<xs:totalDigits value="17"/>
+			<xs:fractionDigits value="5" fixed="false"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTPercentage">
+		<xs:restriction base="xs:decimal">
+			<xs:totalDigits value="10"/>
+			<xs:fractionDigits value="5" fixed="false"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTDate">
+		<xs:restriction base="xs:date"/>
+	</xs:simpleType>
+	<xs:simpleType name="UDTDateTime">
+		<xs:restriction base="xs:dateTime"/>
+	</xs:simpleType>
+	<xs:simpleType name="UDTTime">
+		<xs:restriction base="xs:dateTime"/>
+	</xs:simpleType>
+	<xs:simpleType name="LSTValue">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="10"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

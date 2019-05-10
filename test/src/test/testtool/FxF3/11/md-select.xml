@@ -1,0 +1,6 @@
+<manageDatabaseREQ>
+	<select>
+		<tableName>IBISSTORE</tableName>
+		<order>MESSAGEKEY</order>
+	</select>
+</manageDatabaseREQ>

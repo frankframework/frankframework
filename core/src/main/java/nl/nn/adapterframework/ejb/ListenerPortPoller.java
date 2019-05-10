@@ -190,10 +190,7 @@ public class ListenerPortPoller implements DisposableBean {
 
 	/**
 	 * Callback method from the Spring Bean Factory to allow destruction on shutdown.
-	 *
 	 * This method ensures that all registered listener are cleared.
-	 *
-	 * @throws java.lang.Exception
 	 */
 	public void destroy() throws Exception {
 		clear();

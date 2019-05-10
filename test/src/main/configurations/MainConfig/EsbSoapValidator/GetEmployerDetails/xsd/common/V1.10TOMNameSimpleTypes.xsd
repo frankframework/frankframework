@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://www.ibissource.org/tom" xmlns:tom="http://www.ibissource.org/tom" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" tom:agent="TOM" tom:package="com.ibissource.tom">
+	<!--******************************************TOM Name Simple Types and Enumerations**********************************-->
+	<xsd:simpleType name="PartyNameId">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="35"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="PartyNameUseEnum">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			
+			<xsd:maxInclusive value="99"/>
+		
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="FullName">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="300"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Name">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="150"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="FirstNames">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="28"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="LastName">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="70"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="PreTitles">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="PostTitles">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="TitlesEnum">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			<xsd:maxInclusive value="999"/>
+			
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="TitleTypeEnum">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			
+			<xsd:maxInclusive value="99"/>
+			
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="TitlePositionEnum">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			<xsd:maxInclusive value="99"/>
+		
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="IntroductionEnum">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			<xsd:maxInclusive value="99"/>
+		
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="NameSuffix">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="10"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Initials">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="24"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="BasicLastName">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="70"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="LastNamePrefix">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="10"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

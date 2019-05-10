@@ -1,0 +1,10 @@
+<root>
+	<select>
+		<tableName>IBISTEMP</tableName>
+		<order>tkey</order>
+	</select>
+	<sql>
+		<type>select</type>
+		<query>SELECT COUNT(*) FROM IBISTEMP WHERE TTIMESTAMP IS NULL</query>
+	</sql>
+</root>

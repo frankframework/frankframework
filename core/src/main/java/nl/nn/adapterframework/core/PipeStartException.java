@@ -44,15 +44,13 @@ public PipeStartException(Throwable e) {
 	super(e);
 }
 /**
- * The name of the pipe in error.
- * @return java.lang.String Name of the pipe in error
+ * Get the name of the pipe in error.
  */
 public java.lang.String getPipeNameInError() {
 	return pipeNameInError;
 }
 /**
- * The name of the pipe in error. 
- * @param newPipeNameInError Name of the pipe in error
+ * Set the name of the pipe in error. 
  */
 public void setPipeNameInError(java.lang.String newPipeNameInError) {
 	pipeNameInError = newPipeNameInError;

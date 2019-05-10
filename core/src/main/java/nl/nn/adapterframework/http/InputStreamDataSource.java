@@ -32,9 +32,6 @@ public class InputStreamDataSource implements DataSource {
 	 * It should always return a valid type. It is suggested that getContentType
 	 * return "application/octet-stream" if the DataSource implementation can
 	 * not determine the data type.
-	 * 
-	 * @param contentType
-	 * @param inputStream
 	 */
 	public InputStreamDataSource(String contentType, InputStream inputStream) {
 		this.contentType = contentType;

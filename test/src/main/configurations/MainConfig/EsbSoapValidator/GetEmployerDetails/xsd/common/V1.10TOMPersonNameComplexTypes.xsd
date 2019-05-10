@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tom="http://www.ibissource.org/tom" targetNamespace="http://www.ibissource.org/tom" elementFormDefault="qualified" tom:agent="TOM" tom:package="com.ibissource.tom">
+	<!--******************************************TOM PersonNameComplexTypes**********************************-->
+	<xsd:complexType name="PersonName">
+		<xsd:sequence>
+			<xsd:element name="Id" type="tom:PartyNameId" minOccurs="0"/>
+			<xsd:element name="Use" type="tom:PartyNameUseEnum" minOccurs="0"/>
+			<xsd:element name="FullName" type="tom:FullName" minOccurs="0"/>
+			<xsd:element name="Language" type="tom:LanguageEnum" minOccurs="0"/>
+			<xsd:element name="FirstNames" type="tom:FirstNames" minOccurs="0"/>
+			<xsd:element name="LastName" type="tom:LastName" minOccurs="0"/>
+			<xsd:element name="PreTitles" type="tom:PreTitles" minOccurs="0"/>
+			<xsd:element name="PostTitles" type="tom:PostTitles" minOccurs="0"/>
+			<xsd:element name="Titles" type="tom:Titles" minOccurs="0" maxOccurs="5"/>
+			<xsd:element name="Introduction" type="tom:Introduction" minOccurs="0"/>
+			<xsd:element name="NameSuffix" type="tom:NameSuffix" minOccurs="0"/>
+			<xsd:element name="Initials" type="tom:Initials" minOccurs="0"/>
+			<xsd:element name="BasicLastName" type="tom:BasicLastName" minOccurs="0"/>
+			<xsd:element name="LastNamePrefix" type="tom:LastNamePrefix" minOccurs="0"/>
+			<xsd:element name="PartnerName" type="tom:LastName" minOccurs="0"/>
+			<xsd:element name="PartnerNamePrefix" type="tom:LastNamePrefix" minOccurs="0"/>
+			<xsd:element name="BasicPartnerName" type="tom:BasicLastName" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="Titles">
+		<xsd:sequence>
+			<xsd:element name="TitleType" type="tom:TitleTypeEnum" minOccurs="0"/>
+			<xsd:element name="Title" type="tom:TitlesEnum" minOccurs="0"/>
+			<xsd:element name="TitlePosition" type="tom:TitlePositionEnum" minOccurs="0"/>
+			<xsd:element name="Occurrence" type="tom:Occurrence" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="Introduction">
+		<xsd:sequence>
+			<xsd:element name="IntroductionEnum" type="tom:IntroductionEnum" minOccurs="0"/>
+			<xsd:element name="Occurrence" type="tom:Occurrence" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

@@ -1,0 +1,136 @@
+<ibis>
+	<adapter name="FilePipe" description="Test the functioning of the FilePipe">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="FilePipe">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-FilePipe" />
+		</receiver>
+		<pipeline firstPipe="setFilename">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+						
+			<!-- Set FileName -->
+			<pipe name="setFilename" className="nl.nn.adapterframework.pipes.PutInSession" sessionKey="filename" value="${i4ti.dir}/fp/test.txt" >
+ 			 <forward name="success" path="setFileData"/> 			 
+			</pipe>
+			
+			<!-- get file text from sample file -->
+			<pipe name="setFileData" className="nl.nn.adapterframework.pipes.FixedResult" fileName="/FilePipe/sample.txt">
+			  <forward name="success" path="write file"/>
+			</pipe>
+			
+			<!-- Write file -->
+			<pipe
+				name="write file"
+	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	actions="write"
+	        	fileNameSessionKey="filename"
+	        	createDirectory="true">
+	        	<forward name="success" path="switchAction"/>
+	        </pipe>
+	        
+			<!-- choose which action should be done -->
+			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="request/@action" getInputFromSessionKey="originalMessage"/>
+						
+			<!-- Read file / getInputFromSessionKey -->
+			<pipe
+				name="read file via getInputFromSessionKey"
+	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	actions="read"
+	        	getInputFromSessionKey="filename"	        
+	        	>
+	        	<forward name="success" path="EXIT"/>
+	        </pipe>
+
+			<!-- Read file / fileNameSessionKey -->
+			<pipe
+				name="read file via fileNameSessionKey"
+	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	actions="read"
+	        	fileNameSessionKey="filename">
+	        	<forward name="success" path="EXIT"/>
+	        </pipe>
+
+			<!-- Read file at classpath -->
+			<pipe
+				name="read file at classpath"
+	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	actions="read"
+	        	getInputFromFixedValue="FilePipe/sample.txt"
+	        	fileSource="classpath">
+	        	<forward name="success" path="EXIT"/>
+	        </pipe>
+
+			<!-- Delete file with use of directory and fileNam e-->
+			<pipe
+				name="delete file"
+	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	actions="delete"
+	        	fileName="test.txt"
+	        	directory="${i4ti.dir}/fp"
+	        	deleteEmptyDirectory="true">
+	        	<forward name="success" path="EXIT"/>
+	        </pipe>
+
+			<!-- Delete file without use of directory and fileName (fileNameSessionKey) -->
+			<pipe
+				name="delete file no directory specified"
+	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	actions="delete"
+	        	fileNameSessionKey="filename"
+	        >
+	        	<forward name="success" path="EXIT"/>
+	        </pipe>
+	        
+	        <!-- Delete file no directory no filename (input) -->
+			<pipe
+				name="delete file no directory no filename"
+	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	actions="delete"
+	        	getInputFromFixedValue="${i4ti.dir}/fp/test.txt">
+	        	<forward name="success" path="EXIT"/>
+	        </pipe>
+	        
+
+			<!-- Delete file that does not exist with use of directory -->
+			<pipe
+				name="delete file that does not exists"
+	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	actions="delete"
+	        	fileName="none_existing_file.txt"
+	        	directory="${i4ti.dir}/fp">
+	        	<forward name="success" path="EXIT"/>
+	        </pipe>
+	    	        	       
+			<!-- List files -->
+			<pipe
+				name="list files"
+	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	actions="list"
+	        	fileName="dummy*.txt"
+	        	directory="${i4ti.dir}/fp2">
+	        	<forward name="success" path="EXIT"/>
+	        </pipe>
+
+			<!-- List files without use of directory -->
+			<pipe
+				name="list files no directory specified"
+	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	actions="list"
+	        	fileName="${i4ti.dir}/fp2/dummy*.txt">
+	        	<forward name="success" path="EXIT"/>
+	        </pipe>
+
+			<!-- Create file and info -->
+			<pipe name="create file" className="nl.nn.adapterframework.pipes.FilePipe"
+				actions="create" directory="${i4ti.dir}/fp" writeSuffix=".abc">
+				<param name="writeSuffix" value=".txt" />
+				<forward name="success" path="info file" />
+			</pipe>
+		
+			<pipe name="info file" className="nl.nn.adapterframework.pipes.FilePipe"
+				actions="info">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</ibis>

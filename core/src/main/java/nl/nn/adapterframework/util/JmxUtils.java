@@ -90,10 +90,6 @@ public class JmxUtils {
 	
 	/**
 	 * Builds an operationInfor for getter purposes.
-	 * @param name
-	 * @param klass 
-	 * @param description
-	 * @param signature
 	 */
 	public static ModelMBeanOperationInfo buildGetterModelMBeanOperationInfo(
 		String name,
@@ -113,12 +109,6 @@ public class JmxUtils {
 	}
 	/**
 	 * Builds an AttributeInfo in a default way
-	 * @param name
-	 * @param displayName
-	 * @param description
-	 * @param deflt
-	 * @param operName
-	 * @param signature
 	 * @return the default modelMBeanAttributeInfo object
 	 */
 	public static ModelMBeanAttributeInfo buildAttributeInfo(String name, String displayName, String description, String deflt, String operName, String signature){

@@ -1,0 +1,35 @@
+<SOAPENV:Envelope xmlns:SOAPENV="http://schemas.xmlsoap.org/soap/envelope/">
+	<SOAPENV:Header>
+		<ns0:MessageHeader xmlns:ns0="http://nn.nl/XSD/Generic/MessageHeader/1">
+			<ns0:From>
+				<ns0:Id>portal</ns0:Id>
+			</ns0:From>
+			<ns0:To>
+				<ns0:Location>TIBCO Service</ns0:Location>
+			</ns0:To>
+			<ns0:HeaderFields>
+				<ns0:CPAId>cpid</ns0:CPAId>
+				<ns0:ConversationId>ConversationId</ns0:ConversationId>
+				<ns0:MessageId>MessageId</ns0:MessageId>
+				<ns0:ExternalRefToMessageId>ExternalRefToMessageId</ns0:ExternalRefToMessageId>
+				<ns0:Timestamp>2010-10-20T12:19:35</ns0:Timestamp>
+			</ns0:HeaderFields>
+			<ns0:Service>
+				<ns0:Name>Document</ns0:Name>
+				<ns0:Context>SalesDocument</ns0:Context>
+				<ns0:Action>
+					<ns0:Paradigm>Request</ns0:Paradigm>
+					<ns0:Name>GetDocuments</ns0:Name>
+					<ns0:Version>1</ns0:Version>
+				</ns0:Action>
+			</ns0:Service>
+		</ns0:MessageHeader>
+	</SOAPENV:Header>
+	<SOAPENV:Body>
+		<ServiceRequest xmlns="http://policymanagement.nn.nl/TestEsbValidator">
+			<Body>
+				<meldCode>text</meldCode>
+			</Body>
+		</ServiceRequest>
+	</SOAPENV:Body>
+</SOAPENV:Envelope>

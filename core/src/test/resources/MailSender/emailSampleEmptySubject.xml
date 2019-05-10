@@ -1,0 +1,13 @@
+<email>
+	<recipients>
+		<recipient name="name" type="to">dummy@dummy.dummy</recipient>
+	</recipients>
+	<from name="name">dummy@dummy.dummy</from>	<!--Required-->
+	<subject></subject>			<!--Required min Length 1 -->
+	<message>An email sent by iaf mail handler in result of unit test.</message>	<!--Required-->
+	<messageType>text/plain</messageType>	<!-- Required -->
+	<messageBase64>false</messageBase64>	<!-- Optional -->
+	<attachments>	<!-- either name or type should contain file extension-->
+		<attachment name="test.txt">This is a test file.</attachment>
+	</attachments>
+ </email>

@@ -1,0 +1,2 @@
+shutdown IMMEDIATE;
+exit

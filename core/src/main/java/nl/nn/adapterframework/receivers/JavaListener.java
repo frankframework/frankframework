@@ -167,8 +167,7 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 	}
 
 	/**
-	 * @param name
-	 * @return JavaReiver registered under name
+	 * Returns JavaListener registered under the given name
 	 */
 	public static JavaListener getListener(String name) {
 		return (JavaListener)getListeners().get(name);

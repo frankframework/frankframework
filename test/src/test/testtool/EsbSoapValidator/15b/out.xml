@@ -1,0 +1,5 @@
+<Error>
+  <errorCode>FAILURE</errorCode>
+  <errorMessage>Validation using EsbSoapValidator with 'http://nn.nl/XSD/PensionsCorporate/Employer/EmployerBACO/1/GetEmployerDetails/1 /EsbSoapValidator/GetEmployerDetails/xsd/baco/PensionsCorporate_Employer_EmployerBACO_1_GetEmployerDetails_1.xsd http://nn.nl/XSD/Generic/MessageHeader/1 /xml/xsd/CommonMessageHeader.xsd http://schemas.xmlsoap.org/soap/envelope/ /xml/xsd/soap/envelope.xsd' failed:
+/Envelope/Body/GetEmployerDetails_Request: at (36,25): cvc-complex-type.2.4.a: Invalid content was found starting with element '{"http://nn.nl/XSD/PensionsCorporate/Employer/EmployerBACO/1/GetEmployerDetails/1":EmployerDetailsTipe}'. One of '{"http://nn.nl/XSD/PensionsCorporate/Employer/EmployerBACO/1/GetEmployerDetails/1":WGPAccount, "http://nn.nl/XSD/PensionsCorporate/Employer/EmployerBACO/1/GetEmployerDetails/1":EmployerDetailsType}' is expected.</errorMessage>
+</Error>

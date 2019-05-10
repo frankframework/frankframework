@@ -1,0 +1,5 @@
+<Error>
+  <errorCode>FAILURE</errorCode>
+  <errorMessage>Validation using WsdlXmlValidator with '/WsdlXmlValidator/StartIncomingValueTransferProcess/PensionsSMB_ValueTransfer_ValueTransferLegacy_1_StartIncomingValueTransferProcess_1x.wsdl' failed:
+/Envelope/Body/StartIncomingValueTransferRequest/EmployeeData/EmployeeAddressData: at (45,19): cvc-complex-type.2.4.a: Invalid content was found starting with element 'CountryKode'. One of '{"http://nn.nl/XSD/PensionsSMB/ValueTransfer/ValueTransferLegacy/1/StartIncomingValueTransferProcess/1":CountryCode}' is expected.</errorMessage>
+</Error>

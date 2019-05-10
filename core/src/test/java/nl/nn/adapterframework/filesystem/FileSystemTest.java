@@ -1,226 +1,285 @@
 package nl.nn.adapterframework.filesystem;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Iterator;
 
-import org.junit.Before;
 import org.junit.Test;
 
-import liquibase.util.StreamUtil;
-import nl.nn.adapterframework.configuration.ConfigurationException;
+public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> extends BasicFileSystemTest<F,FS> {
 
-public abstract class FileSystemTest<F,FS extends IFileSystemBase<F>> {
-
-	public String FILE1="file1.txt";
-	public String FILE2="file2.txt";
-
-	protected abstract FS getFileSystem() throws ConfigurationException;
-//	protected abstract F getFileHandle(String filename);
-//	protected abstract String getFileInfo(F f); // expected to return a XML 
-	
-	protected abstract boolean _fileExists(String filename);
-	protected abstract void _deleteFile(String filename);
-	protected abstract OutputStream _createFile(String filename) throws IOException;
-	protected abstract InputStream _readFile(String filename) throws FileNotFoundException;
-
-	protected FS fileSystem;
-	
-	@Before
-	public void setup() throws IOException, ConfigurationException {
-		fileSystem=getFileSystem();
-	}
-
-	
-	public void deleteFile(String filename) {
-		if (_fileExists(filename)) {
-			_deleteFile(filename);
-		}
-	}
-	public void createFile(String filename, String contents) throws IOException {
-		OutputStream out=_createFile(filename);
-		if (contents!=null) out.write(contents.getBytes());
-		out.close();
-	}
+	@Test
+	public void writableFileSystemTestCreateNewFile() throws Exception {
+		String filename = "create" + FILE1;
+		String contents = "regeltje tekst";
 		
-	public String readFile(String filename) throws IOException {
-		InputStream in =_readFile(filename);
-		return StreamUtil.getReaderContents(new InputStreamReader(in));
-	}
-	
-	@Test
-	public void testExists() throws IOException, FileSystemException {
-		//setup negative
-		String filename=FILE1;
-		deleteFile(filename);
-		// test
-		F file = fileSystem.toFile(filename);
-		assertFalse(fileSystem.exists(file));
+		fileSystem.configure();
+		fileSystem.open();
 
-		// setup positive
-		createFile(filename,"tja");
-		// test
-		assertTrue(fileSystem.exists(file));
-	}
-	
-	@Test
-	public void testCreateNewFile() throws IOException, FileSystemException {
-		String filename=FILE1;
-		String contents="regeltje tekst";
-		deleteFile(filename);
+		deleteFile(null, filename);
+		waitForActionToFinish();
 		
 		F file = fileSystem.toFile(filename);
-		OutputStream out=fileSystem.createFile(file);
-
-		PrintWriter pw=new PrintWriter(out);
+		OutputStream out = fileSystem.createFile(file);
+		PrintWriter pw = new PrintWriter(out);
 		pw.println(contents);
 		pw.close();
 		out.close();
-		assertTrue(_fileExists(filename));
-		String actual=readFile(filename);
-		assertEquals(contents.trim(),actual.trim());
+		waitForActionToFinish();
+		// test
+		existsCheck(filename);
+		
+		String actual = readFile(null, filename);
+		// test
+		equalsCheck(contents.trim(), actual.trim());
+
 	}
 
 	@Test
-	public void testCreateOverwriteFile() throws IOException, FileSystemException {
-		String filename=FILE1;
-		createFile(filename,"Eerste versie van de file");
-		String contents="Tweede versie van de file";
+	public void writableFileSystemTestCreateOverwriteFile() throws Exception {
+		String filename = "overwrited" + FILE1;
 		
-		F file = fileSystem.toFile(filename);
-		OutputStream out=fileSystem.createFile(file);
+		fileSystem.configure();
+		fileSystem.open();
 
-		PrintWriter pw=new PrintWriter(out);
+		createFile(null, filename, "Eerste versie van de file");
+		waitForActionToFinish();
+		
+		String contents = "Tweede versie van de file";
+		F file = fileSystem.toFile(filename);
+		OutputStream out = fileSystem.createFile(file);
+		PrintWriter pw = new PrintWriter(out);
 		pw.println(contents);
 		pw.close();
 		out.close();
-		assertTrue(_fileExists(filename));
-		String actual=readFile(filename);
-		assertEquals(contents.trim(),actual.trim());
+		waitForActionToFinish();
+		// test
+		existsCheck(filename);
+
+		String actual = readFile(null, filename);
+		// test
+		equalsCheck(contents.trim(), actual.trim());
 	}
 
+
 	@Test
-	public void testTruncateFile() throws IOException, FileSystemException {
-		String filename=FILE1;
-		createFile(filename,"Eerste versie van de file");
+	public void writableFileSystemTestTruncateFile() throws Exception {
+		String filename = "truncated" + FILE1;
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFile(null, filename, "Eerste versie van de file");
+		waitForActionToFinish();
 		
 		F file = fileSystem.toFile(filename);
-		OutputStream out=fileSystem.createFile(file);
-		
+		OutputStream out = fileSystem.createFile(file);
 		out.close();
-		assertTrue(_fileExists(filename));
-		String actual=readFile(filename);
-		assertEquals("",actual.trim());
+		waitForActionToFinish();
+		// test
+		existsCheck(filename);
+		
+		String actual = readFile(null, filename);
+		// test
+		equalsCheck("", actual.trim());
 	}
 
 	@Test
-	public void testAppendFile() throws IOException, FileSystemException {
-		String filename=FILE1;
-		String regel1="Eerste regel in de file";
-		String regel2="Tweede regel in de file";
-		String expected=regel1+regel2;
-		createFile(filename,regel1);
+	public void writableFileSystemTestAppendExistingFile() throws Exception {
+		String filename = "append" + FILE1;
+		String regel1 = "Eerste regel in de file";
+		String regel2 = "Tweede regel in de file";
+		String expected = regel1 + regel2;
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFile(null, filename, regel1);
+		waitForActionToFinish();
 		
 		F file = fileSystem.toFile(filename);
-		OutputStream out=fileSystem.appendFile(file);
-
-		PrintWriter pw=new PrintWriter(out);
+		OutputStream out = fileSystem.appendFile(file);
+		PrintWriter pw = new PrintWriter(out);
 		pw.println(regel2);
 		pw.close();
 		out.close();
-		assertTrue(_fileExists(filename));
-		String actual=readFile(filename);
-		assertEquals(expected.trim(),actual.trim());
+		waitForActionToFinish();
+		// test
+		existsCheck(filename);
+
+		String actual = readFile(null, filename);
+		// test
+		equalsCheck(expected.trim(), actual.trim());
 	}
 
 	@Test
-	public void testDelete() throws IOException, FileSystemException {
-		String filename=FILE1;
-		createFile(filename,"maakt niet uit");
-		assertTrue(_fileExists(filename));
+	public void writableFileSystemTestAppendNewFile() throws Exception {
+		String filename = "create" + FILE1;
+		String contents = "regeltje tekst";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		deleteFile(null, filename);
+		waitForActionToFinish();
 		
 		F file = fileSystem.toFile(filename);
-		fileSystem.deleteFile(file);
+		OutputStream out = fileSystem.appendFile(file);
+		PrintWriter pw = new PrintWriter(out);
+		pw.println(contents);
+		pw.close();
+		out.close();
+		waitForActionToFinish();
+		// test
+		existsCheck(filename);
 		
-		assertFalse(fileSystem.exists(file));
+		String actual = readFile(null, filename);
+		// test
+		equalsCheck(contents.trim(), actual.trim());
+
 	}
 
-//	public void assertFileEquals(String filename, String expectedContents) throws IOException {
-//		InputStream in = new FileInputStream(filename);
-//
-//		String actual=StreamUtil.getReaderContents(new InputStreamReader(in));
-//		assertEquals(expectedContents.trim(),actual.trim());
-//	}
 
-	
-	public void testReadFile(F file, String expectedContents) throws IOException, FileSystemException {
-		InputStream in = fileSystem.readFile(file);
+	@Test
+	public void writableFileSystemTestCreateAndRemoveFolder() throws Exception {
+		String folderName = "dummyFolder";
+		
+		fileSystem.configure();
+		fileSystem.open();
 
-		String actual=StreamUtil.getReaderContents(new InputStreamReader(in));
-		assertEquals(expectedContents.trim(),actual.trim());
+		_createFolder(folderName);
+		waitForActionToFinish();
+		
+		assertTrue("folder does not exist after creation",_folderExists(folderName));
+		
+		fileSystem.removeFolder(folderName);
+		waitForActionToFinish();
+		
+		assertFalse("folder still exists after removal", _folderExists(folderName));
 	}
-
 	
 	@Test
-	public void testRead() throws IOException, FileSystemException {
-		String filename=FILE1;
-		String contents="Tekst om te lezen";
-		createFile(filename,contents);
-		assertTrue(_fileExists(filename));
+	public void writableFileSystemTestRenameTo() throws Exception {
+		String fileName = "fileTobeRenamed.txt";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFile(null,fileName, "");
+		waitForActionToFinish();
+		
+		assertTrue(_fileExists(fileName));
+		
+		String destination = "fileRenamed.txt";
+		deleteFile(null, destination);
+		waitForActionToFinish();
+		
+		F f = fileSystem.toFile(fileName);
+		fileSystem.renameFile(f, destination, false);
+		waitForActionToFinish();
+		
+		assertTrue("Destination must exist",_fileExists(destination));
+		assertFalse("Origin must have disappeared",_fileExists(fileName));
+	}
+	
+	@Test
+	public void writableFileSystemTestRenameToExisting() throws Exception {
+		exception.expectMessage("Cannot rename file. Destination file already exists.");
+		String fileName = "fileToBeRenamedExisting.txt";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFile(null, fileName, "");
+		waitForActionToFinish();
+		
+		assertTrue(_fileExists(fileName));
+		
+		String destination = "fileRenamedExists.txt";
+		createFile(null, destination, "");
+		waitForActionToFinish();
+		
+		F f = fileSystem.toFile(fileName);
+		fileSystem.renameFile(f, destination, false);
+		waitForActionToFinish();
+		
+		assertTrue("Origin must still exist",_fileExists(fileName));
+		assertTrue("Destination must exist",_fileExists(destination));
+	}
+
+	@Test
+	public void writableFileSystemTestRemovingNonExistingDirectory() throws Exception {
+		exception.expectMessage("Directory does not exist.");
+		String foldername = "nonExistingFolder";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		if(_folderExists(foldername)) {
+			_deleteFolder(foldername);
+		}
+		fileSystem.removeFolder(foldername);
+	}
+	
+	@Test
+	public void writableFileSystemTestCreateExistingFolder() throws Exception {
+		exception.expectMessage("Directory already exists.");
+		String folderName = "existingFolder";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		_createFolder(folderName);
+		waitForActionToFinish();
+		fileSystem.createFolder(folderName);
+	}
+	
+	@Test
+	public void writableFileSystemTestFileSize() throws Exception {
+		String filename = "create" + FILE1;
+		String contents = "regeltje tekst";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+		
+		Iterator<F> files = fileSystem.listFiles(null);
+		F f = null;
+		if(files.hasNext()) {
+			f = files.next();
+		}
+		else {
+			fail("File not found");
+		}
+		long size=fileSystem.getFileSize(f);
+		
+		if (size< contents.length()/2 || size> contents.length()*2) {
+			fail("fileSize ["+size+"] out of range compared to ["+contents.length()+"]");
+		}
+	}
+
+	@Test
+	public void writableFileSystemTestGetCanonicalName() throws Exception {
+		String filename = "create" + FILE1;
+		String contents = "regeltje tekst";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFile(null, filename, contents);
+		waitForActionToFinish();
 		
 		F file = fileSystem.toFile(filename);
-		testReadFile(file,contents);
-	}
-
-	public void testFileInfo(F f) throws FileSystemException {
-		String fiString=fileSystem.getInfo(f);
-		assertThat(fiString,containsString("name"));
-		assertThat(fiString,containsString("lastmodified"));
-	}
-	
-	public void testFileInfo() throws FileSystemException {
-		testFileInfo(fileSystem.toFile(FILE1));
-		testFileInfo(fileSystem.toFile(FILE2));
-	}
-	
-	@Test
-	/*
-	 * TODO 2019-01-04 GvB fix this test: order of files is not guaranteed! fails on travis
-	 */
-	public void testListFile() throws IOException, FileSystemException {
-		String contents1="maakt niet uit";
-		String contents2="maakt ook niet uit";
-		createFile(FILE1,contents1);
-		createFile(FILE2,contents2);
+		String canonicalName=fileSystem.getCanonicalName(file);
 		
-		System.out.println("file 1=["+FILE1+"]");
-		
-		Iterator<F> it =fileSystem.listFiles();
-		assertTrue(it.hasNext());
-		F file=it.next();
-		System.out.println("file =["+file+"]");
-//		testReadFile(file,contents1); 
-		assertTrue(it.hasNext());
-		file=it.next();
-//		testReadFile(file,contents2);
-		assertFalse(it.hasNext());
-		
-		deleteFile(FILE1);
-		
-		it =fileSystem.listFiles();
-		assertTrue(it.hasNext());
-		file=it.next();
-//		testReadFile(file,contents2);
-		assertFalse(it.hasNext());
+		assertNotNull("Canonical name should not be null", canonicalName);
 	}
 
 }

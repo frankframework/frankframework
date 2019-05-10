@@ -1,0 +1,5 @@
+<Error>
+<errorCode>FAILURE</errorCode>
+<errorMessage>Validation using XmlValidator with '/XmlValidator/handlepremiumduedetails/HandlePremiumDueDetails.xsd' failed:
+/HandlePremiumDueDetailsREQ: at (3,25): cvc-complex-type.2.4.a: Invalid content was found starting with element 'PremiumDueDetailxData'. One of '{PremiumDueDetailsData}' is expected.</errorMessage>
+</Error>

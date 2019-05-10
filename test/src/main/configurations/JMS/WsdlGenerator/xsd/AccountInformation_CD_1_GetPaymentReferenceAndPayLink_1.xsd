@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:cmh="http://nn.nl/XSD/Generic/MessageHeader/2" xmlns:mtp="http://nn.nl/XSD/AccountInformation/DomainValues" xmlns="http://nn.nl/XSD/AccountInformation/1/GetPaymentReferenceAndPayLink/1" targetNamespace="http://nn.nl/XSD/AccountInformation/1/GetPaymentReferenceAndPayLink/1" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:import namespace="http://nn.nl/XSD/Generic/MessageHeader/2"/>
+	<xs:import namespace="http://nn.nl/XSD/AccountInformation/DomainValues" schemaLocation="DomainValues_GetPaymentReferenceAndPayLink.xsd"/>
+	<xs:element name="GetPaymentReferenceAndPayLink_Request">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Debtor">
+					<xs:annotation>
+						<xs:documentation>Debtor contains the debtor information required by the MailToPay API including restrictions defined by aforementioned API</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="LastName" type="xs:string"/>
+							<xs:element name="FirstName" type="xs:string" minOccurs="0"/>
+							<xs:element name="Partner" type="xs:string"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="Contract">
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:maxLength value="20"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="PayableItems" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="DocumentNumber">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:maxLength value="12"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="RepetitionItem">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:maxLength value="3"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="DocumentItemNumber">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:maxLength value="04"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="SubItem">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:maxLength value="03"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="TotalAmount" type="mtp:AmountType"/>
+				<xs:element name="Invoice">
+					<xs:annotation>
+						<xs:documentation>Invoice is based on the invoice fields required by the MailToPay API including restrictions defined by aforementioned API</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Description" type="mtp:InvoiceDescriptionType"/>
+							<xs:element name="Date" type="mtp:InvoiceDateType"/>
+							<xs:element name="DueDate" type="mtp:InvoiceDueDateType" minOccurs="0">
+								<xs:annotation>
+									<xs:documentation>DueDate has a cosmetic function and is not used to determine experation date</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="PaymentData">
+					<xs:annotation>
+						<xs:documentation>PaymentData holds fields required by the MailToPay API to process the GetPaylink request</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="BatchId" type="mtp:BatchIdType"/>
+							<xs:element name="Concerning" type="mtp:ConcerningType"/>
+							<xs:element name="ExpirationDate" type="mtp:ExpirationDateType"/>
+							<xs:element name="ReturnURL" type="mtp:ReturnURLType">
+								<xs:annotation>
+									<xs:documentation>ReturnURL is the URL to which the customer should be send after completing the transaction</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="GetPaymentReferenceAndPayLink_Response">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="PaymentDetails" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="PaymentId" type="mtp:PaymentIdType"/>
+							<xs:element name="PaymentURL" type="mtp:PaymentURLType"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element ref="cmh:Result"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

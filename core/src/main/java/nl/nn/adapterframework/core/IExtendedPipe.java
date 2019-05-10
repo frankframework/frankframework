@@ -115,12 +115,11 @@ public interface IExtendedPipe extends IPipe {
 
 	/**
 	 * Register an event for flexible monitoring.
-	 * @param description
 	 */
 	public void registerEvent(String description);
+	
 	/**
 	 * Throw an event for flexible monitoring.
-	 * @param event
 	 */
 	public void throwEvent(String event);
 

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:V1.00TOMProxy="http://www.bom.com" targetNamespace="http://www.ibissource.org/tom">
+	<xsd:include schemaLocation="V1.00TOMDemographicTypes.xsd"/>
+	<xsd:include schemaLocation="V1.00TOMOccupationTypes.xsd"/>
+	<xsd:include schemaLocation="V1.00TOMOrganisationNameComplexTypes.xsd"/>
+	<xsd:include schemaLocation="V1.00TOMPartyAgreementRoleSimpleTypes.xsd"/>
+	<xsd:include schemaLocation="V1.10TOMNameSimpleTypes.xsd"/>
+	<xsd:include schemaLocation="V1.10TOMPersonNameComplexTypes.xsd"/>
+	<xsd:include schemaLocation="V1.20TOMContactPointComplexTypes.xsd"/>
+	<xsd:include schemaLocation="V1.20TOMGenericSimpleTypes.xsd"/>
+	<xsd:include schemaLocation="V1.30TOMAgreementSimpleTypes.xsd"/>
+	<xsd:include schemaLocation="V1.41TOMContactPointSimpleTypes.xsd"/>
+</xsd:schema>

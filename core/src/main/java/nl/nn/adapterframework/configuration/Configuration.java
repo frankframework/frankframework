@@ -59,7 +59,7 @@ public class Configuration {
     private List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
     private boolean unloadInProgressOrDone = false;
 
-	private final Map jobTable = new Hashtable(); // TODO useless synchronization ?
+	private final Map<String, JobDef> jobTable = new Hashtable<String, JobDef>(); // TODO useless synchronization ?
     private final List<JobDef> scheduledJobs = new ArrayList<JobDef>();
 
     private URL configurationURL;
@@ -156,24 +156,21 @@ public class Configuration {
 		return autoStart;
 	}
 
-    /**
-     * get a registered adapter by its name
-     * @param name  the adapter to retrieve
-     * @return IAdapter
-     */
-    @Deprecated
-    public IAdapter getRegisteredAdapter(String name) {
-        return adapterService.getAdapter(name);
-    }
+	/**
+	 * Get a registered adapter by its name through {@link AdapterService#getAdapter(String)}
+	 * @param name the adapter to retrieve
+	 * @return IAdapter
+	 */
+	public IAdapter getRegisteredAdapter(String name) {
+		return adapterService.getAdapter(name);
+	}
 
-    @Deprecated
 	public IAdapter getRegisteredAdapter(int index) {
 		return getRegisteredAdapters().get(index);
 	}
 
-    @Deprecated
 	public List<IAdapter> getRegisteredAdapters() {
-        return new ArrayList<IAdapter>(adapterService.getAdapters().values());
+		return new ArrayList<IAdapter>(adapterService.getAdapters().values());
 	}
 
 	public List<String> getSortedStartedAdapterNames() {
@@ -188,7 +185,7 @@ public class Configuration {
 		Collections.sort(startedAdapters, String.CASE_INSENSITIVE_ORDER);
 		return startedAdapters;
 	}
-    
+
     //Returns a sorted list of registered adapter names as an <code>Iterator</code>
     @Deprecated
     public Iterator<IAdapter> getRegisteredAdapterNames() {
@@ -236,8 +233,7 @@ public class Configuration {
     }
 
     /**
-     * @param adapterName the adapter
-     * @param receiverName the receiver
+     * Performs a check to see if the receiver is known at the adapter
      * @return true if the receiver is known at the adapter
      */
     public boolean isRegisteredReceiver(String adapterName, String receiverName){
@@ -250,8 +246,6 @@ public class Configuration {
 
 	/**
 	 * Register an adapter with the configuration.
-	 * @param adapter
-	 * @throws ConfigurationException
 	 */
 	public void registerAdapter(IAdapter adapter) throws ConfigurationException {
 		if (adapter instanceof Adapter && !((Adapter)adapter).isActive()) {
@@ -304,7 +298,6 @@ public class Configuration {
 
 	/**
 	 * @deprecated replaced by setName(String)
-	 * @param name
 	 */
 	public void setConfigurationName(String name) {
 		this.name = name;

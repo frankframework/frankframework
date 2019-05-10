@@ -1,0 +1,28 @@
+<ibis>
+	<adapter name="JsonPipe">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="JsonPipe">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4test-JsonPipe" />
+		</receiver>
+		<pipeline firstPipe="xml2json">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="xml2json" className="nl.nn.adapterframework.pipes.JsonPipe"
+				direction="xml2json" storeResultInSessionKey="json">
+				<forward name="success" path="send" />
+			</pipe>
+			<pipe name="send"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				<sender className="nl.nn.adapterframework.senders.IbisJavaSender"
+					serviceName="testtool-JsonPipe" />
+				<forward name="success" path="json2xml" />
+			</pipe>
+			<pipe name="json2xml" className="nl.nn.adapterframework.pipes.JsonPipe"
+				getInputFromSessionKey="json">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</ibis>

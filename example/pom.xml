@@ -22,6 +22,11 @@
       <artifactId>ibis-adapterframework-core</artifactId>
     </dependency>
     <dependency>
+      <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-adapterframework-webapp</artifactId>
       <type>war</type>

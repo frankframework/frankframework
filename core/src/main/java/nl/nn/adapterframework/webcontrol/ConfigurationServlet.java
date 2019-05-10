@@ -15,31 +15,26 @@
 */
 package nl.nn.adapterframework.webcontrol;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URL;
 import java.util.Date;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
- * Start IAF with a servlet.
+ * Legacy reload servlet, can be used to manually start the IBIS in case it did not start up succesfully.
+ * The Application Context reload functionality has been moved to the web console.
+ * <br/></br/>
+ * This servlet mainly exists for legacy purposes.
  * 
  * @author  Johan Verrips
  * @author  Jaco de Groot
@@ -48,113 +43,20 @@ public class ConfigurationServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private Logger log = LogUtil.getLogger(this);
 	public static final String KEY_CONTEXT = "KEY_CONTEXT";
-	IbisContext ibisContext;
+	private IbisContext ibisContext;
 
 	@Override
 	public void init() throws ServletException {
-		super.init();
-		ServletContext servletContext = getServletContext();
-		AppConstants appConstants = AppConstants.getInstance();
-		String realPath = servletContext.getRealPath("/");
-		if (realPath != null) {
-			appConstants.put("webapp.realpath", realPath);
-		} else {
-			log.warn("Could not determine webapp.realpath");
-		}
-		String projectBaseDir = Misc.getProjectBaseDir();
-		if (projectBaseDir != null) {
-			appConstants.put("project.basedir", projectBaseDir);
-		} else {
-			log.info("Could not determine project.basedir");
-		}
-		setUploadPathInServletContext();
-		ibisContext = new IbisContext();
-		setDefaultApplicationServerType(ibisContext);
-		String attributeKey = appConstants.getResolvedProperty(KEY_CONTEXT);
-		servletContext.setAttribute(attributeKey, ibisContext);
-		log.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ attributeKey	+ "]");
-		ibisContext.init();
-
-		if(ibisContext.getIbisManager() == null)
-			log.warn("Servlet init finished without successfully initializing the ibisContext");
-		else
-			log.debug("Servlet init finished");
-
-		//Add console warning when security constraints have not been enabled
-		String stage = appConstants.getString("otap.stage", "LOC");
-		if(appConstants.getBoolean("security.constraint.warning", !"LOC".equalsIgnoreCase(stage))) {
-			try {
-				String web = "/WEB-INF"+File.separator+"web.xml";
-				URL webXml = servletContext.getResource(web);
-				if(webXml != null) {
-					if(XmlUtils.buildDomDocument(webXml).getElementsByTagName("security-constraint").getLength() < 1)
-						ConfigurationWarnings.getInstance().add(log, "unsecure IBIS application, enable the security constraints section in the web.xml in order to secure the application!");
-				}
-			} catch (Exception e) {
-				ConfigurationWarnings.getInstance().add(log, "unable to determine whether security constraints have been enabled, is there a web.xml present?", e);
-			}
-		}
-	}
-
-	@Override
-	public void destroy() {
-		ibisContext.destroy();
-		super.destroy();
-	}
-
-	private void setUploadPathInServletContext() {
-		try {
-			// set the directory for struts upload, that is used for instance in 'test a pipeline'
-			ServletContext context = getServletContext();
-			String path=AppConstants.getInstance().getResolvedProperty("upload.dir");
-			// if the path is not found
-			if (StringUtils.isEmpty(path)) {
-				path="/tmp";
-			}
-			log.debug("setting path for Struts file-upload to ["+path+"]");
-			File tempDirFile = new File(path);
-			context.setAttribute("javax.servlet.context.tempdir",tempDirFile);
-		} catch (Exception e) {
-			log.error("Could not set servlet context attribute 'javax.servlet.context.tempdir' to value of ${upload.dir}",e);
-		}
-	}
-
-	private void setDefaultApplicationServerType(IbisContext ibisContext) {
-		ServletContext context = getServletContext();
-		String serverInfo = context.getServerInfo();
-		String defaultApplicationServerType = null;
-		if (StringUtils.containsIgnoreCase(serverInfo, "WebSphere Liberty")) {
-			defaultApplicationServerType = "WLP";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "WebSphere")) {
-			defaultApplicationServerType = "WAS";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "Tomcat")) {
-			defaultApplicationServerType = "TOMCAT";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "JBoss")) {
-			defaultApplicationServerType = "JBOSS";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "WildFly")) {
-			defaultApplicationServerType = "JBOSS";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "jetty")) {
-			String javaHome = AppConstants.getInstance().getString("java.home",
-					"");
-			if (StringUtils.containsIgnoreCase(javaHome, "tibco")) {
-				defaultApplicationServerType = "TIBCOAMX";
-			} else {
-				defaultApplicationServerType = "JETTYMVN";
-			}
-		} else {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings
-					.getInstance();
-			configWarnings.add(log, "Unknown server info [" + serverInfo
-					+ "] default application server type could not be determined, TOMCAT will be used as default value");
-			defaultApplicationServerType = "TOMCAT";
-		}
-		ibisContext.setDefaultApplicationServerType(defaultApplicationServerType);
+		String attributeKey = AppConstants.getInstance().getResolvedProperty(KEY_CONTEXT);
+		ibisContext = (IbisContext) getServletContext().getAttribute(attributeKey);
+		log.debug("retrieved IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ attributeKey + "]");
 	}
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		noCache(response);
 		PrintWriter out = response.getWriter();
+
 		if(ibisContext.getIbisManager() != null) {
 			out.println("<html>");
 			out.println("<body>");

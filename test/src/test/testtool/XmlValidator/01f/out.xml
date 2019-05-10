@@ -1,0 +1,5 @@
+<Error>
+  <errorCode>FAILURE</errorCode>
+  <errorMessage>Validation using XmlValidator with '/XmlValidator/HandleCollectionDisbursementAccount/HandleCollectionDisbursementAccount3_v3.0.xsd' failed:
+/: at (1,88): cvc-elt.1.a: Cannot find the declaration of element 'HandleCollectionDisbursementAccount'.</errorMessage>
+</Error>

@@ -1,0 +1,1215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Domains>
+
+	<Errors>
+		<Item>
+			<ErrorCode>1001</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1002</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1003</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1004</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1005</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1006</ErrorCode>
+			<ReturnCode>OK</ReturnCode>
+			<ReasonCode>NOT_FOUND</ReasonCode>
+			<FOUT_OMSR_NL>Er is geen antwoord voor deze berekening teruggekomen.</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>No answer was returned for this calculation</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>1101</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1102</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1103</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1104</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1105</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>1201</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1202</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1203</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1204</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1205</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1206</ErrorCode>
+			<ReturnCode>NOT_OK</ReturnCode>
+			<ReasonCode>NOT_ALLOWED</ReasonCode>
+			<FOUT_OMSR_NL>De voorgestelde transactie kan niet worden uitgevoerd omdat hij niet is toegestaan. + CompletionInformation.Message</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The proposed transaction cannot be carried out because it is not permitted + CompletionInformation.Message</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>1301</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1302</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1303</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1304</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1305</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>1401</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1402</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1403</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1404</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1405</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>1501</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1502</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1503</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1504</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1505</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>1601</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1602</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1603</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1604</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1605</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1606</ErrorCode>
+			<ReturnCode>NOT_OK</ReturnCode>
+			<ReasonCode>NOT_ALLOWED</ReasonCode>
+			<FOUT_OMSR_NL>De voorgestelde transactie kan niet worden uitgevoerd omdat hij niet is toegestaan + CompletionInformation.Message</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The proposed transaction cannot be carried out because it is not permitted + CompletionInformation.Message</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>1701</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1702</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1703</ErrorCode>
+			<ReturnCode>NOT_OK</ReturnCode>
+			<ReasonCode>NOT_FOUND</ReasonCode>
+			<FOUT_OMSR_NL>Uw risicoprofiel kan niet worden berekend</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your risk profile cannot be calculated</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>1801</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1802</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1803</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>1901</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1902</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1903</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1904</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>1905</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>2001</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2002</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2003</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2004</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2005</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>2101</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2102</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2103</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2104</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2105</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2106</ErrorCode>
+			<ReturnCode>OK</ReturnCode>
+			<ReasonCode>NOT_FOUND</ReasonCode>
+			<FOUT_OMSR_NL>Er zijn geen polisgegevens bekend voor deze gebruiker</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>No policy details are known for this user</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>2201</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2202</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2203</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2204</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2205</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2206</ErrorCode>
+			<ReturnCode>OK</ReturnCode>
+			<ReasonCode>EMPTY_LIST</ReasonCode>
+			<FOUT_OMSR_NL>Er kunnen geen pensioenmutatiegegevens voor het opgegeven polisnummer opgehaald worden</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>No pension update details can be retrieved for the policy number entered</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>2301</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2302</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2303</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2304</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2305</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2306</ErrorCode>
+			<ReturnCode>OK</ReturnCode>
+			<ReasonCode>EMPTY_LIST</ReasonCode>
+			<FOUT_OMSR_NL>Er zijn geen Portaalgebruikers gevonden bij deze zoektermen</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>No Portal Users have been found for these key words</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>2401</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2402</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2403</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2404</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2405</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2406</ErrorCode>
+			<ReturnCode>OK</ReturnCode>
+			<ReasonCode>NOT_FOUND</ReasonCode>
+			<FOUT_OMSR_NL>Er kunnen geen fondspakketten opgehaald worden</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>No fund packages can be retrieved</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>2501</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2502</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2503</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2504</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2505</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2506</ErrorCode>
+			<ReturnCode>OK</ReturnCode>
+			<ReasonCode>NOT_FOUND</ReasonCode>
+			<FOUT_OMSR_NL>Er kunnen geen beschikbare fondsen worden opgehaald</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>No available funds can be retrieved</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>2601</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2602</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2603</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2604</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2605</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2606</ErrorCode>
+			<ReturnCode>OK</ReturnCode>
+			<ReasonCode>NOT_FOUND</ReasonCode>
+			<FOUT_OMSR_NL>Er kan geen account informatie worden opgehaald</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>No account information can be retrieved</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>2701</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2702</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2703</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2704</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2705</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2706</ErrorCode>
+			<ReturnCode>OK</ReturnCode>
+			<ReasonCode>NOT_FOUND</ReasonCode>
+			<FOUT_OMSR_NL>Er kan geen account informatie worden opgehaald</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>No account information can be retrieved</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>2801</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2802</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2803</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2804</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2805</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2806</ErrorCode>
+			<ReturnCode>OK</ReturnCode>
+			<ReasonCode>EMPTY_LIST</ReasonCode>
+			<FOUT_OMSR_NL>Er kunnen geen order details worden opgehaald</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>No order details can be retrieved</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>2901</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2902</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2903</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2904</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2905</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>2906</ErrorCode>
+			<ReturnCode>OK</ReturnCode>
+			<ReasonCode>NOT_FOUND</ReasonCode>
+			<FOUT_OMSR_NL>Er kunnen geen details voor het opgegeven polisnummer opgehaald worden</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>No details can be retrieved for the policy number entered</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>3001</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3002</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3003</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3004</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3005</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3006</ErrorCode>
+			<ReturnCode>OK</ReturnCode>
+			<ReasonCode>EMPTY_LIST</ReasonCode>
+			<FOUT_OMSR_NL>Er kunnen geen boekingsdetails voor het opgegeven polisnummer/mutatienummer opgehaald worden</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>No booking details can be retrieved for the policy number/update number entered</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>3101</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3102</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3103</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3104</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3105</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3106</ErrorCode>
+			<ReturnCode>OK</ReturnCode>
+			<ReasonCode>NOT_FOUND</ReasonCode>
+			<FOUT_OMSR_NL>Er is geen Portaalgebruiker gevonden bij deze gebruikersnaam</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>No Portal Users have been found for these key words</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>3201</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3202</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3203</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3204</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3205</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3206</ErrorCode>
+			<ReturnCode>OK</ReturnCode>
+			<ReasonCode>NOT_FOUND</ReasonCode>
+			<FOUT_OMSR_NL>De vragenlijst kan niet opgehaald worden</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The questionnaire cannot be retrieved</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>3301</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3302</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3303</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3304</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3305</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3306</ErrorCode>
+			<ReturnCode>OK</ReturnCode>
+			<ReasonCode>EMPTY_LIST</ReasonCode>
+			<FOUT_OMSR_NL>Er kunnen geen mutatiegegevens voor het opgegeven polisnummer opgehaald worden</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>No update details can be retrieved for the policy number entered</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>3401</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurt langer dan verwacht. Om dit proces niet te verstoren adviseren wij u geen handelingen op dezelfde werknemer uit te voeren tot dat u ziet dat uw verzoek is verwerkt. U kunt ondertussen gewoon doorgaan met andere handelingen.</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request is taking longer than expected. So as not to disturb this process, we advise you not to carry out any operations on the same employee until you see that your request has been processed. In the meantime you may continue with other operations.</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3402</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3403</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3404</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3405</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>3501</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3502</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3503</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>3601</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3602</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3603</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3604</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3605</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3606</ErrorCode>
+			<ReturnCode>OK</ReturnCode>
+			<ReasonCode>NOT_FOUND</ReasonCode>
+			<FOUT_OMSR_NL>Er kunnen geen voorzieningen voor deze berekening gevonden worden.</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>No provisions can be found for this calculation.</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3607</ErrorCode>
+			<ReturnCode>OK</ReturnCode>
+			<ReasonCode>EMPTY_LIST</ReasonCode>
+			<FOUT_OMSR_NL>De berekening kan niet worden uitgevoerd vanwege ontbrekende gegevens.</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The calculation cannot be carried out because of deficient data.</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3608</ErrorCode>
+			<ReturnCode>NOT_OK</ReturnCode>
+			<ReasonCode>CALCULATION_FAULT</ReasonCode>
+			<FOUT_OMSR_NL>Er is een fout opgetreden tijdens de berekening. Met uw gegevens kan niet automatisch berekend worden.</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>An error occurred during the calculation. No automatic calculation can be carried out with your data.</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>3701</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3702</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3703</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>3801</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3802</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3803</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3804</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3805</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>3901</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3902</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3903</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3904</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>3905</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>4001</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>4002</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+
+		<Item>
+			<ErrorCode>4101</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Het verwerken van uw verzoek duurde te lang</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>The processing of your request took too long</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>4102</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Uw verzoek kan niet worden verwerkt</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>Your request cannot be processed</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>4103</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>4104</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+		<Item>
+			<ErrorCode>4105</ErrorCode>
+			<ReturnCode></ReturnCode>
+			<ReasonCode></ReasonCode>
+			<FOUT_OMSR_NL>Er is een technisch probleem opgetreden tijdens het verwerken van uw verzoek</FOUT_OMSR_NL>
+			<FOUT_OMSR_EN>A technical problem occurred during the processing of your request</FOUT_OMSR_EN>
+		</Item>
+	</Errors>
+
+</Domains>

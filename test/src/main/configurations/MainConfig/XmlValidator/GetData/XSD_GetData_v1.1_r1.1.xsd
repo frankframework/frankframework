@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:bik="http://www.ibissource.org/bik" targetNamespace="http://www.ibissource.org/bik" elementFormDefault="qualified" attributeFormDefault="unqualified" bik:agent="BIK" bik:package="com.ibissource.bik">
+	<xsd:include schemaLocation="XSD_Simple_Types_c0.8.xsd"/>
+	<xsd:element name="GetDataREQ" type="bik:GetDataREQType"/>
+	<xsd:complexType name="GetDataREQType">
+		<xsd:sequence>
+			<xsd:choice>
+				<xsd:element name="Organisation">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="organisationalId" type="bik:organizationalId"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="PortfolioNumber">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="portfolioNumber" type="bik:portfolioNumber"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:choice>
+			<xsd:element name="AccountAttribute" minOccurs="0" maxOccurs="10">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="id" type="bik:accountAttributeId"/>
+						<xsd:element name="value" type="bik:accountAttributeValue"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="Account" minOccurs="0">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="startDate" type="bik:date" minOccurs="0"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="charSet" minOccurs="0">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:enumeration value="01"/>
+						<xsd:enumeration value="02"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="GetDataRLY" type="bik:GetDataRLYType"/>
+	<xsd:complexType name="GetDataRLYType">
+		<xsd:sequence>
+			<xsd:element name="ProcessItem">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="CompletionInformation" type="bik:completionInformation"/>
+						<xsd:element name="DebuggingInformation" type="bik:debuggingInformation" minOccurs="0"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="Acount" minOccurs="0" maxOccurs="unbounded">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="accountId" type="bik:accountId" minOccurs="0"/>
+						<xsd:element name="accountName" type="bik:accountName" minOccurs="0"/>
+						<xsd:element name="AccountAttribute" minOccurs="0" maxOccurs="unbounded">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="id" type="bik:accountAttributeId" minOccurs="0"/>
+									<xsd:element name="description" type="bik:accountAttributeDescription" minOccurs="0"/>
+									<xsd:element name="value" type="bik:accountAttributeValue" minOccurs="0"/>
+									<xsd:element name="valueDescription" type="bik:accountAttributeValueDescription" minOccurs="0"/>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+						<xsd:element name="Responsible" minOccurs="0" maxOccurs="2">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="personalNumber" type="bik:personalNumber" minOccurs="0"/>
+									<xsd:element name="assignmentType" type="bik:assignmentType" minOccurs="0"/>
+									<xsd:element name="PersonName" minOccurs="0">
+										<xsd:complexType>
+											<xsd:sequence>
+												<xsd:element name="fullName" type="bik:fullName" minOccurs="0"/>
+												<xsd:element name="firstNames" type="bik:firstNames" minOccurs="0"/>
+												<xsd:element name="initials" type="bik:initials" minOccurs="0"/>
+												<xsd:element name="lastNamePrefix" type="bik:lastNamePrefix" minOccurs="0"/>
+												<xsd:element name="nameSuffix" type="bik:nameSuffix" minOccurs="0"/>
+												<xsd:element name="lastName" type="bik:lastName" minOccurs="0"/>
+												<xsd:element name="preTitles" type="bik:preTitles" minOccurs="0"/>
+												<xsd:element name="basicLastName" type="bik:basicLastName" minOccurs="0"/>
+												<xsd:element name="postTitles" type="bik:postTitles" minOccurs="0"/>
+												<xsd:element name="introductionEnum" type="bik:introductionEnum" minOccurs="0"/>
+											</xsd:sequence>
+										</xsd:complexType>
+									</xsd:element>
+									<xsd:element name="PostalAddress" minOccurs="0">
+										<xsd:complexType>
+											<xsd:sequence>
+												<xsd:element name="addressNotes" type="bik:addressNotes" minOccurs="0"/>
+												<xsd:element name="AddressType" type="bik:addressType" minOccurs="0"/>
+												<xsd:element name="CareOfName" type="bik:careOfName" minOccurs="0"/>
+												<xsd:element name="street" type="bik:street" minOccurs="0"/>
+												<xsd:element name="houseNumber" type="bik:houseNumber" minOccurs="0"/>
+												<xsd:element name="houseNumberAddition" type="bik:houseNumberAddition" minOccurs="0"/>
+												<xsd:element name="building" type="bik:building" minOccurs="0"/>
+												<xsd:element name="roomNumber" type="bik:roomNumber" minOccurs="0"/>
+												<xsd:element name="floor" type="bik:floor" minOccurs="0"/>
+												<xsd:element name="postalCode" type="bik:postalCode" minOccurs="0"/>
+												<xsd:element name="city" type="bik:city" minOccurs="0"/>
+												<xsd:element name="countryCode" type="bik:countryCodeEnum" minOccurs="0"/>
+												<xsd:element name="pobox" type="bik:poBox" minOccurs="0"/>
+												<xsd:element name="postalCodePObox" type="bik:postalCode" minOccurs="0"/>
+												<xsd:element name="undeliverable" type="bik:undeliverable" minOccurs="0"/>
+												<xsd:element name="ContactPoint" minOccurs="0">
+													<xsd:complexType>
+														<xsd:sequence>
+															<xsd:element name="startDate" type="bik:date" minOccurs="0"/>
+															<xsd:element name="endDate" type="bik:date" minOccurs="0"/>
+														</xsd:sequence>
+													</xsd:complexType>
+												</xsd:element>
+												<xsd:element name="ContactPointUsage" minOccurs="0">
+													<xsd:complexType>
+														<xsd:sequence>
+															<xsd:element name="startDate" type="bik:date" minOccurs="0"/>
+															<xsd:element name="endDate" type="bik:date" minOccurs="0"/>
+														</xsd:sequence>
+													</xsd:complexType>
+												</xsd:element>
+											</xsd:sequence>
+										</xsd:complexType>
+									</xsd:element>
+									<xsd:element name="EmailAddress" minOccurs="0">
+										<xsd:complexType>
+											<xsd:sequence>
+												<xsd:element name="emailAddressInformation" type="bik:emailAddressInformation" minOccurs="0"/>
+											</xsd:sequence>
+										</xsd:complexType>
+									</xsd:element>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

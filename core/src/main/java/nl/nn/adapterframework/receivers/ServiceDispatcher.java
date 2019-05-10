@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 - 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,10 +21,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import javax.xml.ws.Endpoint;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.extensions.cxf.NamespaceUriProvider;
-import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
@@ -46,7 +43,6 @@ public class ServiceDispatcher  {
 
 	private Map<String, ServiceClient> registeredListeners = new HashMap<String, ServiceClient>();
 	private static ServiceDispatcher self = null;
-	private Endpoint namespaceRouter = null;
 
 	/**
 	 * Use this method to get hold of the <code>ServiceDispatcher</code>
@@ -93,7 +89,6 @@ public class ServiceDispatcher  {
 	
 	/**
 	 * Check whether a serviceName is registered at the <code>ServiceDispatcher</code>.
-	 * @param name
 	 * @return true if the service is registered at this dispatcher, otherwise false
 	 */
 	public boolean isRegisteredServiceListener(String name) {
@@ -105,22 +100,7 @@ public class ServiceDispatcher  {
 			log.warn("listener ["+name+"] already registered with ServiceDispatcher");
 		}
 
-		if(listener instanceof WebServiceListener) {
-			//Old school webServiceListener listening via CXF on servlet/rpcrouter/
-			publish();
-		}
-
 		registeredListeners.put(name, listener);
 		log.info("Listener ["+name+"] registered at ServiceDispatcher");
-	}
-
-	/**
-	 * Publish an Endpoint for a given address. Older WebServiceSenders using the 
-	 * RPCrouter don't necessarily listen to an URL but rather a NamespaceURI.
-	 * This allows for backwards compatibility for those services.
-	 */
-	private synchronized void publish() {
-		if(namespaceRouter == null)
-			namespaceRouter = Endpoint.publish("/", new NamespaceUriProvider());
 	}
 }

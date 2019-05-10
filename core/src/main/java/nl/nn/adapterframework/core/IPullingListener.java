@@ -20,10 +20,11 @@ import java.util.Map;
  * Defines listening behaviour of pulling receivers.
  * Pulling receivers are receivers that poll for a message, as opposed to pushing receivers
  * that are 'message driven'
+ * @param <M> the raw message type 
  * 
  * @author  Gerrit van Brakel
  */
-public interface IPullingListener extends IListener {
+public interface IPullingListener<M> extends IListener<M> {
 
 	/**
 	 * Prepares a thread for receiving messages.
@@ -46,6 +47,6 @@ public interface IPullingListener extends IListener {
 	 * Implementations of this method should therefore be thread-safe, or <code>synchronized</code>.
 	 * <p>Any thread-specific properties should be stored in and retrieved from the threadContext.
 	 */
-	Object getRawMessage(Map<String,Object> threadContext) throws ListenerException;
+	M getRawMessage(Map<String,Object> threadContext) throws ListenerException;
 
 }

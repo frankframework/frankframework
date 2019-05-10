@@ -1,0 +1,5 @@
+<Error>
+<errorCode>FAILURE</errorCode>
+<errorMessage>Validation using XmlValidator with 'http://www.ibissource.org/tom /XmlValidator/GPOAI/GetPartiesOnAgreementInsurance/xsd/GetPartiesOnAgreementInsurance_v1.xsd' failed:
+/GetPartiesOnAgreementInsuranceREQ/Agreement/InternalAgreement: at (6,9): cvc-complex-type.2.4.a: Invalid content was found starting with element '{"http://www.ibissource.org/tom":Id2}'. One of '{"http://www.ibissource.org/tom":Id}' is expected.</errorMessage>
+</Error>

@@ -1,0 +1,23 @@
+<Envelope xmlns="http://www.w3.org/2003/05/soap-envelope">
+	<Header>
+		<MessageHeader xmlns="http://www.ing.com/CSP/XSD/General/Message_2">
+			<From>
+				<Id>sf</Id>
+			</From>
+			<HeaderFields>
+				<ConversationId>sdfa</ConversationId>
+				<MessageId>asdf</MessageId>
+				<Timestamp>2010-12-28T17:11:18.688+01:00</Timestamp>
+			</HeaderFields>
+		</MessageHeader>
+	</Header>
+	<Body>
+		<GetVehicleTypeDetailsREQ xmlns="http://www.ing.com/nl/pcretail/ts/getvehicledetails_01">
+			<Body>
+				<bouwmnd>3</bouwmnd>
+				<bouwjr>2008</bouwjr>
+				<uitvoeringCode>ABC01</uitvoeringCode>
+			</Body>
+		</GetVehicleTypeDetailsREQ>
+	</Body>
+</Envelope>

@@ -80,6 +80,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 
 	private ParameterList paramList = null;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (isSoap()) {
@@ -117,6 +118,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		}
 	}
 
+	@Override
 	public void open() throws ListenerException {
 		try {
 			super.open();
@@ -151,7 +153,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 * @param rawMessage - Original message received, can not be <code>null</code>
 	 * @param threadContext - Thread context to be populated, can not be <code>null</code>
 	 */
-	public String getIdFromRawMessage(Object rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	public String getIdFromRawMessage(Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		TextMessage message = null;
 		try {
 			message = (TextMessage) rawMessage;
@@ -162,22 +164,6 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		return retrieveIdFromMessage(message, threadContext);
 	}
 	
-	protected String getResultFromxPath(String message, String xPathExpression) {
-		String found = "";
-		if(message != null && message.length() > 0) {
-			if(XmlUtils.isWellFormed(message)) {
-				try {
-					TransformerPool test = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("", xPathExpression, "text", false));
-					found = test.transform(message, null);
-					
-					//xPath not found and message length is 0 but not null nor ""
-					if(found.length() == 0) found = "";
-				} catch (Exception e) {
-				}
-			}
-		}
-		return found;
-	}
 	
 	protected String retrieveIdFromMessage(Message message, Map<String, Object> threadContext) throws ListenerException {
 		String cid = "unset";
@@ -266,7 +252,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 * other parameters from the message and put those in the threadContext.
 	 * @return String  input message for adapter.
 	 */
-	public String getStringFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
+	public String getStringFromRawMessage(Message rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		try {
 			return getStringFromRawMessage(rawMessage, threadContext, isSoap(), getSoapHeaderSessionKey(),soapWrapper);
 		} catch (Exception e) {
@@ -274,11 +260,11 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		}
 	}
 
-	public String prepareReply(String rawReply, Map threadContext) throws ListenerException {
+	public String prepareReply(String rawReply, Map<String,Object> threadContext) throws ListenerException {
 		return prepareReply(rawReply, threadContext, null);
 	}
 
-	public String prepareReply(String rawReply, Map threadContext, String soapHeader) throws ListenerException {
+	public String prepareReply(String rawReply, Map<String,Object> threadContext, String soapHeader) throws ListenerException {
 		if (!isSoap()) {
 			return rawReply;
 		}
@@ -298,6 +284,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 			log.debug("["+getName()+"] ** registered sender ["+sender.getName()+"] with properties ["+sender.toString()+"]");
     
 	}
+	@Override
 	public ISender getSender() {
 		return sender;
 	}

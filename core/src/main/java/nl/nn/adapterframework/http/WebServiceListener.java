@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 - 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import javax.xml.ws.Endpoint;
 import javax.xml.ws.soap.SOAPBinding;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -37,11 +36,12 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.cxf.BusFactory;
+import org.apache.cxf.jaxws.EndpointImpl;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
  * to receive messages as a web-service.
- * </table>
  * 
  * @author Gerrit van Brakel
  * @author Jaco de Groot
@@ -61,7 +61,7 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 	private String attachmentSessionKeys = "";
 	private String multipartXmlSessionKey = "multipartXml";
 	private List<String> attachmentSessionKeysList = new ArrayList<String>();
-	private Endpoint endpoint = null;
+	private EndpointImpl endpoint = null;
 
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
@@ -100,10 +100,16 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 		super.open();
 
 		if (StringUtils.isNotEmpty(getAddress())) {
-			log.debug("registering listener ["+getAddress()+"] with JAX-WS Endpoint");
-			endpoint = Endpoint.publish(getAddress(), new MessageProvider(this, getMultipartXmlSessionKey()));
+			log.debug("registering listener ["+getName()+"] with JAX-WS CXF Dispatcher");
+			endpoint = new EndpointImpl(BusFactory.getDefaultBus(), new MessageProvider(this, getMultipartXmlSessionKey()));
+			endpoint.publish("/"+getAddress());
 			SOAPBinding binding = (SOAPBinding)endpoint.getBinding();
 			binding.setMTOMEnabled(isMtomEnabled());
+
+			if(endpoint.isPublished())
+				log.debug("published listener ["+getName()+"] on CXF endpoint["+getAddress()+"] with SpringBus["+endpoint.getBus().getId()+"]");
+			else
+				log.error("unable to publish listener ["+getName()+"] on CXF endpoint["+getAddress()+"]");
 		}
 
 		//Can bind on multiple endpoints
@@ -121,7 +127,7 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 	public void close() {
 		super.close();
 
-		if(endpoint != null)
+		if(endpoint != null && endpoint.isPublished())
 			endpoint.stop();
 
 		//TODO maybe unregister oldschool rpc based serviceclients!?
@@ -197,8 +203,14 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 		setApplicationFaultsAsExceptions(b);
 	}
 
+	@IbisDoc({ "The address to listen to, e.g the part <address> in https://mydomain.com/ibis4something/services/<address>, where mydomain.com and ibis4something refer to 'your ibis'","" })
 	public void setAddress(String address) {
-		this.address = address;
+		if(!address.isEmpty()) {
+			if(address.startsWith("/"))
+				this.address = address.substring(1);
+			else
+				this.address = address;
+		}
 	}
 	public String getAddress() {
 		return address;

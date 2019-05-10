@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.extensions.cmis.server;
 
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
@@ -24,6 +25,7 @@ import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 import org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet;
 import org.apache.cxf.Bus;
+import org.apache.cxf.BusFactory;
 import org.apache.log4j.Logger;
 
 /**
@@ -35,15 +37,32 @@ public class WebServicesServlet extends CmisWebServicesServlet {
 
 	private static final long serialVersionUID = 1L;
 	private final Logger log = LogUtil.getLogger(this);
+	private IbisContext ibisContext = null;
+
+	@Override
+	public void init(ServletConfig sc) throws ServletException {
+
+		AppConstants appConstants = AppConstants.getInstance();
+		String ibisContextKey = appConstants.getResolvedProperty(ConfigurationServlet.KEY_CONTEXT);
+		ibisContext = (IbisContext)sc.getServletContext().getAttribute(ibisContextKey);
+		if(ibisContext.getIbisManager() == null)
+			throw new ServletException("failed to retreive ibisContext from servletContext, did the IBIS start up correctly?");
+
+		super.init(sc);
+	}
 
 	@Override
 	protected void loadBus(ServletConfig sc) {
 		log.debug("loading cxf bus for servlet["+sc.getServletName()+"]");
 
-		AppConstants appConstants = AppConstants.getInstance();
-		String ibisContextKey = appConstants.getResolvedProperty(ConfigurationServlet.KEY_CONTEXT);
-		IbisContext ibisContext = (IbisContext)getServletContext().getAttribute(ibisContextKey);
-		setBus((Bus)ibisContext.getBean("cxf"));
+		Bus originalBus = (Bus)ibisContext.getBean("cxf");
+		setBus(originalBus);
+
+		//We have to call the original loadBus in order to register the CMIS endpoints. These will be added to a separate bus, which should not impact the IBIS.
+		super.loadBus(sc);
+
+		//We need to change the default bus back to the original SpringBus, else it will break config reloads
+		BusFactory.setDefaultBus(originalBus);
 	}
 
 }

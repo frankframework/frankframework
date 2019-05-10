@@ -1,0 +1,7 @@
+<email>
+	<recipients>
+	</recipients>
+	<from name="name">dummy@dummy.dummy</from>	<!--Required-->
+	<subject>Mail handler check subject</subject>			<!--Required min Length 1 -->
+	<message>This is the message</message>
+ </email>

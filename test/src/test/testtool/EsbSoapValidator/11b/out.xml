@@ -1,0 +1,8 @@
+<Error>
+  <errorCode>FAILURE</errorCode>
+  <errorMessage>Validation using EsbSoapValidator with 'http://nn.nl/XSD/PropertyCasualtyRetail/Log/LogConversion/1/SetPolicyDetails/1 /EsbSoapValidator/SetPolicyDetails/PropertyCasualtyRetail_Log_LogConversion_1_SetPolicyDetails_1.xsd http://nn.nl/XSD/Generic/MessageHeader/1 /xml/xsd/CommonMessageHeader.xsd http://schemas.xmlsoap.org/soap/envelope/ /xml/xsd/soap/envelope.xsd' failed:
+/: Illegal element 'SetPolicyDetails_Request'. Element(s) 'Envelope' expected.
+/Envelope/Body: Element(s) 'SetPolicyDetails_Request' not found
+/Envelope/Header: Element(s) 'MessageHeader' not found
+/: Element(s) 'Envelope' not found</errorMessage>
+</Error>

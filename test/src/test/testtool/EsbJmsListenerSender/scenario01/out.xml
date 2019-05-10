@@ -1,0 +1,28 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Header><MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
+   <From>
+      <Id>Ibis4Test</Id>
+   </From>
+   <To>
+      <Location>ESB.Infrastructure.TS.Test.TestIAF.1.GetMessage.1.Response</Location>
+   </To>
+   <HeaderFields>
+      <CPAId>cpa1509</CPAId>
+      <ConversationId>conv0807</ConversationId>
+      <MessageId>LPAB00000018703_0a4544bd-385e6bf8_155fcd7d1e0_-7ff0</MessageId>
+      <CorrelationId>LPAB00000018703_0a4544bd-385e6bf8_155fcd7d1e0_-7ff1</CorrelationId>
+      <ExternalRefToMessageId>ext2608</ExternalRefToMessageId>
+      <Timestamp>2016-07-18T09:12:53</Timestamp>
+   </HeaderFields>
+   <Service>
+      <Name>Test</Name>
+      <Context>TestIAF</Context>
+      <Action>
+         <Paradigm>Response</Paradigm>
+         <Name>GetMessage</Name>
+         <Version>1</Version>
+      </Action>
+   </Service>
+</MessageHeader>
+</soapenv:Header><soapenv:Body><reply xmlns="http://nn.nl/XSD/Infrastructure/Test/TestIAF/1/GetMessage/1">
+<root>EsbJmsRRListenerSenderREQ</root>
+</reply></soapenv:Body></soapenv:Envelope>

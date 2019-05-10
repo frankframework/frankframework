@@ -1,0 +1,5 @@
+<Error>
+<errorCode>FAILURE</errorCode>
+<errorMessage>Validation using XmlValidator with '/XmlValidator/import_include/root4.xsd' failed:
+/root: at (13,10): cvc-complex-type.2.4.d: Invalid content was found starting with element 'dummy'. No child element is expected at this point.</errorMessage>
+</Error>

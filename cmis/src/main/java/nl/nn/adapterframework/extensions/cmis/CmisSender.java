@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 - 2018 Nationale-Nederlanden
+   Copyright 2016 - 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.extensions.cmis;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -46,8 +45,6 @@ import nl.nn.adapterframework.extensions.cmis.server.CmisServletDispatcher;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.pipes.AbstractPipe;
-import nl.nn.adapterframework.pipes.PipeAware;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -69,10 +66,12 @@ import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.client.api.SessionFactory;
 import org.apache.chemistry.opencmis.client.runtime.SessionFactoryImpl;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
+import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.enums.Action;
+import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.commons.codec.binary.Base64;
@@ -97,6 +96,7 @@ import org.w3c.dom.Node;
  * <li><code>find</code>: perform a query that returns properties</li>
  * <li><code>update</code>: update the properties of an existing document</li>
  * <li><code>fetch</code>: get the (meta)data of a folder or document</li>
+ * <li><code>delete</code>: delete a document</li>
  * </ul></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
@@ -108,6 +108,7 @@ import org.w3c.dom.Node;
  * <tr><td>{@link #setDefaultMediaType(String) defaultMediaType}</td><td>(only used when <code>action=create</code>) The MIME type used to store the document when it's not set in the input message by a property</td><td>"application/octet-stream"</td></tr>
  * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>(only used when <code>action=get</code>) if true, the content of the document is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as a String)</td><td>false</td></tr>
  * <tr><td>{@link #setGetProperties(boolean) getProperties}</td><td>(only used when <code>action=get</code>) if true, the content of the document is streamed to <code>fileInputStreamSessionKey</code> and all document properties are put in the result as a xml string</td><td>false</td></tr>
+ * <tr><td>{@link #setGetDocumentContent(boolean) getDocumentContent}</td><td>(only used when <code>action=get</code>) if true, the attachment for the document is streamed to <code>fileInputStreamSessionKey</code> otherwise only the properties are returned</td><td>true</td></tr>
  * <tr><td>{@link #setUseRootFolder(boolean) useRootFolder}</td><td>(only used when <code>action=create</code>) if true, the document is created in the root folder of the repository. Otherwise the document is created in the repository</td><td>true</td></tr>
  * <tr><td>{@link #setResultOnNotFound(String) resultOnNotFound}</td><td>(only used when <code>action=get</code>) result returned when no document was found for the given id (e.g. "[NOT_FOUND]"). If empty an exception is thrown</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeepSession(boolean) keepSession}</td><td>if true, the session is not closed at the end and it will be used in the next call</td><td>true</td></tr>
@@ -156,6 +157,21 @@ import org.w3c.dom.Node;
  * 
  * <p>
  * When <code>action=get</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
+ * </p>
+ * <p>
+ * <b>example:</b>
+ * <code>
+ * <pre>
+ *   &lt;cmis&gt;
+ *      &lt;id&gt;
+ *         documentId
+ *      &lt;/id&gt;
+ *   &lt;/cmis&gt;
+ * </pre>
+ * </code>
+ * </p>
+ * <p>
+ * When <code>action=delete</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
  * </p>
  * <p>
  * <b>example:</b>
@@ -256,7 +272,7 @@ import org.w3c.dom.Node;
  * @author	Peter Leeuwenburgh
  * @author	Niels Meijer
  */
-public class CmisSender extends SenderWithParametersBase implements PipeAware {
+public class CmisSender extends SenderWithParametersBase {
 
 	private String action;
 	private String url;
@@ -271,6 +287,7 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 	private String defaultMediaType = "application/octet-stream";
 	private boolean streamResultToServlet = false;
 	private boolean getProperties = false;
+	private boolean getDocumentContent = true;
 	private boolean useRootFolder = true;
 	private String resultOnNotFound;
 	private boolean keepSession = true;
@@ -299,10 +316,8 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 	private String proxyPassword;
 	private String proxyRealm = null;
 
-	List<String> actions = Arrays.asList("create", "get", "find", "update", "fetch");
+	List<String> actions = Arrays.asList("create", "delete", "get", "find", "update", "fetch", "bridge");
 	List<String> bindingTypes = Arrays.asList("atompub", "webservices", "browser");
-	private AbstractPipe pipe = null;
-	private boolean isBridgeSender = false;
 
 	public final static String FORMATSTRING_BY_DEFAULT = "yyyy-MM-dd HH:mm:ss";
 
@@ -313,43 +328,35 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getUrl()) && getOverrideEntryPointWSDL() == null) {
-			throw new ConfigurationException("CmisSender [" + getName()
-					+ "] has no url configured");
+			throw new ConfigurationException("CmisSender [" + getName() + "] has no url configured");
 		}
 		if (StringUtils.isEmpty(getRepository())) {
-			throw new ConfigurationException("CmisSender [" + getName()
-					+ "] has no repository configured");
+			throw new ConfigurationException("CmisSender [" + getName() + "] has no repository configured");
 		}
 		if (!bindingTypes.contains(getBindingType())) {
-			throw new ConfigurationException("illegal value for bindingType ["
-					+ getBindingType() + "], must be " + bindingTypes.toString());
+			throw new ConfigurationException("illegal value for bindingType [" + getBindingType() + "], must be " + bindingTypes.toString());
 		}
 		if(getOverrideEntryPointWSDL() != null && !"webservices".equalsIgnoreCase(getBindingType())) {
-			throw new ConfigurationException("illegal value for bindingtype ["
-					+ getBindingType() + "], overrideEntryPointWSDL only supports webservices");
+			throw new ConfigurationException("illegal value for bindingtype [" + getBindingType() + "], overrideEntryPointWSDL only supports webservices");
 		}
 		if (!actions.contains(getAction())) {
-			throw new ConfigurationException("illegal value for action ["
-					+ getAction() + "], must be " + actions.toString());
+			throw new ConfigurationException("illegal value for action [" + getAction() + "], must be " + actions.toString());
 		}
-		if (getAction().equalsIgnoreCase("create")) {
+		if (getAction().equals("create")) {
 			if (StringUtils.isEmpty(getFileInputStreamSessionKey())
 					&& StringUtils.isEmpty(getFileContentSessionKey())) {
-				throw new ConfigurationException(
-						"fileInputStreamSessionKey or fileContentSessionKey should be specified");
+				throw new ConfigurationException("fileInputStreamSessionKey or fileContentSessionKey should be specified");
 			}
 		}
-		if (getAction().equalsIgnoreCase("get")) {
-			if (isGetProperties()) {
-				if (StringUtils.isEmpty(getFileInputStreamSessionKey())
-						&& StringUtils.isEmpty(getFileContentSessionKey())) {
-					throw new ConfigurationException(
-							"fileInputStreamSessionKey or fileContentSessionKey should be specified");
+		if (getAction().equals("get")) {
+			if (isGetProperties() && isGetDocumentContent()) {
+				if (StringUtils.isEmpty(getFileInputStreamSessionKey()) && StringUtils.isEmpty(getFileContentSessionKey())) {
+					throw new ConfigurationException("fileInputStreamSessionKey or fileContentSessionKey should be specified");
 				}
 			}
 		}
 
-		if(isBridgeSender()) {
+		if (getAction().equals("bridge")) {
 			CmisServletDispatcher.getInstance().registerServiceClient(this);
 		}
 	}
@@ -430,15 +437,18 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 				return sendMessageForActionGet(correlationID, message, prc);
 			} else if (getAction().equalsIgnoreCase("create")) {
 				return sendMessageForActionCreate(correlationID, message, prc);
+			} else if (getAction().equalsIgnoreCase("delete")) {
+				return sendMessageForActionDelete(correlationID, message, prc);
 			} else if (getAction().equalsIgnoreCase("find")) {
 				return sendMessageForActionFind(correlationID, message, prc);
 			} else if (getAction().equalsIgnoreCase("update")) {
 				return sendMessageForActionUpdate(correlationID, message, prc);
 			} else if (getAction().equalsIgnoreCase("fetch")) {
 				return sendMessageForActionFetch(correlationID, message, prc);
+			} else if (getAction().equalsIgnoreCase("bridge")) {
+				return sendMessageForActionFetch(correlationID, message, prc);
 			} else {
-				throw new SenderException(getLogPrefix() + "unknown action ["
-						+ getAction() + "]");
+				throw new SenderException(getLogPrefix() + "unknown action [" + getAction() + "]");
 			}
 		} finally {
 			if (session != null && !isKeepSession()) {
@@ -448,9 +458,7 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		}
 	}
 
-	private String sendMessageForActionGet(String correlationID,
-			String message, ParameterResolutionContext prc)
-			throws SenderException, TimeOutException {
+	private String sendMessageForActionGet(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		if (StringUtils.isEmpty(message)) {
 			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
 		}
@@ -460,8 +468,7 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 			object = getCmisObject(message);
 		} catch (CmisObjectNotFoundException e) {
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
-				log.info(getLogPrefix() + "document with id [" + message
-						+ "] not found", e);
+				log.info(getLogPrefix() + "document with id [" + message + "] not found", e);
 				return getResultOnNotFound();
 			} else {
 				throw new SenderException(e);
@@ -469,42 +476,38 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		}
 
 		Document document = (Document) object;
-		ContentStream contentStream = document.getContentStream();
 
 		try {
-			InputStream inputStream = contentStream.getStream();
 			if (isStreamResultToServlet()) {
-				HttpServletResponse response = (HttpServletResponse) prc
-						.getSession().get(IPipeLineSession.HTTP_RESPONSE_KEY);
+				HttpServletResponse response = (HttpServletResponse) prc.getSession().get(IPipeLineSession.HTTP_RESPONSE_KEY);
+
+				ContentStream contentStream = document.getContentStream();
+				InputStream inputStream = contentStream.getStream();
 				String contentType = contentStream.getMimeType();
 				if (StringUtils.isNotEmpty(contentType)) {
-					log.debug(getLogPrefix()
-							+ "setting response Content-Type header ["
-							+ contentType + "]");
+					log.debug(getLogPrefix() + "setting response Content-Type header [" + contentType + "]");
 					response.setHeader("Content-Type", contentType);
 				}
-				String contentDisposition = "attachment; filename=\""
-						+ contentStream.getFileName() + "\"";
-				log.debug(getLogPrefix()
-						+ "setting response Content-Disposition header ["
-						+ contentDisposition + "]");
+				String contentDisposition = "attachment; filename=\"" + contentStream.getFileName() + "\"";
+				log.debug(getLogPrefix() + "setting response Content-Disposition header [" + contentDisposition + "]");
 				response.setHeader("Content-Disposition", contentDisposition);
 				OutputStream outputStream;
 				outputStream = response.getOutputStream();
 				Misc.streamToStream(inputStream, outputStream);
-				log.debug(getLogPrefix()
-						+ "copied document content input stream ["
-						+ inputStream + "] to output stream [" + outputStream
-						+ "]");
+				log.debug(getLogPrefix() + "copied document content input stream [" + inputStream + "] to output stream [" + outputStream + "]");
+
 				return "";
-			} else if (isGetProperties()) {
-				if (StringUtils.isNotEmpty(fileInputStreamSessionKey)) {
-					prc.getSession().put(getFileInputStreamSessionKey(),
-							inputStream);
-				} else {
-					byte[] bytes = Misc.streamToBytes(inputStream);
-					prc.getSession().put(getFileContentSessionKey(),
-							Base64.encodeBase64String(bytes));
+			}
+			else if (isGetProperties()) {
+				if(isGetDocumentContent()) {
+					ContentStream contentStream = document.getContentStream();
+					InputStream inputStream = contentStream.getStream();
+					if (StringUtils.isNotEmpty(fileInputStreamSessionKey)) {
+						prc.getSession().put(getFileInputStreamSessionKey(), inputStream);
+					} else {
+						byte[] bytes = Misc.streamToBytes(inputStream);
+						prc.getSession().put(getFileContentSessionKey(), Base64.encodeBase64String(bytes));
+					}
 				}
 
 				XmlBuilder cmisXml = new XmlBuilder("cmis");
@@ -516,7 +519,10 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 				cmisXml.addSubElement(propertiesXml);
 
 				return cmisXml.toXML();
-			} else {
+			}
+			else {
+				ContentStream contentStream = document.getContentStream();
+				InputStream inputStream = contentStream.getStream();
 				return Misc.streamToString(inputStream, null, false);
 			}
 		} catch (IOException e) {
@@ -553,22 +559,28 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		return propertyXml;
 	}
 
-	private String sendMessageForActionCreate(String correlationID,
-			String message, ParameterResolutionContext prc)
-			throws SenderException, TimeOutException {
-		String fileName = (String) prc.getSession()
-				.get(getFileNameSessionKey());
+	private String sendMessageForActionCreate(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+		String fileName = (String) prc.getSession().get(getFileNameSessionKey());
 
-		InputStream inputStream = null;
-		if (StringUtils.isNotEmpty(fileInputStreamSessionKey)) {
-			inputStream = (FileInputStream) prc.getSession().get(
-					getFileInputStreamSessionKey());
-		} else {
-			String fileContent = (String) prc.getSession().get(
-					getFileContentSessionKey());
-			byte[] bytes = Base64.decodeBase64((String) fileContent);
-			inputStream = new ByteArrayInputStream(bytes);
+		Object inputFromSessionKey;
+		if(StringUtils.isNotEmpty(fileInputStreamSessionKey)) {
+			inputFromSessionKey = prc.getSession().get(getFileInputStreamSessionKey());
 		}
+		else {
+			inputFromSessionKey = prc.getSession().get(getFileContentSessionKey());
+		}
+		InputStream inputStream = null;	
+		if (inputFromSessionKey instanceof InputStream) {
+			inputStream = (InputStream) inputFromSessionKey;
+		} else if (inputFromSessionKey instanceof byte[]) {
+			inputStream = new ByteArrayInputStream((byte[]) inputFromSessionKey);
+		} else if(inputFromSessionKey instanceof String) {
+			byte[] bytes = Base64.decodeBase64((String) inputFromSessionKey);
+			inputStream = new ByteArrayInputStream(bytes);
+		} else {
+			throw new SenderException("expected InputStream, ByteArray or Base64-String but got ["+inputFromSessionKey.getClass().getName()+"] instead");
+		}
+
 		long fileLength = 0;
 		try {
 			fileLength = inputStream.available();
@@ -586,8 +598,7 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 				cmisElement = XmlUtils.buildElement("<cmis/>");
 			}
 
-			String objectTypeId = XmlUtils.getChildTagAsString(cmisElement,
-					"objectTypeId");
+			String objectTypeId = XmlUtils.getChildTagAsString(cmisElement, "objectTypeId");
 			if (StringUtils.isNotEmpty(objectTypeId)) {
 				props.put(PropertyIds.OBJECT_TYPE_ID, objectTypeId);
 			} else {
@@ -595,8 +606,7 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 			}
 			String name = XmlUtils.getChildTagAsString(cmisElement, "name");
 			if (StringUtils.isEmpty(fileName)) {
-				fileName = XmlUtils
-						.getChildTagAsString(cmisElement, "fileName");
+				fileName = XmlUtils.getChildTagAsString(cmisElement, "fileName");
 			}
 			mediaType = XmlUtils.getChildTagAsString(cmisElement, "mediaType");
 			if (StringUtils.isNotEmpty(name)) {
@@ -606,14 +616,12 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 			} else {
 				props.put(PropertyIds.NAME, "[unknown]");
 			}
-			Element propertiesElement = XmlUtils.getFirstChildTag(cmisElement,
-					"properties");
+			Element propertiesElement = XmlUtils.getFirstChildTag(cmisElement, "properties");
 			if (propertiesElement != null) {
 				processProperties(propertiesElement, props);
 			}
 		} catch (DomBuilderException e) {
-			throw new SenderException(getLogPrefix() + "exception parsing ["
-					+ message + "]", e);
+			throw new SenderException(getLogPrefix() + "exception parsing [" + message + "]", e);
 		}
 
 		if (StringUtils.isEmpty(mediaType)) {
@@ -664,16 +672,17 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 						formatStringAttr = FORMATSTRING_BY_DEFAULT;
 					}
 					DateFormat df = new SimpleDateFormat(formatStringAttr);
-					Date date;
+					GregorianCalendar calendar = new GregorianCalendar();
 					try {
-						date = df.parse(property);
+						Date date = df.parse(property);
+						calendar.setTime(date);
 					} catch (ParseException e) {
 						throw new SenderException(getLogPrefix()
 								+ "exception parsing date [" + property
 								+ "] using formatString [" + formatStringAttr
 								+ "]", e);
 					}
-					props.put(nameAttr, date);
+					props.put(nameAttr, calendar);
 				} else {
 					log.warn(getLogPrefix() + "unknown type [" + typeAttr
 							+ "], assuming 'string'");
@@ -686,6 +695,32 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 			} else {
 				log.debug(getLogPrefix() + "empty property found, ignoring");
 			}
+		}
+	}
+	
+	private String sendMessageForActionDelete(String correlationID, String message, ParameterResolutionContext prc)
+			throws SenderException, TimeOutException {
+		if (StringUtils.isEmpty(message)) {
+			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
+		}
+		CmisObject object = null;
+		try {
+			object = getCmisObject(message);
+		} catch (CmisObjectNotFoundException e) {
+			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
+				log.info(getLogPrefix() + "document with id [" + message + "] not found", e);
+				return getResultOnNotFound();
+			} else {
+				throw new SenderException(e);
+			}
+		}
+		if (object.hasAllowableAction(Action.CAN_DELETE_OBJECT)) { //// You can delete 
+			Document suppDoc = (Document) object;
+			suppDoc.delete(true);
+			return correlationID;
+	
+		} else {  //// You can't delete 
+			throw new SenderException(getLogPrefix() + "Document cannot be deleted");
 		}
 	}
 	
@@ -719,6 +754,7 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 			operationContext.setIncludeAllowableActions(Boolean.parseBoolean(searchAllVersions));
 		}
 		ItemIterable<QueryResult> q = session.query(statement, sav, operationContext);
+		
 		if (StringUtils.isNotEmpty(skipCount)) {
 			long sc = Long.parseLong(skipCount);
 			q = q.skipTo(sc);
@@ -726,7 +762,6 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		if (StringUtils.isNotEmpty(maxItems)) {
 			q = q.getPage();
 		}
-
 		XmlBuilder cmisXml = new XmlBuilder("cmis");
 		XmlBuilder rowsetXml = new XmlBuilder("rowset");
 		for (QueryResult qResult : q) {
@@ -736,6 +771,7 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 			}
 			rowsetXml.addSubElement(rowXml);
 		}
+		cmisXml.addAttribute("totalNumItems", q.getTotalNumItems());
 		cmisXml.addSubElement(rowsetXml);
 		return cmisXml.toXML();
 	}
@@ -883,13 +919,16 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		SessionFactory sessionFactory = SessionFactoryImpl.newInstance();
 		SessionParameterMap parameterMap = new SessionParameterMap();
 
-		parameterMap.setBasicAuthentication(userName, password);
+		parameterMap.setUserAndPassword(userName, password);
 
 		if (getBindingType().equalsIgnoreCase("atompub")) {
 			parameterMap.setAtomPubBindingUrl(getUrl());
+			parameterMap.setUsernameTokenAuthentication(false);
 		} else if (getBindingType().equalsIgnoreCase("browser")) {
 			parameterMap.setBrowserBindingUrl(getUrl());
+			parameterMap.setBasicAuthentication();
 		} else {
+			parameterMap.setUsernameTokenAuthentication(false);
 			// OpenCMIS requires an entrypoint url (wsdl), if this url has been secured and is not publicly accessible,
 			// we can manually override this wsdl by reading it from the classpath.
 			//TODO: Does this work with any binding type?
@@ -907,6 +946,17 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 			}
 			else {
 				parameterMap.setWebServicesBindingUrl(getUrl());
+
+				parameterMap.put(SessionParameter.BINDING_TYPE, BindingType.WEBSERVICES.value());
+				parameterMap.put(SessionParameter.WEBSERVICES_REPOSITORY_SERVICE, getUrl() + "/RepositoryService.svc?wsdl");
+				parameterMap.put(SessionParameter.WEBSERVICES_NAVIGATION_SERVICE, getUrl() + "/NavigationService.svc?wsdl");
+				parameterMap.put(SessionParameter.WEBSERVICES_OBJECT_SERVICE, getUrl() + "/ObjectService.svc?wsdl");
+				parameterMap.put(SessionParameter.WEBSERVICES_VERSIONING_SERVICE, getUrl() + "/VersioningService.svc?wsdl");
+				parameterMap.put(SessionParameter.WEBSERVICES_DISCOVERY_SERVICE, getUrl() + "/DiscoveryService.svc?wsdl");
+				parameterMap.put(SessionParameter.WEBSERVICES_RELATIONSHIP_SERVICE, getUrl() + "/RelationshipService.svc?wsdl");
+				parameterMap.put(SessionParameter.WEBSERVICES_MULTIFILING_SERVICE, getUrl() + "/MultiFilingService.svc?wsdl");
+				parameterMap.put(SessionParameter.WEBSERVICES_POLICY_SERVICE, getUrl() + "/PolicyService.svc?wsdl");
+				parameterMap.put(SessionParameter.WEBSERVICES_ACL_SERVICE, getUrl() + "/ACLService.svc?wsdl");
 			}
 		}
 		parameterMap.setRepositoryId(getRepository());
@@ -1231,6 +1281,14 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 	public boolean isGetProperties() {
 		return getProperties;
 	}
+	
+	public boolean isGetDocumentContent() {
+		return getDocumentContent;
+	}
+
+	public void setGetDocumentContent(boolean getDocumentContent) {
+		this.getDocumentContent = getDocumentContent;
+	}
 
 	public void setUseRootFolder(boolean b) {
 		useRootFolder = b;
@@ -1256,21 +1314,14 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		return keepSession;
 	}
 
+	@Deprecated
 	public void setBridgeSender(boolean isBridgeSender) {
-		this.isBridgeSender  = isBridgeSender;
+		if(isBridgeSender)
+			setAction("bridge");
 	}
 
+	@Deprecated
 	public boolean isBridgeSender() {
-		return isBridgeSender;
-	}
-
-	@Override
-	public void setPipe(AbstractPipe pipe) {
-		this.pipe  = pipe;
-	}
-
-	@Override
-	public AbstractPipe getPipe() {
-		return pipe;
+		return "bridge".equals(getAction());
 	}
 }

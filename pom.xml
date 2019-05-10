@@ -144,8 +144,8 @@
       </dependency>
       <dependency>
         <groupId>javax.servlet</groupId>
-        <artifactId>servlet-api</artifactId>
-        <version>2.5</version>
+        <artifactId>javax.servlet-api</artifactId>
+        <version>3.0.1</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
@@ -233,8 +233,9 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.10.3</version>
+        <version>2.10.4</version>
         <configuration>
+          <additionalparam>-Xdoclint:none</additionalparam>
           <tags>
             <tag>
               <name>IbisDoc.required</name>
@@ -265,9 +266,16 @@
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.17</version>
+		<version>2.22.1</version>
         <configuration>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
+          <!-- requires version 2.22.1 -->
+			<includes>
+			    <include>**/*.java</include>
+			</includes>
+	        <excludes>
+	            <exclude>it.**</exclude>
+	        </excludes>
         </configuration>
       </plugin>
       <plugin>
@@ -419,6 +427,7 @@
         <module>webapp</module>
         <module>test</module>
         <module>ladybug</module>
+        <module>ear-example</module>
       </modules>
     </profile>
   </profiles>
