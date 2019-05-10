@@ -45,6 +45,7 @@ import nl.nn.adapterframework.extensions.cmis.server.CmisServletDispatcher;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -319,7 +320,7 @@ public class CmisSender extends SenderWithParametersBase {
 	List<String> actions = Arrays.asList("create", "delete", "get", "find", "update", "fetch", "bridge");
 	List<String> bindingTypes = Arrays.asList("atompub", "webservices", "browser");
 
-	public final static String FORMATSTRING_BY_DEFAULT = "yyyy-MM-dd HH:mm:ss";
+	public final static String FORMATSTRING_BY_DEFAULT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
 	public final static String OVERRIDE_WSDL_URL = "http://fake.url";
 	public final static String OVERRIDE_WSDL_KEY = "override_wsdl_key";
@@ -549,7 +550,6 @@ public class CmisSender extends SenderWithParametersBase {
 			propertyXml.addAttribute("type", "boolean");
 		} else if (value instanceof GregorianCalendar) {
 			GregorianCalendar gc = (GregorianCalendar) property.getFirstValue();
-			//TODO shouldn't this be "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
 			SimpleDateFormat sdf = new SimpleDateFormat(FORMATSTRING_BY_DEFAULT);
 			propertyXml.setValue(sdf.format(gc.getTime()));
 			propertyXml.addAttribute("type", "datetime");
@@ -670,6 +670,10 @@ public class CmisSender extends SenderWithParametersBase {
 					String formatStringAttr = propertyElement.getAttribute("formatString");
 					if (StringUtils.isEmpty(formatStringAttr)) {
 						formatStringAttr = FORMATSTRING_BY_DEFAULT;
+					}
+					//TODO to be removed in a few versions
+					if(AppConstants.getInstance().getBoolean("cmissender.processproperties.legacydateformat", false)) {
+						formatStringAttr = "yyyy-MM-dd HH:mm:ss";
 					}
 					DateFormat df = new SimpleDateFormat(formatStringAttr);
 					GregorianCalendar calendar = new GregorianCalendar();
@@ -942,6 +946,9 @@ public class CmisSender extends SenderWithParametersBase {
 					} catch (IOException e) {
 						throw new SenderException(e);
 					}
+				}
+				else {
+					throw new SenderException("cannot find overrideEntryPointWSDL["+getOverrideEntryPointWSDL()+"]");
 				}
 			}
 			else {

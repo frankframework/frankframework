@@ -36,6 +36,11 @@ Ibis AdapterFramework release notes
 - Revert old CMIS WS endpoints to register each service's WSDL individually
 
 
+### Non backwards compatible changes
+
+- The dateformat in the CmisSender has been modified to `yyyy-MM-dd'T'HH:mm:ss.SSSZ` in order to use the old format, set the `jcmissender.processproperties.legacydateformat` property to true
+
+
 
 7.2
 --------
