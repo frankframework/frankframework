@@ -37,7 +37,7 @@ public class TestCreateAction extends SenderBase<CmisSender>{
 	private final static String EMPTY_INPUT = "";
 	private final static String INPUT = "<cmis><objectId>dummy</objectId><objectTypeId>cmis:document</objectTypeId><fileName>fileInput.txt</fileName>"
 			+ "<properties><property name=\"project:number\" type=\"integer\">123456789</property>"
-			+ "<property name=\"project:lastModified\" type=\"datetime\">2019-02-26 16:31:15</property>"
+			+ "<property name=\"project:lastModified\" type=\"datetime\">2019-02-26T16:31:15</property>"
 			+ "<property name=\"project:onTime\" type=\"boolean\">true</property></properties></cmis>";
 	private final static String CREATE_RESULT = "dummy_id";
 	

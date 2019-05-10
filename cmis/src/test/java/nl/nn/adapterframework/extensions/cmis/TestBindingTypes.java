@@ -38,7 +38,7 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 	private final static String INPUT = "<cmis><id>id</id><objectId>dummy</objectId><objectTypeId>cmis:document</objectTypeId>"
 			+ "<fileName>fileInput.txt</fileName>" + 
 			" <properties><property name=\"project:number\" type=\"integer\">123456789</property>" + 
-			"<property name=\"project:lastModified\" type=\"datetime\">2019-02-26 16:31:15</property>" + 
+			"<property name=\"project:lastModified\" type=\"datetime\">2019-02-26T16:31:15</property>" + 
 			"<property name=\"project:onTime\" type=\"boolean\">true</property></properties></cmis>";
 	private final static String FIND_INPUT = "<query><name>dummy</name>\n" + 
 			"	<objectId>dummy</objectId>\n" + 
@@ -50,7 +50,7 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 			"		<property name=\"cmis:name\">dummy</property>\n" + 
 			"		<property name=\"project:number\" type=\"integer\">123456789</property>\n" + 
 			"		<property name=\"project:onTime\" type=\"boolean\">true</property>\n" + 
-			"		<property name=\"project:lastModified\" type=\"datetime\">2019-02-26 16:29:46</property>\n" + 
+			"		<property name=\"project:lastModified\" type=\"datetime\">2019-02-26T16:29:46</property>\n" + 
 			"	</properties>\n" + 
 			"	<statement>SELECT * from cmis:document</statement>\n" + 
 			"	<filter>cmis:objectId</filter>\n" + 
@@ -61,7 +61,7 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 	private final static String FETCH_RESULT = "<cmis>  <properties>    "
 			+ "<property name=\"cmis:name\">dummy</property>    "
 			+ "<property name=\"project:number\" type=\"integer\">123456789</property>    "
-			+ "<property name=\"project:lastModified\" type=\"datetime\">2019-02-26 16:31:15</property>    "
+			+ "<property name=\"project:lastModified\" type=\"datetime\">2019-02-26T16:31:15</property>    "
 			+ "<property name=\"project:onTime\" type=\"boolean\">true</property>  "
 			+ "</properties>  <allowableActions>    <action>canCreateDocument</action>  </allowableActions>  <isExactAcl>false</isExactAcl>  "
 			+ "<policyIds>    <policyId>dummyObjectId</policyId>  </policyIds>  "

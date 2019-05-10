@@ -320,7 +320,7 @@ public class CmisSender extends SenderWithParametersBase {
 	List<String> actions = Arrays.asList("create", "delete", "get", "find", "update", "fetch", "bridge");
 	List<String> bindingTypes = Arrays.asList("atompub", "webservices", "browser");
 
-	public final static String FORMATSTRING_BY_DEFAULT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+	public final static String FORMATSTRING_BY_DEFAULT = "yyyy-MM-dd'T'HH:mm:ss";
 
 	public final static String OVERRIDE_WSDL_URL = "http://fake.url";
 	public final static String OVERRIDE_WSDL_KEY = "override_wsdl_key";
