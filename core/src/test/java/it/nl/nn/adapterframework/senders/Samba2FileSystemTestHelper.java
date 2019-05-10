@@ -216,7 +216,8 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 		Set<SMB2ShareAccess> shareAccess = new HashSet<SMB2ShareAccess>();
 		shareAccess.addAll(SMB2ShareAccess.ALL);
 		final File file;
-		file = client.openFile(filename, accessMask, null, shareAccess, SMB2CreateDisposition.FILE_OPEN, null);
+		String path = folder != null ? folder + "\\" + filename : filename;
+		file = client.openFile(path, accessMask, null, shareAccess, SMB2CreateDisposition.FILE_OPEN, null);
 
 		return file.getInputStream();
 	}

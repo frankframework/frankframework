@@ -94,9 +94,6 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 				&& (parameterList == null || parameterList.findParameter("destination") == null))
 			throw new ConfigurationException(
 					getLogPrefix() + "the rename action requires a destination parameter to be present");
-		if (getAction().equals("list")
-				&& (parameterList != null && parameterList.findParameter("inputFolder") != null))
-			inputFolder = parameterList.findParameter("inputFolder").getValue();
 	}
 	
 	@Override
@@ -127,7 +124,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc)
 			throws SenderException, TimeOutException {
 		ParameterValueList pvl = null;
-
+		
 		try {
 			if (prc != null && paramList != null) {
 				pvl = prc.getValues(paramList);
@@ -156,7 +153,11 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 
 				return result;
 			} else if (action.equalsIgnoreCase("list")) {
-				Iterator<F> fileList = ifs.listFiles(getInputFolder());
+				String folder = inputFolder;
+				if(paramList !=null && paramList.findParameter("inputFolder") != null ) {
+					folder = (String) pvl.getParameterValue("inputFolder").getValue();
+				}
+				Iterator<F> fileList = ifs.listFiles(folder);
 				int count = 0;
 				XmlBuilder dirXml = new XmlBuilder("directory");
 				while (fileList.hasNext()) {
