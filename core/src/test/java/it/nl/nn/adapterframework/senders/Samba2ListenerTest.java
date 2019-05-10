@@ -30,7 +30,7 @@ public class Samba2ListenerTest extends FileSystemListenerTest<String, Samba2Fil
 	
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new Samba2FileSystemTestHelper(shareName, username, password, domain, realm, kdc);
+		return new Samba2FileSystemTestHelper(shareName, username, password, domain, realm, kdc, authType);
 	}
 
 

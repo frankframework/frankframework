@@ -1,0 +1,33 @@
+<module>
+	<adapter name="Authentication test" active="${active.authentication}">
+		<receiver name="Authentication-Java">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4test-authentication" />
+		</receiver>
+		<pipeline firstPipe="selectSenderBasedOnRootNode">
+			<exits>
+				<exit path="READY" state="success" />
+			</exits>
+
+			<pipe name="selectSenderBasedOnRootNode" className="nl.nn.adapterframework.pipes.XmlSwitch" />
+
+			<pipe name="testalias" className="nl.nn.adapterframework.pipes.CredentialCheckingPipe"
+				targetUserid="testUser" targetPassword="testPassword" authAlias="${test.alias}"
+				defaultUserid="${test.userid}" defaultPassword="${test.password}">
+				<forward name="success" path="text2Xml" />
+			</pipe>
+
+			<pipe name="dummy" className="nl.nn.adapterframework.pipes.CredentialCheckingPipe"
+				targetUserid="dummy" targetPassword="dummy" authAlias="dummy">
+				<forward name="success" path="text2Xml" />
+			</pipe>
+
+			<pipe name="text2Xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe"
+				xmlTag="result" includeXmlDeclaration="false" useCdataSection="false">
+				<forward name="success" path="READY" />
+			</pipe>
+
+		</pipeline>
+	</adapter>
+
+</module>

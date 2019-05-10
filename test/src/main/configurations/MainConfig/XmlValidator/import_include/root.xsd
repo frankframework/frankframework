@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://nn.nl/root"
+	targetNamespace="http://nn.nl/root" elementFormDefault="qualified"
+	attributeFormDefault="unqualified" xmlns:s01="http://nn.nl/sub01"
+	xmlns:s03="http://nn.nl/sub03" xmlns:s04="http://nn.nl/sub04"
+	xmlns:s05="http://nn.nl/sub05">
+	<!--
+		#################################################
+		|	xsd		|	namespace	|	targetNamespace	|
+		#################################################
+		|	sub01	|	-			|	-				|
+		|	sub01a	|	-			|	-				|
+		|	sub02	|	root		|	root			|
+		|	sub03	|	sub03		|	sub03			|
+		|	sub04	|	-			|	sub04			|
+		|	sub05	|	sub05		|	-				|
+		#################################################
+	-->
+	<!-- ERROR xs:import namespace="http://nn.nl/root" schemaLocation="sub01.xsd"/ -->
+	<!-- ERROR xs:import namespace="http://nn.nl/s01" schemaLocation="sub01.xsd"/ -->
+	<xs:include schemaLocation="sub01.xsd" />
+	<xs:import schemaLocation="sub01a.xsd" />
+	<!-- ERROR xs:import schemaLocation="sub02.xsd"/ -->
+	<!-- ERROR xs:import namespace="http://nn.nl/root" schemaLocation="sub02.xsd"/ -->
+	<!-- ERROR xs:import namespace="http://nn.nl/s02" schemaLocation="sub02.xsd"/ -->
+	<xs:include schemaLocation="sub02.xsd" />
+	<!-- ERROR xs:include schemaLocation="sub03.xsd"/ -->
+	<!-- ERROR xs:import schemaLocation="sub03.xsd"/ -->
+	<!-- ERROR xs:import namespace="http://nn.nl/root" schemaLocation="sub03.xsd"/ -->
+	<xs:import namespace="http://nn.nl/sub03" schemaLocation="sub03.xsd" />
+	<!-- ERROR xs:import schemaLocation="sub04.xsd"/ -->
+	<!-- ERROR xs:import namespace="http://nn.nl/root" schemaLocation="sub04.xsd"/ -->
+	<xs:import namespace="http://nn.nl/sub04" schemaLocation="sub04.xsd" />
+	<!-- ERROR xs:import namespace="http://nn.nl/sub05" schemaLocation="sub05.xsd"/ -->
+	<!-- ERROR xs:import namespace="http://nn.nl/root" schemaLocation="sub05.xsd"/ -->
+	<xs:import schemaLocation="sub05.xsd" />
+	<xs:element name="root">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="string" type="xs:string" />
+				<xs:element ref="sub01" />
+				<!-- ERROR xs:element ref="sub01a"/ -->
+				<xs:element ref="sub02" />
+				<xs:element ref="s03:sub03" />
+				<xs:element ref="s04:sub04" />
+				<!-- ERROR xs:element ref="sub05"/ -->
+				<!-- ERROR xs:element ref="s05:sub05"/ -->
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

@@ -1,0 +1,28 @@
+<manageDatabaseREQ>
+	<delete>
+		<tableName>IBISPROP</tableName>
+	</delete>
+	<insert>
+		<tableName>IBISPROP</tableName>
+		<columns>
+			<column>
+				<name>NAME</name>
+				<value>LASTNAME</value>
+			</column>
+			<column>
+				<name>VALUE</name>
+				<value>DUMMY</value>
+			</column>
+			<column>
+				<name>LASTMODDATE</name>
+				<value>2018</value>
+				<type>datetime</type>
+				<formatString>yyyy</formatString>
+			</column>
+			<column>
+				<name>LASTMODBY</name>
+				<value>DUMMY</value>
+			</column>
+		</columns>
+	</insert>
+</manageDatabaseREQ>

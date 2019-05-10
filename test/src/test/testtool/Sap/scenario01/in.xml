@@ -1,0 +1,5 @@
+<request function="RFC_TRUSTED_CHECK">
+	<INPUT>
+		<RFCDEST>IBIS4TEST</RFCDEST>
+	</INPUT>
+</request>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?><files><![CDATA[<document name="bcb.txt">
+</document>
+;<document name="bcb.txt">
+AA
+850010952009012001
+850010952009012001
+850010952009012001
+850010952009012001
+ZZ
+AA
+850010952009001001
+850010952009001001
+850010952009001001
+ZZ
+</document>
+]]></files>

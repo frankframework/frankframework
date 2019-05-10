@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:tom="http://www.ibissource.org/tom" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.ibissource.org/tom" elementFormDefault="qualified">
+	<!--**********************************************TOM Includes*******************************************************-->
+	<xsd:include schemaLocation="../../xsd/XSD_Includes_TOM/TOMWrapper_V1.20.xsd"/>
+	<!--******************************** Service Elements******************************************-->
+	<xsd:element name="GetPartiesOnAgreementInsuranceREQ" type="tom:RequestMessage"/>
+	<xsd:element name="GetPartiesOnAgreementInsuranceRLY" type="tom:ReplyMessage"/>
+	<!--********************************** Service Types*******************************************-->
+	<xsd:complexType name="ReplyMessage">
+		<xsd:sequence>
+			<xsd:element name="ReturnCode" type="tom:ReturnCode"/>
+			<xsd:element name="ReturnCodeExtension" type="tom:ReturnCodeExtension" minOccurs="0"/>
+			<xsd:element name="Agreement" type="tom:Agreement" minOccurs="0"/>
+			<xsd:element name="PartyAgreementRole" type="tom:PartyAgreementRole" minOccurs="0" maxOccurs="10"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="RequestMessage">
+		<xsd:sequence>
+			<xsd:element name="Agreement" type="tom:AgreementIdentifier"/>
+			<xsd:element name="PartyAgreementRoleType" type="tom:PartyAgreementRoleTypeEnum" minOccurs="0"/>
+			<xsd:element name="RoleTypeSequenceNumber" type="tom:PartyAgreementRoleRoleTypeSequenceNumber" minOccurs="0"/>
+			<xsd:element name="AsIsDate" type="tom:Date" minOccurs="0"/>
+			<xsd:element name="ContactPointUsageType" type="tom:ContactPointUsageTypeEnum" minOccurs="0"/>
+			<xsd:element name="charSet" type="tom:charSetEnum" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--*************************************TOM PartyAgreementRole Object Types***********************************************-->
+	<xsd:complexType name="PartyAgreementRole">
+		<xsd:sequence>
+			<xsd:element name="InternalExternalIndicator" type="tom:PartyAgreementRoleInternalExternalIndicator" minOccurs="0"/>
+			<xsd:choice>
+				<xsd:element name="PartyInternalAgreementRole" type="tom:PartyInternalAgreementRole" minOccurs="0"/>
+				<xsd:element name="PartyExternalAgreementRole" type="tom:PartyExternalAgreementRole" minOccurs="0"/>
+			</xsd:choice>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PartyInternalAgreementRole">
+		<xsd:sequence>
+			<xsd:element name="PartyAgreementRoleType" type="tom:PartyAgreementRoleTypeEnum" minOccurs="0"/>
+			<xsd:element name="RoleTypeSequenceNumber" type="tom:PartyAgreementRoleRoleTypeSequenceNumber" minOccurs="0"/>
+			<xsd:element name="Status" type="tom:PartyAgreementRoleStatus" minOccurs="0"/>
+			<xsd:element name="ProcessingStage" type="tom:PartyAgreementRoleProcessingStage" minOccurs="0"/>
+			<xsd:element name="StartDate" type="tom:Date" minOccurs="0"/>
+			<xsd:element name="EndDate" type="tom:Date" minOccurs="0"/>
+			<xsd:choice>
+				<xsd:element name="PersonName" type="tom:PersonNameRly" minOccurs="0"/>
+				<xsd:element name="OrganisationName" type="tom:OrganisationName" minOccurs="0"/>
+			</xsd:choice>
+			<xsd:element name="PostalAddressContactPointUsage" type="tom:PostalAddressContactPointUsage" minOccurs="0"/>
+			<xsd:element name="TelephoneNumbeContactPointUsage" type="tom:TelephoneNumberContactPointUsage" minOccurs="0"/>
+			<xsd:element name="FaxNumberContactPointUsage" type="tom:FaxNumberContactPointUsage" minOccurs="0"/>
+			<xsd:element name="EmailAddressContactPointUsage" type="tom:EmailAddressContactPointUsage" minOccurs="0"/>
+			<xsd:element name="Party" type="tom:Party" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PartyExternalAgreementRole">
+		<xsd:sequence>
+			<xsd:element name="PartyAgreementRoleType" type="tom:PartyAgreementRoleTypeEnum" minOccurs="0"/>
+			<xsd:element name="Status" type="tom:PartyAgreementRoleStatus" minOccurs="0"/>
+			<xsd:element name="ProcessingStage" type="tom:PartyAgreementRoleProcessingStage" minOccurs="0"/>
+			<xsd:element name="EndDate" type="tom:Date" minOccurs="0"/>
+			<xsd:choice>
+				<xsd:element name="PersonName" type="tom:PersonNameRly" minOccurs="0"/>
+				<xsd:element name="OrganisationName" type="tom:OrganisationName" minOccurs="0"/>
+			</xsd:choice>
+			<xsd:element name="PostalAddressContactPointUsage" type="tom:PostalAddressContactPointUsage" minOccurs="0"/>
+			<xsd:element name="TelephoneNumbeContactPointUsage" type="tom:TelephoneNumberContactPointUsage" minOccurs="0"/>
+			<xsd:element name="FaxNumberContactPointUsage" type="tom:FaxNumberContactPointUsage" minOccurs="0"/>
+			<xsd:element name="EmailAddressContactPointUsage" type="tom:EmailAddressContactPointUsage" minOccurs="0"/>
+			<xsd:element name="Party" type="tom:Party" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="Party">
+		<xsd:sequence>
+			<xsd:element name="Id" type="tom:PartyId" minOccurs="0"/>
+			<xsd:element name="PartyType" type="tom:PartyType" minOccurs="0"/>
+			<xsd:element name="PreferredLanguage" type="tom:LanguageEnum" minOccurs="0"/>
+			<xsd:choice>
+				<xsd:element name="Person" type="tom:Person" minOccurs="0"/>
+				<xsd:element name="Organisation" type="tom:Organisation" minOccurs="0"/>
+			</xsd:choice>
+			<xsd:element name="PostalAddressContactPointUsage" type="tom:PostalAddressContactPointUsage" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="Organisation">
+		<xsd:sequence>
+			<xsd:element name="OrganisationName" type="tom:OrganisationName" minOccurs="0"/>
+			<xsd:element name="LegalForm" type="tom:LegalForm" minOccurs="0"/>
+			<xsd:element name="Demographics" type="tom:OrganisationDemographics" minOccurs="0"/>
+			<xsd:element name="PartyRegistration" type="tom:PartyRegistration" minOccurs="0" maxOccurs="3"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="Person">
+		<xsd:sequence>
+			<xsd:element name="PersonName" type="tom:PersonNameRly" minOccurs="0"/>
+			<xsd:element name="Demographics" type="tom:PersonDemographics" minOccurs="0"/>
+			<xsd:element name="PartyRecursiveRole" type="tom:PartyRecursiveRole" minOccurs="0"/>
+			<xsd:element name="PartyRegistration" type="tom:PartyRegistration" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="OrganisationDemographics">
+		<xsd:sequence>
+			<xsd:element name="FoundationDate" type="tom:Date" minOccurs="0"/>
+			<xsd:element name="LiquidationDate" type="tom:Date" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PersonDemographics">
+		<xsd:sequence>
+			<xsd:element name="Gender" type="tom:GenderEnum" minOccurs="0"/>
+			<xsd:element name="BirthDate" type="tom:Date" minOccurs="0"/>
+			<xsd:element name="DeathDate" type="tom:Date" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PartyRecursiveRole">
+		<xsd:sequence>
+			<xsd:element name="PartyRecursiveRoleType" type="tom:PartyRecursiveRoleTypeEnum" minOccurs="0"/>
+			<xsd:element name="Use" type="tom:PartyNameUseEnum" minOccurs="0"/>
+			<xsd:element name="FullName" type="tom:FullName" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PartyRegistration">
+		<xsd:sequence>
+			<xsd:element name="PartyRegistrationType" type="tom:PartyRegistrationTypeEnum" minOccurs="0"/>
+			<xsd:element name="RegistredReference" type="tom:RegisteredReference" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--*************************************TOM Agreement Object Types***********************************************-->
+	<xsd:complexType name="Agreement">
+		<xsd:sequence>
+			<xsd:element name="InternalExternalIndicator" type="tom:AgreementInternalExternalIndicator" minOccurs="0"/>
+			<xsd:choice>
+				<xsd:element name="InternalAgreement" type="tom:InternalAgreement" minOccurs="0"/>
+				<xsd:element name="ExternalAgreement" type="tom:ExternalAgreement" minOccurs="0"/>
+			</xsd:choice>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ExternalAgreement">
+		<xsd:sequence>
+			<xsd:element name="Id" type="tom:AgreementId" minOccurs="0"/>
+			<xsd:element name="AgreementType" type="tom:AgreementType" minOccurs="0"/>
+			<xsd:element name="Status" type="tom:AgreementStatus" minOccurs="0"/>
+			<xsd:element name="ProcessingStage" type="tom:AgreementProcessingStage" minOccurs="0"/>
+			<xsd:element name="Currency" type="tom:Currency" minOccurs="0"/>
+			<xsd:element name="AgreementLabel" type="tom:AgreementLabel" minOccurs="0"/>
+			<xsd:element name="AgreementCategory" type="tom:AgreementCategory" minOccurs="0"/>
+			<xsd:element name="Bic" type="tom:Bic" minOccurs="0"/>
+			<xsd:element name="ExternalOrganisation" type="tom:ExternalOrganisation" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="InternalAgreement">
+		<xsd:sequence>
+			<xsd:element name="Id" type="tom:AgreementId" minOccurs="0"/>
+			<xsd:element name="ExternalAgreementIdentifier" type="tom:ExternalAgreementIdentifier" minOccurs="0"/>
+			<xsd:element name="AgreementType" type="tom:AgreementType" minOccurs="0"/>
+			<xsd:element name="Status" type="tom:AgreementStatus" minOccurs="0"/>
+			<xsd:element name="ProcessingStage" type="tom:AgreementProcessingStage" minOccurs="0"/>
+			<xsd:element name="StartDate" type="tom:Date" minOccurs="0"/>
+			<xsd:element name="EndDate" type="tom:Date" minOccurs="0"/>
+			<xsd:element name="Currency" type="tom:Currency" minOccurs="0"/>
+			<xsd:element name="AgreementLabel" type="tom:AgreementLabel" minOccurs="0"/>
+			<xsd:element name="AgreementCategory" type="tom:AgreementCategory" minOccurs="0"/>
+			<xsd:element name="Bic" type="tom:Bic" minOccurs="0"/>
+			<xsd:element name="SalesPoint" type="tom:SalesPoint" minOccurs="0"/>
+			<xsd:element name="SalesOrganisation" type="tom:SalesOrganisation" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="AgreementIdentifier">
+		<xsd:sequence>
+			<xsd:element name="InternalExternalIndicator" type="tom:AgreementInternalExternalIndicator" minOccurs="0"/>
+			<xsd:choice>
+				<xsd:element name="InternalAgreement" type="tom:InternalAgreementId" minOccurs="0"/>
+				<xsd:element name="ExternalAgreement" type="tom:ExternalAgreementId" minOccurs="0"/>
+			</xsd:choice>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="InternalAgreementId">
+		<xsd:sequence>
+			<xsd:element name="Id" type="tom:AgreementId"/>
+			<xsd:element name="AgreementType" type="tom:AgreementType"/>
+			<xsd:element name="SalesOrganisation" type="tom:SalesOrganisation"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ExternalAgreementId">
+		<xsd:sequence>
+			<xsd:element name="Id" type="tom:AgreementId"/>
+			<xsd:element name="AgreementType" type="tom:AgreementType"/>
+			<xsd:element name="ExternalOrganisation" type="tom:ExternalOrganisation"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SalesOrganisation">
+		<xsd:sequence>
+			<xsd:element name="SalesOrgRole" type="tom:PartyAgreementRoleTypeEnum" minOccurs="0"/>
+			<xsd:element name="Id" type="tom:PartyId" minOccurs="0"/>
+			<xsd:element name="RoleTypeSequenceNumber" type="tom:PartyAgreementRoleRoleTypeSequenceNumber" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ExternalOrganisation">
+		<xsd:sequence>
+			<xsd:element name="ExternalOrgRole" type="tom:PartyAgreementRoleTypeEnum" minOccurs="0"/>
+			<xsd:element name="Id" type="tom:PartyId" minOccurs="0"/>
+			<xsd:element name="RoleTypeSequenceNumber" type="tom:PartyAgreementRoleRoleTypeSequenceNumber" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PersonNameRly">
+		<xsd:sequence>
+			<xsd:element name="Id" type="tom:PartyNameId" minOccurs="0"/>
+			<xsd:element name="Use" type="tom:PartyNameUseEnum" minOccurs="0"/>
+			<xsd:element name="FullName" type="tom:FullName" minOccurs="0"/>
+			<xsd:element name="Language" type="tom:LanguageEnum" minOccurs="0"/>
+			<xsd:element name="FirstNames" type="tom:FirstNames" minOccurs="0"/>
+			<xsd:element name="LastName" type="tom:LastName" minOccurs="0"/>
+			<xsd:element name="PreTitles" type="tom:PreTitles" minOccurs="0"/>
+			<xsd:element name="PostTitles" type="tom:PostTitles" minOccurs="0"/>
+			<xsd:element name="Titles" type="tom:Titles" minOccurs="0" maxOccurs="5"/>
+			<xsd:element name="Introduction" type="tom:Introduction" minOccurs="0"/>
+			<xsd:element name="NameSuffix" type="tom:NameSuffix" minOccurs="0"/>
+			<xsd:element name="Initials" type="tom:Initials" minOccurs="0"/>
+			<xsd:element name="BasicLastName" type="tom:BasicLastName" minOccurs="0"/>
+			<xsd:element name="LastNamePrefix" type="tom:LastNamePrefix" minOccurs="0"/>
+			<xsd:element name="PartnerName" type="tom:LastName" minOccurs="0"/>
+			<xsd:element name="PartnerNamePrefix" type="tom:LastNamePrefix" minOccurs="0"/>
+			<xsd:element name="BasicPartnerName" type="tom:BasicLastName" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--********************************************TOM Simple Types and Enumerations***************************************-->
+	<xsd:simpleType name="PartyType">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="PartyId">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="35"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="PartyRecursiveRoleTypeEnum">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="PartyRegistrationTypeEnum">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="RegisteredReference">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="35"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

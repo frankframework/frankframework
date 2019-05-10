@@ -1,0 +1,12 @@
+<!DOCTYPE configuration [
+	<!ENTITY Larva SYSTEM "./ConfigurationLarva.xml">
+	<!ENTITY UploadFiles SYSTEM "./ConfigurationUploadFiles.xml">
+]>
+<configuration name="UTIL">
+
+	<!-- running larva scenario's (on startup and once a day scheduled) -->
+	&Larva;
+
+	<!-- include configuration for console functions -->
+	&UploadFiles;
+</configuration>

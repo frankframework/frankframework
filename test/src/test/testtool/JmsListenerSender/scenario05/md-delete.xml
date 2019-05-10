@@ -1,0 +1,5 @@
+<manageDatabaseREQ>
+	<delete>
+		<tableName>IBISPROP</tableName>
+	</delete>
+</manageDatabaseREQ>

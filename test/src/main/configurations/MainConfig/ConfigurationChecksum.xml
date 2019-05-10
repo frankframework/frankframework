@@ -1,0 +1,127 @@
+<module>
+	<adapter name="ChecksumTest-Java" >
+		<receiver 
+			name="Checksum-Java">
+            <listener
+	            className="nl.nn.adapterframework.receivers.JavaListener"
+	            serviceName="ibis4test-checksum"
+	        />
+		</receiver>
+		<pipeline firstPipe="selectSenderBasedOnRootNode">
+			<exits>
+				<exit path="READY" state="success"/>
+				<exit path="ERROR" state="error"/>
+			</exits>
+
+			<pipe
+				name="selectSenderBasedOnRootNode"
+				className="nl.nn.adapterframework.pipes.XmlSwitch" >
+			</pipe>
+
+
+			<pipe 
+				name="CRC32"
+				className="nl.nn.adapterframework.pipes.ChecksumPipe"
+				type="CRC32"
+				>
+				<forward name="success" path="READY"/>
+			</pipe>
+			<pipe 
+				name="Adler32"
+				className="nl.nn.adapterframework.pipes.ChecksumPipe"
+				type="Adler32"
+				>
+				<forward name="success" path="READY"/>
+			</pipe>
+			<pipe 
+				name="MD5"
+				className="nl.nn.adapterframework.pipes.ChecksumPipe"
+				>
+				<forward name="success" path="READY"/>
+			</pipe>
+			<pipe 
+				name="SHA"
+				className="nl.nn.adapterframework.pipes.ChecksumPipe"
+				type="SHA"
+				>
+				<forward name="success" path="READY"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+
+	<adapter name="ChecksumTest-File" active="${active.fxf}" >
+		<receiver 
+			name="Checksum-FXF"
+		>
+			<listener 
+				className="nl.nn.adapterframework.extensions.fxf.FxfListener" 
+				destinationName="jms/fxf_request" 
+				script="${FXF_init}"
+				applicationId="CHECKSUM"
+				jmsRealm="fxf" 
+				delete="true"
+				workDirectory="yyyy" 
+				fxfDestinationName="zzzz"
+			/>
+		</receiver>
+		<pipeline firstPipe="selectSenderBasedOnTransferName">
+			<exits>
+				<exit path="READY" state="success"/>
+				<exit path="ERROR" state="error"/>
+			</exits>
+
+			<pipe
+				name="selectSenderBasedOnTransferName"
+				className="nl.nn.adapterframework.pipes.XmlSwitch" 
+				sessionKey="FxfTransferName" >
+			</pipe>
+
+
+			<pipe 
+				name="CRC32"
+				className="nl.nn.adapterframework.pipes.ChecksumPipe"
+				type="CRC32"
+				inputIsFile="true"
+				>
+				<forward name="success" path="ResponseSender"/>
+			</pipe>
+			<pipe 
+				name="Adler32"
+				className="nl.nn.adapterframework.pipes.ChecksumPipe"
+				type="Adler32"
+				inputIsFile="true"
+				>
+				<forward name="success" path="ResponseSender"/>
+			</pipe>
+			<pipe 
+				name="MD5"
+				className="nl.nn.adapterframework.pipes.ChecksumPipe"
+				inputIsFile="true"
+				>
+				<forward name="success" path="ResponseSender"/>
+			</pipe>
+			<pipe 
+				name="SHA"
+				className="nl.nn.adapterframework.pipes.ChecksumPipe"
+				type="SHA"
+				inputIsFile="true"
+				>
+				<forward name="success" path="ResponseSender"/>
+			</pipe>
+			<pipe 
+		        name="ResponseSender" > 
+		        <sender 
+		                className="nl.nn.adapterframework.jms.JmsSender" 
+		                destinationName="jms/i4testiaf_out"
+		                deliveryMode="NON_PERSISTENT"
+		                jmsRealm="qcf"
+		        >
+		        	<param name="SOURCE" value="I4TESTGR"/>
+				</sender> 
+				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/ChecksumTest-File" />
+			  <forward name="success" path="READY" />
+			</pipe>	
+		</pipeline>
+	</adapter>
+	
+</module>

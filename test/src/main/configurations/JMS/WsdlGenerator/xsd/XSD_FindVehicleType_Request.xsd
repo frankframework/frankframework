@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="FindVehicleTypeREQ">
+		<xs:complexType>
+			<xs:all>
+				<xs:element name="Body" minOccurs="0">
+					<xs:complexType>
+						<xs:all>
+							<xs:element name="bouwmnd">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:minLength value="1"/>
+										<xs:maxLength value="2"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="bouwjr">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:length value="4"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="brandstof">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:enumeration value="A">
+											<xs:annotation>
+												<xs:documentation>Alcohol</xs:documentation>
+											</xs:annotation>
+										</xs:enumeration>
+										<xs:enumeration value="B">
+											<xs:annotation>
+												<xs:documentation>Benzine</xs:documentation>
+											</xs:annotation>
+										</xs:enumeration>
+										<xs:enumeration value="C">
+											<xs:annotation>
+												<xs:documentation>Vloeibaar gas (Cryogeen)</xs:documentation>
+											</xs:annotation>
+										</xs:enumeration>
+										<xs:enumeration value="D">
+											<xs:annotation>
+												<xs:documentation>Diesel</xs:documentation>
+											</xs:annotation>
+										</xs:enumeration>
+										<xs:enumeration value="E">
+											<xs:annotation>
+												<xs:documentation>Electriciteit</xs:documentation>
+											</xs:annotation>
+										</xs:enumeration>
+										<xs:enumeration value="G">
+											<xs:annotation>
+												<xs:documentation>Gas zoals LPG</xs:documentation>
+											</xs:annotation>
+										</xs:enumeration>
+										<xs:enumeration value="H">
+											<xs:annotation>
+												<xs:documentation>Compressed Natural Gas (aardgas)</xs:documentation>
+											</xs:annotation>
+										</xs:enumeration>
+										<xs:enumeration value="W">
+											<xs:annotation>
+												<xs:documentation>Waterstof</xs:documentation>
+											</xs:annotation>
+										</xs:enumeration>
+										<xs:enumeration value="Z">
+											<xs:annotation>
+												<xs:documentation>Other</xs:documentation>
+											</xs:annotation>
+										</xs:enumeration>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="hybride">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:enumeration value="J"/>
+										<xs:enumeration value="N"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="voertuigSoort" minOccurs="0">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:enumeration value="110">
+											<xs:annotation>
+												<xs:documentation>Personenauto's geel kenteken</xs:documentation>
+											</xs:annotation>
+										</xs:enumeration>
+										<xs:enumeration value="120">
+											<xs:annotation>
+												<xs:documentation>Bedrijfswagens tot ca. 3,5 ton GVW</xs:documentation>
+											</xs:annotation>
+										</xs:enumeration>
+										<xs:enumeration value="130">
+											<xs:annotation>
+												<xs:documentation>Bedrijfswagens 3.5 tot 10 ton GVW</xs:documentation>
+											</xs:annotation>
+										</xs:enumeration>
+										<xs:enumeration value="140">
+											<xs:annotation>
+												<xs:documentation>Terreinwagens 4x4 grijs kenteken</xs:documentation>
+											</xs:annotation>
+										</xs:enumeration>
+										<xs:enumeration value="150">
+											<xs:annotation>
+												<xs:documentation>Motoren</xs:documentation>
+											</xs:annotation>
+										</xs:enumeration>
+										<xs:enumeration value="160">
+											<xs:annotation>
+												<xs:documentation>Brommers</xs:documentation>
+											</xs:annotation>
+										</xs:enumeration>
+										<xs:enumeration value="180">
+											<xs:annotation>
+												<xs:documentation>Personenbussen</xs:documentation>
+											</xs:annotation>
+										</xs:enumeration>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="merkNaam" minOccurs="0">
+								<xs:simpleType>
+									<xs:restriction base="xs:string"/>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="modelNaam" minOccurs="0">
+								<xs:simpleType>
+									<xs:restriction base="xs:string"/>
+								</xs:simpleType>
+							</xs:element>
+						</xs:all>
+					</xs:complexType>
+				</xs:element>
+			</xs:all>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

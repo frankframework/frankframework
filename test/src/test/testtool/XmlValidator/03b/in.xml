@@ -1,0 +1,27 @@
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+	<Header>
+		<MessageHeader xmlns="http://www.ing.com/CSP/XSD/General/Message_2">
+			<From>
+				<Id>sf</Id>
+			</From>
+			<HeaderFields>
+				<ConversationId>sdfa</ConversationId>
+				<MessageId>asdf</MessageId>
+				<Timestamp>2010-12-28T17:11:18.688+01:00</Timestamp>
+			</HeaderFields>
+		</MessageHeader>
+	</Header>
+	<Body>
+		<SetRequest xmlns="http://www.ing.com/nl/pcretail/ts/migrationcasedata_01">
+			<CaseData>
+				<RVS_PARTY_ID>60</RVS_PARTY_ID>
+				<COMPANY_CODE>NN1</COMPANY_CODE>
+				<NN_PARTY_ID>SET BY SC1</NN_PARTY_ID>
+				<CASE_ID>2</CASE_ID>
+				<CONVERSATION_ID>ConvID60</CONVERSATION_ID>
+				<PAYLOAD>PAYLOAD60</PAYLOAD>
+				<STATUS>CREATED BY SC1</STATUS>
+			</CaseData>
+		</SetRequest>
+	</Body>
+</Envelope>

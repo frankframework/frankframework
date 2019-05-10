@@ -1,0 +1,7 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+	<soapenv:Body>
+		<Request xmlns="http://targetNamespace">
+			<Test>abc</Test>
+		</Request>
+	</soapenv:Body>
+</soapenv:Envelope>

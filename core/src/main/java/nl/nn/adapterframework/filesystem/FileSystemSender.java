@@ -47,7 +47,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * 
  * 
  * <p><b>Actions:</b></p>
- * <p>The <code>list</code> action for listing a directory content or single file</p>
+ * <p>The <code>list</code> action for listing a directory content inputFolder attribute should be set in adapter to list. If not set then, it will list root folder content </p>
  * <p>The <code>download</code> action for downloading a file, requires filename as input. Returns a base64 encoded string containing the file content </p>
  * <p>The <code>move</code> action for moving a file to another folder</p>
  * <p>The <code>delete</code> action requires the filename as input </p>

@@ -1,0 +1,7 @@
+<Account_spcService_Account_spcServiceQueryPage_Input xmlns="http://siebel.com/CustomUI" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+	<ListOfTestAccount xmlns="http://www.siebel.com/xml/Test%20Account/Query">
+		<Account>
+			<Name>A*</Name>
+		</Account>
+	</ListOfTestAccount>
+</Account_spcService_Account_spcServiceQueryPage_Input>

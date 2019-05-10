@@ -1,0 +1,6 @@
+<Error>
+  <errorCode>FAILURE</errorCode>
+  <errorMessage>Validation using EsbSoapValidator with 'http://nn.nl/XSD/PropertyCasualtyRetail/Log/LogConversion/1/SetPolicyDetails/1 /EsbSoapValidator/SetPolicyDetails/PropertyCasualtyRetail_Log_LogConversion_1_SetPolicyDetails_1.xsd http://nn.nl/XSD/Generic/MessageHeader/1 /xml/xsd/CommonMessageHeader.xsd http://schemas.xmlsoap.org/soap/envelope/ /xml/xsd/soap/envelope.xsd' failed:
+/Envelope/Header: Illegal element 'MessageHeader2'. Element(s) 'MessageHeader' expected.
+/Envelope/Header: Element(s) 'MessageHeader' not found</errorMessage>
+</Error>

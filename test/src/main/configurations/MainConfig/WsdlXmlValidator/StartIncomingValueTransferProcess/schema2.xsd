@@ -1,0 +1,166 @@
+        <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://nn.nl/XSD/PensionsSMB/ValueTransfer/ValueTransferLegacy/1/StartIncomingValueTransferProcess/1" elementFormDefault="qualified" attributeFormDefault="unqualified">
+            <xs:import namespace="http://nn.nl/XSD/Generic/MessageHeader/1" schemaLocation="schema1.xsd"/>
+            <xs:complexType name="EmployeeAddressDataType">
+                <xs:sequence>
+                    <xs:element name="Street">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string"/>
+                        </xs:simpleType>
+                    </xs:element>
+                    <xs:element name="HouseNumber">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string"/>
+                        </xs:simpleType>
+                    </xs:element>
+                    <xs:element name="HouseNumberAddition" minOccurs="0">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string"/>
+                        </xs:simpleType>
+                    </xs:element>
+                    <xs:element name="PostalCode">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string"/>
+                        </xs:simpleType>
+                    </xs:element>
+                    <xs:element name="City">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string"/>
+                        </xs:simpleType>
+                    </xs:element>
+                    <xs:element name="CountryCode">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:minLength value="2"/>
+                                <xs:maxLength value="2"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:element>
+                    <xs:element name="CountryName">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string"/>
+                        </xs:simpleType>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="EmployeeDataType">
+                <xs:sequence>
+                    <xs:element ref="ns0:PersonalDemographics"/>
+                    <xs:element ref="ns0:EmployeeAddressData"/>
+                    <xs:element ref="ns0:PensionParticipation" maxOccurs="unbounded"/>
+                    <xs:element ref="ns0:FormerPUO"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="EmploymentDataType">
+                <xs:sequence>
+                    <xs:element name="StartDate" type="xs:date"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="FormerPUOType">
+                <xs:sequence>
+                    <xs:element name="BP-id">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:positiveInteger"/>
+                        </xs:simpleType>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="PensionParticipationType">
+                <xs:sequence>
+                    <xs:element name="VTA-id">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:integer">
+                                <xs:enumeration value="1"/>
+                                <xs:enumeration value="2"/>
+                                <xs:enumeration value="3"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:element>
+                    <xs:element name="PlanNr" minOccurs="0">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:integer">
+                                <xs:maxInclusive value="99"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:element>
+                    <xs:element name="ContractNr">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:positiveInteger">
+                                <xs:minInclusive value="10000"/>
+                                <xs:maxInclusive value="99999"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="PersonalDemographicsType">
+                <xs:sequence>
+                    <xs:element name="BP-id" minOccurs="0">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:integer"/>
+                        </xs:simpleType>
+                    </xs:element>
+                    <xs:element name="BSN">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:integer">
+                                <xs:pattern value="[0-9]{9}|[0-9]{10}"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:element>
+                    <xs:element name="Birthdate">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:date"/>
+                        </xs:simpleType>
+                    </xs:element>
+                    <xs:element name="Gender">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:integer">
+                                <xs:enumeration value="1"/>
+                                <xs:enumeration value="2"/>
+                                <xs:enumeration value="0"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:element>
+                    <xs:element name="Initials">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string"/>
+                        </xs:simpleType>
+                    </xs:element>
+                    <xs:element name="LastNamePrefix" minOccurs="0">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string"/>
+                        </xs:simpleType>
+                    </xs:element>
+                    <xs:element name="LastName">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string"/>
+                        </xs:simpleType>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="StartIncomingValueTransferRequestType">
+                <xs:sequence>
+                    <xs:element name="OldEmployername" minOccurs="0">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string"/>
+                        </xs:simpleType>
+                    </xs:element>
+                    <xs:element name="OldParticipationId" minOccurs="0">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string"/>
+                        </xs:simpleType>
+                    </xs:element>
+                    <xs:element name="RequestDate">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string"/>
+                        </xs:simpleType>
+                    </xs:element>
+                    <xs:element name="EmployeeData" type="ns0:EmployeeDataType"/>
+                    <xs:element name="EmploymentData" type="ns0:EmploymentDataType"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="EmployeeAddressData" type="ns0:EmployeeAddressDataType"/>
+            <xs:element name="FormerPUO" type="ns0:FormerPUOType"/>
+            <xs:element name="PensionParticipation" type="ns0:PensionParticipationType"/>
+            <xs:element name="PersonalDemographics" type="ns0:PersonalDemographicsType"/>
+            <xs:element name="StartIncomingValueTransferRequest" type="ns0:StartIncomingValueTransferRequestType"/>
+        </xs:schema>

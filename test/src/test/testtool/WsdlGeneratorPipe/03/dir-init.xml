@@ -1,0 +1,8 @@
+<project default="copy.files">
+	<target name="copy.files">
+		<property name="root.dir" value="c:/temp/ibis4test/generateWsdl" />
+		<delete dir="${root.dir}" />
+		<mkdir dir="${root.dir}" />
+		<copy file="input.zip" todir="${root.dir}" />
+	</target>
+</project>

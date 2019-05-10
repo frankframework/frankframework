@@ -1,0 +1,7 @@
+<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope"><soapenv:Header><UsernameToken xmlns="http://siebel.com/webservices" xmlns:soap="http://www.w3.org/2003/05/soap-envelope">user</UsernameToken><PasswordText xmlns="http://siebel.com/webservices" xmlns:soap="http://www.w3.org/2003/05/soap-envelope">hello123</PasswordText><SessionType xmlns="http://siebel.com/webservices" xmlns:soap="http://www.w3.org/2003/05/soap-envelope">None</SessionType></soapenv:Header><soapenv:Body><Account_spcService_Account_spcServiceQueryPage_Input xmlns="http://siebel.com/CustomUI">
+			<ListOfTestAccount xmlns="http://www.siebel.com/xml/Test%20Account/Query">
+				<Account>
+					<Name>A*</Name>
+				</Account>
+			</ListOfTestAccount>
+		</Account_spcService_Account_spcServiceQueryPage_Input></soapenv:Body></soapenv:Envelope>

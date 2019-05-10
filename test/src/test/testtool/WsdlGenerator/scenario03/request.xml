@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+	<SOAP-ENV:Header>
+		<ns:MessageHeader xmlns:ns="http://nn.nl/XSD/Generic/MessageHeader/2"
+			xmlns:ns0="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+			<ns:From>
+				<ns:Id>InvestmentAccountNewProcess_1_1_HandleRequestOut_1</ns:Id>
+			</ns:From>
+			<ns:To>
+				<ns:Location>InvestmentAccountNewProcess_1_1_HandleRequestOut_1</ns:Location>
+			</ns:To>
+			<ns:HeaderFields>
+				<ns:CPAId>QdLZ-UxB6KEAK-Zn6E-7jFYUjaw</ns:CPAId>
+				<ns:ConversationId>ab.simsom.biz_0ace0915--4dd70a80_14c215f1849_-7ff8</ns:ConversationId>
+				<ns:MessageId>QdLZ-UxB6KEAK-Zn6E-7jFYUjaw</ns:MessageId>
+				<ns:CorrelationId>pvm:0a1230dv</ns:CorrelationId>
+				<ns:Timestamp>2015-03-16T08:02:27.16+01:00</ns:Timestamp>
+				<ns:TransactionId>QdLZ-UxB6KEAK-Zn6E-7jFYUlew</ns:TransactionId>
+			</ns:HeaderFields>
+			<ns:Service>
+				<ns:Name>InvestmentAccountNewProcess</ns:Name>
+				<ns:Context>1</ns:Context>
+				<ns:Action>
+					<ns:Paradigm>Request</ns:Paradigm>
+					<ns:Name>HandleRequestOut</ns:Name>
+					<ns:Version>1</ns:Version>
+				</ns:Action>
+			</ns:Service>
+		</ns:MessageHeader>
+	</SOAP-ENV:Header>
+	<SOAP-ENV:Body>
+		<n1:RequestFindBPPensionsREQ xmlns:n1="http://nn.nl/XSD/CustomerAdministration/Party/Party/1/FindBPPensions/1">
+			<n1:SearchParameter>
+				<n1:SocialSecurityNumber>12345</n1:SocialSecurityNumber>
+			</n1:SearchParameter>
+			<n1:IgnoreGBAFlag>x</n1:IgnoreGBAFlag>
+		</n1:RequestFindBPPensionsREQ>
+	</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

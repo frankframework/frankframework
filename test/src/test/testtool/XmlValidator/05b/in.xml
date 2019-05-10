@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GetPartiesOnAgreementInsuranceREQ xmlns="http://www.ibissource.org/tom">
+	<Agreement>
+		<InternalExternalIndicator>99</InternalExternalIndicator>
+		<InternalAgreement>
+			<Id2>a</Id2>
+			<AgreementType>a</AgreementType>
+			<SalesOrganisation>
+				<SalesOrgRole>99</SalesOrgRole>
+				<Id>a</Id>
+				<RoleTypeSequenceNumber>999</RoleTypeSequenceNumber>
+			</SalesOrganisation>
+		</InternalAgreement>
+	</Agreement>
+	<PartyAgreementRoleType>99</PartyAgreementRoleType>
+	<RoleTypeSequenceNumber>999</RoleTypeSequenceNumber>
+	<AsIsDate>1957-08-13</AsIsDate>
+	<ContactPointUsageType>99</ContactPointUsageType>
+	<charSet>01</charSet>
+</GetPartiesOnAgreementInsuranceREQ>

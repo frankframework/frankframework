@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tom="http://www.ibissource.org/tom" targetNamespace="http://www.ibissource.org/tom" elementFormDefault="qualified" tom:agent="TOM" tom:package="com.ibissource.tom">
+	<!--******************************************TOM Generic SimpleTypes**********************************-->
+	<xsd:simpleType name="Date">
+		<xsd:restriction base="xsd:date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="Occurrence">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ReturnCode">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="50"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ReturnCodeExtension">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="512"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="charSetEnum">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="01"/>
+			<xsd:enumeration value="02"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="LanguageEnum">
+		<xsd:restriction base="tom:LstLanguage">
+			<xsd:length value="3"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="AuditTrailInformation">
+		<xsd:restriction base="xsd:string">
+			<xsd:length value="100"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Version">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			<xsd:maxInclusive value="9999999999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

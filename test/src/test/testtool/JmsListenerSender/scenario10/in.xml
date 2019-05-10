@@ -1,0 +1,3 @@
+<request action="subcall_java_echo">
+	<value>test</value>
+</request>

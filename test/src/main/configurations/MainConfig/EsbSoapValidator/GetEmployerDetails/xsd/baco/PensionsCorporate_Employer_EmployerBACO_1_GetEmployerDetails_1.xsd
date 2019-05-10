@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:sfun="http://www.ibissource.org/sfun" xmlns:lpa="http://www.ibissource.org/lpa" xmlns:icd="http://www.ibissource.org/icd" xmlns:tom="http://www.ibissource.org/tom" xmlns:agm="http://www.ibissource.org/agm" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ns1="http://www.ibissource.org/em" xmlns:cmh="http://nn.nl/XSD/Generic/MessageHeader/1" xmlns="http://nn.nl/XSD/PensionsCorporate/Employer/EmployerBACO/1/GetEmployerDetails/1" targetNamespace="http://nn.nl/XSD/PensionsCorporate/Employer/EmployerBACO/1/GetEmployerDetails/1" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:import namespace="http://nn.nl/XSD/Generic/MessageHeader/1" schemaLocation="../common/CommonMessageHeader.xsd"/>
+	<xsd:import namespace="http://www.ibissource.org/lpa" schemaLocation="../common/LifePensionAdministrationV1.0.xsd"/>
+	<xsd:import namespace="http://www.ibissource.org/em" schemaLocation="../common/EmploymentTypesV1.1.xsd"/>
+	<xsd:import namespace="http://www.ibissource.org/agm" schemaLocation="../common/EmployeeBenefitsAgreementsTypesV1.0.xsd"/>
+	<xsd:import namespace="http://www.ibissource.org/sfun" schemaLocation="../common/InvestmentAccounts_V1.0.xsd"/>
+	<xsd:import namespace="http://www.ibissource.org/tom" schemaLocation="../common/V1.10TOMWrapper.xsd"/>
+	<xsd:include schemaLocation="../common/ProcesItemsV10.xsd"/>
+	<!--****************************************************************************************************************-->
+	<!--*************************** Service Elements ***********************************************************-->
+	<xsd:element name="GetEmployerDetails_Request" type="getEmployerDetails_Request"/>
+	<xsd:element name="GetEmployerDetails_Response" type="getEmployerDetails_Response"/>
+	<!--**********************************************************************-->
+	<!--*************************** REQUEST ******************************-->
+	<!--**********************************************************************-->
+	<xsd:complexType name="getEmployerDetails_Request">
+		<xsd:all>
+			<xsd:element name="PortalOrganisationUnit" type="portalOrganisationUnitREQ"/>
+			<xsd:element name="WGPAccount" type="wGPAccountREQ" minOccurs="0"/>
+			<xsd:element name="EmployerDetailsType" type="agm:number1"/>
+		</xsd:all>
+	</xsd:complexType>
+	<!--*******************************InternalComplexTypes*****************************-->
+	<xsd:complexType name="portalOrganisationUnitREQ">
+		<xsd:all>
+			<xsd:element name="Id" type="agm:IdType"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="wGPAccountREQ">
+		<xsd:all>
+			<xsd:element name="Id" type="agm:IdType"/>
+		</xsd:all>
+	</xsd:complexType>
+	<!--**********************************************************************-->
+	<!--*************************** REPLY ******************************-->
+	<!--**********************************************************************-->
+	<xsd:complexType name="getEmployerDetails_Response">
+		<xsd:all>
+			<xsd:element name="Body" type="BodyType" minOccurs="0"/>
+			<xsd:element ref="cmh:Result"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="BodyType">
+		<xsd:all>
+			<xsd:element name="CompletionInformation" type="completionInformationRLY"/>
+			<xsd:element name="DebuggingInformation" type="debuggingInformationRLY" minOccurs="0"/>
+			<xsd:element name="Employer" type="employerRLY" minOccurs="0"/>
+		</xsd:all>
+	</xsd:complexType>
+	<!--*******************************InternalComplexTypes*****************************-->
+	<xsd:complexType name="employerRLY">
+		<xsd:sequence minOccurs="0">
+			<xsd:element name="ContactPerson" type="contactPersonRLY" minOccurs="0" maxOccurs="2"/>
+			<xsd:element name="Contact1IdentContact2" type="contact1IdentContact2Type" minOccurs="0"/>
+			<xsd:element name="KeyFigures" type="keyFiguresRLY" minOccurs="0"/>
+			<xsd:element name="AccountRights" type="accountRightsRLY" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="contactPersonRLY">
+		<xsd:all>
+			<xsd:element name="PersonName" type="personNameRLY"/>
+			<xsd:element name="PersonDemographics" type="personDemographicsRLY"/>
+			<xsd:element name="TelephoneNumber" type="telephoneNumberRLY"/>
+			<xsd:element name="EmailAddress" type="emailAddressRLY"/>
+			<xsd:element name="PostalAddress" type="postalAddressRLY"/>
+			<xsd:element name="Employment" type="employmentRLY" minOccurs="0"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="personNameRLY">
+		<xsd:all>
+			<xsd:element name="LastName" type="tom:LastName"/>
+			<xsd:element name="LastNamePrefix" type="tom:LastNamePrefix" minOccurs="0"/>
+			<xsd:element name="Initials" type="tom:Initials"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="personDemographicsRLY">
+		<xsd:all>
+			<xsd:element name="Gender" type="tom:GenderEnum"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="telephoneNumberRLY">
+		<xsd:sequence>
+			<xsd:element name="TelephoneNumberInformation" type="tom:TelephoneNumberInformation"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="emailAddressRLY">
+		<xsd:sequence>
+			<xsd:element name="EmailAddressInformation" type="tom:EmailAddressInformation"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="postalAddressRLY">
+		<xsd:all>
+			<xsd:element name="Street" type="tom:Street"/>
+			<xsd:element name="HouseNumber" type="tom:HouseNumber"/>
+			<xsd:element name="HouseNumberAddition" type="tom:HouseNumberAddition" minOccurs="0"/>
+			<xsd:element name="PostalCode" type="agm:PostalCode"/>
+			<xsd:element name="POBox" type="tom:POBox" minOccurs="0"/>
+			<xsd:element name="City" type="tom:City"/>
+			<xsd:element name="CountryCode" type="tom:CountryCodeEnum"/>
+			<xsd:element name="LocationCode" type="agm:text20" minOccurs="0"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="employmentRLY">
+		<xsd:all>
+			<xsd:element name="Profession" type="agm:text30"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:simpleType name="contact1IdentContact2Type">
+		<xsd:restriction base="agm:yesno"/>
+	</xsd:simpleType>
+	<xsd:complexType name="keyFiguresRLY">
+		<xsd:sequence minOccurs="0">
+			<xsd:element name="WIAwageLimit" type="agm:AmountType"/>
+			<xsd:element name="PensionContract" type="pensionContractRLY" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="pensionContractRLY">
+		<xsd:sequence>
+			<xsd:element name="Number" type="lpa:number"/>
+			<xsd:element name="PensionPlan" type="pensionPlanRLY" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="pensionPlanRLY">
+		<xsd:sequence minOccurs="0">
+			<xsd:element name="Number" type="lpa:number"/>
+			<xsd:element name="Name" type="lpa:name"/>
+			<xsd:element name="Franchise" type="agm:AmountType"/>
+			<xsd:element name="MaxSalary" type="agm:AmountType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="accountRightsRLY">
+		<xsd:sequence>
+			<xsd:element name="Active" type="activeRLY"/>
+			<xsd:element name="Discharged" type="dischargedRLY"/>
+			<xsd:element name="Retired" type="retiredRLY"/>
+			<xsd:element name="Deceased" type="deceasedRLY"/>
+			<xsd:element name="Disabled" type="disabledRLY"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="activeRLY">
+		<xsd:sequence>
+			<xsd:element name="DisplayActive" type="agm:yesno"/>
+			<xsd:element name="IsReadOnly" type="agm:IsReadOnlyType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="dischargedRLY">
+		<xsd:sequence>
+			<xsd:element name="DisplayDischarged" type="agm:yesno"/>
+			<xsd:element name="IsReadOnly" type="agm:IsReadOnlyType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="retiredRLY">
+		<xsd:sequence>
+			<xsd:element name="DisplayRetired" type="agm:yesno"/>
+			<xsd:element name="IsReadOnly" type="agm:IsReadOnlyType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="deceasedRLY">
+		<xsd:sequence minOccurs="0">
+			<xsd:element name="DisplayDeceased" type="agm:yesno"/>
+			<xsd:element name="IsReadOnly" type="agm:IsReadOnlyType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="disabledRLY">
+		<xsd:sequence minOccurs="0">
+			<xsd:element name="DisplayDisabled" type="agm:yesno"/>
+			<xsd:element name="IsReadOnly" type="agm:IsReadOnlyType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

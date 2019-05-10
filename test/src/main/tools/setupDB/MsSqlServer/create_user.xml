@@ -1,0 +1,16 @@
+<project default="create.user">
+	<target name="create.user">
+		<exec executable="sqlcmd">
+			<arg value="-S"/>
+			<arg value="localhost"/>
+<!--
+			<arg value="-U"/>
+			<arg value="sa"/>
+			<arg value="-P"/>
+			<arg value="Gen76"/>
+-->
+			<arg value="-i"/>
+			<arg value="create_user.sql"/>
+		</exec>
+	</target>
+</project>

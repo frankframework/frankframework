@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<HandlePremiumDueDetailsREQ>
+	<PremiumDueDetailsData>
+		<ServiceRequest xmlns="http://www.unisys.com/schemas/PDG">
+			<RequestEnvelope>
+				<event>String</event>
+				<from>string</from>
+				<messageId>String</messageId>
+				<messageVersion>4</messageVersion>
+				<processReference>String</processReference>
+				<responseRequired>1</responseRequired>
+				<role>String</role>
+				<serviceType>PDG_REQ1008</serviceType>
+				<timeStamp>2001-12-17T09:30:47-05:00</timeStamp>
+				<to>String</to>
+				<txReference>String</txReference>
+				<userReference>String</userReference>
+				<windbackInd>1</windbackInd>
+			</RequestEnvelope>
+			<Body>
+				<XdsPDGPolicy>
+					<contractEngineRef>String</contractEngineRef>
+					<deductiblePercentage>3.14159</deductiblePercentage>
+					<mutationRef>String</mutationRef>
+					<policyCommencementDate>1967-08-13</policyCommencementDate>
+					<policyEndDate>1967-08-13</policyEndDate>
+					<policyQualified>30</policyQualified>
+					<policyRef>String</policyRef>
+					<premiumCollectionDayMonth>1967-08-13</premiumCollectionDayMonth>
+					<premiumPaymentEndDate>1967-08-13</premiumPaymentEndDate>
+					<serviceCompanyRef>String</serviceCompanyRef>
+					<XdsPDGPremium>
+						<paymentStartDate>1967-08-13</paymentStartDate>
+						<premiumType>Start Pro-rata</premiumType>
+						<premiumAmount>3.14159</premiumAmount>
+					</XdsPDGPremium>
+					<XdsPDGPremium>
+						<paymentStartDate>1967-08-13</paymentStartDate>
+						<premiumType>Final Pro-rata</premiumType>
+						<premiumAmount>3.14159</premiumAmount>
+					</XdsPDGPremium>
+					<XdsPDGPremium>
+						<paymentStartDate>1967-08-13</paymentStartDate>
+						<premiumType>Initial</premiumType>
+						<premiumAmount>3.14159</premiumAmount>
+					</XdsPDGPremium>
+					<XdsPDGPremium>
+						<paymentStartDate>1967-08-13</paymentStartDate>
+						<premiumType>Subsequent</premiumType>
+						<premiumAmount>3.14159</premiumAmount>
+					</XdsPDGPremium>
+					<XdsPDGPremium>
+						<paymentStartDate>1967-08-13</paymentStartDate>
+						<premiumType>Regular</premiumType>
+						<premiumAmount>3.14159</premiumAmount>
+					</XdsPDGPremium>
+					<XdsPDGPremium>
+						<paymentStartDate>1967-08-13</paymentStartDate>
+						<premiumType>Single</premiumType>
+						<premiumAmount>3.14159</premiumAmount>
+					</XdsPDGPremium>
+				</XdsPDGPolicy>
+			</Body>
+		</ServiceRequest>
+	</PremiumDueDetailsData>
+</HandlePremiumDueDetailsREQ>

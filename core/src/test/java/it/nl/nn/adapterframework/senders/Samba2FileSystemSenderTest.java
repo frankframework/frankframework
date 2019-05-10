@@ -29,7 +29,7 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<Samba2Sende
 	
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new Samba2FileSystemTestHelper(shareName, username, password, domain, realm, kdc);
+		return new Samba2FileSystemTestHelper(shareName, username, password, domain, realm, kdc, authType);
 	}
 
 

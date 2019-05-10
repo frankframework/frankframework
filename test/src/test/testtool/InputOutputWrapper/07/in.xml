@@ -1,0 +1,22 @@
+<SOAPENV:Envelope xmlns:SOAPENV="http://schemas.xmlsoap.org/soap/envelope/">
+	<SOAPENV:Header>
+		<ns0:MessageHeader xmlns:ns0="http://www.nn.nl/">
+			<ns0:From>
+				<ns0:Id>portal</ns0:Id>
+			</ns0:From>
+			<ns0:To>
+				<ns0:Location>TIBCO Service</ns0:Location>
+			</ns0:To>
+			<ns0:HeaderFields>
+				<ns0:CPAId>cpid</ns0:CPAId>
+				<ns0:ConversationId>ConversationId</ns0:ConversationId>
+				<ns0:MessageId>MessageId</ns0:MessageId>
+				<ns0:ExternalRefToMessageId>ExternalRefToMessageId</ns0:ExternalRefToMessageId>
+				<ns0:Timestamp>2010-10-20T12:19:35</ns0:Timestamp>
+			</ns0:HeaderFields>
+		</ns0:MessageHeader>
+	</SOAPENV:Header>
+	<SOAPENV:Body>
+		<Request xmlns="http://www.nn.nl/InputOutputWrapper" action="sendMessage_notWellFormedResponse">TEST</Request>
+	</SOAPENV:Body>
+</SOAPENV:Envelope>

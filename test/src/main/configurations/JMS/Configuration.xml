@@ -1,0 +1,18 @@
+<!DOCTYPE configuration [
+	<!ENTITY ConfigurationBatch SYSTEM "./ConfigurationBatch.xml">
+	<!ENTITY ConfigurationCompactMessage SYSTEM "./ConfigurationCompactMessage.xml">
+	<!ENTITY ConfigurationEsbJmsListenerSender SYSTEM "./ConfigurationEsbJmsListenerSender.xml">
+	<!ENTITY ConfigurationFxF3 SYSTEM "./ConfigurationFxF3.xml">
+	<!ENTITY ConfigurationJmsListenerSender SYSTEM "./ConfigurationJmsListenerSender.xml">
+	<!ENTITY ConfigurationWsdlGenerator SYSTEM "./ConfigurationWsdlGenerator.xml">
+	<!ENTITY ConfigurationJmsHeaders SYSTEM "./ConfigurationJmsHeaders.xml">
+]>
+<configuration name="JMS">
+	&ConfigurationBatch;
+	&ConfigurationCompactMessage;
+	&ConfigurationEsbJmsListenerSender;
+	&ConfigurationFxF3;
+	&ConfigurationJmsListenerSender;
+	&ConfigurationWsdlGenerator;
+	&ConfigurationJmsHeaders;
+</configuration>

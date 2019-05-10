@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServiceRequest>
+	<RequestEnvelope>
+		<activityReference>a</activityReference>
+		<countryCode>a</countryCode>
+		<event>a</event>
+		<from>a</from>
+		<languageCode>a</languageCode>
+		<messageId>a</messageId>
+		<messageVersion>a</messageVersion>
+		<processReference>a</processReference>
+		<responseRequired>true</responseRequired>
+		<role>a</role>
+		<serviceType>a</serviceType>
+		<timeStamp>2001-12-17T09:30:47Z</timeStamp>
+		<to>a</to>
+		<txReference>a</txReference>
+		<userReference>a</userReference>
+		<windbackInd>true</windbackInd>
+	</RequestEnvelope>
+	<Body>
+		<Header>
+			<branch>a</branch>
+			<clientSystemCD>a</clientSystemCD>
+			<countryCode>a</countryCode>
+			<effectiveDate>1957-08-13</effectiveDate>
+			<servicingCompany>a</servicingCompany>
+		</Header>
+		<SearchCriteria>
+			<partyRef>a</partyRef>
+		</SearchCriteria>
+	</Body>
+</ServiceRequest>

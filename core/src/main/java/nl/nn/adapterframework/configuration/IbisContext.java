@@ -30,15 +30,6 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.core.env.MutablePropertySources;
-import org.springframework.core.env.PropertiesPropertySource;
-import org.springframework.core.env.StandardEnvironment;
-
 import nl.nn.adapterframework.configuration.classloaders.BasePathClassLoader;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
@@ -67,9 +58,8 @@ import nl.nn.adapterframework.util.MessageKeeperMessage;
  * @author Jaco de Groot
  * @since 4.8
  */
-public class IbisContext {
+public class IbisContext extends IbisApplicationContext {
 	private final static Logger LOG = LogUtil.getLogger(IbisContext.class);
-	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final String INSTANCE_NAME = APP_CONSTANTS.getResolvedProperty("instance.name");
 	private static final String CONFIGURATIONS = APP_CONSTANTS.getResolvedProperty("configurations.names.application");
 	private static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
@@ -106,7 +96,6 @@ public class IbisContext {
 			ConfigurationWarnings.getInstance().add(LOG, "DEPRECATED: SUFFIX [_"+loadFileSuffix+"] files are deprecated, property files are now inherited from their parent!");
 	}
 
-	private ApplicationContext applicationContext;
 	private IbisManager ibisManager;
 	private Map<String, MessageKeeper> messageKeepers = new HashMap<String, MessageKeeper>();
 	private int messageKeeperSize = 10;
@@ -171,14 +160,15 @@ public class IbisContext {
 	public synchronized void init(boolean reconnect) {
 		try {
 			long start = System.currentTimeMillis();
+
 			LOG.info("Attempting to start IBIS application");
+			createApplicationContext();
+			LOG.debug("Created Ibis Application Context");
 
 			MessageKeeper messageKeeper = new MessageKeeper();
 			messageKeepers.put("*ALL*", messageKeeper);
 
-			applicationContext = createApplicationContext();
-			LOG.debug("Created Ibis Application Context");
-			ibisManager = (IbisManager)applicationContext.getBean("ibisManager");
+			ibisManager = (IbisManager) getBean("ibisManager");
 			ibisManager.setIbisContext(this);
 			LOG.debug("Loaded IbisManager Bean");
 			classLoaderManager = new ClassLoaderManager(this);
@@ -338,41 +328,8 @@ public class IbisContext {
 					MessageKeeperMessage.ERROR_LEVEL);
 		}
 		JdbcUtil.resetJdbcProperties();
+
 		init();
-	}
-
-	/**
-	 * Create Spring Bean factory. Parameter 'springContext' can be null.
-	 *
-	 * Create the Spring Bean Factory using the supplied <code>springContext</code>,
-	 * if not <code>null</code>.
-	 *
-	 * @return The Spring XML Bean Factory.
-	 * @throws BeansException If the Factory can not be created.
-	 *
-	 */
-	private ApplicationContext createApplicationContext() throws BeansException {
-		// Reading in Spring Context
-		long start = System.currentTimeMillis();
-		String springContext = "/springContext.xml";
-		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext();
-		MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
-		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
-		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
-		propertySources.addFirst(new PropertiesPropertySource("ibis", APP_CONSTANTS));
-		applicationContext.setConfigLocation(springContext);
-		applicationContext.refresh();
-		log("startup " + springContext + " in " + (System.currentTimeMillis() - start) + " ms");
-		return applicationContext;
-	}
-
-	/**
-	 * Destroys the Spring context
-	 */
-	private void destroyApplicationContext() {
-		if (applicationContext!=null) {
-			((ConfigurableApplicationContext)applicationContext).close();
-		}
 	}
 
 	/**
@@ -530,8 +487,7 @@ public class IbisContext {
 		if (flowDiagram != null) {
 			List<IAdapter> registeredAdapters = configuration
 					.getRegisteredAdapters();
-			for (Iterator adapterIt = registeredAdapters.iterator(); adapterIt
-					.hasNext();) {
+			for (Iterator<IAdapter> adapterIt = registeredAdapters.iterator(); adapterIt.hasNext();) {
 				Adapter adapter = (Adapter) adapterIt.next();
 				try {
 					flowDiagram.generate(adapter);
@@ -693,34 +649,5 @@ public class IbisContext {
 	public static void main(String[] args) {
 		IbisContext ibisContext = new IbisContext();
 		ibisContext.init();
-	}
-
-	public Object getBean(String beanName) {
-		return applicationContext.getBean(beanName);
-	}
-
-	public Object getBean(String beanName, Class beanClass) {
-		return applicationContext.getBean(beanName, beanClass);
-	}
-
-	public Object createBeanAutowireByName(Class beanClass) {
-		return applicationContext.getAutowireCapableBeanFactory().createBean(
-				beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
-	}
-
-	public void autowireBeanProperties(Object existingBean, int autowireMode, boolean dependencyCheck) {
-		applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(existingBean, autowireMode, dependencyCheck);
-	}
-
-	public void initializeBean(Object existingBean, String beanName) {
-		applicationContext.getAutowireCapableBeanFactory().initializeBean(existingBean, beanName);
-	}
-
-	public String[] getBeanNamesForType(Class beanClass) {
-		return applicationContext.getBeanNamesForType(beanClass);
-	}
-
-	public boolean isPrototype(String beanName) {
-		return applicationContext.isPrototype(beanName);
 	}
 }

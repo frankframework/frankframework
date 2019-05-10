@@ -1,0 +1,62 @@
+<module>
+	<adapter name="FxF3In">
+		<receiver name="FxF3In">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4test-FxF3In" />
+		</receiver>
+		<pipeline firstPipe="EchoPipe">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<inputValidator
+				className="nl.nn.adapterframework.extensions.fxf.FxfXmlValidator"
+				direction="receive" />
+			<inputWrapper className="nl.nn.adapterframework.extensions.fxf.FxfWrapperPipe"
+				direction="unwrap" />
+			<pipe name="EchoPipe" className="nl.nn.adapterframework.pipes.EchoPipe" />
+		</pipeline>
+	</adapter>
+
+	<adapter name="FxF3Out">
+		<receiver name="FxF3Out">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4test-FxF3Out" />
+		</receiver>
+		<pipeline firstPipe="EchoSender">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="EchoSender"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				<inputWrapper className="nl.nn.adapterframework.extensions.fxf.FxfWrapperPipe"
+					flowId="NNX01234" />
+				<inputValidator
+					className="nl.nn.adapterframework.extensions.fxf.FxfXmlValidator" />
+				<sender className="nl.nn.adapterframework.senders.EchoSender" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+
+	<adapter name="FxF3v2Out">
+		<receiver name="FxF3v2Out">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4test-FxF3v2Out" />
+		</receiver>
+		<pipeline firstPipe="EchoSender">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="EchoSender"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				<inputWrapper className="nl.nn.adapterframework.extensions.fxf.FxfWrapperPipe"
+					flowId="NNX01234" fxfVersion="3.2" cmhVersion="2" />
+				<inputValidator
+					className="nl.nn.adapterframework.extensions.fxf.FxfXmlValidator"
+					fxfVersion="3.2" />
+				<sender className="nl.nn.adapterframework.senders.EchoSender" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>

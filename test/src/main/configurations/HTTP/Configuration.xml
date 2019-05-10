@@ -1,0 +1,18 @@
+<!DOCTYPE configuration [
+	<!ENTITY WebServiceListenerSender SYSTEM "./ConfigurationWebServiceListenerSender.xml">
+	<!ENTITY WebServiceListenerSenderAddress SYSTEM "./ConfigurationWebServiceListenerSenderAddress.xml">
+	<!ENTITY WebServiceListenerSenderAttachments SYSTEM "./ConfigurationWebServiceListenerSenderAttachments.xml">
+	<!ENTITY WebServiceListenerSenderServiceNamespaceURI SYSTEM "./ConfigurationWebServiceListenerSenderServiceNamespaceURI.xml">
+	<!ENTITY WebServiceListenerSenderNoSoap SYSTEM "./ConfigurationWebServiceListenerSenderNoSoap.xml">
+	<!ENTITY HttpListenerSender SYSTEM "./ConfigurationHttpListenerSender.xml">
+	<!ENTITY RestListener SYSTEM "./ConfigurationRestListener.xml">
+]>
+<configuration name="HTTP">
+	&WebServiceListenerSender;
+	&WebServiceListenerSenderAddress;
+	&WebServiceListenerSenderAttachments;
+	&WebServiceListenerSenderServiceNamespaceURI;
+	&WebServiceListenerSenderNoSoap;
+	&HttpListenerSender;
+	&RestListener;
+</configuration>

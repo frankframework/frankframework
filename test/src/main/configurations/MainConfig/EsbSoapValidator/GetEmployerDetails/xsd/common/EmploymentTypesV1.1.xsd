@@ -1,0 +1,501 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:em="http://www.ibissource.org/em" targetNamespace="http://www.ibissource.org/em" elementFormDefault="qualified" em:agent="em" em:package="com.ibissource.em">
+	<xsd:annotation>
+		<xsd:documentation>Exchange model Employee Benefits, Employment</xsd:documentation>
+		<xsd:appinfo>V1.1</xsd:appinfo>
+	</xsd:annotation>
+	<!--********************************em Complex Types General***********************-->
+	<xsd:complexType name="base">
+		<xsd:all>
+			<xsd:element name="StartDateTime" type="xsd:dateTime"/>
+			<xsd:element name="EndDateTime" type="xsd:dateTime"/>
+			<xsd:element name="CreationDate" type="xsd:date"/>
+			<xsd:element name="ModificationDateTime" type="xsd:dateTime"/>
+			<xsd:element name="StartDate" type="xsd:date"/>
+			<xsd:element name="EndDate" type="xsd:date"/>
+			<xsd:element name="Id" type="em:id"/>
+			<xsd:element name="Status" type="em:status"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="disability">
+		<xsd:all>
+			<xsd:element name="DisabilityPercentage" type="em:percentage32"/>
+			<xsd:element name="DisabilityClass" type="em:disabilityClass"/>
+			<xsd:element name="SocialSecurityBenifitPercentage" type="em:percentage32"/>
+			<xsd:element name="IncomeIndicator" type="em:optionYesNo"/>
+			<xsd:element name="ActualBenifitPercentage" type="em:percentage32"/>
+			<xsd:element name="NotificationSource" type="em:notificationSource"/>
+			<xsd:element name="ConformationStage" type="em:conformationStage"/>
+			<xsd:element name="NotificationIndicator" type="em:optionYesNo"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="employment">
+		<xsd:all>
+			<xsd:element name="ProcessingStage" type="em:processingStage"/>
+			<xsd:element name="EmployeeNumber" type="em:employeeNumber"/>
+			<xsd:element name="BranchOfIndustry" type="em:branchOfIndustry"/>
+			<xsd:element name="CollectiveLabourAgreement" type="em:collectiveLabourAgreement"/>
+			<xsd:element name="ParttimePercentage" type="em:percentage32"/>
+			<xsd:element name="SupervisoryPercentage" type="em:percentage32"/>
+			<xsd:element name="CooporationPercentage" type="em:percentage32"/>
+			<xsd:element name="SocialSecurityDays" type="em:socialSecurityDays"/>
+			<xsd:element name="Currency" type="em:currencyCode"/>
+			<xsd:element name="EntranceDate" type="xsd:date"/>
+			<xsd:element name="ProvisionalEndDate" type="xsd:date"/>
+			<xsd:element name="RetirementDate" type="xsd:date"/>
+			<xsd:element name="RetirementPercentage" type="em:percentage32"/>
+			<xsd:element name="DischargeDate" type="xsd:date"/>
+			<xsd:element name="DischargeType" type="em:dischargeType"/>
+			<xsd:element name="EmployeeStatus" type="em:status"/>
+			<xsd:element name="Type" type="em:type" minOccurs="0"/>
+			<xsd:element name="Profession" type="em:profession" minOccurs="0"/>
+			<xsd:element name="Category" type="em:category" minOccurs="0"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="function">
+		<xsd:all>
+			<xsd:element name="TypeName" type="em:functionTypes"/>
+			<xsd:element name="EmployeeGroup" type="em:employeeGroup"/>
+			<xsd:element name="OccupationDescription" type="em:occupationDescription"/>
+			<xsd:element name="OccupationType" type="em:occupationType"/>
+			<xsd:element name="InternationalEmploymentIndicator" type="em:optionYesNoUnknown"/>
+			<xsd:element name="GeneralManagerLargeShareholderIndicator" type="em:optionYesNo"/>
+			<xsd:element name="ReferenceTerm" type="em:term"/>
+			<xsd:element name="StandardWorkingHours" type="em:standardWorkingHours"/>
+			<xsd:element name="HourlyWage" type="em:hourlyWage"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="illness">
+		<xsd:all>
+			<xsd:element name="IllnessPercentage" type="em:percentage32"/>
+			<xsd:element name="NotificationSource" type="em:notificationSource"/>
+			<xsd:element name="ConformationStage" type="em:conformationStage"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="leave">
+		<xsd:all>
+			<xsd:element name="TypeName" type="em:leaveType"/>
+			<xsd:element name="LeavePercentage" type="em:percentage32"/>
+			<xsd:element name="ProvisionalEndDate" type="xsd:date"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="salary">
+		<xsd:all>
+			<xsd:element name="HolidayAllowancePercentage" type="em:percentage32"/>
+			<xsd:element name="HolidayAllowanceFund" type="em:holidayAllowanceFund"/>
+			<xsd:element name="PartTimeInclExclIndicator" type="em:optionInEx"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="salaryComponent">
+		<xsd:all>
+			<xsd:element name="Salary" type="em:salaryAmount"/>
+			<xsd:element name="Term" type="em:term"/>
+			<xsd:element name="HolidayAllowanceInclExclIndicator" type="em:optionInEx"/>
+			<xsd:element name="partTimeIncExclIndicator" type="em:optionInEx"/>
+			<xsd:element name="HoursWorked" type="em:hoursWorked"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="salaryComponentType">
+		<xsd:all>
+			<xsd:element name="Type" type="em:salaryType"/>
+			<xsd:element name="SalaryComponentDescription" type="em:salaryComponentDescription"/>
+		</xsd:all>
+	</xsd:complexType>
+	<!--********************************em Complex Types completionInformation***********************-->
+	<xsd:complexType name="completionInformation">
+		<xsd:all>
+			<xsd:element name="ReturnCode" type="em:returnCode"/>
+			<xsd:element name="ReasonCode" type="em:reasonCode" minOccurs="0"/>
+			<xsd:element name="LanguageCode" type="em:languageCode" minOccurs="0"/>
+			<xsd:element name="Message" type="em:message" minOccurs="0"/>
+		</xsd:all>
+	</xsd:complexType>
+	<!--********************************em Complex Types debuggingInformation***********************-->
+	<xsd:complexType name="debuggingInformation">
+		<xsd:all>
+			<xsd:element name="DateTime" type="xsd:dateTime"/>
+			<xsd:element name="ExceptionCode" type="em:exceptionCode"/>
+			<xsd:element name="ExceptionMessage" type="em:exceptionMessage"/>
+		</xsd:all>
+	</xsd:complexType>
+	<!--********************************em Complex Types pagingRequest***********************-->
+	<xsd:complexType name="pagingRequest">
+		<xsd:sequence>
+			<xsd:element name="PageNumber" type="em:pageNumber"/>
+			<xsd:element name="ItemsPerPage" type="em:itemsPerPage"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--********************************em Complex Types pagingReply***********************-->
+	<xsd:complexType name="pagingReply">
+		<xsd:sequence>
+			<xsd:element name="NumberOfPages" type="em:numberOfPages"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--********************************em Complex Types Sorting***********************-->
+	<xsd:complexType name="sorting">
+		<xsd:all>
+			<xsd:element name="FieldName" type="em:fieldName" minOccurs="0"/>
+			<xsd:element name="SortOrder" type="em:sortOrder" minOccurs="0"/>
+		</xsd:all>
+	</xsd:complexType>
+	<!--********************************em Simple Types General***********************-->
+	<xsd:simpleType name="percentage32">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="5"/>
+			<xsd:fractionDigits value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="percentage34">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="7"/>
+			<xsd:fractionDigits value="4"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="status">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="id">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="35"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="occupationDescription">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="100"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="standardWorkingHours">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="4"/>
+			<xsd:fractionDigits value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="occupationType">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="hourlyWage">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="6"/>
+			<xsd:fractionDigits value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="employeeNumber">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="35"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="branchOfIndustry">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="collectiveLabourAgreement">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="300"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="socialSecurityDays">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="holidayAllowanceFund">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="100"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="salaryAmount">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="10"/>
+			<xsd:fractionDigits value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="hoursWorked">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="4"/>
+			<xsd:fractionDigits value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="salaryType">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="salaryComponentDescription">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="100"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="disabilityClass">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--********************************Simple Types CompletionInformation **************************-->
+	<xsd:simpleType name="returnCode">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="OK">
+				<!-- OK -->
+			</xsd:enumeration>
+			<xsd:enumeration value="NOT_OK">
+				<!-- NOT_OK -->
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="reasonCode">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="100"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="languageCode">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="3"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="message">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="100"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--********************************Simple Types Debugging Information **************************-->
+	<xsd:simpleType name="exceptionCode">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="10"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="exceptionMessage">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="150"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--********************************Simple Types Paging (Request) **************************-->
+	<xsd:simpleType name="pageNumber">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="1"/>
+			<xsd:maxInclusive value="999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="itemsPerPage">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="1"/>
+			<xsd:maxInclusive value="999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--********************************Simple Types Paging (Reply) **************************-->
+	<xsd:simpleType name="numberOfPages">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="1"/>
+			<xsd:maxInclusive value="999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--********************************Simple Types Sorting***********************-->
+	<xsd:simpleType name="fieldName">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="25"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="sortOrder">
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="1">
+				<!-- 1 | Ascending -->
+			</xsd:enumeration>
+			<xsd:enumeration value="2">
+				<!-- 2 | Descending -->
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************* em enumeration Types *****************************-->
+	<xsd:simpleType name="optionYesNo">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Y">
+				<!-- Y | Yes -->
+			</xsd:enumeration>
+			<xsd:enumeration value="N">
+				<!-- N | No -->
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="optionYesNoUnknown">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Y">
+				<!-- Y | Yes -->
+			</xsd:enumeration>
+			<xsd:enumeration value="N">
+				<!-- N | No -->
+			</xsd:enumeration>
+			<xsd:enumeration value="U">
+				<!-- U | Unknown -->
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="optionInEx">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="IN">
+				<!-- IN  | INCLUSIVE -->
+			</xsd:enumeration>
+			<xsd:enumeration value="EX">
+				<!-- EX | EXLUSIVE -->
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="currencyCode">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="EUR"/>
+			<xsd:enumeration value="USD"/>
+		</xsd:restriction>
+		<!-- LET OP ................................ emnumeration  currency codes ISO 4217.xls -->
+	</xsd:simpleType>
+	<xsd:simpleType name="functionTypes">
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="01">
+				<!-- 01 MAIN / HOOFDFUNCTIE -->
+			</xsd:enumeration>
+			<xsd:enumeration value="02">
+				<!-- 02 ADDITIONAL / NEVENFUNCTIE -->
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="term">
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="01">
+				<!-- 01 WEEK -->
+			</xsd:enumeration>
+			<xsd:enumeration value="02">
+				<!-- 02 MAAND -->
+			</xsd:enumeration>
+			<xsd:enumeration value="03">
+				<!-- 03 KWARTAAL -->
+			</xsd:enumeration>
+			<xsd:enumeration value="04">
+				<!-- 04 JAAR -->
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="employeeGroup">
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="01">
+				<!-- 01 ADMINISTRATIEF -->
+			</xsd:enumeration>
+			<xsd:enumeration value="02">
+				<!-- 02 NIET ADMINISTRATIEF -->
+			</xsd:enumeration>
+			<xsd:enumeration value="03">
+				<!-- 03 MANAGEMENT -->
+			</xsd:enumeration>
+			<xsd:enumeration value="04">
+				<!-- 04 PRODUCTIE -->
+			</xsd:enumeration>
+			<xsd:enumeration value="05">
+				<!-- 05 VERKOOP -->
+			</xsd:enumeration>
+			<xsd:enumeration value="06">
+				<!-- 06 MARKETING -->
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="notificationSource">
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="00">
+				<!-- 00 UNKNOWN / ONBEKEND -->
+			</xsd:enumeration>
+			<xsd:enumeration value="01">
+				<!-- 01 EMPLOYEE / WERKNEMER -->
+			</xsd:enumeration>
+			<xsd:enumeration value="02">
+				<!-- 02 EMPLOYER /  WERKGEVER -->
+			</xsd:enumeration>
+			<xsd:enumeration value="03">
+				<!-- 03 ARBO / ARBO -->
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="processingStage">
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="01">
+				<!-- 01 PROPOSAL / VOORLOPIG -->
+			</xsd:enumeration>
+			<xsd:enumeration value="02">
+				<!-- 02 ACTIVE / DEFINITIEF -->
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="conformationStage">
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="00">
+				<!-- 01 UNCONFIRMED / ONBEVESTIGD -->
+			</xsd:enumeration>
+			<xsd:enumeration value="01">
+				<!-- 01 CONFIRMED BY ARBO / BEVESTIGD DOOR ARBO -->
+			</xsd:enumeration>
+			<xsd:enumeration value="02">
+				<!-- 02 MEDICAL ADVISOR CONFIRMED / BEVESTIGD DOOR MEDISCH ADVISEUR -->
+			</xsd:enumeration>
+			<xsd:enumeration value="03">
+				<!-- 03  UWV CONFIRMED / BEVESTIGD DOOR UWV  -->
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="leaveType">
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="01">
+				<!-- 01 SABATTICAL / SABATTICAL -->
+			</xsd:enumeration>
+			<xsd:enumeration value="02">
+				<!-- 02 PATERNITY LEAVE / OUDERSCHAPSVERLOF -->
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="dischargeType">
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="00">
+				<!-- 00 UNKNOWN / ONBEKEND -->
+			</xsd:enumeration>
+			<xsd:enumeration value="01">
+				<!-- 01 DISMISSAL / GEDWONGEN -->
+			</xsd:enumeration>
+			<xsd:enumeration value="02">
+				<!-- 02 LEAVER / VRIJWILLIG  -->
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="type">
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="1">
+				<!-- 1 WERKNEMER -->
+			</xsd:enumeration>
+			<xsd:enumeration value="2">
+				<!-- 2 DGA -->
+			</xsd:enumeration>
+			<xsd:enumeration value="3">
+				<!-- 3 ZELFSTANDIGE  -->
+			</xsd:enumeration>
+			<xsd:enumeration value="4">
+				<!-- 4 MAATSCHAPLID  -->
+			</xsd:enumeration>
+			<xsd:enumeration value="5">
+				<!-- 5 EXPATRIATE  -->
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="profession">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="30"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="category">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="1"/>
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

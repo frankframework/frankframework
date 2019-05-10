@@ -283,10 +283,13 @@ public class CmisSenderTest extends SenderBase<CmisSender> {
 	}
 
 	@Test
-	public void getterSetterBridgeSender() {
+	public void getterSetterBridgeSender1() {
 		sender.setBridgeSender(true);
 		assertEquals(true, sender.isBridgeSender());
+	}
 
+	@Test
+	public void getterSetterBridgeSender2() {
 		sender.setBridgeSender(false);
 		assertEquals(false, sender.isBridgeSender());
 	}

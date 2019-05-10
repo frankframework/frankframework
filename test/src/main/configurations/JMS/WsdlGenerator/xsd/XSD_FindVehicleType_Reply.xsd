@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="FindVehicleTypeRLY">
+		<xs:complexType>
+			<xs:all>
+				<xs:element name="returnCode">
+					<xs:simpleType>
+						<xs:restriction base="xs:decimal">
+							<xs:totalDigits value="5"/>
+							<xs:fractionDigits value="0"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="reasonCode" minOccurs="0">
+					<xs:simpleType>
+						<xs:restriction base="xs:string"/>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="exceptionMessage" minOccurs="0">
+					<xs:simpleType>
+						<xs:restriction base="xs:string"/>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="Body" minOccurs="0">
+					<xs:complexType>
+						<xs:choice>
+							<xs:element name="MerkNamen">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="merkNaam" minOccurs="0" maxOccurs="unbounded">
+											<xs:simpleType>
+												<xs:restriction base="xs:string"/>
+											</xs:simpleType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="ModelNamen">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="modelNaam" minOccurs="0" maxOccurs="unbounded">
+											<xs:simpleType>
+												<xs:restriction base="xs:string"/>
+											</xs:simpleType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="Uitvoeringen">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="Uitvoering" minOccurs="0" maxOccurs="unbounded">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="uitvoeringBeschrijving" minOccurs="0">
+														<xs:simpleType>
+															<xs:restriction base="xs:string"/>
+														</xs:simpleType>
+													</xs:element>
+													<xs:element name="uitvoeringCode" minOccurs="0">
+														<xs:simpleType>
+															<xs:restriction base="xs:string"/>
+														</xs:simpleType>
+													</xs:element>
+													<xs:element name="uitvoeringNaam" minOccurs="0">
+														<xs:simpleType>
+															<xs:restriction base="xs:string"/>
+														</xs:simpleType>
+													</xs:element>
+													<xs:element name="uitvoeringAantaldeuren" minOccurs="0">
+														<xs:simpleType>
+															<xs:restriction base="xs:string"/>
+														</xs:simpleType>
+													</xs:element>
+													<xs:element name="uitvoeringMotorvermogen" minOccurs="0">
+														<xs:simpleType>
+															<xs:restriction base="xs:string"/>
+														</xs:simpleType>
+													</xs:element>
+													<xs:element name="uitvoeringKoetswerk" minOccurs="0">
+														<xs:simpleType>
+															<xs:restriction base="xs:string"/>
+														</xs:simpleType>
+													</xs:element>
+													<xs:element name="uitvoeringAutomaat" minOccurs="0">
+														<xs:simpleType>
+															<xs:restriction base="xs:string">
+																<xs:enumeration value="J"/>
+																<xs:enumeration value="N"/>
+															</xs:restriction>
+														</xs:simpleType>
+													</xs:element>
+												</xs:sequence>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:choice>
+					</xs:complexType>
+				</xs:element>
+			</xs:all>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

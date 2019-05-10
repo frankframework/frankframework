@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://www.ibissource.org/tom" xmlns:tom="http://www.ibissource.org/tom" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" tom:agent="TOM" tom:package="com.ibissource.tom">
+	<!--******************************************TOM Industry Types**********************************-->
+	<xsd:complexType name="Occupation">
+		<xsd:sequence>
+			<xsd:element name="OccupationType" type="tom:OccupationTypeEnum" minOccurs="0"/>
+			<xsd:element name="OccupationRank" type="tom:OccupationRank" minOccurs="0"/>
+			<xsd:element name="Occurrence" type="tom:Occurrence" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="OccupationTypeEnum">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="5"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="OccupationRank">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

@@ -1,0 +1,6 @@
+<root>
+	<item>application.name=[${application.name}]</item>
+	<item>instance.name=[${instance.name}]</item>
+	<item>browse.messages.max=[${browse.messages.max}]</item>
+	<item>Statistics.boundaries=[${Statistics.boundaries}]</item>
+</root>
