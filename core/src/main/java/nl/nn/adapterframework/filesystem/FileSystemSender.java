@@ -47,9 +47,9 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * 
  * 
  * <p><b>Actions:</b></p>
- * <p>The <code>list</code> action for listing a directory content inputFolder attribute should be set in adapter to list. If not set then, it will list root folder content </p>
+ * <p>The <code>list</code> action for listing a directory content. inputFolder could be set as an attribute or as a parameter in adapter to list specific folder content. If both are set then parameter will override the value of attribute. If not set then, it will list root folder content </p>
  * <p>The <code>download</code> action for downloading a file, requires filename as input. Returns a base64 encoded string containing the file content </p>
- * <p>The <code>move</code> action for moving a file to another folder</p>
+ * <p>The <code>move</code> action for moving a file to another folder requires destination folder as parameter "destination"</p>
  * <p>The <code>delete</code> action requires the filename as input </p>
  * <p>The <code>upload</code> action requires the file parameter to be set which should contain the fileContent to upload in either Stream, Bytes or String format</p>
  * <p>The <code>rename</code> action requires the destination parameter to be set which should contain the full path </p>
@@ -124,7 +124,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc)
 			throws SenderException, TimeOutException {
 		ParameterValueList pvl = null;
-
+		
 		try {
 			if (prc != null && paramList != null) {
 				pvl = prc.getValues(paramList);
@@ -153,7 +153,11 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 
 				return result;
 			} else if (action.equalsIgnoreCase("list")) {
-				Iterator<F> fileList = ifs.listFiles(getInputFolder());
+				String folder = inputFolder;
+				if(paramList !=null && paramList.findParameter("inputFolder") != null ) {
+					folder = (String) pvl.getParameterValue("inputFolder").getValue();
+				}
+				Iterator<F> fileList = ifs.listFiles(folder);
 				int count = 0;
 				XmlBuilder dirXml = new XmlBuilder("directory");
 				while (fileList.hasNext()) {

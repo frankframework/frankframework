@@ -1,15 +1,19 @@
 package nl.nn.adapterframework.filesystem;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Iterator;
 
 import org.junit.Test;
+
+import nl.nn.adapterframework.util.Misc;
 
 public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> extends BasicFileSystemTest<F,FS> {
 
@@ -281,5 +285,76 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		
 		assertNotNull("Canonical name should not be null", canonicalName);
 	}
+	
+	@Test
+	public void writableFileSystemTestDeleteDownloadedFile() throws Exception{
+		String filename = "fileToBeDownloadedAndDeleted.txt";
+		String content = "some content";
+		
+		fileSystem.configure();
+		fileSystem.open();
+		
+		createFile(null, filename, content);
+		waitForActionToFinish();
+		
+		F file = fileSystem.toFile(filename);
+		assertTrue("Expected the file ["+filename+"] to be present", _fileExists(filename));
+		
+		InputStream is = fileSystem.readFile(file);
+		String result = Misc.streamToString(is);
+		is.close();
+		
+		assertEquals(result, content);
+		
+		fileSystem.deleteFile(file);
+		waitForActionToFinish();
+		assertFalse("Expected the file ["+filename+"] not to be present", _fileExists(filename));
+	}
+	
+	@Test
+	public void writableFileSystemTestDeleteUploadedFile() throws Exception{
+		String filename = "fileToBeUploadedAndDeleted.txt";
+		String content = "some content";
+		
+		fileSystem.configure();
+		fileSystem.open();
+		
+		F file = fileSystem.toFile(filename);
+		
+		OutputStream out = fileSystem.createFile(file);
+		out.write(content.getBytes());
+		out.close();
+		
+		assertTrue("Expected the file ["+filename+"] to be present",_fileExists(filename));
 
+		fileSystem.deleteFile(file);
+		waitForActionToFinish();
+		assertFalse("Expected the file ["+filename+"] not to be present", _fileExists(filename));
+		
+	}
+	
+	@Test
+	public void writableFileSystemTestDeleteAppendedFile() throws Exception{
+		String filename = "fileToBeAppendedAndDeleted.txt";
+		String content = "some content";
+		
+		fileSystem.configure();
+		fileSystem.open();
+		
+		createFile(null, filename, content);
+		waitForActionToFinish();
+		
+		F file = fileSystem.toFile(filename);
+		assertTrue("Expected the file ["+filename+"] to be present", _fileExists(filename));
+		
+		OutputStream out = fileSystem.appendFile(file);
+		out.write(content.getBytes());
+		out.close();
+		
+		
+		fileSystem.deleteFile(file);
+		waitForActionToFinish();
+		
+		assertFalse("Expected the file ["+filename+"] not to be present", _fileExists(filename));
+	}
 }
