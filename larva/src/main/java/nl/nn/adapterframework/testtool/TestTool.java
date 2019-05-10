@@ -2512,13 +2512,9 @@ public class TestTool {
 		return result;
 	}
 
-<<<<<<< HEAD
-	private static int executeSenderWrite(String stepDisplayName, Map queues, Map writers, String queueName, String senderType, String fileContent) {
+	private static int executeSenderWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String senderType, String fileContent) {
 		AppConstants appConstants = AppConstants.getInstance();
 		fileContent = StringResolver.substVars(fileContent, appConstants);
-=======
-	private static int executeSenderWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String senderType, String fileContent) {
->>>>>>> master
 		int result = RESULT_ERROR;
 		Map senderInfo = (Map)queues.get(queueName);
 		ISender sender = (ISender)senderInfo.get(senderType + "Sender");
@@ -3166,6 +3162,8 @@ public class TestTool {
 		boolean ignoreContentBetweenKeysProcessed = false;
 		i = 1;
 		while (!ignoreContentBetweenKeysProcessed) {
+			HashMap<String, HashMap<String, String>> ignores = new HashMap<String, HashMap<String, String>>();
+			
 			Enumeration<String> enums = (Enumeration<String>) properties.propertyNames();
 		    while (enums.hasMoreElements()) {
 		      String key = enums.nextElement();
