@@ -19,11 +19,11 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
-public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>> extends FileSystemTestBase {
+public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, F, FS extends IWritableFileSystem<F>> extends FileSystemTestBase {
 
-	private FileSystemSender<F, FS> fileSystemSender;
+	protected FSS fileSystemSender;
 
-	public abstract FileSystemSender<F, FS> createFileSystemSender();
+	public abstract FSS createFileSystemSender();
 
 	@Override
 	@Before

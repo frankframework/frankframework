@@ -2,7 +2,6 @@ package it.nl.nn.adapterframework.senders;
 
 import org.apache.commons.net.ftp.FTPFile;
 
-import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
 import nl.nn.adapterframework.filesystem.FtpFileSystem;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
@@ -13,7 +12,7 @@ import nl.nn.adapterframework.senders.FtpFileSystemSender;
  * @author alisihab
  *
  */
-public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFileSystem> {
+public class FtpFileSystemSenderTest extends FileSystemSenderTest<FtpFileSystemSender, FTPFile, FtpFileSystem> {
 
 	private String username = "";
 	private String password = "";
@@ -27,7 +26,7 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FTPFile, FtpFi
 	}
 
 	@Override
-	public FileSystemSender<FTPFile, FtpFileSystem> createFileSystemSender() {
+	public FtpFileSystemSender createFileSystemSender() {
 		FtpFileSystemSender fileSystemSender = new FtpFileSystemSender();
 		fileSystemSender.setHost(host);
 		fileSystemSender.setUsername(username);

@@ -1,6 +1,5 @@
 package it.nl.nn.adapterframework.senders;
 
-import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
@@ -18,7 +17,7 @@ import nl.nn.adapterframework.senders.Samba2Sender;
  * @author alisihab
  *
  */
-public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Samba2FileSystem> {
+public class Samba2FileSystemSenderTest extends FileSystemSenderTest<Samba2Sender, String, Samba2FileSystem> {
 
 	private String authType = "SPNEGO";
 	private String realm = "";
@@ -35,7 +34,7 @@ public class Samba2FileSystemSenderTest extends FileSystemSenderTest<String, Sam
 
 
 	@Override
-	public FileSystemSender<String, Samba2FileSystem> createFileSystemSender() {
+	public Samba2Sender createFileSystemSender() {
 		Samba2Sender result = new Samba2Sender();
 		result.setShare(shareName);
 		result.setUsername(username);

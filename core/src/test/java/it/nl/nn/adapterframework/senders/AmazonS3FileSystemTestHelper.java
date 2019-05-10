@@ -185,4 +185,8 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 		String foldername = folderName.endsWith("/") ? folderName : folderName + "/";
 		_deleteFile(null, foldername);
 	}
+
+	public AmazonS3 getS3Client() {
+		return s3Client;
+	}
 }
