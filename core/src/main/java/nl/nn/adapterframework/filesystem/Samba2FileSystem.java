@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.filesystem;
 
+import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -235,28 +237,61 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 		final File file = diskShare.openFile(f, accessMask, null, SMB2ShareAccess.ALL,
 				SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
 		OutputStream out = file.getOutputStream();
+		FilterOutputStream fos = new FilterOutputStream(out) {
 
-		return out;
+			boolean isOpen = true;
+			@Override
+			public void close() throws IOException {
+				if(isOpen) {
+					super.close();
+					isOpen=false;
+				}
+				file.close();
+			}
+		};
+		return fos;
 	}
 
 	@Override
 	public OutputStream appendFile(String f) throws FileSystemException, IOException {
 		final File file = getFile(f, AccessMask.FILE_APPEND_DATA, SMB2CreateDisposition.FILE_OPEN_IF);
 		OutputStream out = file.getOutputStream();
+		FilterOutputStream fos = new FilterOutputStream(out) {
 
-		return out;
+			boolean isOpen = true;
+			@Override
+			public void close() throws IOException {
+				if(isOpen) {
+					super.close();
+					isOpen=false;
+				}
+				file.close();
+			}
+		};
+		return fos;
 	}
 
 	@Override
 	public InputStream readFile(String filename) throws FileSystemException, IOException {
 		final File file = getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN);
 		InputStream is = file.getInputStream();
+		FilterInputStream fis = new FilterInputStream(is) {
 
-		return is;
+			boolean isOpen = true;
+			@Override
+			public void close() throws IOException {
+				if(isOpen) {
+					super.close();
+					isOpen=false;
+				}
+				file.close();
+			}
+		};
+		return fis;
 	}
 
 	@Override
-	public void deleteFile(String f) {
+	public void deleteFile(String f) throws FileSystemException {
 		diskShare.rm(f);
 	}
 
@@ -524,7 +559,11 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 
 		@Override
 		public void remove() {
-			deleteFile(prefix + files.get(i++).getFileName());
+			try {
+				deleteFile(prefix + files.get(i++).getFileName());
+			} catch (FileSystemException e) {
+				log.error("Unable to close disk share after deleting the file");
+			}
 		}
 	}
 
