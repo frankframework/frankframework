@@ -95,7 +95,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 			throw new ConfigurationException(
 					getLogPrefix() + "the rename action requires a destination parameter to be present");
 		if (getAction().equals("list")
-				&& (parameterList == null || parameterList.findParameter("inputFolder") == null))
+				&& (parameterList != null && parameterList.findParameter("inputFolder") != null))
 			inputFolder = parameterList.findParameter("inputFolder").getValue();
 	}
 	
