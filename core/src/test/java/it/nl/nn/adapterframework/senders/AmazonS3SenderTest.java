@@ -89,7 +89,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 		fileSystemSender.setBucketName(bucketNameTobeCreatedAndDeleted);
 		fileSystemSender.configure();
 		fileSystemSender.getFileSystem().open();
-		String result = fileSystemSender.sendMessage("<result>ok</result>", bucketNameTobeCreatedAndDeleted);
+		String result = fileSystemSender.sendMessage("fakecorrelationid", bucketNameTobeCreatedAndDeleted);
 
 		boolean exists = ((AmazonS3FileSystemTestHelper)helper).getS3Client().doesBucketExistV2(bucketNameTobeCreatedAndDeleted);
 		assertTrue(exists);
@@ -103,7 +103,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 		fileSystemSender.setBucketName(bucketNameTobeCreatedAndDeleted);
 		fileSystemSender.configure();
 		fileSystemSender.getFileSystem().open();
-		String result = fileSystemSender.sendMessage("<result>ok</result>", bucketNameTobeCreatedAndDeleted);
+		String result = fileSystemSender.sendMessage("fakecorrelationid", bucketNameTobeCreatedAndDeleted);
 
 		boolean exists = ((AmazonS3FileSystemTestHelper)helper).getS3Client().doesBucketExistV2(bucketNameTobeCreatedAndDeleted);
 		assertFalse(exists);
@@ -145,7 +145,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 		objectTobeCopied.setKey(fileName);
 		OutputStream out = fileSystemSender.getFileSystem().createFile(objectTobeCopied);
 		out.close();
-		String result = fileSystemSender.sendMessage("", fileName, prc);
+		String result = fileSystemSender.sendMessage("fakecorrelationid", fileName, prc);
 		assertEquals(dest, result);
 	}
 
