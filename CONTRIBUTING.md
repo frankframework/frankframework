@@ -95,7 +95,8 @@ We have yet to test the compatibility of the iaf-test module with Jetty. Until t
 
 In some cases you might want/need to:
 
-- Rightclick iaf, Maven, Update Project..., OK.
+- Rightclick iaf, Maven, Update Project..., OK. When its done delete .setting folder in ifa-webapp module. 
+  Then rightclick iaf-webapp, Maven, Update Project..., OK. This should generate a new flawless .settings.
 - Enable Project, Build Automatically
 - Right click Tomcat v7.0 Server at localhost, Clean...
 - Change newlines in .classpath and org.eclipse.wst.common.component files back to Unix newlines.
