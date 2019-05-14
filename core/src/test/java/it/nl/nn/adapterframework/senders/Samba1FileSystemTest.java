@@ -28,7 +28,7 @@ public class Samba1FileSystemTest extends FileSystemTest<SmbFile, Samba1FileSyst
 	
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new Samba2FileSystemTestHelper(shareName, username, password, domain, realm, kdc,"NTLM");
+		return null;
 	}
 
 
