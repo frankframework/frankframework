@@ -15,7 +15,10 @@
 */
 package nl.nn.adapterframework.doc;
 
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -32,6 +35,7 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import org.apache.xalan.xsltc.compiler.util.ResultTreeType;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
@@ -726,6 +730,42 @@ public class IbisDocPipe extends FixedForwardPipe {
 		if (allHtml == null)  allHtml = new StringBuffer();
 		if (groupsHtml == null) groupsHtml = new HashMap<String, String>();
 		Map<String, TreeSet<IbisBean>> groups = getGroups();
+
+		System.out.println("Starting");
+		ResultsTesting rt = new ResultsTesting();
+		// For all folders
+		for (String folder : groups.keySet()) {
+			// For all classes
+			for (IbisBean ibisBean : groups.get(folder)) {
+				// Get the class
+				Map<String, Method> beanProperties = getBeanProperties(ibisBean.getClazz());
+				if (beanProperties != null) {
+
+					// For each method in the class
+					Iterator<String> iterator = new TreeSet<String>(beanProperties.keySet()).iterator();
+					while (iterator.hasNext()) {
+
+						// Get the method
+						String property = iterator.next();
+						Method method = beanProperties.get(property);
+
+						// Get the ibisdoc of the method
+						IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
+						if (ibisDoc != null) {
+							String[] ibisDocValues = ibisDoc.value();
+							if (ibisDocValues.length > 1) {
+								rt.addMethods(folder, ibisBean.getName(), property, ibisDocValues[0], ibisDocValues[1], method.getDeclaringClass().getSimpleName());
+							} else {
+								rt.addMethods(folder, ibisBean.getName(), property, ibisDocValues[0], "", method.getDeclaringClass().getSimpleName());
+							}
+						}
+					}
+				}
+			}
+		}
+		System.out.println("getDeclaringClass??");
+		rt.writeToJsonFile();
+
 		for (String group : groups.keySet()) {
 			topmenuHtml.append("<a href='" + group + ".html' target='submenuFrame'>" + group + "</a><br/>\n");
 			StringBuffer submenuHtml = new StringBuffer();
