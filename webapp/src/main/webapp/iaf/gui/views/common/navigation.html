@@ -14,6 +14,9 @@
 			<li ui-sref-active="active">
 				<a ui-sref="pages.status"><i class="fa fa-dashboard"></i> <span class="nav-label">Adapter Status</span></a>
 			</li>
+			<li ng-repeat="webapp in webapps" ui-sref-active="active" ng-if="webapp.showInMenu">
+				<a ui-sref="pages.webapp({url: webapp.uriPattern})"><i class="fa fa-desktop"></i> <span class="nav-label">{{webapp.name}}</span></a>
+			</li>
 			<li ng-show="!config_database" ui-sref-active="active">
 				<a ui-sref="pages.configuration"><i class="fa fa-cogs"></i> <span class="nav-label">Configuration</span></a>
 			</li>
