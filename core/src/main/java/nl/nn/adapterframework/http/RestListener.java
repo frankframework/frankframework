@@ -306,5 +306,4 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public boolean getGenerateEtag() {
 		return generateEtag;
 	}
-	
 }
