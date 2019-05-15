@@ -70,7 +70,7 @@ public final class Webservices extends Base {
 					IListener listener = rb.getListener();
 					if (listener instanceof RestListener) {
 						RestListener rl = (RestListener) listener;
-						if (rl.isView() && !rl.isCustomWebapp()) {
+						if (rl.isView()) {
 							Map<String, Object> service = new HashMap<String, Object>(2);
 							service.put("name", rb.getName());
 							service.put("uriPattern", rl.getUriPattern());

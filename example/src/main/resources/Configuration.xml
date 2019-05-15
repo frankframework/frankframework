@@ -1,5 +1,4 @@
 <!DOCTYPE configuration [
-	<!ENTITY WebApp SYSTEM "Configuration_WebApp.xml">
 	<!ENTITY HelloWorld SYSTEM "ConfigurationHelloWorld.xml">
 	<!ENTITY HelloWorlds SYSTEM "ConfigurationHelloWorlds.xml">
 	<!ENTITY HelloBeautifulWorld SYSTEM "ConfigurationHelloBeautifulWorld.xml">
@@ -9,7 +8,6 @@
 		<jmsRealm realmName="jdbc" datasourceName="jdbc/${instance.name.lc}"/>
 		<!-- jmsRealm realmName="qcf" queueConnectionFactoryName="jms/qcf"/ -->
 	</jmsRealms>
-	&WebApp;
 	&HelloWorld;
 	&HelloWorlds;
 	&HelloBeautifulWorld;

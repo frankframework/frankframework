@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.ServletConfig;
@@ -37,6 +38,7 @@ import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.soap.Wsdl;
+import nl.nn.adapterframework.util.AppConstants;
 
 /**
  * GET Endpoint used to retrieve all registered custom web app extensions.
@@ -59,28 +61,25 @@ public final class CustomWebapps extends Base {
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 
 		List<Map<String, Object>> webapps = new ArrayList<Map<String, Object>>();
-		for (IAdapter a : ibisManager.getRegisteredAdapters()) {
-			Adapter adapter = (Adapter) a;
-			Iterator<IReceiver> recIt = adapter.getReceiverIterator();
-			while (recIt.hasNext()) {
-				IReceiver receiver = recIt.next();
-				if (receiver instanceof ReceiverBase) {
-					ReceiverBase rb = (ReceiverBase) receiver;
-					IListener listener = rb.getListener();
-					if (listener instanceof RestListener) {
-						RestListener rl = (RestListener) listener;
-						if (rl.isView() && rl.isCustomWebapp()) {
-							Map<String, Object> webapp = new HashMap<String, Object>(2);
-							webapp.put("name", rb.getName());
-							webapp.put("uriPattern", rl.getUriPattern());
-							webapp.put("showInMenu", rl.isVisibleInMenu());
-							webapp.put("showInWebservices", rl.isVisibleInWebservices());
-                            webapps.add(webapp);
-						}
-					}
-				}
-            }
-        }
+		String customWebapps = AppConstants.getInstance().getString("customWebapps.names", null);
+
+		if(customWebapps != null){
+			StringTokenizer tokenizer = new StringTokenizer(customWebapps, ","); 
+
+			while (tokenizer.hasMoreTokens()) { 
+				String webappName = tokenizer.nextToken();
+				String url = AppConstants.getInstance().getString("customWebapps." + webappName + ".url", null);
+				Boolean showInMenu = AppConstants.getInstance().getBoolean("customWebapps." + webappName + ".visibleInMenu", false);
+				Boolean showInWebservices = AppConstants.getInstance().getBoolean("customWebapps." + webappName + ".visibleInWebservices", true);
+
+				Map<String, Object> webapp = new HashMap<String, Object>(2);
+				webapp.put("name", webappName);
+				webapp.put("uriPattern", url);
+				webapp.put("showInMenu", showInMenu);
+				webapp.put("showInWebservices", showInWebservices);
+				webapps.add(webapp);
+			}
+		}
 
         returnMap.put("webapps", webapps);
 
