@@ -3162,37 +3162,6 @@ public class TestTool {
 		boolean ignoreContentBetweenKeysProcessed = false;
 		i = 1;
 		while (!ignoreContentBetweenKeysProcessed) {
-			HashMap<String, HashMap<String, String>> ignores = new HashMap<String, HashMap<String, String>>();
-			
-			Enumeration<String> enums = (Enumeration<String>) properties.propertyNames();
-		    while (enums.hasMoreElements()) {
-		      String key = enums.nextElement();
-		      if(key.startsWith("ignoreContentBetweenKeys.") && (key.contains(".key1") || key.contains(".key2"))) {
-		        	String id = key.split(Pattern.quote("."))[1];
-		        	String keyId= key.split(Pattern.quote("."))[2];
-		        	String otherKeyId = keyId.equalsIgnoreCase("key1") ? "key2" : "key1";
-		        	String currentKey = properties.getProperty(key);
-		        	
-		        	HashMap<String, String> ignore = ignores.get(id);
-		        	if(ignore == null) {
-		        		ignore = new HashMap<String, String>();
-		        		ignore.put(keyId, currentKey);
-		        		ignores.put(id, ignore);
-		        	}
-		        	else {
-		        		String otherKey = ignore.get(otherKeyId);
-		        		if(keyId.equalsIgnoreCase("key1")) {
-		        			preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, currentKey, otherKey);
-							preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, currentKey, otherKey);
-		        		}
-		        		else {
-		        			preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, otherKey, currentKey);
-							preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, otherKey, currentKey);
-		        		}
-		        	}
-		        }
-			}
-			
 			String key1 = properties.getProperty("ignoreContentBetweenKeys" + i + ".key1");
 			String key2 = properties.getProperty("ignoreContentBetweenKeys" + i + ".key2");
 			if (key1 != null && key2 != null) {
@@ -3204,6 +3173,20 @@ public class TestTool {
 				ignoreContentBetweenKeysProcessed = true;
 			}
 		}
+		HashMap<String, HashMap<String, String>> ignoreContentBetweenKeys = mapPropertiesByName("ignoreContentBetweenKeys", properties);
+		
+		Iterator it = ignoreContentBetweenKeys.entrySet().iterator();
+	    while (it.hasNext()) {
+	        Map.Entry ignoreContentBetweenKeysEntry = (Map.Entry)it.next();
+	        HashMap<String, String> ignoreContentBetweenKeysPair = (HashMap<String, String>) ignoreContentBetweenKeysEntry.getValue();
+	        String key1 = ignoreContentBetweenKeysPair.get("key1");
+	        String key2 = ignoreContentBetweenKeysPair.get("key2");
+	        
+	        preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, key1, key2);
+			preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, key1, key2);
+			
+	        it.remove(); // avoids a ConcurrentModificationException
+	    }
 		debugMessage("Check ignoreKeysAndContentBetweenKeys properties", writers);
 		boolean ignoreKeysAndContentBetweenKeysProcessed = false;
 		i = 1;
@@ -3911,5 +3894,28 @@ public class TestTool {
 			errorMessage("Could not read string '" + string + "': " + e.getMessage(), e, writers);
 		}
 		return sb.toString();
+	}
+	
+	private static HashMap<String, HashMap<String, String>> mapPropertiesByName(String propertyName, Properties properties) {
+		HashMap<String, HashMap<String, String>> returnMap = new HashMap<String, HashMap<String, String>>();
+		Enumeration<String> enums = (Enumeration<String>) properties.propertyNames();
+	    while (enums.hasMoreElements()) {
+	      String key = enums.nextElement();
+	      if(key.startsWith(propertyName + ".") && (key.contains(".key1") || key.contains(".key2"))) {
+	        	String id = key.split(Pattern.quote("."))[1];
+	        	String keyId= key.split(Pattern.quote("."))[2];
+	        	String otherKeyId = keyId.equalsIgnoreCase("key1") ? "key2" : "key1";
+	        	String currentKey = properties.getProperty(key);
+	        	
+	        	HashMap<String, String> ignore = returnMap.get(id);
+	        	if(ignore == null) {
+	        		ignore = new HashMap<String, String>();
+	        	}
+	        	ignore.put(keyId, currentKey);
+        		returnMap.put(id, ignore);
+	        }
+		}
+	    
+	    return returnMap;
 	}
 }
