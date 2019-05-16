@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import javax.xml.soap.SOAPConstants;
 import javax.xml.ws.soap.SOAPBinding;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -154,7 +155,13 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 				log.debug(getLogPrefix()+"received SOAPMSG [" + message + "]");
 				String request = soapWrapper.getBody(message);
 				String result = super.processRequest(correlationId, request, requestContext);
-				String reply = soapWrapper.putInEnvelope(result,null);
+
+				String soapNamespace = SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE;
+				String soapProtocol = (String) requestContext.get("soapProtocol");
+				if(SOAPConstants.SOAP_1_2_PROTOCOL.equals(soapProtocol))
+					soapNamespace = SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE;
+
+				String reply = soapWrapper.putInEnvelope(result, null, null, null, null, soapNamespace, null, false);
 				log.debug(getLogPrefix()+"replied SOAPMSG [" + reply + "]");
 				return reply;
 			} catch (Exception e) {

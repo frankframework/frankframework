@@ -20,6 +20,8 @@ import java.util.Iterator;
 import javax.xml.soap.SOAPBody;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
+import javax.xml.ws.BindingType;
+import javax.xml.ws.ServiceMode;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
@@ -36,6 +38,8 @@ import org.w3c.dom.Node;
  * @author Niels Meijer
  */
 
+@ServiceMode(value=javax.xml.ws.Service.Mode.MESSAGE)
+@BindingType(javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
 public class NamespaceUriProvider extends SOAPProviderBase {
 	protected Logger log = LogUtil.getLogger(this);
 
