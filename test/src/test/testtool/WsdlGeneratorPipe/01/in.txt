@@ -1,1 +1,1 @@
-c:/temp/ibis4test/generateWsdl/input.zip
+c:/temp/testdata/generateWsdl/input.zip

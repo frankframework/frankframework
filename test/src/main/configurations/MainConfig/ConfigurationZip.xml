@@ -77,7 +77,7 @@
 			<pipe
 				name="SimpleZip"
 				className="nl.nn.adapterframework.pipes.FixedResult" 
-				returnString="${i4ti.dir}/zip/simple.zip"
+				returnString="c:/temp/testdata/zip/simple.zip"
 				>
 				<forward name="success" path="SimpleZip2"/>
 			</pipe>
@@ -108,7 +108,7 @@
 			<pipe
 				name="SimpleZipX"
 				className="nl.nn.adapterframework.pipes.FixedResult" 
-				returnString="${i4ti.dir}/zip/simple.zip"
+				returnString="c:/temp/testdata/zip/simple.zip"
 				>
 				<forward name="success" path="SimpleZipX2"/>
 			</pipe>

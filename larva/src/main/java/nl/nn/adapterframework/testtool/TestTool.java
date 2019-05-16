@@ -3207,7 +3207,7 @@ public class TestTool {
 		}
 		debugMessage("Check replaceKey properties", writers);
 		boolean replaceKeyProcessed = false;
-		i = 0;
+		i = 1;
 		while (!replaceKeyProcessed) {
 			String key1 = properties.getProperty("replaceKey" + i + ".key1");
 			String key2 = properties.getProperty("replaceKey" + i + ".key2");
@@ -3216,10 +3216,23 @@ public class TestTool {
 				preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
 				preparedActualResult = replaceKey(preparedActualResult, key1, key2);
 				i++;
-			} else if (i == 0) {
-				i++;
-			} else if (i > 0) {
+			} else {
 				replaceKeyProcessed = true;
+			}
+		}
+		debugMessage("Check replaceEverywhereKey properties", writers);
+		boolean replaceEverywhereKeyProcessed = false;
+		i = 1;
+		while (!replaceEverywhereKeyProcessed) {
+			String key1 = properties.getProperty("replaceEverywhereKey" + i + ".key1");
+			String key2 = properties.getProperty("replaceEverywhereKey" + i + ".key2");
+			if (key1 != null && key2 != null) {
+				debugMessage("Replace key from '" + key1 + "' to '" + key2 + "'", writers);
+				preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
+				preparedActualResult = replaceKey(preparedActualResult, key1, key2);
+				i++;
+			} else {
+				replaceEverywhereKeyProcessed = true;
 			}
 		}
 		debugMessage("Check ignoreCurrentTimeBetweenKeys properties", writers);
