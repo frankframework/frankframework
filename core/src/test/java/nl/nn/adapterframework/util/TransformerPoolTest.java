@@ -12,12 +12,12 @@ import org.junit.Test;
 public class TransformerPoolTest {
 	protected Logger log = LogUtil.getLogger(this);
 
-	String xml = "<root><message active=\"false\">hello</message></root>";
-	String xpath = "root/message";
-	String expectedXpath = "hello";
+	private String xml = "<root><message active=\"false\">hello</message></root>";
+	private String xpath = "root/message";
+	private String expectedXpath = "hello";
 
-	String stylesheetURL = "xml/xsl/active.xsl";
-	String expectedStylesheetURL = "<root/>";
+	private String stylesheetURL = "xml/xsl/active.xsl";
+	private String expectedStylesheetURL = "<root/>";
 
 	@Test
 	public void plainXPath() throws Exception {

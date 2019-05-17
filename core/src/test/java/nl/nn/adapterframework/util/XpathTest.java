@@ -13,6 +13,8 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class XpathTest extends FunctionalTransformerPoolTestBase {
 
+	private String inputMessageWithNs="<root xmlns=\"urn:rootnamespace/\"><body xmlns=\"urn:bodynamespace/\"><item>1</item><item>2</item></body></root>";
+	private String inputMessageWithoutNs="<root><body><item>1</item><item>2</item></body></root>";
 	
 	
 	public void xpathTest(String input, String xpath, String expected) throws ConfigurationException, DomBuilderException, TransformerException, IOException {
@@ -27,9 +29,6 @@ public class XpathTest extends FunctionalTransformerPoolTestBase {
 		Source source = XmlUtils.stringToSource(input,false);
 		testTransformerPool(tp, source, expected, false, "viaSource");
 	}
-	
-	String inputMessageWithNs="<root xmlns=\"urn:rootnamespace/\"><body xmlns=\"urn:bodynamespace/\"><item>1</item><item>2</item></body></root>";
-	String inputMessageWithoutNs="<root><body><item>1</item><item>2</item></body></root>";
 	
 	
 	@Test
