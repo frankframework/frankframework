@@ -47,6 +47,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	public void configure(IbisContext ibisContext, String configurationName) throws ConfigurationException {
 		this.ibisContext = ibisContext;
 		this.configurationName = configurationName;
+		log.info("configured ["+this.getClass().getSimpleName()+"] for ["+configurationName+"]");
 	}
 
 	public String getConfigurationName() {

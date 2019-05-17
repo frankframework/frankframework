@@ -392,6 +392,8 @@ public class IbisContext extends IbisApplicationContext {
 		if (configurationFile == null) {
 			configurationFile = "Configuration.xml";
 			if (!currentConfigurationName.equals(INSTANCE_NAME)) {
+				//Only required for configurations defined in the IAF project.
+				//The BasePathClassLoader checks both the prepended 'currentConfigurationName' and root of the classloader
 				configurationFile = currentConfigurationName + "/" + configurationFile;
 			}
 		}
