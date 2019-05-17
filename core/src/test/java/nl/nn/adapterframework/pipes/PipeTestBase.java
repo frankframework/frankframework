@@ -46,13 +46,6 @@ public abstract class PipeTestBase<P extends IPipe> {
 
 	
 	@Test
-	public void notConfigured() throws ConfigurationException {
-		pipe = createPipe();
-		exception.expect(ConfigurationException.class);
-		pipe.configure();
-	}
-
-	@Test
 	public void basicNoAdditionalConfig() throws ConfigurationException {
 		adapter.configure();
 	}

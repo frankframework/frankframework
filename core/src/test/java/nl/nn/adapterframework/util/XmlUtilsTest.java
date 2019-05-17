@@ -1,7 +1,5 @@
 package nl.nn.adapterframework.util;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 
 import javax.xml.transform.TransformerException;
@@ -10,26 +8,8 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
-public class XmlUtilsTest {
+public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 
-	public void testTransformerPool(TransformerPool tp, String input, String expected, boolean namespaceAware) throws DomBuilderException, TransformerException, IOException {
-		String actual=tp.transform(input, null, namespaceAware);
-		assertEquals(expected.trim(),actual.trim());
-	}
-
-	public void testTransformerPool(TransformerPool tp, String input, String expected) throws DomBuilderException, TransformerException, IOException {
-		testTransformerPool(tp, input, expected, true);
-	}
-	
-	public void testXslt(String xslt, String input, String expected) throws DomBuilderException, TransformerException, IOException {
-		testXslt(xslt, input, expected, false);
-	}
-	
-	public void testXslt(String xslt, String input, String expected, boolean xslt2) throws DomBuilderException, TransformerException, IOException {
-		TransformerPool tp = TransformerPool.getInstance(xslt,xslt2);
-		testTransformerPool(tp,input,expected);
-	}
-	
 	public void testSkipEmptyTags(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws DomBuilderException, TransformerException, IOException, ConfigurationException {
 		testXslt(XmlUtils.makeSkipEmptyTagsXslt(omitXmlDeclaration, indent),input,expected,true);
 		testTransformerPool(XmlUtils.getSkipEmptyTagsTransformerPool(omitXmlDeclaration, indent),input,expected);
