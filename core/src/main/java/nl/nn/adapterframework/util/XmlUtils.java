@@ -751,18 +751,18 @@ public class XmlUtils {
 		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, null);
 	}
 
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List params) throws TransformerConfigurationException {
-		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, params, true);
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List<String> paramNames) throws TransformerConfigurationException {
+		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, paramNames, true);
 	}
 
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List params, boolean stripSpace) throws TransformerConfigurationException {
-		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, params, stripSpace, false, null);
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace) throws TransformerConfigurationException {
+		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, paramNames, stripSpace, false, null);
 	}
 
 	/*
 	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of, and enables use of parameters.
 	 */
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List params, boolean stripSpace, boolean ignoreNamespaces, String separator) throws TransformerConfigurationException {
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace, boolean ignoreNamespaces, String separator) throws TransformerConfigurationException {
 		if (StringUtils.isEmpty(XPathExpression))
 			throw new TransformerConfigurationException("XPathExpression must be filled");
 
@@ -789,9 +789,9 @@ public class XmlUtils {
 		}
 
 		String paramsString = "";
-		if (params != null) {
-			for (Iterator it = params.iterator(); it.hasNext();) {
-				paramsString = paramsString + "<xsl:param name=\"" + it.next() + "\"/>";
+		if (paramNames != null) {
+			for (String paramName: paramNames) {
+				paramsString = paramsString + "<xsl:param name=\"" + paramName + "\"/>";
 			}
 		}
 		String separatorString = "";
@@ -1551,21 +1551,19 @@ public class XmlUtils {
 	/**
 	 * sets all the parameters of the transformer using a Map with parameter values.
 	 */
-	public static void setTransformerParameters(Transformer t, Map parameters) {
+	public static void setTransformerParameters(Transformer t, Map<String,Object> parameters) {
 		t.clearParameters();
 		if (parameters == null) {
 			return;
 		}
-		for (Iterator it=parameters.keySet().iterator(); it.hasNext();) {
-			String name=(String)it.next();
-			Object value = parameters.get(name);
-
+		for (String paramName:parameters.keySet()) {
+			Object value = parameters.get(paramName);
 			if (value != null) {
-				t.setParameter(name, value);
-				log.debug("setting parameter [" + name+ "] on transformer");
+				t.setParameter(paramName, value);
+				log.debug("setting parameter [" + paramName+ "] on transformer");
 			}
 			else {
-				log.info("omitting setting of parameter ["+name+"] on transformer, as it has a null-value");
+				log.info("omitting setting of parameter ["+paramName+"] on transformer, as it has a null-value");
 			}
 		}
 	}
@@ -1880,9 +1878,7 @@ public class XmlUtils {
 	 * Like {@link javanet.staxutils.XMLStreamUtils#mergeAttributes} but it can
 	 * also merge namespaces
 	 */
-	public static StartElement mergeAttributes(StartElement tag,
-			Iterator<? extends Attribute> attrs,
-			Iterator<? extends Namespace> nsps, XMLEventFactory factory) {
+	public static StartElement mergeAttributes(StartElement tag, Iterator<? extends Attribute> attrs, Iterator<? extends Namespace> nsps, XMLEventFactory factory) {
 		// create Attribute map
 		Map<QName, Attribute> attributes = new HashMap<QName, Attribute>();
 
@@ -1920,8 +1916,7 @@ public class XmlUtils {
 				.getNamespaceContext());
 	}
 
-	public static boolean attributesEqual(Attribute attribute1,
-			Attribute attribute2) {
+	public static boolean attributesEqual(Attribute attribute1, Attribute attribute2) {
 		if (!attribute1.getName().equals(attribute2.getName())) {
 			return false;
 		} else if (!attribute1.getValue().equals(attribute2.getValue())) {
@@ -1930,8 +1925,7 @@ public class XmlUtils {
 		return true;
 	}
 
-	public static String getAdapterSite(Object document)
-			throws DomBuilderException, IOException, TransformerException {
+	public static String getAdapterSite(Object document) throws DomBuilderException, IOException, TransformerException {
 		String input;
 		if (document instanceof DefaultDocument) {
 			DefaultDocument defaultDocument = (DefaultDocument) document;
@@ -1942,8 +1936,7 @@ public class XmlUtils {
 		return getAdapterSite(input, null);
 	}
 
-	public static String getAdapterSite(String input, Map parameters)
-			throws IOException, DomBuilderException, TransformerException {
+	public static String getAdapterSite(String input, Map parameters) throws IOException, DomBuilderException, TransformerException {
 		URL xsltSource = ClassUtils.getResourceURL(XmlUtils.class,
 				ADAPTERSITE_XSLT);
 		Transformer transformer = XmlUtils.createTransformer(xsltSource);
