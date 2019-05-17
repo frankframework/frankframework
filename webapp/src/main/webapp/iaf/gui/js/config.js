@@ -285,33 +285,28 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 			breadcrumbs: 'JDBC > Ibisstore Summary'
 		}
 	})
-	.state('pages.webapp', {
-		url: "/webapp",
+	.state('pages.customView', {
+		url: "/customView/:name",
 		templateUrl: "views/iFrame.html",
 		data: {
-			pageTitle: 'Custom Webapp',
-			breadcrumbs: 'Custom Webapp',
+			pageTitle: "Custom View",
+			breadcrumbs: 'Custom View',
 			iframe: true
 		},
 		params: {
-			url: ''
+			name: { value: '', squash: true},
+			url: { value: '', squash: true},
 		},
-		controller: function($scope, Misc, $state, $window){
-			if($state.params.url.length == 0){
-				$scope.$watch("webapps", function(o,n){
-					if(angular.isDefined(o)){
-						if($scope.webapps && $scope.webapps.length > 0){
-							$scope.url = Misc.getServerPath() + $scope.webapps[0].uriPattern;
-						}
-						else {
-							$window.history.back();
-						}
-					}
-				})
+		controller: function($scope, Misc, $state, $window) {
+			if($state.params.url == "")
+				$state.go('pages.status');
+
+			if($state.params.url.indexOf("http") > -1) {
+				$window.open($state.params.url, $state.params.name);
+				$scope.redirectURL = $state.params.url;
 			}
-			else {
+			else
 				$scope.url = Misc.getServerPath() + $state.params.url;
-			}
 		}
 	})
 	.state('pages.larva', {
