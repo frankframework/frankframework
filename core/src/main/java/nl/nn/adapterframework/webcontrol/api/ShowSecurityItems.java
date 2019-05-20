@@ -174,21 +174,21 @@ public final class ShowSecurityItems extends Base {
 				for (int j = 0; j < fieldsInRowset.getLength(); j++) {
 					if (fieldsInRowset.item(j).getNodeType() == Node.ELEMENT_NODE) {
 						Element field = (Element) fieldsInRowset.item(j);
-
-						if(field.getNodeName() == "role") {
+						
+						if("role".equals(field.getNodeName())) {
 							role = field.getAttribute("href");
 							if(role.indexOf("#") > -1)
 								role = role.substring(role.indexOf("#")+1);
 						}
-						else if(field.getNodeName() == "specialSubjects") {
+						else if("specialSubjects".equals(field.getNodeName())) {
 							specialSubjects.add(field.getAttribute("name"));
 						}
-						else if(field.getNodeName() == "groups") {
+						else if("groups".equals(field.getNodeName())) {
 							roles.add(field.getAttribute("name"));
 						}
 					}
 				}
-				if(role != null && role != "") {
+				if(role != null && !role.isEmpty()) {
 					Map<String, List<String>> roleBinding = new HashMap<String, List<String>>();
 					roleBinding.put("groups", roles);
 					roleBinding.put("specialSubjects", specialSubjects);
