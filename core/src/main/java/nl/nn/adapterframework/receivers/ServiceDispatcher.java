@@ -22,6 +22,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
@@ -102,5 +103,9 @@ public class ServiceDispatcher  {
 
 		registeredListeners.put(name, listener);
 		log.info("Listener ["+name+"] registered at ServiceDispatcher");
+	}
+
+	public WebServiceListener getListener(String name) {
+		return (WebServiceListener) registeredListeners.get(name);
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2018 Nationale-Nederlanden
+   Copyright 2013-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -85,6 +85,9 @@ import org.springframework.core.task.TaskExecutor;
 public class Adapter implements IAdapter, NamedBean {
 	private Logger log = LogUtil.getLogger(this);
 	protected Logger msgLog = LogUtil.getLogger("MSG");
+	
+	public static final String PROCESS_STATE_OK = "OK";
+	public static final String PROCESS_STATE_ERROR = "ERROR";
 
 	private String name;
 	private Configuration configuration;
@@ -93,6 +96,7 @@ public class Adapter implements IAdapter, NamedBean {
 
 	private ArrayList<IReceiver> receivers = new ArrayList<IReceiver>();
 	private long lastMessageDate = 0;
+	private String lastMessageProcessingState; //"OK" or "ERROR"
 	private PipeLine pipeline;
 
 	private Map<String, SenderLastExitState> sendersLastExitState = new HashMap<String, SenderLastExitState>();
@@ -248,11 +252,16 @@ public class Adapter implements IAdapter, NamedBean {
 	/**
 	 * Decrease the number of messages in process
 	 */
-	private synchronized void decNumOfMessagesInProcess(long duration) {
+	private synchronized void decNumOfMessagesInProcess(long duration, boolean processingSuccess) {
 		synchronized (statsMessageProcessingDuration) {
 			numOfMessagesInProcess--;
 			numOfMessagesProcessed.increase();
 			statsMessageProcessingDuration.addValue(duration);
+			if (processingSuccess) {
+				lastMessageProcessingState = PROCESS_STATE_OK;
+			} else {
+				lastMessageProcessingState = PROCESS_STATE_ERROR;
+			}
 			notifyAll();
 		}
 	}
@@ -513,6 +522,11 @@ public class Adapter implements IAdapter, NamedBean {
 	public String getRunStateAsString() {
 		return runState.getRunState().toString();
 	}
+
+	public String getLastMessageProcessingState() {
+		return lastMessageProcessingState;
+	}
+
 	/**
 	 * Return the total processing duration as a StatisticsKeeper
 	 * @see StatisticsKeeper
@@ -578,6 +592,7 @@ public class Adapter implements IAdapter, NamedBean {
 		PipeLineResult result = new PipeLineResult();
 
 		long startTime = System.currentTimeMillis();
+		boolean processingSuccess = true;
 		// prevent executing a stopped adapter
 		// the receivers should implement this, but you never now....
 		RunStateEnum currentRunState = getRunState();
@@ -659,6 +674,7 @@ public class Adapter implements IAdapter, NamedBean {
 			} else {
 				e = new ListenerException(t);
 			}
+			processingSuccess = false;
 			incNumOfMessagesInError();
 			error(false, "error processing message with messageId [" + messageId+"]: ",e);
 			throw e;
@@ -666,7 +682,7 @@ public class Adapter implements IAdapter, NamedBean {
 			long endTime = System.currentTimeMillis();
 			long duration = endTime - startTime;
 			//reset the InProcess fields, and increase processedMessagesCount
-			decNumOfMessagesInProcess(duration);
+			decNumOfMessagesInProcess(duration, processingSuccess);
 	
 			if (log.isDebugEnabled()) { // for performance reasons
 				log.debug("Adapter: [" + getName()

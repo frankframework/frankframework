@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,17 +37,26 @@ import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
+import nl.nn.adapterframework.http.WebServiceListener;
+import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
+import nl.nn.adapterframework.http.rest.ApiListener;
+import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.jdbc.JdbcSenderBase;
 import nl.nn.adapterframework.jms.JmsListenerBase;
 import nl.nn.adapterframework.jms.JmsMessageBrowser;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
+import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.ServiceDispatcher;
+import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
@@ -85,6 +94,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 	private class ShowConfigurationStatusManager {
 		boolean count = false;
 		Boolean alert = null;
+		boolean log = false;
 		int countAdapterStateStarting = 0;
 		int countAdapterStateStarted = 0;
 		int countAdapterStateStopping = 0;
@@ -92,18 +102,23 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		int countAdapterStateError = 0;
 		int countReceiverStateStarting = 0;
 		int countReceiverStateStarted = 0;
+		int countReceiverStateStartedNotAvailable = 0;
 		int countReceiverStateStopping = 0;
 		int countReceiverStateStopped = 0;
 		int countReceiverStateError = 0;
 		int countMessagesInfo = 0;
 		int countMessagesWarn = 0;
 		int countMessagesError = 0;
+		int countLastMsgProcessOk = 0;
+		int countLastMsgProcessError = 0;
+		int countLastMsgProcessNotApplicable = 0;
 	}
 
 	private class ShowConfigurationStatusAdapterManager {
 		boolean stateAlert = false;
-		// stateAlert = true when adapter.runState<>'STARTED' or
-		// receiver.runState<>'STARTED' or (lastMessageLevel='ERROR' or 'WARN')
+		// stateAlert = true when adapter.runState<>'STARTED' or receiver.runState<>'STARTED' or adapter.lastMessageProcessState='ERROR'
+		boolean logAlert = false;
+		// logAlert = true when (lastMessageLevel='ERROR' or 'WARN')
 	}
 
 	@Override
@@ -123,6 +138,9 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			configurationName = CONFIG_ALL;
 		}
 
+		String logStr = (String) session.get("log");
+		showConfigurationStatusManager.log = Boolean.parseBoolean(logStr);
+		
 		if (configurationName == null) {
 			configurationName = retrieveConfigurationName(session);
 		}
@@ -176,6 +194,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		if (showConfigurationStatusManager.alert != null) {
 			adapters.addAttribute("alert", showConfigurationStatusManager.alert);
 		}
+		adapters.addAttribute("log", showConfigurationStatusManager.log);
 
 		XmlBuilder configurationMessagesXml = toConfigurationMessagesXml(ibisManager, configurationSelected);
 		adapters.addSubElement(configurationMessagesXml);
@@ -286,7 +305,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 				}
 			}
 		}
-		if (!globalConfigurationWarnings.isEmpty() || !errorStoreCounters.isEmpty() || !SHOW_COUNT_ERRORSTORE
+		if (!globalConfigurationWarnings.isEmpty() || errorStoreCounters == null || !errorStoreCounters.isEmpty() || !SHOW_COUNT_ERRORSTORE
 				|| !selectedConfigurationWarnings.isEmpty()) {
 			XmlBuilder warningsXML = new XmlBuilder("warnings");
 			if (!SHOW_COUNT_ERRORSTORE) {
@@ -296,19 +315,27 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 				warningXML.addAttribute("severe", true);
 				warningsXML.addSubElement(warningXML);
 			}
-			for (int j = 0; j < errorStoreCounters.size(); j++) {
-				ErrorStoreCounter esr = errorStoreCounters.get(j);
+			if (errorStoreCounters == null) {
 				XmlBuilder warningXML = new XmlBuilder("warning");
-				warningXML.addAttribute("config", esr.config);
-				if (esr.counter == 1) {
-					warningXML.setValue(
-							"Errorlog contains 1 record. Service management should check whether this record has to be resent or deleted");
-				} else {
-					warningXML.setValue("Errorlog contains " + esr.counter
-							+ " records. Service Management should check whether these records have to be resent or deleted");
-				}
+				warningXML.setValue(
+						"Errorlog could not be retrieved. See logging for more information");
 				warningXML.addAttribute("severe", true);
 				warningsXML.addSubElement(warningXML);
+			} else {
+				for (int j = 0; j < errorStoreCounters.size(); j++) {
+					ErrorStoreCounter esr = errorStoreCounters.get(j);
+					XmlBuilder warningXML = new XmlBuilder("warning");
+					warningXML.addAttribute("config", esr.config);
+					if (esr.counter == 1) {
+						warningXML.setValue(
+								"Errorlog contains 1 record. Service management should check whether this record has to be resent or deleted");
+					} else {
+						warningXML.setValue("Errorlog contains " + esr.counter
+								+ " records. Service Management should check whether these records have to be resent or deleted");
+					}
+					warningXML.addAttribute("severe", true);
+					warningsXML.addSubElement(warningXML);
+				}
 			}
 			for (int j = 0; j < globalConfigurationWarnings.size(); j++) {
 				XmlBuilder warningXML = new XmlBuilder("warning");
@@ -333,25 +360,37 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			errorStoreCounters = new ArrayList<ErrorStoreCounter>();
 			if (configurationSelected != null) {
 				String config = configurationSelected.getName();
-				int counter = 0;
+				int totalCounter = 0;
 				for (Iterator adapterIt = configurationSelected.getRegisteredAdapters().iterator(); adapterIt
 						.hasNext();) {
 					Adapter adapter = (Adapter) adapterIt.next();
-					counter += retrieveErrorStoragesMessageCount(adapter);
+					int counter = retrieveErrorStoragesMessageCount(adapter);
+					if (counter < 0) {
+						// error occured
+						return null;
+					} else {
+						totalCounter += counter;
+					}
 				}
-				if (counter > 0) {
-					errorStoreCounters.add(new ErrorStoreCounter(config, counter));
+				if (totalCounter > 0) {
+					errorStoreCounters.add(new ErrorStoreCounter(config, totalCounter));
 				}
 			} else {
 				for (Configuration configuration : configurations) {
 					String config = configuration.getName();
-					int counter = 0;
+					int totalCounter = 0;
 					for (Iterator adapterIt = configuration.getRegisteredAdapters().iterator(); adapterIt.hasNext();) {
 						Adapter adapter = (Adapter) adapterIt.next();
-						counter += retrieveErrorStoragesMessageCount(adapter);
+						int counter = retrieveErrorStoragesMessageCount(adapter);
+						if (counter < 0) {
+							// error occured
+							return null;
+						} else {
+							totalCounter += counter;
+						}
 					}
-					if (counter > 0) {
-						errorStoreCounters.add(new ErrorStoreCounter(config, counter));
+					if (totalCounter > 0) {
+						errorStoreCounters.add(new ErrorStoreCounter(config, totalCounter));
 					}
 				}
 			}
@@ -360,22 +399,41 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 	}
 
 	private int retrieveErrorStoragesMessageCount(Adapter adapter) {
-		int counter = 0;
+		int totalCounter = 0;
 		for (Iterator receiverIt = adapter.getReceiverIterator(); receiverIt.hasNext();) {
 			ReceiverBase receiver = (ReceiverBase) receiverIt.next();
 			ITransactionalStorage errorStorage = receiver.getErrorStorage();
 			if (errorStorage != null) {
+				int counter;
 				try {
-					counter += errorStorage.getMessageCount();
+					counter = getErrorStorageMessageCountWithTimeout(errorStorage, 10);
 				} catch (Exception e) {
 					log.warn("error occured on getting number of errorlog records for adapter [" + adapter.getName()
-							+ "], assuming there are no errorlog records", e);
+							+ "]", e);
+					return -1;
 				}
+				totalCounter += counter;
 			}
 		}
-		return counter;
+		return totalCounter;
 	}
 
+	private int getErrorStorageMessageCountWithTimeout(ITransactionalStorage errorStorage,
+			int timeout) throws ListenerException, TimeOutException {
+		if (timeout <= 0) {
+			return errorStorage.getMessageCount();
+		}
+		TimeoutGuard tg = new TimeoutGuard("ErrorMessageCount ");
+		try {
+			tg.activateGuard(timeout);
+			return errorStorage.getMessageCount();
+		} finally {
+			if (tg.cancel()) {
+				throw new TimeOutException("thread has been interrupted");
+			}
+		}
+	}
+	
 	private XmlBuilder toAdapterXml(Configuration configurationSelected, Adapter adapter,
 			ShowConfigurationStatusManager showConfigurationStatusManager) {
 		ShowConfigurationStatusAdapterManager showConfigurationStatusAdapterManager = new ShowConfigurationStatusAdapterManager();
@@ -391,6 +449,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		adapterXML.addAttribute("nameUC", Misc.toSortName(adapterName));
 		adapterXML.addAttribute("started", "" + (adapterRunState.equals(RunStateEnum.STARTED)));
 		adapterXML.addAttribute("state", adapterRunState.toString());
+		adapterXML.addAttribute("lastMsgProcessState", adapter.getLastMessageProcessingState());
 		if (adapterRunState.equals(RunStateEnum.STARTING)) {
 			showConfigurationStatusManager.countAdapterStateStarting++;
 		} else if ((adapterRunState.equals(RunStateEnum.STARTED))) {
@@ -404,6 +463,22 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		}
 		if (!(adapterRunState.equals(RunStateEnum.STARTED))) {
 			showConfigurationStatusAdapterManager.stateAlert = true;
+		}
+		String lastMsgProcessingState = adapter.getLastMessageProcessingState();
+		if (StringUtils.isNotEmpty(lastMsgProcessingState)) {
+			adapterXML.addAttribute("lastMsgProcessState", lastMsgProcessingState);
+		} else {
+			adapterXML.addAttribute("lastMsgProcessState", "-");
+		}
+		if (Adapter.PROCESS_STATE_OK.equals(lastMsgProcessingState)) {
+			showConfigurationStatusManager.countLastMsgProcessOk++;
+		} else if (Adapter.PROCESS_STATE_ERROR.equals(lastMsgProcessingState)) {
+			showConfigurationStatusManager.countLastMsgProcessError++;
+			if (!showConfigurationStatusAdapterManager.stateAlert) {
+				showConfigurationStatusAdapterManager.stateAlert = true;
+			}
+		} else {
+			showConfigurationStatusManager.countLastMsgProcessNotApplicable++;
 		}
 		adapterXML.addAttribute("configured", "" + adapter.configurationSucceeded());
 		Date statsUpSinceDate = adapter.getStatsUpSinceDate();
@@ -442,6 +517,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			adapterXML.addSubElement(adapterMessages);
 		}
 		adapterXML.addAttribute("stateAlert", showConfigurationStatusAdapterManager.stateAlert);
+		adapterXML.addAttribute("logAlert", showConfigurationStatusAdapterManager.logAlert);
 		return adapterXML;
 	}
 
@@ -459,13 +535,19 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			receiversXML.addSubElement(receiverXML);
 
 			RunStateEnum receiverRunState = receiver.getRunState();
+			boolean isAvailable = true;
 
 			receiverXML.addAttribute("isStarted", "" + (receiverRunState.equals(RunStateEnum.STARTED)));
 			receiverXML.addAttribute("state", receiverRunState.toString());
 			if (receiverRunState.equals(RunStateEnum.STARTING)) {
 				showConfigurationStatusManager.countReceiverStateStarting++;
 			} else if ((receiverRunState.equals(RunStateEnum.STARTED))) {
-				showConfigurationStatusManager.countReceiverStateStarted++;
+				isAvailable = isAvailable(receiver);
+				if (isAvailable) {
+					showConfigurationStatusManager.countReceiverStateStarted++;
+				} else {
+					showConfigurationStatusManager.countReceiverStateStartedNotAvailable++;
+				}
 			} else if ((receiverRunState.equals(RunStateEnum.STOPPING))) {
 				showConfigurationStatusManager.countReceiverStateStopping++;
 			} else if ((receiverRunState.equals(RunStateEnum.STOPPED))) {
@@ -473,7 +555,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			} else if ((receiverRunState.equals(RunStateEnum.ERROR))) {
 				showConfigurationStatusManager.countReceiverStateError++;
 			}
-			if (!showConfigurationStatusAdapterManager.stateAlert && !(receiverRunState.equals(RunStateEnum.STARTED))) {
+			if (!showConfigurationStatusAdapterManager.stateAlert && !(receiverRunState.equals(RunStateEnum.STARTED) && isAvailable)) {
 				showConfigurationStatusAdapterManager.stateAlert = true;
 			}
 			receiverXML.addAttribute("name", receiver.getName());
@@ -481,6 +563,9 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			receiverXML.addAttribute("messagesReceived", "" + receiver.getMessagesReceived());
 			receiverXML.addAttribute("messagesRetried", "" + receiver.getMessagesRetried());
 			receiverXML.addAttribute("messagesRejected", "" + receiver.getMessagesRejected());
+			if (!isAvailable) {
+				receiverXML.addAttribute("isAvailable", false);
+			}
 			if (configurationSelected != null) {
 				ISender sender = null;
 				if (receiver instanceof ReceiverBase) {
@@ -528,12 +613,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 					if (isRestListener) {
 						RestListener rl = (RestListener) listener;
 						receiverXML.addAttribute("restUriPattern", rl.getRestUriPattern());
-						receiverXML.addAttribute("isView", (rl.isView() == null ? false : rl.isView()));
-						String matchingPattern = RestServiceDispatcher
-								.getInstance()
-								.findMatchingPattern("/" + rl.getUriPattern());
-						receiverXML.addAttribute("isAvailable",
-								(matchingPattern == null ? false : true));
+						receiverXML.addAttribute("isView", (rl.isView() != null));
 					}
 					if (showConfigurationStatusManager.count) {
 						if (listener instanceof JmsListenerBase) {
@@ -608,6 +688,47 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 
 	}
 
+	private boolean isAvailable(IReceiver receiver) {
+		if (receiver instanceof ReceiverBase) {
+			ReceiverBase rb = (ReceiverBase) receiver;
+			IListener listener = rb.getListener();
+			boolean isRestListener = (listener instanceof RestListener);
+			boolean isJavaListener = (listener instanceof JavaListener);
+			boolean isWebServiceListener = (listener instanceof WebServiceListener);
+			boolean isApiListener = (listener instanceof ApiListener);
+			if (isRestListener) {
+				RestListener rl = (RestListener) listener;
+				String matchingPattern = RestServiceDispatcher.getInstance().findMatchingPattern("/" + rl.getUriPattern());
+				return matchingPattern != null;
+			} else if (isJavaListener) {
+				JavaListener jl = (JavaListener) listener;
+				if (StringUtils.isNotEmpty(jl.getName())) {
+					JavaListener jlRegister = JavaListener.getListener(jl.getName());
+					return jlRegister == jl;
+				}
+			} else if (isWebServiceListener) {
+				WebServiceListener wsl = (WebServiceListener) listener;
+				if (StringUtils.isNotEmpty(wsl.getServiceNamespaceURI())) {
+					WebServiceListener wslRegister = ServiceDispatcher.getInstance().getListener(wsl.getServiceNamespaceURI());
+					return wslRegister == wsl;
+				} else {
+					WebServiceListener wslRegister = ServiceDispatcher.getInstance().getListener(wsl.getName());
+					return wslRegister == wsl;
+				}
+			} else if (isApiListener) {
+				ApiListener al = (ApiListener) listener;
+				ApiDispatchConfig apiDispatchConfig = ApiServiceDispatcher.getInstance().findConfigForUri(al.getUriPattern());
+				if (apiDispatchConfig == null) {
+					return false;
+				}
+				ApiListener alRegister = apiDispatchConfig.getApiListener(al.getMethod());
+				return alRegister == al;
+			}
+		}
+		// default a receiver is available
+		return true;
+	}
+	
 	private XmlBuilder toPipesXml(Adapter adapter) {
 		XmlBuilder pipesElem = new XmlBuilder("pipes");
 		PipeLine pipeline = adapter.getPipeLine();
@@ -718,13 +839,14 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		showConfigurationStatusManager.countMessagesError += cme;
 		showConfigurationStatusManager.countMessagesWarn += cmw;
 		showConfigurationStatusManager.countMessagesInfo += cmi;
-		String lastMessageLevel = adapter.getMessageKeeper().getMessage(adapter.getMessageKeeper().size() - 1)
-				.getMessageLevel();
-		adapterMessages.addAttribute("lastMessageLevel", lastMessageLevel.toLowerCase());
-		if (!showConfigurationStatusAdapterManager.stateAlert
-				&& (lastMessageLevel.equals(MessageKeeperMessage.ERROR_LEVEL)
-						|| lastMessageLevel.equals(MessageKeeperMessage.WARN_LEVEL))) {
-			showConfigurationStatusAdapterManager.stateAlert = true;
+		if (!adapter.getMessageKeeper().isEmpty()) {
+			String lastMessageLevel = adapter.getMessageKeeper().getMessage(adapter.getMessageKeeper().size() - 1)
+					.getMessageLevel();
+			adapterMessages.addAttribute("lastMessageLevel", lastMessageLevel.toLowerCase());
+			if (lastMessageLevel.equals(MessageKeeperMessage.ERROR_LEVEL)
+					|| lastMessageLevel.equals(MessageKeeperMessage.WARN_LEVEL)) {
+				showConfigurationStatusAdapterManager.logAlert = true;
+			}
 		}
 
 		return adapterMessages;
@@ -735,13 +857,20 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		XmlBuilder adapterStateXML = new XmlBuilder("adapterState");
 		adapterStateXML.addAttribute("starting", showConfigurationStatusManager.countAdapterStateStarting + "");
 		adapterStateXML.addAttribute("started", showConfigurationStatusManager.countAdapterStateStarted + "");
+		adapterStateXML.addAttribute("startedNotAvailable", "0");
 		adapterStateXML.addAttribute("stopping", showConfigurationStatusManager.countAdapterStateStopping + "");
 		adapterStateXML.addAttribute("stopped", showConfigurationStatusManager.countAdapterStateStopped + "");
 		adapterStateXML.addAttribute("error", showConfigurationStatusManager.countAdapterStateError + "");
 		summaryXML.addSubElement(adapterStateXML);
+		XmlBuilder lastMsgProcessStateXML = new XmlBuilder("lastMsgProcessState");
+		lastMsgProcessStateXML.addAttribute("ok", showConfigurationStatusManager.countLastMsgProcessOk + "");
+		lastMsgProcessStateXML.addAttribute("notApplicable", showConfigurationStatusManager.countLastMsgProcessNotApplicable + "");
+		lastMsgProcessStateXML.addAttribute("error", showConfigurationStatusManager.countLastMsgProcessError + "");
+		summaryXML.addSubElement(lastMsgProcessStateXML);
 		XmlBuilder receiverStateXML = new XmlBuilder("receiverState");
 		receiverStateXML.addAttribute("starting", showConfigurationStatusManager.countReceiverStateStarting + "");
 		receiverStateXML.addAttribute("started", showConfigurationStatusManager.countReceiverStateStarted + "");
+		receiverStateXML.addAttribute("startedNotAvailable", showConfigurationStatusManager.countReceiverStateStartedNotAvailable + "");
 		receiverStateXML.addAttribute("stopping", showConfigurationStatusManager.countReceiverStateStopping + "");
 		receiverStateXML.addAttribute("stopped", showConfigurationStatusManager.countReceiverStateStopped + "");
 		receiverStateXML.addAttribute("error", showConfigurationStatusManager.countReceiverStateError + "");
