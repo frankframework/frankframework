@@ -1,0 +1,24 @@
+<project default="cleanInstall">
+	<target name="init">
+		<property name="project.root.dir" value="../ija-api-Example" />
+		<property file="${project.root.dir}/src/main/Tools/build-location.properties" />
+		<fail message="Property 'maven.home' not present, create file build-location.properties containing 'maven.home'" unless="maven.home" />
+		<fail message="Property 'maven.repo.local' not present, create file build-location.properties containing 'maven.repo.local'" unless="maven.repo.local" />
+	</target>
+	<target name="cleanInstall" depends="init" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+		<path id="maven-ant-tasks.classpath" path="${project.root.dir}/src/main/Tools//maven-ant-tasks-2.1.3.jar" />
+		<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="antlib:org.apache.maven.artifact.ant" classpathref="maven-ant-tasks.classpath" />
+		<artifact:mvn pom="pom.xml" mavenHome="${maven.home}" fork="true">
+			<arg value="-Dmaven.test.skip=true" />
+			<arg value="-Dmaven.repo.local=${maven.repo.local}" />
+			<arg value="clean" />
+			<arg value="install" />
+			<arg value="-U" />
+			<arg value="-Djava.security.properties=${project.root.dir}/.m2/my.java.security" />
+			<arg value="-Djavax.net.ssl.trustStore=${project.root.dir}/.m2/NNTrustStore.jks" />
+			<arg value="-Dsettings.security=${project.root.dir}/.m2/settings-security.xml" />
+			<arg value="-s" />
+			<arg value="${project.root.dir}/.m2/settings.xml" />
+		</artifact:mvn>
+	</target>
+</project>

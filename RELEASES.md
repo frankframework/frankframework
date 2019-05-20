@@ -36,6 +36,7 @@ Ibis AdapterFramework release notes
 - Revert old CMIS WS endpoints to register each service's WSDL individually
 - Make WebServiceListener SOAP endpoint binding 1.2 capable
 - Add option to add custom views to GUI 3.0
+- Improve validation config warnings
 
 
 ### Non backwards compatible changes
