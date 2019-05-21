@@ -567,7 +567,8 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 			IAdapter adapter = ibisManager.getRegisteredAdapter(DELETE_ADAPTER);
 			if (adapter != null) {
 				IPipeLineSession pipeLineSession = new PipeLineSessionBase();
-				pipeLineSession.put("principal", securityContext.getUserPrincipal());
+				if(securityContext.getUserPrincipal() != null)
+					pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
 				PipeLineResult processResult = adapter.processMessage(TestTool.getCorrelationId(), message, pipeLineSession);
 				if (!(processResult.getState().equalsIgnoreCase("success"))) {
 					errorMessage = "Delete failed (see logging for more details)";
