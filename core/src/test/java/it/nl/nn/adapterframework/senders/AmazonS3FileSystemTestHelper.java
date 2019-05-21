@@ -66,6 +66,10 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 	@Override
 	@After
 	public void tearDown() throws Exception {
+		cleanUpBucketAndShutDown(s3Client);
+	}
+	
+	public void cleanUpBucketAndShutDown(AmazonS3 s3Client) {
 		if(s3Client.doesBucketExistV2(bucketName)) {
 			 ObjectListing objectListing = s3Client.listObjects(bucketName);
 	            while (true) {
@@ -180,5 +184,9 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 	public void _deleteFolder(String folderName) throws Exception {
 		String foldername = folderName.endsWith("/") ? folderName : folderName + "/";
 		_deleteFile(null, foldername);
+	}
+
+	public AmazonS3 getS3Client() {
+		return s3Client;
 	}
 }

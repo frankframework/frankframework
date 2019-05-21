@@ -31,6 +31,16 @@
       <scope>runtime</scope>
     </dependency>
     <dependency>
+      <groupId>org.ibissource</groupId>
+      <artifactId>ibis-adapterframework-cmis</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.ibissource</groupId>
+      <artifactId>ibis-adapterframework-akamai</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
       <groupId>com.github.marcus-nl.btm</groupId>
       <artifactId>btm</artifactId>
       <version>3.0.0-mk1</version>
@@ -56,11 +66,12 @@
 
   <profiles>
     <profile>
-      <id>iaf-with-proprietary-dependencies</id>
+      <id>proprietary</id>
       <activation>
-        <file>
-          <exists>../../mvn-repo-proprietary/.project</exists>
-        </file>
+        <property>
+          <name>proprietary.modules.active</name>
+          <value>true</value>
+        </property>
       </activation>
       <dependencies>
         <dependency>

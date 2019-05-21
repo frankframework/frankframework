@@ -14,7 +14,6 @@ import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 
 import liquibase.util.StreamUtil;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class FileSystemTestBase {

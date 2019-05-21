@@ -8,6 +8,7 @@ import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.apache.commons.codec.binary.Base64;
 import org.junit.After;
@@ -19,11 +20,11 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
-public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>> extends FileSystemTestBase {
+public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, F, FS extends IWritableFileSystem<F>> extends FileSystemTestBase {
 
-	private FileSystemSender<F, FS> fileSystemSender;
+	protected FSS fileSystemSender;
 
-	public abstract FileSystemSender<F, FS> createFileSystemSender();
+	public abstract FSS createFileSystemSender();
 
 	@Override
 	@Before
@@ -446,4 +447,63 @@ public abstract class FileSystemSenderTest<F, FS extends IWritableFileSystem<F>>
 		fileSystemSender.open();
 	}
 	
+	@Test
+	public void fileSystemSenderListActionTestWithInputFolderAsParameter() throws Exception {
+		String filename = FILE1;
+		String filename2 = FILE2;
+		String inputFolder = "directory";
+		
+		if (_fileExists(inputFolder, filename)) {
+			_deleteFile(inputFolder, filename);
+		}
+		
+		if (_fileExists(inputFolder, filename2)) {
+			_deleteFile(inputFolder, filename2);
+		}
+
+		PipeLineSessionBase session = new PipeLineSessionBase();
+		session.put("listWithInputFolderAsParameter", inputFolder);
+
+		Parameter p = new Parameter();
+		p.setName("inputFolder");
+		p.setSessionKey("listWithInputFolderAsParameter");
+
+		fileSystemSender.addParameter(p);
+		fileSystemSender.setAction("list");
+		fileSystemSender.configure();
+		fileSystemSender.open();
+		
+		_createFolder(inputFolder);
+		OutputStream out = _createFile(inputFolder, filename);
+		out.write("some content".getBytes());
+		out.close();
+		waitForActionToFinish();
+		assertTrue("File ["+filename+"]expected to be present", _fileExists(inputFolder, filename));
+		
+		OutputStream out2 = _createFile(inputFolder, filename2);
+		out2.write("some content of second file".getBytes());
+		out2.close();
+		waitForActionToFinish();
+		assertTrue("File ["+filename2+"]expected to be present", _fileExists(inputFolder, filename2));
+		
+		ParameterResolutionContext prc = new ParameterResolutionContext();
+		prc.setSession(session);
+		String correlationId="fakecorrelationid";
+		String message=filename;
+		String result = fileSystemSender.sendMessage(correlationId, message, prc);
+		System.err.println(result);
+		waitForActionToFinish();
+		
+		String anchor=" count=\"";
+		int posCount=result.indexOf(anchor);
+		if (posCount<0) {
+			fail("result does not contain anchor ["+anchor+"]");
+		}
+		int posQuote=result.indexOf('"',posCount+anchor.length());
+		
+		int resultCount = Integer.valueOf(result.substring(posCount+anchor.length(), posQuote));
+		// test
+		assertEquals("count mismatch", 2, resultCount);
+		assertEquals("mismatch in number of files", 2, resultCount);
+	}
 }

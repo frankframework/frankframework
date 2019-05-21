@@ -34,9 +34,16 @@ Ibis AdapterFramework release notes
 - Change IBIS startup servlet to CXF and register it with Spring
 - Fix date issue where time properties are converted to GMT
 - Revert old CMIS WS endpoints to register each service's WSDL individually
+- Make WebServiceListener SOAP endpoint binding 1.2 capable
+- Add option to add custom views to GUI 3.0
 - Possibility to add new domains independently of ear file
     - UploadConfigService adapter
     - Facility to (de)activate configs
+
+
+### Non backwards compatible changes
+
+- The dateformat in the CmisSender has been modified to `yyyy-MM-dd'T'HH:mm:ss.SSSZ` in order to use the old format, set the `jcmissender.processproperties.legacydateformat` property to true
 
 
 

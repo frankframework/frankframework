@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,15 +19,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.activation.DataHandler;
 import javax.annotation.Resource;
 import javax.xml.soap.AttachmentPart;
 import javax.xml.soap.MessageFactory;
 import javax.xml.soap.MimeHeader;
+import javax.xml.soap.SOAPConstants;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
+import javax.xml.soap.SOAPPart;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.ws.BindingType;
@@ -68,7 +72,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String attachmentXmlSessionKey = null;
-	private MessageFactory factory = null;
+	private Map<String, MessageFactory> factory = new HashMap<String, MessageFactory>();
 
 	public SOAPProviderBase() {
 		log.debug("initiating SOAP Service Provider");
@@ -86,6 +90,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 		PipeLineSessionBase pipelineSession = new PipeLineSessionBase();
 		String correlationId = Misc.createSimpleUUID();
 		log.debug(getLogPrefix(correlationId)+"received message");
+		String soapProtocol = SOAPConstants.SOAP_1_1_PROTOCOL;
 
 		if (request == null) {
 			String faultcode = "soap:Server";
@@ -131,7 +136,6 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 					Iterator<MimeHeader> attachmentMimeHeaders = attachmentPart.getAllMimeHeaders();
 					attachment.addSubElement(getMimeHeadersXml(attachmentMimeHeaders));
 				} catch (SOAPException e) {
-					e.printStackTrace();
 					log.warn("Could not store attachment in session key", e);
 				}
 				i++;
@@ -141,13 +145,22 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 			// Transform SOAP message to string
 			String message;
 			try {
-				message = XmlUtils.nodeToString(request.getSOAPPart());
+				SOAPPart part = request.getSOAPPart();
+				try {
+					if(SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE.equals(part.getEnvelope().getNamespaceURI()))
+						soapProtocol = SOAPConstants.SOAP_1_2_PROTOCOL;
+				} catch (SOAPException e) {
+					log.error("unable to determine SOAP URI NS type, falling back to SOAP 1.1", e);
+				}
+
+				message = XmlUtils.nodeToString(part);
 				log.debug(getLogPrefix(correlationId)+"transforming from SOAP message");
 			} catch (TransformerException e) {
 				String m = "Could not transform SOAP message to string";
 				log.error(m, e);
 				throw new WebServiceException(m, e);
 			}
+			pipelineSession.put("soapProtocol", soapProtocol);
 
 			// Process message via WebServiceListener
 			ISecurityHandler securityHandler = new WebServiceContextSecurityHandler(webServiceContext);
@@ -172,7 +185,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 		SOAPMessage soapMessage = null;
 		try {
 			log.debug(getLogPrefix(correlationId)+"transforming to SOAP message");
-			soapMessage = getMessageFactory().createMessage();
+			soapMessage = getMessageFactory(soapProtocol).createMessage();
 			StreamSource streamSource = new StreamSource(new StringReader(result));
 			soapMessage.getSOAPPart().setContent(streamSource);
 		} catch (SOAPException e) {
@@ -242,15 +255,18 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 
 	/**
 	 * Create a MessageFactory singleton
+	 * @param soapProtocol see {@link SOAPConstants} for possible values
 	 * @return previously initialized or newly created MessageFactory
+	 * @throws SOAPException when it's not possible to instantiate a new MessageFactory
 	 */
-	private synchronized MessageFactory getMessageFactory() throws SOAPException {
-		if(factory == null) {
-			log.debug("creating new MessageFactory");
-			factory = MessageFactory.newInstance();
+	private synchronized MessageFactory getMessageFactory(String soapProtocol) throws SOAPException {
+		if(!factory.containsKey(soapProtocol)) {
+			log.info("creating new MessageFactory for soapProtocol ["+soapProtocol+"]");
+			factory.put(soapProtocol, MessageFactory.newInstance(soapProtocol));
 		}
 
-		return factory;
+		log.debug("using cached MessageFactory for soapProtocol ["+soapProtocol+"]");
+		return factory.get(soapProtocol);
 	}
 
 	/**

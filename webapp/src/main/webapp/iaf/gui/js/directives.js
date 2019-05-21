@@ -102,6 +102,39 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
+.directive('customViews', ['appConstants', function(appConstants) {
+	return {
+		restrict: 'E',
+		replace: true,
+		link: function(scope, element, attributes) {
+			scope.customViews = [];
+			scope.$watch('otapStage', function() {
+				var customViews = appConstants["customViews.names"];
+				if(customViews == undefined)
+					return;
+
+				if(customViews.length > 0) {
+					var views = customViews.split(",");
+					for(i in views) {
+						var viewId = views[i];
+						var name = appConstants["customViews."+viewId+".name"];
+						var url =  appConstants["customViews."+viewId+".url"];
+						if(name && url)
+							scope.customViews.push({
+								view: viewId,
+								name: name,
+								url: url
+							});
+					}
+				}
+			});
+		},
+		template: '<li ng-repeat="view in customViews" ui-sref-active="active">'+
+		'<a ui-sref="pages.customView(view)"><i class="fa fa-desktop"></i> <span class="nav-label">{{view.name}}</span></a>' +
+		'</li>'
+	};
+}])
+
 .directive('iboxToolsClose', ['$timeout', function($timeout) {
 	return {
 		restrict: 'A',

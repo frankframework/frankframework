@@ -1,7 +1,6 @@
 package it.nl.nn.adapterframework.senders;
 
 import jcifs.smb.SmbFile;
-import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 import nl.nn.adapterframework.filesystem.Samba1FileSystem;
@@ -13,7 +12,7 @@ import nl.nn.adapterframework.senders.Samba1Sender;
  *
  */
 
-public class SambaFileSystemSenderTest extends FileSystemSenderTest<SmbFile, Samba1FileSystem> {
+public class SambaFileSystemSenderTest extends FileSystemSenderTest<Samba1Sender, SmbFile, Samba1FileSystem> {
 	private String shareName = "Share";
 	private String username = "";
 	private String password = "";
@@ -26,7 +25,7 @@ public class SambaFileSystemSenderTest extends FileSystemSenderTest<SmbFile, Sam
 	}
 
 	@Override
-	public FileSystemSender<SmbFile, Samba1FileSystem> createFileSystemSender() {
+	public Samba1Sender createFileSystemSender() {
 		Samba1Sender result = new Samba1Sender();
 		result.setShare(shareName);
 		result.setUsername(username);

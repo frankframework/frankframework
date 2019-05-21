@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.extensions.cmis.server;
 
+import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.apache.chemistry.opencmis.commons.spi.CmisBinding;
 
@@ -55,7 +56,13 @@ public class CmisServletDispatcher {
 
 	public CmisBinding getCmisBinding() {
 		try {
-			return getCmisSender().getSession().getBinding();
+			CmisSender sender = getCmisSender();
+			if(sender == null)
+				throw new CmisConnectionException("unable to retreive a CMIS binding. no sender specified");
+			Session session = sender.getSession();
+			if(session == null)
+				throw new CmisConnectionException("unable to retreive a CMIS binding. no session found");
+			return session.getBinding();
 		} catch (SenderException e) {
 			throw new CmisConnectionException("unable to retreive a CMIS binding from the CmisSender", e);
 		}
