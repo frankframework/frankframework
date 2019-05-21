@@ -189,7 +189,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
    
 	protected static final int MAXIDLEN=100;		
 	protected static final int MAXCIDLEN=256;		
-	protected static final int MAXCOMMENTLEN=1000;		
+	public static final int MAXCOMMENTLEN=1000;		
 	protected static final int MAXLABELLEN=1000;		
     // the following values are only used when the table is created. 
 	private String keyFieldType="";
