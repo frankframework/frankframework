@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -66,7 +65,6 @@ public class IbisContext extends IbisApplicationContext {
 	private final static Logger secLog = LogUtil.getLogger("SEC");
 
 	private static final String INSTANCE_NAME = APP_CONSTANTS.getResolvedProperty("instance.name");
-	private static final String CONFIGURATIONS = APP_CONSTANTS.getResolvedProperty("configurations.names.application");
 	private static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
 	private static final long UPTIME = System.currentTimeMillis();
 
@@ -106,7 +104,7 @@ public class IbisContext extends IbisApplicationContext {
 	private int messageKeeperSize = 10;
 	private FlowDiagram flowDiagram;
 	private ClassLoaderManager classLoaderManager = null;
-	private static List loadingConfigs = new ArrayList();
+	private static List<String> loadingConfigs = new ArrayList<String>();
 
 	public void setDefaultApplicationServerType(String defaultApplicationServerType) {
 		if (defaultApplicationServerType.equals(getApplicationServerType())) {
@@ -181,7 +179,6 @@ public class IbisContext extends IbisApplicationContext {
 
 			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
 			registerApplicationModules();
-			LOG.debug("found configurations to load ["+CONFIGURATIONS+"]");
 			load();
 			getMessageKeeper().setMaxSize(Math.max(messageKeeperSize, getMessageKeeper().size()));
 
@@ -356,18 +353,19 @@ public class IbisContext extends IbisApplicationContext {
 	public void load() {
 		try {
 			loadingConfigs.add("*ALL*");
-		load(null);
+			load(null);
 		} finally {
 			loadingConfigs.remove("*ALL*");
 		}
 	}
 
 	/**
-	 * Loads, digests and starts a specified configuration
+	 * Loads, digests and starts the specified configuration, or all configurations
 	 * 
 	 * @param configurationName name of the configuration to load or null when you want to load all configurations
 	 * 
 	 * @see ClassLoaderManager#get(String)
+	 * @see ConfigurationUtils#retrieveAllConfigNames(IbisContext)
 	 * @see #digestClassLoaderConfiguration(ClassLoader, ConfigurationDigester, String, ConfigurationException)
 	 */
 	public void load(String configurationName) {
@@ -376,30 +374,33 @@ public class IbisContext extends IbisApplicationContext {
 		//We have an ordered list with all configurations, lets loop through!
 		ConfigurationDigester configurationDigester = new ConfigurationDigester();
 
-		List<String> configNames = new ArrayList<String>();
-		StringTokenizer tokenizer = new StringTokenizer(CONFIGURATIONS, ",");
-		while (tokenizer.hasMoreTokens()) {
-			configNames.add(tokenizer.nextToken());
-		}
-		for (String currentConfigurationName : configNames) {
-			if (loadConfiguration(configurationDigester, configurationName,
-					currentConfigurationName, null)) {
-				configFound = true;
-			}
-		}
+		Map<String, String> allConfigNamesItems = ConfigurationUtils.retrieveAllConfigNames(this);
+		for (Entry<String, String> currentConfigNameItem : allConfigNamesItems.entrySet()) {
+			String currentConfigurationName = currentConfigNameItem.getKey();
+			String classLoaderType = currentConfigNameItem.getValue();
 
-		Map<String, String> allConfigNamesItems = null;
-		try {
-			allConfigNamesItems = ConfigurationUtils.retrieveAllConfigNameItems(ibisManager.getIbisContext());
-		} catch (ConfigurationException e) {
-			log("*ALL*", null, "error retrieving all configuration names", MessageKeeperMessage.WARN_LEVEL, e);
-		}
-		if (allConfigNamesItems != null && !allConfigNamesItems.isEmpty()) {
-			for (Entry<String, String> currentConfigNameItem : allConfigNamesItems.entrySet()) {
-				String classLoaderType = currentConfigNameItem.getKey();
-				String configName = currentConfigNameItem.getValue();
-				if (!configNames.contains(configName) && loadConfiguration(configurationDigester, configurationName, configName, classLoaderType)) {
-					configFound = true;
+			if (configurationName == null || configurationName.equals(currentConfigurationName)) {
+				configFound = true;
+
+				ConfigurationException customClassLoaderConfigurationException = null;
+				ClassLoader classLoader = null;
+				try {
+					classLoader = classLoaderManager.get(currentConfigurationName, classLoaderType);
+
+					//An error occurred but we don't want to throw any exceptions.
+					//Skip configuration digesting so it can be done at a later time.
+					if(classLoader == null)
+						continue;
+
+				} catch (ConfigurationException e) {
+					customClassLoaderConfigurationException = e;
+				}
+
+				try {
+					loadingConfigs.add(currentConfigurationName);
+					digestClassLoaderConfiguration(classLoader, configurationDigester, currentConfigurationName, customClassLoaderConfigurationException);
+				} finally {
+					loadingConfigs.remove(currentConfigurationName);
 				}
 			}
 		}
@@ -407,44 +408,10 @@ public class IbisContext extends IbisApplicationContext {
 		generateFlow();
 		//Check if the configuration we try to reload actually exists
 		if (!configFound) {
-			log(configurationName, configurationName + " not found in '"
-					+ CONFIGURATIONS + "'", MessageKeeperMessage.ERROR_LEVEL);
+			log(configurationName, configurationName + " not found in ["+allConfigNamesItems.keySet().toString()+"]", MessageKeeperMessage.ERROR_LEVEL);
 		}
 	}
 
-	private boolean loadConfiguration(ConfigurationDigester configurationDigester, String configurationName, String currentConfigurationName, String classLoaderType) {
-		boolean configFound = false;
-		if (configurationName == null || configurationName.equals(currentConfigurationName)) {
-			configFound = true;
-
-			ConfigurationException customClassLoaderConfigurationException = null;
-			ClassLoader classLoader = null;
-			try {
-				if (classLoaderType==null) {
-					classLoader = classLoaderManager.get(currentConfigurationName);
-				} else {
-					classLoader = classLoaderManager.get(currentConfigurationName, classLoaderType);
-				}
-
-				//An error occurred but we don't want to throw any exceptions.
-				//Skip the config so it can be initialized at a later time.
-				if(classLoader == null)
-					return configFound;
-
-			} catch (ConfigurationException e) {
-				customClassLoaderConfigurationException = e;
-			}
-
-			try {
-				loadingConfigs.add(currentConfigurationName);
-				digestClassLoaderConfiguration(classLoader, configurationDigester, currentConfigurationName, customClassLoaderConfigurationException);
-			} finally {
-				loadingConfigs.remove(currentConfigurationName);
-			}
-		}
-		return configFound;
-	}
-	
 	public String getConfigurationFile(String currentConfigurationName) {
 		String configurationFile = APP_CONSTANTS.getResolvedProperty(
 				"configurations." + currentConfigurationName + ".configurationFile");
@@ -593,11 +560,11 @@ public class IbisContext extends IbisApplicationContext {
 		log(configurationName, configurationVersion, message, MessageKeeperMessage.INFO_LEVEL);
 	}
 
-	private void log(String configurationName, String configurationVersion, String message, String level) {
+	public void log(String configurationName, String configurationVersion, String message, String level) {
 		log(configurationName, configurationVersion, message, level, null, false);
 	}
 
-	private void log(String configurationName, String configurationVersion, String message, String level, Exception e) {
+	public void log(String configurationName, String configurationVersion, String message, String level, Exception e) {
 		log(configurationName, configurationVersion, message, level, e, false);
 	}
 

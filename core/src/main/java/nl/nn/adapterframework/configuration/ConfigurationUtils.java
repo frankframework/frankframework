@@ -28,9 +28,11 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -50,6 +52,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -68,6 +71,7 @@ public class ConfigurationUtils {
 	private static final String UGLIFY_XSLT = "/xml/xsl/uglify.xsl";
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.autoDatabaseClassLoader", false);
+	private static final String CONFIGURATIONS = APP_CONSTANTS.getResolvedProperty("configurations.names.application");
 
 	public static boolean stubConfiguration() {
 		return APP_CONSTANTS.getBoolean(STUB4TESTTOOL_CONFIGURATION_KEY, false);
@@ -336,19 +340,42 @@ public class ConfigurationUtils {
 		return false;
 	}
 
-	public static Map<String, String> retrieveAllConfigNameItems(IbisContext ibisContext) throws ConfigurationException {
+	/**
+	 * 
+	 * @param ibisContext
+	 * @return A map with all configurations to load (KEY = configName, VALUE = ClassLoader)
+	 * @throws ConfigurationException
+	 */
+	public static Map<String, String> retrieveAllConfigNames(IbisContext ibisContext) {
 		// For now only database configurations are returned, but also
 		// configuration from other resources (like file system directories) can
 		// be added
-		Map<String, String> allConfigNameItems = new HashMap<String, String>();
+		Map<String, String> allConfigNameItems = new LinkedHashMap<String, String>();
+
+		StringTokenizer tokenizer = new StringTokenizer(CONFIGURATIONS, ",");
+		while (tokenizer.hasMoreTokens()) {
+			allConfigNameItems.put(tokenizer.nextToken(), null);
+		}
+
 		if (CONFIG_AUTO_DB_CLASSLOADER) {
-			List<String> dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisContext, null);
-			if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
-				for (String dbConfigName : dbConfigNames) {
-					allConfigNameItems.put("DatabaseClassLoader", dbConfigName);
+			try {
+				List<String> dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisContext, null);
+				if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
+					for (String dbConfigName : dbConfigNames) {
+						if (allConfigNameItems.get(dbConfigName) != null)
+							allConfigNameItems.put(dbConfigName, "DatabaseClassLoader");
+						else
+							log.warn("config ["+dbConfigName+"] already exists, cannot add same config twice");
+					}
 				}
 			}
+			catch (ConfigurationException e) {
+				ibisContext.log("*ALL*", null, "error retrieving database configurations", MessageKeeperMessage.WARN_LEVEL, e);
+			}
 		}
+
+		log.info("found configurations to load ["+allConfigNameItems+"]");
+
 		return allConfigNameItems;
 	}
 

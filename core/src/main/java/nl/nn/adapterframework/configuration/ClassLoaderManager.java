@@ -42,20 +42,12 @@ public class ClassLoaderManager {
 	}
 
 	private ClassLoader createClassloader(String configurationName, String classLoaderType) throws ConfigurationException {
-		return createClassloader(configurationName, Thread.currentThread().getContextClassLoader(), classLoaderType);
+		return createClassloader(configurationName, classLoaderType, Thread.currentThread().getContextClassLoader());
 	}
 
-	private ClassLoader createClassloader(String configurationName, ClassLoader parentClassLoader, String clazzLoaderType) throws ConfigurationException {
-		String classLoaderType;
-		if (clazzLoaderType == null) {
-			classLoaderType = APP_CONSTANTS.getString("configurations." + configurationName + ".classLoaderType", "");
-		} else {
-			classLoaderType = clazzLoaderType;
-		}
-
-		//It is possible that no ClassLoader has been defined, use default ClassLoader (wrapped in a WebAppClassLoader)
+	private ClassLoader createClassloader(String configurationName, String classLoaderType, ClassLoader parentClassLoader) throws ConfigurationException {
 		if(classLoaderType == null || classLoaderType.isEmpty())
-			classLoaderType = "WebAppClassLoader";
+			throw new ConfigurationException("classLoaderType cannot be empty");
 
 		String className = classLoaderType;
 		if(classLoaderType.indexOf(".") == -1)
@@ -143,16 +135,15 @@ public class ClassLoaderManager {
 		return input.substring(0, 1).toLowerCase() + input.substring(1);
 	}
 
-	public ClassLoader init(String configurationName) throws ConfigurationException {
-		String parentConfig = APP_CONSTANTS.getString("configurations." + configurationName + ".parentConfig", null);
-		return init(configurationName, parentConfig);
+	private ClassLoader init(String configurationName) throws ConfigurationException {
+		return init(configurationName, APP_CONSTANTS.getString("configurations." + configurationName + ".classLoaderType", "WebAppClassLoader"));
 	}
 
-	public ClassLoader init(String configurationName, String parentConfig) throws ConfigurationException {
-		return init(configurationName, parentConfig, null);
+	private ClassLoader init(String configurationName, String classLoaderType) throws ConfigurationException {
+		return init(configurationName, classLoaderType, APP_CONSTANTS.getString("configurations." + configurationName + ".parentConfig", null));
 	}
 
-	public ClassLoader init(String configurationName, String parentConfig, String classLoaderType) throws ConfigurationException {
+	private ClassLoader init(String configurationName, String classLoaderType, String parentConfig) throws ConfigurationException {
 		if(contains(configurationName))
 			throw new ConfigurationException("unable to add configuration with duplicate name ["+configurationName+"]");
 
@@ -164,7 +155,7 @@ public class ClassLoaderManager {
 			if(!contains(parentConfig))
 				throw new ConfigurationException("failed to locate parent configuration ["+parentConfig+"]");
 
-			classLoader = createClassloader(configurationName, get(parentConfig), classLoaderType);
+			classLoader = createClassloader(configurationName, classLoaderType, get(parentConfig));
 			LOG.debug("wrapped classLoader ["+classLoader.toString()+"] in parentConfig ["+parentConfig+"]");
 		}
 		else
@@ -198,6 +189,13 @@ public class ClassLoaderManager {
 		return get(configurationName, null);
 	}
 
+	/**
+	 * Returns the ClassLoader for a specific configuration.
+	 * @param configurationName to get the ClassLoader for
+	 * @param classLoaderType null or type of ClassLoader to load
+	 * @return ClassLoader or null on error
+	 * @throws ConfigurationException when a ClassLoader failed to initialize
+	 */
 	public ClassLoader get(String configurationName, String classLoaderType) throws ConfigurationException {
 		LOG.debug("get configuration ClassLoader ["+configurationName+"]");
 		ClassLoader classLoader = classLoaders.get(configurationName);
@@ -205,7 +203,7 @@ public class ClassLoaderManager {
 			if (classLoaderType == null) {
 				classLoader = init(configurationName);
 			} else {
-				classLoader = init(configurationName, null, classLoaderType);
+				classLoader = init(configurationName, classLoaderType);
 			}
 		}
 		return classLoader;
