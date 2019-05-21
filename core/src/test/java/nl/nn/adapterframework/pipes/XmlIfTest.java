@@ -31,10 +31,6 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		return xmlIf;
 	}
 
-	@Override
-	public void notConfigured() throws ConfigurationException {
-	}
-
 	@Test
 	public void nullXPathExpressionTest() throws ConfigurationException, PipeStartException, PipeRunException{
 		pipe.setXpathExpression(null);

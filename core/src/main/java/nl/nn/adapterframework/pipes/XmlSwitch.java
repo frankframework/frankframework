@@ -70,6 +70,7 @@ public class XmlSwitch extends AbstractPipe {
 	 * If no {@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename} is specified, the
 	 * switch uses the root node. 
 	 */
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (getNotFoundForwardName()!=null) {
@@ -123,6 +124,7 @@ public class XmlSwitch extends AbstractPipe {
 		registerEvent(XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT);
 	}
 	
+	@Override
 	public void start() throws PipeStartException {
 		super.start();
 		if (transformerPool!=null) {
@@ -134,6 +136,7 @@ public class XmlSwitch extends AbstractPipe {
 		}
 	}
 	
+	@Override
 	public void stop() {
 		super.stop();
 		if (transformerPool!=null) {
@@ -149,6 +152,7 @@ public class XmlSwitch extends AbstractPipe {
 	 * weblogic.xerces the transformer gets corrupt, on an exception the configuration is done again, so that the
 	 * transformer is re-initialized.
 	 */
+	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		String forward="";
 	    String sInput=(String) input;
@@ -161,12 +165,12 @@ public class XmlSwitch extends AbstractPipe {
 			ParameterList parameterList = null;
 			ParameterResolutionContext prc = new ParameterResolutionContext(sInput, session, isNamespaceAware()); ;	
 			try {
-				Map parametervalues = null;
+				Map<String,Object> parametervalues = null;
 				if (getParameterList()!=null) {
 					parameterList =  getParameterList();
 					parametervalues = prc.getValueMap(parameterList);
 				}
-	           	forward = transformerPool.transform(prc.getInputSource(), parametervalues);
+	           	forward = transformerPool.transform(prc.getInputSource(isNamespaceAware()), parametervalues);
 			}
 		    catch (Throwable e) {
 		   	    throw new PipeRunException(this, getLogPrefix(session)+"got exception on transformation", e);
