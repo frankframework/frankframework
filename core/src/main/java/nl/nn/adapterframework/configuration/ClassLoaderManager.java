@@ -136,7 +136,12 @@ public class ClassLoaderManager {
 	}
 
 	private ClassLoader init(String configurationName) throws ConfigurationException {
-		return init(configurationName, APP_CONSTANTS.getString("configurations." + configurationName + ".classLoaderType", "WebAppClassLoader"));
+		//You can define the property but leave it empty
+		String classLoaderType = APP_CONSTANTS.getString("configurations." + configurationName + ".classLoaderType", "");
+		if(classLoaderType.isEmpty())
+			classLoaderType = "WebAppClassLoader";
+
+		return init(configurationName, classLoaderType);
 	}
 
 	private ClassLoader init(String configurationName, String classLoaderType) throws ConfigurationException {
