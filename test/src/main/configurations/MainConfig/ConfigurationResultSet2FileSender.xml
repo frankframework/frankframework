@@ -11,7 +11,7 @@
 			</exits>
 
 			<pipe name="setFileName" className="nl.nn.adapterframework.pipes.PutInSession"
-				sessionKey="fileName" value="${i4ti.dir}/rs2fs/file.txt">
+				sessionKey="fileName" value="${testdata.dir}/rs2fs/file.txt">
 				<forward name="success" path="setMaxRecords" />
 			</pipe>
 

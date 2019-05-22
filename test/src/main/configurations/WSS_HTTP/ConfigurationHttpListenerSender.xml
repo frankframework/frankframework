@@ -18,7 +18,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="HttpSender">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4test-HttpSender" />
+				serviceName="${web.contextpath}-HttpSender" />
 		</receiver>
 		<pipeline firstPipe="LocalHttp">
 			<exits>
@@ -27,7 +27,7 @@
 			<pipe name="LocalHttp">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					methodType="POST"
-					url="${web.protocol}://${web.host}:${web.port}/iaf-test/HttpListener?service=LocalHttpListener"
+					url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/HttpListener?service=LocalHttpListener"
 					inputMessageParam="request" />
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -53,7 +53,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="HttpSenderTimeout">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4test-HttpSenderTimeout" />
+				serviceName="${web.contextpath}-HttpSenderTimeout" />
 		</receiver>
 		<pipeline firstPipe="LocalHttp">
 			<exits>
@@ -62,7 +62,7 @@
 			<pipe name="LocalHttp">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					methodType="POST"
-					url="${web.protocol}://${web.host}:${web.port}/iaf-test/HttpListener?service=LocalHttpListenerTimeout"
+					url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/HttpListener?service=LocalHttpListenerTimeout"
 					timeout="1000" inputMessageParam="request" />
 				<forward name="timeout" path="error_timeout" />
 				<forward name="success" path="EXIT" />

@@ -16,7 +16,7 @@ Download the following JARs, and place them in your Tomcat server's lib folder. 
 * [geronimo-jms\_1.1_spec-1.1.1.jar](https://mvnrepository.com/artifact/org.apache.geronimo.specs/geronimo-jms_1.1_spec/1.1.1)
 * [geronimo-jta\_1.1_spec-1.1.1.jar](https://mvnrepository.com/artifact/org.apache.geronimo.specs/geronimo-jta_1.1_spec/1.1.1)
 * [kahadb-5.6.0.jar](https://mvnrepository.com/artifact/org.apache.activemq/kahadb/5.6.0)
-* [ojdbc6.jar](https://www.oracle.com/technetwork/apps-tech/jdbc-112010-090769.html) (choose "ojdbc6.jar")
+* [ojdbc7.jar](https://www.oracle.com/technetwork/database/features/jdbc/jdbc-drivers-12c-download-1958347.html)
 * [service-dispatcher-1.5.jar](https://mvnrepository.com/artifact/org.ibissource/service-dispatcher)
 
 In Tomcat's launch configuration (found in the Tomcat Overview window), go to the Classpath tab. Click on the User Entries item and click on the [ Add JARs... ] button. Select all JARs in the lib folder, press OK, and press OK again.
@@ -35,8 +35,8 @@ The module's test scenarios can be run manually with the Larva testtool. This wi
 
 To make sure our database contains the data the tests need, we'll have to run some ant scripts. Navigate to _iaf-test/src/main/tools_ in your Project Explorer. Run the following files as ant builds, in order:
 1. _/setupDir/setupDir.xml_
-2. _/setupDB/Oracle/create_user.xml_
-3. _/setupDB/Oracle/create_database.xml_
+2. _/setupDB/Oracle/create___user.xml_
+3. _/setupDB/Oracle/create___database.xml_
 
 ## 4. Running the test scenarios
 
@@ -50,5 +50,6 @@ Press [ Start ], sit back, relax, do some stretches, and let's hope for the best
 
 ### Troubleshooting
 
-* If the ant builds don't work due to a missing class error, try running it with another version of Java (by pressing "Ant Build..." instead of "Ant Build").
-* If the JdbcQueryListener has trouble starting due to a "table [ibisstore] does not exist" error, try restarting the server.
+* If the ant builds don't work due to a missing class error, try running it with another version of Java (can be set by pressing "Ant Build..." instead of "Ant Build").
+* If the JdbcQueryListener has trouble starting due to a "table [ibisstore] does not exist" error, you may have started the server too quickly after stopping its last instance (<5s).
+* If running Tomcat results in an error related to invalid Oracle credentials, try rerunning the _create___user.xml_ script.
