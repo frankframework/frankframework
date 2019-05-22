@@ -105,7 +105,7 @@ public class ServiceDispatcher  {
 		log.info("Listener ["+name+"] registered at ServiceDispatcher");
 	}
 
-	public WebServiceListener getListener(String name) {
-		return (WebServiceListener) registeredListeners.get(name);
+	public ServiceClient getListener(String name) {
+		return registeredListeners.get(name);
 	}
 }

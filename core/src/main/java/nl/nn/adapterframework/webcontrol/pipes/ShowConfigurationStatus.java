@@ -709,10 +709,10 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			} else if (isWebServiceListener) {
 				WebServiceListener wsl = (WebServiceListener) listener;
 				if (StringUtils.isNotEmpty(wsl.getServiceNamespaceURI())) {
-					WebServiceListener wslRegister = ServiceDispatcher.getInstance().getListener(wsl.getServiceNamespaceURI());
+					WebServiceListener wslRegister = (WebServiceListener) ServiceDispatcher.getInstance().getListener(wsl.getServiceNamespaceURI());
 					return wslRegister == wsl;
 				} else {
-					WebServiceListener wslRegister = ServiceDispatcher.getInstance().getListener(wsl.getName());
+					WebServiceListener wslRegister = (WebServiceListener) ServiceDispatcher.getInstance().getListener(wsl.getName());
 					return wslRegister == wsl;
 				}
 			} else if (isApiListener) {
