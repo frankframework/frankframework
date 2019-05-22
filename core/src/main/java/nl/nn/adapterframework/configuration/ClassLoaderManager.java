@@ -33,6 +33,7 @@ public class ClassLoaderManager {
 
 	private static final Logger LOG = LogUtil.getLogger(ClassLoaderManager.class);
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	private static final int MAX_CLASSLOADER_ITEMS = APP_CONSTANTS.getInt("classloader.items.max", 100);
 	private Map<String, ClassLoader> classLoaders = new TreeMap<String, ClassLoader>();
 
 	private IbisContext ibisContext;
@@ -181,6 +182,10 @@ public class ClassLoaderManager {
 		classLoader = new BasePathClassLoader(classLoader, basePath);
 
 		classLoaders.put(configurationName, classLoader);
+		if (classLoaders.size() > MAX_CLASSLOADER_ITEMS) {
+			String msg = "Number of ClassLoader instances exceeds [" + MAX_CLASSLOADER_ITEMS + "]. Too many ClassLoader instances can cause an OutOfMemoryError";
+			ConfigurationWarnings.getInstance().add(LOG, msg, true);
+		}
 		return classLoader;
 	}
 
