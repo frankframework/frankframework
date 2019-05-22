@@ -358,15 +358,20 @@ public class ConfigurationUtils {
 		}
 
 		if (CONFIG_AUTO_DB_CLASSLOADER) {
+			log.info("scanning database for configurations");
 			try {
 				List<String> dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisContext, null);
 				if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
+					log.debug("found database configurations "+dbConfigNames.toString()+"");
 					for (String dbConfigName : dbConfigNames) {
-						if (allConfigNameItems.get(dbConfigName) != null)
+						if (allConfigNameItems.get(dbConfigName) == null)
 							allConfigNameItems.put(dbConfigName, "DatabaseClassLoader");
 						else
-							log.warn("config ["+dbConfigName+"] already exists, cannot add same config twice");
+							log.warn("config ["+dbConfigName+"] already exists in "+allConfigNameItems+", cannot add same config twice");
 					}
+				}
+				else {
+					log.debug("did not find any database configurations");
 				}
 			}
 			catch (ConfigurationException e) {
