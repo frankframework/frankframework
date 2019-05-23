@@ -77,9 +77,7 @@ public class XsltSender extends SenderWithParametersBase {
 			transformerPoolSkipEmptyTags = XmlUtils.getSkipEmptyTagsTransformerPool(isOmitXmlDeclaration(),isIndentXml());
 		}
 		if (isRemoveNamespaces()) {
-			if (XmlUtils.XPATH_NAMESPACE_REMOVAL_VIA_XSLT) {
-				transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(isOmitXmlDeclaration(),isIndentXml());
-			}
+			transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(isOmitXmlDeclaration(),isIndentXml());
 		}
 
 		if (isXslt2()) {
