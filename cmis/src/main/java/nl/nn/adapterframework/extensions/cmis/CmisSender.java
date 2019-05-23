@@ -1333,6 +1333,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return getDocumentContent;
 	}
 
+	@IbisDoc({"(only used when <code>action=get</code>) if true, the attachment for the document is streamed to <code>fileInputStreamSessionKey</code> otherwise only the properties are returned", "true"})
 	public void setGetDocumentContent(boolean getDocumentContent) {
 		this.getDocumentContent = getDocumentContent;
 	}
