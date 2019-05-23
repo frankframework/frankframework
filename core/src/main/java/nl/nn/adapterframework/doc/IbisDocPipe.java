@@ -317,11 +317,15 @@ public class IbisDocPipe extends FixedForwardPipe {
 		} else if ("/ibisdoc/uglify_lookup.xml".equals(uri)) {
 			result = getUglifyLookup();
 			contentType = "application/xml";
+		} else if ("/ibisdoc/ibisdoc.json".equals(uri)) {
+			result = getJson();
+			contentType = "application/json";
 		} else if ("/ibisdoc".equals(uri)) {
 			result = "<html>\n"
 					+ "  <a href=\"ibisdoc/ibisdoc.html\">ibisdoc.html</a><br/>\n"
 					+ "  <a href=\"ibisdoc/ibisdoc.xsd\">ibisdoc.xsd</a><br/>\n"
 					+ "  <a href=\"ibisdoc/uglify_lookup.xml\">uglify_lookup.xml</a><br/>\n"
+					+ "  <a href=\"ibisdoc/ibisdoc.json\">ibisdoc.json</a><br/>\n"
 					+ "</html>";
 		} else if ("/ibisdoc/ibisdoc.html".equals(uri)) {
 			result = "<html>\n"
@@ -381,6 +385,45 @@ public class IbisDocPipe extends FixedForwardPipe {
 		}
 		session.put("contentType", contentType);
 		return new PipeRunResult(getForward(), result);
+	}
+
+	private String getJson() {
+		Map<String, TreeSet<IbisBean>> groups = getGroups();
+
+		ResultsTesting rt = new ResultsTesting();
+		// For all folders
+		for (String folder : groups.keySet()) {
+			// For all classes
+			for (IbisBean ibisBean : groups.get(folder)) {
+				// Get the class
+				Map<String, Method> beanProperties = getBeanProperties(ibisBean.getClazz());
+				if (beanProperties != null) {
+
+					// For each method in the class
+					Iterator<String> iterator = new TreeSet<String>(beanProperties.keySet()).iterator();
+					while (iterator.hasNext()) {
+
+						// Get the method
+						String property = iterator.next();
+						Method method = beanProperties.get(property);
+
+						// Get the ibisdoc of the method
+						IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
+						if (ibisDoc != null) {
+							String[] ibisDocValues = ibisDoc.value();
+							if (ibisDocValues.length > 1) {
+								rt.addMethods(folder, ibisBean.getName(), property, ibisDocValues[0], ibisDocValues[1], method.getDeclaringClass().getSimpleName());
+							} else {
+								rt.addMethods(folder, ibisBean.getName(), property, ibisDocValues[0], "", method.getDeclaringClass().getSimpleName());
+							}
+						}
+					}
+				}
+			}
+		}
+		rt.writeToJsonFile();
+
+		return rt.getJsonString();
 	}
 
 	private String getSchema() throws PipeRunException {
@@ -730,41 +773,6 @@ public class IbisDocPipe extends FixedForwardPipe {
 		if (allHtml == null)  allHtml = new StringBuffer();
 		if (groupsHtml == null) groupsHtml = new HashMap<String, String>();
 		Map<String, TreeSet<IbisBean>> groups = getGroups();
-
-		System.out.println("Starting");
-		ResultsTesting rt = new ResultsTesting();
-		// For all folders
-		for (String folder : groups.keySet()) {
-			// For all classes
-			for (IbisBean ibisBean : groups.get(folder)) {
-				// Get the class
-				Map<String, Method> beanProperties = getBeanProperties(ibisBean.getClazz());
-				if (beanProperties != null) {
-
-					// For each method in the class
-					Iterator<String> iterator = new TreeSet<String>(beanProperties.keySet()).iterator();
-					while (iterator.hasNext()) {
-
-						// Get the method
-						String property = iterator.next();
-						Method method = beanProperties.get(property);
-
-						// Get the ibisdoc of the method
-						IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
-						if (ibisDoc != null) {
-							String[] ibisDocValues = ibisDoc.value();
-							if (ibisDocValues.length > 1) {
-								rt.addMethods(folder, ibisBean.getName(), property, ibisDocValues[0], ibisDocValues[1], method.getDeclaringClass().getSimpleName());
-							} else {
-								rt.addMethods(folder, ibisBean.getName(), property, ibisDocValues[0], "", method.getDeclaringClass().getSimpleName());
-							}
-						}
-					}
-				}
-			}
-		}
-		System.out.println("getDeclaringClass??");
-		rt.writeToJsonFile();
 
 		for (String group : groups.keySet()) {
 			topmenuHtml.append("<a href='" + group + ".html' target='submenuFrame'>" + group + "</a><br/>\n");
