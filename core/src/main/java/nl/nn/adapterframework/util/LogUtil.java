@@ -35,6 +35,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.spi.RootLogger;
 import org.apache.log4j.xml.DOMConfigurator;
 
+
 /**
  * Convenience functions for logging.
  * Enables a separate log4j configuartion for each Ibis-instance.
@@ -51,7 +52,7 @@ public class LogUtil {
 	public static final String LOG4J_XML_FILE = "log4j4ibis.xml";
 	public static final String LOG4J_PROPS_FILE = "log4j4ibis.properties";
 
-	private static final String THREAD_HIDE_REGEX = "thread.hideRegex";
+	private static final ThreadLocal<String> THREAD_HIDE_REGEX = new ThreadLocal<String>();
 
 	private static Properties log4jProperties;
 	private static Hierarchy hierarchy=null;
@@ -248,14 +249,14 @@ public class LogUtil {
 	}
 
 	public static void setThreadHideRegex(String hideRegex) {
-		MDC.put(THREAD_HIDE_REGEX, hideRegex);
+		THREAD_HIDE_REGEX.set(hideRegex);
 	}
 
 	public static String getThreadHideRegex() {
-		return (String) MDC.get(THREAD_HIDE_REGEX);
+		return THREAD_HIDE_REGEX.get();
 	}
 
 	public static void removeThreadHideRegex() {
-		MDC.remove(THREAD_HIDE_REGEX);
+		THREAD_HIDE_REGEX.remove();
 	}
 }

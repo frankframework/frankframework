@@ -1139,8 +1139,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					pipeLineResult = adapter.processMessageWithExceptions(businessCorrelationId, pipelineMessage, pipelineSession);
 					pipelineSession.put("exitcode", ""+ pipeLineResult.getExitCode());
 					result=pipeLineResult.getResult();
-					if(result != null && result.length() > JdbcTransactionalStorage.MAXCOMMENTLEN) {
-						errorMessage = "exitState ["+pipeLineResult.getState()+"], result ["+result.substring(0, JdbcTransactionalStorage.MAXCOMMENTLEN)+"]";
+					if(result != null && result.length() > ITransactionalStorage.MAXCOMMENTLEN) {
+						errorMessage = "exitState ["+pipeLineResult.getState()+"], result ["+result.substring(0, ITransactionalStorage.MAXCOMMENTLEN)+"]";
 					}else {
 						errorMessage = "exitState ["+pipeLineResult.getState()+"], result ["+result+"]";
 					}
