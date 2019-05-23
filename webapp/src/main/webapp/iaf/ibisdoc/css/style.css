@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  font-size: 12px;
+  font-family: Roboto;
+  overflow: hidden;
+}
+
+td, th {
+  border: 1px solid black;
+  padding: 10px;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+p:hover {
+  color: blue;
+  cursor: pointer;
+}
+
+p {
+  margin: 0;
+  padding: 0;
+}
+
+input {
+  border: 1px solid black;
+  padding: 5px;
+  margin-bottom: 10px;
+  outline: 0;
+  border-radius: 5px;
+  margin-right: 3px;
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+}
+
+.left-wrapper {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid black;
+  min-width: 250px;
+  max-width: 250px;
+}
+
+.folders {
+  border-bottom: 1px solid black;
+  float: left;
+}
+
+
+.methods, .classes {
+  overflow-y: auto;
+}
+
+.methods, .folders, .classes {
+  padding: 20px;
+}
+
+.class_name {
+  padding: 10px 0px;
+  font-size: 16px;
+}

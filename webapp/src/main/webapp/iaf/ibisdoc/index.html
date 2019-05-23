@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <title>Angular JS</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.8/angular.min.js" charset="utf-8"></script>
+    <script src="lib/angular-sanitize.min.js"></script>
+    <script src="javascript/application.js" charset="utf-8"></script>
+    <link rel="stylesheet" href="css/style.css">
+  </head>
+  <body>
+    <div ng-app="myApp" class="wrapper">
+      <div class="left-wrapper">
+        <div class="folders" ng-controller="foldersCtrl">
+          <input type="text" spellcheck="false" placeholder="Search method..." ng-model="searchAllMethods" ng-keyup="onKey($event)">
+
+          <div ng-repeat="folder in folders">
+            <p ng-click="showClasses(folder.name)"> {{ folder.name }}</p>
+          </div>
+
+        </div>
+        <div class="classes" ng-controller="classesCtrl">
+          <div ng-if="classes.length > 0">
+            <input type="text" spellcheck="false" placeholder="Search..." ng-model="searchClass">
+          </div>
+          <div ng-repeat="class in classes | filter:searchClass">
+            <p ng-click="showMethods(class.name)"> {{ class.name }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="methods" ng-controller="methodsCtrl">
+        <div ng-if="methods.length > 0 && !searching">
+          <input type="text" spellcheck="false" placeholder="Search..." ng-model="searchMethod">
+
+          <div class="class_name">
+          {{  methods[0].className }}
+          </div>
+
+          <div class="example">
+            <a ng-href="https://slimwiki.com/ipdoc/{{ methods[0].className }}"> Example code </a>
+          </div>
+
+          <table>
+            <tr>
+              <th> Name </th>
+              <th> Description</th>
+              <th> Default value</th>
+              <th> Class name </th>
+            </tr>
+
+            <tr ng-repeat="method in methods | filter:searchMethod">
+              <td ng-if="method.className === method.originalClassName"> {{ method.name }}</td>
+              <td ng-if="method.className === method.originalClassName" ng-bind-html="method.description"> {{ method.description }}</td>
+              <td ng-if="method.className === method.originalClassName" ng-bind-html="method.defaultValue"> {{ method.defaultValue }}</td>
+              <td ng-if="method.className === method.originalClassName"> {{ method.className }}</td>
+            </tr>
+          </table>
+
+          <br>
+          <div class="class_name">
+            Inherited Methods
+          </div>
+
+          <table>
+            <tr>
+              <th> Name </th>
+              <th> Description</th>
+              <th> Default value</th>
+              <th> Class name </th>
+            </tr>
+
+            <tr ng-repeat="method in methods | filter:searchMethod">
+              <td ng-if="method.className !== method.originalClassName"> {{ method.name }}</td>
+              <td ng-if="method.className !== method.originalClassName" ng-bind-html="method.description"> {{ method.description }}</td>
+              <td ng-if="method.className !== method.originalClassName" ng-bind-html="method.defaultValue"> {{ method.defaultValue }}</td>
+              <td ng-if="method.className !== method.originalClassName"> {{ method.className }}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div ng-if="allMethods.length > 0 && searching">
+          <table>
+            <tr>
+              <th> Name </th>
+              <th> Description</th>
+              <th> Default value</th>
+              <th> Class name </th>
+              <th> Parent name </th>
+              <th> Folder name </th>
+            </tr>
+            <tr ng-repeat="method in allMethods">
+              <td> {{ method.name }} </td>
+              <td ng-bind-html="method.description"> {{ method.description }} </td>
+              <td ng-bind-html="method.defaultValue"> {{ method.defaultValue }} </td>
+              <td> {{ method.className }} </td>
+              <td> {{ method.originalClassName }}</td>
+              <td> {{ method.folderName }}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
