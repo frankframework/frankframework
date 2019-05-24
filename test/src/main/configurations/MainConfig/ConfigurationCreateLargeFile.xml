@@ -1,14 +1,16 @@
 <!-- This adapter creates a large file by reading and appending the content of a small file.
-	 Adapter gets the JVM maxMemory and calculates how many times can append the file content. 
-	 size of the file to be created - corresponding JVM max memory:
+	 Adapter gets the JVM maxMemory and calculates how many times can append the file content in the SetEndIndex pipe. 
+	 In the calculation 160 is substracted from the max memory this is the average expected memory the framework occupies. 
+	 32 is the calculated common factor 
+	 size of the file to be created - corresponding JVM max memory - expected duration(tested on the specified hardware CPU-Intel i7-7700HQ@2.8GHz ; RAM 8GB):
 
-	 * 75MB - 4096M  
-	 * 35MB - 2048M 
-	 * 16MB - 1024M
-	 * 6MB  - 512M 
+	 * 75MB - 4096M - 24 minutes
+	 * 35MB - 2048M - 14 minutes
+	 * 16MB - 1024M - 8 minutes
+	 * 6MB  - 512M  - 5 minutes
  -->
 <module>
-	<adapter name="CreateLargeFile"
+	<adapter name="CreateLargeFile" active="${CreateLargeFile.active}"
 		description="Creates a large file using a small by appending small file content multiple times">
 		<receiver name="Java Receiver for Starstar"
 			className="nl.nn.adapterframework.receivers.GenericReceiver">

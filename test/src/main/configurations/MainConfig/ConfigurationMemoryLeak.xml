@@ -1,5 +1,5 @@
 <module>
-	<adapter name="MemoryLeak"
+	<adapter name="MemoryLeak" active="${MemoryLeak.active}"
 		description="Pass a message through six adapters">
 		<receiver name="Java Receiver for Starstar"
 			className="nl.nn.adapterframework.receivers.GenericReceiver">
