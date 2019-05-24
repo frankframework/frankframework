@@ -893,14 +893,7 @@ public class XmlUtils {
 	}
 
 	public static Source stringToSourceForSingleUse(String xmlString, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
-		if (!XPATH_NAMESPACE_REMOVAL_VIA_XSLT) {
-			return stringToSAXSource(xmlString, namespaceAware, false);
-		}
-		if (namespaceAware) {
-			return stringToSAXSource(xmlString, namespaceAware, false);
-		} else {
-			return stringToSource(xmlString, false);
-		}
+		return stringToSAXSource(xmlString, namespaceAware, false);
 	}
 
 	public static SAXSource stringToSAXSource(String xmlString, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {

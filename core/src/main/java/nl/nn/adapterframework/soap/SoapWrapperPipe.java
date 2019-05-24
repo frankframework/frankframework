@@ -228,14 +228,14 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 				}
 				String soapHeader = null;
 				if (soapHeaderTp != null) {
-					soapHeader = soapHeaderTp.transform(prc.getInputSource(), parameterValues);
+					soapHeader = soapHeaderTp.transform(prc.getInputSource(true), parameterValues);
 				} else {
 					if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
 						soapHeader = (String) session.get(getSoapHeaderSessionKey());
 					}
 				}
 				if (soapBodyTp != null) {
-					payload = soapBodyTp.transform(prc.getInputSource(), parameterValues);
+					payload = soapBodyTp.transform(prc.getInputSource(true), parameterValues);
 				}
 
 				result = wrapMessage(payload, soapHeader);
