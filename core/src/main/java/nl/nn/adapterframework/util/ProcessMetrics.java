@@ -72,10 +72,12 @@ public class ProcessMetrics {
 		
 		long freeMem = Runtime.getRuntime().freeMemory();
 		long totalMem = Runtime.getRuntime().totalMemory();
+		long maxMemory = Runtime.getRuntime().maxMemory();
 		
 		addNumberProperty(props, "freeMemory", freeMem);
 		addNumberProperty(props, "totalMemory", totalMem);
 		addNumberProperty(props, "heapSize", totalMem-freeMem);
+		addNumberProperty(props, "maxMemory", maxMemory);
 		addProperty(props, "currentTime", DateUtils.format(new Date(),DateUtils.FORMAT_FULL_GENERIC));
 		return xmlh.toXML();
 	}
@@ -85,10 +87,12 @@ public class ProcessMetrics {
 		
 		long freeMem = Runtime.getRuntime().freeMemory();
 		long totalMem = Runtime.getRuntime().totalMemory();
+		long maxMemory = Runtime.getRuntime().maxMemory();
 		
 		memoryStatistics.put("freeMemory", normalizedNotation(freeMem));
 		memoryStatistics.put("totalMemory", normalizedNotation(totalMem));
 		memoryStatistics.put("heapSize", normalizedNotation(totalMem-freeMem));
+		memoryStatistics.put("maxMemory", normalizedNotation(maxMemory));
 		return memoryStatistics;
 	}
 }

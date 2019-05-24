@@ -30,6 +30,7 @@ import nl.nn.adapterframework.util.ProcessMetrics;
  * 			<property name="freeMemory">201M</property>
  * 			<property name="totalMemory">245M</property>
  * 			<property name="heapSize">43M</property>
+ * 			<property name="maxMemory">480M</property>
  * 			<property name="currentTime">2018-12-24 14:27:29.730</property>
  * 		</properties>
  * 	</processMetrics>
