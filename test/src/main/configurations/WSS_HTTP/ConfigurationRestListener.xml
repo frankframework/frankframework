@@ -51,7 +51,7 @@
 			<pipe name="callRest"
 				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
-					methodType="POST" url="${web.protocol}://${web.host}:${web.port}/iaf-test/rest/doc"
+					methodType="POST" url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/rest/doc"
 					paramsInUrl="false" multipart="true">
 					<param name="key01" value="every cloud has a silver lining" />
 					<param name="key02" sessionKey="originalMessage" />
@@ -66,7 +66,7 @@
 			</pipe>
 
 			<pipe name="writeFile" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="write" fileName="id.xml" directory="${i4ti.dir}/rest">
+				actions="write" fileName="id.xml" directory="${testdata.dir}/rest">
 				<forward name="success" path="text2Xml2" />
 			</pipe>
 
@@ -151,7 +151,7 @@
 				styleSheetName="RestListener/xsl/GetUrl.xsl" sessionKey="url"
 				getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="baseUrl"
-					value="${web.protocol}://${web.host}:${web.port}/iaf-test/rest/doc" />
+					value="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/rest/doc" />
 				<param name="docId" sessionKey="docId" />
 				<forward name="success" path="callRest" />
 			</pipe>
@@ -190,7 +190,7 @@
 			<pipe name="getUrl" className="nl.nn.adapterframework.pipes.XsltPipe"
 				styleSheetName="RestListener/xsl/GetUrl.xsl" sessionKey="url">
 				<param name="baseUrl"
-					value="${web.protocol}://${web.host}:${web.port}/iaf-test/rest/doc2" />
+					value="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/rest/doc2" />
 				<param name="docId" xpathExpression="id" />
 				<forward name="success" path="callRest" />
 			</pipe>
@@ -210,7 +210,7 @@
 			</pipe>
 
 			<pipe name="writeFile" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="write" fileName="result.pdf" directory="${i4ti.dir}/rest">
+				actions="write" fileName="result.pdf" directory="${testdata.dir}/rest">
 				<forward name="success" path="text2Xml" />
 			</pipe>
 
@@ -250,7 +250,7 @@
 			</exits>
 
 			<pipe name="createFileNameKey" className="nl.nn.adapterframework.pipes.PutInSession"
-				sessionKey="fileName" getInputFromFixedValue="${i4ti.dir}/rest/result3.pdf">
+				sessionKey="fileName" getInputFromFixedValue="${testdata.dir}/rest/result3.pdf">
 				<forward name="success" path="getUrl" />
 			</pipe>
 
@@ -258,7 +258,7 @@
 				styleSheetName="RestListener/xsl/GetUrl.xsl" sessionKey="url"
 				getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="baseUrl"
-					value="${web.protocol}://${web.host}:${web.port}/iaf-test/rest/doc3" />
+					value="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/rest/doc3" />
 				<param name="docId" value="0" />
 				<forward name="success" path="callRest" />
 			</pipe>

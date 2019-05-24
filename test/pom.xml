@@ -130,6 +130,10 @@
 							<directory>src/main/configurations</directory>
 							<targetPath>WEB-INF/classes/configurations</targetPath>
 						</resource>
+ 						<resource>
+							<directory>src/test/testtool</directory>
+							<targetPath>testtool</targetPath>
+						</resource>
 					</webResources>
 				</configuration>
 			</plugin>

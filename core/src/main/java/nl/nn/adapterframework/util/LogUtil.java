@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import java.util.Properties;
 import org.apache.log4j.Hierarchy;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.MDC;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.spi.RootLogger;
 import org.apache.log4j.xml.DOMConfigurator;
@@ -52,10 +51,10 @@ public class LogUtil {
 	public static final String LOG4J_XML_FILE = "log4j4ibis.xml";
 	public static final String LOG4J_PROPS_FILE = "log4j4ibis.properties";
 
-	private static final ThreadLocal<String> THREAD_HIDE_REGEX = new ThreadLocal<String>();
+	private static ThreadLocal<String> threadLocal_hideRegex = new ThreadLocal<String>();
 
 	private static Properties log4jProperties;
-	private static Hierarchy hierarchy=null;
+	private static Hierarchy hierarchy = null;
 	private static String hideRegex;
 
 	static {
@@ -189,7 +188,7 @@ public class LogUtil {
 		return logger;
 	}
 
-	public static Logger getLogger(Class clazz) {
+	public static Logger getLogger(Class<?> clazz) {
 		return getLogger(clazz.getName());
 	}
 
@@ -249,14 +248,14 @@ public class LogUtil {
 	}
 
 	public static void setThreadHideRegex(String hideRegex) {
-		THREAD_HIDE_REGEX.set(hideRegex);
+		threadLocal_hideRegex.set(hideRegex);
 	}
 
 	public static String getThreadHideRegex() {
-		return THREAD_HIDE_REGEX.get();
+		return threadLocal_hideRegex.get();
 	}
 
 	public static void removeThreadHideRegex() {
-		THREAD_HIDE_REGEX.remove();
+		threadLocal_hideRegex.remove();
 	}
 }

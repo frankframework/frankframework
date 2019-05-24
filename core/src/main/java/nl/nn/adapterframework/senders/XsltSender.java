@@ -77,7 +77,9 @@ public class XsltSender extends SenderWithParametersBase {
 			transformerPoolSkipEmptyTags = XmlUtils.getSkipEmptyTagsTransformerPool(isOmitXmlDeclaration(),isIndentXml());
 		}
 		if (isRemoveNamespaces()) {
-			transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(isOmitXmlDeclaration(),isIndentXml());
+			if (XmlUtils.XPATH_NAMESPACE_REMOVAL_VIA_XSLT) {
+				transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(isOmitXmlDeclaration(),isIndentXml());
+			}
 		}
 
 		if (isXslt2()) {
@@ -134,7 +136,7 @@ public class XsltSender extends SenderWithParametersBase {
 	}
 
 	protected Source adaptInput(String input, ParameterResolutionContext prc) throws PipeRunException, DomBuilderException, TransformerException, IOException {
-		if (isRemoveNamespaces()) {
+		if (transformerPoolRemoveNamespaces!=null) {
 			log.debug(getLogPrefix()+ " removing namespaces from input message");
 			input = transformerPoolRemoveNamespaces.transform(prc.getInputSource(isNamespaceAware()), null); 
 			log.debug(getLogPrefix()+ " output message after removing namespaces [" + input + "]");

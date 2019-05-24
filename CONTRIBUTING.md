@@ -88,7 +88,7 @@ We have yet to test the compatibility of the iaf-test module with Jetty. Until t
 - Optionally (when you have access to the proprietary jars some modules depend on) also clone: URI: https://bitbucket.org/ibissource/mvn-repo-proprietary.git, User: ..., Password: ..., Next, Next, Finish. 
 - Right click iaf, Import projects..., Next, **deselect**: iaf-coolgen, iaf-ibm, iaf-ifsa, iaf-sap and iaf-tibco (unless you cloned mvn-repo-proprietary), Finish.
 - Window, Open Perspective, Other..., Java EE.
-- Servers, No servers are available. Click this link to create a new server..., Apache, Tomcat v7.0 Server, Next, Browse..., select the root folder of a Tomcat installation (when not available download [Tomcat](http://tomcat.apache.org/) (version 7.0.22 is known to work, but other version are expected to work too)), OK, Finish.
+- Servers, No servers are available. Click this link to create a new server..., Apache, Tomcat v7.0 Server, Next, Browse..., select the root folder of a Tomcat installation (when not available download the latest version of [Tomcat](http://tomcat.apache.org/) (version 7.0.47+ is known to work)), OK, Finish.
 - Double click Tomcat v7.0 Server at localhost, Open launch configuration, Arguments, VM arguments, add -Dotap.stage=LOC, OK, Modules, Add Web Module..., iaf-example, OK, File, Save
 - Right click Tomcat v7.0 Server at localhost, Start.
 - Browse the IAF console at [http://localhost:8080/iaf-example/](http://localhost:8080/iaf-example/).

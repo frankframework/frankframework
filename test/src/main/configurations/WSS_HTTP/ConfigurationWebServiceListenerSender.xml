@@ -61,7 +61,7 @@
 				name="Send2WS">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws"
-					url="${web.protocol}://${web.host}:${web.port}/iaf-test/servlet/rpcrouter"
+					url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/servlet/rpcrouter"
 					namespaceDefs="ns1=${web.protocol}://www.ing.com/namespace1 ns2=${web.protocol}://www.ing.com/namespace2"
 					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="success" path="EXIT" />
@@ -83,7 +83,7 @@
 				name="Send2WS">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_error"
-					url="${web.protocol}://${web.host}:${web.port}/iaf-test/servlet/rpcrouter" 
+					url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/servlet/rpcrouter" 
 					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -110,7 +110,7 @@
 				name="send2ws_no_forwards">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout"
-					url="${web.protocol}://${web.host}:${web.port}/iaf-test/servlet/rpcrouter"
+					url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
 					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="success" path="EXIT" />
@@ -120,7 +120,7 @@
 				name="send2ws_forward_timeout">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout"
-					url="${web.protocol}://${web.host}:${web.port}/iaf-test/servlet/rpcrouter"
+					url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
 					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="timeout" path="error_timeout" />
@@ -162,7 +162,7 @@
 				name="send2ws_no_forwards">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout"
-					url="${web.protocol}://${web.host}:${web.port}/iaf-test/servlet/rpcrouter"
+					url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
 					allowSelfSignedCertificates="true" verifyHostname="false"/>
 				<forward name="success" path="EXIT" />
@@ -172,7 +172,7 @@
 				name="send2ws_forward_timeout">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout"
-					url="${web.protocol}://${web.host}:${web.port}/iaf-test/servlet/rpcrouter"
+					url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
 					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="timeout" path="error_timeout" />
@@ -183,7 +183,7 @@
 				name="send2ws_forward_exception">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout"
-					url="${web.protocol}://${web.host}:${web.port}/iaf-test/servlet/rpcrouter"
+					url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/servlet/rpcrouter"
 					timeout="1000"
 					allowSelfSignedCertificates="true" verifyHostname="false"  />
 				<forward name="exception" path="error_exception" />
@@ -194,7 +194,7 @@
 				name="send2ws_with_forwards">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout"
-					url="${web.protocol}://${web.host}:${web.port}/iaf-test/servlet/rpcrouter"
+					url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
 					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="timeout" path="error_timeout" />
@@ -206,7 +206,7 @@
 				name="send2ws_multiple_with_forwards" removeXmlDeclarationInResults="true">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout"
-					url="${web.protocol}://${web.host}:${web.port}/iaf-test/servlet/rpcrouter"
+					url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
 					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="timeout" path="error_timeout" />
@@ -218,7 +218,7 @@
 				name="send2ws_no_forwards_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout"
-					url="${web.protocol}://${web.host}:${web.port}/iaf-test/servlet/rpcrouter"
+					url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
 					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="success" path="EXIT" />
@@ -228,7 +228,7 @@
 				name="send2ws_forward_timeout_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout"
-					url="${web.protocol}://${web.host}:${web.port}/iaf-test/servlet/rpcrouter"
+					url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
 					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="timeout" path="error_timeout" />
@@ -239,7 +239,7 @@
 				name="send2ws_forward_exception_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout"
-					url="${web.protocol}://${web.host}:${web.port}/iaf-test/servlet/rpcrouter"
+					url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
 					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="exception" path="error_exception" />
@@ -250,7 +250,7 @@
 				name="send2ws_with_forwards_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout"
-					url="${web.protocol}://${web.host}:${web.port}/iaf-test/servlet/rpcrouter"
+					url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
 					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="timeout" path="error_timeout" />

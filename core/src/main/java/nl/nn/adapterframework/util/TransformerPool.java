@@ -243,7 +243,7 @@ public class TransformerPool {
 	}
 
 	public static TransformerPool getInstance(URL url) throws TransformerConfigurationException, IOException {
-		return getInstance(url, false);
+		return getInstance(url, 0);
 	}
 
 	public static TransformerPool getInstance(URL url, int xsltVersion) throws TransformerConfigurationException, IOException {
