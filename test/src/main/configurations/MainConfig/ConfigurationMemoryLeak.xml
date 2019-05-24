@@ -1,0 +1,210 @@
+<module>
+	<adapter name="MemoryLeak"
+		description="Pass a message through six adapters">
+		<receiver name="Java Receiver for Starstar"
+			className="nl.nn.adapterframework.receivers.GenericReceiver">
+			<listener name="Starstar" serviceName="ibis4test-MemoryLeak"
+				className="nl.nn.adapterframework.receivers.JavaListener" />
+		</receiver>
+		<pipeline firstPipe="Pass through">
+			<exits>
+				<exit path="READY" state="success" />
+			</exits>
+			<pipe name="Pass through"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				<sender javaListener="Starstar2"
+					className="nl.nn.adapterframework.senders.IbisLocalSender">
+					<param name="*" sessionKey="*" />
+				</sender>
+				<forward name="success" path="READY" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="Starstar2"
+		description="Passes throug a message with a wildcard">
+		<receiver name="Java Receiver for Starstar"
+			className="nl.nn.adapterframework.receivers.GenericReceiver">
+			<listener name="Starstar2"
+				className="nl.nn.adapterframework.receivers.JavaListener" />
+		</receiver>
+
+		<pipeline firstPipe="Pass through">
+			<exits>
+				<exit path="READY" state="success" />
+			</exits>
+			<pipe name="Pass through"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				<sender javaListener="Starstar3"
+					className="nl.nn.adapterframework.senders.IbisLocalSender">
+					<param name="*" sessionKey="*" />
+				</sender>
+				<forward name="success" path="READY" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="Starstar3"
+		description="Passes throug a message with a wildcard">
+		<receiver name="Java Receiver for Starstar"
+			className="nl.nn.adapterframework.receivers.GenericReceiver">
+			<listener name="Starstar3"
+				className="nl.nn.adapterframework.receivers.JavaListener" />
+		</receiver>
+		<pipeline firstPipe="Pass through">
+			<exits>
+				<exit path="READY" state="success" />
+			</exits>
+			<pipe name="Pass through"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				hideRegex="">
+				<sender javaListener="Starstar4"
+					className="nl.nn.adapterframework.senders.IbisLocalSender">
+					<param name="*" sessionKey="*" />
+				</sender>
+				<forward name="success" path="READY" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="Starstar4"
+		description="Passes throug a message with a wildcard">
+		<receiver name="Java Receiver for Starstar"
+			className="nl.nn.adapterframework.receivers.GenericReceiver">
+			<listener name="Starstar4"
+				className="nl.nn.adapterframework.receivers.JavaListener" />
+		</receiver>
+		<pipeline firstPipe="Pass through">
+			<exits>
+				<exit path="READY" state="success" />
+			</exits>
+			<pipe name="Pass through"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				<sender javaListener="Starstar5"
+					className="nl.nn.adapterframework.senders.IbisLocalSender">
+					<param name="*" sessionKey="*" />
+				</sender>
+				<forward name="success" path="READY" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="Starstar5"
+		description="Passes throug a message with a wildcard">
+		<receiver name="Java Receiver for Starstar"
+			className="nl.nn.adapterframework.receivers.GenericReceiver">
+			<listener name="Starstar5"
+				className="nl.nn.adapterframework.receivers.JavaListener" />
+		</receiver>
+		<pipeline firstPipe="Pass through">
+			<exits>
+				<exit path="READY" state="success" />
+			</exits>
+			<pipe name="Pass through"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				<sender javaListener="Starstar6"
+					className="nl.nn.adapterframework.senders.IbisLocalSender">
+				</sender>
+				<forward name="success" path="READY" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="Starstar6"
+		description="Passes throug a message with a wildcard">
+		<receiver name="Java Receiver for Starstar"
+			className="nl.nn.adapterframework.receivers.GenericReceiver">
+			<listener name="Starstar6"
+				className="nl.nn.adapterframework.receivers.JavaListener" />
+		</receiver>
+		<pipeline firstPipe="Pass through">
+			<exits>
+				<exit path="READY" state="success" />
+			</exits>
+			<pipe name="Pass through"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				<sender javaListener="Starstar7"
+					className="nl.nn.adapterframework.senders.IbisLocalSender">
+					<param name="*" sessionKey="*" />
+				</sender>
+				<forward name="success" path="READY" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="Starstar7"
+		description="Passes throug a message with a wildcard">
+		<receiver name="Java Receiver for Starstar"
+			className="nl.nn.adapterframework.receivers.GenericReceiver">
+			<listener name="Starstar7"
+				className="nl.nn.adapterframework.receivers.JavaListener" />
+		</receiver>
+		<pipeline firstPipe="Pass through">
+			<exits>
+				<exit path="READY" state="success" />
+			</exits>
+			<pipe name="Pass through"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				<sender javaListener="Starstar8"
+					className="nl.nn.adapterframework.senders.IbisLocalSender">
+				</sender>
+				<forward name="success" path="READY" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="Starstar8"
+		description="Passes throug a message with a wildcard">
+		<receiver name="Java Receiver for Starstar"
+			className="nl.nn.adapterframework.receivers.GenericReceiver">
+			<listener name="Starstar8"
+				className="nl.nn.adapterframework.receivers.JavaListener" />
+		</receiver>
+		<pipeline firstPipe="Pass through">
+			<exits>
+				<exit path="READY" state="success" />
+			</exits>
+			<pipe name="Pass through"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				<sender javaListener="Starstar9"
+					className="nl.nn.adapterframework.senders.IbisLocalSender">
+					<param name="*" sessionKey="*" />
+				</sender>
+				<forward name="success" path="READY" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="Starstar9"
+		description="Passes throug a message with a wildcard">
+		<receiver name="Java Receiver for Starstar"
+			className="nl.nn.adapterframework.receivers.GenericReceiver">
+			<listener name="Starstar9"
+				className="nl.nn.adapterframework.receivers.JavaListener" />
+		</receiver>
+		<pipeline firstPipe="Pass through">
+			<exits>
+				<exit path="READY" state="success" />
+			</exits>
+			<pipe name="Pass through"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				<sender
+					className="nl.nn.adapterframework.senders.EchoSender">
+				</sender>
+				<forward name="success" path="READY" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="Starstar10"
+		description="Passes throug a message with a wildcard">
+		<receiver name="Java Receiver for Starstar"
+			className="nl.nn.adapterframework.receivers.GenericReceiver">
+			<listener name="Starstar10"
+				className="nl.nn.adapterframework.receivers.JavaListener" />
+		</receiver>
+		<pipeline firstPipe="Pass through">
+			<exits>
+				<exit path="READY" state="success" />
+			</exits>
+			<pipe name="Pass through"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				<sender
+					className="nl.nn.adapterframework.senders.EchoSender">
+				</sender>
+				<forward name="success" path="READY" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>
