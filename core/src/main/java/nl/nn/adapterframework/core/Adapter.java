@@ -180,7 +180,7 @@ public class Adapter implements IAdapter, NamedBean {
 		for (IPipe pipe : pipeline.getPipes()) {
 			if (pipe instanceof AbstractPipe) {
 				AbstractPipe aPipe = (AbstractPipe) pipe;
-				if (aPipe.getHideRegex() != null) {
+				if (StringUtils.isNotEmpty(aPipe.getHideRegex())) {
 					if (!hrs.contains(aPipe.getHideRegex())) {
 						hrs.add(aPipe.getHideRegex());
 					}
@@ -592,47 +592,48 @@ public class Adapter implements IAdapter, NamedBean {
 		String lastNDC=NDC.peek();
 		String newNDC="cid [" + messageId + "]";
 		boolean ndcChanged=!newNDC.equals(lastNDC);
-		if (ndcChanged) {
-			NDC.push(newNDC);
-		}
-
-		if (StringUtils.isNotEmpty(composedHideRegex)) {
-			LogUtil.setThreadHideRegex(composedHideRegex);
-		}
-			
-		//if (isRequestReplyLogging()) {
-		StringBuilder additionalLogging = new StringBuilder();
-		
-		String xPathLogKeys = (String) pipeLineSession.get("xPathLogKeys");
-		if(xPathLogKeys != null && xPathLogKeys != "") {
-			StringTokenizer tokenizer = new StringTokenizer(xPathLogKeys, ",");
-			while (tokenizer.hasMoreTokens()) {
-				String logName = tokenizer.nextToken();
-				String xPathResult = (String) pipeLineSession.get(logName);
-				additionalLogging.append(" and ");
-				additionalLogging.append(logName);
-				additionalLogging.append(" [" + xPathResult + "]");
-			}
-		}
-		
-		String logMsg = "Adapter [" + name + "] received message [" + message + "] with messageId [" + messageId + "]" + additionalLogging;
-		if (isMsgLogTerseEnabled()) {
-			if (isMsgLogHidden()) {
-				String logMessage = "Adapter [" + name + "] received message [SIZE=" + getFileSizeAsBytes(message) + "] with messageId [" + messageId + "]" + additionalLogging;
-				msgLog.info(logMessage);
-			} else {
-				msgLog.info(logMsg);
-			}
-		}
-		if (log.isDebugEnabled()) { 
-			log.debug(logMsg);
-		} else {
-			logMsg = "Adapter [" + name + "] received message with messageId [" + messageId + "]" + additionalLogging;
-			log.info(logMsg);
-		}
-
 
 		try {
+			if (ndcChanged) {
+				NDC.push(newNDC);
+			}
+
+			if (StringUtils.isNotEmpty(composedHideRegex)) {
+				LogUtil.setThreadHideRegex(composedHideRegex);
+			}
+
+			//if (isRequestReplyLogging()) {
+			StringBuilder additionalLogging = new StringBuilder();
+
+			String xPathLogKeys = (String) pipeLineSession.get("xPathLogKeys");
+			if(xPathLogKeys != null && xPathLogKeys != "") {
+				StringTokenizer tokenizer = new StringTokenizer(xPathLogKeys, ",");
+				while (tokenizer.hasMoreTokens()) {
+					String logName = tokenizer.nextToken();
+					String xPathResult = (String) pipeLineSession.get(logName);
+					additionalLogging.append(" and ");
+					additionalLogging.append(logName);
+					additionalLogging.append(" [" + xPathResult + "]");
+				}
+			}
+			
+			String logMsg = "Adapter [" + name + "] received message [" + message + "] with messageId [" + messageId + "]" + additionalLogging;
+			if (isMsgLogTerseEnabled()) {
+				if (isMsgLogHidden()) {
+					String logMessage = "Adapter [" + name + "] received message [SIZE=" + getFileSizeAsBytes(message) + "] with messageId [" + messageId + "]" + additionalLogging;
+					msgLog.info(logMessage);
+				} else {
+					msgLog.info(logMsg);
+				}
+			}
+			if (log.isDebugEnabled()) { 
+				log.debug(logMsg);
+			} else {
+				msgLog.info(logMsg);
+				logMsg = "Adapter [" + name + "] received message with messageId [" + messageId + "]" + additionalLogging;
+				log.info(logMsg);
+			}
+
 			if (message == null && isReplaceNullMessage()) {
 				log.debug("Adapter [" + getName() + "] replaces null message with messageId [" + messageId + "] by empty message");
 				message = "";
@@ -678,10 +679,13 @@ public class Adapter implements IAdapter, NamedBean {
 			} else {
 				log.info("Adapter [" + getName() + "] completed message with messageId [" + messageId + "] with exit-state [" + result.getState() + "]");
 			}
+			LogUtil.removeThreadHideRegex();
 			if (ndcChanged) {
 				NDC.pop();
 			}
-			LogUtil.removeThreadHideRegex();
+			if (NDC.getDepth() == 0) {
+				NDC.remove();
+			}
 		}
 	}
 
