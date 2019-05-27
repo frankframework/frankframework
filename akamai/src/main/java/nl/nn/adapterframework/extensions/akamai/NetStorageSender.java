@@ -29,6 +29,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpGet;
@@ -58,38 +59,20 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Sender for Akamai NetStorage (HTTP based).
- * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setAction(String) action}</td><td>possible values: delete, dir, download, du, mkdir, mtime, rename, rmdir, upload</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setActionVersion(int) actionVersion}</td><td>Akamai currently only supports action version 1!</td><td>1</td></tr>
- * 
- * <tr><td>{@link #setCpCode(String) cpCode}</td><td>the CP Code to be used</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRootDir(String) rootDir}</td><td><i>optional</i> root directory</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUrl(String) url}</td><td>The destination, aka Akamai host. Only the hostname is allowed; eq. xyz-nsu.akamaihd.net</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSignVersion(int) signVersion}</td><td>the version used to sign the authentication headers. Possible values: 3 (MD5), 4 (SHA1), 5 (SHA256)</td><td>5</td></tr>
- * <tr><td>{@link #setHashAlgorithm(String) hashAlgorithm}</td><td>only works in combination with the <code>upload</code> action. If set, and not specified as parameter, the sender will sign the file to be uploaded. Possible values: md5, sha1, sha256. <br/>NOTE: if the file input is a Stream this will put the file in memory!</td><td>&nbsp;</td></tr>
- * 
- * <tr><td>{@link #setNonce(String) nonce}</td><td>the nonce or api username</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAccessToken(String) accessToken}</td><td>the api accesstoken</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for nonce (username) and accesstoken (password)</td><td>&nbsp;</td></tr>
- * 
- * </table>
- * </p>
+ *
  * <p>See {@link nl.nn.adapterframework.http.HttpSenderBase} for more arguments and parameters!</p>
- * 
+ *
  * <p><b>Parameters:</b></p>
  * <p>Some actions require specific parameters to be set. Optional parameters for the <code>upload</code> action are: md5, sha1, sha256 and mtime.</p>
- * 
+ *
  * <p><b>AuthAlias: (WebSphere based application servers)</b></p>
  * <p>If you do not want to specify the nonce and the accesstoken used to authenticate with Akamai, you can use the authalias property. The username represents the nonce and the password the accesstoken.</p>
- * 
+ *
  * <br/>
  * <br/>
  * <br/>
- *  
- * 
+ *
+ *
  * @author	Niels Meijer
  * @since	7.0-B4
  */
@@ -276,8 +259,8 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 
 		if (!ok) {
 			throw new SenderException(getLogPrefix() + "httpstatus "
-				+ statusCode + ": " + responseHandler.getStatusLine().getReasonPhrase()
-				+ " body: " + getResponseBodyAsString(responseHandler));
+					+ statusCode + ": " + responseHandler.getStatusLine().getReasonPhrase()
+					+ " body: " + getResponseBodyAsString(responseHandler));
 		}
 
 		XmlBuilder result = new XmlBuilder("result");
@@ -319,7 +302,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 				result.addSubElement(message);
 
 				log.warn(String.format("Unexpected Response from Server: %d %s\n%s",
-					statusCode, responseString, responseHandler.getHeaderFields()));
+						statusCode, responseString, responseHandler.getHeaderFields()));
 			}
 		}
 
@@ -345,16 +328,18 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	 * NOTE: if the file input is a Stream this will put the file in memory!
 	 * @param hashAlgorithm supports 3 types; md5, sha1, sha256
 	 */
+	@IbisDoc({"only works in combination with the <code>upload</code> action. if set, and not specified as parameter, the sender will sign the file to be uploaded. possible values: md5, sha1, sha256. <br/>note: if the file input is a stream this will put the file in memory!", ""})
 	public void setHashAlgorithm(String hashAlgorithm) {
 		this.hashAlgorithm = hashAlgorithm.toUpperCase();
 	}
 
 	/**
 	 * NetStorage action to be used
-	 * @param action delete, dir, download, du, mkdir, mtime, rename, 
+	 * @param action delete, dir, download, du, mkdir, mtime, rename,
 	 * rmdir, upload
 	 * @IbisDoc.required
 	 */
+	@IbisDoc({"possible values: delete, dir, download, du, mkdir, mtime, rename, rmdir, upload", ""})
 	public void setAction(String action) {
 		this.action = action.toLowerCase();
 	}
@@ -368,6 +353,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	 * @param actionVersion
 	 * @IbisDoc.default 1
 	 */
+	@IbisDoc({"akamai currently only supports action version 1!", "1"})
 	public void setActionVersion(int actionVersion) {
 		this.actionVersion = actionVersion;
 	}
@@ -377,6 +363,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	 * @param cpCode of the storage group
 	 * @IbisDoc.optional
 	 */
+	@IbisDoc({"the cp code to be used", ""})
 	public void setCpCode(String cpCode) {
 		this.cpCode = cpCode;
 	}
@@ -389,6 +376,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	 * @param url the base URL for NetStorage (without CpCode)
 	 * @IbisDoc.required
 	 */
+	@IbisDoc({"the destination, aka akamai host. only the hostname is allowed; eq. xyz-nsu.akamaihd.net", ""})
 	@Override
 	public void setUrl(String url) {
 		if(!url.endsWith("/")) url += "/";
@@ -403,6 +391,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	 * Login is done via a Nonce and AccessToken
 	 * @param nonce to use when logging in
 	 */
+	@IbisDoc({"the nonce or api username", ""})
 	public void setNonce(String nonce) {
 		this.nonce = nonce;
 	}
@@ -416,6 +405,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	 * @param signVersion supports 3 types; 3:MD5, 4:SHA1, 5: SHA256
 	 * @IbisDoc.default 5 (SHA256)
 	 */
+	@IbisDoc({"the version used to sign the authentication headers. possible values: 3 (md5), 4 (sha1), 5 (sha256)", "5"})
 	public void setSignVersion(int signVersion) {
 		this.signVersion = signVersion;
 	}
@@ -436,6 +426,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	 * Login is done via a Nonce and AccessToken
 	 * @param accessToken to use when logging in
 	 */
+	@IbisDoc({"the api accesstoken", ""})
 	public void setAccessToken(String accessToken) {
 		this.accessToken = accessToken;
 	}
@@ -456,6 +447,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	 * @param rootDir
 	 * @IbisDoc.optional
 	 */
+	@IbisDoc({"<i>optional</i> root directory", ""})
 	public void setRootDir(String rootDir) {
 		if(!rootDir.startsWith("/")) rootDir = "/" + rootDir;
 		if(rootDir.endsWith("/"))
@@ -470,6 +462,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	/**
 	 * @param authAlias to contain the Nonce (username) and AccessToken (password)
 	 */
+	@IbisDoc({"alias used to obtain credentials for nonce (username) and accesstoken (password)", ""})
 	@Override
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
