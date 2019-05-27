@@ -272,6 +272,8 @@ public class CreateRestViewPipe extends XsltPipe {
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
 				"showIbisstoreSummary.do", "showsummary",
 				"Show Ibisstore Summary"));
+		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix, "iaf/ibisdoc", "book", "The new IbisDoc application!"));
+
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix, "larva",
 				"larva", "Larva Test Tool"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
@@ -282,6 +284,7 @@ public class CreateRestViewPipe extends XsltPipe {
 			imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
 					"iaf/gui", "theme", "Try our new GUI 3.0 and leave feedback!"));
 		}
+
 		menuBar.addSubElement(imagelinkMenu);
 		return menuBar.toXML();
 	}
