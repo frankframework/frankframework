@@ -251,45 +251,6 @@
 				</sender>
 				<forward name="success" path="READY" />
 			</pipe>
- 			<!-- Puts the time stamp in milliseconds in timeStampInMillis session  
- 				Key --> 
-<!-- 			<pipe name="getEndTime" -->
-<!-- 				className="nl.nn.adapterframework.pipes.PutSystemDateInSession" -->
-<!-- 				getTimeStampInMillis="true"> -->
-<!-- 				<forward name="success" path="setEndTime" /> -->
-<!-- 			</pipe> -->
-<!-- 			<pipe name="setEndTime" -->
-<!-- 				className="nl.nn.adapterframework.pipes.PutInSession" -->
-<!-- 				getInputFromSessionKey="timeStampInMillis" sessionKey="endTime"> -->
-<!-- 				<forward name="success" path="StoreValues" /> -->
-<!-- 			</pipe> -->
-<!-- 			<pipe name="StoreValues" -->
-<!-- 				className="nl.nn.adapterframework.pipes.XsltPipe" -->
-<!-- 				getInputFromFixedValue="&lt;dummy/&gt;" -->
-<!-- 				styleSheetName="MemoryLeak/calculateDuration.xsl" -->
-<!-- 				storeResultInSessionKey="actualDuration"> -->
-<!-- 				<param name="startTime" sessionKey="startTime" /> -->
-<!-- 				<param name="endTime" sessionKey="endTime" /> -->
-<!-- 				<forward name="success" path="GetHeapSize" /> -->
-<!-- 			</pipe> -->
-<!-- 			<pipe name="GetHeapSize" -->
-<!-- 				className="nl.nn.adapterframework.pipes.IbisMetricsPipe"> -->
-<!-- 				<forward name="success" path="CalculateExpectedDuration" /> -->
-<!-- 			</pipe> -->
-<!-- 			<pipe name="CalculateExpectedDuration" -->
-<!-- 				className="nl.nn.adapterframework.pipes.XsltPipe" -->
-<!-- 				styleSheetName="MemoryLeak/metrics.xsl" -->
-<!-- 				sessionKey="expectedDuration"> -->
-<!-- 				<forward name="success" -->
-<!-- 					path="compareDurationWithExpectedDuration" /> -->
-<!-- 			</pipe> -->
-<!-- 			<pipe name="compareDurationWithExpectedDuration" -->
-<!-- 				className="nl.nn.adapterframework.pipes.CompareIntegerPipe" -->
-<!-- 				sessionKey1="actualDuration" sessionKey2="expectedDuration"> -->
-<!-- 				<forward name="lessthan" path="READY" /> -->
-<!-- 				<forward name="equals" path="READY" /> -->
-<!-- 				<forward name="greaterthan" path="READY" /> -->
-<!-- 			</pipe> -->
 		</pipeline>
 	</adapter>
 	<adapter name="GetEndTimeStamp" active="${MemoryLeak.active}"
@@ -381,7 +342,7 @@
 				<forward name="greaterthan" path="failWithException" />
 			</pipe>
 			<pipe name="failWithException" className="nl.nn.adapterframework.pipes.ExceptionPipe" 
-				getInputFromFixedValue="Processing Memory Leak Scenario took longer than expected. Scenario has failed.">
+				getInputFromFixedValue="Processing Memory Leak Test Scenario took longer than expected. Scenario has failed.">
 				<forward name="success" path="READY" />
 			</pipe>
 		</pipeline>
