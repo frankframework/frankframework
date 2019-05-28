@@ -37,12 +37,12 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>&nbsp;</td><td>the values of all parameters present are appended as arguments to the command</td></tr>
  * </table>
  * </p>
- * 
+ *
  * @since   4.8
  * @author  Gerrit van Brakel
  */
 public class CommandSender extends SenderWithParametersBase {
-	
+
 	private String command;
 	private int timeOut = 0;
 	private boolean commandWithArguments = false;
