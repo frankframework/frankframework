@@ -50,6 +50,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 	private long sleepWhenEqualToPrevious = -1;
 	private TimeZone timeZone=null;
 	private String previousFormattedDate;
+	private boolean getTimeStampInMillis = false;
 
 	/**
 	 * Checks whether the proper forward is defined, a dateFormat is specified and the dateFormat is valid.
@@ -92,6 +93,9 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 		throws PipeRunException {
 
 		String formattedDate;
+		if(isGetTimeStampInMillis()) {
+			session.put("timeStampInMillis", new Date().getTime() + "");
+		}
 		if (isReturnFixedDate()) {
 			SimpleDateFormat formatterFrom = new SimpleDateFormat(FORMAT_FIXEDDATETIME);
 			String fixedDateTime = (String)session.get(FIXEDDATE_STUB4TESTTOOL_KEY);
@@ -167,6 +171,15 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 
 	public boolean isReturnFixedDate() {
 		return returnFixedDate;
+	}
+
+	public boolean isGetTimeStampInMillis() {
+		return getTimeStampInMillis;
+	}
+
+	@IbisDoc({"If set to 'true' then time stamp in millisecond will be stored in 'timeStampInMillis' sessionKey", "false"})
+	public void setGetTimeStampInMillis(boolean getTimeStampInMillis) {
+		this.getTimeStampInMillis = getTimeStampInMillis;
 	}
 }
 
