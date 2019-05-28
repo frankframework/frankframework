@@ -386,6 +386,39 @@
       </distributionManagement>
     </profile>
     <profile>
+      <id>default-modules</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <modules>
+        <module>core</module>
+        <module>larva</module>
+        <module>akamai</module>
+        <module>webapp</module>
+        <module>test</module>
+        <module>ladybug</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>cmis</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <modules>
+        <module>cmis</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>example</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <modules>
+        <module>example</module>
+        <module>ear-example</module>
+      </modules>
+    </profile>
+    <profile>
       <id>proprietary</id>
       <activation>
         <property>
@@ -394,16 +427,6 @@
         </property>
       </activation>
       <modules>
-        <!-- Default modules -->
-        <module>core</module>
-        <module>example</module>
-        <module>larva</module>
-        <module>akamai</module>
-        <module>cmis</module>
-        <module>webapp</module>
-        <module>test</module>
-        <module>ladybug</module>
-        <!-- Proprietary modules -->
         <module>coolgen</module>
         <module>ibm</module>
         <module>ifsa</module>
@@ -417,23 +440,6 @@
           <url>https://nexus.ibissource.org/content/repositories/private/</url>
         </repository>
       </repositories>
-    </profile>
-    <profile>
-      <id>default-modules</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <modules>
-        <module>core</module>
-        <module>example</module>
-        <module>larva</module>
-        <module>akamai</module>
-        <module>cmis</module>
-        <module>webapp</module>
-        <module>test</module>
-        <module>ladybug</module>
-        <module>ear-example</module>
-      </modules>
     </profile>
   </profiles>
 </project>
