@@ -388,7 +388,9 @@
     <profile>
       <id>default-modules</id>
       <activation>
-        <activeByDefault>true</activeByDefault>
+        <property>
+          <name>!default-modules</name>
+        </property>
       </activation>
       <modules>
         <module>core</module>
@@ -402,7 +404,9 @@
     <profile>
       <id>cmis</id>
       <activation>
-        <activeByDefault>true</activeByDefault>
+        <property>
+          <name>!cmis</name>
+        </property>
       </activation>
       <modules>
         <module>cmis</module>
@@ -411,7 +415,9 @@
     <profile>
       <id>example</id>
       <activation>
-        <activeByDefault>true</activeByDefault>
+        <property>
+          <name>!example</name>
+        </property>
       </activation>
       <modules>
         <module>example</module>
@@ -422,8 +428,7 @@
       <id>proprietary</id>
       <activation>
         <property>
-          <name>proprietary.modules.active</name>
-          <value>true</value>
+          <name>proprietary</name>
         </property>
       </activation>
       <modules>
