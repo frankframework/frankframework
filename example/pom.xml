@@ -122,27 +122,16 @@
         </dependency>
         <dependency>
           <groupId>org.ibissource</groupId>
-          <artifactId>ibis-adapterframework-cmis</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.ibissource</groupId>
           <artifactId>ibis-adapterframework-ladybug</artifactId>
         </dependency>
       </dependencies>
     </profile>
     <profile>
-      <id>m2e-iaf-with-proprietary-dependencies</id>
+      <id>proprietary</id>
       <activation>
-        <!--
-        Disable profile activation only being done for m2e as a workaround for a
-        bug in Maven versions before 3.2.2.
-        http://maven.apache.org/docs/3.2.2/release-notes.html#Requiring_multiple_profile_activation_conditions_to_be_true_does_not_work_MNG-4565
         <property>
-          <name>m2e.version</name>
-        </property -->
-        <file>
-          <exists>../../mvn-repo-proprietary/.project</exists>
-        </file>
+          <name>proprietary</name>
+        </property>
       </activation>
       <dependencies>
         <dependency>
@@ -164,6 +153,21 @@
         <dependency>
           <groupId>org.ibissource</groupId>
           <artifactId>ibis-adapterframework-ibm</artifactId>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>cmis</id>
+      <activation>
+        <property>
+          <name>!cmis</name>
+        </property>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.ibissource</groupId>
+          <artifactId>ibis-adapterframework-cmis</artifactId>
+          <scope>runtime</scope>
         </dependency>
       </dependencies>
     </profile>
