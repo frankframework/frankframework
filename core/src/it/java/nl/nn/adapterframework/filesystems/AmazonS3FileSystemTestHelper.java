@@ -1,4 +1,4 @@
-package it.nl.nn.adapterframework.senders;
+package nl.nn.adapterframework.filesystems;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
