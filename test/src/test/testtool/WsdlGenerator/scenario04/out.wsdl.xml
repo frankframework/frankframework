@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:jms="http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS" xmlns:jndi="http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi" xmlns:tns="http://nn.nl/WSDL/AccountInformation/1/GetPaymentReferenceAndPayLink/1" xmlns:ns1="http://nn.nl/XSD/AccountInformation/1/GetPaymentReferenceAndPayLink/1" xmlns:ns2="http://nn.nl/XSD/AccountInformation/DomainValues" xmlns:ns3="http://nn.nl/XSD/Generic/MessageHeader/2" targetNamespace="http://nn.nl/WSDL/AccountInformation/1/GetPaymentReferenceAndPayLink/1">
+	<wsdl:documentation>IGNORE</wsdl:documentation>
 	<wsdl:types>
 		<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:cmh="http://nn.nl/XSD/Generic/MessageHeader/2" xmlns:mtp="http://nn.nl/XSD/AccountInformation/DomainValues" xmlns="http://nn.nl/XSD/AccountInformation/1/GetPaymentReferenceAndPayLink/1" targetNamespace="http://nn.nl/XSD/AccountInformation/1/GetPaymentReferenceAndPayLink/1" attributeFormDefault="unqualified" elementFormDefault="qualified">
 			<xs:import namespace="http://nn.nl/XSD/Generic/MessageHeader/2"/>
