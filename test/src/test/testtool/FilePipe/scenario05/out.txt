@@ -1,1 +1,1 @@
-c:/temp/ibis4test/fp/test.txt
+c:/temp/testdata/fp/test.txt

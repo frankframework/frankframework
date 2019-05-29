@@ -15,6 +15,9 @@
 */
 package nl.nn.adapterframework.extensions.cxf;
 
+import javax.xml.ws.BindingType;
+import javax.xml.ws.ServiceMode;
+
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
@@ -26,6 +29,8 @@ import nl.nn.adapterframework.http.PushingListenerAdapter;
  *
  */
 
+@ServiceMode(value=javax.xml.ws.Service.Mode.MESSAGE)
+@BindingType(javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
 public class MessageProvider extends SOAPProviderBase {
 
 	private PushingListenerAdapter listener;

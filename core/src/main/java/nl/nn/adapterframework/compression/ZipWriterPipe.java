@@ -266,7 +266,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		return zipWriterHandle;
 	}
 
-
+	@IbisDoc({"one of <ul><li>open: to open a new zip file or stream</li> <li>close: to close the zip file or stream</li> <li>write: write the input to the zip as a new entry</li> <li>stream: create a new zip entry, and provide an outputstream that another pipe can use to write the contents</li> </ul>", ""})
 	public void setAction(String string) {
 		action = string;
 	}

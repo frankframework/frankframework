@@ -98,6 +98,7 @@ public class GetFromSession  extends FixedForwardPipe {
 		this.sessionKey = sessionKey;
 	}
 
+	@IbisDoc({"<ul><li><code>string</code>: renders the contents</li><li><code>map</code>: converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;)</li></ul>", "string"})
 	public String getType() {
 		return type;
 	}

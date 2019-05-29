@@ -88,7 +88,7 @@ We have yet to test the compatibility of the iaf-test module with Jetty. Until t
 - Optionally (when you have access to the proprietary jars some modules depend on) also clone: URI: https://bitbucket.org/ibissource/mvn-repo-proprietary.git, User: ..., Password: ..., Next, Next, Finish. 
 - Right click iaf, Import projects..., Next, **deselect**: iaf-coolgen, iaf-ibm, iaf-ifsa, iaf-sap and iaf-tibco (unless you cloned mvn-repo-proprietary), Finish.
 - Window, Open Perspective, Other..., Java EE.
-- Servers, No servers are available. Click this link to create a new server..., Apache, Tomcat v7.0 Server, Next, Browse..., select the root folder of a Tomcat installation (when not available download [Tomcat](http://tomcat.apache.org/) (version 7.0.22 is known to work, but other version are expected to work too)), OK, Finish.
+- Servers, No servers are available. Click this link to create a new server..., Apache, Tomcat v7.0 Server, Next, Browse..., select the root folder of a Tomcat installation (when not available download the latest version of [Tomcat](http://tomcat.apache.org/) (version 7.0.47+ is known to work)), OK, Finish.
 - Double click Tomcat v7.0 Server at localhost, Open launch configuration, Arguments, VM arguments, add -Dotap.stage=LOC, OK, Modules, Add Web Module..., iaf-example, OK, File, Save
 - Right click Tomcat v7.0 Server at localhost, Start.
 - Browse the IAF console at [http://localhost:8080/iaf-example/](http://localhost:8080/iaf-example/).
@@ -96,8 +96,9 @@ We have yet to test the compatibility of the iaf-test module with Jetty. Until t
 In some cases you might want/need to:
 
 - Rightclick iaf, Maven, Update Project..., OK.
+- Delete .setting folder(s) in broken iaf module(s), followed by rightclick iaf, Maven, Update Project..., OK.
 - Enable Project, Build Automatically
-- Right click Tomcat v7.0 Server at localhost, Clean...
+- Right click Tomcat Server at localhost, Clean...
 - Change newlines in .classpath and org.eclipse.wst.common.component files back to Unix newlines.
 - Rightclick pom.xml (in iaf), Run As, Maven build..., JRE, make sure a JDK (not a JRE) is used (use Java 1.6 to compile with the minimal Java version for the IAF project), Refresh, Refresh resources upon completion, Specific resources, Specify Resources..., iaf (Using "The project containing the selected resource" doesn't seem to work), Finish, Run.
 - The local Maven repository might contain corrupt jar files which for example will result in java.lang.NoClassDefFoundError: org/aspectj/lang/ProceedingJoinPoint when starting Tomcat. Remove the jar file from the repository to make Maven download the file again.

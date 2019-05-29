@@ -34,6 +34,8 @@ Ibis AdapterFramework release notes
 - Change IBIS startup servlet to CXF and register it with Spring
 - Fix date issue where time properties are converted to GMT
 - Revert old CMIS WS endpoints to register each service's WSDL individually
+- Make WebServiceListener SOAP endpoint binding 1.2 capable
+- Add option to add custom views to GUI 3.0
 
 
 ### Non backwards compatible changes

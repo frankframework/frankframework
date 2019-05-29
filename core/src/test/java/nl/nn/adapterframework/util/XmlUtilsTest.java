@@ -1,7 +1,5 @@
 package nl.nn.adapterframework.util;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 
 import javax.xml.transform.Source;
