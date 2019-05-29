@@ -18,10 +18,13 @@ public class XpathTest extends FunctionalTransformerPoolTestBase {
 	
 	
 	public void xpathTest(String input, String xpath, String expected) throws ConfigurationException, DomBuilderException, TransformerException, IOException {
-		xpathTest(input, xpath, "text", expected);
-	}
-	public void xpathTest(String input, String xpath, String outputType, String expected)  throws ConfigurationException, DomBuilderException, TransformerException, IOException {
 		String namespaceDefs=null; 
+		xpathTest(input, namespaceDefs, xpath, "text", expected);
+	}
+	public void xpathTest(String input, String namespaceDefs, String xpath, String expected) throws ConfigurationException, DomBuilderException, TransformerException, IOException {
+		xpathTest(input, namespaceDefs, xpath, "text", expected);
+	}
+	public void xpathTest(String input, String namespaceDefs, String xpath, String outputType, String expected)  throws ConfigurationException, DomBuilderException, TransformerException, IOException {
 		boolean includeXmlDeclaration=false;
 		ParameterList formalParams=null;
 		TransformerPool tp= XmlUtils.getXPathTransformerPool(namespaceDefs, xpath, outputType, includeXmlDeclaration, formalParams);
@@ -58,6 +61,19 @@ public class XpathTest extends FunctionalTransformerPoolTestBase {
 		xpathTest(inputMessageWithNs,"avg(root/*/item)","1.5");
 	}
 	
+	@Test
+	public void testNamespacedXpathNamespacedInput1() throws ConfigurationException, DomBuilderException, TransformerException, IOException {
+		xpathTest(inputMessageWithNs,"r=urn:rootnamespace/,b=urn:bodynamespace/","sum(r:root/b:body/b:item)","3");
+	}
+	@Test
+	public void testNamespacedXpathNamespacedInput2() throws ConfigurationException, DomBuilderException, TransformerException, IOException {
+		xpathTest(inputMessageWithNs,"r=urn:rootnamespace,b=urn:bodynamespace","sum(r:root/r:body/r:item)","0");
+	}
+	@Test
+	public void testNamespacedXpathNamespacedInput3() throws ConfigurationException, DomBuilderException, TransformerException, IOException {
+		xpathTest(inputMessageWithNs,"r=urn:rootnamespace,b=urn:bodynamespace","sum(root/body/item)","0");
+	}
+
 	@Test
 	public void testXpathXmlSwitchCase1() throws ConfigurationException, DomBuilderException, TransformerException, IOException {
 		String input=TestFileUtils.getTestFile("/XmlSwitch/in.xml");
