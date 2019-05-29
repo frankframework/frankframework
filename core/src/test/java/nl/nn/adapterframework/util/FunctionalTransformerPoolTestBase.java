@@ -28,7 +28,7 @@ public class FunctionalTransformerPoolTestBase {
 	}
 	
 	public void testXslt(String xslt, String input, String expected, boolean xslt2) throws DomBuilderException, TransformerException, IOException {
-		TransformerPool tp = TransformerPool.getInstance(xslt,xslt2);
+		TransformerPool tp = TransformerPool.getInstance(xslt,xslt2?2:1);
 		testTransformerPool(tp,input,expected);
 	}
 	
