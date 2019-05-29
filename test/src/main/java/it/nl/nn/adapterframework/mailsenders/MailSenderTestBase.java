@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.mailsenders;
+package it.nl.nn.adapterframework.mailsenders;
 
 import static org.junit.Assert.assertEquals;
 

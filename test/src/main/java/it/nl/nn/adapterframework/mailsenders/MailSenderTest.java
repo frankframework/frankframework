@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.mailsenders;
+package it.nl.nn.adapterframework.mailsenders;
 
 public class MailSenderTest extends MailSenderTestBase<MailSenderWrapper> {
 	private String smtpHost = "localhost"; // could be smtp.sendgrid.net

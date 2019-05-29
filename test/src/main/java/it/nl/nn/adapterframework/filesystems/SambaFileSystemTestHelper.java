@@ -1,4 +1,4 @@
-package it.nl.nn.adapterframework.senders;
+package it.nl.nn.adapterframework.filesystems;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
