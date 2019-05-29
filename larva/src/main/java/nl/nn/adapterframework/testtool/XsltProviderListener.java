@@ -19,7 +19,7 @@ import nl.nn.adapterframework.util.TransformerPool;
 public class XsltProviderListener {
 	String filename;
 	boolean fromClasspath = false;
-	boolean xslt2 = false;
+	private int xsltVersion=0; // set to 0 for auto detect.
 	boolean namespaceAware = true;
 	TransformerPool transformerPool = null;
 	String result;
@@ -27,10 +27,10 @@ public class XsltProviderListener {
 	public void init() throws ListenerException {
 		try {
 			if (fromClasspath) {
-				transformerPool = TransformerPool.getInstance(ClassUtils.getResourceURL(this, filename), xslt2);
+				transformerPool = TransformerPool.getInstance(ClassUtils.getResourceURL(this, filename), getXsltVersion());
 			} else {
 				File file = new File(filename);
-				transformerPool = TransformerPool.getInstance(file.toURI().toURL(), xslt2);
+				transformerPool = TransformerPool.getInstance(file.toURI().toURL(), getXsltVersion());
 			}
 		} catch (Exception e) {
 			throw new ListenerException("Exception creating transformer pool for file '" + filename + "': " + e.getMessage(), e);
@@ -63,8 +63,22 @@ public class XsltProviderListener {
 		this.fromClasspath = fromClasspath;
 	}
 
-	public void setXslt2(boolean xslt2) {
-		this.xslt2 = xslt2;
+	public void setXsltVersion(int xsltVersion) {
+		this.xsltVersion=xsltVersion;
+	}
+	public int getXsltVersion() {
+		return xsltVersion;
+	}
+
+	/**
+	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
+	 */
+	@Deprecated
+	public void setXslt2(boolean b) {
+//		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+//		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'xslt2' has been deprecated. Its value is now auto detected. If necessary, replace with a setting of xsltVersion";
+//		configWarnings.add(log, msg);
+		xsltVersion=b?2:1;
 	}
 
 	/**
