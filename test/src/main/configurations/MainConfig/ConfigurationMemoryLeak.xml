@@ -337,9 +337,14 @@
 			<pipe name="compareDurationWithExpectedDuration"
 				className="nl.nn.adapterframework.pipes.CompareIntegerPipe"
 				sessionKey1="actualDuration" sessionKey2="expectedDuration">
-				<forward name="lessthan" path="READY" />
-				<forward name="equals" path="READY" />
+				<forward name="lessthan" path="Echo" />
+				<forward name="equals" path="Echo" />
 				<forward name="greaterthan" path="failWithException" />
+			</pipe>
+			<pipe name="Echo"
+				className="nl.nn.adapterframework.pipes.EchoPipe"
+				getInputFromFixedValue="success">
+				<forward name="success" path="READY" />
 			</pipe>
 			<pipe name="failWithException" className="nl.nn.adapterframework.pipes.ExceptionPipe" 
 				getInputFromFixedValue="Processing Memory Leak Test Scenario took longer than expected. Scenario has failed.">
