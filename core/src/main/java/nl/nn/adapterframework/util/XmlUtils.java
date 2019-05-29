@@ -67,10 +67,6 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
-import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
@@ -90,6 +86,10 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
+
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
+import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
 
 /**
  * Some utilities for working with XML.
@@ -800,6 +800,7 @@ public class XmlUtils {
 	public static synchronized SAXParserFactory getSAXParserFactory(boolean namespaceAware) {
 		SAXParserFactory factory = new org.apache.xerces.jaxp.SAXParserFactoryImpl();
 		factory.setNamespaceAware(namespaceAware);
+		
 		return factory;
 	}
 

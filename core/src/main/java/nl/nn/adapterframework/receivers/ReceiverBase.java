@@ -30,6 +30,20 @@ import java.util.StringTokenizer;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.log4j.Logger;
+import org.apache.log4j.NDC;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
@@ -63,6 +77,7 @@ import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.monitoring.EventHandler;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.MonitorManager;
+import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -82,20 +97,6 @@ import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.log4j.Logger;
-import org.apache.log4j.NDC;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * This {@link IReceiver Receiver} may be used as a base-class for developing receivers.
@@ -325,7 +326,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	 */
 	private LinkedHashMap poisonMessageIdCache = new LinkedHashMap() {
 
-		protected boolean removeEldestEntry(Entry eldest) {
+		@Override
+        protected boolean removeEldestEntry(Entry eldest) {
 			return size() > getPoisonMessageIdCacheSize();
 		}
         
@@ -333,7 +335,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 	private LinkedHashMap processResultCache = new LinkedHashMap() {
 
-		protected boolean removeEldestEntry(Entry eldest) {
+		@Override
+        protected boolean removeEldestEntry(Entry eldest) {
 			return size() > getProcessResultCacheSize();
 		}
         
@@ -1008,6 +1011,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					handler.setContext(threadContext);
 				}
 				SAXParserFactory parserFactory = XmlUtils.getSAXParserFactory();
+				if (Boolean.getBoolean(XmlValidator.XML_IGNORE_EXTERNAL_ENTITIES)) {				    
+				    parserFactory.setXIncludeAware(false);
+				}
 				parserFactory.setNamespaceAware(true);
 				SAXParser saxParser = parserFactory.newSAXParser();
 				try {
@@ -1621,7 +1627,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	 * @param inProcessStorage The inProcessStorage to set
 	 * @deprecated
 	 */
-	protected void setInProcessStorage(ITransactionalStorage inProcessStorage) {
+	@Deprecated
+    protected void setInProcessStorage(ITransactionalStorage inProcessStorage) {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		String msg = getLogPrefix()+"In-Process Storage is not used anymore. Please remove from configuration.";
 		configWarnings.add(log, msg);
@@ -1794,7 +1801,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	 *
 	 * @return    Description of the Return Value
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		String result = super.toString();
 		ToStringBuilder ts=new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE);
 		ts.append("name", getName() );

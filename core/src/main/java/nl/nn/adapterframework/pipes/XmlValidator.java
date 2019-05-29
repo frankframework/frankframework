@@ -115,6 +115,11 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	protected ConfigurationException configurationException;
 
+    /**
+     * A system property indicating that downloading of external XML entities should be suppressed.
+     */
+    public static final String XML_IGNORE_EXTERNAL_ENTITIES = "xml.external.entitiy.ignore";
+
 	/**
 	 * Configure the XmlValidator
 	 * @throws ConfigurationException when:

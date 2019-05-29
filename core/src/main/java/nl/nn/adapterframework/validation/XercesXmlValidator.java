@@ -25,10 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
@@ -45,6 +41,12 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.pipes.XmlValidator;
+import nl.nn.adapterframework.util.XmlExternalEntityResolver;
 
 
 /**
@@ -211,6 +213,9 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 				grammarPool);
 		parser.setErrorHandler(xmlValidatorErrorHandler);
 		parser.setContentHandler(xmlValidatorContentHandler);
+		if (Boolean.getBoolean(XmlValidator.XML_IGNORE_EXTERNAL_ENTITIES)) {
+		    parser.setEntityResolver(new XmlExternalEntityResolver());
+		}
 		try {
 			parser.setFeature(NAMESPACES_FEATURE_ID, true);
 			parser.setFeature(VALIDATION_FEATURE_ID, true);

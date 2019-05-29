@@ -400,5 +400,11 @@
 		<artifactId>chemistry-opencmis-client-bindings</artifactId>
 		<version>${opencmis.version}</version>
 	</dependency>
+    <dependency>
+        <groupId>org.nanohttpd</groupId>
+        <artifactId>nanohttpd</artifactId>
+        <version>2.2.0</version>
+        <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>
