@@ -4,11 +4,11 @@ import org.xml.sax.Attributes;
 
 public class NamespaceRemovingAttributesWrapper extends AttributesWrapper {
 	
-	NamespaceRemovingAttributesWrapper(Attributes source) {
+	public NamespaceRemovingAttributesWrapper(Attributes source) {
 		super(source);
 	}
 
-	int findIndexByLocalName(String localName) {
+	public int findIndexByLocalName(String localName) {
 		for(int i=0;i<getLength();i++) {
 			if (localName.equals(getLocalName(i))) {
 				return i;
