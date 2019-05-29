@@ -63,11 +63,6 @@ public class XsltSender extends SenderWithParametersBase {
 	private TransformerPool transformerPoolSkipEmptyTags;
 	private TransformerPool transformerPoolRemoveNamespaces;
 
-	{
-		setNamespaceAware(true);
-	}
-
-	
 	/**
 	 * The <code>configure()</code> method instantiates a transformer for the specified
 	 * XSL. If the stylesheetname cannot be accessed, a ConfigurationException is thrown.
@@ -144,7 +139,7 @@ public class XsltSender extends SenderWithParametersBase {
 			log.debug(getLogPrefix()+ " removing namespaces from input message");
 			input = transformerPoolRemoveNamespaces.transform(prc.getInputSource(true), null); 
 			log.debug(getLogPrefix()+ " output message after removing namespaces [" + input + "]");
-			return XmlUtils.stringToSourceForSingleUse(input, isNamespaceAware());
+			return XmlUtils.stringToSourceForSingleUse(input, true);
 		}
 		return prc.getInputSource(isNamespaceAware());
 	}
