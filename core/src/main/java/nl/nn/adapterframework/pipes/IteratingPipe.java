@@ -168,6 +168,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 
 	private StatisticsKeeper senderStatisticsKeeper;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		msgTransformerPool = TransformerPool.configureTransformer(getLogPrefix(null), classLoader, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), false);
@@ -180,10 +181,13 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		}
 	}
 
-	protected IDataIterator getIterator(Object input, IPipeLineSession session, String correlationID, Map threadContext) throws SenderException {
+	protected IDataIterator<String> getIterator(Object input, IPipeLineSession session, String correlationID, Map threadContext) throws SenderException {
 		return null;
 	}
 
+	/**
+	 * Alternative way to provide iteration, for classes that cannot provide an Iterator via {@link getIterator}.
+	 */
 	protected void iterateInput(Object input, IPipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException, TimeOutException {
 		 throw new SenderException("Could not obtain iterator and no iterateInput method provided by class ["+ClassUtils.nameOf(this)+"]");
 	}
@@ -195,7 +199,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		private ISenderWithParameters psender=null;
 		private StringBuffer results = new StringBuffer();
 		int count=0;
-		private Vector inputItems = new Vector();
+		private Vector<String> inputItems = new Vector<String>();
 		private Guard guard;
 		List<ParallelSenderExecutor> executorList;
 
@@ -208,7 +212,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 			}
 			if (isParallel() && isCollectResults()) {
 				guard = new Guard();
-				executorList = new ArrayList();
+				executorList = new ArrayList<ParallelSenderExecutor>();
 			}
 		}
 		public boolean handleItem(String item) throws SenderException, TimeOutException {
@@ -251,8 +255,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 			}
 			try {
 				if (isParallel()) {
-					ParallelSenderExecutor pse= new ParallelSenderExecutor(
-							sender, correlationID, item, prc, guard, senderStatisticsKeeper);
+					ParallelSenderExecutor pse= new ParallelSenderExecutor(sender, correlationID, item, prc, guard, senderStatisticsKeeper);
 					if (isCollectResults()) {
 						executorList.add(pse);
 					}
@@ -349,7 +352,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 	protected String sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map threadContext) throws SenderException, TimeOutException {
 		// sendResult has a messageID for async senders, the result for sync senders
 		boolean keepGoing = true;
-		IDataIterator it=null;
+		IDataIterator<String> it=null;
 		try {
 			ItemCallback callback = new ItemCallback(session,correlationID,sender);
 			it = getIterator(input,session, correlationID,threadContext);
@@ -440,8 +443,8 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		}
 	}
 
-	protected String getItem(IDataIterator it) throws SenderException {
-		return (String)it.next();
+	protected String getItem(IDataIterator<String> it) throws SenderException {
+		return it.next();
 	}
 
 	@Override
