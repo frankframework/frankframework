@@ -262,4 +262,10 @@ public class XsltPipe extends FixedForwardPipe {
 	public void addParameter(Parameter rhs) {
 		sender.addParameter(rhs);
 	}
+
+	@Override
+	public void setName(String name) {
+		super.setName(name);
+		sender.setName("Sender of Pipe ["+name+"]");
+	}
 }
