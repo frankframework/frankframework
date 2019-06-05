@@ -61,8 +61,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 	private boolean synchronous=false;
 
 	protected ParameterList paramList = null;
-	
-	
+
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (paramList!=null) {
@@ -90,7 +89,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 			throw new SenderException(getLogPrefix()+"exception starting", e);
 		}
 	}
-	
+
 	public void close() {
 		closeFacade();
 	}
@@ -155,8 +154,6 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		}
 		paramList.add(p);
 	}
-
-
 
 	public void setLuwHandleSessionKey(String string) {
 		luwHandleSessionKey = string;

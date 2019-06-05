@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco3;
 
-import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -67,8 +66,6 @@ public class IdocSender extends SapSenderBase {
 		}
 	}
 
-
-	
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		String tid=null;
 		try {
@@ -103,4 +100,8 @@ public class IdocSender extends SapSenderBase {
 		}
 	}
 
+	@Override
+	protected String getFunctionName() {
+		return null;
+	}
 }

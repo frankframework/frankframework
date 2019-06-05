@@ -91,14 +91,6 @@ public class SapSender extends SapSenderBase {
 		}
 	}
 
-	public void open() throws SenderException {
-		super.open();
-	}
-	
-	public void close() {
-		super.close();
-	}
-
 	public JCoFunction getFunction(SapSystem sapSystem, ParameterValueList pvl) throws SapException {
 		if (StringUtils.isNotEmpty(getSapSystemName()) && StringUtils.isNotEmpty(getFunctionName())) {
 			return getFunctionTemplate().getFunction();

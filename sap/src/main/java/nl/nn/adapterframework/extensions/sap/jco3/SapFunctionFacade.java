@@ -16,9 +16,7 @@
 package nl.nn.adapterframework.extensions.sap.jco3;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -57,12 +55,12 @@ import com.sap.conn.jco.JCoStructure;
  * @author  Jaco de Groot
  * @since   5.0
  */
-public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
+public abstract class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 	protected static Logger log = LogUtil.getLogger(SapFunctionFacade.class);
 
 	private String name;
 	private String sapSystemName;
-	
+
 	private int correlationIdFieldIndex=0;
 	private String correlationIdFieldName;
 	private int requestFieldIndex=0;
@@ -72,9 +70,6 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 
 	private JCoFunctionTemplate ftemplate;
 	private SapSystem sapSystem;
-	private boolean fieldIndicesCalculated=false;
-
-	static Map extractors = new HashMap();
 
 	protected String getLogPrefix() {
 		return this.getClass().getName()+" ["+getName()+"] ";
@@ -97,27 +92,31 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 	public void openFacade() throws SapException {
 		if (sapSystem!=null) {
 			sapSystem.openSystem();
-			if (!StringUtils.isEmpty(getFunctionName())) {
+			log.info("open SapSystem ["+sapSystem.toString()+"]");
+			if (!StringUtils.isEmpty(getFunctionName())) { //Listeners and IdocSenders don't use a functionName
 				ftemplate = getFunctionTemplate(sapSystem, getFunctionName());
+				log.debug("found JCoFunctionTemplate ["+ftemplate.toString()+"]");
 				try {
 					calculateStaticFieldIndices(ftemplate);
-					fieldIndicesCalculated=true;
 				} catch (Exception e) {
 					throw new SapException(getLogPrefix()+"Exception calculation field-indices ["+getFunctionName()+"]", e);
 				}
 			}
 		} else {
+			log.info("open ALL SapSystems");
 			SapSystem.openSystems();
 		}
 	}
 
 	public void closeFacade() {
-		if (sapSystem!=null) {
+		log.info("trying to close all SapSystem resources");
+		if (sapSystem != null) {
 			sapSystem.closeSystem();
+			log.debug("closed local defined sapSystem");
 		} else {
 			SapSystem.closeSystems();
+			log.debug("closed all sapSystems");
 		}
-		fieldIndicesCalculated=false;
 		ftemplate = null;
 	}
 
@@ -161,43 +160,51 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 	 * @param ft
 	 */
 	protected void calculateStaticFieldIndices(JCoFunctionTemplate ft) {
-		if (getRequestFieldIndex()== 0) {	
+		log.info("calculate static field indexes for JCOFunctionTemplate ["+(ft!=null?ft.getName():"unknown")+"]");
+		if (getRequestFieldIndex()== 0) {
 			if (StringUtils.isEmpty(getRequestFieldName())) {
 				setRequestFieldIndex(-1);
+				log.debug("requestFieldName not set, using index [-1]");
 			} else {
 				if (ft!=null) {
 					setRequestFieldIndex(1+ft.getImportParameterList().indexOf(getRequestFieldName()));
-				}				
+					log.debug("searching for requestFieldName ["+getRequestFieldName()+"] in JCOFunctionTemplate Parameters ["+ft.getImportParameterList()+"]");
+				}
 			}
 		}
-		if (getReplyFieldIndex()== 0) {	
+		if (getReplyFieldIndex()== 0) {
 			if (StringUtils.isEmpty(getReplyFieldName())) {
 				setReplyFieldIndex(-1);
+				log.debug("replyFieldIndex not set, using index [-1]");
 			} else {
 				if (ft!=null) {
 					setReplyFieldIndex(1+ft.getExportParameterList().indexOf(getReplyFieldName()));
-				}				
+					log.debug("searching for replyFieldName ["+getReplyFieldName()+"] in JCOFunctionTemplate Parameters ["+ft.getImportParameterList()+"]");
+				}
 			}
 		}
-		if (getCorrelationIdFieldIndex()== 0) {	
+		if (getCorrelationIdFieldIndex()== 0) {
 			if (StringUtils.isEmpty(getCorrelationIdFieldName())) {
 				setCorrelationIdFieldIndex(-1);
+				log.debug("correlationIdFieldIndex not set, using index [-1]");
 			} else {
 				if (ft!=null) {
 					setCorrelationIdFieldIndex(1+ft.getImportParameterList().indexOf(getCorrelationIdFieldName()));
-				}				
+					log.debug("searching for correlationIdFieldName ["+getCorrelationIdFieldName()+"] in JCOFunctionTemplate Parameters ["+ft.getImportParameterList()+"]");
+				}
 			}
 		}
 	}
 
 	/**
-	 * Calculate the index of the field that correspondes with the message as a whole.
+	 * Calculate the index of the field that corresponds with the message as a whole.
 	 * 
 	 * return values
 	 *  >0 : the required index
 	 *  0  : no index found, convert all fields to/from xml.
 	 */
 	protected int findFieldIndex(JCoParameterList params, int index, String name) {
+		log.debug("find FieldIndex for name ["+name+"] in JCoParameterList ["+params.toString()+"]");
 		if (index!=0 || StringUtils.isEmpty(name)) {
 			return index;
 		}
@@ -399,8 +406,9 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 		sapSystemName = string;
 	}
 
-	protected String getFunctionName() {
-		return null;
-	}
+	/**
+	 * Listeners and IdocSenders don't use a functionName
+	 */
+	protected abstract String getFunctionName();
 
 }

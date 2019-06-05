@@ -346,4 +346,11 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 		}
 	}
 
+	/**
+	 * We don't use functions when receiving SAP messages
+	 */
+	@Override
+	protected String getFunctionName() {
+		return null;
+	}
 }
