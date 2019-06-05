@@ -24,6 +24,7 @@ import javax.xml.transform.TransformerException;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
@@ -31,6 +32,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -275,9 +277,9 @@ public class XsltSender extends SenderWithParametersBase {
 	 */
 	@Deprecated
 	public void setXslt2(boolean b) {
-//		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-//		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'xslt2' has been deprecated. Its value is now auto detected. If necessary, replace with a setting of xsltVersion";
-//		configWarnings.add(log, msg);
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'xslt2' has been deprecated. Its value is now auto detected. If necessary, replace with a setting of xsltVersion";
+		configWarnings.add(log, msg);
 		xsltVersion=b?2:1;
 	}
 
