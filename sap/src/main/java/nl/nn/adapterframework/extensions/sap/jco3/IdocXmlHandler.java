@@ -50,7 +50,7 @@ public class IdocXmlHandler extends DefaultHandler {
 	
 	private SapSystem sapSystem;
 	private IDocDocument doc=null;
-	private List segmentStack=new ArrayList();
+	private List<IDocSegment> segmentStack = new ArrayList<IDocSegment>();
 	private String currentField;
 	private StringBuffer currentFieldValue=new StringBuffer();
 	private boolean parsingEdiDcHeader=false;

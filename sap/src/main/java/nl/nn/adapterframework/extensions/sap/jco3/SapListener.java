@@ -107,7 +107,6 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 		functionHandlerFactory.registerGenericHandler(this);
 	}
 
-
 	public void open() throws ListenerException {
 		try {
 			openFacade();
@@ -135,8 +134,11 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 	public void close() throws ListenerException {
 		try {
 			log.debug(getLogPrefix()+"stop server");
+			serverDataEventListener.deleted(getName());
+
 			JCoServer server = JCoServerFactory.getServer(getName());
 			server.stop();
+
 			log.debug(getLogPrefix()+"unregister ServerDataProvider");
 			// Delete doesn't work after stopping the server, when calling
 			// delete first the stop method will fail.
@@ -177,6 +179,7 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 	}
 
 	public void setServerDataEventListener(ServerDataEventListener serverDataEventListener) {
+		log.debug("setting new serverDataEventListener ["+serverDataEventListener.toString()+"]");
 		this.serverDataEventListener = serverDataEventListener;
 	}
 
@@ -210,8 +213,7 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 		}
 	}
 
-	public void handleRequest(JCoServerContext jcoServerContext, JCoFunction jcoFunction)
-			throws AbapException, AbapClassException {
+	public void handleRequest(JCoServerContext jcoServerContext, JCoFunction jcoFunction) throws AbapException, AbapClassException {
 		try {
 			log.debug("SapListener.handleRequest()");
 			handler.processRawMessage(this, jcoFunction, null);

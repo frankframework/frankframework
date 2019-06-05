@@ -94,6 +94,10 @@ public abstract class SapFunctionFacade implements INamedObject, HasPhysicalDest
 		if (sapSystem!=null) {
 			sapSystem.openSystem();
 			log.info("open SapSystem ["+sapSystem.toString()+"]");
+
+			//Something has changed, so remove the cached templates
+			SapSystemDataProvider.getInstance().updateSystem(sapSystem);
+
 			if (!StringUtils.isEmpty(getFunctionName())) { //Listeners and IdocSenders don't use a functionName
 				ftemplate = getFunctionTemplate(sapSystem, getFunctionName());
 				log.debug("found JCoFunctionTemplate ["+ftemplate.toString()+"]");
@@ -111,6 +115,7 @@ public abstract class SapFunctionFacade implements INamedObject, HasPhysicalDest
 
 	public void closeFacade() {
 		log.info("trying to close all SapSystem resources");
+
 		if (sapSystem != null) {
 			sapSystem.closeSystem();
 			log.debug("closed local defined sapSystem");
@@ -228,18 +233,19 @@ public abstract class SapFunctionFacade implements INamedObject, HasPhysicalDest
 
 	public String functionCall2message(JCoFunction function) {
 		JCoParameterList input = function.getImportParameterList();
-		
+
 		int messageFieldIndex = findFieldIndex(input, getRequestFieldIndex(), getRequestFieldName());
 		String result=null;
-		if (messageFieldIndex>0) {
+		if (messageFieldIndex > 0) {
 			if (input!=null) {
 				result = input.getString(messageFieldIndex-1);
 			}
-		} else {
+		}
+		else {
 			result = "<request function=\""+function.getName()+"\">";
-	
+
 			JCoParameterList tables = function.getTableParameterList();
-			
+
 			if (input!=null) {
 				result+=input.toXML();
 			}
