@@ -21,6 +21,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Iterator;
 
+import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;

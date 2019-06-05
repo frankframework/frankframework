@@ -23,6 +23,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 
 import org.apache.commons.lang.StringUtils;

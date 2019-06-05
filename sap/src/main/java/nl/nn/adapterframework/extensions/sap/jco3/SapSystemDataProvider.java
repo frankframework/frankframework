@@ -17,6 +17,7 @@ package nl.nn.adapterframework.extensions.sap.jco3;
 
 import java.util.Properties;
 
+import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 

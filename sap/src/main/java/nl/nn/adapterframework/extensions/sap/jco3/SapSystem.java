@@ -18,11 +18,13 @@ package nl.nn.adapterframework.extensions.sap.jco3;
 import java.lang.reflect.Field;
 import java.util.Iterator;
 
+import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.GlobalListItem;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+
 import com.sap.conn.idoc.IDocRepository;
 import com.sap.conn.idoc.jco.JCoIDoc;
 import com.sap.conn.jco.JCo;
