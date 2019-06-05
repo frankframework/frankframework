@@ -223,7 +223,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 				ParameterResolutionContext prc = null;
 				Map parameterValues = null;
 				if (getParameterList()!=null && (soapHeaderTp != null || soapBodyTp != null)) {
-					prc = new ParameterResolutionContext(payload, session);
+					prc = new ParameterResolutionContext(payload, session, true);
 					parameterValues = prc.getValueMap(getParameterList());
 				}
 				String soapHeader = null;
