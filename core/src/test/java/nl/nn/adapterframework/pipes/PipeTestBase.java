@@ -44,10 +44,4 @@ public abstract class PipeTestBase<P extends IPipe> {
 		}
 	}
 
-	
-	@Test
-	public void basicNoAdditionalConfig() throws ConfigurationException {
-		adapter.configure();
-	}
-
 }
