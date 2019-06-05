@@ -17,11 +17,38 @@ public class XpathTest extends FunctionalTransformerPoolTestBase {
 	private String inputMessageWithoutNs="<root><body><item>1</item><item>2</item></body></root>";
 	private String inputMessageMultipleChildren=
 			"<root>" + 
-			"	<sub><num>11</num></sub>" + 
-			"	<sub><num>12</num></sub>" + 
-			"	<sub><num>13</num></sub>" + 
-			"	<sub><num>14</num></sub>" + 
-			"	<sub><num>15</num></sub>" + 
+			"	<subDirectory>" + 
+			"		<directoryUrl>aa</directoryUrl>" + 
+			"		<orgUnitId>ab</orgUnitId>" + 
+			"	</subDirectory>" + 
+			"	<subDirectory>" + 
+			"		<directoryUrl>ba</directoryUrl>" + 
+			"		<orgUnitId>bb</orgUnitId>" + 
+			"	</subDirectory>" + 
+			"	<subDirectory>" + 
+			"		<directoryUrl>ca</directoryUrl>" + 
+			"		<orgUnitId>cb</orgUnitId>" + 
+			"	</subDirectory>" + 
+			"	<subDirectory>" + 
+			"		<directoryUrl>da</directoryUrl>" + 
+			"		<orgUnitId>db</orgUnitId>" + 
+			"	</subDirectory>" + 
+			"	<subDirectory>" + 
+			"		<directoryUrl>ea</directoryUrl>" + 
+			"		<orgUnitId>eb</orgUnitId>" + 
+			"	</subDirectory>" + 
+			"	<subDirectory>" + 
+			"		<directoryUrl>fa</directoryUrl>" + 
+			"		<orgUnitId>fb</orgUnitId>" + 
+			"	</subDirectory>" + 
+			"	<subDirectory>" + 
+			"		<directoryUrl>ga</directoryUrl>" + 
+			"		<orgUnitId>gb</orgUnitId>" + 
+			"	</subDirectory>" + 
+			"	<subDirectory>" + 
+			"		<directoryUrl>ha</directoryUrl>" + 
+			"		<orgUnitId>hb</orgUnitId>" + 
+			"	</subDirectory>" + 
 			"</root>";
 	
 	public void xpathTest(String input, String xpath, String expected) throws ConfigurationException, DomBuilderException, TransformerException, IOException {
@@ -90,17 +117,11 @@ public class XpathTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	@Test
-	public void testXpathMultipleChildren1() throws ConfigurationException, DomBuilderException, TransformerException, IOException {
-		xpathTest(inputMessageMultipleChildren, "root/sub[position()&gt;1 and position()&lt;5]", "12 13 14");
+	public void testXpathWithXmlSpecialChars() throws ConfigurationException, DomBuilderException, TransformerException, IOException {
+		xpathTest(inputMessageMultipleChildren, "root/subDirectory[position()>1 and position()<6]", "babb cacb dadb eaeb");
 	}
-	
-	@Test
-	public void testXpathMultipleChildren2() throws ConfigurationException, DomBuilderException, TransformerException, IOException {
-		xpathTest(inputMessageMultipleChildren, "root/sub[num&gt;11 and num&lt;15]", "12 13 14");
-	}
-	
-	@Test
-	public void testXpathMultipleChildren3() throws ConfigurationException, DomBuilderException, TransformerException, IOException {
-		xpathTest(inputMessageMultipleChildren, "root/sub[num&gt;14 or num&lt;12]", "11 15");
-	}
+//	@Test
+//	public void testXpathWithXmlSpecialCharsEscaped() throws ConfigurationException, DomBuilderException, TransformerException, IOException {
+//		xpathTest(inputMessageMultipleChildren, "root/subDirectory[position()&gt;1 and position()&lt;6]", "babb cacb dadb eaeb");
+//	}
 }

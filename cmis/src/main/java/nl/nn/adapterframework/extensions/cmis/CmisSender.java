@@ -74,6 +74,7 @@ import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.enums.Action;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
+import org.apache.chemistry.opencmis.commons.enums.DateTimeFormat;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.commons.codec.binary.Base64;
@@ -932,6 +933,8 @@ public class CmisSender extends SenderWithParametersBase {
 		} else if (getBindingType().equalsIgnoreCase("browser")) {
 			parameterMap.setBrowserBindingUrl(getUrl());
 			parameterMap.setBasicAuthentication();
+			//Add parameter dateTimeFormat to send dates in ISO format instead of milliseconds.
+			parameterMap.put(SessionParameter.BROWSER_DATETIME_FORMAT, DateTimeFormat.EXTENDED.value());			
 		} else {
 			parameterMap.setUsernameTokenAuthentication(false);
 			// OpenCMIS requires an entrypoint url (wsdl), if this url has been secured and is not publicly accessible,

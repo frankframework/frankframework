@@ -18,8 +18,7 @@
 			</pipe>
 
 			<pipe name="testIfsaService" className="nl.nn.adapterframework.pipes.CreateRestViewPipe"
-				styleSheetName="WebControl/TestIfsaService/xsl/TestIfsaService.xsl"
-				xslt2="true">
+				styleSheetName="WebControl/TestIfsaService/xsl/TestIfsaService.xsl" >
 				<param name="protocolList" sessionKey="protocolList" />
 				<param name="applicationId" sessionKey="applicationId" />
 				<param name="serviceId" sessionKey="serviceId" />

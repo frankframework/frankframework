@@ -24,8 +24,7 @@
 			</pipe>
 
 			<pipe name="showEnvironmentVariables" className="nl.nn.adapterframework.pipes.CreateRestViewPipe"
-				styleSheetName="ShowEnvironmentVariables/xsl/ShowEnvironmentVariables.xsl"
-				xslt2="true">
+				styleSheetName="ShowEnvironmentVariables/xsl/ShowEnvironmentVariables.xsl" >
 				<param name="configurationName" sessionKey="configurationName" />
 				<param name="classLoaderType" sessionKey="classLoaderType" />
 				<forward name="success" path="EXIT" />
