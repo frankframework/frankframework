@@ -15,7 +15,16 @@ import nl.nn.adapterframework.senders.XsltSender;
 
 public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElementPipe> {
 
-    private IPipeLineSession session = new PipeLineSessionBase();
+	private String messageBasic="<root><sub>abc</sub><sub>def</sub></root>";
+	private String expectedBasic="<results count=\"2\">\n"+
+			"<result item=\"1\">\n"+
+			"abc\n"+
+			"</result>\n"+
+			"<result item=\"2\">\n"+
+			"def\n"+
+			"</result>\n</results>";
+
+	private IPipeLineSession session = new PipeLineSessionBase();
 
     @Override
     public ForEachChildElementPipe createPipe() {
@@ -28,14 +37,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
     	return sender;
     }
 
-	String messageBasic="<root><sub>abc</sub><sub>def</sub></root>";
-	String expectedBasic="<results count=\"2\">\n"+
-			"<result item=\"1\">\n"+
-			"abc\n"+
-			"</result>\n"+
-			"<result item=\"2\">\n"+
-			"def\n"+
-			"</result>\n</results>";
     
     @Test
     public void testBasic() throws PipeRunException, ConfigurationException, PipeStartException {
