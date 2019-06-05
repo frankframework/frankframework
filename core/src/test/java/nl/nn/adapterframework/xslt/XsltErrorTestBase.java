@@ -34,7 +34,8 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 
 	protected TestAppender testAppender;
 	private ErrorOutputStream errorOutputStream;
-
+	public static int EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING=1;
+	
 	protected int getMultiplicity() {
 		return 1;
 	}
@@ -129,7 +130,7 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 		pipe.configure();
 		assertThat(errorOutputStream.toString(),isEmptyString());
 		System.out.println(testAppender.toString());
-		checkTestAppender(0,null);
+		checkTestAppender(EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING*getMultiplicity(),null);
 	}
 
 	// detect duplicate imports in configure()
@@ -141,7 +142,7 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 		pipe.configure();
 		pipe.start();
 		assertThat(errorOutputStream.toString(),isEmptyString());
-		checkTestAppender(getMultiplicity(),"is included or imported more than once");
+		checkTestAppender(getMultiplicity()*(1+EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING),"is included or imported more than once");
 	}
 
 	public void duplicateImportErrorProcessing(boolean xslt2) throws SenderException, TimeOutException, ConfigurationException, IOException, PipeRunException, PipeStartException {
@@ -190,7 +191,7 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 		assertThat(errorOutputStream.toString(),isEmptyString());
 		assertThat(errorMessage,containsString("java.io.FileNotFoundException"));
 		System.out.println("alerts: "+testAppender);
-		assertEquals(0, testAppender.getNumberOfAlerts());
+		assertEquals(EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING, testAppender.getNumberOfAlerts());
 	}
 
 	@Test
@@ -209,7 +210,7 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 			errorMessage = e.getMessage();
 		}
 		assertThat(errorOutputStream.toString(),isEmptyString());
-		assertEquals(0, testAppender.getNumberOfAlerts());
+		assertEquals(EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING, testAppender.getNumberOfAlerts());
 		assertThat(errorMessage,containsString("java.io.FileNotFoundException"));
 	}
 
@@ -221,7 +222,7 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 		pipe.configure();
 		assertThat(errorOutputStream.toString(),not(isEmptyString()));
 		assertThat(errorOutputStream.toString(),containsString("java.io.FileNotFoundException"));
-		checkTestAppender(0,null);
+		checkTestAppender(EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING*getMultiplicity(),null);
 	}
 
 	@Test
@@ -237,7 +238,7 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 		}
 		assertThat(errorOutputStream.toString(),isEmptyOrNullString());
 		assertEquals(true, errorOutputStream.isEmpty());
-		assertThat(testAppender.getNumberOfAlerts(),is(0));
+		assertThat(testAppender.getNumberOfAlerts(),is(EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING*getMultiplicity()));
 		assertThat(errorMessage,containsString("Failed to compile stylesheet"));
 	}
 

@@ -32,11 +32,6 @@
     </dependency>
     <dependency>
       <groupId>org.ibissource</groupId>
-      <artifactId>ibis-adapterframework-cmis</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.ibissource</groupId>
       <artifactId>ibis-adapterframework-akamai</artifactId>
       <scope>runtime</scope>
     </dependency>
@@ -58,10 +53,10 @@
       <version>1.2.0</version>
     </dependency>
     <dependency>
-		<groupId>javax.servlet</groupId>
-		<artifactId>javax.servlet-api</artifactId>
-		<scope>provided</scope>
-	</dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
   <profiles>
@@ -69,8 +64,7 @@
       <id>proprietary</id>
       <activation>
         <property>
-          <name>proprietary.modules.active</name>
-          <value>true</value>
+          <name>proprietary</name>
         </property>
       </activation>
       <dependencies>
@@ -93,6 +87,21 @@
         <dependency>
           <groupId>org.ibissource</groupId>
           <artifactId>ibis-adapterframework-ibm</artifactId>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>cmis</id>
+      <activation>
+        <property>
+          <name>!cmis</name>
+        </property>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.ibissource</groupId>
+          <artifactId>ibis-adapterframework-cmis</artifactId>
+          <scope>runtime</scope>
         </dependency>
       </dependencies>
     </profile>

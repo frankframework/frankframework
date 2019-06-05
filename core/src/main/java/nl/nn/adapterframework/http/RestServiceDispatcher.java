@@ -355,7 +355,7 @@ public class RestServiceDispatcher  {
 		try {
 			CreateRestViewPipe pipe = new CreateRestViewPipe();
 			pipe.setStyleSheetName("xml/xsl/web/noIbisContext.xsl");
-			pipe.setXslt2(true);
+			//pipe.setXslt2(true);
 			PipeForward pipeForward = new PipeForward();
 			pipeForward.setName("success");
 			pipe.registerForward(pipeForward);

@@ -45,6 +45,10 @@ public class XmlIf extends AbstractPipe {
 	private String regex = null;
 
 	private TransformerPool tp = null;
+	
+	{
+		setNamespaceAware(true);
+	}
 
 	protected String makeStylesheet(String xpathExpression, String resultVal) {
 	String result = 

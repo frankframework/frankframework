@@ -18,8 +18,7 @@
 			</pipe>
 
 			<pipe name="executeJdbcProperties" className="nl.nn.adapterframework.pipes.CreateRestViewPipe"
-				styleSheetName="ExecuteJdbcProperties/xsl/ExecuteJdbcProperties.xsl"
-				xslt2="true" skipOnEmptyInput="true">
+				styleSheetName="ExecuteJdbcProperties/xsl/ExecuteJdbcProperties.xsl" skipOnEmptyInput="true">
 				<param name="jmsRealmList" sessionKey="jmsRealmList" />
 				<param name="jmsRealm" sessionKey="jmsRealm" />
 				<param name="actionList" sessionKey="actionList" />

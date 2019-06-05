@@ -2069,6 +2069,15 @@ public class TestTool {
 				XsltProviderListener xsltProviderListener = new XsltProviderListener();
 				xsltProviderListener.setFromClasspath(fromClasspath);
 				xsltProviderListener.setFilename(filename);
+				String xsltVersionString = (String)properties.get(queueName + ".xsltVersion");
+				if (xsltVersionString != null) {
+					try {
+						int xsltVersion = Integer.valueOf(xsltVersionString).intValue();
+						xsltProviderListener.setXsltVersion(xsltVersion);
+						debugMessage("XsltVersion set to '" + xsltVersion + "'", writers);
+					} catch(Exception e) {
+					}
+				}
 				String xslt2String = (String)properties.get(queueName + ".xslt2");
 				if (xslt2String != null) {
 					try {

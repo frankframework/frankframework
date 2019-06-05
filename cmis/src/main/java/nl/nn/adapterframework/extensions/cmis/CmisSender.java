@@ -41,6 +41,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.cmis.server.CmisServletDispatcher;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -73,6 +74,7 @@ import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.enums.Action;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
+import org.apache.chemistry.opencmis.commons.enums.DateTimeFormat;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.commons.codec.binary.Base64;
@@ -569,7 +571,7 @@ public class CmisSender extends SenderWithParametersBase {
 		else {
 			inputFromSessionKey = prc.getSession().get(getFileContentSessionKey());
 		}
-		InputStream inputStream = null;	
+		InputStream inputStream = null;
 		if (inputFromSessionKey instanceof InputStream) {
 			inputStream = (InputStream) inputFromSessionKey;
 		} else if (inputFromSessionKey instanceof byte[]) {
@@ -701,7 +703,7 @@ public class CmisSender extends SenderWithParametersBase {
 			}
 		}
 	}
-	
+
 	private String sendMessageForActionDelete(String correlationID, String message, ParameterResolutionContext prc)
 			throws SenderException, TimeOutException {
 		if (StringUtils.isEmpty(message)) {
@@ -718,16 +720,16 @@ public class CmisSender extends SenderWithParametersBase {
 				throw new SenderException(e);
 			}
 		}
-		if (object.hasAllowableAction(Action.CAN_DELETE_OBJECT)) { //// You can delete 
+		if (object.hasAllowableAction(Action.CAN_DELETE_OBJECT)) { //// You can delete
 			Document suppDoc = (Document) object;
 			suppDoc.delete(true);
 			return correlationID;
-	
-		} else {  //// You can't delete 
+
+		} else {  //// You can't delete
 			throw new SenderException(getLogPrefix() + "Document cannot be deleted");
 		}
 	}
-	
+
 	private String sendMessageForActionFind(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		Element queryElement = null;
 		try {
@@ -758,7 +760,7 @@ public class CmisSender extends SenderWithParametersBase {
 			operationContext.setIncludeAllowableActions(Boolean.parseBoolean(searchAllVersions));
 		}
 		ItemIterable<QueryResult> q = session.query(statement, sav, operationContext);
-		
+
 		if (StringUtils.isNotEmpty(skipCount)) {
 			long sc = Long.parseLong(skipCount);
 			q = q.skipTo(sc);
@@ -931,6 +933,8 @@ public class CmisSender extends SenderWithParametersBase {
 		} else if (getBindingType().equalsIgnoreCase("browser")) {
 			parameterMap.setBrowserBindingUrl(getUrl());
 			parameterMap.setBasicAuthentication();
+			//Add parameter dateTimeFormat to send dates in ISO format instead of milliseconds.
+			parameterMap.put(SessionParameter.BROWSER_DATETIME_FORMAT, DateTimeFormat.EXTENDED.value());			
 		} else {
 			parameterMap.setUsernameTokenAuthentication(false);
 			// OpenCMIS requires an entrypoint url (wsdl), if this url has been secured and is not publicly accessible,
@@ -1005,6 +1009,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return session;
 	}
 
+	@IbisDoc({"override entrypoint wsdl by reading it from the classpath, overrides url attribute", ""})
 	public void setOverrideEntryPointWSDL(String overrideEntryPointWSDL) {
 		if(!overrideEntryPointWSDL.isEmpty())
 			this.overrideEntryPointWSDL = overrideEntryPointWSDL;
@@ -1015,6 +1020,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return overrideEntryPointWSDL;
 	}
 
+	@IbisDoc({"when true, self signed certificates are accepted", "false"})
 	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
 		this.allowSelfSignedCertificates = allowSelfSignedCertificates;
 	}
@@ -1023,6 +1029,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return allowSelfSignedCertificates;
 	}
 
+	@IbisDoc({"when true, the hostname in the certificate will be checked against the actual hostname", "true"})
 	public void setVerifyHostname(boolean verifyHostname) {
 		this.verifyHostname = verifyHostname;
 	}
@@ -1031,6 +1038,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return verifyHostname;
 	}
 
+	@IbisDoc({"when true, the certificateexpiredexception is ignored", "false"})
 	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
 		this.ignoreCertificateExpiredException = ignoreCertificateExpiredException;
 	}
@@ -1039,6 +1047,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return ignoreCertificateExpiredException;
 	}
 
+	@IbisDoc({"resource url to certificate to be used for authentication", ""})
 	public void setCertificateUrl(String certificate) {
 		this.certificate = certificate;
 	}
@@ -1047,6 +1056,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return certificate;
 	}
 
+	@IbisDoc({"alias used to obtain certificate password", ""})
 	public void setCertificateAuthAlias(String certificateAuthAlias) {
 		this.certificateAuthAlias = certificateAuthAlias;
 	}
@@ -1055,6 +1065,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return certificateAuthAlias;
 	}
 
+	@IbisDoc({"&nbsp;", ""})
 	public void setCertificatePassword(String certificatePassword) {
 		this.certificatePassword = certificatePassword;
 	}
@@ -1063,6 +1074,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return certificatePassword;
 	}
 
+	@IbisDoc({"resource url to truststore to be used for authentication", ""})
 	public void setTruststore(String truststore) {
 		this.truststore = truststore;
 	}
@@ -1071,6 +1083,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return truststore;
 	}
 
+	@IbisDoc({"alias used to obtain truststore password", ""})
 	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
 		this.truststoreAuthAlias = truststoreAuthAlias;
 	}
@@ -1079,6 +1092,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return truststoreAuthAlias;
 	}
 
+	@IbisDoc({"&nbsp;", ""})
 	public void setTruststorePassword(String truststorePassword) {
 		this.truststorePassword = truststorePassword;
 	}
@@ -1087,6 +1101,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return truststorePassword;
 	}
 
+	@IbisDoc({"&nbsp;", "pkcs12"})
 	public void setKeystoreType(String keystoreType) {
 		this.keystoreType = keystoreType;
 	}
@@ -1095,6 +1110,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return keystoreType;
 	}
 
+	@IbisDoc({"&nbsp;", "pkix"})
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		this.keyManagerAlgorithm = keyManagerAlgorithm;
 	}
@@ -1103,6 +1119,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return keyManagerAlgorithm;
 	}
 
+	@IbisDoc({"&nbsp;", "jks"})
 	public void setTruststoreType(String truststoreType) {
 		this.truststoreType = truststoreType;
 	}
@@ -1111,6 +1128,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return truststoreType;
 	}
 
+	@IbisDoc({"&nbsp;", "pkix"})
 	public void setTrustManagerAlgorithm(String getTrustManagerAlgorithm) {
 		this.trustManagerAlgorithm = getTrustManagerAlgorithm;
 	}
@@ -1123,6 +1141,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return proxyHost;
 	}
 
+	@IbisDoc({"&nbsp;", ""})
 	public void setProxyHost(String string) {
 		proxyHost = string;
 	}
@@ -1131,6 +1150,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return proxyPort;
 	}
 
+	@IbisDoc({"&nbsp;", "80"})
 	public void setProxyPort(int i) {
 		proxyPort = i;
 	}
@@ -1139,6 +1159,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return proxyAuthAlias;
 	}
 
+	@IbisDoc({"alias used to obtain credentials for authentication to proxy", ""})
 	public void setProxyAuthAlias(String string) {
 		proxyAuthAlias = string;
 	}
@@ -1147,6 +1168,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return proxyUserName;
 	}
 
+	@IbisDoc({"&nbsp;", ""})
 	public void setProxyUserName(String string) {
 		proxyUserName = string;
 	}
@@ -1155,6 +1177,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return proxyPassword;
 	}
 
+	@IbisDoc({"&nbsp;", ""})
 	public void setProxyPassword(String string) {
 		proxyPassword = string;
 	}
@@ -1179,6 +1202,14 @@ public class CmisSender extends SenderWithParametersBase {
 				+ productName + "] version [" + productVersion + "]";
 	}
 
+	@IbisDoc({"specifies action to perform. Must be one of \n" +
+			" * <ul>\n" +
+			" * <li><code>get</code>: get the content of a document (and optional the properties)</li>\n" +
+			" * <li><code>create</code>: create a document</li>\n" +
+			" * <li><code>find</code>: perform a query that returns properties</li>\n" +
+			" * <li><code>update</code>: update the properties of an existing document</li>\n" +
+			" * <li><code>fetch</code>: get the (meta)data of a folder or document</li>\n" +
+			" * </ul>", ""})
 	public void setAction(String string) {
 		action = string;
 	}
@@ -1190,6 +1221,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return null;
 	}
 
+	@IbisDoc({"atompub service document url", ""})
 	public void setUrl(String string) {
 		url = string;
 	}
@@ -1198,6 +1230,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return url;
 	}
 
+	@IbisDoc({"repository id", ""})
 	public void setRepository(String string) {
 		repository = string;
 	}
@@ -1206,6 +1239,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return repository;
 	}
 
+	@IbisDoc({"alias used to obtain credentials for authentication to host", ""})
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
@@ -1214,6 +1248,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return authAlias;
 	}
 
+	@IbisDoc({"username used in authentication to host", ""})
 	public void setUserName(String string) {
 		userName = string;
 	}
@@ -1222,6 +1257,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return userName;
 	}
 
+	@IbisDoc({"", ""})
 	public void setPassword(String string) {
 		password = string;
 	}
@@ -1230,6 +1266,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return password;
 	}
 
+	@IbisDoc({"'atompub', 'webservices' or 'browser'", "'atompub'"})
 	public void setBindingType(String string) {
 		bindingType = string;
 	}
@@ -1245,10 +1282,12 @@ public class CmisSender extends SenderWithParametersBase {
 		return fileNameSessionKey;
 	}
 
+	@IbisDoc({"(only used when <code>action=create</code>) the session key that contains the name of the file to use. if not set, the value of the property <code>filename</code> from the input message is used", ""})
 	public void setFileNameSessionKey(String string) {
 		fileNameSessionKey = string;
 	}
 
+	@IbisDoc({"when <code>action=create</code>: the session key that contains the input stream of the file to use. when <code>action=get</code> and <code>getproperties=true</code>: the session key in which the input stream of the document is stored", ""})
 	public void setFileInputStreamSessionKey(String string) {
 		fileInputStreamSessionKey = string;
 	}
@@ -1257,6 +1296,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return fileInputStreamSessionKey;
 	}
 
+	@IbisDoc({"when <code>action=create</code>: the session key that contains the base64 encoded content of the file to use. when <code>action=get</code> and <code>getproperties=true</code>: the session key in which the base64 encoded content of the document is stored", ""})
 	public void setFileContentSessionKey(String string) {
 		fileContentStreamSessionKey = string;
 	}
@@ -1265,6 +1305,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return fileContentStreamSessionKey;
 	}
 
+	@IbisDoc({"(only used when <code>action=create</code>) the mime type used to store the document when it's not set in the input message by a property", "'application/octet-stream'"})
 	public void setDefaultMediaType(String string) {
 		defaultMediaType = string;
 	}
@@ -1273,6 +1314,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return defaultMediaType;
 	}
 
+	@IbisDoc({"(only used when <code>action=get</code>) if true, the content of the document is streamed to the httpservletresponse object of the restservicedispatcher (instead of passed as a string)", "false"})
 	public void setStreamResultToServlet(boolean b) {
 		streamResultToServlet = b;
 	}
@@ -1281,6 +1323,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return streamResultToServlet;
 	}
 
+	@IbisDoc({"(only used when <code>action=get</code>) if true, the content of the document is streamed to <code>fileinputstreamsessionkey</code> and all document properties are put in the result as a xml string", "false"})
 	public void setGetProperties(boolean b) {
 		getProperties = b;
 	}
@@ -1288,15 +1331,17 @@ public class CmisSender extends SenderWithParametersBase {
 	public boolean isGetProperties() {
 		return getProperties;
 	}
-	
+
 	public boolean isGetDocumentContent() {
 		return getDocumentContent;
 	}
 
+	@IbisDoc({"(only used when <code>action=get</code>) if true, the attachment for the document is streamed to <code>fileInputStreamSessionKey</code> otherwise only the properties are returned", "true"})
 	public void setGetDocumentContent(boolean getDocumentContent) {
 		this.getDocumentContent = getDocumentContent;
 	}
 
+	@IbisDoc({"(only used when <code>action=create</code>) if true, the document is created in the root folder of the repository. otherwise the document is created in the repository", "true"})
 	public void setUseRootFolder(boolean b) {
 		useRootFolder = b;
 	}
@@ -1305,6 +1350,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return useRootFolder;
 	}
 
+	@IbisDoc({"(only used when <code>action=get</code>) result returned when no document was found for the given id (e.g. '[not_found]'). if empty an exception is thrown", ""})
 	public void setResultOnNotFound(String string) {
 		resultOnNotFound = string;
 	}
@@ -1313,6 +1359,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return resultOnNotFound;
 	}
 
+	@IbisDoc({"if true, the session is not closed at the end and it will be used in the next call", "true"})
 	public void setKeepSession(boolean keepSession) {
 		this.keepSession = keepSession;
 	}
@@ -1322,6 +1369,7 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 	@Deprecated
+	@IbisDoc({"when a cmislistener is used, this specifies where non-bypassed requests should be send to", ""})
 	public void setBridgeSender(boolean isBridgeSender) {
 		if(isBridgeSender)
 			setAction("bridge");

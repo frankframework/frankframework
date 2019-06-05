@@ -25,9 +25,6 @@ public class CmisServletDispatcher {
 		if(listener != null)
 			throw new ConfigurationException("only one cmisListener can be registered per ibis");
 
-		if(sender == null)
-			throw new ConfigurationException("no default cmisSender has been specified");
-
 		this.listener = cmisListener;
 	}
 

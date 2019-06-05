@@ -56,16 +56,16 @@ public class TransformerPoolTest {
 		TransformerPool.clearTransformerPools();
 		String xpath = "root/message";
 		String xpathEvaluatorSource = XmlUtils.createXPathEvaluatorSource(xpath);
-		TransformerPool.getInstance(xpathEvaluatorSource, null, false, true);
+		TransformerPool.getInstance(xpathEvaluatorSource, null, 1, true);
 		assertEquals(1, TransformerPool.getTransformerPoolsKeys().size());
-		TransformerPool.getInstance(xpathEvaluatorSource, "xyz", false, true);
+		TransformerPool.getInstance(xpathEvaluatorSource, "xyz", 1, true);
 		assertEquals(2, TransformerPool.getTransformerPoolsKeys().size());
-		TransformerPool.getInstance(xpathEvaluatorSource, null, true, true);
+		TransformerPool.getInstance(xpathEvaluatorSource, null, 2, true);
 		assertEquals(3, TransformerPool.getTransformerPoolsKeys().size());
-		TransformerPool.getInstance(xpathEvaluatorSource, null, false, true);
+		TransformerPool.getInstance(xpathEvaluatorSource, null, 1, true);
 		assertEquals(3, TransformerPool.getTransformerPoolsKeys().size());
 		String xpath2 = "root/@message";
-		TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(xpath2), null, false, true);
+		TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(xpath2), null, 1, true);
 		assertEquals(4, TransformerPool.getTransformerPoolsKeys().size());
 	}
 

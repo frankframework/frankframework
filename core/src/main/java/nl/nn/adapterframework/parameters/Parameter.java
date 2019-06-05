@@ -33,7 +33,6 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
@@ -41,11 +40,13 @@ import org.w3c.dom.Node;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IWithParameters;
-import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.PutSystemDateInSession;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
@@ -136,7 +137,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	private Number maxInclusive;
 	private boolean hidden = false;
 	private boolean removeNamespaces=false;
-	private boolean xslt2=false;
+	private int xsltVersion=0; // set to 0 for auto detect.
 
 	private DecimalFormatSymbols decimalFormatSymbols = null;
 	private TransformerPool transformerPool = null;
@@ -168,7 +169,7 @@ public class Parameter implements INamedObject, IWithParameters {
 							  TYPE_DOMDOC.equalsIgnoreCase(getType())?"xml":"text";
 			boolean includeXmlDeclaration=false;
 			
-			transformerPool=TransformerPool.configureTransformer0("Parameter ["+getName()+"] ",classLoader,getNamespaceDefs(),getXpathExpression(), styleSheetName,outputType,includeXmlDeclaration,paramList,isXslt2()?2:0);
+			transformerPool=TransformerPool.configureTransformer0("Parameter ["+getName()+"] ",classLoader,getNamespaceDefs(),getXpathExpression(), styleSheetName,outputType,includeXmlDeclaration,paramList,getXsltVersion());
 	    } else {
 			if (paramList!=null && StringUtils.isEmpty(getXpathExpression())) {
 				throw new ConfigurationException("Parameter ["+getName()+"] can only have parameters itself if a styleSheetName or xpathExpression is specified");
@@ -644,6 +645,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	/**
 	 * @param type of the parameter
 	 */
+	@IbisDoc({"<ul><li><code>string</code>: renders the contents of the first node (in combination with xslt or xpath)</li><li><code>xml</code>:  renders a xml-nodeset as an xml-string (in combination with xslt or xpath)</li><li><code>node</code>: renders the CONTENTS of the first node as a nodeset that can be used as such when passed as xslt-parameter (only for XSLT 1.0). Please note that the nodeset may contain multiple nodes, without a common root node. N.B. The result is the set of children of what you might expect it to be...</li><li><code>domdoc</code>: renders xml as a DOM document; similar to <code>node</code> with the distinction that there is always a common root node (required for XSLT 2.0)</li><li><code>date</code>: converts the result to a Date, by default using formatString <code>yyyy-MM-dd</code>. When applied as a JDBC parameter, the method setDate() is used</li><li><code>time</code>: converts the result to a Date, by default using formatString <code>HH:mm:ss</code>. When applied as a JDBC parameter, the method setTime() is used</li><li><code>datetime</code>: converts the result to a Date, by default using formatString <code>yyyy-MM-dd HH:mm:ss</code>. When applied as a JDBC parameter, the method setTimestamp() is used</li>	<li><code>timestamp</code>: similar to datetime, except for the formatString that is <code>yyyy-MM-dd HH:mm:ss.SSS</code> by default</li><li><code>xmldatetime</code>: converts the result from a XML dateTime to a Date. When applied as a JDBC parameter, the method setTimestamp() is used</li>	<li><code>number</code>: converts the result to a Number, using decimalSeparator and groupingSeparator. When applied as a JDBC parameter, the method setDouble() is used</li><li><code>integer</code>: converts the result to an Integer</li><li><code>inputstream</code>: only applicable as a JDBC parameter, the method setBinaryStream() is used</li><li><code>list</code>: converts a List&lt;String&gt; object to a xml-string (&lt;items&gt;&lt;item&gt;...&lt;/item&gt;&lt;item&gt;...&lt;/item&gt;&lt;/items&gt;)</li><li><code>map</code>: converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;)</li></ul>", "string"})
 	public void setType(String type) {
 		this.type = type;
 	}
@@ -756,11 +758,23 @@ public class Parameter implements INamedObject, IWithParameters {
 		return minInclusiveString;
 	}
 
-	@IbisDoc({"(applicable for xpathexpression and stylesheetname) when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
-	public void setXslt2(boolean b) {
-		xslt2 = b;
+	@IbisDoc({"when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
+	public void setXsltVersion(int xsltVersion) {
+		this.xsltVersion=xsltVersion;
 	}
-	public boolean isXslt2() {
-		return xslt2;
+	public int getXsltVersion() {
+		return xsltVersion;
+	}
+
+	@IbisDoc({"Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
+	/**
+	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
+	 */
+	@Deprecated
+	public void setXslt2(boolean b) {
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'xslt2' has been deprecated. Its value is now auto detected. If necessary, replace with a setting of xsltVersion";
+		configWarnings.add(log, msg);
+		xsltVersion=b?2:1;
 	}
 }
