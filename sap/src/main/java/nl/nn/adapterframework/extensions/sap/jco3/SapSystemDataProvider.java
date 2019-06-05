@@ -107,14 +107,23 @@ public class SapSystemDataProvider implements DestinationDataProvider {
 		return true;
 	}
 
-	public synchronized void registerSystem(SapSystem sapSytem) throws SapException {
-		log.debug("Register " + sapSytem.getName());
-		destinationDataEventListener.updated(sapSytem.getName());
+	@Deprecated
+	public synchronized void registerSystem(SapSystem sapSystem) throws SapException {
+		registerSystem(sapSystem);
 	}
 
-	public synchronized void unregisterSystem(SapSystem sapSytem) {
-		log.debug("Unregister " + sapSytem.getName());
-		destinationDataEventListener.deleted(sapSytem.getName());
+	public synchronized void updateSystem(SapSystem sapSystem) throws SapException {
+		log.debug("Update " + sapSystem.getName());
+		destinationDataEventListener.updated(sapSystem.getName());
 	}
 
+	@Deprecated
+	public synchronized void unregisterSystem(SapSystem sapSystem) {
+		deleteSystem(sapSystem);
+	}
+
+	public synchronized void deleteSystem(SapSystem sapSystem) {
+		log.debug("Delete " + sapSystem.getName());
+		destinationDataEventListener.deleted(sapSystem.getName());
+	}
 }
