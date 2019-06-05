@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -110,12 +110,12 @@ public class SapSystem extends GlobalListItem {
 	}
 
 	private void clearSystem() {
-		SapSystemDataProvider.getInstance().unregisterSystem(this);
+		SapSystemDataProvider.getInstance().deleteSystem(this);
 	}
 
 	private void initSystem() throws SapException {
 		try {
-			SapSystemDataProvider.getInstance().registerSystem(this);
+			SapSystemDataProvider.getInstance().updateSystem(this);
 			if (log.isDebugEnabled() && getTraceLevel()>0) {
 				String logPath=AppConstants.getInstance().getResolvedProperty("logging.path");
 				JCo.setTrace(getTraceLevel(), logPath);
@@ -126,8 +126,8 @@ public class SapSystem extends GlobalListItem {
 	}
 
 	public static void configureAll() {
-		for(Iterator it = getRegisteredNames(); it.hasNext();) {
-			String systemName=(String)it.next();
+		for(Iterator<String> it = getRegisteredNames(); it.hasNext();) {
+			String systemName = it.next();
 			SapSystem system = getSystem(systemName);
 			system.configure();
 		}
@@ -154,16 +154,16 @@ public class SapSystem extends GlobalListItem {
 	}
 
 	public static void openSystems() throws SapException {
-		for(Iterator it = getRegisteredNames(); it.hasNext();) {
-			String systemName=(String)it.next();
+		for(Iterator<String> it = getRegisteredNames(); it.hasNext();) {
+			String systemName = it.next();
 			SapSystem system = getSystem(systemName);
 			system.openSystem();
 		}
 	}
 
 	public static void closeSystems() {
-		for(Iterator it = getRegisteredNames(); it.hasNext();) {
-			String systemName=(String)it.next();
+		for(Iterator<String> it = getRegisteredNames(); it.hasNext();) {
+			String systemName = it.next();
 			SapSystem system = getSystem(systemName);
 			system.closeSystem();
 		}

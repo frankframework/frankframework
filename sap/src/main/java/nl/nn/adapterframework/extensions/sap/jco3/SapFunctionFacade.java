@@ -85,9 +85,9 @@ public abstract class SapFunctionFacade implements INamedObject, HasPhysicalDest
 			if (sapSystem==null) {
 				throw new ConfigurationException(getLogPrefix()+"cannot find SapSystem ["+getSapSystemName()+"]");
 			}
- 		} else {
- 			SapSystem.configureAll();
- 		}
+		} else {
+			SapSystem.configureAll();
+		}
 	}
 
 	public void openFacade() throws SapException {
