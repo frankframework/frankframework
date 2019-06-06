@@ -30,14 +30,17 @@
 
   <div class="methods" ng-controller="methodsCtrl">
     <div ng-if="methods.length > 0 && !searching">
-      <input type="text" spellcheck="false" placeholder="Search..." ng-model="searchMethod">
+      <input type="text" spellcheck="false" placeholder="Search in {{ methods[0].className }}..." ng-model="searchMethod">
 
       <div class="class_name">
         {{  methods[0].className }}
       </div>
 
-      <br>
-      <div class="class_name">
+      <div>
+        <a ng-href="https://github.com/ibissource/iaf/wiki/{{ methods[0].className }}#Examples" target="_blank">Examples</a>
+      </div>
+
+      <div class="attribute">
         Attributes
       </div>
       <table>
