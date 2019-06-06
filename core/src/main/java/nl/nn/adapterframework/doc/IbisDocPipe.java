@@ -322,10 +322,11 @@ public class IbisDocPipe extends FixedForwardPipe {
 			contentType = "application/json";
 		} else if ("/ibisdoc".equals(uri)) {
 			result = "<html>\n"
-					+ "  <a href=\"ibisdoc/ibisdoc.html\">ibisdoc.html</a><br/>\n"
+					+ "  <a href=\"ibisdoc/ibisdoc.html\">ibisdoc.html (deprecated)</a><br/>\n"
 					+ "  <a href=\"ibisdoc/ibisdoc.xsd\">ibisdoc.xsd</a><br/>\n"
 					+ "  <a href=\"ibisdoc/uglify_lookup.xml\">uglify_lookup.xml</a><br/>\n"
 					+ "  <a href=\"ibisdoc/ibisdoc.json\">ibisdoc.json</a><br/>\n"
+					+ "  <a href=\"../../iaf/ibisdoc\">The new ibisdoc application</a><br/>\n"
 					+ "</html>";
 		} else if ("/ibisdoc/ibisdoc.html".equals(uri)) {
 			result = "<html>\n"

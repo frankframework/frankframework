@@ -98,11 +98,6 @@
 				alt="Show Ibisstore Summary">
 			</imagelink>
 			<imagelink
-				href="iaf/ibisdoc"
-				type="book"
-				alt="The new IbisDoc application!">
-			</imagelink>
-			<imagelink
 				href="larva"
 				type="larva"
 				alt="Larva Test Tool">
