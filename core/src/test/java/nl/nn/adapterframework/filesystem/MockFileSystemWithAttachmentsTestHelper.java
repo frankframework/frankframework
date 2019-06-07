@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.filesystem;
 
+import java.util.Map;
+
 public class MockFileSystemWithAttachmentsTestHelper extends MockFileSystemTestHelper<MockFileWithAttachments> implements IFileSystemWithAttachmentsTestHelper<MockAttachment> {
 	
 	public MockFileSystemWithAttachmentsTestHelper() {
@@ -28,6 +30,20 @@ public class MockFileSystemWithAttachmentsTestHelper extends MockFileSystemTestH
 	@Override
 	protected MockFileWithAttachments createNewFile(MockFolder folder, String filename) {
 		return new MockFileWithAttachments(filename,folder);
+	}
+
+	@Override
+	public void setProperty(MockAttachment attachment, String key, Object value) {
+		attachment.setAdditionalProperties(key, value);
+	}
+
+	@Override
+	public Object getProperty(MockAttachment attachment, String key) {
+		Map<String,Object> properties=attachment.getAdditionalProperties();
+		if (properties==null) {
+			return null;
+		}
+		return properties.get(key);
 	}
 
 }

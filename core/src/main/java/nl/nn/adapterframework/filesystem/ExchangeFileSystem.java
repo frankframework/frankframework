@@ -398,9 +398,32 @@ public class ExchangeFileSystem implements IWithAttachments<Item,FileAttachment>
 
 
 	@Override
-	public String getAttachmentName(Item f, FileAttachment a) {
+	public String getAttachmentName(FileAttachment a) {
 		return a.getName();
 	}
+
+	@Override
+	public FileAttachment getAttachmentByName(Item f, String name) throws FileSystemException {
+		try {
+			EmailMessage emailMessage;
+			PropertySet ps = new PropertySet(EmailMessageSchema.Attachments);
+			emailMessage = EmailMessage.bind(exchangeService, f.getId(), ps);
+			AttachmentCollection attachmentCollection = emailMessage.getAttachments();
+			emailMessage = EmailMessage.bind(exchangeService, f.getId(), ps);
+			for (Attachment attachment : attachmentCollection) {
+				FileAttachment fileAttachment = (FileAttachment) attachment;
+				if (name.equals(attachment.getName())) {
+					return fileAttachment;
+				}
+			}
+			return null;
+		} catch (ServiceLocalException e) {
+			throw new FileSystemException("cannot read attachments",e);
+		} catch (Exception e) {
+			throw new FileSystemException("cannot read attachments",e);
+		}
+	}
+
 
 
 	@Override
@@ -411,7 +434,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,FileAttachment>
 
 
 	@Override
-	public long getAttachmentSize(Item f, FileAttachment a) throws FileSystemException {
+	public long getAttachmentSize(FileAttachment a) throws FileSystemException {
 		try {
 			return a.getSize();
 		} catch (ServiceVersionException e) {
@@ -421,18 +444,18 @@ public class ExchangeFileSystem implements IWithAttachments<Item,FileAttachment>
 
 
 	@Override
-	public String getAttachmentContentType(Item f, FileAttachment a) throws FileSystemException {
+	public String getAttachmentContentType(FileAttachment a) throws FileSystemException {
 		return a.getContentType();
 	}
 
 	@Override
-	public String getAttachmentFileName(Item f, FileAttachment a) throws FileSystemException {
+	public String getAttachmentFileName(FileAttachment a) throws FileSystemException {
 		return a.getFileName();
 	}
 
 
 	@Override
-	public Map<String, Object> getAdditionalAttachmentProperties(Item f, FileAttachment a) throws FileSystemException {
+	public Map<String, Object> getAdditionalAttachmentProperties(FileAttachment a) throws FileSystemException {
 		Map<String, Object> result = new LinkedHashMap<String,Object>();
 		result.put("id", a.getId());
 		result.put("contentId", a.getContentId());
@@ -709,7 +732,6 @@ public class ExchangeFileSystem implements IWithAttachments<Item,FileAttachment>
 			return redirectionUrl.toLowerCase().startsWith("https://");
 		}
 	}
-
 
 
 }

@@ -16,8 +16,18 @@ public class MockFileSystemWithAttachments extends MockFileSystem<MockFileWithAt
 	}
 
 	@Override
-	public String getAttachmentName(MockFileWithAttachments f, MockAttachment a) {
+	public String getAttachmentName(MockAttachment a) {
 		return a.getName();
+	}
+
+	@Override
+	public MockAttachment getAttachmentByName(MockFileWithAttachments f, String name) throws FileSystemException {
+		for (MockAttachment a:f.getAttachments()) {
+			if (a.getName().equals(name)) {
+				return a;
+			}
+		}
+		return null;
 	}
 
 	@Override
@@ -26,22 +36,22 @@ public class MockFileSystemWithAttachments extends MockFileSystem<MockFileWithAt
 	}
 
 	@Override
-	public long getAttachmentSize(MockFileWithAttachments f, MockAttachment a) throws FileSystemException {
+	public long getAttachmentSize(MockAttachment a) throws FileSystemException {
 		return a.getContents()==null?0:a.getContents().length;
 	}
 
 	@Override
-	public String getAttachmentContentType(MockFileWithAttachments f, MockAttachment a) throws FileSystemException {
+	public String getAttachmentContentType(MockAttachment a) throws FileSystemException {
 		return a.getContents()==null?null:a.getContentType();
 	}
 
 	@Override
-	public String getAttachmentFileName(MockFileWithAttachments f, MockAttachment a) throws FileSystemException {
+	public String getAttachmentFileName(MockAttachment a) throws FileSystemException {
 		return a.getContents()==null?null:a.getFilename();
 	}
 
 	@Override
-	public Map<String, Object> getAdditionalAttachmentProperties(MockFileWithAttachments f, MockAttachment a) throws FileSystemException {
+	public Map<String, Object> getAdditionalAttachmentProperties(MockAttachment a) throws FileSystemException {
 		return a.getContents()==null?null:a.getAdditionalProperties();
 	}
 

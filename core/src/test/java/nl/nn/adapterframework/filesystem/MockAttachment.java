@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.filesystem;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class MockAttachment {
@@ -39,5 +40,11 @@ public class MockAttachment {
 		return additionalProperties;
 	}
 
+	public void setAdditionalProperties(String key, Object value) {
+		if (additionalProperties==null) {
+			additionalProperties=new LinkedHashMap<String,Object>();
+		}
+		additionalProperties.put(key, value);
+	}
 
 }
