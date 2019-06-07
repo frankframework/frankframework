@@ -1,7 +1,8 @@
 <!DOCTYPE configuration [
 	<!ENTITY HelloWorld SYSTEM "ConfigurationHelloWorld.xml">
 	<!ENTITY HelloWorlds SYSTEM "ConfigurationHelloWorlds.xml">
-	<!ENTITY HelloBeautifulWorld SYSTEM "ConfigurationHelloBeautifulWorld.xml">
+	<!ENTITY ForEach SYSTEM "ConfigurationForEach.xml">
+	<!ENTITY Echo SYSTEM "ConfigurationEcho.xml">
 ]>
 <configuration name="Ibis4Example">
 	<jmsRealms>
@@ -10,5 +11,6 @@
 	</jmsRealms>
 	&HelloWorld;
 	&HelloWorlds;
-	&HelloBeautifulWorld;
+	&Echo;
+	&ForEach;
 </configuration>

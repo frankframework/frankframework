@@ -1,0 +1,68 @@
+<module>
+	<adapter name="ForEach">
+		<receiver
+			name="ForEach"
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			>
+			<listener
+				name="ForEach"
+				className="nl.nn.adapterframework.receivers.JavaListener"
+			/>
+		</receiver>
+		<pipeline firstPipe="CheckInputIsXml">
+			<exits>
+				<exit path="EXIT" state="success"/>
+			</exits>
+			<pipe
+				name="CheckInputIsXml"
+				className="nl.nn.adapterframework.pipes.XmlWellFormedChecker"
+				>
+				<forward name="success" path="ForEach"/>
+				<forward name="failure" path="Text2Xml"/>
+			</pipe>
+			<pipe
+				name="Text2Xml"
+				className="nl.nn.adapterframework.pipes.Text2XmlPipe"
+				includeXmlDeclaration="false"
+				xmlTag="tests"
+				splitLines="true"
+				>
+				<forward name="success" path="RenameElementLineToTest"/>
+			</pipe>
+			<pipe
+				name="RenameElementLineToTest"
+				className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="ForEach/xsl/RenameElementLineToTest.xsl"
+				>
+				<forward name="success" path="CheckEmptyMessage"/>
+			</pipe>
+			<pipe
+				name="CheckEmptyMessage"
+				className="nl.nn.adapterframework.pipes.CompareStringPipe"
+				>
+				<param name="operand1" value="&lt;tests/>"/>
+				<forward name="equals" path="CreateNewMessage"/>
+				<forward name="lessthan" path="ForEach"/>
+				<forward name="greaterthan" path="ForEach"/>
+			</pipe>
+			<pipe
+				name="CreateNewMessage"
+				className="nl.nn.adapterframework.pipes.FixedResult"
+				returnString="&lt;tests>&lt;test>1&lt;/test>&lt;/tests>"
+				>
+				<forward name="success" path="ForEach"/>
+			</pipe>
+			<pipe
+				name="ForEach"
+				className="nl.nn.adapterframework.pipes.ForEachChildElementPipe"
+				elementXPathExpression="/tests/test[text()&gt;5 and text()&lt;15]"
+				>
+				<sender
+					className="nl.nn.adapterframework.senders.IbisLocalSender"
+					javaListener="Echo"
+				/>
+				<forward name="success" path="EXIT"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>
