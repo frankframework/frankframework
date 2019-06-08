@@ -358,10 +358,6 @@ public class CmisSender extends SenderWithParametersBase {
 				}
 			}
 		}
-
-		if (getAction().equals("bridge")) {
-			CmisServletDispatcher.getInstance().registerServiceClient(this);
-		}
 	}
 
 	public Session getSession() throws SenderException {
@@ -423,12 +419,20 @@ public class CmisSender extends SenderWithParametersBase {
 		 * "CWPST0164E: The /opt/WAS/7.0/profiles/AppSrv01/config/cells/IUFjava_Shared_HA_AS_V4.3/applications/null.ear/deployments/deployment.xml composition unit is not found."
 		 * if (session == null) { session = connect(); }
 		 */
+
+		if (getAction().equals("bridge")) {
+			CmisServletDispatcher.getInstance().registerServiceClient(this);
+		}
 	}
 
 	public void close() throws SenderException {
 		if (session != null) {
 			session.clear();
 			session = null;
+		}
+
+		if (getAction().equals("bridge")) {
+			CmisServletDispatcher.getInstance().unregisterServiceClient(this);
 		}
 	}
 
