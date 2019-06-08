@@ -18,7 +18,7 @@ Upcoming
 --------
 
 [Commits](https://github.com/ibissource/iaf/compare/v7.2...v7.3-RC1)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.3-RC1)](https://travis-ci.org/ibissource/iaf)
 
 - Generate IbisDoc and XSD and support beautiful configuration xml. The XSD can be used for code completion of beautiful Ibis configurations in Eclipse
 - Use XSLT 2.0 instead of 1.0 for configuration tweaks (e.g. stub4testtool.xsl)
@@ -55,6 +55,7 @@ Upcoming
 ### Non backwards compatible changes
 
 - The dateformat in the CmisSender has been modified to `yyyy-MM-dd'T'HH:mm:ss.SSSZ` in order to use the old format, set the `jcmissender.processproperties.legacydateformat` property to true
+- **Upgrade minimum require Java version from 6 to 7**. Java sources are still Java 1.6 compatible at this stage.
 
 
 

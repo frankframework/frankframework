@@ -420,7 +420,7 @@ public class CmisSender extends SenderWithParametersBase {
 		 * if (session == null) { session = connect(); }
 		 */
 
-		if (getAction().equals("bridge")) {
+		if (getAction() != null && getAction().equals("bridge")) {
 			CmisServletDispatcher.getInstance().registerServiceClient(this);
 		}
 	}
@@ -431,7 +431,7 @@ public class CmisSender extends SenderWithParametersBase {
 			session = null;
 		}
 
-		if (getAction().equals("bridge")) {
+		if (getAction() != null && getAction().equals("bridge")) {
 			CmisServletDispatcher.getInstance().unregisterServiceClient(this);
 		}
 	}
