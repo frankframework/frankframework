@@ -48,11 +48,11 @@ import org.apache.commons.lang.StringUtils;
  * @author Jaco de Groot
  */
 @IbisDescription(
-	"Perform an XQuery." + 
-	"<tr><th>nested elements</th><th>description</th></tr>" + 
-	"<tr><td>{@link Parameter param}</td><td>any parameters defined on the pipe will be passed as external variable to the XQuery</td></tr>" + 
-	"</table>" + 
-	"</p>" 
+	"Perform an XQuery. \n" + 
+	"<tr><th>nested elements</th><th>description</th></tr> \n" + 
+	"<tr><td>{@link Parameter param}</td><td>any parameters defined on the pipe will be passed as external variable to the XQuery</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 
 public class XQueryPipe extends FixedForwardPipe {

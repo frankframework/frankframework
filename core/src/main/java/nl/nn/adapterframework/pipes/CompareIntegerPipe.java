@@ -29,19 +29,19 @@ import org.apache.commons.lang.StringUtils;
  * @author     Richard Punt / Gerrit van Brakel
  */
 @IbisDescription(
-	"Pipe that compares the integer values of two session variables." + 
-	"Used to in combination with {@link IncreaseIntegerPipe} to contstruct loops." + 
-	"<tr><td>{@link #setSessionKey2(String) sessionKey2}</td><td>reference to the other session variables to be compared</td><td></td></tr>" + 
-	"</table>" + 
-	"</p>" + 
-	"<p><b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>state</th><th>condition</th></tr>" + 
-	"<tr><td>lessthan</td><td>when v1 &lt; v2</td></tr>" + 
-	"<tr><td>greaterthan</td><td>when v1 &gt; v2</td></tr>" + 
-	"<tr><td>equals</td><td>when v1 = v1</td></tr>" + 
-	"</table>" + 
-	"</p>" 
+	"Pipe that compares the integer values of two session variables. \n" + 
+	"Used to in combination with {@link IncreaseIntegerPipe} to contstruct loops. \n" + 
+	"<tr><td>{@link #setSessionKey2(String) sessionKey2}</td><td>reference to the other session variables to be compared</td><td></td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" + 
+	"<p><b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>state</th><th>condition</th></tr> \n" + 
+	"<tr><td>lessthan</td><td>when v1 &lt; v2</td></tr> \n" + 
+	"<tr><td>greaterthan</td><td>when v1 &gt; v2</td></tr> \n" + 
+	"<tr><td>equals</td><td>when v1 = v1</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 public class CompareIntegerPipe extends AbstractPipe {
 

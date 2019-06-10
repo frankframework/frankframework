@@ -36,14 +36,14 @@ import nl.nn.adapterframework.doc.IbisDescription;
  * @since   4.5
  */
 @IbisDescription(
-	"Returns random password." + 
-	"<p><b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>state</th><th>condition</th></tr>" + 
-	"<tr><td>\"success\"</td><td>default</td></tr>" + 
-	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>" + 
-	"</table>" + 
-	"</p>" 
+	"Returns random password. \n" + 
+	"<p><b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>state</th><th>condition</th></tr> \n" + 
+	"<tr><td>\"success\"</td><td>default</td></tr> \n" + 
+	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 public class PasswordGeneratorPipe extends FixedForwardPipe {
 	

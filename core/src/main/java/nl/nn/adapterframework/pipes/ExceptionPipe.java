@@ -28,13 +28,13 @@ import org.apache.commons.lang.StringUtils;
  * @author  Gerrit van Brakel
  */
 @IbisDescription(
-	"Pipe that throws an exception, based on the input message." + 
-	"<p><b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>state</th><th>condition</th></tr>" + 
-	"<tr><td>\"success\"</td><td>default</td></tr>" + 
-	"</table>" + 
-	"</p>" 
+	"Pipe that throws an exception, based on the input message. \n" + 
+	"<p><b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>state</th><th>condition</th></tr> \n" + 
+	"<tr><td>\"success\"</td><td>default</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 
 public class ExceptionPipe extends FixedForwardPipe {

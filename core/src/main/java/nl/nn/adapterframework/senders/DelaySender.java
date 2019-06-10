@@ -25,8 +25,8 @@ import nl.nn.adapterframework.doc.IbisDescription;
  * @since   4.9
  */
 @IbisDescription(
-	"Sender that sleeps for a specified time, which defaults to 5000 msecs." + 
-	"Useful for testing purposes." 
+	"Sender that sleeps for a specified time, which defaults to 5000 msecs. \n" + 
+	"Useful for testing purposes. \n" 
 )
 public class DelaySender extends SenderBase {
 

@@ -30,8 +30,8 @@ import org.apache.commons.lang.StringUtils;
  * @since   4.3
  */
 @IbisDescription(
-	"Selects an exitState, based on if the input is a XML string." + 
-	"The input is a XML string if it, after removing leading white-space characters, starts with '<'." 
+	"Selects an exitState, based on if the input is a XML string. \n" + 
+	"The input is a XML string if it, after removing leading white-space characters, starts with '<'. \n" 
 )
 
 public class IsXmlIfPipe extends AbstractPipe {

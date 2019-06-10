@@ -55,31 +55,31 @@ import org.apache.log4j.Logger;
  * @author Jaco de Groot (***@dynasol.nl)
  */
 @IbisDescription(
-	"FileHandler, available to the Ibis developer as {@link nl.nn.adapterframework.senders.FileSender} and" + 
-	"{@link nl.nn.adapterframework.pipes.FilePipe}, allows to write to or read from a file." + 
-	"<p>" + 
-	"Actions take place on the file specified by the fileName attribute (or when" + 
-	"not available the fileNameSessionKey, when fileNameSessionKey is empty too" + 
-	"the input of the pipe is used as file name). When a directory is not" + 
-	"specified, the fileName is expected to include the directory." + 
-	"</p>" + 
-	"<p>" + 
-	"When a file needs to be created and both the fileName and the directory are" + 
-	"not specified a temporary file is created as specified by the" + 
-	"java.io.File.createTempFile method using the string \"ibis\" as a" + 
-	"prefix and a suffix as specified bij the writeSuffix attribute. If only" + 
-	"the directory is specified, the temporary file is created the same way except" + 
-	"that the temporary file is created in the specified directory." + 
-	"</p>" + 
-	"<p>" + 
-	"The pipe also support base64 en- and decoding." + 
-	"</p>" + 
-	"<table border=\"1\">" + 
-	"<p><b>Parameters:</b>" + 
-	"<tr><th>name</th><th>type</th><th>remarks</th></tr>" + 
-	"<tr><td></td>writeSuffix<td><i>String</i></td><td>When a parameter with name writeSuffix is present, it is used instead of the writeSuffix specified by the attribute</td></tr>" + 
-	"</table>" + 
-	"</p>" 
+	"FileHandler, available to the Ibis developer as {@link nl.nn.adapterframework.senders.FileSender} and \n" + 
+	"{@link nl.nn.adapterframework.pipes.FilePipe}, allows to write to or read from a file. \n" + 
+	"<p> \n" + 
+	"Actions take place on the file specified by the fileName attribute (or when \n" + 
+	"not available the fileNameSessionKey, when fileNameSessionKey is empty too \n" + 
+	"the input of the pipe is used as file name). When a directory is not \n" + 
+	"specified, the fileName is expected to include the directory. \n" + 
+	"</p> \n" + 
+	"<p> \n" + 
+	"When a file needs to be created and both the fileName and the directory are \n" + 
+	"not specified a temporary file is created as specified by the \n" + 
+	"java.io.File.createTempFile method using the string \"ibis\" as a \n" + 
+	"prefix and a suffix as specified bij the writeSuffix attribute. If only \n" + 
+	"the directory is specified, the temporary file is created the same way except \n" + 
+	"that the temporary file is created in the specified directory. \n" + 
+	"</p> \n" + 
+	"<p> \n" + 
+	"The pipe also support base64 en- and decoding. \n" + 
+	"</p> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<p><b>Parameters:</b> \n" + 
+	"<tr><th>name</th><th>type</th><th>remarks</th></tr> \n" + 
+	"<tr><td></td>writeSuffix<td><i>String</i></td><td>When a parameter with name writeSuffix is present, it is used instead of the writeSuffix specified by the attribute</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 public class FileHandler {
 	protected Logger log = LogUtil.getLogger(this);

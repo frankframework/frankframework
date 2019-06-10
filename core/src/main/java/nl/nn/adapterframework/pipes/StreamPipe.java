@@ -51,27 +51,27 @@ import nl.nn.adapterframework.util.Misc;
  * @author Jaco de Groot
  */
 @IbisDescription(
-	"Stream an input stream to an output stream." + 
-	"<p><b>Parameters:</b></p>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>name</th><th>default</th></tr>" + 
-	"<tr><td>inputStream</td><td>the input stream object to use instead of an input stream object taken from pipe input</td></tr>" + 
-	"<tr><td>outputStream</td><td>the output stream object to use unless httpResponse parameter is specified</td></tr>" + 
-	"<tr><td>httpResponse</td><td>an HttpServletResponse object to stream to (the output stream is retrieved by calling getOutputStream() on the HttpServletResponse object)</td></tr>" + 
-	"<tr><td>httpRequest</td><td>an HttpServletRequest object to stream from. Each part is put in a session key and the result of this pipe is a xml with info about these parts and the name of the session key</td></tr>" + 
-	"<tr><td>contentType</td><td>the Content-Type header to set in case httpResponse was specified</td></tr>" + 
-	"<tr><td>contentDisposition</td><td>the Content-Disposition header to set in case httpResponse was specified</td></tr>" + 
-	"<tr><td>redirectLocation</td><td>the redirect location to set in case httpResponse was specified</td></tr>" + 
-	"</table>" + 
-	"</p>" + 
-	"<p><b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>state</th><th>condition</th></tr>" + 
-	"<tr><td>\"success\"</td><td>default</td></tr>" + 
-	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>" + 
-	"<tr><td>\"antiVirusFailed\"</td><td>if <code>checkAntiVirus=true</code> and an antivirus part is present of which the value differs from <code>antiVirusPassedMessage</code>. If not specified, a PipeRunException is thrown in that situation</td></tr>" + 
-	"</table>" + 
-	"</p>" 
+	"Stream an input stream to an output stream. \n" + 
+	"<p><b>Parameters:</b></p> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>name</th><th>default</th></tr> \n" + 
+	"<tr><td>inputStream</td><td>the input stream object to use instead of an input stream object taken from pipe input</td></tr> \n" + 
+	"<tr><td>outputStream</td><td>the output stream object to use unless httpResponse parameter is specified</td></tr> \n" + 
+	"<tr><td>httpResponse</td><td>an HttpServletResponse object to stream to (the output stream is retrieved by calling getOutputStream() on the HttpServletResponse object)</td></tr> \n" + 
+	"<tr><td>httpRequest</td><td>an HttpServletRequest object to stream from. Each part is put in a session key and the result of this pipe is a xml with info about these parts and the name of the session key</td></tr> \n" + 
+	"<tr><td>contentType</td><td>the Content-Type header to set in case httpResponse was specified</td></tr> \n" + 
+	"<tr><td>contentDisposition</td><td>the Content-Disposition header to set in case httpResponse was specified</td></tr> \n" + 
+	"<tr><td>redirectLocation</td><td>the redirect location to set in case httpResponse was specified</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" + 
+	"<p><b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>state</th><th>condition</th></tr> \n" + 
+	"<tr><td>\"success\"</td><td>default</td></tr> \n" + 
+	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr> \n" + 
+	"<tr><td>\"antiVirusFailed\"</td><td>if <code>checkAntiVirus=true</code> and an antivirus part is present of which the value differs from <code>antiVirusPassedMessage</code>. If not specified, a PipeRunException is thrown in that situation</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 public class StreamPipe extends FixedForwardPipe {
 	public static final String ANTIVIRUS_FAILED_FORWARD = "antiVirusFailed";

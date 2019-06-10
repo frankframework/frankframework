@@ -33,26 +33,26 @@ import nl.nn.adapterframework.doc.IbisDescription;
  * @author  John Dekker
  */
 @IbisDescription(
-	"Retrieves a message using an {@link IPostboxListener}. " + 
-	"Note that most listeners allow you to specify a timeout. The timeout has the following" + 
-	"meaning:" + 
-	"<ul> " + 
-	"<li>&lt;0 = no wait</li>" + 
-	"<li>0 = block until message available</li>" + 
-	"<li>&gt;= 0 maximum wait in milliseconds<li>" + 
-	"</ul> " + 
-	"<tr><th>nested elements</th><th>description</th></tr>" + 
-	"<tr><td>{@link IPostboxListener listener}</td><td>specification of postbox listener to retrieve messages from</td></tr>" + 
-	"</table>" + 
-	"</p>" + 
-	"<p><b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>state</th><th>condition</th></tr>" + 
-	"<tr><td>\"success\"</td><td>default when the message was successfully sent</td></tr>" + 
-	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, and otherwise under same condition as \"success\"</td></tr>" + 
-	"</table>" + 
-	"</p>" + 
-	" " 
+	"Retrieves a message using an {@link IPostboxListener}.  \n" + 
+	"Note that most listeners allow you to specify a timeout. The timeout has the following \n" + 
+	"meaning: \n" + 
+	"<ul>  \n" + 
+	"<li>&lt;0 = no wait</li> \n" + 
+	"<li>0 = block until message available</li> \n" + 
+	"<li>&gt;= 0 maximum wait in milliseconds<li> \n" + 
+	"</ul>  \n" + 
+	"<tr><th>nested elements</th><th>description</th></tr> \n" + 
+	"<tr><td>{@link IPostboxListener listener}</td><td>specification of postbox listener to retrieve messages from</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" + 
+	"<p><b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>state</th><th>condition</th></tr> \n" + 
+	"<tr><td>\"success\"</td><td>default when the message was successfully sent</td></tr> \n" + 
+	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, and otherwise under same condition as \"success\"</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" + 
+	"  \n" 
 )
 public class PostboxRetrieverPipe  extends FixedForwardPipe {
 

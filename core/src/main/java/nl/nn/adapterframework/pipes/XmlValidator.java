@@ -46,6 +46,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDescription;
+import nl.nn.adapterframework.doc.IbisDescription;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -58,21 +59,22 @@ import nl.nn.adapterframework.validation.XercesXmlValidator;
 import nl.nn.adapterframework.validation.XmlValidatorException;
 
 
+
 /**
  * @author Johan Verrips IOS
  * @author Jaco de Groot
  */
 @IbisDescription(
-		"code>Pipe</code> that validates the input message against a XML-Schema." +
-				"<table border=\"1\">" +
-				"<tr><th>state</th><th>condition</th></tr>" +
-				"<tr><td>\"success\"</td><td>default</td></tr>" +
-				"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, the value for \"success\"</td></tr>" +
-				"<tr><td>\"parserError\"</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, \"failure\" is used in such a case</td></tr>" +
-				"<tr><td>\"illegalRoot\"</td><td>if the required root element is not found. If not specified, \"failure\" is used in such a case</td></tr>" +
-				"<tr><td>\"failure\"</td><td>if a validation error occurred</td></tr>" +
-				"</table>" +
-				"<br>"
+		"code>Pipe</code> that validates the input message against a XML-Schema. \n" +
+				"<table border=\"1\"> \n" +
+				"<tr><th>state</th><th>condition</th></tr> \n" +
+				"<tr><td>\"success\"</td><td>default</td></tr> \n" +
+				"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, the value for \"success\"</td></tr> \n" +
+				"<tr><td>\"parserError\"</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, \"failure\" is used in such a case</td></tr> \n" +
+				"<tr><td>\"illegalRoot\"</td><td>if the required root element is not found. If not specified, \"failure\" is used in such a case</td></tr> \n" +
+				"<tr><td>\"failure\"</td><td>if a validation error occurred</td></tr> \n" +
+				"</table> \n" +
+				"<br> \n"
 )
 public class XmlValidator extends FixedForwardPipe implements SchemasProvider, HasSpecialDefaultValues, IDualModeValidator, IXmlValidator {
 

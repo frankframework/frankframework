@@ -26,7 +26,7 @@ import nl.nn.adapterframework.doc.IbisDescription;
  * @author Jaco de Groot (***@dynasol.nl)
  */
 @IbisDescription(
-	"Skip a number of bytes or characters from the input. " 
+	"Skip a number of bytes or characters from the input.  \n" 
 )
 public class SkipPipe extends FixedForwardPipe {
 

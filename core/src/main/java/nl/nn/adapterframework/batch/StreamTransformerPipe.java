@@ -49,23 +49,23 @@ import nl.nn.adapterframework.util.Misc;
  * @since   4.7
  */
 @IbisDescription(
-	"Pipe for transforming a stream with records. Records in the stream must be separated" + 
-	"with new line characters." + 
-	"<table border=\"1\">" + 
-	"<tr><th>nested elements</th><th>description</th></tr>" + 
-	"<tr><td>{@link IInputStreamReaderFactory readerFactory}</td><td>Factory for reader of inputstream. Default implementation {@link InputStreamReaderFactory} just converts using the specified characterset</td></tr>" + 
-	"<tr><td>{@link IRecordHandlerManager manager}</td><td>Manager determines which handlers are to be used for the current line." + 
-	"			If no manager is specified, a default manager and flow are created. The default manager " + 
-	"			always uses the default flow. The default flow always uses the first registered recordHandler " + 
-	"			(if available) and the first registered resultHandler (if available).</td></tr>" + 
-	"<tr><td>{@link RecordHandlingFlow manager/flow}</td><td>Element that contains the handlers for a specific record type, to be assigned to the manager</td></tr>" + 
-	"<tr><td>{@link IRecordHandler recordHandler}</td><td>Handler for transforming records of a specific type</td></tr>" + 
-	"<tr><td>{@link IResultHandler resultHandler}</td><td>Handler for processing transformed records</td></tr>" + 
-	"</table>" + 
-	"</p>" + 
-	"For file containing only a single type of lines, a simpler configuration without managers and flows" + 
-	"can be specified. A single recordHandler with key=\"*\" and (optional) a single resultHandler need to be specified." + 
-	"Each line will be handled by this recordHandler and resultHandler." 
+	"Pipe for transforming a stream with records. Records in the stream must be separated \n" + 
+	"with new line characters. \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>nested elements</th><th>description</th></tr> \n" + 
+	"<tr><td>{@link IInputStreamReaderFactory readerFactory}</td><td>Factory for reader of inputstream. Default implementation {@link InputStreamReaderFactory} just converts using the specified characterset</td></tr> \n" + 
+	"<tr><td>{@link IRecordHandlerManager manager}</td><td>Manager determines which handlers are to be used for the current line. \n" + 
+	"			If no manager is specified, a default manager and flow are created. The default manager  \n" + 
+	"			always uses the default flow. The default flow always uses the first registered recordHandler  \n" + 
+	"			(if available) and the first registered resultHandler (if available).</td></tr> \n" + 
+	"<tr><td>{@link RecordHandlingFlow manager/flow}</td><td>Element that contains the handlers for a specific record type, to be assigned to the manager</td></tr> \n" + 
+	"<tr><td>{@link IRecordHandler recordHandler}</td><td>Handler for transforming records of a specific type</td></tr> \n" + 
+	"<tr><td>{@link IResultHandler resultHandler}</td><td>Handler for processing transformed records</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" + 
+	"For file containing only a single type of lines, a simpler configuration without managers and flows \n" + 
+	"can be specified. A single recordHandler with key=\"*\" and (optional) a single resultHandler need to be specified. \n" + 
+	"Each line will be handled by this recordHandler and resultHandler. \n" 
 )
 public class StreamTransformerPipe extends FixedForwardPipe {
 

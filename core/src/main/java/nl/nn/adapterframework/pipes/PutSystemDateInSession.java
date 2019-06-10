@@ -38,7 +38,7 @@ import org.apache.commons.lang.StringUtils;
  * @since   4.2c
  */
 @IbisDescription(
-	"Puts the system date/time under a key in the {@link IPipeLineSession pipeLineSession}." 
+	"Puts the system date/time under a key in the {@link IPipeLineSession pipeLineSession}. \n" 
 )
 public class PutSystemDateInSession extends FixedForwardPipe {
 	public final static Object OBJECT = new Object();

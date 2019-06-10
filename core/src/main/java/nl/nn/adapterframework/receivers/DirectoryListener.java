@@ -50,10 +50,10 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author  John Dekker
  */
 @IbisDescription(
-	"File {@link IPullingListener listener} that looks in a directory for files" + 
-	"according to a <code>wildcard</code> and a <code>excludeWildcard</code>.  " + 
-	"When a file is found, it is moved to an outputdirectory, so that it isn't found more then once.  " + 
-	"The name of the moved file is passed to the pipeline.  " 
+	"File {@link IPullingListener listener} that looks in a directory for files \n" + 
+	"according to a <code>wildcard</code> and a <code>excludeWildcard</code>.   \n" + 
+	"When a file is found, it is moved to an outputdirectory, so that it isn't found more then once.   \n" + 
+	"The name of the moved file is passed to the pipeline.   \n" 
 )
 public class DirectoryListener implements IPullingListener, INamedObject, HasPhysicalDestination {
 	protected Logger log = LogUtil.getLogger(this);

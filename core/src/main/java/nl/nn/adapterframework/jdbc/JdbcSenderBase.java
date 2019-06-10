@@ -37,7 +37,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * @since 	4.2.h
  */
 @IbisDescription(
-	"Base class for building JDBC-senders." 
+	"Base class for building JDBC-senders. \n" 
 )
 public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithParameters {
 

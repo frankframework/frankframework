@@ -26,9 +26,9 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @author John Dekker
  */
 @IbisDescription(
-	"Manager that decides the handlers based on the content of a field in the specified " + 
-	"position in a record. The fields in the record are separated by a separator." + 
-	"The value of the specified field is taken as key in the flow-table." 
+	"Manager that decides the handlers based on the content of a field in the specified  \n" + 
+	"position in a record. The fields in the record are separated by a separator. \n" + 
+	"The value of the specified field is taken as key in the flow-table. \n" 
 )
 public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 

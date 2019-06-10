@@ -51,28 +51,28 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Peter Leeuwenburgh
  */
 @IbisDescription(
-	"QuerySender that transforms the input message to a query." + 
-	"<br/><code><pre>" + 
-	" select" + 
-	" delete" + 
-	" insert" + 
-	" update - tableName" + 
-	"        - columns [0..1] - column [1..n] - name" + 
-	"                                         - value [0..1]" + 
-	"                                         - type [0..1] one of {string;function;number;datetime;blob;clob;xmldatetime}, string by default" + 
-	"                                         - decimalSeparator [0..1] only applicable for type=number" + 
-	"                                         - groupingSeparator [0..1] only applicable for type=number" + 
-	"                                         - formatString [0..1] only applicable for type=datetime, yyyy-MM-dd HH:mm:ss.SSS by default " + 
-	"        - where [0..1]" + 
-	"        - order [0..1]" + 
-	"<br/>" + 
-	" alter - sequenceName" + 
-	"       - startWith" + 
-	"<br/>" + 
-	" sql   - type [0..1] one of {select;ddl;other}, other by default" + 
-	"       - query" + 
-	"<br/>" + 
-	"</pre></code><br/>" 
+	"QuerySender that transforms the input message to a query. \n" + 
+	"<br/><code><pre> \n" + 
+	" select \n" + 
+	" delete \n" + 
+	" insert \n" + 
+	" update - tableName \n" + 
+	"        - columns [0..1] - column [1..n] - name \n" + 
+	"                                         - value [0..1] \n" + 
+	"                                         - type [0..1] one of {string;function;number;datetime;blob;clob;xmldatetime}, string by default \n" + 
+	"                                         - decimalSeparator [0..1] only applicable for type=number \n" + 
+	"                                         - groupingSeparator [0..1] only applicable for type=number \n" + 
+	"                                         - formatString [0..1] only applicable for type=datetime, yyyy-MM-dd HH:mm:ss.SSS by default  \n" + 
+	"        - where [0..1] \n" + 
+	"        - order [0..1] \n" + 
+	"<br/> \n" + 
+	" alter - sequenceName \n" + 
+	"       - startWith \n" + 
+	"<br/> \n" + 
+	" sql   - type [0..1] one of {select;ddl;other}, other by default \n" + 
+	"       - query \n" + 
+	"<br/> \n" + 
+	"</pre></code><br/> \n" 
 )
 public class XmlQuerySender extends JdbcQuerySenderBase {
 

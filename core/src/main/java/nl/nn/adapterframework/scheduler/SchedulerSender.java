@@ -36,8 +36,8 @@ import static org.quartz.JobBuilder.*;
  * @author John Dekker
  */
 @IbisDescription(
-	"Registers a trigger in the scheduler so that the message is send to a javalistener" + 
-	"at a scheduled time." 
+	"Registers a trigger in the scheduler so that the message is send to a javalistener \n" + 
+	"at a scheduled time. \n" 
 )
 public class SchedulerSender extends SenderWithParametersBase {
 	

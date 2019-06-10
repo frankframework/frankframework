@@ -34,7 +34,7 @@ import org.apache.commons.lang.StringUtils;
  * @since   4.3
  */
 @IbisDescription(
-	"Selects an exitState, based on the content of a sessionkey." 
+	"Selects an exitState, based on the content of a sessionkey. \n" 
 )
 
 public class XmlIf extends AbstractPipe {

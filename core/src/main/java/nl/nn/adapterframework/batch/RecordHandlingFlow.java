@@ -30,9 +30,9 @@ import org.apache.log4j.Logger;
  * @author  John Dekker
  */
 @IbisDescription(
-	"The flow contains the handlers to handle records of a specific type. " + 
-	"Each flow is registered to a manager using the recordHandlerManagerRef." + 
-	" " 
+	"The flow contains the handlers to handle records of a specific type.  \n" + 
+	"Each flow is registered to a manager using the recordHandlerManagerRef. \n" + 
+	"  \n" 
 )
 public final class RecordHandlingFlow {
 	protected Logger log = LogUtil.getLogger(this);

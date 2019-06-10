@@ -33,8 +33,8 @@ import org.apache.log4j.Logger;
  * @since   4.11
  */
 @IbisDescription(
-	"Baseclass for caching." + 
-	"Provides key transformation functionality." 
+	"Baseclass for caching. \n" + 
+	"Provides key transformation functionality. \n" 
 )
 public abstract class CacheAdapterBase implements ICacheAdapter {
 	protected Logger log = LogUtil.getLogger(this);

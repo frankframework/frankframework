@@ -35,15 +35,15 @@ import org.apache.commons.digester.xmlrules.DigesterLoader;
  * @since 4.0.1 : adjustments to support multi-threading
  */
 @IbisDescription(
-	"Converts an XML string (input) to a set of java objects using the" + 
-	"<a href=\"http://jakarta.apache.org/commons/digester\">digester</a>." + 
-	"<p>The result is an anonymous object. Your digester-rules file should specify" + 
-	"how the xml file is parsed, and what the root object will be.</p>" + 
-	"<p><b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>state</th><th>condition</th></tr>" + 
-	"<tr><td>\"success\"</td><td>default</td></tr>" + 
-	"</table></p>" 
+	"Converts an XML string (input) to a set of java objects using the \n" + 
+	"<a href=\"http://jakarta.apache.org/commons/digester\">digester</a>. \n" + 
+	"<p>The result is an anonymous object. Your digester-rules file should specify \n" + 
+	"how the xml file is parsed, and what the root object will be.</p> \n" + 
+	"<p><b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>state</th><th>condition</th></tr> \n" + 
+	"<tr><td>\"success\"</td><td>default</td></tr> \n" + 
+	"</table></p> \n" 
 )
 
 public class DigesterPipe extends FixedForwardPipe {

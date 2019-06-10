@@ -48,9 +48,9 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 @IbisDescription(
-	"File {@link IPullingListener listener} that looks in a directory for files according to a wildcard. When a file is" + 
-	"found, it is read in a String object and parsed to records. " + 
-	"After reading the file, the file is renamed and moved to a directory." 
+	"File {@link IPullingListener listener} that looks in a directory for files according to a wildcard. When a file is \n" + 
+	"found, it is read in a String object and parsed to records.  \n" + 
+	"After reading the file, the file is renamed and moved to a directory. \n" 
 )
 public class FileRecordListener implements IPullingListener, INamedObject {
 	protected Logger log = LogUtil.getLogger(this);

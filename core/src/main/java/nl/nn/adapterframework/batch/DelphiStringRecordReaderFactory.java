@@ -30,7 +30,7 @@ import nl.nn.adapterframework.doc.IbisDescription;
  * @since   4.10  
  */
 @IbisDescription(
-	"{@link IInputStreamReaderFactory} that provides a reader that reads Delphi records containing Strings." 
+	"{@link IInputStreamReaderFactory} that provides a reader that reads Delphi records containing Strings. \n" 
 )
 public class DelphiStringRecordReaderFactory implements IInputStreamReaderFactory {
 

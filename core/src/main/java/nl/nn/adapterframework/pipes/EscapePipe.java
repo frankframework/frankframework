@@ -28,14 +28,14 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Peter Leeuwenburgh
  */
 @IbisDescription(
-	"Pipe that performs translations between special characters and their xml equivalents." + 
-	"<p>When direction=cdata2text all cdata nodes are converted to text nodes without any other translations.</p>" + 
-	"<p><b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>state</th><th>condition</th></tr>" + 
-	"<tr><td>\"success\"</td><td>default</td></tr>" + 
-	"</table>" + 
-	"</p>" 
+	"Pipe that performs translations between special characters and their xml equivalents. \n" + 
+	"<p>When direction=cdata2text all cdata nodes are converted to text nodes without any other translations.</p> \n" + 
+	"<p><b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>state</th><th>condition</th></tr> \n" + 
+	"<tr><td>\"success\"</td><td>default</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 public class EscapePipe extends FixedForwardPipe {
 

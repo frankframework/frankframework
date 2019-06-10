@@ -31,13 +31,13 @@ import nl.nn.adapterframework.doc.IbisDescription;
  * @since   4.8
  */
 @IbisDescription(
-	"Selects an exitState, based on the last (filename) part of the path that is the input." + 
-	"<p><b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>state</th><th>condition</th></tr>" + 
-	"<tr><td>&lt;filenname part of the path&gt;</td><td>default</td></tr>" + 
-	"</table>" + 
-	"</p>" 
+	"Selects an exitState, based on the last (filename) part of the path that is the input. \n" + 
+	"<p><b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>state</th><th>condition</th></tr> \n" + 
+	"<tr><td>&lt;filenname part of the path&gt;</td><td>default</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 public class FilenameSwitch extends AbstractPipe {
 	

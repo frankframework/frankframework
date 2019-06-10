@@ -35,7 +35,7 @@ import org.apache.commons.lang.SystemUtils;
  * @since   4.3
  */
 @IbisDescription(
-	"ErrorMessageFormatter that returns a fixed message with replacements." 
+	"ErrorMessageFormatter that returns a fixed message with replacements. \n" 
 )
 public class FixedErrorMessage extends ErrorMessageFormatter {
 	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();

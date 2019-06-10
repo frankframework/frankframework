@@ -37,7 +37,7 @@ import nl.nn.adapterframework.core.SenderException;
  * @since   4.1
  */
 @IbisDescription(
-	"JMS implementation of <code>ITransactionalStorage</code>." 
+	"JMS implementation of <code>ITransactionalStorage</code>. \n" 
 )
 public class JmsTransactionalStorage extends JmsMessageBrowser implements ITransactionalStorage {
 

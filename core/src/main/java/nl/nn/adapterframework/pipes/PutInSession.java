@@ -27,16 +27,16 @@ import nl.nn.adapterframework.doc.IbisDescription;
  * @author Johan Verrips
  */
 @IbisDescription(
-	"Puts the input in the PipeLineSession, under the key specified by" + 
-	"<code>{@link #setSessionKey(String) sessionKey}</code>." + 
-	"<p><b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>state</th><th>condition</th></tr>" + 
-	"<tr><td>\"success\"</td><td>default</td></tr>" + 
-	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>" + 
-	"</table>" + 
-	"</p>" + 
-	"@see IPipeLineSession" 
+	"Puts the input in the PipeLineSession, under the key specified by \n" + 
+	"<code>{@link #setSessionKey(String) sessionKey}</code>. \n" + 
+	"<p><b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>state</th><th>condition</th></tr> \n" + 
+	"<tr><td>\"success\"</td><td>default</td></tr> \n" + 
+	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" + 
+	"@see IPipeLineSession \n" 
 )
 public class PutInSession extends FixedForwardPipe {
 	

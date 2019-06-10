@@ -47,47 +47,47 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Gerrit van Brakel
  */
 @IbisDescription(
-	"Assumes input to be the file name of a ZIP archive, and unzips it to a" + 
-	"directory and/or an XML message." + 
-	"<br>" + 
-	"The output of each unzipped item is returned in XML as follows when" + 
-	"collectFileContents is false:" + 
-	"<pre>" + 
-	" &lt;results count=\"num_of_items\"&gt;" + 
-	"   &lt;result item=\"1\"&gt;" + 
-	"     &lt;zipEntry&gt;name in ZIP archive of first item&lt;/zipEntry&gt;" + 
-	"     &lt;fileName&gt;filename of first item&lt;/fileName&gt;" + 
-	"   &lt;/result&gt;" + 
-	"   &lt;result item=\"2\"&gt;" + 
-	"     &lt;zipEntry&gt;name in ZIP archive of second item&lt;/zipEntry&gt;" + 
-	"     &lt;fileName&gt;filename of second item&lt;/fileName&gt;" + 
-	"   &lt;/result&gt;" + 
-	"      ..." + 
-	" &lt;/results&gt;" + 
-	"</pre>" + 
-	"<br>" + 
-	"The output of each unzipped item is returned in XML as follows when" + 
-	"collectFileContents is true:" + 
-	"<pre>" + 
-	" &lt;results count=\"num_of_items\"&gt;" + 
-	"   &lt;result item=\"1\"&gt;" + 
-	"     &lt;zipEntry&gt;name in ZIP archive of first item&lt;/zipEntry&gt;" + 
-	"     &lt;fileContent&gt;content of first item&lt;/fileContent&gt;" + 
-	"   &lt;/result&gt;" + 
-	"   &lt;result item=\"2\"&gt;" + 
-	"     &lt;zipEntry&gt;name in ZIP archive of second item&lt;/zipEntry&gt;" + 
-	"     &lt;fileContent&gt;content of second item&lt;/fileContent&gt;" + 
-	"   &lt;/result&gt;" + 
-	"      ..." + 
-	" &lt;/results&gt;" + 
-	"</pre>" + 
-	"<p><b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>state</th><th>condition</th></tr>" + 
-	"<tr><td>\"success\"</td><td>default</td></tr>" + 
-	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>" + 
-	"</table>" + 
-	"</p>" 
+	"Assumes input to be the file name of a ZIP archive, and unzips it to a \n" + 
+	"directory and/or an XML message. \n" + 
+	"<br> \n" + 
+	"The output of each unzipped item is returned in XML as follows when \n" + 
+	"collectFileContents is false: \n" + 
+	"<pre> \n" + 
+	" &lt;results count=\"num_of_items\"&gt; \n" + 
+	"   &lt;result item=\"1\"&gt; \n" + 
+	"     &lt;zipEntry&gt;name in ZIP archive of first item&lt;/zipEntry&gt; \n" + 
+	"     &lt;fileName&gt;filename of first item&lt;/fileName&gt; \n" + 
+	"   &lt;/result&gt; \n" + 
+	"   &lt;result item=\"2\"&gt; \n" + 
+	"     &lt;zipEntry&gt;name in ZIP archive of second item&lt;/zipEntry&gt; \n" + 
+	"     &lt;fileName&gt;filename of second item&lt;/fileName&gt; \n" + 
+	"   &lt;/result&gt; \n" + 
+	"      ... \n" + 
+	" &lt;/results&gt; \n" + 
+	"</pre> \n" + 
+	"<br> \n" + 
+	"The output of each unzipped item is returned in XML as follows when \n" + 
+	"collectFileContents is true: \n" + 
+	"<pre> \n" + 
+	" &lt;results count=\"num_of_items\"&gt; \n" + 
+	"   &lt;result item=\"1\"&gt; \n" + 
+	"     &lt;zipEntry&gt;name in ZIP archive of first item&lt;/zipEntry&gt; \n" + 
+	"     &lt;fileContent&gt;content of first item&lt;/fileContent&gt; \n" + 
+	"   &lt;/result&gt; \n" + 
+	"   &lt;result item=\"2\"&gt; \n" + 
+	"     &lt;zipEntry&gt;name in ZIP archive of second item&lt;/zipEntry&gt; \n" + 
+	"     &lt;fileContent&gt;content of second item&lt;/fileContent&gt; \n" + 
+	"   &lt;/result&gt; \n" + 
+	"      ... \n" + 
+	" &lt;/results&gt; \n" + 
+	"</pre> \n" + 
+	"<p><b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>state</th><th>condition</th></tr> \n" + 
+	"<tr><td>\"success\"</td><td>default</td></tr> \n" + 
+	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 public class UnzipPipe extends FixedForwardPipe {
 	

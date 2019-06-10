@@ -40,38 +40,38 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author Tom van der Heijden
  */
 @IbisDescription(
-	"Pipe that reads a CRL from an input stream and transforms it to an XML." + 
-	"The steam is closed after reading." + 
-	"Example configuration:" + 
-	"<code><pre>" + 
-	"pipe" + 
-	"name=\"Read issuer\"" + 
-	"className=\"nl.nn.adapterframework.pipes.FilePipe\"" + 
-	"actions=\"read\"" + 
-	"fileName=\"dir/issuer.cer\"" + 
-	"preserveInput=\"true\"" + 
-	"outputType=\"stream\"" + 
-	"storeResultInSessionKey=\"issuer\"" + 
-	">" + 
-	"<forward name=\"success\" path=\"Read CRL\" />" + 
-	"/pipe>" + 
-	"pipe" + 
-	"name=\"Read CRL\"" + 
-	"className=\"nl.nn.adapterframework.pipes.FilePipe\"" + 
-	"actions=\"read\"" + 
-	"fileName=\"dir/CRL.crl\"" + 
-	"outputType=\"stream\"" + 
-	">" + 
-	"<forward name=\"success\" path=\"Transform CRL\" />" + 
-	"/pipe>" + 
-	"pipe" + 
-	"name=\"Transform CRL\"" + 
-	"className=\"nl.nn.adapterframework.pipes.CrlPipe\"" + 
-	"issuerSessionKey=\"issuer\"" + 
-	">" + 
-	"<forward name=\"success\" path=\"EXIT\" />" + 
-	"/pipe>" + 
-	"</pre></code>" 
+	"Pipe that reads a CRL from an input stream and transforms it to an XML. \n" + 
+	"The steam is closed after reading. \n" + 
+	"Example configuration: \n" + 
+	"<code><pre> \n" + 
+	"pipe \n" + 
+	"name=\"Read issuer\" \n" + 
+	"className=\"nl.nn.adapterframework.pipes.FilePipe\" \n" + 
+	"actions=\"read\" \n" + 
+	"fileName=\"dir/issuer.cer\" \n" + 
+	"preserveInput=\"true\" \n" + 
+	"outputType=\"stream\" \n" + 
+	"storeResultInSessionKey=\"issuer\" \n" + 
+	"> \n" + 
+	"<forward name=\"success\" path=\"Read CRL\" /> \n" + 
+	"/pipe> \n" + 
+	"pipe \n" + 
+	"name=\"Read CRL\" \n" + 
+	"className=\"nl.nn.adapterframework.pipes.FilePipe\" \n" + 
+	"actions=\"read\" \n" + 
+	"fileName=\"dir/CRL.crl\" \n" + 
+	"outputType=\"stream\" \n" + 
+	"> \n" + 
+	"<forward name=\"success\" path=\"Transform CRL\" /> \n" + 
+	"/pipe> \n" + 
+	"pipe \n" + 
+	"name=\"Transform CRL\" \n" + 
+	"className=\"nl.nn.adapterframework.pipes.CrlPipe\" \n" + 
+	"issuerSessionKey=\"issuer\" \n" + 
+	"> \n" + 
+	"<forward name=\"success\" path=\"EXIT\" /> \n" + 
+	"/pipe> \n" + 
+	"</pre></code> \n" 
 )
 public class CrlPipe extends FixedForwardPipe {
 	private String issuerSessionKey;

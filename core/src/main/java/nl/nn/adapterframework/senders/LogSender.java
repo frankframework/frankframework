@@ -35,7 +35,7 @@ import org.apache.log4j.Level;
  * @since  4.9
  */
 @IbisDescription(
-	"Sender that just logs its message." 
+	"Sender that just logs its message. \n" 
 )
 public class LogSender extends SenderWithParametersBase implements IParameterHandler {
 	private String logLevel="info";

@@ -40,14 +40,14 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
  * @author Peter Leeuwenburgh
  */
 @IbisDescription(
-	"Extension to FixedForwardPipe for interrupting processing when timeout is exceeded." + 
-	"<p>" + 
-	"<table border=\"1\">" + 
-	"<b>Parameters:</b>" + 
-	"<tr><th>name</th><th>type</th><th>remarks</th></tr>" + 
-	"<tr><td>timeout</td><td>int</td><td>When a parameter with name timeout is present, it is used instead of the timeout specified by the attribute</td></tr>" + 
-	"</table>" + 
-	"</p>" 
+	"Extension to FixedForwardPipe for interrupting processing when timeout is exceeded. \n" + 
+	"<p> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<b>Parameters:</b> \n" + 
+	"<tr><th>name</th><th>type</th><th>remarks</th></tr> \n" + 
+	"<tr><td>timeout</td><td>int</td><td>When a parameter with name timeout is present, it is used instead of the timeout specified by the attribute</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 
 public class TimeoutGuardPipe extends FixedForwardPipe {

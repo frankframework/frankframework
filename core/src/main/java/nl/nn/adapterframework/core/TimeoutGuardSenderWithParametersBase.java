@@ -34,8 +34,8 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * @author Peter Leeuwenburgh
  */
 @IbisDescription(
-	"Extension to SenderWithParametersBase for interrupting processing when" + 
-	"timeout is exceeded." 
+	"Extension to SenderWithParametersBase for interrupting processing when \n" + 
+	"timeout is exceeded. \n" 
 )
 public class TimeoutGuardSenderWithParametersBase extends
 		SenderWithParametersBase {

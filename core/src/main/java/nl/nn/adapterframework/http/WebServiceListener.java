@@ -48,8 +48,8 @@ import org.apache.cxf.jaxws.EndpointImpl;
  * @author Niels Meijer
  */
 @IbisDescription(
-	"Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}" + 
-	"to receive messages as a web-service." 
+	"Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver} \n" + 
+	"to receive messages as a web-service. \n" 
 )
 public class WebServiceListener extends PushingListenerAdapter implements Serializable, HasPhysicalDestination, HasSpecialDefaultValues {
 

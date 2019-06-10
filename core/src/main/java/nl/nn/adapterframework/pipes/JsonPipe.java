@@ -37,26 +37,26 @@ import org.json.XML;
  * @author Tom van der Heijden
  */
 @IbisDescription(
-	"Perform an JSON to XML transformation" + 
-	"<p>" + 
-	"<b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr>" + 
-	"<th>state</th>" + 
-	"<th>condition</th>" + 
-	"</tr>" + 
-	"<tr>" + 
-	"<td>\"success\"</td>" + 
-	"<td>default</td>" + 
-	"</tr>" + 
-	"<tr>" + 
-	"<td>" + 
-	"<i>{@link #setForwardName(String) forwardName}</i>" + 
-	"</td>" + 
-	"<td>if specified</td>" + 
-	"</tr>" + 
-	"</table>" + 
-	"</p>" 
+	"Perform an JSON to XML transformation \n" + 
+	"<p> \n" + 
+	"<b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr> \n" + 
+	"<th>state</th> \n" + 
+	"<th>condition</th> \n" + 
+	"</tr> \n" + 
+	"<tr> \n" + 
+	"<td>\"success\"</td> \n" + 
+	"<td>default</td> \n" + 
+	"</tr> \n" + 
+	"<tr> \n" + 
+	"<td> \n" + 
+	"<i>{@link #setForwardName(String) forwardName}</i> \n" + 
+	"</td> \n" + 
+	"<td>if specified</td> \n" + 
+	"</tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 
 public class JsonPipe extends FixedForwardPipe {

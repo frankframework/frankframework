@@ -28,7 +28,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * @since   4.7
  */
 @IbisDescription(
-	"Database Listener that operates on a table having at least a key and a status field." 
+	"Database Listener that operates on a table having at least a key and a status field. \n" 
 )
 public class JdbcQueryListener extends JdbcListener {
 

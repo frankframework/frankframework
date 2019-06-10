@@ -44,11 +44,11 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @since   4.9
  */
 @IbisDescription(
-	"Perform an XSLT transformation with a specified stylesheet or XPath-expression." +
-	"<tr><th>nested elements</th><th>description</th></tr>" +
-	"<tr><td>{@link Parameter param}</td><td>any parameters defined on the sender will be applied to the created transformer</td></tr>" +
-	"</table>" +
-	"</p>"
+	"Perform an XSLT transformation with a specified stylesheet or XPath-expression. \n" +
+	"<tr><th>nested elements</th><th>description</th></tr> \n" +
+	"<tr><td>{@link Parameter param}</td><td>any parameters defined on the sender will be applied to the created transformer</td></tr> \n" +
+	"</table> \n" +
+	"</p> \n"
 )
 public class XsltSender extends SenderWithParametersBase {
 

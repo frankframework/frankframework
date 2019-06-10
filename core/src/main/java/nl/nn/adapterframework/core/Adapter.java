@@ -58,30 +58,30 @@ import org.springframework.core.task.TaskExecutor;
  * @author Johan Verrips
  */
 @IbisDescription(
-	"The Adapter is the central manager in the IBIS Adapterframework, that has knowledge" + 
-	"and uses {@link IReceiver IReceivers} and a {@link PipeLine}." + 
-	"<b>responsibility</b><br/>" + 
-	"<ul>" + 
-	"  <li>keeping and gathering statistics</li>" + 
-	"  <li>processing messages, retrieved from IReceivers</li>" + 
-	"  <li>starting and stoppping IReceivers</li>" + 
-	"  <li>delivering error messages in a specified format</li>" + 
-	"</ul>" + 
-	"All messages from IReceivers pass through the adapter (multi threaded)." + 
-	"Multiple receivers may be attached to one adapter.<br/>" + 
-	"<br/>" + 
-	"The actual processing of messages is delegated to the {@link PipeLine}" + 
-	"object, which returns a {@link PipeLineResult}. If an error occurs during" + 
-	"the pipeline execution, the state in the <code>PipeLineResult</code> is set" + 
-	"to the state specified by <code>setErrorState</code>, which defaults to \"ERROR\"." + 
-	"<tr><td>{@link #setReplaceNullMessage(boolean) replaceNullMessage}</td><td>when <code>true</code> a null message is replaced by an empty message</td><td>false</td></tr>" + 
-	"</table>" + 
-	"@see    IReceiver" + 
-	"@see    PipeLine" + 
-	"@see    StatisticsKeeper" + 
-	"@see    DateUtils" + 
-	"@see    MessageKeeper" + 
-	"@see    PipeLineResult" 
+	"The Adapter is the central manager in the IBIS Adapterframework, that has knowledge \n" + 
+	"and uses {@link IReceiver IReceivers} and a {@link PipeLine}. \n" + 
+	"<b>responsibility</b><br/> \n" + 
+	"<ul> \n" + 
+	"  <li>keeping and gathering statistics</li> \n" + 
+	"  <li>processing messages, retrieved from IReceivers</li> \n" + 
+	"  <li>starting and stoppping IReceivers</li> \n" + 
+	"  <li>delivering error messages in a specified format</li> \n" + 
+	"</ul> \n" + 
+	"All messages from IReceivers pass through the adapter (multi threaded). \n" + 
+	"Multiple receivers may be attached to one adapter.<br/> \n" + 
+	"<br/> \n" + 
+	"The actual processing of messages is delegated to the {@link PipeLine} \n" + 
+	"object, which returns a {@link PipeLineResult}. If an error occurs during \n" + 
+	"the pipeline execution, the state in the <code>PipeLineResult</code> is set \n" + 
+	"to the state specified by <code>setErrorState</code>, which defaults to \"ERROR\". \n" + 
+	"<tr><td>{@link #setReplaceNullMessage(boolean) replaceNullMessage}</td><td>when <code>true</code> a null message is replaced by an empty message</td><td>false</td></tr> \n" + 
+	"</table> \n" + 
+	"@see    IReceiver \n" + 
+	"@see    PipeLine \n" + 
+	"@see    StatisticsKeeper \n" + 
+	"@see    DateUtils \n" + 
+	"@see    MessageKeeper \n" + 
+	"@see    PipeLineResult \n" 
 )
 public class Adapter implements IAdapter, NamedBean {
 	private Logger log = LogUtil.getLogger(this);

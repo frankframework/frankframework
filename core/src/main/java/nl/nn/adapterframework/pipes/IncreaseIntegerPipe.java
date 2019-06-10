@@ -29,19 +29,19 @@ import org.apache.commons.lang.StringUtils;
  * @author Richard Punt / Gerrit van Brakel
  */
 @IbisDescription(
-	"Pipe that increases the integer values of a session variable." + 
-	"Used to in combination with {@link CompareIntegerPipe} to contstruct loops." + 
-	"<tr><td>{@link #setSessionKey(String) sessionKey}</td><td>reference to the session variable whose value is to be increased</td><td></td></tr>" + 
-	"<tr><td>{@link #setIncrement(int) increment}</td><td>amount to increment the value</td><td>1</td></tr>" + 
-	"</table>" + 
-	"</p>" + 
-	"<p><b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>state</th><th>condition</th></tr>" + 
-	"<tr><td>\"success\"</td><td>default</td></tr>" + 
-	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>" + 
-	"</table>" + 
-	"</p>" 
+	"Pipe that increases the integer values of a session variable. \n" + 
+	"Used to in combination with {@link CompareIntegerPipe} to contstruct loops. \n" + 
+	"<tr><td>{@link #setSessionKey(String) sessionKey}</td><td>reference to the session variable whose value is to be increased</td><td></td></tr> \n" + 
+	"<tr><td>{@link #setIncrement(int) increment}</td><td>amount to increment the value</td><td>1</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" + 
+	"<p><b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>state</th><th>condition</th></tr> \n" + 
+	"<tr><td>\"success\"</td><td>default</td></tr> \n" + 
+	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 public class IncreaseIntegerPipe extends FixedForwardPipe {
 

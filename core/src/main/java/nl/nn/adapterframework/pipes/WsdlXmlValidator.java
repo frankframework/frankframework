@@ -58,8 +58,8 @@ import javax.xml.namespace.QName;
  * @author Jaco de Groot
  */
 @IbisDescription(
-	"XmlValidator that will read the XSD's to use from a WSDL. As it extends the" + 
-	"SoapValidator is will also add the SOAP envelope XSD." 
+	"XmlValidator that will read the XSD's to use from a WSDL. As it extends the \n" + 
+	"SoapValidator is will also add the SOAP envelope XSD. \n" 
 )
 public class WsdlXmlValidator extends SoapValidator {
 	private static final Logger LOG = LogUtil.getLogger(WsdlXmlValidator.class);

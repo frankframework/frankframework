@@ -40,9 +40,9 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * @author  John Dekker
  */
 @IbisDescription(
-	"Listener that polls a directory via FTP for files according to a wildcard. " + 
-	"When a file is found, it is moved to an outputdirectory, so that it isn't found more then once.  " + 
-	"The name of the moved file is passed to the pipeline.  " 
+	"Listener that polls a directory via FTP for files according to a wildcard.  \n" + 
+	"When a file is found, it is moved to an outputdirectory, so that it isn't found more then once.   \n" + 
+	"The name of the moved file is passed to the pipeline.   \n" 
 )
 public class FtpListener extends FtpSession implements IPullingListener, INamedObject, RunStateEnquiring {
 

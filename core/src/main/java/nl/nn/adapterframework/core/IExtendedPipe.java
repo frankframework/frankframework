@@ -26,13 +26,13 @@ import nl.nn.adapterframework.util.Locker;
  * @since   4.3
  */
 @IbisDescription(
-	"extra attributes to do logging and use sessionvariables." + 
-	"<p>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>nested elements</th><th>description</th></tr>" + 
-	"<tr><td>{@link Locker locker}</td><td>optional: the pipe will only be executed if a lock could be set successfully</td></tr>" + 
-	"</table>" + 
-	"</p>" 
+	"extra attributes to do logging and use sessionvariables. \n" + 
+	"<p> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>nested elements</th><th>description</th></tr> \n" + 
+	"<tr><td>{@link Locker locker}</td><td>optional: the pipe will only be executed if a lock could be set successfully</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 public interface IExtendedPipe extends IPipe {
 

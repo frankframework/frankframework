@@ -47,23 +47,23 @@ import org.apache.commons.lang.StringUtils;
  * @since   4.9.10
  */
 @IbisDescription(
-	"Sends a message to a Sender for each entry of its input, that must be an ZipInputStream. The input of the pipe must be one of:" + 
-	"<ul>" + 
-	"	<li>String refering to a filename</li>" + 
-	" <li>File</li>" + 
-	" <li>InputStream</li> " + 
-	"</ul>" + 
-	"The message sent each time to the sender is the filename of the entry found in the archive. " + 
-	"The contents of the archive is available as a Stream or a String in a session variable. " + 
-	"<table border=\"1\">" + 
-	"<tr><th>nested elements</th><th>description</th></tr>" + 
-	"<tr><td>{@link nl.nn.adapterframework.core.ISender sender}</td><td>specification of sender to send messages with</td></tr>" + 
-	"<tr><td>{@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}</td><td>specification of listener to listen to for replies</td></tr>" + 
-	"<tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be handed to the sender, if this is a {@link nl.nn.adapterframework.core.ISenderWithParameters ISenderWithParameters}</td></tr>" + 
-	"</table>" + 
-	"</p>" + 
-	"For more configuration options, see {@link MessageSendingPipe}." + 
-	"<br>" 
+	"Sends a message to a Sender for each entry of its input, that must be an ZipInputStream. The input of the pipe must be one of: \n" + 
+	"<ul> \n" + 
+	"	<li>String refering to a filename</li> \n" + 
+	" <li>File</li> \n" + 
+	" <li>InputStream</li>  \n" + 
+	"</ul> \n" + 
+	"The message sent each time to the sender is the filename of the entry found in the archive.  \n" + 
+	"The contents of the archive is available as a Stream or a String in a session variable.  \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>nested elements</th><th>description</th></tr> \n" + 
+	"<tr><td>{@link nl.nn.adapterframework.core.ISender sender}</td><td>specification of sender to send messages with</td></tr> \n" + 
+	"<tr><td>{@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}</td><td>specification of listener to listen to for replies</td></tr> \n" + 
+	"<tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be handed to the sender, if this is a {@link nl.nn.adapterframework.core.ISenderWithParameters ISenderWithParameters}</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" + 
+	"For more configuration options, see {@link MessageSendingPipe}. \n" + 
+	"<br> \n" 
 )
 public class ZipIteratorPipe extends IteratingPipe {
 

@@ -31,7 +31,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @since   4.9
  */
 @IbisDescription(
-	"Baseclass for senders." 
+	"Baseclass for senders. \n" 
 )
 public abstract class SenderBase implements ISender {
 	protected Logger log = LogUtil.getLogger(this);

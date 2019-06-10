@@ -66,86 +66,86 @@ import org.w3c.dom.Node;
  * @author Johan Verrips/Gerrit van Brakel
  */
 @IbisDescription(
-	"{@link nl.nn.adapterframework.core.ISender sender} that sends a mail specified by an XML message." + 
-	"<p>" + 
-	"Sample email.xml:" + 
-	"<code><pre>" + 
-	"   &lt;email&gt;" + 
-	"      &lt;recipients&gt;" + 
-	"         &lt;recipient type=\"to\"&gt;***@hotmail.com&lt;/recipient&gt;" + 
-	"         &lt;recipient type=\"cc\"&gt;***@gmail.com&lt;/recipient&gt;" + 
-	"      &lt;/recipients&gt;" + 
-	"      &lt;from&gt;***@yahoo.com&lt;/from&gt;" + 
-	"      &lt;subject&gt;This is the subject&lt;/subject&gt;" + 
-	"      &lt;threadTopic&gt;subject&lt;/threadTopic&gt;" + 
-	"      &lt;message&gt;This is the message&lt;/message&gt;" + 
-	"      &lt;messageType&gt;text/plain&lt;/messageType&gt;&lt;!-- Optional --&gt;" + 
-	"      &lt;messageBase64&gt;false&lt;/messageBase64&gt;&lt;!-- Optional --&gt;" + 
-	"      &lt;charset&gt;UTF-8&lt;/charset&gt;&lt;!-- Optional --&gt;" + 
-	"      &lt;attachments&gt;" + 
-	"         &lt;attachment name=\"filename1.txt\"&gt;This is the first attachment&lt;/attachment&gt;" + 
-	"         &lt;attachment name=\"filename2.pdf\" base64=\"true\"&gt;JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==&lt;/attachment&gt;" + 
-	"         &lt;attachment name=\"filename3.pdf\" url=\"file:/c:/filename3.pdf\"/&gt;" + 
-	"         &lt;attachment name=\"filename4.pdf\" sessionKey=\"fileContent\"/&gt;" + 
-	"      &lt;/attachments&gt;&lt;!-- Optional --&gt;" + 
-	"  &lt;/email&gt;" + 
-	"</pre></code>" + 
-	"<p>" + 
-	"Notice: the XML message must be valid XML. Therefore, especially the message element" + 
-	"must be plain text or be wrapped as CDATA. Example:" + 
-	"<code><pre>" + 
-	"   &lt;message&gt;&lt;![CDATA[&lt;h1&gt;This is a HtmlMessage&lt;/h1&gt;]]&gt;&lt;/message&gt;" + 
-	"</pre></code>" + 
-	"<p>" + 
-	"The <code>sessionKey</code> attribute for attachment can contain an inputstream or a string. Other types are not supported at this moment." + 
-	"<p>" + 
-	"The attribute order for attachments is as follows:" + 
-	"<ol>" + 
-	"   <li>sessionKey</li>" + 
-	"   <li>url</li>" + 
-	"   <li><i>value of the attachment element</i></li>" + 
-	"</ol>" + 
-	"<p>" + 
-	"The <code>base64</code> attribute is only used when the value of the PipeLineSession variable <code>sessionKey</code> is a String object" + 
-	"or when the value of the attachment element is used. If <code>base64=true</code> then the value will be decoded before it's used." + 
-	"<p>" + 
-	"<b>Configuration:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>attributes</th><th>description</th><th>default</th></tr>" + 
-	"<tr><td>{@link #setSmtpHost(String) smtpHost}</td><td>name of the host by which the messages are to be send</td><td>&nbsp;</td></tr>" + 
-	"<tr><td>{@link #setSmtpAuthAlias(String) smtpAuthAlias}</td><td>alias used to obtain credentials for authentication to smtpHost</td><td>&nbsp;</td></tr>" + 
-	"<tr><td>{@link #setSmtpUserid(String) smtpUserid}</td><td>userid on the smtpHost</td><td>&nbsp;</td></tr>" + 
-	"<tr><td>{@link #setSmtpPassword(String) smtpPassword}</td><td>password of userid on the smtpHost</td><td>&nbsp;</td></tr>" + 
-	"<tr><td>{@link #setDefaultFrom(String) defaultFrom}</td><td>value of the From: header if not specified in message itself</td><td>&nbsp;</td></tr>" + 
-	"<tr><td>{@link #setDefaultSubject(String) defaultSubject}</td><td>value of the Subject: header if not specified in message itself</td><td>&nbsp;</td></tr>" + 
-	"<tr><td>{@link #setDefaultAttachmentName(String) defaultAttachmentName}</td><td>When this name is used, it will be followed by a number which is equal to the node's position</td><td>attachment</td></tr>" + 
-	"<tr><td>{@link #setTimeout(int) timeout}</td><td>timeout (in milliseconds). Used for socket connection timeout and socket I/O timeout</td><td>20000</td></tr>" + 
-	"</table>" + 
-	"<p>" + 
-	"<table border=\"1\">" + 
-	"<b>Parameters:</b>" + 
-	"<tr><th>name</th><th>type</th><th>remarks</th></tr>" + 
-	"<tr><td>from</td><td>string</td><td>email address of the sender</td></tr>" + 
-	"<tr><td>subject</td><td>string</td><td>subject field of the message</td></tr>" + 
-	"<tr><td>threadTopic</td><td>string</td><td>(optional) conversation field of the message, used to correlate mails in mail viewer (header field \"Thread-Topic\"). Note: subject must end with value of threadTopic, but cann't be exactly the same</td></tr>" + 
-	"<tr><td>message</td><td>string</td><td>message itself. If absent, the complete input message is assumed to be the message</td></tr>" + 
-	"<tr><td>messageType</td><td>string</td><td>message MIME type (at this moment only available are text/plain and text/html - default: text/plain)</td></tr>" + 
-	"<tr><td>messageBase64</td><td>boolean</td><td>indicates whether the message content is base64 encoded (default: false)</td></tr>" + 
-	"<tr><td>charset</td><td>string</td><td>the character encoding (e.g. ISO-8859-1 or UTF-8) used to send the email (default: value of system property mail.mime.charset, when not present the value of system property file.encoding)</td></tr>" + 
-	"<tr><td>recipients</td><td>xml</td><td>recipients of the message. must result in a structure like: <code><pre>" + 
-	"      &lt;recipient type=\"to\"&gt;***@hotmail.com&lt;/recipient&gt;" + 
-	"      &lt;recipient type=\"cc\"&gt;***@gmail.com&lt;/recipient&gt;" + 
-	"</pre></code></td></tr>" + 
-	"<tr><td>attachments</td><td>xml</td><td>attachments to the message. must result in a structure like: <code><pre>" + 
-	"      &lt;attachment name=\"filename1.txt\"&gt;This is the first attachment&lt;/attachment&gt;" + 
-	"      &lt;attachment name=\"filename2.pdf\" base64=\"true\"&gt;JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==&lt;/attachment&gt;" + 
-	"      &lt;attachment name=\"filename3.pdf\" url=\"file:/c:/filename3.pdf\"/&gt;" + 
-	"      &lt;attachment name=\"filename4.pdf\" sessionKey=\"fileContent\"/&gt;" + 
-	"</pre></code></td></tr>" + 
-	"</table>" + 
-	"<p>" + 
-	"<b>Compilation and Deployment Note:</b> mail.jar (v1.2) and activation.jar must appear BEFORE j2ee.jar." + 
-	"Otherwise errors like the following might occur: <code>NoClassDefFoundException: com/sun/mail/util/MailDateFormat</code> " 
+	"{@link nl.nn.adapterframework.core.ISender sender} that sends a mail specified by an XML message. \n" + 
+	"<p> \n" + 
+	"Sample email.xml: \n" + 
+	"<code><pre> \n" + 
+	"   &lt;email&gt; \n" + 
+	"      &lt;recipients&gt; \n" + 
+	"         &lt;recipient type=\"to\"&gt;***@hotmail.com&lt;/recipient&gt; \n" + 
+	"         &lt;recipient type=\"cc\"&gt;***@gmail.com&lt;/recipient&gt; \n" + 
+	"      &lt;/recipients&gt; \n" + 
+	"      &lt;from&gt;***@yahoo.com&lt;/from&gt; \n" + 
+	"      &lt;subject&gt;This is the subject&lt;/subject&gt; \n" + 
+	"      &lt;threadTopic&gt;subject&lt;/threadTopic&gt; \n" + 
+	"      &lt;message&gt;This is the message&lt;/message&gt; \n" + 
+	"      &lt;messageType&gt;text/plain&lt;/messageType&gt;&lt;!-- Optional --&gt; \n" + 
+	"      &lt;messageBase64&gt;false&lt;/messageBase64&gt;&lt;!-- Optional --&gt; \n" + 
+	"      &lt;charset&gt;UTF-8&lt;/charset&gt;&lt;!-- Optional --&gt; \n" + 
+	"      &lt;attachments&gt; \n" + 
+	"         &lt;attachment name=\"filename1.txt\"&gt;This is the first attachment&lt;/attachment&gt; \n" + 
+	"         &lt;attachment name=\"filename2.pdf\" base64=\"true\"&gt;JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==&lt;/attachment&gt; \n" + 
+	"         &lt;attachment name=\"filename3.pdf\" url=\"file:/c:/filename3.pdf\"/&gt; \n" + 
+	"         &lt;attachment name=\"filename4.pdf\" sessionKey=\"fileContent\"/&gt; \n" + 
+	"      &lt;/attachments&gt;&lt;!-- Optional --&gt; \n" + 
+	"  &lt;/email&gt; \n" + 
+	"</pre></code> \n" + 
+	"<p> \n" + 
+	"Notice: the XML message must be valid XML. Therefore, especially the message element \n" + 
+	"must be plain text or be wrapped as CDATA. Example: \n" + 
+	"<code><pre> \n" + 
+	"   &lt;message&gt;&lt;![CDATA[&lt;h1&gt;This is a HtmlMessage&lt;/h1&gt;]]&gt;&lt;/message&gt; \n" + 
+	"</pre></code> \n" + 
+	"<p> \n" + 
+	"The <code>sessionKey</code> attribute for attachment can contain an inputstream or a string. Other types are not supported at this moment. \n" + 
+	"<p> \n" + 
+	"The attribute order for attachments is as follows: \n" + 
+	"<ol> \n" + 
+	"   <li>sessionKey</li> \n" + 
+	"   <li>url</li> \n" + 
+	"   <li><i>value of the attachment element</i></li> \n" + 
+	"</ol> \n" + 
+	"<p> \n" + 
+	"The <code>base64</code> attribute is only used when the value of the PipeLineSession variable <code>sessionKey</code> is a String object \n" + 
+	"or when the value of the attachment element is used. If <code>base64=true</code> then the value will be decoded before it's used. \n" + 
+	"<p> \n" + 
+	"<b>Configuration:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>attributes</th><th>description</th><th>default</th></tr> \n" + 
+	"<tr><td>{@link #setSmtpHost(String) smtpHost}</td><td>name of the host by which the messages are to be send</td><td>&nbsp;</td></tr> \n" + 
+	"<tr><td>{@link #setSmtpAuthAlias(String) smtpAuthAlias}</td><td>alias used to obtain credentials for authentication to smtpHost</td><td>&nbsp;</td></tr> \n" + 
+	"<tr><td>{@link #setSmtpUserid(String) smtpUserid}</td><td>userid on the smtpHost</td><td>&nbsp;</td></tr> \n" + 
+	"<tr><td>{@link #setSmtpPassword(String) smtpPassword}</td><td>password of userid on the smtpHost</td><td>&nbsp;</td></tr> \n" + 
+	"<tr><td>{@link #setDefaultFrom(String) defaultFrom}</td><td>value of the From: header if not specified in message itself</td><td>&nbsp;</td></tr> \n" + 
+	"<tr><td>{@link #setDefaultSubject(String) defaultSubject}</td><td>value of the Subject: header if not specified in message itself</td><td>&nbsp;</td></tr> \n" + 
+	"<tr><td>{@link #setDefaultAttachmentName(String) defaultAttachmentName}</td><td>When this name is used, it will be followed by a number which is equal to the node's position</td><td>attachment</td></tr> \n" + 
+	"<tr><td>{@link #setTimeout(int) timeout}</td><td>timeout (in milliseconds). Used for socket connection timeout and socket I/O timeout</td><td>20000</td></tr> \n" + 
+	"</table> \n" + 
+	"<p> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<b>Parameters:</b> \n" + 
+	"<tr><th>name</th><th>type</th><th>remarks</th></tr> \n" + 
+	"<tr><td>from</td><td>string</td><td>email address of the sender</td></tr> \n" + 
+	"<tr><td>subject</td><td>string</td><td>subject field of the message</td></tr> \n" + 
+	"<tr><td>threadTopic</td><td>string</td><td>(optional) conversation field of the message, used to correlate mails in mail viewer (header field \"Thread-Topic\"). Note: subject must end with value of threadTopic, but cann't be exactly the same</td></tr> \n" + 
+	"<tr><td>message</td><td>string</td><td>message itself. If absent, the complete input message is assumed to be the message</td></tr> \n" + 
+	"<tr><td>messageType</td><td>string</td><td>message MIME type (at this moment only available are text/plain and text/html - default: text/plain)</td></tr> \n" + 
+	"<tr><td>messageBase64</td><td>boolean</td><td>indicates whether the message content is base64 encoded (default: false)</td></tr> \n" + 
+	"<tr><td>charset</td><td>string</td><td>the character encoding (e.g. ISO-8859-1 or UTF-8) used to send the email (default: value of system property mail.mime.charset, when not present the value of system property file.encoding)</td></tr> \n" + 
+	"<tr><td>recipients</td><td>xml</td><td>recipients of the message. must result in a structure like: <code><pre> \n" + 
+	"      &lt;recipient type=\"to\"&gt;***@hotmail.com&lt;/recipient&gt; \n" + 
+	"      &lt;recipient type=\"cc\"&gt;***@gmail.com&lt;/recipient&gt; \n" + 
+	"</pre></code></td></tr> \n" + 
+	"<tr><td>attachments</td><td>xml</td><td>attachments to the message. must result in a structure like: <code><pre> \n" + 
+	"      &lt;attachment name=\"filename1.txt\"&gt;This is the first attachment&lt;/attachment&gt; \n" + 
+	"      &lt;attachment name=\"filename2.pdf\" base64=\"true\"&gt;JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==&lt;/attachment&gt; \n" + 
+	"      &lt;attachment name=\"filename3.pdf\" url=\"file:/c:/filename3.pdf\"/&gt; \n" + 
+	"      &lt;attachment name=\"filename4.pdf\" sessionKey=\"fileContent\"/&gt; \n" + 
+	"</pre></code></td></tr> \n" + 
+	"</table> \n" + 
+	"<p> \n" + 
+	"<b>Compilation and Deployment Note:</b> mail.jar (v1.2) and activation.jar must appear BEFORE j2ee.jar. \n" + 
+	"Otherwise errors like the following might occur: <code>NoClassDefFoundException: com/sun/mail/util/MailDateFormat</code>  \n" 
 )
 
 public class MailSenderOld extends SenderWithParametersBase {

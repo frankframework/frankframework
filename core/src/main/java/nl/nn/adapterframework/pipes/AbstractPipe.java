@@ -58,41 +58,35 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author     Johan Verrips / Gerrit van Brakel
  */
 @IbisDescription(
-	"Base class for {@link IPipe Pipe}." + 
-	"A Pipe represents an action to take in a {@link PipeLine Pipeline}. This class is ment to be extended" + 
-	"for defining steps or actions to take to complete a request. <br/>" + 
-	"The contract is that a pipe is created (by the digester), {@link #setName(String)} is called and" + 
-	"other setters are called, and then {@link IPipe#configure()} is called, optionally" + 
-	"throwing a {@link ConfigurationException}. <br/>" + 
-	"As much as possible, class instantiating should take place in the" + 
-	"{@link IPipe#configure()} method." + 
-	"The object remains alive while the framework is running. When the pipe is to be run," + 
-	"the {@link IPipe#doPipe(Object, IPipeLineSession) doPipe} method is activated." + 
-	"<p>" + 
-	"For the duration of the processing of a message by the {@link PipeLine pipeline} has a {@link IPipeLineSession pipeLineSession}." + 
-	"<br/>" + 
-	"By this mechanism, pipes may communicate with one another.<br/>" + 
-	"However, use this functionality with caution, as it is not desirable to make pipes dependend" + 
-	"on each other. If a pipe expects something in a session, it is recommended that" + 
-	"the key under which the information is stored is configurable (has a setter for this keyname)." + 
-	"Also, the setting of something in the <code>PipeLineSession</code> should be done using" + 
-	"this technique (specifying the key under which to store the value by a parameter)." + 
-	"</p>" + 
-	"<p>Since 4.1 this class also has parameters, so that decendants of this class automatically are parameter-enabled." + 
-	"However, your documentation should say if and how parameters are used!<p>" + 
-	"<tr><td>{@link #setWriteToSecLog (boolean) writeToSecLog}</td><td>when set to <code>true</code> a record is written to the security log when the pipe has finished successfully</td><td>false</td></tr>" + 
-	"<tr><td>{@link #setSecLogSessionKeys(String) secLogSessionKeys}</td><td>(only used when <code>writeToSecLog=true</code>) comma separated list of keys of session variables that is appended to the security log record</td><td>&nbsp;</td></tr>" + 
-	"<tr><td>{@link #setLogIntermediaryResults (String) logIntermediaryResults}</td><td>when set, the value in AppConstants is overwritten (for this pipe only)</td><td>&nbsp;</td></tr>" + 
-	"<tr><td>{@link #setHideRegex(String) hideRegex}</td><td>Regular expression to mask strings in the log. For example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code> will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>Note:</b> this feature is used at adapter level, so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)</td><td>&nbsp;</td></tr>" + 
-	"</table>" + 
-	"</p>" + 
-	"<p>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>nested elements</th><th>description</th></tr>" + 
-	"<tr><td>{@link Locker locker}</td><td>optional: the pipe will only be executed if a lock could be set successfully</td></tr>" + 
-	"</table>" + 
-	"</p>" + 
-	"@see IPipeLineSession" 
+	"Base class for {@link IPipe Pipe}. \n" + 
+	"A Pipe represents an action to take in a {@link PipeLine Pipeline}. This class is ment to be extended \n" + 
+	"for defining steps or actions to take to complete a request. <br/> \n" + 
+	"The contract is that a pipe is created (by the digester), {@link #setName(String)} is called and \n" + 
+	"other setters are called, and then {@link IPipe#configure()} is called, optionally \n" + 
+	"throwing a {@link ConfigurationException}. <br/> \n" + 
+	"As much as possible, class instantiating should take place in the \n" + 
+	"{@link IPipe#configure()} method. \n" + 
+	"The object remains alive while the framework is running. When the pipe is to be run, \n" + 
+	"the {@link IPipe#doPipe(Object, IPipeLineSession) doPipe} method is activated. \n" + 
+	"<p> \n" + 
+	"For the duration of the processing of a message by the {@link PipeLine pipeline} has a {@link IPipeLineSession pipeLineSession}. \n" + 
+	"<br/> \n" + 
+	"By this mechanism, pipes may communicate with one another.<br/> \n" + 
+	"However, use this functionality with caution, as it is not desirable to make pipes dependend \n" + 
+	"on each other. If a pipe expects something in a session, it is recommended that \n" + 
+	"the key under which the information is stored is configurable (has a setter for this keyname). \n" + 
+	"Also, the setting of something in the <code>PipeLineSession</code> should be done using \n" + 
+	"this technique (specifying the key under which to store the value by a parameter). \n" + 
+	"</p> \n" + 
+	"<p> Since 4.1 this class also has parameters, so that decendants of this class automatically are parameter-enabled. \n" + 
+	"However, your documentation should say if and how parameters are used!</p> \n" + 
+	"<p> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>nested elements</th><th>description</th></tr> \n" + 
+	"<tr><td>{@link Locker locker}</td><td>optional: the pipe will only be executed if a lock could be set successfully</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" + 
+	"@see IPipeLineSession \n" 
 )
 public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, EventThrowing {
 	protected Logger log = LogUtil.getLogger(this);
@@ -634,6 +628,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return outSizeStatDummyObject;
 	}
 
+	@IbisDoc({"when set to <code>true</code> a record is written to the security log when the pipe has finished successfully", "false"})
 	@Override
 	public void setWriteToSecLog(boolean b) {
 		writeToSecLog = b;
@@ -657,6 +652,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		recoverAdapter = b;
 	}
 
+	@IbisDoc({"when set, the value in AppConstants is overwritten (for this pipe only)", ""})
 	public void setLogIntermediaryResults(String string) {
 		logIntermediaryResults = string;
 	}

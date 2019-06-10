@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @author	Niels Meijer
  */
 @IbisDescription(
-	"Pipe that hashes the imput" 
+	"Pipe that hashes the imput \n" 
 )
 public class HashPipe extends FixedForwardPipe {
 

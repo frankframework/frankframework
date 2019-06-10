@@ -32,19 +32,19 @@ import org.apache.commons.lang.StringUtils;
  * @author Jaco de Groot
  */
 @IbisDescription(
-	"Hash a password or validate a password against a hash using PasswordHash.java" + 
-	"from <a href=\"https://crackstation.net/hashing-security.htm\">https://crackstation.net/hashing-security.htm</a>." + 
-	"Input of the pipe is expected to be the password. In case hashSessionKey" + 
-	"isn't used a hash of the password is returned. In case hashSessionKey is used" + 
-	"it is validated against the hash in the session key which will determine" + 
-	"the forward to be used (success or failure)." + 
-	" " + 
-	"<b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>state</th><th>condition</th></tr>" + 
-	"<tr><td>\"success\"</td><td>default</td></tr>" + 
-	"<tr><td>\"failure\"</td><td>when hashSessionKey is used and password doesn't validate against the hash</td></tr>" + 
-	"</table>" 
+	"Hash a password or validate a password against a hash using PasswordHash.java \n" + 
+	"from <a href=\"https://crackstation.net/hashing-security.htm\">https://crackstation.net/hashing-security.htm</a>. \n" + 
+	"Input of the pipe is expected to be the password. In case hashSessionKey \n" + 
+	"isn't used a hash of the password is returned. In case hashSessionKey is used \n" + 
+	"it is validated against the hash in the session key which will determine \n" + 
+	"the forward to be used (success or failure). \n" + 
+	"  \n" + 
+	"<b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>state</th><th>condition</th></tr> \n" + 
+	"<tr><td>\"success\"</td><td>default</td></tr> \n" + 
+	"<tr><td>\"failure\"</td><td>when hashSessionKey is used and password doesn't validate against the hash</td></tr> \n" + 
+	"</table> \n" 
 )
 public class PasswordHashPipe extends FixedForwardPipe {
 	private static String FAILURE_FORWARD_NAME = "failure";

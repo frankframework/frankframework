@@ -29,10 +29,10 @@ import nl.nn.adapterframework.statistics.StatisticsKeeper;
  * @author  Peter Leeuwenburgh
  */
 @IbisDescription(
-	"Selects an exitState, based on the number of received messages by this pipe." + 
-	"The exitState is the difference (subtraction) between the <code>divisor</code> and" + 
-	"the remainder of [number of received messages] modulus <code>divisor</code>." + 
-	"This will always be an integer between 1 and <code>divisor</code>, inclusive." 
+	"Selects an exitState, based on the number of received messages by this pipe. \n" + 
+	"The exitState is the difference (subtraction) between the <code>divisor</code> and \n" + 
+	"the remainder of [number of received messages] modulus <code>divisor</code>. \n" + 
+	"This will always be an integer between 1 and <code>divisor</code>, inclusive. \n" 
 )
 
 public class CounterSwitchPipe extends FixedForwardPipe {

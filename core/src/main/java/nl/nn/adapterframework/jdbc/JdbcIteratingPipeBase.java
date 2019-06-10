@@ -42,7 +42,7 @@ import org.apache.commons.lang.StringUtils;
  * @since   4.7
  */
 @IbisDescription(
-	"Base class for JDBC iterating pipes." 
+	"Base class for JDBC iterating pipes. \n" 
 )
 public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 

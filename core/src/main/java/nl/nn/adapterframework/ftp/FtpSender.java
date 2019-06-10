@@ -29,8 +29,8 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * @author John Dekker
  */
 @IbisDescription(
-	"FTP client voor het versturen van files via FTP." + 
-	" " 
+	"FTP client voor het versturen van files via FTP. \n" + 
+	"  \n" 
 )
 public class FtpSender extends SenderWithParametersBase {
 

@@ -47,8 +47,8 @@ import org.apache.log4j.Logger;
  * @author  Gerrit van Brakel
  */
 @IbisDescription(
-	" *" + 
-	"The JavaListener listens to java requests." 
+	" * \n" + 
+	"The JavaListener listens to java requests. \n" 
 )
 public class JavaListener implements IPushingListener, RequestProcessor, HasPhysicalDestination {
 	protected Logger log = LogUtil.getLogger(this);

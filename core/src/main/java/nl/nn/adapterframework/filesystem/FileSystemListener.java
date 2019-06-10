@@ -41,9 +41,9 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @author Gerrit van Brakel, after {@link DirectoryListener} by John Dekker
  */
 @IbisDescription(
-	"{@link IPullingListener listener} that looks in a filesystem for files." + 
-	"When a file is found, it is moved to an process-folder, so that it isn't found more then once.  " + 
-	"The name of the moved file is passed to the pipeline.  " 
+	"{@link IPullingListener listener} that looks in a filesystem for files. \n" + 
+	"When a file is found, it is moved to an process-folder, so that it isn't found more then once.   \n" + 
+	"The name of the moved file is passed to the pipeline.   \n" 
 )
 public class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F> {
 	protected Logger log = LogUtil.getLogger(this);

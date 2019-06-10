@@ -38,18 +38,18 @@ import nl.nn.adapterframework.senders.XsltSender;
  * @author Johan Verrips
  */
 @IbisDescription(
-	"Perform an XSLT transformation with a specified stylesheet." + 
-	"<tr><th>nested elements</th><th>description</th></tr>" + 
-	"<tr><td>{@link Parameter param}</td><td>any parameters defined on the pipe will be applied to the created transformer</td></tr>" + 
-	"</table>" + 
-	"</p>" + 
-	"<p><b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>state</th><th>condition</th></tr>" + 
-	"<tr><td>\"success\"</td><td>default</td></tr>" + 
-	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>" + 
-	"</table>" + 
-	"</p>" 
+	"Perform an XSLT transformation with a specified stylesheet. \n" + 
+	"<tr><th>nested elements</th><th>description</th></tr> \n" + 
+	"<tr><td>{@link Parameter param}</td><td>any parameters defined on the pipe will be applied to the created transformer</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" + 
+	"<p><b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>state</th><th>condition</th></tr> \n" + 
+	"<tr><td>\"success\"</td><td>default</td></tr> \n" + 
+	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 
 public class XsltPipe extends FixedForwardPipe {

@@ -38,32 +38,32 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Peter Leeuwenburgh
  */
 @IbisDescription(
-	"Pipe that compares lexicographically two strings." + 
-	"<tr><th>nested elements</th><th>description</th></tr>" + 
-	"<tr><td>{@link Parameter param}</td><td>the parameters <code>operand1</code> and <code>operand2</code> are compared. If one of these parameters doesn't exist the input message is taken." + 
-	"If parameter <code>ignorepatterns</code> exists it contains a xml table with references to substrings which have to be ignored during the comparison. This xml table has the following layout:" + 
-	"<br/><code><pre>" + 
-	"&lt;ignores&gt;" + 
-	"	&lt;ignore&gt;" + 
-	"		&lt;after&gt;...&lt;/after&gt;" + 
-	"		&lt;before&gt;...&lt;/before&gt;" + 
-	"	&lt;/ignore&gt;" + 
-	"	&lt;ignore&gt;" + 
-	"		&lt;after&gt;...&lt;/after&gt;" + 
-	"		&lt;before&gt;...&lt;/before&gt;" + 
-	"	&lt;/ignore&gt;" + 
-	"&lt;/ignores&gt;" + 
-	"</pre></code><br/>Substrings between \"after\" and \"before\" are ignored</td></tr>" + 
-	"</table>" + 
-	"</p>" + 
-	"<p><b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>state</th><th>condition</th></tr>" + 
-	"<tr><td>lessthan</td><td>when v1 &lt; v2</td></tr>" + 
-	"<tr><td>greaterthan</td><td>when v1 &gt; v2</td></tr>" + 
-	"<tr><td>equals</td><td>when v1 = v1</td></tr>" + 
-	"</table>" + 
-	"</p>" 
+	"Pipe that compares lexicographically two strings. \n" + 
+	"<tr><th>nested elements</th><th>description</th></tr> \n" + 
+	"<tr><td>{@link Parameter param}</td><td>the parameters <code>operand1</code> and <code>operand2</code> are compared. If one of these parameters doesn't exist the input message is taken. \n" + 
+	"If parameter <code>ignorepatterns</code> exists it contains a xml table with references to substrings which have to be ignored during the comparison. This xml table has the following layout: \n" + 
+	"<br/><code><pre> \n" + 
+	"&lt;ignores&gt; \n" + 
+	"	&lt;ignore&gt; \n" + 
+	"		&lt;after&gt;...&lt;/after&gt; \n" + 
+	"		&lt;before&gt;...&lt;/before&gt; \n" + 
+	"	&lt;/ignore&gt; \n" + 
+	"	&lt;ignore&gt; \n" + 
+	"		&lt;after&gt;...&lt;/after&gt; \n" + 
+	"		&lt;before&gt;...&lt;/before&gt; \n" + 
+	"	&lt;/ignore&gt; \n" + 
+	"&lt;/ignores&gt; \n" + 
+	"</pre></code><br/>Substrings between \"after\" and \"before\" are ignored</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" + 
+	"<p><b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>state</th><th>condition</th></tr> \n" + 
+	"<tr><td>lessthan</td><td>when v1 &lt; v2</td></tr> \n" + 
+	"<tr><td>greaterthan</td><td>when v1 &gt; v2</td></tr> \n" + 
+	"<tr><td>equals</td><td>when v1 = v1</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 public class CompareStringPipe extends AbstractPipe {
 

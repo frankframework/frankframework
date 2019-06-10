@@ -38,9 +38,9 @@ import org.apache.log4j.Logger;
  * @since   4.12
  */
 @IbisDescription(
-	"Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}" + 
-	"to receive messages from Servlets." + 
-	"</table>" 
+	"Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver} \n" + 
+	"to receive messages from Servlets. \n" + 
+	"</table> \n" 
 )
 public class PushingListenerAdapter implements IPushingListener, ServiceClient {
 	protected Logger log = LogUtil.getLogger(this);
