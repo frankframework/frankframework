@@ -410,12 +410,19 @@ public class IbisDocPipe extends FixedForwardPipe {
 
 						// Get the ibisdoc of the method
 						IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
+						IbisDescription desc = AnnotationUtils.findAnnotation(ibisBean.getClazz(), IbisDescription.class);
 						if (ibisDoc != null) {
 							String[] ibisDocValues = ibisDoc.value();
-							if (ibisDocValues.length > 1) {
-								rt.addMethods(folder, ibisBean.getName(), property, ibisDocValues[0], ibisDocValues[1], method.getDeclaringClass().getSimpleName());
+							String description = "";
+							if (desc != null) {
+								description = desc.value();
 							} else {
-								rt.addMethods(folder, ibisBean.getName(), property, ibisDocValues[0], "", method.getDeclaringClass().getSimpleName());
+								System.out.println(ibisBean.getName());
+							}
+							if (ibisDocValues.length > 1) {
+								rt.addMethods(folder, ibisBean.getName(), property, ibisDocValues[0], ibisDocValues[1], method.getDeclaringClass().getSimpleName(), description);
+							} else {
+								rt.addMethods(folder, ibisBean.getName(), property, ibisDocValues[0], "", method.getDeclaringClass().getSimpleName(), description);
 							}
 						}
 					}
