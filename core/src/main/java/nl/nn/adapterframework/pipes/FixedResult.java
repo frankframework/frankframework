@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -42,33 +43,35 @@ import nl.nn.adapterframework.util.XmlUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 
-/**
- * Provides an example of a pipe. It may return the contents of a file
- * (in the classpath) when <code>fileName</code> or <code>fileNameSessionKey</code> is specified, otherwise the
- * input of <code>returnString</code> is returned.
- *
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr>
- *   <td><i>any</i></td><td><i>any</i></td>
- * 	 <td>Any parameters defined on the pipe will be used for replacements. Each occurrence
- * 		 of <code>${name-of-parameter}</code> in the file {@link #setFileName(String) fileName} 
- *       will be replaced by its corresponding <i>value-of-parameter</i>. <br>
- *       This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}</td>
- * </tr>
- * </table>
- * </p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td>"filenotfound"</td><td>file not found (when this forward isn't specified an exception will be thrown)</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
- * </table>
- * </p>
+
+/** 
  * @author Johan Verrips
  */
+@IbisDescription(
+	"Provides an example of a pipe. It may return the contents of a file" + 
+	"(in the classpath) when <code>fileName</code> or <code>fileNameSessionKey</code> is specified, otherwise the" + 
+	"input of <code>returnString</code> is returned." + 
+	"<table border=\"1\">" + 
+	"<p><b>Parameters:</b>" + 
+	"<tr><th>name</th><th>type</th><th>remarks</th></tr>" + 
+	"<tr>" + 
+	"  <td><i>any</i></td><td><i>any</i></td>" + 
+	"	 <td>Any parameters defined on the pipe will be used for replacements. Each occurrence" + 
+	"		 of <code>${name-of-parameter}</code> in the file {@link #setFileName(String) fileName} " + 
+	"      will be replaced by its corresponding <i>value-of-parameter</i>. <br>" + 
+	"      This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}</td>" + 
+	"</tr>" + 
+	"</table>" + 
+	"</p>" + 
+	"<p><b>Exits:</b>" + 
+	"<table border=\"1\">" + 
+	"<tr><th>state</th><th>condition</th></tr>" + 
+	"<tr><td>\"success\"</td><td>default</td></tr>" + 
+	"<tr><td>\"filenotfound\"</td><td>file not found (when this forward isn't specified an exception will be thrown)</td></tr>" + 
+	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>" + 
+	"</table>" + 
+	"</p>" 
+)
 public class FixedResult extends FixedForwardPipe {
 	
 	private final static String FILE_NOT_FOUND_FORWARD = "filenotfound";

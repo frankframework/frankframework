@@ -22,18 +22,20 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
 
-/**
- * Pipe for moving files to another directory.
- *
- * 
+
+/** 
  * @author  John Dekker
  * @author  Jaco de Groot (***@dynasol.nl)
  * @author  Gerrit van Brakel
  */
+@IbisDescription(
+	"Pipe for moving files to another directory." 
+)
 public class MoveFilePipe extends FixedForwardPipe {
 
 	private String directory;

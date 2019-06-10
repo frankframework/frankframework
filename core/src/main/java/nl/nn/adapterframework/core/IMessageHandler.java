@@ -30,12 +30,12 @@ public interface IMessageHandler<M> {
 	/**
 	 * Will use listener to perform getIdFromRawMessage(), getStringFromRawMessage and afterMessageProcessed 
 	 */
-	public void processRawMessage(IListener<M> origin, M message, Map<String,Object> context) throws ListenerException;
+	public void processRawMessage(IListener<M> origin, M message, Map<String, Object> context) throws ListenerException;
 	
 	/**
 	 * Same as {@link #processRawMessage(IListener,Object,Map)}, but now updates IdleStatistics too
 	 */
-	public void processRawMessage(IListener<M> origin, M message, Map<String,Object> context, long waitingTime) throws ListenerException;
+	public void processRawMessage(IListener<M> origin, M message, Map<String, Object> context, long waitingTime) throws ListenerException;
 
 	/**
 	 * Same as {@link #processRawMessage(IListener,Object,Map)}, but now without context, for convenience
@@ -52,8 +52,8 @@ public interface IMessageHandler<M> {
 	 * as the correlationId is logged also.
 	 */	
 	public String processRequest(IListener<M> origin, String correlationId, String message) throws ListenerException;
-	public String processRequest(IListener<M> origin, String correlationId, String message, Map<String,Object> context) throws ListenerException;
-	public String processRequest(IListener<M> origin, String correlationId, String message, Map<String,Object> context, long waitingTime) throws ListenerException;
+	public String processRequest(IListener<M> origin, String correlationId, String message, Map<String, Object> context) throws ListenerException;
+	public String processRequest(IListener<M> origin, String correlationId, String message, Map<String, Object> context, long waitingTime) throws ListenerException;
 
 	/**
 	 *	Formats any exception thrown by any of the above methods to a message that can be returned.

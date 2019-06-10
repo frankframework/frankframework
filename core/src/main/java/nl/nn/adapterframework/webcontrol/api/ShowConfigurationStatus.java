@@ -148,7 +148,7 @@ public final class ShowConfigurationStatus extends Base {
 			return response.tag(etag).build();
 		}
 		
-		response = Response.status(Response.Status.OK).entity(adapterList).tag(etag);
+		response = Response.status(Status.OK).entity(adapterList).tag(etag);
 		return response.build();
 	}
 
@@ -199,7 +199,7 @@ public final class ShowConfigurationStatus extends Base {
 			return response.tag(etag).build();
 		}
 		
-		response = Response.status(Response.Status.OK).entity(adapterInfo).tag(etag);
+		response = Response.status(Status.OK).entity(adapterInfo).tag(etag);
 		return response.build();
 	}
 
@@ -237,9 +237,9 @@ public final class ShowConfigurationStatus extends Base {
 			state = RunStateEnum.ERROR;
 		}
 
-		Status status = Response.Status.OK;
+		Status status = Status.OK;
 		if(state.equals(RunStateEnum.ERROR))
-			status = Response.Status.SERVICE_UNAVAILABLE;
+			status = Status.SERVICE_UNAVAILABLE;
 
 		if(errors.size() > 0)
 			response.put("errors", errors);
@@ -257,7 +257,7 @@ public final class ShowConfigurationStatus extends Base {
 	public Response updateAdapters(LinkedHashMap<String, Object> json) throws ApiException {
 		initBase(servletConfig);
 
-		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
+		Response.ResponseBuilder response = Response.status(Status.NO_CONTENT); //PUT defaults to no content
 		String action = null;
 		ArrayList<String> adapters = new ArrayList<String>();
 
@@ -273,13 +273,13 @@ public final class ShowConfigurationStatus extends Base {
 					adapters.addAll((ArrayList<String>) value);
 				}
 				catch(Exception e) {
-					return response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+					return response.status(Status.INTERNAL_SERVER_ERROR).build();
 				}
 			}
 		}
 		
 		if(action != null) {
-			response.status(Response.Status.ACCEPTED);
+			response.status(Status.ACCEPTED);
 			if(adapters.size() == 0) {
 				ibisManager.handleAdapter(action, "*ALL*", "*ALL*", null, null, false);
 			}
@@ -308,7 +308,7 @@ public final class ShowConfigurationStatus extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
+		Response.ResponseBuilder response = Response.status(Status.NO_CONTENT); //PUT defaults to no content
 
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
@@ -347,7 +347,7 @@ public final class ShowConfigurationStatus extends Base {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
 
-		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
+		Response.ResponseBuilder response = Response.status(Status.NO_CONTENT); //PUT defaults to no content
 
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
@@ -383,7 +383,7 @@ public final class ShowConfigurationStatus extends Base {
 		if(adapterInfo == null)
 			throw new ApiException("Adapter not configured!");
 
-		return Response.status(Response.Status.OK).entity(adapterInfo).build();
+		return Response.status(Status.OK).entity(adapterInfo).build();
 	}
 
 	@GET
@@ -401,7 +401,7 @@ public final class ShowConfigurationStatus extends Base {
 
 		ArrayList<Object> adapterInfo = mapAdapterMessages(adapter);
 
-		return Response.status(Response.Status.OK).entity(adapterInfo).build();
+		return Response.status(Status.OK).entity(adapterInfo).build();
 	}
 
 	@GET
@@ -423,7 +423,7 @@ public final class ShowConfigurationStatus extends Base {
 
 		ArrayList<Object> receiverInfo = mapAdapterReceivers(adapter, showPendingMsgCount);
 
-		return Response.status(Response.Status.OK).entity(receiverInfo).build();
+		return Response.status(Status.OK).entity(receiverInfo).build();
 	}
 
 	@GET
@@ -439,7 +439,7 @@ public final class ShowConfigurationStatus extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		return Response.status(Response.Status.OK).entity(getFlow(adapter)).build();
+		return Response.status(Status.OK).entity(getFlow(adapter)).build();
 	}
 
 	private Map<String, Object> addCertificateInfo(WebServiceSender s) {

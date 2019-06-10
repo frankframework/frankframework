@@ -22,13 +22,16 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 
-/**
- * {@link IInputStreamReaderFactory} that provides a reader that reads Delphi records containing Strings.
- * 
+
+/** 
  * @author  Gerrit van Brakel
  * @since   4.10  
  */
+@IbisDescription(
+	"{@link IInputStreamReaderFactory} that provides a reader that reads Delphi records containing Strings." 
+)
 public class DelphiStringRecordReaderFactory implements IInputStreamReaderFactory {
 
 	private int stringLength=50;

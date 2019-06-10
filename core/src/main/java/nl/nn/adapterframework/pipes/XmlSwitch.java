@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -38,19 +39,21 @@ import nl.nn.adapterframework.util.XmlUtils;
 import org.apache.commons.lang.StringUtils;
 
 
-/**
- * Selects an exitState, based on either the content of the input message, by means
- * of a XSLT-stylesheet, the content of a session variable or, by default, by returning the name of the root-element.
- * 
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>&lt;name of the root-element&gt;</td><td>default</td></tr>
- * <tr><td>&lt;result of transformation&gt</td><td>when {@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename} or {@link #setXpathExpression(String) xpathExpression} is specified</td></tr>
- * </table>
- * </p>
+
+/** 
  * @author Johan Verrips
  */
+@IbisDescription(
+	"Selects an exitState, based on either the content of the input message, by means" + 
+	"of a XSLT-stylesheet, the content of a session variable or, by default, by returning the name of the root-element." + 
+	"<p><b>Exits:</b>" + 
+	"<table border=\"1\">" + 
+	"<tr><th>state</th><th>condition</th></tr>" + 
+	"<tr><td>&lt;name of the root-element&gt;</td><td>default</td></tr>" + 
+	"<tr><td>&lt;result of transformation&gt</td><td>when {@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename} or {@link #setXpathExpression(String) xpathExpression} is specified</td></tr>" + 
+	"</table>" + 
+	"</p>" 
+)
 public class XmlSwitch extends AbstractPipe {
 
 	public static final String XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT = "Switch: Forward Found";

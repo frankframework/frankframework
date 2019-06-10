@@ -23,6 +23,7 @@ import javax.jms.ObjectMessage;
 import javax.jms.Session;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -30,12 +31,14 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
 
-/**
- * JMS implementation of <code>ITransactionalStorage</code>.
- * 
+
+/** 
  * @author  Gerrit van Brakel
  * @since   4.1
  */
+@IbisDescription(
+	"JMS implementation of <code>ITransactionalStorage</code>." 
+)
 public class JmsTransactionalStorage extends JmsMessageBrowser implements ITransactionalStorage {
 
 	public static final String FIELD_TYPE="type";

@@ -28,17 +28,19 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
 
-/**
- * Pipe to calculate checksum on input.
- *
- * 
+
+/** 
  * @author  Gerrit van Brakel
  * @since   4.9  
  */
+@IbisDescription(
+	"Pipe to calculate checksum on input." 
+)
 public class ChecksumPipe extends FixedForwardPipe {
 	
 	public static final String CHECKSUM_MD5="MD5";

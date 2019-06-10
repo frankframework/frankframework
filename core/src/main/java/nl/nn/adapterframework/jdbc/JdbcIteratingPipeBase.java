@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.IteratingPipe;
@@ -35,12 +36,14 @@ import nl.nn.adapterframework.util.JdbcUtil;
 import org.apache.commons.lang.StringUtils;
 
 
-/**
- * Base class for JDBC iterating pipes.
- * 
+
+/** 
  * @author  Gerrit van Brakel
  * @since   4.7
  */
+@IbisDescription(
+	"Base class for JDBC iterating pipes." 
+)
 public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 
 	private String query=null;

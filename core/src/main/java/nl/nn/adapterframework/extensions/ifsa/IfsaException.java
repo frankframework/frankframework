@@ -20,7 +20,7 @@ import nl.nn.adapterframework.core.IbisException;
 /**
  * Exception thrown by Ifsa-related classes.
  *
- * @see nl.nn.adapterframework.core.IbisException
+ * @see IbisException
  *
  * @author Gerrit van Brakel
  */

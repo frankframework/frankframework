@@ -39,6 +39,7 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.commons.digester.Digester;
 import org.apache.commons.lang.StringUtils;
 
@@ -55,190 +56,179 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 
-/**
- * Sender to obtain information from and write to an LDAP Directory.
- * Returns the set of attributes in an XML format. Examples are shown below.
- * 
- * 
- * 
- * <p>
- * <b>Parameters:</b>
- * <table border="1">
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>entryName</td><td>Represents entryName (RDN) of interest.</td></tr>
- * <tr><td>filterExpression</td><td>Filter expression (handy with searching - see RFC2254).</td></tr>
- * <tr><td>principal</td><td>Will overwrite jndiAuthAlias, principal and credential attributes together with parameter credentials which is expected to be present too. This will also have the effect of usePooling being set to false and the LDAP connection being made at runtime only (skipped at configuration time).</td></tr>
- * <tr><td>credentials</td><td>See parameter principal. It's advised to set attribute hidden to true for parameter credentials.</td></tr>
- * </table>
- * </p>
- * 
- * <p>
- * current requirements for input and configuration
- * <table border="1">
- * <tr><th>operation</th><th>requirements</th></tr>
- * <tr><td>read</td><td>
- * <ul>
- * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
- * 	  <li>optional xml-inputmessage containing attributes to be returned</li>
- * </ul>
- * </td></tr>
- * <tr><td>create</td><td>
- * <ul>
- * 	  <li>parameter 'entryName', resolving to RDN of entry to create</li>
- * 	  <li>xml-inputmessage containing attributes to create</li>
- * </ul>
- * </td></tr>
- * <tr><td>update</td><td>
- * <ul>
- * 	  <li>parameter 'entryName', resolving to RDN of entry to update</li>
- * 	  <li>xml-inputmessage containing attributes to update</li>
- * 	  <li>optional parameter 'newEntryName', new RDN of entry</li>
- * </ul>
- * </td></tr>
- * <tr><td>delete</td><td>
- * <ul>
- * 	  <li>parameter 'entryName', resolving to RDN of entry to delete</li>
- * 	  <li>when manipulationSubject is set to attribute: xml-inputmessage containing attributes to be deleted</li>
- * </ul>
- * </td></tr>
- * <tr><td>getTree</td><td>
- * <ul>
- * 	  <li>parameter 'entryName', resolving to RDN of entry that is root of tree to read</li>
- * 	  <li>no specific inputmessage required</li>
- * </ul>
- * </td></tr>
- * <tr><td>search</td><td>
- * <ul>
- * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
- *    <li>parameter 'filterExpression', specifying the entries searched for</li>
- * 	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>
- * </ul>
- * </td></tr>
- * <tr><td>deepSearch</td><td>
- * <ul>
- * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
- *    <li>parameter 'filterExpression', specifying the entries searched for</li>
- * 	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>
- * </ul>
- * </td></tr>
- * <tr><td>getSubcontexts</td><td>
- * <ul>
- * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
- * 	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>
- * </ul>
- * </td></tr>
- * <tr><td>getTree</td><td>
- * <ul>
- * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
- * 	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>
- * </ul>
- * </td></tr>
- * <tr><td>challenge</td><td>
- * <ul>
- * 	  <li>parameter 'principal', resolving to RDN of user who's password should be verified</li>
- * 	  <li>parameter 'credentials', password to verify</li>
- * </ul>
- * </td></tr>
- * <tr><td>changeUnicodePwd</td><td>
- * <ul>
- * 	  <li>parameter 'entryName', resolving to RDN of user who's password should be changed</li>
- * 	  <li>parameter 'oldPassword', current password, will be encoded as required by Active Directory (a UTF-16 encoded Unicode string containing the password surrounded by quotation marks) before sending it to the LDAP server. It's advised to set attribute hidden to true for parameter.</li>
- * 	  <li>parameter 'newPassword', new password, will be encoded as required by Active Directory (a UTF-16 encoded Unicode string containing the password surrounded by quotation marks) before sending it to the LDAP server. It's advised to set attribute hidden to true for parameter.</li>
- * </ul>
- * </td></tr>
- * </table>
- * </p>
- * 
- * <h2>example</h2>
- * Consider the following configuration example:
- * <code>
- * <pre>
- *   &lt;sender
- *        className="nl.nn.adapterframework.ldap.LdapSender"
- *        ldapProviderURL="ldap://servername:389/o=ing"
- *        operation="read"
- *        attributesToReturn="givenName,sn,telephoneNumber" &gt;
- *     <&ltparam name="entryName" xpathExpression="entryName" /&gt;
- *   &lt;/sender&gt;
- * </pre>
- * </code>
- * <br/>
- * 
- * This may result in the following output:
- * <code><pre>
- * &lt;ldap&gt;
- *	&lt;entryName&gt;uid=srp,ou=people&lt;/entryName&gt;
- *
- *	&lt;attributes&gt;
- *		&lt;attribute attrID="givenName"&gt;
- *			&lt;value&gt;Jan&lt;/value&gt;
- *		&lt;/attribute&gt;
- *
- *		&lt;attribute attrID="telephoneNumber"&gt;
- *			&lt;value&gt;010 5131123&lt;/value&gt;
- *			&lt;value&gt;06 23456064&lt;/value&gt;
- *		&lt;/attribute&gt;
- *
- *		&lt;attribute attrID="sn"&gt;
- *			&lt;value&gt;Jansen&lt;/value&gt;
- *		&lt;/attribute&gt;
- *	&lt;/attributes&gt;
- * &lt;/ldap&gt;
- *  </pre></code> <br/>
- * 
- * Search or Read?
- * 
- * Read retrieves all the attributes of the specified entry.
- * 
- * Search retrieves all the entries of the specified (by entryName) context that have the specified attributes,
- * together with the attributes. If the specified attributes are null or empty all the attributes of all the entries within the 
- * specified context are returned.
- *  
- * Sample result of a <code>read</code> operation:<br/><code><pre>
- *	&lt;attributes&gt;
- *	    &lt;attribute&gt;
- *	    &lt;attribute name="employeeType" value="Extern"/&gt;
- *	    &lt;attribute name="roomNumber" value="DP 2.13.025"/&gt;
- *	    &lt;attribute name="departmentCode" value="358000"/&gt;
- *	    &lt;attribute name="organizationalHierarchy"&gt;
- *	        &lt;item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- *	        &lt;item value="ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- *	        &lt;item value="ou=000001,ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- *	    &lt;/attribute>
- *	    &lt;attribute name="givenName" value="Gerrit"/>
- *	&lt;/attributes&gt;
- * 
- * </pre></code> <br/>
- * Sample result of a <code>search</code> operation:<br/><code><pre>
- *	&lt;entries&gt;
- *	 &lt;entry name="uid=srp"&gt;
- *	   &lt;attributes&gt;
- *	    &lt;attribute&gt;
- *	    &lt;attribute name="employeeType" value="Extern"/&gt;
- *	    &lt;attribute name="roomNumber" value="DP 2.13.025"/&gt;
- *	    &lt;attribute name="departmentCode" value="358000"/&gt;
- *	    &lt;attribute name="organizationalHierarchy"&gt;
- *	        &lt;item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- *	        &lt;item value="ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- *	        &lt;item value="ou=000001,ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- *	    &lt;/attribute>
- *	    &lt;attribute name="givenName" value="Gerrit"/>
- *	   &lt;/attributes&gt;
- *	  &lt;/entry&gt;
- *   &lt;entry&gt; .... &lt;/entry&gt;
- *   .....
- *	&lt;/entries&gt;
- * </pre></code> <br/>
- *
- * <h2>upgrading from earlier versions (pre 4.6)</h2>
- * <ul>
- *   <li>In earlier versions, the entryName was taken from the first parameter. To upgrade, call your first parameter 'entryName'</li> 
- *   <li>In earlier versions, the filterExpression was taken from the first parameter. To upgrade, call your second parameter 'filterExpression'</li> 
- * </ul>
- *  
+
+/** 
  * @author Gerrit van Brakel
  * @author Jaco de Groot
  */
+@IbisDescription(
+	"Sender to obtain information from and write to an LDAP Directory." + 
+	"Returns the set of attributes in an XML format. Examples are shown below." + 
+	"<p>" + 
+	"<b>Parameters:</b>" + 
+	"<table border=\"1\">" + 
+	"<tr><th>name</th><th>type</th><th>remarks</th></tr>" + 
+	"<tr><td>entryName</td><td>Represents entryName (RDN) of interest.</td></tr>" + 
+	"<tr><td>filterExpression</td><td>Filter expression (handy with searching - see RFC2254).</td></tr>" + 
+	"<tr><td>principal</td><td>Will overwrite jndiAuthAlias, principal and credential attributes together with parameter credentials which is expected to be present too. This will also have the effect of usePooling being set to false and the LDAP connection being made at runtime only (skipped at configuration time).</td></tr>" + 
+	"<tr><td>credentials</td><td>See parameter principal. It's advised to set attribute hidden to true for parameter credentials.</td></tr>" + 
+	"</table>" + 
+	"</p>" + 
+	"<p>" + 
+	"current requirements for input and configuration" + 
+	"<table border=\"1\">" + 
+	"<tr><th>operation</th><th>requirements</th></tr>" + 
+	"<tr><td>read</td><td>" + 
+	"<ul>" + 
+	"	  <li>parameter 'entryName', resolving to RDN of entry to read</li>" + 
+	"	  <li>optional xml-inputmessage containing attributes to be returned</li>" + 
+	"</ul>" + 
+	"</td></tr>" + 
+	"<tr><td>create</td><td>" + 
+	"<ul>" + 
+	"	  <li>parameter 'entryName', resolving to RDN of entry to create</li>" + 
+	"	  <li>xml-inputmessage containing attributes to create</li>" + 
+	"</ul>" + 
+	"</td></tr>" + 
+	"<tr><td>update</td><td>" + 
+	"<ul>" + 
+	"	  <li>parameter 'entryName', resolving to RDN of entry to update</li>" + 
+	"	  <li>xml-inputmessage containing attributes to update</li>" + 
+	"	  <li>optional parameter 'newEntryName', new RDN of entry</li>" + 
+	"</ul>" + 
+	"</td></tr>" + 
+	"<tr><td>delete</td><td>" + 
+	"<ul>" + 
+	"	  <li>parameter 'entryName', resolving to RDN of entry to delete</li>" + 
+	"	  <li>when manipulationSubject is set to attribute: xml-inputmessage containing attributes to be deleted</li>" + 
+	"</ul>" + 
+	"</td></tr>" + 
+	"<tr><td>getTree</td><td>" + 
+	"<ul>" + 
+	"	  <li>parameter 'entryName', resolving to RDN of entry that is root of tree to read</li>" + 
+	"	  <li>no specific inputmessage required</li>" + 
+	"</ul>" + 
+	"</td></tr>" + 
+	"<tr><td>search</td><td>" + 
+	"<ul>" + 
+	"	  <li>parameter 'entryName', resolving to RDN of entry to read</li>" + 
+	"   <li>parameter 'filterExpression', specifying the entries searched for</li>" + 
+	"	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>" + 
+	"</ul>" + 
+	"</td></tr>" + 
+	"<tr><td>deepSearch</td><td>" + 
+	"<ul>" + 
+	"	  <li>parameter 'entryName', resolving to RDN of entry to read</li>" + 
+	"   <li>parameter 'filterExpression', specifying the entries searched for</li>" + 
+	"	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>" + 
+	"</ul>" + 
+	"</td></tr>" + 
+	"<tr><td>getSubcontexts</td><td>" + 
+	"<ul>" + 
+	"	  <li>parameter 'entryName', resolving to RDN of entry to read</li>" + 
+	"	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>" + 
+	"</ul>" + 
+	"</td></tr>" + 
+	"<tr><td>getTree</td><td>" + 
+	"<ul>" + 
+	"	  <li>parameter 'entryName', resolving to RDN of entry to read</li>" + 
+	"	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>" + 
+	"</ul>" + 
+	"</td></tr>" + 
+	"<tr><td>challenge</td><td>" + 
+	"<ul>" + 
+	"	  <li>parameter 'principal', resolving to RDN of user who's password should be verified</li>" + 
+	"	  <li>parameter 'credentials', password to verify</li>" + 
+	"</ul>" + 
+	"</td></tr>" + 
+	"<tr><td>changeUnicodePwd</td><td>" + 
+	"<ul>" + 
+	"	  <li>parameter 'entryName', resolving to RDN of user who's password should be changed</li>" + 
+	"	  <li>parameter 'oldPassword', current password, will be encoded as required by Active Directory (a UTF-16 encoded Unicode string containing the password surrounded by quotation marks) before sending it to the LDAP server. It's advised to set attribute hidden to true for parameter.</li>" + 
+	"	  <li>parameter 'newPassword', new password, will be encoded as required by Active Directory (a UTF-16 encoded Unicode string containing the password surrounded by quotation marks) before sending it to the LDAP server. It's advised to set attribute hidden to true for parameter.</li>" + 
+	"</ul>" + 
+	"</td></tr>" + 
+	"</table>" + 
+	"</p>" + 
+	"<h2>example</h2>" + 
+	"Consider the following configuration example:" + 
+	"<code>" + 
+	"<pre>" + 
+	"  &lt;sender" + 
+	"       className=\"nl.nn.adapterframework.ldap.LdapSender\"" + 
+	"       ldapProviderURL=\"ldap://servername:389/o=ing\"" + 
+	"       operation=\"read\"" + 
+	"       attributesToReturn=\"givenName,sn,telephoneNumber\" &gt;" + 
+	"    <&ltparam name=\"entryName\" xpathExpression=\"entryName\" /&gt;" + 
+	"  &lt;/sender&gt;" + 
+	"</pre>" + 
+	"</code>" + 
+	"<br/>" + 
+	"This may result in the following output:" + 
+	"<code><pre>" + 
+	"&lt;ldap&gt;" + 
+	"&lt;entryName&gt;uid=srp,ou=people&lt;/entryName&gt;" + 
+	"&lt;attributes&gt;" + 
+	"	&lt;attribute attrID=\"givenName\"&gt;" + 
+	"		&lt;value&gt;Jan&lt;/value&gt;" + 
+	"	&lt;/attribute&gt;" + 
+	"	&lt;attribute attrID=\"telephoneNumber\"&gt;" + 
+	"		&lt;value&gt;010 5131123&lt;/value&gt;" + 
+	"		&lt;value&gt;06 23456064&lt;/value&gt;" + 
+	"	&lt;/attribute&gt;" + 
+	"	&lt;attribute attrID=\"sn\"&gt;" + 
+	"		&lt;value&gt;Jansen&lt;/value&gt;" + 
+	"	&lt;/attribute&gt;" + 
+	"&lt;/attributes&gt;" + 
+	"&lt;/ldap&gt;" + 
+	" </pre></code> <br/>" + 
+	"Search or Read?" + 
+	"Read retrieves all the attributes of the specified entry." + 
+	"Search retrieves all the entries of the specified (by entryName) context that have the specified attributes," + 
+	"together with the attributes. If the specified attributes are null or empty all the attributes of all the entries within the " + 
+	"specified context are returned." + 
+	" " + 
+	"Sample result of a <code>read</code> operation:<br/><code><pre>" + 
+	"&lt;attributes&gt;" + 
+	"    &lt;attribute&gt;" + 
+	"    &lt;attribute name=\"employeeType\" value=\"Extern\"/&gt;" + 
+	"    &lt;attribute name=\"roomNumber\" value=\"DP 2.13.025\"/&gt;" + 
+	"    &lt;attribute name=\"departmentCode\" value=\"358000\"/&gt;" + 
+	"    &lt;attribute name=\"organizationalHierarchy\"&gt;" + 
+	"        &lt;item value=\"ou=ING-EUR,ou=Group,ou=Organization,o=ing\"/&gt;" + 
+	"        &lt;item value=\"ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing\"/&gt;" + 
+	"        &lt;item value=\"ou=000001,ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing\"/&gt;" + 
+	"    &lt;/attribute>" + 
+	"    &lt;attribute name=\"givenName\" value=\"Gerrit\"/>" + 
+	"&lt;/attributes&gt;" + 
+	"</pre></code> <br/>" + 
+	"Sample result of a <code>search</code> operation:<br/><code><pre>" + 
+	"&lt;entries&gt;" + 
+	" &lt;entry name=\"uid=srp\"&gt;" + 
+	"   &lt;attributes&gt;" + 
+	"    &lt;attribute&gt;" + 
+	"    &lt;attribute name=\"employeeType\" value=\"Extern\"/&gt;" + 
+	"    &lt;attribute name=\"roomNumber\" value=\"DP 2.13.025\"/&gt;" + 
+	"    &lt;attribute name=\"departmentCode\" value=\"358000\"/&gt;" + 
+	"    &lt;attribute name=\"organizationalHierarchy\"&gt;" + 
+	"        &lt;item value=\"ou=ING-EUR,ou=Group,ou=Organization,o=ing\"/&gt;" + 
+	"        &lt;item value=\"ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing\"/&gt;" + 
+	"        &lt;item value=\"ou=000001,ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing\"/&gt;" + 
+	"    &lt;/attribute>" + 
+	"    &lt;attribute name=\"givenName\" value=\"Gerrit\"/>" + 
+	"   &lt;/attributes&gt;" + 
+	"  &lt;/entry&gt;" + 
+	"  &lt;entry&gt; .... &lt;/entry&gt;" + 
+	"  ....." + 
+	"&lt;/entries&gt;" + 
+	"</pre></code> <br/>" + 
+	"<h2>upgrading from earlier versions (pre 4.6)</h2>" + 
+	"<ul>" + 
+	"  <li>In earlier versions, the entryName was taken from the first parameter. To upgrade, call your first parameter 'entryName'</li> " + 
+	"  <li>In earlier versions, the filterExpression was taken from the first parameter. To upgrade, call your second parameter 'filterExpression'</li> " + 
+	"</ul>" + 
+	" " 
+)
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
 
 	private String FILTER = "filterExpression";

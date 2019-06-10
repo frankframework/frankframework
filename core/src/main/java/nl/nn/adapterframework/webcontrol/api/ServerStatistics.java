@@ -131,7 +131,7 @@ public class ServerStatistics extends Base {
 		returnMap.put("machineName" , Misc.getHostname());
 		returnMap.put("uptime", ibisContext.getUptimeDate());
 
-		return Response.status(Response.Status.CREATED).entity(returnMap).build();
+		return Response.status(Status.CREATED).entity(returnMap).build();
 	}
 
 	@GET
@@ -215,7 +215,7 @@ public class ServerStatistics extends Base {
 		if(messages.size() > 0)
 			returnMap.put("messages", messages);
 
-		return Response.status(Response.Status.CREATED).entity(returnMap).build();
+		return Response.status(Status.CREATED).entity(returnMap).build();
 	}
 
 	private List<Object> mapMessageKeeperMessages(MessageKeeper messageKeeper) {
@@ -267,7 +267,7 @@ public class ServerStatistics extends Base {
 
 		logSettings.put("logIntermediaryResults", AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true));
 
-		return Response.status(Response.Status.CREATED).entity(logSettings).build();
+		return Response.status(Status.CREATED).entity(logSettings).build();
 	}
 
 	@PUT
@@ -335,7 +335,7 @@ public class ServerStatistics extends Base {
 			LogUtil.getLogger("SEC").info(msg.toString());
 		}
 
-		return Response.status(Response.Status.NO_CONTENT).build();
+		return Response.status(Status.NO_CONTENT).build();
 	}
 
 	@GET
@@ -379,9 +379,9 @@ public class ServerStatistics extends Base {
 			stateCount.put(state, ++count);
 		}
 
-		Status status = Response.Status.OK;
+		Status status = Status.OK;
 		if(stateCount.containsKey(RunStateEnum.ERROR))
-			status = Response.Status.SERVICE_UNAVAILABLE;
+			status = Status.SERVICE_UNAVAILABLE;
 
 		if(errors.size() > 0)
 			response.put("errors", errors);

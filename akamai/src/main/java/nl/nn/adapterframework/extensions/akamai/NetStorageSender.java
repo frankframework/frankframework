@@ -30,6 +30,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpGet;
@@ -57,25 +58,22 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
+
 /**
- * Sender for Akamai NetStorage (HTTP based).
- *
- * <p>See {@link nl.nn.adapterframework.http.HttpSenderBase} for more arguments and parameters!</p>
- *
- * <p><b>Parameters:</b></p>
- * <p>Some actions require specific parameters to be set. Optional parameters for the <code>upload</code> action are: md5, sha1, sha256 and mtime.</p>
- *
- * <p><b>AuthAlias: (WebSphere based application servers)</b></p>
- * <p>If you do not want to specify the nonce and the accesstoken used to authenticate with Akamai, you can use the authalias property. The username represents the nonce and the password the accesstoken.</p>
- *
- * <br/>
- * <br/>
- * <br/>
- *
- *
  * @author	Niels Meijer
  * @since	7.0-B4
  */
+@IbisDescription(
+		"Sender for Akamai NetStorage (HTTP based)." +
+				"<p>See {@link nl.nn.adapterframework.http.HttpSenderBase} for more arguments and parameters!</p>" +
+				"<p><b>Parameters:</b></p>" +
+				"<p>Some actions require specific parameters to be set. Optional parameters for the <code>upload</code> action are: md5, sha1, sha256 and mtime.</p>" +
+				"<p><b>AuthAlias: (WebSphere based application servers)</b></p>" +
+				"<p>If you do not want to specify the nonce and the accesstoken used to authenticate with Akamai, you can use the authalias property. The username represents the nonce and the password the accesstoken.</p>" +
+				"<br/>" +
+				"<br/>" +
+				"<br/>"
+)
 public class NetStorageSender extends HttpSenderBase implements HasPhysicalDestination {
 	private Logger log = LogUtil.getLogger(NetStorageSender.class);
 
@@ -323,8 +321,8 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	}
 
 	/**
-	 * Only works in combination with the UPLOAD action. If set, and not 
-	 * specified as parameter, the sender will sign the file to be uploaded. 
+	 * Only works in combination with the UPLOAD action. If set, and not
+	 * specified as parameter, the sender will sign the file to be uploaded.
 	 * NOTE: if the file input is a Stream this will put the file in memory!
 	 * @param hashAlgorithm supports 3 types; md5, sha1, sha256
 	 */

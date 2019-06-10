@@ -33,6 +33,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.WildCardFilter;
@@ -42,13 +43,15 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
 
-/**
- * File {@link IPullingListener listener} that looks in a directory for files according to a wildcard. When a file is
- * found, it is read in a String object and parsed to records. 
- * After reading the file, the file is renamed and moved to a directory.
- * 
+
+/** 
  * @author  Johan Verrips
  */
+@IbisDescription(
+	"File {@link IPullingListener listener} that looks in a directory for files according to a wildcard. When a file is" + 
+	"found, it is read in a String object and parsed to records. " + 
+	"After reading the file, the file is renamed and moved to a directory." 
+)
 public class FileRecordListener implements IPullingListener, INamedObject {
 	protected Logger log = LogUtil.getLogger(this);
 

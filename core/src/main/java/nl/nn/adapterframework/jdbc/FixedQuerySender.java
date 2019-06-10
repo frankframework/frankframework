@@ -22,23 +22,24 @@ import java.sql.SQLException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.commons.lang.StringUtils;
 
-/**
- * QuerySender that assumes a fixed query, possibly with attributes.
- * 
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>&nbsp;</td><td>all parameters present are applied to the statement to be executed</td></tr>
- * </table>
- * </p>
- * 
- * <p><b>NOTE:</b> See {@link nl.nn.adapterframework.util.DB2XMLWriter DB2XMLWriter} for Resultset!</p>
- * 
+
+/** 
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
+@IbisDescription(
+	"QuerySender that assumes a fixed query, possibly with attributes." + 
+	"<table border=\"1\">" + 
+	"<p><b>Parameters:</b>" + 
+	"<tr><th>name</th><th>type</th><th>remarks</th></tr>" + 
+	"<tr><td>&nbsp;</td><td>all parameters present are applied to the statement to be executed</td></tr>" + 
+	"</table>" + 
+	"</p>" + 
+	"<p><b>NOTE:</b> See {@link nl.nn.adapterframework.util.DB2XMLWriter DB2XMLWriter} for Resultset!</p>" 
+)
 public class FixedQuerySender extends JdbcQuerySenderBase {
 
 	private String query=null;

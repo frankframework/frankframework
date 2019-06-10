@@ -12,7 +12,7 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
- */
+*/
 package nl.nn.adapterframework.jdbc;
 
 import java.sql.Connection;
@@ -29,14 +29,16 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.commons.lang.StringUtils;
 
-/**
- * Database Listener that operates on a table.
- *
- * 
+
+/** 
  * @author  Peter Leeuwenburgh
  */
+@IbisDescription(
+	"Database Listener that operates on a table." 
+)
 
 public class SimpleJdbcListener extends JdbcFacade implements IPullingListener {
 	protected final static String KEYWORD_SELECT_COUNT = "select count(";

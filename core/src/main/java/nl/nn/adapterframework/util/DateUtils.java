@@ -104,7 +104,7 @@ public class DateUtils {
      * Parses a string to a Date, according to the XML Schema dateTime data type
      */
     static public Date parseXmlDateTime(String s) {
-    	GDate gdate = new org.apache.xmlbeans.GDate(s);
+    	GDate gdate = new GDate(s);
         Date result = gdate.getDate();
 		return result;
     }

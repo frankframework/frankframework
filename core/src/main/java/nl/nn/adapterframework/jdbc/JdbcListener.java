@@ -30,6 +30,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.JtaUtil;
@@ -37,12 +38,14 @@ import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
 
-/**
- * JdbcListener base class.
- *
+
+/** 
  * @author  Gerrit van Brakel
  * @since   4.7
  */
+@IbisDescription(
+	"JdbcListener base class." 
+)
 public class JdbcListener extends JdbcFacade implements IPullingListener {
 
 	private String startLocalTransactionQuery;

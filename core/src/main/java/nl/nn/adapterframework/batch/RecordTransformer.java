@@ -32,35 +32,35 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
 
-/**
- * Translate a record using an outputFields description. 
- * 
- * 
- * The {@link #setOutputFields(String) outputFields} description can contain the following functions:
- * 
- * <table border="1">
- * <tr><td>string(value)</td><td>inserts the value between the braces</td><td>string( Dit wordt geinsert inclusief spaties ervoor en erna. )</td></tr>
- * <tr><td>align(value,size,align,fillchar)</td><td>inserts the value aligned</td><td>align(test~10~left~ )</td></tr>
- * <tr><td>fill(size,fillchar)</td><td>insert size fillchars</td><td>fill(2,0)</td></tr>
- * <tr><td>now(outformat)</td><td>inserts the current date</td><td>now(dd MMM yyyy)</td></tr>
- * <tr><td>incopy(fieldnr)</td><td>simply inserts the value of the field</td><td>incopy(2)</td></tr>
- * <tr><td>substr(fieldnr,startindex,endindex)</td><td>insert part of the value of the field</td><td>substr(2,0,8)</td></tr>
- * <tr><td>lookup(fieldnr,orgvval=newval,...)</td><td>replace original value using lookup table</td><td>lookup(3,Debit=+,Credit=-)</td></tr>
- * <tr><td>indate(fieldnr,informat,outformat)</td><td>inserts an input datefield using a different format</td><td>indate(2~MMddYY~dd MMM yyyy)</td></tr>
- * <tr><td>inalign(fieldnr,size,align,fillchar)</td><td>inserts an input field</td><td>inalign(3~5~left~0)</td></tr>
- * <tr><td>if(fieldnr,comparator,compareval)</td><td>only output the next fields if condition is true. Comparator is EQ (is equal to), NE (is not equal to), SW (starts with) or NS (not starts with). Use "{..|..|..}" for multiple compareValues</td><td>if(1,eq,3)</td></tr>
- * <tr><td>elseif(fieldnr,comparator,compareval)</td><td>only output the next fields if condition is true. Comparator is EQ, NE, SW or NS</td><td>elseif(1,ne,4)</td></tr>
- * <tr><td>endif()</td><td>endmarker for if</td><td>endif()</td></tr>
- * </table>
- * 
+
+/** 
  * @author  John Dekker
  */
+@IbisDescription(
+	"Translate a record using an outputFields description. " + 
+	"The {@link #setOutputFields(String) outputFields} description can contain the following functions:" + 
+	"<table border=\"1\">" + 
+	"<tr><td>string(value)</td><td>inserts the value between the braces</td><td>string( Dit wordt geinsert inclusief spaties ervoor en erna. )</td></tr>" + 
+	"<tr><td>align(value,size,align,fillchar)</td><td>inserts the value aligned</td><td>align(test~10~left~ )</td></tr>" + 
+	"<tr><td>fill(size,fillchar)</td><td>insert size fillchars</td><td>fill(2,0)</td></tr>" + 
+	"<tr><td>now(outformat)</td><td>inserts the current date</td><td>now(dd MMM yyyy)</td></tr>" + 
+	"<tr><td>incopy(fieldnr)</td><td>simply inserts the value of the field</td><td>incopy(2)</td></tr>" + 
+	"<tr><td>substr(fieldnr,startindex,endindex)</td><td>insert part of the value of the field</td><td>substr(2,0,8)</td></tr>" + 
+	"<tr><td>lookup(fieldnr,orgvval=newval,...)</td><td>replace original value using lookup table</td><td>lookup(3,Debit=+,Credit=-)</td></tr>" + 
+	"<tr><td>indate(fieldnr,informat,outformat)</td><td>inserts an input datefield using a different format</td><td>indate(2~MMddYY~dd MMM yyyy)</td></tr>" + 
+	"<tr><td>inalign(fieldnr,size,align,fillchar)</td><td>inserts an input field</td><td>inalign(3~5~left~0)</td></tr>" + 
+	"<tr><td>if(fieldnr,comparator,compareval)</td><td>only output the next fields if condition is true. Comparator is EQ (is equal to), NE (is not equal to), SW (starts with) or NS (not starts with). Use \"{..|..|..}\" for multiple compareValues</td><td>if(1,eq,3)</td></tr>" + 
+	"<tr><td>elseif(fieldnr,comparator,compareval)</td><td>only output the next fields if condition is true. Comparator is EQ, NE, SW or NS</td><td>elseif(1,ne,4)</td></tr>" + 
+	"<tr><td>endif()</td><td>endmarker for if</td><td>endif()</td></tr>" + 
+	"</table>" 
+)
 public class RecordTransformer extends AbstractRecordHandler {
 
 	private String outputSeparator;

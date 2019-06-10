@@ -76,7 +76,7 @@ public class SchemaUtils {
 	public static final QName NAMESPACE		 = new QName(null, "namespace");
 	public static final QName NAME			 = new QName(null, "name");
 
-	public static final javax.xml.namespace.QName WSDL_SCHEMA = new javax.xml.namespace.QName(XSD, "schema", "");
+	public static final QName WSDL_SCHEMA = new QName(XSD, "schema", "");
 
 	public static Set<XSD> getXsdsRecursive(Set<XSD> xsds)
 			throws ConfigurationException {
@@ -211,8 +211,8 @@ public class SchemaUtils {
 
 	/**
 	 * Including a {@link nl.nn.adapterframework.validation.XSD} into an
-	 * {@link javax.xml.stream.XMLStreamWriter} while parsing it. It is parsed
-	 * (using a low level {@link javax.xml.stream.XMLEventReader} so that
+	 * {@link XMLStreamWriter} while parsing it. It is parsed
+	 * (using a low level {@link XMLEventReader} so that
 	 * certain things can be corrected on the fly.
 	 * @param xsd
 	 * @param xmlStreamWriter
@@ -224,7 +224,7 @@ public class SchemaUtils {
 	 * (without includes or imports). The XSD might have an import with
 	 * schemaLocation to make it valid on it's own, when
 	 * stripSchemaLocationFromImport is true it will be removed.
-	 * @throws java.io.IOException, XMLStreamException
+	 * @throws IOException, XMLStreamException
 	 */
 	public static void xsdToXmlStreamWriter(final XSD xsd,
 			XMLStreamWriter xmlStreamWriter, boolean standalone,

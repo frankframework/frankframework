@@ -24,14 +24,17 @@ import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.util.ReaderLineIterator;
 
-/**
- * Sends a message to a Sender for each line of its input, that must be an InputStream.
- * 
+
+/** 
  * @author  Gerrit van Brakel
  * @since   4.7
  */
+@IbisDescription(
+	"Sends a message to a Sender for each line of its input, that must be an InputStream." 
+)
 public class StreamLineIteratorPipe extends IteratingPipe {
 
 	private String endOfLineString;

@@ -215,19 +215,19 @@ public class CalcboxOutputReader implements XMLReader
     { }
   
     /** Look up the value of a property. */
-    public Object getProperty(java.lang.String name)
+    public Object getProperty(String name)
     { return null; }
     
     /** Set the value of a property. */
-    public void setProperty(java.lang.String name, java.lang.Object value)
+    public void setProperty(String name, Object value)
     { } 
 
     /** Set the state of a feature. */
-    public void setFeature(java.lang.String name, boolean value)
+    public void setFeature(String name, boolean value)
     { }
     
     /** Look up the value of a feature. */
-    public boolean getFeature(java.lang.String name)
+    public boolean getFeature(String name)
     { return false; }  
 
 	/** strip function to strip trailing numbers */

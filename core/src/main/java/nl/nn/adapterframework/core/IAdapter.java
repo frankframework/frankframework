@@ -50,7 +50,7 @@ public interface IAdapter extends IManagable {
 	PipeLineResult processMessage(String messageId, String message, IPipeLineSession pipeLineSession);
 	PipeLineResult processMessageWithExceptions(String messageId, String message, IPipeLineSession pipeLineSession) throws ListenerException;
 
-	void registerPipeLine (PipeLine pipeline) throws ConfigurationException;
+	void registerPipeLine(PipeLine pipeline) throws ConfigurationException;
 	void setConfiguration(Configuration configuration);
 	Configuration getConfiguration();
 	boolean isAutoStart();

@@ -40,6 +40,6 @@ import java.util.Map;
 public interface HasSpecialDefaultValues {
 
 	Object getSpecialDefaultValue(String attributeName, Object defaultValue,
-			Map<String, String> attributes);
+                                  Map<String, String> attributes);
 
 }

@@ -22,6 +22,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -35,17 +36,18 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
-/**
- * Perform an XSLT transformation with a specified stylesheet or XPath-expression.
- *
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link Parameter param}</td><td>any parameters defined on the sender will be applied to the created transformer</td></tr>
- * </table>
- * </p>
- *
+
+/** 
  * @author  Gerrit van Brakel
  * @since   4.9
  */
+@IbisDescription(
+	"Perform an XSLT transformation with a specified stylesheet or XPath-expression." + 
+	"<tr><th>nested elements</th><th>description</th></tr>" + 
+	"<tr><td>{@link Parameter param}</td><td>any parameters defined on the sender will be applied to the created transformer</td></tr>" + 
+	"</table>" + 
+	"</p>" 
+)
 public class XsltSender extends SenderWithParametersBase {
 
 	private String xpathExpression=null;

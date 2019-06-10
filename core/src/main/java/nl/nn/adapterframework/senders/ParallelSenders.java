@@ -1,12 +1,9 @@
 /*
    Copyright 2013, 2017-2018 Nationale-Nederlanden
-
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
-
        http://www.apache.org/licenses/LICENSE-2.0
-
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,42 +11,25 @@
    limitations under the License.
 */
 package nl.nn.adapterframework.senders;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-
-/**
- * Collection of Senders, that are executed all at the same time.
- * 
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link ISender sender}</td><td>one or more specifications of senders. Each will receive the same input message, to be processed in parallel</td></tr>
- * </table>
- * </p>
-
- * @author  Gerrit van Brakel
- * @since   4.9
- */
 public class ParallelSenders extends SenderSeries {
-
 	private int maxConcurrentThreads = 0;
-
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -62,13 +42,11 @@ public class ParallelSenders extends SenderSeries {
 			ConfigurationWarnings.getInstance().add(log, msg, true);
 		}
 	}
-
 	@Override
 	public String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		Guard guard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
 		TaskExecutor executor = createTaskExecutor();
-
 		for (Iterator<ISender> it = getSenderIterator(); it.hasNext();) {
 			ISender sender = it.next();
 			guard.addResource();
@@ -90,7 +68,6 @@ public class ParallelSenders extends SenderSeries {
 					correlationID, message, newPrc, guard,
 					getStatisticsKeeper(sender));
 			executorMap.put(sender, pse);
-
 			executor.execute(pse);
 		}
 		try {
@@ -98,7 +75,6 @@ public class ParallelSenders extends SenderSeries {
 		} catch (InterruptedException e) {
 			throw new SenderException(getLogPrefix()+"was interupted",e);
 		}
-
 		XmlBuilder resultsXml = new XmlBuilder("results");
 		for (Iterator<ISender> it = getSenderIterator(); it.hasNext();) {
 			ISender sender = it.next();
@@ -123,25 +99,21 @@ public class ParallelSenders extends SenderSeries {
 		}
 		return resultsXml.toXML();
 	}
-
 	@Override
 	public void setSynchronous(boolean value) {
 		if (!isSynchronous()) {
 			super.setSynchronous(value); 
 		} 
 	}
-
 	protected TaskExecutor createTaskExecutor() {
 		ThreadPoolTaskExecutor executor = (ThreadPoolTaskExecutor) getConfiguration().getIbisManager().getIbisContext().getBean("concurrentTaskExecutor");
 		executor.setCorePoolSize(getMaxConcurrentThreads());
 		return executor;
 	}
-
 	@IbisDoc({"sets and upper limit to the amount of concurrent threads that can be run simultaneously. use 0 to disable.", "0"})
 	public void setMaxConcurrentThreads(int maxThreads) {
 		if(maxThreads < 1)
 			maxThreads = 0;
-
 		this.maxConcurrentThreads = maxThreads;
 	}
 	public int getMaxConcurrentThreads() {

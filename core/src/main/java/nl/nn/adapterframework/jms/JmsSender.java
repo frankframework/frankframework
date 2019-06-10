@@ -31,6 +31,7 @@ import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
@@ -49,19 +50,20 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.DomBuilderException;
 
-/**
- * This class sends messages with JMS.
- *
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td></td>SoapAction<td><i>String</i></td><td>SoapAction. Automatically filled from attribute <code>soapAction</code></td></tr>
- * <tr><td><i>any</i></td><td><i>any</i></td><td>all parameters present are set as messageproperties</td></tr>
- * </table>
- * </p>
- * 
+
+/** 
  * @author Gerrit van Brakel
  */
+@IbisDescription(
+	"This class sends messages with JMS." + 
+	"<table border=\"1\">" + 
+	"<p><b>Parameters:</b>" + 
+	"<tr><th>name</th><th>type</th><th>remarks</th></tr>" + 
+	"<tr><td></td>SoapAction<td><i>String</i></td><td>SoapAction. Automatically filled from attribute <code>soapAction</code></td></tr>" + 
+	"<tr><td><i>any</i></td><td><i>any</i></td><td>all parameters present are set as messageproperties</td></tr>" + 
+	"</table>" + 
+	"</p>" 
+)
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
 	private String replyToName = null;

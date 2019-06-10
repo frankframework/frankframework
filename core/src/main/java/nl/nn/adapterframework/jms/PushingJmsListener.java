@@ -23,6 +23,7 @@ import javax.jms.Message;
 import javax.jms.Session;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -40,50 +41,47 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 
-/**
- * JMSListener re-implemented as a pushing listener rather than a pulling listener.
- * The JMS messages have to come in from an external source: an MDB or a Spring
- * message container.
- *
- * This version of the <code>JmsListener</code> supports distributed transactions using the XA-protocol.
- * No special action is required to have the listener join the transaction.
- *
- *</p><p><b>Using jmsTransacted and acknowledgement</b><br/>
- * If jmsTransacted is set <code>true</code>, it should ensure that a message is received and processed on
- * a both or nothing basis. IBIS will commit the the message, otherwise perform rollback. However, using
- * jmsTransacted, IBIS does not bring transactions within the adapters under transaction control,
- * compromising the idea of atomic transactions. In the roll-back situation messages sent to other
- * destinations within the Pipeline are NOT rolled back if jmsTransacted is set <code>true</code>! In
- * the failure situation the message is therefore completely processed, and the roll back does not mean
- * that the processing is rolled back! To obtain the correct (transactional) behaviour, set
- * <code>transacted</code>="true" for the enclosing Receiver. Do not use jmsTransacted for any new situation.
- *
- *<p>
- * Setting {@link #setAcknowledgeMode(String) listener.acknowledgeMode} to "auto" means that messages are allways acknowledged (removed from
- * the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
- * when the state of the Adapter equals the defined state for committing (specified by {@link #setCommitOnState(String) listener.commitOnState}).
- * The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
- * delivery of duplicate messages if JMS fails. It should be used by consumers who are tolerant in processing duplicate messages.
- * In cases where the client is tolerant of duplicate messages, some enhancement in performance can be achieved using this mode,
- * since a session has lower overhead in trying to prevent duplicate messages.
- * </p>
- * <p>The setting for {@link #setAcknowledgeMode(String) listener.acknowledgeMode} will only be processed if
- * the setting for {@link #setTransacted(boolean) listener.transacted} as well as for
- * {@link #setJmsTransacted(boolean) listener.jmsTransacted} is false.</p>
- *
- * <p>If {@link #setUseReplyTo(boolean) useReplyTo} is set and a replyTo-destination is
- * specified in the message, the JmsListener sends the result of the processing
- * in the pipeline to this destination. Otherwise the result is sent using the (optionally)
- * specified {@link #setSender(ISender) Sender}, that in turn sends the message to
- * whatever it is configured to.</p>
- *
- * <p><b>Notice:</b> the JmsListener is ONLY capable of processing
- * <code>javax.jms.TextMessage</code>s <br/><br/>
- * </p>
- *
+
+/** 
  * @author  Tim van der Leeuw
  * @since   4.8
  */
+@IbisDescription(
+	"JMSListener re-implemented as a pushing listener rather than a pulling listener." + 
+	"The JMS messages have to come in from an external source: an MDB or a Spring" + 
+	"message container." + 
+	"This version of the <code>JmsListener</code> supports distributed transactions using the XA-protocol." + 
+	"No special action is required to have the listener join the transaction." + 
+	"/p><p><b>Using jmsTransacted and acknowledgement</b><br/>" + 
+	"If jmsTransacted is set <code>true</code>, it should ensure that a message is received and processed on" + 
+	"a both or nothing basis. IBIS will commit the the message, otherwise perform rollback. However, using" + 
+	"jmsTransacted, IBIS does not bring transactions within the adapters under transaction control," + 
+	"compromising the idea of atomic transactions. In the roll-back situation messages sent to other" + 
+	"destinations within the Pipeline are NOT rolled back if jmsTransacted is set <code>true</code>! In" + 
+	"the failure situation the message is therefore completely processed, and the roll back does not mean" + 
+	"that the processing is rolled back! To obtain the correct (transactional) behaviour, set" + 
+	"<code>transacted</code>=\"true\" for the enclosing Receiver. Do not use jmsTransacted for any new situation." + 
+	"p>" + 
+	"Setting {@link #setAcknowledgeMode(String) listener.acknowledgeMode} to \"auto\" means that messages are allways acknowledged (removed from" + 
+	"the queue, regardless of what the status of the Adapter is. \"client\" means that the message will only be removed from the queue" + 
+	"when the state of the Adapter equals the defined state for committing (specified by {@link #setCommitOnState(String) listener.commitOnState})." + 
+	"The \"dups\" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the" + 
+	"delivery of duplicate messages if JMS fails. It should be used by consumers who are tolerant in processing duplicate messages." + 
+	"In cases where the client is tolerant of duplicate messages, some enhancement in performance can be achieved using this mode," + 
+	"since a session has lower overhead in trying to prevent duplicate messages." + 
+	"</p>" + 
+	"<p>The setting for {@link #setAcknowledgeMode(String) listener.acknowledgeMode} will only be processed if" + 
+	"the setting for {@link #setTransacted(boolean) listener.transacted} as well as for" + 
+	"{@link #setJmsTransacted(boolean) listener.jmsTransacted} is false.</p>" + 
+	"<p>If {@link #setUseReplyTo(boolean) useReplyTo} is set and a replyTo-destination is" + 
+	"specified in the message, the JmsListener sends the result of the processing" + 
+	"in the pipeline to this destination. Otherwise the result is sent using the (optionally)" + 
+	"specified {@link #setSender(ISender) Sender}, that in turn sends the message to" + 
+	"whatever it is configured to.</p>" + 
+	"<p><b>Notice:</b> the JmsListener is ONLY capable of processing" + 
+	"<code>javax.jms.TextMessage</code>s <br/><br/>" + 
+	"</p>" 
+)
 public class PushingJmsListener extends JmsListenerBase implements IPortConnectedListener<Message>, IThreadCountControllable, IKnowsDeliveryCount {
 
 	private String listenerPort;

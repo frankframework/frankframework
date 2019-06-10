@@ -20,20 +20,22 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.commons.lang.StringUtils;
 
-/**
- * Pipe that throws an exception, based on the input message.
- * 
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * </table>
- * </p>
- * 
+
+/** 
  * @author  Gerrit van Brakel
  */
+@IbisDescription(
+	"Pipe that throws an exception, based on the input message." + 
+	"<p><b>Exits:</b>" + 
+	"<table border=\"1\">" + 
+	"<tr><th>state</th><th>condition</th></tr>" + 
+	"<tr><td>\"success\"</td><td>default</td></tr>" + 
+	"</table>" + 
+	"</p>" 
+)
 
 public class ExceptionPipe extends FixedForwardPipe {
 

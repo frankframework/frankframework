@@ -484,8 +484,8 @@ public class Misc {
 		Properties props = new Properties();
 
 		try {
-			Method getenvs = System.class.getMethod( "getenv", (java.lang.Class[]) null );
-			Map env = (Map) getenvs.invoke( null, (java.lang.Object[]) null );
+			Method getenvs = System.class.getMethod( "getenv", (Class[]) null );
+			Map env = (Map) getenvs.invoke( null, (Object[]) null );
 			for (Iterator it = env.keySet().iterator(); it.hasNext();) {
 				String key = (String)it.next();
 				String value = (String)env.get(key);
@@ -757,7 +757,7 @@ public class Misc {
 
 	public static String getFileSystemTotalSpace() {
 		try {
-			Method getTotalSpace = File.class.getMethod("getTotalSpace", (java.lang.Class[]) null);
+			Method getTotalSpace = File.class.getMethod("getTotalSpace", (Class[]) null);
 			String dirName = System.getProperty("APPSERVER_ROOT_DIR");
 			if (dirName==null) {
 				dirName = System.getProperty("user.dir");
@@ -766,7 +766,7 @@ public class Misc {
 				}
 			}
 			File file = new File(dirName);
-			long l = ((Long) getTotalSpace.invoke(file, (java.lang.Object[]) null)).longValue();
+			long l = ((Long) getTotalSpace.invoke(file, (Object[]) null)).longValue();
 			return toFileSize(l);
 		} catch ( NoSuchMethodException e ) {
 			log.debug("Caught NoSuchMethodException, just not on JDK 1.6: "+e.getMessage());
@@ -779,7 +779,7 @@ public class Misc {
 
 	public static String getFileSystemFreeSpace() {
 		try {
-			Method getFreeSpace = File.class.getMethod("getFreeSpace", (java.lang.Class[]) null);
+			Method getFreeSpace = File.class.getMethod("getFreeSpace", (Class[]) null);
 			String dirName = System.getProperty("APPSERVER_ROOT_DIR");
 			if (dirName==null) {
 				dirName = System.getProperty("user.dir");
@@ -788,7 +788,7 @@ public class Misc {
 				}
 			}
 			File file = new File(dirName);
-			long l = ((Long) getFreeSpace.invoke(file, (java.lang.Object[]) null)).longValue();
+			long l = ((Long) getFreeSpace.invoke(file, (Object[]) null)).longValue();
 			return toFileSize(l);
 		} catch ( NoSuchMethodException e ) {
 			log.debug("Caught NoSuchMethodException, just not on JDK 1.6: "+e.getMessage());

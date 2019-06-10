@@ -89,7 +89,7 @@ abstract public class AbstractEJBBase {
      * @param varName Name of variable to retrieve. Will be prefixed with 
      * "java:comp/env/" is needed.
      * @return Value of the variable, as <code>java.lang.Object</code>.
-     * @throws org.springframework.jndi.JndiLookupFailureException If the lookup
+     * @throws JndiLookupFailureException If the lookup
      * in the JNDI throws a NamingException, it will be wrapped in a JndiLookupFailureException
      * (which is derived from RuntimeException).
      */

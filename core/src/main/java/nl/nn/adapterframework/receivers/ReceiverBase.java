@@ -31,6 +31,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -99,65 +100,65 @@ import nl.nn.adapterframework.util.SpringTxManagerProxy;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
-/**
- * This {@link IReceiver Receiver} may be used as a base-class for developing receivers.
- *
- * <p>
- * THE FOLLOWING TO BE UPDATED, attribute 'transacted' replaced by 'transactionAttribute'. 
- * <table border="1">
- * <tr><th>{@link #setTransactionAttribute(String) transactionAttribute}</th><th>{@link #setTransacted(boolean) transacted}</th></tr>
- * <tr><td>Required</td><td>true</td></tr>
- * <tr><td>RequiresNew</td><td>true</td></tr>
- * <tr><td>Mandatory</td><td>true</td></tr>
- * <tr><td>otherwise</td><td>false</td></tr>
- * </table>
- * </p>
- * <p>
- * <table border="1">
- * <tr><th>nested elements (accessible in descender-classes)</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.core.IPullingListener listener}</td><td>the listener used to receive messages from</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.core.ITransactionalStorage inProcessStorage}</td><td>mandatory for {@link #setTransacted(boolean) transacted} receivers: place to store messages during processing.</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.core.ITransactionalStorage errorStorage}</td><td>optional for {@link #setTransacted(boolean) transacted} receivers: place to store messages if message processing has gone wrong. If no errorStorage is specified, the inProcessStorage is used for errorStorage</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.core.ISender errorSender}</td><td>optional for {@link #setTransacted(boolean) transacted} receviers: 
- * will be called to store messages that failed to process. If no errorSender is specified, failed messages will remain in inProcessStorage</td></tr>
- * </table>
- * </p>
- * <p><b>Transaction control</b><br>
- * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be received and processed under transaction control.
- * This means that after a message has been read and processed and the transaction has ended, one of the following apply:
- * <ul>
- * <table border="1">
- * <tr><th>situation</th><th>input listener</th><th>Pipeline</th><th>inProcess storage</th><th>errorSender</th><th>summary of effect</th></tr>
- * <tr><td>successful</td><td>message read and committed</td><td>message processed</td><td>unchanged</td><td>unchanged</td><td>message processed</td></tr>
- * <tr><td>procesing failed</td><td>message read and committed</td><td>message processing failed and rolled back</td><td>unchanged</td><td>message sent</td><td>message only transferred from listener to errroSender</td></tr>
- * <tr><td>listening failed</td><td>unchanged: listening rolled back</td><td>no processing performed</td><td>unchanged</td><td>unchanged</td><td>no changes, input message remains on input available for listener</td></tr>
- * <tr><td>transfer to inprocess storage failed</td><td>unchanged: listening rolled back</td><td>no processing performed</td><td>unchanged</td><td>unchanged</td><td>no changes, input message remains on input available for listener</td></tr>
- * <tr><td>transfer to errorSender failed</td><td>message read and committed</td><td>message processing failed and rolled back</td><td>message present</td><td>unchanged</td><td>message only transferred from listener to inProcess storage</td></tr>
- * </table> 
- * If the application or the server crashes in the middle of one or more transactions, these transactions 
- * will be recovered and rolled back after the server/application is restarted. Then allways exactly one of 
- * the following applies for any message touched at any time by Ibis by a transacted receiver:
- * <ul>
- * <li>It is processed correctly by the pipeline and removed from the input-queue, 
- *     not present in inProcess storage and not send to the errorSender</li> 
- * <li>It is not processed at all by the pipeline, or processing by the pipeline has been rolled back; 
- *     the message is removed from the input queue and either (one of) still in inProcess storage <i>or</i> sent to the errorSender</li>
- * </ul>
- * </p>
- *
- * <p><b>commit or rollback</b><br>
- * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be either committed or rolled back.
- * All message-processing transactions are committed, unless one or more of the following apply:
- * <ul>
- * <li>The PipeLine is transacted and the exitState of the pipeline is not equal to {@link nl.nn.adapterframework.core.PipeLine#setCommitOnState(String) commitOnState} (that defaults to 'success')</li>
- * <li>a PipeRunException or another runtime-exception has been thrown by any Pipe or by the PipeLine</li>
- * <li>the setRollBackOnly() method has been called on the userTransaction (not accessible by Pipes)</li>
- * </ul>
- * </p>
- *
+
+/** 
  * @author     Gerrit van Brakel
  * @since 4.2
  */
+@IbisDescription(
+	"This {@link IReceiver Receiver} may be used as a base-class for developing receivers." + 
+	"<p>" + 
+	"THE FOLLOWING TO BE UPDATED, attribute 'transacted' replaced by 'transactionAttribute'. " + 
+	"<table border=\"1\">" + 
+	"<tr><th>{@link #setTransactionAttribute(String) transactionAttribute}</th><th>{@link #setTransacted(boolean) transacted}</th></tr>" + 
+	"<tr><td>Required</td><td>true</td></tr>" + 
+	"<tr><td>RequiresNew</td><td>true</td></tr>" + 
+	"<tr><td>Mandatory</td><td>true</td></tr>" + 
+	"<tr><td>otherwise</td><td>false</td></tr>" + 
+	"</table>" + 
+	"</p>" + 
+	"<p>" + 
+	"<table border=\"1\">" + 
+	"<tr><th>nested elements (accessible in descender-classes)</th><th>description</th></tr>" + 
+	"<tr><td>{@link nl.nn.adapterframework.core.IPullingListener listener}</td><td>the listener used to receive messages from</td></tr>" + 
+	"<tr><td>{@link nl.nn.adapterframework.core.ITransactionalStorage inProcessStorage}</td><td>mandatory for {@link #setTransacted(boolean) transacted} receivers: place to store messages during processing.</td></tr>" + 
+	"<tr><td>{@link nl.nn.adapterframework.core.ITransactionalStorage errorStorage}</td><td>optional for {@link #setTransacted(boolean) transacted} receivers: place to store messages if message processing has gone wrong. If no errorStorage is specified, the inProcessStorage is used for errorStorage</td></tr>" + 
+	"<tr><td>{@link nl.nn.adapterframework.core.ISender errorSender}</td><td>optional for {@link #setTransacted(boolean) transacted} receviers: " + 
+	"will be called to store messages that failed to process. If no errorSender is specified, failed messages will remain in inProcessStorage</td></tr>" + 
+	"</table>" + 
+	"</p>" + 
+	"<p><b>Transaction control</b><br>" + 
+	"If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be received and processed under transaction control." + 
+	"This means that after a message has been read and processed and the transaction has ended, one of the following apply:" + 
+	"<ul>" + 
+	"<table border=\"1\">" + 
+	"<tr><th>situation</th><th>input listener</th><th>Pipeline</th><th>inProcess storage</th><th>errorSender</th><th>summary of effect</th></tr>" + 
+	"<tr><td>successful</td><td>message read and committed</td><td>message processed</td><td>unchanged</td><td>unchanged</td><td>message processed</td></tr>" + 
+	"<tr><td>procesing failed</td><td>message read and committed</td><td>message processing failed and rolled back</td><td>unchanged</td><td>message sent</td><td>message only transferred from listener to errroSender</td></tr>" + 
+	"<tr><td>listening failed</td><td>unchanged: listening rolled back</td><td>no processing performed</td><td>unchanged</td><td>unchanged</td><td>no changes, input message remains on input available for listener</td></tr>" + 
+	"<tr><td>transfer to inprocess storage failed</td><td>unchanged: listening rolled back</td><td>no processing performed</td><td>unchanged</td><td>unchanged</td><td>no changes, input message remains on input available for listener</td></tr>" + 
+	"<tr><td>transfer to errorSender failed</td><td>message read and committed</td><td>message processing failed and rolled back</td><td>message present</td><td>unchanged</td><td>message only transferred from listener to inProcess storage</td></tr>" + 
+	"</table> " + 
+	"If the application or the server crashes in the middle of one or more transactions, these transactions " + 
+	"will be recovered and rolled back after the server/application is restarted. Then allways exactly one of " + 
+	"the following applies for any message touched at any time by Ibis by a transacted receiver:" + 
+	"<ul>" + 
+	"<li>It is processed correctly by the pipeline and removed from the input-queue, " + 
+	"    not present in inProcess storage and not send to the errorSender</li> " + 
+	"<li>It is not processed at all by the pipeline, or processing by the pipeline has been rolled back; " + 
+	"    the message is removed from the input queue and either (one of) still in inProcess storage <i>or</i> sent to the errorSender</li>" + 
+	"</ul>" + 
+	"</p>" + 
+	"<p><b>commit or rollback</b><br>" + 
+	"If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be either committed or rolled back." + 
+	"All message-processing transactions are committed, unless one or more of the following apply:" + 
+	"<ul>" + 
+	"<li>The PipeLine is transacted and the exitState of the pipeline is not equal to {@link nl.nn.adapterframework.core.PipeLine#setCommitOnState(String) commitOnState} (that defaults to 'success')</li>" + 
+	"<li>a PipeRunException or another runtime-exception has been thrown by any Pipe or by the PipeLine</li>" + 
+	"<li>the setRollBackOnly() method has been called on the userTransaction (not accessible by Pipes)</li>" + 
+	"</ul>" + 
+	"</p>" 
+)
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable, BeanFactoryAware {
 	protected Logger log = LogUtil.getLogger(this);
 	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -924,7 +925,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 	/**
 	 * All messages that for this receiver are pumped down to this method, so it actually
-	 * calls the {@link nl.nn.adapterframework.core.Adapter adapter} to process the message.<br/>
+	 * calls the {@link Adapter adapter} to process the message.<br/>
 
 	 * Assumes that a transation has been started where necessary.
 	 */
@@ -1643,7 +1644,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	public IListener getListener() {
 		return listener;
 	}/**
-	 * Sets the listener. If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and no <code>getName()</code>
+	 * Sets the listener. If the listener implements the {@link INamedObject name} interface and no <code>getName()</code>
 	 * of the listener is empty, the name of this object is given to the listener.
 	 * Creation date: (04-11-2003 12:04:05)
 	 * @param newListener IListener
@@ -1764,7 +1765,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 	/**
 	 * Sets the name of the Receiver. 
-	 * If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and <code>getName()</code>
+	 * If the listener implements the {@link INamedObject name} interface and <code>getName()</code>
 	 * of the listener is empty, the name of this object is given to the listener.
 	 */
 	@IbisDoc({"name of the receiver as known to the adapter", ""})

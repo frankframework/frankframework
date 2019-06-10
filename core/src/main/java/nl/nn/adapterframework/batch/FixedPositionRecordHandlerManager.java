@@ -20,15 +20,17 @@ import java.util.Map;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 
-/**
- * Manager that decides the handlers based on the content of a field in the specified 
- * position in a record. The fields in the record are of a fixed length.
- * The data beween the start position and end position is taken as key in the flow-table.
- * 
- * 
+
+/** 
  * @author John Dekker
  */
+@IbisDescription(
+	"Manager that decides the handlers based on the content of a field in the specified " + 
+	"position in a record. The fields in the record are of a fixed length." + 
+	"The data beween the start position and end position is taken as key in the flow-table." 
+)
 public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 
 	private int startPosition;

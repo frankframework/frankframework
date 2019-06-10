@@ -7,7 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- *  * Straight forward implemenation of {@link AdapterService}, which is only filled by calls to {@link #registerAdapter(nl.nn.adapterframework.core.IAdapter)}, typically by digester rules via {@link Configuration#registerAdapter(nl.nn.adapterframework.core.IAdapter)}
+ *  * Straight forward implemenation of {@link AdapterService}, which is only filled by calls to {@link #registerAdapter(IAdapter)}, typically by digester rules via {@link Configuration#registerAdapter(IAdapter)}
  *
  * @author Michiel Meeuwissen
  * @since 5.4

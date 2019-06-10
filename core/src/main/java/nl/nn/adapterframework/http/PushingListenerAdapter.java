@@ -25,19 +25,23 @@ import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
-/**
- * Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
- * to receive messages from Servlets.
- * </table>
+
+/** 
  * @author  Gerrit van Brakel 
  * @since   4.12
  */
+@IbisDescription(
+	"Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}" + 
+	"to receive messages from Servlets." + 
+	"</table>" 
+)
 public class PushingListenerAdapter implements IPushingListener, ServiceClient {
 	protected Logger log = LogUtil.getLogger(this);
 

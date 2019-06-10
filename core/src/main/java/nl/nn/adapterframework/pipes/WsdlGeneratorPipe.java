@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -12,11 +12,9 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
- */
+*/
 package nl.nn.adapterframework.pipes;
-
 import java.io.ByteArrayOutputStream;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
@@ -24,26 +22,18 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.soap.Wsdl;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
-
-/**
- * Generate WSDL of parent or specified adapter.
- *
-
- * @author Jaco de Groot
- */
 public class WsdlGeneratorPipe extends FixedForwardPipe {
 	private String from = "parent";
-
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (!"parent".equals(getFrom()) && !"input".equals(getFrom())) {
 			throw new ConfigurationException(getLogPrefix(null) + " from should either be parent or input");
 		}
 	}
-
 	public PipeRunResult doPipe(Object input, IPipeLineSession session)
 			throws PipeRunException {
 		String result = null;
@@ -74,14 +64,11 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		}
 		return new PipeRunResult(getForward(), result);
 	}
-
 	public String getFrom() {
 		return from;
 	}
-
 	@IbisDoc({"either parent (adapter of pipeline which contains this pipe) or input (name of adapter specified by input of pipe)", "parent"})
 	public void setFrom(String from) {
 		this.from = from;
 	}
-
 }

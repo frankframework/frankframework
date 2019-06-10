@@ -131,7 +131,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
      * <li></li>
      * </ol>
      *
-     * @see org.apache.commons.digester.ObjectCreationFactory#createObject(org.xml.sax.Attributes)
+     * @see org.apache.commons.digester.ObjectCreationFactory#createObject(Attributes)
      */
     @Override
     public Object createObject(Attributes attrs) throws Exception {

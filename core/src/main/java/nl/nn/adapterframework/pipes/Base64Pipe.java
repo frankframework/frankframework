@@ -31,17 +31,19 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 
-/**
- * Pipe that performs base64 encoding and decoding.
- *
- *
+
+/** 
  * @since   4.4
  * @author  Niels Meijer
- * @version 2.0
  */
+@IbisDescription(
+	"Pipe that performs base64 encoding and decoding." + 
+	"@version 2.0" 
+)
 public class Base64Pipe extends FixedForwardPipe {
 
 	private String direction = "encode";

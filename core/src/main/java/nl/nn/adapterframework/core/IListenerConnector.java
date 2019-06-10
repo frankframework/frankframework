@@ -31,8 +31,8 @@ public interface IListenerConnector {
 	public final static String THREAD_CONTEXT_SESSION_KEY="JmsSession";
 
 	void configureEndpointConnection(IPortConnectedListener listener, ConnectionFactory connectionFactory,
-			Destination destination, IbisExceptionListener exceptionListener, String cacheMode, int acknowledgeMode,
-			boolean sessionTransacted, String selector, long receiveTimeout, long pollGuardInterval)
+                                     Destination destination, IbisExceptionListener exceptionListener, String cacheMode, int acknowledgeMode,
+                                     boolean sessionTransacted, String selector, long receiveTimeout, long pollGuardInterval)
 			throws ConfigurationException;
 
 	/**

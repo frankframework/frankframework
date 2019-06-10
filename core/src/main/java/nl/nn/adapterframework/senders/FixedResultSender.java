@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -39,24 +40,26 @@ import nl.nn.adapterframework.util.XmlUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 
-/**
- * FixedResultSender, same behaviour as {@link nl.nn.adapterframework.pipes.FixedResult FixedResult}, but now as a ISender.
- *
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr>
- *   <td><i>any</i></td><td><i>any</i></td>
- * 	 <td>Any parameters defined on the sender will be used for replacements. Each occurrence
- * 		 of <code>${name-of-parameter}</code> in the file {@link #setFileName(String) fileName} 
- *       will be replaced by its corresponding <i>value-of-parameter</i>. <br>
- *       This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}</td>
- * </tr>
- * </table>
- * </p>
+
+/** 
  * @author  Gerrit van Brakel
  * @since   4.9
  */
+@IbisDescription(
+	"FixedResultSender, same behaviour as {@link nl.nn.adapterframework.pipes.FixedResult FixedResult}, but now as a ISender." + 
+	"<table border=\"1\">" + 
+	"<p><b>Parameters:</b>" + 
+	"<tr><th>name</th><th>type</th><th>remarks</th></tr>" + 
+	"<tr>" + 
+	"  <td><i>any</i></td><td><i>any</i></td>" + 
+	"	 <td>Any parameters defined on the sender will be used for replacements. Each occurrence" + 
+	"		 of <code>${name-of-parameter}</code> in the file {@link #setFileName(String) fileName} " + 
+	"      will be replaced by its corresponding <i>value-of-parameter</i>. <br>" + 
+	"      This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}</td>" + 
+	"</tr>" + 
+	"</table>" + 
+	"</p>" 
+)
 public class FixedResultSender extends SenderWithParametersBase {
 
 	private String fileName;

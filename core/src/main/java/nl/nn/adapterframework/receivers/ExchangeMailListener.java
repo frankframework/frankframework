@@ -67,9 +67,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
- * Implementation of a {@link nl.nn.adapterframework.core.IPullingListener
+ * Implementation of a {@link IPullingListener
  * IPullingListener} that enables a
- * {@link nl.nn.adapterframework.receivers.GenericReceiver} to look in a folder
+ * {@link GenericReceiver} to look in a folder
  * for received mails. When a mail is found, it is moved to an output folder (or
  * it's deleted), so that it isn't found more then once. A xml string with
  * information about the mail is passed to the pipeline.

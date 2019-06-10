@@ -127,7 +127,7 @@ public class JndiMap implements Map {
 
 	public void putAll(Map t) {
 		for (Iterator iter = t.entrySet().iterator(); iter.hasNext();) {
-			Map.Entry entry = (Map.Entry) iter.next();
+			Entry entry = (Entry) iter.next();
 			put(entry.getKey(), entry.getValue());
 		}
 	}

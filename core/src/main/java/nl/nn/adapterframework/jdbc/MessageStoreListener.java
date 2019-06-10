@@ -23,41 +23,42 @@ import java.util.StringTokenizer;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 
 import org.apache.commons.lang.text.StrTokenizer;
 
-/**
- * Read messages from the ibisstore previously stored by a
- * {@link MessageStoreSender}.
- * 
- * Example configuration:
- * <code><pre>
-		&lt;listener
-			name="MyListener"
-			className="nl.nn.adapterframework.jdbc.MessageStoreListener"
-			jmsRealm="jdbc"
-			slotId="${instance.name}/MyService"
-			sessionKeys="key1,key2"
-		/>
-		&lt;!-- DummyTransactionalStorage to enable messagelog browser in the console (messages are moved to messagelog by MessageStoreListener hence JdbcTransactionalStorage isn't needed) -->
-		&lt;messageLog
-			className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage"
-			jmsRealm="jdbc"
-			slotId="${instance.name}/ServiceName"
-		/>
-		&lt;!-- On error the message is moved to the errorStorage. And when moveToMessageLog="true" also to the messageLog (after manual resend the messageLog doesn't change). -->
-		&lt;errorStorage
-			className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-			jmsRealm="jdbc"
-			slotId="${instance.name}/ServiceName"
-		/>
- * </pre></code>
- * 
- * 
+
+/** 
  * @author Jaco de Groot
  */
+@IbisDescription(
+	"Read messages from the ibisstore previously stored by a" + 
+	"{@link MessageStoreSender}." + 
+	"Example configuration:" + 
+	"<code><pre>" + 
+	"lt;listener" + 
+	"name=\"MyListener\"" + 
+	"className=\"nl.nn.adapterframework.jdbc.MessageStoreListener\"" + 
+	"jmsRealm=\"jdbc\"" + 
+	"slotId=\"${instance.name}/MyService\"" + 
+	"sessionKeys=\"key1,key2\"" + 
+	">" + 
+	"lt;!-- DummyTransactionalStorage to enable messagelog browser in the console (messages are moved to messagelog by MessageStoreListener hence JdbcTransactionalStorage isn't needed) -->" + 
+	"lt;messageLog" + 
+	"className=\"nl.nn.adapterframework.jdbc.DummyTransactionalStorage\"" + 
+	"jmsRealm=\"jdbc\"" + 
+	"slotId=\"${instance.name}/ServiceName\"" + 
+	">" + 
+	"lt;!-- On error the message is moved to the errorStorage. And when moveToMessageLog=\"true\" also to the messageLog (after manual resend the messageLog doesn't change). -->" + 
+	"lt;errorStorage" + 
+	"className=\"nl.nn.adapterframework.jdbc.JdbcTransactionalStorage\"" + 
+	"jmsRealm=\"jdbc\"" + 
+	"slotId=\"${instance.name}/ServiceName\"" + 
+	">" + 
+	"</pre></code>" 
+)
 public class MessageStoreListener extends JdbcQueryListener {
 	private String slotId;
 	private String sessionKeys = null;

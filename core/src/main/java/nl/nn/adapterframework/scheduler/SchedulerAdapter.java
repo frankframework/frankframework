@@ -255,7 +255,7 @@ public class SchedulerAdapter {
 				
 				xbRoot.addSubElement(el);
 			}
-		} catch (org.quartz.SchedulerException se) {
+		} catch (SchedulerException se) {
 			log.error(se);
 		}
 		return xbRoot;

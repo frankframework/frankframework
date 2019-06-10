@@ -18,16 +18,18 @@ package nl.nn.adapterframework.batch;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.util.ClassUtils;
 
-/**
- * Manager that decides the handlers based on the content of a field in the specified 
- * position in a record. The fields in the record are separated by a separator.
- * The value of the specified field is taken as key in the flow-table.
- * 
- * 
+
+/** 
  * @author John Dekker
  */
+@IbisDescription(
+	"Manager that decides the handlers based on the content of a field in the specified " + 
+	"position in a record. The fields in the record are separated by a separator." + 
+	"The value of the specified field is taken as key in the flow-table." 
+)
 public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 
 	private int fieldNr;

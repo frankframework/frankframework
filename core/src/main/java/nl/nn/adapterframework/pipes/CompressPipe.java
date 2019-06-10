@@ -35,25 +35,27 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
 
-/**
- * Pipe to zip or unzip a message or file.  
- * 
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>When no problems encountered</td></tr>
- * <tr><td>"exception"</td><td>When problems encountered. The result passed to the next pipe is the exception that was caught formatted by the ErrorMessageFormatter class.</td></tr>
- * </table>
- * </p>
- * 
+
+/** 
  * @author John Dekker
  * @author Jaco de Groot (***@dynasol.nl)
  */
+@IbisDescription(
+	"Pipe to zip or unzip a message or file.  " + 
+	"<p><b>Exits:</b>" + 
+	"<table border=\"1\">" + 
+	"<tr><th>state</th><th>condition</th></tr>" + 
+	"<tr><td>\"success\"</td><td>When no problems encountered</td></tr>" + 
+	"<tr><td>\"exception\"</td><td>When problems encountered. The result passed to the next pipe is the exception that was caught formatted by the ErrorMessageFormatter class.</td></tr>" + 
+	"</table>" + 
+	"</p>" 
+)
 public class CompressPipe extends FixedForwardPipe {
 
 	private final static String EXCEPTIONFORWARD = "exception";

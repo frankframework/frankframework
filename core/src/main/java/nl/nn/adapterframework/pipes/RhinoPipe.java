@@ -12,12 +12,13 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
- */
+*/
 package nl.nn.adapterframework.pipes;
 
 import java.net.URL;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.mozilla.javascript.*;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -34,43 +35,44 @@ import nl.nn.adapterframework.util.Misc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 
-/**
- * Rhino JavaScript Runtime Factory Pipe.
- * 
- * This pipe takes all input and pushes it into javascript runtime.
- * The invoke method is called to initialize the runtime
- * Afterward the results are evaluated.
- * <table border="1">
- * <p>
- * <b>Parameters:</b>
- * <tr>
- * <th>name</th>
- * <th>type</th>
- * <th>remarks</th>
- * </tr>
- * <tr>
- * <td><i>any</i></td>
- * <td><i>any</i></td>
- * <td>Any parameters defined on the pipe will be Concatenated into one string and added to input</td>
- * </tr>
- * </table>
- * </p>
- * <p>
- * <b>Exits:</b>
- * <table border="1">
- * <tr>
- * <th>state</th>
- * <th>condition</th>
- * </tr>
- * <tr>
- * <td>"success"</td>
- * <td>default</td>
- * </tr>
- * </table>
- * </p>
- * 
+
+/** 
  * @author Barry Jacobs
  */
+@IbisDescription(
+	"Rhino JavaScript Runtime Factory Pipe." + 
+	"This pipe takes all input and pushes it into javascript runtime." + 
+	"The invoke method is called to initialize the runtime" + 
+	"Afterward the results are evaluated." + 
+	"<table border=\"1\">" + 
+	"<p>" + 
+	"<b>Parameters:</b>" + 
+	"<tr>" + 
+	"<th>name</th>" + 
+	"<th>type</th>" + 
+	"<th>remarks</th>" + 
+	"</tr>" + 
+	"<tr>" + 
+	"<td><i>any</i></td>" + 
+	"<td><i>any</i></td>" + 
+	"<td>Any parameters defined on the pipe will be Concatenated into one string and added to input</td>" + 
+	"</tr>" + 
+	"</table>" + 
+	"</p>" + 
+	"<p>" + 
+	"<b>Exits:</b>" + 
+	"<table border=\"1\">" + 
+	"<tr>" + 
+	"<th>state</th>" + 
+	"<th>condition</th>" + 
+	"</tr>" + 
+	"<tr>" + 
+	"<td>\"success\"</td>" + 
+	"<td>default</td>" + 
+	"</tr>" + 
+	"</table>" + 
+	"</p>" 
+)
 public class RhinoPipe extends FixedForwardPipe {
 
 	private String fileName;

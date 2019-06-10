@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Node;
@@ -51,13 +52,15 @@ import javax.wsdl.xml.WSDLLocator;
 import javax.wsdl.xml.WSDLReader;
 import javax.xml.namespace.QName;
 
-/**
- * XmlValidator that will read the XSD's to use from a WSDL. As it extends the
- * SoapValidator is will also add the SOAP envelope XSD.
- * 
+
+/** 
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
  */
+@IbisDescription(
+	"XmlValidator that will read the XSD's to use from a WSDL. As it extends the" + 
+	"SoapValidator is will also add the SOAP envelope XSD." 
+)
 public class WsdlXmlValidator extends SoapValidator {
 	private static final Logger LOG = LogUtil.getLogger(WsdlXmlValidator.class);
 

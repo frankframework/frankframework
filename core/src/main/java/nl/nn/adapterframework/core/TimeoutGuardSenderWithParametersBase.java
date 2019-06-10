@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
- */
+*/
 package nl.nn.adapterframework.core;
 
 import java.util.concurrent.Callable;
@@ -23,18 +23,20 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.NDC;
 
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
-/**
- * Extension to SenderWithParametersBase for interrupting processing when
- * timeout is exceeded.
- * 
- * 
+
+/** 
  * @author Peter Leeuwenburgh
  */
+@IbisDescription(
+	"Extension to SenderWithParametersBase for interrupting processing when" + 
+	"timeout is exceeded." 
+)
 public class TimeoutGuardSenderWithParametersBase extends
 		SenderWithParametersBase {
 

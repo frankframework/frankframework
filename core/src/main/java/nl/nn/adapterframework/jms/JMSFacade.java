@@ -48,6 +48,7 @@ import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
@@ -56,17 +57,18 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import org.apache.commons.lang.StringUtils;
 
 
-/**
- * Provides functions for jms connections, queues and topics and acts as a facade
- * to hide for clients whether a <code>Queue</code> or <code>Topic</code> is used.
- * <br/>
- * The <code>destinationType</code> field specifies which
- * type should be used.<br/>
- * This class sends messages with JMS.
- *
- *
+
+/** 
  * @author 	Gerrit van Brakel
  */
+@IbisDescription(
+	"Provides functions for jms connections, queues and topics and acts as a facade" + 
+	"to hide for clients whether a <code>Queue</code> or <code>Topic</code> is used." + 
+	"<br/>" + 
+	"The <code>destinationType</code> field specifies which" + 
+	"type should be used.<br/>" + 
+	"This class sends messages with JMS." 
+)
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
 
 	public static final String MODE_PERSISTENT     = "PERSISTENT";

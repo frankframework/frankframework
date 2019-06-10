@@ -25,15 +25,18 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.util.ClassUtils;
 
 import org.apache.commons.lang.StringUtils;
 
-/**
- * Sends a message to a Sender for each line of the file that the input message refers to.
- *
+
+/** 
  * @author  Gerrit van Brakel
  */
+@IbisDescription(
+	"Sends a message to a Sender for each line of the file that the input message refers to." 
+)
 public class FileLineIteratorPipe extends StreamLineIteratorPipe {
 
 	private String move2dirAfterTransform;

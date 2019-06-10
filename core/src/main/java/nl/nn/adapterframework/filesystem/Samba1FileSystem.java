@@ -36,10 +36,9 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
-/**
- * 
+
+/** 
  * @author alisihab
- *
  */
 public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 

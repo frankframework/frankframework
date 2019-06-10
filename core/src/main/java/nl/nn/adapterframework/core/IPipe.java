@@ -38,7 +38,7 @@ void configure() throws ConfigurationException;
  * This is where the action takes place. Pipes may only throw a PipeRunException,
  * to be handled by the caller of this object.
  */
-PipeRunResult doPipe (Object input, IPipeLineSession session) throws PipeRunException;
+PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException;
 
 /**
  * Indicates the maximum number of treads that may call {@link #doPipe(Object, IPipeLineSession) doPipe()} simultaneously.

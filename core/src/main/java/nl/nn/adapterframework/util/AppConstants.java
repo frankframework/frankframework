@@ -154,7 +154,7 @@ public final class AppConstants extends Properties implements Serializable{
 	/**
 	 * the method is like the <code>Properties.getProperty</code>, but provides functionality to resolve <code>${variable}</code>
 	 * syntaxis. It uses the AppConstants values and systemvalues to resolve the variables, and does this recursively.
-	 * @see nl.nn.adapterframework.util.StringResolver
+	 * @see StringResolver
 	 */
 	public String getResolvedProperty(String key) {
 		String value = null;

@@ -149,13 +149,13 @@ public class JmsRealm {
 	/**
 	 * The name of the QueueConnectionFactory <br/>
 	 */
-	public java.lang.String getQueueConnectionFactoryName() {
+	public String getQueueConnectionFactoryName() {
 		return queueConnectionFactoryName;
 	}
 	/**
 	 * The name of this realm<br/>
 	 */
-	public java.lang.String getRealmName() {
+	public String getRealmName() {
 		return realmName;
 	}
     public String getSecurityProtocol() {
@@ -164,7 +164,7 @@ public class JmsRealm {
 	/**
 	 * The name of the TopicConnectionFactory <br/>
 	 */
-	public java.lang.String getTopicConnectionFactoryName() {
+	public String getTopicConnectionFactoryName() {
 		return topicConnectionFactoryName;
 	}
     public String getUrlPkgPrefixes() {
@@ -186,14 +186,14 @@ public class JmsRealm {
 	 * Set the name of the QueueConnectionFactory<br/>
 	 * @param newQueueConnectionFactoryName java.lang.String
 	 */
-	public void setQueueConnectionFactoryName(java.lang.String newQueueConnectionFactoryName) {
+	public void setQueueConnectionFactoryName(String newQueueConnectionFactoryName) {
 		queueConnectionFactoryName = newQueueConnectionFactoryName;
 	}
 	/**
 	 * Set the name of this realm<br/>.
 	 * @param newName java.lang.String
 	 */
-	public void setRealmName(java.lang.String newName) {
+	public void setRealmName(String newName) {
 		realmName = newName;
 	}
 	    public void setSecurityProtocol(String securityProtocol) {
@@ -203,7 +203,7 @@ public class JmsRealm {
 	 * Set the name of the TopicConnectionFactory<br/>
 	 * @param newTopicConnectionFactoryName java.lang.String
 	 */
-	public void setTopicConnectionFactoryName(java.lang.String newTopicConnectionFactoryName) {
+	public void setTopicConnectionFactoryName(String newTopicConnectionFactoryName) {
 		topicConnectionFactoryName = newTopicConnectionFactoryName;
 	}
     public void setUrlPkgPrefixes(String urlPkgPrefixes) {
@@ -212,7 +212,7 @@ public class JmsRealm {
   /**
    * The <code>toString()</code> method retrieves its value
    * by reflection.
-   * @see org.apache.commons.lang.builder.ToStringBuilder#reflectionToString
+   * @see ToStringBuilder#reflectionToString
    *
    **/
   public String toString() {

@@ -13,22 +13,21 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 
-/**
- * Sender to work with Amazon S3. 
- * 
- * <p><b>S3 File System specific Actions:</b></p>
- * <p>The <code>createBucket</code> action requires bucket name as input. Bucket region must be specified.</p>
- * <p>The <code>deleteBucket</code> action requires bucket name as input. </p>
- * <p>The <code>copy</code> action requires the destinationFileName parameter to be set which should contain the name of the destination file. Destination bucket name must be specified. </p>
- * <p>The <code>restore</code> action restores an archived copy of an object back into Amazon S3, requires object name as input. Tier must be specified. </p>
- * 
- * <br/>
- */
+@IbisDescription(
+	"Sender to work with Amazon S3. " + 
+	"<p><b>S3 File System specific Actions:</b></p>" + 
+	"<p>The <code>createBucket</code> action requires bucket name as input. Bucket region must be specified.</p>" + 
+	"<p>The <code>deleteBucket</code> action requires bucket name as input. </p>" + 
+	"<p>The <code>copy</code> action requires the destinationFileName parameter to be set which should contain the name of the destination file. Destination bucket name must be specified. </p>" + 
+	"<p>The <code>restore</code> action restores an archived copy of an object back into Amazon S3, requires object name as input. Tier must be specified. </p>" + 
+	"<br/>" 
+)
 public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSystem> {
 
 	private List<String> specificActions = Arrays.asList("createBucket", "deleteBucket", "copy", "restore");

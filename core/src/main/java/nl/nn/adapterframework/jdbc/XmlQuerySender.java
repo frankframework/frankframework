@@ -32,6 +32,7 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
 
@@ -45,32 +46,34 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
 
-/**
- * QuerySender that transforms the input message to a query.
- * <br/><code><pre>
- *  select
- *  delete
- *  insert
- *  update - tableName
- *         - columns [0..1] - column [1..n] - name
- *                                          - value [0..1]
- *                                          - type [0..1] one of {string;function;number;datetime;blob;clob;xmldatetime}, string by default
- *                                          - decimalSeparator [0..1] only applicable for type=number
- *                                          - groupingSeparator [0..1] only applicable for type=number
- *                                          - formatString [0..1] only applicable for type=datetime, yyyy-MM-dd HH:mm:ss.SSS by default 
- *         - where [0..1]
- *         - order [0..1]
- * <br/>
- *  alter - sequenceName
- *        - startWith
- * <br/>
- *  sql   - type [0..1] one of {select;ddl;other}, other by default
- *        - query
- * <br/>
- * </pre></code><br/>
- * 
+
+/** 
  * @author  Peter Leeuwenburgh
  */
+@IbisDescription(
+	"QuerySender that transforms the input message to a query." + 
+	"<br/><code><pre>" + 
+	" select" + 
+	" delete" + 
+	" insert" + 
+	" update - tableName" + 
+	"        - columns [0..1] - column [1..n] - name" + 
+	"                                         - value [0..1]" + 
+	"                                         - type [0..1] one of {string;function;number;datetime;blob;clob;xmldatetime}, string by default" + 
+	"                                         - decimalSeparator [0..1] only applicable for type=number" + 
+	"                                         - groupingSeparator [0..1] only applicable for type=number" + 
+	"                                         - formatString [0..1] only applicable for type=datetime, yyyy-MM-dd HH:mm:ss.SSS by default " + 
+	"        - where [0..1]" + 
+	"        - order [0..1]" + 
+	"<br/>" + 
+	" alter - sequenceName" + 
+	"       - startWith" + 
+	"<br/>" + 
+	" sql   - type [0..1] one of {select;ddl;other}, other by default" + 
+	"       - query" + 
+	"<br/>" + 
+	"</pre></code><br/>" 
+)
 public class XmlQuerySender extends JdbcQuerySenderBase {
 
 	public static final String TYPE_STRING = "string";

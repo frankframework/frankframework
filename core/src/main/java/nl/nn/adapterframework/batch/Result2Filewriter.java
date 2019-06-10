@@ -25,18 +25,20 @@ import java.util.Map;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
 
 
-/**
- * Resulthandler that writes the transformed record to a file.
- * 
- * 
+
+/** 
  * @author  John Dekker
  */
+@IbisDescription(
+	"Resulthandler that writes the transformed record to a file." 
+)
 public class Result2Filewriter extends ResultWriter {
 	
 	private String outputDirectory;
