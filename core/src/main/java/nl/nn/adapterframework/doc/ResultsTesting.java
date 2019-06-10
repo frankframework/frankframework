@@ -55,7 +55,7 @@ public class ResultsTesting {
         return this.json;
     }
 
-    public void addMethods(String currentFolder, String currentClass, String methodName, String description, String defaultValue, String originalClassName) {
+    public void addMethods(String currentFolder, String currentClass, String methodName, String description, String defaultValue, String originalClassName, String descriptionClass) {
 
         // Check if the folder already exists (there is only one of each)
         boolean folderExists = false;
@@ -92,7 +92,7 @@ public class ResultsTesting {
             if (currentFolder.equals(folder.getName())) {
                 for (AClass aClass : folder.getClasses()) {
                     if (currentClass.equals(aClass.getName())) {
-                        aClass.addMethod(new AMethod(currentFolder, currentClass, methodName, description, defaultValue, originalClassName));
+                        aClass.addMethod(new AMethod(currentFolder, currentClass, methodName, description, defaultValue, originalClassName, descriptionClass));
                     }
                 }
             }
@@ -109,14 +109,16 @@ public class ResultsTesting {
         private String superClassName;
         private String folderName;
         private String originalClassName;
+        private String descriptionClass;
 
-        public AMethod(String folderName, String className, String name, String description, String defaultValue, String originalClassName) {
+        public AMethod(String folderName, String className, String name, String description, String defaultValue, String originalClassName, String descriptionClass) {
             this.folderName = folderName;
             this.className = className;
             this.name = name;
             this.description = description;
             this.defaultValue = defaultValue;
             this.originalClassName = originalClassName;
+            this.descriptionClass = descriptionClass;
         }
     }
 
