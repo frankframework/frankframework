@@ -18,6 +18,7 @@ package nl.nn.adapterframework.batch;
 import java.util.List;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -34,12 +35,13 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 
-/**
- * Abstract class for resulthandlers (handler that handles the transformed record).
- * 
- * 
+
+/** 
  * @author  John Dekker
  */
+@IbisDescription(
+	"Abstract class for resulthandlers (handler that handles the transformed record)." 
+)
 public abstract class AbstractResultHandler implements IResultHandler, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);
 

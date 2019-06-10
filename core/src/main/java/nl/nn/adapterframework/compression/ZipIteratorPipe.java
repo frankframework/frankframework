@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.pipes.IteratingPipe;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -40,30 +41,30 @@ import nl.nn.adapterframework.util.StreamUtil;
 import org.apache.commons.lang.StringUtils;
 
 
-/**
- * Sends a message to a Sender for each entry of its input, that must be an ZipInputStream. The input of the pipe must be one of:
- * <ul>
- * 	<li>String refering to a filename</li>
- *  <li>File</li>
- *  <li>InputStream</li> 
- * </ul>
- * The message sent each time to the sender is the filename of the entry found in the archive. 
- * The contents of the archive is available as a Stream or a String in a session variable. 
- *
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.core.ISender sender}</td><td>specification of sender to send messages with</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}</td><td>specification of listener to listen to for replies</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be handed to the sender, if this is a {@link nl.nn.adapterframework.core.ISenderWithParameters ISenderWithParameters}</td></tr>
- * </table>
- * </p>
- * 
- * For more configuration options, see {@link MessageSendingPipe}.
- * <br>
- * 
+
+/** 
  * @author  Gerrit van Brakel
  * @since   4.9.10
  */
+@IbisDescription(
+	"Sends a message to a Sender for each entry of its input, that must be an ZipInputStream. The input of the pipe must be one of:" + 
+	"<ul>" + 
+	"	<li>String refering to a filename</li>" + 
+	" <li>File</li>" + 
+	" <li>InputStream</li> " + 
+	"</ul>" + 
+	"The message sent each time to the sender is the filename of the entry found in the archive. " + 
+	"The contents of the archive is available as a Stream or a String in a session variable. " + 
+	"<table border=\"1\">" + 
+	"<tr><th>nested elements</th><th>description</th></tr>" + 
+	"<tr><td>{@link nl.nn.adapterframework.core.ISender sender}</td><td>specification of sender to send messages with</td></tr>" + 
+	"<tr><td>{@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}</td><td>specification of listener to listen to for replies</td></tr>" + 
+	"<tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be handed to the sender, if this is a {@link nl.nn.adapterframework.core.ISenderWithParameters ISenderWithParameters}</td></tr>" + 
+	"</table>" + 
+	"</p>" + 
+	"For more configuration options, see {@link MessageSendingPipe}." + 
+	"<br>" 
+)
 public class ZipIteratorPipe extends IteratingPipe {
 
 	private String contentsSessionKey="zipdata";

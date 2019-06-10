@@ -30,6 +30,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -44,15 +45,16 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-/**
- * File {@link IPullingListener listener} that looks in a directory for files
- * according to a <code>wildcard</code> and a <code>excludeWildcard</code>.  
- * When a file is found, it is moved to an outputdirectory, so that it isn't found more then once.  
- * The name of the moved file is passed to the pipeline.  
- *
- *
+
+/** 
  * @author  John Dekker
  */
+@IbisDescription(
+	"File {@link IPullingListener listener} that looks in a directory for files" + 
+	"according to a <code>wildcard</code> and a <code>excludeWildcard</code>.  " + 
+	"When a file is found, it is moved to an outputdirectory, so that it isn't found more then once.  " + 
+	"The name of the moved file is passed to the pipeline.  " 
+)
 public class DirectoryListener implements IPullingListener, INamedObject, HasPhysicalDestination {
 	protected Logger log = LogUtil.getLogger(this);
 

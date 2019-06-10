@@ -27,7 +27,7 @@ import org.apache.soap.util.xml.QName;
  */
 public class SoapMappingRegistryWithDefault extends SOAPMappingRegistry {
 	
-	protected Deserializer queryDeserializer_(QName elementType, java.lang.String encodingStyleURI)
+	protected Deserializer queryDeserializer_(QName elementType, String encodingStyleURI)
 	{
 		Deserializer result = super.queryDeserializer_(elementType,encodingStyleURI);
 		if (result==null) {

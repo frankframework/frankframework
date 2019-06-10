@@ -154,7 +154,7 @@ public class ListenerPortPoller implements DisposableBean {
 	 *
 	 * @param elpc ListenerPortConnector for which state is to be changed.
 	 *
-	 * @throws nl.nn.adapterframework.configuration.ConfigurationException
+	 * @throws ConfigurationException
 	 */
 	public void toggleConfiguratorState(IListenerConnector elpc) throws ConfigurationException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
 		GenericReceiver receiver = (GenericReceiver) getListener(elpc).getReceiver();

@@ -45,7 +45,7 @@ import org.apache.struts.action.ActionMapping;
  * pipename.
  * @author  Johan Verrips
  * @see nl.nn.adapterframework.core.PipeLine
- * @see nl.nn.adapterframework.core.Adapter
+ * @see Adapter
  */
 public class ShowAdapterStatistics extends ActionBase {
 

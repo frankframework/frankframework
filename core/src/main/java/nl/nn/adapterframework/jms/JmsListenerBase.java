@@ -35,6 +35,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapper;
@@ -45,12 +46,14 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 
-/**
- * Common baseclass for Pulling and Pushing JMS Listeners.
- *
+
+/** 
  * @author  Gerrit van Brakel
  * @since   4.9
  */
+@IbisDescription(
+	"Common baseclass for Pulling and Pushing JMS Listeners." 
+)
 public class JmsListenerBase extends JMSFacade implements HasSender, IWithParameters {
 
 	private long timeOut = 1000; // Same default value as Spring: https://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/jms/listener/AbstractPollingMessageListenerContainer.html#setReceiveTimeout(long)

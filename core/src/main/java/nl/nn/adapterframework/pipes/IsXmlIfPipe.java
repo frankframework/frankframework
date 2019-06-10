@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
- */
+*/
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -21,17 +21,18 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.commons.lang.StringUtils;
 
-/**
- * Selects an exitState, based on if the input is a XML string.
- * 
- * The input is a XML string if it, after removing leading white-space characters, starts with '<'.
- * 
- *
+
+/** 
  * @author  Peter Leeuwenburgh
  * @since   4.3
  */
+@IbisDescription(
+	"Selects an exitState, based on if the input is a XML string." + 
+	"The input is a XML string if it, after removing leading white-space characters, starts with '<'." 
+)
 
 public class IsXmlIfPipe extends AbstractPipe {
 

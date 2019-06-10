@@ -19,6 +19,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
@@ -30,12 +31,14 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
-/**
- * Base class for building JDBC-senders.
- *
+
+/** 
  * @author  Gerrit van Brakel
  * @since 	4.2.h
  */
+@IbisDescription(
+	"Base class for building JDBC-senders." 
+)
 public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithParameters {
 
 	private int timeout = 0;

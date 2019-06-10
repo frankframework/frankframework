@@ -19,14 +19,17 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
-/**
- * Echos input to output. 
- * 
+
+/** 
  * @author  Gerrit van Brakel
  * @since   4.9
  */
+@IbisDescription(
+	"Echos input to output. " 
+)
 public class EchoSender extends SenderWithParametersBase {
 	
 	private boolean synchronous=true;

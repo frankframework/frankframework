@@ -25,24 +25,26 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.util.EncapsulatingReader;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 
-/**
- * Pipe for converting text to or from xml. 
- * 
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
- * </table>
- * </p>
- * 
+
+/** 
  * @author J. Dekker
  */
+@IbisDescription(
+	"Pipe for converting text to or from xml. " + 
+	"<p><b>Exits:</b>" + 
+	"<table border=\"1\">" + 
+	"<tr><th>state</th><th>condition</th></tr>" + 
+	"<tr><td>\"success\"</td><td>default</td></tr>" + 
+	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>" + 
+	"</table>" + 
+	"</p>" 
+)
 public class Text2XmlPipe extends FixedForwardPipe {
 	private String xmlTag;
 	private boolean includeXmlDeclaration = true;

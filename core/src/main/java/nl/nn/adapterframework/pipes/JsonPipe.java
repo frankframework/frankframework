@@ -20,6 +20,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -30,31 +31,33 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.json.XML;
 
-/**
- * Perform an JSON to XML transformation
- *
- * <p>
- * <b>Exits:</b>
- * <table border="1">
- * <tr>
- * <th>state</th>
- * <th>condition</th>
- * </tr>
- * <tr>
- * <td>"success"</td>
- * <td>default</td>
- * </tr>
- * <tr>
- * <td>
- * <i>{@link #setForwardName(String) forwardName}</i>
- * </td>
- * <td>if specified</td>
- * </tr>
- * </table>
- * </p>
+
+/** 
  * @author Martijn Onstwedder
  * @author Tom van der Heijden
  */
+@IbisDescription(
+	"Perform an JSON to XML transformation" + 
+	"<p>" + 
+	"<b>Exits:</b>" + 
+	"<table border=\"1\">" + 
+	"<tr>" + 
+	"<th>state</th>" + 
+	"<th>condition</th>" + 
+	"</tr>" + 
+	"<tr>" + 
+	"<td>\"success\"</td>" + 
+	"<td>default</td>" + 
+	"</tr>" + 
+	"<tr>" + 
+	"<td>" + 
+	"<i>{@link #setForwardName(String) forwardName}</i>" + 
+	"</td>" + 
+	"<td>if specified</td>" + 
+	"</tr>" + 
+	"</table>" + 
+	"</p>" 
+)
 
 public class JsonPipe extends FixedForwardPipe {
 	private String direction = "json2xml";

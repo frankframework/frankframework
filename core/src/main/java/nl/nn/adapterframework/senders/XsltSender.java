@@ -21,6 +21,8 @@ import java.util.Map;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -28,7 +30,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -37,17 +38,18 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
+
 /**
- * Perform an XSLT transformation with a specified stylesheet or XPath-expression.
- *
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link Parameter param}</td><td>any parameters defined on the sender will be applied to the created transformer</td></tr>
- * </table>
- * </p>
- *
  * @author  Gerrit van Brakel
  * @since   4.9
  */
+@IbisDescription(
+	"Perform an XSLT transformation with a specified stylesheet or XPath-expression." +
+	"<tr><th>nested elements</th><th>description</th></tr>" +
+	"<tr><td>{@link Parameter param}</td><td>any parameters defined on the sender will be applied to the created transformer</td></tr>" +
+	"</table>" +
+	"</p>"
+)
 public class XsltSender extends SenderWithParametersBase {
 
 	private String xpathExpression=null;
@@ -139,7 +141,7 @@ public class XsltSender extends SenderWithParametersBase {
 	protected Source adaptInput(String input, ParameterResolutionContext prc) throws PipeRunException, DomBuilderException, TransformerException, IOException {
 		if (transformerPoolRemoveNamespaces!=null) {
 			log.debug(getLogPrefix()+ " removing namespaces from input message");
-			input = transformerPoolRemoveNamespaces.transform(prc.getInputSource(true), null); 
+			input = transformerPoolRemoveNamespaces.transform(prc.getInputSource(true), null);
 			log.debug(getLogPrefix()+ " output message after removing namespaces [" + input + "]");
 			return XmlUtils.stringToSourceForSingleUse(input, true);
 		}

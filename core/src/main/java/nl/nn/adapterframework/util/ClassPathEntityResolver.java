@@ -24,7 +24,7 @@ import org.xml.sax.SAXException;
 
 /**
  * @author Frits Berger RSD SF OJM
- * @see org.xml.sax.EntityResolver
+ * @see EntityResolver
  * This class offers the resolveEntity method to resolve a systemId to
  * a resource on the classpath.
  * @since 4.1.1
@@ -38,7 +38,7 @@ public class ClassPathEntityResolver implements EntityResolver {
 		this.classLoader = classLoader;
 	}
 	/**
-	 * @see org.xml.sax.EntityResolver#resolveEntity(String, String)
+	 * @see EntityResolver#resolveEntity(String, String)
 	 */
 	public InputSource resolveEntity(String publicId, String systemId)
 		throws SAXException, IOException {

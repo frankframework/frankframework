@@ -1,5 +1,5 @@
 /*
-   Copyright 2015-2018 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
- */
+*/
 package nl.nn.adapterframework.pipes;
 
 import java.util.Hashtable;
@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -40,101 +41,102 @@ import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 import org.apache.commons.lang.StringUtils;
 
-/**
- * Create a view for {@link nl.nn.adapterframework.http.RestListener}.
- *
- * <p>
- * <b>expected format after performing the XSLT transformation:</b>
- * <code>
- * <pre>
- *   &lt;page title="..."&gt;
- *      ...
- *   &lt;/page&gt;
- * </pre>
- * </code>
- * </p>
- * <p>
- * <b>example:</b>
- * <code>
- * <pre>
- *   &lt;page title="Generate WSDL"&gt;
- *      &lt;script type="text/javascript"&gt;
- *         //&amp;lt;![CDATA[
- *         function changeBg(obj,isOver) {
- *            var color1="#8D0022";
- *            var color2="#b4e2ff";
- *            if (isOver) {
- *               obj.style.backgroundColor=color1;
- *               obj.style.color=color2;
- *            } else {
- *               obj.style.backgroundColor=color2;
- *               obj.style.color=color1;
- *            }
- *         }
- *         //]]&amp;gt;
- *      &lt;/script&gt;
- *      &lt;form method="post" action="" enctype="multipart/form-data"&gt;
- *         &lt;table border="0" width="100%"&gt;
- *            &lt;tr&gt;
- *               &lt;td&gt;Upload xsd/zip file&lt;/td&gt;
- *               &lt;td&gt;
- *                  &lt;input type="file" name="file" value=""/&gt;
- *               &lt;/td&gt;
- *            &lt;/tr&gt;
- *             &lt;tr&gt;
- *                &lt;td/&gt;
- *                &lt;td&gt;
- *                   &lt;input type="submit" onmouseover="changeBg(this,true);" onmouseout="changeBg(this,false);" value="send"/&gt;
- *                &lt;/td&gt;
- *             &lt;/tr&gt;
- *         &lt;/table&gt;
- *      &lt;/form&gt;
- *   &lt;/page&gt;
- * </pre>
- * </code>
- * </p>
- * <p>
- * <b>example:</b>
- * <code>
- * <pre>
- *   &lt;page title="Show Generated WSDL"&gt;
- *      &lt;table&gt;
- *         &lt;caption class="caption"&gt;Files&lt;/caption&gt;
- *         &lt;tr&gt;
- *            &lt;th class="colHeader"&gt;Name&lt;/th&gt;
- *            &lt;th class="colHeader"&gt;Size&lt;/th&gt;
- *            &lt;th class="colHeader"&gt;Date&lt;/th&gt;
- *            &lt;th class="colHeader"&gt;Time&lt;/th&gt;
- *            &lt;th class="colHeader"&gt;as&lt;/th&gt;
- *         &lt;/tr&gt;
- *         &lt;tr class="filterRow"&gt;
- *            &lt;td class="filterRow"&gt;GetCollectionDisbursementAccountInformationOnPolicy_2_concrete.wsdl&lt;/td&gt;
- *            &lt;td class="filterRow"&gt;25269&lt;/td&gt;
- *            &lt;td class="filterRow"&gt;28-05-15&lt;/td&gt;
- *            &lt;td class="filterRow"&gt;11:33:30&lt;/td&gt;
- *            &lt;td class="filterRow"&gt;
- *               &lt;a href="../FileViewerServlet?resultType=xml&amp;amp;fileName=C:\Temp\GetCollectionDisbursementAccountInformationOnPolicy_2_concrete.wsdl"&gt;xml&lt;/a&gt;
- *               &lt;a href="../FileViewerServlet?resultType=text&amp;amp;fileName=C:\Temp\GetCollectionDisbursementAccountInformationOnPolicy_2_concrete.wsdl"&gt;text&lt;/a&gt;
- *            &lt;/td&gt;
- *         &lt;/tr&gt;
- *         &lt;tr class="rowEven"&gt;
- *            &lt;td class="filterRow"&gt;GetCollectionDisbursementAccountInformationOnPolicy_2_concrete.zip&lt;/td&gt;
- *            &lt;td class="filterRow"&gt;5759&lt;/td&gt;
- *            &lt;td class="filterRow"&gt;28-05-15&lt;/td&gt;
- *            &lt;td class="filterRow"&gt;11:33:30&lt;/td&gt;
- *            &lt;td class="filterRow"&gt;
- *               &lt;a href="../FileViewerServlet?resultType=zip&amp;amp;fileName=C:\Temp\GetCollectionDisbursementAccountInformationOnPolicy_2_concrete.zip"&gt;zip&lt;/a&gt;
- *            &lt;/td&gt;
- *         &lt;/tr&gt;
- *      &lt;/table&gt;
- *   &lt;/page&gt;
- * </pre>
- * </code>
- * </p>
- * <p>
- * 
+
+/** 
  * @author Peter Leeuwenburgh
  */
+@IbisDescription(
+	"Create a view for {@link nl.nn.adapterframework.http.RestListener}." + 
+	"<p>" + 
+	"<b>expected format after performing the XSLT transformation:</b>" + 
+	"<code>" + 
+	"<pre>" + 
+	"  &lt;page title=\"...\"&gt;" + 
+	"     ..." + 
+	"  &lt;/page&gt;" + 
+	"</pre>" + 
+	"</code>" + 
+	"</p>" + 
+	"<p>" + 
+	"<b>example:</b>" + 
+	"<code>" + 
+	"<pre>" + 
+	"  &lt;page title=\"Generate WSDL\"&gt;" + 
+	"     &lt;script type=\"text/javascript\"&gt;" + 
+	"        //&amp;lt;![CDATA[" + 
+	"        function changeBg(obj,isOver) {" + 
+	"           var color1=\"#8D0022\";" + 
+	"           var color2=\"#b4e2ff\";" + 
+	"           if (isOver) {" + 
+	"              obj.style.backgroundColor=color1;" + 
+	"              obj.style.color=color2;" + 
+	"           } else {" + 
+	"              obj.style.backgroundColor=color2;" + 
+	"              obj.style.color=color1;" + 
+	"           }" + 
+	"        }" + 
+	"        //]]&amp;gt;" + 
+	"     &lt;/script&gt;" + 
+	"     &lt;form method=\"post\" action=\"\" enctype=\"multipart/form-data\"&gt;" + 
+	"        &lt;table border=\"0\" width=\"100%\"&gt;" + 
+	"           &lt;tr&gt;" + 
+	"              &lt;td&gt;Upload xsd/zip file&lt;/td&gt;" + 
+	"              &lt;td&gt;" + 
+	"                 &lt;input type=\"file\" name=\"file\" value=\"\"/&gt;" + 
+	"              &lt;/td&gt;" + 
+	"           &lt;/tr&gt;" + 
+	"            &lt;tr&gt;" + 
+	"               &lt;td/&gt;" + 
+	"               &lt;td&gt;" + 
+	"                  &lt;input type=\"submit\" onmouseover=\"changeBg(this,true);\" onmouseout=\"changeBg(this,false);\" value=\"send\"/&gt;" + 
+	"               &lt;/td&gt;" + 
+	"            &lt;/tr&gt;" + 
+	"        &lt;/table&gt;" + 
+	"     &lt;/form&gt;" + 
+	"  &lt;/page&gt;" + 
+	"</pre>" + 
+	"</code>" + 
+	"</p>" + 
+	"<p>" + 
+	"<b>example:</b>" + 
+	"<code>" + 
+	"<pre>" + 
+	"  &lt;page title=\"Show Generated WSDL\"&gt;" + 
+	"     &lt;table&gt;" + 
+	"        &lt;caption class=\"caption\"&gt;Files&lt;/caption&gt;" + 
+	"        &lt;tr&gt;" + 
+	"           &lt;th class=\"colHeader\"&gt;Name&lt;/th&gt;" + 
+	"           &lt;th class=\"colHeader\"&gt;Size&lt;/th&gt;" + 
+	"           &lt;th class=\"colHeader\"&gt;Date&lt;/th&gt;" + 
+	"           &lt;th class=\"colHeader\"&gt;Time&lt;/th&gt;" + 
+	"           &lt;th class=\"colHeader\"&gt;as&lt;/th&gt;" + 
+	"        &lt;/tr&gt;" + 
+	"        &lt;tr class=\"filterRow\"&gt;" + 
+	"           &lt;td class=\"filterRow\"&gt;GetCollectionDisbursementAccountInformationOnPolicy_2_concrete.wsdl&lt;/td&gt;" + 
+	"           &lt;td class=\"filterRow\"&gt;25269&lt;/td&gt;" + 
+	"           &lt;td class=\"filterRow\"&gt;28-05-15&lt;/td&gt;" + 
+	"           &lt;td class=\"filterRow\"&gt;11:33:30&lt;/td&gt;" + 
+	"           &lt;td class=\"filterRow\"&gt;" + 
+	"              &lt;a href=\"../FileViewerServlet?resultType=xml&amp;amp;fileName=C:\\Temp\\GetCollectionDisbursementAccountInformationOnPolicy_2_concrete.wsdl\"&gt;xml&lt;/a&gt;" +
+	"              &lt;a href=\"../FileViewerServlet?resultType=text&amp;amp;fileName=C:\\Temp\\GetCollectionDisbursementAccountInformationOnPolicy_2_concrete.wsdl\"&gt;text&lt;/a&gt;" +
+	"           &lt;/td&gt;" + 
+	"        &lt;/tr&gt;" + 
+	"        &lt;tr class=\"rowEven\"&gt;" + 
+	"           &lt;td class=\"filterRow\"&gt;GetCollectionDisbursementAccountInformationOnPolicy_2_concrete.zip&lt;/td&gt;" + 
+	"           &lt;td class=\"filterRow\"&gt;5759&lt;/td&gt;" + 
+	"           &lt;td class=\"filterRow\"&gt;28-05-15&lt;/td&gt;" + 
+	"           &lt;td class=\"filterRow\"&gt;11:33:30&lt;/td&gt;" + 
+	"           &lt;td class=\"filterRow\"&gt;" + 
+	"              &lt;a href=\"../FileViewerServlet?resultType=zip&amp;amp;fileName=C:\\Temp\\GetCollectionDisbursementAccountInformationOnPolicy_2_concrete.zip\"&gt;zip&lt;/a&gt;" +
+	"           &lt;/td&gt;" + 
+	"        &lt;/tr&gt;" + 
+	"     &lt;/table&gt;" + 
+	"  &lt;/page&gt;" + 
+	"</pre>" + 
+	"</code>" + 
+	"</p>" + 
+	"<p>" 
+)
 
 public class CreateRestViewPipe extends XsltPipe {
 	private static final String CONTENTTYPE = "contentType";

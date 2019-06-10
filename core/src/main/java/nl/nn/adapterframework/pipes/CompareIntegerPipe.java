@@ -21,25 +21,28 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.commons.lang.StringUtils;
 
-/**
- * Pipe that compares the integer values of two session variables.
- * Used to in combination with {@link IncreaseIntegerPipe} to contstruct loops.
- *
- * <tr><td>{@link #setSessionKey2(String) sessionKey2}</td><td>reference to the other session variables to be compared</td><td></td></tr>
- * </table>
- * </p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>lessthan</td><td>when v1 &lt; v2</td></tr>
- * <tr><td>greaterthan</td><td>when v1 &gt; v2</td></tr>
- * <tr><td>equals</td><td>when v1 = v1</td></tr>
- * </table>
- * </p>
+
+/** 
  * @author     Richard Punt / Gerrit van Brakel
  */
+@IbisDescription(
+	"Pipe that compares the integer values of two session variables." + 
+	"Used to in combination with {@link IncreaseIntegerPipe} to contstruct loops." + 
+	"<tr><td>{@link #setSessionKey2(String) sessionKey2}</td><td>reference to the other session variables to be compared</td><td></td></tr>" + 
+	"</table>" + 
+	"</p>" + 
+	"<p><b>Exits:</b>" + 
+	"<table border=\"1\">" + 
+	"<tr><th>state</th><th>condition</th></tr>" + 
+	"<tr><td>lessthan</td><td>when v1 &lt; v2</td></tr>" + 
+	"<tr><td>greaterthan</td><td>when v1 &gt; v2</td></tr>" + 
+	"<tr><td>equals</td><td>when v1 = v1</td></tr>" + 
+	"</table>" + 
+	"</p>" 
+)
 public class CompareIntegerPipe extends AbstractPipe {
 
 	private final static String LESSTHANFORWARD = "lessthan";

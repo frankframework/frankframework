@@ -53,7 +53,7 @@ import org.apache.struts.util.MessageResources;
  * This action is ment to be extended by individual actions in the project.
  * 
  * @author  Johan Verrips
- * @see     org.apache.struts.action.Action
+ * @see     Action
  */
 public abstract class ActionBase extends Action {
 	protected Logger log = LogUtil.getLogger(this);

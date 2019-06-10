@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
- */
+*/
 package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.configuration.Configuration;
@@ -22,24 +22,27 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.XmlUtils;
 
-/**
- * Performs a reload on database config .
- *
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * </table>
- * </p>
- * <p>It is possible to set the name of the configuration with the parameter 'name'.</p>
- * <p>You can dynamically set 'forceReload' attribute with the parameter 'forceReload'.</p>
+
+/** 
  * @author	Lars Sinke
  * @author	Niels Meijer
  */
+@IbisDescription(
+	"Performs a reload on database config ." + 
+	"<p><b>Exits:</b>" + 
+	"<table border=\"1\">" + 
+	"<tr><th>state</th><th>condition</th></tr>" + 
+	"<tr><td>\"success\"</td><td>default</td></tr>" + 
+	"</table>" + 
+	"</p>" + 
+	"<p>It is possible to set the name of the configuration with the parameter 'name'.</p>" + 
+	"<p>You can dynamically set 'forceReload' attribute with the parameter 'forceReload'.</p>" 
+)
 public class ReloadSender extends SenderWithParametersBase implements ConfigurationAware {
 
 	private Configuration configuration;

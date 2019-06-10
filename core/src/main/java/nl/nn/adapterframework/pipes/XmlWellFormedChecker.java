@@ -20,24 +20,27 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
 
-/**
- *<code>Pipe</code> that checks the well-formedness of the input message.
- * If <code>root</code> is given then this is also checked.
- * 
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, the value for "success"</td></tr>
- * <tr><td>"parserError"</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, "failure" is used in such a case</td></tr>
- * <tr><td>"failure"</td><td>if a validation error occurred</td></tr>
- * </table>
- * <br>
+
+/** 
  * @author  Peter Leeuwenburgh
  * @since	4.4.5
  */
+@IbisDescription(
+	"code>Pipe</code> that checks the well-formedness of the input message." + 
+	"If <code>root</code> is given then this is also checked." + 
+	"<table border=\"1\">" + 
+	"<tr><th>state</th><th>condition</th></tr>" + 
+	"<tr><td>\"success\"</td><td>default</td></tr>" + 
+	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, the value for \"success\"</td></tr>" + 
+	"<tr><td>\"parserError\"</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, \"failure\" is used in such a case</td></tr>" + 
+	"<tr><td>\"failure\"</td><td>if a validation error occurred</td></tr>" + 
+	"</table>" + 
+	"<br>" 
+)
 
 public class XmlWellFormedChecker extends FixedForwardPipe {
 	private String root = null;

@@ -35,6 +35,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -42,16 +43,17 @@ import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
 
-/**
- * Perform an XQuery.
- *
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link Parameter param}</td><td>any parameters defined on the pipe will be passed as external variable to the XQuery</td></tr>
- * </table>
- * </p>
- * 
+
+/** 
  * @author Jaco de Groot
  */
+@IbisDescription(
+	"Perform an XQuery." + 
+	"<tr><th>nested elements</th><th>description</th></tr>" + 
+	"<tr><td>{@link Parameter param}</td><td>any parameters defined on the pipe will be passed as external variable to the XQuery</td></tr>" + 
+	"</table>" + 
+	"</p>" 
+)
 
 public class XQueryPipe extends FixedForwardPipe {
 	private String xquery;

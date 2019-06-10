@@ -21,6 +21,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.parameters.IParameterHandler;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.LogUtil;
@@ -28,12 +29,14 @@ import nl.nn.adapterframework.util.LogUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 
-/**
- * Sender that just logs its message.
- * 
+
+/** 
  * @author Gerrit van Brakel
  * @since  4.9
  */
+@IbisDescription(
+	"Sender that just logs its message." 
+)
 public class LogSender extends SenderWithParametersBase implements IParameterHandler {
 	private String logLevel="info";
 	private String logCategory=null;

@@ -25,18 +25,20 @@ import java.util.Map;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 import org.apache.commons.lang.StringUtils;
 
 
-/**
- * Baseclass for resulthandlers that write the transformed record to a writer.
- * 
- * 
+
+/** 
  * @author  Gerrit van Brakel
  * @since   4.7
  */
+@IbisDescription(
+	"Baseclass for resulthandlers that write the transformed record to a writer." 
+)
 public abstract class ResultWriter extends AbstractResultHandler {
 	
 	private String onOpenDocument="<document name=\"#name#\">";

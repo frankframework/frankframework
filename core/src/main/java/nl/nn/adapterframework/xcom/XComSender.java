@@ -1,12 +1,9 @@
 /*
    Copyright 2013 Nationale-Nederlanden
-
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
-
        http://www.apache.org/licenses/LICENSE-2.0
-
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,14 +11,13 @@
    limitations under the License.
 */
 package nl.nn.adapterframework.xcom;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.*;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.FileUtils;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -30,17 +26,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
-
 import org.apache.commons.lang.StringUtils;
-
-/**
- * XCom client voor het versturen van files via XCom.
-
- *
- * @author John Dekker
- */
 public class XComSender extends SenderWithParametersBase {
-
 	private File workingDir;
 	private String name;
 	private String fileOption = null;
@@ -61,7 +48,6 @@ public class XComSender extends SenderWithParametersBase {
 	private String configFile = null;
 	private String workingDirName = ".";
 	private String xcomtcp = "xcomtcp";
-
 	/* (non-Javadoc)
 	 * @see nl.nn.adapterframework.core.ISender#configure()
 	 */
@@ -113,14 +99,12 @@ public class XComSender extends SenderWithParametersBase {
 			}
 		}
 	}
-
 	/* (non-Javadoc)
 	 * @see nl.nn.adapterframework.core.ISender#isSynchronous()
 	 */
 	public boolean isSynchronous() {
 		return true;
 	}
-
 	/* (non-Javadoc)
 	 * @see nl.nn.adapterframework.core.ISender#sendMessage(java.lang.String, java.lang.String)
 	 */
@@ -128,16 +112,12 @@ public class XComSender extends SenderWithParametersBase {
 		for (Iterator filenameIt = getFileList(message).iterator(); filenameIt.hasNext(); ) {
 			String filename = (String)filenameIt.next();
 			log.debug("Start sending " + filename);
-
 			// get file to send
 			File localFile = new File(filename);
-
 			// execute command in a new operating process
 			try {
 				String cmd = getCommand(prc.getSession(), localFile, true);
-
 				Process p = Runtime.getRuntime().exec(cmd, null, workingDir);
-
 				// read the output of the process
 				BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
 				StringBuffer output = new StringBuffer();
@@ -145,17 +125,14 @@ public class XComSender extends SenderWithParametersBase {
 				while ((line = br.readLine()) != null) {
 					output.append(line);
 				}
-
 				// wait until the process is completely finished
 				try {
 					p.waitFor();
 				}
 				catch(InterruptedException e) {
 				}
-
 				log.debug("output for " + localFile.getName() + " = " + output.toString());
 				log.debug(localFile.getName() + " exits with " + p.exitValue());
-
 				// throw an exception if the command returns an error exit value
 				if (p.exitValue() != 0) {
 					throw new SenderException("XComSender failed for file " + localFile.getAbsolutePath() + "\r\n" + output.toString());
@@ -167,24 +144,18 @@ public class XComSender extends SenderWithParametersBase {
 		}
 		return message;
 	}
-
 	private String getCommand(IPipeLineSession session, File localFile, boolean inclPasswd) throws SenderException {
 		try {
 			StringBuffer sb = new StringBuffer();
-
 			sb.append(xcomtcp). append(" -c1");
-
 			if (StringUtils.isNotEmpty(configFile)) {
 				sb.append(" -f ").append(configFile);
 			}
-
 			if (StringUtils.isNotEmpty(remoteSystem)) {
 				sb.append(" REMOTE_SYSTEM=").append(remoteSystem);
 			}
-
 			if (localFile != null) {
 				sb.append(" LOCAL_FILE=").append(localFile.getAbsolutePath());
-
 				sb.append(" REMOTE_FILE=");
 				if (! StringUtils.isEmpty(remoteDirectory))
 					sb.append(remoteDirectory);
@@ -193,10 +164,7 @@ public class XComSender extends SenderWithParametersBase {
 				else
 					sb.append(FileUtils.getFilename(paramList, session, localFile, remoteFilePattern));
 			}
-
 			CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUserid(), password);
-
-
 			// optional parameters
 			if (StringUtils.isNotEmpty(fileOption))
 				sb.append(" FILE_OPTION=").append(fileOption);
@@ -220,18 +188,15 @@ public class XComSender extends SenderWithParametersBase {
 				sb.append(" USERID=").append(cf.getUsername());
 			if (inclPasswd && ! StringUtils.isEmpty(cf.getPassword()))
 				sb.append(" PASSWORD=").append(cf.getPassword());
-
 			return sb.toString();
 		}
 		catch(ParameterException e) {
 			throw new SenderException(e);
 		}
 	}
-
 	public String getXcomtcp() {
 		return xcomtcp;
 	}
-
 	private List getFileList(String message) {
 		StringTokenizer st = new StringTokenizer(message, ";");
 		LinkedList list = new LinkedList();
@@ -240,14 +205,12 @@ public class XComSender extends SenderWithParametersBase {
 		}
 		return list;
 	}
-
 	/* (non-Javadoc)
 	 * @see nl.nn.adapterframework.core.INamedObject#getName()
 	 */
 	public String getName() {
 		return name;
 	}
-
 	/* (non-Javadoc)
 	 * @see nl.nn.adapterframework.core.INamedObject#setName(java.lang.String)
 	 */
@@ -255,124 +218,97 @@ public class XComSender extends SenderWithParametersBase {
 	public void setName(String name) {
 		this.name = name;
 	}
-
 	public String getFileOption() {
 		return fileOption;
 	}
-
 	@IbisDoc({"one of create, append or replace", ""})
 	public void setFileOption(String newVal) {
 		fileOption = newVal;
 	}
-
 	public String getRemoteDirectory() {
 		return remoteDirectory;
 	}
-
 	@IbisDoc({"remote directory is prefixed witht the remote file", ""})
 	public void setRemoteDirectory(String string) {
 		remoteDirectory = string;
 	}
-
 	public String getCariageflag() {
 		return carriageflag;
 	}
-
 	public String getCodeflag() {
 		return codeflag;
 	}
-
 	public String getCompress() {
 		return compress;
 	}
-
 	public String getLogfile() {
 		return logfile;
 	}
-
 	public String getPort() {
 		return port;
 	}
-
 	public Boolean isQueue() {
 		return queue;
 	}
-
 	public String getRemoteSystem() {
 		return remoteSystem;
 	}
-
 	public Integer getTracelevel() {
 		return tracelevel;
 	}
-
 	public Boolean isTruncation() {
 		return truncation;
 	}
-
 	public String getUserid() {
 		return userid;
 	}
-
 	@IbisDoc({"one of yes, no, vrl, vrl2, mpack or xpack", ""})
 	public void setCarriageflag(String string) {
 		carriageflag = string;
 	}
-
 	@IbisDoc({"characterset conversion, one of ascii or ebcdic", ""})
 	public void setCodeflag(String string) {
 		codeflag = string;
 	}
-
 	@IbisDoc({"one of yes, no, rle, compact, lzlarge, lzmedium or lzsmall", ""})
 	public void setCompress(String string) {
 		compress = string;
 	}
-
 	@IbisDoc({"name of logfile for xcomtcp to be used", ""})
 	public void setLogfile(String string) {
 		logfile = string;
 	}
-
 	@IbisDoc({"password of user on remote system", ""})
 	public void setPassword(String string) {
 		password = string;
 	}
-
 	@IbisDoc({"port of remote host", ""})
 	public void setPort(String string) {
 		port = string;
 	}
-
 	@IbisDoc({"set queue off or on", ""})
 	public void setQueue(Boolean b) {
 		queue = b;
 	}
-
 	@IbisDoc({"hostname or tcpip adres of remote host", ""})
 	public void setRemoteSystem(String string) {
 		remoteSystem = string;
 	}
-
 	@IbisDoc({"set between 0 (no trace) and 10", ""})
 	public void setTracelevel(Integer i) {
 		tracelevel = i;
 	}
-
 	@IbisDoc({"set truncation off or on", ""})
 	public void setTruncation(Boolean b) {
 		truncation = b;
 	}
-
 	@IbisDoc({"loginname of user on remote system", ""})
 	public void setUserid(String string) {
 		userid = string;
 	}
-
 	public String getRemoteFilePattern() {
 		return remoteFilePattern;
 	}
-
 	@IbisDoc({"remote file to create. if empty, the name is equal to the local file", ""})
 	public void setRemoteFilePattern(String string) {
 		remoteFilePattern = string;
@@ -380,25 +316,20 @@ public class XComSender extends SenderWithParametersBase {
 	public String getWorkingDirName() {
 		return workingDirName;
 	}
-
 	@IbisDoc({"directory in which to run the xcomtcp command", ""})
 	public void setWorkingDirName(String string) {
 		workingDirName = string;
 	}
-
 	@IbisDoc({"path to xcomtcp command", ""})
 	public void setXcomtcp(String string) {
 		xcomtcp = string;
 	}
-
 	public String getConfigFile() {
 		return configFile;
 	}
-
 	public void setConfigFile(String string) {
 		configFile = string;
 	}
-
 	@IbisDoc({"name of the alias to obtain credentials to authenticatie on remote server", ""})
 	public void setAuthAlias(String string) {
 		authAlias = string;
@@ -406,6 +337,4 @@ public class XComSender extends SenderWithParametersBase {
 	public String getAuthAlias() {
 		return authAlias;
 	}
-
-
 }

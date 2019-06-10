@@ -21,14 +21,17 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
-/**
- * FTP client voor het versturen van files via FTP.
- *
- *  
+
+/** 
  * @author John Dekker
  */
+@IbisDescription(
+	"FTP client voor het versturen van files via FTP." + 
+	" " 
+)
 public class FtpSender extends SenderWithParametersBase {
 
 	private FtpSession ftpSession;

@@ -17,14 +17,17 @@ package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 
-/**
- * Sender that sleeps for a specified time, which defaults to 5000 msecs.
- * Useful for testing purposes.
- * 
+
+/** 
  * @author  Gerrit van Brakel
  * @since   4.9
  */
+@IbisDescription(
+	"Sender that sleeps for a specified time, which defaults to 5000 msecs." + 
+	"Useful for testing purposes." 
+)
 public class DelaySender extends SenderBase {
 
 	private long delayTime=5000;

@@ -39,7 +39,7 @@ import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 /**
  * Some utilities for working with
- * {@link nl.nn.adapterframework.http.RestListener RestListener}.
+ * {@link RestListener RestListener}.
  * 
  * @author Peter Leeuwenburgh
  */

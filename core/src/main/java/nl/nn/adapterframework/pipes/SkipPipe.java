@@ -19,14 +19,15 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 
-/**
- * Skip a number of bytes or characters from the input. 
- * 
- * 
+
+/** 
  * @author Jaco de Groot (***@dynasol.nl)
- *
  */
+@IbisDescription(
+	"Skip a number of bytes or characters from the input. " 
+)
 public class SkipPipe extends FixedForwardPipe {
 
 	private int skip = 0;

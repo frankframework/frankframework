@@ -21,23 +21,25 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 
-/**
- * Pipe for retreiving files via (s)ftp. The path of the created local file is returned.
- *
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default when a file has been retrieved</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, and otherwise under same condition as "success"</td></tr>
- * <tr><td>"exception"</td><td>an exception was thrown retrieving the file. The result passed to the next pipe is the input of the pipe</td></tr>
- * </table>
- * </p>
- * 
+
+/** 
  * @author John Dekker
  * @since   4.4
  */
+@IbisDescription(
+	"Pipe for retreiving files via (s)ftp. The path of the created local file is returned." + 
+	"<p><b>Exits:</b>" + 
+	"<table border=\"1\">" + 
+	"<tr><th>state</th><th>condition</th></tr>" + 
+	"<tr><td>\"success\"</td><td>default when a file has been retrieved</td></tr>" + 
+	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, and otherwise under same condition as \"success\"</td></tr>" + 
+	"<tr><td>\"exception\"</td><td>an exception was thrown retrieving the file. The result passed to the next pipe is the input of the pipe</td></tr>" + 
+	"</table>" + 
+	"</p>" 
+)
 public class FtpFileRetrieverPipe extends FixedForwardPipe {
 
 	private FtpSession ftpSession;

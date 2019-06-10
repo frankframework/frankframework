@@ -19,6 +19,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -30,12 +31,14 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import static org.quartz.JobBuilder.*;
 
-/**
- * Registers a trigger in the scheduler so that the message is send to a javalistener
- * at a scheduled time.
- *
+
+/** 
  * @author John Dekker
  */
+@IbisDescription(
+	"Registers a trigger in the scheduler so that the message is send to a javalistener" + 
+	"at a scheduled time." 
+)
 public class SchedulerSender extends SenderWithParametersBase {
 	
 	public static final String JAVALISTENER = "javaListener";

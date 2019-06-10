@@ -57,8 +57,8 @@ import org.xml.sax.SAXParseException;
  * -Djava.naming.factory.initial=org.exolab.jms.jndi.mipc.IpcJndiInitialContextFactory<br/>
  * -Djava.naming.provider.url=tcp://localhost:3035/<br/>
  * </p>
- * <p>Since 4.0.1, the configuration.xml is first resolved using the {@link nl.nn.adapterframework.util.StringResolver resolver},
- * with tries to resolve ${variable} with the {@link nl.nn.adapterframework.util.AppConstants AppConstants}, so that
+ * <p>Since 4.0.1, the configuration.xml is first resolved using the {@link StringResolver resolver},
+ * with tries to resolve ${variable} with the {@link AppConstants AppConstants}, so that
  * both the values from the property files as the environment setting are available.<p>
  * <p>Since 4.1.1 the configuration.xml is parsed with a entityresolver that uses the classpath, which
  * means that you may specify entities that will be resolved during parsing.

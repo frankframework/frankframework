@@ -40,6 +40,7 @@ import javax.jms.JMSException;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang.StringUtils;
 
@@ -58,34 +59,34 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
-/**
- * This executes the query that is obtained from the (here still abstract) method getStatement.
- * Descendent classes can override getStatement to provide meaningful statements.
- * If used with parameters, the values of the parameters will be applied to the statement. 
- * Each occurrence of a questionmark ('?') will be replaced by a parameter value. Parameters are applied
- * in order: The n-th questionmark is replaced by the value of the n-th parameter.
- *
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>&nbsp;</td><td>all parameters present are applied to the statement to be executed</td></tr>
- * </table>
- * <br/>
- * <h3>Note on using packages</h3>
- * The package processor makes some assumptions about the datatypes:
- * <ul>
- *   <li>elements that start with a single quote are assumed to be Strings</li>
- *   <li>elements thta contain a dash ('-') are assumed to be dates (yyyy-MM-dd) or timestamps (yyyy-MM-dd HH:mm:ss)</li>
- *   <li>elements containing a dot ('.') are assumed to be floats</li>
- *   <li>all other elements are assumed to be integers</li>
- * </ul>
- * </p>
- * 
- * Queries that return no data (queryType 'other') return a message indicating the number of rows processed
- * 
+
+/** 
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
+@IbisDescription(
+	"This executes the query that is obtained from the (here still abstract) method getStatement." + 
+	"Descendent classes can override getStatement to provide meaningful statements." + 
+	"If used with parameters, the values of the parameters will be applied to the statement. " + 
+	"Each occurrence of a questionmark ('?') will be replaced by a parameter value. Parameters are applied" + 
+	"in order: The n-th questionmark is replaced by the value of the n-th parameter." + 
+	"<table border=\"1\">" + 
+	"<p><b>Parameters:</b>" + 
+	"<tr><th>name</th><th>type</th><th>remarks</th></tr>" + 
+	"<tr><td>&nbsp;</td><td>all parameters present are applied to the statement to be executed</td></tr>" + 
+	"</table>" + 
+	"<br/>" + 
+	"<h3>Note on using packages</h3>" + 
+	"The package processor makes some assumptions about the datatypes:" + 
+	"<ul>" + 
+	"  <li>elements that start with a single quote are assumed to be Strings</li>" + 
+	"  <li>elements thta contain a dash ('-') are assumed to be dates (yyyy-MM-dd) or timestamps (yyyy-MM-dd HH:mm:ss)</li>" + 
+	"  <li>elements containing a dot ('.') are assumed to be floats</li>" + 
+	"  <li>all other elements are assumed to be integers</li>" + 
+	"</ul>" + 
+	"</p>" + 
+	"Queries that return no data (queryType 'other') return a message indicating the number of rows processed" 
+)
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 	private final static String UNP_START = "?{";

@@ -38,6 +38,7 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -48,41 +49,38 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 
-/**
- * FileHandler, available to the Ibis developer as {@link nl.nn.adapterframework.senders.FileSender} and
- * {@link nl.nn.adapterframework.pipes.FilePipe}, allows to write to or read from a file.
- * 
- * <p>
- * Actions take place on the file specified by the fileName attribute (or when
- * not available the fileNameSessionKey, when fileNameSessionKey is empty too
- * the input of the pipe is used as file name). When a directory is not
- * specified, the fileName is expected to include the directory.
- * </p>
- * 
- * <p>
- * When a file needs to be created and both the fileName and the directory are
- * not specified a temporary file is created as specified by the
- * java.io.File.createTempFile method using the string "ibis" as a
- * prefix and a suffix as specified bij the writeSuffix attribute. If only
- * the directory is specified, the temporary file is created the same way except
- * that the temporary file is created in the specified directory.
- * </p>
- * 
- * <p>
- * The pipe also support base64 en- and decoding.
- * </p>
- * 
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td></td>writeSuffix<td><i>String</i></td><td>When a parameter with name writeSuffix is present, it is used instead of the writeSuffix specified by the attribute</td></tr>
- * </table>
- * </p>
- * 
+
+/** 
  * @author J. Dekker
  * @author Jaco de Groot (***@dynasol.nl)
- *
  */
+@IbisDescription(
+	"FileHandler, available to the Ibis developer as {@link nl.nn.adapterframework.senders.FileSender} and" + 
+	"{@link nl.nn.adapterframework.pipes.FilePipe}, allows to write to or read from a file." + 
+	"<p>" + 
+	"Actions take place on the file specified by the fileName attribute (or when" + 
+	"not available the fileNameSessionKey, when fileNameSessionKey is empty too" + 
+	"the input of the pipe is used as file name). When a directory is not" + 
+	"specified, the fileName is expected to include the directory." + 
+	"</p>" + 
+	"<p>" + 
+	"When a file needs to be created and both the fileName and the directory are" + 
+	"not specified a temporary file is created as specified by the" + 
+	"java.io.File.createTempFile method using the string \"ibis\" as a" + 
+	"prefix and a suffix as specified bij the writeSuffix attribute. If only" + 
+	"the directory is specified, the temporary file is created the same way except" + 
+	"that the temporary file is created in the specified directory." + 
+	"</p>" + 
+	"<p>" + 
+	"The pipe also support base64 en- and decoding." + 
+	"</p>" + 
+	"<table border=\"1\">" + 
+	"<p><b>Parameters:</b>" + 
+	"<tr><th>name</th><th>type</th><th>remarks</th></tr>" + 
+	"<tr><td></td>writeSuffix<td><i>String</i></td><td>When a parameter with name writeSuffix is present, it is used instead of the writeSuffix specified by the attribute</td></tr>" + 
+	"</table>" + 
+	"</p>" 
+)
 public class FileHandler {
 	protected Logger log = LogUtil.getLogger(this);
 	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();

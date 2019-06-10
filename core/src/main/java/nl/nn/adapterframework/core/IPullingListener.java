@@ -39,7 +39,7 @@ public interface IPullingListener<M> extends IListener<M> {
 	 * Called once for each thread that listens for messages, just before
 	 * {@link #close()} is called.
 	 */
-	void closeThread(Map<String,Object> threadContext) throws ListenerException;
+	void closeThread(Map<String, Object> threadContext) throws ListenerException;
 	
 	/**
 	 * Retrieves messages from queue or other channel, but does no processing on it.
@@ -47,6 +47,6 @@ public interface IPullingListener<M> extends IListener<M> {
 	 * Implementations of this method should therefore be thread-safe, or <code>synchronized</code>.
 	 * <p>Any thread-specific properties should be stored in and retrieved from the threadContext.
 	 */
-	M getRawMessage(Map<String,Object> threadContext) throws ListenerException;
+	M getRawMessage(Map<String, Object> threadContext) throws ListenerException;
 
 }

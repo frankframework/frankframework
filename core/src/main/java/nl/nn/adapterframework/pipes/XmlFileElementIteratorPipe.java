@@ -12,7 +12,7 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
- */
+*/
 package nl.nn.adapterframework.pipes;
 
 import java.io.FileInputStream;
@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -38,11 +39,13 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-/**
- * Sends a message to a Sender for each element in the XML file that the input message refers to.
- * 
+
+/** 
  * @author  Peter Leeuwenburgh
  */
+@IbisDescription(
+	"Sends a message to a Sender for each element in the XML file that the input message refers to." 
+)
 public class XmlFileElementIteratorPipe extends IteratingPipe {
 
 	private String elementName = null;

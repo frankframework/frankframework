@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -27,21 +28,22 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.util.XmlBuilder;
 
-/**
- * Gets the contents of the {@link IPipeLineSession pipeLineSession} by a key specified by
- * <code>{@link #setSessionKey(String) sessionKey}</code>.
- *
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
- * </table>
- * </p>
+
+/** 
  * @author Johan Verrips
- *
- * @see IPipeLineSession
  */
+@IbisDescription(
+	"Gets the contents of the {@link IPipeLineSession pipeLineSession} by a key specified by" + 
+	"<code>{@link #setSessionKey(String) sessionKey}</code>." + 
+	"<p><b>Exits:</b>" + 
+	"<table border=\"1\">" + 
+	"<tr><th>state</th><th>condition</th></tr>" + 
+	"<tr><td>\"success\"</td><td>default</td></tr>" + 
+	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>" + 
+	"</table>" + 
+	"</p>" + 
+	"@see IPipeLineSession" 
+)
 
 public class GetFromSession  extends FixedForwardPipe {
 

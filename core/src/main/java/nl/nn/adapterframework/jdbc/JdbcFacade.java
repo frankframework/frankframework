@@ -264,7 +264,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	/**
 	 * Returns the name and location of the database that this objects operates on.
 	 *  
-	 * @see nl.nn.adapterframework.core.HasPhysicalDestination#getPhysicalDestinationName()
+	 * @see HasPhysicalDestination#getPhysicalDestinationName()
 	 */
 	public String getPhysicalDestinationName() {
 		String result="unknown";

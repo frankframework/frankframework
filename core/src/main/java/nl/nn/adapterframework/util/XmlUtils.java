@@ -613,7 +613,7 @@ public class XmlUtils {
 	/**
 	 * Convert an XML string to a Document, then return the root-element
 	 */
-	public static org.w3c.dom.Element buildElement(String s, boolean namespaceAware) throws DomBuilderException {
+	public static Element buildElement(String s, boolean namespaceAware) throws DomBuilderException {
 		return buildDomDocument(s,namespaceAware).getDocumentElement();
 	}
 

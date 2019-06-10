@@ -24,6 +24,7 @@ import javax.xml.transform.Source;
 import javax.xml.validation.ValidatorHandler;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription;
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.xs.PSVIProvider;
 import org.xml.sax.XMLReader;
@@ -42,28 +43,30 @@ import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.ValidationContext;
 import nl.nn.adapterframework.validation.XmlValidatorException;
 
+
 /**
-*<code>Pipe</code> that validates the XML or JSON input message against a XML-Schema and returns either XML or JSON.
-*
-* <table border="1">
-* <tr><th>state</th><th>condition</th></tr>
-* <tr><td>"success"</td><td>default</td></tr>
-* <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, the value for "success"</td></tr>
-* <tr><td>"parserError"</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, "failure" is used in such a case</td></tr>
-* <tr><td>"illegalRoot"</td><td>if the required root element is not found. If not specified, "failure" is used in such a case</td></tr>
-* <tr><td>"failure"</td><td>if a validation error occurred</td></tr>
-* </table>
-* <br>
-* @author Gerrit van Brakel
-*/
+ * @author Gerrit van Brakel
+ */
+@IbisDescription(
+		"code>Pipe</code> that validates the XML or JSON input message against a XML-Schema and returns either XML or JSON." +
+				"<table border=\"1\">" +
+				"<tr><th>state</th><th>condition</th></tr>" +
+				"<tr><td>\"success\"</td><td>default</td></tr>" +
+				"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, the value for \"success\"</td></tr>" +
+				"<tr><td>\"parserError\"</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, \"failure\" is used in such a case</td></tr>" +
+				"<tr><td>\"illegalRoot\"</td><td>if the required root element is not found. If not specified, \"failure\" is used in such a case</td></tr>" +
+				"<tr><td>\"failure\"</td><td>if a validation error occurred</td></tr>" +
+				"</table>" +
+				"<br>"
+)
 public class Json2XmlValidator extends XmlValidator {
 
 	public static final String INPUT_FORMAT_SESSION_KEY_PREFIX = "Json2XmlValidator.inputformat ";
-	
+
 	public final String FORMAT_XML="xml";
 	public final String FORMAT_JSON="json";
 	public final String FORMAT_AUTO="auto";
-	
+
 	private boolean compactJsonArrays=true;
 	private boolean strictJsonArraySyntax=false;
 	private boolean jsonWithRootElements=false;
@@ -81,7 +84,7 @@ public class Json2XmlValidator extends XmlValidator {
 	{
 		setSoapNamespace("");
 	}
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -89,7 +92,7 @@ public class Json2XmlValidator extends XmlValidator {
 			throw new ConfigurationException("soapNamespace attribute not supported");
 		}
 	}
-	
+
 	public String getOutputFormat(IPipeLineSession session, boolean responseMode) {
 		String format=null;
 		if (StringUtils.isNotEmpty(getOutputFormatSessionKey())) {
@@ -97,26 +100,26 @@ public class Json2XmlValidator extends XmlValidator {
 		}
 		if (StringUtils.isEmpty(format) && isAutoFormat() && responseMode) {
 			format=(String)session.get(INPUT_FORMAT_SESSION_KEY_PREFIX+getName());
-		}	
+		}
 		if (StringUtils.isEmpty(format)) {
 			format=getOutputFormat();
-		}	
+		}
 		return format;
 	}
-	
+
 	protected void storeInputFormat(String format, IPipeLineSession session, boolean responseMode) {
 		if (!responseMode) {
 			session.put(INPUT_FORMAT_SESSION_KEY_PREFIX+getName(), format);
 		}
 	}
-	
-    /**
-     * Validate the XML or JSON string. The format is automatically detected.
-     * @param input a String
-     * @param session a {@link IPipeLineSession Pipelinesession}
 
-     * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
-     */
+	/**
+	 * Validate the XML or JSON string. The format is automatically detected.
+	 * @param input a String
+	 * @param session a {@link IPipeLineSession Pipelinesession}
+
+	 * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
+	 */
 	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session, boolean responseMode) throws PipeRunException {
 		String messageToValidate=input==null?"{}":input.toString();
@@ -160,25 +163,25 @@ public class Json2XmlValidator extends XmlValidator {
 			throw new PipeRunException(this, "Cannot align JSON", e);
 		}
 	}
-	
+
 	protected PipeRunResult alignXml2Json(String messageToValidate, IPipeLineSession session, boolean responseMode)
 			throws XmlValidatorException, PipeRunException, ConfigurationException {
 
 		ValidationContext context = validator.createValidationContext(session, getRootValidations(responseMode), getInvalidRootNamespaces());
 		XMLReader parser = validator.getValidatingParser(session,context);
 		XmlAligner aligner = new XmlAligner((PSVIProvider)parser);
-		Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());	
+		Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
 		parser.setContentHandler(aligner);
 		aligner.setContentHandler(xml2json);
 		aligner.setErrorHandler(context.getErrorHandler());
-		
+
 		String resultEvent= validator.validate(messageToValidate, session, getLogPrefix(session), parser, xml2json, context);
 		String out=xml2json.toString();
 		PipeForward forward=determineForward(resultEvent, session, responseMode);
 		PipeRunResult result=new PipeRunResult(forward,out);
 		return result;
 	}
-	
+
 	protected PipeRunResult alignJson(String messageToValidate, IPipeLineSession session, boolean responseMode) throws PipeRunException, XmlValidatorException {
 
 		ValidationContext context;
@@ -207,7 +210,7 @@ public class Json2XmlValidator extends XmlValidator {
 				aligner.setOverrideValues(parametervalues);
 			}
 			JsonStructure jsonStructure = Json.createReader(new StringReader(messageToValidate)).read();
-			
+
 			if (getOutputFormat(session,responseMode).equalsIgnoreCase(FORMAT_JSON)) {
 				Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
 				aligner.setContentHandler(xml2json);
@@ -229,7 +232,7 @@ public class Json2XmlValidator extends XmlValidator {
 	public String addNamespace(String xml) {
 		if (StringUtils.isEmpty(xml) || xml.indexOf("xmlns")>0) {
 			return xml;
-		}	
+		}
 		String namespace = getSchemaLocation().split(" ")[0];
 		if (log.isDebugEnabled()) log.debug("setting namespace ["+namespace+"]");
 		int startPos=0;
@@ -245,8 +248,8 @@ public class Json2XmlValidator extends XmlValidator {
 		}
 		return xml.substring(0, elementEnd)+" xmlns=\""+namespace+"\""+xml.substring(elementEnd);
 	}
-	
-	
+
+
 	public String getTargetNamespace() {
 		return targetNamespace;
 	}
@@ -255,7 +258,7 @@ public class Json2XmlValidator extends XmlValidator {
 	public void setTargetNamespace(String targetNamespace) {
 		this.targetNamespace = targetNamespace;
 	}
-	
+
 	public String getOutputFormat() {
 		return outputFormat;
 	}
@@ -264,7 +267,7 @@ public class Json2XmlValidator extends XmlValidator {
 	public void setOutputFormat(String outputFormat) {
 		this.outputFormat = outputFormat;
 	}
-	
+
 	public String getOutputFormatSessionKey() {
 		return outputFormatSessionKey;
 	}
@@ -273,7 +276,7 @@ public class Json2XmlValidator extends XmlValidator {
 	public void setOutputFormatSessionKey(String outputFormatSessionKey) {
 		this.outputFormatSessionKey = outputFormatSessionKey;
 	}
-	
+
 	public boolean isCompactJsonArrays() {
 		return compactJsonArrays;
 	}

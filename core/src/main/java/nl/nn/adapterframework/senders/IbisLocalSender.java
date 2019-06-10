@@ -18,6 +18,7 @@ package nl.nn.adapterframework.senders;
 import java.util.HashMap;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
@@ -35,49 +36,46 @@ import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.util.Misc;
 
-/**
- * Posts a message to another IBIS-adapter in the same IBIS instance.
- * 
- * An IbisLocalSender makes a call to a Receiver with either a {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener}
- * or a {@link JavaListener JavaListener}.
- *
- * Any parameters are copied to the PipeLineSession of the service called.
- * 
- * <h3>Configuration of the Adapter to be called</h3>
- * A call to another Adapter in the same IBIS instance is preferably made using the combination
- * of an IbisLocalSender and a {@link JavaListener JavaListener}. If,
- * however, a Receiver with a {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener} is already present, that can be used in some cases, too.
- *  
- * <h4>configuring IbisLocalSender and JavaListener</h4>
- * <ul>
- *   <li>Define a GenericMessageSendingPipe with an IbisLocalSender</li>
- *   <li>Set the attribute <code>javaListener</code> to <i>yourServiceName</i></li>
- *   <li>Do not set the attribute <code>serviceName</code></li>
- * </ul>
- * In the Adapter to be called:
- * <ul>
- *   <li>Define a Receiver with a JavaListener</li>
- *   <li>Set the attribute <code>name</code> to <i>yourServiceName</i></li>
- *   <li>Do not set the attribute <code>serviceName</code>, except if the service is to be called also
- *       from applications other than this IBIS-instance</li>
- * </ul>
- * 
- * <h4>configuring IbisLocalSender and WebServiceListener</h4>
- * 
- * <ul>
- *   <li>Define a GenericMessageSendingPipe with an IbisLocalSender</li>
- *   <li>Set the attribute <code>serviceName</code> to <i>yourIbisWebServiceName</i></li>
- *   <li>Do not set the attribute <code>javaListener</code></li>
- * </ul>
- * In the Adapter to be called:
- * <ul>
- *   <li>Define a Receiver with a WebServiceListener</li>
- *   <li>Set the attribute <code>name</code> to <i>yourIbisWebServiceName</i></li>
- * </ul>
- *
+
+/** 
  * @author Gerrit van Brakel
  * @since  4.2
  */
+@IbisDescription(
+	"Posts a message to another IBIS-adapter in the same IBIS instance." + 
+	"An IbisLocalSender makes a call to a Receiver with either a {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener}" + 
+	"or a {@link JavaListener JavaListener}." + 
+	"Any parameters are copied to the PipeLineSession of the service called." + 
+	"<h3>Configuration of the Adapter to be called</h3>" + 
+	"A call to another Adapter in the same IBIS instance is preferably made using the combination" + 
+	"of an IbisLocalSender and a {@link JavaListener JavaListener}. If," + 
+	"however, a Receiver with a {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener} is already present, that can be used in some cases, too." + 
+	" " + 
+	"<h4>configuring IbisLocalSender and JavaListener</h4>" + 
+	"<ul>" + 
+	"  <li>Define a GenericMessageSendingPipe with an IbisLocalSender</li>" + 
+	"  <li>Set the attribute <code>javaListener</code> to <i>yourServiceName</i></li>" + 
+	"  <li>Do not set the attribute <code>serviceName</code></li>" + 
+	"</ul>" + 
+	"In the Adapter to be called:" + 
+	"<ul>" + 
+	"  <li>Define a Receiver with a JavaListener</li>" + 
+	"  <li>Set the attribute <code>name</code> to <i>yourServiceName</i></li>" + 
+	"  <li>Do not set the attribute <code>serviceName</code>, except if the service is to be called also" + 
+	"      from applications other than this IBIS-instance</li>" + 
+	"</ul>" + 
+	"<h4>configuring IbisLocalSender and WebServiceListener</h4>" + 
+	"<ul>" + 
+	"  <li>Define a GenericMessageSendingPipe with an IbisLocalSender</li>" + 
+	"  <li>Set the attribute <code>serviceName</code> to <i>yourIbisWebServiceName</i></li>" + 
+	"  <li>Do not set the attribute <code>javaListener</code></li>" + 
+	"</ul>" + 
+	"In the Adapter to be called:" + 
+	"<ul>" + 
+	"  <li>Define a Receiver with a WebServiceListener</li>" + 
+	"  <li>Set the attribute <code>name</code> to <i>yourIbisWebServiceName</i></li>" + 
+	"</ul>" 
+)
 public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination, ConfigurationAware {
 	
 	private Configuration configuration;

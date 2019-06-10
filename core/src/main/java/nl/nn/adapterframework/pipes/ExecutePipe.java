@@ -22,17 +22,19 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.util.ProcessUtil;
 
 import org.apache.commons.lang.StringUtils;
 
-/**
- * Executes a command.
- * 
- * 
+
+/** 
  * @author Jaco de Groot (***@dynasol.nl)
  * @deprecated please use CommandSender
  */
+@IbisDescription(
+	"Executes a command." 
+)
 public class ExecutePipe extends FixedForwardPipe {
 	
 	private String command;

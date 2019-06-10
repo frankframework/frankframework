@@ -12,7 +12,7 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
- */
+*/
 package nl.nn.adapterframework.pipes;
 
 import java.util.concurrent.Callable;
@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.log4j.NDC;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -34,19 +35,20 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 
-/**
- * Extension to FixedForwardPipe for interrupting processing when timeout is exceeded.
- * 
- * <p>
- * <table border="1">
- * <b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>timeout</td><td>int</td><td>When a parameter with name timeout is present, it is used instead of the timeout specified by the attribute</td></tr>
- * </table>
- * </p>
- * 
+
+/** 
  * @author Peter Leeuwenburgh
  */
+@IbisDescription(
+	"Extension to FixedForwardPipe for interrupting processing when timeout is exceeded." + 
+	"<p>" + 
+	"<table border=\"1\">" + 
+	"<b>Parameters:</b>" + 
+	"<tr><th>name</th><th>type</th><th>remarks</th></tr>" + 
+	"<tr><td>timeout</td><td>int</td><td>When a parameter with name timeout is present, it is used instead of the timeout specified by the attribute</td></tr>" + 
+	"</table>" + 
+	"</p>" 
+)
 
 public class TimeoutGuardPipe extends FixedForwardPipe {
 

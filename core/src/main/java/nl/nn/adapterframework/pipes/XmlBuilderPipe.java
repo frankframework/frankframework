@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -12,28 +12,30 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
- */
+*/
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.util.XmlUtils;
 
-/**
- * Pipe for converting special characters to their xml equivalents. 
- * 
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
- * </table>
- * </p>
- * 
+
+/** 
  * @author Peter Leeuwenburgh
  */
+@IbisDescription(
+	"Pipe for converting special characters to their xml equivalents. " + 
+	"<p><b>Exits:</b>" + 
+	"<table border=\"1\">" + 
+	"<tr><th>state</th><th>condition</th></tr>" + 
+	"<tr><td>\"success\"</td><td>default</td></tr>" + 
+	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>" + 
+	"</table>" + 
+	"</p>" 
+)
 public class XmlBuilderPipe extends FixedForwardPipe {
 
 	private String substringStart;

@@ -12,8 +12,7 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
- */
-
+*/
 package nl.nn.adapterframework.http;
 
 import java.io.IOException;
@@ -28,6 +27,7 @@ import jcifs.ntlmssp.Type3Message;
 import jcifs.util.Base64;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -60,11 +60,13 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.Misc;
 
-/**
- * Sender that sends a message via a WebService based on NTLM authentication.
- *
+
+/** 
  * @author  Peter Leeuwenburgh
  */
+@IbisDescription(
+	"Sender that sends a message via a WebService based on NTLM authentication." 
+)
 public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		HasPhysicalDestination {
 

@@ -26,17 +26,20 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.util.DateUtils;
 
 import org.apache.commons.lang.StringUtils;
 
-/**
- * Puts the system date/time under a key in the {@link IPipeLineSession pipeLineSession}.
- *
+
+/** 
  * @author  Johan Verrips
  * @author  Jaco de Groot (***@dynasol.nl)
  * @since   4.2c
  */
+@IbisDescription(
+	"Puts the system date/time under a key in the {@link IPipeLineSession pipeLineSession}." 
+)
 public class PutSystemDateInSession extends FixedForwardPipe {
 	public final static Object OBJECT = new Object();
 	public final static String FIXEDDATETIME  ="2001-12-17 09:30:47";

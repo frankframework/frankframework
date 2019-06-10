@@ -30,6 +30,7 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -39,32 +40,32 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 import org.apache.commons.lang.StringUtils;
 
-/**
- * Pipe that creates a ZipStream.
- * 
- * For action=open, the Pipe will create a new zip, that will be written to a file or stream specified by the input message, that must be a:<ul>
- * <li>String specifying a filename</li>
- * <li>OutputStream</li>
- * <li>HttpResponse</li>
- * </ul>
- * The parameter 'filename' is used to specify the filename if the input is a HttpResponse.
- *
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>filename</td><td>string</td><td>filename of the zip or zipentry.</td></tr>
- * </table>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
- * </table>
- * </p>
- *
+
+/** 
  * @author  Gerrit van Brakel
  * @since   4.9.10
  */
+@IbisDescription(
+	"Pipe that creates a ZipStream." + 
+	"For action=open, the Pipe will create a new zip, that will be written to a file or stream specified by the input message, that must be a:<ul>" + 
+	"<li>String specifying a filename</li>" + 
+	"<li>OutputStream</li>" + 
+	"<li>HttpResponse</li>" + 
+	"</ul>" + 
+	"The parameter 'filename' is used to specify the filename if the input is a HttpResponse." + 
+	"<table border=\"1\">" + 
+	"<p><b>Parameters:</b>" + 
+	"<tr><th>name</th><th>type</th><th>remarks</th></tr>" + 
+	"<tr><td>filename</td><td>string</td><td>filename of the zip or zipentry.</td></tr>" + 
+	"</table>" + 
+	"<p><b>Exits:</b>" + 
+	"<table border=\"1\">" + 
+	"<tr><th>state</th><th>condition</th></tr>" + 
+	"<tr><td>\"success\"</td><td>default</td></tr>" + 
+	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>" + 
+	"</table>" + 
+	"</p>" 
+)
 public class ZipWriterPipe extends FixedForwardPipe {
 
  	private static final String ACTION_OPEN="open";

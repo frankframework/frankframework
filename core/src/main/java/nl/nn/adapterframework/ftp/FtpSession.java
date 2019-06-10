@@ -33,6 +33,7 @@ import java.util.List;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.FileUtils;
@@ -59,13 +60,13 @@ import com.sshtools.j2ssh.transport.ConsoleKnownHostsKeyVerification;
 import com.sshtools.j2ssh.transport.IgnoreHostKeyVerification;
 import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
 
-/**
- * Helper class for sftp and ftp.
- * 
- *
- * 
+
+/** 
  * @author John Dekker
  */
+@IbisDescription(
+	"Helper class for sftp and ftp." 
+)
 public class FtpSession {
 	protected Logger log = LogUtil.getLogger(this);
 

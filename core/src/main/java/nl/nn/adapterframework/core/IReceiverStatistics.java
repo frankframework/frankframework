@@ -27,13 +27,13 @@ import nl.nn.adapterframework.statistics.StatisticsKeeper;
  */
 public interface IReceiverStatistics  {
 	/**
-	 * @return an iterator of {@link nl.nn.adapterframework.statistics.StatisticsKeeper}s describing the durations of time that
+	 * @return an iterator of {@link StatisticsKeeper}s describing the durations of time that
 	 * the receiver has been waiting between messages.
 	 */
 	Iterator<StatisticsKeeper> getIdleStatisticsIterator();
 	
 	/**
-	 * @return an iterator of {@link nl.nn.adapterframework.statistics.StatisticsKeeper}s describing the durations of time that
+	 * @return an iterator of {@link StatisticsKeeper}s describing the durations of time that
 	 * the receiver has been waiting for the adapter to process messages.
 	 */
 	Iterator<StatisticsKeeper> getProcessStatisticsIterator();

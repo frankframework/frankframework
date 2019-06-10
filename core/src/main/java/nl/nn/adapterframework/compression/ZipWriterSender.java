@@ -26,26 +26,28 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.StreamUtil;
 
-/**
- * Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action='write'.
- * Filename and contents are taken from parameters. If one of the parameters is not present, the input message 
- * is used for either filename or contents.
- *
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>filename</td><td>string</td><td>filename of the zipentry</td></tr>
- * <tr><td>contents</td><td>string</td><td>contents of the zipentry</td></tr>
- * </table>
- * 
+
+/** 
  * @author  Gerrit van Brakel
  * @since   4.9.10
  */
+@IbisDescription(
+	"Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action='write'." + 
+	"Filename and contents are taken from parameters. If one of the parameters is not present, the input message " + 
+	"is used for either filename or contents." + 
+	"<table border=\"1\">" + 
+	"<p><b>Parameters:</b>" + 
+	"<tr><th>name</th><th>type</th><th>remarks</th></tr>" + 
+	"<tr><td>filename</td><td>string</td><td>filename of the zipentry</td></tr>" + 
+	"<tr><td>contents</td><td>string</td><td>contents of the zipentry</td></tr>" + 
+	"</table>" 
+)
 public class ZipWriterSender extends SenderWithParametersBase {
 
 	private static final String PARAMETER_FILENAME="filename";

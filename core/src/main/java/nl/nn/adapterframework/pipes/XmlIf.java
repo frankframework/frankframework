@@ -23,17 +23,19 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.util.TransformerPool;
 
 import org.apache.commons.lang.StringUtils;
 
-/**
- * Selects an exitState, based on the content of a sessionkey.
- * 
- *
+
+/** 
  * @author  Peter Leeuwenburgh
  * @since   4.3
  */
+@IbisDescription(
+	"Selects an exitState, based on the content of a sessionkey." 
+)
 
 public class XmlIf extends AbstractPipe {
 

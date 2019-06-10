@@ -120,7 +120,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 				String xPathLogKeys = "";
 				Iterator<Entry<String, String>> it = getxPathLogMap().entrySet().iterator();
 			    while (it.hasNext()) {
-			    	Map.Entry<String, String> pair = (Entry<String, String>) it.next();
+			    	Entry<String, String> pair = (Entry<String, String>) it.next();
 			    	String sessionKey = pair.getKey();
 			        String xPath = pair.getValue();
 			        String result = getResultFromxPath(soapMessage, xPath);

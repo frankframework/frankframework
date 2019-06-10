@@ -72,7 +72,7 @@ public interface IReceiver extends IManagable, HasStatistics {
      * The processing of messages must be delegated to the <code>Adapter</code>
      * object. The adapter also provides a MessageKeeper, which the receiver
      * may use to store messages in.
-     * @see nl.nn.adapterframework.core.IAdapter
+     * @see IAdapter
      */
     public void setAdapter(IAdapter adapter);
 

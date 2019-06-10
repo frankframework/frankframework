@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -12,21 +12,23 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
- */
+*/
 package nl.nn.adapterframework.util;
 
 import java.io.File;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-/**
- * Cleans up a directory.
- *
- * 
+
+/** 
  * @author Peter Leeuwenburgh
  */
+@IbisDescription(
+	"Cleans up a directory." 
+)
 public class DirectoryCleaner {
 	protected Logger log = LogUtil.getLogger(this);
 

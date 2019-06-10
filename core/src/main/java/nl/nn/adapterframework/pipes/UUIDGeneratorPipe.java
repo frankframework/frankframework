@@ -20,25 +20,26 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.util.Misc;
 
-/**
- * Pipe that generates an UUID (Universally Unique Identifier).
- * 
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
- * </table>
- * </p>
- * 
- * If {@link #setType(String) type} is set to <code>numeric</code>, a UUID with fixed length 31 will be generated.
- * If {@link #setType(String) type} is set to <code>alphanumeric</code>, the UUID will not have a fixed length which will be about 42.
- * Only type <code>alphanumeric</code> guarantees a 100% unique identifier, type <code>numeric</code> has a 0.01% chance of exactly the same id in case of multiple calls on the same host within a few milliseconds.  
- * 
+
+/** 
  * @author Peter Leeuwenburgh
  */
+@IbisDescription(
+	"Pipe that generates an UUID (Universally Unique Identifier)." + 
+	"<p><b>Exits:</b>" + 
+	"<table border=\"1\">" + 
+	"<tr><th>state</th><th>condition</th></tr>" + 
+	"<tr><td>\"success\"</td><td>default</td></tr>" + 
+	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>" + 
+	"</table>" + 
+	"</p>" + 
+	"If {@link #setType(String) type} is set to <code>numeric</code>, a UUID with fixed length 31 will be generated." + 
+	"If {@link #setType(String) type} is set to <code>alphanumeric</code>, the UUID will not have a fixed length which will be about 42." + 
+	"Only type <code>alphanumeric</code> guarantees a 100% unique identifier, type <code>numeric</code> has a 0.01% chance of exactly the same id in case of multiple calls on the same host within a few milliseconds.  " 
+)
 public class UUIDGeneratorPipe extends FixedForwardPipe {
 
 	private String type = "alphanumeric";

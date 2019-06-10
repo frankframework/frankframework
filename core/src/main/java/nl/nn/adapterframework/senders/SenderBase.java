@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ClassLoaderManager;
@@ -24,12 +25,14 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.LogUtil;
 
-/**
- * Baseclass for senders.
- * 
+
+/** 
  * @author  Gerrit van Brakel
  * @since   4.9
  */
+@IbisDescription(
+	"Baseclass for senders." 
+)
 public abstract class SenderBase implements ISender {
 	protected Logger log = LogUtil.getLogger(this);
 	private String name;

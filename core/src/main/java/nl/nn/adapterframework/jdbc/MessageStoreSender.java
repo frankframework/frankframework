@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.text.StrBuilder;
 
@@ -33,51 +34,49 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
-/**
- * Send messages to the ibisstore to have them processed exactly-once by another
- * adapter which will read the messages using a {@link MessageStoreListener}.
- * This other adapter will process the messages asynchronously and (optionally)
- * under transaction control. Duplicate messages are ignored based on the
- * messageId (except when onlyStoreWhenMessageIdUnique is set to false), hence
- * the sender of the message can retry sending the message until a valid reply
- * is received in which case it can be certain that the message is stored in the
- * ibisstore.
- * 
- * Add a messageLog element with class {@link DummyTransactionalStorage} to
- * prevent the warning "... has no messageLog..." and enable the message
- * browser in the console. Set it's type to A to view the messages moved to the
- * messageLog by the {@link MessageStoreListener} or M to view the messages in
- * the messageStore which still need to be processed.
- * 
- * Example configuration:
- * <code><pre>
-		&lt;sender
-			className="nl.nn.adapterframework.jdbc.MessageStoreSender"
-			jmsRealm="jdbc"
-			slotId="${instance.name}/ServiceName"
-			sessionKeys="key1,key2"
-			>
-			&lt;param name="messageId" xpathExpression="/Envelope/Header/MessageID"/>
-		&lt;/sender>
-		&lt;!-- DummyTransactionalStorage to enable messagestore browser in the console (JdbcTransactionalStorage would store an extra record in the ibisstore) -->
-		&lt;messageLog
-			className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage"
-			jmsRealm="jdbc"
-			slotId="${instance.name}/ServiceName"
-			type="M"
-		/>
-</pre></code>
- * 
- * 
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>messageId</td><td>string</td><td>messageId to check for duplicates, when this parameter isn't present the messageId it read from sessionKey messageId</td></tr>
- * </table>
- * </p>
- * 
+
+/** 
  * @author Jaco de Groot
  */
+@IbisDescription(
+	"Send messages to the ibisstore to have them processed exactly-once by another" + 
+	"adapter which will read the messages using a {@link MessageStoreListener}." + 
+	"This other adapter will process the messages asynchronously and (optionally)" + 
+	"under transaction control. Duplicate messages are ignored based on the" + 
+	"messageId (except when onlyStoreWhenMessageIdUnique is set to false), hence" + 
+	"the sender of the message can retry sending the message until a valid reply" + 
+	"is received in which case it can be certain that the message is stored in the" + 
+	"ibisstore." + 
+	"Add a messageLog element with class {@link DummyTransactionalStorage} to" + 
+	"prevent the warning \"... has no messageLog...\" and enable the message" + 
+	"browser in the console. Set it's type to A to view the messages moved to the" + 
+	"messageLog by the {@link MessageStoreListener} or M to view the messages in" + 
+	"the messageStore which still need to be processed." + 
+	"Example configuration:" + 
+	"<code><pre>" + 
+	"lt;sender" + 
+	"className=\"nl.nn.adapterframework.jdbc.MessageStoreSender\"" + 
+	"jmsRealm=\"jdbc\"" + 
+	"slotId=\"${instance.name}/ServiceName\"" + 
+	"sessionKeys=\"key1,key2\"" + 
+	">" + 
+	"&lt;param name=\"messageId\" xpathExpression=\"/Envelope/Header/MessageID\"/>" + 
+	"lt;/sender>" + 
+	"lt;!-- DummyTransactionalStorage to enable messagestore browser in the console (JdbcTransactionalStorage would store an extra record in the ibisstore) -->" + 
+	"lt;messageLog" + 
+	"className=\"nl.nn.adapterframework.jdbc.DummyTransactionalStorage\"" + 
+	"jmsRealm=\"jdbc\"" + 
+	"slotId=\"${instance.name}/ServiceName\"" + 
+	"type=\"M\"" + 
+	">" + 
+	"re></code>" + 
+	"<table border=\"1\">" + 
+	"<p><b>Parameters:</b>" + 
+	"<tr><th>name</th><th>type</th><th>remarks</th></tr>" + 
+	"<tr><td>messageId</td><td>string</td><td>messageId to check for duplicates, when this parameter isn't present the messageId it read from sessionKey messageId</td></tr>" + 
+	"</table>" + 
+	"</p>" 
+)
 public class MessageStoreSender extends JdbcTransactionalStorage implements ISenderWithParameters {
 	private ParameterList paramList = null;
 	private String sessionKeys = null;

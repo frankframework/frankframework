@@ -19,6 +19,7 @@ import java.net.URL;
 
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -28,12 +29,14 @@ import javax.xml.transform.Transformer;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 
-/**
- * ErrorMessageFormatter that returns a fixed message with replacements.
- * 
+
+/** 
  * @author  Peter Leeuwenburgh
  * @since   4.3
  */
+@IbisDescription(
+	"ErrorMessageFormatter that returns a fixed message with replacements." 
+)
 public class FixedErrorMessage extends ErrorMessageFormatter {
 	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 	private String fileName = null;

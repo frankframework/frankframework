@@ -19,18 +19,21 @@ import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-/**
- * The flow contains the handlers to handle records of a specific type. 
- * Each flow is registered to a manager using the recordHandlerManagerRef.
- *  
- * 
+
+/** 
  * @author  John Dekker
  */
+@IbisDescription(
+	"The flow contains the handlers to handle records of a specific type. " + 
+	"Each flow is registered to a manager using the recordHandlerManagerRef." + 
+	" " 
+)
 public final class RecordHandlingFlow {
 	protected Logger log = LogUtil.getLogger(this);
 

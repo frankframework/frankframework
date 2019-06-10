@@ -44,8 +44,8 @@ import org.apache.log4j.Logger;
  * functions for starting and stopping adapters as a facade.
  *
  * @author Johan Verrips
- * @see    nl.nn.adapterframework.configuration.ConfigurationException
- * @see    nl.nn.adapterframework.core.IAdapter
+ * @see    ConfigurationException
+ * @see    IAdapter
  */
 public class Configuration {
     protected Logger log = LogUtil.getLogger(this);
@@ -133,7 +133,7 @@ public class Configuration {
 
     /**
      *	initializes the log and the AppConstants
-     * @see nl.nn.adapterframework.util.AppConstants
+     * @see AppConstants
      */
     public Configuration(AdapterService adapterService) {
          this.adapterService = adapterService;
@@ -265,7 +265,7 @@ public class Configuration {
      * receiver are registered.
      * <p>See the <a href="http://quartz.sourceforge.net">Quartz scheduler</a> documentation</p>
      * @param jobdef a JobDef object
-     * @see nl.nn.adapterframework.scheduler.JobDef for a description of Cron triggers
+     * @see JobDef for a description of Cron triggers
      * @since 4.0
      */
     public void registerScheduledJob(JobDef jobdef) throws ConfigurationException {

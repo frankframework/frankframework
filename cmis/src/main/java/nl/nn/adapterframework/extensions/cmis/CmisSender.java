@@ -12,7 +12,7 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
- */
+*/
 package nl.nn.adapterframework.extensions.cmis;
 
 import java.io.ByteArrayInputStream;
@@ -42,6 +42,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription;
 import nl.nn.adapterframework.extensions.cmis.server.CmisServletDispatcher;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -82,144 +83,141 @@ import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+
 /**
- * Sender to obtain information from and write to a CMIS application.
- *
- * <p><b>NOTE:</b></p>
- * <p>Only one CmisSender can act as the default 'bridged' sender!</p>
- * <p>When used to proxy requests, you should use the fetch action!</p>
- * <p></p>
- *
- * <p>
- * <table border="1">
- * <b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>authAlias</td><td>string</td><td>When a parameter with name authAlias is present, it is used instead of the authAlias specified by the attribute</td></tr>
- * <tr><td>userName</td><td>string</td><td>When a parameter with name userName is present, it is used instead of the userName specified by the attribute</td></tr>
- * <tr><td>password</td><td>string</td><td>When a parameter with name password is present, it is used instead of the password specified by the attribute</td></tr>
- * </table>
- * </p>
- * <p><b>NOTE:</b></p>
- * <p>These parameters are incompatible when the sender is configured as a BridgeSender!</p>
- * <p></p>
- *
- * <p>
- * When <code>action=get</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
- * </p>
- * <p>
- * <b>example:</b>
- * <code>
- * <pre>
- *   &lt;cmis&gt;
- *      &lt;id&gt;
- *         documentId
- *      &lt;/id&gt;
- *   &lt;/cmis&gt;
- * </pre>
- * </code>
- * </p>
- * <p>
- * When <code>action=delete</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
- * </p>
- * <p>
- * <b>example:</b>
- * <code>
- * <pre>
- *   &lt;cmis&gt;
- *      &lt;id&gt;
- *         documentId
- *      &lt;/id&gt;
- *   &lt;/cmis&gt;
- * </pre>
- * </code>
- * </p>
- * <p>
- * When <code>action=create</code> the input (xml string) indicates document properties to set. This input is optional.
- * </p>
- * <p>
- * <b>example:</b>
- * <code>
- * <pre>
- *   &lt;cmis&gt;
- *      &lt;name&gt;Offerte&lt;/name&gt;
- *      &lt;objectTypeId&gt;NNB_Geldlening&lt;/objectTypeId&gt;
- *      &lt;mediaType&gt;application/pdf&lt;/mediaType&gt;
- *      &lt;properties&gt;
- *         &lt;property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz"&gt;2014-11-27T16:43:01.268+0100&lt;/property&gt;
- *         &lt;property name="ArrivedBy"&gt;HDN&lt;/property&gt;
- *         &lt;property name="DocumentType"&gt;Geldlening&lt;/property&gt;
- *      &lt;/properties&gt;
- *   &lt;/cmis&gt;
- * </pre>
- * </code>
- * </p>
- *
- * <p>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>name</td><td>mandatory property "cmis:name". If not set the sender attribute fileNameSessionKey is used</td><td>"[unknown]"</td></tr>
- * <tr><td>objectTypeId</td><td>mandatory property "cmis:objectTypeId"</td><td>"cmis:document"</td></tr>
- * <tr><td>mediaType</td><td>the MIME type of the document to store</td><td>"application/octet-stream"</td></tr>
- * <tr><td>property</td><td>custom document property to set. Possible attributes:
- * <table border="1">
- * <tr><th>name</th><th>description</th><th>default</th></tr>
- * <tr><td>type</td><td>
- * <ul>
- * <li><code>string</code>: renders the value</li>
- * <li><code>datetime</code>: converts the value to a Date, by default using formatString <code>yyyy-MM-dd HH:mm:ss</code></li>
- * </ul>
- * </td><td>string</td></tr>
- * <tr><td>formatString</td><td>used in combination with <code>datetime</code></td><td>yyyy-MM-dd HH:mm:ss</td></tr>
- * </table></td><td>&nbsp;</td></tr>
- * </table>
- * </p>
- * <p>
- * When <code>action=find</code> the input (xml string) indicates the query to perform.
- * </p>
- * <p>
- * <b>example:</b>
- * <code>
- * <pre>
- *   &lt;query&gt;
- *      &lt;statement&gt;select * from cmis:document&lt;/statement&gt;
- *      &lt;maxItems&gt;10&lt;/maxItems&gt;
- *      &lt;skipCount&gt;0&lt;/skipCount&gt;
- *      &lt;searchAllVersions&gt;true&lt;/searchAllVersions&gt;
- *      &lt;includeAllowableActions&gt;true&lt;/includeAllowableActions&gt;
- *   &lt;/query&gt;
- * </pre>
- * </code>
- * </p>
- * <p>
- * When <code>action=update</code> the input (xml string) indicates document properties to update.
- * </p>
- * <p>
- * <b>example:</b>
- * <code>
- * <pre>
- *   &lt;cmis&gt;
- *      &lt;id&gt;123456789&lt;/id&gt;
- *      &lt;properties&gt;
- *         &lt;property name="ArrivedAt" type="datetime" formatString="yyyy-MM-dd'T'HH:mm:ss.SSSz"&gt;2014-11-27T16:43:01.268+0100&lt;/property&gt;
- *         &lt;property name="ArrivedBy"&gt;HDN&lt;/property&gt;
- *         &lt;property name="DocumentType"&gt;Geldlening&lt;/property&gt;
- *      &lt;/properties&gt;
- *   &lt;/cmis&gt;
- * </pre>
- * </code>
- * </p>
- *
- * <p>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>id</td><td>mandatory property "cmis:objectId" which indicates the document to update</td><td>&nbsp;</td></tr>
- * <tr><td>property</td><td>custom document property to update. See <code>action=create</code> for possible attributes</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
- *
  * @author	Peter Leeuwenburgh
  * @author	Niels Meijer
  */
+@IbisDescription(
+		"Sender to obtain information from and write to a CMIS application." +
+				"<p><b>NOTE:</b></p>" +
+				"<p>Only one CmisSender can act as the default 'bridged' sender!</p>" +
+				"<p>When used to proxy requests, you should use the fetch action!</p>" +
+				"<p></p>" +
+				"<p>" +
+				"<table border=\"1\">" +
+				"<b>Parameters:</b>" +
+				"<tr><th>name</th><th>type</th><th>remarks</th></tr>" +
+				"<tr><td>authAlias</td><td>string</td><td>When a parameter with name authAlias is present, it is used instead of the authAlias specified by the attribute</td></tr>" +
+				"<tr><td>userName</td><td>string</td><td>When a parameter with name userName is present, it is used instead of the userName specified by the attribute</td></tr>" +
+				"<tr><td>password</td><td>string</td><td>When a parameter with name password is present, it is used instead of the password specified by the attribute</td></tr>" +
+				"</table>" +
+				"</p>" +
+				"<p><b>NOTE:</b></p>" +
+				"<p>These parameters are incompatible when the sender is configured as a BridgeSender!</p>" +
+				"<p></p>" +
+				"<p>" +
+				"When <code>action=get</code> the input (xml string) indicates the id of the document to get. This input is mandatory." +
+				"</p>" +
+				"<p>" +
+				"<b>example:</b>" +
+				"<code>" +
+				"<pre>" +
+				"  &lt;cmis&gt;" +
+				"     &lt;id&gt;" +
+				"        documentId" +
+				"     &lt;/id&gt;" +
+				"  &lt;/cmis&gt;" +
+				"</pre>" +
+				"</code>" +
+				"</p>" +
+				"<p>" +
+				"When <code>action=delete</code> the input (xml string) indicates the id of the document to get. This input is mandatory." +
+				"</p>" +
+				"<p>" +
+				"<b>example:</b>" +
+				"<code>" +
+				"<pre>" +
+				"  &lt;cmis&gt;" +
+				"     &lt;id&gt;" +
+				"        documentId" +
+				"     &lt;/id&gt;" +
+				"  &lt;/cmis&gt;" +
+				"</pre>" +
+				"</code>" +
+				"</p>" +
+				"<p>" +
+				"When <code>action=create</code> the input (xml string) indicates document properties to set. This input is optional." +
+				"</p>" +
+				"<p>" +
+				"<b>example:</b>" +
+				"<code>" +
+				"<pre>" +
+				"  &lt;cmis&gt;" +
+				"     &lt;name&gt;Offerte&lt;/name&gt;" +
+				"     &lt;objectTypeId&gt;NNB_Geldlening&lt;/objectTypeId&gt;" +
+				"     &lt;mediaType&gt;application/pdf&lt;/mediaType&gt;" +
+				"     &lt;properties&gt;" +
+				"        &lt;property name=\"ArrivedAt\" type=\"datetime\" formatString=\"yyyy-MM-dd'T'HH:mm:ss.SSSz\"&gt;2014-11-27T16:43:01.268+0100&lt;/property&gt;" +
+				"        &lt;property name=\"ArrivedBy\"&gt;HDN&lt;/property&gt;" +
+				"        &lt;property name=\"DocumentType\"&gt;Geldlening&lt;/property&gt;" +
+				"     &lt;/properties&gt;" +
+				"  &lt;/cmis&gt;" +
+				"</pre>" +
+				"</code>" +
+				"</p>" +
+				"<p>" +
+				"<table border=\"1\">" +
+				"<tr><th>attributes</th><th>description</th><th>default</th></tr>" +
+				"<tr><td>name</td><td>mandatory property \"cmis:name\". If not set the sender attribute fileNameSessionKey is used</td><td>\"[unknown]\"</td></tr>" +
+				"<tr><td>objectTypeId</td><td>mandatory property \"cmis:objectTypeId\"</td><td>\"cmis:document\"</td></tr>" +
+				"<tr><td>mediaType</td><td>the MIME type of the document to store</td><td>\"application/octet-stream\"</td></tr>" +
+				"<tr><td>property</td><td>custom document property to set. Possible attributes:" +
+				"<table border=\"1\">" +
+				"<tr><th>name</th><th>description</th><th>default</th></tr>" +
+				"<tr><td>type</td><td>" +
+				"<ul>" +
+				"<li><code>string</code>: renders the value</li>" +
+				"<li><code>datetime</code>: converts the value to a Date, by default using formatString <code>yyyy-MM-dd HH:mm:ss</code></li>" +
+				"</ul>" +
+				"</td><td>string</td></tr>" +
+				"<tr><td>formatString</td><td>used in combination with <code>datetime</code></td><td>yyyy-MM-dd HH:mm:ss</td></tr>" +
+				"</table></td><td>&nbsp;</td></tr>" +
+				"</table>" +
+				"</p>" +
+				"<p>" +
+				"When <code>action=find</code> the input (xml string) indicates the query to perform." +
+				"</p>" +
+				"<p>" +
+				"<b>example:</b>" +
+				"<code>" +
+				"<pre>" +
+				"  &lt;query&gt;" +
+				"     &lt;statement&gt;select * from cmis:document&lt;/statement&gt;" +
+				"     &lt;maxItems&gt;10&lt;/maxItems&gt;" +
+				"     &lt;skipCount&gt;0&lt;/skipCount&gt;" +
+				"     &lt;searchAllVersions&gt;true&lt;/searchAllVersions&gt;" +
+				"     &lt;includeAllowableActions&gt;true&lt;/includeAllowableActions&gt;" +
+				"  &lt;/query&gt;" +
+				"</pre>" +
+				"</code>" +
+				"</p>" +
+				"<p>" +
+				"When <code>action=update</code> the input (xml string) indicates document properties to update." +
+				"</p>" +
+				"<p>" +
+				"<b>example:</b>" +
+				"<code>" +
+				"<pre>" +
+				"  &lt;cmis&gt;" +
+				"     &lt;id&gt;123456789&lt;/id&gt;" +
+				"     &lt;properties&gt;" +
+				"        &lt;property name=\"ArrivedAt\" type=\"datetime\" formatString=\"yyyy-MM-dd'T'HH:mm:ss.SSSz\"&gt;2014-11-27T16:43:01.268+0100&lt;/property&gt;" +
+				"        &lt;property name=\"ArrivedBy\"&gt;HDN&lt;/property&gt;" +
+				"        &lt;property name=\"DocumentType\"&gt;Geldlening&lt;/property&gt;" +
+				"     &lt;/properties&gt;" +
+				"  &lt;/cmis&gt;" +
+				"</pre>" +
+				"</code>" +
+				"</p>" +
+				"<p>" +
+				"<table border=\"1\">" +
+				"<tr><th>attributes</th><th>description</th><th>default</th></tr>" +
+				"<tr><td>id</td><td>mandatory property \"cmis:objectId\" which indicates the document to update</td><td>&nbsp;</td></tr>" +
+				"<tr><td>property</td><td>custom document property to update. See <code>action=create</code> for possible attributes</td><td>&nbsp;</td></tr>" +
+				"</table>" +
+				"</p>"
+)
 public class CmisSender extends SenderWithParametersBase {
 
 	private String action;
@@ -764,7 +762,7 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 	private String sendMessageForActionFetch(String correlationID,
-			String message, ParameterResolutionContext prc)
+											 String message, ParameterResolutionContext prc)
 			throws SenderException, TimeOutException {
 
 		CmisObject object = null;
@@ -828,7 +826,7 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 	private String sendMessageForActionUpdate(String correlationID,
-			String message, ParameterResolutionContext prc)
+											  String message, ParameterResolutionContext prc)
 			throws SenderException, TimeOutException {
 		String objectId = null;
 		Map<String, Object> props = new HashMap<String, Object>();

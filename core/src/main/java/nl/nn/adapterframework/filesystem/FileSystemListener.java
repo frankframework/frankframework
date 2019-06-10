@@ -29,20 +29,22 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.receivers.DirectoryListener;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
-/**
- * {@link IPullingListener listener} that looks in a filesystem for files.
- * When a file is found, it is moved to an process-folder, so that it isn't found more then once.  
- * The name of the moved file is passed to the pipeline.  
- *
- *
+
+/** 
  * @author Gerrit van Brakel, after {@link DirectoryListener} by John Dekker
  */
+@IbisDescription(
+	"{@link IPullingListener listener} that looks in a filesystem for files." + 
+	"When a file is found, it is moved to an process-folder, so that it isn't found more then once.  " + 
+	"The name of the moved file is passed to the pipeline.  " 
+)
 public class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F> {
 	protected Logger log = LogUtil.getLogger(this);
 

@@ -23,17 +23,19 @@ import java.util.Map;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
 
-/**
- * Basic implementation of RecordHandlerManager, that allows only for a single flow.
- * The manager decides which handlers to be used for a specific record.
- * 
- * 
+
+/** 
  * @author  John Dekker
  */
+@IbisDescription(
+	"Basic implementation of RecordHandlerManager, that allows only for a single flow." + 
+	"The manager decides which handlers to be used for a specific record." 
+)
 public class RecordHandlerManager implements IRecordHandlerManager {
 	protected Logger log = LogUtil.getLogger(this);
 

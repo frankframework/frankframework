@@ -19,17 +19,21 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 
 import org.apache.commons.lang.StringUtils;
 
-/**
- * Implementation of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
- * to receive messages from HTTP requests.
- * </table>
+
+/** 
  * @author  Gerrit van Brakel 
  * @since   4.4.x (still experimental)
  */
+@IbisDescription(
+	"Implementation of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}" + 
+	"to receive messages from HTTP requests." + 
+	"</table>" 
+)
 public class HttpListener extends PushingListenerAdapter implements HasPhysicalDestination {
 
 	private String serviceName;
