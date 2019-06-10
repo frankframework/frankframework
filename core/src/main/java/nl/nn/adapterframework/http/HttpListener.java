@@ -30,9 +30,9 @@ import org.apache.commons.lang.StringUtils;
  * @since   4.4.x (still experimental)
  */
 @IbisDescription(
-	"Implementation of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}" + 
-	"to receive messages from HTTP requests." + 
-	"</table>" 
+	"Implementation of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver} \n" + 
+	"to receive messages from HTTP requests. \n" + 
+	"</table> \n" 
 )
 public class HttpListener extends PushingListenerAdapter implements HasPhysicalDestination {
 

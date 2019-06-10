@@ -32,9 +32,9 @@ import nl.nn.adapterframework.util.AppConstants;
  * @since   4.11
  */
 @IbisDescription(
-	"General Cache provider." + 
-	"N.B. the default values shown can be overridden using properties in appConstants. The property names are found by prefixing the attribute name with <code>cache.default.</code>." + 
-	"</p>" 
+	"General Cache provider. \n" + 
+	"N.B. the default values shown can be overridden using properties in appConstants. The property names are found by prefixing the attribute name with <code>cache.default.</code>. \n" + 
+	"</p> \n" 
 )
 public class EhCache extends CacheAdapterBase {
 	

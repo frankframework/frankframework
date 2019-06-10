@@ -27,7 +27,7 @@ import org.apache.log4j.Logger;
  * @author Peter Leeuwenburgh
  */
 @IbisDescription(
-	"Cleans up a directory." 
+	"Cleans up a directory. \n" 
 )
 public class DirectoryCleaner {
 	protected Logger log = LogUtil.getLogger(this);

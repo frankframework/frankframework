@@ -33,7 +33,7 @@ import nl.nn.adapterframework.util.ReaderLineIterator;
  * @since   4.7
  */
 @IbisDescription(
-	"Sends a message to a Sender for each line of its input, that must be an InputStream." 
+	"Sends a message to a Sender for each line of its input, that must be an InputStream. \n" 
 )
 public class StreamLineIteratorPipe extends IteratingPipe {
 

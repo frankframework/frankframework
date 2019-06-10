@@ -41,8 +41,8 @@ import org.apache.log4j.Logger;
  * @author Johan Verrips IOS
  */
 @IbisDescription(
-	"Provides all JNDI functions and is meant to act as a base class." + 
-	"<br/>" 
+	"Provides all JNDI functions and is meant to act as a base class. \n" + 
+	"<br/> \n" 
 )
 public class JNDIBase {
 	protected Logger log = LogUtil.getLogger(this);

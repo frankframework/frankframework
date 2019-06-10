@@ -33,15 +33,15 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author	Niels Meijer
  */
 @IbisDescription(
-	"Performs a reload on database config ." + 
-	"<p><b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>state</th><th>condition</th></tr>" + 
-	"<tr><td>\"success\"</td><td>default</td></tr>" + 
-	"</table>" + 
-	"</p>" + 
-	"<p>It is possible to set the name of the configuration with the parameter 'name'.</p>" + 
-	"<p>You can dynamically set 'forceReload' attribute with the parameter 'forceReload'.</p>" 
+	"Performs a reload on database config . \n" + 
+	"<p><b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>state</th><th>condition</th></tr> \n" + 
+	"<tr><td>\"success\"</td><td>default</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" + 
+	"<p>It is possible to set the name of the configuration with the parameter 'name'.</p> \n" + 
+	"<p>You can dynamically set 'forceReload' attribute with the parameter 'forceReload'.</p> \n" 
 )
 public class ReloadSender extends SenderWithParametersBase implements ConfigurationAware {
 

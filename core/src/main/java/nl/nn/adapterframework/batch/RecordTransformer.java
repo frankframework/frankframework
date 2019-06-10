@@ -44,22 +44,22 @@ import org.apache.commons.lang.StringUtils;
  * @author  John Dekker
  */
 @IbisDescription(
-	"Translate a record using an outputFields description. " + 
-	"The {@link #setOutputFields(String) outputFields} description can contain the following functions:" + 
-	"<table border=\"1\">" + 
-	"<tr><td>string(value)</td><td>inserts the value between the braces</td><td>string( Dit wordt geinsert inclusief spaties ervoor en erna. )</td></tr>" + 
-	"<tr><td>align(value,size,align,fillchar)</td><td>inserts the value aligned</td><td>align(test~10~left~ )</td></tr>" + 
-	"<tr><td>fill(size,fillchar)</td><td>insert size fillchars</td><td>fill(2,0)</td></tr>" + 
-	"<tr><td>now(outformat)</td><td>inserts the current date</td><td>now(dd MMM yyyy)</td></tr>" + 
-	"<tr><td>incopy(fieldnr)</td><td>simply inserts the value of the field</td><td>incopy(2)</td></tr>" + 
-	"<tr><td>substr(fieldnr,startindex,endindex)</td><td>insert part of the value of the field</td><td>substr(2,0,8)</td></tr>" + 
-	"<tr><td>lookup(fieldnr,orgvval=newval,...)</td><td>replace original value using lookup table</td><td>lookup(3,Debit=+,Credit=-)</td></tr>" + 
-	"<tr><td>indate(fieldnr,informat,outformat)</td><td>inserts an input datefield using a different format</td><td>indate(2~MMddYY~dd MMM yyyy)</td></tr>" + 
-	"<tr><td>inalign(fieldnr,size,align,fillchar)</td><td>inserts an input field</td><td>inalign(3~5~left~0)</td></tr>" + 
-	"<tr><td>if(fieldnr,comparator,compareval)</td><td>only output the next fields if condition is true. Comparator is EQ (is equal to), NE (is not equal to), SW (starts with) or NS (not starts with). Use \"{..|..|..}\" for multiple compareValues</td><td>if(1,eq,3)</td></tr>" + 
-	"<tr><td>elseif(fieldnr,comparator,compareval)</td><td>only output the next fields if condition is true. Comparator is EQ, NE, SW or NS</td><td>elseif(1,ne,4)</td></tr>" + 
-	"<tr><td>endif()</td><td>endmarker for if</td><td>endif()</td></tr>" + 
-	"</table>" 
+	"Translate a record using an outputFields description.  \n" + 
+	"The {@link #setOutputFields(String) outputFields} description can contain the following functions: \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><td>string(value)</td><td>inserts the value between the braces</td><td>string( Dit wordt geinsert inclusief spaties ervoor en erna. )</td></tr> \n" + 
+	"<tr><td>align(value,size,align,fillchar)</td><td>inserts the value aligned</td><td>align(test~10~left~ )</td></tr> \n" + 
+	"<tr><td>fill(size,fillchar)</td><td>insert size fillchars</td><td>fill(2,0)</td></tr> \n" + 
+	"<tr><td>now(outformat)</td><td>inserts the current date</td><td>now(dd MMM yyyy)</td></tr> \n" + 
+	"<tr><td>incopy(fieldnr)</td><td>simply inserts the value of the field</td><td>incopy(2)</td></tr> \n" + 
+	"<tr><td>substr(fieldnr,startindex,endindex)</td><td>insert part of the value of the field</td><td>substr(2,0,8)</td></tr> \n" + 
+	"<tr><td>lookup(fieldnr,orgvval=newval,...)</td><td>replace original value using lookup table</td><td>lookup(3,Debit=+,Credit=-)</td></tr> \n" + 
+	"<tr><td>indate(fieldnr,informat,outformat)</td><td>inserts an input datefield using a different format</td><td>indate(2~MMddYY~dd MMM yyyy)</td></tr> \n" + 
+	"<tr><td>inalign(fieldnr,size,align,fillchar)</td><td>inserts an input field</td><td>inalign(3~5~left~0)</td></tr> \n" + 
+	"<tr><td>if(fieldnr,comparator,compareval)</td><td>only output the next fields if condition is true. Comparator is EQ (is equal to), NE (is not equal to), SW (starts with) or NS (not starts with). Use \"{..|..|..}\" for multiple compareValues</td><td>if(1,eq,3)</td></tr> \n" + 
+	"<tr><td>elseif(fieldnr,comparator,compareval)</td><td>only output the next fields if condition is true. Comparator is EQ, NE, SW or NS</td><td>elseif(1,ne,4)</td></tr> \n" + 
+	"<tr><td>endif()</td><td>endmarker for if</td><td>endif()</td></tr> \n" + 
+	"</table> \n" 
 )
 public class RecordTransformer extends AbstractRecordHandler {
 

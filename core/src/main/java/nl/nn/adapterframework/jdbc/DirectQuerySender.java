@@ -31,14 +31,14 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @since 	4.1
  */
 @IbisDescription(
-	"QuerySender that interprets the input message as a query, possibly with attributes." + 
-	"Messages are expected to contain sql-text." + 
-	"<table border=\"1\">" + 
-	"<p><b>Parameters:</b>" + 
-	"<tr><th>name</th><th>type</th><th>remarks</th></tr>" + 
-	"<tr><td>&nbsp;</td><td>all parameters present are applied to the statement to be executed</td></tr>" + 
-	"</table>" + 
-	"</p>" 
+	"QuerySender that interprets the input message as a query, possibly with attributes. \n" + 
+	"Messages are expected to contain sql-text. \n" + 
+	"<table border=\"1\"> \n" + 
+	"<p><b>Parameters:</b> \n" + 
+	"<tr><th>name</th><th>type</th><th>remarks</th></tr> \n" + 
+	"<tr><td>&nbsp;</td><td>all parameters present are applied to the statement to be executed</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 public class DirectQuerySender extends JdbcQuerySenderBase {
 

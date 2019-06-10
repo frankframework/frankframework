@@ -65,7 +65,7 @@ import nl.nn.adapterframework.util.Misc;
  * @author  Peter Leeuwenburgh
  */
 @IbisDescription(
-	"Sender that sends a message via a WebService based on NTLM authentication." 
+	"Sender that sends a message via a WebService based on NTLM authentication. \n" 
 )
 public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		HasPhysicalDestination {

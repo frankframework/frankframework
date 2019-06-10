@@ -28,17 +28,17 @@ import nl.nn.adapterframework.util.Misc;
  * @author Peter Leeuwenburgh
  */
 @IbisDescription(
-	"Pipe that generates an UUID (Universally Unique Identifier)." + 
-	"<p><b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>state</th><th>condition</th></tr>" + 
-	"<tr><td>\"success\"</td><td>default</td></tr>" + 
-	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>" + 
-	"</table>" + 
-	"</p>" + 
-	"If {@link #setType(String) type} is set to <code>numeric</code>, a UUID with fixed length 31 will be generated." + 
-	"If {@link #setType(String) type} is set to <code>alphanumeric</code>, the UUID will not have a fixed length which will be about 42." + 
-	"Only type <code>alphanumeric</code> guarantees a 100% unique identifier, type <code>numeric</code> has a 0.01% chance of exactly the same id in case of multiple calls on the same host within a few milliseconds.  " 
+	"Pipe that generates an UUID (Universally Unique Identifier). \n" + 
+	"<p><b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>state</th><th>condition</th></tr> \n" + 
+	"<tr><td>\"success\"</td><td>default</td></tr> \n" + 
+	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" + 
+	"If {@link #setType(String) type} is set to <code>numeric</code>, a UUID with fixed length 31 will be generated. \n" + 
+	"If {@link #setType(String) type} is set to <code>alphanumeric</code>, the UUID will not have a fixed length which will be about 42. \n" + 
+	"Only type <code>alphanumeric</code> guarantees a 100% unique identifier, type <code>numeric</code> has a 0.01% chance of exactly the same id in case of multiple calls on the same host within a few milliseconds.   \n" 
 )
 public class UUIDGeneratorPipe extends FixedForwardPipe {
 

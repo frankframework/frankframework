@@ -37,7 +37,7 @@ import org.apache.commons.lang.StringUtils;
  * @author  John Dekker
  */
 @IbisDescription(
-	"Resulthandler that writes the transformed record to a file." 
+	"Resulthandler that writes the transformed record to a file. \n" 
 )
 public class Result2Filewriter extends ResultWriter {
 	

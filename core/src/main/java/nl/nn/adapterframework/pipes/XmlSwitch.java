@@ -44,15 +44,15 @@ import org.apache.commons.lang.StringUtils;
  * @author Johan Verrips
  */
 @IbisDescription(
-	"Selects an exitState, based on either the content of the input message, by means" + 
-	"of a XSLT-stylesheet, the content of a session variable or, by default, by returning the name of the root-element." + 
-	"<p><b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>state</th><th>condition</th></tr>" + 
-	"<tr><td>&lt;name of the root-element&gt;</td><td>default</td></tr>" + 
-	"<tr><td>&lt;result of transformation&gt</td><td>when {@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename} or {@link #setXpathExpression(String) xpathExpression} is specified</td></tr>" + 
-	"</table>" + 
-	"</p>" 
+	"Selects an exitState, based on either the content of the input message, by means \n" + 
+	"of a XSLT-stylesheet, the content of a session variable or, by default, by returning the name of the root-element. \n" + 
+	"<p><b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>state</th><th>condition</th></tr> \n" + 
+	"<tr><td>&lt;name of the root-element&gt;</td><td>default</td></tr> \n" + 
+	"<tr><td>&lt;result of transformation&gt</td><td>when {@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename} or {@link #setXpathExpression(String) xpathExpression} is specified</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 public class XmlSwitch extends AbstractPipe {
 

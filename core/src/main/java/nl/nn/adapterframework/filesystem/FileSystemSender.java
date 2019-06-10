@@ -44,17 +44,17 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 @IbisDescription(
-	"FileSystem Sender: Base class for all file system senders" + 
-	"<p><b>Actions:</b></p>" + 
-	"<p>The <code>list</code> action for listing a directory content. inputFolder could be set as an attribute or as a parameter in adapter to list specific folder content. If both are set then parameter will override the value of attribute. If not set then, it will list root folder content </p>" + 
-	"<p>The <code>download</code> action for downloading a file, requires filename as input. Returns a base64 encoded string containing the file content </p>" + 
-	"<p>The <code>move</code> action for moving a file to another folder requires destination folder as parameter \"destination\"</p>" + 
-	"<p>The <code>delete</code> action requires the filename as input </p>" + 
-	"<p>The <code>upload</code> action requires the file parameter to be set which should contain the fileContent to upload in either Stream, Bytes or String format</p>" + 
-	"<p>The <code>rename</code> action requires the destination parameter to be set which should contain the full path </p>" + 
-	"<p>The <code>mkdir</code> action for creating a directory requires directory name to be created as input. </p>" + 
-	"<p>The <code>rmdir</code> action for removing a directory requires directory name to be removed as input. </p>" + 
-	"<br/>" 
+	"FileSystem Sender: Base class for all file system senders \n" + 
+	"<p><b>Actions:</b></p> \n" + 
+	"<p>The <code>list</code> action for listing a directory content. inputFolder could be set as an attribute or as a parameter in adapter to list specific folder content. If both are set then parameter will override the value of attribute. If not set then, it will list root folder content </p> \n" + 
+	"<p>The <code>download</code> action for downloading a file, requires filename as input. Returns a base64 encoded string containing the file content </p> \n" + 
+	"<p>The <code>move</code> action for moving a file to another folder requires destination folder as parameter \"destination\"</p> \n" + 
+	"<p>The <code>delete</code> action requires the filename as input </p> \n" + 
+	"<p>The <code>upload</code> action requires the file parameter to be set which should contain the fileContent to upload in either Stream, Bytes or String format</p> \n" + 
+	"<p>The <code>rename</code> action requires the destination parameter to be set which should contain the full path </p> \n" + 
+	"<p>The <code>mkdir</code> action for creating a directory requires directory name to be created as input. </p> \n" + 
+	"<p>The <code>rmdir</code> action for removing a directory requires directory name to be removed as input. </p> \n" + 
+	"<br/> \n" 
 )
 
 public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderWithParametersBase {

@@ -37,12 +37,12 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author Jaco de Groot
  */
 @IbisDescription(
-	"XmlValidator that will automatically add the SOAP envelope XSD to the set of" + 
-	"XSD's used for validation." + 
-	"<b><A name=\"note1\">Note 1:</A></b>" + 
-	"Before the <code>outputSoapBody</code> attribute was introduced, two validators were used for a request-reply pattern (an inputValidator for the request and an outputValidator for the reply)." + 
-	"These inputValidator and outputValidator were identical except for the child element of the SOAP body. Because validators use relatively a lot of memory, the <code>outputSoapBody</code> attribute was added which replaces the outputValidator." + 
-	"Both the request and the reply are then validated by the inputValidator." 
+	"XmlValidator that will automatically add the SOAP envelope XSD to the set of \n" + 
+	"XSD's used for validation. \n" + 
+	"<b><A name=\"note1\">Note 1:</A></b> \n" + 
+	"Before the <code>outputSoapBody</code> attribute was introduced, two validators were used for a request-reply pattern (an inputValidator for the request and an outputValidator for the reply). \n" + 
+	"These inputValidator and outputValidator were identical except for the child element of the SOAP body. Because validators use relatively a lot of memory, the <code>outputSoapBody</code> attribute was added which replaces the outputValidator. \n" + 
+	"Both the request and the reply are then validated by the inputValidator. \n" 
 )
 public class SoapValidator extends Json2XmlValidator {
 

@@ -33,8 +33,8 @@ import org.apache.log4j.Logger;
  * @author  John Dekker
  */
 @IbisDescription(
-	"Basic implementation of RecordHandlerManager, that allows only for a single flow." + 
-	"The manager decides which handlers to be used for a specific record." 
+	"Basic implementation of RecordHandlerManager, that allows only for a single flow. \n" + 
+	"The manager decides which handlers to be used for a specific record. \n" 
 )
 public class RecordHandlerManager implements IRecordHandlerManager {
 	protected Logger log = LogUtil.getLogger(this);

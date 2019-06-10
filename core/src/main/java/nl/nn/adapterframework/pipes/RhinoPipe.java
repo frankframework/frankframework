@@ -40,38 +40,38 @@ import org.apache.commons.lang.SystemUtils;
  * @author Barry Jacobs
  */
 @IbisDescription(
-	"Rhino JavaScript Runtime Factory Pipe." + 
-	"This pipe takes all input and pushes it into javascript runtime." + 
-	"The invoke method is called to initialize the runtime" + 
-	"Afterward the results are evaluated." + 
-	"<table border=\"1\">" + 
-	"<p>" + 
-	"<b>Parameters:</b>" + 
-	"<tr>" + 
-	"<th>name</th>" + 
-	"<th>type</th>" + 
-	"<th>remarks</th>" + 
-	"</tr>" + 
-	"<tr>" + 
-	"<td><i>any</i></td>" + 
-	"<td><i>any</i></td>" + 
-	"<td>Any parameters defined on the pipe will be Concatenated into one string and added to input</td>" + 
-	"</tr>" + 
-	"</table>" + 
-	"</p>" + 
-	"<p>" + 
-	"<b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr>" + 
-	"<th>state</th>" + 
-	"<th>condition</th>" + 
-	"</tr>" + 
-	"<tr>" + 
-	"<td>\"success\"</td>" + 
-	"<td>default</td>" + 
-	"</tr>" + 
-	"</table>" + 
-	"</p>" 
+	"Rhino JavaScript Runtime Factory Pipe. \n" + 
+	"This pipe takes all input and pushes it into javascript runtime. \n" + 
+	"The invoke method is called to initialize the runtime \n" + 
+	"Afterward the results are evaluated. \n" + 
+	"<table border=\"1\"> \n" + 
+	"<p> \n" + 
+	"<b>Parameters:</b> \n" + 
+	"<tr> \n" + 
+	"<th>name</th> \n" + 
+	"<th>type</th> \n" + 
+	"<th>remarks</th> \n" + 
+	"</tr> \n" + 
+	"<tr> \n" + 
+	"<td><i>any</i></td> \n" + 
+	"<td><i>any</i></td> \n" + 
+	"<td>Any parameters defined on the pipe will be Concatenated into one string and added to input</td> \n" + 
+	"</tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" + 
+	"<p> \n" + 
+	"<b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr> \n" + 
+	"<th>state</th> \n" + 
+	"<th>condition</th> \n" + 
+	"</tr> \n" + 
+	"<tr> \n" + 
+	"<td>\"success\"</td> \n" + 
+	"<td>default</td> \n" + 
+	"</tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 public class RhinoPipe extends FixedForwardPipe {
 

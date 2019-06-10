@@ -41,14 +41,14 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @since   4.9
  */
 @IbisDescription(
-	"Pipe that performs domain transforming on the basis of a database table." + 
-	"Every string which equals \"%![DT{<code>label</code>,<code>valueIn</code>,<code>type</code>}]\" will be replaced by <code>valueOut</code>. " + 
-	"The field <code>type</code>, which is optional, indicates the format of <code>valueIn</code>. Currently the following types are supported:" + 
-	"<ul>" + 
-	"  <li><code>string</code> (default): the methode setString() is used</li>" + 
-	"  <li><code>number</code>: the method setDouble() is used </li>" + 
-	"</ul>" + 
-	" " 
+	"Pipe that performs domain transforming on the basis of a database table. \n" + 
+	"Every string which equals \"%![DT{<code>label</code>,<code>valueIn</code>,<code>type</code>}]\" will be replaced by <code>valueOut</code>.  \n" + 
+	"The field <code>type</code>, which is optional, indicates the format of <code>valueIn</code>. Currently the following types are supported: \n" + 
+	"<ul> \n" + 
+	"  <li><code>string</code> (default): the methode setString() is used</li> \n" + 
+	"  <li><code>number</code>: the method setDouble() is used </li> \n" + 
+	"</ul> \n" + 
+	"  \n" 
 )
 
 public class DomainTransformerPipe extends FixedForwardPipe {

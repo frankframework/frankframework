@@ -31,14 +31,14 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 @IbisDescription(
-	"QuerySender that assumes a fixed query, possibly with attributes." + 
-	"<table border=\"1\">" + 
-	"<p><b>Parameters:</b>" + 
-	"<tr><th>name</th><th>type</th><th>remarks</th></tr>" + 
-	"<tr><td>&nbsp;</td><td>all parameters present are applied to the statement to be executed</td></tr>" + 
-	"</table>" + 
-	"</p>" + 
-	"<p><b>NOTE:</b> See {@link nl.nn.adapterframework.util.DB2XMLWriter DB2XMLWriter} for Resultset!</p>" 
+	"QuerySender that assumes a fixed query, possibly with attributes. \n" + 
+	"<table border=\"1\"> \n" + 
+	"<p><b>Parameters:</b> \n" + 
+	"<tr><th>name</th><th>type</th><th>remarks</th></tr> \n" + 
+	"<tr><td>&nbsp;</td><td>all parameters present are applied to the statement to be executed</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" + 
+	"<p><b>NOTE:</b> See {@link nl.nn.adapterframework.util.DB2XMLWriter DB2XMLWriter} for Resultset!</p> \n" 
 )
 public class FixedQuerySender extends JdbcQuerySenderBase {
 

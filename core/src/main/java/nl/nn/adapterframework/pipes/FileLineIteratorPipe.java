@@ -35,7 +35,7 @@ import org.apache.commons.lang.StringUtils;
  * @author  Gerrit van Brakel
  */
 @IbisDescription(
-	"Sends a message to a Sender for each line of the file that the input message refers to." 
+	"Sends a message to a Sender for each line of the file that the input message refers to. \n" 
 )
 public class FileLineIteratorPipe extends StreamLineIteratorPipe {
 

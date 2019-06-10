@@ -34,7 +34,7 @@ import org.apache.commons.lang.StringUtils;
  * @author  Gerrit van Brakel
  */
 @IbisDescription(
-	"Pipe for moving files to another directory." 
+	"Pipe for moving files to another directory. \n" 
 )
 public class MoveFilePipe extends FixedForwardPipe {
 

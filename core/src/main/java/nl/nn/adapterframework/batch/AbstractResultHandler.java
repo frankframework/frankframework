@@ -40,7 +40,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author  John Dekker
  */
 @IbisDescription(
-	"Abstract class for resulthandlers (handler that handles the transformed record)." 
+	"Abstract class for resulthandlers (handler that handles the transformed record). \n" 
 )
 public abstract class AbstractResultHandler implements IResultHandler, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);

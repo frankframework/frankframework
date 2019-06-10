@@ -51,8 +51,8 @@ import org.xml.sax.helpers.DefaultHandler;
  * @since 4.6.1
  */
 @IbisDescription(
-	"Sends a message to a Sender for each child element of the input XML." + 
-	"Input can be a String containing XML, a filename (set processFile true), an InputStream or a Reader." 
+	"Sends a message to a Sender for each child element of the input XML. \n" + 
+	"Input can be a String containing XML, a filename (set processFile true), an InputStream or a Reader. \n" 
 )
 public class ForEachChildElementPipe extends IteratingPipe {
 

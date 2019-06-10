@@ -62,12 +62,12 @@ import org.apache.commons.lang.StringUtils;
  * @author 	Gerrit van Brakel
  */
 @IbisDescription(
-	"Provides functions for jms connections, queues and topics and acts as a facade" + 
-	"to hide for clients whether a <code>Queue</code> or <code>Topic</code> is used." + 
-	"<br/>" + 
-	"The <code>destinationType</code> field specifies which" + 
-	"type should be used.<br/>" + 
-	"This class sends messages with JMS." 
+	"Provides functions for jms connections, queues and topics and acts as a facade \n" + 
+	"to hide for clients whether a <code>Queue</code> or <code>Topic</code> is used. \n" + 
+	"<br/> \n" + 
+	"The <code>destinationType</code> field specifies which \n" + 
+	"type should be used.<br/> \n" + 
+	"This class sends messages with JMS. \n" 
 )
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
 

@@ -41,9 +41,9 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author  John Dekker
  */
 @IbisDescription(
-	"Abstract class that contains functionality for parsing the field values from a " + 
-	"record (line). Fields in the record are either separated with a separator or have" + 
-	"a fixed position in the line." 
+	"Abstract class that contains functionality for parsing the field values from a  \n" + 
+	"record (line). Fields in the record are either separated with a separator or have \n" + 
+	"a fixed position in the line. \n" 
 )
 public abstract class AbstractRecordHandler implements IRecordHandler, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);

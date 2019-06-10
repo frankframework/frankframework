@@ -31,21 +31,21 @@ import org.apache.commons.lang.StringUtils;
  * @since   4.4.3
  */
 @IbisDescription(
-	"Pipe that checks if the calling user has a specified role. " + 
-	"Uses the PipeLineSessions methods." + 
-	"<p>" + 
-	"If the role is not specified by the role attribute, the input of" + 
-	"the pipe is used as role." + 
-	"</p>" + 
-	"<p><b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>state</th><th>condition</th></tr>" + 
-	"<tr><td>\"success\" or value set by {@link #setForwardName(String) forwardName}</td><td>user may assume role</td></tr>" + 
-	"<tr><td>\"notInRole\" or value set by {@link #setNotInRoleForwardName(String) notInRoleForwardName}</td><td>user may not assume role</td></tr>" + 
-	"<tr><td><i></i></td><td>if specified</td></tr>" + 
-	"</table>" + 
-	"</p>" + 
-	"N.B. The role itself must be specified by hand in the deployement descriptors web.xml and application.xml." 
+	"Pipe that checks if the calling user has a specified role.  \n" + 
+	"Uses the PipeLineSessions methods. \n" + 
+	"<p> \n" + 
+	"If the role is not specified by the role attribute, the input of \n" + 
+	"the pipe is used as role. \n" + 
+	"</p> \n" + 
+	"<p><b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>state</th><th>condition</th></tr> \n" + 
+	"<tr><td>\"success\" or value set by {@link #setForwardName(String) forwardName}</td><td>user may assume role</td></tr> \n" + 
+	"<tr><td>\"notInRole\" or value set by {@link #setNotInRoleForwardName(String) notInRoleForwardName}</td><td>user may not assume role</td></tr> \n" + 
+	"<tr><td><i></i></td><td>if specified</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" + 
+	"N.B. The role itself must be specified by hand in the deployement descriptors web.xml and application.xml. \n" 
 )
 public class IsUserInRolePipe extends FixedForwardPipe {
 

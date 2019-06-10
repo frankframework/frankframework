@@ -46,19 +46,19 @@ import org.apache.commons.lang.SystemUtils;
  * @since   4.9
  */
 @IbisDescription(
-	"FixedResultSender, same behaviour as {@link nl.nn.adapterframework.pipes.FixedResult FixedResult}, but now as a ISender." + 
-	"<table border=\"1\">" + 
-	"<p><b>Parameters:</b>" + 
-	"<tr><th>name</th><th>type</th><th>remarks</th></tr>" + 
-	"<tr>" + 
-	"  <td><i>any</i></td><td><i>any</i></td>" + 
-	"	 <td>Any parameters defined on the sender will be used for replacements. Each occurrence" + 
-	"		 of <code>${name-of-parameter}</code> in the file {@link #setFileName(String) fileName} " + 
-	"      will be replaced by its corresponding <i>value-of-parameter</i>. <br>" + 
-	"      This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}</td>" + 
-	"</tr>" + 
-	"</table>" + 
-	"</p>" 
+	"FixedResultSender, same behaviour as {@link nl.nn.adapterframework.pipes.FixedResult FixedResult}, but now as a ISender. \n" + 
+	"<table border=\"1\"> \n" + 
+	"<p><b>Parameters:</b> \n" + 
+	"<tr><th>name</th><th>type</th><th>remarks</th></tr> \n" + 
+	"<tr> \n" + 
+	"  <td><i>any</i></td><td><i>any</i></td> \n" + 
+	"	 <td>Any parameters defined on the sender will be used for replacements. Each occurrence \n" + 
+	"		 of <code>${name-of-parameter}</code> in the file {@link #setFileName(String) fileName}  \n" + 
+	"      will be replaced by its corresponding <i>value-of-parameter</i>. <br> \n" + 
+	"      This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}</td> \n" + 
+	"</tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 public class FixedResultSender extends SenderWithParametersBase {
 

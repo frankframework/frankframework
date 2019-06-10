@@ -47,14 +47,14 @@ import org.apache.commons.lang.StringUtils;
  * @author Jaco de Groot (***@dynasol.nl)
  */
 @IbisDescription(
-	"Pipe to zip or unzip a message or file.  " + 
-	"<p><b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>state</th><th>condition</th></tr>" + 
-	"<tr><td>\"success\"</td><td>When no problems encountered</td></tr>" + 
-	"<tr><td>\"exception\"</td><td>When problems encountered. The result passed to the next pipe is the exception that was caught formatted by the ErrorMessageFormatter class.</td></tr>" + 
-	"</table>" + 
-	"</p>" 
+	"Pipe to zip or unzip a message or file.   \n" + 
+	"<p><b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>state</th><th>condition</th></tr> \n" + 
+	"<tr><td>\"success\"</td><td>When no problems encountered</td></tr> \n" + 
+	"<tr><td>\"exception\"</td><td>When problems encountered. The result passed to the next pipe is the exception that was caught formatted by the ErrorMessageFormatter class.</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 public class CompressPipe extends FixedForwardPipe {
 

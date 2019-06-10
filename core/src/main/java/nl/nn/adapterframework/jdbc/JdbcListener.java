@@ -44,7 +44,7 @@ import org.apache.commons.lang.StringUtils;
  * @since   4.7
  */
 @IbisDescription(
-	"JdbcListener base class." 
+	"JdbcListener base class. \n" 
 )
 public class JdbcListener extends JdbcFacade implements IPullingListener {
 

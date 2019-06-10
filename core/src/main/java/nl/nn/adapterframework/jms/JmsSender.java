@@ -55,14 +55,14 @@ import nl.nn.adapterframework.util.DomBuilderException;
  * @author Gerrit van Brakel
  */
 @IbisDescription(
-	"This class sends messages with JMS." + 
-	"<table border=\"1\">" + 
-	"<p><b>Parameters:</b>" + 
-	"<tr><th>name</th><th>type</th><th>remarks</th></tr>" + 
-	"<tr><td></td>SoapAction<td><i>String</i></td><td>SoapAction. Automatically filled from attribute <code>soapAction</code></td></tr>" + 
-	"<tr><td><i>any</i></td><td><i>any</i></td><td>all parameters present are set as messageproperties</td></tr>" + 
-	"</table>" + 
-	"</p>" 
+	"This class sends messages with JMS. \n" + 
+	"<table border=\"1\"> \n" + 
+	"<p><b>Parameters:</b> \n" + 
+	"<tr><th>name</th><th>type</th><th>remarks</th></tr> \n" + 
+	"<tr><td></td>SoapAction<td><i>String</i></td><td>SoapAction. Automatically filled from attribute <code>soapAction</code></td></tr> \n" + 
+	"<tr><td><i>any</i></td><td><i>any</i></td><td>all parameters present are set as messageproperties</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {

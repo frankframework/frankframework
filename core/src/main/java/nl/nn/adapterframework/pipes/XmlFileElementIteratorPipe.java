@@ -44,7 +44,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author  Peter Leeuwenburgh
  */
 @IbisDescription(
-	"Sends a message to a Sender for each element in the XML file that the input message refers to." 
+	"Sends a message to a Sender for each element in the XML file that the input message refers to. \n" 
 )
 public class XmlFileElementIteratorPipe extends IteratingPipe {
 

@@ -30,12 +30,12 @@ import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
  * @since   4.7
  */
 @IbisDescription(
-	"{@link nl.nn.adapterframework.batch.IResultHandler ResultHandler} that writes the transformed record to a CLOB." + 
-	"<table border=\"1\">" + 
-	"<tr><th>nested elements</th><th>description</th></tr>" + 
-	"<tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the resultHandler will be applied to the SQL statement</td></tr>" + 
-	"</table>" + 
-	"<p/>" 
+	"{@link nl.nn.adapterframework.batch.IResultHandler ResultHandler} that writes the transformed record to a CLOB. \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>nested elements</th><th>description</th></tr> \n" + 
+	"<tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the resultHandler will be applied to the SQL statement</td></tr> \n" + 
+	"</table> \n" + 
+	"<p/> \n" 
 )
 public class Result2ClobWriter extends Result2LobWriterBase {
 	

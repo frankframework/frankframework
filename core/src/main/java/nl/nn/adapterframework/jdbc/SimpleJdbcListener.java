@@ -37,7 +37,7 @@ import org.apache.commons.lang.StringUtils;
  * @author  Peter Leeuwenburgh
  */
 @IbisDescription(
-	"Database Listener that operates on a table." 
+	"Database Listener that operates on a table. \n" 
 )
 
 public class SimpleJdbcListener extends JdbcFacade implements IPullingListener {

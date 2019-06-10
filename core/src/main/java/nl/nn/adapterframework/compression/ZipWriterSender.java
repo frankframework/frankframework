@@ -38,15 +38,15 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @since   4.9.10
  */
 @IbisDescription(
-	"Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action='write'." + 
-	"Filename and contents are taken from parameters. If one of the parameters is not present, the input message " + 
-	"is used for either filename or contents." + 
-	"<table border=\"1\">" + 
-	"<p><b>Parameters:</b>" + 
-	"<tr><th>name</th><th>type</th><th>remarks</th></tr>" + 
-	"<tr><td>filename</td><td>string</td><td>filename of the zipentry</td></tr>" + 
-	"<tr><td>contents</td><td>string</td><td>contents of the zipentry</td></tr>" + 
-	"</table>" 
+	"Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action='write'. \n" + 
+	"Filename and contents are taken from parameters. If one of the parameters is not present, the input message  \n" + 
+	"is used for either filename or contents. \n" + 
+	"<table border=\"1\"> \n" + 
+	"<p><b>Parameters:</b> \n" + 
+	"<tr><th>name</th><th>type</th><th>remarks</th></tr> \n" + 
+	"<tr><td>filename</td><td>string</td><td>filename of the zipentry</td></tr> \n" + 
+	"<tr><td>contents</td><td>string</td><td>contents of the zipentry</td></tr> \n" + 
+	"</table> \n" 
 )
 public class ZipWriterSender extends SenderWithParametersBase {
 

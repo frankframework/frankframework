@@ -42,8 +42,8 @@ import org.apache.http.client.utils.URIBuilder;
  * @since 7.0
  */
 @IbisDescription(
-	"Sender that sends a message via a WebService." + 
-	"@version 2.0" 
+	"Sender that sends a message via a WebService. \n" + 
+	"@version 2.0 \n" 
 )
 public class WebServiceSender extends HttpSender {
 

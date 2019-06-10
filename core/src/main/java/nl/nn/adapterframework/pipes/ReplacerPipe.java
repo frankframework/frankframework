@@ -32,14 +32,14 @@ import org.apache.commons.lang.StringUtils;
  * @since 4.2
  */
 @IbisDescription(
-	"Replaces all occurrences of one string with another." + 
-	"<p><b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>state</th><th>condition</th></tr>" + 
-	"<tr><td>\"success\"</td><td>default</td></tr>" + 
-	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>" + 
-	"</table>" + 
-	"</p>" 
+	"Replaces all occurrences of one string with another. \n" + 
+	"<p><b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>state</th><th>condition</th></tr> \n" + 
+	"<tr><td>\"success\"</td><td>default</td></tr> \n" + 
+	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 public class ReplacerPipe extends FixedForwardPipe {
 

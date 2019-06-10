@@ -46,25 +46,25 @@ import org.apache.commons.lang.StringUtils;
  * @since   4.9.10
  */
 @IbisDescription(
-	"Pipe that creates a ZipStream." + 
-	"For action=open, the Pipe will create a new zip, that will be written to a file or stream specified by the input message, that must be a:<ul>" + 
-	"<li>String specifying a filename</li>" + 
-	"<li>OutputStream</li>" + 
-	"<li>HttpResponse</li>" + 
-	"</ul>" + 
-	"The parameter 'filename' is used to specify the filename if the input is a HttpResponse." + 
-	"<table border=\"1\">" + 
-	"<p><b>Parameters:</b>" + 
-	"<tr><th>name</th><th>type</th><th>remarks</th></tr>" + 
-	"<tr><td>filename</td><td>string</td><td>filename of the zip or zipentry.</td></tr>" + 
-	"</table>" + 
-	"<p><b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>state</th><th>condition</th></tr>" + 
-	"<tr><td>\"success\"</td><td>default</td></tr>" + 
-	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>" + 
-	"</table>" + 
-	"</p>" 
+	"Pipe that creates a ZipStream. \n" + 
+	"For action=open, the Pipe will create a new zip, that will be written to a file or stream specified by the input message, that must be a:<ul> \n" + 
+	"<li>String specifying a filename</li> \n" + 
+	"<li>OutputStream</li> \n" + 
+	"<li>HttpResponse</li> \n" + 
+	"</ul> \n" + 
+	"The parameter 'filename' is used to specify the filename if the input is a HttpResponse. \n" + 
+	"<table border=\"1\"> \n" + 
+	"<p><b>Parameters:</b> \n" + 
+	"<tr><th>name</th><th>type</th><th>remarks</th></tr> \n" + 
+	"<tr><td>filename</td><td>string</td><td>filename of the zip or zipentry.</td></tr> \n" + 
+	"</table> \n" + 
+	"<p><b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>state</th><th>condition</th></tr> \n" + 
+	"<tr><td>\"success\"</td><td>default</td></tr> \n" + 
+	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 public class ZipWriterPipe extends FixedForwardPipe {
 

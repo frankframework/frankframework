@@ -37,7 +37,7 @@ import org.apache.commons.lang.StringUtils;
  * @since   4.7
  */
 @IbisDescription(
-	"Baseclass for resulthandlers that write the transformed record to a writer." 
+	"Baseclass for resulthandlers that write the transformed record to a writer. \n" 
 )
 public abstract class ResultWriter extends AbstractResultHandler {
 	

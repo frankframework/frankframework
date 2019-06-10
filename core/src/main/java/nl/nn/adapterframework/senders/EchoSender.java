@@ -28,7 +28,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * @since   4.9
  */
 @IbisDescription(
-	"Echos input to output. " 
+	"Echos input to output.  \n" 
 )
 public class EchoSender extends SenderWithParametersBase {
 	

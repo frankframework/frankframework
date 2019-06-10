@@ -38,7 +38,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author  John Dekker / Gerrit van Brakel
  */
 @IbisDescription(
-	"Encapsulates a record in XML, optionally translates it using XSLT or XPath." 
+	"Encapsulates a record in XML, optionally translates it using XSLT or XPath. \n" 
 )
 public class RecordXmlTransformer extends AbstractRecordHandler {
 	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();

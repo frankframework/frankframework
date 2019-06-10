@@ -52,8 +52,8 @@ import nl.nn.adapterframework.util.XmlExternalEntityResolver;
  * @author Jaco de Groot
  */
 @IbisDescription(
-	"baseclass for validating input message against a XML-Schema." + 
-	"N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path." 
+	"baseclass for validating input message against a XML-Schema. \n" + 
+	"N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path. \n" 
 )
 public abstract class AbstractXmlValidator {
 	protected static Logger log = LogUtil.getLogger(AbstractXmlValidator.class);

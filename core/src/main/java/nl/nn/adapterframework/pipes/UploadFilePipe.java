@@ -34,7 +34,7 @@ import org.apache.commons.lang.StringUtils;
  * @author Peter Leeuwenburgh
  */
 @IbisDescription(
-	"Uploads a zip file (inputstream in a sessionKey) and unzips it to a directory." 
+	"Uploads a zip file (inputstream in a sessionKey) and unzips it to a directory. \n" 
 )
 
 public class UploadFilePipe extends FixedForwardPipe {

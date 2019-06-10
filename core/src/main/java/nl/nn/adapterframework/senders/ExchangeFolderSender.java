@@ -26,21 +26,21 @@ import nl.nn.adapterframework.filesystem.FileSystemSender;
  * @author Gerrit van Brakel
  */
 @IbisDescription(
-	"Implementation of a {@link FileSystemSender} that enables to manipulate messages in a Exchange folder." + 
-	"<p>" + 
-	"<b>Configuration:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>attributes</th><th>description</th><th>default</th></tr>" + 
-	"<tr><td>{@link #setMailAddress(String) mailAddress}</td><td>mail address (also used for auto discovery)</td><td>&nbsp;</td></tr>" + 
-	"<tr><td>{@link #setUrl(String) url}</td><td>(only used when mailAddress is empty) url of the service</td><td>&nbsp;</td></tr>" + 
-	"<tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to exchange mail server</td><td>&nbsp;</td></tr>" + 
-	"<tr><td>{@link #setUsername(String) username}</td><td>username used in authentication to exchange mail server</td><td>&nbsp;</td></tr>" + 
-	"<tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>" + 
-	"<tr><td>{@link #setFilter(String) filter}</td><td>If empty, all mails are retrieved. If 'NDR' only Non-Delivery Report mails ('bounces') are retrieved</td><td>&nbsp;</td></tr>" + 
-	"<tr><td>{@link #setInputFolder(String) inputFolder}</td><td>folder (subfolder of inbox) to look for mails. If empty, the inbox folder is used</td><td>&nbsp;</td></tr>" + 
-	"<tr><td>{@link #setSimple(boolean) simple}</td><td>when set to <code>true</code>, the xml string passed to the pipeline contains minimum information about the mail (to save memory)</td><td>false</td></tr>" + 
-	"</table>" + 
-	"</p>" 
+	"Implementation of a {@link FileSystemSender} that enables to manipulate messages in a Exchange folder. \n" + 
+	"<p> \n" + 
+	"<b>Configuration:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>attributes</th><th>description</th><th>default</th></tr> \n" + 
+	"<tr><td>{@link #setMailAddress(String) mailAddress}</td><td>mail address (also used for auto discovery)</td><td>&nbsp;</td></tr> \n" + 
+	"<tr><td>{@link #setUrl(String) url}</td><td>(only used when mailAddress is empty) url of the service</td><td>&nbsp;</td></tr> \n" + 
+	"<tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to exchange mail server</td><td>&nbsp;</td></tr> \n" + 
+	"<tr><td>{@link #setUsername(String) username}</td><td>username used in authentication to exchange mail server</td><td>&nbsp;</td></tr> \n" + 
+	"<tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr> \n" + 
+	"<tr><td>{@link #setFilter(String) filter}</td><td>If empty, all mails are retrieved. If 'NDR' only Non-Delivery Report mails ('bounces') are retrieved</td><td>&nbsp;</td></tr> \n" + 
+	"<tr><td>{@link #setInputFolder(String) inputFolder}</td><td>folder (subfolder of inbox) to look for mails. If empty, the inbox folder is used</td><td>&nbsp;</td></tr> \n" + 
+	"<tr><td>{@link #setSimple(boolean) simple}</td><td>when set to <code>true</code>, the xml string passed to the pipeline contains minimum information about the mail (to save memory)</td><td>false</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 public class ExchangeFolderSender extends FileSystemSender<Item,ExchangeFileSystem> implements HasPhysicalDestination {
 

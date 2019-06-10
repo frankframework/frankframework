@@ -41,8 +41,8 @@ import nl.nn.adapterframework.util.Misc;
  * @author  Niels Meijer
  */
 @IbisDescription(
-	"Pipe that performs base64 encoding and decoding." + 
-	"@version 2.0" 
+	"Pipe that performs base64 encoding and decoding. \n" + 
+	"@version 2.0 \n" 
 )
 public class Base64Pipe extends FixedForwardPipe {
 

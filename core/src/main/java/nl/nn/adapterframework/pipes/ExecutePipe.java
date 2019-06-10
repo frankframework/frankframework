@@ -33,7 +33,7 @@ import org.apache.commons.lang.StringUtils;
  * @deprecated please use CommandSender
  */
 @IbisDescription(
-	"Executes a command." 
+	"Executes a command. \n" 
 )
 public class ExecutePipe extends FixedForwardPipe {
 	

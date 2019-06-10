@@ -36,7 +36,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * @since 4.2
  */
 @IbisDescription(
-	"Posts a message to another IBIS-adapter as a WebService." 
+	"Posts a message to another IBIS-adapter as a WebService. \n" 
 )
 public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
 

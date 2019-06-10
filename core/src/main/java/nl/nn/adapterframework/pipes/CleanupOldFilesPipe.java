@@ -36,7 +36,7 @@ import org.apache.commons.lang.StringUtils;
  * @since  4.2
  */
 @IbisDescription(
-	"Pipe for deleting files." 
+	"Pipe for deleting files. \n" 
 )
 public class CleanupOldFilesPipe extends FixedForwardPipe {
 	

@@ -51,20 +51,20 @@ import org.apache.commons.lang.StringUtils;
  * @since	7.1-B4
  */
 @IbisDescription(
-	"Samba Sender: The standard Windows interoperability suite for Linux and Unix." + 
-	"<p><b>Parameters:</b></p>" + 
-	"<p>The <code>upload</code> action requires the file parameter to be set which should contain the fileContent to upload in either Stream, Bytes or String format</p>" + 
-	"<p>The <code>rename</code> action requires the destination parameter to be set which should contain the full path relative to the share + filename</p>" + 
-	"<p><b>AuthAlias: (WebSphere based application servers)</b></p>" + 
-	"<p>If you do not want to specify the username/password used to authenticate with the Samba Share, you can use the authalias property.</p>" + 
-	"<p><b>NOTES:</b></p>" + 
-	"<p>Folders must always end with a slash.</p>" + 
-	"<p>It is possible to move files with the <code>rename</code> action. When doing so, make sure that the target folder exists!</p>" + 
-	"<p>It is possible to create multiple directories at once, when the <code>force</code> argument is set to <code>true</code>.</p>" + 
-	"<p>The <code>download</code> action returns a base64 encoded string containing the file content.</p>" + 
-	"<br/>" + 
-	"<br/>" + 
-	"<br/>" 
+	"Samba Sender: The standard Windows interoperability suite for Linux and Unix. \n" + 
+	"<p><b>Parameters:</b></p> \n" + 
+	"<p>The <code>upload</code> action requires the file parameter to be set which should contain the fileContent to upload in either Stream, Bytes or String format</p> \n" + 
+	"<p>The <code>rename</code> action requires the destination parameter to be set which should contain the full path relative to the share + filename</p> \n" + 
+	"<p><b>AuthAlias: (WebSphere based application servers)</b></p> \n" + 
+	"<p>If you do not want to specify the username/password used to authenticate with the Samba Share, you can use the authalias property.</p> \n" + 
+	"<p><b>NOTES:</b></p> \n" + 
+	"<p>Folders must always end with a slash.</p> \n" + 
+	"<p>It is possible to move files with the <code>rename</code> action. When doing so, make sure that the target folder exists!</p> \n" + 
+	"<p>It is possible to create multiple directories at once, when the <code>force</code> argument is set to <code>true</code>.</p> \n" + 
+	"<p>The <code>download</code> action returns a base64 encoded string containing the file content.</p> \n" + 
+	"<br/> \n" + 
+	"<br/> \n" + 
+	"<br/> \n" 
 )
 public class SambaSenderOld extends SenderWithParametersBase {
 

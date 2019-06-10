@@ -25,6 +25,7 @@ import javax.xml.validation.ValidatorHandler;
 
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDescription;
+import nl.nn.adapterframework.doc.IbisDescription;
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.xs.PSVIProvider;
 import org.xml.sax.XMLReader;
@@ -48,16 +49,16 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
  * @author Gerrit van Brakel
  */
 @IbisDescription(
-		"code>Pipe</code> that validates the XML or JSON input message against a XML-Schema and returns either XML or JSON." +
-				"<table border=\"1\">" +
-				"<tr><th>state</th><th>condition</th></tr>" +
-				"<tr><td>\"success\"</td><td>default</td></tr>" +
-				"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, the value for \"success\"</td></tr>" +
-				"<tr><td>\"parserError\"</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, \"failure\" is used in such a case</td></tr>" +
-				"<tr><td>\"illegalRoot\"</td><td>if the required root element is not found. If not specified, \"failure\" is used in such a case</td></tr>" +
-				"<tr><td>\"failure\"</td><td>if a validation error occurred</td></tr>" +
-				"</table>" +
-				"<br>"
+		"code>Pipe</code> that validates the XML or JSON input message against a XML-Schema and returns either XML or JSON. \n" +
+				"<table border=\"1\"> \n" +
+				"<tr><th>state</th><th>condition</th></tr> \n" +
+				"<tr><td>\"success\"</td><td>default</td></tr> \n" +
+				"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, the value for \"success\"</td></tr> \n" +
+				"<tr><td>\"parserError\"</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, \"failure\" is used in such a case</td></tr> \n" +
+				"<tr><td>\"illegalRoot\"</td><td>if the required root element is not found. If not specified, \"failure\" is used in such a case</td></tr> \n" +
+				"<tr><td>\"failure\"</td><td>if a validation error occurred</td></tr> \n" +
+				"</table> \n" +
+				"<br> \n"
 )
 public class Json2XmlValidator extends XmlValidator {
 

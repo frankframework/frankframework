@@ -24,31 +24,31 @@ import nl.nn.adapterframework.doc.IbisDescription;
  * @author Niels Meijer
  */
 @IbisDescription(
-	"The PipeLineExit, that represents a terminator of the PipeLine, provides a placeholder" + 
-	"for a path (corresponding to a pipeforward) and a state (that is returned to the receiver)." + 
-	"<p>An exit consists out of two mandatory and two optional parameters:" + 
-	"<table border=\"1\">" + 
-	"<tr><th>attributes</th><th>description</th><th>default</th></tr>" + 
-	"<tr><td>{@link #setPath(String) path}</td><td>name of the pipeline exit</td><td>&nbsp;</td></tr>" + 
-	"<tr><td>{@link #setState(String) state}</td><td>The exit state defines possible exists to the pipeline. The state can be one of the following: <code>success, error</code></td><td>&nbsp;</td></tr>" + 
-	"<tr><td>{@link #setCode(String) code}</td><td>http statuscode e.g. <code>500</code></td><td>200</td></tr>" + 
-	"<tr><td>{@link #setEmpty(String) empty}</td><td>when using RestListener and set to <code>true</code>, this removes the output and shows a blank page, the output is still logged in the ladybug testtool</td><td>false</td></tr>" + 
-	"</table>" + 
-	"</p>" + 
-	"<p>" + 
-	"<b>example:</b> <code><pre>" + 
-	"  &lt;exits&gt;" + 
-	"     &lt;exit path=\"EXIT\" state=\"success\" /&gt;" + 
-	"     &lt;exit path=\"Created\" state=\"error\" code=\"201\" empty=\"true\" /&gt;" + 
-	"     &lt;exit path=\"NotModified\" state=\"error\" code=\"304\" empty=\"true\" /&gt;" + 
-	"     &lt;exit path=\"BadRequest\" state=\"error\" code=\"400\" empty=\"true\" /&gt;" + 
-	"     &lt;exit path=\"NotAuthorized\" state=\"error\" code=\"401\" empty=\"true\" /&gt;" + 
-	"     &lt;exit path=\"NotAllowed\" state=\"error\" code=\"403\" empty=\"true\" /&gt;" + 
-	"     &lt;exit path=\"Teapot\" state=\"success\" code=\"418\" /&gt;" + 
-	"     &lt;exit path=\"ServerError\" state=\"error\" code=\"500\" /&gt;" + 
-	"  &lt;/exits&gt;" + 
-	"</pre></code>" + 
-	"</p>" 
+	"The PipeLineExit, that represents a terminator of the PipeLine, provides a placeholder \n" + 
+	"for a path (corresponding to a pipeforward) and a state (that is returned to the receiver). \n" + 
+	"<p>An exit consists out of two mandatory and two optional parameters: \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>attributes</th><th>description</th><th>default</th></tr> \n" + 
+	"<tr><td>{@link #setPath(String) path}</td><td>name of the pipeline exit</td><td>&nbsp;</td></tr> \n" + 
+	"<tr><td>{@link #setState(String) state}</td><td>The exit state defines possible exists to the pipeline. The state can be one of the following: <code>success, error</code></td><td>&nbsp;</td></tr> \n" + 
+	"<tr><td>{@link #setCode(String) code}</td><td>http statuscode e.g. <code>500</code></td><td>200</td></tr> \n" + 
+	"<tr><td>{@link #setEmpty(String) empty}</td><td>when using RestListener and set to <code>true</code>, this removes the output and shows a blank page, the output is still logged in the ladybug testtool</td><td>false</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" + 
+	"<p> \n" + 
+	"<b>example:</b> <code><pre> \n" + 
+	"  &lt;exits&gt; \n" + 
+	"     &lt;exit path=\"EXIT\" state=\"success\" /&gt; \n" + 
+	"     &lt;exit path=\"Created\" state=\"error\" code=\"201\" empty=\"true\" /&gt; \n" + 
+	"     &lt;exit path=\"NotModified\" state=\"error\" code=\"304\" empty=\"true\" /&gt; \n" + 
+	"     &lt;exit path=\"BadRequest\" state=\"error\" code=\"400\" empty=\"true\" /&gt; \n" + 
+	"     &lt;exit path=\"NotAuthorized\" state=\"error\" code=\"401\" empty=\"true\" /&gt; \n" + 
+	"     &lt;exit path=\"NotAllowed\" state=\"error\" code=\"403\" empty=\"true\" /&gt; \n" + 
+	"     &lt;exit path=\"Teapot\" state=\"success\" code=\"418\" /&gt; \n" + 
+	"     &lt;exit path=\"ServerError\" state=\"error\" code=\"500\" /&gt; \n" + 
+	"  &lt;/exits&gt; \n" + 
+	"</pre></code> \n" + 
+	"</p> \n" 
 )
 public class PipeLineExit {
 	

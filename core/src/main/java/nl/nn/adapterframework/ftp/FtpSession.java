@@ -65,7 +65,7 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
  * @author John Dekker
  */
 @IbisDescription(
-	"Helper class for sftp and ftp." 
+	"Helper class for sftp and ftp. \n" 
 )
 public class FtpSession {
 	protected Logger log = LogUtil.getLogger(this);

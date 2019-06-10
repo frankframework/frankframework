@@ -26,8 +26,8 @@ import nl.nn.adapterframework.doc.IbisDescription;
  * @author L180564 - Johan Verrips
  */
 @IbisDescription(
-	"Pipe that sleeps for a specified time, which defaults to 5000 msecs." + 
-	"Usefull for testing purposes." 
+	"Pipe that sleeps for a specified time, which defaults to 5000 msecs. \n" + 
+	"Usefull for testing purposes. \n" 
 )
 public class DelayPipe extends FixedForwardPipe {
 

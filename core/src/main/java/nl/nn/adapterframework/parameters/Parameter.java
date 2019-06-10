@@ -60,31 +60,31 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Gerrit van Brakel
  */
 @IbisDescription(
-	"Generic parameter definition." + 
-	"A parameter resembles an attribute. However, while attributes get their value at configuration-time," + 
-	"parameters get their value at the time of processing the message. Value can be retrieved from the message itself," + 
-	"a fixed value, or from the pipelineSession. If this does not result in a value (or if neither of these is specified), a default value " + 
-	"can be specified. If an XPathExpression or stylesheet is specified, it will be applied to the message, the value retrieved" + 
-	"from the pipelineSession or the fixed value specified." + 
-	"<br/>" + 
-	"Examples:" + 
-	"<pre>" + 
-	"stored under SessionKey 'TransportInfo':" + 
-	" &lt;transportinfo&gt;" + 
-	"  &lt;to&gt;***@zonnet.nl&lt;/to&gt;" + 
-	"  &lt;to&gt;***@zonnet.nl&lt;/to&gt;" + 
-	"  &lt;cc&gt;***@zonnet.nl&lt;/cc&gt;" + 
-	" &lt;/transportinfo&gt;" + 
-	"to obtain all 'to' addressees as a parameter:" + 
-	"sessionKey=\"TransportInfo\"" + 
-	"xpathExpression=\"transportinfo/to\"" + 
-	"type=\"xml\"" + 
-	"Result:" + 
-	"  &lt;to&gt;***@zonnet.nl&lt;/to&gt;" + 
-	"  &lt;to&gt;***@zonnet.nl&lt;/to&gt;" + 
-	"</pre>" + 
-	"N.B. to obtain a fixed value: a non-existing 'dummy' <code>sessionKey</code> in combination with the fixed value in <code>DefaultValue</code> is used traditionally." + 
-	"The current version of parameter supports the 'value' attribute, that is sufficient to set a fixed value.    " 
+	"Generic parameter definition. \n" + 
+	"A parameter resembles an attribute. However, while attributes get their value at configuration-time, \n" + 
+	"parameters get their value at the time of processing the message. Value can be retrieved from the message itself, \n" + 
+	"a fixed value, or from the pipelineSession. If this does not result in a value (or if neither of these is specified), a default value  \n" + 
+	"can be specified. If an XPathExpression or stylesheet is specified, it will be applied to the message, the value retrieved \n" + 
+	"from the pipelineSession or the fixed value specified. \n" + 
+	"<br/> \n" + 
+	"Examples: \n" + 
+	"<pre> \n" + 
+	"stored under SessionKey 'TransportInfo': \n" + 
+	" &lt;transportinfo&gt; \n" + 
+	"  &lt;to&gt;***@zonnet.nl&lt;/to&gt; \n" + 
+	"  &lt;to&gt;***@zonnet.nl&lt;/to&gt; \n" + 
+	"  &lt;cc&gt;***@zonnet.nl&lt;/cc&gt; \n" + 
+	" &lt;/transportinfo&gt; \n" + 
+	"to obtain all 'to' addressees as a parameter: \n" + 
+	"sessionKey=\"TransportInfo\" \n" + 
+	"xpathExpression=\"transportinfo/to\" \n" + 
+	"type=\"xml\" \n" + 
+	"Result: \n" + 
+	"  &lt;to&gt;***@zonnet.nl&lt;/to&gt; \n" + 
+	"  &lt;to&gt;***@zonnet.nl&lt;/to&gt; \n" + 
+	"</pre> \n" + 
+	"N.B. to obtain a fixed value: a non-existing 'dummy' <code>sessionKey</code> in combination with the fixed value in <code>DefaultValue</code> is used traditionally. \n" + 
+	"The current version of parameter supports the 'value' attribute, that is sufficient to set a fixed value.     \n" 
 )
 public class Parameter implements INamedObject, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);

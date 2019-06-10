@@ -37,22 +37,22 @@ import org.apache.commons.lang.StringUtils;
  * @author  Milan Tomc
  */
 @IbisDescription(
-	"Pipe to check if a username and password are valid in LDAP." + 
-	"<table border=\"1\">" + 
-	"<p><b>Parameters:</b>" + 
-	"<tr><th>name</th><th>type</th><th>remarks</th></tr>" + 
-	"<tr><td>ldapProviderURL</td><td>URL to the LDAP server. <br/>Example: ldap://su05b9.itc.intranet</td><td>Required only if attribute ldapProviderURL is not set</td></tr>" + 
-	"<tr><td>principal</td><td>The LDAP DN for the username. <br/>Example: UID=SRP,OU=DI-IUF-EP,OU=SERVICES,O=ING</td><td>Required and must be filled</td></tr>" + 
-	"<tr><td>credentials</td><td>The LDAP password. <br/> Example: welkom01</td><td>Required and must be filled</td></tr>" + 
-	"</table>" + 
-	"</p>" + 
-	"<p><b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>state</th><th>condition</th><th>remarks</th></tr>" + 
-	"<tr><td>success</td><td>Successful login to LDAP</td><td>should be defined in configuration</td></tr>" + 
-	"<tr><td>invalid</td><td>Unsuccessful login to LDAP</td><td>should be defined in configuration</td></tr>" + 
-	"</table>" + 
-	"</p>" 
+	"Pipe to check if a username and password are valid in LDAP. \n" + 
+	"<table border=\"1\"> \n" + 
+	"<p><b>Parameters:</b> \n" + 
+	"<tr><th>name</th><th>type</th><th>remarks</th></tr> \n" + 
+	"<tr><td>ldapProviderURL</td><td>URL to the LDAP server. <br/>Example: ldap://su05b9.itc.intranet</td><td>Required only if attribute ldapProviderURL is not set</td></tr> \n" + 
+	"<tr><td>principal</td><td>The LDAP DN for the username. <br/>Example: UID=SRP,OU=DI-IUF-EP,OU=SERVICES,O=ING</td><td>Required and must be filled</td></tr> \n" + 
+	"<tr><td>credentials</td><td>The LDAP password. <br/> Example: welkom01</td><td>Required and must be filled</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" + 
+	"<p><b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>state</th><th>condition</th><th>remarks</th></tr> \n" + 
+	"<tr><td>success</td><td>Successful login to LDAP</td><td>should be defined in configuration</td></tr> \n" + 
+	"<tr><td>invalid</td><td>Unsuccessful login to LDAP</td><td>should be defined in configuration</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 public class LdapChallengePipe extends AbstractPipe {
 

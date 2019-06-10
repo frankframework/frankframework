@@ -41,7 +41,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * @author  Peter Leeuwenburgh
  */
 @IbisDescription(
-	"QuerySender that writes each row in a ResultSet to a file." 
+	"QuerySender that writes each row in a ResultSet to a file. \n" 
 )
 public class ResultSet2FileSender extends FixedQuerySender {
 	private String fileNameSessionKey;

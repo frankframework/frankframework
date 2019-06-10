@@ -33,7 +33,7 @@ import org.apache.commons.lang.StringUtils;
  * @author Jaco de Groot
  */
 @IbisDescription(
-	"Remove specified cache key from cache with specified name." 
+	"Remove specified cache key from cache with specified name. \n" 
 )
 public class RemoveCacheKeyPipe extends FixedForwardPipe {
 	private IbisCacheManager ibisCacheManager;
@@ -116,12 +116,10 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 	}
 
 }
-
 /**
- *
+ * 
  * Helper class to use the transformKey method of the abstract CacheAdapterBase
  * class.
- *
  */
 class KeyTransformer extends CacheAdapterBase {
 

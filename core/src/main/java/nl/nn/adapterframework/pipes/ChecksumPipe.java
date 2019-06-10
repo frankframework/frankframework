@@ -39,7 +39,7 @@ import org.apache.commons.lang.StringUtils;
  * @since   4.9  
  */
 @IbisDescription(
-	"Pipe to calculate checksum on input." 
+	"Pipe to calculate checksum on input. \n" 
 )
 public class ChecksumPipe extends FixedForwardPipe {
 	

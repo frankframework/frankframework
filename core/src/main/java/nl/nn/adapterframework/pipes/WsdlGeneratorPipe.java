@@ -14,6 +14,7 @@
    limitations under the License.
 */
 package nl.nn.adapterframework.pipes;
+
 import java.io.ByteArrayOutputStream;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
@@ -22,10 +23,15 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.doc.IbisDescription; 
+import nl.nn.adapterframework.doc.IbisDescription;
 import nl.nn.adapterframework.soap.Wsdl;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
+
+/**
+ * @author Jaco de Groot
+ */
+@IbisDescription("Generate WSDL of parent or specified adapter")
 public class WsdlGeneratorPipe extends FixedForwardPipe {
 	private String from = "parent";
 	public void configure() throws ConfigurationException {

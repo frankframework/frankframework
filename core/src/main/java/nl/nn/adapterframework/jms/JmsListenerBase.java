@@ -52,7 +52,7 @@ import org.apache.commons.lang.StringUtils;
  * @since   4.9
  */
 @IbisDescription(
-	"Common baseclass for Pulling and Pushing JMS Listeners." 
+	"Common baseclass for Pulling and Pushing JMS Listeners. \n" 
 )
 public class JmsListenerBase extends JMSFacade implements HasSender, IWithParameters {
 

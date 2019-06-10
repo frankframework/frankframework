@@ -35,20 +35,15 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
  * @author Gerrit van Brakel
  */
 @IbisDescription(
-	"Provides a base-class for a Pipe that always has the same forward." + 
-	"Ancestor classes should call <code>super.configure()</code> in their <code>configure()</code>-methods." + 
-	"<tr><td>{@link #setSkipOnEmptyInput(boolean) skipOnEmptyInput}</td><td>when set, this pipe is skipped</td><td>false</td></tr>" + 
-	"<tr><td>{@link #setIfParam(String) ifParam}</td><td>when set, this pipe is only executed when the value of parameter with name <code>ifParam</code> equals <code>ifValue</code> (otherwise this pipe is skipped)</td><td>&nbsp;</td></tr>" + 
-	"<tr><td>{@link #setIfValue(String) ifValue}</td><td>see <code>ifParam</code></td><td>&nbsp;</td></tr>" + 
-	"</table>" + 
-	"</p>" + 
-	"<p><b>Exits:</b>" + 
-	"<table border=\"1\">" + 
-	"<tr><th>state</th><th>condition</th></tr>" + 
-	"<tr><td>\"success\"</td><td>default</td></tr>" + 
-	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>" + 
-	"</table>" + 
-	"</p>" 
+	"Provides a base-class for a Pipe that always has the same forward. \n" + 
+	"Ancestor classes should call <code>super.configure()</code> in their <code>configure()</code>-methods. \n" + 
+	"<p><b>Exits:</b> \n" + 
+	"<table border=\"1\"> \n" + 
+	"<tr><th>state</th><th>condition</th></tr> \n" + 
+	"<tr><td>\"success\"</td><td>default</td></tr> \n" + 
+	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr> \n" + 
+	"</table> \n" + 
+	"</p> \n" 
 )
 public class FixedForwardPipe extends AbstractPipe {
 
