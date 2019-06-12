@@ -15,15 +15,20 @@ import nl.nn.adapterframework.senders.XsltSender;
 
 public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElementPipe> {
 
-	private String messageBasic="<root><sub>abc</sub><sub>def</sub></root>";
-	private String expectedBasic="<results count=\"2\">\n"+
-			"<result item=\"1\">\n"+
-			"abc\n"+
-			"</result>\n"+
-			"<result item=\"2\">\n"+
-			"def\n"+
-			"</result>\n</results>";
-
+	private String messageBasic = "<root><num>1</num><num>2</num></root>";
+	private String expectedBasic =
+			"<results count=\"2\">\n"+
+			"<result item=\"1\">\n1\n</result>\n"+
+			"<result item=\"2\">\n2\n</result>\n" +
+			"</results>";
+	private String messageExpanded = "<root><num>1</num><num>2</num><num>3</num><num>4</num><num>5</num></root>";
+	private String expectedExpanded =
+			"<results count=\"3\">\n"+
+			"<result item=\"1\">\n2\n</result>\n"+
+			"<result item=\"2\">\n3\n</result>\n" +
+			"<result item=\"3\">\n4\n</result>\n" +
+			"</results>";
+	
 	private IPipeLineSession session = new PipeLineSessionBase();
 
     @Override
@@ -33,7 +38,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
     protected ISender getElementRenderer() {
     	XsltSender sender = new XsltSender();
-    	sender.setXpathExpression("sub");
+    	sender.setXpathExpression("num/text()");
     	return sender;
     }
 
@@ -46,13 +51,14 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
         PipeRunResult prr = pipe.doPipe(messageBasic, session);
         String actual=prr.getResult().toString();
+        System.out.println();
         
         assertEquals(expectedBasic, actual);
     }
 
     @Test
     public void testXPath() throws PipeRunException, ConfigurationException, PipeStartException {
-    	pipe.setElementXPathExpression("/root/sub");
+    	pipe.setElementXPathExpression("/root/num");
     	pipe.setNamespaceAware(true);
     	pipe.setSender(getElementRenderer());
     	configurePipe();
@@ -66,16 +72,17 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
     @Test
     public void testXPathWithSpecialChars() throws PipeRunException, ConfigurationException, PipeStartException {
-    	pipe.setElementXPathExpression("/root/sub[position()<3]");
+    	System.out.println(messageExpanded);
+    	pipe.setElementXPathExpression("/root/num[position()>1 and position()<5]");
     	pipe.setNamespaceAware(true);
     	pipe.setSender(getElementRenderer());
     	configurePipe();
     	pipe.start();
 
-        PipeRunResult prr = pipe.doPipe(messageBasic, session);
+        PipeRunResult prr = pipe.doPipe(messageExpanded, session);
         String actual=prr.getResult().toString();
         
-        assertEquals(expectedBasic, actual);
+        assertEquals(expectedExpanded, actual);
     }
 
 }

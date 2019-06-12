@@ -45,6 +45,8 @@
 	<!ENTITY MultipleSessionKeys SYSTEM "./ConfigurationMultipleSessionKeys.xml">
 	<!ENTITY CreateLargeFile SYSTEM "./ConfigurationCreateLargeFile.xml">
 	<!ENTITY MemoryLeak SYSTEM "./ConfigurationMemoryLeak.xml">
+	<!ENTITY ForEachWithEscapeChars SYSTEM "./ConfigurationForEachWithEscapeChars.xml">
+	<!ENTITY EchoTextOnly SYSTEM "./ConfigurationEchoTextOnly.xml">
 ]>
 <configuration name="MainConfig">
 	&Authentication;
@@ -80,7 +82,6 @@
 	&ForEachChildElementPipe;
 	&ResultSetIteratingPipe;
 	&InputOutputWrapper;
-
 	&EsbSoapValidator;
 	&WsdlGeneratorPipe;
 	&FxF3;
@@ -94,4 +95,6 @@
 	&MultipleSessionKeys;
 	&CreateLargeFile;
 	&MemoryLeak;
+	&EchoTextOnly;
+	&ForEachWithEscapeChars;
 </configuration>

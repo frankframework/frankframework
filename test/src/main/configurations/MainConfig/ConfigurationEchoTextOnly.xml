@@ -1,0 +1,23 @@
+<adapter name="EchoTextOnly" description="excecutes XPath '/*/text()' on XML input and returns result">
+	<receiver
+		name="EchoTextOnly"
+		className="nl.nn.adapterframework.receivers.GenericReceiver"
+		>
+		<listener
+			name="EchoTextOnly"
+			className="nl.nn.adapterframework.receivers.JavaListener"
+		/>
+	</receiver>
+	<pipeline firstPipe="EchoTextOnly">
+		<exits>
+			<exit path="EXIT" state="success"/>
+		</exits>
+		<pipe
+			name="EchoTextOnly"
+			className="nl.nn.adapterframework.pipes.XsltPipe"
+			xpathExpression="/*/text()"
+			>
+			<forward name="success" path="EXIT"/>
+		</pipe>
+	</pipeline>
+</adapter>
