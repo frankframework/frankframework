@@ -51,7 +51,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
         PipeRunResult prr = pipe.doPipe(messageBasic, session);
         String actual=prr.getResult().toString();
-        System.out.println();
         
         assertEquals(expectedBasic, actual);
     }
@@ -72,7 +71,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
     @Test
     public void testXPathWithSpecialChars() throws PipeRunException, ConfigurationException, PipeStartException {
-    	System.out.println(messageExpanded);
     	pipe.setElementXPathExpression("/root/num[position()>1 and position()<5]");
     	pipe.setNamespaceAware(true);
     	pipe.setSender(getElementRenderer());
