@@ -21,16 +21,18 @@ import java.util.Map;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -56,14 +58,13 @@ public class XsltSender extends SenderWithParametersBase {
 	private boolean indentXml=true;
 	private boolean skipEmptyTags=false;
 	private boolean removeNamespaces=false;
-	private boolean xslt2=false;
+	private int xsltVersion=0; // set to 0 for auto detect.
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
 
 	private TransformerPool transformerPool;
 	private TransformerPool transformerPoolSkipEmptyTags;
 	private TransformerPool transformerPoolRemoveNamespaces;
 
-	
 	/**
 	 * The <code>configure()</code> method instantiates a transformer for the specified
 	 * XSL. If the stylesheetname cannot be accessed, a ConfigurationException is thrown.
@@ -72,7 +73,7 @@ public class XsltSender extends SenderWithParametersBase {
 	public void configure() throws ConfigurationException {
 		super.configure();
 	
-		transformerPool = TransformerPool.configureTransformer0(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), isXslt2()?2:1);
+		transformerPool = TransformerPool.configureTransformer0(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), getXsltVersion());
 		if (isSkipEmptyTags()) {
 			transformerPoolSkipEmptyTags = XmlUtils.getSkipEmptyTagsTransformerPool(isOmitXmlDeclaration(),isIndentXml());
 		}
@@ -82,7 +83,7 @@ public class XsltSender extends SenderWithParametersBase {
 			}
 		}
 
-		if (isXslt2()) {
+		if (getXsltVersion()>=2) {
 			ParameterList parameterList = getParameterList();
 			if (parameterList!=null) {
 				for (int i=0; i<parameterList.size(); i++) {
@@ -138,9 +139,9 @@ public class XsltSender extends SenderWithParametersBase {
 	protected Source adaptInput(String input, ParameterResolutionContext prc) throws PipeRunException, DomBuilderException, TransformerException, IOException {
 		if (transformerPoolRemoveNamespaces!=null) {
 			log.debug(getLogPrefix()+ " removing namespaces from input message");
-			input = transformerPoolRemoveNamespaces.transform(prc.getInputSource(isNamespaceAware()), null); 
+			input = transformerPoolRemoveNamespaces.transform(prc.getInputSource(true), null); 
 			log.debug(getLogPrefix()+ " output message after removing namespaces [" + input + "]");
-			return XmlUtils.stringToSourceForSingleUse(input, isNamespaceAware());
+			return XmlUtils.stringToSourceForSingleUse(input, true);
 		}
 		return prc.getInputSource(isNamespaceAware());
 	}
@@ -262,13 +263,24 @@ public class XsltSender extends SenderWithParametersBase {
 		return removeNamespaces;
 	}
 
-	public boolean isXslt2() {
-		return xslt2;
+	@IbisDoc({"when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
+	public void setXsltVersion(int xsltVersion) {
+		this.xsltVersion=xsltVersion;
+	}
+	public int getXsltVersion() {
+		return xsltVersion;
 	}
 
-	@IbisDoc({"when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
+	@IbisDoc({"Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
+	/**
+	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
+	 */
+	@Deprecated
 	public void setXslt2(boolean b) {
-		xslt2 = b;
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'xslt2' has been deprecated. Its value is now auto detected. If necessary, replace with a setting of xsltVersion";
+		configWarnings.add(log, msg);
+		xsltVersion=b?2:1;
 	}
 
 	public void setNamespaceAware(boolean b) {

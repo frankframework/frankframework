@@ -96,6 +96,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	protected ConfigurationException configurationException;
 
+	{
+		setNamespaceAware(true);
+	}
+
 	/**
 	 * Configure the XmlValidator
 	 * @throws ConfigurationException when:
@@ -291,7 +295,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
  					if (StringUtils.isNotEmpty(inputRootNs) && StringUtils.isEmpty(getSchemaLocation())) {
  						log.debug(getLogPrefix(session)+"remove namespaces from extracted SOAP body");
  			    		try {
- 				    		inputStr = transformerPoolRemoveNamespaces.transform(inputStr,null);
+ 				    		inputStr = transformerPoolRemoveNamespaces.transform(inputStr,null,true);
  						} catch (Exception e) {
  							throw new PipeRunException(this,"cannot remove namespaces",e);
  						}
@@ -518,7 +522,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
     @Deprecated
-	@IbisDoc({"the namespace of the soap envelope, when this property has a value and the input message is a soap message the content of the soap body is used for validation, hence the soap envelope and soap body elements are not considered part of the message to validate. please note that this functionality is deprecated, using {@link nl.nn.adapterframework.soap.soapvalidator} is now the preferred solution in case a soap message needs to be validated, in other cases give this property an empty value", "http://schemas.xmlsoap.org/soap/envelope/"})
+	@IbisDoc({"the namespace of the soap envelope, when this property has a value and the input message is a soap message, the content of the soap body is used for validation, hence the soap envelope and soap body elements are not considered part of the message to validate. please note that this functionality is deprecated, using {@link nl.nn.adapterframework.soap.soapvalidator} is now the preferred solution in case a soap message needs to be validated, in other cases give this property an empty value", "http://schemas.xmlsoap.org/soap/envelope/"})
 	public void setSoapNamespace(String string) {
 		soapNamespace = string;
     }

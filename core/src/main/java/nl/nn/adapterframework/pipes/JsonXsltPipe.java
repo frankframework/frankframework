@@ -55,9 +55,9 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class JsonXsltPipe extends XsltPipe {
 
-	{
-		setXslt2(true);
-	}
+//	{
+//		setXslt2(true);
+//	}
 
 	private String jsonToXml(String json) throws TransformerException {
 		XMLReader reader=new JsonXmlReader();
