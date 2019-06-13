@@ -16,7 +16,7 @@
 				Key -->
 			<pipe name="getStartTime"
 				className="nl.nn.adapterframework.pipes.PutSystemDateInSession"
-				getTimeStampInMillis="true">
+				getCurrentTimeStampInMillis="true">
 				<forward name="success" path="writeStartTime" />
 			</pipe>
 			<pipe name="writeStartTime" actions="write"
@@ -24,7 +24,7 @@
 				directory="${testdata.dir}/MemoryLeak"
 				createDirectory="true"
 				fileName="startTimeStamp.txt"
-				getInputFromSessionKey="timeStampInMillis">
+				getInputFromSessionKey="systemDate">
 				<forward name="success" path="Echo" />
 			</pipe>
 			<pipe name="Echo"
@@ -266,16 +266,16 @@
 			<exits>
 				<exit path="READY" state="success" />
 			</exits>
-			<!-- Puts the time stamp in milliseconds in timeStampInMillis session 
+			<!-- Puts the time stamp in milliseconds in systemDate session 
 				Key -->
 			<pipe name="getEndTime"
 				className="nl.nn.adapterframework.pipes.PutSystemDateInSession"
-				getTimeStampInMillis="true">
+				getCurrentTimeStampInMillis="true">
 				<forward name="success" path="writeEndTime" />
 			</pipe>
 			<pipe name="writeEndTime" actions="write"
 				className="nl.nn.adapterframework.pipes.FilePipe"
-				getInputFromSessionKey="timeStampInMillis"
+				getInputFromSessionKey="systemDate"
 				directory="${testdata.dir}/MemoryLeak"
 				fileName="endTimeStamp.txt">
 				<forward name="success" path="Echo" />
