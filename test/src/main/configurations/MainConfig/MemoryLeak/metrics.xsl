@@ -6,7 +6,7 @@
 			 <!-- 455 is the maxMemory returned by Runtime class for 512M JVM on Tomcat 
 				910 -> 1024M
 				1820 -> 2048M ...
-				470000 : the expected duration(ms) for 512M memory 
+				470000 : the expected duration(ms) for 512M memory
 			-->
 		</xsl:comment>
 		<xsl:value-of select="round(number(substring(processMetrics/properties/property[@name='maxMemory'], 0, string-length(processMetrics/properties/property[@name='maxMemory']))) div 455) * 470000" />
