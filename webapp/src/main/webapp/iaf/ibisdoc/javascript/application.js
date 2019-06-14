@@ -27,6 +27,7 @@ app.factory('classesService', function() {
 
 app.factory('methodsService', function() {
   var methods = [];
+  var parents = [];
 
   return {
     getMethods: function() {
@@ -34,11 +35,17 @@ app.factory('methodsService', function() {
     },
     setMethods: function(methodArray) {
       methods = methodArray;
+    },
+    getParents: function () {
+      return parents;
+    },
+    setParents: function(parentArray) {
+      parents = parentArray;
     }
   };
 });
 
-app.controller("foldersCtrl", function($scope, dataService, classesService, methodsService, $rootScope, $filter) {
+app.controller("foldersCtrl", function($scope, dataService, classesService, methodsService, $rootScope) {
   dataService.getData().then(function(response) {
     $scope.folders = response;
     $scope.methods = [];
@@ -60,11 +67,11 @@ app.controller("foldersCtrl", function($scope, dataService, classesService, meth
         classesService.setClasses(folder.classes);
       }
     });
-  }
+  };
 
   $scope.onKey = function($event) {
     $rootScope.$broadcast('givingAllMethhods', $scope.methods.filter(function (method) {
-      return (method.name.toLowerCase() == $event.target.value.toLowerCase());
+      return (method.name.toLowerCase() === $event.target.value.toLowerCase());
     }));
     $rootScope.$broadcast('searching');
   }
@@ -78,7 +85,24 @@ app.controller("classesCtrl", function($scope, classesService, methodsService) {
   $scope.showMethods = function(className) {
     angular.forEach($scope.classes, function(clas) {
       if (angular.equals(clas.name, className)) {
+        $scope.parentClasses = [];
+
+        angular.forEach(clas.methods, function(method) {
+          if (method.className !== method.originalClassName) {
+            let index = $scope.parentClasses.findIndex(parent => parent.name === method.originalClassName);
+
+            if (index === -1) {
+              $scope.parentClasses.push({
+                name : method.originalClassName,
+                attributes : [method]
+              });
+            } else {
+              $scope.parentClasses[index].attributes.push(method);
+            }
+          }
+        });
         methodsService.setMethods(clas.methods);
+        methodsService.setParents($scope.parentClasses);
       }
     });
   }
@@ -90,11 +114,14 @@ app.controller("methodsCtrl", function($scope, methodsService) {
     $scope.searching = false;
   }.bind(this));
 
+  $scope.$watch(methodsService.getParents, function(change) {
+    $scope.parents = change;
+  }.bind(this));
+
 
   $scope.$on('givingAllMethhods', function(event, allMethods) {
-    console.log(allMethods.length);
     $scope.allMethods = allMethods;
-  })
+  });
 
   $scope.$on('searching', function() {
     $scope.searching = true;
