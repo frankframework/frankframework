@@ -17,6 +17,7 @@ td, th {
 
 table {
   border-collapse: collapse;
+  min-width: 100%;
 }
 
 a {
