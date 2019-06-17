@@ -20,7 +20,7 @@ public class FunctionalTransformerPoolTestBase {
 	}
 
 	public void testTransformerPool(TransformerPool tp, String input, String expected) throws DomBuilderException, TransformerException, IOException {
-		testTransformerPool(tp, input, expected, true, "viaSource");
+		testTransformerPool(tp, input, expected, true, "String input");
 	}
 	
 	public void testXslt(String xslt, String input, String expected) throws DomBuilderException, TransformerException, IOException {
@@ -28,7 +28,7 @@ public class FunctionalTransformerPoolTestBase {
 	}
 	
 	public void testXslt(String xslt, String input, String expected, boolean xslt2) throws DomBuilderException, TransformerException, IOException {
-		TransformerPool tp = TransformerPool.getInstance(xslt,xslt2);
+		TransformerPool tp = TransformerPool.getInstance(xslt,xslt2?2:1);
 		testTransformerPool(tp,input,expected);
 	}
 	

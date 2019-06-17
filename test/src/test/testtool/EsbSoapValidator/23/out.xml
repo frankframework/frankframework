@@ -13,7 +13,7 @@
       <Timestamp>2001-12-17T09:30:47</Timestamp>
    </HeaderFields>
    <Service>
-      <Name>CollectionsDisbursements</Name>
+      <Name>AccountInformation</Name>
       <Context/>
       <Action>
          <Paradigm>Response</Paradigm>
@@ -22,7 +22,7 @@
       </Action>
    </Service>
 </MessageHeader>
-</soapenv:Header><soapenv:Body><GetPaymentReferenceAndPayLink_Response xmlns="http://nn.nl/XSD/AccountInformation/1/GetPaymentReferenceAndPayLink/1">
+</soapenv:Header><soapenv:Body><GetPaymentReferenceAndPayLink_Response xmlns="http://nn.nl/XSD/AccountInformation/AccountInformation/1/GetPaymentReferenceAndPayLink/1">
    <PaymentDetails>
       <PaymentId>987</PaymentId>
       <PaymentURL>paymentulr</PaymentURL>

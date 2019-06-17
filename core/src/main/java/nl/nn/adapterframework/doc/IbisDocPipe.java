@@ -422,7 +422,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 				}
 			}
 		}
-		rt.writeToJsonFile();
+		rt.writeToJsonUrl();
 
 		return rt.getJsonString();
 	}

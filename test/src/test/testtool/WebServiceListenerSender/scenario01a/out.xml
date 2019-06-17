@@ -1,0 +1,5 @@
+<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope">
+  <soapenv:Body>
+    <WebServiceListerSenderREQ xmlns="urn:ws" xmlns:env="http://www.w3.org/2003/05/soap-envelope"></WebServiceListerSenderREQ>
+  </soapenv:Body>
+</soapenv:Envelope>

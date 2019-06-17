@@ -16,8 +16,7 @@
 			</pipe>
 
 			<pipe name="showConfig" className="nl.nn.adapterframework.pipes.CreateRestViewPipe"
-				styleSheetName="ShowConfig/xsl/ShowConfig.xsl" xslt2="true"
-				skipOnEmptyInput="true">
+				styleSheetName="ShowConfig/xsl/ShowConfig.xsl" skipOnEmptyInput="true">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

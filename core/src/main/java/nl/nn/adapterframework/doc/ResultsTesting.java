@@ -1,24 +1,54 @@
 package nl.nn.adapterframework.doc;
 
-import com.google.gson.Gson;
-import java.io.*;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.*;
 
 public class ResultsTesting {
 
-    BufferedWriter writer;
     private ArrayList<AFolder> folders = new ArrayList<AFolder>();
     private ArrayList<AClass> classes = new ArrayList<AClass>();
     private String json = "";
 
-    public static void main(String[] args) {
-        ResultsTesting rt = new ResultsTesting();
-        rt.writeToJsonFile();
-    }
+    public void writeToJsonUrl() {
+        JSONArray newFolders = new JSONArray();
+        JSONArray newClasses;
+        JSONArray newMethods;
 
-    public void writeToJsonFile() {
-        Gson gson = new Gson();
-        json = gson.toJson(folders);
+        try {
+            for (AFolder folder : folders) {
+                JSONObject folderObject = new JSONObject();
+                folderObject.put("name", folder.name);
+
+                newClasses = new JSONArray();
+                for (AClass aClass : folder.getClasses()) {
+                    JSONObject classObject = new JSONObject();
+                    classObject.put("name", aClass.name);
+
+                    newMethods = new JSONArray();
+                    for (AMethod method : aClass.getMethods()) {
+                        JSONObject methodObject = new JSONObject();
+                        methodObject.put("name", method.name);
+                        methodObject.put("description", method.description);
+                        methodObject.put("defaultValue", method.defaultValue);
+                        methodObject.put("className", method.className);
+                        methodObject.put("folderName", method.folderName);
+                        methodObject.put("originalClassName", method.originalClassName);
+                        newMethods.put(methodObject);
+                    }
+                    classObject.put("methods", newMethods);
+                    newClasses.put(classObject);
+                }
+                folderObject.put("classes", newClasses);
+                newFolders.put(folderObject);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        json = newFolders.toString();
     }
 
     public String getJsonString() {

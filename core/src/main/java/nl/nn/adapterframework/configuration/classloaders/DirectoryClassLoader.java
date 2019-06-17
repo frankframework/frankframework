@@ -18,17 +18,13 @@ package nl.nn.adapterframework.configuration.classloaders;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
 
 public class DirectoryClassLoader extends ClassLoaderBase {
-	private List<File> directories;
-	private String directory = null;
+	private File directory = null;
 
 	public DirectoryClassLoader(ClassLoader parent) throws ConfigurationException {
 		super(parent);
@@ -44,44 +40,38 @@ public class DirectoryClassLoader extends ClassLoaderBase {
 			if (configurationsDirectory == null) {
 				throw new ConfigurationException("Could not find property configurations.directory");
 			}
-			retrieveDirectories(configurationsDirectory);
-		} else {
-			retrieveDirectories(directory);
+
+			this.directory = new File(configurationsDirectory);
+		}
+
+		if (!this.directory.isDirectory()) {
+			throw new ConfigurationException("Could not find directory to load configuration from: " + this.directory);
 		}
 	}
 
-	public void setDirectory(String directory) {
-		this.directory = directory;
+	/**
+	 * Set the directory from which the configuration files should be loaded
+	 * @throws ConfigurationException if the directory can't be found
+	 */
+	public void setDirectory(String directory) throws ConfigurationException {
+		File dir = new File(directory);
+		if(!dir.isDirectory())
+			throw new ConfigurationException("directory ["+directory+"] not found");
+
+		this.directory = dir;
 	}
 
-	private void retrieveDirectories(String directoriesString) throws ConfigurationException {
-		directories = new ArrayList<File>();
-		List<String> directoriesStringAsList = Arrays.asList(directoriesString.split(","));
-		boolean existingDir = false;
-		for (String directoryString : directoriesStringAsList) {
-			File directory = new File(directoryString);
-			if (directory.isDirectory()) {
-				existingDir = true;
-			}
-			directories.add(directory);
-		}
-		if (!existingDir) {
-			throw new ConfigurationException("Could not find directory to load configuration from: " + directoriesString);
-		}
-	}
-	
 	@Override
 	public URL getResource(String name) {
-		for (File directory: directories) {
-			File file = new File(directory, name);
-			if (file.exists()) {
-				try {
-					return file.toURI().toURL();
-				} catch (MalformedURLException e) {
-					log.error("Could not create url for '" + name + "'", e);
-				}
+		File file = new File(directory, name);
+		if (file.exists()) {
+			try {
+				return file.toURI().toURL();
+			} catch (MalformedURLException e) {
+				log.error("Could not create url for '" + name + "'", e);
 			}
 		}
+
 		return super.getResource(name);
 	}
 }

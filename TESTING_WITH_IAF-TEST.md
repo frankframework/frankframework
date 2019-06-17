@@ -4,11 +4,12 @@ To ensure that your contribution doesn't break any logic, we would like you to r
 
 This guide was written with the assertion that you are A) using Eclipse, and B) have successfully run the iaf-example module before. If this is not the case, please follow the steps as described on our [CONTRIBUTING](https://github.com/ibissource/iaf/blob/master/CONTRIBUTING.md#developing-with-eclipse) page.
 
-To prevent problems with data transactionality, we will be using an Oracle database rather than an H2 database. If you don't have Oracle Database Express Edition installed on your system, download it [here](https://www.oracle.com/technetwork/database/enterprise-edition/downloads/index.html). (Express Edition downloads can be found a bit further down on the page)
+To prevent problems with data transactionality, we will be using an Oracle database rather than an H2 database. If you don't have Oracle Database Express Edition installed on your system, download it [here](https://www.oracle.com/technetwork/database/enterprise-edition/downloads/index.html). The 'Express Edition' downloads can be found a bit further down on the oracle website. 
+> _Make sure to use the default password **system** when installing oracle, don't use a custom password!_
 
 ## 1. Proprietary modules and JAR dependencies
 
-Some parts of the iaf-test module rely on proprietary modules. To tell Maven that it should download these modules, go to Window > Preferences > Maven > User Settings. If you already have a _settings.xml_ file, press the "Open file" link. Otherwise, browse to _C:/Users/(your name)/.m2/_ and create a _settings.xml_ file. Edit the file following [these instructions](https://knowhow.interpar.nl/?epkb_post_type_1=how-to-add-proprietary-to-your-settings-xml-of-maven).
+Some parts of the iaf-test module rely on proprietary modules. To tell Maven that it should download these modules, go to Window > Preferences > Maven > User Settings. If you already have a _settings.xml_ file, press the "Open file" link. Otherwise, browse to _C:/Users/(your name)/.m2/_ and create a _settings.xml_ file. Edit the file by adding your own repository or the [ibissource nexus repository](https://nexus.ibissource.org/content/groups/private/) as [mirror](https://maven.apache.org/guides/mini/guide-mirror-settings.html).
 
 Download the following JARs, and place them in your Tomcat server's lib folder. If you do not yet have a lib folder, you can create one directly under your Tomcat server's root directory.
 * [activemq-core-5.6.0.jar](https://mvnrepository.com/artifact/org.apache.activemq/activemq-core/5.6.0)
@@ -35,8 +36,8 @@ The module's test scenarios can be run manually with the Larva testtool. This wi
 
 To make sure our database contains the data the tests need, we'll have to run some ant scripts. Navigate to _iaf-test/src/main/tools_ in your Project Explorer. Run the following files as ant builds, in order:
 1. _/setupDir/setupDir.xml_
-2. _/setupDB/Oracle/create___user.xml_
-3. _/setupDB/Oracle/create___database.xml_
+2. _/setupDB/Oracle/create_user.xml_
+3. _/setupDB/Oracle/create_database.xml_
 
 ## 4. Running the test scenarios
 

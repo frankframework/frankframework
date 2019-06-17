@@ -29,6 +29,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 */
 public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
 
+	public static final int MAXCOMMENTLEN=1000;
+
 	/**
 	 * Prepares the object for operation. After this
 	 * method is called the storeMessage() and retrieveMessage() methods may be called
