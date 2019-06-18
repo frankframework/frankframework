@@ -466,7 +466,7 @@
 			<xsl:when test="@type='larva'"				>images/larva.gif</xsl:when>
 			<xsl:when test="@type='showsummary'"		>images/ibisstore.gif</xsl:when>
 			<xsl:when test="@type='theme'"				>images/new-gui.png</xsl:when>
-			
+
 			<xsl:when test="@type='configurationStatus'">images/configurationStatus.gif</xsl:when>
 
 			<xsl:when test="@type='monitoring'"			>images/monitoring.gif</xsl:when>
