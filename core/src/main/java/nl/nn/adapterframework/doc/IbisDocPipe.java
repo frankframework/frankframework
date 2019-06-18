@@ -15,10 +15,7 @@
 */
 package nl.nn.adapterframework.doc;
 
-import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -35,7 +32,6 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-import org.apache.xalan.xsltc.compiler.util.ResultTreeType;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
@@ -390,12 +386,14 @@ public class IbisDocPipe extends FixedForwardPipe {
 
 	private String getJson() {
 		Map<String, TreeSet<IbisBean>> groups = getGroups();
+		IbisDocExtractor extractor = new IbisDocExtractor();
 
-		ResultsTesting rt = new ResultsTesting();
 		// For all folders
 		for (String folder : groups.keySet()) {
+
 			// For all classes
 			for (IbisBean ibisBean : groups.get(folder)) {
+
 				// Get the class
 				Map<String, Method> beanProperties = getBeanProperties(ibisBean.getClazz());
 				if (beanProperties != null) {
@@ -410,21 +408,57 @@ public class IbisDocPipe extends FixedForwardPipe {
 
 						// Get the ibisdoc of the method
 						IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
+
+						// Get the ibis description of the method
+						IbisDescription ibisDescription = AnnotationUtils.findAnnotation(ibisBean.getClazz(), IbisDescription.class);
+
+						// Create an array for the superclasses of this method's class
+						ArrayList<String> superClasses = new ArrayList<String>();
+
+						// Get the class
+                        Class clazz = ibisBean.getClazz();
+						int index = 0;
+
+						// For each superclass
+                        while (clazz.getSuperclass() != null) {
+
+                        	// Assign a string with a priority number attached to it and add it to the array of superclasses
+                        	String str = Integer.toString(index);
+                        	superClasses.add(clazz.getSimpleName() + str);
+                            clazz = clazz.getSuperclass();
+                            index++;
+                        }
+
+                        String javadocLink = ibisBean.getClazz().getName().replaceAll("\\.", "/");
+
+						// If there is an IbisDoc of the method
 						if (ibisDoc != null) {
+
+							// Get the values (description and default value)
 							String[] ibisDocValues = ibisDoc.value();
+							String description = "";
+
+							// If there is an IbisDescription of the class
+							if (ibisDescription != null) {
+
+								// Assign the value of the description, else it will be the empty string
+							    description = ibisDescription.value();
+                            }
+
+							// If the IbisDoc has a default value use it, else give an empty string
 							if (ibisDocValues.length > 1) {
-								rt.addMethods(folder, ibisBean.getName(), property, ibisDocValues[0], ibisDocValues[1], method.getDeclaringClass().getSimpleName());
+								extractor.addMethods(folder, ibisBean.getName(), property, ibisDocValues[0], ibisDocValues[1], method.getDeclaringClass().getSimpleName(), description, superClasses, javadocLink);
 							} else {
-								rt.addMethods(folder, ibisBean.getName(), property, ibisDocValues[0], "", method.getDeclaringClass().getSimpleName());
+								extractor.addMethods(folder, ibisBean.getName(), property, ibisDocValues[0], "", method.getDeclaringClass().getSimpleName(), description, superClasses, javadocLink);
 							}
 						}
 					}
 				}
 			}
 		}
-		rt.writeToJsonUrl();
+		extractor.writeToJsonUrl();
 
-		return rt.getJsonString();
+		return extractor.getJsonString();
 	}
 
 	private String getSchema() throws PipeRunException {

@@ -6,7 +6,7 @@ import org.json.JSONObject;
 
 import java.util.*;
 
-public class ResultsTesting {
+public class IbisDocExtractor {
 
     private ArrayList<AFolder> folders = new ArrayList<AFolder>();
     private ArrayList<AClass> classes = new ArrayList<AClass>();
@@ -36,7 +36,11 @@ public class ResultsTesting {
                         methodObject.put("className", method.className);
                         methodObject.put("folderName", method.folderName);
                         methodObject.put("originalClassName", method.originalClassName);
+                        methodObject.put("descriptionClass", method.descriptionClass);
+                        methodObject.put("superClasses", method.superClasses);
+                        methodObject.put("javadocLink", method.javadocLink);
                         newMethods.put(methodObject);
+
                     }
                     classObject.put("methods", newMethods);
                     newClasses.put(classObject);
@@ -55,7 +59,7 @@ public class ResultsTesting {
         return this.json;
     }
 
-    public void addMethods(String currentFolder, String currentClass, String methodName, String description, String defaultValue, String originalClassName) {
+    public void addMethods(String currentFolder, String currentClass, String methodName, String description, String defaultValue, String originalClassName, String descriptionClass, ArrayList<String> superClasses, String javadocLink) {
 
         // Check if the folder already exists (there is only one of each)
         boolean folderExists = false;
@@ -92,7 +96,7 @@ public class ResultsTesting {
             if (currentFolder.equals(folder.getName())) {
                 for (AClass aClass : folder.getClasses()) {
                     if (currentClass.equals(aClass.getName())) {
-                        aClass.addMethod(new AMethod(currentFolder, currentClass, methodName, description, defaultValue, originalClassName));
+                        aClass.addMethod(new AMethod(currentFolder, currentClass, methodName, description, defaultValue, originalClassName, descriptionClass, superClasses, javadocLink));
                     }
                 }
             }
@@ -109,14 +113,20 @@ public class ResultsTesting {
         private String superClassName;
         private String folderName;
         private String originalClassName;
+        private String descriptionClass;
+        private ArrayList<String> superClasses;
+        private String javadocLink;
 
-        public AMethod(String folderName, String className, String name, String description, String defaultValue, String originalClassName) {
+        public AMethod(String folderName, String className, String name, String description, String defaultValue, String originalClassName, String descriptionClass, ArrayList<String> superClasses, String javadocLink) {
             this.folderName = folderName;
             this.className = className;
             this.name = name;
             this.description = description;
             this.defaultValue = defaultValue;
             this.originalClassName = originalClassName;
+            this.descriptionClass = descriptionClass;
+            this.superClasses = superClasses;
+            this.javadocLink = javadocLink;
         }
     }
 

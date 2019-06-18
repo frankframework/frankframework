@@ -94,6 +94,6 @@ input {
   cursor: pointer;
 }
 
-.exampleLink {
+.exampleLink, .javadocLink {
   font-size: 12px;
 }
