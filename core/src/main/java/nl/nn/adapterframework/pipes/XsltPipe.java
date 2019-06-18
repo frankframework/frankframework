@@ -243,15 +243,19 @@ public class XsltPipe extends FixedForwardPipe {
 		return sender.isNamespaceAware();
 	}
 
-	public boolean isXslt2() {
-		return sender.isXslt2();
+	@IbisDoc({"when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
+	public void setXsltVersion(int xsltVersion) {
+		sender.setXsltVersion(xsltVersion);
 	}
-
-	@IbisDoc({"when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
+	@IbisDoc({"Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
+	/**
+	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
+	 */
+	@Deprecated
 	public void setXslt2(boolean b) {
 		sender.setXslt2(b);
 	}
-
+	
 	@Override
 	public ParameterList getParameterList() {
 		return sender.getParameterList();
@@ -260,5 +264,11 @@ public class XsltPipe extends FixedForwardPipe {
 	@Override
 	public void addParameter(Parameter rhs) {
 		sender.addParameter(rhs);
+	}
+
+	@Override
+	public void setName(String name) {
+		super.setName(name);
+		sender.setName("Sender of Pipe ["+name+"]");
 	}
 }

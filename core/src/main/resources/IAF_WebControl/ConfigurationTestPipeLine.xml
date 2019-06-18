@@ -20,7 +20,7 @@
 			</pipe>
 
 			<pipe name="testPipeLine" className="nl.nn.adapterframework.pipes.CreateRestViewPipe"
-				styleSheetName="TestPipeLine/xsl/TestPipeLine.xsl" xslt2="true">
+				styleSheetName="TestPipeLine/xsl/TestPipeLine.xsl" >
 				<param name="adapterList" sessionKey="adapterList" />
 				<param name="adapterName" sessionKey="adapterName" />
 				<param name="timeout" sessionKey="timeout" />

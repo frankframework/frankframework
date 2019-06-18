@@ -124,6 +124,7 @@ public class CmisHttpInvoker implements HttpInvoker {
 				sender.setTimeout(timeout);
 			}
 
+			sender.setMethodType("custom");
 			sender.configure();
 			sender.open();
 		}
@@ -180,13 +181,13 @@ public class CmisHttpInvoker implements HttpInvoker {
 			if(sender == null)
 				throw new CmisConnectionException("Failed to create IbisHttpSender");
 
-			sender.setMethodType(method);
-			if (contentType != null)
-				sender.setContentType(contentType);
-
 			// init headers if not exist
 			if(headers == null)
 				headers = new HashMap<String, String>();
+
+			if (contentType != null)
+				headers.put("Content-Type", contentType);
+
 			headers.put("User-Agent", (String) session.get(SessionParameter.USER_AGENT, ClientVersion.OPENCMIS_USER_AGENT));
 
 			// offset
@@ -242,7 +243,7 @@ public class CmisHttpInvoker implements HttpInvoker {
 
 			log.trace("invoking CmisHttpSender: content-type["+contentType+"] headers["+headers.toString()+"]");
 
-			response = sender.invoke(url.toString(), headers, writer, session, offset, length);
+			response = sender.invoke(method, url.toString(), headers, writer, session);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new CmisConnectionException(url.toString(), -1, e);

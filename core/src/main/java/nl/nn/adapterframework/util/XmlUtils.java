@@ -111,7 +111,6 @@ public class XmlUtils {
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 	
 	public static final boolean XPATH_NAMESPACE_REMOVAL_VIA_XSLT=true;
-//	public static final boolean XPATH_NAMESPACE_REMOVAL_VIA_XML_FILTER_IN_SOURCE=!XPATH_NAMESPACE_REMOVAL_VIA_XSLT;
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
 	static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
@@ -522,15 +521,35 @@ public class XmlUtils {
 		Document document;
 		InputSource src;
 
-			DocumentBuilderFactory factory = getDocumentBuilderFactory(namespaceAware);
 		try {
-			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			DocumentBuilder builder = factory.newDocumentBuilder();
-				if (!resolveExternalEntities) {
-					builder.setEntityResolver(new XmlExternalEntityResolver());
-				}
-				src = new InputSource(in);
-				document = builder.parse(src);
+//			if (!XPATH_NAMESPACE_REMOVAL_VIA_XSLT && !namespaceAware) {
+////				Sax2Dom sax2dom = new Sax2Dom();
+////				XMLReader reader=getXMLReader(namespaceAware, resolveExternalEntities);
+////				reader.setContentHandler(sax2dom);
+////				reader.setDTDHandler(sax2dom);
+////				reader.setErrorHandler(sax2dom);
+////				InputSource source = new InputSource(in);
+////				reader.parse(source);
+////				return sax2dom.getDOM();
+//				TransformerPool tp = getRemoveNamespacesTransformerPool(false, false);
+//				Source source = new StreamSource(in);
+//				DocumentBuilderFactory factory = getDocumentBuilderFactory(namespaceAware);
+//				factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+//				DocumentBuilder builder = factory.newDocumentBuilder();
+//				document=builder.newDocument();
+//				Result result = new DOMResult(document);
+//				tp.transform(source, result, null);
+//				
+//			} else {
+				DocumentBuilderFactory factory = getDocumentBuilderFactory(namespaceAware);
+				factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+				DocumentBuilder builder = factory.newDocumentBuilder();
+					if (!resolveExternalEntities) {
+						builder.setEntityResolver(new XmlExternalEntityResolver());
+					}
+					src = new InputSource(in);
+					document = builder.parse(src);
+//			}
 		} catch (SAXParseException e) {
 			throw new DomBuilderException(e);
 		} catch (ParserConfigurationException e) {
@@ -539,6 +558,10 @@ public class XmlUtils {
 			throw new DomBuilderException(e);
 		} catch (SAXException e) {
 			throw new DomBuilderException(e);
+//		} catch (ConfigurationException e) {
+//			throw new DomBuilderException(e);
+//		} catch (TransformerException e) {
+//			throw new DomBuilderException(e);
 		}
 		if (document == null) {
 			throw new DomBuilderException("Parsed Document is null");
@@ -728,7 +751,7 @@ public class XmlUtils {
 		}
 		try {
 			String xslt;
-			if (XPATH_NAMESPACE_REMOVAL_VIA_XSLT) {
+			if (XPATH_NAMESPACE_REMOVAL_VIA_XSLT && StringUtils.isEmpty(namespaceDefs)) {
 				xslt = createXPathEvaluatorSource(namespaceDefs,xPathExpression, outputType, includeXmlDeclaration, paramNames, true, true, null);
 			} else {
 				xslt = createXPathEvaluatorSource(namespaceDefs,xPathExpression, outputType, includeXmlDeclaration, paramNames);
@@ -816,12 +839,12 @@ public class XmlUtils {
 				"<xsl:template name=\"expression\">" +
 					"<xsl:param name=\"root\" />" +
 					"<xsl:for-each select=\"$root\">" +
-						"<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XPathExpression + "\"" + separatorString + "/>" +
+						"<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XmlUtils.encodeChars(XPathExpression) + "\"" + separatorString + "/>" +
 					"</xsl:for-each>" +
 				"</xsl:template>" 
 			:
 			"<xsl:template match=\"/\">" +
-			"<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XPathExpression + "\"" + separatorString + "/>" +
+			"<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XmlUtils.encodeChars(XPathExpression) + "\"" + separatorString + "/>" +
 			"</xsl:template>" )+
 			"</xsl:stylesheet>";
 
@@ -873,14 +896,7 @@ public class XmlUtils {
 	}
 
 	public static Source stringToSourceForSingleUse(String xmlString, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
-		if (!XPATH_NAMESPACE_REMOVAL_VIA_XSLT) {
-			return stringToSAXSource(xmlString, namespaceAware, false);
-		}
-		if (namespaceAware) {
-			return stringToSAXSource(xmlString, namespaceAware, false);
-		} else {
-			return stringToSource(xmlString, false);
-		}
+		return stringToSAXSource(xmlString, namespaceAware, false);
 	}
 
 	public static SAXSource stringToSAXSource(String xmlString, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
@@ -894,49 +910,8 @@ public class XmlUtils {
 	}	
 	
 	public static SAXSource inputSourceToSAXSource(InputSource is, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
-		SAXParserFactory factory = getSAXParserFactory(namespaceAware);
 		try {
-			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			XMLReader xmlReader = factory.newSAXParser().getXMLReader();
-			if (!resolveExternalEntities) {
-				xmlReader.setEntityResolver(new XmlExternalEntityResolver());
-			}
-
-			if (!XPATH_NAMESPACE_REMOVAL_VIA_XSLT) {
-				if (!namespaceAware) {
-					XMLFilter filter=new XMLFilterImpl(xmlReader) {
-	
-						@Override
-						public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-							log.debug("startElement("+uri+","+localName+","+qName+")");
-							super.startElement("", localName, qName, atts);
-						}
-
-						@Override
-						public void endElement(String uri, String localName, String qName) throws SAXException {
-							log.debug("endElement("+uri+","+localName+","+qName+")");
-							super.endElement("", localName, qName);
-						}
-
-						@Override
-						public void startPrefixMapping(String prefix, String uri) throws SAXException {
-							log.debug("startPrefixMapping("+prefix+","+uri+")");
-							super.startPrefixMapping(prefix, "");
-						}
-
-						@Override
-						public void endPrefixMapping(String prefix) throws SAXException {
-							log.debug("endPrefixMapping("+prefix+")");
-							super.endPrefixMapping(prefix);
-						}
-
-								
-					};
-					return new SAXSource(filter, is);
-				}
-			}
-			
-			return new SAXSource(xmlReader, is);
+			return new SAXSource(getXMLReader(namespaceAware, resolveExternalEntities), is);
 		} catch (Exception e) {
 			// TODO Use DomBuilderException as the stringToSource and calling
 			// methods use them a lot. Rename DomBuilderException to
@@ -945,7 +920,21 @@ public class XmlUtils {
 		}
 	}
 	
+	public static XMLReader getXMLReader(boolean namespaceAware, boolean resolveExternalEntities) throws ParserConfigurationException, SAXException {
+		SAXParserFactory factory = getSAXParserFactory(namespaceAware);
+		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+		XMLReader xmlReader = factory.newSAXParser().getXMLReader();
+		if (!resolveExternalEntities) {
+			xmlReader.setEntityResolver(new XmlExternalEntityResolver());
+		}
 
+		if (!XPATH_NAMESPACE_REMOVAL_VIA_XSLT && !namespaceAware) {
+			return new NamespaceRemovingFilter(xmlReader);
+		}
+		return xmlReader;
+	}
+	
+	
 	public static int interpretXsltVersion(String xsltVersion) throws TransformerException, IOException {
 		if (StringUtils.isEmpty(xsltVersion)) {
 			return 0;
@@ -1883,8 +1872,8 @@ public class XmlUtils {
 		Map<QName, Attribute> attributes = new HashMap<QName, Attribute>();
 
 		// iterate through start tag's attributes
-		for (Iterator i = tag.getAttributes(); i.hasNext();) {
-			Attribute attr = (Attribute) i.next();
+		for (Iterator<Attribute> i = tag.getAttributes(); i.hasNext();) {
+			Attribute attr = i.next();
 			attributes.put(attr.getName(), attr);
 		}
 		if (attrs != null) {
@@ -1896,8 +1885,8 @@ public class XmlUtils {
 		}
 
 		Map<QName, Namespace> namespaces = new HashMap<QName, Namespace>();
-		for (Iterator i = tag.getNamespaces(); i.hasNext();) {
-			Namespace ns = (Namespace) i.next();
+		for (Iterator<Namespace> i = tag.getNamespaces(); i.hasNext();) {
+			Namespace ns = i.next();
 			namespaces.put(ns.getName(), ns);
 		}
 		if (nsps != null) {

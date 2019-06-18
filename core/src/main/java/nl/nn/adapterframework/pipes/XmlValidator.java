@@ -46,7 +46,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDescription;
-import nl.nn.adapterframework.doc.IbisDescription;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -79,8 +78,8 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
 public class XmlValidator extends FixedForwardPipe implements SchemasProvider, HasSpecialDefaultValues, IDualModeValidator, IXmlValidator {
 
 	private String soapNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
-	private boolean forwardFailureToSuccess = false;
-
+    private boolean forwardFailureToSuccess = false;
+ 
 	private String root;
 	private String responseRoot;
 	private Set<List<String>> requestRootValidations;
@@ -98,6 +97,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	protected String schemaSessionKey;
 
 	protected ConfigurationException configurationException;
+
+	{
+		setNamespaceAware(true);
+	}
 
 	/**
 	 * Configure the XmlValidator
@@ -131,17 +134,17 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				} catch (TransformerConfigurationException te) {
 					throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from getSoapBody", te);
 				}
-
+	
 				transformerPoolGetRootNamespace = XmlUtils.getGetRootNamespaceTransformerPool();
 				transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(true, false);
 			}
-
+	
 			if (!isForwardFailureToSuccess() && !isThrowException()){
 				if (findForward("failure")==null) {
 					throw new ConfigurationException(getLogPrefix(null)+ "must either set throwException true, forwardFailureToSuccess true or have a forward with name [failure]");
 				}
 			}
-
+	
 			// Different default value for ignoreUnknownNamespaces when using
 			// noNamespaceSchemaLocation.
 			if (validator.getIgnoreUnknownNamespaces() == null) {
@@ -188,156 +191,156 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 
-	/**
-	 * Validate the XML string
-	 * @param input a String
-	 * @param session a {@link IPipeLineSession Pipelinesession}
+     /**
+      * Validate the XML string
+      * @param input a String
+      * @param session a {@link IPipeLineSession Pipelinesession}
 
-	 * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
-	 */
-	@Override
-	public final PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		return doPipe(input, session, false);
-	}
-
-	public PipeRunResult doPipe(Object input, IPipeLineSession session, boolean responseMode) throws PipeRunException {
-		String messageToValidate;
-		if (StringUtils.isNotEmpty(getSoapNamespace())) {
-			messageToValidate = getMessageToValidate(input, session);
-		} else {
-			messageToValidate = input.toString();
-		}
-		try {
-			PipeForward forward = validate(messageToValidate, session, responseMode);
+      * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
+      */
+     @Override
+     public final PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+    	 return doPipe(input, session, false);
+     }
+     
+     public PipeRunResult doPipe(Object input, IPipeLineSession session, boolean responseMode) throws PipeRunException {
+         String messageToValidate;
+         if (StringUtils.isNotEmpty(getSoapNamespace())) {
+             messageToValidate = getMessageToValidate(input, session);
+         } else {
+             messageToValidate = input.toString();
+         }
+         try {
+            PipeForward forward = validate(messageToValidate, session, responseMode);
 			return new PipeRunResult(forward, input);
 		} catch (Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session), e);
 		}
 
-	}
+     }
+     
 
+     protected final PipeForward validate(String messageToValidate, IPipeLineSession session) throws XmlValidatorException, PipeRunException, ConfigurationException {
+    	 return validate(messageToValidate,session,false);
+     }
 
-	protected final PipeForward validate(String messageToValidate, IPipeLineSession session) throws XmlValidatorException, PipeRunException, ConfigurationException {
-		return validate(messageToValidate,session,false);
-	}
+    protected PipeForward validate(String messageToValidate, IPipeLineSession session, boolean responseMode) throws XmlValidatorException, PipeRunException, ConfigurationException {
+        String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session), getRootValidations(responseMode), getInvalidRootNamespaces(), false);
+        return determineForward(resultEvent, session, responseMode);
+    }
 
-	protected PipeForward validate(String messageToValidate, IPipeLineSession session, boolean responseMode) throws XmlValidatorException, PipeRunException, ConfigurationException {
-		String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session), getRootValidations(responseMode), getInvalidRootNamespaces(), false);
-		return determineForward(resultEvent, session, responseMode);
-	}
+    protected PipeForward determineForward(String resultEvent, IPipeLineSession session, boolean responseMode) throws PipeRunException {
+        throwEvent(resultEvent);
+        if (AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
+            return getForward();
+        }
+        PipeForward forward = null;
+        if (AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT.equals(resultEvent)) {
+        	if (responseMode) {
+            	forward = findForward("outputParserError");
+        	}
+            if (forward == null) {
+            	forward = findForward("parserError");
+            }
+        }
+        if (forward == null) {
+        	if (responseMode) {
+                forward = findForward("outputFailure");
+        	}
+            if (forward == null) {
+                forward = findForward("failure");
+        	}
+        }
+        if (forward == null) {
+        	if (isForwardFailureToSuccess()) {
+            	forward = findForward("success");
+        	} else {
+            	throw new PipeRunException(this, "not implemented: should get reason from validator");
+        	}
+        }
+        return forward;
+    }
 
-	protected PipeForward determineForward(String resultEvent, IPipeLineSession session, boolean responseMode) throws PipeRunException {
-		throwEvent(resultEvent);
-		if (AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
-			return getForward();
-		}
-		PipeForward forward = null;
-		if (AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT.equals(resultEvent)) {
-			if (responseMode) {
-				forward = findForward("outputParserError");
-			}
-			if (forward == null) {
-				forward = findForward("parserError");
-			}
-		}
-		if (forward == null) {
-			if (responseMode) {
-				forward = findForward("outputFailure");
-			}
-			if (forward == null) {
-				forward = findForward("failure");
-			}
-		}
-		if (forward == null) {
-			if (isForwardFailureToSuccess()) {
-				forward = findForward("success");
-			} else {
-				throw new PipeRunException(this, "not implemented: should get reason from validator");
-			}
-		}
-		return forward;
-	}
-
-	@Deprecated
-	private String getMessageToValidate(Object input, IPipeLineSession session) throws PipeRunException {
-		String inputStr = input.toString();
-		if (XmlUtils.isWellFormed(inputStr, "Envelope")) {
-			String inputRootNs;
-			try {
-				inputRootNs = transformerPoolGetRootNamespace.transform(inputStr, null);
-			} catch (Exception e) {
-				throw new PipeRunException(this,"cannot extract root namespace",e);
-			}
-			if (inputRootNs.equals(getSoapNamespace())) {
-				log.debug(getLogPrefix(session)+"message to validate is a SOAP message");
-				boolean extractSoapBody = true;
-				if (StringUtils.isNotEmpty(getSchemaLocation())) {
-					StringTokenizer st = new StringTokenizer(getSchemaLocation(),", \t\r\n\f");
-					while (st.hasMoreTokens() && extractSoapBody) {
-						if (st.nextToken().equals(getSoapNamespace())) {
-							extractSoapBody = false;
-						}
-					}
-				}
-				if (extractSoapBody) {
-					log.debug(getLogPrefix(session)+"extract SOAP body for validation");
-					try {
-						inputStr = transformerPoolExtractSoapBody.transform(inputStr,null,true);
-					} catch (Exception e) {
-						throw new PipeRunException(this,"cannot extract SOAP body",e);
-					}
-					try {
-						inputRootNs = transformerPoolGetRootNamespace.transform(inputStr,null);
-					} catch (Exception e) {
-						throw new PipeRunException(this,"cannot extract root namespace",e);
-					}
-					if (StringUtils.isNotEmpty(inputRootNs) && StringUtils.isEmpty(getSchemaLocation())) {
-						log.debug(getLogPrefix(session)+"remove namespaces from extracted SOAP body");
-						try {
-							inputStr = transformerPoolRemoveNamespaces.transform(inputStr,null);
-						} catch (Exception e) {
-							throw new PipeRunException(this,"cannot remove namespaces",e);
-						}
-					}
-				}
-			}
-		}
-		return inputStr;
-	}
+    @Deprecated
+     private String getMessageToValidate(Object input, IPipeLineSession session) throws PipeRunException {
+    	 String inputStr = input.toString();
+    	 if (XmlUtils.isWellFormed(inputStr, "Envelope")) {
+     		String inputRootNs;
+     		try {
+     			inputRootNs = transformerPoolGetRootNamespace.transform(inputStr, null);
+ 			} catch (Exception e) {
+ 				throw new PipeRunException(this,"cannot extract root namespace",e);
+ 			}
+      		if (inputRootNs.equals(getSoapNamespace())) {
+ 				log.debug(getLogPrefix(session)+"message to validate is a SOAP message");
+ 		    	boolean extractSoapBody = true;
+ 		    	if (StringUtils.isNotEmpty(getSchemaLocation())) {
+ 					StringTokenizer st = new StringTokenizer(getSchemaLocation(),", \t\r\n\f");
+ 					while (st.hasMoreTokens() && extractSoapBody) {
+ 						if (st.nextToken().equals(getSoapNamespace())) {
+ 							extractSoapBody = false;
+ 						}
+ 					}
+ 		    	}
+ 		    	if (extractSoapBody) {
+ 					log.debug(getLogPrefix(session)+"extract SOAP body for validation");
+ 					try {
+ 						inputStr = transformerPoolExtractSoapBody.transform(inputStr,null,true);
+ 					} catch (Exception e) {
+ 						throw new PipeRunException(this,"cannot extract SOAP body",e);
+ 					}
+ 		    		try {
+ 		    			inputRootNs = transformerPoolGetRootNamespace.transform(inputStr,null);
+ 					} catch (Exception e) {
+ 						throw new PipeRunException(this,"cannot extract root namespace",e);
+ 					}
+ 					if (StringUtils.isNotEmpty(inputRootNs) && StringUtils.isEmpty(getSchemaLocation())) {
+ 						log.debug(getLogPrefix(session)+"remove namespaces from extracted SOAP body");
+ 			    		try {
+ 				    		inputStr = transformerPoolRemoveNamespaces.transform(inputStr,null,true);
+ 						} catch (Exception e) {
+ 							throw new PipeRunException(this,"cannot remove namespaces",e);
+ 						}
+ 			    	}
+ 		    	}
+      		}
+    	 }
+    	 return inputStr;
+     }
 
 	protected boolean isConfiguredForMixedValidation() {
 		return responseRootValidations!=null && !responseRootValidations.isEmpty();
 	}
 
 
-	/**
-	 * Enable full schema grammar constraint checking, including
-	 * checking which may be time-consuming or memory intensive.
-	 *  Currently, particle unique attribution constraint checking and particle
-	 * derivation resriction checking are controlled by this option.
-	 * <p> see property http://apache.org/xml/features/validation/schema-full-checking</p>
-	 * Defaults to <code>false</code>;
-	 */
+    /**
+     * Enable full schema grammar constraint checking, including
+     * checking which may be time-consuming or memory intensive.
+     *  Currently, particle unique attribution constraint checking and particle
+     * derivation resriction checking are controlled by this option.
+     * <p> see property http://apache.org/xml/features/validation/schema-full-checking</p>
+     * Defaults to <code>false</code>;
+     */
 	@IbisDoc({"perform addional memory intensive checks", "<code>false</code>"})
-	public void setFullSchemaChecking(boolean fullSchemaChecking) {
-		validator.setFullSchemaChecking(fullSchemaChecking);
-	}
+    public void setFullSchemaChecking(boolean fullSchemaChecking) {
+        validator.setFullSchemaChecking(fullSchemaChecking);
+    }
 	public boolean isFullSchemaChecking() {
 		return validator.isFullSchemaChecking();
 	}
 
-	/**
-	 * <p>The filename of the schema on the classpath.
-	 * It is not possible to specify a namespace using this attribute.
-	 * <p>An example value would be "xml/xsd/GetPartyDetail.xsd"</p>
-	 * <p>The value of the schema attribute is only used if the schemaLocation
-	 * attribute and the noNamespaceSchemaLocation are not set</p>
-	 * @see ClassUtils#getResourceURL
-	 */
+    /**
+     * <p>The filename of the schema on the classpath.
+     * It is not possible to specify a namespace using this attribute.
+     * <p>An example value would be "xml/xsd/GetPartyDetail.xsd"</p>
+     * <p>The value of the schema attribute is only used if the schemaLocation
+     * attribute and the noNamespaceSchemaLocation are not set</p>
+     * @see ClassUtils#getResourceURL
+     */
 	@IbisDoc({"the filename of the schema on the classpath. see doc on the method. (effectively the same as nonamespaceschemalocation)", ""})
-	public void setSchema(String schema) {
-		setNoNamespaceSchemaLocation(schema);
-	}
+    public void setSchema(String schema) {
+        setNoNamespaceSchemaLocation(schema);
+    }
 	@Override
 	public String getSchema() {
 		return getNoNamespaceSchemaLocation();
@@ -401,14 +404,14 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 
-	/**
-	 * Indicates wether to throw an error (piperunexception) when
-	 * the xml is not compliant.
-	 */
+    /**
+     * Indicates wether to throw an error (piperunexception) when
+     * the xml is not compliant.
+     */
 	@IbisDoc({"should the xmlvalidator throw a piperunexception on a validation error (if not, a forward with name 'failure' should be defined.", "<code>false</code>"})
-	public void setThrowException(boolean throwException) {
-		validator.setThrowException(throwException);
-	}
+    public void setThrowException(boolean throwException) {
+    	validator.setThrowException(throwException);
+    }
 	public boolean isThrowException() {
 		return validator.isThrowException();
 	}
@@ -452,17 +455,17 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	public String getMessageRoot() {
 		return getRoot();
 	}
-
+	
 	public String getMessageRoot(boolean responseMode) {
 		return responseMode?getResponseRoot():getMessageRoot();
 	}
-	/**
-	 * Not ready yet (namespace not yet correctly parsed)
-	 *
-	 */
-	public QName getRootTag() {
-		return new QName(getSchema()/* TODO*/, getRoot());
-	}
+    /**
+     * Not ready yet (namespace not yet correctly parsed)
+     *
+     */
+    public QName getRootTag() {
+        return new QName(getSchema()/* TODO*/, getRoot());
+    }
 
 	@IbisDoc({"when set <code>true</code>, the input is assumed to be the name of the file to be validated. otherwise the input itself is validated", "<code>false</code>"})
 	public void setValidateFile(boolean b) {
@@ -480,36 +483,36 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return  validator.getCharset();
 	}
 
-	public void setImplementation(Class<AbstractXmlValidator> clazz) throws IllegalAccessException, InstantiationException {
-		validator = clazz.newInstance();
-	}
+    public void setImplementation(Class<AbstractXmlValidator> clazz) throws IllegalAccessException, InstantiationException {
+        validator = clazz.newInstance();
+    }
 
-	public boolean isAddNamespaceToSchema() {
-		return validator.isAddNamespaceToSchema();
-	}
+    public boolean isAddNamespaceToSchema() {
+        return validator.isAddNamespaceToSchema();
+    }
 
 	@IbisDoc({"when set <code>true</code>, the namespace from schemalocation is added to the schema document as targetnamespace", "<code>false</code>"})
-	public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
-		validator.setAddNamespaceToSchema(addNamespaceToSchema);
-	}
+    public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
+        validator.setAddNamespaceToSchema(addNamespaceToSchema);
+    }
 
 	@IbisDoc({"comma separated list of schemalocations which are excluded from an import or include in the schema document", ""})
 	public void setImportedSchemaLocationsToIgnore(String string) {
 		validator.setImportedSchemaLocationsToIgnore(string);
-	}
+    }
 
 	public String getImportedSchemaLocationsToIgnore() {
 		return validator.getImportedSchemaLocationsToIgnore();
 	}
 
-	public boolean isUseBaseImportedSchemaLocationsToIgnore() {
-		return validator.isUseBaseImportedSchemaLocationsToIgnore();
-	}
+    public boolean isUseBaseImportedSchemaLocationsToIgnore() {
+        return validator.isUseBaseImportedSchemaLocationsToIgnore();
+    }
 
 	@IbisDoc({"when set <code>true</code>, the comparison for importedschemalocationstoignore is done on base filename without any path", "<code>false</code>"})
-	public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
-		validator.setUseBaseImportedSchemaLocationsToIgnore(useBaseImportedSchemaLocationsToIgnore);
-	}
+    public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
+        validator.setUseBaseImportedSchemaLocationsToIgnore(useBaseImportedSchemaLocationsToIgnore);
+    }
 
 	@IbisDoc({"comma separated list of namespaces which are excluded from an import or include in the schema document", ""})
 	public void setImportedNamespacesToIgnore(String string) {
@@ -520,21 +523,21 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return validator.getImportedNamespacesToIgnore();
 	}
 
-	@Deprecated
-	@IbisDoc({"the namespace of the soap envelope, when this property has a value and the input message is a soap message the content of the soap body is used for validation, hence the soap envelope and soap body elements are not considered part of the message to validate. please note that this functionality is deprecated, using {@link nl.nn.adapterframework.soap.soapvalidator} is now the preferred solution in case a soap message needs to be validated, in other cases give this property an empty value", "http://schemas.xmlsoap.org/soap/envelope/"})
+    @Deprecated
+	@IbisDoc({"the namespace of the soap envelope, when this property has a value and the input message is a soap message, the content of the soap body is used for validation, hence the soap envelope and soap body elements are not considered part of the message to validate. please note that this functionality is deprecated, using {@link nl.nn.adapterframework.soap.soapvalidator} is now the preferred solution in case a soap message needs to be validated, in other cases give this property an empty value", "http://schemas.xmlsoap.org/soap/envelope/"})
 	public void setSoapNamespace(String string) {
 		soapNamespace = string;
-	}
+    }
 
-	@Deprecated
+    @Deprecated
 	public String getSoapNamespace() {
 		return soapNamespace;
 	}
 
 	@IbisDoc({"when set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)", "<code>true</code>"})
 	public void setWarn(boolean warn) {
-		validator.setWarn(warn);
-	}
+        validator.setWarn(warn);
+    }
 
 	@IbisDoc({"ignore namespaces in the input message which are unknown", "true when schema or nonamespaceschemalocation is used, false otherwise"})
 	public void setIgnoreUnknownNamespaces(boolean ignoreUnknownNamespaces) {
@@ -639,25 +642,25 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		}
 		return null;
 	}
-
+	
 	public class ResponseValidatorWrapper implements IPipe,IXmlValidator {
 
 		private String name;
 		private Map<String, PipeForward> forwards=new HashMap<String, PipeForward>();
-
+		
 		protected XmlValidator owner;
 		public ResponseValidatorWrapper(XmlValidator owner) {
 			super();
 			this.owner=owner;
 			name="ResponseValidator of "+owner.getName();
 		}
-
+		
 		@Override
 		public String getName() {
 			return name;
 		}
 
-		@IbisDoc({"name of the pipe", ""})
+	@IbisDoc({"name of the pipe", ""})
 		@Override
 		public void setName(String name) {
 			this.name=name;
@@ -681,7 +684,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		public String getMessageRoot() {
 			return owner.getResponseRoot();
 		}
-
+		
 		@Override
 		public int getMaxThreads() {
 			return 0;
@@ -725,16 +728,16 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			return owner.getXsds();
 		}
 
-
+		
 	}
-
+	
 	public boolean isMixedValidator(Object outputValidator) {
 		return outputValidator==null && isConfiguredForMixedValidation();
 	}
 
 	public Set<List<String>> getRootValidations(boolean responseMode) {
 		return responseMode ? responseRootValidations : requestRootValidations;
-	}
+	} 
 
 	private void checkInputRootValidations(Set<XSD> xsds) throws ConfigurationException {
 		if (getRequestRootValidations() != null) {
@@ -770,7 +773,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				if (!found) {
 					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 					String msg = getLogPrefix(null) + "Element '" + validElement +
-							"' not in list of available root elements " + allRootTags;
+					"' not in list of available root elements " + allRootTags;
 					configWarnings.add(log, msg);
 				}
 			}
@@ -783,7 +786,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		if (schemaSessionKey != null) {
 			if (session.containsKey(schemaSessionKey)) {
 				return session.get(schemaSessionKey).toString();
-			}
+			} 
 			throw new PipeRunException(null, getLogPrefix(session) + "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
 		}
 		return null;
@@ -823,7 +826,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	@Override
 	public Object getSpecialDefaultValue(String attributeName,
-										 Object defaultValue, Map<String, String> attributes) {
+			Object defaultValue, Map<String, String> attributes) {
 		// Different default value for ignoreUnknownNamespaces when using
 		// noNamespaceSchemaLocation.
 		if ("ignoreUnknownNamespaces".equals(attributeName)) {
@@ -839,7 +842,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	protected void addRootValidation(List<String> path) {
 		addRequestRootValidation(path);
 	}
-
+	
 	protected void addRequestRootValidation(List<String> path) {
 		if (requestRootValidations == null) {
 			requestRootValidations = new LinkedHashSet<List<String>>();
@@ -875,9 +878,9 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	@IbisDoc({"when set, the value in appconstants is overwritten (for this validator only)", "<code>application default (false)</code>"})
-	public void setLazyInit(boolean lazyInit) {
-		validator.setLazyInit(lazyInit);
-	}
+    public void setLazyInit(boolean lazyInit) {
+    	validator.setLazyInit(lazyInit);
+    }
 
 	public Map<List<String>, List<String>> getInvalidRootNamespaces() {
 		return invalidRootNamespaces;

@@ -1,4 +1,4 @@
-<GetPaymentReferenceAndPayLink_Response xmlns="http://nn.nl/XSD/AccountInformation/1/GetPaymentReferenceAndPayLink/1">
+<GetPaymentReferenceAndPayLink_Response xmlns="http://nn.nl/XSD/AccountInformation/AccountInformation/1/GetPaymentReferenceAndPayLink/1">
    <PaymentDetails>
       <PaymentId>987</PaymentId>
       <PaymentURL>paymentulr</PaymentURL>

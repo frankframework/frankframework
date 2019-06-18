@@ -12,7 +12,7 @@
 				<forward name="success" path="showConfiguration" />
 			</pipe>
 
-			<pipe name="showConfiguration" className="nl.nn.adapterframework.pipes.CreateRestViewPipe" styleSheetName="ShowConfiguration/xsl/ShowConfiguration.xsl" xslt2="true">
+			<pipe name="showConfiguration" className="nl.nn.adapterframework.pipes.CreateRestViewPipe" styleSheetName="ShowConfiguration/xsl/ShowConfiguration.xsl">
 				<param name="configurationName" sessionKey="configurationName" />
 				<param name="classLoaderType" sessionKey="classLoaderType" />
 				<forward name="success" path="EXIT" />

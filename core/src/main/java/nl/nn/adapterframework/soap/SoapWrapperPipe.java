@@ -209,19 +209,19 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 				ParameterResolutionContext prc = null;
 				Map parameterValues = null;
 				if (getParameterList()!=null && (soapHeaderTp != null || soapBodyTp != null)) {
-					prc = new ParameterResolutionContext(payload, session);
+					prc = new ParameterResolutionContext(payload, session, true);
 					parameterValues = prc.getValueMap(getParameterList());
 				}
 				String soapHeader = null;
 				if (soapHeaderTp != null) {
-					soapHeader = soapHeaderTp.transform(prc.getInputSource(), parameterValues);
+					soapHeader = soapHeaderTp.transform(prc.getInputSource(true), parameterValues);
 				} else {
 					if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
 						soapHeader = (String) session.get(getSoapHeaderSessionKey());
 					}
 				}
 				if (soapBodyTp != null) {
-					payload = soapBodyTp.transform(prc.getInputSource(), parameterValues);
+					payload = soapBodyTp.transform(prc.getInputSource(true), parameterValues);
 				}
 
 				result = wrapMessage(payload, soapHeader);

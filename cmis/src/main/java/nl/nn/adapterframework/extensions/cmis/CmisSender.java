@@ -12,7 +12,7 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-*/
+ */
 package nl.nn.adapterframework.extensions.cmis;
 
 import java.io.ByteArrayInputStream;
@@ -75,6 +75,7 @@ import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.enums.Action;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
+import org.apache.chemistry.opencmis.commons.enums.DateTimeFormat;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.commons.codec.binary.Base64;
@@ -300,10 +301,6 @@ public class CmisSender extends SenderWithParametersBase {
 				}
 			}
 		}
-
-		if (getAction().equals("bridge")) {
-			CmisServletDispatcher.getInstance().registerServiceClient(this);
-		}
 	}
 
 	public Session getSession() throws SenderException {
@@ -365,12 +362,20 @@ public class CmisSender extends SenderWithParametersBase {
 		 * "CWPST0164E: The /opt/WAS/7.0/profiles/AppSrv01/config/cells/IUFjava_Shared_HA_AS_V4.3/applications/null.ear/deployments/deployment.xml composition unit is not found."
 		 * if (session == null) { session = connect(); }
 		 */
+
+		if (getAction() != null && getAction().equals("bridge")) {
+			CmisServletDispatcher.getInstance().registerServiceClient(this);
+		}
 	}
 
 	public void close() throws SenderException {
 		if (session != null) {
 			session.clear();
 			session = null;
+		}
+
+		if (getAction() != null && getAction().equals("bridge")) {
+			CmisServletDispatcher.getInstance().unregisterServiceClient(this);
 		}
 	}
 
@@ -757,7 +762,7 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 	private String sendMessageForActionFetch(String correlationID,
-											 String message, ParameterResolutionContext prc)
+			String message, ParameterResolutionContext prc)
 			throws SenderException, TimeOutException {
 
 		CmisObject object = null;
@@ -821,7 +826,7 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 	private String sendMessageForActionUpdate(String correlationID,
-											  String message, ParameterResolutionContext prc)
+			String message, ParameterResolutionContext prc)
 			throws SenderException, TimeOutException {
 		String objectId = null;
 		Map<String, Object> props = new HashMap<String, Object>();
@@ -875,6 +880,8 @@ public class CmisSender extends SenderWithParametersBase {
 		} else if (getBindingType().equalsIgnoreCase("browser")) {
 			parameterMap.setBrowserBindingUrl(getUrl());
 			parameterMap.setBasicAuthentication();
+			//Add parameter dateTimeFormat to send dates in ISO format instead of milliseconds.
+			parameterMap.put(SessionParameter.BROWSER_DATETIME_FORMAT, DateTimeFormat.EXTENDED.value());
 		} else {
 			parameterMap.setUsernameTokenAuthentication(false);
 			// OpenCMIS requires an entrypoint url (wsdl), if this url has been secured and is not publicly accessible,

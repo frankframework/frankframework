@@ -58,7 +58,6 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
-
 /**
  * @author	Niels Meijer
  * @since	7.0-B4
@@ -321,8 +320,8 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	}
 
 	/**
-	 * Only works in combination with the UPLOAD action. If set, and not
-	 * specified as parameter, the sender will sign the file to be uploaded.
+	 * Only works in combination with the UPLOAD action. If set, and not 
+	 * specified as parameter, the sender will sign the file to be uploaded. 
 	 * NOTE: if the file input is a Stream this will put the file in memory!
 	 * @param hashAlgorithm supports 3 types; md5, sha1, sha256
 	 */

@@ -9,6 +9,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.Level;
+import org.apache.log4j.spi.LoggingEvent;
+import org.junit.Before;
+import org.junit.Test;
+import org.xml.sax.SAXException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
@@ -17,13 +24,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
-
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.Level;
-import org.apache.log4j.spi.LoggingEvent;
-import org.junit.Before;
-import org.junit.Test;
-import org.xml.sax.SAXException;
+import nl.nn.adapterframework.xslt.XsltErrorTestBase;
 
 public class XsltPipeErrorTest {
 
@@ -105,7 +106,7 @@ public class XsltPipeErrorTest {
 		xsltPipe.setXslt2(false);
 		xsltPipe.configure();
 		assertEquals(true, errorOutputStream.isEmpty());
-		assertEquals(0, testAppender.getNumberOfAlerts());
+		assertEquals(XsltErrorTestBase.EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING, testAppender.getNumberOfAlerts());
 	}
 
 	@Test
@@ -118,7 +119,7 @@ public class XsltPipeErrorTest {
 		xsltPipe.setXslt2(true);
 		xsltPipe.configure();
 		assertEquals(true, errorOutputStream.isEmpty());
-		assertEquals(1, testAppender.getNumberOfAlerts());
+		assertEquals(1+XsltErrorTestBase.EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING, testAppender.getNumberOfAlerts());
 		assertEquals(
 				true,
 				testAppender.toString().contains(
@@ -144,7 +145,7 @@ public class XsltPipeErrorTest {
 			errorMessage = e.getMessage();
 		}
 		assertEquals(true, errorOutputStream.isEmpty());
-		assertEquals(0, testAppender.getNumberOfAlerts());
+		assertEquals(XsltErrorTestBase.EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING, testAppender.getNumberOfAlerts());
 		assertEquals(true,
 				errorMessage.contains("java.io.FileNotFoundException"));
 	}
@@ -168,7 +169,7 @@ public class XsltPipeErrorTest {
 			errorMessage = e.getMessage();
 		}
 		assertEquals(true, errorOutputStream.isEmpty());
-		assertEquals(0, testAppender.getNumberOfAlerts());
+		assertEquals(XsltErrorTestBase.EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING, testAppender.getNumberOfAlerts());
 		assertEquals(true,
 				errorMessage.contains("java.io.FileNotFoundException"));
 	}
@@ -187,7 +188,7 @@ public class XsltPipeErrorTest {
 				true,
 				errorOutputStream.toString().contains(
 						"java.io.FileNotFoundException"));
-		assertEquals(0, testAppender.getNumberOfAlerts());
+		assertEquals(XsltErrorTestBase.EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING, testAppender.getNumberOfAlerts());
 	}
 
 	@Test
@@ -205,7 +206,7 @@ public class XsltPipeErrorTest {
 			errorMessage = e.getMessage();
 		}
 		assertEquals(true, errorOutputStream.isEmpty());
-		assertEquals(0, testAppender.getNumberOfAlerts());
+		assertEquals(XsltErrorTestBase.EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING, testAppender.getNumberOfAlerts());
 		assertEquals(true,
 				errorMessage.contains("Failed to compile stylesheet"));
 	}

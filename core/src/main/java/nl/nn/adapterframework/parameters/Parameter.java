@@ -34,7 +34,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
 
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.doc.IbisDescription; 
+import nl.nn.adapterframework.doc.IbisDescription;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
@@ -42,11 +42,12 @@ import org.w3c.dom.Node;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IWithParameters;
-import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.pipes.PutSystemDateInSession;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
@@ -56,35 +57,35 @@ import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
 
-/** 
+/**
  * @author Gerrit van Brakel
  */
 @IbisDescription(
-	"Generic parameter definition. \n" + 
-	"A parameter resembles an attribute. However, while attributes get their value at configuration-time, \n" + 
-	"parameters get their value at the time of processing the message. Value can be retrieved from the message itself, \n" + 
-	"a fixed value, or from the pipelineSession. If this does not result in a value (or if neither of these is specified), a default value  \n" + 
-	"can be specified. If an XPathExpression or stylesheet is specified, it will be applied to the message, the value retrieved \n" + 
-	"from the pipelineSession or the fixed value specified. \n" + 
-	"<br/> \n" + 
-	"Examples: \n" + 
-	"<pre> \n" + 
-	"stored under SessionKey 'TransportInfo': \n" + 
-	" &lt;transportinfo&gt; \n" + 
-	"  &lt;to&gt;***@zonnet.nl&lt;/to&gt; \n" + 
-	"  &lt;to&gt;***@zonnet.nl&lt;/to&gt; \n" + 
-	"  &lt;cc&gt;***@zonnet.nl&lt;/cc&gt; \n" + 
-	" &lt;/transportinfo&gt; \n" + 
-	"to obtain all 'to' addressees as a parameter: \n" + 
-	"sessionKey=\"TransportInfo\" \n" + 
-	"xpathExpression=\"transportinfo/to\" \n" + 
-	"type=\"xml\" \n" + 
-	"Result: \n" + 
-	"  &lt;to&gt;***@zonnet.nl&lt;/to&gt; \n" + 
-	"  &lt;to&gt;***@zonnet.nl&lt;/to&gt; \n" + 
-	"</pre> \n" + 
-	"N.B. to obtain a fixed value: a non-existing 'dummy' <code>sessionKey</code> in combination with the fixed value in <code>DefaultValue</code> is used traditionally. \n" + 
-	"The current version of parameter supports the 'value' attribute, that is sufficient to set a fixed value.     \n" 
+	"Generic parameter definition. \n" +
+	"A parameter resembles an attribute. However, while attributes get their value at configuration-time, \n" +
+	"parameters get their value at the time of processing the message. Value can be retrieved from the message itself, \n" +
+	"a fixed value, or from the pipelineSession. If this does not result in a value (or if neither of these is specified), a default value  \n" +
+	"can be specified. If an XPathExpression or stylesheet is specified, it will be applied to the message, the value retrieved \n" +
+	"from the pipelineSession or the fixed value specified. \n" +
+	"<br/> \n" +
+	"Examples: \n" +
+	"<pre> \n" +
+	"stored under SessionKey 'TransportInfo': \n" +
+	" &lt;transportinfo&gt; \n" +
+	"  &lt;to&gt;***@zonnet.nl&lt;/to&gt; \n" +
+	"  &lt;to&gt;***@zonnet.nl&lt;/to&gt; \n" +
+	"  &lt;cc&gt;***@zonnet.nl&lt;/cc&gt; \n" +
+	" &lt;/transportinfo&gt; \n" +
+	"to obtain all 'to' addressees as a parameter: \n" +
+	"sessionKey=\"TransportInfo\" \n" +
+	"xpathExpression=\"transportinfo/to\" \n" +
+	"type=\"xml\" \n" +
+	"Result: \n" +
+	"  &lt;to&gt;***@zonnet.nl&lt;/to&gt; \n" +
+	"  &lt;to&gt;***@zonnet.nl&lt;/to&gt; \n" +
+	"</pre> \n" +
+	"N.B. to obtain a fixed value: a non-existing 'dummy' <code>sessionKey</code> in combination with the fixed value in <code>DefaultValue</code> is used traditionally. \n" +
+	"The current version of parameter supports the 'value' attribute, that is sufficient to set a fixed value.     \n"
 )
 public class Parameter implements INamedObject, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);
@@ -135,7 +136,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	private Number maxInclusive;
 	private boolean hidden = false;
 	private boolean removeNamespaces=false;
-	private boolean xslt2=false;
+	private int xsltVersion=0; // set to 0 for auto detect.
 
 	private DecimalFormatSymbols decimalFormatSymbols = null;
 	private TransformerPool transformerPool = null;
@@ -167,7 +168,7 @@ public class Parameter implements INamedObject, IWithParameters {
 							  TYPE_DOMDOC.equalsIgnoreCase(getType())?"xml":"text";
 			boolean includeXmlDeclaration=false;
 			
-			transformerPool=TransformerPool.configureTransformer0("Parameter ["+getName()+"] ",classLoader,getNamespaceDefs(),getXpathExpression(), styleSheetName,outputType,includeXmlDeclaration,paramList,isXslt2()?2:0);
+			transformerPool=TransformerPool.configureTransformer0("Parameter ["+getName()+"] ",classLoader,getNamespaceDefs(),getXpathExpression(), styleSheetName,outputType,includeXmlDeclaration,paramList,getXsltVersion());
 	    } else {
 			if (paramList!=null && StringUtils.isEmpty(getXpathExpression())) {
 				throw new ConfigurationException("Parameter ["+getName()+"] can only have parameters itself if a styleSheetName or xpathExpression is specified");
@@ -756,11 +757,23 @@ public class Parameter implements INamedObject, IWithParameters {
 		return minInclusiveString;
 	}
 
-	@IbisDoc({"(applicable for xpathexpression and stylesheetname) when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
-	public void setXslt2(boolean b) {
-		xslt2 = b;
+	@IbisDoc({"when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
+	public void setXsltVersion(int xsltVersion) {
+		this.xsltVersion=xsltVersion;
 	}
-	public boolean isXslt2() {
-		return xslt2;
+	public int getXsltVersion() {
+		return xsltVersion;
+	}
+
+	@IbisDoc({"Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
+	/**
+	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
+	 */
+	@Deprecated
+	public void setXslt2(boolean b) {
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'xslt2' has been deprecated. Its value is now auto detected. If necessary, replace with a setting of xsltVersion";
+		configWarnings.add(log, msg);
+		xsltVersion=b?2:1;
 	}
 }

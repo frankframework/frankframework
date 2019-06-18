@@ -24,6 +24,9 @@ import java.util.Vector;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.lang.StringUtils;
+import org.springframework.core.task.TaskExecutor;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -32,10 +35,9 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.doc.IbisDescription; 
+import nl.nn.adapterframework.doc.IbisDescription;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.ParallelSenderExecutor;
-import nl.nn.adapterframework.senders.ParallelSenders;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -44,82 +46,78 @@ import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import org.apache.commons.lang.StringUtils;
-import org.springframework.core.task.TaskExecutor;
-
-
-/** 
+/**
  * @author  Gerrit van Brakel
  * @since   4.7
  */
 @IbisDescription(
-	"Abstract base class to sends a message to a Sender for each item returned by a configurable iterator. \n" + 
-	"<tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit (e.g. \"receiver timed out\").</td><td>&nbsp;</td></tr> \n" + 
-	"<tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply</td><td>CORRELATIONID</td></tr> \n" + 
-	"<tr><td>{@link #setAuditTrailXPath(String) auditTrailXPath}</td><td>xpath expression to extract audit trail from message</td><td>&nbsp;</td></tr> \n" + 
-	"<tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr> \n" + 
-	"<tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>stylesheet to apply to each message, before sending it</td><td>&nbsp;</td></tr> \n" + 
-	"<tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>alternatively: XPath-expression to create stylesheet from</td><td>&nbsp;</td></tr> \n" + 
-	"<tr><td>{@link #setNamespaceDefs(String) namespaceDefs}</td><td>namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr> \n" + 
-	"<tr><td>{@link #setOutputType(String) outputType}</td><td>either 'text' or 'xml'. Only valid for xpathExpression</td><td>text</td></tr> \n" + 
-	"<tr><td>{@link #setOmitXmlDeclaration(boolean) omitXmlDeclaration}</td><td>force the transformer generated from the XPath-expression to omit the xml declaration</td><td>true</td></tr> \n" + 
-	"<tr><td>{@link #setIgnoreExceptions(boolean) ignoreExceptions}</td><td>when <code>true</code> ignore any exception thrown by executing sender</td><td>false</td></tr> \n" + 
-	"<tr><td>{@link #setStopConditionXPathExpression(String) stopConditionXPathExpression}</td><td>expression evaluated on each result if set.  \n" + 
-	"		Iteration stops if condition returns anything other than <code>false</code> or an empty result. \n" + 
-	"For example, to stop after the second child element has been processed, one of the following expressions could be used: \n" + 
-	"<table>  \n" + 
-	"<tr><td><li><code>result[position()='2']</code></td><td>returns result element after second child element has been processed</td></tr> \n" + 
-	"<tr><td><li><code>position()='2'</code></td><td>returns <code>false</code> after second child element has been processed, <code>true</code> for others</td></tr> \n" + 
-	"</table>  \n" + 
-	"</td><td>&nbsp;</td></tr> \n" + 
-	"<tr><td>{@link #setRemoveXmlDeclarationInResults(boolean) removeXmlDeclarationInResults}</td><td>postprocess each partial result, to remove the xml-declaration, as this is not allowed inside an xml-document</td><td>false</td></tr> \n" + 
-	"<tr><td>{@link #setCollectResults(boolean) collectResults}</td><td>controls whether all the results of each iteration will be collected in one result message. If set <code>false</code>, only a small summary is returned</td><td>true</td></tr> \n" + 
-	"<tr><td>{@link #setBlockSize(int) blockSize}</td><td>controls multiline behaviour. when set to a value greater than 0, it specifies the number of rows send in a block to the sender.</td><td>0 (one line at a time, no prefix of suffix)</td></tr> \n" + 
-	"<tr><td>{@link #setBlockPrefix(String) blockPrefix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the start of the set of lines.</td><td>&lt;block&gt;</td></tr> \n" + 
-	"<tr><td>{@link #setBlockSuffix(String) blockSuffix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the end of the set of lines.</td><td>&lt;/block&gt;</td></tr> \n" + 
-	"<tr><td>{@link #setStartPosition(int) startPosition}</td><td>When <code>startPosition &gt;= 0</code>, this field contains the start position of the key in the current record (first character is 0); all sequenced lines with the same key are put in one block and send to the sender</td><td>-1</td></tr> \n" + 
-	"<tr><td>{@link #setEndPosition(int) endPosition}</td><td>When <code>endPosition &gt;= startPosition</code>, this field contains the end position of the key in the current record</td><td>-1</td></tr> \n" + 
-	"<tr><td>{@link #setLinePrefix(String) linePrefix}</td><td>this string is inserted at the start of each line</td><td>&nbsp;</td></tr> \n" + 
-	"<tr><td>{@link #setLineSuffix(String) lineSuffix}</td><td>this string is inserted at the end of each line</td><td>&nbsp;</td></tr> \n" + 
-	"<tr><td>{@link #setItemNoSessionKey(String) itemNoSessionKey}</td><td>key of session variable to store number of item processed.</td><td>&nbsp;</td></tr> \n" + 
-	"<tr><td>{@link #setAddInputToResult(boolean) addInputToResult}</td><td>when <code>true</code> the input is added to the result in an input element</td><td>false</td></tr> \n" + 
-	"<tr><td>{@link #setRemoveDuplicates(boolean) removeDuplicates}</td><td>when <code>true</code> duplicate input elements are removed</td><td>false</td></tr> \n" + 
-	"</table> \n" + 
-	"<table border=\"1\"> \n" + 
-	"<tr><th>nested elements</th><th>description</th></tr> \n" + 
-	"<tr><td>{@link ISender sender}</td><td>specification of sender to send messages with</td></tr> \n" + 
-	"<tr><td>{@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}</td><td>specification of listener to listen to for replies</td></tr> \n" + 
-	"<tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}</td></tr> \n" + 
-	"<tr><td><code>inputValidator</code></td><td>specification of Pipe to validate input messages</td></tr> \n" + 
-	"<tr><td><code>outputValidator</code></td><td>specification of Pipe to validate output messages</td></tr> \n" + 
-	"<tr><td>{@link nl.nn.adapterframework.core.ITransactionalStorage messageLog}</td><td>log of all messages sent</td></tr> \n" + 
-	"</table> \n" + 
-	"</p> \n" + 
-	"<p><b>Exits:</b> \n" + 
-	"<table border=\"1\"> \n" + 
-	"<tr><th>state</th><th>condition</th></tr> \n" + 
-	"<tr><td>\"success\"</td><td>default when a good message was retrieved (synchronous sender), or the message was successfully sent and no listener was specified and the sender was not synchronous</td></tr> \n" + 
-	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, and otherwise under same condition as \"success\"</td></tr> \n" + 
-	"<tr><td>\"timeout\"</td><td>no data was received (timeout on listening), if the sender was synchronous or a listener was specified.</td></tr> \n" + 
-	"<tr><td>\"exception\"</td><td>an exception was thrown by the Sender or its reply-Listener. The result passed to the next pipe is the exception that was caught.</td></tr> \n" + 
-	"</table> \n" + 
-	"</p> \n" + 
-	"<br> \n" + 
-	"The output of each of the processing of each of the elements is returned in XML as follows: \n" + 
-	"<pre> \n" + 
-	" &lt;results count=\"num_of_elements\"&gt; \n" + 
-	"   &lt;result&gt;result of processing of first item&lt;/result&gt; \n" + 
-	"   &lt;result&gt;result of processing of second item&lt;/result&gt; \n" + 
-	"      ... \n" + 
-	" &lt;/results&gt; \n" + 
-	"</pre> \n" + 
-	"For more configuration options, see {@link MessageSendingPipe}. \n" + 
-	"<br> \n" + 
-	"use parameters like: \n" + 
-	"<pre> \n" + 
-	"&lt;param name=\"element-name-of-current-item\"  xpathExpression=\"name(/*)\" /&gt; \n" + 
-	"&lt;param name=\"value-of-current-item\"         xpathExpression=\"/*\" /&gt; \n" + 
-	"</pre> \n" 
+	"Abstract base class to sends a message to a Sender for each item returned by a configurable iterator. \n" +
+	"<tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit (e.g. \"receiver timed out\").</td><td>&nbsp;</td></tr> \n" +
+	"<tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply</td><td>CORRELATIONID</td></tr> \n" +
+	"<tr><td>{@link #setAuditTrailXPath(String) auditTrailXPath}</td><td>xpath expression to extract audit trail from message</td><td>&nbsp;</td></tr> \n" +
+	"<tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr> \n" +
+	"<tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>stylesheet to apply to each message, before sending it</td><td>&nbsp;</td></tr> \n" +
+	"<tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>alternatively: XPath-expression to create stylesheet from</td><td>&nbsp;</td></tr> \n" +
+	"<tr><td>{@link #setNamespaceDefs(String) namespaceDefs}</td><td>namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr> \n" +
+	"<tr><td>{@link #setOutputType(String) outputType}</td><td>either 'text' or 'xml'. Only valid for xpathExpression</td><td>text</td></tr> \n" +
+	"<tr><td>{@link #setOmitXmlDeclaration(boolean) omitXmlDeclaration}</td><td>force the transformer generated from the XPath-expression to omit the xml declaration</td><td>true</td></tr> \n" +
+	"<tr><td>{@link #setIgnoreExceptions(boolean) ignoreExceptions}</td><td>when <code>true</code> ignore any exception thrown by executing sender</td><td>false</td></tr> \n" +
+	"<tr><td>{@link #setStopConditionXPathExpression(String) stopConditionXPathExpression}</td><td>expression evaluated on each result if set.  \n" +
+	"		Iteration stops if condition returns anything other than <code>false</code> or an empty result. \n" +
+	"For example, to stop after the second child element has been processed, one of the following expressions could be used: \n" +
+	"<table>  \n" +
+	"<tr><td><li><code>result[position()='2']</code></td><td>returns result element after second child element has been processed</td></tr> \n" +
+	"<tr><td><li><code>position()='2'</code></td><td>returns <code>false</code> after second child element has been processed, <code>true</code> for others</td></tr> \n" +
+	"</table>  \n" +
+	"</td><td>&nbsp;</td></tr> \n" +
+	"<tr><td>{@link #setRemoveXmlDeclarationInResults(boolean) removeXmlDeclarationInResults}</td><td>postprocess each partial result, to remove the xml-declaration, as this is not allowed inside an xml-document</td><td>false</td></tr> \n" +
+	"<tr><td>{@link #setCollectResults(boolean) collectResults}</td><td>controls whether all the results of each iteration will be collected in one result message. If set <code>false</code>, only a small summary is returned</td><td>true</td></tr> \n" +
+	"<tr><td>{@link #setBlockSize(int) blockSize}</td><td>controls multiline behaviour. when set to a value greater than 0, it specifies the number of rows send in a block to the sender.</td><td>0 (one line at a time, no prefix of suffix)</td></tr> \n" +
+	"<tr><td>{@link #setBlockPrefix(String) blockPrefix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the start of the set of lines.</td><td>&lt;block&gt;</td></tr> \n" +
+	"<tr><td>{@link #setBlockSuffix(String) blockSuffix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the end of the set of lines.</td><td>&lt;/block&gt;</td></tr> \n" +
+	"<tr><td>{@link #setStartPosition(int) startPosition}</td><td>When <code>startPosition &gt;= 0</code>, this field contains the start position of the key in the current record (first character is 0); all sequenced lines with the same key are put in one block and send to the sender</td><td>-1</td></tr> \n" +
+	"<tr><td>{@link #setEndPosition(int) endPosition}</td><td>When <code>endPosition &gt;= startPosition</code>, this field contains the end position of the key in the current record</td><td>-1</td></tr> \n" +
+	"<tr><td>{@link #setLinePrefix(String) linePrefix}</td><td>this string is inserted at the start of each line</td><td>&nbsp;</td></tr> \n" +
+	"<tr><td>{@link #setLineSuffix(String) lineSuffix}</td><td>this string is inserted at the end of each line</td><td>&nbsp;</td></tr> \n" +
+	"<tr><td>{@link #setItemNoSessionKey(String) itemNoSessionKey}</td><td>key of session variable to store number of item processed.</td><td>&nbsp;</td></tr> \n" +
+	"<tr><td>{@link #setAddInputToResult(boolean) addInputToResult}</td><td>when <code>true</code> the input is added to the result in an input element</td><td>false</td></tr> \n" +
+	"<tr><td>{@link #setRemoveDuplicates(boolean) removeDuplicates}</td><td>when <code>true</code> duplicate input elements are removed</td><td>false</td></tr> \n" +
+	"</table> \n" +
+	"<table border=\"1\"> \n" +
+	"<tr><th>nested elements</th><th>description</th></tr> \n" +
+	"<tr><td>{@link ISender sender}</td><td>specification of sender to send messages with</td></tr> \n" +
+	"<tr><td>{@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}</td><td>specification of listener to listen to for replies</td></tr> \n" +
+	"<tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}</td></tr> \n" +
+	"<tr><td><code>inputValidator</code></td><td>specification of Pipe to validate input messages</td></tr> \n" +
+	"<tr><td><code>outputValidator</code></td><td>specification of Pipe to validate output messages</td></tr> \n" +
+	"<tr><td>{@link nl.nn.adapterframework.core.ITransactionalStorage messageLog}</td><td>log of all messages sent</td></tr> \n" +
+	"</table> \n" +
+	"</p> \n" +
+	"<p><b>Exits:</b> \n" +
+	"<table border=\"1\"> \n" +
+	"<tr><th>state</th><th>condition</th></tr> \n" +
+	"<tr><td>\"success\"</td><td>default when a good message was retrieved (synchronous sender), or the message was successfully sent and no listener was specified and the sender was not synchronous</td></tr> \n" +
+	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, and otherwise under same condition as \"success\"</td></tr> \n" +
+	"<tr><td>\"timeout\"</td><td>no data was received (timeout on listening), if the sender was synchronous or a listener was specified.</td></tr> \n" +
+	"<tr><td>\"exception\"</td><td>an exception was thrown by the Sender or its reply-Listener. The result passed to the next pipe is the exception that was caught.</td></tr> \n" +
+	"</table> \n" +
+	"</p> \n" +
+	"<br> \n" +
+	"The output of each of the processing of each of the elements is returned in XML as follows: \n" +
+	"<pre> \n" +
+	" &lt;results count=\"num_of_elements\"&gt; \n" +
+	"   &lt;result&gt;result of processing of first item&lt;/result&gt; \n" +
+	"   &lt;result&gt;result of processing of second item&lt;/result&gt; \n" +
+	"      ... \n" +
+	" &lt;/results&gt; \n" +
+	"</pre> \n" +
+	"For more configuration options, see {@link MessageSendingPipe}. \n" +
+	"<br> \n" +
+	"use parameters like: \n" +
+	"<pre> \n" +
+	"&lt;param name=\"element-name-of-current-item\"  xpathExpression=\"name(/*)\" /&gt; \n" +
+	"&lt;param name=\"value-of-current-item\"         xpathExpression=\"/*\" /&gt; \n" +
+	"</pre> \n"
 )
 public abstract class IteratingPipe extends MessageSendingPipe {
 	private TaskExecutor taskExecutor;
@@ -155,12 +153,12 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 
 	protected String makeEncapsulatingXslt(String rootElementname,String xpathExpression) {
 		return 
-		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
+		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
 		"<xsl:output method=\"xml\" omit-xml-declaration=\"yes\"/>" +
 		"<xsl:strip-space elements=\"*\"/>" +
 		"<xsl:template match=\"/\">" +
 		"<xsl:element name=\"" + rootElementname + "\">" +
-		"<xsl:copy-of select=\"" + xpathExpression + "\"/>" +
+		"<xsl:copy-of select=\"" + XmlUtils.encodeChars(xpathExpression) + "\"/>" +
 		"</xsl:element>" +
 		"</xsl:template>" +
 		"</xsl:stylesheet>";
@@ -168,6 +166,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 
 	private StatisticsKeeper senderStatisticsKeeper;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		msgTransformerPool = TransformerPool.configureTransformer(getLogPrefix(null), classLoader, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), false);
@@ -346,6 +345,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		}
 	}
 
+	@Override
 	protected String sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map threadContext) throws SenderException, TimeOutException {
 		// sendResult has a messageID for async senders, the result for sync senders
 		boolean keepGoing = true;

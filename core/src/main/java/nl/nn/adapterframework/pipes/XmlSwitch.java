@@ -67,7 +67,7 @@ public class XmlSwitch extends AbstractPipe {
 	private String sessionKey=null;
     private String notFoundForwardName=null;
     private String emptyForwardName=null;
-	private boolean xslt2=false;
+	private int xsltVersion=0; // set to 0 for auto detect.
 
 	/**
 	 * If no {@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename} is specified, the
@@ -106,7 +106,7 @@ public class XmlSwitch extends AbstractPipe {
 					if (stylesheetURL==null) {
 						throw new ConfigurationException(getLogPrefix(null) + "cannot find stylesheet ["+getServiceSelectionStylesheetFilename()+"]");
 					}
-					transformerPool = TransformerPool.getInstance(stylesheetURL, isXslt2());
+					transformerPool = TransformerPool.getInstance(stylesheetURL, getXsltVersion());
 				} catch (IOException e) {
 					throw new ConfigurationException(getLogPrefix(null) + "cannot retrieve ["+ serviceSelectionStylesheetFilename + "]", e);
 				} catch (TransformerConfigurationException te) {
@@ -265,12 +265,23 @@ public class XmlSwitch extends AbstractPipe {
 		return sessionKey;
 	}
 
-	public boolean isXslt2() {
-		return xslt2;
+	@IbisDoc({"when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
+	public void setXsltVersion(int xsltVersion) {
+		this.xsltVersion=xsltVersion;
+	}
+	public int getXsltVersion() {
+		return xsltVersion;
 	}
 
-	@IbisDoc({"when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
+	@IbisDoc({"Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
+	/**
+	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
+	 */
+	@Deprecated
 	public void setXslt2(boolean b) {
-		xslt2 = b;
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'xslt2' has been deprecated. Its value is now auto detected. If necessary, replace with a setting of xsltVersion";
+		configWarnings.add(log, msg);
+		xsltVersion=b?2:1;
 	}
 }

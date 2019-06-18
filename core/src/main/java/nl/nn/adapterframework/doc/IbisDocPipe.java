@@ -427,7 +427,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 				}
 			}
 		}
-		rt.writeToJsonFile();
+		rt.writeToJsonUrl();
 
 		return rt.getJsonString();
 	}
@@ -779,7 +779,6 @@ public class IbisDocPipe extends FixedForwardPipe {
 		if (allHtml == null)  allHtml = new StringBuffer();
 		if (groupsHtml == null) groupsHtml = new HashMap<String, String>();
 		Map<String, TreeSet<IbisBean>> groups = getGroups();
-
 		for (String group : groups.keySet()) {
 			topmenuHtml.append("<a href='" + group + ".html' target='submenuFrame'>" + group + "</a><br/>\n");
 			StringBuffer submenuHtml = new StringBuffer();
