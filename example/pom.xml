@@ -89,9 +89,6 @@
               <value>LOC</value>
             </systemProperty>
           </systemProperties>
-          <webAppConfig>
-            <allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
-          </webAppConfig>
         </configuration>
       </plugin>
     </plugins>
