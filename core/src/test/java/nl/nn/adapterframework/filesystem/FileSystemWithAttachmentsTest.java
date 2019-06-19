@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.util.Misc;
 
-public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttachments<F,A>> extends BasicFileSystemTest<F,FS> {
+public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttachments<F,A>> extends HelperedBasicFileSystemTest<F,FS> {
 
 	protected IFileSystemWithAttachmentsTestHelper<A> getHelper() {
 		return (IFileSystemWithAttachmentsTestHelper<A>)helper;
@@ -50,7 +50,7 @@ public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttach
 		assertEquals(attachmentFileName,fileSystem.getAttachmentFileName(attachmentRetrieved));
 		assertEquals(attachmentContentType,fileSystem.getAttachmentContentType(attachmentRetrieved));
 		
-		assertEquals(attachmentContents,Misc.streamToString(fileSystem.readAttachment(f, attachmentRetrieved)));
+		assertEquals(attachmentContents,Misc.streamToString(fileSystem.readAttachment(attachmentRetrieved)));
 	}
 
 	@Test
@@ -91,7 +91,7 @@ public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttach
 		assertEquals(attachmentFileName,fileSystem.getAttachmentFileName(attachmentRetrieved));
 		assertEquals(attachmentContentType,fileSystem.getAttachmentContentType(attachmentRetrieved));
 		
-		assertEquals(attachmentContents,Misc.streamToString(fileSystem.readAttachment(f, attachmentRetrieved)));
+		assertEquals(attachmentContents,Misc.streamToString(fileSystem.readAttachment(attachmentRetrieved)));
 		
 		Map<String,Object> retrievedProperties = fileSystem.getAdditionalAttachmentProperties(attachmentRetrieved);
 		assertNotNull(retrievedProperties);

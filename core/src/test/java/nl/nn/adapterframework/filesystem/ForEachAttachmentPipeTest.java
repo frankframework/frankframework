@@ -13,7 +13,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.senders.SenderSeries;
 
-public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<F, A, FS>, F, A, FS extends IWithAttachments<F,A>> extends FileSystemTestBase {
+public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<F, A, FS>, F, A, FS extends IWithAttachments<F,A>> extends HelperedFileSystemTestBase {
 
 	protected P pipe;
 

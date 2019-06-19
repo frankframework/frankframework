@@ -15,7 +15,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.util.Misc;
 
-public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> extends BasicFileSystemTest<F,FS> {
+public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> extends HelperedBasicFileSystemTest<F,FS> {
 
 	@Test
 	public void writableFileSystemTestCreateNewFile() throws Exception {

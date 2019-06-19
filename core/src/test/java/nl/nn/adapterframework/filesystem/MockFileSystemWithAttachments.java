@@ -31,7 +31,7 @@ public class MockFileSystemWithAttachments extends MockFileSystem<MockFileWithAt
 	}
 
 	@Override
-	public InputStream readAttachment(MockFileWithAttachments f, MockAttachment a) throws FileSystemException, IOException {
+	public InputStream readAttachment(MockAttachment a) throws FileSystemException, IOException {
 		return a.getContents()==null?null:new ByteArrayInputStream(a.getContents());
 	}
 

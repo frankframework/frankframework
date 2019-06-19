@@ -13,7 +13,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> extends FileSystemTestBase {
+public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> extends HelperedFileSystemTestBase {
 
 	private FileSystemListener<F, FS> fileSystemListener;
 	private Map<String,Object> threadContext;
