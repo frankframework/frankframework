@@ -210,7 +210,9 @@ public abstract class SapFunctionFacade implements INamedObject, HasPhysicalDest
 	 *  0  : no index found, convert all fields to/from xml.
 	 */
 	protected int findFieldIndex(JCoParameterList params, int index, String name) {
-		log.debug("find FieldIndex for name ["+name+"] in JCoParameterList ["+params.toString()+"]");
+		if(name != null && params != null)
+			log.debug("find FieldIndex for name ["+name+"] in JCoParameterList ["+params.toString()+"]");
+
 		if (index!=0 || StringUtils.isEmpty(name)) {
 			return index;
 		}
