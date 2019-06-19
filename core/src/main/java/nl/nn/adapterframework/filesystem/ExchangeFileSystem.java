@@ -39,6 +39,7 @@ import microsoft.exchange.webservices.data.core.enumeration.search.SortDirection
 import microsoft.exchange.webservices.data.core.enumeration.service.DeleteMode;
 import microsoft.exchange.webservices.data.core.exception.service.local.ServiceLocalException;
 import microsoft.exchange.webservices.data.core.exception.service.local.ServiceVersionException;
+import microsoft.exchange.webservices.data.core.service.folder.Folder;
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import microsoft.exchange.webservices.data.core.service.item.Item;
 import microsoft.exchange.webservices.data.core.service.schema.EmailMessageSchema;
@@ -54,6 +55,7 @@ import microsoft.exchange.webservices.data.property.complex.EmailAddressCollecti
 import microsoft.exchange.webservices.data.property.complex.FileAttachment;
 import microsoft.exchange.webservices.data.property.complex.FolderId;
 import microsoft.exchange.webservices.data.property.complex.InternetMessageHeader;
+import microsoft.exchange.webservices.data.property.complex.ItemAttachment;
 import microsoft.exchange.webservices.data.property.complex.ItemId;
 import microsoft.exchange.webservices.data.property.complex.Mailbox;
 import microsoft.exchange.webservices.data.property.complex.MessageBody;
@@ -80,7 +82,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to exchange mail server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUsername(String) username}</td><td>username used in authentication to exchange mail server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInputFolder(String) inputFolder}</td><td>folder (subfolder of inbox) to look for mails. If empty, the inbox folder is used</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setFolder(String) folder}</td><td>folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFilter(String) filter}</td><td>If empty, all mails are retrieved. If 'NDR' only Non-Delivery Report mails ('bounces') are retrieved</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSimple(boolean) simple}</td><td>when set to <code>true</code>, the xml string passed to the pipeline contains minimum information about the mail (to save memory)</td><td>false</td></tr>
  * </table>
@@ -88,7 +90,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  * 
  * @author Gerrit van Brakel, after {@link ExchangeMailListener} by Peter Leeuwenburgh
  */
-public class ExchangeFileSystem implements IWithAttachments<Item,FileAttachment>, HasPhysicalDestination {
+public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, HasPhysicalDestination {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String mailAddress;
@@ -97,7 +99,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,FileAttachment>
 	private String authAlias;
 	private String username;
 	private String password;
-	private String inputFolder;
+	private String folder;
 	private String filter;
 	private boolean simple = false;
 	private boolean readMimeContents=false;
@@ -111,7 +113,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,FileAttachment>
 	private String proxyDomain = null;
 
 	private ExchangeService exchangeService;
-	private FolderId folderId;
+	private FolderId basefolderId;
 
 
 	@Override
@@ -120,6 +122,9 @@ public class ExchangeFileSystem implements IWithAttachments<Item,FileAttachment>
 			if (!getFilter().equalsIgnoreCase("NDR")) {
 				throw new ConfigurationException("illegal value for filter [" + getFilter()	+ "], must be 'NDR' or empty");
 			}
+		}
+		if (StringUtils.isEmpty(getUrl()) && StringUtils.isEmpty(getMailAddress())) {
+			throw new ConfigurationException("either url or mailAddress needs to be specified");
 		}
 	}
 	
@@ -154,13 +159,14 @@ public class ExchangeFileSystem implements IWithAttachments<Item,FileAttachment>
 				
 			};
 
-			if (StringUtils.isNotEmpty(getMailAddress())) {
+			if (StringUtils.isEmpty(getUrl())) {
 				log.debug("performing autodiscovery for ["+getMailAddress()+"]");
 				exchangeService.autodiscoverUrl(getMailAddress(),redirectionUrlCallback);
 			} else {
 				exchangeService.setUrl(new URI(getUrl()));
 			}
-
+			log.debug("using url ["+exchangeService.getUrl()+"]");
+			
 			log.debug("searching inbox");
 			FolderId inboxId;
 			if (StringUtils.isNotEmpty(getMailAddress())) {
@@ -169,35 +175,57 @@ public class ExchangeFileSystem implements IWithAttachments<Item,FileAttachment>
 			} else {
 				inboxId = new FolderId(WellKnownFolderName.Inbox);
 			}
-			log.debug("determined inbox ["+inboxId+"]");
+			log.debug("determined inbox ["+inboxId+"] foldername ["+inboxId.getFolderName()+"]");
 	
-			FindFoldersResults findFoldersResultsIn;
-			FolderView folderViewIn = new FolderView(10);
-			if (StringUtils.isNotEmpty(getInputFolder())) {
-				SearchFilter searchFilterIn = new SearchFilter.IsEqualTo(FolderSchema.DisplayName, getInputFolder());
-				findFoldersResultsIn = exchangeService.findFolders(inboxId, searchFilterIn, folderViewIn);
-				if (findFoldersResultsIn.getTotalCount() == 0) {
-					throw new ConfigurationException("no (in) folder found with name ["	+ getInputFolder() + "]");
-				} else if (findFoldersResultsIn.getTotalCount() > 1) {
-					throw new ConfigurationException("multiple (in) folders found with name ["+ getInputFolder() + "]");
-				}
-			} else {
-				findFoldersResultsIn = exchangeService.findFolders(inboxId,	folderViewIn);
-			}
-			if (findFoldersResultsIn.getFolders().isEmpty()) {
-				folderId=inboxId;
-			} else {
-				folderId =findFoldersResultsIn.getFolders().get(0).getId();
+			try {
+				basefolderId=findFolder(inboxId,getFolder());
+			} catch (Exception e) {
+				log.debug("Could not get folder ["+getFolder()+"] as subfolder of ["+inboxId.getFolderName()+"]");
+				basefolderId=findFolder(null,getFolder());
 			}
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}
 	}
 	
+	public FolderId findFolder(FolderId baseFolder, String folderName) throws Exception {
+		FindFoldersResults findFoldersResultsIn;
+		FolderId result;
+		FolderView folderViewIn = new FolderView(10);
+		if (StringUtils.isNotEmpty(folderName)) {
+			log.debug("searching folder ["+folderName+"]");
+			SearchFilter searchFilterIn = new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName);
+			if (baseFolder==null) {
+				findFoldersResultsIn = exchangeService.findFolders(WellKnownFolderName.MsgFolderRoot, searchFilterIn, folderViewIn);
+			} else {
+				findFoldersResultsIn = exchangeService.findFolders(baseFolder, searchFilterIn, folderViewIn);
+			}
+			if (findFoldersResultsIn.getTotalCount() == 0) {
+				throw new ConfigurationException("no folder found with name ["	+ folderName + "]");
+			} else if (findFoldersResultsIn.getTotalCount() > 1) {
+				if (log.isDebugEnabled()) {
+					for (Folder folder:findFoldersResultsIn.getFolders()) {
+						log.debug("found folder ["+folder.getDisplayName()+"]");
+					}
+				}
+				throw new ConfigurationException("multiple folders found with name ["+ folderName + "]");
+			}
+		} else {
+			findFoldersResultsIn = exchangeService.findFolders(baseFolder,	folderViewIn);
+		}
+		if (findFoldersResultsIn.getFolders().isEmpty()) {
+			result=baseFolder;
+		} else {
+			result =findFoldersResultsIn.getFolders().get(0).getId();
+		}
+		return result;
+	}
 
 	@Override
 	public void close() throws FileSystemException {
-		exchangeService.close();
+		if (exchangeService!=null) {
+			exchangeService.close();
+		}
 	}
 	
 	
@@ -219,16 +247,71 @@ public class ExchangeFileSystem implements IWithAttachments<Item,FileAttachment>
 			view.getOrderBy().add(ItemSchema.DateTimeReceived, SortDirection.Ascending);
 			SearchFilter searchFilter =  new SearchFilter.IsEqualTo(ItemSchema.Id, f.getId().toString());
 			FindItemsResults<Item> findResults;
-			findResults = exchangeService.findItems(folderId,searchFilter, view);
+			findResults = exchangeService.findItems(basefolderId,searchFilter, view);
 			return findResults.getTotalCount()!=0;
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}
 	}
 
+	public Item extractNestedItem(Item item) throws Exception {
+		Iterator<Attachment> attachments = listAttachments(item);
+		if (attachments!=null) {
+			while (attachments.hasNext()) {
+				Attachment attachment=attachments.next();
+				if (attachment instanceof ItemAttachment) {
+					ItemAttachment itemAttachment = (ItemAttachment)attachment;
+					itemAttachment.load();
+					return itemAttachment.getItem();
+				}
+			}
+		}
+		return null;
+	}
+	
+	private class NestedMessageExtractingItemIterator implements Iterator<Item> {
+
+		private Iterator<Item> itemIt;
+		private Iterator<Attachment> attachmentIt=null; 
+		private Item nextItem;
+		
+		public NestedMessageExtractingItemIterator(FindItemsResults<Item> findResults) {
+			itemIt=findResults.iterator();
+		}
+		
+		private void findNextItem() {
+			while (nextItem==null && itemIt.hasNext()) {
+				Item superItem = itemIt.next();
+				try {
+					superItem.load();
+					nextItem=extractNestedItem(superItem);
+				} catch (Exception e) {
+					log.warn(e);
+				}
+			}
+		}
+		
+		@Override
+		public boolean hasNext() {
+			findNextItem();
+			return nextItem!=null;
+		}
+
+		@Override
+		public Item next() {
+			Item result;
+			findNextItem();
+			result=nextItem;
+			nextItem=null;
+			return result;
+		}
+		
+	}
+	
 	@Override
 	public Iterator<Item> listFiles(String folder) throws FileSystemException {
 		try {
+			FolderId folderId = findFolder(basefolderId,folder);
 			ItemView view = new ItemView(getMaxNumberOfMessagesToList());
 			view.getOrderBy().add(ItemSchema.DateTimeReceived, SortDirection.Ascending);
 			FindItemsResults<Item> findResults;
@@ -241,6 +324,9 @@ public class ExchangeFileSystem implements IWithAttachments<Item,FileAttachment>
 			if (findResults.getTotalCount() == 0) {
 				return null;
 			} else {
+//				if ("NDR".equals(getFilter())) {
+//					return new NestedMessageExtractingItemIterator(findResults);
+//				}
 				return findResults.getItems().iterator();
 			}
 		} catch (Exception e) {
@@ -376,8 +462,8 @@ public class ExchangeFileSystem implements IWithAttachments<Item,FileAttachment>
 	}
 
 	@Override
-	public Iterator<FileAttachment> listAttachments(Item f) throws FileSystemException {
-		List<FileAttachment> result=new LinkedList<FileAttachment>();
+	public Iterator<Attachment> listAttachments(Item f) throws FileSystemException {
+		List<Attachment> result=new LinkedList<Attachment>();
 		try {
 			EmailMessage emailMessage;
 			PropertySet ps = new PropertySet(EmailMessageSchema.Attachments);
@@ -385,8 +471,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,FileAttachment>
 			AttachmentCollection attachmentCollection = emailMessage.getAttachments();
 			emailMessage = EmailMessage.bind(exchangeService, f.getId(), ps);
 			for (Attachment attachment : attachmentCollection) {
-				FileAttachment fileAttachment = (FileAttachment) attachment;
-				result.add(fileAttachment);
+				result.add(attachment);
 			}
 			return result.iterator();
 		} catch (ServiceLocalException e) {
@@ -398,7 +483,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,FileAttachment>
 
 
 	@Override
-	public String getAttachmentName(FileAttachment a) {
+	public String getAttachmentName(Attachment a) {
 		return a.getName();
 	}
 
@@ -427,14 +512,32 @@ public class ExchangeFileSystem implements IWithAttachments<Item,FileAttachment>
 
 
 	@Override
-	public InputStream readAttachment(Item f, FileAttachment a) throws FileSystemException, IOException {
-		InputStream binaryInputStream = new ByteArrayInputStream(a.getContent());
+	public InputStream readAttachment(Attachment a) throws FileSystemException, IOException {
+		try {
+			a.load();
+		} catch (Exception e) {
+			throw new FileSystemException("Cannot load attachment",e);
+		}
+		byte[] content = null;
+		if (a instanceof FileAttachment) {
+			content=((FileAttachment)a).getContent(); // TODO: should do streaming, instead of via byte array
+		}
+		if (a instanceof ItemAttachment) {
+			ItemAttachment itemAttachment=(ItemAttachment)a;
+			Item attachmentItem = itemAttachment.getItem();
+			return readFile(attachmentItem);
+		}
+		if (content==null) {
+			log.warn("content of attachment is null");
+			content = new byte[0];
+		}
+		InputStream binaryInputStream = new ByteArrayInputStream(content);
 		return binaryInputStream;
 	}
 
 
 	@Override
-	public long getAttachmentSize(FileAttachment a) throws FileSystemException {
+	public long getAttachmentSize(Attachment a) throws FileSystemException {
 		try {
 			return a.getSize();
 		} catch (ServiceVersionException e) {
@@ -444,18 +547,21 @@ public class ExchangeFileSystem implements IWithAttachments<Item,FileAttachment>
 
 
 	@Override
-	public String getAttachmentContentType(FileAttachment a) throws FileSystemException {
+	public String getAttachmentContentType(Attachment a) throws FileSystemException {
 		return a.getContentType();
 	}
 
 	@Override
-	public String getAttachmentFileName(FileAttachment a) throws FileSystemException {
-		return a.getFileName();
+	public String getAttachmentFileName(Attachment a) throws FileSystemException {
+		if (a instanceof FileAttachment) {
+			return ((FileAttachment)a).getFileName();
+		}
+		return null;
 	}
 
 
 	@Override
-	public Map<String, Object> getAdditionalAttachmentProperties(FileAttachment a) throws FileSystemException {
+	public Map<String, Object> getAdditionalAttachmentProperties(Attachment a) throws FileSystemException {
 		Map<String, Object> result = new LinkedHashMap<String,Object>();
 		result.put("id", a.getId());
 		result.put("contentId", a.getContentId());
@@ -644,11 +750,11 @@ public class ExchangeFileSystem implements IWithAttachments<Item,FileAttachment>
 		return password;
 	}
 	
-	public void setInputFolder(String inputFolder) {
-		this.inputFolder = inputFolder;
+	public void setFolder(String folder) {
+		this.folder = folder;
 	}
-	public String getInputFolder() {
-		return inputFolder;
+	public String getFolder() {
+		return folder;
 	}
 
 	public void setFilter(String filter) {
