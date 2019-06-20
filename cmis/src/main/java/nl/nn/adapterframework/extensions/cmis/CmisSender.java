@@ -84,67 +84,12 @@ import org.w3c.dom.Node;
 
 /**
  * Sender to obtain information from and write to a CMIS application.
- * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.adapterframework.extensions.cmis.CmisSender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUrl(String) url}</td><td>AtomPub service document URL</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRepository(String) repository}</td><td>Repository id</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAction(String) action}</td><td>specifies action to perform. Must be one of 
- * <ul>
- * <li><code>get</code>: get the content of a document (and optional the properties)</li>
- * <li><code>create</code>: create a document</li>
- * <li><code>find</code>: perform a query that returns properties</li>
- * <li><code>update</code>: update the properties of an existing document</li>
- * <li><code>fetch</code>: get the (meta)data of a folder or document</li>
- * <li><code>delete</code>: delete a document</li>
- * </ul></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to host</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setBindingType(String) bindingType}</td><td>"atompub", "webservices" or "browser"</td><td>"atompub"</td></tr>
- * <tr><td>{@link #setFileNameSessionKey(String) fileNameSessionKey}</td><td>(only used when <code>action=create</code>) The session key that contains the name of the file to use. If not set, the value of the property <code>fileName</code> from the input message is used</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFileInputStreamSessionKey(String) fileInputStreamSessionKey}</td><td>When <code>action=create</code>: the session key that contains the input stream of the file to use. When <code>action=get</code> and <code>getProperties=true</code>: the session key in which the input stream of the document is stored</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFileContentSessionKey(String) fileContentSessionKey}</td><td>When <code>action=create</code>: the session key that contains the base64 encoded content of the file to use. When <code>action=get</code> and <code>getProperties=true</code>: the session key in which the base64 encoded content of the document is stored</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDefaultMediaType(String) defaultMediaType}</td><td>(only used when <code>action=create</code>) The MIME type used to store the document when it's not set in the input message by a property</td><td>"application/octet-stream"</td></tr>
- * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>(only used when <code>action=get</code>) if true, the content of the document is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as a String)</td><td>false</td></tr>
- * <tr><td>{@link #setGetProperties(boolean) getProperties}</td><td>(only used when <code>action=get</code>) if true, the content of the document is streamed to <code>fileInputStreamSessionKey</code> and all document properties are put in the result as a xml string</td><td>false</td></tr>
- * <tr><td>{@link #setGetDocumentContent(boolean) getDocumentContent}</td><td>(only used when <code>action=get</code>) if true, the attachment for the document is streamed to <code>fileInputStreamSessionKey</code> otherwise only the properties are returned</td><td>true</td></tr>
- * <tr><td>{@link #setUseRootFolder(boolean) useRootFolder}</td><td>(only used when <code>action=create</code>) if true, the document is created in the root folder of the repository. Otherwise the document is created in the repository</td><td>true</td></tr>
- * <tr><td>{@link #setResultOnNotFound(String) resultOnNotFound}</td><td>(only used when <code>action=get</code>) result returned when no document was found for the given id (e.g. "[NOT_FOUND]"). If empty an exception is thrown</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setKeepSession(boolean) keepSession}</td><td>if true, the session is not closed at the end and it will be used in the next call</td><td>true</td></tr>
- * 
- * <tr><td>{@link #setCertificateUrl(String) certificate}</td><td>resource URL to certificate to be used for authentication</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCertificateAuthAlias(String) certificateAuthAlias}</td><td>alias used to obtain certificate password</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCertificatePassword(String) certificatePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setKeystoreType(String) keystoreType}</td><td>&nbsp;</td><td>pkcs12</td></tr>
- * <tr><td>{@link #setKeyManagerAlgorithm(String) keyManagerAlgorithm}</td><td>&nbsp;</td><td>PKIX</td></tr>
- * <tr><td>{@link #setTruststore(String) truststore}</td><td>resource URL to truststore to be used for authentication</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTruststoreAuthAlias(String) truststoreAuthAlias}</td><td>alias used to obtain truststore password</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTruststorePassword(String) truststorePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTruststoreType(String) truststoreType}</td><td>&nbsp;</td><td>jks</td></tr>
- * <tr><td>{@link #setTrustManagerAlgorithm(String) trustManagerAlgorithm}</td><td>&nbsp;</td><td>PKIX</td></tr>
- * <tr><td>{@link #setAllowSelfSignedCertificates(boolean) allowSelfSignedCertificates}</td><td>when true, self signed certificates are accepted</td><td>false</td></tr>
- * <tr><td>{@link #setVerifyHostname(boolean) verifyHostname}</td><td>when true, the hostname in the certificate will be checked against the actual hostname</td><td>true</td></tr>
- * <tr><td>{@link #setIgnoreCertificateExpiredException(boolean) ignoreCertificateExpiredException}</td><td>when true, the CertificateExpiredException is ignored</td><td>false</td></tr>
- * 
- * <tr><td>{@link #setProxyHost(String) proxyHost}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProxyPort(int) proxyPort}</td><td>&nbsp;</td><td>80</td></tr>
- * <tr><td>{@link #setProxyAuthAlias(String) proxyAuthAlias}</td><td>alias used to obtain credentials for authentication to proxy</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProxyUserName(String) proxyUserName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProxyPassword(String) proxyPassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * 
- * <tr><td>{@link #setBridgeSender(boolean) isBridgeSender}</td><td>when a cmisListener is used, this specifies where non-bypassed requests should be send to</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setOverrideEntryPointWSDL(String) overrideEntryPointWSDL}</td><td>override entrypoint wsdl by reading it from the classpath, overrides url attribute</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
+ *
  * <p><b>NOTE:</b></p>
  * <p>Only one CmisSender can act as the default 'bridged' sender!</p>
  * <p>When used to proxy requests, you should use the fetch action!</p>
  * <p></p>
- * 
+ *
  * <p>
  * <table border="1">
  * <b>Parameters:</b>
@@ -157,7 +102,7 @@ import org.w3c.dom.Node;
  * <p><b>NOTE:</b></p>
  * <p>These parameters are incompatible when the sender is configured as a BridgeSender!</p>
  * <p></p>
- * 
+ *
  * <p>
  * When <code>action=get</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
  * </p>
@@ -208,7 +153,7 @@ import org.w3c.dom.Node;
  * </pre>
  * </code>
  * </p>
- * 
+ *
  * <p>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
@@ -263,7 +208,7 @@ import org.w3c.dom.Node;
  * </pre>
  * </code>
  * </p>
- * 
+ *
  * <p>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
@@ -396,7 +341,7 @@ public class CmisSender extends SenderWithParametersBase {
 			} catch (ParameterException e) {
 				throw new SenderException(getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
 			}
-	
+
 			if (authAlias_work == null) {
 				authAlias_work = getAuthAlias();
 			}
@@ -406,7 +351,7 @@ public class CmisSender extends SenderWithParametersBase {
 			if (password_work == null) {
 				password_work = getPassword();
 			}
-	
+
 			CredentialFactory cf = new CredentialFactory(authAlias_work, userName_work, password_work);
 			session = connect(cf.getUsername(), cf.getPassword());
 		}
