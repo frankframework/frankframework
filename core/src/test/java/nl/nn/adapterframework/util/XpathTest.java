@@ -117,7 +117,11 @@ public class XpathTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	@Test
-	public void testXpathMultipleChildren() throws ConfigurationException, DomBuilderException, TransformerException, IOException {
-		xpathTest(inputMessageMultipleChildren, "root/subDirectory[position()&gt;1 and position()&lt;6]", "babb cacb dadb eaeb");
+	public void testXpathWithXmlSpecialChars() throws ConfigurationException, DomBuilderException, TransformerException, IOException {
+		xpathTest(inputMessageMultipleChildren, "root/subDirectory[position()>1 and position()<6]", "babb cacb dadb eaeb");
 	}
+//	@Test
+//	public void testXpathWithXmlSpecialCharsEscaped() throws ConfigurationException, DomBuilderException, TransformerException, IOException {
+//		xpathTest(inputMessageMultipleChildren, "root/subDirectory[position()&gt;1 and position()&lt;6]", "babb cacb dadb eaeb");
+//	}
 }

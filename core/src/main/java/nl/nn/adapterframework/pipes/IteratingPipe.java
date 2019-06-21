@@ -154,12 +154,12 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 	protected String makeEncapsulatingXslt(String rootElementname,String xpathExpression) {
 		return 
-		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
+		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
 		"<xsl:output method=\"xml\" omit-xml-declaration=\"yes\"/>" +
 		"<xsl:strip-space elements=\"*\"/>" +
 		"<xsl:template match=\"/\">" +
 		"<xsl:element name=\"" + rootElementname + "\">" +
-		"<xsl:copy-of select=\"" + xpathExpression + "\"/>" +
+		"<xsl:copy-of select=\"" + XmlUtils.encodeChars(xpathExpression) + "\"/>" +
 		"</xsl:element>" +
 		"</xsl:template>" +
 		"</xsl:stylesheet>";
@@ -355,7 +355,11 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 	@Override
+<<<<<<< HEAD
 	protected String sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeOutException {
+=======
+	protected String sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map threadContext) throws SenderException, TimeOutException {
+>>>>>>> refs/heads/master
 		// sendResult has a messageID for async senders, the result for sync senders
 		boolean keepGoing = true;
 		IDataIterator<I> it=null;

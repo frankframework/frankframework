@@ -1,7 +1,7 @@
+dist: trusty
 language: java
 jdk:
   - openjdk7
-#  - openjdk6
 
 # Skip separate install phase as for some reason running the two default phases
 # on Travis seem to cause the second phases to select the wrong profile
@@ -10,7 +10,7 @@ jdk:
 # Default install phase: mvn install -DskipTests=true -B
 # Default script phase: mvn test -B
 install: echo 'Skipping separate install phase'
-script: mvn install -B
+script: mvn install -B -Dmaven.javadoc.skip=true
 
 notifications:
   email:
