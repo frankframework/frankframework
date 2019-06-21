@@ -123,8 +123,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * 
  * @author Peter Leeuwenburgh
  */
-public class ExchangeMailListener implements IPullingListener<Item>, INamedObject,
-		HasPhysicalDestination {
+public class ExchangeMailListener implements IPullingListener<Item>, HasPhysicalDestination {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -141,29 +140,26 @@ public class ExchangeMailListener implements IPullingListener<Item>, INamedObjec
 	private boolean simple = false;
 	
 	private String proxyHost;
-	private int proxyPort = 80;
+	private int    proxyPort = 80;
 	private String proxyAuthAlias;
 	private String proxyUserName;
 	private String proxyPassword;
 
 	private ExchangeService exchangeService;
 	private Folder folderIn;
-	private Folder folderTemp;
-	private Folder folderOut;
+	private Folder folderInProcess;
+	private Folder folderProcessed;
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, Item rawMessage, Map<String,Object> context) throws ListenerException {
 		Item item = (Item) rawMessage;
 		try {
-			if (folderOut != null) {
-				item.move(folderOut.getId());
-				log.debug("moved item [" + item.getId() + "] from folder ["
-						+ getFolderFromName() + "] to folder ["
-						+ folderOut.getDisplayName() + "]");
+			if (folderProcessed != null) {
+				item.move(folderProcessed.getId());
+				log.debug("moved item [" + item.getId() + "] from folder [" + getFolderFromName() + "] to folder [" + folderProcessed.getDisplayName() + "]");
 			} else {
 				item.delete(DeleteMode.MoveToDeletedItems);
-				log.debug("deleted item [" + item.getId() + "] from folder ["
-						+ getFolderFromName() + "]");
+				log.debug("deleted item [" + item.getId() + "] from folder [" + getFolderFromName() + "]");
 			}
 		} catch (Exception e) {
 			throw new ListenerException(e);
@@ -171,8 +167,7 @@ public class ExchangeMailListener implements IPullingListener<Item>, INamedObjec
 	}
 
 	private String getFolderFromName() throws ServiceLocalException {
-		return (folderTemp == null ? folderIn.getDisplayName() : folderTemp
-				.getDisplayName());
+		return (folderInProcess == null ? folderIn.getDisplayName() : folderInProcess.getDisplayName());
 	}
 
 	@Override
@@ -183,17 +178,12 @@ public class ExchangeMailListener implements IPullingListener<Item>, INamedObjec
 	@Override
 	public void configure() throws ConfigurationException {
 		try {
-			exchangeService = new ExchangeService(
-					ExchangeVersion.Exchange2010_SP2);
-			CredentialFactory cf = new CredentialFactory(getAuthAlias(),
-					getUserName(), getPassword());
-			ExchangeCredentials credentials = new WebCredentials(
-					cf.getUsername(), cf.getPassword());
+			exchangeService = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
+			CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
+			ExchangeCredentials credentials = new WebCredentials(cf.getUsername(), cf.getPassword());
 			exchangeService.setCredentials(credentials);
 			if (StringUtils.isNotEmpty(getProxyHost())) {
-				CredentialFactory cfProxy = new CredentialFactory(
-						getProxyAuthAlias(), getProxyUserName(),
-						getProxyPassword());
+				CredentialFactory cfProxy = new CredentialFactory(getProxyAuthAlias(), getProxyUserName(), getProxyPassword());
 				String domain = null;
 				if (StringUtils.isNotEmpty(getUrl())) {
 					URI uri = new URI(getUrl());
@@ -221,19 +211,13 @@ public class ExchangeMailListener implements IPullingListener<Item>, INamedObjec
 
 			FindFoldersResults findFoldersResultsIn;
 			if (StringUtils.isNotEmpty(getInputFolder())) {
-				SearchFilter searchFilterIn = new SearchFilter.IsEqualTo(
-						FolderSchema.DisplayName, getInputFolder());
+				SearchFilter searchFilterIn = new SearchFilter.IsEqualTo(FolderSchema.DisplayName, getInputFolder());
 				FolderView folderViewIn = new FolderView(10);
-				findFoldersResultsIn = exchangeService.findFolders(inboxId,
-						searchFilterIn, folderViewIn);
+				findFoldersResultsIn = exchangeService.findFolders(inboxId, searchFilterIn, folderViewIn);
 				if (findFoldersResultsIn.getTotalCount() == 0) {
-					throw new ConfigurationException(
-							"no (in) folder found with name ["
-									+ getInputFolder() + "]");
+					throw new ConfigurationException("no (in) folder found with name ["+ getInputFolder() + "]");
 				} else if (findFoldersResultsIn.getTotalCount() > 1) {
-					throw new ConfigurationException(
-							"multiple (in) folders found with name ["
-									+ getInputFolder() + "]");
+					throw new ConfigurationException("multiple (in) folders found with name [" + getInputFolder() + "]");
 				}
 				folderIn = findFoldersResultsIn.getFolders().get(0);
 			} else {
@@ -242,46 +226,33 @@ public class ExchangeMailListener implements IPullingListener<Item>, INamedObjec
 
 			if (StringUtils.isNotEmpty(getFilter())) {
 				if (!getFilter().equalsIgnoreCase("NDR")) {
-					throw new ConfigurationException(
-							"illegal value for filter [" + getFilter()
-									+ "], must be 'NDR' or empty");
+					throw new ConfigurationException("illegal value for filter [" + getFilter() + "], must be 'NDR' or empty");
 				}
 			}
 
 			if (StringUtils.isNotEmpty(getInProcessFolder())) {
-				SearchFilter searchFilterTemp = new SearchFilter.IsEqualTo(
+				SearchFilter searchFilterInProcess = new SearchFilter.IsEqualTo(
 						FolderSchema.DisplayName, getInProcessFolder());
-				FolderView folderViewTemp = new FolderView(10);
-				FindFoldersResults findFoldersResultsTemp = exchangeService
-						.findFolders(inboxId, searchFilterTemp, folderViewTemp);
-				if (findFoldersResultsTemp.getTotalCount() == 0) {
-					throw new ConfigurationException(
-							"no (temp) folder found with name ["
-									+ getInProcessFolder() + "]");
-				} else if (findFoldersResultsTemp.getTotalCount() > 1) {
-					throw new ConfigurationException(
-							"multiple (temp) folders found with name ["
-									+ getInProcessFolder() + "]");
+				FolderView folderViewInProcess = new FolderView(10);
+				FindFoldersResults findFoldersResultsInProcess = exchangeService.findFolders(inboxId, searchFilterInProcess, folderViewInProcess);
+				if (findFoldersResultsInProcess.getTotalCount() == 0) {
+					throw new ConfigurationException("no (temp) folder found with name [" + getInProcessFolder() + "]");
+				} else if (findFoldersResultsInProcess.getTotalCount() > 1) {
+					throw new ConfigurationException("multiple (temp) folders found with name [" + getInProcessFolder() + "]");
 				}
-				folderTemp = findFoldersResultsTemp.getFolders().get(0);
+				folderInProcess = findFoldersResultsInProcess.getFolders().get(0);
 			}
 
 			if (StringUtils.isNotEmpty(getProcessedFolder())) {
-				SearchFilter searchFilterOut = new SearchFilter.IsEqualTo(
-						FolderSchema.DisplayName, getProcessedFolder());
-				FolderView folderViewOut = new FolderView(10);
-				FindFoldersResults findFoldersResultsOut = exchangeService
-						.findFolders(inboxId, searchFilterOut, folderViewOut);
-				if (findFoldersResultsOut.getTotalCount() == 0) {
-					throw new ConfigurationException(
-							"no (out) folder found with name ["
-									+ getProcessedFolder() + "]");
-				} else if (findFoldersResultsOut.getTotalCount() > 1) {
-					throw new ConfigurationException(
-							"multiple (out) folders found with name ["
-									+ getProcessedFolder() + "]");
+				SearchFilter searchFilterProcessed = new SearchFilter.IsEqualTo(FolderSchema.DisplayName, getProcessedFolder());
+				FolderView folderViewProcessed = new FolderView(10);
+				FindFoldersResults findFoldersResultsProcessed = exchangeService.findFolders(inboxId, searchFilterProcessed, folderViewProcessed);
+				if (findFoldersResultsProcessed.getTotalCount() == 0) {
+					throw new ConfigurationException("no (out) folder found with name [" + getProcessedFolder() + "]");
+				} else if (findFoldersResultsProcessed.getTotalCount() > 1) {
+					throw new ConfigurationException("multiple (out) folders found with name [" + getProcessedFolder() + "]");
 				}
-				folderOut = findFoldersResultsOut.getFolders().get(0);
+				folderProcessed = findFoldersResultsProcessed.getFolders().get(0);
 			}
 		} catch (Exception e) {
 			throw new ConfigurationException(e);
@@ -289,8 +260,7 @@ public class ExchangeMailListener implements IPullingListener<Item>, INamedObjec
 	}
 
 	@Override
-	public String getIdFromRawMessage(Item rawMessage, Map<String,Object> threadContext)
-			throws ListenerException {
+	public String getIdFromRawMessage(Item rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		Item item = (Item) rawMessage;
 		try {
 			return "" + item.getId();
@@ -300,8 +270,7 @@ public class ExchangeMailListener implements IPullingListener<Item>, INamedObjec
 	}
 
 	@Override
-	public String getStringFromRawMessage(Item rawMessage, Map<String,Object> threadContext)
-			throws ListenerException {
+	public String getStringFromRawMessage(Item rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		Item item = (Item) rawMessage;
 		try {
 			XmlBuilder emailXml = new XmlBuilder("email");
@@ -314,12 +283,8 @@ public class ExchangeMailListener implements IPullingListener<Item>, INamedObjec
 				emailMessage.load();
 				addEmailInfoSimple(emailMessage, emailXml);
 			} else {
-				ps = new PropertySet(EmailMessageSchema.DateTimeReceived,
-						EmailMessageSchema.From, EmailMessageSchema.Subject,
-						EmailMessageSchema.Body,
-						EmailMessageSchema.DateTimeSent);
-				emailMessage = EmailMessage.bind(exchangeService, item.getId(),
-						ps);
+				ps = new PropertySet(EmailMessageSchema.DateTimeReceived, EmailMessageSchema.From, EmailMessageSchema.Subject, EmailMessageSchema.Body, EmailMessageSchema.DateTimeSent);
+				emailMessage = EmailMessage.bind(exchangeService, item.getId(), ps);
 				emailMessage.load();
 				addEmailInfo(emailMessage, emailXml);
 			}
@@ -327,8 +292,7 @@ public class ExchangeMailListener implements IPullingListener<Item>, INamedObjec
 			if (StringUtils.isNotEmpty(getStoreEmailAsStreamInSessionKey())) {
 				emailMessage.load(new PropertySet(ItemSchema.MimeContent));
 				MimeContent mc = emailMessage.getMimeContent();
-				ByteArrayInputStream bis = new ByteArrayInputStream(
-						mc.getContent());
+				ByteArrayInputStream bis = new ByteArrayInputStream(mc.getContent());
 				threadContext.put(getStoreEmailAsStreamInSessionKey(), bis);
 			}
 
@@ -484,9 +448,9 @@ public class ExchangeMailListener implements IPullingListener<Item>, INamedObjec
 			} else {
 				Item item = findResults.getItems().get(0);
 				try {
-					if (folderTemp != null) {
-						item = item.move(folderTemp.getId());
-						log.debug("moved item [" + item.getId() + "] from folder [" + folderIn.getDisplayName() + "] to folder [" + folderTemp.getDisplayName() + "]");
+					if (folderInProcess != null) {
+						item = item.move(folderInProcess.getId());
+						log.debug("moved item [" + item.getId() + "] from folder [" + folderIn.getDisplayName() + "] to folder [" + folderInProcess.getDisplayName() + "]");
 					}
 				} catch (Exception e) {
 					throw new ListenerException(e);
