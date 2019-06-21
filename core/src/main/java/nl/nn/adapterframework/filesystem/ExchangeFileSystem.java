@@ -305,7 +305,12 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 			nextItem=null;
 			return result;
 		}
-		
+	
+		@Override
+		public void remove() {
+			itemIt.remove();
+		}
+
 	}
 	
 	@Override
