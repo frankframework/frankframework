@@ -72,8 +72,8 @@ public class ExchangeFolderSender extends FileSystemSender<Item,ExchangeFileSyst
 	}
 
 
-	public void setFolder(String folder) {
-		getFileSystem().setFolder(folder);
+	public void setBaseFolder(String basefolder) {
+		getFileSystem().setBaseFolder(basefolder);
 	}
 	public void setFilter(String string) {
 		getFileSystem().setFilter(string);
