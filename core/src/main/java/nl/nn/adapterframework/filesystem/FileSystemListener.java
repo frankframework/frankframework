@@ -43,7 +43,22 @@ import nl.nn.adapterframework.util.StreamUtil;
  *
  * @author Gerrit van Brakel, after {@link DirectoryListener} by John Dekker
  */
-public class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F> {
+/*
+   Copyright 2019 Integration Partners
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ */
+public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -62,6 +77,11 @@ public class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IP
 //	private Long fileListFirstFileFound;
 	private FS fileSystem;
 
+	protected abstract FS createFileSystem();
+	
+	public FileSystemListener() {
+		fileSystem=createFileSystem();
+	}
 	/**
 	 * Configure does some basic checks (outputDirectory is a directory, inputDirectory is a directory, wildcard is filled etc.);
 	 *
@@ -133,9 +153,6 @@ public class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IP
 		return fileSystem;
 	}
 
-	public void setFileSystem(FS fileSystem) {
-		this.fileSystem = fileSystem;
-	}
 
 	/**
 	 * Retrieves a single record from a file. If the file is empty or fully processed, it looks whether there

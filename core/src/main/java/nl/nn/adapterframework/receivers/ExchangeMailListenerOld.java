@@ -16,33 +16,58 @@
 package nl.nn.adapterframework.receivers;
 
 import java.io.ByteArrayInputStream;
+import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
+import microsoft.exchange.webservices.data.core.ExchangeService;
 import microsoft.exchange.webservices.data.core.PropertySet;
+import microsoft.exchange.webservices.data.core.WebProxy;
+import microsoft.exchange.webservices.data.core.enumeration.misc.ExchangeVersion;
+import microsoft.exchange.webservices.data.core.enumeration.property.WellKnownFolderName;
+import microsoft.exchange.webservices.data.core.enumeration.search.SortDirection;
+import microsoft.exchange.webservices.data.core.enumeration.service.DeleteMode;
+import microsoft.exchange.webservices.data.core.exception.service.local.ServiceLocalException;
+import microsoft.exchange.webservices.data.core.service.folder.Folder;
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import microsoft.exchange.webservices.data.core.service.item.Item;
 import microsoft.exchange.webservices.data.core.service.schema.EmailMessageSchema;
+import microsoft.exchange.webservices.data.core.service.schema.FolderSchema;
 import microsoft.exchange.webservices.data.core.service.schema.ItemSchema;
+import microsoft.exchange.webservices.data.credential.ExchangeCredentials;
+import microsoft.exchange.webservices.data.credential.WebCredentials;
+import microsoft.exchange.webservices.data.credential.WebProxyCredentials;
 import microsoft.exchange.webservices.data.property.complex.Attachment;
 import microsoft.exchange.webservices.data.property.complex.AttachmentCollection;
 import microsoft.exchange.webservices.data.property.complex.EmailAddress;
 import microsoft.exchange.webservices.data.property.complex.EmailAddressCollection;
+import microsoft.exchange.webservices.data.property.complex.FolderId;
 import microsoft.exchange.webservices.data.property.complex.InternetMessageHeader;
 import microsoft.exchange.webservices.data.property.complex.InternetMessageHeaderCollection;
 import microsoft.exchange.webservices.data.property.complex.ItemAttachment;
+import microsoft.exchange.webservices.data.property.complex.Mailbox;
 import microsoft.exchange.webservices.data.property.complex.MessageBody;
 import microsoft.exchange.webservices.data.property.complex.MimeContent;
+import microsoft.exchange.webservices.data.search.FindFoldersResults;
+import microsoft.exchange.webservices.data.search.FindItemsResults;
+import microsoft.exchange.webservices.data.search.FolderView;
+import microsoft.exchange.webservices.data.search.ItemView;
+import microsoft.exchange.webservices.data.search.filter.SearchFilter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.filesystem.ExchangeFileSystem;
-import nl.nn.adapterframework.filesystem.FileSystemListener;
+import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -95,18 +120,139 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * <tr><td>{@link #setProxyPassword(String) proxyPassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table></p>
  * 
- * @author Peter Leeuwenburgh, Gerrit van Brakel
+ * @author Peter Leeuwenburgh
  */
-public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSystem> implements HasPhysicalDestination {
+public class ExchangeMailListenerOld implements IPullingListener<Item>, HasPhysicalDestination {
+	protected Logger log = LogUtil.getLogger(this);
 
+	private String name;
+	private String inputFolder;
+	private String inProcessFolder;
+	private String processedFolder;
+	private String authAlias;
+	private String userName;
+	private String password;
+	private String mailAddress;
+	private String filter;
+	private String url;
 	private String storeEmailAsStreamInSessionKey;
 	private boolean simple = false;
 	
+	private String proxyHost;
+	private int    proxyPort = 80;
+	private String proxyAuthAlias;
+	private String proxyUserName;
+	private String proxyPassword;
+
+	private ExchangeService exchangeService;
+	private Folder folderIn;
+	private Folder folderInProcess;
+	private Folder folderProcessed;
+
 	@Override
-	protected ExchangeFileSystem createFileSystem() {
-		return new ExchangeFileSystem();
+	public void afterMessageProcessed(PipeLineResult processResult, Item rawMessage, Map<String,Object> context) throws ListenerException {
+		Item item = (Item) rawMessage;
+		try {
+			if (folderProcessed != null) {
+				item.move(folderProcessed.getId());
+				log.debug("moved item [" + item.getId() + "] from folder [" + getFolderFromName() + "] to folder [" + folderProcessed.getDisplayName() + "]");
+			} else {
+				item.delete(DeleteMode.MoveToDeletedItems);
+				log.debug("deleted item [" + item.getId() + "] from folder [" + getFolderFromName() + "]");
+			}
+		} catch (Exception e) {
+			throw new ListenerException(e);
+		}
 	}
 
+	private String getFolderFromName() throws ServiceLocalException {
+		return (folderInProcess == null ? folderIn.getDisplayName() : folderInProcess.getDisplayName());
+	}
+
+	@Override
+	public void close() throws ListenerException {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void configure() throws ConfigurationException {
+		try {
+			exchangeService = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
+			CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
+			ExchangeCredentials credentials = new WebCredentials(cf.getUsername(), cf.getPassword());
+			exchangeService.setCredentials(credentials);
+			if (StringUtils.isNotEmpty(getProxyHost())) {
+				CredentialFactory cfProxy = new CredentialFactory(getProxyAuthAlias(), getProxyUserName(), getProxyPassword());
+				String domain = null;
+				if (StringUtils.isNotEmpty(getUrl())) {
+					URI uri = new URI(getUrl());
+					domain = uri.getHost();
+				}
+				WebProxyCredentials wpc = new WebProxyCredentials(
+						cfProxy.getUsername(), cfProxy.getPassword(), domain);
+				WebProxy wp = new WebProxy(getProxyHost(), getProxyPort(), wpc);
+				exchangeService.setWebProxy(wp);
+			}
+			if (StringUtils.isNotEmpty(getUrl())) {
+				URI uri = new URI(getUrl());
+				exchangeService.setUrl(uri);
+			} else {
+				exchangeService.autodiscoverUrl(getMailAddress());
+			}
+
+			FolderId inboxId;
+			if (StringUtils.isNotEmpty(getMailAddress())) {
+				Mailbox mailbox = new Mailbox(getMailAddress());
+				inboxId = new FolderId(WellKnownFolderName.Inbox, mailbox);
+			} else {
+				inboxId = new FolderId(WellKnownFolderName.Inbox);
+			}
+
+			if (StringUtils.isNotEmpty(getInputFolder())) {
+				folderIn = findFolder(inboxId,getInputFolder());
+			} else {
+				folderIn = Folder.bind(exchangeService, inboxId);
+			}
+
+			if (StringUtils.isNotEmpty(getFilter())) {
+				if (!getFilter().equalsIgnoreCase("NDR")) {
+					throw new ConfigurationException("illegal value for filter [" + getFilter() + "], must be 'NDR' or empty");
+				}
+			}
+
+			if (StringUtils.isNotEmpty(getInProcessFolder())) {
+				folderInProcess = findFolder(inboxId,getInProcessFolder());
+			}
+
+			if (StringUtils.isNotEmpty(getProcessedFolder())) {
+				folderProcessed = findFolder(inboxId,getProcessedFolder());
+			}
+		} catch (Exception e) {
+			throw new ConfigurationException(e);
+		}
+	}
+
+	private Folder findFolder(FolderId basefolderId, String folderName) throws Exception {
+		SearchFilter searchFilter = new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName);
+		FolderView folderView = new FolderView(10);
+		FindFoldersResults findFoldersResults = exchangeService.findFolders(basefolderId, searchFilter, folderView);
+		if (findFoldersResults.getTotalCount() == 0) {
+			throw new ConfigurationException("no folder found with name [" + folderName + "]");
+		} else if (findFoldersResults.getTotalCount() > 1) {
+			throw new ConfigurationException("multiple folders found with name [" + folderName + "]");
+		}
+		return findFoldersResults.getFolders().get(0);
+	}
+	
+	@Override
+	public String getIdFromRawMessage(Item rawMessage, Map<String,Object> threadContext) throws ListenerException {
+		Item item = (Item) rawMessage;
+		try {
+			return "" + item.getId();
+		} catch (ServiceLocalException e) {
+			throw new ListenerException(e);
+		}
+	}
 
 	@Override
 	public String getStringFromRawMessage(Item rawMessage, Map<String,Object> threadContext) throws ListenerException {
@@ -117,12 +263,13 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 			PropertySet ps;
 			if (isSimple()) {
 				ps = new PropertySet(EmailMessageSchema.Subject);
-				emailMessage = EmailMessage.bind(getFileSystem().getExchangeService(), item.getId(), ps);
+				emailMessage = EmailMessage.bind(exchangeService, item.getId(),
+						ps);
 				emailMessage.load();
 				addEmailInfoSimple(emailMessage, emailXml);
 			} else {
 				ps = new PropertySet(EmailMessageSchema.DateTimeReceived, EmailMessageSchema.From, EmailMessageSchema.Subject, EmailMessageSchema.Body, EmailMessageSchema.DateTimeSent);
-				emailMessage = EmailMessage.bind(getFileSystem().getExchangeService(), item.getId(), ps);
+				emailMessage = EmailMessage.bind(exchangeService, item.getId(), ps);
 				emailMessage.load();
 				addEmailInfo(emailMessage, emailXml);
 			}
@@ -186,7 +333,8 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 		subjectXml.setCdataValue(emailMessage.getSubject());
 		emailXml.addSubElement(subjectXml);
 		XmlBuilder messageXml = new XmlBuilder("message");
-		messageXml.setCdataValue(MessageBody.getStringFromMessageBody(emailMessage.getBody()));
+		messageXml.setCdataValue(MessageBody
+				.getStringFromMessageBody(emailMessage.getBody()));
 		emailXml.addSubElement(messageXml);
 		XmlBuilder attachmentsXml = new XmlBuilder("attachments");
 		try {
@@ -210,7 +358,8 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 				}
 			}
 		} catch (Exception e) {
-			log.info("error occurred during getting internet message attachment(s): " + e.getMessage());
+			log.info("error occurred during getting internet message attachment(s): "
+					+ e.getMessage());
 		}
 		emailXml.addSubElement(attachmentsXml);
 		XmlBuilder headersXml = new XmlBuilder("headers");
@@ -218,7 +367,8 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 		try {
 			imhc = emailMessage.getInternetMessageHeaders();
 		} catch (Exception e) {
-			log.info("error occurred during getting internet message headers: " + e.getMessage());
+			log.info("error occurred during getting internet message headers: "
+					+ e.getMessage());
 		}
 		if (imhc != null) {
 			for (Iterator<InternetMessageHeader> it = imhc.iterator(); it.hasNext();) {
@@ -230,7 +380,8 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 			}
 		}
 		emailXml.addSubElement(headersXml);
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+		SimpleDateFormat sdf = new SimpleDateFormat(
+				"yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 		Date dateTimeSend = emailMessage.getDateTimeSent();
 		XmlBuilder dateTimeSentXml = new XmlBuilder("dateTimeSent");
 		dateTimeSentXml.setValue(sdf.format(dateTimeSend));
@@ -241,61 +392,152 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 		emailXml.addSubElement(dateTimeReceivedXml);
 	}
 
+	@Override
+	public void open() throws ListenerException {
+		// TODO Auto-generated method stub
+	}
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return getFileSystem().getPhysicalDestinationName()
-				+ " inputFolder ["
+		return "url ["
+				+ (exchangeService == null ? "" : exchangeService.getUrl())
+				+ "] mailAddress ["
+				+ (getMailAddress() == null ? "" : getMailAddress())
+				+ "] inputFolder ["
 				+ (getInputFolder() == null ? "" : getInputFolder())
-				+ "] inProcessFolder ["
+				+ "] tempFolder ["
 				+ (getInProcessFolder() == null ? "" : getInProcessFolder())
-				+ "] processedFolder ["
+				+ "] outputFolder ["
 				+ (getProcessedFolder() == null ? "" : getProcessedFolder() + "]");
 	}
 
+	@Override
+	public void closeThread(Map<String,Object> threadContext) throws ListenerException {
+		// TODO Auto-generated method stub
+	}
 
+	@Override
+	public Item getRawMessage(Map<String,Object> threadContext) throws ListenerException {
+		try {
+			ItemView view = new ItemView(1);
+			view.getOrderBy().add(ItemSchema.DateTimeReceived, SortDirection.Ascending);
+			FindItemsResults<Item> findResults;
+			if ("NDR".equalsIgnoreCase(getFilter())) {
+				SearchFilter searchFilterBounce = new SearchFilter.IsEqualTo(ItemSchema.ItemClass, "REPORT.IPM.Note.NDR");
+				findResults = exchangeService.findItems(folderIn.getId(), searchFilterBounce, view);
+			} else {
+				findResults = exchangeService.findItems(folderIn.getId(), view);
+			}
+			if (findResults.getTotalCount() == 0) {
+				return null;
+			} else {
+				Item item = findResults.getItems().get(0);
+				try {
+					if (folderInProcess != null) {
+						item = item.move(folderInProcess.getId());
+						log.debug("moved item [" + item.getId() + "] from folder [" + folderIn.getDisplayName() + "] to folder [" + folderInProcess.getDisplayName() + "]");
+					}
+				} catch (Exception e) {
+					throw new ListenerException(e);
+				}
+				return item;
+			}
+		} catch (Exception e) {
+			throw new ListenerException(e);
+		}
+	}
 
+	@Override
+	public Map<String,Object> openThread() throws ListenerException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
+	@Override
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	public void setInputFolder(String inputFolder) {
+		this.inputFolder = inputFolder;
+	}
+	public String getInputFolder() {
+		return inputFolder;
+	}
+
+	@IbisDoc({"folder where files are stored <i>after</i> being processed", ""})
+	public void setProcessedFolder(String processedFolder) {
+		this.processedFolder = processedFolder;
+	}
 	public void setOutputFolder(String outputFolder) {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: attribute 'outputFolder' has been replaced by 'processedFolder'";
 		configWarnings.add(log, msg);
 		setProcessedFolder(outputFolder);
 	}
+	public String getProcessedFolder() {
+		return processedFolder;
+	}
 
+	@IbisDoc({"folder where files are stored <i>while</i> being processed", ""})
+	public void setInProcessFolder(String inProcessFolder) {
+		this.inProcessFolder = inProcessFolder;
+	}
 	public void setTempFolder(String tempFolder) {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: attribute 'tempFolder' has been replaced by 'inProcessFolder'";
 		configWarnings.add(log, msg);
 		setInProcessFolder(tempFolder);
 	}
-
-	public void setAuthAlias(String authAlias) {
-		getFileSystem().setAuthAlias(authAlias);;
+	public String getInProcessFolder() {
+		return inProcessFolder;
 	}
 
-	public void setUserName(String username) {
-		getFileSystem().setUsername(username);;
+	public void setAuthAlias(String string) {
+		authAlias = string;
+	}
+	public String getAuthAlias() {
+		return authAlias;
 	}
 
-	public void setPassword(String password) {
-		getFileSystem().setPassword(password);;
+	public void setUserName(String string) {
+		userName = string;
+	}
+	public String getUserName() {
+		return userName;
 	}
 
-	public void setMailAddress(String mailAddress) {
-		getFileSystem().setMailAddress(mailAddress);
+	public void setPassword(String string) {
+		password = string;
+	}
+	public String getPassword() {
+		return password;
 	}
 
-	public void setFilter(String filter) {
-		getFileSystem().setFilter(filter);
+	public void setMailAddress(String string) {
+		mailAddress = string;
+	}
+	public String getMailAddress() {
+		return mailAddress;
 	}
 
-	public void setUrl(String url) {
-		getFileSystem().setUrl(url);
+	public void setFilter(String string) {
+		filter = string;
 	}
-	
-	public void setBaseFolder(String baseFolder) {
-		getFileSystem().setBaseFolder(baseFolder);
+	public String getFilter() {
+		return filter;
+	}
+
+	public void setUrl(String string) {
+		url = string;
+	}
+	public String getUrl() {
+		return url;
 	}
 
 	public void setStoreEmailAsStreamInSessionKey(String string) {
@@ -312,24 +554,38 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 		return simple;
 	}
 
-	public void setProxyHost(String proxyHost) {
-		getFileSystem().setProxyHost(proxyHost);
+	public String getProxyHost() {
+		return proxyHost;
+	}
+	public void setProxyHost(String string) {
+		proxyHost = string;
 	}
 
-	public void setProxyPort(int proxyPort) {
-		getFileSystem().setProxyPort(proxyPort);
+	public int getProxyPort() {
+		return proxyPort;
+	}
+	public void setProxyPort(int i) {
+		proxyPort = i;
 	}
 
-	public void setProxyAuthAlias(String proxyAuthAlias) {
-		getFileSystem().setProxyAuthAlias(proxyAuthAlias);
+	public String getProxyAuthAlias() {
+		return proxyAuthAlias;
+	}
+	public void setProxyAuthAlias(String string) {
+		proxyAuthAlias = string;
 	}
 
-	public void setProxyUserName(String proxyUsername) {
-		getFileSystem().setProxyUsername(proxyUsername);
+	public String getProxyUserName() {
+		return proxyUserName;
+	}
+	public void setProxyUserName(String string) {
+		proxyUserName = string;
 	}
 
-	public void setProxyPassword(String proxyPassword) {
-		getFileSystem().setProxyPassword(proxyPassword);
+	public String getProxyPassword() {
+		return proxyPassword;
 	}
-
+	public void setProxyPassword(String string) {
+		proxyPassword = string;
+	}
 }

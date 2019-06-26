@@ -82,6 +82,12 @@ public class XmlBuilder {
 		addSubElement(newElement, true);
 	}
 
+	public void addSubElement(String name, String value) {
+		XmlBuilder subElement = new XmlBuilder(name);
+		subElement.setValue(value);
+		addSubElement(subElement, true);
+	}
+
 	public void addSubElement(XmlBuilder newElement, boolean adoptNamespace) {
 		if (newElement != null) {
 			if (adoptNamespace

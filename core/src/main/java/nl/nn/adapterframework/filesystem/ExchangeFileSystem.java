@@ -82,7 +82,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to exchange mail server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUsername(String) username}</td><td>username used in authentication to exchange mail server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFolder(String) folder}</td><td>folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setBaseFolder(String) basefolder}</td><td>folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFilter(String) filter}</td><td>If empty, all mails are retrieved. If 'NDR' only Non-Delivery Report mails ('bounces') are retrieved</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSimple(boolean) simple}</td><td>when set to <code>true</code>, the xml string passed to the pipeline contains minimum information about the mail (to save memory)</td><td>false</td></tr>
  * </table>
@@ -99,7 +99,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 	private String authAlias;
 	private String username;
 	private String password;
-	private String folder;
+	private String basefolder;
 	private String filter;
 	private boolean simple = false;
 	private boolean readMimeContents=false;
@@ -177,31 +177,39 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 			}
 			log.debug("determined inbox ["+inboxId+"] foldername ["+inboxId.getFolderName()+"]");
 	
-			try {
-				basefolderId=findFolder(inboxId,getFolder());
-			} catch (Exception e) {
-				log.debug("Could not get folder ["+getFolder()+"] as subfolder of ["+inboxId.getFolderName()+"]");
-				basefolderId=findFolder(null,getFolder());
+			if (StringUtils.isNotEmpty(getBaseFolder())) {
+				try {
+					basefolderId=findFolder(inboxId,getBaseFolder());
+				} catch (Exception e) {
+					log.debug("Could not get folder ["+getBaseFolder()+"] as subfolder of ["+inboxId.getFolderName()+"]");
+					basefolderId=findFolder(null,getBaseFolder());
+				}				
+			} else {
+				basefolderId=inboxId;
 			}
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}
 	}
 	
-	public FolderId findFolder(FolderId baseFolder, String folderName) throws Exception {
+	public FolderId findFolder(String folderName) throws Exception {
+		return findFolder(basefolderId, folderName);
+	}
+	
+	public FolderId findFolder(FolderId baseFolderId, String folderName) throws Exception {
 		FindFoldersResults findFoldersResultsIn;
 		FolderId result;
 		FolderView folderViewIn = new FolderView(10);
 		if (StringUtils.isNotEmpty(folderName)) {
 			log.debug("searching folder ["+folderName+"]");
 			SearchFilter searchFilterIn = new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName);
-			if (baseFolder==null) {
+			if (baseFolderId==null) {
 				findFoldersResultsIn = exchangeService.findFolders(WellKnownFolderName.MsgFolderRoot, searchFilterIn, folderViewIn);
 			} else {
-				findFoldersResultsIn = exchangeService.findFolders(baseFolder, searchFilterIn, folderViewIn);
+				findFoldersResultsIn = exchangeService.findFolders(baseFolderId, searchFilterIn, folderViewIn);
 			}
 			if (findFoldersResultsIn.getTotalCount() == 0) {
-				throw new ConfigurationException("no folder found with name ["	+ folderName + "]");
+				throw new ConfigurationException("no folder found with name ["	+ folderName + "] in basefolder ["+baseFolderId+"]");
 			} else if (findFoldersResultsIn.getTotalCount() > 1) {
 				if (log.isDebugEnabled()) {
 					for (Folder folder:findFoldersResultsIn.getFolders()) {
@@ -211,12 +219,13 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 				throw new ConfigurationException("multiple folders found with name ["+ folderName + "]");
 			}
 		} else {
-			findFoldersResultsIn = exchangeService.findFolders(baseFolder,	folderViewIn);
+			//findFoldersResultsIn = exchangeService.findFolders(baseFolderId, folderViewIn);
+			return baseFolderId;
 		}
 		if (findFoldersResultsIn.getFolders().isEmpty()) {
-			result=baseFolder;
+			result=baseFolderId;
 		} else {
-			result =findFoldersResultsIn.getFolders().get(0).getId();
+			result=findFoldersResultsIn.getFolders().get(0).getId();
 		}
 		return result;
 	}
@@ -269,49 +278,49 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 		return null;
 	}
 	
-	private class NestedMessageExtractingItemIterator implements Iterator<Item> {
-
-		private Iterator<Item> itemIt;
-		private Iterator<Attachment> attachmentIt=null; 
-		private Item nextItem;
-		
-		public NestedMessageExtractingItemIterator(FindItemsResults<Item> findResults) {
-			itemIt=findResults.iterator();
-		}
-		
-		private void findNextItem() {
-			while (nextItem==null && itemIt.hasNext()) {
-				Item superItem = itemIt.next();
-				try {
-					superItem.load();
-					nextItem=extractNestedItem(superItem);
-				} catch (Exception e) {
-					log.warn(e);
-				}
-			}
-		}
-		
-		@Override
-		public boolean hasNext() {
-			findNextItem();
-			return nextItem!=null;
-		}
-
-		@Override
-		public Item next() {
-			Item result;
-			findNextItem();
-			result=nextItem;
-			nextItem=null;
-			return result;
-		}
-	
-		@Override
-		public void remove() {
-			itemIt.remove();
-		}
-
-	}
+//	private class NestedMessageExtractingItemIterator implements Iterator<Item> {
+//
+//		private Iterator<Item> itemIt;
+//		private Iterator<Attachment> attachmentIt=null; 
+//		private Item nextItem;
+//		
+//		public NestedMessageExtractingItemIterator(FindItemsResults<Item> findResults) {
+//			itemIt=findResults.iterator();
+//		}
+//		
+//		private void findNextItem() {
+//			while (nextItem==null && itemIt.hasNext()) {
+//				Item superItem = itemIt.next();
+//				try {
+//					superItem.load();
+//					nextItem=extractNestedItem(superItem);
+//				} catch (Exception e) {
+//					log.warn(e);
+//				}
+//			}
+//		}
+//		
+//		@Override
+//		public boolean hasNext() {
+//			findNextItem();
+//			return nextItem!=null;
+//		}
+//
+//		@Override
+//		public Item next() {
+//			Item result;
+//			findNextItem();
+//			result=nextItem;
+//			nextItem=null;
+//			return result;
+//		}
+//	
+//		@Override
+//		public void remove() {
+//			itemIt.remove();
+//		}
+//
+//	}
 	
 	@Override
 	public Iterator<Item> listFiles(String folder) throws FileSystemException {
@@ -339,9 +348,16 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 		}
 	}
 
+	
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
-		return false;
+		FolderId folderId;
+		try {
+			folderId = findFolder(folder);
+		} catch (Exception e) {
+			throw new FileSystemException(e);
+		}
+		return folderId!=null;
 	}
 
 	
@@ -706,7 +722,8 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 	@Override
 	public String getPhysicalDestinationName() {
 		if (exchangeService != null) {
-			return "url [" + exchangeService.getUrl() + "]";
+			return "url [" + (exchangeService == null ? "" : exchangeService.getUrl())
+					+ "] mailAddress [" + (getMailAddress() == null ? "" : getMailAddress()) + "]";
 		}
 		return null;
 	}
@@ -755,11 +772,11 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 		return password;
 	}
 	
-	public void setFolder(String folder) {
-		this.folder = folder;
+	public void setBaseFolder(String basefolder) {
+		this.basefolder = basefolder;
 	}
-	public String getFolder() {
-		return folder;
+	public String getBaseFolder() {
+		return basefolder;
 	}
 
 	public void setFilter(String filter) {
@@ -842,6 +859,10 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 		public boolean autodiscoverRedirectionUrlValidationCallback(String redirectionUrl) {
 			return redirectionUrl.toLowerCase().startsWith("https://");
 		}
+	}
+
+	public ExchangeService getExchangeService() {
+		return exchangeService;
 	}
 
 

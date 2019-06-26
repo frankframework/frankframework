@@ -10,8 +10,14 @@ public class MockFileSystemListenerTest extends FileSystemListenerTest <MockFile
 
 	@Override
 	public FileSystemListener<MockFile, MockFileSystem<MockFile>> createFileSystemListener() {
-		FileSystemListener<MockFile,MockFileSystem<MockFile>> result=new FileSystemListener<MockFile,MockFileSystem<MockFile>>();
-		result.setFileSystem(((MockFileSystemTestHelper<MockFile>)helper).getFileSystem());
+		FileSystemListener<MockFile,MockFileSystem<MockFile>> result=new FileSystemListener<MockFile,MockFileSystem<MockFile>>(){
+
+			@Override
+			protected MockFileSystem<MockFile> createFileSystem() {
+				return ((MockFileSystemTestHelper<MockFile>)helper).getFileSystem();
+			}
+			
+		};
 		return result;
 	}
 
