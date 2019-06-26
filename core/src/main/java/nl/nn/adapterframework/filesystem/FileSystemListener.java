@@ -54,12 +54,12 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private boolean delete = false;
 	private String processedFolder;
 //	private boolean createFolders=false;
-	private boolean overwrite = false;
+//	private boolean overwrite = false;
 	private String messageType="name";
 
 	private long minStableTime = 1000;
-
 //	private Long fileListFirstFileFound;
+	
 	private FS fileSystem;
 
 	protected abstract FS createFileSystem();
@@ -435,13 +435,13 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 //		return numberOfBackups;
 //	}
 
-	@IbisDoc({"when set <code>true</code>, the destination file will be deleted if it already exists", "false"})
-	public void setOverwrite(boolean overwrite) {
-		this.overwrite = overwrite;
-	}
-	public boolean isOverwrite() {
-		return overwrite;
-	}
+//	@IbisDoc({"when set <code>true</code>, the destination file will be deleted if it already exists", "false"})
+//	public void setOverwrite(boolean overwrite) {
+//		this.overwrite = overwrite;
+//	}
+//	public boolean isOverwrite() {
+//		return overwrite;
+//	}
 
 	@IbisDoc({"when set <code>true</code>, the file processed will deleted after being processed, and not stored", "false"})
 	public void setDelete(boolean b) {

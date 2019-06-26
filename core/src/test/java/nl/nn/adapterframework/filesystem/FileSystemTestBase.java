@@ -20,7 +20,7 @@ public abstract class FileSystemTestBase {
 	protected boolean doTimingTests=false;
 
 	@Rule
-	public ExpectedException exception = ExpectedException.none();
+	public ExpectedException thrown = ExpectedException.none();
 	
 	public String FILE1 = "file1.txt";
 	public String FILE2 = "file2.txt";

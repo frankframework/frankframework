@@ -13,7 +13,9 @@ import java.util.Map;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> extends HelperedFileSystemTestBase {
 
@@ -21,6 +23,9 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	private Map<String,Object> threadContext;
 
 	public abstract IFileSystemListener<F> createFileSystemListener();
+
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 
 	@Override
 	@Before
@@ -47,6 +52,31 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 	@Test
 	public void fileListenerTestOpen() throws Exception {
+		fileSystemListener.configure();
+		fileSystemListener.open();
+	}
+	
+
+	@Test
+	public void fileListenerTestInvalidInputFolder() throws Exception {
+		fileSystemListener.setInputFolder("xxx");
+		thrown.expectMessage("The value for inputFolder [xxx] is invalid. It is not a folder.");
+		fileSystemListener.configure();
+		fileSystemListener.open();
+	}
+	
+	@Test
+	public void fileListenerTestInvalidInProcessFolder() throws Exception {
+		fileSystemListener.setInProcessFolder("xxx");
+		thrown.expectMessage("The value for inProcessFolder [xxx] is invalid. It is not a folder.");
+		fileSystemListener.configure();
+		fileSystemListener.open();
+	}
+	
+	@Test
+	public void fileListenerTestInvalidProcessedFolder() throws Exception {
+		fileSystemListener.setProcessedFolder("xxx");
+		thrown.expectMessage("The value for processedFolder [xxx] is invalid. It is not a folder.");
 		fileSystemListener.configure();
 		fileSystemListener.open();
 	}
