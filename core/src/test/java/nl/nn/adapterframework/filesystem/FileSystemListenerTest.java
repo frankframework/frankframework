@@ -4,21 +4,23 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> extends HelperedFileSystemTestBase {
 
-	private FileSystemListener<F, FS> fileSystemListener;
+	private IFileSystemListener<F> fileSystemListener;
 	private Map<String,Object> threadContext;
 
-	public abstract FileSystemListener<F, FS> createFileSystemListener();
+	public abstract IFileSystemListener<F> createFileSystemListener();
 
 	@Override
 	@Before
@@ -184,7 +186,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		assertNotNull(rawMessage);
 		
 		String id=fileSystemListener.getIdFromRawMessage(rawMessage, threadContext);
-		assertEquals(filename,id);
+		assertThat(id, Matchers.endsWith(filename));
 	}
 	
 	@Test
