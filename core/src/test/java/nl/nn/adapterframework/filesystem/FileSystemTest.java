@@ -193,7 +193,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	
 	@Test
 	public void writableFileSystemTestRenameToExisting() throws Exception {
-		exception.expectMessage("Cannot rename file. Destination file already exists.");
+		thrown.expectMessage("Cannot rename file. Destination file already exists.");
 		String fileName = "fileToBeRenamedExisting.txt";
 		
 		fileSystem.configure();
@@ -218,7 +218,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 
 	@Test
 	public void writableFileSystemTestRemovingNonExistingDirectory() throws Exception {
-		exception.expectMessage("Directory does not exist.");
+		thrown.expectMessage("Directory does not exist.");
 		String foldername = "nonExistingFolder";
 
 		fileSystem.configure();
@@ -232,7 +232,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	
 	@Test
 	public void writableFileSystemTestCreateExistingFolder() throws Exception {
-		exception.expectMessage("Directory already exists.");
+		thrown.expectMessage("Directory already exists.");
 		String folderName = "existingFolder";
 		
 		fileSystem.configure();
