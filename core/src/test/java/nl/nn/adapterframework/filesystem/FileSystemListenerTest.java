@@ -154,7 +154,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	}
 
 	@Test
-	public void fileListenerTestGetStringFromRawMessageFilenam() throws Exception {
+	public void fileListenerTestGetStringFromRawMessageFilename() throws Exception {
 		String filename="rawMessageFile";
 		String contents="Test Message Contents";
 		
@@ -206,7 +206,6 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		String contents="Test Message Contents";
 		
 		fileSystemListener.setMinStableTime(0);
-		fileSystemListener.setMessageType("contents");
 		fileSystemListener.configure();
 		fileSystemListener.open();
 		
@@ -218,6 +217,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		String id=fileSystemListener.getIdFromRawMessage(rawMessage, threadContext);
 		assertThat(id, Matchers.endsWith(filename));
 	}
+
 	
 	@Test
 	public void fileListenerTestAfterMessageProcessedDelete() throws Exception {

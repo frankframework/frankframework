@@ -47,8 +47,8 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
- * Implementation of a {@link nl.nn.adapterframework.core.IPullingListener
- * IPullingListener} that enables a
+ * Implementation of a {@link nl.nn.adapterframework.filesystem.FileSystemListener
+ * FileSystemListener} that enables a
  * {@link nl.nn.adapterframework.receivers.GenericReceiver} to look in a folder
  * for received mails. When a mail is found, it is moved to an output folder (or
  * it's deleted), so that it isn't found more then once. A xml string with
@@ -100,8 +100,13 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSystem> implements HasPhysicalDestination, IFileSystemListener<Item> {
 
+	public final String EMAIL_MESSAGE_TYPE="email";
 	private String storeEmailAsStreamInSessionKey;
 	private boolean simple = false;
+	
+	{
+		setMessageType(EMAIL_MESSAGE_TYPE);
+	}
 	
 	@Override
 	protected ExchangeFileSystem createFileSystem() {
@@ -111,6 +116,9 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 
 	@Override
 	public String getStringFromRawMessage(Item rawMessage, Map<String,Object> threadContext) throws ListenerException {
+		if (!EMAIL_MESSAGE_TYPE.equals(getMessageType())) {
+			return super.getStringFromRawMessage(rawMessage, threadContext);
+		}
 		Item item = (Item) rawMessage;
 		try {
 			XmlBuilder emailXml = new XmlBuilder("email");
