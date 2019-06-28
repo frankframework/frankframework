@@ -130,7 +130,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 	@Test
 	public void fileListenerTestGetRawMessageDelayed() throws Exception {
-		int stabilityTimeUnit=100; // ms
+		int stabilityTimeUnit=1000; // ms
 		fileSystemListener.setMinStableTime(2*stabilityTimeUnit);
 		String filename="rawMessageFile";
 		String contents="Test Message Contents";
