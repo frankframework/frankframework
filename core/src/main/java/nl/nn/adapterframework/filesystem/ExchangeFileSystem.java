@@ -278,49 +278,6 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 		return null;
 	}
 	
-//	private class NestedMessageExtractingItemIterator implements Iterator<Item> {
-//
-//		private Iterator<Item> itemIt;
-//		private Iterator<Attachment> attachmentIt=null; 
-//		private Item nextItem;
-//		
-//		public NestedMessageExtractingItemIterator(FindItemsResults<Item> findResults) {
-//			itemIt=findResults.iterator();
-//		}
-//		
-//		private void findNextItem() {
-//			while (nextItem==null && itemIt.hasNext()) {
-//				Item superItem = itemIt.next();
-//				try {
-//					superItem.load();
-//					nextItem=extractNestedItem(superItem);
-//				} catch (Exception e) {
-//					log.warn(e);
-//				}
-//			}
-//		}
-//		
-//		@Override
-//		public boolean hasNext() {
-//			findNextItem();
-//			return nextItem!=null;
-//		}
-//
-//		@Override
-//		public Item next() {
-//			Item result;
-//			findNextItem();
-//			result=nextItem;
-//			nextItem=null;
-//			return result;
-//		}
-//	
-//		@Override
-//		public void remove() {
-//			itemIt.remove();
-//		}
-//
-//	}
 	
 	@Override
 	public Iterator<Item> listFiles(String folder) throws FileSystemException {
@@ -338,9 +295,6 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 			if (findResults.getTotalCount() == 0) {
 				return null;
 			} else {
-//				if ("NDR".equals(getFilter())) {
-//					return new NestedMessageExtractingItemIterator(findResults);
-//				}
 				return findResults.getItems().iterator();
 			}
 		} catch (Exception e) {
@@ -856,8 +810,10 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 	}
 	
 	static class RedirectionUrlCallback implements IAutodiscoverRedirectionUrl {
+		
+		@Override
 		public boolean autodiscoverRedirectionUrlValidationCallback(String redirectionUrl) {
-			return redirectionUrl.toLowerCase().startsWith("https://");
+			return redirectionUrl.toLowerCase().startsWith("https://"); //TODO: provide better test on how to trust this url
 		}
 	}
 

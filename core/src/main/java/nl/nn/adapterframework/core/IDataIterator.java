@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.core;
 
-import java.util.Iterator;
-
 /**
  * Interface to handle generic iterations.
  * 
