@@ -130,7 +130,8 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 	@Test
 	public void fileListenerTestGetRawMessageDelayed() throws Exception {
-		fileSystemListener.setMinStableTime(100);
+		int stabilityTimeUnit=100; // ms
+		fileSystemListener.setMinStableTime(2*stabilityTimeUnit);
 		String filename="rawMessageFile";
 		String contents="Test Message Contents";
 		
@@ -141,16 +142,16 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		createFile(null, filename, contents);
 		long afterCreateFile=System.currentTimeMillis();
 		log.debug("beforeCreateFile ["+beforeCreateFile+"] afterCreateFile ["+afterCreateFile+"]");
-		Thread.sleep(50);
+		Thread.sleep(1*stabilityTimeUnit);
 		long afterSleep=System.currentTimeMillis();
 		log.debug("afterSleep ["+afterSleep+"]");
 		
 		F rawMessage=fileSystemListener.getRawMessage(threadContext);
-		assertNull("raw message must be null when not yet stable for 100ms",rawMessage);
+		assertNull("raw message must be null when not yet stable for "+(2*stabilityTimeUnit)+"ms",rawMessage);
 		
-		Thread.sleep(100);
+		Thread.sleep(2*stabilityTimeUnit);
 		rawMessage=fileSystemListener.getRawMessage(threadContext);
-		assertNotNull("raw message must be not null when stable for 150ms",rawMessage);
+		assertNotNull("raw message must be not null when stable for "+(3*stabilityTimeUnit)+"ms",rawMessage);
 	}
 
 	@Test
