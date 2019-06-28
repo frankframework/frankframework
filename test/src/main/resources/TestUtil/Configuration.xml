@@ -1,0 +1,6 @@
+<!DOCTYPE configuration [
+	<!ENTITY CreateFileDirectories SYSTEM "./ConfigurationCreateFileDirectories.xml">
+]>
+<configuration name="TestUtil">
+	&CreateFileDirectories;
+</configuration>

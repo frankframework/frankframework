@@ -8,7 +8,7 @@
   <fielddefinition>
     <field columnClassName="java.lang.String" columnDisplaySize="1" columnTypeName="CHAR" isCurrency="false" name="TCHAR" precision="1" scale="0" type="CHAR"/>
     <field columnClassName="java.lang.String" columnDisplaySize="100" columnTypeName="VARCHAR2" isCurrency="false" name="TVARCHAR" precision="100" scale="0" type="VARCHAR"/>
-    <field columnClassName="java.math.BigDecimal" columnDisplaySize="22" columnTypeName="NUMBER" isCurrency="true" name="TNUMBER" precision="17" scale="5" type="NUMERIC"/>
+    <field columnClassName="java.math.BigDecimal" columnDisplaySize="39" columnTypeName="NUMBER" isCurrency="true" name="TNUMBER" precision="38" scale="0" type="NUMERIC"/>
   </fielddefinition>
   <rowset>
     <row number="0">

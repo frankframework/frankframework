@@ -1,6 +1,6 @@
 <result>
   <fielddefinition>
-    <field name="DATAKEY" type="NUMERIC" columnDisplaySize="22" precision="10" scale="0" isCurrency="true" columnTypeName="NUMBER" columnClassName="java.math.BigDecimal"/>
+    <field name="DATAKEY" type="NUMERIC" columnDisplaySize="39" precision="38" scale="0" isCurrency="true" columnTypeName="NUMBER" columnClassName="java.math.BigDecimal"/>
     <field name="DATA" type="BLOB" columnDisplaySize="4000" precision="-1" scale="0" isCurrency="false" columnTypeName="BLOB" columnClassName="oracle.sql.BLOB"/>
   </fielddefinition>
   <rowset>
