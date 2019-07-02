@@ -48,7 +48,9 @@ import org.apache.chemistry.opencmis.commons.data.AclCapabilities;
 import org.apache.chemistry.opencmis.commons.data.CreatablePropertyTypes;
 import org.apache.chemistry.opencmis.commons.data.NewTypeSettableAttributes;
 import org.apache.chemistry.opencmis.commons.data.ObjectData;
+import org.apache.chemistry.opencmis.commons.data.ObjectList;
 import org.apache.chemistry.opencmis.commons.data.PermissionMapping;
+import org.apache.chemistry.opencmis.commons.data.PolicyIdList;
 import org.apache.chemistry.opencmis.commons.data.Properties;
 import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.apache.chemistry.opencmis.commons.data.RepositoryCapabilities;
@@ -80,6 +82,7 @@ import org.apache.chemistry.opencmis.commons.impl.dataobjects.AllowableActionsIm
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.CreatablePropertyTypesImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.NewTypeSettableAttributesImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ObjectDataImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.ObjectListImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PermissionDefinitionDataImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PermissionMappingDataImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PolicyIdListImpl;
@@ -161,6 +164,10 @@ public class CmisUtils {
 			String propertyValue = XmlUtils.getStringValue(propertyElement);
 			String nameAttr = propertyElement.getAttribute("name");
 			String typeAttr = propertyElement.getAttribute("type");
+			PropertyType propertyType = PropertyType.STRING;
+			if(StringUtils.isNotEmpty(typeAttr))
+				propertyType = PropertyType.fromValue(typeAttr);
+
 			boolean isNull = Boolean.parseBoolean(propertyElement.getAttribute("isNull"));
 			if(isNull)
 				propertyValue = null;
@@ -172,6 +179,7 @@ public class CmisUtils {
 				propertyDefinition.setLocalName(nameAttr);
 				propertyDefinition.setQueryName(nameAttr);
 				propertyDefinition.setCardinality(Cardinality.SINGLE);
+				propertyDefinition.setPropertyType(propertyType);
 
 				if(nameAttr.startsWith("cmis:")) {
 					propertyDefinition.setPropertyType(PropertyType.ID);
@@ -189,6 +197,7 @@ public class CmisUtils {
 				propertyDefinition.setLocalName(nameAttr);
 				propertyDefinition.setQueryName(nameAttr);
 				propertyDefinition.setCardinality(Cardinality.SINGLE);
+				propertyDefinition.setPropertyType(propertyType);
 
 				properties.addProperty(new PropertyIntegerImpl(propertyDefinition, new BigInteger(propertyValue)));
 			} else if (typeAttr.equalsIgnoreCase("boolean")) {
@@ -199,6 +208,7 @@ public class CmisUtils {
 				propertyDefinition.setLocalName(nameAttr);
 				propertyDefinition.setQueryName(nameAttr);
 				propertyDefinition.setCardinality(Cardinality.SINGLE);
+				propertyDefinition.setPropertyType(propertyType);
 
 				properties.addProperty(new PropertyBooleanImpl(propertyDefinition, Boolean.parseBoolean(propertyValue)));
 			} else if (typeAttr.equalsIgnoreCase("datetime")) {
@@ -209,6 +219,7 @@ public class CmisUtils {
 				propertyDefinition.setLocalName(nameAttr);
 				propertyDefinition.setQueryName(nameAttr);
 				propertyDefinition.setCardinality(Cardinality.SINGLE);
+				propertyDefinition.setPropertyType(propertyType);
 
 				String formatStringAttr = propertyElement.getAttribute("formatString");
 				if (StringUtils.isEmpty(formatStringAttr)) {
@@ -453,7 +464,9 @@ public class CmisUtils {
 
 		return definition;
 	}
-
+	/**
+	 * Helper class
+	 */
 	private static String parseStringAttr(Element xml, String attribute) {
 		if(xml.hasAttribute(attribute)) {
 			return xml.getAttribute(attribute);
@@ -470,6 +483,19 @@ public class CmisUtils {
 		}
 		return null;
 	}
+
+	/**
+	 * Helper class because BigInteger can also be NULL in some cases with CMIS
+	 */
+	private static BigInteger parseBigIntegerAttr(Element xml, String attribute) {
+		if(xml.hasAttribute(attribute)) {
+			String value = xml.getAttribute(attribute);
+			Long longValue = Long.parseLong(value);
+			return BigInteger.valueOf(longValue);
+		}
+		return null;
+	}
+	
 
 	public static XmlBuilder repositoryInfo2xml(RepositoryInfo repository) {
 		XmlBuilder repositoryXml = new XmlBuilder("repository");
@@ -805,8 +831,7 @@ public class CmisUtils {
 		return typeDefinitionList;
 	}
 
-	public static void objectData2Xml(XmlBuilder cmisXml, CmisObject object) {
-
+	public static void cmisObject2Xml(XmlBuilder cmisXml, CmisObject object) {
 		if(object.getProperties() != null) {
 			XmlBuilder propertiesXml = new XmlBuilder("properties");
 			for (Iterator<Property<?>> it = object.getProperties().iterator(); it.hasNext();) {
@@ -848,12 +873,68 @@ public class CmisUtils {
 		List<Relationship> relationships = object.getRelationships();
 		if(relationships != null) {
 			for (Relationship relation : relationships) {
-				XmlBuilder policyXml = new XmlBuilder("relation");
-				policyXml.setValue(relation.getId());
-				relationshipsXml.addSubElement(policyXml);
+				XmlBuilder relationXml = new XmlBuilder("relation");
+				relationXml.setValue(relation.getId());
+				relationshipsXml.addSubElement(relationXml);
 			}
 		}
 		cmisXml.addSubElement(relationshipsXml);
+	}
+
+	public static XmlBuilder objectData2Xml(ObjectData object) {
+		return CmisUtils.objectData2Xml(object, new XmlBuilder("objectData"));
+	}
+	public static XmlBuilder objectData2Xml(ObjectData object, XmlBuilder cmisXml) {
+
+		if(object.getProperties() != null) {
+			XmlBuilder propertiesXml = new XmlBuilder("properties");
+			for (Iterator<PropertyData<?>> it = object.getProperties().getPropertyList().iterator(); it.hasNext();) {
+				propertiesXml.addSubElement(CmisUtils.getPropertyXml(it.next()));
+			}
+			cmisXml.addSubElement(propertiesXml);
+		}
+
+		if(object.getAllowableActions() != null) {
+			XmlBuilder allowableActionsXml = new XmlBuilder("allowableActions");
+			Set<Action> actions = object.getAllowableActions().getAllowableActions();
+			for (Action action : actions) {
+				XmlBuilder actionXml = new XmlBuilder("action");
+				actionXml.setValue(action.value());
+				allowableActionsXml.addSubElement(actionXml);
+			}
+			cmisXml.addSubElement(allowableActionsXml);
+		}
+
+		if(object.getAcl() != null) {
+			XmlBuilder isExactAclXml = new XmlBuilder("isExactAcl");
+			isExactAclXml.setValue(object.getAcl().isExact().toString());
+			cmisXml.addSubElement(isExactAclXml);
+		}
+
+		cmisXml.addAttribute("id", object.getId());
+		cmisXml.addAttribute("baseTypeId", object.getBaseTypeId().name());
+
+		PolicyIdList policies = object.getPolicyIds();
+		if(policies != null) {
+			XmlBuilder policiesXml = new XmlBuilder("policyIds");
+			for (String objectId : policies.getPolicyIds()) {
+				XmlBuilder policyXml = new XmlBuilder("policyId");
+				policyXml.setValue(objectId);
+				policiesXml.addSubElement(policyXml);
+			}
+			cmisXml.addSubElement(policiesXml);
+		}
+
+		XmlBuilder relationshipsXml = new XmlBuilder("relationships");
+		List<ObjectData> relationships = object.getRelationships();
+		if(relationships != null) {
+			for (ObjectData relation : relationships) {
+				relationshipsXml.addSubElement(objectData2Xml(relation, new XmlBuilder("relation")));
+			}
+		}
+		cmisXml.addSubElement(relationshipsXml);
+
+		return cmisXml;
 	}
 
 	public static ObjectData xml2ObjectData(Element cmisElement, IPipeLineSession context) {
@@ -879,9 +960,11 @@ public class CmisUtils {
 		impl.setIsExactAcl(XmlUtils.getChildTagAsBoolean(cmisElement, "isExactAcl"));
 
 		// If the original object exists copy the permissions over. These cannot (and shouldn't) be changed)
-		CmisObject object = (CmisObject) context.get(CmisUtils.ORIGINAL_OBJECT_KEY);
-		if(object != null) {
-			impl.setAcl(object.getAcl());
+		if(context != null) {
+			CmisObject object = (CmisObject) context.get(CmisUtils.ORIGINAL_OBJECT_KEY);
+			if(object != null) {
+				impl.setAcl(object.getAcl());
+			}
 		}
 
 		// Handle policyIds
@@ -903,11 +986,53 @@ public class CmisUtils {
 		// Handle properties
 		impl.setProperties(CmisUtils.processProperties(cmisElement));
 
+		Element relationshipsElem = XmlUtils.getFirstChildTag(cmisElement, "relationships");
+		if(relationshipsElem != null) {
+			List<ObjectData> relationships = new ArrayList<ObjectData>();
+			for (Node type : XmlUtils.getChildTags(relationshipsElem, "relation")) {
+				ObjectData data = xml2ObjectData((Element) type, null);
+				relationships.add(data);
+			}
+			impl.setRelationships(relationships);
+		}
+
 		impl.setRenditions(null);
 		impl.setExtensions(null);
 		impl.setChangeEventInfo(null);
-		impl.setRelationships(null);
 
 		return impl;
+	}
+
+	public static ObjectList xml2ObjectList(Element result, IPipeLineSession context) {
+		ObjectListImpl objectList = new ObjectListImpl();
+		objectList.setNumItems(CmisUtils.parseBigIntegerAttr(result, "numberOfItems"));
+		objectList.setHasMoreItems(CmisUtils.parseBooleanAttr(result, "hasMoreItems"));
+
+		List<ObjectData> objects = new ArrayList<ObjectData>();
+
+		Element objectsElem = XmlUtils.getFirstChildTag(result, "objects");
+		for (Node type : XmlUtils.getChildTags(objectsElem, "objectData")) {
+			ObjectData objectData = xml2ObjectData((Element) type, context);
+			objects.add(objectData);
+		}
+		objectList.setObjects(objects);
+
+		return objectList;
+	}
+
+	public static XmlBuilder objectList2xml(ObjectList result) {
+		XmlBuilder objectListXml = new XmlBuilder("objectList");
+		if(result.getNumItems() != null)
+			objectListXml.addAttribute("numberOfItems", result.getNumItems().toString());
+		if(result.hasMoreItems() != null)
+			objectListXml.addAttribute("hasMoreItems", result.hasMoreItems());
+
+		XmlBuilder objectDataXml = new XmlBuilder("objects");
+		for (ObjectData objectData : result.getObjects()) {
+			objectDataXml.addSubElement(CmisUtils.objectData2Xml(objectData));
+		}
+		objectListXml.addSubElement(objectDataXml);
+
+		return objectListXml;
 	}
 }

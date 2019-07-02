@@ -31,7 +31,8 @@ public enum CmisEvent {
 	GET_TYPE_DEFINITION("getTypeDefinition"), 
 	GET_TYPE_DESCENDANTS("getTypeDescendants"), 
 	GET_REPOSITORIES("getRepositories"), 
-	GET_REPOSITORY_INFO("getRepositoryInfo");
+	GET_REPOSITORY_INFO("getRepositoryInfo"), 
+	QUERY("query");
 
 	private final String value;
 

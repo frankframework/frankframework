@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -63,9 +64,11 @@ import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.client.api.Tree;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
+import org.apache.chemistry.opencmis.commons.data.ObjectList;
 import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.enums.Action;
+import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisNotSupportedException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
@@ -823,13 +826,37 @@ public class CmisSender extends SenderWithParametersBase {
 				resultXml.addSubElement(repositoryInfoXml);
 				break;
 
+			case QUERY:
+				String repositoryQueryId = XmlUtils.getChildTagAsString(requestElement, "repositoryId");
+				String statement = XmlUtils.getChildTagAsString(requestElement, "statement");
+				Boolean searchAllVersions = XmlUtils.getChildTagAsBoolean(requestElement, "searchAllVersions");
+				Boolean includeAllowableActions = XmlUtils.getChildTagAsBoolean(requestElement, "includeAllowableActions");
+				String includeRelationshipsEnum = XmlUtils.getChildTagAsString(requestElement, "includeRelationships");
+				IncludeRelationships includeRelationships = IncludeRelationships.valueOf(includeRelationshipsEnum);
+				String renditionFilter = XmlUtils.getChildTagAsString(requestElement, "renditionFilter");
+				Long maxItemsLong = XmlUtils.getChildTagAsLong(requestElement, "maxItems");
+				BigInteger maxItems = BigInteger.valueOf(maxItemsLong);
+				Long skipCountLong = XmlUtils.getChildTagAsLong(requestElement, "skipCount");
+				BigInteger skipCount = BigInteger.valueOf(skipCountLong);
+
+				//Create a operationContext and do session.query?
+//				OperationContext context = session.createOperationContext();
+//				context.setIncludeAllowableActions(includeAllowableActions);
+//				context.setIncludeRelationships(includeRelationships);
+//				context.setRenditionFilterString(renditionFilter);
+
+				ObjectList result = session.getBinding().getDiscoveryService().query(repositoryQueryId, statement, 
+						searchAllVersions, includeAllowableActions, includeRelationships, renditionFilter, maxItems, skipCount, null);
+				resultXml.addSubElement(CmisUtils.objectList2xml(result));
+				break;
+
 			case GET_PROPERTIES:
 			case GET_OBJECT:
 			case GET_OBJECT_BY_PATH:
 			case GET_ALLOWABLE_ACTIONS:
 				CmisObject object = getCmisObject(requestElement);
 				messageContext.put(CmisUtils.ORIGINAL_OBJECT_KEY, object);
-				CmisUtils.objectData2Xml(resultXml, object);
+				CmisUtils.cmisObject2Xml(resultXml, object);
 				break;
 			default:
 				throw new CmisNotSupportedException("Operation not implemented");
