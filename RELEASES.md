@@ -12,6 +12,9 @@ Upcoming
 [Commits](https://github.com/ibissource/iaf/compare/v7.3-RC1...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
+- Refactor CmisListener to an event based listener, you can now have multiple listeners listening to different events
+- The cmis bridge functionality on the sender has been removed. In order to use the bridge you need to configure properties in the WAR/EAR file. See CmisSessionBuilder for more information about the properties that can be set
+
 
 
 7.3-RC1

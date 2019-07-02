@@ -162,10 +162,10 @@ public class CmisHttpInvoker implements HttpInvoker {
 
 		log.debug("Session "+session.getSessionId()+": "+method+" "+url);
 
-		if(url.toString().equals(CmisSender.OVERRIDE_WSDL_URL)) {
+		if(url.toString().equals(CmisSessionBuilder.OVERRIDE_WSDL_URL)) {
 			try {
 				Map<String, List<String>> headerFields = new HashMap<String, List<String>>();
-				String wsdl = (String) session.get(CmisSender.OVERRIDE_WSDL_KEY);
+				String wsdl = (String) session.get(CmisSessionBuilder.OVERRIDE_WSDL_KEY);
 				InputStream inputStream = new ByteArrayInputStream(wsdl.getBytes(Misc.DEFAULT_INPUT_STREAM_ENCODING));
 				return new Response(200, "ok", headerFields, inputStream, null);
 			} catch (UnsupportedEncodingException e) {
