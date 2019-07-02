@@ -1,16 +1,41 @@
+/*
+   Copyright 2019 Nationale-Nederlanden
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ */
 package nl.nn.adapterframework.extensions.cmis.server;
 
+import java.lang.reflect.Method;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.servlet.http.HttpSession;
 
+import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder;
+import nl.nn.adapterframework.extensions.cmis.CmisSessionException;
 import nl.nn.adapterframework.util.AppConstants;
-import org.apache.chemistry.opencmis.commons.data.ExtensionsData;
-import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
-import org.apache.chemistry.opencmis.commons.impl.dataobjects.RepositoryInfoImpl;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.extensions.cmis.server.impl.IbisDiscoveryService;
+import nl.nn.adapterframework.extensions.cmis.server.impl.IbisObjectService;
+import nl.nn.adapterframework.extensions.cmis.server.impl.IbisRepositoryService;
+
+import org.apache.chemistry.opencmis.client.api.Session;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.spi.CmisBinding;
+import org.apache.chemistry.opencmis.commons.spi.DiscoveryService;
 import org.apache.chemistry.opencmis.commons.spi.ObjectService;
+import org.apache.chemistry.opencmis.commons.spi.RepositoryService;
+import org.apache.log4j.Logger;
 
 /**
  * Uses HTTP sessions to cache {@link CmisBinding} objects.
@@ -18,6 +43,7 @@ import org.apache.chemistry.opencmis.commons.spi.ObjectService;
 public class HttpSessionCmisService extends CachedBindingCmisService {
 
 	private static final long serialVersionUID = 1L;
+	private final Logger log = LogUtil.getLogger(this);
 
 	/** Key in the HTTP session. **/
 	public static final String CMIS_BINDING = "org.apache.chemistry.opencmis.bridge.binding";
@@ -26,6 +52,8 @@ public class HttpSessionCmisService extends CachedBindingCmisService {
 
 	public HttpSessionCmisService(CallContext context) {
 		setCallContext(context);
+//		context.getUsername();
+//		context.getPassword();
 	}
 
 	@Override
@@ -75,25 +103,71 @@ public class HttpSessionCmisService extends CachedBindingCmisService {
 
 	@Override
 	public CmisBinding createCmisBinding() {
-		return CmisServletDispatcher.getInstance().getCmisBinding();
+		AppConstants APP_CONSTANTS = AppConstants.getInstance();
+		final String PROPERTY_PREFIX = "cmisbridge.";
+
+		//Make sure cmisbridge properties are defined
+		if(APP_CONSTANTS.getResolvedProperty(PROPERTY_PREFIX+"url") == null)
+			throw new CmisConnectionException("no bridge properties found");
+
+		CmisSessionBuilder sessionBuilder = new CmisSessionBuilder();
+		for(Method method: sessionBuilder.getClass().getMethods()) {
+			if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
+				continue;
+
+			//Remove set from the method name
+			String setter = firstCharToLower(method.getName().substring(3));
+			String value = APP_CONSTANTS.getResolvedProperty(PROPERTY_PREFIX+setter);
+			if(value == null)
+				continue;
+
+			//Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
+			Object castValue = getCastValue(method.getParameterTypes()[0], value);
+			log.debug("trying to set property ["+PROPERTY_PREFIX+setter+"] with value ["+value+"] of type ["+castValue.getClass().getCanonicalName()+"] on ["+sessionBuilder.toString()+"]");
+
+			try {
+				method.invoke(sessionBuilder, castValue);
+			} catch (Exception e) {
+				throw new CmisConnectionException("error while calling method ["+setter+"] on CmisSessionBuilder ["+sessionBuilder.toString()+"]", e);
+			}
+		}
+
+		try {
+			Session session = sessionBuilder.build();
+			return session.getBinding();
+		}
+		catch (CmisSessionException e) {
+			log.error(e);
+			throw new CmisConnectionException(e.getMessage());
+		}
+	}
+
+	private String firstCharToLower(String input) {
+		return input.substring(0, 1).toLowerCase() + input.substring(1);
+	}
+
+	private Object getCastValue(Class<?> class1, String value) {
+		String className = class1.getName().toLowerCase();
+		if("boolean".equals(className))
+			return Boolean.parseBoolean(value);
+		else if("int".equals(className) || "integer".equals(className))
+			return Integer.parseInt(value);
+		else
+			return value;
 	}
 
 	@Override
 	public ObjectService getObjectService() {
-		return new ObjectServiceImpl(super.getObjectService());
+		return new IbisObjectService(super.getObjectService());
 	}
 
 	@Override
-	public RepositoryInfo getRepositoryInfo(String repositoryId, ExtensionsData extension) {
+	public RepositoryService getRepositoryService() {
+		return new IbisRepositoryService(super.getRepositoryService(), getCallContext().getCmisVersion());
+	}
 
-		RepositoryInfo repInfo = getCmisBinding().getRepositoryService().getRepositoryInfo(repositoryId, extension);
-
-		RepositoryInfoImpl newRepInfo = new RepositoryInfoImpl(repInfo);
-		String description = repInfo.getDescription();
-		if(!description.isEmpty())
-			description += " ";
-		newRepInfo.setDescription(description + "(forwarded by "+AppConstants.getInstance().get("instance.name")+")");
-
-		return newRepInfo;
+	@Override
+	public DiscoveryService getDiscoveryService() {
+		return new IbisDiscoveryService(super.getDiscoveryService());
 	}
 }

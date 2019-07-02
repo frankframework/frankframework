@@ -85,7 +85,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 		this.getProperties = getProperties;
 	}
 	@Override
-	public CmisSender createSender() {
+	public CmisSender createSender() throws ConfigurationException {
 		CmisSender sender = spy(new CmisSender());
 
 		sender.setUrl("http://dummy.url");
@@ -120,7 +120,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 		doReturn(operationContext).when(cmisSession).createOperationContext();
 		
 		try {
-			doReturn(cmisSession).when(sender).getSession(any(ParameterResolutionContext.class));
+			doReturn(cmisSession).when(sender).createSession(any(ParameterResolutionContext.class));
 		} catch (SenderException e) {
 			//Since we stub the entire session it won't throw exceptions
 		}
