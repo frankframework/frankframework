@@ -1,8 +1,6 @@
 package nl.nn.adapterframework.extensions.cmis;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.parameters.Parameter;
-
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.junit.Test;
 
@@ -252,6 +250,8 @@ public class CmisSenderTest extends SenderBase<CmisSender> {
 	@Test()
 	public void getterSetterBindingTypeSuccess() throws ConfigurationException {
 		sender.setBindingType(BindingType.BROWSER.value());
+		sender.setBindingType(BindingType.ATOMPUB.value());
+		sender.setBindingType(BindingType.WEBSERVICES.value());
 	}
 
 	@Test(expected = ConfigurationException.class)

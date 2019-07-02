@@ -226,7 +226,7 @@ public class CmisSender extends SenderWithParametersBase {
 
 	private Session session;
 
-	List<String> actions = Arrays.asList("create", "delete", "get", "find", "update", "fetch", "dynamic");
+	private List<String> actions = Arrays.asList("create", "delete", "get", "find", "update", "fetch", "dynamic");
 
 	private CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(getClassLoader());
 
