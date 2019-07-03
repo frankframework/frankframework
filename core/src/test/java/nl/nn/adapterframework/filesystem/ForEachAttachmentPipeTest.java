@@ -39,7 +39,7 @@ public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<
 	public void tearDown() throws Exception {
 		if (pipe!=null) {
 			pipe.stop();
-		};
+		}
 		super.tearDown();
 	}
 

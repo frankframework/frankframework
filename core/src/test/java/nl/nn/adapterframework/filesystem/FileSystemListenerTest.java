@@ -22,10 +22,11 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	private IFileSystemListener<F> fileSystemListener;
 	private Map<String,Object> threadContext;
 
-	public abstract IFileSystemListener<F> createFileSystemListener();
-
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
+
+	
+	public abstract IFileSystemListener<F> createFileSystemListener();
 
 	@Override
 	@Before

@@ -63,14 +63,15 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 	}
 
 	private class ItemCallbackCallingHandler extends DefaultHandler {
-		ItemCallback callback;
-		StringBuffer elementBuffer = new StringBuffer();
-		List<String> elements = new ArrayList<String>();
-		boolean sElem = false;
-		Exception rootException = null;
-		int startLength;
-		boolean stopRequested;
-		TimeOutException timeOutException;
+		
+		private ItemCallback callback;
+		private StringBuffer elementBuffer = new StringBuffer();
+		private List<String> elements = new ArrayList<String>();
+		private boolean sElem = false;
+		private Exception rootException = null;
+		private int startLength;
+		private boolean stopRequested;
+		private TimeOutException timeOutException;
 
 		public ItemCallbackCallingHandler(ItemCallback callback) {
 			this.callback = callback;

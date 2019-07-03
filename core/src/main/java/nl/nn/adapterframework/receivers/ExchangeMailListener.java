@@ -280,15 +280,15 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 	}
 
 	public void setAuthAlias(String authAlias) {
-		getFileSystem().setAuthAlias(authAlias);;
+		getFileSystem().setAuthAlias(authAlias);
 	}
 
 	public void setUserName(String username) {
-		getFileSystem().setUsername(username);;
+		getFileSystem().setUsername(username);
 	}
 
 	public void setPassword(String password) {
-		getFileSystem().setPassword(password);;
+		getFileSystem().setPassword(password);
 	}
 
 	public void setMailAddress(String mailAddress) {

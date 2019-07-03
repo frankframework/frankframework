@@ -52,7 +52,8 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 	}
 
 	private class AttachmentIterator implements IDataIterator<A> {
-		Iterator<A> it;
+
+		private Iterator<A> it;
 		
 		AttachmentIterator(Iterator<A> it) {
 			this.it=it;
