@@ -211,7 +211,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 
 
 	@Override
-	protected void iterateInput(Object input, IPipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException, TimeOutException {
+	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException, TimeOutException {
 		Reader reader=null;
 		try {
 			if (input instanceof Reader) {
