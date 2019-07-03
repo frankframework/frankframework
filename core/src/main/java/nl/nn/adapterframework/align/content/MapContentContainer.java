@@ -83,7 +83,7 @@ public class MapContentContainer<V> implements DocumentContainer {
 	}
 
 	@Override
-	public void characters(char[] ch, int start, int length, boolean numericType, boolean booleanType) {
+	public void characters(char[] ch, int start, int length) {
 		String rawValue=new String(ch,start,length);
 		if (currentName==null) {
 			if (rawValue.trim().length()>0) {
