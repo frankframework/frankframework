@@ -23,6 +23,7 @@ import javax.json.stream.JsonGenerator;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.log4j.Logger;
+import org.apache.xerces.xs.XSTypeDefinition;
 
 /**
  * Helper class to construct JSON from XML events.
@@ -49,8 +50,8 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 	}
 	
 	@Override
-	protected JsonElementContainer createElementContainer(String localName, boolean xmlArrayContainer, boolean repeatedElement) {
-		return new JsonElementContainer(localName, xmlArrayContainer, repeatedElement, skipArrayElementContainers, attributePrefix);
+	protected JsonElementContainer createElementContainer(String localName, boolean xmlArrayContainer, boolean repeatedElement, XSTypeDefinition typeDefinition) {
+		return new JsonElementContainer(localName, xmlArrayContainer, repeatedElement, skipArrayElementContainers, attributePrefix, typeDefinition);
 	}
 
 	@Override
