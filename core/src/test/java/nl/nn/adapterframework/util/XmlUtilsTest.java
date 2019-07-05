@@ -14,7 +14,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 
 	public void testSkipEmptyTags(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws DomBuilderException, TransformerException, IOException, ConfigurationException {
-		testXslt(XmlUtils.makeSkipEmptyTagsXslt(omitXmlDeclaration, indent),input,expected,true);
+		testXslt(XmlUtils.makeSkipEmptyTagsXslt(omitXmlDeclaration, indent),input,expected,0);
 		testTransformerPool(XmlUtils.getSkipEmptyTagsTransformerPool(omitXmlDeclaration, indent),input,expected);
 	}
 	
@@ -62,9 +62,9 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	public void testRemoveNamespaces() throws DomBuilderException, TransformerException, IOException, ConfigurationException {
 		String lineSeparator=System.getProperty("line.separator");
 		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a><b/><c/></root>",false,false);
-		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root>"+lineSeparator+"<a>a</a>"+lineSeparator+"<b/>"+lineSeparator+"<c/>"+lineSeparator+"</root>",false,true);
+		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+lineSeparator+"<root>"+lineSeparator+"   <a>a</a>"+lineSeparator+"   <b/>"+lineSeparator+"   <c/>"+lineSeparator+"</root>",false,true);
 		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>","<root><a>a</a><b/><c/></root>",true,false);
-		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>","<root>"+lineSeparator+"<a>a</a>"+lineSeparator+"<b/>"+lineSeparator+"<c/>"+lineSeparator+"</root>",true,true);
+		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>","<root>"+lineSeparator+"   <a>a</a>"+lineSeparator+"   <b/>"+lineSeparator+"   <c/>"+lineSeparator+"</root>",true,true);
 	}
 	
 	@Test

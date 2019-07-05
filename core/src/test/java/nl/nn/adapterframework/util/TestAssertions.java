@@ -34,7 +34,11 @@ import org.junit.Test;
 public class TestAssertions extends org.junit.Assert {
 
 	static public void assertEqualsIgnoreWhitespaces(String expected, String actual) throws IOException {
-		assertEquals(trimMultilineString(expected), trimMultilineString(actual));
+		assertEqualsIgnoreWhitespaces(null, trimMultilineString(expected), trimMultilineString(actual));
+	}
+
+	static public void assertEqualsIgnoreWhitespaces(String message, String expected, String actual) throws IOException {
+		assertEquals(message, trimMultilineString(expected), trimMultilineString(actual));
 	}
 
 	private static String trimMultilineString(String str) throws IOException {
@@ -54,7 +58,11 @@ public class TestAssertions extends org.junit.Assert {
 	}
 
 	static public void assertEqualsIgnoreCRLF(String expected, String actual) {
-		assertEquals(expected.trim().replace("\r",""), actual.trim().replace("\r",""));
+		assertEqualsIgnoreCRLF(null, expected, actual);
+	}
+
+	static public void assertEqualsIgnoreCRLF(String message, String expected, String actual) {
+		assertEquals(message, expected.trim().replace("\r",""), actual.trim().replace("\r",""));
 	}
 
 	static public void assertXpathValueEquals(String expected, String source, String xpathExpr) throws DomBuilderException, XPathExpressionException, TransformerException, IOException {
