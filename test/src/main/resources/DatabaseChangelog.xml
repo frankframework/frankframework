@@ -41,7 +41,7 @@ TagDatabase
 			</column>
 			<column name="TCHAR" type="java.sql.Types.CHAR(1)"/>
 			<column name="TVARCHAR" type="java.sql.Types.VARCHAR(100)"/>
-			<column name="TNUMBER" type="java.sql.Types.DECIMAL(17, 5)"/> <!-- dit moet misschien anders |||| dit kan nu goed zijn -->
+			<column name="TNUMBER" type="java.sql.Types.DECIMAL(17, 5)"/>
 			<column name="TTIMESTAMP" type="DATETIME"/>
 			<column name="TDATE" type="TIME"/>
 			<column name="TBLOB1" type="BLOB"/>
