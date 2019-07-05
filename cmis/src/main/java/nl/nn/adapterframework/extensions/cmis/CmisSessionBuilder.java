@@ -18,6 +18,7 @@ package nl.nn.adapterframework.extensions.cmis;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
+import java.util.Arrays;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -368,7 +369,7 @@ public class CmisSessionBuilder {
 			this.bindingType = type.name();
 		}
 		catch(IllegalArgumentException e) {
-			throw new ConfigurationException("illegal value for bindingType ["+bindingType+"] must be one of " + BindingTypes.values());
+			throw new ConfigurationException("illegal value for bindingType ["+bindingType+"] must be one of " + Arrays.asList(BindingTypes.values()));
 		}
 
 		return this;
