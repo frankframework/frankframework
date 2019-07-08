@@ -18,10 +18,9 @@ package nl.nn.adapterframework.pipes;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
@@ -50,6 +49,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.http.RestListenerUtils;
@@ -211,7 +211,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private PipeProcessor pipeProcessor;
 	private ListenerProcessor listenerProcessor;
 
-	private String hideRegex = null;
 	private String hideMethod = "all";
 
 	private boolean streamResultToServlet=false;
@@ -419,6 +418,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 
 	
+	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session)	throws PipeRunException {
 		String originalMessage = input.toString();
 		String result = null;
@@ -472,7 +472,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				log.info(getLogPrefix(session)+"returning result from static stub ["+getStubFileName()+"]");
 			}
 		} else {
-			Map threadContext=new HashMap();
+			Map<String,Object> threadContext=new LinkedHashMap<String,Object>();
 			try {
 				String messageID = null;
 				// sendResult has a messageID for async senders, the result for sync senders
@@ -508,7 +508,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 						}
 					} catch (SenderException se) {
 						if (retriesLeft>=1) {
-							retryInterval = increaseRetryIntervalAndWait(session, retryInterval, "exception ["+(se!=null?se.getMessage():"")+"] occured, retries left [" + retriesLeft + "]");
+							retryInterval = increaseRetryIntervalAndWait(session, retryInterval, "exception ["+se.getMessage()+"] occured, retries left [" + retriesLeft + "]");
 						} else {
 							throw se;
 						}
@@ -581,21 +581,21 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 					}
 					if (sender instanceof MailSender) {
 						String messageInMailSafeForm = (String)session.get("messageInMailSafeForm");
-						if (hideRegex != null){
+						if (getHideRegex() != null){
 							if (getHideMethod().equalsIgnoreCase("FIRSTHALF")) {
-								messageInMailSafeForm = Misc.hideFirstHalf(messageInMailSafeForm, hideRegex);
+								messageInMailSafeForm = Misc.hideFirstHalf(messageInMailSafeForm, getHideRegex());
 							} else {
-								messageInMailSafeForm = Misc.hideAll(messageInMailSafeForm, hideRegex);
+								messageInMailSafeForm = Misc.hideAll(messageInMailSafeForm, getHideRegex());
 							}
 						}
 						messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label,messageInMailSafeForm);
 					} else {
 						String message = (String)input;
-						if (hideRegex != null){
+						if (getHideRegex() != null){
 							if (getHideMethod().equalsIgnoreCase("FIRSTHALF")) {
-								message = Misc.hideFirstHalf(message, hideRegex);
+								message = Misc.hideFirstHalf(message, getHideRegex());
 							} else {
-								message = Misc.hideAll(message, hideRegex);
+								message = Misc.hideAll(message, getHideRegex());
 							}
 						}
 						messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label,message);
@@ -724,7 +724,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return validResult;
 	}
 
-	protected String sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map threadContext) throws SenderException, TimeOutException, InterruptedException {
+	protected String sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeOutException, InterruptedException {
 		long startTime = System.currentTimeMillis();
 		String sendResult = null;
 		String exitState = null;
@@ -789,7 +789,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return sendResult;
 	}
 	
-	protected String sendTextMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map threadContext) throws SenderException, TimeOutException {
+	protected String sendTextMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeOutException {
 		if (input!=null && !(input instanceof String)) {
 			throw new SenderException("String expected, got a [" + input.getClass().getName() + "]");
 		}
@@ -821,6 +821,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return retryInterval;
 	}
 
+	@Override
 	public void start() throws PipeStartException {
 		if (StringUtils.isEmpty(getStubFileName())) {
 			try {
@@ -846,6 +847,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			}
 		}
 	}
+	@Override
 	public void stop() {
 		if (StringUtils.isEmpty(getStubFileName())) {
 			log.info(getLogPrefix(null) + "is closing");
@@ -873,6 +875,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		}
 	}
 
+	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
 		if (sender instanceof HasStatistics) {
 			((HasStatistics)sender).iterateOverStatistics(hski,data,action);
@@ -931,6 +934,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				+ sender.toString()
 				+ "]");
 	}
+	@Override
 	public ISender getSender() {
 		return sender;
 	}
@@ -1178,6 +1182,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		this.retryNamespaceDefs = retryNamespaceDefs;
 	}
 
+	@Override
 	public boolean hasSizeStatistics() {
 		if (!super.hasSizeStatistics()) {
 			return getSender().isSynchronous();
@@ -1203,13 +1208,10 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return useInputForExtract;
 	}
 	
-	@IbisDoc({"next to common usage in {@link abstractpipe}, also strings in the error/logstore are masked", ""})
+	@Override
+	@IbisDoc({"next to common usage in {@link AbstractPipe}, also strings in the error/logstore are masked", ""})
 	public void setHideRegex(String hideRegex) {
-		this.hideRegex = hideRegex;
-	}
-
-	public String getHideRegex() {
-		return hideRegex;
+		super.setHideRegex(hideRegex);
 	}
 
 	@IbisDoc({"(only used when hideregex is not empty and only applies to error/logstore) either <code>all</code> or <code>firsthalf</code>. when <code>firsthalf</code> only the first half of the string is masked, otherwise (<code>all</code>) the entire string is masked", "all"})

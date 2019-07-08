@@ -26,9 +26,11 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
 import nl.nn.adapterframework.configuration.classloaders.BasePathClassLoader;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.extensions.graphviz.GraphvizEngine;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.jdbc.migration.Migrator;
 import nl.nn.adapterframework.receivers.JavaListener;
@@ -177,7 +179,11 @@ public class IbisContext extends IbisApplicationContext {
 			//TODO consider moving this to #FlowDiagram
 			String graphvizJsVersion = APP_CONSTANTS.getProperty("graphviz.js.version", null);
 			String graphvizJsFormat = APP_CONSTANTS.getProperty("graphviz.js.format", null);
-			flowDiagram = new FlowDiagram(graphvizJsFormat, graphvizJsVersion);
+			try {
+				flowDiagram = new FlowDiagram(graphvizJsFormat, graphvizJsVersion);
+			} catch (IllegalStateException e) {
+				log(null, null, "failed to initalize GraphVizEngine", MessageKeeperMessage.ERROR_LEVEL, e, true);
+			}
 
 			log("startup in " + (System.currentTimeMillis() - start) + " ms");
 		}

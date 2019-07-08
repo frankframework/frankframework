@@ -16,6 +16,11 @@
 package nl.nn.adapterframework.util;
 
 import static org.junit.Assert.*;
+
+import java.io.IOException;
+
+import javax.xml.transform.TransformerConfigurationException;
+
 import nl.nn.adapterframework.util.FlowDiagram;
 
 import org.junit.Test;
@@ -23,25 +28,25 @@ import org.junit.Test;
 public class FlowDiagramTest {
 
 	@Test
-	public void canInitDefaultWithoutErrors() {
+	public void canInitDefaultWithoutErrors() throws TransformerConfigurationException, IOException {
 		FlowDiagram flow = new FlowDiagram();
 		assertNotNull(flow);
 	}
 
 	@Test
-	public void canInitNullWithoutErrors() {
+	public void canInitNullWithoutErrors() throws TransformerConfigurationException, IOException {
 		FlowDiagram flow = new FlowDiagram(null, null);
 		assertNotNull(flow);
 	}
 
 	@Test
-	public void canInitSVGWithoutErrors() {
+	public void canInitSVGWithoutErrors() throws TransformerConfigurationException, IOException {
 		FlowDiagram flow = new FlowDiagram("svg");
 		assertNotNull(flow);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void getUnknownFormat() {
+	public void getUnknownFormat() throws TransformerConfigurationException, IOException {
 		new FlowDiagram("application/pdf");
 	}
 }

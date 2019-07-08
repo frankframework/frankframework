@@ -25,7 +25,7 @@
 		</MessageHeader>
 	</soapenv:Header>
 	<soapenv:Body>
-		<GetPaymentReferenceAndPayLink_Request xmlns="http://nn.nl/XSD/AccountInformation/1/GetPaymentReferenceAndPayLink/1">
+		<GetPaymentReferenceAndPayLink_Request xmlns="http://nn.nl/XSD/AccountInformation/AccountInformation/1/GetPaymentReferenceAndPayLink/1">
 			<Debtor>
 				<LastName>LastName</LastName>
 				<FirstName>FirstName</FirstName>

@@ -22,12 +22,13 @@ import nl.nn.adapterframework.filesystem.LocalFileSystem;
 
 public class LocalFileSystemListener extends FileSystemListener<File, LocalFileSystem>{
 
-	public LocalFileSystemListener() {
-		setFileSystem(new LocalFileSystem());
+	@Override
+	protected LocalFileSystem createFileSystem() {
+		return new LocalFileSystem();
 	}
 	
 	public void setRoot(String root) {
 		getFileSystem().setRoot(root);
 	}
-	
+
 }

@@ -235,7 +235,7 @@ public class XmlUtils {
 		String xslt = makeSkipEmptyTagsXslt(omitXmlDeclaration,indent);
 		return getUtilityTransformerPool(xslt,"skipEmptyTags",omitXmlDeclaration,indent);
 	}
-	
+
 	protected static String makeRemoveNamespacesXsltTemplates() {
 		return
 		"<xsl:template match=\"*\">"
@@ -250,12 +250,12 @@ public class XmlUtils {
 			+ "<xsl:copy>"
 			+ "<xsl:apply-templates/>"
 			+ "</xsl:copy>"
-			+ "</xsl:template>";
+		+ "</xsl:template>";
 	}
 
 	protected static String makeRemoveNamespacesXslt(boolean omitXmlDeclaration, boolean indent) {
 		return
-		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
+		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
 			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
 			+ makeRemoveNamespacesXsltTemplates()
 			+ "</xsl:stylesheet>";
@@ -839,12 +839,12 @@ public class XmlUtils {
 				"<xsl:template name=\"expression\">" +
 					"<xsl:param name=\"root\" />" +
 					"<xsl:for-each select=\"$root\">" +
-						"<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XPathExpression + "\"" + separatorString + "/>" +
+						"<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XmlUtils.encodeChars(XPathExpression) + "\"" + separatorString + "/>" +
 					"</xsl:for-each>" +
 				"</xsl:template>" 
 			:
 			"<xsl:template match=\"/\">" +
-			"<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XPathExpression + "\"" + separatorString + "/>" +
+			"<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XmlUtils.encodeChars(XPathExpression) + "\"" + separatorString + "/>" +
 			"</xsl:template>" )+
 			"</xsl:stylesheet>";
 

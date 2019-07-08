@@ -4,7 +4,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -42,12 +41,6 @@ public abstract class PipeTestBase<P extends IPipe> {
 		} else {
 			pipe.configure();
 		}
-	}
-
-	
-	@Test
-	public void basicNoAdditionalConfig() throws ConfigurationException {
-		adapter.configure();
 	}
 
 }

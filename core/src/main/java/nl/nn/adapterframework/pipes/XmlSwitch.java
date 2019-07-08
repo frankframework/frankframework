@@ -276,9 +276,9 @@ public class XmlSwitch extends AbstractPipe {
 	 */
 	@Deprecated
 	public void setXslt2(boolean b) {
-//		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-//		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'xslt2' has been deprecated. Its value is now auto detected. If necessary, replace with a setting of xsltVersion";
-//		configWarnings.add(log, msg);
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'xslt2' has been deprecated. Its value is now auto detected. If necessary, replace with a setting of xsltVersion";
+		configWarnings.add(log, msg);
 		xsltVersion=b?2:1;
 	}
 }
