@@ -109,11 +109,6 @@
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
-        <artifactId>ibis-adapterframework-test-common</artifactId>
-        <version>7.3-RC2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-test</artifactId>
         <version>7.3-RC2-SNAPSHOT</version>
       </dependency>
@@ -407,7 +402,6 @@
         <module>larva</module>
         <module>akamai</module>
         <module>webapp</module>
-        <module>test-common</module>
         <module>test</module>
         <module>ladybug</module>
       </modules>

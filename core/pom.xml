@@ -532,8 +532,21 @@
 
 		<!-- Test scoped dependencies -->
 	    <dependency>
-	      <groupId>org.ibissource</groupId>
-	      <artifactId>ibis-adapterframework-test-common</artifactId>
+		<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-all</artifactId>
+			<version>1.3</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>2.24.5</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version> 
 			<scope>test</scope>
 	    </dependency>
 		<dependency>
@@ -574,6 +587,13 @@
 						</manifest>
 					</archive>
 				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

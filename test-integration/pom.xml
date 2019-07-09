@@ -10,15 +10,19 @@
   <artifactId>ibis-adapterframework-test-integration</artifactId>
   <name>Ibis AdapterFramework Integration Tests for various databases, messaging and mail systems</name>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.ibissource</groupId>
-      <artifactId>ibis-adapterframework-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.ibissource</groupId>
-      <artifactId>ibis-adapterframework-test-common</artifactId>
-    </dependency>
-  </dependencies>
+	<dependencies>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-core</artifactId>
+			<classifier>tests</classifier>
+			<type>test-jar</type>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
 </project>
