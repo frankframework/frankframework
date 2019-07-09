@@ -404,7 +404,6 @@
         <module>webapp</module>
         <module>test</module>
         <module>ladybug</module>
-        <module>test-integration</module>
       </modules>
     </profile>
     <profile>
@@ -451,6 +450,17 @@
           <url>https://nexus.ibissource.org/content/repositories/private/</url>
         </repository>
       </repositories>
+    </profile>
+    <profile>
+      <id>test-integration</id>
+      <activation>
+        <property>
+          <name>test-integration</name>
+        </property>
+      </activation>
+      <modules>
+        <module>test-integration</module>
+      </modules>
     </profile>
   </profiles>
 </project>
