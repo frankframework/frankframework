@@ -1,4 +1,4 @@
-package it.nl.nn.adapterframework.senders;
+package nl.nn.adapterframework.senders;
 
 import org.apache.commons.net.ftp.FTPFile;
 
