@@ -269,8 +269,8 @@ public class CmisSender extends SenderWithParametersBase {
 
 		ParameterValueList pvl = null;
 		try {
-			if (prc != null && paramList != null) {
-				pvl = prc.getValues(paramList);
+			if (prc != null && getParameterList() != null) {
+				pvl = prc.getValues(getParameterList());
 				if (pvl != null) {
 					ParameterValue pv = pvl.getParameterValue("authAlias");
 					if (pv != null) {
@@ -383,14 +383,14 @@ public class CmisSender extends SenderWithParametersBase {
 
 		try {
 			boolean getProperties = isGetProperties();
-			boolean getDocumentContent= isGetDocumentContent();
+			boolean getDocumentContent = isGetDocumentContent();
 			if (prc != null && getParameterList() != null) {
 				ParameterValueList pvl = prc.getValues(getParameterList());
 				if (pvl != null) {
 					if(pvl.parameterExists("getProperties"))
 						getProperties = pvl.getParameterValue("getProperties").asBooleanValue(isGetProperties());
 					if(pvl.parameterExists("getDocumentContent"))
-						getProperties = pvl.getParameterValue("getDocumentContent").asBooleanValue(isGetDocumentContent());
+						getDocumentContent = pvl.getParameterValue("getDocumentContent").asBooleanValue(isGetDocumentContent());
 				}
 			}
 
