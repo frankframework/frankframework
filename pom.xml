@@ -404,6 +404,7 @@
         <module>webapp</module>
         <module>test</module>
         <module>ladybug</module>
+        <module>test-integration</module>
       </modules>
     </profile>
     <profile>
@@ -443,7 +444,6 @@
         <module>sap</module>
         <module>tibco</module>
         <module>idin</module>
-        <module>test-integration</module>
       </modules>
       <repositories>
         <repository>
