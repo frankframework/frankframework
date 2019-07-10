@@ -820,9 +820,7 @@ public class JobDef {
 					}
 				}
 			} catch (Exception e) {
-				String msg = "error while executing query [" + selectQuery
-						+ "] (as part of scheduled job execution): "
-						+ e.getMessage();
+				String msg = "error while executing query [" + selectQuery	+ "] (as part of scheduled job execution): " + e.getMessage();
 				getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
 				log.error(getLogPrefix() + msg);
 			} finally {
@@ -855,7 +853,7 @@ public class JobDef {
 		DirectQuerySender qs;
 		qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 		try {
-			qs.setName("QuerySender");
+			qs.setName("executeQueryJob");
 			qs.setJmsRealm(getJmsRealm());
 			qs.setQueryType("other");
 			qs.setTimeout(getQueryTimeout());

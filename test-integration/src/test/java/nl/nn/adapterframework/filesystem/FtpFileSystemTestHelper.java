@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.senders;
+package nl.nn.adapterframework.filesystem;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;

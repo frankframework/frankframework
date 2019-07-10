@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.senders;
+package nl.nn.adapterframework.filesystem;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

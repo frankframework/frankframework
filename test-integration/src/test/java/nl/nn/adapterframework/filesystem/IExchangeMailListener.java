@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.senders;
+package nl.nn.adapterframework.filesystem;
 
 import microsoft.exchange.webservices.data.core.service.item.Item;
 import nl.nn.adapterframework.filesystem.IFileSystemListener;

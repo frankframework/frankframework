@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.senders;
+package nl.nn.adapterframework.filesystem;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -15,7 +15,6 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.filesystem.HelperedFileSystemTestBase;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
-import nl.nn.adapterframework.filesystem.MailSendingTestHelper;
 import nl.nn.adapterframework.util.TestAssertions;
 import nl.nn.adapterframework.util.XmlUtils;
 
