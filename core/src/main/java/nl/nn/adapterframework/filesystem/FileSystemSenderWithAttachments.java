@@ -57,15 +57,6 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 		if (!getAction().equalsIgnoreCase("listAttachments")) {
 			return super.sendMessage(correlationID, message);
 		} else {
-			ParameterValueList pvl = null;
-			try {
-				if (prc != null && paramList != null) {
-					pvl = prc.getValues(paramList);
-				}
-			} catch (ParameterException e) {
-				throw new SenderException(
-						getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
-			}
 
 			IBasicFileSystem<F> ifs = getFileSystem();
 			F file;
@@ -84,10 +75,10 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 					while (it.hasNext()) {
 						A attachment = it.next();
 						XmlBuilder attachmentXml = new XmlBuilder("attachment");
-						attachmentXml.addAttribute("name", withAttachments.getAttachmentName(file, attachment));
-						attachmentXml.addAttribute("contentType", withAttachments.getAttachmentContentType(file, attachment));
-						attachmentXml.addAttribute("size", withAttachments.getAttachmentSize(file, attachment));
-						attachmentXml.addAttribute("filename", withAttachments.getAttachmentFileName(file, attachment));
+						attachmentXml.addAttribute("name", withAttachments.getAttachmentName(attachment));
+						attachmentXml.addAttribute("contentType", withAttachments.getAttachmentContentType(attachment));
+						attachmentXml.addAttribute("size", withAttachments.getAttachmentSize(attachment));
+						attachmentXml.addAttribute("filename", withAttachments.getAttachmentFileName(attachment));
 						
 						FileAttachment fileAttachment = (FileAttachment) attachment;
 						fileAttachment.load();

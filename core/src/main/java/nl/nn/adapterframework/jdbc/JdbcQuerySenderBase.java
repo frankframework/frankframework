@@ -837,6 +837,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	 * <li><i>anything else</i>:</li> no output is expected, the number of rows affected is returned
 	 * </ul>
 	 */
+	@IbisDoc({"one of: <ul><li>'select' for queries that return data</li><li>'updateBlob' for queries that update a BLOB</li><li>'dateClob' for queries that update a CLOB</li><li>'package' to execute Oracle PL/SQL package</li><li>anything else for queries that return no data.</li></ul>", "other"})
 	public void setQueryType(String queryType) {
 		this.queryType = queryType;
 	}
@@ -882,6 +883,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return scalarExtended;
 	}
 
+	@IbisDoc({"when <code>true</code> and <code>scalar</code> is also <code>true</code>, but returns no value, one of the following is returned: <ul><li>'[absent]' no row is found</li> <li>'[null]' a row is found, but the value is a SQL-NULL</li> <li>'[empty]' a row is found, but the value is a empty string</li> </ul>", "false"})
 	public void setScalarExtended(boolean b) {
 		scalarExtended = b;
 	}

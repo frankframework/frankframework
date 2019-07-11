@@ -57,7 +57,8 @@ public class TibetView extends View {
 			return "Not allowed. Could not find adapter " + AUTHORISATION_CHECK_ADAPTER;
 		} else {
 			IPipeLineSession pipeLineSession = new PipeLineSessionBase();
-			pipeLineSession.put("principal", app.getUserPrincipal());
+			if(app.getUserPrincipal() != null)
+				pipeLineSession.put("principal", app.getUserPrincipal().getName());
 			pipeLineSession.put("StorageId", StorageId);
 			pipeLineSession.put("View", getName());
 			PipeLineResult processResult = adapter.processMessage(null, "<dummy/>", pipeLineSession);

@@ -8,8 +8,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 
 import org.apache.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 
@@ -22,25 +20,16 @@ public abstract class FileSystemTestBase {
 	protected boolean doTimingTests=false;
 
 	@Rule
-	public ExpectedException exception = ExpectedException.none();
+	public ExpectedException thrown = ExpectedException.none();
 	
 	public String FILE1 = "file1.txt";
 	public String FILE2 = "file2.txt";
 	public String DIR1 = "testDirectory";
 	public String DIR2 = "testDirectory2";
 
-	protected IFileSystemTestHelper helper;
-	
 	private long waitMillis = 0;
 	
 	
-	/**
-	 * Returns the file system 
-	 * @return fileSystem
-	 * @throws ConfigurationException
-	 */
-	protected abstract IFileSystemTestHelper getFileSystemTestHelper();
-
 	/**
 	 * Checks if a file with the specified name exists.
 	 * @param folder to search in for the file, set to null for root folder. 
@@ -48,9 +37,7 @@ public abstract class FileSystemTestBase {
 	 * @return
 	 * @throws Exception
 	 */
-	protected boolean _fileExists(String folder, String filename) throws Exception {
-		return helper._fileExists(folder,filename);
-	}
+	protected abstract boolean _fileExists(String folder, String filename) throws Exception;
 	
 	/**
 	 * Checks if a folder with the specified name exists.
@@ -58,9 +45,7 @@ public abstract class FileSystemTestBase {
 	 * @return
 	 * @throws Exception
 	 */
-	protected boolean _folderExists(String folderName) throws Exception {
-		return helper._folderExists(folderName);
-	}
+	protected abstract boolean _folderExists(String folderName) throws Exception;
 	
 	/**
 	 * Deletes the file with the specified name
@@ -68,9 +53,7 @@ public abstract class FileSystemTestBase {
 	 * @param filename
 	 * @throws Exception
 	 */
-	protected void _deleteFile(String folder, String filename) throws Exception {
-		helper._deleteFile(folder, filename);
-	}
+	protected abstract void _deleteFile(String folder, String filename) throws Exception;
 	
 	/**
 	 * Creates a file with the specified name and returns output stream 
@@ -80,9 +63,7 @@ public abstract class FileSystemTestBase {
 	 * @return
 	 * @throws Exception
 	 */
-	protected OutputStream _createFile(String folder, String filename) throws Exception {
-		return helper._createFile(folder, filename);
-	}
+	protected abstract OutputStream _createFile(String folder, String filename) throws Exception;
 
 	/**
 	 * Returns an input stream of the file 
@@ -91,42 +72,26 @@ public abstract class FileSystemTestBase {
 	 * @return
 	 * @throws Exception
 	 */
-	protected InputStream _readFile(String folder, String filename) throws Exception {
-		return helper._readFile(folder, filename);
-	}
+	protected abstract InputStream _readFile(String folder, String filename) throws Exception;
 	
 	/**
 	 * Creates a folder 
 	 * @param filename
 	 * @throws Exception
 	 */
-	protected void _createFolder(String foldername) throws Exception {
-		helper._createFolder(foldername);
-	}
-
+	protected abstract void _createFolder(String foldername) throws Exception;
+	
 	/**
 	 * Deletes the folder 
 	 * @param filename
 	 * @throws Exception
 	 */
-	protected void _deleteFolder(String folderName) throws Exception {
-		helper._deleteFolder(folderName);
-	}
+	protected abstract void _deleteFolder(String folderName) throws Exception;
 
 	protected boolean _fileExists(String filename) throws Exception {
 		return _fileExists(null, filename);
 	}
 
-	@Before
-	public void setUp() throws Exception {
-		helper = getFileSystemTestHelper();
-		helper.setUp();
-	}
-	
-	@After 
-	public void tearDown() throws Exception {
-		helper.tearDown();
-	}
 
 	public void deleteFile(String folder, String filename) throws Exception {
 		if (_fileExists(folder,filename)) {

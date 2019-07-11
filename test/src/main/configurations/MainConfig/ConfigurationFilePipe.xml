@@ -9,7 +9,7 @@
 			</exits>
 						
 			<!-- Set FileName -->
-			<pipe name="setFilename" className="nl.nn.adapterframework.pipes.PutInSession" sessionKey="filename" value="${i4ti.dir}/fp/test.txt" >
+			<pipe name="setFilename" className="nl.nn.adapterframework.pipes.PutInSession" sessionKey="filename" value="${testdata.dir}/fp/test.txt" >
  			 <forward name="success" path="setFileData"/> 			 
 			</pipe>
 			
@@ -66,7 +66,7 @@
 	        	className="nl.nn.adapterframework.pipes.FilePipe"
 	        	actions="delete"
 	        	fileName="test.txt"
-	        	directory="${i4ti.dir}/fp"
+	        	directory="${testdata.dir}/fp"
 	        	deleteEmptyDirectory="true">
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
@@ -86,7 +86,7 @@
 				name="delete file no directory no filename"
 	        	className="nl.nn.adapterframework.pipes.FilePipe"
 	        	actions="delete"
-	        	getInputFromFixedValue="${i4ti.dir}/fp/test.txt">
+	        	getInputFromFixedValue="${testdata.dir}/fp/test.txt">
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
 	        
@@ -97,7 +97,7 @@
 	        	className="nl.nn.adapterframework.pipes.FilePipe"
 	        	actions="delete"
 	        	fileName="none_existing_file.txt"
-	        	directory="${i4ti.dir}/fp">
+	        	directory="${testdata.dir}/fp">
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
 	    	        	       
@@ -107,7 +107,7 @@
 	        	className="nl.nn.adapterframework.pipes.FilePipe"
 	        	actions="list"
 	        	fileName="dummy*.txt"
-	        	directory="${i4ti.dir}/fp2">
+	        	directory="${testdata.dir}/fp2">
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
 
@@ -116,13 +116,13 @@
 				name="list files no directory specified"
 	        	className="nl.nn.adapterframework.pipes.FilePipe"
 	        	actions="list"
-	        	fileName="${i4ti.dir}/fp2/dummy*.txt">
+	        	fileName="${testdata.dir}/fp2/dummy*.txt">
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
 
 			<!-- Create file and info -->
 			<pipe name="create file" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="create" directory="${i4ti.dir}/fp" writeSuffix=".abc">
+				actions="create" directory="${testdata.dir}/fp" writeSuffix=".abc">
 				<param name="writeSuffix" value=".txt" />
 				<forward name="success" path="info file" />
 			</pipe>

@@ -2,5 +2,7 @@
 <DataTypes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:datatypes DataTypes.xsd" xmlns="urn:datatypes">
 	<Strings>
 		<String>tja</String>
+		<String></String>
+		<String>och</String>
 	</Strings>
 </DataTypes>

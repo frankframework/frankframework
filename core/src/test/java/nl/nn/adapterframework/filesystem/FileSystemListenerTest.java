@@ -4,21 +4,29 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
-public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> extends FileSystemTestBase {
+public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> extends HelperedFileSystemTestBase {
 
-	private FileSystemListener<F, FS> fileSystemListener;
+	private IFileSystemListener<F> fileSystemListener;
 	private Map<String,Object> threadContext;
 
-	public abstract FileSystemListener<F, FS> createFileSystemListener();
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
+
+	
+	public abstract IFileSystemListener<F> createFileSystemListener();
 
 	@Override
 	@Before
@@ -45,6 +53,31 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 	@Test
 	public void fileListenerTestOpen() throws Exception {
+		fileSystemListener.configure();
+		fileSystemListener.open();
+	}
+	
+
+	@Test
+	public void fileListenerTestInvalidInputFolder() throws Exception {
+		fileSystemListener.setInputFolder("xxx");
+		thrown.expectMessage("The value for inputFolder [xxx] is invalid. It is not a folder.");
+		fileSystemListener.configure();
+		fileSystemListener.open();
+	}
+	
+	@Test
+	public void fileListenerTestInvalidInProcessFolder() throws Exception {
+		fileSystemListener.setInProcessFolder("xxx");
+		thrown.expectMessage("The value for inProcessFolder [xxx] is invalid. It is not a folder.");
+		fileSystemListener.configure();
+		fileSystemListener.open();
+	}
+	
+	@Test
+	public void fileListenerTestInvalidProcessedFolder() throws Exception {
+		fileSystemListener.setProcessedFolder("xxx");
+		thrown.expectMessage("The value for processedFolder [xxx] is invalid. It is not a folder.");
 		fileSystemListener.configure();
 		fileSystemListener.open();
 	}
@@ -98,7 +131,8 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 	@Test
 	public void fileListenerTestGetRawMessageDelayed() throws Exception {
-		fileSystemListener.setMinStableTime(100);
+		int stabilityTimeUnit=1000; // ms
+		fileSystemListener.setMinStableTime(2*stabilityTimeUnit);
 		String filename="rawMessageFile";
 		String contents="Test Message Contents";
 		
@@ -109,20 +143,20 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		createFile(null, filename, contents);
 		long afterCreateFile=System.currentTimeMillis();
 		log.debug("beforeCreateFile ["+beforeCreateFile+"] afterCreateFile ["+afterCreateFile+"]");
-		Thread.sleep(50);
+		Thread.sleep(1*stabilityTimeUnit);
 		long afterSleep=System.currentTimeMillis();
 		log.debug("afterSleep ["+afterSleep+"]");
 		
 		F rawMessage=fileSystemListener.getRawMessage(threadContext);
-		assertNull("raw message must be null when not yet stable for 100ms",rawMessage);
+		assertNull("raw message must be null when not yet stable for "+(2*stabilityTimeUnit)+"ms",rawMessage);
 		
-		Thread.sleep(100);
+		Thread.sleep(2*stabilityTimeUnit);
 		rawMessage=fileSystemListener.getRawMessage(threadContext);
-		assertNotNull("raw message must be not null when stable for 150ms",rawMessage);
+		assertNotNull("raw message must be not null when stable for "+(3*stabilityTimeUnit)+"ms",rawMessage);
 	}
 
 	@Test
-	public void fileListenerTestGetStringFromRawMessageFilenam() throws Exception {
+	public void fileListenerTestGetStringFromRawMessageFilename() throws Exception {
 		String filename="rawMessageFile";
 		String contents="Test Message Contents";
 		
@@ -174,7 +208,6 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		String contents="Test Message Contents";
 		
 		fileSystemListener.setMinStableTime(0);
-		fileSystemListener.setMessageType("contents");
 		fileSystemListener.configure();
 		fileSystemListener.open();
 		
@@ -184,8 +217,9 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		assertNotNull(rawMessage);
 		
 		String id=fileSystemListener.getIdFromRawMessage(rawMessage, threadContext);
-		assertEquals(filename,id);
+		assertThat(id, Matchers.endsWith(filename));
 	}
+
 	
 	@Test
 	public void fileListenerTestAfterMessageProcessedDelete() throws Exception {

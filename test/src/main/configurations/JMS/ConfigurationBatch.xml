@@ -3,8 +3,8 @@
 		<receiver name="BatchFileListener" pollInterval="1">
 			<listener 
 				className="nl.nn.adapterframework.receivers.DirectoryListener" 
-				inputDirectory="${i4ti.dir}/batch/in"
-				outputDirectory="${i4ti.dir}/batch/out"
+				inputDirectory="${testdata.dir}/batch/in"
+				outputDirectory="${testdata.dir}/batch/out"
 				wildcard="*.*"
 				overwrite="true"
 				fileTimeSensitive="true"

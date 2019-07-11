@@ -127,12 +127,17 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 	 * functionality is deprecated, using {@link
 	 * nl.nn.adapterframework.soap.SoapValidator} is now the preferred solution
 	 * in case a SOAP Message needs to be validated, in other cases give this
-	 * property an empty
-	 * value</td><td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
+	 * property an empty value</td>
+	 * <td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
 	 * 
 	 */
 	public void testSoapNamespaceFeature(String schema, String root, String inputFile) throws ConfigurationException, IOException, PipeRunException, XmlValidatorException, PipeStartException {
         XmlValidator validator = new XmlValidator();
+        try {
+            validator.setImplementation(implementation);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         validator.registerForward(getSuccess());
         validator.setThrowException(true);
@@ -147,7 +152,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 	}
 
 	@Test
-	public void noTargetNamespace() throws ConfigurationException, IOException, PipeRunException, XmlValidatorException, PipeStartException {
+	public void testSoapNamespaceFeature() throws ConfigurationException, IOException, PipeRunException, XmlValidatorException, PipeStartException {
 		testSoapNamespaceFeature(NO_NAMESPACE_SCHEMA,NO_NAMESPACE_SOAP_MSGROOT,NO_NAMESPACE_SOAP_FILE);
 	}
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="text" indent="no"/>
 	<xsl:variable name="dbmsName" select="browseJdbcTableExecuteREQ/dbmsName"/>
 	<xsl:variable name="tableName" select="browseJdbcTableExecuteREQ/tableName"/>

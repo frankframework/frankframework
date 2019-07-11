@@ -1,10 +1,5 @@
 <%@ taglib uri="/WEB-INF/struts-bean.tld" prefix="bean" %>
-<%@ taglib uri="/WEB-INF/struts-html.tld" prefix="html" %>
 <%@ taglib uri="http://jakarta.apache.org/taglibs/xtags-1.0" prefix="xtags" %>
-<%@ page import="nl.nn.adapterframework.util.RunStateEnum" %>
-
-
-
 
 <page title="Show Security Items" refresh="showSecurityItems.do">
 

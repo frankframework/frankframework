@@ -55,7 +55,8 @@ public class Debugger extends nl.nn.ibistesttool.Debugger {
 					inRerun.add(correlationId);
 				}
 				try {
-					pipeLineSession.put("principal", securityContext.getUserPrincipal());
+					if(securityContext.getUserPrincipal() != null)
+						pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
 					PipeLineResult processResult = adapter.processMessage(correlationId, message, pipeLineSession);
 					if (!(processResult.getState().equalsIgnoreCase("success")
 							&& processResult.getResult().equalsIgnoreCase("<ok/>"))) {

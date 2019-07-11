@@ -11,8 +11,11 @@ import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
 import org.apache.commons.lang3.text.translate.EntityArrays;
 import org.apache.commons.lang3.text.translate.LookupTranslator;
 import org.apache.log4j.Logger;
+import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
+
+import nl.nn.adapterframework.align.ScalarType;
 
 public class MapContentContainer<V> implements DocumentContainer {
 	protected Logger log = Logger.getLogger(this.getClass());
@@ -25,6 +28,7 @@ public class MapContentContainer<V> implements DocumentContainer {
 	private String currentName;
 	private String currentValue;
 	boolean currentIsNull;
+	private ScalarType type=ScalarType.UNKNOWN;
 	
 	public MapContentContainer(Map<String,List<V>> data) {
 		super();
@@ -45,21 +49,27 @@ public class MapContentContainer<V> implements DocumentContainer {
 	}
 	
 	@Override
-	public void startElement(String localName, boolean xmlArrayContainer, boolean repeatedElement,
-			XSTypeDefinition typeDefinition) {
+	public void startElement(String localName, boolean xmlArrayContainer, boolean repeatedElement, XSTypeDefinition typeDefinition) {
 		currentName=localName;
 		currentValue=null;
 		currentIsNull=false;
+		if (typeDefinition instanceof XSSimpleType) {
+			type=(ScalarType.findType(((XSSimpleType)typeDefinition)));
+		}
 	}
 
 	protected void setValue(String name, V value, boolean isNull) {
-		if (value!=null || isNull) {
+		if (value!=null || isNull || type==ScalarType.STRING) {
 			List<V> entry=data.get(name);
 			if (entry==null) {
 				entry=new ArrayList<V>();
 				data.put(name, entry);
 			}
-			entry.add(value);
+			if (value==null && !isNull && type==ScalarType.STRING) {
+				entry.add(stringToValue(""));
+			} else {
+				entry.add(value);
+			}
 		}
 	}
 	
@@ -69,6 +79,7 @@ public class MapContentContainer<V> implements DocumentContainer {
 		currentValue=null;
 		currentIsNull=false;
 		currentName=null;
+		type=null;
 	}
 
 	@Override
@@ -83,7 +94,7 @@ public class MapContentContainer<V> implements DocumentContainer {
 	}
 
 	@Override
-	public void characters(char[] ch, int start, int length, boolean numericType, boolean booleanType) {
+	public void characters(char[] ch, int start, int length) {
 		String rawValue=new String(ch,start,length);
 		if (currentName==null) {
 			if (rawValue.trim().length()>0) {

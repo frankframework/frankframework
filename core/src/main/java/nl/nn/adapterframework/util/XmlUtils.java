@@ -86,11 +86,14 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLFilter;
 import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLFilterImpl;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -106,6 +109,8 @@ import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
  */
 public class XmlUtils {
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
+	
+	public static final boolean XPATH_NAMESPACE_REMOVAL_VIA_XSLT=true;
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
 	static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
@@ -170,6 +175,7 @@ public class XmlUtils {
 	}
 
 	private static TransformerPool getUtilityTransformerPool(String xslt, String key, boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
+		//log.debug("utility transformer pool key ["+key+"] xslt ["+xslt+"]");
 		return getUtilityTransformerPool(xslt, key, omitXmlDeclaration, indent, 0);
 	}
 	
@@ -229,12 +235,10 @@ public class XmlUtils {
 		String xslt = makeSkipEmptyTagsXslt(omitXmlDeclaration,indent);
 		return getUtilityTransformerPool(xslt,"skipEmptyTags",omitXmlDeclaration,indent);
 	}
-	
-	protected static String makeRemoveNamespacesXslt(boolean omitXmlDeclaration, boolean indent) {
+
+	protected static String makeRemoveNamespacesXsltTemplates() {
 		return
-		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
-			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
-			+ "<xsl:template match=\"*\">"
+		"<xsl:template match=\"*\">"
 			+ "<xsl:element name=\"{local-name()}\">"
 			+ "<xsl:for-each select=\"@*\">"
 			+ "<xsl:attribute name=\"{local-name()}\"><xsl:value-of select=\".\"/></xsl:attribute>"
@@ -246,12 +250,20 @@ public class XmlUtils {
 			+ "<xsl:copy>"
 			+ "<xsl:apply-templates/>"
 			+ "</xsl:copy>"
-			+ "</xsl:template>"
+		+ "</xsl:template>";
+	}
+
+	protected static String makeRemoveNamespacesXslt(boolean omitXmlDeclaration, boolean indent) {
+		return
+		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
+			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
+			+ makeRemoveNamespacesXsltTemplates()
 			+ "</xsl:stylesheet>";
 	}
 
 	public static TransformerPool getRemoveNamespacesTransformerPool(boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
 		String xslt = makeRemoveNamespacesXslt(omitXmlDeclaration,indent);
+		//log.debug("RemoveNamespacesXslt ["+xslt+"]");
 		return getUtilityTransformerPool(xslt,"RemoveNamespaces",omitXmlDeclaration,indent);
 	}
 
@@ -509,15 +521,35 @@ public class XmlUtils {
 		Document document;
 		InputSource src;
 
-		DocumentBuilderFactory factory = getDocumentBuilderFactory(namespaceAware);
 		try {
-			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			if (!resolveExternalEntities) {
-				builder.setEntityResolver(new XmlExternalEntityResolver());
-			}
-			src = new InputSource(in);
-			document = builder.parse(src);
+//			if (!XPATH_NAMESPACE_REMOVAL_VIA_XSLT && !namespaceAware) {
+////				Sax2Dom sax2dom = new Sax2Dom();
+////				XMLReader reader=getXMLReader(namespaceAware, resolveExternalEntities);
+////				reader.setContentHandler(sax2dom);
+////				reader.setDTDHandler(sax2dom);
+////				reader.setErrorHandler(sax2dom);
+////				InputSource source = new InputSource(in);
+////				reader.parse(source);
+////				return sax2dom.getDOM();
+//				TransformerPool tp = getRemoveNamespacesTransformerPool(false, false);
+//				Source source = new StreamSource(in);
+//				DocumentBuilderFactory factory = getDocumentBuilderFactory(namespaceAware);
+//				factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+//				DocumentBuilder builder = factory.newDocumentBuilder();
+//				document=builder.newDocument();
+//				Result result = new DOMResult(document);
+//				tp.transform(source, result, null);
+//				
+//			} else {
+				DocumentBuilderFactory factory = getDocumentBuilderFactory(namespaceAware);
+				factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+				DocumentBuilder builder = factory.newDocumentBuilder();
+					if (!resolveExternalEntities) {
+						builder.setEntityResolver(new XmlExternalEntityResolver());
+					}
+					src = new InputSource(in);
+					document = builder.parse(src);
+//			}
 		} catch (SAXParseException e) {
 			throw new DomBuilderException(e);
 		} catch (ParserConfigurationException e) {
@@ -526,6 +558,10 @@ public class XmlUtils {
 			throw new DomBuilderException(e);
 		} catch (SAXException e) {
 			throw new DomBuilderException(e);
+//		} catch (ConfigurationException e) {
+//			throw new DomBuilderException(e);
+//		} catch (TransformerException e) {
+//			throw new DomBuilderException(e);
 		}
 		if (document == null) {
 			throw new DomBuilderException("Parsed Document is null");
@@ -714,7 +750,12 @@ public class XmlUtils {
 			}
 		}
 		try {
-			String xslt = createXPathEvaluatorSource(namespaceDefs,xPathExpression, outputType, includeXmlDeclaration, paramNames);
+			String xslt;
+			if (XPATH_NAMESPACE_REMOVAL_VIA_XSLT && StringUtils.isEmpty(namespaceDefs)) {
+				xslt = createXPathEvaluatorSource(namespaceDefs,xPathExpression, outputType, includeXmlDeclaration, paramNames, true, true, null);
+			} else {
+				xslt = createXPathEvaluatorSource(namespaceDefs,xPathExpression, outputType, includeXmlDeclaration, paramNames);
+			}
 			return getUtilityTransformerPool(xslt,"XPath:"+xPathExpression+"|"+outputType+"|"+namespaceDefs,!includeXmlDeclaration,false);
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(e);
@@ -733,18 +774,18 @@ public class XmlUtils {
 		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, null);
 	}
 
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List params) throws TransformerConfigurationException {
-		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, params, true);
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List<String> paramNames) throws TransformerConfigurationException {
+		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, paramNames, true);
 	}
 
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List params, boolean stripSpace) throws TransformerConfigurationException {
-		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, params, stripSpace, null);
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace) throws TransformerConfigurationException {
+		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, paramNames, stripSpace, false, null);
 	}
 
 	/*
 	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of, and enables use of parameters.
 	 */
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List params, boolean stripSpace, String separator) throws TransformerConfigurationException {
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace, boolean ignoreNamespaces, String separator) throws TransformerConfigurationException {
 		if (StringUtils.isEmpty(XPathExpression))
 			throw new TransformerConfigurationException("XPathExpression must be filled");
 
@@ -771,9 +812,9 @@ public class XmlUtils {
 		}
 
 		String paramsString = "";
-		if (params != null) {
-			for (Iterator it = params.iterator(); it.hasNext();) {
-				paramsString = paramsString + "<xsl:param name=\"" + it.next() + "\"/>";
+		if (paramNames != null) {
+			for (String paramName: paramNames) {
+				paramsString = paramsString + "<xsl:param name=\"" + paramName + "\"/>";
 			}
 		}
 		String separatorString = "";
@@ -786,9 +827,25 @@ public class XmlUtils {
 			"<xsl:output method=\""+outputMethod+"\" omit-xml-declaration=\""+ (includeXmlDeclaration ? "no": "yes") +"\"/>" +
 			(stripSpace?"<xsl:strip-space elements=\"*\"/>":"") +
 			paramsString +
+			(ignoreNamespaces ?
+				"<xsl:template match=\"/\">" +
+					"<xsl:variable name=\"prep\"><xsl:apply-templates/></xsl:variable>" +
+					"<xsl:call-template name=\"expression\">" +
+						"<xsl:with-param name=\"root\" select=\"$prep\"/>" +
+					"</xsl:call-template>" +
+				"</xsl:template>" + 
+				makeRemoveNamespacesXsltTemplates()+
+					
+				"<xsl:template name=\"expression\">" +
+					"<xsl:param name=\"root\" />" +
+					"<xsl:for-each select=\"$root\">" +
+						"<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XmlUtils.encodeChars(XPathExpression) + "\"" + separatorString + "/>" +
+					"</xsl:for-each>" +
+				"</xsl:template>" 
+			:
 			"<xsl:template match=\"/\">" +
-			"<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XPathExpression + "\"" + separatorString + "/>" +
-			"</xsl:template>" +
+			"<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XmlUtils.encodeChars(XPathExpression) + "\"" + separatorString + "/>" +
+			"</xsl:template>" )+
 			"</xsl:stylesheet>";
 
 		return xsl;
@@ -830,40 +887,31 @@ public class XmlUtils {
 		return stringToSource(xmlString,isNamespaceAwareByDefault());
 	}
 
-	public static Source stringToSourceForSingleUse(String xmlString)
-			throws DomBuilderException {
-		return stringToSourceForSingleUse(xmlString,
-				isNamespaceAwareByDefault());
+	public static Source stringToSourceForSingleUse(String xmlString) throws DomBuilderException {
+		return stringToSourceForSingleUse(xmlString, isNamespaceAwareByDefault());
 	}
 
-	public static Source stringToSourceForSingleUse(String xmlString,
-			boolean namespaceAware) throws DomBuilderException {
+	public static Source stringToSourceForSingleUse(String xmlString, boolean namespaceAware) throws DomBuilderException {
 		return stringToSourceForSingleUse(xmlString, namespaceAware, false);
 	}
 
-	public static Source stringToSourceForSingleUse(String xmlString,
-			boolean namespaceAware, boolean resolveExternalEntities)
-			throws DomBuilderException {
-		if (namespaceAware) {
-			return stringToSAXSource(xmlString, namespaceAware, false);
-		} else {
-			return stringToSource(xmlString, false);
-		}
+	public static Source stringToSourceForSingleUse(String xmlString, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
+		return stringToSAXSource(xmlString, namespaceAware, false);
 	}
 
-	public static SAXSource stringToSAXSource(String xmlString,
-			boolean namespaceAware, boolean resolveExternalEntities)
-			throws DomBuilderException {
-		Variant in = new Variant(xmlString);
-		InputSource is = in.asXmlInputSource();
-		SAXParserFactory factory = getSAXParserFactory(namespaceAware);
+	public static SAXSource stringToSAXSource(String xmlString, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
+		StringReader reader = new StringReader(xmlString);
+		return readerToSAXSource(reader,namespaceAware,resolveExternalEntities);
+	}
+	
+	public static SAXSource readerToSAXSource(Reader reader, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
+		InputSource is = new InputSource(reader);
+		return inputSourceToSAXSource(is,namespaceAware,resolveExternalEntities);
+	}	
+	
+	public static SAXSource inputSourceToSAXSource(InputSource is, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
 		try {
-			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			XMLReader xmlReader = factory.newSAXParser().getXMLReader();
-			if (!resolveExternalEntities) {
-				xmlReader.setEntityResolver(new XmlExternalEntityResolver());
-			}
-			return new SAXSource(xmlReader, is);
+			return new SAXSource(getXMLReader(namespaceAware, resolveExternalEntities), is);
 		} catch (Exception e) {
 			// TODO Use DomBuilderException as the stringToSource and calling
 			// methods use them a lot. Rename DomBuilderException to
@@ -872,7 +920,21 @@ public class XmlUtils {
 		}
 	}
 	
+	public static XMLReader getXMLReader(boolean namespaceAware, boolean resolveExternalEntities) throws ParserConfigurationException, SAXException {
+		SAXParserFactory factory = getSAXParserFactory(namespaceAware);
+		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+		XMLReader xmlReader = factory.newSAXParser().getXMLReader();
+		if (!resolveExternalEntities) {
+			xmlReader.setEntityResolver(new XmlExternalEntityResolver());
+		}
 
+		if (!XPATH_NAMESPACE_REMOVAL_VIA_XSLT && !namespaceAware) {
+			return new NamespaceRemovingFilter(xmlReader);
+		}
+		return xmlReader;
+	}
+	
+	
 	public static int interpretXsltVersion(String xsltVersion) throws TransformerException, IOException {
 		if (StringUtils.isEmpty(xsltVersion)) {
 			return 0;
@@ -889,7 +951,9 @@ public class XmlUtils {
 	public static int detectXsltVersion(String xsltString) throws TransformerConfigurationException {
 		try {
 			TransformerPool tpVersion = XmlUtils.getDetectXsltVersionTransformerPool();
-			return interpretXsltVersion(tpVersion.transform(xsltString, null));
+			String version=tpVersion.transform(xsltString, null, true);
+			log.debug("detected version ["+version+"] for xslt ["+xsltString+"]");
+			return interpretXsltVersion(version);
 		} catch (Exception e) {
 			throw new TransformerConfigurationException(e);
 		}
@@ -1476,21 +1540,19 @@ public class XmlUtils {
 	/**
 	 * sets all the parameters of the transformer using a Map with parameter values.
 	 */
-	public static void setTransformerParameters(Transformer t, Map parameters) {
+	public static void setTransformerParameters(Transformer t, Map<String,Object> parameters) {
 		t.clearParameters();
 		if (parameters == null) {
 			return;
 		}
-		for (Iterator it=parameters.keySet().iterator(); it.hasNext();) {
-			String name=(String)it.next();
-			Object value = parameters.get(name);
-
+		for (String paramName:parameters.keySet()) {
+			Object value = parameters.get(paramName);
 			if (value != null) {
-				t.setParameter(name, value);
-				log.debug("setting parameter [" + name+ "] on transformer");
+				t.setParameter(paramName, value);
+				log.debug("setting parameter [" + paramName+ "] on transformer");
 			}
 			else {
-				log.info("omitting setting of parameter ["+name+"] on transformer, as it has a null-value");
+				log.info("omitting setting of parameter ["+paramName+"] on transformer, as it has a null-value");
 			}
 		}
 	}
@@ -1805,15 +1867,13 @@ public class XmlUtils {
 	 * Like {@link javanet.staxutils.XMLStreamUtils#mergeAttributes} but it can
 	 * also merge namespaces
 	 */
-	public static StartElement mergeAttributes(StartElement tag,
-			Iterator<? extends Attribute> attrs,
-			Iterator<? extends Namespace> nsps, XMLEventFactory factory) {
+	public static StartElement mergeAttributes(StartElement tag, Iterator<? extends Attribute> attrs, Iterator<? extends Namespace> nsps, XMLEventFactory factory) {
 		// create Attribute map
 		Map<QName, Attribute> attributes = new HashMap<QName, Attribute>();
 
 		// iterate through start tag's attributes
-		for (Iterator i = tag.getAttributes(); i.hasNext();) {
-			Attribute attr = (Attribute) i.next();
+		for (Iterator<Attribute> i = tag.getAttributes(); i.hasNext();) {
+			Attribute attr = i.next();
 			attributes.put(attr.getName(), attr);
 		}
 		if (attrs != null) {
@@ -1825,8 +1885,8 @@ public class XmlUtils {
 		}
 
 		Map<QName, Namespace> namespaces = new HashMap<QName, Namespace>();
-		for (Iterator i = tag.getNamespaces(); i.hasNext();) {
-			Namespace ns = (Namespace) i.next();
+		for (Iterator<Namespace> i = tag.getNamespaces(); i.hasNext();) {
+			Namespace ns = i.next();
 			namespaces.put(ns.getName(), ns);
 		}
 		if (nsps != null) {
@@ -1845,8 +1905,7 @@ public class XmlUtils {
 				.getNamespaceContext());
 	}
 
-	public static boolean attributesEqual(Attribute attribute1,
-			Attribute attribute2) {
+	public static boolean attributesEqual(Attribute attribute1, Attribute attribute2) {
 		if (!attribute1.getName().equals(attribute2.getName())) {
 			return false;
 		} else if (!attribute1.getValue().equals(attribute2.getValue())) {
@@ -1855,8 +1914,7 @@ public class XmlUtils {
 		return true;
 	}
 
-	public static String getAdapterSite(Object document)
-			throws DomBuilderException, IOException, TransformerException {
+	public static String getAdapterSite(Object document) throws DomBuilderException, IOException, TransformerException {
 		String input;
 		if (document instanceof DefaultDocument) {
 			DefaultDocument defaultDocument = (DefaultDocument) document;
@@ -1867,10 +1925,8 @@ public class XmlUtils {
 		return getAdapterSite(input, null);
 	}
 
-	public static String getAdapterSite(String input, Map parameters)
-			throws IOException, DomBuilderException, TransformerException {
-		URL xsltSource = ClassUtils.getResourceURL(XmlUtils.class,
-				ADAPTERSITE_XSLT);
+	public static String getAdapterSite(String input, Map parameters) throws IOException, DomBuilderException, TransformerException {
+		URL xsltSource = ClassUtils.getResourceURL(XmlUtils.class, ADAPTERSITE_XSLT);
 		Transformer transformer = XmlUtils.createTransformer(xsltSource);
 		if (parameters != null) {
 			XmlUtils.setTransformerParameters(transformer, parameters);
