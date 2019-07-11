@@ -6,11 +6,33 @@ Ibis AdapterFramework release notes
 
 
 
-7.3-B1
+Upcoming
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.2...HEAD)
+[Commits](https://github.com/ibissource/iaf/compare/v7.3...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+
+- Improve validation config warnings
+
+
+
+7.3
+--------
+
+[Commits](https://github.com/ibissource/iaf/compare/v7.2...v7.3)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.3)](https://travis-ci.org/ibissource/iaf)
+
+- Refactor CmisListener to an event based listener, you can now have multiple listeners listening to different events
+- The cmis bridge functionality on the sender has been removed. In order to use the bridge you need to configure properties in the WAR/EAR file. See CmisSessionBuilder for more information about the properties that can be set
+- Several bugfixes and performance improvements
+
+
+
+7.3-RC1
+--------
+
+[Commits](https://github.com/ibissource/iaf/compare/v7.2...v7.3-RC1)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.3-RC1)](https://travis-ci.org/ibissource/iaf)
 
 - Generate IbisDoc and XSD and support beautiful configuration xml. The XSD can be used for code completion of beautiful Ibis configurations in Eclipse
 - Use XSLT 2.0 instead of 1.0 for configuration tweaks (e.g. stub4testtool.xsl)
@@ -36,12 +58,17 @@ Ibis AdapterFramework release notes
 - Revert old CMIS WS endpoints to register each service's WSDL individually
 - Make WebServiceListener SOAP endpoint binding 1.2 capable
 - Add option to add custom views to GUI 3.0
-- Improve validation config warnings
+- Remove xslt2=true attribute, xslt version is now automatically detected. You may override this setting by specifying the xsltVersion attribute
+- Fix potential memory leaks when:
+    - NDC stacks are not cleaned up after processing messages
+    - using the hideRegex attribute on pipes/adapters
+    - consecutively processing multiple large messages in a row
 
 
 ### Non backwards compatible changes
 
 - The dateformat in the CmisSender has been modified to `yyyy-MM-dd'T'HH:mm:ss.SSSZ` in order to use the old format, set the `jcmissender.processproperties.legacydateformat` property to true
+- **Upgrade minimum require Java version from 6 to 7**. Java sources are still Java 1.6 compatible at this stage.
 
 
 

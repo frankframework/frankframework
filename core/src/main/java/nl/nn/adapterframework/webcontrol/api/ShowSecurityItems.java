@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2018 Integration Partners B.V.
+Copyright 2016-2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package nl.nn.adapterframework.webcontrol.api;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -37,20 +36,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Transformer;
 
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.jms.JmsSender;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -70,6 +64,7 @@ import org.xml.sax.InputSource;
 @Path("/")
 public final class ShowSecurityItems extends Base {
 	public static final String AUTHALIAS_XSLT = "xml/xsl/authAlias.xsl";
+
 	@Context ServletConfig servletConfig;
 	@Context HttpServletRequest httpServletRequest;
 
@@ -174,21 +169,21 @@ public final class ShowSecurityItems extends Base {
 				for (int j = 0; j < fieldsInRowset.getLength(); j++) {
 					if (fieldsInRowset.item(j).getNodeType() == Node.ELEMENT_NODE) {
 						Element field = (Element) fieldsInRowset.item(j);
-
-						if(field.getNodeName() == "role") {
+						
+						if("role".equals(field.getNodeName())) {
 							role = field.getAttribute("href");
 							if(role.indexOf("#") > -1)
 								role = role.substring(role.indexOf("#")+1);
 						}
-						else if(field.getNodeName() == "specialSubjects") {
+						else if("specialSubjects".equals(field.getNodeName())) {
 							specialSubjects.add(field.getAttribute("name"));
 						}
-						else if(field.getNodeName() == "groups") {
+						else if("groups".equals(field.getNodeName())) {
 							roles.add(field.getAttribute("name"));
 						}
 					}
 				}
-				if(role != null && role != "") {
+				if(role != null && !role.isEmpty()) {
 					Map<String, List<String>> roleBinding = new HashMap<String, List<String>>();
 					roleBinding.put("groups", roles);
 					roleBinding.put("specialSubjects", specialSubjects);
@@ -311,54 +306,54 @@ public final class ShowSecurityItems extends Base {
 		return sapSystemList;
 	}
 
-	private ArrayList<Object> addAuthEntries() {
-		ArrayList<Object> authEntries = new ArrayList<Object>();
-		Collection<Node> entries = null;
-		try {
-			URL url = ClassUtils.getResourceURL(this, AUTHALIAS_XSLT);
-			if (url != null) {
-				for (Configuration configuration : ibisManager.getConfigurations()) {
-					Transformer t = XmlUtils.createTransformer(url);
-					String configString = configuration.getOriginalConfiguration();
-					configString = StringResolver.substVars(configString, AppConstants.getInstance());
-					configString = ConfigurationUtils.getActivatedConfiguration(configuration, configString);
-					String ae = XmlUtils.transformXml(t, configString);
-					Element authEntriesElement = XmlUtils.buildElement(ae);
-					if (entries == null) {
-						entries = XmlUtils.getChildTags(authEntriesElement, "entry");
-					} else {
-						entries.addAll(XmlUtils.getChildTags(authEntriesElement, "entry"));
+	private List<String> getAuthEntries() {
+		List<String> entries = new ArrayList<String>();
+		for (Configuration configuration : ibisManager.getConfigurations()) {
+			String configString = configuration.getLoadedConfiguration();
+			if(configString == null) continue; //If a configuration can't be found, continue...
+
+			try {
+				Collection<String> c = XmlUtils.evaluateXPathNodeSet(configString, "//@*[starts-with(name(),'authAlias') or ends-with(name(),'AuthAlias')]");
+				if (c != null && !c.isEmpty()) {
+					for (Iterator<String> cit = c.iterator(); cit.hasNext();) {
+						String entry = cit.next();
+						if (!entries.contains(entry)) {
+							entries.add(entry);
+						}
 					}
 				}
 			}
-		} catch (Exception e) {
-			authEntries.add("*** ERROR ***");
-		}
-
-		if (entries != null) {
-			Iterator<Node> iter = entries.iterator();
-			while (iter.hasNext()) {
-				Map<String, Object> ae = new HashMap<String, Object>();
-				Element itemElement = (Element) iter.next();
-				String alias = itemElement.getAttribute("alias");
-				ae.put("alias", alias);
-				CredentialFactory cf = new CredentialFactory(alias, null, null);
-
-				String userName;
-				String passWord;
-				try {
-					userName = cf.getUsername();
-					passWord = StringUtils.repeat("*", cf.getPassword().length());
-				} catch (Exception e) {
-					userName = "*** ERROR ***";
-					passWord = "*** ERROR ***";
-				}
-
-				ae.put("username", userName);
-				ae.put("password", passWord);
-				authEntries.add(ae);
+			catch (Exception e) {
+				log.warn("an error occurred while evaulating 'authAlias' xPathExpression", e);
 			}
 		}
+		return entries;
+	}
+
+	private List<Object> addAuthEntries() {
+		List<Object> authEntries = new ArrayList<Object>();
+
+		for(String authAlias : getAuthEntries()) {
+			Map<String, Object> ae = new HashMap<String, Object>();
+
+			ae.put("alias", authAlias);
+			CredentialFactory cf = new CredentialFactory(authAlias, null, null);
+
+			String userName;
+			String passWord;
+			try {
+				userName = cf.getUsername();
+				passWord = StringUtils.repeat("*", cf.getPassword().length());
+			} catch (Exception e) {
+				userName = "*** ERROR ***";
+				passWord = "*** ERROR ***";
+			}
+
+			ae.put("username", userName);
+			ae.put("password", passWord);
+			authEntries.add(ae);
+		}
+
 		return authEntries;
 	}
 

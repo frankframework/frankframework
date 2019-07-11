@@ -83,7 +83,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 		querySender.close();
 	}
 
-	protected void iterateInput(Object input, IPipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException {
+	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException {
 		if (log.isDebugEnabled()) {log.debug(getLogPrefix(session)+"result set is empty, nothing to iterate over");}
 	}
 

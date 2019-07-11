@@ -318,6 +318,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		return dependencyTimeOut;
 	}
 
+	@IbisDoc({"comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)<br/>N.B. To get this working, the attribute returnedSessionKeys must also be set on the corresponding Receiver", ""})
 	public void setReturnedSessionKeys(String string) {
 		returnedSessionKeys = string;
 	}

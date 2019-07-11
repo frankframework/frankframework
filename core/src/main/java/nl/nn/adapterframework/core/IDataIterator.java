@@ -22,10 +22,10 @@ package nl.nn.adapterframework.core;
  * @author  Gerrit van Brakel
  * @since   6.4.1
  */
-public interface IDataIterator {
+public interface IDataIterator<T> {
 	
 	public boolean hasNext() throws SenderException; 
-	public Object next() throws SenderException;
+	public T next() throws SenderException;
 
 	public void close() throws SenderException;
 }

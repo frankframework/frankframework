@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-parent</artifactId>
-		<version>7.3-B1-SNAPSHOT</version>
+		<version>7.4-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>ibis-adapterframework-test</artifactId>
@@ -129,6 +129,10 @@
 						<resource>
 							<directory>src/main/configurations</directory>
 							<targetPath>WEB-INF/classes/configurations</targetPath>
+						</resource>
+ 						<resource>
+							<directory>src/test/testtool</directory>
+							<targetPath>testtool</targetPath>
 						</resource>
 					</webResources>
 				</configuration>

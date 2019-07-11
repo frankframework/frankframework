@@ -40,13 +40,13 @@ public class GraphvizEngineTest {
 	}
 
 	@Test
-	public void canInitDefaultWithoutErrors() {
+	public void canInitDefaultWithoutErrors() throws IOException {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 	}
 
 	@Test
-	public void canInitNullWithoutErrors() {
+	public void canInitNullWithoutErrors() throws IOException {
 		GraphvizEngine engine = new GraphvizEngine(null);
 		assertNotNull(engine);
 	}

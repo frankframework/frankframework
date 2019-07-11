@@ -15,6 +15,13 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
 import javax.servlet.ServletException;
 
 import nl.nn.adapterframework.extensions.cxf.NamespaceUriProviderManager;
@@ -91,6 +98,8 @@ public class IbisApplicationContext {
 			//When the IBIS is started from a servlet, start the NamespaceUriProviderManager (servlet/rpcrouter)
 			namespaceUriProviderManager.init();
 		}
+
+		registerApplicationModules();
 
 		log.info("created "+applicationContext.getClass().getSimpleName()+" in " + (System.currentTimeMillis() - start) + " ms");
 	}
@@ -211,5 +220,71 @@ public class IbisApplicationContext {
 			createApplicationContext();
 
 		return applicationContext;
+	}
+	
+
+	/**
+	 * Register all IBIS modules that can be found on the classpath
+	 * TODO: retrieve this (automatically/) through Spring
+	 */
+	private void registerApplicationModules() {
+		List<String> iafModules = new ArrayList<String>();
+
+		iafModules.add("ibis-adapterframework-akamai");
+		iafModules.add("ibis-adapterframework-cmis");
+		iafModules.add("ibis-adapterframework-coolgen");
+		iafModules.add("ibis-adapterframework-core");
+		iafModules.add("ibis-adapterframework-ibm");
+		iafModules.add("ibis-adapterframework-idin");
+		iafModules.add("ibis-adapterframework-ifsa");
+		iafModules.add("ibis-adapterframework-ladybug");
+		iafModules.add("ibis-adapterframework-larva");
+		iafModules.add("ibis-adapterframework-sap");
+		iafModules.add("ibis-adapterframework-tibco");
+		iafModules.add("ibis-adapterframework-webapp");
+
+		registerApplicationModules(iafModules);
+	}
+
+	/**
+	 * Register IBIS modules that can be found on the classpath
+	 * @param iafModules list with modules to register
+	 */
+	private void registerApplicationModules(List<String> iafModules) {
+		for(String module: iafModules) {
+			String version = getModuleVersion(module);
+
+			if(version != null) {
+				APP_CONSTANTS.put(module+".version", version);
+				log.info("Loading IAF module ["+module+"] version ["+version+"]");
+			}
+		}
+	}
+
+	/**
+	 * Get IBIS module version
+	 * @param module name of the module to fetch the version
+	 * @return module version or null if not found
+	 */
+	private String getModuleVersion(String module) {
+		ClassLoader classLoader = this.getClass().getClassLoader();
+		String basePath = "META-INF/maven/org.ibissource/";
+		URL pomProperties = classLoader.getResource(basePath+module+"/pom.properties");
+
+		if(pomProperties != null) {
+			try {
+				InputStream is = pomProperties.openStream();
+				Properties props = new Properties();
+				props.load(is);
+				return (String) props.get("version");
+			} catch (IOException e) {
+				log.warn("unable to read pom.properties file for module["+module+"]", e);
+
+				return "unknown";
+			}
+		}
+
+		// unable to find module, assume it's not on the classpath
+		return null;
 	}
 }

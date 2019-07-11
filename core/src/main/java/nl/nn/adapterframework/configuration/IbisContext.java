@@ -15,10 +15,6 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,9 +26,11 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
 import nl.nn.adapterframework.configuration.classloaders.BasePathClassLoader;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.extensions.graphviz.GraphvizEngine;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.jdbc.migration.Migrator;
 import nl.nn.adapterframework.receivers.JavaListener;
@@ -174,7 +172,6 @@ public class IbisContext extends IbisApplicationContext {
 			classLoaderManager = new ClassLoaderManager(this);
 
 			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
-			registerApplicationModules();
 			LOG.debug("found configurations to load ["+CONFIGURATIONS+"]");
 			load();
 			getMessageKeeper().setMaxSize(Math.max(messageKeeperSize, getMessageKeeper().size()));
@@ -182,7 +179,11 @@ public class IbisContext extends IbisApplicationContext {
 			//TODO consider moving this to #FlowDiagram
 			String graphvizJsVersion = APP_CONSTANTS.getProperty("graphviz.js.version", null);
 			String graphvizJsFormat = APP_CONSTANTS.getProperty("graphviz.js.format", null);
-			flowDiagram = new FlowDiagram(graphvizJsFormat, graphvizJsVersion);
+			try {
+				flowDiagram = new FlowDiagram(graphvizJsFormat, graphvizJsVersion);
+			} catch (IllegalStateException e) {
+				log(null, null, "failed to initalize GraphVizEngine", MessageKeeperMessage.ERROR_LEVEL, e, true);
+			}
 
 			log("startup in " + (System.currentTimeMillis() - start) + " ms");
 		}
@@ -199,71 +200,6 @@ public class IbisContext extends IbisApplicationContext {
 	}
 
 	Thread ibisContextReconnectThread = null;
-
-	/**
-	 * Register all IBIS modules that can be found on the classpath
-	 */
-	public void registerApplicationModules() {
-		List<String> iafModules = new ArrayList<String>();
-
-		iafModules.add("ibis-adapterframework-akamai");
-		iafModules.add("ibis-adapterframework-cmis");
-		iafModules.add("ibis-adapterframework-coolgen");
-		iafModules.add("ibis-adapterframework-core");
-		iafModules.add("ibis-adapterframework-ibm");
-		iafModules.add("ibis-adapterframework-idin");
-		iafModules.add("ibis-adapterframework-ifsa");
-		iafModules.add("ibis-adapterframework-ladybug");
-		iafModules.add("ibis-adapterframework-larva");
-		iafModules.add("ibis-adapterframework-sap");
-		iafModules.add("ibis-adapterframework-tibco");
-		iafModules.add("ibis-adapterframework-webapp");
-
-		registerApplicationModules(iafModules);
-	}
-
-	/**
-	 * Register IBIS modules that can be found on the classpath
-	 * @param iafModules list with modules to register
-	 */
-	public void registerApplicationModules(List<String> iafModules) {
-		AppConstants appConstants = AppConstants.getInstance();
-		for(String module: iafModules) {
-			String version = getModuleVersion(module);
-
-			if(version != null) {
-				appConstants.put(module+".version", version);
-				LOG.debug("Found IAF module["+module+"]");
-			}
-		}
-	}
-
-	/**
-	 * Get IBIS module version
-	 * @param module name of the module to fetch the version
-	 * @return module version or null if not found
-	 */
-	public String getModuleVersion(String module) {
-		ClassLoader classLoader = this.getClass().getClassLoader();
-		String basePath = "META-INF/maven/org.ibissource/";
-		URL pomProperties = classLoader.getResource(basePath+module+"/pom.properties");
-
-		if(pomProperties != null) {
-			try {
-				InputStream is = pomProperties.openStream();
-				Properties props = new Properties();
-				props.load(is);
-				return (String) props.get("version");
-			} catch (IOException e) {
-				LOG.warn("unable to read pom.properties file for module["+module+"]", e);
-
-				return "unknown";
-			}
-		}
-
-		// unable to find module, assume it's not on the classpath
-		return null;
-	}
 
 	/**
 	 * Shuts down the IbisContext, and therefore the Spring context

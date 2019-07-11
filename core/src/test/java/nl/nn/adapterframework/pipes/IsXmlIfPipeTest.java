@@ -30,10 +30,6 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlIfPipe> {
 		return isXmlIfPipe;
 	}
 
-	@Override
-	public void notConfigured() throws ConfigurationException {
-	}
-
 	@Test
 	public void validInputOnInvalidElsePipeTestUnRegistered() throws PipeRunException, ConfigurationException, PipeStartException{
 		exception.expect(PipeRunException.class);

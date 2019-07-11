@@ -1,1 +1,1 @@
-c:/temp/ibis4test/b64/file.pdf
+c:/temp/testdata/b64/file.pdf

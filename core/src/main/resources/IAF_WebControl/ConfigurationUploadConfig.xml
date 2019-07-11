@@ -17,7 +17,7 @@
 			</pipe>
 
 			<pipe name="uploadConfig" className="nl.nn.adapterframework.pipes.CreateRestViewPipe"
-				styleSheetName="UploadConfig/xsl/UploadConfig.xsl" xslt2="true">
+				styleSheetName="UploadConfig/xsl/UploadConfig.xsl" >
 				<param name="jmsRealmList" sessionKey="jmsRealmList" />
 				<param name="jmsRealm" sessionKey="jmsRealm" />
 				<param name="name" sessionKey="name" />

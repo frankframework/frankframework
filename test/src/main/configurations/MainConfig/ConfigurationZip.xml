@@ -21,7 +21,7 @@
 			<pipe
 				name="UnZip"
 				className="nl.nn.adapterframework.pipes.UnzipPipe" 
-				directory="${i4ti.dir}/zip"
+				directory="${testdata.dir}/zip"
 				>
 				<forward name="success" path="READY"/>
 			</pipe>
@@ -41,7 +41,7 @@
 			<pipe
 				name="ReCreateZip"
 				className="nl.nn.adapterframework.pipes.FixedResult" 
-				returnString="${i4ti.dir}/zip/recreated.zip"
+				returnString="${testdata.dir}/zip/recreated.zip"
 				>
 				<forward name="success" path="ReCreateZip2"/>
 			</pipe>
@@ -51,7 +51,7 @@
 				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
 				action="open"
 				>
-					<param name="filename" value="${i4ti.dir}/zip/out.zip" />
+					<param name="filename" value="${testdata.dir}/zip/out.zip" />
 				<forward name="success" path="ReCreateZip3"/>
 			</pipe>
 			<pipe
@@ -77,7 +77,7 @@
 			<pipe
 				name="SimpleZip"
 				className="nl.nn.adapterframework.pipes.FixedResult" 
-				returnString="${i4ti.dir}/zip/simple.zip"
+				returnString="${testdata.dir}/zip/simple.zip"
 				>
 				<forward name="success" path="SimpleZip2"/>
 			</pipe>
@@ -108,7 +108,7 @@
 			<pipe
 				name="SimpleZipX"
 				className="nl.nn.adapterframework.pipes.FixedResult" 
-				returnString="${i4ti.dir}/zip/simple.zip"
+				returnString="${testdata.dir}/zip/simple.zip"
 				>
 				<forward name="success" path="SimpleZipX2"/>
 			</pipe>

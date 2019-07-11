@@ -43,6 +43,8 @@
 	<!ENTITY Text2Xml SYSTEM "./ConfigurationText2Xml.xml">
 	<!ENTITY JsonPipe SYSTEM "./ConfigurationJsonPipe.xml">
 	<!ENTITY MultipleSessionKeys SYSTEM "./ConfigurationMultipleSessionKeys.xml">
+	<!ENTITY CreateLargeFile SYSTEM "./ConfigurationCreateLargeFile.xml">
+	<!ENTITY MemoryLeak SYSTEM "./ConfigurationMemoryLeak.xml">
 ]>
 <configuration name="MainConfig">
 	&Authentication;
@@ -90,4 +92,6 @@
 	&Text2Xml;
 	&JsonPipe;
 	&MultipleSessionKeys;
+	&CreateLargeFile;
+	&MemoryLeak;
 </configuration>

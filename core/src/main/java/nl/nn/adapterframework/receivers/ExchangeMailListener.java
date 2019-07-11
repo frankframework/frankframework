@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,59 +16,39 @@
 package nl.nn.adapterframework.receivers;
 
 import java.io.ByteArrayInputStream;
-import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 
-import microsoft.exchange.webservices.data.core.ExchangeService;
+import org.apache.commons.lang.StringUtils;
+
 import microsoft.exchange.webservices.data.core.PropertySet;
-import microsoft.exchange.webservices.data.core.enumeration.misc.ExchangeVersion;
-import microsoft.exchange.webservices.data.core.enumeration.property.WellKnownFolderName;
-import microsoft.exchange.webservices.data.core.enumeration.search.SortDirection;
-import microsoft.exchange.webservices.data.core.enumeration.service.DeleteMode;
-import microsoft.exchange.webservices.data.core.exception.service.local.ServiceLocalException;
-import microsoft.exchange.webservices.data.core.service.folder.Folder;
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import microsoft.exchange.webservices.data.core.service.item.Item;
 import microsoft.exchange.webservices.data.core.service.schema.EmailMessageSchema;
-import microsoft.exchange.webservices.data.core.service.schema.FolderSchema;
 import microsoft.exchange.webservices.data.core.service.schema.ItemSchema;
-import microsoft.exchange.webservices.data.credential.ExchangeCredentials;
-import microsoft.exchange.webservices.data.credential.WebCredentials;
 import microsoft.exchange.webservices.data.property.complex.Attachment;
 import microsoft.exchange.webservices.data.property.complex.AttachmentCollection;
 import microsoft.exchange.webservices.data.property.complex.EmailAddress;
 import microsoft.exchange.webservices.data.property.complex.EmailAddressCollection;
-import microsoft.exchange.webservices.data.property.complex.FolderId;
 import microsoft.exchange.webservices.data.property.complex.InternetMessageHeader;
 import microsoft.exchange.webservices.data.property.complex.InternetMessageHeaderCollection;
 import microsoft.exchange.webservices.data.property.complex.ItemAttachment;
-import microsoft.exchange.webservices.data.property.complex.Mailbox;
 import microsoft.exchange.webservices.data.property.complex.MessageBody;
 import microsoft.exchange.webservices.data.property.complex.MimeContent;
-import microsoft.exchange.webservices.data.search.FindFoldersResults;
-import microsoft.exchange.webservices.data.search.FindItemsResults;
-import microsoft.exchange.webservices.data.search.FolderView;
-import microsoft.exchange.webservices.data.search.ItemView;
-import microsoft.exchange.webservices.data.search.filter.SearchFilter;
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.filesystem.ExchangeFileSystem;
+import nl.nn.adapterframework.filesystem.FileSystemListener;
+import nl.nn.adapterframework.filesystem.IFileSystemListener;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-
 /**
- * Implementation of a {@link nl.nn.adapterframework.core.IPullingListener
- * IPullingListener} that enables a
+ * Implementation of a {@link nl.nn.adapterframework.filesystem.FileSystemListener
+ * FileSystemListener} that enables a
  * {@link nl.nn.adapterframework.receivers.GenericReceiver} to look in a folder
  * for received mails. When a mail is found, it is moved to an output folder (or
  * it's deleted), so that it isn't found more then once. A xml string with
@@ -100,149 +80,45 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setName(String) name}</td><td>name of the listener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setInputFolder(String) inputFolder}</td><td>folder (subfolder of inbox) to look for mails. If empty, the inbox folder is used</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFilter(String) filter}</td><td>If empty, all mails are retrieved. If 'NDR' only Non-Delivery Report mails ('bounces') are retrieved</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setOutputFolder(String) outputFolder}</td><td>folder (subfolder of inbox) where mails are stored after being processed. If empty, processed mails are deleted</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setInProcessFolder(String) inProcessFolder}</td><td>folder (subfolder of inbox) where mails are stored <i>while</i> being processed. If empty, processed mails are not temporarily moved</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setProcessedFolder(String) processedFolder}</td><td>folder (subfolder of inbox) where mails are stored after being processed. If empty, processed mails are deleted</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to exchange mail server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to exchange mail server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMailAddress(String) mailAddress}</td><td>mail address (also used for auto discovery)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUrl(String) url}</td><td>(only used when mailAddress is empty) url of the service</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStoreEmailAsStreamInSessionKey(String) storeEmailAsStreamInSessionKey}</td><td>if set, the mail is streamed to a file (eml)</td><td>&nbsp;</td> * </tr>
+ * <tr><td>{@link #setStoreEmailAsStreamInSessionKey(String) storeEmailAsStreamInSessionKey}</td><td>if set, the mail is streamed to a file (eml)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSimple(boolean) simple}</td><td>when set to <code>true</code>, the xml string passed to the pipeline contains minimum information about the mail (to save memory)</td><td>false</td></tr>
- * </table>
- * </p>
+ * <tr><td>{@link #setProxyHost(String) proxyHost}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setProxyPort(int) proxyPort}</td><td>&nbsp;</td><td>80</td></tr>
+ * <tr><td>{@link #setProxyAuthAlias(String) proxyAuthAlias}</td><td>alias used to obtain credentials for authentication to proxy</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setProxyUserName(String) proxyUserName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setProxyPassword(String) proxyPassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * </table></p>
  * 
- * @author Peter Leeuwenburgh
+ * @author Peter Leeuwenburgh, Gerrit van Brakel
  */
-public class ExchangeMailListener implements IPullingListener, INamedObject,
-		HasPhysicalDestination {
-	protected Logger log = LogUtil.getLogger(this);
+public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSystem> implements HasPhysicalDestination, IFileSystemListener<Item> {
 
-	private String name;
-	private String inputFolder;
-	private String outputFolder;
-	private String authAlias;
-	private String userName;
-	private String password;
-	private String mailAddress;
-	private String filter;
-	private String url;
+	public final String EMAIL_MESSAGE_TYPE="email";
 	private String storeEmailAsStreamInSessionKey;
 	private boolean simple = false;
+	
+	{
+		setMessageType(EMAIL_MESSAGE_TYPE);
+	}
+	
+	@Override
+	protected ExchangeFileSystem createFileSystem() {
+		return new ExchangeFileSystem();
+	}
 
-	private ExchangeService exchangeService;
-	private Folder folderIn;
-	private Folder folderOut;
 
-	public void afterMessageProcessed(PipeLineResult processResult,
-			Object rawMessage, Map context) throws ListenerException {
-		Item item = (Item) rawMessage;
-		try {
-			if (folderOut != null) {
-				item.move(folderOut.getId());
-				log.debug("moved item [" + item.getId() + "] from folder ["
-						+ folderIn.getDisplayName() + "] to folder ["
-						+ folderOut.getDisplayName() + "]");
-			} else {
-				item.delete(DeleteMode.MoveToDeletedItems);
-				log.debug("deleted item [" + item.getId() + "] from folder ["
-						+ folderIn.getDisplayName() + "]");
-			}
-		} catch (Exception e) {
-			throw new ListenerException(e);
+	@Override
+	public String getStringFromRawMessage(Item rawMessage, Map<String,Object> threadContext) throws ListenerException {
+		if (!EMAIL_MESSAGE_TYPE.equals(getMessageType())) {
+			return super.getStringFromRawMessage(rawMessage, threadContext);
 		}
-	}
-
-	public void close() throws ListenerException {
-		// TODO Auto-generated method stub
-	}
-
-	public void configure() throws ConfigurationException {
-		try {
-			exchangeService = new ExchangeService(
-					ExchangeVersion.Exchange2010_SP2);
-			CredentialFactory cf = new CredentialFactory(getAuthAlias(),
-					getUserName(), getPassword());
-			ExchangeCredentials credentials = new WebCredentials(
-					cf.getUsername(), cf.getPassword());
-			exchangeService.setCredentials(credentials);
-			if (StringUtils.isNotEmpty(getMailAddress())) {
-				exchangeService.autodiscoverUrl(getMailAddress());
-			} else {
-				exchangeService.setUrl(new URI(getUrl()));
-			}
-
-			FolderId inboxId;
-			if (StringUtils.isNotEmpty(getMailAddress())) {
-				Mailbox mailbox = new Mailbox(getMailAddress());
-				inboxId = new FolderId(WellKnownFolderName.Inbox, mailbox);
-			} else {
-				inboxId = new FolderId(WellKnownFolderName.Inbox);
-			}
-
-			FindFoldersResults findFoldersResultsIn;
-			FolderView folderViewIn = new FolderView(10);
-			if (StringUtils.isNotEmpty(getInputFolder())) {
-				SearchFilter searchFilterIn = new SearchFilter.IsEqualTo(
-						FolderSchema.DisplayName, getInputFolder());
-				findFoldersResultsIn = exchangeService.findFolders(inboxId,
-						searchFilterIn, folderViewIn);
-				if (findFoldersResultsIn.getTotalCount() == 0) {
-					throw new ConfigurationException(
-							"no (in) folder found with name ["
-									+ getInputFolder() + "]");
-				} else if (findFoldersResultsIn.getTotalCount() > 1) {
-					throw new ConfigurationException(
-							"multiple (in) folders found with name ["
-									+ getInputFolder() + "]");
-				}
-			} else {
-				findFoldersResultsIn = exchangeService.findFolders(inboxId,
-						folderViewIn);
-			}
-			folderIn = findFoldersResultsIn.getFolders().get(0);
-
-			if (StringUtils.isNotEmpty(getFilter())) {
-				if (!getFilter().equalsIgnoreCase("NDR")) {
-					throw new ConfigurationException(
-							"illegal value for filter [" + getFilter()
-									+ "], must be 'NDR' or empty");
-				}
-			}
-
-			if (StringUtils.isNotEmpty(getOutputFolder())) {
-				SearchFilter searchFilterOut = new SearchFilter.IsEqualTo(
-						FolderSchema.DisplayName, getOutputFolder());
-				FolderView folderViewOut = new FolderView(10);
-				FindFoldersResults findFoldersResultsOut = exchangeService
-						.findFolders(inboxId, searchFilterOut, folderViewOut);
-				if (findFoldersResultsOut.getTotalCount() == 0) {
-					throw new ConfigurationException(
-							"no (out) folder found with name ["
-									+ getOutputFolder() + "]");
-				} else if (findFoldersResultsOut.getTotalCount() > 1) {
-					throw new ConfigurationException(
-							"multiple (out) folders found with name ["
-									+ getOutputFolder() + "]");
-				}
-				folderOut = findFoldersResultsOut.getFolders().get(0);
-			}
-		} catch (Exception e) {
-			throw new ConfigurationException(e);
-		}
-	}
-
-	public String getIdFromRawMessage(Object rawMessage, Map threadContext)
-			throws ListenerException {
-		Item item = (Item) rawMessage;
-		try {
-			return "" + item.getId();
-		} catch (ServiceLocalException e) {
-			throw new ListenerException(e);
-		}
-	}
-
-	public String getStringFromRawMessage(Object rawMessage, Map threadContext)
-			throws ListenerException {
 		Item item = (Item) rawMessage;
 		try {
 			XmlBuilder emailXml = new XmlBuilder("email");
@@ -250,24 +126,20 @@ public class ExchangeMailListener implements IPullingListener, INamedObject,
 			PropertySet ps;
 			if (isSimple()) {
 				ps = new PropertySet(EmailMessageSchema.Subject);
-				emailMessage = EmailMessage.bind(exchangeService, item.getId(),
-						ps);
+				emailMessage = EmailMessage.bind(getFileSystem().getExchangeService(), item.getId(), ps);
+				emailMessage.load();
 				addEmailInfoSimple(emailMessage, emailXml);
 			} else {
-				ps = new PropertySet(EmailMessageSchema.DateTimeReceived,
-						EmailMessageSchema.From, EmailMessageSchema.Subject,
-						EmailMessageSchema.Body,
-						EmailMessageSchema.DateTimeSent);
-				emailMessage = EmailMessage.bind(exchangeService, item.getId(),
-						ps);
+				ps = new PropertySet(EmailMessageSchema.DateTimeReceived, EmailMessageSchema.From, EmailMessageSchema.Subject, EmailMessageSchema.Body, EmailMessageSchema.DateTimeSent);
+				emailMessage = EmailMessage.bind(getFileSystem().getExchangeService(), item.getId(), ps);
+				emailMessage.load();
 				addEmailInfo(emailMessage, emailXml);
 			}
 
 			if (StringUtils.isNotEmpty(getStoreEmailAsStreamInSessionKey())) {
 				emailMessage.load(new PropertySet(ItemSchema.MimeContent));
 				MimeContent mc = emailMessage.getMimeContent();
-				ByteArrayInputStream bis = new ByteArrayInputStream(
-						mc.getContent());
+				ByteArrayInputStream bis = new ByteArrayInputStream(mc.getContent());
 				threadContext.put(getStoreEmailAsStreamInSessionKey(), bis);
 			}
 
@@ -277,21 +149,19 @@ public class ExchangeMailListener implements IPullingListener, INamedObject,
 		}
 	}
 
-	private void addEmailInfoSimple(EmailMessage emailMessage,
-			XmlBuilder emailXml) throws Exception {
+	private void addEmailInfoSimple(EmailMessage emailMessage, XmlBuilder emailXml) throws Exception {
 		XmlBuilder subjectXml = new XmlBuilder("subject");
 		subjectXml.setCdataValue(emailMessage.getSubject());
 		emailXml.addSubElement(subjectXml);
 	}
 
-	private void addEmailInfo(EmailMessage emailMessage, XmlBuilder emailXml)
-			throws Exception {
+	private void addEmailInfo(EmailMessage emailMessage, XmlBuilder emailXml) throws Exception {
 		XmlBuilder recipientsXml = new XmlBuilder("recipients");
 		EmailAddressCollection eacTo = emailMessage.getToRecipients();
 		if (eacTo != null) {
-			for (Iterator it = eacTo.iterator(); it.hasNext();) {
+			for (Iterator<EmailAddress> it = eacTo.iterator(); it.hasNext();) {
 				XmlBuilder recipientXml = new XmlBuilder("recipient");
-				EmailAddress ea = (EmailAddress) it.next();
+				EmailAddress ea = it.next();
 				recipientXml.addAttribute("type", "to");
 				recipientXml.setValue(ea.getAddress());
 				recipientsXml.addSubElement(recipientXml);
@@ -299,9 +169,9 @@ public class ExchangeMailListener implements IPullingListener, INamedObject,
 		}
 		EmailAddressCollection eacCc = emailMessage.getCcRecipients();
 		if (eacCc != null) {
-			for (Iterator it = eacCc.iterator(); it.hasNext();) {
+			for (Iterator<EmailAddress> it = eacCc.iterator(); it.hasNext();) {
 				XmlBuilder recipientXml = new XmlBuilder("recipient");
-				EmailAddress ea = (EmailAddress) it.next();
+				EmailAddress ea = it.next();
 				recipientXml.addAttribute("type", "cc");
 				recipientXml.setValue(ea.getAddress());
 				recipientsXml.addSubElement(recipientXml);
@@ -309,9 +179,9 @@ public class ExchangeMailListener implements IPullingListener, INamedObject,
 		}
 		EmailAddressCollection eacBcc = emailMessage.getBccRecipients();
 		if (eacBcc != null) {
-			for (Iterator it = eacBcc.iterator(); it.hasNext();) {
+			for (Iterator<EmailAddress> it = eacBcc.iterator(); it.hasNext();) {
 				XmlBuilder recipientXml = new XmlBuilder("recipient");
-				EmailAddress ea = (EmailAddress) it.next();
+				EmailAddress ea = it.next();
 				recipientXml.addAttribute("type", "bcc");
 				recipientXml.setValue(ea.getAddress());
 				recipientsXml.addSubElement(recipientXml);
@@ -325,28 +195,31 @@ public class ExchangeMailListener implements IPullingListener, INamedObject,
 		subjectXml.setCdataValue(emailMessage.getSubject());
 		emailXml.addSubElement(subjectXml);
 		XmlBuilder messageXml = new XmlBuilder("message");
-		messageXml.setCdataValue(MessageBody
-				.getStringFromMessageBody(emailMessage.getBody()));
+		messageXml.setCdataValue(MessageBody.getStringFromMessageBody(emailMessage.getBody()));
 		emailXml.addSubElement(messageXml);
 		XmlBuilder attachmentsXml = new XmlBuilder("attachments");
-		AttachmentCollection ac = emailMessage.getAttachments();
-		if (ac != null) {
-			for (Iterator it = ac.iterator(); it.hasNext();) {
-				XmlBuilder attachmentXml = new XmlBuilder("attachment");
-				Attachment att = (Attachment) it.next();
-				att.load();
-				attachmentXml.addAttribute("name", att.getName());
-				if (att instanceof ItemAttachment) {
-					ItemAttachment ia = (ItemAttachment) att;
-					Item aItem = ia.getItem();
-					if (aItem instanceof EmailMessage) {
-						EmailMessage em;
-						em = (EmailMessage) aItem;
-						addEmailInfo(em, attachmentXml);
+		try {
+			AttachmentCollection ac = emailMessage.getAttachments();
+			if (ac != null) {
+				for (Iterator<Attachment> it = ac.iterator(); it.hasNext();) {
+					XmlBuilder attachmentXml = new XmlBuilder("attachment");
+					Attachment att = (Attachment) it.next();
+					att.load();
+					attachmentXml.addAttribute("name", att.getName());
+					if (att instanceof ItemAttachment) {
+						ItemAttachment ia = (ItemAttachment) att;
+						Item aItem = ia.getItem();
+						if (aItem instanceof EmailMessage) {
+							EmailMessage em;
+							em = (EmailMessage) aItem;
+							addEmailInfo(em, attachmentXml);
+						}
 					}
+					attachmentsXml.addSubElement(attachmentXml);
 				}
-				attachmentsXml.addSubElement(attachmentXml);
 			}
+		} catch (Exception e) {
+			log.info("error occurred during getting internet message attachment(s): " + e.getMessage());
 		}
 		emailXml.addSubElement(attachmentsXml);
 		XmlBuilder headersXml = new XmlBuilder("headers");
@@ -354,11 +227,10 @@ public class ExchangeMailListener implements IPullingListener, INamedObject,
 		try {
 			imhc = emailMessage.getInternetMessageHeaders();
 		} catch (Exception e) {
-			log.info("error occurred during getting internet message headers: "
-					+ e.getMessage());
+			log.info("error occurred during getting internet message headers: " + e.getMessage());
 		}
 		if (imhc != null) {
-			for (Iterator it = imhc.iterator(); it.hasNext();) {
+			for (Iterator<InternetMessageHeader> it = imhc.iterator(); it.hasNext();) {
 				XmlBuilder headerXml = new XmlBuilder("header");
 				InternetMessageHeader imh = (InternetMessageHeader) it.next();
 				headerXml.addAttribute("name", imh.getName());
@@ -367,8 +239,7 @@ public class ExchangeMailListener implements IPullingListener, INamedObject,
 			}
 		}
 		emailXml.addSubElement(headersXml);
-		SimpleDateFormat sdf = new SimpleDateFormat(
-				"yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 		Date dateTimeSend = emailMessage.getDateTimeSent();
 		XmlBuilder dateTimeSentXml = new XmlBuilder("dateTimeSent");
 		dateTimeSentXml.setValue(sdf.format(dateTimeSend));
@@ -379,126 +250,66 @@ public class ExchangeMailListener implements IPullingListener, INamedObject,
 		emailXml.addSubElement(dateTimeReceivedXml);
 	}
 
-	public void open() throws ListenerException {
-		// TODO Auto-generated method stub
-	}
 
+	@Override
 	public String getPhysicalDestinationName() {
-		if (exchangeService != null) {
-			return "url [" + exchangeService.getUrl() + "]";
-		}
-		return null;
+		return getFileSystem().getPhysicalDestinationName()
+				+ " inputFolder ["
+				+ (getInputFolder() == null ? "" : getInputFolder())
+				+ "] inProcessFolder ["
+				+ (getInProcessFolder() == null ? "" : getInProcessFolder())
+				+ "] processedFolder ["
+				+ (getProcessedFolder() == null ? "" : getProcessedFolder() + "]");
 	}
 
-	public void closeThread(Map threadContext) throws ListenerException {
-		// TODO Auto-generated method stub
-	}
 
-	public Object getRawMessage(Map threadContext) throws ListenerException {
-		try {
-			ItemView view = new ItemView(1);
-			view.getOrderBy().add(ItemSchema.DateTimeReceived,
-					SortDirection.Ascending);
-			FindItemsResults<Item> findResults;
-			if ("NDR".equalsIgnoreCase(getFilter())) {
-				SearchFilter searchFilterBounce = new SearchFilter.IsEqualTo(
-						ItemSchema.ItemClass, "REPORT.IPM.Note.NDR");
-				findResults = exchangeService.findItems(folderIn.getId(),
-						searchFilterBounce, view);
-			} else {
-				findResults = exchangeService.findItems(folderIn.getId(), view);
-			}
-			if (findResults.getTotalCount() == 0) {
-				return null;
-			} else {
-				return findResults.getItems().get(0);
-			}
-		} catch (Exception e) {
-			throw new ListenerException(e);
-		}
-	}
 
-	public Map openThread() throws ListenerException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setInputFolder(String inputFolder) {
-		this.inputFolder = inputFolder;
-	}
-
-	public String getInputFolder() {
-		return inputFolder;
-	}
 
 	public void setOutputFolder(String outputFolder) {
-		this.outputFolder = outputFolder;
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: attribute 'outputFolder' has been replaced by 'processedFolder'";
+		configWarnings.add(log, msg);
+		setProcessedFolder(outputFolder);
 	}
 
-	public String getOutputFolder() {
-		return outputFolder;
+	public void setTempFolder(String tempFolder) {
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: attribute 'tempFolder' has been replaced by 'inProcessFolder'";
+		configWarnings.add(log, msg);
+		setInProcessFolder(tempFolder);
 	}
 
-	public void setAuthAlias(String string) {
-		authAlias = string;
+	public void setAuthAlias(String authAlias) {
+		getFileSystem().setAuthAlias(authAlias);
 	}
 
-	public String getAuthAlias() {
-		return authAlias;
+	public void setUserName(String username) {
+		getFileSystem().setUsername(username);
 	}
 
-	public void setUserName(String string) {
-		userName = string;
+	public void setPassword(String password) {
+		getFileSystem().setPassword(password);
 	}
 
-	public String getUserName() {
-		return userName;
+	public void setMailAddress(String mailAddress) {
+		getFileSystem().setMailAddress(mailAddress);
 	}
 
-	public void setPassword(String string) {
-		password = string;
+	public void setFilter(String filter) {
+		getFileSystem().setFilter(filter);
 	}
 
-	public String getPassword() {
-		return password;
+	public void setUrl(String url) {
+		getFileSystem().setUrl(url);
 	}
-
-	public void setMailAddress(String string) {
-		mailAddress = string;
-	}
-
-	public String getMailAddress() {
-		return mailAddress;
-	}
-
-	public void setFilter(String string) {
-		filter = string;
-	}
-
-	public String getFilter() {
-		return filter;
-	}
-
-	public void setUrl(String string) {
-		url = string;
-	}
-
-	public String getUrl() {
-		return url;
+	
+	public void setBaseFolder(String baseFolder) {
+		getFileSystem().setBaseFolder(baseFolder);
 	}
 
 	public void setStoreEmailAsStreamInSessionKey(String string) {
 		storeEmailAsStreamInSessionKey = string;
 	}
-
 	public String getStoreEmailAsStreamInSessionKey() {
 		return storeEmailAsStreamInSessionKey;
 	}
@@ -506,8 +317,28 @@ public class ExchangeMailListener implements IPullingListener, INamedObject,
 	public void setSimple(boolean b) {
 		simple = b;
 	}
-
 	public boolean isSimple() {
 		return simple;
 	}
+
+	public void setProxyHost(String proxyHost) {
+		getFileSystem().setProxyHost(proxyHost);
+	}
+
+	public void setProxyPort(int proxyPort) {
+		getFileSystem().setProxyPort(proxyPort);
+	}
+
+	public void setProxyAuthAlias(String proxyAuthAlias) {
+		getFileSystem().setProxyAuthAlias(proxyAuthAlias);
+	}
+
+	public void setProxyUserName(String proxyUsername) {
+		getFileSystem().setProxyUsername(proxyUsername);
+	}
+
+	public void setProxyPassword(String proxyPassword) {
+		getFileSystem().setProxyPassword(proxyPassword);
+	}
+
 }

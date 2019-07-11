@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:cmh="http://nn.nl/XSD/Generic/MessageHeader/2" xmlns:mtp="http://nn.nl/XSD/AccountInformation/DomainValues" xmlns="http://nn.nl/XSD/AccountInformation/1/GetPaymentReferenceAndPayLink/1" targetNamespace="http://nn.nl/XSD/AccountInformation/1/GetPaymentReferenceAndPayLink/1" elementFormDefault="qualified" attributeFormDefault="unqualified">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:cmh="http://nn.nl/XSD/Generic/MessageHeader/2" xmlns:mtp="http://nn.nl/XSD/AccountInformation/DomainValues" xmlns="http://nn.nl/XSD/AccountInformation/AccountInformation/1/GetPaymentReferenceAndPayLink/1" targetNamespace="http://nn.nl/XSD/AccountInformation/AccountInformation/1/GetPaymentReferenceAndPayLink/1" elementFormDefault="qualified" attributeFormDefault="unqualified">
 	<xs:import namespace="http://nn.nl/XSD/Generic/MessageHeader/2"/>
 	<xs:import namespace="http://nn.nl/XSD/AccountInformation/DomainValues" schemaLocation="DomainValues_GetPaymentReferenceAndPayLink.xsd"/>
 	<xs:element name="GetPaymentReferenceAndPayLink_Request">
