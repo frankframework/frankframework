@@ -13,6 +13,7 @@ Upcoming
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
 - Improve validation config warnings
+- ShowConfigurationStatus - improve error view
 
 
 
