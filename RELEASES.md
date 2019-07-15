@@ -9,11 +9,24 @@ Ibis AdapterFramework release notes
 Upcoming
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.3-RC1...HEAD)
+[Commits](https://github.com/ibissource/iaf/compare/v7.3...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+
+- Improve validation config warnings
+- ShowConfigurationStatus - improve error view
+- Possibility to add new domains independently of ear file
+    - UploadConfigService adapter
+    - Facility to (de)activate configs
+
+7.3
+--------
+
+[Commits](https://github.com/ibissource/iaf/compare/v7.2...v7.3)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.3)](https://travis-ci.org/ibissource/iaf)
 
 - Refactor CmisListener to an event based listener, you can now have multiple listeners listening to different events
 - The cmis bridge functionality on the sender has been removed. In order to use the bridge you need to configure properties in the WAR/EAR file. See CmisSessionBuilder for more information about the properties that can be set
+- Several bugfixes and performance improvements
 
 
 
@@ -52,7 +65,6 @@ Upcoming
     - NDC stacks are not cleaned up after processing messages
     - using the hideRegex attribute on pipes/adapters
     - consecutively processing multiple large messages in a row
-
 
 
 ### Non backwards compatible changes

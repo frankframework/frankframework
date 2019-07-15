@@ -6,7 +6,7 @@
       <configuration nameUC="1NOTEXISTINGCONFIG">NotExistingConfig</configuration>
       <configuration nameUC="1IAF*UTIL">IAF_Util</configuration>
   </configurations>
-  <registeredAdapters all="true">
+  <registeredAdapters all="true" log="false">
       <configurationMessages>
          <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Configuration [IAF_WebControl] LiquiBase applied [5] change(s) and added tag [IAF_Util:5:Niels Meijer]</configurationMessage>
          <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Configuration [IAF_WebControl] startup in 0 ms</configurationMessage>
@@ -26,6 +26,8 @@
                configUC="IAF*WEBCONTROL"
                configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
                messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
@@ -58,6 +60,8 @@
                configUC="IAF*WEBCONTROL"
                configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
                messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
@@ -90,6 +94,8 @@
                configUC="IAF*WEBCONTROL"
                configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
                messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
@@ -122,6 +128,8 @@
                configUC="IAF*WEBCONTROL"
                configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
                messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
@@ -154,6 +162,8 @@
                configUC="IAF*WEBCONTROL"
                configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
                messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
@@ -186,6 +196,8 @@
                configUC="IAF*WEBCONTROL"
                configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
                messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
@@ -225,6 +237,8 @@
                configUC="IBIS4EXAMPLE"
                configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
                messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
@@ -257,6 +271,8 @@
                configUC="IBIS4EXAMPLE"
                configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
                messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
@@ -289,6 +305,8 @@
                configUC="IBIS4EXAMPLE"
                configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
                messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
@@ -321,6 +339,8 @@
                configUC="IBIS4EXAMPLE"
                configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
                messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
@@ -354,6 +374,8 @@
                configured="true"
                description="Manage the database"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
                messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
@@ -386,6 +408,8 @@
                configUC="IAF*UTIL"
                configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
                messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
@@ -424,11 +448,14 @@
       <summary>
          <adapterState error="0"
                        started="12"
+                       startedNotAvailable="0"
                        starting="0"
                        stopped="0"
                        stopping="0"/>
+         <lastMsgProcessState error="0" notApplicable="12" ok="0"/>
          <receiverState error="0"
                         started="26"
+                        startedNotAvailable="0"
                         starting="0"
                         stopped="0"
                         stopping="0"/>

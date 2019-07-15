@@ -33,6 +33,7 @@ public class ClassLoaderManager {
 
 	private static final Logger LOG = LogUtil.getLogger(ClassLoaderManager.class);
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	private static final int MAX_CLASSLOADER_ITEMS = APP_CONSTANTS.getInt("classloader.items.max", 100);
 	private Map<String, ClassLoader> classLoaders = new TreeMap<String, ClassLoader>();
 
 	private IbisContext ibisContext;
@@ -41,16 +42,13 @@ public class ClassLoaderManager {
 		this.ibisContext = ibisContext;
 	}
 
-	private ClassLoader createClassloader(String configurationName, String configurationFile) throws ConfigurationException {
-		return createClassloader(configurationName, configurationFile, Thread.currentThread().getContextClassLoader());
+	private ClassLoader createClassloader(String configurationName, String classLoaderType) throws ConfigurationException {
+		return createClassloader(configurationName, classLoaderType, Thread.currentThread().getContextClassLoader());
 	}
 
-	private ClassLoader createClassloader(String configurationName, String configurationFile, ClassLoader parentClassLoader) throws ConfigurationException {
-
-		String classLoaderType = APP_CONSTANTS.getString("configurations." + configurationName + ".classLoaderType", "");
-		//It is possible that no ClassLoader has been defined, use default ClassLoader (wrapped in a WebAppClassLoader)
+	private ClassLoader createClassloader(String configurationName, String classLoaderType, ClassLoader parentClassLoader) throws ConfigurationException {
 		if(classLoaderType == null || classLoaderType.isEmpty())
-			classLoaderType = "WebAppClassLoader";
+			throw new ConfigurationException("classLoaderType cannot be empty");
 
 		String className = classLoaderType;
 		if(classLoaderType.indexOf(".") == -1)
@@ -138,12 +136,20 @@ public class ClassLoaderManager {
 		return input.substring(0, 1).toLowerCase() + input.substring(1);
 	}
 
-	public ClassLoader init(String configurationName) throws ConfigurationException {
-		String parentConfig = APP_CONSTANTS.getString("configurations." + configurationName + ".parentConfig", null);
-		return init(configurationName, parentConfig);
+	private ClassLoader init(String configurationName) throws ConfigurationException {
+		//You can define the property but leave it empty
+		String classLoaderType = APP_CONSTANTS.getString("configurations." + configurationName + ".classLoaderType", "");
+		if(classLoaderType.isEmpty())
+			classLoaderType = "WebAppClassLoader";
+
+		return init(configurationName, classLoaderType);
 	}
 
-	public ClassLoader init(String configurationName, String parentConfig) throws ConfigurationException {
+	private ClassLoader init(String configurationName, String classLoaderType) throws ConfigurationException {
+		return init(configurationName, classLoaderType, APP_CONSTANTS.getString("configurations." + configurationName + ".parentConfig", null));
+	}
+
+	private ClassLoader init(String configurationName, String classLoaderType, String parentConfig) throws ConfigurationException {
 		if(contains(configurationName))
 			throw new ConfigurationException("unable to add configuration with duplicate name ["+configurationName+"]");
 
@@ -155,11 +161,11 @@ public class ClassLoaderManager {
 			if(!contains(parentConfig))
 				throw new ConfigurationException("failed to locate parent configuration ["+parentConfig+"]");
 
-			classLoader = createClassloader(configurationName, configurationFile, get(parentConfig));
+			classLoader = createClassloader(configurationName, classLoaderType, get(parentConfig));
 			LOG.debug("wrapped classLoader ["+classLoader.toString()+"] in parentConfig ["+parentConfig+"]");
 		}
 		else
-			classLoader = createClassloader(configurationName, configurationFile);
+			classLoader = createClassloader(configurationName, classLoaderType);
 
 		if(classLoader == null) {
 			//A databaseClassloader error occurred, cancel, break, abort (but don't throw a ConfigurationException!
@@ -176,6 +182,10 @@ public class ClassLoaderManager {
 		classLoader = new BasePathClassLoader(classLoader, basePath);
 
 		classLoaders.put(configurationName, classLoader);
+		if (classLoaders.size() > MAX_CLASSLOADER_ITEMS) {
+			String msg = "Number of ClassLoader instances exceeds [" + MAX_CLASSLOADER_ITEMS + "]. Too many ClassLoader instances can cause an OutOfMemoryError";
+			ConfigurationWarnings.getInstance().add(LOG, msg, true);
+		}
 		return classLoader;
 	}
 
@@ -186,11 +196,26 @@ public class ClassLoaderManager {
 	 * @throws ConfigurationException when a ClassLoader failed to initialize
 	 */
 	public ClassLoader get(String configurationName) throws ConfigurationException {
+		return get(configurationName, null);
+	}
+
+	/**
+	 * Returns the ClassLoader for a specific configuration.
+	 * @param configurationName to get the ClassLoader for
+	 * @param classLoaderType null or type of ClassLoader to load
+	 * @return ClassLoader or null on error
+	 * @throws ConfigurationException when a ClassLoader failed to initialize
+	 */
+	public ClassLoader get(String configurationName, String classLoaderType) throws ConfigurationException {
 		LOG.debug("get configuration ClassLoader ["+configurationName+"]");
 		ClassLoader classLoader = classLoaders.get(configurationName);
-		if (classLoader == null)
-			classLoader = init(configurationName);
-
+		if (classLoader == null) {
+			if (classLoaderType == null) {
+				classLoader = init(configurationName);
+			} else {
+				classLoader = init(configurationName, classLoaderType);
+			}
+		}
 		return classLoader;
 	}
 

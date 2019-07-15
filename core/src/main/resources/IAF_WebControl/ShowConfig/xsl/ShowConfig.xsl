@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-	version="2.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
 	<xsl:output method="xml" indent="yes" omit-xml-declaration="yes" />
 	<xsl:param name="srcPrefix" />
 	<xsl:variable name="brvbar" select="'&#166;'" />
@@ -47,68 +46,101 @@
 						<th class="colHeader">Filename</th>
 						<th class="colHeader">Creation timestamp</th>
 						<th class="colHeader">User</th>
-						<th class="colHeader">Active config</th>
-						<th class="colHeader">Auto reload</th>
+						<th class="colHeader">Active</th>
+						<th class="colHeader">Auto-reload</th>
 					</tr>
-					<xsl:choose>
-						<xsl:when test="error">
-							<tr>
-								<td colspan="8" style="color: red;">
-									<xsl:value-of select="error" />
-								</td>
-							</tr>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:for-each select="result/rowset/row">
-								<xsl:variable name="class">
-									<xsl:choose>
-										<xsl:when test="position() mod 2 = 0">
-											<text>rowEven</text>
-										</xsl:when>
-										<xsl:otherwise>
-											<text>filterRow</text>
-										</xsl:otherwise>
-									</xsl:choose>
-								</xsl:variable>
-								<tr>
-									<xsl:attribute name="class">
-										<xsl:value-of select="$class" />
-									</xsl:attribute>
-									<td class="filterRow">
-										<imagelink type="showastext" newwindow="true">
-											<parameter name="jmsRealm">
-												<xsl:value-of select="$jr" />
-											</parameter>
+					<xsl:for-each select="result/rowset/row">
+						<xsl:variable name="class">
+							<xsl:choose>
+								<xsl:when test="position() mod 2 = 0">
+									<text>rowEven</text>
+								</xsl:when>
+								<xsl:otherwise>
+									<text>filterRow</text>
+								</xsl:otherwise>
+							</xsl:choose>
+						</xsl:variable>
+						<tr>
+							<xsl:attribute name="class">
+								<xsl:value-of select="$class" />
+							</xsl:attribute>
+							<td class="filterRow">
+								<imagelink type="showastext" newwindow="true">
+									<parameter name="jmsRealm">
+										<xsl:value-of select="$jr" />
+									</parameter>
+									<parameter name="name">
+										<xsl:value-of select="field[@name='NAME']" />
+									</parameter>
+									<parameter name="version">
+										<xsl:value-of select="field[@name='VERSION']" />
+									</parameter>
+								</imagelink>
+
+								<xsl:choose>
+									<xsl:when test="field[@name='ACTIVECONFIG']='true'">
+										<imagelink type="stop" alt="deactivate">
+											<xsl:attribute name="href" select="concat($srcPrefix,'rest/showConfigExe')" />
+											<parameter name="action">deactivate</parameter>
 											<parameter name="name">
 												<xsl:value-of select="field[@name='NAME']" />
 											</parameter>
+											<parameter name="jmsRealm">
+												<xsl:value-of select="$jr" />
+											</parameter>
 										</imagelink>
-									</td>
-									<td class="filterRow">
-										<xsl:value-of select="field[@name='NAME']" />
-									</td>
-									<td class="filterRow">
-										<xsl:value-of select="field[@name='VERSION']" />
-									</td>
-									<td class="filterRow">
-										<xsl:value-of select="field[@name='FILENAME']" />
-									</td>
-									<td class="filterRow">
-										<xsl:value-of select="field[@name='CRE_TYDST']" />
-									</td>
-									<td class="filterRow">
-										<xsl:value-of select="field[@name='RUSER']" />
-									</td>
-									<td class="filterRow">
-										<xsl:value-of select="field[@name='ACTIVECONFIG']" />
-									</td>
-									<td class="filterRow">
-										<xsl:value-of select="field[@name='AUTORELOAD']" />
-									</td>
-								</tr>
-							</xsl:for-each>
-						</xsl:otherwise>
-					</xsl:choose>
+									</xsl:when>
+									<xsl:otherwise>
+										<imagelink type="start" alt="activate">
+											<xsl:attribute name="href" select="concat($srcPrefix,'rest/showConfigExe')" />
+											<parameter name="action">activate</parameter>
+											<parameter name="name">
+												<xsl:value-of select="field[@name='NAME']" />
+											</parameter>
+											<parameter name="jmsRealm">
+												<xsl:value-of select="$jr" />
+											</parameter>
+										</imagelink>
+									</xsl:otherwise>
+								</xsl:choose>
+							</td>
+							<td class="filterRow">
+								<xsl:value-of select="field[@name='NAME']" />
+							</td>
+							<td class="filterRow">
+								<xsl:value-of select="field[@name='VERSION']" />
+							</td>
+							<td class="filterRow">
+								<xsl:value-of select="field[@name='FILENAME']" />
+							</td>
+							<td class="filterRow">
+								<xsl:value-of select="field[@name='CRE_TYDST']" />
+							</td>
+							<td class="filterRow">
+								<xsl:value-of select="field[@name='RUSER']" />
+							</td>
+							<td class="filterRow">
+								<xsl:choose>
+									<xsl:when test="field[@name='ACTIVECONFIG']='true'">
+										<image type="started" title="true" />
+									</xsl:when>
+									<xsl:otherwise>
+										<image type="stopped" title="false" />
+									</xsl:otherwise>
+								</xsl:choose>
+							</td>
+							<td class="filterRow">
+								<xsl:choose>
+									<xsl:when test="field[@name='AUTORELOAD']='true'">
+										<image type="started" title="true" />
+									</xsl:when>
+									<xsl:otherwise>
+										<image type="stopped" title="false" />
+									</xsl:otherwise>
+								</xsl:choose>
+							</td>
+						</tr>
+					</xsl:for-each>
 				</table>
 			</xsl:for-each>
 		</page>

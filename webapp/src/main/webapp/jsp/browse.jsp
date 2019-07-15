@@ -1,8 +1,4 @@
-
-<%@ taglib uri="/WEB-INF/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/struts-html.tld" prefix="html" %>
-<%@ taglib uri="/WEB-INF/struts-logic.tld" prefix="logic" %>
-<%@ page import="org.apache.struts.action.DynaActionForm" %> 
 <%@ page import="nl.nn.adapterframework.util.XmlUtils" %> 
 <%@ taglib uri="/WEB-INF/xtags.tld" prefix="xtags" %>
 

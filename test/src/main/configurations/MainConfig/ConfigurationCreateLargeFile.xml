@@ -22,7 +22,7 @@
 			<exits>
 				<exit path="READY" state="success" />
 			</exits>
-			<pipe name="ReadFile" actions="read"
+			<pipe name="ReadFile"
 				className="nl.nn.adapterframework.pipes.FixedResult"
 				storeResultInSessionKey="fileContent"
 				fileName="CreateLargeFile/input_small.txt">

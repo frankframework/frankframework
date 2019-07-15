@@ -166,6 +166,12 @@ public class JdbcUtil {
             case Types.REF :
             case Types.STRUCT :
                 return "undefined";
+			case Types.BOOLEAN :
+			case Types.BIT :
+			{
+				boolean value = rs.getBoolean(colNum);
+				return Boolean.toString(value);
+			}
 			// return as specified date format
 			case Types.TIMESTAMP :
 			case Types.DATE :
