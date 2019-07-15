@@ -16,24 +16,19 @@
 package nl.nn.adapterframework.extensions.sap.jco2;
 
 import java.lang.reflect.Field;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
 import java.util.Iterator;
 
-import nl.nn.adapterframework.extensions.sap.SapException;
-import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.GlobalListItem;
-
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
 
 import com.sap.mw.idoc.IDoc;
 import com.sap.mw.idoc.jco.JCoIDoc;
 import com.sap.mw.jco.IRepository;
 import com.sap.mw.jco.JCO;
+
+import nl.nn.adapterframework.extensions.sap.SapException;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.GlobalListItem;
 /**
  * A SapSystem is a provider of repository information and connections to a SAP-system.
  * <p><b>Configuration:</b>
@@ -134,6 +129,7 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 		}
 	}
 
+	@Override
 	public void configure() {
 		if (log.isDebugEnabled()) {
 			JCO.removeServerStateChangedListener(this); // to avoid double logging when restarted
@@ -143,7 +139,7 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 	}
 
 	public static void configureAll() {
-		for(Iterator it = getRegisteredNames(); it.hasNext();) {
+		for(Iterator<String> it = getRegisteredNames(); it.hasNext();) {
 			String systemName=(String)it.next();
 			SapSystem system = getSystem(systemName);
 			system.configure();
@@ -160,6 +156,7 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
   	}
   
 	public synchronized void closeSystem() {
+		clearCache();
 		if (--referenceCount<=0) {
 			log.debug(getLogPrefix()+"reference count ["+referenceCount+"], closing system");
 			referenceCount=0;
@@ -172,21 +169,38 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 	}
 
 	public static void openSystems() throws SapException {
-		for(Iterator it = getRegisteredNames(); it.hasNext();) {
-			String systemName=(String)it.next();
+		for(Iterator<String> it = getRegisteredNames(); it.hasNext();) {
+			String systemName=it.next();
 			SapSystem system = getSystem(systemName);
 			system.openSystem();
 		}
 	}
 
 	public static void closeSystems() {
-		for(Iterator it = getRegisteredNames(); it.hasNext();) {
-			String systemName=(String)it.next();
+		for(Iterator<String> it = getRegisteredNames(); it.hasNext();) {
+			String systemName=it.next();
 			SapSystem system = getSystem(systemName);
 			system.closeSystem();
 		}
 	}
 
+	public void clearCache() {
+		log.debug("start clearing cache of SapSystem ["+getName()+"]");
+		IRepository jcoRepository = getJcoRepository();
+		String[] cachedFunctionInterfaces=jcoRepository.getCachedFunctionInterfaces();
+		if (cachedFunctionInterfaces!=null) {
+			for (int i=0;i<cachedFunctionInterfaces.length;i++) {
+				jcoRepository.removeFunctionInterfaceFromCache(cachedFunctionInterfaces[i]);
+			}
+		}
+		String[] cachedStructureDefinitions=jcoRepository.getCachedStructureDefinitions();
+		if (cachedStructureDefinitions!=null) {
+			for (int i=0;i<cachedStructureDefinitions.length;i++) {
+				jcoRepository.removeStructureDefinitionFromCache(cachedStructureDefinitions[i]);
+			}
+		}
+		log.debug("end clearing cache of SapSystem ["+getName()+"]");
+	}
 
 
   	public JCO.Client getClient() {
@@ -210,6 +224,7 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 		return result;
 	}
 
+	@Override
 	public void serverStateChangeOccurred(JCO.Server server, int old_state, int new_state) {
 		log.debug(getLogPrefix()+"a thread of Server [" + server.getProgID() + "] changed state from ["
 				+stateToString(old_state)+"] to ["+stateToString(new_state)+"]");
@@ -237,9 +252,11 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
     	return String.valueOf(getServiceOffset() + Integer.parseInt(getSystemnr()));
     }
     
+	@Override
 	public String toString() {
 		//return ToStringBuilder.reflectionToString(this);
 		return (new ReflectionToStringBuilder(this) {
+			@Override
 			protected boolean accept(Field f) {
 				return super.accept(f) && !f.getName().equals("passwd");
 			}

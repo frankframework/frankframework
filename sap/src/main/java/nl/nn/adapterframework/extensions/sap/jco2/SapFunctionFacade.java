@@ -18,6 +18,13 @@ package nl.nn.adapterframework.extensions.sap.jco2;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+
+import com.sap.mw.jco.IFunctionTemplate;
+import com.sap.mw.jco.IRepository;
+import com.sap.mw.jco.JCO;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
@@ -27,13 +34,6 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.digester.Digester;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-
-import com.sap.mw.jco.IFunctionTemplate;
-import com.sap.mw.jco.JCO;
 /**
  * Wrapper round SAP-functions, either SAP calling Ibis, or Ibis calling SAP.
  * <p><b>Configuration:</b>
@@ -373,6 +373,21 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 		return functionTemplate;
 	}
 
+	public void clearCache() throws SapException {
+		IRepository jcoRepository = sapSystem.getJcoRepository();
+		String[] cachedFunctionInterfaces=jcoRepository.getCachedFunctionInterfaces();
+		if (cachedFunctionInterfaces!=null) {
+			for (int i=0;i<cachedFunctionInterfaces.length;i++) {
+				jcoRepository.removeFunctionInterfaceFromCache(cachedFunctionInterfaces[i]);
+			}
+		}
+		String[] cachedStructureDefinitions=jcoRepository.getCachedStructureDefinitions();
+		if (cachedStructureDefinitions!=null) {
+			for (int i=0;i<cachedStructureDefinitions.length;i++) {
+				jcoRepository.removeStructureDefinitionFromCache(cachedStructureDefinitions[i]);
+			}
+		}
+	}
 
 	public int getCorrelationIdFieldIndex() {
 		return correlationIdFieldIndex;

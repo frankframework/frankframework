@@ -143,6 +143,7 @@ public class SapSystem extends GlobalListItem {
 	}
 
 	public synchronized void closeSystem() {
+		clearCache();
 		if (--referenceCount<=0) {
 			log.debug(getLogPrefix()+"reference count ["+referenceCount+"], closing system");
 			referenceCount=0;
@@ -169,6 +170,17 @@ public class SapSystem extends GlobalListItem {
 		}
 	}
 
+	public void clearCache() {
+		log.debug("start clearing cache of SapSystem ["+getName()+"]");
+		try {
+			JCoRepository jcoRepository = getJcoRepository();
+			jcoRepository.clear();
+		} catch (JCoException e) {
+			log.warn("cannot clear function template cache",e);
+		}
+		log.debug("end clearing cache of SapSystem ["+getName()+"]");
+	}
+
 	public JCoDestination getDestination() throws JCoException {
 		JCoDestination destination = JCoDestinationManager.getDestination(getName());
 		return destination;
@@ -186,9 +198,11 @@ public class SapSystem extends GlobalListItem {
 		return "SapSystem ["+getName()+"] "; 
 	}
 
+	@Override
 	public String toString() {
 		//return ToStringBuilder.reflectionToString(this);
 		return (new ReflectionToStringBuilder(this) {
+			@Override
 			protected boolean accept(Field f) {
 				return super.accept(f) && !f.getName().equals("passwd");
 			}

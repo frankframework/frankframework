@@ -15,6 +15,10 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco3;
 
+import org.apache.commons.lang.StringUtils;
+
+import com.sap.conn.jco.JCoException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineExitHandler;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -22,13 +26,9 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
-
-import org.apache.commons.lang.StringUtils;
-
-import com.sap.conn.jco.JCoException;
 
 /**
  * Manager for SAP Logical Units of Work (LUWs). 
@@ -68,6 +68,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 	private SapSystem sapSystem;
 
 
+	@Override
 	public void configure(PipeLine pipeline) throws ConfigurationException {
 		super.configure(pipeline);
 		if (StringUtils.isEmpty(getAction())) {
@@ -94,6 +95,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 		}
 	}
 
+	@Override
 	public void atEndOfPipeLine(String correlationId, PipeLineResult pipeLineResult, IPipeLineSession session) throws PipeRunException {
 		try {
 			SapLUWHandle.releaseHandle(session,getLuwHandleSessionKey());
@@ -102,20 +104,23 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 		}
 	}
 
-	public void open() throws SenderException {
+	@Override
+	public void start() throws PipeStartException  {
 		try {
 			sapSystem.openSystem();
 		} catch (SapException e) {
-			close();
-			throw new SenderException(getLogPrefix(null)+"exception starting SapSender", e);
+			stop();
+			throw new PipeStartException(getLogPrefix(null)+"exception starting SapSender", e);
 		}
 	}
 	
-	public void close() {
+	@Override
+	public void stop() {
 		sapSystem.closeSystem();
 	}
 
 
+	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		if (getAction().equalsIgnoreCase(ACTION_BEGIN)) {
 			try {

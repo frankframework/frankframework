@@ -43,6 +43,7 @@ public class Handler extends DefaultHandler {
 	protected int unknownElementDepth = 0;
 	protected boolean done = false;
 
+	@Override
 	public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
 		if (childHandler != null) {
 			childHandler.startElement(namespaceURI, localName, qName, atts);
@@ -63,6 +64,7 @@ public class Handler extends DefaultHandler {
 		stringFieldValue.setLength(0);
 	}
 
+	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
 		if (childHandler != null) {
 			childHandler.characters(ch, start, length);
@@ -73,6 +75,7 @@ public class Handler extends DefaultHandler {
 		}
 	}
 
+	@Override
 	public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
 		if (childHandler != null) {
 			childHandler.endElement(namespaceURI, localName, qName);
