@@ -662,6 +662,7 @@ public class FileHandler {
 	 * Sets actions the pipe has to do. Possible actions are "read", "write", "write_append", "encode", "decode", "delete" and "read_delete"
 	 * You can also define combinations, like "read encode write".
 	 */
+	@IbisDoc({"comma separated list of actions to be performed. Possible action values: <ul> <li>write: create a new file and write input to it</li> <li>write_append: create a new file if it does not exist, otherwise append to existing file; then write input to it</li> <li>create: create a new file, but do not write anything to it</li> <li>read: read from file</li> <li>delete: delete the file</li><li>read_delete: read the contents, then delete (when outputType is stream the file is deleted after the stream is read)</li> <li>encode: encode base64</li> <li>decode: decode base64</li> <li>list: returns the files and directories in the directory that satisfy the specified filter (see {@link nl.nn.adapterframework.util.Dir2Xml dir2xml}). If a directory is not specified, the fileName is expected to include the directory</li> <li>info: returns information about the file</li> </ul>", ""})
 	public void setActions(String actions) {
 		this.actions = actions;
 	}

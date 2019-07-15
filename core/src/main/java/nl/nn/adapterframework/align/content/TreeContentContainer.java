@@ -23,10 +23,10 @@ import org.apache.xerces.xs.XSTypeDefinition;
 public abstract class TreeContentContainer<E extends ElementContainer> implements DocumentContainer {
 
 	private Stack<E> elementStack=new Stack<E>(); 
-	private E root=createElementContainer(null, false, false);
+	private E root=createElementContainer(null, false, false, null);
 	private E elementContainer=root;
 
-	protected abstract E createElementContainer(String localName, boolean xmlArrayContainer, boolean repeatedElement);
+	protected abstract E createElementContainer(String localName, boolean xmlArrayContainer, boolean repeatedElement, XSTypeDefinition typeDefinition);
 	protected abstract void addContent(E parent, E child);
 
 	@Override
@@ -40,7 +40,7 @@ public abstract class TreeContentContainer<E extends ElementContainer> implement
 	@Override
 	public void startElement(String localName, boolean xmlArrayContainer, boolean repeatedElement, XSTypeDefinition typeDefinition) {
 		elementStack.push(elementContainer);
-		elementContainer=createElementContainer(localName, xmlArrayContainer, repeatedElement);
+		elementContainer=createElementContainer(localName, xmlArrayContainer, repeatedElement, typeDefinition);
 	}
 	@Override
 	public void endElement(String localName) {
@@ -60,8 +60,8 @@ public abstract class TreeContentContainer<E extends ElementContainer> implement
 	}
 
 	@Override
-	public void characters(char[] ch, int start, int length, boolean numericType, boolean booleanType) {
-		elementContainer.characters(ch, start, length, numericType, booleanType);
+	public void characters(char[] ch, int start, int length) {
+		elementContainer.characters(ch, start, length);
 	}
 	public E getRoot() {
 		return root;

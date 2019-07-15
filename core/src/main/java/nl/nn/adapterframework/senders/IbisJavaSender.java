@@ -152,6 +152,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 		return serviceName;
 	}
 
+	@IbisDoc({"serviceName of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called", ""})
 	public void setServiceName(String string) {
 		serviceName = string;
 	}

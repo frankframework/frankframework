@@ -30,12 +30,11 @@ public abstract class SenderBase<S extends ISender> extends Mockito {
 	@Mock
 	protected IPipeLineSession session = new PipeLineSessionBase();
 
-	public abstract S createSender();
+	public abstract S createSender() throws ConfigurationException;
 
 	@Before
 	public void setup() throws ConfigurationException, PipeStartException, SenderException {
 		sender = createSender();
-		sender.open();
 	}
 
 	@After

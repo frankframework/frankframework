@@ -2069,6 +2069,15 @@ public class TestTool {
 				XsltProviderListener xsltProviderListener = new XsltProviderListener();
 				xsltProviderListener.setFromClasspath(fromClasspath);
 				xsltProviderListener.setFilename(filename);
+				String xsltVersionString = (String)properties.get(queueName + ".xsltVersion");
+				if (xsltVersionString != null) {
+					try {
+						int xsltVersion = Integer.valueOf(xsltVersionString).intValue();
+						xsltProviderListener.setXsltVersion(xsltVersion);
+						debugMessage("XsltVersion set to '" + xsltVersion + "'", writers);
+					} catch(Exception e) {
+					}
+				}
 				String xslt2String = (String)properties.get(queueName + ".xslt2");
 				if (xslt2String != null) {
 					try {
@@ -3218,6 +3227,21 @@ public class TestTool {
 				i++;
 			} else {
 				replaceKeyProcessed = true;
+			}
+		}
+		debugMessage("Check replaceEverywhereKey properties", writers);
+		boolean replaceEverywhereKeyProcessed = false;
+		i = 1;
+		while (!replaceEverywhereKeyProcessed) {
+			String key1 = properties.getProperty("replaceEverywhereKey" + i + ".key1");
+			String key2 = properties.getProperty("replaceEverywhereKey" + i + ".key2");
+			if (key1 != null && key2 != null) {
+				debugMessage("Replace key from '" + key1 + "' to '" + key2 + "'", writers);
+				preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
+				preparedActualResult = replaceKey(preparedActualResult, key1, key2);
+				i++;
+			} else {
+				replaceEverywhereKeyProcessed = true;
 			}
 		}
 		debugMessage("Check ignoreCurrentTimeBetweenKeys properties", writers);

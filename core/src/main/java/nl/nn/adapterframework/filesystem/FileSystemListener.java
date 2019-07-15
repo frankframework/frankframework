@@ -43,7 +43,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  *
  * @author Gerrit van Brakel, after {@link DirectoryListener} by John Dekker
  */
-public class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F> {
+public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F>, IFileSystemListener<F> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -54,14 +54,19 @@ public class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IP
 	private boolean delete = false;
 	private String processedFolder;
 //	private boolean createFolders=false;
-	private boolean overwrite = false;
+//	private boolean overwrite = false;
 	private String messageType="name";
 
 	private long minStableTime = 1000;
-
 //	private Long fileListFirstFileFound;
+	
 	private FS fileSystem;
 
+	protected abstract FS createFileSystem();
+	
+	public FileSystemListener() {
+		fileSystem=createFileSystem();
+	}
 	/**
 	 * Configure does some basic checks (outputDirectory is a directory, inputDirectory is a directory, wildcard is filled etc.);
 	 *
@@ -133,9 +138,6 @@ public class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IP
 		return fileSystem;
 	}
 
-	public void setFileSystem(FS fileSystem) {
-		this.fileSystem = fileSystem;
-	}
 
 	/**
 	 * Retrieves a single record from a file. If the file is empty or fully processed, it looks whether there
@@ -433,13 +435,13 @@ public class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IP
 //		return numberOfBackups;
 //	}
 
-	@IbisDoc({"when set <code>true</code>, the destination file will be deleted if it already exists", "false"})
-	public void setOverwrite(boolean overwrite) {
-		this.overwrite = overwrite;
-	}
-	public boolean isOverwrite() {
-		return overwrite;
-	}
+//	@IbisDoc({"when set <code>true</code>, the destination file will be deleted if it already exists", "false"})
+//	public void setOverwrite(boolean overwrite) {
+//		this.overwrite = overwrite;
+//	}
+//	public boolean isOverwrite() {
+//		return overwrite;
+//	}
 
 	@IbisDoc({"when set <code>true</code>, the file processed will deleted after being processed, and not stored", "false"})
 	public void setDelete(boolean b) {

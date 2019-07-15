@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2018 Nationale-Nederlanden
+   Copyright 2013-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -85,6 +85,9 @@ import org.springframework.core.task.TaskExecutor;
 public class Adapter implements IAdapter, NamedBean {
 	private Logger log = LogUtil.getLogger(this);
 	protected Logger msgLog = LogUtil.getLogger("MSG");
+	
+	public static final String PROCESS_STATE_OK = "OK";
+	public static final String PROCESS_STATE_ERROR = "ERROR";
 
 	private String name;
 	private Configuration configuration;
@@ -93,6 +96,7 @@ public class Adapter implements IAdapter, NamedBean {
 
 	private ArrayList<IReceiver> receivers = new ArrayList<IReceiver>();
 	private long lastMessageDate = 0;
+	private String lastMessageProcessingState; //"OK" or "ERROR"
 	private PipeLine pipeline;
 
 	private Map<String, SenderLastExitState> sendersLastExitState = new HashMap<String, SenderLastExitState>();
@@ -180,7 +184,7 @@ public class Adapter implements IAdapter, NamedBean {
 		for (IPipe pipe : pipeline.getPipes()) {
 			if (pipe instanceof AbstractPipe) {
 				AbstractPipe aPipe = (AbstractPipe) pipe;
-				if (aPipe.getHideRegex() != null) {
+				if (StringUtils.isNotEmpty(aPipe.getHideRegex())) {
 					if (!hrs.contains(aPipe.getHideRegex())) {
 						hrs.add(aPipe.getHideRegex());
 					}
@@ -248,11 +252,16 @@ public class Adapter implements IAdapter, NamedBean {
 	/**
 	 * Decrease the number of messages in process
 	 */
-	private synchronized void decNumOfMessagesInProcess(long duration) {
+	private synchronized void decNumOfMessagesInProcess(long duration, boolean processingSuccess) {
 		synchronized (statsMessageProcessingDuration) {
 			numOfMessagesInProcess--;
 			numOfMessagesProcessed.increase();
 			statsMessageProcessingDuration.addValue(duration);
+			if (processingSuccess) {
+				lastMessageProcessingState = PROCESS_STATE_OK;
+			} else {
+				lastMessageProcessingState = PROCESS_STATE_ERROR;
+			}
 			notifyAll();
 		}
 	}
@@ -513,6 +522,11 @@ public class Adapter implements IAdapter, NamedBean {
 	public String getRunStateAsString() {
 		return runState.getRunState().toString();
 	}
+
+	public String getLastMessageProcessingState() {
+		return lastMessageProcessingState;
+	}
+
 	/**
 	 * Return the total processing duration as a StatisticsKeeper
 	 * @see StatisticsKeeper
@@ -578,6 +592,7 @@ public class Adapter implements IAdapter, NamedBean {
 		PipeLineResult result = new PipeLineResult();
 
 		long startTime = System.currentTimeMillis();
+		boolean processingSuccess = true;
 		// prevent executing a stopped adapter
 		// the receivers should implement this, but you never now....
 		RunStateEnum currentRunState = getRunState();
@@ -592,47 +607,48 @@ public class Adapter implements IAdapter, NamedBean {
 		String lastNDC=NDC.peek();
 		String newNDC="cid [" + messageId + "]";
 		boolean ndcChanged=!newNDC.equals(lastNDC);
-		if (ndcChanged) {
-			NDC.push(newNDC);
-		}
-
-		if (StringUtils.isNotEmpty(composedHideRegex)) {
-			LogUtil.setThreadHideRegex(composedHideRegex);
-		}
-			
-		//if (isRequestReplyLogging()) {
-		StringBuilder additionalLogging = new StringBuilder();
-		
-		String xPathLogKeys = (String) pipeLineSession.get("xPathLogKeys");
-		if(xPathLogKeys != null && xPathLogKeys != "") {
-			StringTokenizer tokenizer = new StringTokenizer(xPathLogKeys, ",");
-			while (tokenizer.hasMoreTokens()) {
-				String logName = tokenizer.nextToken();
-				String xPathResult = (String) pipeLineSession.get(logName);
-				additionalLogging.append(" and ");
-				additionalLogging.append(logName);
-				additionalLogging.append(" [" + xPathResult + "]");
-			}
-		}
-		
-		String logMsg = "Adapter [" + name + "] received message [" + message + "] with messageId [" + messageId + "]" + additionalLogging;
-		if (isMsgLogTerseEnabled()) {
-			if (isMsgLogHidden()) {
-				String logMessage = "Adapter [" + name + "] received message [SIZE=" + getFileSizeAsBytes(message) + "] with messageId [" + messageId + "]" + additionalLogging;
-				msgLog.info(logMessage);
-			} else {
-				msgLog.info(logMsg);
-			}
-		}
-		if (log.isDebugEnabled()) { 
-			log.debug(logMsg);
-		} else {
-			logMsg = "Adapter [" + name + "] received message with messageId [" + messageId + "]" + additionalLogging;
-			log.info(logMsg);
-		}
-
 
 		try {
+			if (ndcChanged) {
+				NDC.push(newNDC);
+			}
+
+			if (StringUtils.isNotEmpty(composedHideRegex)) {
+				LogUtil.setThreadHideRegex(composedHideRegex);
+			}
+
+			//if (isRequestReplyLogging()) {
+			StringBuilder additionalLogging = new StringBuilder();
+
+			String xPathLogKeys = (String) pipeLineSession.get("xPathLogKeys");
+			if(xPathLogKeys != null && xPathLogKeys != "") {
+				StringTokenizer tokenizer = new StringTokenizer(xPathLogKeys, ",");
+				while (tokenizer.hasMoreTokens()) {
+					String logName = tokenizer.nextToken();
+					String xPathResult = (String) pipeLineSession.get(logName);
+					additionalLogging.append(" and ");
+					additionalLogging.append(logName);
+					additionalLogging.append(" [" + xPathResult + "]");
+				}
+			}
+			
+			String logMsg = "Adapter [" + name + "] received message [" + message + "] with messageId [" + messageId + "]" + additionalLogging;
+			if (isMsgLogTerseEnabled()) {
+				if (isMsgLogHidden()) {
+					String logMessage = "Adapter [" + name + "] received message [SIZE=" + getFileSizeAsBytes(message) + "] with messageId [" + messageId + "]" + additionalLogging;
+					msgLog.info(logMessage);
+				} else {
+					msgLog.info(logMsg);
+				}
+			}
+			if (log.isDebugEnabled()) { 
+				log.debug(logMsg);
+			} else {
+				msgLog.info(logMsg);
+				logMsg = "Adapter [" + name + "] received message with messageId [" + messageId + "]" + additionalLogging;
+				log.info(logMsg);
+			}
+
 			if (message == null && isReplaceNullMessage()) {
 				log.debug("Adapter [" + getName() + "] replaces null message with messageId [" + messageId + "] by empty message");
 				message = "";
@@ -659,6 +675,7 @@ public class Adapter implements IAdapter, NamedBean {
 			} else {
 				e = new ListenerException(t);
 			}
+			processingSuccess = false;
 			incNumOfMessagesInError();
 			error(false, "error processing message with messageId [" + messageId+"]: ",e);
 			throw e;
@@ -666,7 +683,7 @@ public class Adapter implements IAdapter, NamedBean {
 			long endTime = System.currentTimeMillis();
 			long duration = endTime - startTime;
 			//reset the InProcess fields, and increase processedMessagesCount
-			decNumOfMessagesInProcess(duration);
+			decNumOfMessagesInProcess(duration, processingSuccess);
 	
 			if (log.isDebugEnabled()) { // for performance reasons
 				log.debug("Adapter: [" + getName()
@@ -678,10 +695,13 @@ public class Adapter implements IAdapter, NamedBean {
 			} else {
 				log.info("Adapter [" + getName() + "] completed message with messageId [" + messageId + "] with exit-state [" + result.getState() + "]");
 			}
+			LogUtil.removeThreadHideRegex();
 			if (ndcChanged) {
 				NDC.pop();
 			}
-			LogUtil.removeThreadHideRegex();
+			if (NDC.getDepth() == 0) {
+				NDC.remove();
+			}
 		}
 	}
 
@@ -1035,6 +1055,7 @@ public class Adapter implements IAdapter, NamedBean {
 		return name;
 	}
 
+	@IbisDoc({"defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties. Possible values are: <table border='1'><tr><th>msgLogLevel</th><th>messages which are logged</th></tr><tr><td colspan='1'>None</td> <td>none</td></tr><tr><td colspan='1'>Terse</td><td>at adapter level</td></tr><tr><td colspan='1'>Basic</td><td>at adapter and sending pipe level (not yet available; only at adapter level)</td></tr><tr><td colspan='1'>Full</td> <td>at adapter and pipe level (not yet available; only at adapter level)</td></tr></table>", "application default (None)"})
 	public void setMsgLogLevel(String level) throws ConfigurationException {
 		msgLogLevel = MsgLogUtil.getMsgLogLevelNum(level);
 		if (msgLogLevel<0) {

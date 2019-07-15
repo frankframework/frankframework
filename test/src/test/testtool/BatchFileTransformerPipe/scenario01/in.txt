@@ -1,1 +1,1 @@
-c:/temp/ibis4test/bftp/in/EDIFACT.TXT
+c:/temp/testdata/bftp/in/EDIFACT.TXT

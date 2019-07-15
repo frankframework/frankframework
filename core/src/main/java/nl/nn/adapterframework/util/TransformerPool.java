@@ -212,17 +212,17 @@ public class TransformerPool {
 	}
 
 	@Deprecated
-	public static TransformerPool getInstance(String xsltString, boolean xslt2) throws TransformerConfigurationException {
+	private static TransformerPool getInstance(String xsltString, boolean xslt2) throws TransformerConfigurationException {
 		return getInstance(xsltString, null, xslt2);
 	}
 
 	@Deprecated
-	public static TransformerPool getInstance(String xsltString, String sysId, boolean xslt2) throws TransformerConfigurationException {
+	private static TransformerPool getInstance(String xsltString, String sysId, boolean xslt2) throws TransformerConfigurationException {
 		return getInstance(xsltString, sysId, xslt2, USE_CACHING);
 	}
 
 	@Deprecated
-	public static TransformerPool getInstance(String xsltString, String sysId, boolean xslt2, boolean caching) throws TransformerConfigurationException {
+	private static TransformerPool getInstance(String xsltString, String sysId, boolean xslt2, boolean caching) throws TransformerConfigurationException {
 		if (caching) {
 			return retrieveInstance(xsltString, sysId, xslt2);
 		} else {
@@ -243,7 +243,7 @@ public class TransformerPool {
 	}
 
 	public static TransformerPool getInstance(URL url) throws TransformerConfigurationException, IOException {
-		return getInstance(url, false);
+		return getInstance(url, 0);
 	}
 
 	public static TransformerPool getInstance(URL url, int xsltVersion) throws TransformerConfigurationException, IOException {

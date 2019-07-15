@@ -4,34 +4,17 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
+import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
-public class XmlUtilsTest {
+public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 
-	public void testTransformerPool(TransformerPool tp, String input, String expected, boolean namespaceAware) throws DomBuilderException, TransformerException, IOException {
-		String actual=tp.transform(input, null, namespaceAware);
-		assertEquals(expected.trim(),actual.trim());
-	}
-
-	public void testTransformerPool(TransformerPool tp, String input, String expected) throws DomBuilderException, TransformerException, IOException {
-		testTransformerPool(tp, input, expected, true);
-	}
-	
-	public void testXslt(String xslt, String input, String expected) throws DomBuilderException, TransformerException, IOException {
-		testXslt(xslt, input, expected, false);
-	}
-	
-	public void testXslt(String xslt, String input, String expected, boolean xslt2) throws DomBuilderException, TransformerException, IOException {
-		TransformerPool tp = TransformerPool.getInstance(xslt,xslt2);
-		testTransformerPool(tp,input,expected);
-	}
-	
 	public void testSkipEmptyTags(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws DomBuilderException, TransformerException, IOException, ConfigurationException {
-		testXslt(XmlUtils.makeSkipEmptyTagsXslt(omitXmlDeclaration, indent),input,expected,true);
+		testXslt(XmlUtils.makeSkipEmptyTagsXslt(omitXmlDeclaration, indent),input,expected,0);
 		testTransformerPool(XmlUtils.getSkipEmptyTagsTransformerPool(omitXmlDeclaration, indent),input,expected);
 	}
 	
@@ -78,12 +61,11 @@ public class XmlUtilsTest {
 	@Test
 	public void testRemoveNamespaces() throws DomBuilderException, TransformerException, IOException, ConfigurationException {
 		String lineSeparator=System.getProperty("line.separator");
-		testRemoveNamespaces("<root><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a><b/><c/></root>",false,false);
-		testRemoveNamespaces("<root><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root>"+lineSeparator+"<a>a</a>"+lineSeparator+"<b/>"+lineSeparator+"<c/>"+lineSeparator+"</root>",false,true);
-		testRemoveNamespaces("<root><a>a</a><b></b><c/></root>","<root><a>a</a><b/><c/></root>",true,false);
-		testRemoveNamespaces("<root><a>a</a><b></b><c/></root>","<root>"+lineSeparator+"<a>a</a>"+lineSeparator+"<b/>"+lineSeparator+"<c/>"+lineSeparator+"</root>",true,true);
+		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a><b/><c/></root>",false,false);
+		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+lineSeparator+"<root>"+lineSeparator+"   <a>a</a>"+lineSeparator+"   <b/>"+lineSeparator+"   <c/>"+lineSeparator+"</root>",false,true);
+		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>","<root><a>a</a><b/><c/></root>",true,false);
+		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>","<root>"+lineSeparator+"   <a>a</a>"+lineSeparator+"   <b/>"+lineSeparator+"   <c/>"+lineSeparator+"</root>",true,true);
 	}
-	
 	
 	@Test
 	public void testGetRootNamespace() throws DomBuilderException, TransformerException, IOException, ConfigurationException {
@@ -112,7 +94,7 @@ public class XmlUtilsTest {
 		testChangeRoot("switch","<root><a>a</a></root>","<switch>"+lineSeparator+"<a>a</a>"+lineSeparator+"</switch>",true,true);
 	}
 
-	@Test
+	@Test()
 	public void testRemoveUnusedNamespaces() throws DomBuilderException, TransformerException, IOException, ConfigurationException {
 		String lineSeparator=System.getProperty("line.separator");
 		testRemoveUnusedNamespaces("<root><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a><b/><c/></root>",false,false);
@@ -135,8 +117,30 @@ public class XmlUtilsTest {
 		testRemoveUnusedNamespaces("<root xmlns:xx=\"xyz\"><a>a</a><b></b><xx:c/></root>","<root><a>a</a><b/><c xmlns=\"xyz\"/></root>",true,false);
 		testRemoveUnusedNamespaces("<root xmlns:xx=\"xyz\"><a>a</a><b></b><xx:c/></root>","<root>"+lineSeparator+"<a>a</a>"+lineSeparator+"<b/>"+lineSeparator+"<c xmlns=\"xyz\"/>"+lineSeparator+"</root>",true,true);
 
-}
+	}
 
+	
+	@Test()
+	public void testIdentityTransform() throws DomBuilderException, TransformerException, IOException {
+		String in="<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a><b/><c/></root>";
+		String xslt="<?xml version=\"1.0\"?>"+
+					"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\" ><xsl:output method=\"xml\"/>"+
+						"<xsl:template match=\"@*|*|processing-instruction()|comment()\">"+
+							"<xsl:copy>"+
+								"<xsl:apply-templates select=\"*|@*|text()|processing-instruction()|comment()\" />"+
+							"</xsl:copy>"+
+						"</xsl:template>"+
+					"</xsl:stylesheet>";
+		TransformerPool tp = TransformerPool.getInstance(xslt);
+		
+		String actual=tp.transform(in, null, true);
+		assertEquals("String,namespaceAware",in,actual);
+		
+		Source source = XmlUtils.stringToSourceForSingleUse(in, true);
+		actual = tp.transform(source, null);
+		assertEquals("Source,namespaceAware",in,actual);
+	}
+	
 //	@Test
 //	public void testRemoveUnusedNamespacesXslt2() throws DomBuilderException, TransformerException, IOException, ConfigurationException {
 //		String lineSeparator=System.getProperty("line.separator");

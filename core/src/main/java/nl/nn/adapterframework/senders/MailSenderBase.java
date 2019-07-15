@@ -303,9 +303,15 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		Element emailElement = XmlUtils.buildElement(input);
 		from = XmlUtils.getFirstChildTag(emailElement, "from");
 		subject = XmlUtils.getChildTagAsString(emailElement, "subject");
+		if (StringUtils.isEmpty(subject)) {
+			subject=getDefaultSubject();
+		}
 		threadTopic = XmlUtils.getChildTagAsString(emailElement, "threadTopic");
 		message = XmlUtils.getChildTagAsString(emailElement, "message");
 		messageType = XmlUtils.getChildTagAsString(emailElement, "messageType");
+		if (StringUtils.isEmpty(messageType)) {
+			messageType=getDefaultMessageType();
+		}
 		messageBase64 = XmlUtils.getChildTagAsString(emailElement, "messageBase64");
 		charset = XmlUtils.getChildTagAsString(emailElement, "charset");
 

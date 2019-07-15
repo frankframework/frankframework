@@ -170,7 +170,7 @@
 
 			<inputValidator 
 				className="nl.nn.adapterframework.extensions.esb.EsbSoapValidator"
-				schemaLocation="http://nn.nl/XSD/AccountInformation/1/GetPaymentReferenceAndPayLink/1 /WsdlGenerator/xsd/AccountInformation_CD_1_GetPaymentReferenceAndPayLink_1.xsd"
+				schemaLocation="http://nn.nl/XSD/AccountInformation/AccountInformation/1/GetPaymentReferenceAndPayLink/1 /WsdlGenerator/xsd/AccountInformation_CD_1_GetPaymentReferenceAndPayLink_1.xsd"
 				soapBody="GetPaymentReferenceAndPayLink_Request"
 				ignoreUnknownNamespaces="true"
 				cmhVersion="2"
@@ -179,7 +179,7 @@
 			
 			<outputValidator 
 				className="nl.nn.adapterframework.extensions.esb.EsbSoapValidator"
-				schemaLocation="http://nn.nl/XSD/AccountInformation/1/GetPaymentReferenceAndPayLink/1 /WsdlGenerator/xsd/AccountInformation_CD_1_GetPaymentReferenceAndPayLink_1.xsd"
+				schemaLocation="http://nn.nl/XSD/AccountInformation/AccountInformation/1/GetPaymentReferenceAndPayLink/1 /WsdlGenerator/xsd/AccountInformation_CD_1_GetPaymentReferenceAndPayLink_1.xsd"
 				soapBody="GetPaymentReferenceAndPayLink_Response"
 				cmhVersion="2"
 				throwException="true">

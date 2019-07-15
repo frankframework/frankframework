@@ -6,7 +6,7 @@
       <configuration nameUC="1NOTEXISTINGCONFIG">NotExistingConfig</configuration>
       <configuration nameUC="1IAF*UTIL">IAF_Util</configuration>
   </configurations>
-  <registeredAdapters all="false">
+  <registeredAdapters all="false" log="false">
       <configurationMessages>
          <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Configuration [Ibis4Example] LiquiBase applying change [Ibis4Example:1:Niels Meijer] description [insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE] tag [Ibis4Example:1:Niels Meijer]</configurationMessage>
          <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Configuration [Ibis4Example] startup in 0 ms</configurationMessage>
@@ -18,6 +18,8 @@
                configUC="IBIS4EXAMPLE"
                configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
                messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
@@ -74,6 +76,8 @@
                configUC="IBIS4EXAMPLE"
                configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
                messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
@@ -142,6 +146,8 @@
                configUC="IBIS4EXAMPLE"
                configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
                messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
@@ -202,6 +208,8 @@
                configUC="IBIS4EXAMPLE"
                configured="true"
                lastMessageDate="-"
+               lastMsgProcessState="-"
+               logAlert="false"
                messagesInError="0"
                messagesInProcess="0"
                messagesProcessed="0"
@@ -255,8 +263,9 @@
          </adapterMessages>
       </adapter>
       <summary>
-         <adapterState error="0" started="4" starting="0" stopped="0" stopping="0"/>
-         <receiverState error="0" started="8" starting="0" stopped="0" stopping="0"/>
+         <adapterState error="0" started="4" startedNotAvailable="0" starting="0" stopped="0" stopping="0"/>
+         <lastMsgProcessState error="0" notApplicable="4" ok="0"/>
+         <receiverState error="0" started="8" startedNotAvailable="0" starting="0" stopped="0" stopping="0"/>
          <messageLevel error="0" info="40" warn="0"/>
       </summary>
   </registeredAdapters>
