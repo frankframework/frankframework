@@ -14,8 +14,9 @@ Upcoming
 
 - Improve validation config warnings
 - ShowConfigurationStatus - improve error view
-
-
+- Possibility to add new domains independently of ear file
+    - UploadConfigService adapter
+    - Facility to (de)activate configs
 
 7.3
 --------

@@ -19,20 +19,19 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlBuilder;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Upload a configuration.
@@ -42,10 +41,10 @@ import org.apache.commons.lang.StringUtils;
 
 public class UploadConfig extends TimeoutGuardPipe {
 	private IbisContext ibisContext;
-	private static final String DUMMY = "dummy";
 	private static final String AUTO_RELOAD = "autoReload";
 	private static final String ACTIVE_CONFIG = "activeConfig";
-	
+	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.autoDatabaseClassLoader", false);
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -53,7 +52,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 		ibisContext = ((Adapter) getAdapter()).getConfiguration()
 				.getIbisManager().getIbisContext();
 	}
-	
+
 	@Override
 	public String doPipeWithTimeoutGuarded(Object input,
 			IPipeLineSession session) throws PipeRunException {
@@ -63,41 +62,35 @@ public class UploadConfig extends TimeoutGuardPipe {
 		} else if ("POST".equalsIgnoreCase(method)) {
 			return doPost(session);
 		} else {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "Illegal value for method [" + method
-					+ "], must be 'GET' or 'POST'");
+			throw new PipeRunException(this,
+					getLogPrefix(session) + "Illegal value for method ["
+							+ method + "], must be 'GET' or 'POST'");
 		}
 	}
 
 	private String doGet(IPipeLineSession session) throws PipeRunException {
-		String otapStage = AppConstants.getInstance().getResolvedProperty("otap.stage");
+		String otapStage = AppConstants.getInstance()
+				.getResolvedProperty("otap.stage");
 		session.put(ACTIVE_CONFIG, "on");
-		if ("DEV".equalsIgnoreCase(otapStage) || "TEST".equalsIgnoreCase(otapStage)) { 
-			session.put(AUTO_RELOAD, "on"); 
+		if ("DEV".equalsIgnoreCase(otapStage)
+				|| "TEST".equalsIgnoreCase(otapStage)) {
+			session.put(AUTO_RELOAD, "on");
 		} else {
-			session.put(AUTO_RELOAD, "off"); 	
+			session.put(AUTO_RELOAD, "off");
 		}
 		return retrieveFormInput();
 	}
-	
+
 	private String doPost(IPipeLineSession session) throws PipeRunException {
-		String multipleConfigs = (String)session.get("multipleConfigs");
-		String fileName = (String)session.get("fileName");
-		String name = (String)session.get("name");
-		String version = (String)session.get("version");
-		ConfigData configData = new ConfigData(multipleConfigs, fileName, name, version);
+		String multipleConfigs = (String) session.get("multipleConfigs");
+		String fileName = (String) session.get("fileName");
 		String result;
-		
-		if (!"on".equals(multipleConfigs)) {
-		processMultipleConfigs(configData, session);
-		}
-		
 		Object file = session.get("file");
 		if (file == null) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "Nothing to send or test");
+			throw new PipeRunException(this,
+					getLogPrefix(session) + "Nothing to send or test");
 		}
-		
+
 		if ("on".equals(multipleConfigs)) {
 			try {
 				result = processZipFile(session);
@@ -106,52 +99,26 @@ public class UploadConfig extends TimeoutGuardPipe {
 						+ "Error while processing zip file", e);
 			}
 		} else {
-			result = processJarFile(session, name, version, fileName, "file");
+			result = processJarFile(session, fileName, "file");
 		}
-		
+
 		session.put("result", result);
 		return "<dummy/>";
 	}
 
-	private String[] splitFilename(String fileName) {
-		String name = null;
-		String version = null;
-		if (StringUtils.isNotEmpty(fileName)) {
-			int i = fileName.lastIndexOf('.');
-			if (i != -1) {
-				name = fileName.substring(0, i);
-				int j = name.lastIndexOf('-');
-				if (j != -1) {
-					name = name.substring(0, j);
-					j = name.lastIndexOf('-');
-					if (j != -1) {
-						name = fileName.substring(0, j);
-						version = fileName.substring(j + 1, i);
-						if (version.startsWith("SNAPSHOT")) {
-							j = name.lastIndexOf('-');
-							if (j != -1) {
-								name = fileName.substring(0, j);
-								version = fileName.substring(j + 1, i);
-							}
-						}
-					}
-				}
-			}
-		}
-		return new String[] { name, version };
-	}
-	
 	private String processZipFile(IPipeLineSession session)
 			throws PipeRunException, IOException {
 		StringBuilder result = new StringBuilder();
 		Object formFile = session.get("file");
-		if (formFile != null && (formFile instanceof InputStream)) {
-				InputStream inputStream = (InputStream) formFile;
+		if (formFile instanceof InputStream) {
+			InputStream inputStream = (InputStream) formFile;
+			try {
 				if (inputStream.available() > 0) {
 					ZipInputStream archive = new ZipInputStream(inputStream);
 					int counter = 1;
-					for (ZipEntry entry = archive.getNextEntry(); entry != null; entry = archive
-							.getNextEntry()) {
+					for (ZipEntry entry = archive
+							.getNextEntry(); entry != null; entry = archive
+									.getNextEntry()) {
 						String entryName = entry.getName();
 						int size = (int) entry.getSize();
 						if (size > 0) {
@@ -164,238 +131,72 @@ public class UploadConfig extends TimeoutGuardPipe {
 								}
 								rb += chunk;
 							}
-							ByteArrayInputStream bais = new ByteArrayInputStream(
-									b, 0, rb);
-							String fileNameSessionKey = "file_zipentry"
-									+ counter;
+							ByteArrayInputStream bais = new ByteArrayInputStream(b,
+									0, rb);
+							String fileNameSessionKey = "file_zipentry" + counter;
 							session.put(fileNameSessionKey, bais);
-							if (result.toString().isEmpty()) {
-								result.append("\n");
+							if (result.length()!=0){
+								result.append("\n" + new String(new char[32]).replace("\0", "-") + "\n"); //Creates separator between config results
 							}
-							String name = "";
-							String version = "";
-							String[] fnArray = splitFilename(entryName);
-							if (fnArray[0] != null) {
-								name = fnArray[0];
-							}
-							if (fnArray[1] != null) {
-								version = fnArray[1];
-							}
-							result.append(entryName);
-							result.append(":");
-							result.append(processJarFile(session, name, version,
-											entryName, fileNameSessionKey));
+							result.append(processJarFile(session,
+									entryName, fileNameSessionKey));
 							session.remove(fileNameSessionKey);
 						}
 						archive.closeEntry();
 						counter++;
 					}
 					archive.close();
-				}	
+				} else {
+					throw new PipeRunException(this, getLogPrefix(session)
+							+ "Cannot read zip file");
+				}
+			} finally {
+				if (inputStream != null) {
+					inputStream.close();
+				}
+			}
 		}
 		return result.toString();
 	}
-	
-	private String selectConfigQuery(IPipeLineSession session, String name) throws PipeRunException {
-		String formJmsRealm = (String) session.get("jmsRealm");
-		String result = "";
-		FixedQuerySender qs = (FixedQuerySender) ibisContext
-				.createBeanAutowireByName(FixedQuerySender.class);
-		try {
-			qs.setName("QuerySender");
-			qs.setJmsRealm(formJmsRealm);
-			qs.setQueryType("select");
-			qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG WHERE NAME=?");
-			Parameter param = new Parameter();
-			param.setName("name");
-			param.setValue(name);
-			qs.addParameter(param);
-			qs.setScalar(true);
-			qs.configure();
-			qs.open();
-			ParameterResolutionContext prc = new ParameterResolutionContext(
-					DUMMY, session);
-			result = qs.sendMessage(DUMMY, DUMMY, prc);
-		} catch (Exception t) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "Error occured on executing jdbc query", t);
-		} finally {
-			qs.close();
-		}
-		return result;
-	}
-	
-	private String deleteConfigQuery(IPipeLineSession session, String name, String formJmsRealm, String version) throws PipeRunException {
-		FixedQuerySender qs = (FixedQuerySender) ibisContext
-				.createBeanAutowireByName(FixedQuerySender.class);
-		String result = "";
-		try {
-			qs.setName("QuerySender");
-			qs.setJmsRealm(formJmsRealm);
-			qs.setQuery("DELETE FROM IBISCONFIG WHERE NAME = ? AND VERSION = ?");
-			Parameter param = new Parameter();
-			param.setName("name");
-			param.setValue(name);
-			qs.addParameter(param);
-			param = new Parameter();
-			param.setName("version");
-			param.setValue(version);
-			qs.addParameter(param);
-			qs.setScalar(true);
-			qs.configure();
-			qs.open();
-			ParameterResolutionContext prc = new ParameterResolutionContext(
-					DUMMY, session);
-			result = qs.sendMessage(DUMMY, DUMMY, prc);
-		} catch (Exception t) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "Error occured on executing jdbc query", t);
-		} finally {
-			qs.close();
-		}
-		return result;
-	}
-	
-	private String activeConfigQuery(IPipeLineSession session, String name, String formJmsRealm, String result) throws PipeRunException {
-		FixedQuerySender qs = (FixedQuerySender) ibisContext
-				.createBeanAutowireByName(FixedQuerySender.class);
-		try {
-			qs.setName("QuerySender");
-			qs.setJmsRealm(formJmsRealm);
-			qs.setQueryType("update");
-			qs.setQuery("UPDATE IBISCONFIG SET ACTIVECONFIG = '"+qs.getDbmsSupport().getBooleanValue(false)+"' WHERE NAME=?");
-			Parameter param = new Parameter();
-			param.setName("name");
-			param.setValue(name);
-			qs.addParameter(param);
-			qs.setScalar(true);
-			qs.configure();
-			qs.open();
-			ParameterResolutionContext prc = new ParameterResolutionContext(
-					DUMMY, session);
-			result = qs.sendMessage(DUMMY, DUMMY, prc);
-		} catch (Exception t) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "Error occured on executing jdbc query", t);
-		} finally {
-			qs.close();
-		}
-		return result;
-	}
-	
-	private ConfigData processMultipleConfigs(ConfigData configData, IPipeLineSession session) throws PipeRunException {
-			if (StringUtils.isEmpty(configData.getName()) && StringUtils.isEmpty(configData.getVersion())) {
-				String[] fnArray = splitFilename(configData.getFileName());
-				if (fnArray[0] != null) {
-					configData.setName(fnArray[0]);
-				}
-				if (fnArray[1] != null) {
-					configData.setVersion(fnArray[1]);
-				}
-			}
 
-			if (StringUtils.isEmpty(configData.getName())) {
-				throw new PipeRunException(this, getLogPrefix(session)
-						+ "Cannot determine configuration name");
-			}
+	
 
-			if (StringUtils.isEmpty(configData.getVersion())) {
-				throw new PipeRunException(this, getLogPrefix(session)
-						+ "Cannot determine configuration version");
-			}
-		return configData;
-	}
-	
-	private FixedQuerySender setAutoReload(String autoReload, FixedQuerySender qs) {
-		Parameter param = new Parameter();
-		param.setName(AUTO_RELOAD);
-		if ("on".equals(autoReload)) {
-			param.setValue(qs.getDbmsSupport().getBooleanValue(true));
-		} else {
-			param.setValue(qs.getDbmsSupport().getBooleanValue(false));
-		}
-		qs.addParameter(param);
-		return qs;
-	}
-	
-	private FixedQuerySender setActiveConfig(String activeConfig, FixedQuerySender qs) {
-		Parameter param = new Parameter();
-		param.setName(ACTIVE_CONFIG);
-		if ("on".equals(activeConfig)) {
-			param.setValue(qs.getDbmsSupport().getBooleanValue(true));
-		} else {
-			param.setValue(qs.getDbmsSupport().getBooleanValue(false));
-		}
-		qs.addParameter(param);
-		return qs;
-	}
-	
-	private String processJarFile(IPipeLineSession session, String name,
-			String version, String fileName, String fileNameSessionKey)
+	private String processJarFile(IPipeLineSession session, String fileName, String fileSessionKey)
 			throws PipeRunException {
 		String formJmsRealm = (String) session.get("jmsRealm");
 		String activeConfig = (String) session.get(ACTIVE_CONFIG);
+		boolean isActiveConfig = "on".equals(activeConfig);
 		String autoReload = (String) session.get(AUTO_RELOAD);
-		String result = selectConfigQuery(session, name);
-		
-		if ("on".equals(activeConfig)) {
-			activeConfigQuery(session, name, formJmsRealm, result);
-		}
-		if (Integer.parseInt(result) > 0) {
-			deleteConfigQuery(session, name, formJmsRealm, version);
-		}
-
+		boolean isAutoReload = "on".equals(autoReload);
 		String remoteUser = (String) session.get("principal");
+		InputStream inputStream = (InputStream) session.get(fileSessionKey);
 
-		FixedQuerySender qs = (FixedQuerySender) ibisContext
-				.createBeanAutowireByName(FixedQuerySender.class);
 		try {
-			qs.setName("QuerySender");
-			qs.setJmsRealm(formJmsRealm);
-			qs.setQueryType("insert");
-			if (StringUtils.isEmpty(remoteUser)) {
-				qs.setQuery("INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, ACTIVECONFIG, AUTORELOAD) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)");
-			} else {
-				qs.setQuery("INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, RUSER, ACTIVECONFIG, AUTORELOAD) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?)");
-			}
-			Parameter param = new Parameter();
-			param.setName("name");
-			param.setValue(name);
-			qs.addParameter(param);
-			param = new Parameter();
-			param.setName("version");
-			param.setValue(version);
-			qs.addParameter(param);
-			param = new Parameter();
-			param.setName("fileName");
-			param.setValue(fileName);
-			qs.addParameter(param);
-			param = new Parameter();
-			param.setName("config");
-			param.setSessionKey(fileNameSessionKey);
-			param.setType(Parameter.TYPE_INPUTSTREAM);
-			qs.addParameter(param);
-			if (StringUtils.isNotEmpty(remoteUser)) {
-				param = new Parameter();
-				param.setName("ruser");
-				param.setValue(remoteUser);
-				qs.addParameter(param);
-			}
-			setActiveConfig(activeConfig, qs);
-			setAutoReload(autoReload, qs);
+			// convert inputStream to byteArray so it can be read twice
+			byte[] bytes = IOUtils.toByteArray(inputStream);
 			
-			qs.configure();
-			qs.open();
-			ParameterResolutionContext prc = new ParameterResolutionContext(
-					DUMMY, session);
-			result = qs.sendMessage(DUMMY, DUMMY, prc);
-		} catch (Exception t) {
+			String[] buildInfo = ConfigurationUtils.retrieveBuildInfo(
+					new ByteArrayInputStream(bytes));
+			String buildInfoName = buildInfo[0];
+			String buildInfoVersion = buildInfo[1];
+			if (StringUtils.isEmpty(buildInfoName) || StringUtils.isEmpty(buildInfoVersion)) {
+				throw new PipeRunException(this, getLogPrefix(session)
+						+ "Cannot retrieve BuildInfo name and version");
+			}
+			if (ConfigurationUtils.addConfigToDatabase(ibisContext,
+					formJmsRealm, isActiveConfig, isAutoReload, buildInfoName, buildInfoVersion,
+					fileName, new ByteArrayInputStream(bytes), remoteUser)) {
+				if (CONFIG_AUTO_DB_CLASSLOADER && isAutoReload && ibisContext
+						.getIbisManager().getConfiguration(buildInfoName) == null) {
+					ibisContext.load(buildInfoName);
+				}
+				return ("OK\n" + "Name: " + buildInfoName + "\nVersion: " + buildInfoVersion);
+			}
+		} catch (Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session)
-					+ "Error occured on executing jdbc query", t);
-		} finally {
-			qs.close();
+					+ "Error occured on adding config to database", e);
 		}
-		return result;
+		return "NOT_OK";
 	}
 
 	private String retrieveFormInput() {
@@ -413,44 +214,5 @@ public class UploadConfig extends TimeoutGuardPipe {
 			}
 		}
 		return jmsRealmsXML.toXML();
-	}
-}
-
-
-class ConfigData {
-	private String multipleConfigs;
-	private String fileName;
-	private String name;
-	private String version;
-	
-	public ConfigData(String multipleConfigs, String fileName, String name, String version){
-		this.multipleConfigs = multipleConfigs;
-		this.fileName = fileName;
-		this.name = name;
-		this.version = version;
-	}
-
-	public String getMultipleConfigs() {
-		return multipleConfigs;
-	}
-
-	public String getFileName() {
-		return fileName;
-	}
-
-	public String getName() {
-		return name;
-	}
-	
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getVersion() {
-		return version;
-	}
-	
-	public void setVersion(String version) {
-		this.version = version;
 	}
 }
