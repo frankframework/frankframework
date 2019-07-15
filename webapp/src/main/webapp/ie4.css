@@ -105,6 +105,12 @@ H2 A:visited {
 H3 A:visited {
 	COLOR: #333366
 }
+H7 A:link {
+	COLOR: #b4e2ff; TEXT-DECORATION: underline
+}
+H7 A:visited {
+	COLOR: #b4e2ff; TEXT-DECORATION: underline
+}
 A.clsIncCpyRt {
 	FONT-SIZE: 11px; COLOR: #000000
 }

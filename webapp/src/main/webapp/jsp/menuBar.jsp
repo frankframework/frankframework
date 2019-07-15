@@ -1,9 +1,6 @@
 <%@ page import="nl.nn.adapterframework.monitoring.MonitorManager"%>
 <%@ page import="nl.nn.adapterframework.util.AppConstants"%>
-<%@ page import="nl.nn.adapterframework.util.XmlUtils"%>
 
-<%@ taglib uri="/WEB-INF/struts-bean.tld" prefix="bean" %>
-<%@ taglib uri="/WEB-INF/struts-html.tld" prefix="html" %>
 <menuBar>
 	<imagelinkMenu>
 			<imagelink 

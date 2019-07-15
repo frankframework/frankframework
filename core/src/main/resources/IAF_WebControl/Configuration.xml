@@ -6,6 +6,7 @@
 	<!ENTITY TestIfsaService SYSTEM "ConfigurationTestIfsaService.xml">
 	<!ENTITY UploadConfig SYSTEM "ConfigurationUploadConfig.xml">
 	<!ENTITY ShowConfig SYSTEM "ConfigurationShowConfig.xml">
+	<!ENTITY ShowConfigExe SYSTEM "ConfigurationShowConfigExe.xml">
 	<!ENTITY ShowFlowDiagram SYSTEM "ConfigurationShowFlowDiagram.xml">
 	<!ENTITY ExecuteJdbcProperties SYSTEM "ConfigurationExecuteJdbcProperties.xml">
 	<!ENTITY ShowEnvironmentVariables SYSTEM "ConfigurationShowEnvironmentVariables.xml">
@@ -18,6 +19,7 @@
 	&TestIfsaService;
 	&UploadConfig;
 	&ShowConfig;
+	&ShowConfigExe;
 	&ShowFlowDiagram;
 	&ExecuteJdbcProperties;
 	&ShowEnvironmentVariables;
