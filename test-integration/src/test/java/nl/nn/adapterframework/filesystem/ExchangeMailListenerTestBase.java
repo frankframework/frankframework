@@ -33,16 +33,16 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	private int senderSmtpPort=465;
 	private boolean senderSsl=true;
 	private String senderUserId="gerrit@25bis.nl";
-	private String senderPassword="";
+//	private String senderPassword="";
 	private String sendGridApiKey="";
 	
-	private String nonExistingFileName = "AAMkAGNmZTczMWUwLWQ1MDEtNDA3Ny1hNjU4LTlmYTQzNjE0NjJmYgBGAAAAAAALFKqetECyQKQyuRBrRSzgBwDx14SZku4LS5ibCBco+nmXAAAAAAEMAADx14SZku4LS5ibCBco+nmXAABMFuwsAAA=";
+//	private String nonExistingFileName = "AAMkAGNmZTczMWUwLWQ1MDEtNDA3Ny1hNjU4LTlmYTQzNjE0NjJmYgBGAAAAAAALFKqetECyQKQyuRBrRSzgBwDx14SZku4LS5ibCBco+nmXAAAAAAEMAADx14SZku4LS5ibCBco+nmXAABMFuwsAAA=";
 
 	protected IExchangeMailListener mailListener;
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new MailSendingTestHelper(mailaddress,senderSmtpHost,senderSmtpPort,senderSsl, senderUserId, sendGridApiKey);
+		return new MailSendingTestHelper(mailaddress,senderSmtpHost,senderSmtpPort, senderSsl, senderUserId, sendGridApiKey);
 	}
 	
 	@Override
@@ -255,12 +255,6 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		
 		System.out.println("message ["+message+"]");
 		//assertEquals("name","x",fileSystem.getName(file));
-		String expectedBody="tja\r\n\r\n"+
-           "-- \r\n"+
-           "Gerrit van Brakel\r\n"+
-           "Kievitdwarsstraat 25 bis\r\n"+
-           "3514 VC Utrecht\r\n"+
-           "T +31-6-55-804644, gerrit@25bis.nl\r\n";
 
 		assertTrue(XmlUtils.isWellFormed(message,"email"));
 		TestAssertions.assertXpathValueEquals("gerrit@integrationpartners.nl", message, "/email/recipients/recipient[@type='to']");
@@ -325,7 +319,6 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		String xEnvironment="TST";
 		String xCorrelationId="ID:EMS_TST_ESB_P2P_LARGE.19DA5B995492D604248:15";
 		int    originalAttachmentCount=0;
-		String originalAttachmentName="tekstfile.txt";
 
 		String mainRecipient=originalRecipient;
 		String mainSubject="Onbestelbaar: "+originalSubject;	

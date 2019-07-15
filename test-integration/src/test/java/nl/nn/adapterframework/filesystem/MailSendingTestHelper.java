@@ -18,9 +18,6 @@ public class MailSendingTestHelper implements IFileSystemTestHelper {
 	private String senderUserId="";
 	private String senderPassword="";
 
-	private Properties properties=new Properties();
-	
-//	protected ExchangeFileSystem fileSystem;
 	private SendGridSender mailSender;
 	
 	private MockFile currentFile;
