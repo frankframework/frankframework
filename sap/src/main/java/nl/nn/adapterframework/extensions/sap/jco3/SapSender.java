@@ -75,6 +75,7 @@ public class SapSender extends SapSenderBase {
 		setSynchronous(true);
 	}
 	
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getFunctionName())) {
@@ -112,6 +113,7 @@ public class SapSender extends SapSenderBase {
 		return getFunctionTemplate(sapSystem, functionName).getFunction();
 	}
 
+	@Override
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		String tid=null;
 		try {
@@ -150,11 +152,13 @@ public class SapSender extends SapSenderBase {
 		}
 	}
 
+	@Override
 	public void setSynchronous(boolean b) {
 		super.setSynchronous(b);
 	}
 
 
+	@Override
 	public String getFunctionName() {
 		return functionName;
 	}

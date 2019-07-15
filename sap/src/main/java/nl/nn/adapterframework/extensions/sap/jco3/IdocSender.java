@@ -66,6 +66,7 @@ public class IdocSender extends SapSenderBase {
 		}
 	}
 
+	@Override
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		String tid=null;
 		try {

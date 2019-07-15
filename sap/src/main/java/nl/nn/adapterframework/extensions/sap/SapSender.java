@@ -49,6 +49,7 @@ public class SapSender implements ISenderWithParameters, HasPhysicalDestination 
 		}
 	}
 
+	@Override
 	public String getName() {
 		if (jcoVersion == 3) {
 			return sapSender3.getName();
@@ -57,6 +58,7 @@ public class SapSender implements ISenderWithParameters, HasPhysicalDestination 
 		}
 	}
 
+	@Override
 	public void setName(String name) {
 		if (jcoVersion == 3) {
 			sapSender3.setName(name);
@@ -65,6 +67,7 @@ public class SapSender implements ISenderWithParameters, HasPhysicalDestination 
 		}
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 		if (jcoVersion == 3) {
 			sapSender3.configure();
@@ -73,6 +76,7 @@ public class SapSender implements ISenderWithParameters, HasPhysicalDestination 
 		}
 	}
 
+	@Override
 	public void open() throws SenderException {
 		if (jcoVersion == 3) {
 			sapSender3.open();
@@ -81,6 +85,7 @@ public class SapSender implements ISenderWithParameters, HasPhysicalDestination 
 		}
 	}
 
+	@Override
 	public void close() throws SenderException {
 		if (jcoVersion == 3) {
 			sapSender3.close();
@@ -89,6 +94,7 @@ public class SapSender implements ISenderWithParameters, HasPhysicalDestination 
 		}
 	}
 
+	@Override
 	public boolean isSynchronous() {
 		if (jcoVersion == 3) {
 			return sapSender3.isSynchronous();
@@ -97,6 +103,7 @@ public class SapSender implements ISenderWithParameters, HasPhysicalDestination 
 		}
 	}
 
+	@Override
 	public void addParameter(Parameter p) {
 		if (jcoVersion == 3) {
 			sapSender3.addParameter(p);
@@ -105,8 +112,8 @@ public class SapSender implements ISenderWithParameters, HasPhysicalDestination 
 		}
 	}
 
-	public String sendMessage(String correlationID, String message)
-			throws SenderException, TimeOutException {
+	@Override
+	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
 		if (jcoVersion == 3) {
 			return sapSender3.sendMessage(correlationID, message);
 		} else {
@@ -114,9 +121,8 @@ public class SapSender implements ISenderWithParameters, HasPhysicalDestination 
 		}
 	}
 
-	public String sendMessage(String correlationID, String message,
-			ParameterResolutionContext prc) throws SenderException,
-			TimeOutException {
+	@Override
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		if (jcoVersion == 3) {
 			return sapSender3.sendMessage(correlationID, message, prc);
 		} else {
@@ -252,6 +258,7 @@ public class SapSender implements ISenderWithParameters, HasPhysicalDestination 
 		}
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		if (jcoVersion == 3) {
 			return sapSender3.getSapSystemName();

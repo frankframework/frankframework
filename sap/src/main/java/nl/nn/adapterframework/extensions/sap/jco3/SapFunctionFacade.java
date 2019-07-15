@@ -18,6 +18,14 @@ package nl.nn.adapterframework.extensions.sap.jco3;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+
+import com.sap.conn.jco.JCoFunction;
+import com.sap.conn.jco.JCoFunctionTemplate;
+import com.sap.conn.jco.JCoParameterList;
+import com.sap.conn.jco.JCoStructure;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
@@ -27,14 +35,6 @@ import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-
-import com.sap.conn.jco.JCoFunction;
-import com.sap.conn.jco.JCoFunctionTemplate;
-import com.sap.conn.jco.JCoParameterList;
-import com.sap.conn.jco.JCoStructure;
 /**
  * Wrapper round SAP-functions, either SAP calling Ibis, or Ibis calling SAP.
  * <p><b>Configuration:</b>
@@ -98,7 +98,7 @@ public abstract class SapFunctionFacade implements INamedObject, HasPhysicalDest
 			//Something has changed, so remove the cached templates
 			SapSystemDataProvider.getInstance().updateSystem(sapSystem);
 
-			if (!StringUtils.isEmpty(getFunctionName())) { //Listeners and IdocSenders don't use a functionName
+			if (StringUtils.isNotEmpty(getFunctionName())) { //Listeners and IdocSenders don't use a functionName
 				ftemplate = getFunctionTemplate(sapSystem, getFunctionName());
 				log.debug("found JCoFunctionTemplate ["+ftemplate.toString()+"]");
 				try {
@@ -126,6 +126,7 @@ public abstract class SapFunctionFacade implements INamedObject, HasPhysicalDest
 		ftemplate = null;
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		String result;
 		if (sapSystem==null) {
@@ -351,6 +352,7 @@ public abstract class SapFunctionFacade implements INamedObject, HasPhysicalDest
 		return functionTemplate;
 	}
 
+	
 	public int getCorrelationIdFieldIndex() {
 		return correlationIdFieldIndex;
 	}
@@ -399,10 +401,12 @@ public abstract class SapFunctionFacade implements INamedObject, HasPhysicalDest
 		requestFieldName = string;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	public void setName(String string) {
 		name = string;
 	}

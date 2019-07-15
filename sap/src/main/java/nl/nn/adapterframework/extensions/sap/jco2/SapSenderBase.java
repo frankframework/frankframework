@@ -80,6 +80,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		}
 	}
 
+	@Override
 	public void open() throws SenderException {
 		try {
 			openFacade();
@@ -89,10 +90,12 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		}
 	}
 	
+	@Override
 	public void close() {
 		closeFacade();
 	}
 
+	@Override
 	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
 		return sendMessage(correlationID,message,null);
 	}

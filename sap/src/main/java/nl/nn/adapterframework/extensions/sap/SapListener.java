@@ -17,6 +17,9 @@ package nl.nn.adapterframework.extensions.sap;
 
 import java.util.Map;
 
+import com.sap.conn.jco.JCoFunction;
+import com.sap.mw.jco.JCO;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IMessageHandler;
@@ -51,6 +54,7 @@ public class SapListener implements IPushingListener, HasPhysicalDestination {
 		}
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 		if (jcoVersion == 3) {
 			sapListener3.configure();
@@ -59,6 +63,7 @@ public class SapListener implements IPushingListener, HasPhysicalDestination {
 		}
 	}
 
+	@Override
 	public void open() throws ListenerException {
 		if (jcoVersion == 3) {
 			sapListener3.open();
@@ -67,6 +72,7 @@ public class SapListener implements IPushingListener, HasPhysicalDestination {
 		}
 	}
 
+	@Override
 	public void close() throws ListenerException {
 		if (jcoVersion == 3) {
 			sapListener3.close();
@@ -75,33 +81,34 @@ public class SapListener implements IPushingListener, HasPhysicalDestination {
 		}
 	}
 
-	public String getIdFromRawMessage(Object rawMessage, Map context)
-			throws ListenerException {
+	@Override
+	public String getIdFromRawMessage(Object rawMessage, Map<String,Object> context) throws ListenerException {
 		if (jcoVersion == 3) {
-			return sapListener3.getIdFromRawMessage(rawMessage, context);
+			return sapListener3.getIdFromRawMessage((JCoFunction)rawMessage, context);
 		} else {
-			return sapListener2.getIdFromRawMessage(rawMessage, context);
+			return sapListener2.getIdFromRawMessage((JCO.Function)rawMessage, context);
 		}
 	}
 
-	public String getStringFromRawMessage(Object rawMessage, Map context)
-			throws ListenerException {
+	@Override
+	public String getStringFromRawMessage(Object rawMessage, Map<String,Object> context) throws ListenerException {
 		if (jcoVersion == 3) {
-			return sapListener3.getStringFromRawMessage(rawMessage, context);
+			return sapListener3.getStringFromRawMessage((JCoFunction)rawMessage, context);
 		} else {
-			return sapListener2.getStringFromRawMessage(rawMessage, context);
+			return sapListener2.getStringFromRawMessage((JCO.Function)rawMessage, context);
 		}
 	}
 
-	public void afterMessageProcessed(PipeLineResult processResult,
-			Object rawMessage, Map context) throws ListenerException {
+	@Override
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map<String,Object> context) throws ListenerException {
 		if (jcoVersion == 3) {
-			sapListener3.afterMessageProcessed(processResult, rawMessage, context);
+			sapListener3.afterMessageProcessed(processResult, (JCoFunction)rawMessage, context);
 		} else {
-			sapListener2.afterMessageProcessed(processResult, rawMessage, context);
+			sapListener2.afterMessageProcessed(processResult, (JCO.Function)rawMessage, context);
 		}
 	}
 
+	@Override
 	public String getName() {
 		if (jcoVersion == 3) {
 			return sapListener3.getName();
@@ -110,6 +117,7 @@ public class SapListener implements IPushingListener, HasPhysicalDestination {
 		}
 	}
 
+	@Override
 	public void setName(String name) {
 		if (jcoVersion == 3) {
 			sapListener3.setName(name);
@@ -118,6 +126,7 @@ public class SapListener implements IPushingListener, HasPhysicalDestination {
 		}
 	}
 
+	@Override
 	public void setHandler(IMessageHandler handler) {
 		if (jcoVersion == 3) {
 			sapListener3.setHandler(handler);
@@ -126,6 +135,7 @@ public class SapListener implements IPushingListener, HasPhysicalDestination {
 		}
 	}
 
+	@Override
 	public void setExceptionListener(IbisExceptionListener listener) {
 		if (jcoVersion == 3) {
 			sapListener3.setExceptionListener(listener);

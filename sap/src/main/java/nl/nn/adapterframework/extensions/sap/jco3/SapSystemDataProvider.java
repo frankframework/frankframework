@@ -53,6 +53,7 @@ public class SapSystemDataProvider implements DestinationDataProvider {
 		return self;
 	}
 
+	@Override
 	public Properties getDestinationProperties(String destinationName) {
 		SapSystem sapSystem = SapSystem.getSystem(destinationName);
 		if (sapSystem == null) {
@@ -99,10 +100,12 @@ public class SapSystemDataProvider implements DestinationDataProvider {
 		}
 	}
 
+	@Override
 	public void setDestinationDataEventListener(DestinationDataEventListener destinationDataEventListener) {
 		this.destinationDataEventListener = destinationDataEventListener;
 	}
 
+	@Override
 	public boolean supportsEvents() {
 		return true;
 	}

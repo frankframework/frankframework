@@ -18,14 +18,6 @@ package nl.nn.adapterframework.extensions.sap.jco3;
 import java.util.Map;
 import java.util.Properties;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IMessageHandler;
-import nl.nn.adapterframework.core.IPushingListener;
-import nl.nn.adapterframework.core.IbisExceptionListener;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.extensions.sap.SapException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
@@ -56,6 +48,14 @@ import com.sap.conn.jco.server.JCoServerExceptionListener;
 import com.sap.conn.jco.server.JCoServerFactory;
 import com.sap.conn.jco.server.JCoServerFunctionHandler;
 import com.sap.conn.jco.server.JCoServerTIDHandler;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IMessageHandler;
+import nl.nn.adapterframework.core.IPushingListener;
+import nl.nn.adapterframework.core.IbisExceptionListener;
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.extensions.sap.SapException;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener},
@@ -97,6 +97,7 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 	private DefaultServerHandlerFactory.FunctionHandlerFactory functionHandlerFactory;
 	private ServerDataEventListener serverDataEventListener;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getProgid())) {
 			throw new ConfigurationException("attribute progid must be specified");
@@ -107,6 +108,7 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 		functionHandlerFactory.registerGenericHandler(this);
 	}
 
+	@Override
 	public void open() throws ListenerException {
 		try {
 			openFacade();
@@ -131,6 +133,7 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 		}
 	}
 
+	@Override
 	public void close() throws ListenerException {
 		try {
 			log.debug(getLogPrefix()+"stop server");
@@ -156,6 +159,7 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 		}
 	}
 
+	@Override
 	public Properties getServerProperties(String arg0) {
 		Properties serverProperties = new Properties();
 		serverProperties.setProperty(ServerDataProvider.JCO_GWHOST, sapSystem.getGwhost());
@@ -174,45 +178,53 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 		return serverProperties;
 	}
 
+	@Override
 	public JCoIDocHandler getIDocHandler(JCoIDocServerContext serverCtx) {
 		return this;
 	}
 
+	@Override
 	public void setServerDataEventListener(ServerDataEventListener serverDataEventListener) {
 		log.debug("setting new serverDataEventListener ["+serverDataEventListener.toString()+"]");
 		this.serverDataEventListener = serverDataEventListener;
 	}
 
+	@Override
 	public boolean supportsEvents() {
 		return true;
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		return "progid ["+getProgid()+"] on "+super.getPhysicalDestinationName();
 	}
 
 
-	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
+	@Override
+	public String getIdFromRawMessage(Object rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		log.debug("SapListener.getCorrelationIdFromField");
-		return getCorrelationIdFromField((JCoFunction) rawMessage);
+		return getCorrelationIdFromField((JCoFunction)rawMessage);
 	}
 
-	public String getStringFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
+	@Override
+	public String getStringFromRawMessage(Object rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		log.debug("SapListener.getStringFromRawMessage");
-		return functionCall2message((JCoFunction) rawMessage);
+		return functionCall2message((JCoFunction)rawMessage);
 	}
 
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map threadContext) throws ListenerException {
+	@Override
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		try {
 			log.debug("SapListener.afterMessageProcessed");
 			if (rawMessage instanceof JCoFunction) {
-				message2FunctionResult((JCoFunction) rawMessage, processResult.getResult());
+				message2FunctionResult((JCoFunction)rawMessage, processResult.getResult());
 			}
 		} catch (SapException e) {
 			throw new ListenerException(e);
 		}
 	}
 
+	@Override
 	public void handleRequest(JCoServerContext jcoServerContext, JCoFunction jcoFunction) throws AbapException, AbapClassException {
 		try {
 			log.debug("SapListener.handleRequest()");
@@ -223,6 +235,7 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 		}
 	}
 
+	@Override
 	public void handleRequest(JCoServerContext serverCtx, IDocDocumentList documentList) {
 		log.debug(getLogPrefix()+"Incoming IDoc list request containing " + documentList.getNumDocuments() + " documents...");
 		IDocXMLProcessor xmlProcessor = JCoIDoc.getIDocFactory().getIDocXMLProcessor();
@@ -240,6 +253,7 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 		}
 	}
 
+	@Override
 	public void handleRequest(JCoIDocServerContext idocServerCtx, IDocDocumentList documentList) {
 		handleRequest(idocServerCtx.getJCoServerContext(), documentList);
 	}
@@ -250,6 +264,7 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
   	 * @see org.apache.commons.lang.builder.ToStringBuilder#reflectionToString
   	 *
   	 **/
+	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
 	}
@@ -270,23 +285,25 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 		this.connectionCount = connectionCount;
 	}
 
+	@Override
 	public void setHandler(IMessageHandler handler) {
 		this.handler=handler;
 	}
 
+	@Override
 	public void setExceptionListener(IbisExceptionListener listener) {
 		exceptionListener = listener;
 	}
 
-	public void serverExceptionOccurred(JCoServer server, String connectionID,
-			JCoServerContextInfo serverCtx, Exception e) {
+	@Override
+	public void serverExceptionOccurred(JCoServer server, String connectionID, JCoServerContextInfo serverCtx, Exception e) {
 		if (exceptionListener!=null) {
 			exceptionListener.exceptionThrown(this, new SapException(getLogPrefix()+"exception in SapServer ["+progid+"]",e));
 		}
 	}
 
-	public void serverErrorOccurred(JCoServer server, String connectionID,
-			JCoServerContextInfo serverCtx, Error e) {
+	@Override
+	public void serverErrorOccurred(JCoServer server, String connectionID, JCoServerContextInfo serverCtx, Error e) {
 		if (exceptionListener!=null) {
 			exceptionListener.exceptionThrown(this, new SapException(getLogPrefix()+"error in SapServer ["+progid+"]",e));
 		}
@@ -303,6 +320,7 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 	 *  @param tid the transaction ID
 	 *  @return <code>true</code> if the ID is valid and not in use otherwise, <code>false</code> otherwise
 	 */
+	@Override
 	public boolean checkTID(JCoServerContext serverCtx, String tid) {
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix()+"is requested to check TID ["+tid+"]; (currently ignored)");
@@ -317,6 +335,7 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 	 *  Derived servers must override this method to actually implement the transaction ID management.
 	 *  @param tid the transaction ID
 	 */
+	@Override
 	public void confirmTID(JCoServerContext serverCtx, String tid) {
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix()+"is requested to confirm TID ["+tid+"]; (currently ignored)");
@@ -330,6 +349,7 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 	 *  Derived servers can override this method to locally commit the transaction.
 	 *  @param tid the transaction ID
 	 */
+	@Override
 	public void commit(JCoServerContext serverCtx, String tid) {
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix()+"is requested to commit TID ["+tid+"]; (currently ignored)");
@@ -343,6 +363,7 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 	 *  Derived servers can override this method to locally rollback the transaction.
 	 *  @param tid the transaction ID
 	 */
+	@Override
 	public void rollback(JCoServerContext serverCtx, String tid) {
 		if (log.isDebugEnabled()) {
 			log.warn(getLogPrefix()+"is requested to rollback TID ["+tid+"]; (currently ignored)");

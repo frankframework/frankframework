@@ -63,6 +63,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 
 	protected ParameterList paramList = null;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (paramList!=null) {
@@ -81,6 +82,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		}
 	}
 
+	@Override
 	public void open() throws SenderException {
 		try {
 			openFacade();
@@ -91,10 +93,12 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		}
 	}
 
+	@Override
 	public void close() {
 		closeFacade();
 	}
 
+	@Override
 	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
 		return sendMessage(correlationID,message,null);
 	}
@@ -149,6 +153,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		return DestinationFactoryUtils.getTransactionalTid(sapSystem,destination,true);
 	}
 
+	@Override
 	public void addParameter(Parameter p) {
 		if (paramList==null) {
 			paramList=new ParameterList();
@@ -173,6 +178,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 	protected void setSynchronous(boolean b) {
 		synchronous = b;
 	}
+	@Override
 	public boolean isSynchronous() {
 		return synchronous;
 	}
