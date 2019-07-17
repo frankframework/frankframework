@@ -375,6 +375,18 @@ angular.module('iaf.beheerconsole')
 	$scope.openOldGui = function() {
 		location.href = Misc.getServerPath();
 	};
+	
+	$scope.scrollTop = function() {
+		$(window).scrollTop(0);
+	};
+	
+	$(window).on('scroll', function() {
+		if($(this).scrollTop() > 100) {
+			$('.scroll-to-top').show();
+		} else {
+			$('.scroll-to-top').hide();
+		}
+	});
 }])
 
 .controller('InformationCtrl', ['$scope', '$uibModalInstance', 'Api', function($scope, $uibModalInstance, Api) {
