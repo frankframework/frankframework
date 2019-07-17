@@ -21,16 +21,17 @@ public class XpsConvertor extends AbstractConvertor {
 	@Override
 	void convert(MediaType mediaType, InputStream inputStream, File fileDest, CisConversionResult result,
 			ConversionOption conversionOption) throws Exception {
-		//		PdfSaveOptions saveOption = new PdfSaveOptions();
+		// PdfSaveOptions saveOption = new PdfSaveOptions();
 		XpsLoadOptions load = new XpsLoadOptions();
 		XpsDocument xps = new XpsDocument(inputStream, load);
 		// add glyph to the document
-		//		com.aspose.xps.XpsGlyphs glyphs = xps.addGlyphs("Arial", 12, XpsFontStyle.Regular, 300f, 450f, "Hello World!");
-		//		glyphs.setFill(xps.createSolidColorBrush(Color.BLACK));
+		// com.aspose.xps.XpsGlyphs glyphs = xps.addGlyphs("Arial", 12,
+		// XpsFontStyle.Regular, 300f, 450f, "Hello World!");
+		// glyphs.setFill(xps.createSolidColorBrush(Color.BLACK));
 		// save result
 		xps.save(fileDest.getAbsolutePath());
 
-		//		result.setMetaData(new MetaData(getNumberOfPages(fileDest)));
+		// result.setMetaData(new MetaData(getNumberOfPages(fileDest)));
 
 	}
 

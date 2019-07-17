@@ -4,7 +4,8 @@
 package nl.nn.adapterframework.extensions.aspose.services.util;
 
 /**
- * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der Hoorn</a> (d937275)
+ * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
+ *         Hoorn</a> (d937275)
  *
  */
 public class ConvertorUtil {
@@ -18,8 +19,9 @@ public class ConvertorUtil {
 	}
 
 	/**
-	 * Creates a filename.
-	 * If the file already contains a file extension it will be removed.
+	 * Creates a filename. If the file already contains a file extension it will be
+	 * removed.
+	 * 
 	 * @param filename
 	 * @return
 	 */
@@ -37,8 +39,9 @@ public class ConvertorUtil {
 	}
 
 	/**
-	 * Creates a filename which always contains pdf as file type.
-	 * If the file already contains a extension it will be replaced with pdf.
+	 * Creates a filename which always contains pdf as file type. If the file
+	 * already contains a extension it will be replaced with pdf.
+	 * 
 	 * @param filename
 	 * @return
 	 */
@@ -47,10 +50,13 @@ public class ConvertorUtil {
 	}
 
 	/**
-	 * Creates a filename which always contains the given extension as file type (without period).
-	 * If the file already contains a extension it will be replaced with the given extension.
+	 * Creates a filename which always contains the given extension as file type
+	 * (without period). If the file already contains a extension it will be
+	 * replaced with the given extension.
+	 * 
 	 * @param filename
-	 * @param extension (without the period).
+	 * @param extension
+	 *            (without the period).
 	 * @return
 	 */
 	public static String createTidyFilename(String argFilename, String extension) {

@@ -13,7 +13,8 @@ import nl.nn.adapterframework.extensions.aspose.services.util.ConvertUtil;
 /**
  * Immutable class with meta data of a mail.
  * 
- * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der Hoorn</a> (d937275)
+ * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
+ *         Hoorn</a> (d937275)
  */
 public class MailMetaData extends MetaData {
 
@@ -44,23 +45,25 @@ public class MailMetaData extends MetaData {
 		this.from = from;
 	}
 
-	//	@JsonSerialize(using = JsonDateSerializer.class)
+	// @JsonSerialize(using = JsonDateSerializer.class)
 	public Date getSentTimestamp() {
 		return sentTimestamp;
 	}
 
 	/**
-	 * Set timestamp. Clear milliseconds so values can be checked without the millisecond.
+	 * Set timestamp. Clear milliseconds so values can be checked without the
+	 * millisecond.
+	 * 
 	 * @param sentTimestamp
 	 */
-	//	@JsonDeserialize(using = JsonDateDeserializer.class)
+	// @JsonDeserialize(using = JsonDateDeserializer.class)
 	public void setSentTimestamp(Date sentTimestamp) {
 		this.sentTimestamp = sentTimestamp;
-		//		if (sentTimestamp == null) {
-		//			this.sentTimestamp = null;
-		//		} else {
-		//			this.sentTimestamp = new Date((sentTimestamp.getTime() / 1000L) * 1000L);
-		//		}
+		// if (sentTimestamp == null) {
+		// this.sentTimestamp = null;
+		// } else {
+		// this.sentTimestamp = new Date((sentTimestamp.getTime() / 1000L) * 1000L);
+		// }
 	}
 
 	public String getRecipient() {

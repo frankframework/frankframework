@@ -20,17 +20,19 @@ import com.aspose.slides.SaveFormat;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
-import nl.nn.adapterframework.extensions.aspose.services.conv.MetaData;
 
 /**
- * Converts the files which are required and supported by the aspose slides library.
+ * Converts the files which are required and supported by the aspose slides
+ * library.
  * 
- * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der Hoorn</a> (d937275)
+ * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
+ *         Hoorn</a> (d937275)
  *
  */
 public class SlidesConvertor extends AbstractConvertor {
 
-	// contains mapping from MediaType to the LoadOption for the aspose word conversion.
+	// contains mapping from MediaType to the LoadOption for the aspose word
+	// conversion.
 	private static final Map<MediaType, LoadOptions> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
 
 	static {
@@ -55,7 +57,8 @@ public class SlidesConvertor extends AbstractConvertor {
 			ConversionOption conversionOption) throws Exception {
 
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
-			// mediaType should always be supported otherwise there a program error because the supported media types should be part of the map
+			// mediaType should always be supported otherwise there a program error because
+			// the supported media types should be part of the map
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
 
@@ -65,7 +68,7 @@ public class SlidesConvertor extends AbstractConvertor {
 		presentation.dispose();
 		InputStream inStream = new ByteArrayInputStream(outputStream.toByteArray());
 		result.setFileStream(inStream);
-//		result.setMetaData(new MetaData(getNumberOfPages(inStream)));
+		// result.setMetaData(new MetaData(getNumberOfPages(inStream)));
 	}
 
 	@Override

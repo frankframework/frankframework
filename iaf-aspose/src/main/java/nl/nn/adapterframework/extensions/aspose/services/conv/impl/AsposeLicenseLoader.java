@@ -31,13 +31,14 @@ import com.aspose.words.FontSourceBase;
 import nl.nn.adapterframework.extensions.aspose.services.util.FileUtil;
 
 /**
- * Cleanup the tmp directory before this class is started. This is because the fonts will be stored in a subdirectory in DDCCS_PdfOutputLocation.
+ * Cleanup the tmp directory before this class is started. This is because the
+ * fonts will be stored in a subdirectory in DDCCS_PdfOutputLocation.
  * 
  * @author Gerard van der Hoorn
  */
-//@Singleton
-//@Startup
-//@DependsOn("CleanupTmpDirStartup")
+// @Singleton
+// @Startup
+// @DependsOn("CleanupTmpDirStartup")
 public class AsposeLicenseLoader {
 
 	private static final String ASPOSE_LICENSE_RESOURCE_NAME = "/Aspose.Total.Java.lic";
@@ -50,19 +51,13 @@ public class AsposeLicenseLoader {
 
 	private String pathToExtractFonts = null;
 	private String license = null;
-	private com.aspose.words.License wordsLicense;
-	private com.aspose.pdf.License pdfLicense;
-	private com.aspose.cells.License cellsLicense;
-	private com.aspose.slides.License slidesLicense;
-	private com.aspose.email.License emailLicense;
-	private com.aspose.imaging.License imagingLicense;
 
 	public AsposeLicenseLoader(String asposeLicenseLocation) {
 		license = asposeLicenseLocation;
 	}
 
 	public void loadLicense() throws IOException {
-//		loadLicences();
+		// loadLicences();
 		loadAsposeLicense();
 
 		pathToExtractFonts = Files.createTempDirectory("").toString();
@@ -70,31 +65,23 @@ public class AsposeLicenseLoader {
 
 		unpackFontsZip(pathToFonts);
 
-		//		logFonts("(Initi�le fonts)");
+		// logFonts("(Initi�le fonts)");
 
 		loadFonts(pathToFonts);
 
-		//		logFonts("(Na load fonts)");
+		// logFonts("(Na load fonts)");
 
 		loadExtraFonts(pathToFonts);
 
-		//		logFonts("(Na load extra fonts)");
+		// logFonts("(Na load extra fonts)");
 
 		setFontDirectory(pathToFonts);
 	}
 
-	private void loadLicences() {
-		
-		if(pdfLicense == null) {
-			pdfLicense = new com.aspose.pdf.License();
-//			pdfLicense.setLicense(stream);
-		}
-		
-	}
-
 	/**
-	 * Zet de directory waar de fonts zich bevinden.
-	 * Nodig omdat aspose op een unix bak ze anders niet kan vinden.
+	 * Zet de directory waar de fonts zich bevinden. Nodig omdat aspose op een unix
+	 * bak ze anders niet kan vinden.
+	 * 
 	 * @param pathToFonts
 	 */
 	private void setFontDirectory(String pathToFonts) {
@@ -173,7 +160,7 @@ public class AsposeLicenseLoader {
 				asposeLicense.setLicense(licenseInputStream);
 			}
 		}, "pdf");
-		//		
+		//
 		// slides
 		loadAsposeLicense(new LicenseLoader() {
 
@@ -197,7 +184,7 @@ public class AsposeLicenseLoader {
 	}
 
 	private void loadAsposeLicense(LicenseLoader licenseLoader, String asposeLibrayName) {
-		//TODO: remove this if statement
+		// TODO: remove this if statement
 		if (license == null) {
 			license = ASPOSE_LICENSE_RESOURCE_NAME;
 		}
@@ -220,16 +207,21 @@ public class AsposeLicenseLoader {
 	}
 
 	private void loadExtraFontsForWord(String pathToFonts) {
-		// Retrieve the array of environment-dependent font sources that are searched by default.
-		// For example this will contain a "Windows\Fonts\" source on a Windows machines.
-		// We add this array to a new ArrayList to make adding or removing font entries much easier.
+		// Retrieve the array of environment-dependent font sources that are searched by
+		// default.
+		// For example this will contain a "Windows\Fonts\" source on a Windows
+		// machines.
+		// We add this array to a new ArrayList to make adding or removing font entries
+		// much easier.
 		List<FontSourceBase> fontSources = new ArrayList<>(
 				Arrays.asList(FontSettings.getDefaultInstance().getFontsSources()));
 
-		// Add a new folder source which will instruct Aspose.Words to search the following folder for fonts.
+		// Add a new folder source which will instruct Aspose.Words to search the
+		// following folder for fonts.
 		FolderFontSource folderFontSource = new FolderFontSource(pathToFonts, false);
-		//com.aspose.pdf.FolderFontSource
-		// Add the custom folder which contains our fonts to the list of existing font sources.
+		// com.aspose.pdf.FolderFontSource
+		// Add the custom folder which contains our fonts to the list of existing font
+		// sources.
 		fontSources.add(folderFontSource);
 
 		// Convert the list of source back into a primitive array of FontSource objects.
@@ -273,7 +265,7 @@ public class AsposeLicenseLoader {
 				LOGGER.debug("Register font " + newFont);
 
 				if (!ge.registerFont(newFont)) {
-//					LOGGER.warn("Font not registered!" + newFont.getFontName());
+					// LOGGER.warn("Font not registered!" + newFont.getFontName());
 				}
 				fontInputStream.close();
 				fis.close();
@@ -286,7 +278,9 @@ public class AsposeLicenseLoader {
 	}
 
 	/**
-	 * Get the font. When retrieving the font fails it is logged and <code>null</code> is returned.
+	 * Get the font. When retrieving the font fails it is logged and
+	 * <code>null</code> is returned.
+	 * 
 	 * @param fontEntry
 	 * @return the font or <code>null</code>.
 	 */

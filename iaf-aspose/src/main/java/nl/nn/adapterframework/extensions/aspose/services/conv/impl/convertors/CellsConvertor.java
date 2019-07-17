@@ -21,7 +21,6 @@ import com.aspose.cells.Workbook;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
-import nl.nn.adapterframework.extensions.aspose.services.conv.MetaData;
 import nl.nn.adapterframework.extensions.aspose.services.util.FileUtil;
 
 class CellsConvertor extends AbstractConvertor {
@@ -68,12 +67,11 @@ class CellsConvertor extends AbstractConvertor {
 		workbook.save(outputStream, SaveFormat.PDF);
 		InputStream inStream = new ByteArrayInputStream(outputStream.toByteArray());
 		result.setFileStream(inStream);
-//		result.setMetaData(new MetaData(getNumberOfPages(inStream)));
+		// result.setMetaData(new MetaData(getNumberOfPages(inStream)));
 	}
 
 	/**
-	 * {@inheritDoc}
-	 * Convert to PDF and attach the original to it.
+	 * {@inheritDoc} Convert to PDF and attach the original to it.
 	 */
 	@Override
 	void convert(MediaType mediaType, InputStream inputStream, File fileDest, CisConversionResult result,

@@ -25,12 +25,13 @@ import com.aspose.pdf.SaveFormat;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
-import nl.nn.adapterframework.extensions.aspose.services.conv.MetaData;
 
 /**
- * Converts the files which are required and supported by the aspose pdf library.
+ * Converts the files which are required and supported by the aspose pdf
+ * library.
  * 
- * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der Hoorn</a> (d937275)
+ * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
+ *         Hoorn</a> (d937275)
  *
  */
 public class PdfImageConvertor extends AbstractConvertor {
@@ -45,7 +46,8 @@ public class PdfImageConvertor extends AbstractConvertor {
 
 	private static final Logger LOGGER = Logger.getLogger(PdfImageConvertor.class);
 
-	// contains mapping from MediaType to the LoadOption for the aspose word conversion.
+	// contains mapping from MediaType to the LoadOption for the aspose word
+	// conversion.
 	private static final Map<MediaType, LoadOptions> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
 
 	static {
@@ -72,7 +74,8 @@ public class PdfImageConvertor extends AbstractConvertor {
 			ConversionOption conversionOption) throws Exception {
 
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
-			// mediaType should always be supported otherwise there a program error because the supported media types should be part of the map
+			// mediaType should always be supported otherwise there a program error because
+			// the supported media types should be part of the map
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
 
@@ -88,8 +91,10 @@ public class PdfImageConvertor extends AbstractConvertor {
 			page.getPageInfo().getMargin().setLeft(PageConvertUtil.convertCmToPoints(marginInCm));
 			page.getPageInfo().getMargin().setRight(PageConvertUtil.convertCmToPoints(marginInCm));
 
-			// Temporary file (because first we need to get image information (the size) and than load it into 
-			// the pdf. The image itself can not be loaded into the pdf because it will be blured with orange.
+			// Temporary file (because first we need to get image information (the size) and
+			// than load it into
+			// the pdf. The image itself can not be loaded into the pdf because it will be
+			// blured with orange.
 			tmpImageFile = UniqueFileGenerator.getUniqueFile(getPdfOutputlocation(), this.getClass().getSimpleName(),
 					mediaType.getSubtype());
 			Files.copy(inputStream, tmpImageFile.toPath());
@@ -99,10 +104,12 @@ public class PdfImageConvertor extends AbstractConvertor {
 			BufferedImage bufferedImage = ImageExtensions.toJava(image);
 			LOGGER.debug("Image info height:" + bufferedImage.getHeight() + " width:" + bufferedImage.getWidth());
 
-			//			BufferedImage bufferedImage = ImageIO.read(inputStream);
-			//			LOGGER.debug("Image info height:" + bufferedImage.getHeight() + " width:" + bufferedImage.getWidth());
+			// BufferedImage bufferedImage = ImageIO.read(inputStream);
+			// LOGGER.debug("Image info height:" + bufferedImage.getHeight() + " width:" +
+			// bufferedImage.getWidth());
 
-			// page width in points is 595.0, height 842.0 ( page.getPageInfo().getHeight() page.getPageInfo().getWidth())
+			// page width in points is 595.0, height 842.0 ( page.getPageInfo().getHeight()
+			// page.getPageInfo().getWidth())
 			float maxImageWidthInPoints = PageConvertUtil
 					.convertCmToPoints(PageConvertUtil.PAGE_WIDHT_IN_CM - NUMBER_OF_MARGINS * marginInCm);
 			float maxImageHeightInPoints = PageConvertUtil
@@ -119,9 +126,9 @@ public class PdfImageConvertor extends AbstractConvertor {
 
 			Image pdfImage = new Image();
 			pdfImage.setFile(tmpImageFile.getAbsolutePath());
-			//			pdfImage.setBufferedImage(bufferedImage);
+			// pdfImage.setBufferedImage(bufferedImage);
 
-			//do not set scale if the image type is tiff
+			// do not set scale if the image type is tiff
 			if (!mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
 				pdfImage.setImageScale(scaleFactor);
 			}
@@ -131,7 +138,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 			doc.save(outputStream, SaveFormat.Pdf);
 			InputStream inStream = new ByteArrayInputStream(outputStream.toByteArray());
 			result.setFileStream(inStream);
-//			result.setMetaData(new MetaData(getNumberOfPages(inStream)));
+			// result.setMetaData(new MetaData(getNumberOfPages(inStream)));
 
 		} finally {
 			doc.freeMemory();

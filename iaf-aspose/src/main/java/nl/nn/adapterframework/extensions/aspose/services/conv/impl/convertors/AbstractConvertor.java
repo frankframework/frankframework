@@ -1,9 +1,6 @@
 package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -13,8 +10,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 import org.apache.tika.mime.MediaType;
-
-import com.aspose.pdf.Document;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
@@ -38,8 +33,9 @@ abstract class AbstractConvertor implements Convertor {
 	}
 
 	/**
-	 * Converts the the inputstream to the given file the builder object can also be updated (metaData set and any
-	 * attachements added).
+	 * Converts the the inputstream to the given file the builder object can also be
+	 * updated (metaData set and any attachements added).
+	 * 
 	 * @param mediaType
 	 * @param conversionOption
 	 */
@@ -123,30 +119,31 @@ abstract class AbstractConvertor implements Convertor {
 				result.setFailureReason(createTechnishefoutMsg(e));
 			}
 
-			// Clear the file to state that the conversion has failed. 
+			// Clear the file to state that the conversion has failed.
 			result.setPdfResultFile(null);
 		}
 		return result;
 	}
 
-//	protected Integer getNumberOfPages(InputStream inputStream) {
-//		Integer result = null;
-//
-//		if (inputStream != null) {
-//			try {
-//				BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
-//				// Open document
-//				Document doc = new Document(bufferedInputStream);
-//
-//				result = doc.getPages().size();
-////				doc.close();
-//			} catch (Exception e) {
-//				LOGGER.warn("Het bepalen van het aantal paginas niet mogelijk", e);
-//			}
-//		}
-//
-//		return result;
-//	}
+	// protected Integer getNumberOfPages(InputStream inputStream) {
+	// Integer result = null;
+	//
+	// if (inputStream != null) {
+	// try {
+	// BufferedInputStream bufferedInputStream = new
+	// BufferedInputStream(inputStream);
+	// // Open document
+	// Document doc = new Document(bufferedInputStream);
+	//
+	// result = doc.getPages().size();
+	//// doc.close();
+	// } catch (Exception e) {
+	// LOGGER.warn("Het bepalen van het aantal paginas niet mogelijk", e);
+	// }
+	// }
+	//
+	// return result;
+	// }
 
 	protected String getPdfOutputlocation() {
 		return pdfOutputlocation;
@@ -170,7 +167,9 @@ abstract class AbstractConvertor implements Convertor {
 
 	/**
 	 * Create a unique file in the pdfOutputLocation with the given extension
-	 * @param extension is allowed to be null.
+	 * 
+	 * @param extension
+	 *            is allowed to be null.
 	 * @return
 	 */
 	protected File getUniqueFile() {

@@ -8,7 +8,8 @@ import java.io.InputStream;
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 
 /**
- * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der Hoorn</a> (d937275)
+ * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
+ *         Hoorn</a> (d937275)
  *
  */
 public interface CisConversionService {
@@ -19,9 +20,12 @@ public interface CisConversionService {
 	 * The given document stream is <em>not</em> closed by this method.
 	 * 
 	 * @param inputStream
-	 * @param filename (without the path). Is used to detect mediatype and inform the user of the name of the file. Is allowed to be null. 
+	 * @param filename
+	 *            (without the path). Is used to detect mediatype and inform the
+	 *            user of the name of the file. Is allowed to be null.
 	 * @return
-	 * @throws CisConversionException when a failure occurs.
+	 * @throws CisConversionException
+	 *             when a failure occurs.
 	 */
 	CisConversionResult convertToPdf(InputStream inputStream, String filename, ConversionOption conversionOption);
 
@@ -32,12 +36,14 @@ public interface CisConversionService {
 	 * 
 	 * @param inputStream
 	 * @return
-	 * @throws CisConversionException when a failure occurs.
+	 * @throws CisConversionException
+	 *             when a failure occurs.
 	 */
 	CisConversionResult convertToPdf(InputStream inputStream, ConversionOption conversionOption);
 
 	/**
 	 * Combines the given files in cisConversionResult to a single pdf.
+	 * 
 	 * @param cisConversionResult
 	 * @return
 	 */

@@ -27,14 +27,15 @@ import nl.nn.adapterframework.extensions.aspose.services.util.DateUtil;
 import nl.nn.adapterframework.extensions.aspose.services.util.FileUtil;
 
 /**
- * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der Hoorn</a> (d937275)
+ * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
+ *         Hoorn</a> (d937275)
  *
  */
 public class CisConversionServiceImpl implements CisConversionService {
 
 	private static final Logger LOGGER = Logger.getLogger(CisConversionServiceImpl.class);
 
-	//location of converted pdf files
+	// location of converted pdf files
 	private String pdfOutputlocation = "";
 
 	private ConvertorFactory convertorFactory;
@@ -69,19 +70,25 @@ public class CisConversionServiceImpl implements CisConversionService {
 
 		try {
 
-			// Temporary file (because first we need to check the file contents for the file type.
-			// and because in some circumstances the inputstream can not reset back by tika we
-			// store the inputstream to a file after which we can start an input stream again.
+			// Temporary file (because first we need to check the file contents for the file
+			// type.
+			// and because in some circumstances the inputstream can not reset back by tika
+			// we
+			// store the inputstream to a file after which we can start an input stream
+			// again.
 			tmpFile = getUniqueFile();
 			Files.copy(inputStream, tmpFile.toPath());
 
-			//			// Check the size before the Virusscan is called.
-			//			long fileSize = Files.size(tmpFile.c toPath());
-			//			if (fileSize > DdccsConversionConstants.MAX_BESTAND_SIZE_IN_BYTES) {
-			//				return CisConversionResult.createFailureResult(conversionOption, null, null, filename, 
-			//						"Bestand is groter (" + NumberFormat.getInstance(new Locale("nl", "NL")).format(fileSize) 
-			//						+ " bytes) dan de toegestane grootte van " + DdccsConversionConstants.MAX_BESTAND_SIZE_HUMAN_READABLE + ".");
-			//			}
+			// // Check the size before the Virusscan is called.
+			// long fileSize = Files.size(tmpFile.c toPath());
+			// if (fileSize > DdccsConversionConstants.MAX_BESTAND_SIZE_IN_BYTES) {
+			// return CisConversionResult.createFailureResult(conversionOption, null, null,
+			// filename,
+			// "Bestand is groter (" + NumberFormat.getInstance(new Locale("nl",
+			// "NL")).format(fileSize)
+			// + " bytes) dan de toegestane grootte van " +
+			// DdccsConversionConstants.MAX_BESTAND_SIZE_HUMAN_READABLE + ".");
+			// }
 
 			return convertToPdf(tmpFile, filename, conversionOption);
 
@@ -196,7 +203,9 @@ public class CisConversionServiceImpl implements CisConversionService {
 
 	/**
 	 * Create a unique file in the pdfOutputLocation with the given extension
-	 * @param extension is allowed to be null.
+	 * 
+	 * @param extension
+	 *            is allowed to be null.
 	 * @return
 	 */
 	private File getUniqueFile() {

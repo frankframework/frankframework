@@ -22,24 +22,27 @@ import com.aspose.pdf.exceptions.InvalidPasswordException;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
-import nl.nn.adapterframework.extensions.aspose.services.conv.MetaData;
 
 /**
- * Converts the files which are required and supported by the aspose pdf library.
+ * Converts the files which are required and supported by the aspose pdf
+ * library.
  * 
- * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der Hoorn</a> (d937275)
+ * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
+ *         Hoorn</a> (d937275)
  *
  */
 public class PdfConvertor extends AbstractConvertor {
 
-	// contains mapping from MediaType to the LoadOption for the aspose word conversion.
+	// contains mapping from MediaType to the LoadOption for the aspose word
+	// conversion.
 	private static final Map<MediaType, LoadOptions> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
 
 	static {
 		Map<MediaType, LoadOptions> map = new HashMap<>();
 
 		// The string value is defined in com.aspose.pdf.LoadOptions.
-		//		CIS-44: Tijdelijk gedisabled omdat html conversie op A (en P) niet goed gaat. Moet nog worden geanalyseerd.
+		// CIS-44: Tijdelijk gedisabled omdat html conversie op A (en P) niet goed gaat.
+		// Moet nog worden geanalyseerd.
 		map.put(new MediaType("text", "html"), new HtmlLoadOptions());
 		map.put(new MediaType("application", "xhtml+xml"), new HtmlLoadOptions());
 		map.put(new MediaType("application", "vnd.ms-xpsdocument"), new XpsLoadOptions());
@@ -59,7 +62,8 @@ public class PdfConvertor extends AbstractConvertor {
 			ConversionOption conversionOption) throws Exception {
 
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
-			// mediaType should always be supported otherwise there a program error because the supported media types should be part of the map
+			// mediaType should always be supported otherwise there a program error because
+			// the supported media types should be part of the map
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
 		HtmlLoadOptions load = new HtmlLoadOptions("C:/Users/alisihab/Desktop/PDFconversionTestFiles/");
@@ -71,7 +75,7 @@ public class PdfConvertor extends AbstractConvertor {
 		doc.dispose();
 		doc.close();
 		InputStream inStream = new ByteArrayInputStream(outputStream.toByteArray());
-//		result.setMetaData(new MetaData(getNumberOfPages(inStream)));
+		// result.setMetaData(new MetaData(getNumberOfPages(inStream)));
 		result.setFileStream(inStream);
 	}
 

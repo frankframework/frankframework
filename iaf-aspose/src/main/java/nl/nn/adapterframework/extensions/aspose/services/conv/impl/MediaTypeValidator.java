@@ -12,7 +12,8 @@ import org.apache.tika.mime.MediaType;
 /**
  * Specific class used by the {@link CisConversionServiceImpl} class.
  * 
- * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der Hoorn</a> (d937275)
+ * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
+ *         Hoorn</a> (d937275)
  *
  */
 class MediaTypeValidator {
@@ -26,18 +27,20 @@ class MediaTypeValidator {
 	 */
 	MediaTypeValidator(String pdfOutputlocation) {
 		// Create only once. Tika seems to be thread safe
-		// (see http://stackoverflow.com/questions/10190980/spring-tika-integration-is-my-approach-thread-safe)
+		// (see
+		// http://stackoverflow.com/questions/10190980/spring-tika-integration-is-my-approach-thread-safe)
 		tika = new Tika();
 		tmp = new TemporaryResources();
 		tmp.setTemporaryFileDirectory(Paths.get(pdfOutputlocation));
 	}
 
 	/**
-	 * The stream will be reset back to the point as received used the marked and reset method are supported by the
-	 * given inputstream.
+	 * The stream will be reset back to the point as received used the marked and
+	 * reset method are supported by the given inputstream.
 	 * 
 	 * @param inputStream
-	 * @return returns the media type. If media type could not be detected <code>null</code> is returned.
+	 * @return returns the media type. If media type could not be detected
+	 *         <code>null</code> is returned.
 	 * @throws IOException
 	 */
 	MediaType getMediaType(InputStream inputStream, String filename) throws IOException {

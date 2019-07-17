@@ -16,7 +16,8 @@ import com.google.common.base.MoreObjects;
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 
 /**
- * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der Hoorn</a> (d937275)
+ * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
+ *         Hoorn</a> (d937275)
  */
 public class CisConversionResult {
 
@@ -30,11 +31,13 @@ public class CisConversionResult {
 	private InputStream fileStream;
 
 	/**
-	 * List with documents which where part of the source document (e.g. attachments in mails). Will be an empty list if there are no attachments.
+	 * List with documents which where part of the source document (e.g. attachments
+	 * in mails). Will be an empty list if there are no attachments.
 	 * <p>
-	 * Note: the attachments will not contain a pdfResultFile because that will be in overall pdf file (flat pdf file) for SINGLEPDF conversions otherwise it
+	 * Note: the attachments will not contain a pdfResultFile because that will be
+	 * in overall pdf file (flat pdf file) for SINGLEPDF conversions otherwise it
 	 * can contain pdf files.
-	 * </p> 
+	 * </p>
 	 */
 	private List<CisConversionResult> attachments = new ArrayList<>();
 
@@ -45,6 +48,7 @@ public class CisConversionResult {
 
 	/**
 	 * CreateCisConversionResult
+	 * 
 	 * @param ConversionOption
 	 * @param mediaType
 	 * @param metaData

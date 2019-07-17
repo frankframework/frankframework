@@ -9,16 +9,17 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 
 /**
-/**
- * Immutable class with meta data of for each type of document.
+ * /** Immutable class with meta data of for each type of document.
  * 
- * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der Hoorn</a> (d937275)
+ * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
+ *         Hoorn</a> (d937275)
  */
-//@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="type")
-//@JsonSubTypes({
-//	@JsonSubTypes.Type(value=MetaData.class, name="MetaData"),
-//	@JsonSubTypes.Type(value=MailMetaData.class, name="MailMetaData")
-//})
+// @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY,
+// property="type")
+// @JsonSubTypes({
+// @JsonSubTypes.Type(value=MetaData.class, name="MetaData"),
+// @JsonSubTypes.Type(value=MailMetaData.class, name="MailMetaData")
+// })
 public class MetaData {
 
 	private Integer numberOfPages;
@@ -55,6 +56,7 @@ public class MetaData {
 
 	/**
 	 * Every derived class so implement this class.
+	 * 
 	 * @return
 	 */
 	protected ToStringHelper toStringHelper() {

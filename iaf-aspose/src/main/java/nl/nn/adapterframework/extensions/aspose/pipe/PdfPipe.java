@@ -24,50 +24,53 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
 public class PdfPipe extends FixedForwardPipe {
 
 	private static final Logger LOGGER = Logger.getLogger(PdfPipe.class);
-	
+
 	private boolean saveSeparate = false;
 	private CisConversionService cisConversionService;
 	private String pdfOutputLocation = null;
 	private String license = null;
 	private AsposeLicenseLoader loader;
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if(StringUtils.isEmpty(pdfOutputLocation)) {
-			LOGGER.debug("PDF output location is not set. Temporary directory will be created to store converted files.");
+		if (StringUtils.isEmpty(pdfOutputLocation)) {
+			LOGGER.debug(
+					"PDF output location is not set. Temporary directory will be created to store converted files.");
 			try {
 				pdfOutputLocation = Files.createTempDirectory("Pdf").toString();
-				LOGGER.debug("Temporary directory path : "+ pdfOutputLocation);
+				LOGGER.debug("Temporary directory path : " + pdfOutputLocation);
 			} catch (IOException e) {
 				throw new ConfigurationException(e);
 			}
-//			throw new ConfigurationException("Pdf output location cannot be null. Please specify a location.");
+			// throw new ConfigurationException("Pdf output location cannot be null. Please
+			// specify a location.");
 		}
-		
+
 		File outputLocation = new File(pdfOutputLocation);
-		if(!outputLocation.exists()){
-			throw new ConfigurationException("Pdf output location does not exists. Please specify an existing location ");
+		if (!outputLocation.exists()) {
+			throw new ConfigurationException(
+					"Pdf output location does not exists. Please specify an existing location ");
 		}
-		
-		if(!outputLocation.isDirectory()){
+
+		if (!outputLocation.isDirectory()) {
 			throw new ConfigurationException("Pdf output location is not directory. Please specify a diretory");
 		}
-		
+
 		try {
 			loader = new AsposeLicenseLoader(license);
 			loader.loadLicense();
-		} catch(Exception e) {
+		} catch (Exception e) {
 			throw new ConfigurationException(e);
 		}
-		
+
 		cisConversionService = new CisConversionServiceImpl(pdfOutputLocation);
 	}
-	
+
 	@Override
 	public void start() throws PipeStartException {
 		super.start();
-		
+
 	}
 
 	@Override
@@ -82,18 +85,17 @@ public class PdfPipe extends FixedForwardPipe {
 
 		if (input instanceof InputStream) {
 			binaryInputStream = (InputStream) input;
-		}
-		else if (input instanceof byte[]) {
-			binaryInputStream = new ByteArrayInputStream((byte[])input);
-		}
-		else { 
+		} else if (input instanceof byte[]) {
+			binaryInputStream = new ByteArrayInputStream((byte[]) input);
+		} else {
 			// TODO: do something here (ask about string)
 		}
 
-		CisConversionResult cisConversionResult = cisConversionService.convertToPdf(binaryInputStream, saveSeparate ? ConversionOption.SEPERATEPDF : ConversionOption.SINGLEPDF);
+		CisConversionResult cisConversionResult = cisConversionService.convertToPdf(binaryInputStream,
+				saveSeparate ? ConversionOption.SEPERATEPDF : ConversionOption.SINGLEPDF);
 		System.err.println(cisConversionResult.toString());
-		if(cisConversionResult.getFailureReason() != null) {
-			
+		if (cisConversionResult.getFailureReason() != null) {
+
 		}
 		session.put("result", cisConversionResult);
 		session.put("CONVERSION_OPTION", cisConversionResult.getConversionOption().name());

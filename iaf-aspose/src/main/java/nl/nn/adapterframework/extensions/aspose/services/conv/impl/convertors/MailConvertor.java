@@ -37,7 +37,6 @@ import com.aspose.words.Shape;
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
-import nl.nn.adapterframework.extensions.aspose.services.conv.MailMetaData;
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertUtil;
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertorUtil;
 import nl.nn.adapterframework.extensions.aspose.services.util.StringsUtil;
@@ -53,7 +52,8 @@ class MailConvertor extends AbstractConvertor {
 
 	private CisConversionService cisConversionService;
 
-	// contains mapping from MediaType to the LoadOption for the aspose word conversion.
+	// contains mapping from MediaType to the LoadOption for the aspose word
+	// conversion.
 	private static final Map<MediaType, com.aspose.email.LoadOptions> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
 
 	static {
@@ -94,7 +94,8 @@ class MailConvertor extends AbstractConvertor {
 		LOGGER.debug("reversePath : " + toString(eml.getReversePath()));
 		LOGGER.debug("subject     : " + eml.getSubject());
 
-		// Change mail headers (From, Sent, To, ...) to Dutch (also MhtFormatOptions on None so the English headers are suppressed).
+		// Change mail headers (From, Sent, To, ...) to Dutch (also MhtFormatOptions on
+		// None so the English headers are suppressed).
 		MhtMessageFormatter messageformatter = new MhtMessageFormatter();
 		messageformatter.setFromFormat(messageformatter.getFromFormat().replace("From:", "Afzender:"));
 		messageformatter.setSentFormat(messageformatter.getSentFormat().replace("Sent:", "Verzonden:"));
@@ -119,7 +120,7 @@ class MailConvertor extends AbstractConvertor {
 		saveOptions.setMhtFormatOptions(MhtFormatOptions.None);
 		eml.save(emlStream, saveOptions);
 
-		// Load the stream in Word document		
+		// Load the stream in Word document
 		HtmlLoadOptions loadOptions = new HtmlLoadOptions();
 		loadOptions.setLoadFormat(LoadFormat.MHTML);
 		loadOptions.setWebRequestTimeout(0);
@@ -131,9 +132,10 @@ class MailConvertor extends AbstractConvertor {
 		doc.save(outputStream, SaveFormat.PDF);
 		InputStream inStream = new ByteArrayInputStream(outputStream.toByteArray());
 		result.setFileStream(inStream);
-		
-//		result.setMetaData(new MailMetaData(getNumberOfPages(inStream), toUserFormat(from), eml.getLocalDate(),
-//				toUserFormat(eml.getTo()), eml.getSubject()));
+
+		// result.setMetaData(new MailMetaData(getNumberOfPages(inStream),
+		// toUserFormat(from), eml.getLocalDate(),
+		// toUserFormat(eml.getTo()), eml.getSubject()));
 
 		// Convert and (optional add) any attachment of the mail.
 		for (int index = 0; index < attachments.size(); index++) {
@@ -150,7 +152,8 @@ class MailConvertor extends AbstractConvertor {
 				// If conversion successful add the converted pdf to the pdf.
 				addAttachmentInPdf(cisConversionResultAttachment, fileDest);
 			}
-			// Add the conversion information to the result (even if the conversion failed!).
+			// Add the conversion information to the result (even if the conversion
+			// failed!).
 			result.addAttachment(cisConversionResultAttachment);
 		}
 
@@ -161,7 +164,7 @@ class MailConvertor extends AbstractConvertor {
 		for (int i = 0; i < shapes.length; i++) {
 			Shape shape = (Shape) shapes[i];
 
-			//If images needs to be shrunk then scale to fit
+			// If images needs to be shrunk then scale to fit
 			if (shape.getImageData().getImageSize().getWidthPoints() > MaxImageWidthInPoints) {
 				double scaleWidth = MaxImageWidthInPoints / shape.getImageData().getImageSize().getWidthPoints();
 
@@ -179,9 +182,10 @@ class MailConvertor extends AbstractConvertor {
 
 	/**
 	 * Converts an email attachment to a pdf via the cisConversionService.
+	 * 
 	 * @param attachment
 	 * @return
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	private CisConversionResult convertAttachmentInPdf(Attachment attachment, ConversionOption conversionOption)
 			throws IOException {
@@ -192,7 +196,8 @@ class MailConvertor extends AbstractConvertor {
 		String[] segments = attachment.getName().split("/");
 		String segmentFilename = segments[segments.length - 1];
 
-		// Create a bufferedInputStream because that support markSupported as is required for the tika library.
+		// Create a bufferedInputStream because that support markSupported as is
+		// required for the tika library.
 		try (InputStream inputStream = new BufferedInputStream(attachment.getContentStream())) {
 			// Convert the attachment to pdf.
 			return cisConversionService.convertToPdf(inputStream, segmentFilename, conversionOption);
@@ -203,6 +208,7 @@ class MailConvertor extends AbstractConvertor {
 
 	/**
 	 * Adds a file (in cisConversieResultBuilder) to the given (fileCombined).
+	 * 
 	 * @param cisConversieResultBuilder
 	 * @param fileCombined
 	 * @throws IOException
@@ -231,7 +237,8 @@ class MailConvertor extends AbstractConvertor {
 			// Add an attachment to document's attachment collection
 			pdfDocument.getEmbeddedFiles().add(fileSpecification);
 
-			// UseOC means "Optional attachments panel set to visible" used so that the attachments are shown.
+			// UseOC means "Optional attachments panel set to visible" used so that the
+			// attachments are shown.
 			pdfDocument.setPageMode(PageMode.UseAttachments);
 
 			// Save the updated document
@@ -243,7 +250,7 @@ class MailConvertor extends AbstractConvertor {
 
 			deleteFile(cisConversieResult.getPdfResultFile());
 
-			// Clear the file because it is now incorporated in the file it self. 
+			// Clear the file because it is now incorporated in the file it self.
 			cisConversieResult.setPdfResultFile(null);
 		}
 
@@ -307,7 +314,9 @@ class MailConvertor extends AbstractConvertor {
 	}
 
 	/**
-	 * Adds first the displayname or user name when available. Adds than the email address (the original or when not available the address).
+	 * Adds first the displayname or user name when available. Adds than the email
+	 * address (the original or when not available the address).
+	 * 
 	 * @param mailAddress
 	 * @return
 	 */

@@ -15,7 +15,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import org.apache.log4j.Logger;
 
 /**
- * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der Hoorn</a> (d937275)
+ * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
+ *         Hoorn</a> (d937275)
  *
  */
 public final class FileUtil {
@@ -34,9 +35,11 @@ public final class FileUtil {
 	public static Logger getLogger() {
 		return LOGGER;
 	}
-	
+
 	/**
-	 * Delete the given file (when file == null nothing will be done). Throws an runtimeexception when deleting fails.
+	 * Delete the given file (when file == null nothing will be done). Throws an
+	 * runtimeexception when deleting fails.
+	 * 
 	 * @param file
 	 */
 	public static void deleteFile(File file) {
@@ -49,24 +52,24 @@ public final class FileUtil {
 				throw new RuntimeException("Deleting file failed!", e);
 			}
 		}
-		
+
 	}
-	
-	
+
 	/**
-	 * Visitor to delete all files in the given directory except the directory itself.
+	 * Visitor to delete all files in the given directory except the directory
+	 * itself.
 	 */
 	private static class DeleteDirectoryContentsFileVisitor extends SimpleFileVisitor<Path> {
-		
+
 		private final File directory;
-		
+
 		private DeleteDirectoryContentsFileVisitor(final File directory) {
 			this.directory = directory;
 		}
-		
+
 		@Override
 		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-//			getLogger().debug("Delete file " + file);
+			// getLogger().debug("Delete file " + file);
 			Files.delete(file);
 			return FileVisitResult.CONTINUE;
 		}

@@ -12,8 +12,10 @@ import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 
 /**
- * This class is implemented to see if converting html file to pdf can be done here.
- * Pdf library also supports html conversion so use pdf instead and remove this
+ * This class is implemented to see if converting html file to pdf can be done
+ * here. Pdf library also supports html conversion so use pdf instead and remove
+ * this
+ * 
  * @author alisihab
  *
  */
@@ -35,11 +37,11 @@ public class HtmlConvertor extends AbstractConvertor {
 
 		}
 
-		//		HtmlLoadOptions htmloptions = new HtmlLoadOptions();
-		//		// Load HTML file
-		//		Document doc = new com.aspose.pdf.Document(inputStream, htmloptions);
-		//		// Save HTML file
-		//		doc.save(fileDest.getAbsolutePath());
+		// HtmlLoadOptions htmloptions = new HtmlLoadOptions();
+		// // Load HTML file
+		// Document doc = new com.aspose.pdf.Document(inputStream, htmloptions);
+		// // Save HTML file
+		// doc.save(fileDest.getAbsolutePath());
 
 	}
 

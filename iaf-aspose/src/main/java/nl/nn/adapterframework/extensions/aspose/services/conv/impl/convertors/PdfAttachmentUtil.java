@@ -22,9 +22,11 @@ import nl.nn.adapterframework.extensions.aspose.services.util.FileConstants;
 import nl.nn.adapterframework.extensions.aspose.services.util.StringsUtil;
 
 /**
- * This class will combine seperate pdf files to a single pdf with attachments. None existing files in a CisConversionResult will be skipped!
+ * This class will combine seperate pdf files to a single pdf with attachments.
+ * None existing files in a CisConversionResult will be skipped!
  * 
- * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der Hoorn</a> (d937275)
+ * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
+ *         Hoorn</a> (d937275)
  */
 class PdfAttachmentUtil {
 
@@ -37,7 +39,8 @@ class PdfAttachmentUtil {
 	private Document pdfDocument;
 
 	/**
-	 * Private constructor om te voorkomen dat deze klasse (met static methoden) aangemaakt kan worden.
+	 * Private constructor om te voorkomen dat deze klasse (met static methoden)
+	 * aangemaakt kan worden.
 	 */
 	private PdfAttachmentUtil(List<CisConversionResult> cisConversionResultList, File rootPdf) {
 		this.cisConversionResultList = cisConversionResultList;
@@ -46,6 +49,7 @@ class PdfAttachmentUtil {
 
 	/**
 	 * Adds the given files in cisConversionResultList to the given rootPdf file.
+	 * 
 	 * @param cisConversionResultList
 	 * @param rootPdf
 	 * @throws IOException
@@ -71,13 +75,19 @@ class PdfAttachmentUtil {
 	}
 
 	/**
-	 * Create a new pdf rootPdf based on the pdf in cisConversionResult and add all files specified in cisConversionResult.attachments to it.
-	 * <p>Note: Nothing is changed to the given cisConversionResult object and its underlying files.</p>
+	 * Create a new pdf rootPdf based on the pdf in cisConversionResult and add all
+	 * files specified in cisConversionResult.attachments to it.
+	 * <p>
+	 * Note: Nothing is changed to the given cisConversionResult object and its
+	 * underlying files.
+	 * </p>
 	 * 
 	 * if there are no attachments null is returned otherwise rootPdf.
 	 * 
-	 * @param cisConversionResult wiht the given pdf and its attachments.
-	 * @param rootPdf the pdf created with the attachments embedded.
+	 * @param cisConversionResult
+	 *            wiht the given pdf and its attachments.
+	 * @param rootPdf
+	 *            the pdf created with the attachments embedded.
 	 * @throws IOException
 	 */
 	private void addAttachmentInSinglePdf() throws IOException {
@@ -115,7 +125,8 @@ class PdfAttachmentUtil {
 	}
 
 	private void addFileToPdf(InputStream attachmentDocumentStream, String fileName, String extension) {
-		// Determine the document name to use. (Convert any invalid name to a valid filename.
+		// Determine the document name to use. (Convert any invalid name to a valid
+		// filename.
 		String documentName = ConvertorUtil.createTidyFilename(convertToValidFileName(fileName), extension);
 
 		LOGGER.debug("Adding attachment with document name \"" + documentName + "\" (original: \"" + fileName + "\")");
@@ -142,7 +153,8 @@ class PdfAttachmentUtil {
 			// Open the base pdf.
 			pdfDocument = new Document(rootPdf.getAbsolutePath());
 
-			// UseAttachments means "Optional attachments panel set to visible" used so that the attachments are shown.
+			// UseAttachments means "Optional attachments panel set to visible" used so that
+			// the attachments are shown.
 			pdfDocument.setPageMode(PageMode.UseAttachments);
 		}
 

@@ -11,7 +11,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import nl.nn.adapterframework.extensions.aspose.services.util.StringsUtil;
 
 /**
- * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der Hoorn</a> (d937275)
+ * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
+ *         Hoorn</a> (d937275)
  *
  */
 class UniqueFileGenerator {
@@ -20,7 +21,9 @@ class UniqueFileGenerator {
 
 	/**
 	 * Create a unique file in the pdfOutputLocation with the given extension
-	 * @param extension is allowed to be null.
+	 * 
+	 * @param extension
+	 *            is allowed to be null.
 	 * @return
 	 */
 	static File getUniqueFile(String directory, String prefix, String extension) {
