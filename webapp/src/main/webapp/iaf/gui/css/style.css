@@ -6912,3 +6912,6 @@ body.body-small .vote-icon {
     margin-left: -200px;
   }
 }
+.text-center {
+  text-align: center;
+}

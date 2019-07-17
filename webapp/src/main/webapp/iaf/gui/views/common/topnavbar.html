@@ -39,6 +39,7 @@
                         </a>
                     </li>
                     <li ng-repeat-end class="divider" ng-if="!$last"></li>
+                    <li class="text-center" ng-if="notificationList.length <= 0">No notifications</li>
                     <!-- <li>
                         <div class="text-center link-block">
                             <a ui-sref="pages.notifications({id: 0})">
