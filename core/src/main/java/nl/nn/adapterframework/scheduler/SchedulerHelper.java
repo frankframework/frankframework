@@ -83,7 +83,7 @@ public class SchedulerHelper {
 						.withIdentity(jobDetail.getKey().getName(), jobDetail.getKey().getGroup())
 						.forJob(jobDetail)
 						.withSchedule(simpleSchedule()
-								.withIntervalInSeconds((int)interval)
+								.withIntervalInMilliseconds((int)interval)
 								.repeatForever())
 						.build();
 			}
