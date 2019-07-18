@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -20,6 +21,7 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionServi
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.AsposeLicenseLoader;
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.CisConversionServiceImpl;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.util.XmlBuilder;
 
 public class PdfPipe extends FixedForwardPipe {
 
@@ -63,7 +65,7 @@ public class PdfPipe extends FixedForwardPipe {
 		} catch (Exception e) {
 			throw new ConfigurationException(e);
 		}
-
+		System.err.println("NEW VERSION");
 		cisConversionService = new CisConversionServiceImpl(pdfOutputLocation);
 	}
 
@@ -90,21 +92,60 @@ public class PdfPipe extends FixedForwardPipe {
 		} else {
 			// TODO: do something here (ask about string)
 		}
-
-		CisConversionResult cisConversionResult = cisConversionService.convertToPdf(binaryInputStream,
-				saveSeparate ? ConversionOption.SEPERATEPDF : ConversionOption.SINGLEPDF);
+		String fileName = (String) session.get("fileName");
+		String conversionOption = (String) session.get("attachmentOption");
+		CisConversionResult cisConversionResult = cisConversionService.convertToPdf(binaryInputStream, fileName,
+				ConversionOption.valueOf(conversionOption));
 		System.err.println(cisConversionResult.toString());
 		if (cisConversionResult.getFailureReason() != null) {
 
 		}
 		session.put("result", cisConversionResult);
-		session.put("CONVERSION_OPTION", cisConversionResult.getConversionOption().name());
+		session.put("CONVERSION_OPTION", cisConversionResult.getConversionOption().getValue());
 		session.put("MEDIA_TYPE", cisConversionResult.getMediaType().toString());
 		session.put("DOCUMENT_NAME", cisConversionResult.getDocumentName());
-		session.put("AMOUNT_OF_PAGES", null);
 		session.put("FAILURE_REASON", cisConversionResult.getFailureReason());
-		session.put("PARENT_ID", "3");
-		session.put("FILE_CONTENT", cisConversionResult.getFileStream());
+		session.put("PARENT_CONVERSION_ID", null);
+		session.put("CONVERTED_DOCUMENT", cisConversionResult.getFileStream());
+
+		List<CisConversionResult> attachments = cisConversionResult.getAttachments();
+
+		XmlBuilder attachmentsAsXml = new XmlBuilder("attachments");
+
+		if (attachments != null) {
+			for (int i = 0; i < attachments.size(); i++) {
+				CisConversionResult attachment = attachments.get(i);
+
+				XmlBuilder attachmentAsXml = new XmlBuilder("attachment");
+
+				XmlBuilder conversionOptionAsXml = new XmlBuilder("conversionOption");
+				conversionOptionAsXml.setValue(attachment.getConversionOption().getValue() + "");
+
+				XmlBuilder mediaTypeAsXml = new XmlBuilder("mediaType");
+				mediaTypeAsXml.setValue(cisConversionResult.getMediaType().toString());
+
+				XmlBuilder documentNameAsXml = new XmlBuilder("documentName");
+				documentNameAsXml.setValue(cisConversionResult.getDocumentName());
+
+				XmlBuilder failureReasonAsXml = new XmlBuilder("failureReason");
+				failureReasonAsXml.setValue(cisConversionResult.getFailureReason());
+
+				XmlBuilder convertedDocumentAsXml = new XmlBuilder("convertedDocumentSessionKey");
+				convertedDocumentAsXml.setValue("attachment" + i);
+
+				session.put("attachment" + i, attachment.getFileStream());
+
+				attachmentAsXml.addSubElement(conversionOptionAsXml);
+				attachmentAsXml.addSubElement(mediaTypeAsXml);
+				attachmentAsXml.addSubElement(documentNameAsXml);
+				attachmentAsXml.addSubElement(failureReasonAsXml);
+				attachmentAsXml.addSubElement(convertedDocumentAsXml);
+
+				attachmentsAsXml.addSubElement(attachmentAsXml);
+			}
+		}
+
+		session.put("ATTACHMENTS", attachmentsAsXml.toXML());
 
 		return new PipeRunResult(getForward(), "");
 	}
