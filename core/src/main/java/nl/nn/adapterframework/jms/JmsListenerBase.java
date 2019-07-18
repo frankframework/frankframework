@@ -374,7 +374,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		return commitOnState;
 	}
 
-	@IbisDoc({"receiver timeout, in milliseconds", "3000 [ms]"})
+	@IbisDoc({"receive timeout in milliseconds as specified by the JMS API, see https://docs.oracle.com/javaee/7/api/javax/jms/MessageConsumer.html#receive-long-", "1000 [ms]"})
 	public void setTimeOut(long newTimeOut) {
 		timeOut = newTimeOut;
 	}
