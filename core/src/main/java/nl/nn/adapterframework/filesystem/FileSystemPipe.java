@@ -15,22 +15,21 @@
 */
 package nl.nn.adapterframework.filesystem;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
-
-import org.apache.commons.codec.binary.Base64InputStream;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.pipes.FixedForwardPipe;
 
 /**
  * FileSystem Sender: Base class for all file system senders
@@ -49,10 +48,11 @@ import nl.nn.adapterframework.util.Misc;
  * <br/>
  */
 
-public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderWithParametersBase {
+public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends FixedForwardPipe implements HasPhysicalDestination {
 	
+	private FileSystemActor<F, FS> actor = new FileSystemActor<F, FS>();
 	private FS fileSystem;
-	private FileSystemActor<F,FS> actor=new FileSystemActor<F,FS>();
+	
 	
 	@Override
 	public void configure() throws ConfigurationException {
@@ -62,59 +62,55 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 	}
 	
 	@Override
-	public void open() throws SenderException {
+	public void start() throws PipeStartException {
+		super.start();
 		try {
 			FS fileSystem=getFileSystem();
 			fileSystem.open();
 			actor.open();
 		} catch (FileSystemException e) {
-			throw new SenderException("Cannot open fileSystem",e);
+			throw new PipeStartException("Cannot open fileSystem",e);
 		}
 	}
 	
 	@Override
-	public void close() throws SenderException {
+	public void stop() {
 		try {
 			getFileSystem().close();
 		} catch (FileSystemException e) {
-			throw new SenderException("Cannot close fileSystem",e);
+			log.warn("Cannot close fileSystem",e);
+		} finally {
+			super.stop();
 		}
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		ParameterValueList pvl = null;
+	public PipeRunResult doPipe (Object input, IPipeLineSession session) throws PipeRunException {
+		ParameterList paramList = getParameterList();
+		ParameterResolutionContext prc = new ParameterResolutionContext(input.toString(), session);
+		ParameterValueList pvl=null;
 		
 		try {
-			if (prc != null && paramList != null) {
+			if (paramList != null) {
 				pvl = prc.getValues(paramList);
 			}
 		} catch (ParameterException e) {
-			throw new SenderException(
-					getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
+			throw new PipeRunException(this,getLogPrefix(session) + "Sender [" + getName() + "] caught exception evaluating parameters", e);
 		}
 
+		Object result;
 		try {
-			Object result = actor.doAction(message, pvl);
-			if (result==null) {
-				return null;
-			} else {
-				if (result instanceof InputStream) {
-					try (InputStream is = new Base64InputStream((InputStream)result, true)) {
-						return Misc.streamToString(is);
-					} catch (IOException e) {
-						throw new SenderException(e);
-					}
-				} else {
-					return result.toString();
-				}
-			}
-		} catch (FileSystemException e) {
-			throw new SenderException(e);
+			result = actor.doAction(input, pvl);
+		} catch (FileSystemException | TimeOutException e) {
+			throw new PipeRunException(this, "cannot perform action", e);
 		}
+		if (result!=null) {
+			return new PipeRunResult(getForward(), result);
+		}
+		return new PipeRunResult(getForward(), input);
 	}
 
-
+	@Override
 	public String getPhysicalDestinationName() {
 		if (getFileSystem() instanceof HasPhysicalDestination) {
 			return ((HasPhysicalDestination)getFileSystem()).getPhysicalDestinationName();
@@ -122,19 +118,19 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 		return null;
 	}
 
-
-	public void setFileSystem(FS fileSystem) {
-		this.fileSystem=fileSystem;
-	}
 	public FS getFileSystem() {
 		return fileSystem;
+	}
+
+	protected void setFileSystem(FS fileSystem) {
+		this.fileSystem = fileSystem;
 	}
 
 	protected void addActions(List<String> specificActions) {
 		actor.addActions(specificActions);
 	}
 
-	@IbisDoc({ "possible values: list, download, delete, upload, rename, move, mkdir, rmdir", "" })
+	@IbisDoc({ "possible values: list, read, delete, write, rename, move, mkdir, rmdir", "" })
 	public void setAction(String action) {
 		actor.setAction(action);
 	}
@@ -145,6 +141,9 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 	@IbisDoc({"folder that is scanned for files when action=list. When not set, the root is scanned", ""})
 	public void setInputFolder(String inputFolder) {
 		actor.setInputFolder(inputFolder);
+	}
+	public String getInputFolder() {
+		return actor.getInputFolder();
 	}
 
 }
