@@ -35,7 +35,4 @@ public interface IWritableFileSystem<F> extends IBasicFileSystem<F> {
 	 */
 	public F renameFile(F f, String newName, boolean force) throws FileSystemException;
 
-	public void createFolder(String folder) throws FileSystemException;
-	public void removeFolder(String folder) throws FileSystemException;
-
 }

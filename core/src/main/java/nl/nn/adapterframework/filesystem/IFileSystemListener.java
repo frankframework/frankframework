@@ -101,15 +101,11 @@ public interface IFileSystemListener<F> extends IPullingListener<F> {
 //		return passWithoutDirectory;
 //	}
 
-//	@IbisDoc({"when set to <code>true</code>, the directory to look for files is created if it does not exist", "false"})
-//	public void setCreateInputDirectory(boolean b) {
-//		createInputDirectory = b;
-//	}
+	@IbisDoc({"when set to <code>true</code>, the directory to look for files is created if it does not exist", "false"})
+	public void setCreateInputDirectory(boolean b);
 //
-//	public boolean isCreateInputDirectory() {
-//		return createInputDirectory;
-//	}
-
+//	public boolean isCreateInputDirectory();
+	
 //	/**
 //	 * @Deprecated replaced by processedFolder
 //	 */

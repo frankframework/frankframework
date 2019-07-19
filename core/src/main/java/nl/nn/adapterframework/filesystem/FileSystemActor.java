@@ -79,8 +79,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 	public final String PARAMETER_DESTINATION="destination";	// destination for action rename and move
 	
 	
-	public final String[] ACTIONS_BASIC= {ACTION_LIST, ACTION_READ1, ACTION_READ2, ACTION_MOVE, ACTION_DELETE};
-	public final String[] ACTIONS_WRITABLE_FS= {ACTION_MKDIR, ACTION_RMDIR, ACTION_WRITE1, ACTION_WRITE2, ACTION_RENAME};
+	public final String[] ACTIONS_BASIC= {ACTION_LIST, ACTION_READ1, ACTION_READ2, ACTION_MOVE, ACTION_DELETE, ACTION_MKDIR, ACTION_RMDIR};
+	public final String[] ACTIONS_WRITABLE_FS= {ACTION_WRITE1, ACTION_WRITE2, ACTION_RENAME};
 
 	private String action;
 	private String inputFolder; // folder for action=list
@@ -227,10 +227,10 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 				return getFileAsXmlBuilder(file, "file").toXML();
 			} else if (action.equalsIgnoreCase(ACTION_MKDIR)) {
 				String folder = determineInputFoldername(input, pvl);
-				((IWritableFileSystem<F>)fileSystem).createFolder(folder);
+				fileSystem.createFolder(folder);
 			} else if (action.equalsIgnoreCase(ACTION_RMDIR)) {
 				String folder = determineInputFoldername(input, pvl);
-				((IWritableFileSystem<F>)fileSystem).removeFolder(folder);
+				fileSystem.removeFolder(folder);
 			} else if (action.equalsIgnoreCase(ACTION_RENAME)) {
 				F file=getFile(input, pvl);
 				String destination = (String) pvl.getParameterValue(PARAMETER_DESTINATION).getValue();

@@ -53,7 +53,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	private boolean delete = false;
 	private String processedFolder;
-//	private boolean createFolders=false;
+	private boolean createFolders=false;
 //	private boolean overwrite = false;
 	private String messageType="name";
 
@@ -85,12 +85,20 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			// folders can only be checked at 'open()', because the checks need an opened file system.
 			if (StringUtils.isNotEmpty(getInputFolder())) {
 				if (!fileSystem.folderExists(getInputFolder())) {
-					throw new ListenerException("The value for inputFolder [" + getInputFolder() + "] is invalid. It is not a folder.");
+					if (isCreateFolders()) {
+						fileSystem.createFolder(getInputFolder());
+					} else { 
+						throw new ListenerException("The value for inputFolder [" + getInputFolder() + "] is invalid. It is not a folder.");
+					}
 				}
 			}
 			if (StringUtils.isNotEmpty(getInProcessFolder())) {
 				if (!fileSystem.folderExists(getInProcessFolder())) {
-					throw new ListenerException("The value for inProcessFolder [" + getInProcessFolder() + "] is invalid. It is not a folder.");
+					if (isCreateFolders()) {
+						fileSystem.createFolder(getInProcessFolder());
+					} else { 
+						throw new ListenerException("The value for inProcessFolder [" + getInProcessFolder() + "] is invalid. It is not a folder.");
+					}
 				}
 			} else {
 				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
@@ -100,7 +108,11 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			}
 			if (StringUtils.isNotEmpty(getProcessedFolder())) {
 				if (!fileSystem.folderExists(getProcessedFolder())) {
-					throw new ListenerException("The value for processedFolder [" + getProcessedFolder() + "] is invalid. It is not a folder.");
+					if (isCreateFolders()) {
+						fileSystem.createFolder(getProcessedFolder());
+					} else { 
+						throw new ListenerException("The value for processedFolder [" + getProcessedFolder() + "] is invalid. It is not a folder.");
+					}
 				}
 			}
 		} catch (FileSystemException e) {
@@ -459,6 +471,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return fileTimeSensitive;
 	}
 
+	@Override
 	@IbisDoc({"determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'contents' for the contents of the file. For any other value, the attributes of the file are searched and used", "name"})
 	public void setMessageType(String messageType) {
 		this.messageType = messageType;
@@ -467,11 +480,21 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return messageType;
 	}
 
-//	public boolean isCreateFolders() {
-//		return createFolders;
-//	}
-//	public void setCreateFolders(boolean createFolders) {
-//		this.createFolders = createFolders;
-//	}
+	public boolean isCreateFolders() {
+		return createFolders;
+	}
+
+	@IbisDoc({"when set to <code>true</code>, the folders to look for files and to move files to when being processed and after being processed are created if they are specified and do not exist", "false"})
+	public void setCreateFolders(boolean createFolders) {
+		this.createFolders = createFolders;
+	}
+	
+	@Override
+	public void setCreateInputDirectory(boolean createInputDirectory) {
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: attribute 'createInputDirectory' has been replaced by 'createFolders'";
+		configWarnings.add(log, msg);
+		setCreateFolders(createInputDirectory);
+	}
 
 }
