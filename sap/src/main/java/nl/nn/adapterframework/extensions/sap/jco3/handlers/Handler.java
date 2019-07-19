@@ -34,7 +34,7 @@ import com.sap.conn.jco.JCoRecord;
  * @author  Jaco de Groot
  * @since   5.0
  */
-public class Handler extends DefaultHandler {
+public abstract class Handler extends DefaultHandler {
 	protected Logger log = LogUtil.getLogger(this);
 
 	protected Handler childHandler;
@@ -43,6 +43,10 @@ public class Handler extends DefaultHandler {
 	protected int unknownElementDepth = 0;
 	protected boolean done = false;
 
+	protected abstract void startElement(String localName);
+	protected abstract void endElement(String localName);
+	
+	
 	@Override
 	public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
 		if (childHandler != null) {
@@ -56,8 +60,6 @@ public class Handler extends DefaultHandler {
 		}
 	}
 
-	protected void startElement(String localName) {
-	}
 
 	protected void startStringField(String localName, JCoRecord structure) {
 		parsedStringField = true;
@@ -91,8 +93,6 @@ public class Handler extends DefaultHandler {
 		}
 	}
 
-	protected void endElement(String localName) {
-	}
 
 	protected void endStringField(String localName, JCoRecord record) {
 		if (record.getMetaData().hasField(localName)) {

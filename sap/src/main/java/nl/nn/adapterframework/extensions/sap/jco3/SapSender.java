@@ -118,9 +118,7 @@ public class SapSender extends SapSenderBase {
 		String tid=null;
 		try {
 			ParameterValueList pvl = null;
-			if (prc!=null) {
-				pvl=prc.getValues(paramList);
-			}
+			pvl=prc.getValues(paramList);
 			SapSystem sapSystem = getSystem(pvl);
 			
 			JCoFunction function=getFunction(sapSystem, pvl);

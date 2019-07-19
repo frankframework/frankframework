@@ -65,6 +65,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 	private SapSystem sapSystem;
 
 
+	@Override
 	public void configure(PipeLine pipeline) throws ConfigurationException {
 		super.configure(pipeline);
 		if (StringUtils.isEmpty(getAction())) {
@@ -91,6 +92,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 		}
 	}
 
+	@Override
 	public void atEndOfPipeLine(String correlationId, PipeLineResult pipeLineResult, IPipeLineSession session) throws PipeRunException {
 		SapLUWHandle.releaseHandle(session,getLuwHandleSessionKey());
 	}
@@ -109,6 +111,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 	}
 
 
+	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		if (getAction().equalsIgnoreCase(ACTION_BEGIN)) {
 			SapLUWHandle.retrieveHandle(session,getLuwHandleSessionKey(),true,getSapSystem(),false).begin();

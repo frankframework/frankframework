@@ -61,9 +61,12 @@ public class TableDigester {
 			this.tableParams=tableParams;
 		}
 		
+		@Override
 		public void startDocument() {
-			
+			// nothing special here
 		}
+		
+		@Override
 		public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
 			if (!parsedTables) {
 				if (localName.equals("TABLES")) {
@@ -85,6 +88,7 @@ public class TableDigester {
 			} 
 		}
 		
+		@Override
 		public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
 			if (parsedColumn) {
 				log.debug("setting column ["+localName+"] to value ["+columnValue+"]");
@@ -100,6 +104,8 @@ public class TableDigester {
 				log.warn("unexpected state");
 			}
 		}
+
+		@Override
 		public void characters(char[] ch, int start, int length) throws SAXException {
 			if (parsedColumn) {
 				columnValue.append(ch,start,length);

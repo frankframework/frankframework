@@ -42,6 +42,7 @@ public class TableHandler extends Handler {
 		this.table=table;
 	}
 
+	@Override
 	protected void startElement(String localName) {
 		if (!parsedItem) {
 			if (localName.equals("item")) {
@@ -65,6 +66,7 @@ public class TableHandler extends Handler {
 		}
 	}
 
+	@Override
 	protected void endElement(String localName) {
 		if (parsedStringField) {
 			endStringField(localName, table);

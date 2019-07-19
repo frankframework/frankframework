@@ -71,9 +71,7 @@ public class IdocSender extends SapSenderBase {
 		String tid=null;
 		try {
 			ParameterValueList pvl = null;
-			if (prc!=null) {
-				pvl=prc.getValues(paramList);
-			}
+			pvl=prc.getValues(paramList);
 			SapSystem sapSystem = getSystem(pvl);
 			
 			IDocDocument idoc = parseIdoc(sapSystem,message);

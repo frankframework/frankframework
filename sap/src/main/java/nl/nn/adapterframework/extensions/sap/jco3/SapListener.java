@@ -85,13 +85,13 @@ import nl.nn.adapterframework.extensions.sap.SapException;
  * @since 5.0
  * @see "http://help.sap.com/saphelp_nw04/helpdata/en/09/c88442a07b0e53e10000000a155106/frameset.htm"
  */
-public class SapListener extends SapFunctionFacade implements IPushingListener, JCoServerFunctionHandler, JCoServerTIDHandler, JCoIDocHandlerFactory, JCoIDocHandler, JCoQueuedIDocHandler, JCoServerExceptionListener, JCoServerErrorListener, ServerDataProvider {
+public class SapListener extends SapFunctionFacade implements IPushingListener<JCoFunction>, JCoServerFunctionHandler, JCoServerTIDHandler, JCoIDocHandlerFactory, JCoIDocHandler, JCoQueuedIDocHandler, JCoServerExceptionListener, JCoServerErrorListener, ServerDataProvider {
 
 	private String progid;	 // progid of the RFC-destination
 	private String connectionCount = "2"; // used in SAP examples
 
 	private SapSystem sapSystem;
-	private IMessageHandler handler;
+	private IMessageHandler<JCoFunction> handler;
 	private IbisExceptionListener exceptionListener;
 
 	private DefaultServerHandlerFactory.FunctionHandlerFactory functionHandlerFactory;
@@ -201,23 +201,23 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 
 
 	@Override
-	public String getIdFromRawMessage(Object rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public String getIdFromRawMessage(JCoFunction rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		log.debug("SapListener.getCorrelationIdFromField");
-		return getCorrelationIdFromField((JCoFunction)rawMessage);
+		return getCorrelationIdFromField(rawMessage);
 	}
 
 	@Override
-	public String getStringFromRawMessage(Object rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public String getStringFromRawMessage(JCoFunction rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		log.debug("SapListener.getStringFromRawMessage");
-		return functionCall2message((JCoFunction)rawMessage);
+		return functionCall2message(rawMessage);
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, JCoFunction rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		try {
 			log.debug("SapListener.afterMessageProcessed");
 			if (rawMessage instanceof JCoFunction) {
-				message2FunctionResult((JCoFunction)rawMessage, processResult.getResult());
+				message2FunctionResult(rawMessage, processResult.getResult());
 			}
 		} catch (SapException e) {
 			throw new ListenerException(e);
@@ -286,7 +286,7 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 	}
 
 	@Override
-	public void setHandler(IMessageHandler handler) {
+	public void setHandler(IMessageHandler<JCoFunction> handler) {
 		this.handler=handler;
 	}
 

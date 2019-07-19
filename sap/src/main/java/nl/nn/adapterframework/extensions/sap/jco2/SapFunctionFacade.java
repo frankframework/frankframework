@@ -69,9 +69,8 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 
 	private IFunctionTemplate ftemplate;
 	private SapSystem sapSystem;
-	private boolean fieldIndicesCalculated=false;
 
-	static Map extractors = new HashMap();
+	static Map<String,TransformerPool> extractors = new HashMap<String,TransformerPool>();
 
 	protected String getLogPrefix() {
 		return this.getClass().getName()+" ["+getName()+"] ";
@@ -98,7 +97,6 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 				ftemplate = getFunctionTemplate(sapSystem, getFunctionName());
 				try {
 					calculateStaticFieldIndices(ftemplate);
-					fieldIndicesCalculated=true;
 				} catch (Exception e) {
 					throw new SapException(getLogPrefix()+"Exception calculation field-indices ["+getFunctionName()+"]", e);
 				}
@@ -114,11 +112,11 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 		} else {
 			SapSystem.closeSystems();
 		}
-		fieldIndicesCalculated=false;
 		ftemplate = null;
 	}
 
 
+	@Override
 	public String getPhysicalDestinationName() {
 		String result;
 		if (sapSystem==null) {
@@ -437,10 +435,11 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 		requestFieldName = string;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
-
+	@Override
 	public void setName(String string) {
 		name = string;
 	}
@@ -454,7 +453,6 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 	public void setSapSystemName(String string) {
 		sapSystemName = string;
 	}
-
 	protected String getFunctionName() {
 		return null;
 	}

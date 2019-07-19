@@ -62,6 +62,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 	protected ParameterList paramList = null;
 	
 	
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (paramList!=null) {
@@ -156,6 +157,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		return ClientFactoryUtils.getTransactionalTid(sapSystem,client,true);
 	}
 
+	@Override
 	public void addParameter(Parameter p) {
 		if (paramList==null) {
 			paramList=new ParameterList();
@@ -182,6 +184,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 	protected void setSynchronous(boolean b) {
 		synchronous = b;
 	}
+	@Override
 	public boolean isSynchronous() {
 		return synchronous;
 	}

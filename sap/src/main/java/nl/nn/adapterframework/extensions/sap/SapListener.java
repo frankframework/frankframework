@@ -38,7 +38,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
  * @author  Jaco de Groot
  * @since   5.0
  */
-public class SapListener implements IPushingListener, HasPhysicalDestination {
+public class SapListener implements IPushingListener<Object>, HasPhysicalDestination {
 	private int jcoVersion = 3;
 	private nl.nn.adapterframework.extensions.sap.jco3.SapListener sapListener3;
 	private nl.nn.adapterframework.extensions.sap.jco2.SapListener sapListener2;

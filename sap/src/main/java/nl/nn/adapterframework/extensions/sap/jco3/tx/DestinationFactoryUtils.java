@@ -75,18 +75,23 @@ public abstract class DestinationFactoryUtils {
 			throws SapException, JCoException {
 
 		return doGetTransactionalTid(sapSystem, new ResourceFactory() {
+			@Override
 			public String getTid(JcoResourceHolder holder) {
 				return holder.getTid(existingDestination);
 			}
+			@Override
 			public JCoDestination getDestination(JcoResourceHolder holder) {
 				return (existingDestination != null ? existingDestination : holder.getDestination());
 			}
+			@Override
 			public JCoDestination createDestination() throws JCoException {
 				return sapSystem.getDestination();
 			}
+			@Override
 			public String createTid(JCoDestination destination) throws JCoException {
 				return destination.createTID();
 			}
+			@Override
 			public boolean isSynchedLocalTransactionAllowed() {
 				return synchedLocalTransactionAllowed;
 			}
@@ -98,18 +103,23 @@ public abstract class DestinationFactoryUtils {
 			throws SapException, JCoException {
 
 		return doGetTransactionalDestination(sapSystem, new ResourceFactory() {
+			@Override
 			public String getTid(JcoResourceHolder holder) {
 				return holder.getTid(holder.getDestination());
 			}
+			@Override
 			public JCoDestination getDestination(JcoResourceHolder holder) {
 				return holder.getDestination();
 			}
+			@Override
 			public JCoDestination createDestination() throws JCoException {
 				return sapSystem.getDestination();
 			}
+			@Override
 			public String createTid(JCoDestination destination) throws JCoException {
 				return destination.createTID();
 			}
+			@Override
 			public boolean isSynchedLocalTransactionAllowed() {
 				return synchedLocalTransactionAllowed;
 			}
@@ -183,8 +193,7 @@ public abstract class DestinationFactoryUtils {
 		Assert.notNull(sapSystem, "SapSystem must not be null");
 		Assert.notNull(resourceFactory, "ResourceFactory must not be null");
 
-		JcoResourceHolder resourceHolder =
-				(JcoResourceHolder) TransactionSynchronizationManager.getResource(sapSystem);
+		JcoResourceHolder resourceHolder = (JcoResourceHolder) TransactionSynchronizationManager.getResource(sapSystem);
 		if (resourceHolder != null) {
 			JCoDestination destination = resourceFactory.getDestination(resourceHolder);
 			if (destination != null) {
@@ -283,23 +292,27 @@ public abstract class DestinationFactoryUtils {
 			this.synchedLocalTransacted = synchedLocalTransacted;
 		}
 
+		@Override
 		public void suspend() {
 			if (this.holderActive) {
 				TransactionSynchronizationManager.unbindResource(this.resourceKey);
 			}
 		}
 
+		@Override
 		public void resume() {
 			if (this.holderActive) {
 				TransactionSynchronizationManager.bindResource(this.resourceKey, this.resourceHolder);
 			}
 		}
 
+		@Override
 		public void beforeCompletion() {
 			TransactionSynchronizationManager.unbindResource(this.resourceKey);
 			this.holderActive = false;
 		}
 
+		@Override
 		public void afterCommit() {
 			if (this.synchedLocalTransacted) {
 				try {

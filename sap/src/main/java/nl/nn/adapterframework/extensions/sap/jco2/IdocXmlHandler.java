@@ -42,7 +42,7 @@ public class IdocXmlHandler extends DefaultHandler {
 	
 	private SapSystem sapSystem;
 	private IDoc.Document doc=null;
-	private List segmentStack=new ArrayList();
+	private List<IDoc.Segment> segmentStack=new ArrayList<IDoc.Segment>();
 	private String currentField;
 	private StringBuffer currentFieldValue=new StringBuffer();
 	private boolean parsingEdiDcHeader=false;
@@ -58,6 +58,7 @@ public class IdocXmlHandler extends DefaultHandler {
 	}
 
 
+	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 		//log.debug("startElement("+localName+")");
 		if (doc==null) {
@@ -81,6 +82,7 @@ public class IdocXmlHandler extends DefaultHandler {
 		}
 	}
 	
+	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		//log.debug("endElement("+localName+")");
 		if (currentField!=null) {
@@ -146,6 +148,7 @@ public class IdocXmlHandler extends DefaultHandler {
 		}
 	}
 
+	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
 		if (currentField==null) {
 			String part=new String(ch,start,length).trim();
@@ -157,22 +160,26 @@ public class IdocXmlHandler extends DefaultHandler {
 		currentFieldValue.append(ch,start,length);
 	}
 
+	@Override
 	public void error(SAXParseException e) throws SAXException {
 		log.warn("Parser Error",e);
 		super.error(e);
 	}
 
+	@Override
 	public void fatalError(SAXParseException e) throws SAXException {
 		log.warn("Parser FatalError",e);
 		super.fatalError(e);
 	}
 
+	@Override
 	public void warning(SAXParseException e) throws SAXException {
 		log.warn("Parser Warning",e);
 		super.warning(e);
 	}
 
 
+	@Override
 	public void setDocumentLocator(Locator locator) {
 		super.setDocumentLocator(locator);
 		this.locator=locator;

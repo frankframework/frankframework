@@ -73,6 +73,7 @@ public class SapSender extends SapSenderBase {
 		setSynchronous(true);
 	}
 	
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getFunctionName())) {
@@ -87,14 +88,6 @@ public class SapSender extends SapSenderBase {
 				throw new ConfigurationException(getLogPrefix()+"functionName cannot be specified both in attribute functionName ["+getFunctionName()+"] and via parameter ["+getFunctionNameParam()+"]");
 			}
 		}
-	}
-
-	public void open() throws SenderException {
-		super.open();
-	}
-	
-	public void close() {
-		super.close();
 	}
 
 	public JCO.Function getFunction(SapSystem sapSystem, ParameterValueList pvl) throws SapException {
@@ -118,13 +111,12 @@ public class SapSender extends SapSenderBase {
 		return getFunctionTemplate(sapSystem, functionName).getFunction();
 	}
 
+	@Override
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		String tid=null;
 		try {
 			ParameterValueList pvl = null;
-			if (prc!=null) {
-				pvl=prc.getValues(paramList);
-			}
+			pvl=prc.getValues(paramList);
 			SapSystem sapSystem = getSystem(pvl);
 			
 			JCO.Function function=getFunction(sapSystem, pvl);
@@ -158,11 +150,13 @@ public class SapSender extends SapSenderBase {
 		}
 	}
 
+	@Override
 	public void setSynchronous(boolean b) {
 		super.setSynchronous(b);
 	}
 
 
+	@Override
 	public String getFunctionName() {
 		return functionName;
 	}

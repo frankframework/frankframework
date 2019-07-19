@@ -43,15 +43,13 @@ import com.sap.conn.jco.JCoDestination;
 public class JcoResourceHolder extends ResourceHolderSupport {
 //	private static final Logger logger = LogUtil.getLogger(JcoResourceHolder.class);
 
-	private SapSystem sapSystem;
-
 	private boolean frozen = false;
 
-	private final List destinations = new LinkedList();
+	private final List<JCoDestination> destinations = new LinkedList<JCoDestination>();
 
-	private final List tids = new LinkedList();
+	private final List<String> tids = new LinkedList<String>();
 
-	private final Map tidsPerDestination = new HashMap();
+	private final Map<JCoDestination,List<String>> tidsPerDestination = new HashMap<JCoDestination,List<String>>();
 
 
 	/**
@@ -68,7 +66,6 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 	 * resource holder is associated with (may be <code>null</code>)
 	 */
 	public JcoResourceHolder(SapSystem sapSystem) {
-		this.sapSystem = sapSystem;
 	}
 
 	/**
@@ -78,7 +75,6 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 	 * @param destination the JCoDestination
 	 */
 	public JcoResourceHolder(SapSystem sapSystem, JCoDestination destination) {
-		this.sapSystem = sapSystem;
 		addDestination(destination);
 	}
 
@@ -101,7 +97,6 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 	 * @param tid the TID
 	 */
 	public JcoResourceHolder(SapSystem sapSystem, JCoDestination destination, String tid) {
-		this.sapSystem = sapSystem;
 		addDestination(destination);
 		addTid(tid, destination);
 		this.frozen = true;
@@ -127,9 +122,9 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 		if (!this.tids.contains(tid)) {
 			this.tids.add(tid);
 			if (destination != null) {
-				List tids = (List) this.tidsPerDestination.get(destination);
+				List<String> tids = this.tidsPerDestination.get(destination);
 				if (tids == null) {
-					tids = new LinkedList();
+					tids = new LinkedList<String>();
 					this.tidsPerDestination.put(destination, tids);
 				}
 				tids.add(tid);
@@ -151,7 +146,7 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 
 	public String getTid(JCoDestination destination) {
 		Assert.notNull(destination, "Destination must not be null");
-		List tids = (List) this.tidsPerDestination.get(destination);
+		List<String> tids = this.tidsPerDestination.get(destination);
 		if (tids==null) {
 			return null;
 		}
@@ -160,11 +155,11 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 
 
 	public void commitAll() throws SapException {
-		for (Iterator itc = this.destinations.iterator(); itc.hasNext();) {
-			JCoDestination destination = (JCoDestination)itc.next();
-			List tids = (List)this.tidsPerDestination.get(destination);
-			for (Iterator itt = tids.iterator(); itt.hasNext();) {
-				String tid = (String)itt.next();
+		for (Iterator<JCoDestination> itc = this.destinations.iterator(); itc.hasNext();) {
+			JCoDestination destination = itc.next();
+			List<String> tids = this.tidsPerDestination.get(destination);
+			for (Iterator<String> itt = tids.iterator(); itt.hasNext();) {
+				String tid = itt.next();
 				try {
 					destination.confirmTID(tid);						
 				} catch (Throwable t) {
