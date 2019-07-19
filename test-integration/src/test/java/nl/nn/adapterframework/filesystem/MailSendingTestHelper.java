@@ -2,7 +2,6 @@ package nl.nn.adapterframework.filesystem;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
