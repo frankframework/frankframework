@@ -598,6 +598,7 @@ body.canvas-menu.mini-navbar nav.navbar-static-side {
 }
 .btn {
   border-radius: 3px;
+  background-color: #ddd;
 }
 .btn-w-m {
   min-width: 120px;
