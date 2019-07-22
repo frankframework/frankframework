@@ -28,6 +28,19 @@ import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
+/**
+ * @author Gerrit van Brakel
+ * @since 4.9
+ */
+@IbisDescription(
+	"Collection of Senders, that are executed all at the same time.\n" +
+	"<table border=\"1\">\n" +
+	"<tr><th>nested elements</th><th>description</th></tr>\n" +
+	"<tr><td>{@link ISender sender}</td><td>one or more specifications of senders. Each will receive the same input message, to be processed in parallel</td></tr>\n" +
+	"</table>\n" +
+	"</p>" 
+)
 public class ParallelSenders extends SenderSeries {
 	private int maxConcurrentThreads = 0;
 	@Override

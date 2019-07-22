@@ -25,6 +25,32 @@ import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.util.Misc;
 import org.apache.commons.lang.StringUtils;
+
+/**
+ * @author Peter Leeuwenburgh
+ */
+@IbisDescription(
+	"Locker of scheduler jobs and pipes.\n" +
+	"Tries to set a lock (by inserting a record in the database table IbisLock) and only if this is done\n" +
+	"successfully the job is executed.\n" +
+	"For an Oracle database the following objects are used:\n" +
+	" <pre>\n" +
+	"CREATE TABLE &lt;schema_owner&gt;.IBISLOCK\n" +
+	"(\n" +
+	"OBJECTID VARCHAR2(100 CHAR),\n" +
+	"TYPE CHAR(1 CHAR),\n" +
+	"HOST VARCHAR2(100 CHAR),\n" +
+	"CREATIONDATE TIMESTAMP(6),\n" +
+	"EXPIRYDATE TIMESTAMP(6)\n" +
+	"CONSTRAINT PK_IBISLOCK PRIMARY KEY (OBJECTID)\n" +
+	");\n" +
+	"CREATE INDEX &lt;schema_owner&gt;.IX_IBISLOCK ON &lt;schema_owner&gt;.IBISLOCK\n" +
+	"(EXPIRYDATE);\n" +
+	"GRANT DELETE, INSERT, SELECT, UPDATE ON &lt;schema_owner&gt;.IBISLOCK TO &lt;rolename&gt;;\n" +
+	"GRANT SELECT ON SYS.DBA_PENDING_TRANSACTIONS TO &lt;rolename&gt;;\n" +
+	"COMMIT;\n" +
+	" </pre>"
+)
 public class Locker extends JdbcFacade {
 	private static final String LOCK_IGNORED="%null%";
 	private String name;

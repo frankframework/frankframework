@@ -18,7 +18,6 @@ package nl.nn.adapterframework.senders;
 import org.apache.commons.net.ftp.FTPFile;
 
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.FtpFileSystem;
 

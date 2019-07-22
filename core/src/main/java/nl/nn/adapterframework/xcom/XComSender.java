@@ -27,6 +27,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 import org.apache.commons.lang.StringUtils;
+
+/**
+ * @author John Dekker
+ */
+@IbisDescription(
+	"XCom client voor het versturen van files via XCom"
+)
 public class XComSender extends SenderWithParametersBase {
 	private File workingDir;
 	private String name;

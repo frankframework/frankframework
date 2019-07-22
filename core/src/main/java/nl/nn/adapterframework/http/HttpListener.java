@@ -17,7 +17,6 @@ package nl.nn.adapterframework.http;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.receivers.ServiceDispatcher;

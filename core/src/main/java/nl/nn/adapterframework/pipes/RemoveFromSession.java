@@ -27,21 +27,21 @@ import nl.nn.adapterframework.doc.IbisDescription;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Removes a key specified by <code>{@link #setSessionKey(String) sessionKey}</code>
- * from the {@link IPipeLineSession pipeLineSession}.
- *
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
- * </table>
- * </p>
- * @author Peter Leeuwenburgh
- *
  * @see IPipeLineSession
  */
 
+ @IbisDescription(
+	"Removes a key specified by <code>{@link #setSessionKey(String) sessionKey}</code>\n" +
+	"from the {@link IPipeLineSession pipeLineSession}.\n" +
+	"<p><b>Exits:</b>\n" +
+	"<table border=\"1\">\n" +
+	"<tr><th>state</th><th>condition</th></tr>\n" +
+	"<tr><td>\"success\"</td><td>default</td></tr>\n" +
+	"<tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>\n" +
+	"</table>\n" +
+	"</p>\n" +
+	"@author Peter Leeuwenburgh\n"
+ )
  public class RemoveFromSession  extends FixedForwardPipe {
     private String sessionKey;
 

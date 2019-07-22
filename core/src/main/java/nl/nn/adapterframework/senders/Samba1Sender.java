@@ -17,7 +17,6 @@ package nl.nn.adapterframework.senders;
 
 import jcifs.smb.SmbFile;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.Samba1FileSystem;
 

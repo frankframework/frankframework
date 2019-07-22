@@ -33,7 +33,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDescription; 
 import nl.nn.adapterframework.pipes.IteratingPipe;
-import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;

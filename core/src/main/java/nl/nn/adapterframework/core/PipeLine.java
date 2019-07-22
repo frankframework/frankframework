@@ -21,7 +21,7 @@ import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.doc.IbisDescription; 
+import nl.nn.adapterframework.doc.IbisDescription;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
@@ -77,15 +77,18 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	private List<IPipeLineExitHandler> exitHandlers = new ArrayList<IPipeLineExitHandler>();
 	//private CongestionSensorList congestionSensors = new CongestionSensorList();
 	private ICacheAdapter cache;
+
 	/**
-	 * Register an Pipe at this pipeline.
-	 * The name is also put in the globalForwards table (with
-	 * forward-name=pipename and forward-path=pipename, so that
-	 * pipe can look for a specific pipe-name. If already a globalForward
-	 * exists under that name, the pipe is NOT added, allowing globalForwards
-	 * to prevail.
 	 * @see AbstractPipe
-	 **/
+	 */
+	@IbisDescription(
+		"Register an Pipe at this pipeline.\n" +
+		"The name is also put in the globalForwards table (with\n" +
+		"forward-name=pipename and forward-path=pipename, so that\n" +
+		"pipe can look for a specific pipe-name. If already a globalForward\n" +
+		"exists under that name, the pipe is NOT added, allowing globalForwards\n" +
+		"to prevail."
+	)
 	public void addPipe(IPipe pipe) throws ConfigurationException {
 		if (pipe == null) {
 			throw new ConfigurationException("pipe to be added is null, pipelineTable size [" + pipesByName.size() + "]");

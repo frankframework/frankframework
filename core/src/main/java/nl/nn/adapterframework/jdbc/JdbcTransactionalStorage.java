@@ -51,6 +51,91 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+/**
+ * @author Gerrit van Brakel
+ * @author Jaco de Groot
+ * @since 4.1
+ */
+@IbisDescription(
+		"JDBC implementation of {@link ITransactionalStorage}.\n" +
+		"For an Oracle database the following objects are used by default:\n" +
+		"   <pre>\n" +
+		"CREATE TABLE &lt;schema_owner&gt;.IBISSTORE\n" +
+		"(\n" +
+		"MESSAGEKEY NUMBER(10),\n" +
+		"TYPE CHAR(1 CHAR),\n" +
+		"SLOTID VARCHAR2(100 CHAR),\n" +
+		"HOST VARCHAR2(100 CHAR),\n" +
+		"MESSAGEID VARCHAR2(100 CHAR),\n" +
+		"CORRELATIONID VARCHAR2(256 CHAR),\n" +
+		"MESSAGEDATE TIMESTAMP(6),\n" +
+		"COMMENTS VARCHAR2(1000 CHAR),\n" +
+		"MESSAGE BLOB,\n" +
+		"EXPIRYDATE TIMESTAMP(6),\n" +
+		"LABEL VARCHAR2(100 CHAR),\n" +
+		"CONSTRAINT PK_IBISSTORE PRIMARY KEY (MESSAGEKEY)\n" +
+		");\n" +
+		"\n" +
+		"CREATE INDEX &lt;schema_owner&gt;.IX_IBISSTORE ON &lt;schema_owner&gt;.IBISSTORE (TYPE, SLOTID, MESSAGEDATE);\n" +
+		"CREATE INDEX &lt;schema_owner&gt;.IX_IBISSTORE_02 ON &lt;schema_owner&gt;.IBISSTORE (EXPIRYDATE);\n" +
+		"CREATE SEQUENCE &lt;schema_owner&gt;.SEQ_IBISSTORE;\n" +
+		"GRANT DELETE, INSERT, SELECT, UPDATE ON &lt;schema_owner&gt;.IBISSTORE TO &lt;rolename&gt;;\n" +
+		"GRANT SELECT ON &lt;schema_owner&gt;.SEQ_IBISSTORE TO &lt;rolename&gt;;\n" +
+		"GRANT SELECT ON SYS.DBA_PENDING_TRANSACTIONS TO &lt;rolename&gt;;\n" +
+		"\n" +
+		"COMMIT;\n" +
+		"   </pre>\n" +
+		"  For an MS SQL Server database the following objects are used by default:\n" +
+		"   <pre>\n" +
+		"CREATE TABLE IBISSTORE\n" +
+		"(\n" +
+		"MESSAGEKEY int identity,\n" +
+		"TYPE CHAR(1),\n" +
+		"SLOTID VARCHAR(100),\n" +
+		"HOST VARCHAR(100),\n" +
+		"MESSAGEID VARCHAR(100),\n" +
+		"CORRELATIONID VARCHAR(256),\n" +
+		"MESSAGEDATE datetime,\n" +
+		"COMMENTS VARCHAR(1000),\n" +
+		"MESSAGE varbinary(max),\n" +
+		"EXPIRYDATE datetime,\n" +
+		"LABEL VARCHAR(100),\n" +
+		"CONSTRAINT PK_IBISSTORE PRIMARY KEY (MESSAGEKEY)\n" +
+		");\n" +
+		"\n" +
+		"CREATE INDEX IX_IBISSTORE ON IBISSTORE (TYPE, SLOTID, MESSAGEDATE);\n" +
+		"CREATE INDEX IX_IBISSTORE_02 ON IBISSTORE (EXPIRYDATE);\n" +
+		"COMMIT;\n" +
+		"   </pre>\n" +
+		"  \n" +
+		"  For a generic database the following objects are used by default:\n" +
+		"   <pre>\n" +
+		"CREATE TABLE ibisstore (\n" +
+		"  messageKey INT DEFAULT AUTOINCREMENT CONSTRAINT ibisstore_pk PRIMARY KEY,\n" +
+		"  type CHAR(1), \n" +
+		"  slotId VARCHAR(100), \n" +
+		"  host VARCHAR(100),\n" +
+		"  messageId VARCHAR(100), \n" +
+		"  correlationId VARCHAR(256), \n" +
+		"  messageDate TIMESTAMP, \n" +
+		"  comments VARCHAR(1000), \n" +
+		"  message LONG BINARY),\n" +
+		"  expiryDate TIMESTAMP, \n" +
+		"  label VARCHAR(100); \n" +
+		"CREATE INDEX ibisstore_idx ON ibisstore (slotId, messageDate, expiryDate);\n" +
+		"   </pre>\n" +
+		"  If these objects do not exist, Ibis will try to create them if the attribute createTable=\"true\".\n" +
+		"  \n" +
+		"  <br/>\n" +
+		"  N.B. Note on using XA transactions:\n" +
+		"  If transactions are used, make sure that the database user can access the table SYS.DBA_PENDING_TRANSACTIONS.\n" +
+		"  If not, transactions present when the server goes down cannot be properly recovered, resulting in exceptions like:\n" +
+		"  <pre>\n" +
+		"   The error code was XAER_RMERR. The exception stack trace follows: javax.transaction.xa.XAException\n" +
+		"at oracle.jdbc.xa.OracleXAResource.recover(OracleXAResource.java:508)\n" +
+		"   </pre>"
+)
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
 	public static final String TYPE_ERRORSTORAGE="E";
 	public static final String TYPE_MESSAGESTORAGE="M";
