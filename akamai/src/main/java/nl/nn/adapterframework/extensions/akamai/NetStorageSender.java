@@ -64,15 +64,15 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @since	7.0-B4
  */
 @IbisDescription(
-		"Sender for Akamai NetStorage (HTTP based)." +
-				"<p>See {@link nl.nn.adapterframework.http.HttpSenderBase} for more arguments and parameters!</p>" +
-				"<p><b>Parameters:</b></p>" +
-				"<p>Some actions require specific parameters to be set. Optional parameters for the <code>upload</code> action are: md5, sha1, sha256 and mtime.</p>" +
-				"<p><b>AuthAlias: (WebSphere based application servers)</b></p>" +
-				"<p>If you do not want to specify the nonce and the accesstoken used to authenticate with Akamai, you can use the authalias property. The username represents the nonce and the password the accesstoken.</p>" +
-				"<br/>" +
-				"<br/>" +
-				"<br/>"
+	"Sender for Akamai NetStorage (HTTP based)." +
+	"<p>See {@link nl.nn.adapterframework.http.HttpSenderBase} for more arguments and parameters!</p>" +
+	"<p><b>Parameters:</b></p>" +
+	"<p>Some actions require specific parameters to be set. Optional parameters for the <code>upload</code> action are: md5, sha1, sha256 and mtime.</p>" +
+	"<p><b>AuthAlias: (WebSphere based application servers)</b></p>" +
+	"<p>If you do not want to specify the nonce and the accesstoken used to authenticate with Akamai, you can use the authalias property. The username represents the nonce and the password the accesstoken.</p>" +
+	"<br/>" +
+	"<br/>" +
+	"<br/>"
 )
 public class NetStorageSender extends HttpSenderBase implements HasPhysicalDestination {
 	private Logger log = LogUtil.getLogger(NetStorageSender.class);

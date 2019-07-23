@@ -36,6 +36,7 @@ public class ResultsTesting {
                         methodObject.put("className", method.className);
                         methodObject.put("folderName", method.folderName);
                         methodObject.put("originalClassName", method.originalClassName);
+                        methodObject.put("descriptionClass", method.descriptionClass);
                         newMethods.put(methodObject);
                     }
                     classObject.put("methods", newMethods);
