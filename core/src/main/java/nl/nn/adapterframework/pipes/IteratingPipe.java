@@ -120,7 +120,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 	"&lt;param name=\"value-of-current-item\"         xpathExpression=\"/*\" /&gt; \n" +
 	"</pre> \n"
 )
-public abstract class IteratingPipe extends MessageSendingPipe {
+public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	private TaskExecutor taskExecutor;
 	private boolean parallel = false;
 
@@ -180,11 +180,19 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		}
 	}
 
-	protected IDataIterator getIterator(Object input, IPipeLineSession session, String correlationID, Map threadContext) throws SenderException {
+	protected IDataIterator<I> getIterator(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext) throws SenderException {
 		return null;
 	}
 
-	protected void iterateInput(Object input, IPipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException, TimeOutException {
+	protected String itemToMessage(I item) throws SenderException {
+		return (String)item;
+	}
+
+	/**
+	 * Alternative way to provide iteration, for classes that cannot provide an Iterator via {@link getIterator}.
+	 * For each item in the input callback.handleItem is called.
+	 */
+	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
 		 throw new SenderException("Could not obtain iterator and no iterateInput method provided by class ["+ClassUtils.nameOf(this)+"]");
 	}
 
@@ -195,7 +203,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		private ISenderWithParameters psender=null;
 		private StringBuffer results = new StringBuffer();
 		int count=0;
-		private Vector inputItems = new Vector();
+		private Vector<I> inputItems = new Vector<I>();
 		private Guard guard;
 		List<ParallelSenderExecutor> executorList;
 
@@ -208,10 +216,10 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 			}
 			if (isParallel() && isCollectResults()) {
 				guard = new Guard();
-				executorList = new ArrayList();
+				executorList = new ArrayList<ParallelSenderExecutor>();
 			}
 		}
-		public boolean handleItem(String item) throws SenderException, TimeOutException {
+		public boolean handleItem(I item) throws SenderException, TimeOutException {
 			if (isParallel() && isCollectResults()) {
 				guard.addResource();
 			}
@@ -229,39 +237,39 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 				session.put(getItemNoSessionKey(),""+count);
 			}
 			ParameterResolutionContext prc=null;
+			String message=itemToMessage(item);
 			// TODO check for bug: sessionKey params not resolved when only parameters set on sender. Next line should check sender.parameterlist too.
 			if (psender !=null || msgTransformerPool!=null && getParameterList()!=null) {
 				//TODO find out why ParameterResolutionContext cannot be constructed using dom-source
-				prc = new ParameterResolutionContext(item, session, isNamespaceAware());
+				prc = new ParameterResolutionContext(message, session, isNamespaceAware());
 			}
 			if (msgTransformerPool!=null) {
 				try {
-					String transformedMsg=msgTransformerPool.transform(item,prc!=null?prc.getValueMap(getParameterList()):null);
+					String transformedMsg=msgTransformerPool.transform(message,prc!=null?prc.getValueMap(getParameterList()):null);
 					if (log.isDebugEnabled()) {
-						log.debug(getLogPrefix(session)+"iteration ["+count+"] transformed item ["+item+"] into ["+transformedMsg+"]");
+						log.debug(getLogPrefix(session)+"iteration ["+count+"] transformed item ["+message+"] into ["+transformedMsg+"]");
 					}
-					item=transformedMsg;
+					message=transformedMsg;
 				} catch (Exception e) {
 					throw new SenderException(getLogPrefix(session)+"cannot transform item",e);
 				}
 			} else {
 				if (log.isDebugEnabled()) {
-					log.debug(getLogPrefix(session)+"iteration ["+count+"] item ["+item+"]");
+					log.debug(getLogPrefix(session)+"iteration ["+count+"] item ["+message+"]");
 				} 
 			}
 			try {
 				if (isParallel()) {
-					ParallelSenderExecutor pse= new ParallelSenderExecutor(
-							sender, correlationID, item, prc, guard, senderStatisticsKeeper);
+					ParallelSenderExecutor pse= new ParallelSenderExecutor(sender, correlationID, message, prc, guard, senderStatisticsKeeper);
 					if (isCollectResults()) {
 						executorList.add(pse);
 					}
 					getTaskExecutor().execute(pse);
 				} else {
 					if (psender!=null) {
-						itemResult = psender.sendMessage(correlationID, item, prc);
+						itemResult = psender.sendMessage(correlationID, message, prc);
 					} else {
-						itemResult = sender.sendMessage(correlationID, item);
+						itemResult = sender.sendMessage(correlationID, message);
 					}
 				}
 				if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(itemResult)) {
@@ -287,7 +295,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 			}
 			try {
 				if (isCollectResults() && !isParallel()) {
-					addResult(count, item, itemResult);
+					addResult(count, message, itemResult);
 				}
 				if (getStopConditionTp()!=null) {
 					String stopConditionResult = getStopConditionTp().transform(itemResult,null);
@@ -307,7 +315,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 				throw new SenderException(getLogPrefix(session)+"cannot serialize item",e);
 			}
 		}
-		private void addResult(int count, String item, String itemResult) {
+		private void addResult(int count, String message, String itemResult) {
 			if (isRemoveXmlDeclarationInResults()) {
 				if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"removing XML declaration from ["+itemResult+"]");
 				itemResult = XmlUtils.skipXmlDeclaration(itemResult);
@@ -315,7 +323,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"partial result ["+itemResult+"]");
 			String itemInput="";
 			if (isAddInputToResult()) {
-				itemInput = "<input>"+(isRemoveXmlDeclarationInResults()?XmlUtils.skipXmlDeclaration(item):item)+"</input>";
+				itemInput = "<input>"+(isRemoveXmlDeclarationInResults()?XmlUtils.skipXmlDeclaration(message):message)+"</input>";
 			}
 			itemResult = "<result item=\"" + count + "\">\n"+itemInput+itemResult+"\n</result>";
 			results.append(itemResult+"\n");
@@ -347,15 +355,15 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 	}
 
 	@Override
-	protected String sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map threadContext) throws SenderException, TimeOutException {
+	protected String sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeOutException {
 		// sendResult has a messageID for async senders, the result for sync senders
 		boolean keepGoing = true;
-		IDataIterator it=null;
+		IDataIterator<I> it=null;
 		try {
 			ItemCallback callback = new ItemCallback(session,correlationID,sender);
 			it = getIterator(input,session, correlationID,threadContext);
 			if (it==null) {
-				iterateInput(input,session,correlationID, threadContext, callback);
+				iterateOverInput(input,session,correlationID, threadContext, callback);
 			} else {
 				String nextItemStored = null;
 				while (keepGoing && (it.hasNext() || nextItemStored!=null)) {
@@ -372,7 +380,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 							items.append(getLineSuffix());
 						}
 						items.append(getBlockSuffix());
- 						keepGoing = callback.handleItem(items.toString()); 
+ 						keepGoing = callback.handleItem((I)items.toString());  // cannot just cast to I, but anyhow....
 						
 					} else {
 						if (getStartPosition()>=0 && getEndPosition()>getStartPosition()) {
@@ -407,9 +415,9 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 								}
 							}
 							items.append(getBlockSuffix());
-	 						keepGoing = callback.handleItem(items.toString()); 
+	 						keepGoing = callback.handleItem((I)items.toString()); // cannot just cast to I, but anyhow....
 						} else {
-							String item = getItem(it);
+							I item = getItem(it);
 							items.append(getLinePrefix());
 							items.append(item);
 							items.append(getLineSuffix());
@@ -441,8 +449,8 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		}
 	}
 
-	protected String getItem(IDataIterator it) throws SenderException {
-		return (String)it.next();
+	protected I getItem(IDataIterator<I> it) throws SenderException {
+		return it.next();
 	}
 
 	@Override

@@ -38,6 +38,7 @@ import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
 import java.text.DecimalFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -753,6 +754,25 @@ public class Misc {
 			sb.append((String) it.next());
 		}
 		return sb.toString();
+	}
+
+	public static void addItemsToList(Collection<String> collection, String list, String collectionDescription, boolean lowercase) {
+		if (list==null) {
+			return;
+		}
+		StringTokenizer st = new StringTokenizer(list, ",");
+		while (st.hasMoreTokens()) {
+			String item = st.nextToken().trim();
+			if (lowercase) {
+				item=item.toLowerCase();
+			}
+			log.debug("adding item to "+collectionDescription+" ["+item+"]");
+			collection.add(item);
+		}
+		if (list.trim().endsWith(",")) {
+			log.debug("adding item to "+collectionDescription+" <empty string>");
+			collection.add("");
+		}
 	}
 
 	public static String getFileSystemTotalSpace() {

@@ -12,7 +12,7 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-*/
+ */
 package nl.nn.adapterframework.pipes;
 
 import java.io.FileInputStream;
@@ -26,31 +26,31 @@ import java.util.Map;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.doc.IbisDescription; 
-import nl.nn.adapterframework.util.XmlUtils;
-
 import org.apache.commons.lang.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDescription;
+import nl.nn.adapterframework.util.XmlUtils;
 
-/** 
+/**
  * @author  Peter Leeuwenburgh
  */
 @IbisDescription(
-	"Sends a message to a Sender for each element in the XML file that the input message refers to. \n" 
+	"Sends a message to a Sender for each element in the XML file that the input message refers to. \n"
 )
-public class XmlFileElementIteratorPipe extends IteratingPipe {
+public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 
 	private String elementName = null;
 	private String elementChain = null;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (!StringUtils.isEmpty(getElementName())) {
@@ -65,14 +65,15 @@ public class XmlFileElementIteratorPipe extends IteratingPipe {
 	}
 
 	private class ItemCallbackCallingHandler extends DefaultHandler {
-		ItemCallback callback;
-		StringBuffer elementBuffer = new StringBuffer();
-		List elements = new ArrayList();
-		boolean sElem = false;
-		Exception rootException = null;
-		int startLength;
-		boolean stopRequested;
-		TimeOutException timeOutException;
+
+		private ItemCallback callback;
+		private StringBuffer elementBuffer = new StringBuffer();
+		private List<String> elements = new ArrayList<String>();
+		private boolean sElem = false;
+		private Exception rootException = null;
+		private int startLength;
+		private boolean stopRequested;
+		private TimeOutException timeOutException;
 
 		public ItemCallbackCallingHandler(ItemCallback callback) {
 			this.callback = callback;
@@ -80,8 +81,8 @@ public class XmlFileElementIteratorPipe extends IteratingPipe {
 			startLength = elementBuffer.length();
 		}
 
-		public void startElement(String uri, String localName, String qName,
-				Attributes attributes) throws SAXException {
+		@Override
+		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 			elements.add(localName);
 			if ((getElementName() != null && localName.equals(getElementName()))
 					|| (getElementChain() != null && elementsToString().equals(
@@ -98,8 +99,8 @@ public class XmlFileElementIteratorPipe extends IteratingPipe {
 			}
 		}
 
-		public void endElement(String uri, String localName, String qName)
-				throws SAXException {
+		@Override
+		public void endElement(String uri, String localName, String qName) throws SAXException {
 			int lastIndex = elements.size() - 1;
 			String lastElement = (String) elements.get(lastIndex);
 			if (!lastElement.equals(localName)) {
@@ -138,8 +139,8 @@ public class XmlFileElementIteratorPipe extends IteratingPipe {
 			elements.remove(lastIndex);
 		}
 
-		public void characters(char[] ch, int start, int length)
-				throws SAXException {
+		@Override
+		public void characters(char[] ch, int start, int length) throws SAXException {
 			if (sElem) {
 				elementBuffer.append(XmlUtils.encodeChars(ch, start, length));
 			}
@@ -171,9 +172,8 @@ public class XmlFileElementIteratorPipe extends IteratingPipe {
 		}
 	}
 
-	protected void iterateInput(Object input, IPipeLineSession session,
-			String correlationID, Map threadContext, ItemCallback callback)
-			throws SenderException, TimeOutException {
+	@Override
+	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
 		InputStream xmlInput;
 		try {
 			xmlInput = new FileInputStream((String) input);

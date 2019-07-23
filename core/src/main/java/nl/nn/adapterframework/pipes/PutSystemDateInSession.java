@@ -53,6 +53,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 	private long sleepWhenEqualToPrevious = -1;
 	private TimeZone timeZone=null;
 	private String previousFormattedDate;
+	private boolean getCurrentTimeStampInMillis = false;
 
 	/**
 	 * Checks whether the proper forward is defined, a dateFormat is specified and the dateFormat is valid.
@@ -74,17 +75,17 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 				throw new ConfigurationException(getLogPrefix(null)+"returnFixedDate only allowed in stub mode");
 			}
 		}
-
+		
+		if(isGetCurrentTimeStampInMillis() && isReturnFixedDate()) {
+			throw new ConfigurationException(getLogPrefix(null)+"returnFixedDate cannot be used to get current time stamp in millis");
+		}
 		// check the dateformat
 		try {
-			Date currentDate = new Date();
-			SimpleDateFormat formatter = new SimpleDateFormat(getDateFormat());
-			
+			formatter = new SimpleDateFormat(getDateFormat());
 		} catch (IllegalArgumentException ex){
 			throw new ConfigurationException(getLogPrefix(null)+"has an illegal value for dateFormat", ex);
 		}
-
-		formatter = new SimpleDateFormat(getDateFormat());
+		
 		if (timeZone!=null) {
 			formatter.setTimeZone(timeZone);
 		}
@@ -95,41 +96,48 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 		throws PipeRunException {
 
 		String formattedDate;
-		if (isReturnFixedDate()) {
-			SimpleDateFormat formatterFrom = new SimpleDateFormat(FORMAT_FIXEDDATETIME);
-			String fixedDateTime = (String)session.get(FIXEDDATE_STUB4TESTTOOL_KEY);
-			if (StringUtils.isEmpty(fixedDateTime)) {
-				fixedDateTime = FIXEDDATETIME;
-			}
-			Date d;
-			try {
-				d = formatterFrom.parse(fixedDateTime);
-			} catch (ParseException e) {
-				throw new PipeRunException(this,"cannot parse fixed date ["+fixedDateTime+"] with format ["+FORMAT_FIXEDDATETIME+"]",e);
-			}
-			formattedDate = formatter.format(d);
-		} else{
-			if (sleepWhenEqualToPrevious > -1) {
-				// Synchronize on a static value to generate unique value's for the
-				// whole virtual machine.
-				synchronized(OBJECT) {
-					formattedDate = formatter.format(new Date());
-					while (formattedDate.equals(previousFormattedDate)) {
-						try {
-							Thread.sleep(sleepWhenEqualToPrevious);
-						} catch(InterruptedException e) {
-						}
-						formattedDate = formatter.format(new Date());
-					}
-					previousFormattedDate = formattedDate;
+		if(isGetCurrentTimeStampInMillis()) {
+			formattedDate = new Date().getTime()+"";
+		}
+		else {
+			if (isReturnFixedDate()) {
+				SimpleDateFormat formatterFrom = new SimpleDateFormat(FORMAT_FIXEDDATETIME);
+				String fixedDateTime = (String)session.get(FIXEDDATE_STUB4TESTTOOL_KEY);
+				if (StringUtils.isEmpty(fixedDateTime)) {
+					fixedDateTime = FIXEDDATETIME;
 				}
-			} else {
-				formattedDate = formatter.format(new Date());
+				Date d;
+				try {
+					d = formatterFrom.parse(fixedDateTime);
+				} catch (ParseException e) {
+					throw new PipeRunException(this,"cannot parse fixed date ["+fixedDateTime+"] with format ["+FORMAT_FIXEDDATETIME+"]",e);
+				}
+				formattedDate = formatter.format(d);
+			}
+			else {
+				if (sleepWhenEqualToPrevious > -1) {
+					// Synchronize on a static value to generate unique value's for the
+					// whole virtual machine.
+					synchronized(OBJECT) {
+						formattedDate = formatter.format(new Date());
+						while (formattedDate.equals(previousFormattedDate)) {
+							try {
+								Thread.sleep(sleepWhenEqualToPrevious);
+							} catch(InterruptedException e) {
+							}
+							formattedDate = formatter.format(new Date());
+						}
+						previousFormattedDate = formattedDate;
+					}
+				}
+				else {
+					formattedDate = formatter.format(new Date());
+				}
 			}
 		}
 
-		session.put(this.getSessionKey(), formattedDate);		
-		
+		session.put(this.getSessionKey(), formattedDate);
+	
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix(session) + "stored ["+ formattedDate	+ "] in pipeLineSession under key [" + getSessionKey() + "]");
 		}
@@ -170,6 +178,15 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 
 	public boolean isReturnFixedDate() {
 		return returnFixedDate;
+	}
+
+	public boolean isGetCurrentTimeStampInMillis() {
+		return getCurrentTimeStampInMillis;
+	}
+
+	@IbisDoc({"If set to 'true' then current time stamp in millisecond will be stored in the sessionKey", "false"})
+	public void setGetCurrentTimeStampInMillis(boolean getCurrentTimeStampInMillis) {
+		this.getCurrentTimeStampInMillis = getCurrentTimeStampInMillis;
 	}
 }
 

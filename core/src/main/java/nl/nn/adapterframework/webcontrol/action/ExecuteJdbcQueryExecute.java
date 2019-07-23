@@ -144,10 +144,7 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		return (mapping.findForward("success"));
 
 	}
-	public void StoreFormData(
-		String query,
-		String result,
-		DynaActionForm executeJdbcQueryExecuteForm) {
+	public void StoreFormData(String query, String result, DynaActionForm executeJdbcQueryExecuteForm) {
 		List jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
 		if (jmsRealms.size() == 0)
 			jmsRealms.add("no realms defined");

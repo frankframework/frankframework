@@ -29,7 +29,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.doc.IbisDescription; 
+import nl.nn.adapterframework.doc.IbisDescription;
 import nl.nn.adapterframework.receivers.DirectoryListener;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
@@ -37,15 +37,15 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
 
-/** 
+/**
  * @author Gerrit van Brakel, after {@link DirectoryListener} by John Dekker
  */
 @IbisDescription(
-	"{@link IPullingListener listener} that looks in a filesystem for files. \n" + 
-	"When a file is found, it is moved to an process-folder, so that it isn't found more then once.   \n" + 
-	"The name of the moved file is passed to the pipeline.   \n" 
+	"{@link IPullingListener listener} that looks in a filesystem for files. \n" +
+	"When a file is found, it is moved to an process-folder, so that it isn't found more then once.   \n" +
+	"The name of the moved file is passed to the pipeline.   \n"
 )
-public class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F> {
+public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F>, IFileSystemListener<F> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -56,14 +56,19 @@ public class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IP
 	private boolean delete = false;
 	private String processedFolder;
 //	private boolean createFolders=false;
-	private boolean overwrite = false;
+//	private boolean overwrite = false;
 	private String messageType="name";
 
 	private long minStableTime = 1000;
-
 //	private Long fileListFirstFileFound;
+
 	private FS fileSystem;
 
+	protected abstract FS createFileSystem();
+
+	public FileSystemListener() {
+		fileSystem=createFileSystem();
+	}
 	/**
 	 * Configure does some basic checks (outputDirectory is a directory, inputDirectory is a directory, wildcard is filled etc.);
 	 *
@@ -135,9 +140,6 @@ public class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IP
 		return fileSystem;
 	}
 
-	public void setFileSystem(FS fileSystem) {
-		this.fileSystem = fileSystem;
-	}
 
 	/**
 	 * Retrieves a single record from a file. If the file is empty or fully processed, it looks whether there
@@ -435,13 +437,13 @@ public class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IP
 //		return numberOfBackups;
 //	}
 
-	@IbisDoc({"when set <code>true</code>, the destination file will be deleted if it already exists", "false"})
-	public void setOverwrite(boolean overwrite) {
-		this.overwrite = overwrite;
-	}
-	public boolean isOverwrite() {
-		return overwrite;
-	}
+//	@IbisDoc({"when set <code>true</code>, the destination file will be deleted if it already exists", "false"})
+//	public void setOverwrite(boolean overwrite) {
+//		this.overwrite = overwrite;
+//	}
+//	public boolean isOverwrite() {
+//		return overwrite;
+//	}
 
 	@IbisDoc({"when set <code>true</code>, the file processed will deleted after being processed, and not stored", "false"})
 	public void setDelete(boolean b) {

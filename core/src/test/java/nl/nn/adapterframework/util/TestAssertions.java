@@ -20,6 +20,10 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.xpath.XPathExpressionException;
+
 import org.junit.Test;
 
 /**
@@ -29,8 +33,12 @@ import org.junit.Test;
  */
 public class TestAssertions extends org.junit.Assert {
 
-	static public void assertEqualsIgnoreWhitespaces(String str1, String str2) throws IOException {
-		assertEquals(trimMultilineString(str1), trimMultilineString(str2));
+	static public void assertEqualsIgnoreWhitespaces(String expected, String actual) throws IOException {
+		assertEqualsIgnoreWhitespaces(null, trimMultilineString(expected), trimMultilineString(actual));
+	}
+
+	static public void assertEqualsIgnoreWhitespaces(String message, String expected, String actual) throws IOException {
+		assertEquals(message, trimMultilineString(expected), trimMultilineString(actual));
 	}
 
 	private static String trimMultilineString(String str) throws IOException {
@@ -49,10 +57,32 @@ public class TestAssertions extends org.junit.Assert {
 		return buffer.toString();
 	}
 
-	static public void assertEqualsIgnoreCRLF(String str1, String str2) {
-		assertEquals(str1.trim().replace("\r",""), str2.trim().replace("\r",""));
+	static public void assertEqualsIgnoreCRLF(String expected, String actual) {
+		assertEqualsIgnoreCRLF(null, expected, actual);
 	}
 
+	static public void assertEqualsIgnoreCRLF(String message, String expected, String actual) {
+		assertEquals(message, expected.trim().replace("\r",""), actual.trim().replace("\r",""));
+	}
+
+	static public void assertXpathValueEquals(String expected, String source, String xpathExpr) throws DomBuilderException, XPathExpressionException, TransformerException, IOException {
+		String xslt=XmlUtils.createXPathEvaluatorSource(xpathExpr);
+		Transformer transformer = XmlUtils.createTransformer(xslt);
+		
+		String result=XmlUtils.transformXml(transformer, source);
+		//System.out.println("xpath ["+xpathExpr+"] result ["+result+"]");
+		assertEquals(xpathExpr,expected,result);
+	}
+
+	static public void assertXpathValueEquals(int expected, String source, String xpathExpr) throws DomBuilderException, XPathExpressionException, TransformerException, IOException {
+		String xslt=XmlUtils.createXPathEvaluatorSource(xpathExpr);
+		Transformer transformer = XmlUtils.createTransformer(xslt);
+		
+		String result=XmlUtils.transformXml(transformer, source);
+		System.out.println("xpath ["+xpathExpr+"] result ["+result+"]");
+		assertEquals(xpathExpr,expected+"",result);
+	}
+	
 	@Test
 	public void testAssertEqualsIgnoreWhitespacesNull() throws IOException {
 		assertEqualsIgnoreWhitespaces(null, null);
@@ -68,6 +98,7 @@ public class TestAssertions extends org.junit.Assert {
 		String string = "dummy";
 
 		assertEqualsIgnoreWhitespaces(string, string);
+		assertEqualsIgnoreWhitespaces(string+" ", "  "+string);
 	}
 
 	@Test

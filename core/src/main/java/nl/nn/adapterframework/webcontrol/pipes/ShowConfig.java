@@ -25,7 +25,6 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
-import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -82,10 +81,14 @@ public class ShowConfig extends TimeoutGuardPipe {
 				qs.setName("QuerySender");
 				qs.setJmsRealm(parm_jmsRealm);
 				qs.setQueryType("select");
-				qs.setQuery("SELECT CONFIG FROM IBISCONFIG WHERE NAME = ? ORDER BY NAME");
+				qs.setQuery("SELECT CONFIG FROM IBISCONFIG WHERE NAME = ? AND VERSION = ?");
 				Parameter param = new Parameter();
 				param.setName("name");
 				param.setSessionKey("name");
+				qs.addParameter(param);
+				param = new Parameter();
+				param.setName("version");
+				param.setSessionKey("version");
 				qs.addParameter(param);
 				qs.setScalar(true);
 				qs.setScalarExtended(true);
@@ -128,7 +131,14 @@ public class ShowConfig extends TimeoutGuardPipe {
 				qs.setName("QuerySender");
 				qs.setJmsRealm(jr);
 				qs.setQueryType("select");
-				qs.setQuery("SELECT NAME, VERSION, FILENAME, CRE_TYDST, RUSER, ACTIVECONFIG, AUTORELOAD FROM IBISCONFIG WHERE ACTIVECONFIG = '"+qs.getDbmsSupport().getBooleanValue(true)+"' ORDER BY NAME");
+				String query = "SELECT NAME, VERSION, FILENAME, CRE_TYDST, RUSER, ACTIVECONFIG, AUTORELOAD FROM IBISCONFIG X WHERE ACTIVECONFIG='"
+						+ qs.getDbmsSupport().getBooleanValue(true)
+						+ "' OR (ACTIVECONFIG='"
+						+ qs.getDbmsSupport().getBooleanValue(false)
+						+ "' AND 0=(SELECT COUNT(*) FROM IBISCONFIG WHERE NAME=X.NAME AND (ACTIVECONFIG='"
+						+ qs.getDbmsSupport().getBooleanValue(true)
+						+ "' OR CRE_TYDST>X.CRE_TYDST))) ORDER BY NAME";
+				qs.setQuery(query);
 				qs.setBlobSmartGet(true);
 				qs.setIncludeFieldDefinition(false);
 				qs.configure();
@@ -138,10 +148,8 @@ public class ShowConfig extends TimeoutGuardPipe {
 				String queryResult = qs.sendMessage("dummy", "dummy", prc);
 				configXML.setValue(queryResult, false);
 			} catch (Throwable t) {
-				log.warn(getLogPrefix(session) + "Error occured on executing jdbc query", t);
-				XmlBuilder errorXML = new XmlBuilder("error");
-				errorXML.setValue(t.getMessage());
-				configXML.addSubElement(errorXML);
+				throw new PipeRunException(this, getLogPrefix(session)
+						+ "Error occured on executing jdbc query", t);
 			} finally {
 				qs.close();
 			}

@@ -5,8 +5,6 @@
 	<xsl:param name="srcPrefix" />
 	<xsl:param name="jmsRealmList" />
 	<xsl:param name="jmsRealm" />
-	<xsl:param name="name" />
-	<xsl:param name="version" />
 	<xsl:param name="fileEncoding" />
 	<xsl:param name="multipleConfigs" />
 	<xsl:param name="activeConfig" />
@@ -23,7 +21,6 @@
 			<script type="text/javascript">
 				<xsl:text disable-output-escaping="yes">
 						//&lt;![CDATA[
-
 						function changeBg(obj,isOver) {
 							var color1="#8D0022";
 							var color2="#b4e2ff";
@@ -35,49 +32,6 @@
 							    obj.style.color=color1;
 							}
 						}
-
-						function fillNameAndVersion(obj) {
-							var name = document.getElementById("name").value;
-							var version = document.getElementById("version").value;
-							var name_new = "";
-							var version_new = "";
-							var filename = obj.value.replace(/^.*[\\\/]/, '');
-							var i = filename.lastIndexOf(".");
-							if (i != -1) {
-								name_new = filename.substring(0, i);
-								var j = name_new.lastIndexOf("-");
-								if (j != -1) {
-									name_new = name_new.substring(0, j);
-									j = name_new.lastIndexOf("-");
-									if (j != -1) {
-										name_new = filename.substring(0, j);
-										version_new = filename.substring(j + 1, i);
-										//if (version_new.startsWith("SNAPSHOT")) {
-										//not supported in IE
-										if (version_new.substring(0, 8)=="SNAPSHOT") {										
-											j = name_new.lastIndexOf("-");
-											if (j != -1) {
-												name_new = filename.substring(0, j);
-												version_new = filename.substring(j + 1, i);
-											}
-										}
-									}
-								}
-							}
-							if (name=="" &amp;&amp; version=="") {
-								document.getElementById("name").value=name_new;
-								document.getElementById("version").value=version_new;
-							} else {
-								if (name!=name_new || version!=version_new) {
-									var msg = "Overwrite name ["+name+"] with ["+name_new+"] and version ["+version+"] with ["+version_new+"]?";
-									if (confirm(msg)) {
-										document.getElementById("name").value=name_new;
-										document.getElementById("version").value=version_new;
-									}
-								}
-							}
-						}
-
 						//]]&gt;
 					</xsl:text>
 			</script>
@@ -118,28 +72,9 @@
 						</td>
 					</tr>
 					<tr>
-						<td>Name</td>
-						<td>
-							<input class="text" maxlength="100" size="80" type="text"
-								name="name" id="name">
-								<xsl:attribute name="value" select="$name" />
-							</input>
-						</td>
-					</tr>
-					<tr>
-						<td>Version</td>
-						<td>
-							<input class="text" maxlength="50" size="40" type="text"
-								name="version" id="version">
-								<xsl:attribute name="value" select="$version" />
-							</input>
-						</td>
-					</tr>
-					<tr>
 						<td>Upload File</td>
 						<td>
-							<input class="file" type="file" name="file"
-								onchange="fillNameAndVersion(this)" />
+							<input class="file" type="file" name="file"/>
 							<text>Encoding</text>
 							<input class="text" maxlength="20" name="fileEncoding"
 								size="10" type="text">

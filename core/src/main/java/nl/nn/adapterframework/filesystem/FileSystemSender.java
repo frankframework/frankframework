@@ -119,8 +119,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc)
-			throws SenderException, TimeOutException {
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		ParameterValueList pvl = null;
 		
 		try {

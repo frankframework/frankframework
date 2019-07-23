@@ -13,6 +13,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import liquibase.util.StreamUtil;
@@ -28,16 +30,14 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	 */
 	protected abstract FS createFileSystem();
 
-	@Override
+	@Before
 	public void setUp() throws Exception {
-		super.setUp();
 		fileSystem = createFileSystem();
 	}
 	
-	@Override
+	@After 
 	public void tearDown() throws Exception {
-		fileSystem.close();
-		super.tearDown();
+		if (fileSystem!=null) fileSystem.close();
 	}
 
 	@Test

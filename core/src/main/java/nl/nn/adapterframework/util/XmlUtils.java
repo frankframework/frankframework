@@ -235,7 +235,7 @@ public class XmlUtils {
 		String xslt = makeSkipEmptyTagsXslt(omitXmlDeclaration,indent);
 		return getUtilityTransformerPool(xslt,"skipEmptyTags",omitXmlDeclaration,indent);
 	}
-	
+
 	protected static String makeRemoveNamespacesXsltTemplates() {
 		return
 		"<xsl:template match=\"*\">"
@@ -250,12 +250,12 @@ public class XmlUtils {
 			+ "<xsl:copy>"
 			+ "<xsl:apply-templates/>"
 			+ "</xsl:copy>"
-			+ "</xsl:template>";
+		+ "</xsl:template>";
 	}
 
 	protected static String makeRemoveNamespacesXslt(boolean omitXmlDeclaration, boolean indent) {
 		return
-		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
+		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
 			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
 			+ makeRemoveNamespacesXsltTemplates()
 			+ "</xsl:stylesheet>";
@@ -1926,8 +1926,7 @@ public class XmlUtils {
 	}
 
 	public static String getAdapterSite(String input, Map parameters) throws IOException, DomBuilderException, TransformerException {
-		URL xsltSource = ClassUtils.getResourceURL(XmlUtils.class,
-				ADAPTERSITE_XSLT);
+		URL xsltSource = ClassUtils.getResourceURL(XmlUtils.class, ADAPTERSITE_XSLT);
 		Transformer transformer = XmlUtils.createTransformer(xsltSource);
 		if (parameters != null) {
 			XmlUtils.setTransformerParameters(transformer, parameters);
