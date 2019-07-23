@@ -27,8 +27,7 @@ import com.sap.conn.jco.JCoParameterList;
 import com.sap.conn.jco.JCoStructure;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.extensions.sap.ISapFunctionFacade;
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.extensions.sap.jco3.handlers.Handler;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -56,7 +55,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Jaco de Groot
  * @since   5.0
  */
-public abstract class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
+public abstract class SapFunctionFacade implements ISapFunctionFacade {
 	protected static Logger log = LogUtil.getLogger(SapFunctionFacade.class);
 
 	private String name;
@@ -377,26 +376,32 @@ public abstract class SapFunctionFacade implements INamedObject, HasPhysicalDest
 		return requestFieldName;
 	}
 
+	@Override
 	public void setCorrelationIdFieldIndex(int i) {
 		correlationIdFieldIndex = i;
 	}
 
+	@Override
 	public void setCorrelationIdFieldName(String string) {
 		correlationIdFieldName = string;
 	}
 
+	@Override
 	public void setReplyFieldIndex(int i) {
 		replyFieldIndex = i;
 	}
 
+	@Override
 	public void setReplyFieldName(String string) {
 		replyFieldName = string;
 	}
 
+	@Override
 	public void setRequestFieldIndex(int i) {
 		requestFieldIndex = i;
 	}
 
+	@Override
 	public void setRequestFieldName(String string) {
 		requestFieldName = string;
 	}
@@ -415,6 +420,7 @@ public abstract class SapFunctionFacade implements INamedObject, HasPhysicalDest
 		return sapSystemName;
 	}
 
+	@Override
 	public void setSapSystemName(String string) {
 		sapSystemName = string;
 	}

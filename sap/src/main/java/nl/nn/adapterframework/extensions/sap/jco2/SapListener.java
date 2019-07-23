@@ -17,19 +17,19 @@ package nl.nn.adapterframework.extensions.sap.jco2;
 
 import java.util.Map;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IMessageHandler;
-import nl.nn.adapterframework.core.IPushingListener;
-import nl.nn.adapterframework.core.IbisExceptionListener;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.extensions.sap.SapException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import com.sap.mw.idoc.IDoc.Document;
 import com.sap.mw.jco.JCO;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IMessageHandler;
+import nl.nn.adapterframework.core.IbisExceptionListener;
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.extensions.sap.ISapListener;
+import nl.nn.adapterframework.extensions.sap.SapException;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener},
@@ -57,7 +57,7 @@ import com.sap.mw.jco.JCO;
  * @since   4.2
  * @see   "http://help.sap.com/saphelp_nw04/helpdata/en/09/c88442a07b0e53e10000000a155106/frameset.htm"
  */
-public class SapListener extends SapFunctionFacade implements IPushingListener<JCO.Function>, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
+public class SapListener extends SapFunctionFacade implements ISapListener<JCO.Function>, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
 
 	private String progid;	 // progid of the RFC-destination
         	
@@ -182,6 +182,7 @@ public class SapListener extends SapFunctionFacade implements IPushingListener<J
 		return progid;
 	}
 
+	@Override
 	public void setProgid(String string) {
 		progid = string;
 	}
@@ -211,6 +212,12 @@ public class SapListener extends SapFunctionFacade implements IPushingListener<J
 		if (exceptionListener!=null) {
 			exceptionListener.exceptionThrown(this, new SapException(getLogPrefix()+"error in SapServer ["+server.getProgID()+"]",e));
 		}
+	}
+
+
+	@Override
+	public void setConnectionCount(String connectionCount) {
+		log.warn("setConnectionCount() not used by JCo2");
 	}
 
 }

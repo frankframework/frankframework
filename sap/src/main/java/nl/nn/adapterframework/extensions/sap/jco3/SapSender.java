@@ -15,18 +15,19 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco3;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.extensions.sap.SapException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.parameters.ParameterValue;
-import nl.nn.adapterframework.parameters.ParameterValueList;
-
 import org.apache.commons.lang.StringUtils;
 
 import com.sap.conn.jco.JCoDestination;
 import com.sap.conn.jco.JCoFunction;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.extensions.sap.ISapSender;
+import nl.nn.adapterframework.extensions.sap.SapException;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValue;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 
 /**
  * Implementation of {@link nl.nn.adapterframework.core.ISender sender} that calls a SAP RFC-function.
@@ -65,7 +66,7 @@ import com.sap.conn.jco.JCoFunction;
  * @author  Jaco de Groot
  * @since   5.0
  */
-public class SapSender extends SapSenderBase {
+public class SapSender extends SapSenderBase implements ISapSender {
 	
 	private String functionName=null;
 	private String functionNameParam="functionName";
@@ -160,11 +161,13 @@ public class SapSender extends SapSenderBase {
 	public String getFunctionName() {
 		return functionName;
 	}
+	@Override
 	public void setFunctionName(String string) {
 		functionName = string;
 	}
 
 
+	@Override
 	public void setFunctionNameParam(String string) {
 		functionNameParam = string;
 	}

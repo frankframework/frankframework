@@ -18,10 +18,6 @@ package nl.nn.adapterframework.extensions.sap.jco3;
 import java.lang.reflect.Field;
 import java.util.Iterator;
 
-import nl.nn.adapterframework.extensions.sap.SapException;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.GlobalListItem;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 
@@ -32,6 +28,11 @@ import com.sap.conn.jco.JCoDestination;
 import com.sap.conn.jco.JCoDestinationManager;
 import com.sap.conn.jco.JCoException;
 import com.sap.conn.jco.JCoRepository;
+
+import nl.nn.adapterframework.extensions.sap.ISapSystemJco3;
+import nl.nn.adapterframework.extensions.sap.SapException;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.GlobalListItem;
 /**
  * A SapSystem is a provider of repository information and connections to a SAP-system.
  * <p><b>Configuration:</b>
@@ -71,7 +72,7 @@ import com.sap.conn.jco.JCoRepository;
  * @author  Niels Meijer
  * @since   5.0
  */
-public class SapSystem extends GlobalListItem {
+public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 
 	private String host;
 	private String ashost;
@@ -209,10 +210,12 @@ public class SapSystem extends GlobalListItem {
 		}).toString();
 	}
 
+	@Override
 	public void setHost(String host) {
 		this.host = host;
 	}
 
+	@Override
 	public void setAshost(String ashost) {
 		this.ashost = ashost;
 	}
@@ -225,6 +228,7 @@ public class SapSystem extends GlobalListItem {
 		}
 	}
 
+	@Override
 	public void setSystemnr(String string) {
 		systemnr = string;
 	}
@@ -233,6 +237,7 @@ public class SapSystem extends GlobalListItem {
 		return systemnr;
 	}
 
+	@Override
 	public void setGroup(String group) {
 		this.group = group;
 	}
@@ -241,6 +246,7 @@ public class SapSystem extends GlobalListItem {
 		return group;
 	}
 
+	@Override
 	public void setR3name(String r3name) {
 		this.r3name = r3name;
 	}
@@ -249,6 +255,7 @@ public class SapSystem extends GlobalListItem {
 		return r3name;
 	}
 
+	@Override
 	public void setMshost(String mshost) {
 		this.mshost = mshost;
 	}
@@ -272,10 +279,12 @@ public class SapSystem extends GlobalListItem {
 		return msservOffset;
 	}
 
+	@Override
 	public void setMsservOffset(int i) {
 		msservOffset = i;
 	}
 
+	@Override
 	public void setGwhost(String string) {
 		gwhost = string;
 	}
@@ -295,6 +304,7 @@ public class SapSystem extends GlobalListItem {
 		return String.valueOf(getGwservOffset() + Integer.parseInt(getSystemnr()));
 	}
 
+	@Override
 	public void setGwservOffset(int i) {
 		gwservOffset = i;
 	}
@@ -303,6 +313,7 @@ public class SapSystem extends GlobalListItem {
 		return gwservOffset;
 	}
 
+	@Override
 	public void setMandant(String string) {
 		mandant = string;
 	}
@@ -311,6 +322,7 @@ public class SapSystem extends GlobalListItem {
 		return mandant;
 	}
 
+	@Override
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
@@ -319,6 +331,7 @@ public class SapSystem extends GlobalListItem {
 		return authAlias;
 	}
 
+	@Override
 	public void setUserid(String string) {
 		userid = string;
 	}
@@ -327,6 +340,7 @@ public class SapSystem extends GlobalListItem {
 		return userid;
 	}
 
+	@Override
 	public void setPasswd(String string) {
 		passwd = string;
 	}
@@ -339,10 +353,12 @@ public class SapSystem extends GlobalListItem {
 		return language;
 	}
 
+	@Override
 	public void setLanguage(String string) {
 		language = string;
 	}
 
+	@Override
 	public void setUnicode(boolean b) {
 		unicode = b;
 	}
@@ -351,6 +367,7 @@ public class SapSystem extends GlobalListItem {
 		return unicode;
 	}
 
+	@Override
 	public void setMaxConnections(int i) {
 		maxConnections = i;
 	}
@@ -359,6 +376,7 @@ public class SapSystem extends GlobalListItem {
 		return maxConnections;
 	}
 
+	@Override
 	public void setTraceLevel(int i) {
 		traceLevel = i;
 	}
@@ -367,6 +385,7 @@ public class SapSystem extends GlobalListItem {
 		return traceLevel;
 	}
 
+	@Override
 	public void setSncEnabled(boolean sncEnabled) {
 		this.sncEnabled = sncEnabled;
 	}
@@ -374,6 +393,7 @@ public class SapSystem extends GlobalListItem {
 		return sncEnabled;
 	}
 
+	@Override
 	public void setSncLibrary(String sncLibPath) {
 		this.sncLibPath = sncLibPath;
 	}
@@ -381,6 +401,7 @@ public class SapSystem extends GlobalListItem {
 		return sncLibPath;
 	}
 
+	@Override
 	public void setSncQop(int qop) {
 		this.qop = qop;
 	}
@@ -388,6 +409,7 @@ public class SapSystem extends GlobalListItem {
 		return qop+"";
 	}
 
+	@Override
 	public void setMyName(String myName) {
 		this.myName = myName;
 	}
@@ -395,6 +417,7 @@ public class SapSystem extends GlobalListItem {
 		return myName;
 	}
 
+	@Override
 	public void setPartnerName(String partnerName) {
 		this.partnerName = partnerName;
 	}
@@ -402,6 +425,7 @@ public class SapSystem extends GlobalListItem {
 		return partnerName;
 	}
 
+	@Override
 	public void setSncAuthMethod(String sncAuthMethod) {
 		this.authMethod = sncAuthMethod;
 	}
@@ -409,10 +433,16 @@ public class SapSystem extends GlobalListItem {
 		return authMethod;
 	}
 
+	@Override
 	public void setSncSSO2(String sncSSO2) {
 		this.sncSSO2 = sncSSO2;
 	}
 	public String getSncSSO2() {
 		return sncSSO2;
+	}
+
+	@Override
+	public void setServiceOffset(int i) {
+		log.warn("setServiceOffset not used in JCo3");
 	}
 }

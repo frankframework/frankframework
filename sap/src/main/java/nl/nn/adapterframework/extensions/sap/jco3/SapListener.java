@@ -51,10 +51,10 @@ import com.sap.conn.jco.server.JCoServerTIDHandler;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
-import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.extensions.sap.ISapListener;
 import nl.nn.adapterframework.extensions.sap.SapException;
 
 /**
@@ -85,7 +85,7 @@ import nl.nn.adapterframework.extensions.sap.SapException;
  * @since 5.0
  * @see "http://help.sap.com/saphelp_nw04/helpdata/en/09/c88442a07b0e53e10000000a155106/frameset.htm"
  */
-public class SapListener extends SapFunctionFacade implements IPushingListener<JCoFunction>, JCoServerFunctionHandler, JCoServerTIDHandler, JCoIDocHandlerFactory, JCoIDocHandler, JCoQueuedIDocHandler, JCoServerExceptionListener, JCoServerErrorListener, ServerDataProvider {
+public class SapListener extends SapFunctionFacade implements ISapListener<JCoFunction>, JCoServerFunctionHandler, JCoServerTIDHandler, JCoIDocHandlerFactory, JCoIDocHandler, JCoQueuedIDocHandler, JCoServerExceptionListener, JCoServerErrorListener, ServerDataProvider {
 
 	private String progid;	 // progid of the RFC-destination
 	private String connectionCount = "2"; // used in SAP examples
@@ -273,6 +273,7 @@ public class SapListener extends SapFunctionFacade implements IPushingListener<J
 		return progid;
 	}
 
+	@Override
 	public void setProgid(String string) {
 		progid = string;
 	}
@@ -281,6 +282,7 @@ public class SapListener extends SapFunctionFacade implements IPushingListener<J
 		return connectionCount;
 	}
 
+	@Override
 	public void setConnectionCount(String connectionCount) {
 		this.connectionCount = connectionCount;
 	}

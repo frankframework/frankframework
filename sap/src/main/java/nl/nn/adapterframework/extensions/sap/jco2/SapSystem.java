@@ -25,6 +25,7 @@ import com.sap.mw.idoc.jco.JCoIDoc;
 import com.sap.mw.jco.IRepository;
 import com.sap.mw.jco.JCO;
 
+import nl.nn.adapterframework.extensions.sap.ISapSystem;
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -51,7 +52,7 @@ import nl.nn.adapterframework.util.GlobalListItem;
  * @author Gerrit van Brakel
  * @since 4.1.1
  */
-public class SapSystem extends GlobalListItem  implements JCO.ServerStateChangedListener  {
+public class SapSystem extends GlobalListItem  implements ISapSystem, JCO.ServerStateChangedListener  {
 
 	private int maxConnections = 10;
 
@@ -279,18 +280,21 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 		return systemnr;
 	}
 
+	@Override
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
 	public String getAuthAlias() {
 		return authAlias;
 	}
+	@Override
 	public void setUserid(String string) {
 		userid = string;
 	}
 	public String getUserid() {
 		return userid;
 	}
+	@Override
 	public void setPasswd(String string) {
 		passwd = string;
 	}
@@ -298,20 +302,24 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 		return passwd;
 	}
 
+	@Override
 	public void setGwhost(String string) {
 		gwhost = string;
 	}
 
+	@Override
 	public void setLanguage(String string) {
 		language = string;
 	}
 
+	@Override
 	public void setMandant(String string) {
 		mandant = string;
 	}
 
 
 
+	@Override
 	public void setSystemnr(String string) {
 		systemnr = string;
 	}
@@ -321,6 +329,7 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 		return maxConnections;
 	}
 
+	@Override
 	public void setMaxConnections(int i) {
 		maxConnections = i;
 	}
@@ -329,6 +338,7 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 		return serviceOffset;
 	}
 
+	@Override
 	public void setServiceOffset(int i) {
 		serviceOffset = i;
 	}
@@ -337,6 +347,7 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 		return traceLevel;
 	}
 
+	@Override
 	public void setTraceLevel(int i) {
 		traceLevel = i;
 	}
@@ -345,6 +356,7 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 		return unicode;
 	}
 
+	@Override
 	public void setUnicode(boolean b) {
 		unicode = b;
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013,2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,9 +17,6 @@ package nl.nn.adapterframework.extensions.sap;
 
 import java.util.Map;
 
-import com.sap.conn.jco.JCoFunction;
-import com.sap.mw.jco.JCO;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IMessageHandler;
@@ -30,211 +27,115 @@ import nl.nn.adapterframework.core.PipeLineResult;
 
 /**
  * Depending on the JCo version found (see {@link JCoVersion}) delegate to
- * {@link nl.nn.adapterframework.extensions.sap.jco3.SapListener jco3.SapListener} or
- * {@link nl.nn.adapterframework.extensions.sap.jco2.SapListener jco2.SapListener}
- * Don't use the jco3 or jco2 class in your Ibis configuration, use this one
- * instead.
+ * implementation of ISapListener. Don't use the jco3 or jco2 class in your 
+ * Ibis configuration, use this one instead.
  * 
  * @author  Jaco de Groot
  * @since   5.0
  */
 public class SapListener implements IPushingListener<Object>, HasPhysicalDestination {
-	private int jcoVersion = 3;
-	private nl.nn.adapterframework.extensions.sap.jco3.SapListener sapListener3;
-	private nl.nn.adapterframework.extensions.sap.jco2.SapListener sapListener2;
+
+	private ISapListener delegate;
 
 	public SapListener() throws ConfigurationException {
-		jcoVersion = JCoVersion.getInstance().getJCoVersion();
+		int jcoVersion = JCoVersion.getInstance().getJCoVersion();
 		if (jcoVersion == -1) {
 			throw new ConfigurationException(JCoVersion.getInstance().getErrorMessage());
 		} else if (jcoVersion == 3) {
-			sapListener3 = new nl.nn.adapterframework.extensions.sap.jco3.SapListener();
+			delegate = new nl.nn.adapterframework.extensions.sap.jco3.SapListener();
 		} else {
-			sapListener2 = new nl.nn.adapterframework.extensions.sap.jco2.SapListener();
+			delegate = new nl.nn.adapterframework.extensions.sap.jco2.SapListener();
 		}
 	}
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (jcoVersion == 3) {
-			sapListener3.configure();
-		} else {
-			sapListener2.configure();
-		}
+		delegate.configure();
 	}
 
 	@Override
 	public void open() throws ListenerException {
-		if (jcoVersion == 3) {
-			sapListener3.open();
-		} else {
-			sapListener2.open();
-		}
+		delegate.open();
 	}
 
 	@Override
 	public void close() throws ListenerException {
-		if (jcoVersion == 3) {
-			sapListener3.close();
-		} else {
-			sapListener2.close();
-		}
+		delegate.close();
 	}
 
 	@Override
 	public String getIdFromRawMessage(Object rawMessage, Map<String,Object> context) throws ListenerException {
-		if (jcoVersion == 3) {
-			return sapListener3.getIdFromRawMessage((JCoFunction)rawMessage, context);
-		} else {
-			return sapListener2.getIdFromRawMessage((JCO.Function)rawMessage, context);
-		}
+		return delegate.getIdFromRawMessage(rawMessage, context);
 	}
 
 	@Override
 	public String getStringFromRawMessage(Object rawMessage, Map<String,Object> context) throws ListenerException {
-		if (jcoVersion == 3) {
-			return sapListener3.getStringFromRawMessage((JCoFunction)rawMessage, context);
-		} else {
-			return sapListener2.getStringFromRawMessage((JCO.Function)rawMessage, context);
-		}
+		return delegate.getStringFromRawMessage(rawMessage, context);
 	}
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map<String,Object> context) throws ListenerException {
-		if (jcoVersion == 3) {
-			sapListener3.afterMessageProcessed(processResult, (JCoFunction)rawMessage, context);
-		} else {
-			sapListener2.afterMessageProcessed(processResult, (JCO.Function)rawMessage, context);
-		}
+		delegate.afterMessageProcessed(processResult, rawMessage, context);
 	}
 
 	@Override
 	public String getName() {
-		if (jcoVersion == 3) {
-			return sapListener3.getName();
-		} else {
-			return sapListener2.getName();
-		}
+		return delegate.getName();
 	}
 
 	@Override
 	public void setName(String name) {
-		if (jcoVersion == 3) {
-			sapListener3.setName(name);
-		} else {
-			sapListener2.setName(name);
-		}
+		delegate.setName(name);
 	}
 
 	@Override
 	public void setHandler(IMessageHandler handler) {
-		if (jcoVersion == 3) {
-			sapListener3.setHandler(handler);
-		} else {
-			sapListener2.setHandler(handler);
-		}
+		delegate.setHandler(handler);
 	}
 
 	@Override
 	public void setExceptionListener(IbisExceptionListener listener) {
-		if (jcoVersion == 3) {
-			sapListener3.setExceptionListener(listener);
-		} else {
-			sapListener2.setExceptionListener(listener);
-		}
+		delegate.setExceptionListener(listener);
 	}
 
 	public void setSapSystemName(String string) {
-		if (jcoVersion == 3) {
-			sapListener3.setSapSystemName(string);
-		} else {
-			sapListener2.setSapSystemName(string);
-		}
+		delegate.setSapSystemName(string);
 	}
 
 	public void setProgid(String string) {
-		if (jcoVersion == 3) {
-			sapListener3.setProgid(string);
-		} else {
-			sapListener2.setProgid(string);
-		}
+		delegate.setProgid(string);
 	}
 
 	public void setConnectionCount(String connectionCount) {
-		if (jcoVersion == 3) {
-			sapListener3.setConnectionCount(connectionCount);
-		}
+		delegate.setConnectionCount(connectionCount);
 	}
 
 	public void setCorrelationIdFieldIndex(int i) {
-		if (jcoVersion == 3) {
-			sapListener3.setCorrelationIdFieldIndex(i);
-		} else {
-			sapListener2.setCorrelationIdFieldIndex(i);
-		}
+		delegate.setCorrelationIdFieldIndex(i);
 	}
 
 	public void setCorrelationIdFieldName(String string) {
-		if (jcoVersion == 3) {
-			sapListener3.setCorrelationIdFieldName(string);
-		} else {
-			sapListener2.setCorrelationIdFieldName(string);
-		}
+		delegate.setCorrelationIdFieldName(string);
 	}
 
 	public void setReplyFieldIndex(int i) {
-		if (jcoVersion == 3) {
-			sapListener3.setReplyFieldIndex(i);
-		} else {
-			sapListener2.setReplyFieldIndex(i);
-		}
+		delegate.setReplyFieldIndex(i);
 	}
 
 	public void setReplyFieldName(String string) {
-		if (jcoVersion == 3) {
-			sapListener3.setReplyFieldName(string);
-		} else {
-			sapListener2.setReplyFieldName(string);
-		}
+		delegate.setReplyFieldName(string);
 	}
 
 	public void setRequestFieldIndex(int i) {
-		if (jcoVersion == 3) {
-			sapListener3.setRequestFieldIndex(i);
-		} else {
-			sapListener2.setRequestFieldIndex(i);
-		}
+		delegate.setRequestFieldIndex(i);
 	}
 
 	public void setRequestFieldName(String string) {
-		if (jcoVersion == 3) {
-			sapListener3.setRequestFieldName(string);
-		} else {
-			sapListener2.setRequestFieldName(string);
-		}
+		delegate.setRequestFieldName(string);
 	}
 
-	public Object getSapSystem() {
-		if (jcoVersion == 3) {
-			try {
-				return sapListener3.getSapSystem();
-			} catch (Exception e) {
-				return null;
-			}
-		} else {
-			try {
-				return sapListener2.getSapSystem();
-			} catch (Exception e) {
-				return null;
-			}
-		}
-	}
-
+	@Override
 	public String getPhysicalDestinationName() {
-		if (jcoVersion == 3) {
-			return sapListener3.getSapSystemName();
-		} else {
-			return sapListener2.getSapSystemName();
-		}
+		return delegate.getPhysicalDestinationName();
 	}
 }
