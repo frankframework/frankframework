@@ -1,44 +1,4 @@
 <ibis>
-	<adapter name="FilePipe - FPDirectoryCreator" description="Creates a directory for fp Larva tests">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="GenericReceiver">
-			<listener className="nl.nn.adapterframework.receivers.DirectoryListener" name="DirectoryListener"
-					  createInputDirectory="true" inputDirectory="${testdata.dir}/fp" random="true"/>
-		</receiver>
-		
-		<pipeline firstPipe="EchoPipe">
-            <exits>
-                <exit path="EXIT" state="success"/>
-            </exits>
-            
-            <pipe
-                name="EchoPipe"
-                className="nl.nn.adapterframework.pipes.EchoPipe">
-                <forward name="success" path="EXIT"/>
-            </pipe>
-        </pipeline>
-        
-	</adapter>
-	
-	<adapter name="FilePipe - FP2DirectoryCreator" description="Creates a directory for fp2 Larva tests">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="GenericReceiver">
-			<listener className="nl.nn.adapterframework.receivers.DirectoryListener" name="DirectoryListener"
-					  createInputDirectory="true" inputDirectory="${testdata.dir}/fp2" random="true"/>
-		</receiver>
-		
-		<pipeline firstPipe="EchoPipe">
-            <exits>
-                <exit path="EXIT" state="success"/>
-            </exits>
-            
-            <pipe
-                name="EchoPipe"
-                className="nl.nn.adapterframework.pipes.EchoPipe">
-                <forward name="success" path="EXIT"/>
-            </pipe>
-        </pipeline>
-        
-	</adapter>
-	
 	<adapter name="FilePipe" description="Test the functioning of the FilePipe">
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="FilePipe">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-FilePipe" />

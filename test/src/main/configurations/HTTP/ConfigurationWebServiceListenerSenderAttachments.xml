@@ -56,9 +56,8 @@
 			<pipe
 				name="GetFile" className="nl.nn.adapterframework.pipes.FilePipe" actions="read" outputType="string" 
 				directory="${testdata.dir}/webservices" fileName="filetext.txt" storeResultInSessionKey="attachment1" 
-				preserveInput="true" createDirectory="true"
-				>
-				
+				preserveInput="true"
+			>
 				<forward name="success" path="EXIT"/>
 			</pipe>
 
@@ -81,7 +80,7 @@
 			<pipe
 				name="GetFile" className="nl.nn.adapterframework.pipes.FilePipe" actions="read" outputType="string" 
 				directory="${testdata.dir}/webservices" fileName="filetext.txt" storeResultInSessionKey="file" 
-				preserveInput="true" createDirectory="true"
+				preserveInput="true"
 			>
 				<forward name="success" path="SetMultipartSessionKey"/>
 			</pipe>
@@ -130,13 +129,11 @@
 			</exits> 
 			<pipe name="GetAttachment1" className="nl.nn.adapterframework.pipes.FilePipe"
 				actions="read" outputType="string" directory="${testdata.dir}/webservices" fileName="textfile.txt" storeResultInSessionKey="file"
-				createDirectory="true"
 			>
 				<forward name="success" path="GetAttachment2" />
 			</pipe> 
 			<pipe name="GetAttachment2" className="nl.nn.adapterframework.pipes.FilePipe"
 				actions="read" outputType="string" directory="${testdata.dir}/webservices" fileName="textfile.txt"  storeResultInSessionKey="file2"
-				createDirectory="true"
 			>
 				<forward name="success" path="PutMultipartInSessionKey" />
 			</pipe>	
