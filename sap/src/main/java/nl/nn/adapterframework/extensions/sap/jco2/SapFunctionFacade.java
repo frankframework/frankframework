@@ -69,7 +69,7 @@ public class SapFunctionFacade implements ISapFunctionFacade {
 	private IFunctionTemplate ftemplate;
 	private SapSystem sapSystem;
 
-	static Map<String,TransformerPool> extractors = new HashMap<String,TransformerPool>();
+	private static Map<String,TransformerPool> extractors = new HashMap<String,TransformerPool>();
 
 	protected String getLogPrefix() {
 		return this.getClass().getName()+" ["+getName()+"] ";
