@@ -1,24 +1,4 @@
 <module>
-	<adapter name="Zip - DirectoryCreator" description="Creates a directory for Zip Larva tests">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="GenericReceiver">
-			<listener className="nl.nn.adapterframework.receivers.DirectoryListener" name="DirectoryListener"
-					  createInputDirectory="true" inputDirectory="${testdata.dir}/zip" random="true"/>
-		</receiver>
-		
-        <pipeline firstPipe="EchoPipe">
-            <exits>
-                <exit path="EXIT" state="success"/>
-            </exits>
-            
-            <pipe
-                name="EchoPipe"
-                className="nl.nn.adapterframework.pipes.EchoPipe">
-                <forward name="success" path="EXIT"/>
-            </pipe>
-        </pipeline>
-        
-	</adapter>
-
 	<adapter name="Zip - Main" >
 		<receiver 
 			name="Zip - Main" 
