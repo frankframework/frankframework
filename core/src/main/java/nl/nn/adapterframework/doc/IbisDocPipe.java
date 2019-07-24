@@ -445,11 +445,25 @@ public class IbisDocPipe extends FixedForwardPipe {
 							    description = ibisDescription.value();
                             }
 
-							// If the IbisDoc has a default value use it, else give an empty string
-							if (ibisDocValues.length > 1) {
-								extractor.addMethods(folder, ibisBean.getName(), property, ibisDocValues[0], ibisDocValues[1], method.getDeclaringClass().getSimpleName(), description, superClasses, javadocLink);
+							int order;
+							int desc;
+							int def;
+
+							// If it doesnt have anything
+							if (ibisDocValues[0].matches("\\d+")) {
+								order = Integer.parseInt(ibisDocValues[0]);
+								desc = 1;
+								def = 2;
 							} else {
-								extractor.addMethods(folder, ibisBean.getName(), property, ibisDocValues[0], "", method.getDeclaringClass().getSimpleName(), description, superClasses, javadocLink);
+								order = 999;
+								desc = 0;
+								def = 1;
+							}
+
+							if (ibisDocValues.length > def) {
+								extractor.addMethods(folder, ibisBean.getName(), property, ibisDocValues[desc], ibisDocValues[def], method.getDeclaringClass().getSimpleName(), description, superClasses, javadocLink, order);
+							} else {
+								extractor.addMethods(folder, ibisBean.getName(), property, ibisDocValues[desc], "", method.getDeclaringClass().getSimpleName(), description, superClasses, javadocLink, order);
 							}
 						}
 					}

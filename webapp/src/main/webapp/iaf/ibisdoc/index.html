@@ -30,7 +30,7 @@
 
   <div class="methods" ng-controller="methodsCtrl">
     <div ng-if="methods.length > 0 && !searching">
-      <input type="text" spellcheck="false" placeholder="Search in {{ methods[0].className }}..." ng-model="searchMethod">
+      <input class="searchBarMethods" type="text" spellcheck="false" placeholder="Search in {{ methods[0].className }}..." ng-model="searchMethod">
 
       <div class="class_name">
         {{  methods[0].className }}
@@ -66,10 +66,10 @@
           <th> Default value</th>
         </tr>
 
-        <tr ng-repeat="method in methods | filter:searchMethod">
-          <td ng-if="method.className === method.originalClassName"> {{ method.name }}</td>
-          <td ng-if="method.className === method.originalClassName" ng-bind-html="method.description"> {{ method.description }}</td>
-          <td ng-if="method.className === method.originalClassName" ng-bind-html="method.defaultValue"> {{ method.defaultValue }}</td>
+        <tr ng-repeat="method in methods | filter:searchMethod | orderBy: 'order'">
+          <td class="attributeName" ng-if="method.className === method.originalClassName"> {{ method.name }}</td>
+          <td class="attributeDesc" ng-if="method.className === method.originalClassName" ng-bind-html="method.description"> {{ method.description }}</td>
+          <td class="attributeDV" ng-if="method.className === method.originalClassName" ng-bind-html="method.defaultValue"> {{ method.defaultValue }}</td>
         </tr>
       </table>
 
@@ -78,19 +78,19 @@
         Inherited Attributes
       </div>
 
-      <div ng-repeat="parent in parents">
+      <div ng-repeat="parent in parents | orderBy: 'parentIndex' ">
         <h3> {{ parent.name }}</h3>
         <table>
           <tr>
             <th> Name </th>
-            <th> Description</th>
-            <th> Default value</th>
+            <th> Description </th>
+            <th> Default value </th>
           </tr>
 
-          <tr ng-repeat="method in parent.attributes">
-            <td> {{ method.name }}</td>
-            <td ng-bind-html="method.description"> {{ method.description }}</td>
-            <td ng-bind-html="method.defaultValue"> {{ method.defaultValue }}</td>
+          <tr ng-repeat="method in parent.attributes | filter:searchMethod | orderBy: 'order'">
+            <td class="attributeName"> {{ method.name }}</td>
+            <td class="attributeDesc" ng-bind-html="method.description"> {{ method.description }}</td>
+            <td class="attributeDV" ng-bind-html="method.defaultValue"> {{ method.defaultValue }}</td>
           </tr>
         </table>
         <br>
