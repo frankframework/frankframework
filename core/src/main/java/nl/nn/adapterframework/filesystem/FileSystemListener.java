@@ -101,11 +101,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					}
 				}
 			} else {
-				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-				String msg = ClassUtils.nameOf(this) +"["+getName()+"]: attribute 'inProcessFolder' has not been set. This listener can only run in a single thread";
-				configWarnings.add(log, msg);
-				
-			}
+				ConfigurationWarnings.add(this, log, "attribute 'inProcessFolder' has not been set. This listener can only run in a single thread");			}
 			if (StringUtils.isNotEmpty(getProcessedFolder())) {
 				if (!fileSystem.folderExists(getProcessedFolder())) {
 					if (isCreateFolders()) {
@@ -311,9 +307,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	 * @Deprecated replaced by inProcessFolder
 	 */
 	public void setInputDirectory(String inputDirectory) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: attribute 'inputDirectory' has been replaced by 'inputFolder'";
-		configWarnings.add(log, msg);
+		ConfigurationWarnings.add(this, log, "attribute 'inputDirectory' has been replaced by 'inputFolder'");
 		setInputFolder(inputDirectory);
 	}
 
@@ -369,9 +363,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	 * @Deprecated replaced by inProcessFolder
 	 */
 	public void setOutputDirectory(String outputDirectory) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: attribute 'outputDirectory' has been replaced by 'inProcessFolder'";
-		configWarnings.add(log, msg);
+		ConfigurationWarnings.add(this, log, "attribute 'outputDirectory' has been replaced by 'inProcessFolder'");
 		setInProcessFolder(outputDirectory);
 	}
 
@@ -425,9 +417,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	 * @Deprecated replaced by processedFolder
 	 */
 	public void setProcessedDirectory(String processedDirectory) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: attribute 'processedDirectory' has been replaced by 'processedFolder'";
-		configWarnings.add(log, msg);
+		ConfigurationWarnings.add(this, log, "attribute 'processedDirectory' has been replaced by 'processedFolder'");
 		setProcessedFolder(processedDirectory);
 	}
 
@@ -491,9 +481,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	
 	@Override
 	public void setCreateInputDirectory(boolean createInputDirectory) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: attribute 'createInputDirectory' has been replaced by 'createFolders'";
-		configWarnings.add(log, msg);
+		ConfigurationWarnings.add(this, log, "attribute 'createInputDirectory' has been replaced by 'createFolders'");
 		setCreateFolders(createInputDirectory);
 	}
 

@@ -132,10 +132,10 @@ public interface IFileSystemListener<F> extends IPullingListener<F> {
 //
 	@IbisDoc({"when set <code>true</code>, the file processed will deleted after being processed, and not stored", "false"})
 	public void setDelete(boolean b);
-//
-//	@IbisDoc({"when <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before", "false"})
-//	public void setFileTimeSensitive(boolean b);
-//
+
+	@IbisDoc({"when <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before", "false"})
+	public void setFileTimeSensitive(boolean b);
+
 	@IbisDoc({"determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'contents' for the contents of the file. For any other value, the attributes of the file are searched and used", "name"})
 	public void setMessageType(String messageType);
 

@@ -25,8 +25,8 @@ import org.apache.log4j.Logger;
  * 
  * @author Peter Leeuwenburgh
  */
-public class BaseConfigurationWarnings extends LinkedList {
-	protected Vector defaultValueExceptions = new Vector();
+public class BaseConfigurationWarnings extends LinkedList<String> {
+	protected Vector<String> defaultValueExceptions = new Vector<String>();
 
 	protected boolean add(Logger log, String msg, Throwable t, boolean onlyOnce) {
 		if (t == null) {

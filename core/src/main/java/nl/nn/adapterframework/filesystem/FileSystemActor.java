@@ -104,23 +104,17 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 			throw new ConfigurationException("["+owner.getName()+"]: unknown or invalid action [" + getAction() + "] supported actions are " + actions.toString() + "");
 
 		if (getAction().equals(ACTION_READ2)) {
+			ConfigurationWarnings.add(owner, log, "action ["+ACTION_READ2+"] has been replaced with ["+ACTION_READ1+"]");
 			setAction(ACTION_READ1);
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			String msg = "["+owner.getName()+"]: action ["+ACTION_READ2+"] has been replaced with ["+ACTION_READ1+"]";
-			configWarnings.add(log, msg);
 		}
 		if (getAction().equals(ACTION_WRITE2)) {
+			ConfigurationWarnings.add(owner, log, "action ["+ACTION_WRITE2+"] has been replaced with ["+ACTION_WRITE1+"]");
 			setAction(ACTION_WRITE1);
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			String msg = "["+owner.getName()+"]: action ["+ACTION_WRITE2+"] has been replaced with ["+ACTION_WRITE1+"]";
-			configWarnings.add(log, msg);
 		}
 		
 		if (parameterList!=null && parameterList.findParameter(PARAMETER_CONTENTS2) != null && parameterList.findParameter(PARAMETER_CONTENTS1) == null) {
+			ConfigurationWarnings.add(owner, log, "parameter ["+PARAMETER_CONTENTS2+"] has been replaced with ["+PARAMETER_CONTENTS1+"]");
 			parameterList.findParameter(PARAMETER_CONTENTS2).setName(PARAMETER_CONTENTS1);;
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			String msg = "["+owner.getName()+"]: parameter ["+PARAMETER_CONTENTS2+"] has been replaced with ["+PARAMETER_CONTENTS1+"]";
-			configWarnings.add(log, msg);
 		}
 		
 		//Check if necessarily parameters are available
@@ -129,9 +123,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 		actionRequiresParameter(parameterList, ACTION_RENAME, PARAMETER_DESTINATION);
 		
 		if (StringUtils.isNotEmpty(getInputFolder()) && parameterList!=null && parameterList.findParameter(PARAMETER_INPUTFOLDER) != null) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			String msg = "["+owner.getName()+"]: inputFolder configured via attribute [inputFolder] as well as via parameter ["+PARAMETER_INPUTFOLDER+"], parameter will be ignored";
-			configWarnings.add(log, msg);
+			ConfigurationWarnings.add(owner, log, "inputFolder configured via attribute [inputFolder] as well as via parameter ["+PARAMETER_INPUTFOLDER+"], parameter will be ignored");
 		}
 		
 	}
