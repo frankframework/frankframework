@@ -345,7 +345,7 @@ public class ApiListenerServlet extends HttpServlet {
 			 */
 			response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
 
-			String contentType = listener.getContentType() + "; " + listener.getCharset();
+			String contentType = listener.getContentType() + ";  charset=" + listener.getCharset();
 			if(listener.getProduces().equals("ANY")) {
 				contentType = messageContext.get("contentType", contentType);
 			}
