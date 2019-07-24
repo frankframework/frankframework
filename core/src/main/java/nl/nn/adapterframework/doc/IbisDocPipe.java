@@ -409,9 +409,6 @@ public class IbisDocPipe extends FixedForwardPipe {
 						// Get the ibisdoc of the method
 						IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
 
-						// Get the ibis description of the method
-						IbisDescription ibisDescription = AnnotationUtils.findAnnotation(ibisBean.getClazz(), IbisDescription.class);
-
 						// Create an array for the superclasses of this method's class
 						ArrayList<String> superClasses = new ArrayList<String>();
 
@@ -438,13 +435,6 @@ public class IbisDocPipe extends FixedForwardPipe {
 							String[] ibisDocValues = ibisDoc.value();
 							String description = "";
 
-							// If there is an IbisDescription of the class
-							if (ibisDescription != null) {
-
-								// Assign the value of the description, else it will be the empty string
-							    description = ibisDescription.value();
-                            }
-
 							int order;
 							int desc;
 							int def;
@@ -461,9 +451,9 @@ public class IbisDocPipe extends FixedForwardPipe {
 							}
 
 							if (ibisDocValues.length > def) {
-								extractor.addMethods(folder, ibisBean.getName(), property, ibisDocValues[desc], ibisDocValues[def], method.getDeclaringClass().getSimpleName(), description, superClasses, javadocLink, order);
+								extractor.addMethods(folder, ibisBean.getName(), property, ibisDocValues[desc], ibisDocValues[def], method.getDeclaringClass().getSimpleName(), superClasses, javadocLink, order);
 							} else {
-								extractor.addMethods(folder, ibisBean.getName(), property, ibisDocValues[desc], "", method.getDeclaringClass().getSimpleName(), description, superClasses, javadocLink, order);
+								extractor.addMethods(folder, ibisBean.getName(), property, ibisDocValues[desc], "", method.getDeclaringClass().getSimpleName(), superClasses, javadocLink, order);
 							}
 						}
 					}

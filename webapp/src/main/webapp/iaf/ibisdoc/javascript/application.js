@@ -88,13 +88,28 @@ app.controller("classesCtrl", function($scope, classesService, methodsService) {
         $scope.parentClasses = [];
 
         angular.forEach(clas.methods, function(method) {
+
           if (method.className !== method.originalClassName) {
             let index = $scope.parentClasses.findIndex(parent => parent.name === method.originalClassName);
+            var parentIndex = 0;
+
+            // For each of the parentClasses
+            angular.forEach(method.superClasses, function(parentClass) {
+
+              // Check if we are dealing with the right parentClass
+              if (parentClass.substring(0, parentClass.length - 1) === method.originalClassName) {
+
+                // Get the priority index
+                var str = parentClass.substring(parentClass.length - 1, parentClass.length);
+                parentIndex = parseInt(str, 10);
+              }
+            });
 
             if (index === -1) {
               $scope.parentClasses.push({
                 name : method.originalClassName,
-                attributes : [method]
+                attributes : [method],
+                parentIndex : parentIndex
               });
             } else {
               $scope.parentClasses[index].attributes.push(method);
