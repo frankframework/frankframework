@@ -25,7 +25,7 @@ public class DirectoryListenerTest extends FileSystemListenerTest {
 			directoryListener.setWildcard("*");
 			result=directoryListener;
 		}
-		fileAndFolderPrefix=folder.getRoot().getAbsolutePath()+"\\";
+		fileAndFolderPrefix=folder.getRoot().getAbsolutePath()+"/";
 		testFullErrorMessages=false;
 		return result;
 	}
