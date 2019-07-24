@@ -44,6 +44,8 @@ public class ApiListenerServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 
+	private final String CHARSET="UTF-8";
+
 	protected Logger log = LogUtil.getLogger(this);
 	private ApiServiceDispatcher dispatcher = null;
 	private IApiCache cache = null;
@@ -274,6 +276,7 @@ public class ApiListenerServlet extends HttpServlet {
 			if (ServletFileUpload.isMultipartContent(request)) {
 				DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
 				ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
+				servletFileUpload.setHeaderEncoding(CHARSET);
 				List<FileItem> items = servletFileUpload.parseRequest(request);
 				for (FileItem item : items) {
 					if (item.isFormField()) {
@@ -345,7 +348,7 @@ public class ApiListenerServlet extends HttpServlet {
 			 */
 			response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
 
-			String contentType = listener.getContentType() + ";charset=utf-8";
+			String contentType = listener.getContentType() + ";charset="+CHARSET;
 			if(listener.getProduces().equals("ANY")) {
 				contentType = messageContext.get("contentType", contentType);
 			}
