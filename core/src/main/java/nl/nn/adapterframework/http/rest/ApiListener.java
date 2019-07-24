@@ -43,7 +43,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	private String consumes = "ANY";
 	private String produces = "ANY";
-	private List<String> mediaTypes = Arrays.asList("ANY", "XML", "JSON", "TEXT", "MULTIPART");
+	private List<String> mediaTypes = Arrays.asList("ANY", "XML", "JSON", "TEXT", "MULTIPART", "PDF");
 
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
@@ -171,6 +171,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			contentType = "application/json";
 		else if(getProduces().equals("TEXT"))
 			contentType = "text/plain";
+		else if(getProduces().equals("PDF"))
+			contentType = "application/pdf";
 		return contentType;
 	}
 
