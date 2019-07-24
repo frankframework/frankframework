@@ -45,6 +45,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private String produces = "ANY";
 	private List<String> mediaTypes = Arrays.asList("ANY", "XML", "JSON", "TEXT", "MULTIPART");
 
+	private String charset = "utf-8";
+
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
@@ -179,6 +181,13 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 	public boolean getUpdateEtag() {
 		return updateEtag;
+	}
+
+	public void setCharset(String charset) {
+		this.charset = charset;
+	}
+	public String getCharset() {
+		return charset;
 	}
 
 	@Override
