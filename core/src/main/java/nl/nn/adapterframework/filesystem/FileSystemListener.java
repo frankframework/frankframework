@@ -30,13 +30,12 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.DirectoryListener;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
- * {@link IPullingListener listener} that looks in a filesystem for files.
+ * {@link IPullingListener listener} that looks in a {@link IBasicFileSystem FileSystem} for files.
  * When a file is found, it is moved to an process-folder, so that it isn't found more then once.  
  * The name of the moved file is passed to the pipeline.  
  *
@@ -48,12 +47,12 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	private String name;
 	private String inputFolder;
-	private boolean fileTimeSensitive=false;
 	private String inProcessFolder;
-
-	private boolean delete = false;
 	private String processedFolder;
+
 	private boolean createFolders=false;
+	private boolean delete = false;
+	private boolean fileTimeSensitive=false;
 //	private boolean overwrite = false;
 	private String messageType="name";
 
@@ -67,10 +66,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public FileSystemListener() {
 		fileSystem=createFileSystem();
 	}
-	/**
-	 * Configure does some basic checks (outputDirectory is a directory, inputDirectory is a directory, wildcard is filled etc.);
-	 *
-	 */
+	
 	@Override
 	public void configure() throws ConfigurationException {
 		FS fileSystem = getFileSystem();
@@ -147,10 +143,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 
-	/**
-	 * Retrieves a single record from a file. If the file is empty or fully processed, it looks whether there
-	 * is a new file to process and returns the first record.
-	 */
 	@Override
 	public synchronized F getRawMessage(Map<String,Object> threadContext) throws ListenerException {
 		try {
@@ -225,7 +217,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	/**
-	 * Returns returns the filename, or the xml with filenames
+	 * Returns returns the filename, or the contents
 	 */
 	@Override
 	public String getStringFromRawMessage(F rawMessage, Map<String,Object> threadContext) throws ListenerException {
@@ -294,7 +286,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 
 	@Override
-	@IbisDoc({"name of the listener", ""})
+	@IbisDoc({"1", "name of the listener", ""})
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -311,7 +303,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		setInputFolder(inputDirectory);
 	}
 
-	@IbisDoc({"folder that is scanned for files. When not set, the root is scanned", ""})
+	@IbisDoc({"2", "folder that is scanned for files. When not set, the root is scanned", ""})
 	public void setInputFolder(String inputFolder) {
 		this.inputFolder = inputFolder;
 	}
@@ -367,7 +359,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		setInProcessFolder(outputDirectory);
 	}
 
-	@IbisDoc({"folder where files are stored <i>while</i> being processed", ""})
+	@IbisDoc({"3", "folder where files are stored <i>while</i> being processed", ""})
 	public void setInProcessFolder(String inProcessFolder) {
 		this.inProcessFolder = inProcessFolder;
 	}
@@ -375,6 +367,43 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return inProcessFolder;
 	}
 
+	/**
+	 * @Deprecated replaced by processedFolder
+	 */
+	public void setProcessedDirectory(String processedDirectory) {
+		ConfigurationWarnings.add(this, log, "attribute 'processedDirectory' has been replaced by 'processedFolder'");
+		setProcessedFolder(processedDirectory);
+	}
+
+	@IbisDoc({"4", "folder where files are stored <i>after</i> being processed", ""})
+	public void setProcessedFolder(String processedFolder) {
+		this.processedFolder = processedFolder;
+	}
+	public String getProcessedFolder() {
+		return processedFolder;
+	}
+
+	@IbisDoc({"5", "when set to <code>true</code>, the folders to look for files and to move files to when being processed and after being processed are created if they are specified and do not exist", "false"})
+	public void setCreateFolders(boolean createFolders) {
+		this.createFolders = createFolders;
+	}
+	public boolean isCreateFolders() {
+		return createFolders;
+	}
+	
+	@Override
+	public void setCreateInputDirectory(boolean createInputDirectory) {
+		ConfigurationWarnings.add(this, log, "attribute 'createInputDirectory' has been replaced by 'createFolders'");
+		setCreateFolders(createInputDirectory);
+	}
+
+	@IbisDoc({"6", "when set <code>true</code>, the file processed will deleted after being processed, and not stored", "false"})
+	public void setDelete(boolean b) {
+		delete = b;
+	}
+	public boolean isDelete() {
+		return delete;
+	}
 
 //	@IbisDoc({"pattern for the name using the messageformat.format method. params: 0=inputfilename, 1=inputfile extension, 2=unique uuid, 3=current date", ""})
 //	public void setOutputFilenamePattern(String string) {
@@ -383,17 +412,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 //	public String getOutputFilenamePattern() {
 //		return outputFilenamePattern;
 //	}
-
-
-
-	@IbisDoc({"minimal age of file in milliseconds, to avoid receiving a file while it is still being written", "1000 [ms]"})
-	public void setMinStableTime(long minStableTime) {
-		this.minStableTime = minStableTime;
-	}
-	public long getMinStableTime() {
-		return minStableTime;
-	}
-
 
 //	@IbisDoc({"pass the filename without the <code>outputdirectory</code> to the pipeline", "false"})
 //	public void setPassWithoutDirectory(boolean b) {
@@ -404,30 +422,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 //		return passWithoutDirectory;
 //	}
 
-//	@IbisDoc({"when set to <code>true</code>, the directory to look for files is created if it does not exist", "false"})
-//	public void setCreateInputDirectory(boolean b) {
-//		createInputDirectory = b;
-//	}
-//
-//	public boolean isCreateInputDirectory() {
-//		return createInputDirectory;
-//	}
-
-	/**
-	 * @Deprecated replaced by processedFolder
-	 */
-	public void setProcessedDirectory(String processedDirectory) {
-		ConfigurationWarnings.add(this, log, "attribute 'processedDirectory' has been replaced by 'processedFolder'");
-		setProcessedFolder(processedDirectory);
-	}
-
-	@IbisDoc({"folder where files are stored <i>after</i> being processed", ""})
-	public void setProcessedFolder(String processedFolder) {
-		this.processedFolder = processedFolder;
-	}
-	public String getProcessedFolder() {
-		return processedFolder;
-	}
 	
 //	@IbisDoc({"number of copies held of a file with the same name. backup files have a dot and a number suffixed to their name. if set to 0, no backups will be kept.", "5"})
 //	public void setNumberOfBackups(int i) {
@@ -445,15 +439,8 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 //		return overwrite;
 //	}
 
-	@IbisDoc({"when set <code>true</code>, the file processed will deleted after being processed, and not stored", "false"})
-	public void setDelete(boolean b) {
-		delete = b;
-	}
-	public boolean isDelete() {
-		return delete;
-	}
 
-	@IbisDoc({"when <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before", "false"})
+	@IbisDoc({"7", "when <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before", "false"})
 	public void setFileTimeSensitive(boolean b) {
 		fileTimeSensitive = b;
 	}
@@ -462,7 +449,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	@Override
-	@IbisDoc({"determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'contents' for the contents of the file. For any other value, the attributes of the file are searched and used", "name"})
+	@IbisDoc({"8", "determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'contents' for the contents of the file. For any other value, the attributes of the file are searched and used", "name"})
 	public void setMessageType(String messageType) {
 		this.messageType = messageType;
 	}
@@ -470,19 +457,13 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return messageType;
 	}
 
-	public boolean isCreateFolders() {
-		return createFolders;
-	}
 
-	@IbisDoc({"when set to <code>true</code>, the folders to look for files and to move files to when being processed and after being processed are created if they are specified and do not exist", "false"})
-	public void setCreateFolders(boolean createFolders) {
-		this.createFolders = createFolders;
+	@IbisDoc({"9", "minimal age of file in milliseconds, to avoid receiving a file while it is still being written", "1000 [ms]"})
+	public void setMinStableTime(long minStableTime) {
+		this.minStableTime = minStableTime;
 	}
-	
-	@Override
-	public void setCreateInputDirectory(boolean createInputDirectory) {
-		ConfigurationWarnings.add(this, log, "attribute 'createInputDirectory' has been replaced by 'createFolders'");
-		setCreateFolders(createInputDirectory);
+	public long getMinStableTime() {
+		return minStableTime;
 	}
 
 }

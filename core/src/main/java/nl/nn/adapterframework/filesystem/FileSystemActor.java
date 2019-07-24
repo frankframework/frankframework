@@ -42,11 +42,11 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
- * FileSystem Sender: Base class for all file system senders
+ * Worker class for {@link FileSystemPipe} and {@link FileSystemSender}.
  * 
  * <table align="top">
- * <tr><th>Action</th><th>Description</th><th>Configuration (in order of precedence)</th></tr>
- * <tr><td>list</td><td>list files in a directory</td><td>folder:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>root folder</li></ol></td></tr>
+ * <tr><th>Action</th><th>Description</th><th>Configuration</th></tr>
+ * <tr><td>list</td><td>list files in a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>root folder</li></ol></td></tr>
  * <tr><td>read</td><td>read a file, returns an InputStream</td><td>filename: taken from input message</td><td>&nbsp;</td></tr>
  * <tr><td>move</td><td>move a file to another folder</td><td>filename: taken from input message<br/>parameter <code>destination</code></td></tr>
  * <tr><td>delete</td><td>delete a file</td><td>filename: taken from input message</td><td>&nbsp;</td></tr>
@@ -56,9 +56,8 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * <tr><td>rename</td><td>change the name of a file</td><td>filename: taken from input message<br/>parameter <code>destination</code></td></tr>
  * <table>
  * 
- * <br/>
+ * @author Gerrit van Brakel
  */
-
 public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 	protected Logger log = LogUtil.getLogger(this);
 	
@@ -289,7 +288,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 		actions.addAll(specificActions);
 	}
 
-	@IbisDoc({ "possible values: list, read, delete, write, rename, move, mkdir, rmdir", "" })
+	@IbisDoc({"1", "possible values: list, read, delete, move, mkdir, rmdir, write, rename", "" })
 	public void setAction(String action) {
 		this.action = action;
 	}
@@ -297,7 +296,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 		return action;
 	}
 
-	@IbisDoc({"input folder, that is scanned for files when action=list. When not set, the root is scanned", ""})
+	@IbisDoc({"2", "folder that is scanned for files when action=list. When not set, the root is scanned", ""})
 	public void setInputFolder(String inputFolder) {
 		this.inputFolder = inputFolder;
 	}
