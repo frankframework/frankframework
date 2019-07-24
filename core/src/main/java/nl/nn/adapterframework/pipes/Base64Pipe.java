@@ -136,7 +136,7 @@ public class Base64Pipe extends FixedForwardPipe {
 		return new PipeRunResult(getForward(), result);
 	}
 
-	@IbisDoc({"either <code>encode</code> or <code>decode</code>", "encode"})
+	@IbisDoc({"1", "either <code>encode</code> or <code>decode</code>", "encode"})
 	public void setDirection(String string) {
 		direction = string.toLowerCase();
 	}
@@ -155,7 +155,7 @@ public class Base64Pipe extends FixedForwardPipe {
 		convertToString = b;
 	}
 
-	@IbisDoc({"either <code>string</code>, <code>bytes</code> or <code>stream</code>", "string"})
+	@IbisDoc({"2", "either <code>string</code>, <code>bytes</code> or <code>stream</code>", "string"})
 	public void setOutputType(String outputType) {
 		this.outputType = outputType.toLowerCase();
 	}
@@ -164,7 +164,7 @@ public class Base64Pipe extends FixedForwardPipe {
 		return outputType;
 	}
 
-	@IbisDoc({"character encoding to be used to encode or decode message to or from string. (only used when convert2string=true)", "utf-8"})
+	@IbisDoc({"3", "character encoding to be used to encode or decode message to or from string. (only used when convert2string=true)", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}
@@ -172,7 +172,7 @@ public class Base64Pipe extends FixedForwardPipe {
 		return charset;
 	}
 
-	@IbisDoc({" (only used when direction=encode) defines separator between lines. special values: <code>auto</code>: platform default, <code>dos</code>: crlf, <code>unix</code>: lf", "auto"})
+	@IbisDoc({"4", " (only used when direction=encode) defines separator between lines. special values: <code>auto</code>: platform default, <code>dos</code>: crlf, <code>unix</code>: lf", "auto"})
 	public void setLineSeparator(String lineSeparator) {
 		this.lineSeparator = lineSeparator;
 	}
@@ -180,7 +180,7 @@ public class Base64Pipe extends FixedForwardPipe {
 		return lineSeparator;
 	}
 
-	@IbisDoc({" (only used when direction=encode) each line of encoded data will be at most of the given length (rounded down to nearest multiple of 4). if linelength <= 0, then the output will not be divided into lines", "auto"})
+	@IbisDoc({"5", " (only used when direction=encode) each line of encoded data will be at most of the given length (rounded down to nearest multiple of 4). if linelength <= 0, then the output will not be divided into lines", "auto"})
 	public void setLineLength(int lineLength) {
 		this.lineLength = lineLength;
 	}
