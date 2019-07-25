@@ -101,7 +101,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		return notInRoleForwardName;
 	}
 
-	@IbisDoc({"user may not assume role", ""})
+	@IbisDoc({"name of forward returned if user is not allowed to assume the specified role", "notInRole"})
 	public void setNotInRoleForwardName(String string) {
 		notInRoleForwardName = string;
 	}

@@ -122,7 +122,7 @@ public class FixedForwardPipe extends AbstractPipe {
  	 * Sets the name of the <code>forward</code> that is looked up
  	 * upon completion.
  	 */
-	@IbisDoc({"if specified", ""})
+	@IbisDoc({"name of forward returned upon completion", "success"})
 	public void setForwardName(String forwardName) {
         this.forwardName = forwardName;
     }
