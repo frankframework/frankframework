@@ -433,7 +433,6 @@ public class IbisDocPipe extends FixedForwardPipe {
 
 							// Get the values (description and default value)
 							String[] ibisDocValues = ibisDoc.value();
-							String description = "";
 
 							int order;
 							int desc;
@@ -460,6 +459,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 				}
 			}
 		}
+		extractor.addAllFolder();
 		extractor.writeToJsonUrl();
 
 		return extractor.getJsonString();
