@@ -45,13 +45,13 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 
 	protected Logger log = LogUtil.getLogger(this);
 
-	private String domain = null;
+	private String share = null;
 	private String username = null;
 	private String password = null;
 	private String authAlias = null;
-	private String share = null;
+	private String domain = null;
 	private boolean isForce;
-	private boolean listHiddenFiles = true;
+	private boolean listHiddenFiles = false;
 
 	private NtlmPasswordAuthentication auth = null;
 	private SmbFile smbContext;
@@ -61,7 +61,7 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 		if (getShare() == null)
 			throw new ConfigurationException("server share endpoint is required");
 		if (!getShare().startsWith("smb://"))
-			throw new ConfigurationException("url must begin with [smb://]");
+			throw new ConfigurationException("attribute share must begin with [smb://]");
 
 		//Setup credentials if applied, may be null.
 		//NOTE: When using NtmlPasswordAuthentication without username it returns GUEST
@@ -213,7 +213,7 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 		try {
 			dest = new SmbFile(smbContext, newName);
 			if (exists(dest)) {
-				if (isForce)
+				if (force)
 					dest.delete();
 				else {
 					throw new FileSystemException("Cannot rename file. Destination file already exists.");
@@ -302,28 +302,18 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 		return null;
 	}
 
-	public boolean isListHiddenFiles() {
-		return listHiddenFiles;
+	public String getShare() {
+		return share;
 	}
-
-	public void setListHiddenFiles(boolean listHiddenFiles) {
-		this.listHiddenFiles = listHiddenFiles;
-	}
-
-	public String getDomain() {
-		return domain;
+	@IbisDoc({ "1", "the destination, aka smb://xxx/yyy share", "" })
+	public void setShare(String share) {
+		this.share = share;
 	}
 	
-	@IbisDoc({ "in case the user account is bound to a domain", "" })
-	public void setDomain(String domain) {
-		this.domain = domain;
-	}
-
 	public String getUsername() {
 		return username;
 	}
-	
-	@IbisDoc({ "the smb share username", "" })
+	@IbisDoc({ "2", "the smb share username", "" })
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -331,8 +321,7 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 	public String getPassword() {
 		return password;
 	}
-	
-	@IbisDoc({ "the smb share password", "" })
+	@IbisDoc({ "3", "the smb share password", "" })
 	public void setPassword(String password) {
 		this.password = password;
 	}
@@ -340,26 +329,31 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 	public String getAuthAlias() {
 		return authAlias;
 	}
-	
-	@IbisDoc({ "alias used to obtain credentials for the smb share", "" })
+	@IbisDoc({ "4", "alias used to obtain credentials for the smb share", "" })
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
 
-	public String getShare() {
-		return share;
+	public String getDomain() {
+		return domain;
+	}
+	@IbisDoc({ "5", "domain, in case the user account is bound to a domain", "" })
+	public void setDomain(String domain) {
+		this.domain = domain;
 	}
 
-	@IbisDoc({ "the destination, aka smb://xxx/yyy share", "" })
-	public void setShare(String share) {
-		this.share = share;
-	}
-	
-	@IbisDoc({
-		"used when creating folders or overwriting existing files (when renaming or moving)",
-		"false" })
+	@IbisDoc({ "6", "when <code>true</code>, intermediate directories are created also", "false" })
 	public void setForce(boolean force) {
 		isForce = force;
 	}
+
+	public boolean isListHiddenFiles() {
+		return listHiddenFiles;
+	}
+	@IbisDoc({ "7", "controls whether hidden files are seen or not", "false" })
+	public void setListHiddenFiles(boolean listHiddenFiles) {
+		this.listHiddenFiles = listHiddenFiles;
+	}
+
 
 }

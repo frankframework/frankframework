@@ -13,16 +13,16 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.senders;
+package nl.nn.adapterframework.pipes;
 
 import jcifs.smb.SmbFile;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.filesystem.FileSystemSender;
+import nl.nn.adapterframework.filesystem.FileSystemPipe;
 import nl.nn.adapterframework.filesystem.Samba1FileSystem;
 
-public class Samba1Sender extends FileSystemSender<SmbFile, Samba1FileSystem> {
+public class Samba1Pipe extends FileSystemPipe<SmbFile, Samba1FileSystem> {
 
-	public Samba1Sender() {
+	public Samba1Pipe() {
 		setFileSystem(new Samba1FileSystem());
 	}
 

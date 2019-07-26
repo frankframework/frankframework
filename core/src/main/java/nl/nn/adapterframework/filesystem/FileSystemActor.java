@@ -42,11 +42,11 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
- * FileSystem Sender: Base class for all file system senders
+ * Worker class for {@link FileSystemPipe} and {@link FileSystemSender}.
  * 
  * <table align="top">
- * <tr><th>Action</th><th>Description</th><th>Configuration (in order of precedence)</th></tr>
- * <tr><td>list</td><td>list files in a directory</td><td>folder:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>root folder</li></ol></td></tr>
+ * <tr><th>Action</th><th>Description</th><th>Configuration</th></tr>
+ * <tr><td>list</td><td>list files in a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>root folder</li></ol></td></tr>
  * <tr><td>read</td><td>read a file, returns an InputStream</td><td>filename: taken from input message</td><td>&nbsp;</td></tr>
  * <tr><td>move</td><td>move a file to another folder</td><td>filename: taken from input message<br/>parameter <code>destination</code></td></tr>
  * <tr><td>delete</td><td>delete a file</td><td>filename: taken from input message</td><td>&nbsp;</td></tr>
@@ -56,9 +56,8 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * <tr><td>rename</td><td>change the name of a file</td><td>filename: taken from input message<br/>parameter <code>destination</code></td></tr>
  * <table>
  * 
- * <br/>
+ * @author Gerrit van Brakel
  */
-
 public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 	protected Logger log = LogUtil.getLogger(this);
 	
@@ -79,8 +78,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 	public final String PARAMETER_DESTINATION="destination";	// destination for action rename and move
 	
 	
-	public final String[] ACTIONS_BASIC= {ACTION_LIST, ACTION_READ1, ACTION_READ2, ACTION_MOVE, ACTION_DELETE};
-	public final String[] ACTIONS_WRITABLE_FS= {ACTION_MKDIR, ACTION_RMDIR, ACTION_WRITE1, ACTION_WRITE2, ACTION_RENAME};
+	public final String[] ACTIONS_BASIC= {ACTION_LIST, ACTION_READ1, ACTION_READ2, ACTION_MOVE, ACTION_DELETE, ACTION_MKDIR, ACTION_RMDIR};
+	public final String[] ACTIONS_WRITABLE_FS= {ACTION_WRITE1, ACTION_WRITE2, ACTION_RENAME};
 
 	private String action;
 	private String inputFolder; // folder for action=list
@@ -104,23 +103,17 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 			throw new ConfigurationException("["+owner.getName()+"]: unknown or invalid action [" + getAction() + "] supported actions are " + actions.toString() + "");
 
 		if (getAction().equals(ACTION_READ2)) {
+			ConfigurationWarnings.add(owner, log, "action ["+ACTION_READ2+"] has been replaced with ["+ACTION_READ1+"]");
 			setAction(ACTION_READ1);
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			String msg = "["+owner.getName()+"]: action ["+ACTION_READ2+"] has been replaced with ["+ACTION_READ1+"]";
-			configWarnings.add(log, msg);
 		}
 		if (getAction().equals(ACTION_WRITE2)) {
+			ConfigurationWarnings.add(owner, log, "action ["+ACTION_WRITE2+"] has been replaced with ["+ACTION_WRITE1+"]");
 			setAction(ACTION_WRITE1);
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			String msg = "["+owner.getName()+"]: action ["+ACTION_WRITE2+"] has been replaced with ["+ACTION_WRITE1+"]";
-			configWarnings.add(log, msg);
 		}
 		
 		if (parameterList!=null && parameterList.findParameter(PARAMETER_CONTENTS2) != null && parameterList.findParameter(PARAMETER_CONTENTS1) == null) {
+			ConfigurationWarnings.add(owner, log, "parameter ["+PARAMETER_CONTENTS2+"] has been replaced with ["+PARAMETER_CONTENTS1+"]");
 			parameterList.findParameter(PARAMETER_CONTENTS2).setName(PARAMETER_CONTENTS1);;
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			String msg = "["+owner.getName()+"]: parameter ["+PARAMETER_CONTENTS2+"] has been replaced with ["+PARAMETER_CONTENTS1+"]";
-			configWarnings.add(log, msg);
 		}
 		
 		//Check if necessarily parameters are available
@@ -129,9 +122,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 		actionRequiresParameter(parameterList, ACTION_RENAME, PARAMETER_DESTINATION);
 		
 		if (StringUtils.isNotEmpty(getInputFolder()) && parameterList!=null && parameterList.findParameter(PARAMETER_INPUTFOLDER) != null) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			String msg = "["+owner.getName()+"]: inputFolder configured via attribute [inputFolder] as well as via parameter ["+PARAMETER_INPUTFOLDER+"], parameter will be ignored";
-			configWarnings.add(log, msg);
+			ConfigurationWarnings.add(owner, log, "inputFolder configured via attribute [inputFolder] as well as via parameter ["+PARAMETER_INPUTFOLDER+"], parameter will be ignored");
 		}
 		
 	}
@@ -227,10 +218,10 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 				return getFileAsXmlBuilder(file, "file").toXML();
 			} else if (action.equalsIgnoreCase(ACTION_MKDIR)) {
 				String folder = determineInputFoldername(input, pvl);
-				((IWritableFileSystem<F>)fileSystem).createFolder(folder);
+				fileSystem.createFolder(folder);
 			} else if (action.equalsIgnoreCase(ACTION_RMDIR)) {
 				String folder = determineInputFoldername(input, pvl);
-				((IWritableFileSystem<F>)fileSystem).removeFolder(folder);
+				fileSystem.removeFolder(folder);
 			} else if (action.equalsIgnoreCase(ACTION_RENAME)) {
 				F file=getFile(input, pvl);
 				String destination = (String) pvl.getParameterValue(PARAMETER_DESTINATION).getValue();
@@ -297,7 +288,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 		actions.addAll(specificActions);
 	}
 
-	@IbisDoc({ "possible values: list, read, delete, write, rename, move, mkdir, rmdir", "" })
+	@IbisDoc({"1", "possible values: list, read, delete, move, mkdir, rmdir, write, rename", "" })
 	public void setAction(String action) {
 		this.action = action;
 	}
@@ -305,7 +296,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 		return action;
 	}
 
-	@IbisDoc({"input folder, that is scanned for files when action=list. When not set, the root is scanned", ""})
+	@IbisDoc({"2", "folder that is scanned for files when action=list. When not set, the root is scanned", ""})
 	public void setInputFolder(String inputFolder) {
 		this.inputFolder = inputFolder;
 	}

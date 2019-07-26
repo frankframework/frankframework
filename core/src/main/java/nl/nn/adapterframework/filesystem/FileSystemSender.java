@@ -33,22 +33,22 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.Misc;
 
 /**
- * FileSystem Sender: Base class for all file system senders
+ * Base class for Senders that use a {@link IBasicFileSystem FileSystem}.
  * 
+ * <table align="top">
+ * <tr><th>Action</th><th>Description</th><th>Configuration</th></tr>
+ * <tr><td>list</td><td>list files in a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>root folder</li></ol></td></tr>
+ * <tr><td>read</td><td>read a file, returns a base64 encoded string containing the file content</td><td>filename: taken from input message</td><td>&nbsp;</td></tr>
+ * <tr><td>move</td><td>move a file to another folder</td><td>filename: taken from input message<br/>parameter <code>destination</code></td></tr>
+ * <tr><td>delete</td><td>delete a file</td><td>filename: taken from input message</td><td>&nbsp;</td></tr>
+ * <tr><td>mkdir</td><td>create a folder/directory</td><td>folder: taken from input message</td><td>&nbsp;</td></tr>
+ * <tr><td>rmdir</td><td>remove a folder/directory</td><td>folder: taken from input message</td><td>&nbsp;</td></tr>
+ * <tr><td>write</td><td>write contents to a file<td>filename: taken from input message<br/>parameter <code>contents</code>: contents as either Stream, Bytes or String</td><td>&nbsp;</td></tr>
+ * <tr><td>rename</td><td>change the name of a file</td><td>filename: taken from input message<br/>parameter <code>destination</code></td></tr>
+ * <table>
  * 
- * <p><b>Actions:</b></p>
- * <p>The <code>list</code> action for listing a directory content. inputFolder could be set as an attribute or as a parameter in adapter to list specific folder content. If both are set then parameter will override the value of attribute. If not set then, it will list root folder content </p>
- * <p>The <code>download</code> action for downloading a file, requires filename as input. Returns a base64 encoded string containing the file content </p>
- * <p>The <code>move</code> action for moving a file to another folder requires destination folder as parameter "destination"</p>
- * <p>The <code>delete</code> action requires the filename as input </p>
- * <p>The <code>upload</code> action requires the file parameter to be set which should contain the fileContent to upload in either Stream, Bytes or String format</p>
- * <p>The <code>rename</code> action requires the destination parameter to be set which should contain the full path </p>
- * <p>The <code>mkdir</code> action for creating a directory requires directory name to be created as input. </p>
- * <p>The <code>rmdir</code> action for removing a directory requires directory name to be removed as input. </p>
- * 
- * <br/>
+ * @author Gerrit van Brakel
  */
-
 public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderWithParametersBase {
 	
 	private FS fileSystem;
@@ -134,7 +134,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 		actor.addActions(specificActions);
 	}
 
-	@IbisDoc({ "possible values: list, download, delete, upload, rename, move, mkdir, rmdir", "" })
+	@IbisDoc({"1", "possible values: list, read, delete, move, mkdir, rmdir, write, rename", "" })
 	public void setAction(String action) {
 		actor.setAction(action);
 	}
@@ -142,7 +142,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 		return actor.getAction();
 	}
 
-	@IbisDoc({"folder that is scanned for files when action=list. When not set, the root is scanned", ""})
+	@IbisDoc({"2", "folder that is scanned for files when action=list. When not set, the root is scanned", ""})
 	public void setInputFolder(String inputFolder) {
 		actor.setInputFolder(inputFolder);
 	}
