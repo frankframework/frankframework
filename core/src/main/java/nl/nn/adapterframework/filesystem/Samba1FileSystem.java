@@ -337,7 +337,7 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 	public String getDomain() {
 		return domain;
 	}
-	@IbisDoc({ "5", "in case the user account is bound to a domain", "" })
+	@IbisDoc({ "5", "domain, in case the user account is bound to a domain", "" })
 	public void setDomain(String domain) {
 		this.domain = domain;
 	}

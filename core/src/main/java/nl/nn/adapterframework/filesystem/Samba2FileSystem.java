@@ -476,24 +476,16 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	public String getDomain() {
 		return domain;
 	}
-	@IbisDoc({ "5", "in case the user account is bound to a domain", "" })
+	@IbisDoc({ "5", "domain, in case the user account is bound to a domain", "" })
 	public void setDomain(String domain) {
 		this.domain = domain;
-	}
-
-	public boolean isListHiddenFiles() {
-		return listHiddenFiles;
-	}
-	@IbisDoc({ "6", "controls whether hidden files are seen or not", "false" })
-	public void setListHiddenFiles(boolean listHiddenFiles) {
-		this.listHiddenFiles = listHiddenFiles;
 	}
 
 
 	public String getAuthType() {
 		return authType;
 	}
-	@IbisDoc({ "7", "authentication type: NTLM or SPNEGO", "SPNEGO" })
+	@IbisDoc({ "6", "Type of the authentication either 'NTLM' or 'SPNEGO' ", "SPNEGO" })
 	public void setAuthType(String authType) {
 		this.authType = authType;
 	}
@@ -501,7 +493,7 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	public String getKdc() {
 		return kdc;
 	}
-	@IbisDoc({ "8", "Kerberos Domain Controller, as set in java.security.krb5.kdc", "" })
+	@IbisDoc({ "7", "Kerberos Domain Controller, as set in java.security.krb5.kdc", "" })
 	public void setKdc(String kdc) {
 		this.kdc = kdc;
 	}
@@ -509,9 +501,17 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	public String getRealm() {
 		return realm;
 	}
-	@IbisDoc({ "9", "Kerberos Realm, as set in java.security.krb5.realm", "" })
+	@IbisDoc({ "8", "Kerberos Realm, as set in java.security.krb5.realm", "" })
 	public void setRealm(String realm) {
 		this.realm = realm;
+	}
+
+	public boolean isListHiddenFiles() {
+		return listHiddenFiles;
+	}
+	@IbisDoc({ "9", "controls whether hidden files are seen or not", "false" })
+	public void setListHiddenFiles(boolean listHiddenFiles) {
+		this.listHiddenFiles = listHiddenFiles;
 	}
 
 	class FilesIterator implements Iterator<String> {
