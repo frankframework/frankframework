@@ -17,11 +17,16 @@ td, th {
 
 table {
   border-collapse: collapse;
+  min-width: 100%;
 }
 
-p:hover {
-  color: blue;
-  cursor: pointer;
+a {
+  color: #1E7EC8;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }
 
 p {
@@ -74,4 +79,21 @@ input {
 .attribute {
   font-size: 16px;
   padding: 10px 0px;
+}
+
+.outerDescription {
+  margin: 0 auto;
+}
+
+.innerDescription {
+  margin-left: 50px;
+}
+
+.clickableClasses:hover, .clickableFolders:hover {
+  color: blue;
+  cursor: pointer;
+}
+
+.exampleLink, .javadocLink {
+  font-size: 12px;
 }
