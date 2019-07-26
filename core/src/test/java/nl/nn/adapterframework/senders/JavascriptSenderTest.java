@@ -32,7 +32,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
     @Test
     public void callMain() throws ConfigurationException, SenderException, TimeOutException {
         String dummyInput = "dummyinput";
-        sender.setjsFileName("JavascriptTest/javascriptTest.js"); 
+        sender.setjsFileName("Javascript/javascriptTest.js"); 
         
         ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
         
@@ -46,7 +46,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
     @Test
     public void noParameters() throws ConfigurationException, SenderException, TimeOutException {
         String dummyInput = "dummyinput";
-        sender.setjsFileName("JavascriptTest/javascriptTest.js"); 
+        sender.setjsFileName("Javascript/javascriptTest.js"); 
         sender.setjsFunctionName("f1");
         
         ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
@@ -63,7 +63,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
     public void twoParameters() throws ConfigurationException, SenderException, TimeOutException {
     	
         String dummyInput = "dummyinput";
-        sender.setjsFileName("JavascriptTest/javascriptTest.js"); 
+        sender.setjsFileName("Javascript/javascriptTest.js"); 
         sender.setjsFunctionName("f2");
         
         ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
@@ -92,7 +92,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
     public void inputAsFirstParameter() throws ConfigurationException, SenderException, TimeOutException {
     	
         String Input = "10";
-        sender.setjsFileName("JavascriptTest/javascriptTest.js"); 
+        sender.setjsFileName("Javascript/javascriptTest.js"); 
         sender.setjsFunctionName("f2");
         
         session.put("originalMessage", Input);
@@ -123,7 +123,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
     public void concatenateString() throws ConfigurationException, SenderException, TimeOutException {
     	
         String Input = "Hello";
-        sender.setjsFileName("JavascriptTest/javascriptTest.js"); 
+        sender.setjsFileName("Javascript/javascriptTest.js"); 
         sender.setjsFunctionName("f2");
         
         session.put("originalMessage", Input);
@@ -154,7 +154,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
     public void threeParametersTrue() throws ConfigurationException, SenderException, TimeOutException {
     	
         String dummyInput = "dummyinput";
-        sender.setjsFileName("JavascriptTest/javascriptTest.js"); 
+        sender.setjsFileName("Javascript/javascriptTest.js"); 
         sender.setjsFunctionName("f3");
 		
         ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
@@ -190,7 +190,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
     public void threeParametersFalse() throws ConfigurationException, PipeRunException, PipeStartException, SenderException, TimeOutException {
     	
         String dummyInput = "dummyinput";
-        sender.setjsFileName("JavascriptTest/javascriptTest.js"); 
+        sender.setjsFileName("Javascript/javascriptTest.js"); 
         sender.setjsFunctionName("f3");
 		
         ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
@@ -256,7 +256,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
     public void invalidFunctionGivenException() throws ConfigurationException, SenderException, TimeOutException {
     	exception.expectMessage("javascript function does not exist or contains an error");
         String dummyInput = "dummyinput";
-        sender.setjsFileName("JavascriptTest/javascriptTest.js"); 
+        sender.setjsFileName("Javascript/javascriptTest.js"); 
         sender.setjsFunctionName("nonexisting");
         
         ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
@@ -272,7 +272,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
     public void emptyFunctionGivenException() throws ConfigurationException, SenderException, TimeOutException {
     	exception.expectMessage("JavaScript FunctionName not specified!");
         String dummyInput = "dummyinput";
-        sender.setjsFileName("JavascriptTest/javascriptTest.js"); 
+        sender.setjsFileName("Javascript/javascriptTest.js"); 
         sender.setjsFunctionName("");
         
         ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
@@ -288,7 +288,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
     public void invalidJavascriptSyntax() throws ConfigurationException, SenderException, TimeOutException {
     	exception.expectMessage("invalid javascript syntax given");
         String dummyInput = "dummyinput";
-        sender.setjsFileName("JavascriptTest/IncorrectJavascript.js"); 
+        sender.setjsFileName("Javascript/IncorrectJavascript.js"); 
         
         ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
         
@@ -304,7 +304,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
     public void errorInJavascriptCode() throws ConfigurationException, SenderException, TimeOutException {
     	exception.expectMessage("javascript function does not exist or contains an error");
         String dummyInput = "dummyinput";
-        sender.setjsFileName("JavascriptTest/IncorrectJavascript2.js"); 
+        sender.setjsFileName("Javascript/IncorrectJavascript2.js"); 
         
         ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
         
@@ -319,7 +319,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
     public void wrongInputAsFirstParameter() throws ConfigurationException, SenderException, TimeOutException {
     	
         String Input = "Stringinput";
-        sender.setjsFileName("JavascriptTest/javascriptTest.js"); 
+        sender.setjsFileName("Javascript/javascriptTest.js"); 
         sender.setjsFunctionName("f2");
         
         session.put("originalMessage", Input);
@@ -349,7 +349,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
     public void Performance() throws ConfigurationException, SenderException, TimeOutException {
     	
         String dummyInput = "dummyinput";
-        sender.setjsFileName("JavascriptTest/javascriptTest.js"); 
+        sender.setjsFileName("Javascript/javascriptTest.js"); 
         sender.setjsFunctionName("performance");
         
         ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
