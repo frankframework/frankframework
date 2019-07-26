@@ -13,8 +13,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.senders;
+package nl.nn.adapterframework.pipes;
 
-public class SambaSender extends Samba2Sender {
+public class SambaPipe extends Samba2Pipe {
 
 }
