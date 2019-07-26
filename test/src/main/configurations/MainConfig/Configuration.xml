@@ -45,6 +45,7 @@
 	<!ENTITY MultipleSessionKeys SYSTEM "./ConfigurationMultipleSessionKeys.xml">
 	<!ENTITY CreateLargeFile SYSTEM "./ConfigurationCreateLargeFile.xml">
 	<!ENTITY MemoryLeak SYSTEM "./ConfigurationMemoryLeak.xml">
+	<!ENTITY Javascript SYSTEM "./ConfigurationJavascript.xml">
 ]>
 <configuration name="MainConfig">
 	&Authentication;
@@ -93,5 +94,6 @@
 	&JsonPipe;
 	&MultipleSessionKeys;
 	&CreateLargeFile;
-	&MemoryLeak;
+	&MemoryLeak; 
+	&Javascript;
 </configuration>

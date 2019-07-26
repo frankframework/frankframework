@@ -1,0 +1,28 @@
+<ibis>
+	<adapter name="Javascript" description="FExecute javascript using the JavascriptSender">
+		<receiver
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="Javascript"
+			>
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4test-Javascript"
+			/>
+		</receiver>
+		<pipeline firstPipe="Javascript">
+			<exits>
+				<exit path="EXIT" state="success"/>
+			</exits>
+			<pipe name="Javascript"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+					<sender className="nl.nn.adapterframework.senders.JavascriptSender"
+					jsFileName="JavaScript/JavascriptTest.js"
+					jsFunctionName="f2">
+					<param name="x" type="integer" sessionKey="originalMessage"/>
+					<param name="y" type="integer" value="2"/>
+					</sender>
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</ibis>
