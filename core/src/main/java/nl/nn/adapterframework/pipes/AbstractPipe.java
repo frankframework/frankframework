@@ -67,13 +67,13 @@ import nl.nn.adapterframework.util.XmlUtils;
  * For the duration of the processing of a message by the {@link PipeLine pipeline} has a {@link IPipeLineSession pipeLineSession}.
  * <br/>
  * By this mechanism, pipes may communicate with one another.<br/>
- * However, use this functionality with caution, as it is not desirable to make pipes dependend
+ * However, use this functionality with caution, as it is not desirable to make pipes dependent
  * on each other. If a pipe expects something in a session, it is recommended that
  * the key under which the information is stored is configurable (has a setter for this keyname).
  * Also, the setting of something in the <code>PipeLineSession</code> should be done using
  * this technique (specifying the key under which to store the value by a parameter).
  * </p>
- * <p>Since 4.1 this class also has parameters, so that decendants of this class automatically are parameter-enabled.
+ * <p>Since 4.1 this class also has parameters, so that descendants of this class automatically are parameter-enabled.
  * However, your documentation should say if and how parameters are used!<p>
  * <tr><td>{@link #setWriteToSecLog (boolean) writeToSecLog}</td><td>when set to <code>true</code> a record is written to the security log when the pipe has finished successfully</td><td>false</td></tr>
  * <tr><td>{@link #setSecLogSessionKeys(String) secLogSessionKeys}</td><td>(only used when <code>writeToSecLog=true</code>) comma separated list of keys of session variables that is appended to the security log record</td><td>&nbsp;</td></tr>
@@ -98,15 +98,14 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	protected ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	private String name;
-
-	private Map<String, PipeForward> pipeForwards = new Hashtable<String, PipeForward>();
-	private int maxThreads = 0;
-	private ParameterList parameterList = new ParameterList();
-	private long durationThreshold = -1;
 	private String getInputFromSessionKey=null;
 	private String getInputFromFixedValue=null;
 	private String storeResultInSessionKey=null;
 	private boolean preserveInput=false;
+
+	private int maxThreads = 0;
+	private long durationThreshold = -1;
+
 	private String chompCharSize = null;
 	private String elementToMove = null;
 	private String elementToMoveSessionKey = null;
@@ -114,6 +113,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private boolean removeCompactMsgNamespaces = true;
 	private boolean restoreMovedElements=false;
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
+	
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
 	private int transactionTimeout=0;
 	private boolean sizeStatistics = AppConstants.getInstance().getBoolean("statistics.size", false);
@@ -127,6 +127,8 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 
 	private boolean active=true;
 
+	private Map<String, PipeForward> pipeForwards = new Hashtable<String, PipeForward>();
+	private ParameterList parameterList = new ParameterList();
 	private EventHandler eventHandler=null;
 
 	private PipeLine pipeline;
@@ -421,7 +423,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	/**
 	 * The functional name of this pipe
 	 */
-	@IbisDoc({"name of the pipe", ""})
+	@IbisDoc({"1", "name of the pipe", ""})
 	@Override
 	public void setName(String name) {
 		this.name=name;
@@ -431,6 +433,46 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	@Override
 	public String getName() {
 		return this.name;
+	}
+
+	@IbisDoc({"2", "when set, input is taken from this session key, instead of regular input", ""})
+	@Override
+	public void setGetInputFromSessionKey(String string) {
+		getInputFromSessionKey = string;
+	}
+	@Override
+	public String getGetInputFromSessionKey() {
+		return getInputFromSessionKey;
+	}
+
+	@IbisDoc({"3", "when set, this fixed value is taken as input, instead of regular input", ""})
+	@Override
+	public void setGetInputFromFixedValue(String string) {
+		getInputFromFixedValue = string;
+	}
+	@Override
+	public String getGetInputFromFixedValue() {
+		return getInputFromFixedValue;
+	}
+
+	@IbisDoc({"4", "when set, the result is stored under this session key", ""})
+	@Override
+	public void setStoreResultInSessionKey(String string) {
+		storeResultInSessionKey = string;
+	}
+	@Override
+	public String getStoreResultInSessionKey() {
+		return storeResultInSessionKey;
+	}
+
+	@IbisDoc({"5", "when set <code>true</code>, the input of a pipe is restored before processing the next one", "false"})
+	@Override
+	public void setPreserveInput(boolean preserveInput) {
+		this.preserveInput = preserveInput;
+	}
+	@Override
+	public boolean isPreserveInput() {
+		return preserveInput;
 	}
 
 	/**
@@ -445,46 +487,6 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	@Override
 	public long getDurationThreshold() {
 		return durationThreshold;
-	}
-
-	@IbisDoc({"when set, input is taken from this session key, instead of regular input", ""})
-	@Override
-	public void setGetInputFromSessionKey(String string) {
-		getInputFromSessionKey = string;
-	}
-	@Override
-	public String getGetInputFromSessionKey() {
-		return getInputFromSessionKey;
-	}
-
-	@IbisDoc({"when set, this fixed value is taken as input, instead of regular input", ""})
-	@Override
-	public void setGetInputFromFixedValue(String string) {
-		getInputFromFixedValue = string;
-	}
-	@Override
-	public String getGetInputFromFixedValue() {
-		return getInputFromFixedValue;
-	}
-
-	@IbisDoc({"when set, the result is stored under this session key", ""})
-	@Override
-	public void setStoreResultInSessionKey(String string) {
-		storeResultInSessionKey = string;
-	}
-	@Override
-	public String getStoreResultInSessionKey() {
-		return storeResultInSessionKey;
-	}
-
-	@IbisDoc({"when set <code>true</code>, the input of a pipe is restored before processing the next one", "false"})
-	@Override
-	public void setPreserveInput(boolean preserveInput) {
-		this.preserveInput = preserveInput;
-	}
-	@Override
-	public boolean isPreserveInput() {
-		return preserveInput;
 	}
 
 	@IbisDoc({"if set (>=0) and the character data length inside a xml element exceeds this size, the character data is chomped (with a clear comment)", ""})

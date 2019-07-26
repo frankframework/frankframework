@@ -98,6 +98,20 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		super.stop();
 	}
 
+	protected String makeEncapsulatingXslt(String rootElementname,String xpathExpression) {
+		return 
+		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
+		"<xsl:output method=\"xml\" omit-xml-declaration=\"yes\"/>" +
+		"<xsl:strip-space elements=\"*\"/>" +
+		"<xsl:template match=\"/\">" +
+		"<xsl:element name=\"" + rootElementname + "\">" +
+		"<xsl:copy-of select=\"" + XmlUtils.encodeChars(xpathExpression) + "\"/>" +
+		"</xsl:element>" +
+		"</xsl:template>" +
+		"</xsl:stylesheet>";
+	}
+
+
 	private class ItemCallbackCallingHandler extends DefaultHandler {
 		
 		ItemCallback callback;

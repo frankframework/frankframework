@@ -152,39 +152,46 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	public static final int MIN_RETRY_INTERVAL=1;
 	public static final int MAX_RETRY_INTERVAL=600;
 
-	private String resultOnTimeOut;
 	private String linkMethod = "CORRELATIONID";
 
-	private String stubFileName;
-	private boolean checkXmlWellFormed = false;
-	private String checkRootTag;
-	private String auditTrailXPath;
-	private String auditTrailNamespaceDefs;
+	private String correlationIDStyleSheet;
 	private String correlationIDXPath;
 	private String correlationIDNamespaceDefs;
-	private String correlationIDStyleSheet;
+	private String correlationIDSessionKey = null;
+	private String labelStyleSheet;
 	private String labelXPath;
 	private String labelNamespaceDefs;
-	private String labelStyleSheet;
-	private String timeOutOnResult;
-	private String exceptionOnResult;
+	private String auditTrailSessionKey = null;
+	private String auditTrailXPath;
+	private String auditTrailNamespaceDefs;
 	private boolean useInputForExtract = true;
+	private String hideMethod = "all";
 
+	private boolean checkXmlWellFormed = false;
+	private String checkRootTag;
+
+	private String resultOnTimeOut;
 	private int maxRetries=0;
 	private int retryMinInterval=1;
 	private int retryMaxInterval=1;
 	private String retryXPath;
 	private String retryNamespaceDefs;
+	private int presumedTimeOutInterval=10;
+
+
+	private boolean streamResultToServlet=false;
+
+	private String stubFileName;
+	private String timeOutOnResult;
+	private String exceptionOnResult;
 
 	private ISender sender = null;
 	private ICorrelatedPullingListener listener = null;
 	private ITransactionalStorage messageLog=null;
 
-	private String returnString;
+	private String returnString; // contains contents of stubUrl	
 	private TransformerPool auditTrailTp=null;
-	private String auditTrailSessionKey = null;
 	private TransformerPool correlationIDTp=null;
-	private String correlationIDSessionKey = null;
 	private TransformerPool labelTp=null;
 	private TransformerPool retryTp=null;
 
@@ -211,10 +218,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private PipeProcessor pipeProcessor;
 	private ListenerProcessor listenerProcessor;
 
-	private String hideMethod = "all";
-
-	private boolean streamResultToServlet=false;
-	private int presumedTimeOutInterval=10;
 
 	protected void propagateName() {
 		ISender sender=getSender();
@@ -305,15 +308,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			}
 			if (!(getLinkMethod().equalsIgnoreCase("MESSAGEID"))
 				&& (!(getLinkMethod().equalsIgnoreCase("CORRELATIONID")))) {
-				throw new ConfigurationException(getLogPrefix(null)+
-					"Invalid argument for property LinkMethod ["+getLinkMethod()+ "]. it should be either MESSAGEID or CORRELATIONID");
+				throw new ConfigurationException(getLogPrefix(null)+ "Invalid argument for property LinkMethod ["+getLinkMethod()+ "]. it should be either MESSAGEID or CORRELATIONID");
 			}	
 
 			if (!(getHideMethod().equalsIgnoreCase("all"))
 					&& (!(getHideMethod().equalsIgnoreCase("firstHalf")))) {
-				throw new ConfigurationException(getLogPrefix(null)
-						+ "invalid value for hideMethod [" + getHideMethod()
-						+ "], must be 'all' or 'firstHalf'");
+				throw new ConfigurationException(getLogPrefix(null) + "invalid value for hideMethod [" + getHideMethod() + "], must be 'all' or 'firstHalf'");
 			}
 
 			if (isCheckXmlWellFormed() || StringUtils.isNotEmpty(getCheckRootTag())) {
@@ -698,7 +698,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		}
 
 		if (isStreamResultToServlet()) {
-			byte[] bytes = Base64.decodeBase64(new String(result));
+			byte[] bytes = Base64.decodeBase64(result);
 			try {
 				String contentType = (String) session.get("contentType");
 				if (StringUtils.isNotEmpty(contentType)) {
@@ -882,17 +882,22 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		}
 	}
 
+	@Override
+	public boolean hasSizeStatistics() {
+		if (!super.hasSizeStatistics()) {
+			return getSender().isSynchronous();
+		} else {
+			return super.hasSizeStatistics();
+		}
+	}
+
+
 	/**
 	 * Register a {@link ICorrelatedPullingListener} at this Pipe
 	 */
 	protected void setListener(ICorrelatedPullingListener listener) {
 		this.listener = listener;
-		log.debug(
-			"pipe ["
-				+ getName()
-				+ "] registered listener ["
-				+ listener.toString()
-				+ "]");
+		log.debug("pipe [" + getName() + "] registered listener [" + listener.toString() + "]");
 	}
 	public ICorrelatedPullingListener getListener() {
 		return listener;
@@ -925,137 +930,26 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	 */
 	protected void setSender(ISender sender) {
 		this.sender = sender;
-		log.debug(
-			"pipe ["
-				+ getName()
-				+ "] registered sender ["
-				+ sender.getName()
-				+ "] with properties ["
-				+ sender.toString()
-				+ "]");
+		log.debug("pipe [" + getName() + "] registered sender [" + sender.getName() + "] with properties [" + sender.toString() + "]");
 	}
 	@Override
 	public ISender getSender() {
 		return sender;
 	}
-	
-	/**
-	 * The message that is returned when the time listening for a reply message
-	 * exceeds the timeout, or in other situations no reply message is received.
-	 */
-	@IbisDoc({"result returned when no return-message was received within the timeout limit (e.g. 'receiver timed out').", ""})
-	public void setResultOnTimeOut(String newResultOnTimeOut) {
-		resultOnTimeOut = newResultOnTimeOut;
-	}
-	public String getResultOnTimeOut() {
-		return resultOnTimeOut;
-	}
 
-	/**
-	 * For asynchronous communication, the server side may either use the messageID or the correlationID
-	 * in the correlationID field of the reply message. Use this property to set the behaviour of the reply-listener.
-	 * <ul>
-	 * <li>Use <code>MESSAGEID</code> to let the listener wait for a message with the messageID of the
-	 * sent message in the correlation ID field</li>
-	 * <li>Use <code>CORRELATIONID</code> to let the listener wait for a message with the correlationID of the
-	 * sent message in the correlation ID field</li>
-	 * </ul>
-	 * When you use the method CORRELATIONID you have the advantage that you can trace your request
-	 * as the messageID as it is known in the Adapter is used as the correlationID. In the logging you should be able
-	 * to follow the message more clearly. When you use the method MESSAGEID, the messageID (unique for every
-	 * message) will be expected in the correlationID field of the returned message.
-	 * 
-	 * @param method either MESSAGEID or CORRELATIONID
-	 */
-	@IbisDoc({"indicates wether the server uses the correlationid or the messageid in the correlationid field of the reply. this requirers the sender to have set the correlationid at the time of sending.", "correlationid"})
-	public void setLinkMethod(String method) {
-		linkMethod = method;
-	}
-	public String getLinkMethod() {
-		return linkMethod;
-	}
-
-	@IbisDoc({"when set, the pipe returns a message from a file, instead of doing the regular process", ""})
-	public void setStubFileName(String fileName) {
-		stubFileName = fileName;
-	}
-	public String getStubFileName() {
-		return stubFileName;
-	}
-
-	@IbisDoc({"when set <code>true</code>, the xml well-formedness of the result is checked", "false"})
-	public void setCheckXmlWellFormed(boolean b) {
-		checkXmlWellFormed = b;
-	}
-	public boolean isCheckXmlWellFormed() {
-		return checkXmlWellFormed;
-	}
-
-	@IbisDoc({"when set, besides the xml well-formedness the root element of the result is checked to be equal to the value set", ""})
-	public void setCheckRootTag(String s) {
-		checkRootTag = s;
-	}
-	public String getCheckRootTag() {
-		return checkRootTag;
-	}
-
-	@IbisDoc({"xpath expression to extract audit trail from message", ""})
-	public void setAuditTrailXPath(String string) {
-		auditTrailXPath = string;
-	}
-	public String getAuditTrailXPath() {
-		return auditTrailXPath;
-	}
-
-	@IbisDoc({"xpath expression to extract correlationid from message", ""})
-	public void setCorrelationIDXPath(String string) {
-		correlationIDXPath = string;
-	}
-	public String getCorrelationIDXPath() {
-		return correlationIDXPath;
-	}
-
-	@IbisDoc({"stylesheet to extract correlationid from message", ""})
-	public void setCorrelationIDStyleSheet(String string) {
-		correlationIDStyleSheet = string;
-	}
-	public String getCorrelationIDStyleSheet() {
-		return correlationIDStyleSheet;
-	}
-
-	@IbisDoc({"xpath expression to extract label from message", ""})
-	public void setLabelXPath(String string) {
-		labelXPath = string;
-	}
-	public String getLabelXPath() {
-		return labelXPath;
-	}
-
-	@IbisDoc({"stylesheet to extract label from message", ""})
-	public void setLabelStyleSheet(String string) {
-		labelStyleSheet = string;
-	}
-	public String getLabelStyleSheet() {
-		return labelStyleSheet;
-	}
-	
 	public void setInputValidator(IPipe inputValidator) {
-//		if (inputValidator.isActive()) {
-			inputValidator.setName(INPUT_VALIDATOR_NAME_PREFIX+getName()+INPUT_VALIDATOR_NAME_SUFFIX);
-			this.inputValidator = inputValidator;
-//		}
+		inputValidator.setName(INPUT_VALIDATOR_NAME_PREFIX+getName()+INPUT_VALIDATOR_NAME_SUFFIX);
+		this.inputValidator = inputValidator;
 	}
 	public IPipe getInputValidator() {
 		return inputValidator;
 	}
 
 	public void setOutputValidator(IPipe outputValidator) {
-//		if (outputValidator.isActive()) {
-			if (outputValidator!=null) {
-				outputValidator.setName(OUTPUT_VALIDATOR_NAME_PREFIX+getName()+OUTPUT_VALIDATOR_NAME_SUFFIX);
-			}
-			this.outputValidator = outputValidator;
-//		}
+		if (outputValidator!=null) {
+			outputValidator.setName(OUTPUT_VALIDATOR_NAME_PREFIX+getName()+OUTPUT_VALIDATOR_NAME_SUFFIX);
+		}
+		this.outputValidator = outputValidator;
 	}
 	public IPipe getOutputValidator() {
 		return outputValidator;
@@ -1077,58 +971,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return outputWrapper;
 	}
 
-	@IbisDoc({"key of a pipelinesession-variable. is specified, the value of the pipelinesession variable is used as input for the xpathexpression or stylesheet, instead of the current input message", ""})
-	public void setCorrelationIDSessionKey(String string) {
-		correlationIDSessionKey = string;
-	}
-
-	public String getCorrelationIDSessionKey() {
-		return correlationIDSessionKey;
-	}
-
-	public String getAuditTrailNamespaceDefs() {
-		return auditTrailNamespaceDefs;
-	}
-
-	@IbisDoc({"namespace defintions for audittrailxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
-	public void setAuditTrailNamespaceDefs(String auditTrailNamespaceDefs) {
-		this.auditTrailNamespaceDefs = auditTrailNamespaceDefs;
-	}
-
-	public String getCorrelationIDNamespaceDefs() {
-		return correlationIDNamespaceDefs;
-	}
-
-	@IbisDoc({"namespace defintions for correlationidxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
-	public void setCorrelationIDNamespaceDefs(String correlationIDNamespaceDefs) {
-		this.correlationIDNamespaceDefs = correlationIDNamespaceDefs;
-	}
-
-	public String getLabelNamespaceDefs() {
-		return labelNamespaceDefs;
-	}
-
-	@IbisDoc({"namespace defintions for labelxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
-	public void setLabelNamespaceDefs(String labelXNamespaceDefs) {
-		this.labelNamespaceDefs = labelXNamespaceDefs;
-	}
-	
-	@IbisDoc({"when not empty, a timeoutexception is thrown when the result equals this value (for testing purposes only)", ""})
-	public void setTimeOutOnResult(String string) {
-		timeOutOnResult = string;
-	}
-	public String getTimeOutOnResult() {
-		return timeOutOnResult;
-	}
-
-	@IbisDoc({"when not empty, a piperunexception is thrown when the result equals this value (for testing purposes only)", ""})
-	public void setExceptionOnResult(String string) {
-		exceptionOnResult = string;
-	}
-	public String getExceptionOnResult() {
-		return exceptionOnResult;
-	}
-
 	public void setPipeProcessor(PipeProcessor pipeProcessor) {
 		this.pipeProcessor = pipeProcessor;
 	}
@@ -1137,70 +979,117 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		this.listenerProcessor = listenerProcessor;
 	}
 
-	public int getMaxRetries() {
-		return maxRetries;
+
+
+	/**
+	 * For asynchronous communication, the server side may either use the messageID or the correlationID
+	 * in the correlationID field of the reply message. Use this property to set the behaviour of the reply-listener.
+	 * <ul>
+	 * <li>Use <code>MESSAGEID</code> to let the listener wait for a message with the messageID of the
+	 * sent message in the correlation ID field</li>
+	 * <li>Use <code>CORRELATIONID</code> to let the listener wait for a message with the correlationID of the
+	 * sent message in the correlation ID field</li>
+	 * </ul>
+	 * When you use the method CORRELATIONID you have the advantage that you can trace your request
+	 * as the messageID as it is known in the Adapter is used as the correlationID. In the logging you should be able
+	 * to follow the message more clearly. When you use the method MESSAGEID, the messageID (unique for every
+	 * message) will be expected in the correlationID field of the returned message.
+	 * 
+	 * @param method either MESSAGEID or CORRELATIONID
+	 */
+	@IbisDoc({"1", "either MESSAGEID or CORRELATIONID. For asynchronous communication, the server side may either use the messageID or the correlationID "
+		+ "in the correlationID field of the reply message. Use this property to set the behaviour of the reply-listener.", "correlationid"})
+	public void setLinkMethod(String method) {
+		linkMethod = method;
+	}
+	public String getLinkMethod() {
+		return linkMethod;
 	}
 
-	@IbisDoc({"the number of times a processing attempt is retried after a timeout or an exception is caught or after a incorrect reply is received (see also <code>retryxpath</code>)", "0"})
-	public void setMaxRetries(int i) {
-		maxRetries = i;
+
+	@IbisDoc({"2", "stylesheet to extract correlationid from message", ""})
+	public void setCorrelationIDStyleSheet(String string) {
+		correlationIDStyleSheet = string;
+	}
+	public String getCorrelationIDStyleSheet() {
+		return correlationIDStyleSheet;
 	}
 
-	public int getRetryMinInterval() {
-		return retryMinInterval;
+	@IbisDoc({"3", "xpath expression to extract correlationid from message", ""})
+	public void setCorrelationIDXPath(String string) {
+		correlationIDXPath = string;
+	}
+	public String getCorrelationIDXPath() {
+		return correlationIDXPath;
 	}
 
-	@IbisDoc({"the starting number of seconds waited after an unsuccessful processing attempt before another processing attempt is made. each next retry this interval is doubled with a upper limit of <code>retrymaxinterval</code>", "1"})
-	public void setRetryMinInterval(int i) {
-		retryMinInterval = i;
+	@IbisDoc({"4", "namespace defintions for correlationidxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
+	public void setCorrelationIDNamespaceDefs(String correlationIDNamespaceDefs) {
+		this.correlationIDNamespaceDefs = correlationIDNamespaceDefs;
+	}
+	public String getCorrelationIDNamespaceDefs() {
+		return correlationIDNamespaceDefs;
 	}
 
-	public int getRetryMaxInterval() {
-		return retryMaxInterval;
+	@IbisDoc({"5", "key of a pipelinesession-variable. is specified, the value of the pipelinesession variable is used as input for the xpathexpression or stylesheet, instead of the current input message", ""})
+	public void setCorrelationIDSessionKey(String string) {
+		correlationIDSessionKey = string;
+	}
+	public String getCorrelationIDSessionKey() {
+		return correlationIDSessionKey;
 	}
 
-	@IbisDoc({"the maximum number of seconds waited after an unsuccessful processing attempt before another processing attempt is made", "600"})
-	public void setRetryMaxInterval(int i) {
-		retryMaxInterval = i;
+	
+	@IbisDoc({"6", "stylesheet to extract label from message", ""})
+	public void setLabelStyleSheet(String string) {
+		labelStyleSheet = string;
+	}
+	public String getLabelStyleSheet() {
+		return labelStyleSheet;
+	}
+	
+	@IbisDoc({"7", "xpath expression to extract label from message", ""})
+	public void setLabelXPath(String string) {
+		labelXPath = string;
+	}
+	public String getLabelXPath() {
+		return labelXPath;
 	}
 
-	@IbisDoc({"xpath expression evaluated on each technical successful reply. retry is done if condition returns true", ""})
-	public void setRetryXPath(String string) {
-		retryXPath = string;
+	@IbisDoc({"8", "namespace defintions for labelxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
+	public void setLabelNamespaceDefs(String labelXNamespaceDefs) {
+		this.labelNamespaceDefs = labelXNamespaceDefs;
+	}
+	public String getLabelNamespaceDefs() {
+		return labelNamespaceDefs;
+	}
+	
+
+	@IbisDoc({"9", "xpath expression to extract audit trail from message", ""})
+	public void setAuditTrailXPath(String string) {
+		auditTrailXPath = string;
+	}
+	public String getAuditTrailXPath() {
+		return auditTrailXPath;
 	}
 
-	public String getRetryXPath() {
-		return retryXPath;
+	@IbisDoc({"10", "namespace defintions for audittrailxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
+	public void setAuditTrailNamespaceDefs(String auditTrailNamespaceDefs) {
+		this.auditTrailNamespaceDefs = auditTrailNamespaceDefs;
+	}
+	public String getAuditTrailNamespaceDefs() {
+		return auditTrailNamespaceDefs;
 	}
 
-	public String getRetryNamespaceDefs() {
-		return retryNamespaceDefs;
-	}
-
-	@IbisDoc({"namespace defintions for retryxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
-	public void setRetryNamespaceDefs(String retryNamespaceDefs) {
-		this.retryNamespaceDefs = retryNamespaceDefs;
-	}
-
-	@Override
-	public boolean hasSizeStatistics() {
-		if (!super.hasSizeStatistics()) {
-			return getSender().isSynchronous();
-		} else {
-			return super.hasSizeStatistics();
-		}
-	}
-
-	@IbisDoc({"key of a pipelinesession-variable. if specified, the value of the pipelinesession variable is used as audit trail (instead of the default 'no audit trail)", ""})
+	@IbisDoc({"11", "key of a pipelinesession-variable. if specified, the value of the pipelinesession variable is used as audit trail (instead of the default 'no audit trail)", ""})
 	public void setAuditTrailSessionKey(String string) {
 		auditTrailSessionKey = string;
 	}
-
 	public String getAuditTrailSessionKey() {
 		return auditTrailSessionKey;
 	}
 
-	@IbisDoc({"when set <code>true</code>, the input of a pipe is used to extract audit trail, correlationid and label (instead of the wrapped input)", "true"})
+	@IbisDoc({"12", "when set <code>true</code>, the input of a pipe is used to extract audit trail, correlationid and label (instead of the wrapped input)", "true"})
 	public void setUseInputForExtract(boolean b) {
 		useInputForExtract = b;
 	}
@@ -1209,21 +1098,103 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 	
 	@Override
-	@IbisDoc({"next to common usage in {@link AbstractPipe}, also strings in the error/logstore are masked", ""})
+	@IbisDoc({"13", "next to common usage in {@link AbstractPipe}, also strings in the error/logstore are masked", ""})
 	public void setHideRegex(String hideRegex) {
 		super.setHideRegex(hideRegex);
 	}
 
-	@IbisDoc({"(only used when hideregex is not empty and only applies to error/logstore) either <code>all</code> or <code>firsthalf</code>. when <code>firsthalf</code> only the first half of the string is masked, otherwise (<code>all</code>) the entire string is masked", "all"})
+	@IbisDoc({"14", "(only used when hideregex is not empty and only applies to error/logstore) either <code>all</code> or <code>firsthalf</code>. when <code>firsthalf</code> only the first half of the string is masked, otherwise (<code>all</code>) the entire string is masked", "all"})
 	public void setHideMethod(String hideMethod) {
 		this.hideMethod = hideMethod;
 	}
-
 	public String getHideMethod() {
 		return hideMethod;
 	}
 
-	@IbisDoc({"if set, the result is first base64 decoded and then streamed to the httpservletresponse object", "false"})
+	
+	
+	@IbisDoc({"15", "when set <code>true</code>, the xml well-formedness of the result is checked", "false"})
+	public void setCheckXmlWellFormed(boolean b) {
+		checkXmlWellFormed = b;
+	}
+	public boolean isCheckXmlWellFormed() {
+		return checkXmlWellFormed;
+	}
+
+	@IbisDoc({"16", "when set, besides the xml well-formedness the root element of the result is checked to be equal to the value set", ""})
+	public void setCheckRootTag(String s) {
+		checkRootTag = s;
+	}
+	public String getCheckRootTag() {
+		return checkRootTag;
+	}
+
+
+
+
+
+	/**
+	 * The message that is returned when the time listening for a reply message
+	 * exceeds the timeout, or in other situations no reply message is received.
+	 */
+	@IbisDoc({"17", "result returned when no return-message was received within the timeout limit (e.g. 'receiver timed out').", ""})
+	public void setResultOnTimeOut(String newResultOnTimeOut) {
+		resultOnTimeOut = newResultOnTimeOut;
+	}
+	public String getResultOnTimeOut() {
+		return resultOnTimeOut;
+	}
+
+	@IbisDoc({"18", "the number of times a processing attempt is retried after a timeout or an exception is caught or after a incorrect reply is received (see also <code>retryxpath</code>)", "0"})
+	public void setMaxRetries(int i) {
+		maxRetries = i;
+	}
+	public int getMaxRetries() {
+		return maxRetries;
+	}
+
+	@IbisDoc({"19", "the starting number of seconds waited after an unsuccessful processing attempt before another processing attempt is made. each next retry this interval is doubled with a upper limit of <code>retrymaxinterval</code>", "1"})
+	public void setRetryMinInterval(int i) {
+		retryMinInterval = i;
+	}
+	public int getRetryMinInterval() {
+		return retryMinInterval;
+	}
+
+	@IbisDoc({"20", "the maximum number of seconds waited after an unsuccessful processing attempt before another processing attempt is made", "600"})
+	public void setRetryMaxInterval(int i) {
+		retryMaxInterval = i;
+	}
+	public int getRetryMaxInterval() {
+		return retryMaxInterval;
+	}
+
+	@IbisDoc({"21", "xpath expression evaluated on each technical successful reply. retry is done if condition returns true", ""})
+	public void setRetryXPath(String string) {
+		retryXPath = string;
+	}
+	public String getRetryXPath() {
+		return retryXPath;
+	}
+
+	@IbisDoc({"22", "namespace defintions for retryxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
+	public void setRetryNamespaceDefs(String retryNamespaceDefs) {
+		this.retryNamespaceDefs = retryNamespaceDefs;
+	}
+	public String getRetryNamespaceDefs() {
+		return retryNamespaceDefs;
+	}
+
+	@IbisDoc({"23", "when the previous call was a timeout, the maximum time (in seconds) after this timeout to presume the current call is also a timeout. a value of -1 indicates to never presume timeouts", "10 s"})
+	public void setPresumedTimeOutInterval(int i) {
+		presumedTimeOutInterval = i;
+	}
+	public int getPresumedTimeOutInterval() {
+		return presumedTimeOutInterval;
+	}
+
+	
+	@IbisDoc({"24", "if set, the result is first base64 decoded and then streamed to the httpservletresponse object", "false"})
 	public void setStreamResultToServlet(boolean b) {
 		streamResultToServlet = b;
 	}
@@ -1231,12 +1202,28 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return streamResultToServlet;
 	}
 
-	public int getPresumedTimeOutInterval() {
-		return presumedTimeOutInterval;
+	@IbisDoc({"25", "when set, the pipe returns a message from a file, instead of doing the regular process", ""})
+	public void setStubFileName(String fileName) {
+		stubFileName = fileName;
+	}
+	public String getStubFileName() {
+		return stubFileName;
+	}
+	
+	@IbisDoc({"26", "when not empty, a timeoutexception is thrown when the result equals this value (for testing purposes only)", ""})
+	public void setTimeOutOnResult(String string) {
+		timeOutOnResult = string;
+	}
+	public String getTimeOutOnResult() {
+		return timeOutOnResult;
 	}
 
-	@IbisDoc({"when the previous call was a timeout, the maximum time (in seconds) after this timeout to presume the current call is also a timeout. a value of -1 indicates to never presume timeouts", "10 s"})
-	public void setPresumedTimeOutInterval(int i) {
-		presumedTimeOutInterval = i;
+	@IbisDoc({"276", "when not empty, a piperunexception is thrown when the result equals this value (for testing purposes only)", ""})
+	public void setExceptionOnResult(String string) {
+		exceptionOnResult = string;
 	}
+	public String getExceptionOnResult() {
+		return exceptionOnResult;
+	}
+
 }
