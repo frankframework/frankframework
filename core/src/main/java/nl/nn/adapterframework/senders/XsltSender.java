@@ -16,15 +16,18 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Map;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IOutputStreamConsumer;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
@@ -48,7 +51,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class XsltSender extends SenderWithParametersBase {
+public class XsltSender extends SenderWithParametersBase implements IOutputStreamConsumer {
 
 	private String xpathExpression=null;
 	private String namespaceDefs = null; 
@@ -60,7 +63,8 @@ public class XsltSender extends SenderWithParametersBase {
 	private boolean removeNamespaces=false;
 	private int xsltVersion=0; // set to 0 for auto detect.
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
-
+	private String streamToSessionKey;
+	
 	private TransformerPool transformerPool;
 	private TransformerPool transformerPoolSkipEmptyTags;
 	private TransformerPool transformerPoolRemoveNamespaces;
@@ -75,6 +79,9 @@ public class XsltSender extends SenderWithParametersBase {
 	
 		transformerPool = TransformerPool.configureTransformer0(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), getXsltVersion());
 		if (isSkipEmptyTags()) {
+			if (StringUtils.isNotEmpty(getStreamToSessionKey())) {
+				throw new ConfigurationException("Attribute 'streamToSessionKey' cannot be combined with 'skipEmptyTags'");
+			}
 			transformerPoolSkipEmptyTags = XmlUtils.getSkipEmptyTagsTransformerPool(isOmitXmlDeclaration(),isIndentXml());
 		}
 		if (isRemoveNamespaces()) {
@@ -172,14 +179,22 @@ public class XsltSender extends SenderWithParametersBase {
 //				log.debug(getLogPrefix()+" prc.inputsource ["+prc.getInputSource()+"]");
 //			}
 			
-			stringResult = transformerPool.transform(inputMsg, parametervalues); 
-
-			if (isSkipEmptyTags()) {
-				log.debug(getLogPrefix()+ " skipping empty tags from result [" + stringResult + "]");
-				//URL xsltSource = ClassUtils.getResourceURL( this, skipEmptyTags_xslt);
-				//Transformer transformer = XmlUtils.createTransformer(xsltSource);
-				//stringResult = XmlUtils.transformXml(transformer, stringResult);
-				stringResult = transformerPoolSkipEmptyTags.transform(XmlUtils.stringToSourceForSingleUse(stringResult, isNamespaceAware()), null); 
+			if (StringUtils.isNotEmpty(getStreamToSessionKey())) {
+				Object streamToObject = prc.getSession().get(getStreamToSessionKey());
+				OutputStream outputStream = (OutputStream)streamToObject;
+				StreamResult streamResult = new StreamResult(outputStream);
+				transformerPool.transform(inputMsg, streamResult, parametervalues); 
+				stringResult=message;
+			} else {
+				stringResult = transformerPool.transform(inputMsg, parametervalues); 
+	
+				if (isSkipEmptyTags()) {
+					log.debug(getLogPrefix()+ " skipping empty tags from result [" + stringResult + "]");
+					//URL xsltSource = ClassUtils.getResourceURL( this, skipEmptyTags_xslt);
+					//Transformer transformer = XmlUtils.createTransformer(xsltSource);
+					//stringResult = XmlUtils.transformXml(transformer, stringResult);
+					stringResult = transformerPoolSkipEmptyTags.transform(XmlUtils.stringToSourceForSingleUse(stringResult, isNamespaceAware()), null); 
+				}
 			}
 //			if (log.isDebugEnabled()) {
 //				log.debug(getLogPrefix()+" transformed input ["+message+"] to ["+stringResult+"]");
@@ -288,6 +303,17 @@ public class XsltSender extends SenderWithParametersBase {
 	}
 	public boolean isNamespaceAware() {
 		return namespaceAware;
+	}
+
+	
+	@IbisDoc({"When set, the pipe will not return a String output, but will write its output to the {@link OutputStream} provided in the session variable. The pipe will return its input message", ""})
+	@Override
+	public void setStreamToSessionKey(String streamToSessionKey) {
+		this.streamToSessionKey=streamToSessionKey;
+	}
+	@Override
+	public String getStreamToSessionKey() {
+		return streamToSessionKey;
 	}
 
 }

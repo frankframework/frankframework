@@ -21,6 +21,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IOutputStreamConsumer;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -49,7 +50,7 @@ import nl.nn.adapterframework.senders.XsltSender;
  * @author Johan Verrips
  */
 
-public class XsltPipe extends FixedForwardPipe {
+public class XsltPipe extends FixedForwardPipe implements IOutputStreamConsumer {
 
 	private String sessionKey=null;
 	
@@ -268,4 +269,15 @@ public class XsltPipe extends FixedForwardPipe {
 		super.setName(name);
 		sender.setName("Sender of Pipe ["+name+"]");
 	}
+	
+	@IbisDoc({"When set, no String output will be returned, but the output will be written to the {@link OutputStream} provided in the session variable. The pipe will return its input message", ""})
+	@Override
+	public void setStreamToSessionKey(String streamToSessionKey) {
+		sender.setStreamToSessionKey(streamToSessionKey);
+	}
+	@Override
+	public String getStreamToSessionKey() {
+		return sender.getStreamToSessionKey();
+	}
+
 }

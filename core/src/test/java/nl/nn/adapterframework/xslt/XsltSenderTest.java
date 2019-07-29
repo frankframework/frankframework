@@ -47,4 +47,10 @@ public class XsltSenderTest extends XsltErrorTestBase<GenericMessageSendingPipe>
 		sender.setXslt2(xslt2);
 	}
 
+
+	@Override
+	protected void setStreamToSessionKey(String streamToSessionKey) {
+		sender.setStreamToSessionKey(streamToSessionKey);
+	}
+
 }

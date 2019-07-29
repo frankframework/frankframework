@@ -31,6 +31,8 @@ import org.apache.log4j.Logger;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IOutputStreamProvider;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -58,7 +60,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * 
  * @author Gerrit van Brakel
  */
-public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
+public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutputStreamProvider {
 	protected Logger log = LogUtil.getLogger(this);
 	
 	public final String ACTION_LIST="list";
@@ -76,6 +78,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 	public final String PARAMETER_CONTENTS2="file";
 	public final String PARAMETER_INPUTFOLDER="inputFolder";			// folder for actions list, mkdir and rmdir. This is a sub folder of baseFolder
 	public final String PARAMETER_DESTINATION="destination";	// destination for action rename and move
+	public final String ATTRIBUTE_CREATE_OUTPUTSTREAM_SESSION_KEY="createStreamSessionKey";
 	
 	
 	public final String[] ACTIONS_BASIC= {ACTION_LIST, ACTION_READ1, ACTION_READ2, ACTION_MOVE, ACTION_DELETE, ACTION_MKDIR, ACTION_RMDIR};
@@ -83,6 +86,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 
 	private String action;
 	private String inputFolder; // folder for action=list
+	private String createStreamSessionKey;
 
 	private Set<String> actions = new LinkedHashSet<String>(Arrays.asList(ACTIONS_BASIC));
 	
@@ -117,7 +121,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 		}
 		
 		//Check if necessarily parameters are available
-		actionRequiresParameter(parameterList, ACTION_WRITE1, PARAMETER_CONTENTS1);
+		actionRequiresParameterOrAttribute(parameterList, ACTION_WRITE1, PARAMETER_CONTENTS1, ATTRIBUTE_CREATE_OUTPUTSTREAM_SESSION_KEY, getCreateStreamSessionKey());
 		actionRequiresParameter(parameterList, ACTION_MOVE, PARAMETER_DESTINATION);
 		actionRequiresParameter(parameterList, ACTION_RENAME, PARAMETER_DESTINATION);
 		
@@ -130,11 +134,25 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 	
 	
 	protected void actionRequiresParameter(ParameterList parameterList, String action, String parameter) throws ConfigurationException {
-		if (getAction().equals(action) && (parameterList == null || parameterList.findParameter(parameter) == null)) {
-			throw new ConfigurationException("the "+action+" action requires the parameter ["+parameter+"] to be present");
+//		if (getAction().equals(action) && (parameterList == null || parameterList.findParameter(parameter) == null)) {
+//			throw new ConfigurationException("the "+action+" action requires the parameter ["+parameter+"] to be present");
+//		}
+		actionRequiresParameterOrAttribute(parameterList, action, parameter, null, null);
+	}
+
+	protected void actionRequiresParameterOrAttribute(ParameterList parameterList, String action, String parameter, String attributeName, String attributeValue) throws ConfigurationException {
+		if (getAction().equals(action)) {
+			boolean parameterSet = parameterList != null && parameterList.findParameter(parameter) != null;
+			boolean attributeSet = attributeName!=null && StringUtils.isNotEmpty(attributeValue);
+			if (!parameterSet && !attributeSet) {
+				throw new ConfigurationException("the "+action+" action requires the parameter ["+parameter+"] "+(attributeName!=null?"or attribute ["+attributeName+"] ":"")+"to be present");
+			}
+			if (parameterSet && attributeSet) {
+				throw new ConfigurationException("the "+action+" action can have only one of the parameter ["+parameter+"] or attribute ["+attributeName+"] to be present");
+			}
 		}
 	}
-	
+
 	public void open() throws FileSystemException {
 		if (StringUtils.isNotEmpty(getInputFolder())) {
 			if (!fileSystem.folderExists(getInputFolder())) {
@@ -180,7 +198,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 		return input.toString();
 	}
 	
-	public Object doAction(Object input, ParameterValueList pvl) throws FileSystemException, TimeOutException {
+	public Object doAction(Object input, ParameterValueList pvl, IPipeLineSession session) throws FileSystemException, TimeOutException {
 		try {
 			if (action.equalsIgnoreCase(ACTION_DELETE)) {
 				F file=getFile(input, pvl);
@@ -202,17 +220,22 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 
 				return dirXml.toXML();
 			} else if (action.equalsIgnoreCase(ACTION_WRITE1)) {
-				Object contents=pvl.getParameterValue(PARAMETER_CONTENTS1).getValue();
 				F file=getFile(input, pvl);
-				try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).createFile(file)) {
-					if (contents instanceof InputStream) {
-						Misc.streamToStream((InputStream)contents, out, true);
-					} else if (contents instanceof byte[]) {
-						out.write((byte[])contents);
-					} else if (contents instanceof String) {
-						out.write(((String) contents).getBytes(Misc.DEFAULT_INPUT_STREAM_ENCODING));
-					} else {
-						throw new FileSystemException("expected InputStream, ByteArray or String but got [" + contents.getClass().getName() + "] instead");
+				if (StringUtils.isNotEmpty(getCreateStreamSessionKey())) {
+					OutputStream out = ((IWritableFileSystem<F>)fileSystem).createFile(file);
+					session.put(getCreateStreamSessionKey(),out);
+				} else {
+					Object contents=pvl.getParameterValue(PARAMETER_CONTENTS1).getValue();
+					try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).createFile(file)) {
+						if (contents instanceof InputStream) {
+							Misc.streamToStream((InputStream)contents, out, true);
+						} else if (contents instanceof byte[]) {
+							out.write((byte[])contents);
+						} else if (contents instanceof String) {
+							out.write(((String) contents).getBytes(Misc.DEFAULT_INPUT_STREAM_ENCODING));
+						} else {
+							throw new FileSystemException("expected InputStream, ByteArray or String but got [" + contents.getClass().getName() + "] instead");
+						}
 					}
 				}
 				return getFileAsXmlBuilder(file, "file").toXML();
@@ -303,5 +326,16 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 	public String getInputFolder() {
 		return inputFolder;
 	}
+
+	@IbisDoc({"3", "Only for action 'write': When set, an {@link OutputStream} will be provided in this session variable, that the next pipe can use to write it's output to.", ""})
+	@Override
+	public void setCreateStreamSessionKey(String createStreamSessionKey) {
+		this.createStreamSessionKey=createStreamSessionKey;
+	}
+	@Override
+	public String getCreateStreamSessionKey() {
+		return createStreamSessionKey;
+	}
+
 
 }

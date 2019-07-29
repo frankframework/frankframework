@@ -23,6 +23,7 @@ import org.apache.commons.codec.binary.Base64InputStream;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IOutputStreamProvider;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
@@ -49,7 +50,7 @@ import nl.nn.adapterframework.util.Misc;
  * 
  * @author Gerrit van Brakel
  */
-public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderWithParametersBase {
+public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderWithParametersBase implements IOutputStreamProvider {
 	
 	private FS fileSystem;
 	private FileSystemActor<F,FS> actor=new FileSystemActor<F,FS>();
@@ -95,7 +96,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 		}
 
 		try {
-			Object result = actor.doAction(message, pvl);
+			Object result = actor.doAction(message, pvl, prc.getSession());
 			if (result==null) {
 				return null;
 			} else {
@@ -145,6 +146,16 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 	@IbisDoc({"2", "folder that is scanned for files when action=list. When not set, the root is scanned", ""})
 	public void setInputFolder(String inputFolder) {
 		actor.setInputFolder(inputFolder);
+	}
+
+	@IbisDoc({"3", "Only for action 'write': When set, an {@link OutputStream} will be provided in this session variable, that the next pipe can use to write it's output to.", ""})
+	@Override
+	public void setCreateStreamSessionKey(String createStreamSessionKey) {
+		actor.setCreateStreamSessionKey(createStreamSessionKey);
+	}
+	@Override
+	public String getCreateStreamSessionKey() {
+		return actor.getCreateStreamSessionKey();
 	}
 
 }

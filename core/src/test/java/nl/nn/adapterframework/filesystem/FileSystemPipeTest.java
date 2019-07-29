@@ -167,6 +167,43 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	}
 
 	@Test
+	public void fileSystemPipeUploadActionTestWithOutputStream() throws Exception {
+		String filename = "uploadedwithOutputStream" + FILE1;
+		String contents = "Some text content to test upload action\n";
+		
+		if (_fileExists(filename)) {
+			_deleteFile(null, filename);
+		}
+
+		//InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
+		PipeLineSessionBase session = new PipeLineSessionBase();
+		//session.put("uploadActionTarget", stream);
+
+		fileSystemPipe.setAction("upload");
+		fileSystemPipe.setCreateStreamSessionKey("createStreamSessionKey");
+		fileSystemPipe.configure();
+		fileSystemPipe.start();
+
+		String message=filename;
+		PipeRunResult prr = fileSystemPipe.doPipe(message, session);
+		String result=(String)prr.getResult();
+		TestAssertions.assertXpathValueEquals(filename, result, "file/@name");
+		
+		OutputStream outputStream = (OutputStream)session.get("createStreamSessionKey");
+		outputStream.write(contents.getBytes("UTF-8"));
+		outputStream.close();
+		
+		waitForActionToFinish();
+
+		String actual = readFile(null, filename);
+		// test
+		// TODO: evaluate 'result'
+		//assertEquals("result of sender should be input message",result,message);
+		assertEquals(contents.trim(), actual.trim());
+	}
+	
+	
+	@Test
 	public void fileSystemPipeDownloadActionTest() throws Exception {
 		String filename = "sender" + FILE1;
 		String contents = "Tekst om te lezen";

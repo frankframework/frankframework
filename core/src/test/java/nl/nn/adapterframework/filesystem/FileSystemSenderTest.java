@@ -163,6 +163,40 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 	}
 
 	@Test
+	public void fileSystemSenderUploadActionTestWithOutputStream() throws Exception {
+		String filename = "uploadedwithInputStream" + FILE1;
+		String contents = "Some text content to test upload action\n";
+		
+		if (_fileExists(filename)) {
+			_deleteFile(null, filename);
+		}
+
+		PipeLineSessionBase session = new PipeLineSessionBase();
+
+		fileSystemSender.setAction("upload");
+		fileSystemSender.setCreateStreamSessionKey("createStreamSessionKey");
+		fileSystemSender.configure();
+		fileSystemSender.open();
+
+		ParameterResolutionContext prc = new ParameterResolutionContext();
+		prc.setSession(session);
+		String correlationId="fakecorrelationid";
+		String message=filename;
+		String result = fileSystemSender.sendMessage(correlationId, message, prc);
+
+		OutputStream outputStream = (OutputStream)session.get("createStreamSessionKey");
+		outputStream.write(contents.getBytes("UTF-8"));
+		outputStream.close();
+		waitForActionToFinish();
+
+		String actual = readFile(null, filename);
+		// test
+		// TODO: evaluate 'result'
+		//assertEquals("result of sender should be input message",result,message);
+		assertEquals(contents.trim(), actual.trim());
+	}
+
+	@Test
 	public void fileSystemSenderDownloadActionTest() throws Exception {
 		String filename = "sender" + FILE1;
 		String contents = "Tekst om te lezen";

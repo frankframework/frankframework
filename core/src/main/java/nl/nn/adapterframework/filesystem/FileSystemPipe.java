@@ -19,6 +19,7 @@ import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IOutputStreamProvider;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -48,10 +49,11 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
  * 
  * @author Gerrit van Brakel
  */
-public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends FixedForwardPipe implements HasPhysicalDestination {
+public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends FixedForwardPipe implements HasPhysicalDestination, IOutputStreamProvider {
 	
 	private FileSystemActor<F, FS> actor = new FileSystemActor<F, FS>();
 	private FS fileSystem;
+	
 	
 	
 	@Override
@@ -100,7 +102,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends FixedForw
 
 		Object result;
 		try {
-			result = actor.doAction(input, pvl);
+			result = actor.doAction(input, pvl, session);
 		} catch (FileSystemException | TimeOutException e) {
 			throw new PipeRunException(this, "cannot perform action", e);
 		}
@@ -144,6 +146,16 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends FixedForw
 	}
 	public String getInputFolder() {
 		return actor.getInputFolder();
+	}
+
+	@IbisDoc({"3", "Only for action 'write': When set, an {@link OutputStream} will be provided in this session variable, that the next pipe can use to write it's output to. Cannot exist in combination with parameter 'contents'", ""})
+	@Override
+	public void setCreateStreamSessionKey(String createStreamSessionKey) {
+		actor.setCreateStreamSessionKey(createStreamSessionKey);
+	}
+	@Override
+	public String getCreateStreamSessionKey() {
+		return actor.getCreateStreamSessionKey();
 	}
 
 }

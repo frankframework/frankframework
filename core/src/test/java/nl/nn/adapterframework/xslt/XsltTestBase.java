@@ -2,7 +2,9 @@ package nl.nn.adapterframework.xslt;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import javax.xml.transform.TransformerException;
 
@@ -31,6 +33,7 @@ public abstract class XsltTestBase<P extends IPipe> extends PipeTestBase<P> {
 	protected abstract void setSkipEmptyTags(boolean skipEmptyTags);
 	protected abstract void setRemoveNamespaces(boolean removeNamespaces);
 	protected abstract void setXslt2(boolean xslt2);
+	protected abstract void setStreamToSessionKey(String streamToSessionKey);
 	
 	@Override
 	public void setup() throws ConfigurationException {
@@ -42,7 +45,7 @@ public abstract class XsltTestBase<P extends IPipe> extends PipeTestBase<P> {
 		assertEquals(expected,actual);	
 	}
 	
-	protected void testXslt(String styleSheetName, String input, String expected, Boolean omitXmlDeclaration, Boolean indent, Boolean skipEmptyTags, Boolean removeNamespaces, Boolean xslt2) throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	protected void testXslt(String styleSheetName, String input, String expected, Boolean omitXmlDeclaration, Boolean indent, Boolean skipEmptyTags, Boolean removeNamespaces, Boolean xslt2, boolean viaOutputStream) throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		setStyleSheetName(styleSheetName);
 		if (omitXmlDeclaration!=null) {
 			setOmitXmlDeclaration(omitXmlDeclaration);
@@ -59,11 +62,22 @@ public abstract class XsltTestBase<P extends IPipe> extends PipeTestBase<P> {
 		if (xslt2!=null) {
 			setXslt2(xslt2);
 		}
+		if (viaOutputStream) {
+			OutputStream out = new ByteArrayOutputStream();
+			session.put("outputstream", out);
+			setStreamToSessionKey("outputstream");
+		}
 		pipe.configure();
 		pipe.start();
 		PipeRunResult prr = pipe.doPipe(input,session);
-		String xmlOut=(String)prr.getResult();
-		assertResultsAreCorrect(expected,xmlOut.trim(),session);
+		String result=(String)prr.getResult();
+		if (viaOutputStream) {
+			assertEquals(input, result);
+			ByteArrayOutputStream out = (ByteArrayOutputStream)session.get("outputstream");
+			result=new String(out.toByteArray(),"utf-8");
+		}
+		assertResultsAreCorrect(expected,result.trim(),session);
+		
 	}
 	
 	@Test
@@ -76,15 +90,15 @@ public abstract class XsltTestBase<P extends IPipe> extends PipeTestBase<P> {
 		Boolean skipEmptyTags=null;
 		Boolean removeNamespaces=null;
 		Boolean xslt2=true;
-		testXslt(styleSheetName, input, expected, omitXmlDeclaration, indent, skipEmptyTags, removeNamespaces, xslt2);
+		testXslt(styleSheetName, input, expected, omitXmlDeclaration, indent, skipEmptyTags, removeNamespaces, xslt2, false);
 	}
 
 	public void testSkipEmptyTags(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws DomBuilderException, TransformerException, IOException, ConfigurationException, PipeStartException, PipeRunException {
-		testXslt(IDENTITY_STYLESHEET, input, expected, omitXmlDeclaration, indent, true, null, null);
+		testXslt(IDENTITY_STYLESHEET, input, expected, omitXmlDeclaration, indent, true, null, null, false);
 	}
 	
 	public void testRemoveNamespaces(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws DomBuilderException, TransformerException, IOException, ConfigurationException, PipeStartException, PipeRunException {
-		testXslt(IDENTITY_STYLESHEET, input, expected, omitXmlDeclaration, indent, null, true, null);
+		testXslt(IDENTITY_STYLESHEET, input, expected, omitXmlDeclaration, indent, null, true, null, false);
 	}
 	
 	@Test
@@ -127,4 +141,18 @@ public abstract class XsltTestBase<P extends IPipe> extends PipeTestBase<P> {
 //		String lineSeparator=System.getProperty("line.separator");
 //		testRemoveNamespaces("<root><a>a</a><b></b><c/></root>","<root>"+lineSeparator+"<a>a</a>"+lineSeparator+"<b/>"+lineSeparator+"<c/>"+lineSeparator+"</root>",true,true);
 //	}
+	
+	public void testBasic(String input, String expected, boolean omitXmlDeclaration, boolean indent, boolean streaming) throws DomBuilderException, TransformerException, IOException, ConfigurationException, PipeStartException, PipeRunException {
+		testXslt(IDENTITY_STYLESHEET, input, expected, omitXmlDeclaration, indent, false, null, null, streaming);
+	}
+	@Test
+	public void testBasicNoOmitNoIndent() throws DomBuilderException, TransformerException, IOException, ConfigurationException, PipeStartException, PipeRunException {
+		testBasic("<root><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a><b/><c/></root>",false,false,false);
+	}
+	@Test
+	public void testBasicNoOmitNoIndentStreaming() throws DomBuilderException, TransformerException, IOException, ConfigurationException, PipeStartException, PipeRunException {
+		testBasic("<root><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a><b/><c/></root>",false,false,true);
+	}
+
+
 }

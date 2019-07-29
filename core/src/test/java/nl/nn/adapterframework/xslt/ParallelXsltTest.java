@@ -3,20 +3,27 @@ package nl.nn.adapterframework.xslt;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.xml.transform.TransformerException;
 
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.GenericMessageSendingPipe;
 import nl.nn.adapterframework.senders.ParallelSenders;
 import nl.nn.adapterframework.senders.SenderSeries;
 import nl.nn.adapterframework.senders.XsltSender;
+import nl.nn.adapterframework.util.DomBuilderException;
 
 public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPipe> {
 	
@@ -117,13 +124,17 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 		return NUM_SENDERS;
 	}
 
+	@Override
 	@Test
     @Ignore("error handling is different in parallel")
 	public void documentNotFoundXslt1() throws Exception {
+		super.  documentNotFoundXslt1();
 	}
+	@Override
 	@Test
     @Ignore("error handling is different in parallel")
 	public void documentNotFoundXslt2() throws Exception {
+		super.  documentNotFoundXslt2();
 	}
 	
 	@Override
@@ -167,6 +178,20 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 		for (XsltSender sender:xsltSenders) {
 			sender.setXslt2(xslt2);
 		}
+	}
+
+	@Override
+	protected void setStreamToSessionKey(String streamToSessionKey) {
+		for (XsltSender sender:xsltSenders) {
+			sender.setStreamToSessionKey(streamToSessionKey);
+		}
+	}
+
+	@Test
+	@Override
+	@Ignore("Test currently not suitable for streaming")
+	public void testBasicNoOmitNoIndentStreaming() throws DomBuilderException, TransformerException, IOException, ConfigurationException, PipeStartException, PipeRunException {
+		super.testBasicNoOmitNoIndentStreaming();
 	}
 
 }
