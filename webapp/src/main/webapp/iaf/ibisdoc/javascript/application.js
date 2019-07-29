@@ -68,13 +68,6 @@ app.controller("foldersCtrl", function($scope, dataService, classesService, meth
       }
     });
   };
-
-  $scope.onKey = function($event) {
-    $rootScope.$broadcast('givingAllMethhods', $scope.methods.filter(function (method) {
-      return (method.name.toLowerCase() === $event.target.value.toLowerCase());
-    }));
-    $rootScope.$broadcast('searching');
-  }
 });
 
 app.controller("classesCtrl", function($scope, classesService, methodsService) {
@@ -138,7 +131,7 @@ app.controller("methodsCtrl", function($scope, methodsService) {
     $scope.allMethods = allMethods;
   });
 
-  $scope.$on('searching', function() {
+  $scope.onKey = function($event) {
     $scope.searching = true;
-  })
+    }
 });
