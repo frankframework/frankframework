@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,25 +31,29 @@ import org.quartz.JobExecutionException;
  */
 public class ServiceJob extends BaseJob {
 
+	public static final String JAVALISTENER = "javaListener";
+	public static final String CORRELATIONID = "correlationId";
+	public static final String MESSAGE = "message";
+
 	public ServiceJob() {
 		super();
 	}
-	
+
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		try {
 			log.info("executing" + getLogPrefix(context));
 			JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-			String serviceName = dataMap.getString(SchedulerSender.JAVALISTENER);
-			String message = dataMap.getString(SchedulerSender.MESSAGE);
-			String correlationId = dataMap.getString(SchedulerSender.CORRELATIONID);
-			
+			String serviceName = dataMap.getString(JAVALISTENER);
+			String message = dataMap.getString(MESSAGE);
+			String correlationId = dataMap.getString(CORRELATIONID);
+
 			// send job
 			IbisLocalSender localSender = new IbisLocalSender();
 			localSender.setJavaListener(serviceName);
 			localSender.setIsolated(false);
 			localSender.setName("ServiceJob");
 			localSender.configure();
-			
+
 			localSender.open();
 			try {
 				localSender.sendMessage(correlationId, message);

@@ -391,7 +391,7 @@ public class JobDef {
 	private TransactionDefinition txDef=null;
 	private PlatformTransactionManager txManager;
 
-	private String jobGroup = Scheduler.DEFAULT_GROUP;
+	private String jobGroup = SchedulerHelper.DEFAULT_GROUP;
 
 	private List<DirectoryCleaner> directoryCleaners = new ArrayList<DirectoryCleaner>();
 
@@ -533,17 +533,17 @@ public class JobDef {
 	}
 
 	public JobDetail getJobDetail(IbisManager ibisManager) {
-		
+
 		JobDataMap jobDataMap = new JobDataMap();
-		jobDataMap.put("manager", ibisManager);
-		jobDataMap.put("jobdef", this);
-		
+		jobDataMap.put(ConfiguredJob.MANAGER, ibisManager);
+		jobDataMap.put(ConfiguredJob.JOBDEF, this);
+
 		JobDetail jobDetail = newJob(ConfiguredJob.class)
 				.withIdentity(getName(), getJobGroup())
 				.setJobData(jobDataMap)
 				.withDescription(StringUtils.isNotEmpty(getDescription()) ? getDescription() : null)
 				.build();
-		
+
 		return jobDetail;
 	}
 

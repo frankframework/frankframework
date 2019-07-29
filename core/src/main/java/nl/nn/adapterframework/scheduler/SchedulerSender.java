@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden
+   Copyright 2013, 2015, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import org.apache.commons.lang.StringUtils;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
-import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import static org.quartz.JobBuilder.*;
 
@@ -37,17 +36,13 @@ import static org.quartz.JobBuilder.*;
  * @author John Dekker
  */
 public class SchedulerSender extends SenderWithParametersBase {
-	
-	public static final String JAVALISTENER = "javaListener";
-	public static final String CORRELATIONID = "correlationId";
-	public static final String MESSAGE = "message";
-	
+
 	private String javaListener;
 	private String cronExpressionPattern;
-	private String jobGroup = Scheduler.DEFAULT_GROUP;
+	private String jobGroup = null;
 	private String jobNamePattern;
 	private SchedulerHelper schedulerHelper;
-    
+
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(javaListener)) {
 			throw new ConfigurationException("Property [serviceName] is empty");
@@ -90,7 +85,7 @@ public class SchedulerSender extends SenderWithParametersBase {
 			String jobName = getName() + correlationID;
 			String cronExpression = values.getParameterValue("_cronexpression").getValue().toString();
 			if (StringUtils.isNotEmpty(jobNamePattern)) {
-				jobName = values.getParameterValue("_jobname").getValue().toString();;	
+				jobName = values.getParameterValue("_jobname").getValue().toString();
 			}
 			schedule(jobName, cronExpression, correlationID, message);
 			return jobName;
@@ -103,22 +98,19 @@ public class SchedulerSender extends SenderWithParametersBase {
 		}
 	}
 
-	/*
-	 * Schedule the job
-	 */
-	void schedule(String jobName, String cronExpression, String correlationId, String message) throws Exception {
-		
+	private void schedule(String jobName, String cronExpression, String correlationId, String message) throws Exception {
+
 		JobDataMap jobDataMap = new JobDataMap();
-		jobDataMap.put(JAVALISTENER, javaListener);
-		jobDataMap.put(MESSAGE, message);
-		jobDataMap.put(CORRELATIONID, correlationId);
-		
+		jobDataMap.put(ServiceJob.JAVALISTENER, javaListener);
+		jobDataMap.put(ServiceJob.MESSAGE, message);
+		jobDataMap.put(ServiceJob.CORRELATIONID, correlationId);
+
 		JobDetail jobDetail = newJob(ServiceJob.class)
 				.withIdentity(jobName, jobGroup)
-				.usingJobData(jobDataMap) 
+				.usingJobData(jobDataMap)
 				.build();
-		
-		schedulerHelper.scheduleJob(jobDetail, cronExpression, -1, false);
+
+		schedulerHelper.scheduleJob(jobDetail, cronExpression);
 		if (log.isDebugEnabled()) {
 			log.debug("SchedulerSender ["+ getName() +"] has send job [" + jobName + "] to the scheduler");
 		}
@@ -131,7 +123,10 @@ public class SchedulerSender extends SenderWithParametersBase {
 
 	@IbisDoc({"job group in which the new trigger is to be created (optional)", ""})
 	public void setJobGroup(String string) {
-		jobGroup = string;
+		if(StringUtils.isNotEmpty(string))
+			jobGroup = string;
+		else
+			jobGroup = null;
 	}
 
 	@IbisDoc({"pattern that leads to the name of the registered trigger(optional)", ""})
@@ -144,12 +139,11 @@ public class SchedulerSender extends SenderWithParametersBase {
 		javaListener = string;
 	}
 
-    public SchedulerHelper getSchedulerHelper() {
-        return schedulerHelper;
-    }
+	public SchedulerHelper getSchedulerHelper() {
+		return schedulerHelper;
+	}
 
-    public void setSchedulerHelper(SchedulerHelper helper) {
-        schedulerHelper = helper;
-    }
-
+	public void setSchedulerHelper(SchedulerHelper helper) {
+		schedulerHelper = helper;
+	}
 }

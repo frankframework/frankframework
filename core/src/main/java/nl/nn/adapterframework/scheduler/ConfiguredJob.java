@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -45,15 +45,17 @@ import org.quartz.JobExecutionException;
  * @see nl.nn.adapterframework.core.IAdapter
  * @see nl.nn.adapterframework.configuration.Configuration
   */
-public class ConfiguredJob extends BaseJob implements Job  {
+public class ConfiguredJob extends BaseJob implements Job {
 
+	public static final String MANAGER = "manager";
+	public static final String JOBDEF = "jobdef";
 
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		String ctName = Thread.currentThread().getName();
 		try {
 			JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-			IbisManager ibisManager = (IbisManager)dataMap.get("manager");
-			JobDef jobDef = (JobDef)dataMap.get("jobdef");
+			IbisManager ibisManager = (IbisManager)dataMap.get(MANAGER);
+			JobDef jobDef = (JobDef)dataMap.get(JOBDEF);
 			Thread.currentThread().setName(jobDef.getName() + "["+ctName+"]");
 			log.info(getLogPrefix(jobDef) + "executing");
 			jobDef.executeJob(ibisManager);
