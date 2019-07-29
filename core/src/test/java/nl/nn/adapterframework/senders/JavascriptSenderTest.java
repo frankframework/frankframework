@@ -19,14 +19,14 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
     private IPipeLineSession session = new PipeLineSessionBase();
+    
+    @Rule
+	public ExpectedException exception = ExpectedException.none();
 
     @Override
     public JavascriptSender createSender() {
         return new JavascriptSender();
     }
-    
-    @Rule
-	public ExpectedException exception = ExpectedException.none();
     
     //Test without a given jsFunctionName. Will call the javascript function main as default
     @Test
@@ -346,7 +346,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
     
     //This test is used to compare the performance of J2V8 to that of Nashorn. J2V8 should finish about ten times faster than Nashorn.
     //@Test
-    public void Performance() throws ConfigurationException, SenderException, TimeOutException {
+    public void performance() throws ConfigurationException, SenderException, TimeOutException {
     	
         String dummyInput = "dummyinput";
         sender.setjsFileName("Javascript/JavascriptTest.js"); 

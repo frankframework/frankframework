@@ -1,10 +1,10 @@
 function main(){
-	print("This is the main function");
+	log("This is the main function");
 	return 0;
 }
 
 function f1(){
-	print("HelloWorld!");
+	log("HelloWorld!");
 	return 1;
 }
 

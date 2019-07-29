@@ -11,13 +11,13 @@ import com.eclipsesource.v8.V8ScriptExecutionException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 
 import java.net.URL;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 
@@ -32,48 +32,50 @@ public class JavascriptSender extends SenderWithParametersBase {
 	private String inputString;
 	private String jsFileName;
 	private String jsFunctionName = "main";
-	private Object jsResult = "";
-	private int numberOfParameters = 0;
 	
-	//Configure function used to load the JavascriptFile
-	public void configure() throws ConfigurationException {
-		super.configure();
+	//Open function used to load the JavascriptFile
+	public void open() throws SenderException {
+		super.open();
 
 		if (StringUtils.isNotEmpty(getjsFileName())) {
 			URL resource = null;
 			try {
 				resource = ClassUtils.getResourceURL(getClassLoader(), getjsFileName());
 			} catch (Throwable e) {
-				throw new ConfigurationException(
+				throw new SenderException(
 					getLogPrefix() + "got exception searching for [" + getjsFileName() + "]", e);
 			}
 			if (resource == null) {
-				throw new ConfigurationException(
+				throw new SenderException(
 					getLogPrefix() + "cannot find resource [" + getjsFileName() + "]");
 			}
 			try {
 				fileInput = Misc.resourceToString(resource, SystemUtils.LINE_SEPARATOR);
 			} catch (Throwable e) {
-				throw new ConfigurationException(
+				throw new SenderException(
 					getLogPrefix() + "got exception loading [" + getjsFileName() + "]", e);
 			}
 		}
 		if ((StringUtils.isEmpty(fileInput)) && inputString == null) { 
 			// No input from file or input string. Only from session-keys?
-			throw new ConfigurationException(
+			throw new SenderException(
 				getLogPrefix() + "has neither fileName nor inputString specified");
 		}
 		if (StringUtils.isEmpty(jsFunctionName)) { 
 			// Cannot run the code in factory without any function start point
-			throw new ConfigurationException(
+			throw new SenderException(
 				getLogPrefix() + "JavaScript FunctionName not specified!");
 		}
+
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
 		if (message==null) {
 			throw new SenderException(getLogPrefix()+"got null input");
 		}
+		
+		Object jsResult = "";
+		int numberOfParameters = 0;
 		
 		//Create a Parameter Value List
 		ParameterValueList pvl;
@@ -91,12 +93,12 @@ public class JavascriptSender extends SenderWithParametersBase {
 			jsParameters[i] = pv.getValue();
 		}
 		
-		//This allows the Javascript function to use a Java function, in this case it is used for System.out.println().
+		//This allows the Javascript function to use a Java function, in this case it is used to send output to the logging.
 		JavaVoidCallback callback = new JavaVoidCallback() {
 			public void invoke(final V8Object receiver, final V8Array parameters) {
 				if (parameters.length() > 0) {
 					Object arg1 = parameters.get(0);
-					System.out.println(arg1);
+					log.debug(arg1);
 					if (arg1 instanceof Releasable) {
 						((Releasable) arg1).release();
 					}
@@ -104,12 +106,12 @@ public class JavascriptSender extends SenderWithParametersBase {
 			}
 		};
 		
-		
 		try {
+
 			//Start using J2V8
 			V8 v8 = V8.createV8Runtime();
-			//Javascript can now use print() to use the Java function System.out.println()
-			v8.registerJavaMethod(callback, "print");		
+			//Javascript can now use log() to use the Java function log.debug()
+			v8.registerJavaMethod(callback, "log");
 			v8.executeScript(fileInput);
 			jsResult = v8.executeJSFunction(jsFunctionName, jsParameters);
 		} catch (V8ScriptExecutionException e) {
@@ -122,7 +124,7 @@ public class JavascriptSender extends SenderWithParametersBase {
 		return jsResult.toString();
 	}
 
-	//The name of the javascript file containing the functions to run
+	@IbisDoc({"the name of the javascript file containing the functions to run", ""})
 	public void setjsFileName(String jsFileName) {
 		this.jsFileName = jsFileName;
 	}
@@ -131,7 +133,7 @@ public class JavascriptSender extends SenderWithParametersBase {
 		return jsFileName;
 	}
 	
-	//The name of the javascript function that will be called (first)
+	@IbisDoc({"the name of the javascript function that will be called (first)", "main"})
 	public void setjsFunctionName(String jsFunctionName) {
 		this.jsFunctionName = jsFunctionName;
 	}
