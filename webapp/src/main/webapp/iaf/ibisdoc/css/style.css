@@ -110,3 +110,9 @@ input {
   width: 10%;
 }
 
+.foundnothing {
+  font-style: italic;
+  color: #808080;
+  padding-left: 10px;
+}
+

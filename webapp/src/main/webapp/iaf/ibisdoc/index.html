@@ -22,7 +22,7 @@
       <div ng-repeat="class in classes | filter:searchClass as filteredClasses">
         <p class="clickableClasses" ng-click="showMethods(class.name)"> {{ class.name }}</p>
       </div>
-      <p class="foundnothing" ng-show="filteredClasses.length == 0" style="font-style: italic; text-align: center;"> Nothing found </p>
+      <p class="foundnothing" ng-show="filteredClasses.length == 0"> No matches </p>
     </div>
   </div>
 
@@ -49,7 +49,7 @@
           <td> {{ method.folderName }}</td>
         </tr>
       </table>
-      <p class="foundnothing" ng-if="filteredMethods.length == 0" style="font-style: italic; text-align: center;"> Nothing found </p>
+      <p class="foundnothing" ng-if="filteredMethods.length == 0"> No matches </p>
     </div>
 
     <div ng-if="methods.length > 0 && !searching">
