@@ -17,6 +17,9 @@ package nl.nn.adapterframework.configuration;
 
 import org.apache.log4j.Logger;
 
+import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.util.ClassUtils;
+
 /**
  * Singleton class that has the configuration warnings for this application.
  * 
@@ -32,6 +35,12 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 		}
 		return self;
 	}
+	
+	public static void add(INamedObject object, Logger log, String message) {
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = ClassUtils.nameOf(object) +"["+object.getName()+"]: "+message;
+		configWarnings.add(log, msg);		
+	}
 
 	public boolean add(Logger log, String msg) {
 		return add(log, msg, null, false);
@@ -45,6 +54,7 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 		return add(log, msg, null, onlyOnce);
 	}
 
+	@Override
 	public boolean add(Logger log, String msg, Throwable t, boolean onlyOnce) {
 		return add(log, msg, null, onlyOnce, null);
 	}

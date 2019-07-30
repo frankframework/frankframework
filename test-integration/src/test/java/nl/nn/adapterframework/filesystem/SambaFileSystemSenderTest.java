@@ -1,4 +1,4 @@
-package it.nl.nn.adapterframework.senders;
+package nl.nn.adapterframework.filesystem;
 
 import jcifs.smb.SmbFile;
 import nl.nn.adapterframework.filesystem.FileSystemSenderTest;

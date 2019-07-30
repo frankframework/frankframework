@@ -17,6 +17,7 @@ Upcoming
 - Possibility to add new domains independently of ear file
     - UploadConfigService adapter
     - Facility to (de)activate configs
+- Add Samba2Filesystem, used in SambaSender, SambaPipe and SambaListener
 
 7.3
 --------
