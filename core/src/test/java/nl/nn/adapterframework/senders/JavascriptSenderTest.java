@@ -42,7 +42,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
         assertEquals("0", sender.sendMessage(null,dummyInput,prc));
     }
     
-    //Test without parameters. Prints "HelloWorld" to the Java console and returns 1
+    //Test without parameters. Prints "HelloWorld" to the logging and returns 1
     @Test
     public void noParameters() throws ConfigurationException, SenderException, TimeOutException {
         String dummyInput = "dummyinput";
