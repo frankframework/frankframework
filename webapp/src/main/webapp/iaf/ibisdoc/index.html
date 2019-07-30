@@ -18,10 +18,11 @@
 
     </div>
     <div class="classes" ng-controller="classesCtrl">
-      <input type="text" spellcheck="false" placeholder="Search in {{ classes[0].methods[0].folderName }}... " ng-model="searchClass">
-      <div ng-repeat="class in classes | filter:searchClass">
+      <input type="text" spellcheck="false" placeholder="Search in {{ classes[0].methods[0].folderName }}... " ng-model="searchClass" ng-click="onKey($event)">
+      <div ng-repeat="class in classes | filter:searchClass as filteredClasses">
         <p class="clickableClasses" ng-click="showMethods(class.name)"> {{ class.name }}</p>
       </div>
+      <p class="foundnothing" ng-show="filteredClasses.length == 0" style="font-style: italic; text-align: center;"> Nothing found </p>
     </div>
   </div>
 
@@ -29,9 +30,9 @@
 
     <input type="text" spellcheck="false" placeholder="Search all attributes..." ng-model="searchAllMethods" ng-click="onKey($event)">
 
-    <div ng-if="searching">
+    <div ng-if="searching && allMethods.length > 0">
       <table>
-        <tr>
+        <tr ng-if="filteredMethods.length > 0">
           <th> Name </th>
           <th> Description </th>
           <th> Default value </th>
@@ -39,7 +40,7 @@
           <th> Parent name </th>
           <th> Folder name </th>
         </tr>
-        <tr ng-repeat="method in allMethods | filter:searchAllMethods">
+        <tr ng-repeat="method in allMethods | filter:searchAllMethods as filteredMethods">
           <td> {{ method.name }} </td>
           <td ng-bind-html="method.description"> {{ method.description }} </td>
           <td ng-bind-html="method.defaultValue"> {{ method.defaultValue }} </td>
@@ -48,6 +49,7 @@
           <td> {{ method.folderName }}</td>
         </tr>
       </table>
+      <p class="foundnothing" ng-if="filteredMethods.length == 0" style="font-style: italic; text-align: center;"> Nothing found </p>
     </div>
 
     <div ng-if="methods.length > 0 && !searching">
@@ -113,7 +115,6 @@
         <br>
         <br>
       </div>
-
     </div>
   </div>
 </div>
