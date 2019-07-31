@@ -22,6 +22,7 @@
 				name="UnZip"
 				className="nl.nn.adapterframework.pipes.UnzipPipe" 
 				directory="${testdata.dir}/zip"
+				testDirectory="true"
 				>
 				<forward name="success" path="READY"/>
 			</pipe>
@@ -37,7 +38,7 @@
 				</sender>
 				<forward name="success" path="READY"/>
 			</pipe>
-
+			
 			<pipe
 				name="ReCreateZip"
 				className="nl.nn.adapterframework.pipes.FixedResult" 
@@ -45,7 +46,6 @@
 				>
 				<forward name="success" path="ReCreateZip2"/>
 			</pipe>
-							
 			<pipe
 				name="ReCreateZip2"
 				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
@@ -104,7 +104,7 @@
 				>
 				<forward name="success" path="READY"/>
 			</pipe>
-
+			
 			<pipe
 				name="SimpleZipX"
 				className="nl.nn.adapterframework.pipes.FixedResult" 
@@ -135,6 +135,55 @@
 				>
 				<forward name="success" path="READY"/>
 			</pipe>
+
+			<pipe name="CreateZipDirectory"
+				  className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				  preserveInput="true"
+				  getInputFromFixedValue="zip">
+				  <sender name="localfilesender"
+						  className="nl.nn.adapterframework.senders.LocalFileSystemSender"
+						  action="mkdir"
+						  root="${testdata.dir}">
+				  </sender>
+				  <forward name="success" path="READY"/>
+			</pipe>
+			
+			<pipe name="RemoveRecreatedZipFile"
+				  className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				  preserveInput="true"
+				  getInputFromFixedValue="zip/recreated.zip">
+				  <sender name="localfilesender"
+						  className="nl.nn.adapterframework.senders.LocalFileSystemSender"
+						  action="delete"
+						  root="${testdata.dir}">
+				  </sender>
+				  <forward name="success" path="RemoveZipDirectory"/>
+			</pipe>
+
+			<pipe name="RemoveSimpleZipFile"
+				  className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				  preserveInput="true"
+				  getInputFromFixedValue="zip/simple.zip">
+				  <sender name="localfilesender"
+						  className="nl.nn.adapterframework.senders.LocalFileSystemSender"
+						  action="delete"
+						  root="${testdata.dir}">
+				  </sender>
+				  <forward name="success" path="RemoveZipDirectory"/>
+			</pipe>
+			
+			<pipe name="RemoveZipDirectory"
+				  className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				  preserveInput="true"
+				  getInputFromFixedValue="zip">
+				  <sender name="localfilesender"
+						  className="nl.nn.adapterframework.senders.LocalFileSystemSender"
+						  action="delete"
+						  root="${testdata.dir}">
+				  </sender>
+				  <forward name="success" path="READY"/>
+			</pipe>
+
 		</pipeline>
 	</adapter>
 
