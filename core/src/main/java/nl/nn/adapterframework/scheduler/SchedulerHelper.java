@@ -119,10 +119,14 @@ public class SchedulerHelper {
 	}
 
 	public boolean contains(String name, String group) throws SchedulerException {
-		if(StringUtils.isEmpty(group))
-			group = DEFAULT_GROUP;
+		JobKey key = null;
 
-		return scheduler.checkExists(JobKey.jobKey(name, group));
+		if(StringUtils.isEmpty(group))
+			key = JobKey.jobKey(name, DEFAULT_GROUP);
+		else
+			key = JobKey.jobKey(name, group);
+
+		return scheduler.checkExists(key);
 	}
 
 	public Trigger getTrigger(String name) throws SchedulerException {
@@ -130,10 +134,13 @@ public class SchedulerHelper {
 	}
 
 	public Trigger getTrigger(String name, String group) throws SchedulerException {
+		TriggerKey key = null;
 		if(StringUtils.isEmpty(group))
-			group = DEFAULT_GROUP;
+			key = TriggerKey.triggerKey(name, DEFAULT_GROUP);
+		else
+			key = TriggerKey.triggerKey(name, group);
 
-		return scheduler.getTrigger(TriggerKey.triggerKey(name, group));
+		return scheduler.getTrigger(key);
 	}
 
 	public JobDetail getJobDetail(String jobName) throws SchedulerException {
@@ -149,10 +156,13 @@ public class SchedulerHelper {
 	}
 
 	public void deleteTrigger(String name, String group) throws SchedulerException {
+		TriggerKey key = null;
 		if(StringUtils.isEmpty(group))
-			group = DEFAULT_GROUP;
+			key = TriggerKey.triggerKey(name, DEFAULT_GROUP);
+		else
+			key = TriggerKey.triggerKey(name, group);
 
-		getScheduler().unscheduleJob(TriggerKey.triggerKey(name, group));
+		getScheduler().unscheduleJob(key);
 	}
 
 	public Scheduler getScheduler() throws SchedulerException {

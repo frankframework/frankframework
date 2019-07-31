@@ -36,8 +36,8 @@ public class SchedulerSenderTest extends SchedulerTestBase {
 	private final String JOB_NAME = "senderName";
 
 	@Before
-	public void setup() throws SchedulerException, ParseException {
-		super.setup();
+	public void setUp() throws SchedulerException, ParseException {
+		super.setUp();
 		schedulerSender = new SchedulerSender();
 		schedulerSender.setName(JOB_NAME);
 		schedulerSender.setSchedulerHelper(schedulerHelper);

@@ -42,8 +42,8 @@ public class SchedulerAdapterTest extends SchedulerTestBase {
 	private SchedulerAdapter schedulerAdapter;
 
 	@Before
-	public void setup() throws SchedulerException, ParseException {
-		super.setup();
+	public void setUp() throws SchedulerException, ParseException {
+		super.setUp();
 		schedulerAdapter = new SchedulerAdapter();
 	}
 

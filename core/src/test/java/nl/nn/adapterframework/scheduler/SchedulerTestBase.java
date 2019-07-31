@@ -36,7 +36,7 @@ public abstract class SchedulerTestBase {
 	protected SchedulerHelper schedulerHelper;
 
 	@Before
-	public void setup() throws SchedulerException, ParseException {
+	public void setUp() throws SchedulerException, ParseException {
 		schedulerHelper = new SchedulerHelper();
 		schedulerHelper.setScheduler(StdSchedulerFactory.getDefaultScheduler());
 		schedulerHelper.getScheduler().clear();
