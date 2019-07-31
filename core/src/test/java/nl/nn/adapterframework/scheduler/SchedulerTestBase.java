@@ -44,17 +44,17 @@ public abstract class SchedulerTestBase {
 
 	private JobDataMap createServiceJobDataMap() {
 		JobDataMap jobDataMap = new JobDataMap();
-		jobDataMap.put(ServiceJob.JAVALISTENER, "my-listener");
-		jobDataMap.put(ServiceJob.CORRELATIONID, "super-correlation-id");
-		jobDataMap.put(ServiceJob.MESSAGE, "my dummy message");
+		jobDataMap.put(ServiceJob.JAVALISTENER_KEY, "my-listener");
+		jobDataMap.put(ServiceJob.CORRELATIONID_KEY, "super-correlation-id");
+		jobDataMap.put(ServiceJob.MESSAGE_KEY, "my dummy message");
 
 		return jobDataMap;
 	}
 
 	private JobDataMap createConfiguredJobDataMap() {
 		JobDataMap jobDataMap = new JobDataMap();
-		jobDataMap.put(ConfiguredJob.JOBDEF, (JobDef) null);
-		jobDataMap.put(ConfiguredJob.MANAGER, (IbisManager) null);
+		jobDataMap.put(ConfiguredJob.JOBDEF_KEY, (JobDef) null);
+		jobDataMap.put(ConfiguredJob.MANAGER_KEY, (IbisManager) null);
 
 		return jobDataMap;
 	}

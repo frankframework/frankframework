@@ -47,15 +47,15 @@ import org.quartz.JobExecutionException;
   */
 public class ConfiguredJob extends BaseJob implements Job {
 
-	public static final String MANAGER = "manager";
-	public static final String JOBDEF = "jobdef";
+	public static final String MANAGER_KEY = "manager";
+	public static final String JOBDEF_KEY = "jobdef";
 
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		String ctName = Thread.currentThread().getName();
 		try {
 			JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-			IbisManager ibisManager = (IbisManager)dataMap.get(MANAGER);
-			JobDef jobDef = (JobDef)dataMap.get(JOBDEF);
+			IbisManager ibisManager = (IbisManager)dataMap.get(MANAGER_KEY);
+			JobDef jobDef = (JobDef)dataMap.get(JOBDEF_KEY);
 			Thread.currentThread().setName(jobDef.getName() + "["+ctName+"]");
 			log.info(getLogPrefix(jobDef) + "executing");
 			jobDef.executeJob(ibisManager);

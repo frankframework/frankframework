@@ -74,7 +74,6 @@ public class SchedulerSender extends SenderWithParametersBase {
 		}
 	}
 
-
 	public boolean isSynchronous() {
 		return true;
 	}
@@ -101,9 +100,9 @@ public class SchedulerSender extends SenderWithParametersBase {
 	private void schedule(String jobName, String cronExpression, String correlationId, String message) throws Exception {
 
 		JobDataMap jobDataMap = new JobDataMap();
-		jobDataMap.put(ServiceJob.JAVALISTENER, javaListener);
-		jobDataMap.put(ServiceJob.MESSAGE, message);
-		jobDataMap.put(ServiceJob.CORRELATIONID, correlationId);
+		jobDataMap.put(ServiceJob.JAVALISTENER_KEY, javaListener);
+		jobDataMap.put(ServiceJob.MESSAGE_KEY, message);
+		jobDataMap.put(ServiceJob.CORRELATIONID_KEY, correlationId);
 
 		JobDetail jobDetail = newJob(ServiceJob.class)
 				.withIdentity(jobName, jobGroup)

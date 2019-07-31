@@ -535,8 +535,8 @@ public class JobDef {
 	public JobDetail getJobDetail(IbisManager ibisManager) {
 
 		JobDataMap jobDataMap = new JobDataMap();
-		jobDataMap.put(ConfiguredJob.MANAGER, ibisManager);
-		jobDataMap.put(ConfiguredJob.JOBDEF, this);
+		jobDataMap.put(ConfiguredJob.MANAGER_KEY, ibisManager);
+		jobDataMap.put(ConfiguredJob.JOBDEF_KEY, this);
 
 		JobDetail jobDetail = newJob(ConfiguredJob.class)
 				.withIdentity(getName(), getJobGroup())

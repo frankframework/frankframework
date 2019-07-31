@@ -31,9 +31,9 @@ import org.quartz.JobExecutionException;
  */
 public class ServiceJob extends BaseJob {
 
-	public static final String JAVALISTENER = "javaListener";
-	public static final String CORRELATIONID = "correlationId";
-	public static final String MESSAGE = "message";
+	public static final String JAVALISTENER_KEY = "javaListener";
+	public static final String CORRELATIONID_KEY = "correlationId";
+	public static final String MESSAGE_KEY = "message";
 
 	public ServiceJob() {
 		super();
@@ -43,9 +43,9 @@ public class ServiceJob extends BaseJob {
 		try {
 			log.info("executing" + getLogPrefix(context));
 			JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-			String serviceName = dataMap.getString(JAVALISTENER);
-			String message = dataMap.getString(MESSAGE);
-			String correlationId = dataMap.getString(CORRELATIONID);
+			String serviceName = dataMap.getString(JAVALISTENER_KEY);
+			String message = dataMap.getString(MESSAGE_KEY);
+			String correlationId = dataMap.getString(CORRELATIONID_KEY);
 
 			// send job
 			IbisLocalSender localSender = new IbisLocalSender();
