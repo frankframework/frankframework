@@ -32,11 +32,11 @@ import nl.nn.adapterframework.util.ReaderLineIterator;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public class StreamLineIteratorPipe extends IteratingPipe {
+public class StreamLineIteratorPipe extends IteratingPipe<String> {
 
 	private String endOfLineString;
 	
-	protected Reader getReader(Object input, IPipeLineSession session, String correlationID, Map threadContext) throws SenderException {
+	protected Reader getReader(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext) throws SenderException {
 		if (input==null) {
 			throw new SenderException("input is null. Must supply stream as input");
 		}
@@ -47,11 +47,13 @@ public class StreamLineIteratorPipe extends IteratingPipe {
 		return reader;
 	}
 
-	protected IDataIterator getIterator(Object input, IPipeLineSession session, String correlationID, Map threadContext) throws SenderException {
+	@Override
+	protected IDataIterator<String> getIterator(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext) throws SenderException {
 		return new ReaderLineIterator(getReader(input,session, correlationID,threadContext));
 	}
 
-	protected String getItem(IDataIterator it) throws SenderException {
+	@Override
+	protected String getItem(IDataIterator<String> it) throws SenderException {
 		String item = (String)it.next();
 		if (getEndOfLineString()!=null) {
 			while (!item.endsWith(getEndOfLineString()) && it.hasNext()) {
@@ -61,7 +63,15 @@ public class StreamLineIteratorPipe extends IteratingPipe {
 		return item;
 	}
 
-	@IbisDoc({"when set to <code>false</code>, the inputstream is not closed after it has been used", "true"})
+	@IbisDoc({"1", "when set, each line has to end with this string. if the line doesn't end with this string next lines are added (including line separators) until the total line ends with the given string", ""})
+	public void setEndOfLineString(String string) {
+		endOfLineString = string;
+	}
+	public String getEndOfLineString() {
+		return endOfLineString;
+	}
+
+	@IbisDoc({"2", "when set to <code>false</code>, the inputstream is not closed after it has been used", "true"})
 	public void setCloseInputstreamOnExit(boolean b) {
 		setCloseIteratorOnExit(b);
 	}
@@ -69,11 +79,4 @@ public class StreamLineIteratorPipe extends IteratingPipe {
 		return isCloseIteratorOnExit();
 	}
 
-	@IbisDoc({"when set, each line has to end with this string. if the line doesn't end with this string next lines are added (including line separators) until the total line ends with the given string", ""})
-	public void setEndOfLineString(String string) {
-		endOfLineString = string;
-	}
-	public String getEndOfLineString() {
-		return endOfLineString;
-	}
 }

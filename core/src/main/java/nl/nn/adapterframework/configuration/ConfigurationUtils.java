@@ -344,7 +344,6 @@ public class ConfigurationUtils {
 	 * 
 	 * @param ibisContext
 	 * @return A map with all configurations to load (KEY = configName, VALUE = ClassLoader)
-	 * @throws ConfigurationException
 	 */
 	public static Map<String, String> retrieveAllConfigNames(IbisContext ibisContext) {
 		// For now only database configurations are returned, but also

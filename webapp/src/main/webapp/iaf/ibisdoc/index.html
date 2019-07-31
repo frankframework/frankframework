@@ -2,8 +2,8 @@
 <html lang="en" dir="ltr">
 <head>
   <title>IbisDoc</title>
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.8/angular.min.js" charset="utf-8"></script>
-  <script src="lib/angular-sanitize.min.js"></script>
+  <script src="javascript/angular.min.js" charset="utf-8"></script>
+  <script src="javascript/angular-sanitize.min.js"></script>
   <script src="javascript/application.js" charset="utf-8"></script>
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -14,7 +14,7 @@
       <input type="text" spellcheck="false" placeholder="Search all attributes..." ng-model="searchAllMethods" ng-keyup="onKey($event)">
 
       <div ng-repeat="folder in folders">
-        <p ng-click="showClasses(folder.name)"> {{ folder.name }}</p>
+        <p class="clickableFolders" ng-click="showClasses(folder.name)"> {{ folder.name }}</p>
       </div>
 
     </div>
@@ -23,22 +23,34 @@
         <input type="text" spellcheck="false" placeholder="Search in {{ classes[0].methods[0].folderName }}... " ng-model="searchClass">
       </div>
       <div ng-repeat="class in classes | filter:searchClass">
-        <p ng-click="showMethods(class.name)"> {{ class.name }}</p>
+        <p class="clickableClasses" ng-click="showMethods(class.name)"> {{ class.name }}</p>
       </div>
     </div>
   </div>
 
   <div class="methods" ng-controller="methodsCtrl">
     <div ng-if="methods.length > 0 && !searching">
-      <input type="text" spellcheck="false" placeholder="Search in {{ methods[0].className }}..." ng-model="searchMethod">
+      <input class="searchBarMethods" type="text" spellcheck="false" placeholder="Search in {{ methods[0].className }}..." ng-model="searchMethod">
 
       <div class="class_name">
         {{  methods[0].className }}
       </div>
 
-      <div>
-        <a ng-href="https://github.com/ibissource/iaf/wiki/{{ methods[0].className }}#Examples" target="_blank">Examples</a>
+      <div class="outerDescription">
+        <div class="innerDescription">
+          <div class="javadocLink">
+              <a ng-href=" https://javadoc.ibissource.org/latest/{{ methods[0].javadocLink}}.html" target="_blank">Javadoc</a>
+          </div>
+
+          <br>
+
+          <div class="exampleLink">
+            <a ng-href="https://github.com/ibissource/iaf/wiki/{{ methods[0].className }}#Examples" target="_blank">Examples</a>
+          </div>
+        </div>
       </div>
+
+      <br>
 
       <div class="attribute">
         Attributes
@@ -50,10 +62,10 @@
           <th> Default value</th>
         </tr>
 
-        <tr ng-repeat="method in methods | filter:searchMethod">
-          <td ng-if="method.className === method.originalClassName"> {{ method.name }}</td>
-          <td ng-if="method.className === method.originalClassName" ng-bind-html="method.description"> {{ method.description }}</td>
-          <td ng-if="method.className === method.originalClassName" ng-bind-html="method.defaultValue"> {{ method.defaultValue }}</td>
+        <tr ng-repeat="method in methods | filter:searchMethod | orderBy: 'order'">
+          <td class="attributeName" ng-if="method.className === method.originalClassName"> {{ method.name }}</td>
+          <td class="attributeDesc" ng-if="method.className === method.originalClassName" ng-bind-html="method.description"> {{ method.description }}</td>
+          <td class="attributeDV" ng-if="method.className === method.originalClassName" ng-bind-html="method.defaultValue"> {{ method.defaultValue }}</td>
         </tr>
       </table>
 
@@ -62,21 +74,25 @@
         Inherited Attributes
       </div>
 
-      <table>
-        <tr>
-          <th> Name </th>
-          <th> Description</th>
-          <th> Default value</th>
-          <th> Original class name </th>
-        </tr>
+      <div ng-repeat="parent in parents | orderBy: 'parentIndex' ">
+        <h3> {{ parent.name }}</h3>
+        <table>
+          <tr>
+            <th> Name </th>
+            <th> Description </th>
+            <th> Default value </th>
+          </tr>
 
-        <tr ng-repeat="method in methods | filter:searchMethod">
-          <td ng-if="method.className !== method.originalClassName"> {{ method.name }}</td>
-          <td ng-if="method.className !== method.originalClassName" ng-bind-html="method.description"> {{ method.description }}</td>
-          <td ng-if="method.className !== method.originalClassName" ng-bind-html="method.defaultValue"> {{ method.defaultValue }}</td>
-          <td ng-if="method.className !== method.originalClassName"> {{ method.originalClassName }}</td>
-        </tr>
-      </table>
+          <tr ng-repeat="method in parent.attributes | filter:searchMethod | orderBy: 'order'">
+            <td class="attributeName"> {{ method.name }}</td>
+            <td class="attributeDesc" ng-bind-html="method.description"> {{ method.description }}</td>
+            <td class="attributeDV" ng-bind-html="method.defaultValue"> {{ method.defaultValue }}</td>
+          </tr>
+        </table>
+        <br>
+        <br>
+      </div>
+
     </div>
 
     <div ng-if="allMethods.length > 0 && searching">

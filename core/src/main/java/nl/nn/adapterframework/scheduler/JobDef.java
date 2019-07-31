@@ -69,7 +69,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
-import org.quartz.Scheduler;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -391,7 +390,7 @@ public class JobDef {
 	private TransactionDefinition txDef=null;
 	private PlatformTransactionManager txManager;
 
-	private String jobGroup = Scheduler.DEFAULT_GROUP;
+	private String jobGroup = SchedulerHelper.DEFAULT_GROUP;
 
 	private List<DirectoryCleaner> directoryCleaners = new ArrayList<DirectoryCleaner>();
 
@@ -533,17 +532,17 @@ public class JobDef {
 	}
 
 	public JobDetail getJobDetail(IbisManager ibisManager) {
-		
+
 		JobDataMap jobDataMap = new JobDataMap();
-		jobDataMap.put("manager", ibisManager);
-		jobDataMap.put("jobdef", this);
-		
+		jobDataMap.put(ConfiguredJob.MANAGER_KEY, ibisManager);
+		jobDataMap.put(ConfiguredJob.JOBDEF_KEY, this);
+
 		JobDetail jobDetail = newJob(ConfiguredJob.class)
 				.withIdentity(getName(), getJobGroup())
 				.setJobData(jobDataMap)
 				.withDescription(StringUtils.isNotEmpty(getDescription()) ? getDescription() : null)
 				.build();
-		
+
 		return jobDetail;
 	}
 
@@ -840,9 +839,7 @@ public class JobDef {
 					}
 				}
 			} catch (Exception e) {
-				String msg = "error while executing query [" + selectQuery
-						+ "] (as part of scheduled job execution): "
-						+ e.getMessage();
+				String msg = "error while executing query [" + selectQuery	+ "] (as part of scheduled job execution): " + e.getMessage();
 				getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
 				log.error(getLogPrefix() + msg);
 			} finally {
@@ -913,7 +910,7 @@ public class JobDef {
 		DirectQuerySender qs;
 		qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 		try {
-			qs.setName("QuerySender");
+			qs.setName("executeQueryJob");
 			qs.setJmsRealm(getJmsRealm());
 			qs.setQueryType("other");
 			qs.setTimeout(getQueryTimeout());

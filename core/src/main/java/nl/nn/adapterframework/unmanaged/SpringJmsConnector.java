@@ -159,11 +159,9 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		// Initialize with a number of dynamic properties which come from the configuration file
 		jmsContainer.setConnectionFactory(getConnectionFactory());
 		jmsContainer.setDestination(getDestination());
-        
+
 		jmsContainer.setExceptionListener(this);
-		// the following is not required, the timeout set is the time waited to start a new poll attempt.
-		//this.jmsContainer.setReceiveTimeout(getJmsListener().getTimeOut());
-        
+
 		if (getReceiver().getNumThreads() > 0) {
 			jmsContainer.setMaxConcurrentConsumers(getReceiver().getNumThreads());
 		} else {
