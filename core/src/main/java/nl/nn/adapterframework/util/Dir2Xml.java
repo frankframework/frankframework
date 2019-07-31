@@ -53,7 +53,6 @@ public class Dir2Xml  {
 		int count = (files == null ? 0 : files.length);
 		XmlBuilder dirXml = new XmlBuilder("directory");
 		dirXml.addAttribute("name", path);
-		dirXml.addAttribute("count", count);
 		if (maxItems >= 0 && count > maxItems) {
 			count = maxItems;
 		}
@@ -63,13 +62,24 @@ public class Dir2Xml  {
 				dirXml.addSubElement(getFileAsXmlBuilder(parent,".."));
 			}
 		}
+		
+		int numberOfDirectories = 0;
 		for (int i = 0; i < count; i++) {
 			File file = files[i];
 			if (file.isDirectory() && !includeDirectories) {
+				numberOfDirectories++;
 				continue;
 			}
 			dirXml.addSubElement(getFileAsXmlBuilder(file,file.getName()));
 		}
+		
+		// TODO: implement includeDirectories on WildCardFilter
+		if (includeDirectories && !wildcard.equals("*.*")) {
+			dirXml.addAttribute("count", count);
+		} else {
+			dirXml.addAttribute("count", count - numberOfDirectories);
+		}
+				
 		return dirXml.toXML();
 	}
 
