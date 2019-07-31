@@ -69,7 +69,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
-import org.quartz.Scheduler;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
