@@ -46,7 +46,7 @@ public class TableHandler extends Handler {
 	protected void startElement(String localName) {
 		if (!parsedItem) {
 			if (localName.equals("item")) {
-				log.debug("appending row");
+				if(log.isTraceEnabled()) log.trace("appending row");
 				table.appendRow();
 				parsedItem=true;
 			} else {

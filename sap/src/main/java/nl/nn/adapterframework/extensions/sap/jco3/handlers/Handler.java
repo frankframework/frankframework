@@ -96,7 +96,7 @@ public abstract class Handler extends DefaultHandler {
 
 	protected void endStringField(String localName, JCoRecord record) {
 		if (record.getMetaData().hasField(localName)) {
-			log.debug("setting field [" + localName + "] to value [" + stringFieldValue + "]");
+			if(log.isTraceEnabled()) log.trace("setting field [" + localName + "] to value [" + stringFieldValue + "]");
 			record.setValue(localName,stringFieldValue.toString());
 		} else {
 			log.warn("unknown field [" + localName + "] for value [" + stringFieldValue + "]");
@@ -105,7 +105,7 @@ public abstract class Handler extends DefaultHandler {
 	}
 
 	protected void finished(String localName) {
-		log.debug("finished parsing '" + localName + "'");
+		if(log.isTraceEnabled()) log.trace("finished parsing '" + localName + "'");
 		done = true;
 	}
 
@@ -119,7 +119,7 @@ public abstract class Handler extends DefaultHandler {
 	}
 
 	protected Handler getHandler(JCoParameterList jcoParameterList) {
-		log.debug("new ParameterListHandler for '" + jcoParameterList.getMetaData().getName() + "'");
+		if(log.isDebugEnabled()) log.debug("new ParameterListHandler for '" + jcoParameterList.getMetaData().getName() + "'");
 		return new ParameterListHandler(jcoParameterList);
 	}
 
@@ -130,10 +130,10 @@ public abstract class Handler extends DefaultHandler {
 	protected Handler getHandler(JCoRecord jcoRecord, String fieldName, boolean warnWhenNoHandler) {
 		int jcoMetaDataType = jcoRecord.getMetaData().getType(fieldName);
 		if (jcoMetaDataType == JCoMetaData.TYPE_TABLE) {
-			log.debug("new TableHandler for '" + fieldName + "'");
+			if(log.isTraceEnabled()) log.trace("new TableHandler for '" + fieldName + "'");
 			return new TableHandler(jcoRecord.getTable(fieldName));
 		} else if (jcoMetaDataType == JCoMetaData.TYPE_STRUCTURE) {
-			log.debug("new StructureHandler for '" + fieldName + "'");
+			if(log.isTraceEnabled()) log.trace("new StructureHandler for '" + fieldName + "'");
 			return new StructureHandler(jcoRecord.getStructure(fieldName));
 		} else {
 			if (warnWhenNoHandler) {

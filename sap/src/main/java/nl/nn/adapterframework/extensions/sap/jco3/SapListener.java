@@ -202,20 +202,17 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCoFu
 
 	@Override
 	public String getIdFromRawMessage(JCoFunction rawMessage, Map<String,Object> threadContext) throws ListenerException {
-		log.debug("SapListener.getCorrelationIdFromField");
 		return getCorrelationIdFromField(rawMessage);
 	}
 
 	@Override
 	public String getStringFromRawMessage(JCoFunction rawMessage, Map<String,Object> threadContext) throws ListenerException {
-		log.debug("SapListener.getStringFromRawMessage");
 		return functionCall2message(rawMessage);
 	}
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, JCoFunction rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		try {
-			log.debug("SapListener.afterMessageProcessed");
 			if (rawMessage instanceof JCoFunction) {
 				message2FunctionResult(rawMessage, processResult.getResult());
 			}
@@ -227,7 +224,6 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCoFu
 	@Override
 	public void handleRequest(JCoServerContext jcoServerContext, JCoFunction jcoFunction) throws AbapException, AbapClassException {
 		try {
-			log.debug("SapListener.handleRequest()");
 			handler.processRawMessage(this, jcoFunction, null);
 		} catch (Throwable t) {
 			log.warn(getLogPrefix()+"Exception caught and handed to SAP",t);
@@ -237,13 +233,13 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCoFu
 
 	@Override
 	public void handleRequest(JCoServerContext serverCtx, IDocDocumentList documentList) {
-		log.debug(getLogPrefix()+"Incoming IDoc list request containing " + documentList.getNumDocuments() + " documents...");
+		if(log.isDebugEnabled()) log.debug(getLogPrefix()+"Incoming IDoc list request containing " + documentList.getNumDocuments() + " documents...");
 		IDocXMLProcessor xmlProcessor = JCoIDoc.getIDocFactory().getIDocXMLProcessor();
 		IDocDocumentIterator iterator = documentList.iterator();
 		IDocDocument doc = null;
 		while (iterator.hasNext()) {
 			doc = iterator.next();
-			log.debug(getLogPrefix()+"Processing document no. [" + doc.getIDocNumber() + "] of type ["+doc.getIDocType()+"]");
+			if(log.isTraceEnabled()) log.trace(getLogPrefix()+"Processing document no. [" + doc.getIDocNumber() + "] of type ["+doc.getIDocType()+"]");
 			try {
 				handler.processRequest(this, xmlProcessor.render(doc));
 			} catch (Throwable t) {

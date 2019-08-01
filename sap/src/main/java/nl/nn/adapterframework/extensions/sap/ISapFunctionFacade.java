@@ -33,5 +33,4 @@ public interface ISapFunctionFacade extends INamedObject, HasPhysicalDestination
 	public void setReplyFieldIndex(int i);
 	public void setReplyFieldName(String string);
 	public void setSapSystemName(String string);
-
 }

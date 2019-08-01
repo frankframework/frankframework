@@ -210,8 +210,8 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 	 *  0  : no index found, convert all fields to/from xml.
 	 */
 	protected int findFieldIndex(JCoParameterList params, int index, String name) {
-		if(name != null && params != null)
-			log.debug("find FieldIndex for name ["+name+"] in JCoParameterList ["+params.toString()+"]");
+		if(name != null && params != null && log.isTraceEnabled())
+			log.trace("find FieldIndex for name ["+name+"] in JCoParameterList ["+params.toString()+"]");
 
 		if (index!=0 || StringUtils.isEmpty(name)) {
 			return index;
