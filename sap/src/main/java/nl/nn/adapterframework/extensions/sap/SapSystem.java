@@ -15,7 +15,10 @@
 */
 package nl.nn.adapterframework.extensions.sap;
 
+import java.lang.reflect.Constructor;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * Depending on the JCo version found (see {@link JCoVersion}) delegate to
@@ -30,17 +33,22 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @since  5.0
  */
 public class SapSystem {
-	
+
 	private ISapSystem delegate;
 
 	public SapSystem() throws ConfigurationException {
 		int jcoVersion = JCoVersion.getInstance().getJCoVersion();
 		if (jcoVersion == -1) {
 			throw new ConfigurationException(JCoVersion.getInstance().getErrorMessage());
-		} else if (jcoVersion == 3) {
-			delegate = new nl.nn.adapterframework.extensions.sap.jco3.SapSystem();
-		} else {
-			delegate = new nl.nn.adapterframework.extensions.sap.jco2.SapSystem();
+		}
+
+		try {
+			Class<?> clazz = ClassUtils.loadClass("nl.nn.adapterframework.extensions.sap.jco"+jcoVersion+".SapSystem");
+			Constructor<?> con = clazz.getConstructor();
+			delegate = (ISapSystem) con.newInstance();
+		}
+		catch (Exception e) {
+			throw new ConfigurationException("failed to load SapSystem version ["+jcoVersion+"]", e);
 		}
 	}
 

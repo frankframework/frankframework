@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.extensions.sap;
 
+import java.lang.reflect.Constructor;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ISenderWithParameters;
@@ -22,6 +24,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * Depending on the JCo version found (see {@link JCoVersion}) delegate to an implementation of ISapSender.
@@ -38,10 +41,15 @@ public class SapSender implements ISenderWithParameters, HasPhysicalDestination 
 		int jcoVersion = JCoVersion.getInstance().getJCoVersion();
 		if (jcoVersion == -1) {
 			throw new ConfigurationException(JCoVersion.getInstance().getErrorMessage());
-		} else if (jcoVersion == 3) {
-			delegate = new nl.nn.adapterframework.extensions.sap.jco3.SapSender();
-		} else {
-			delegate = new nl.nn.adapterframework.extensions.sap.jco2.SapSender();
+		}
+
+		try {
+			Class<?> clazz = ClassUtils.loadClass("nl.nn.adapterframework.extensions.sap.jco"+jcoVersion+".SapSender");
+			Constructor<?> con = clazz.getConstructor();
+			delegate = (ISapSender) con.newInstance();
+		}
+		catch (Exception e) {
+			throw new ConfigurationException("failed to load SapSender version ["+jcoVersion+"]", e);
 		}
 	}
 

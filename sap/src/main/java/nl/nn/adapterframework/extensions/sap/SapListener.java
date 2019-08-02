@@ -1,5 +1,5 @@
 /*
-   Copyright 2013,2019 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.sap;
 
+import java.lang.reflect.Constructor;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -24,6 +25,7 @@ import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * Depending on the JCo version found (see {@link JCoVersion}) delegate to
@@ -35,16 +37,21 @@ import nl.nn.adapterframework.core.PipeLineResult;
  */
 public class SapListener implements IPushingListener<Object>, HasPhysicalDestination {
 
-	private ISapListener delegate;
+	private ISapListener<Object> delegate;
 
 	public SapListener() throws ConfigurationException {
 		int jcoVersion = JCoVersion.getInstance().getJCoVersion();
 		if (jcoVersion == -1) {
 			throw new ConfigurationException(JCoVersion.getInstance().getErrorMessage());
-		} else if (jcoVersion == 3) {
-			delegate = new nl.nn.adapterframework.extensions.sap.jco3.SapListener();
-		} else {
-			delegate = new nl.nn.adapterframework.extensions.sap.jco2.SapListener();
+		}
+
+		try {
+			Class<?> clazz = ClassUtils.loadClass("nl.nn.adapterframework.extensions.sap.jco"+jcoVersion+".SapListener");
+			Constructor<?> con = clazz.getConstructor();
+			delegate = (ISapListener) con.newInstance();
+		}
+		catch (Exception e) {
+			throw new ConfigurationException("failed to load SapListener version ["+jcoVersion+"]", e);
 		}
 	}
 
@@ -89,7 +96,7 @@ public class SapListener implements IPushingListener<Object>, HasPhysicalDestina
 	}
 
 	@Override
-	public void setHandler(IMessageHandler handler) {
+	public void setHandler(IMessageHandler<Object> handler) {
 		delegate.setHandler(handler);
 	}
 
