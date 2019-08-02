@@ -17,9 +17,6 @@ package nl.nn.adapterframework.extensions.sap.jco3.tx;
 
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.extensions.sap.jco3.SapSystem;
-import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.log4j.Logger;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
@@ -38,7 +35,6 @@ import com.sap.conn.jco.JCoException;
  * @since   5.0
  */
 public abstract class DestinationFactoryUtils {
-	private static final Logger logger = LogUtil.getLogger(DestinationFactoryUtils.class);
 
 	/**
 	 * Determine whether the given JCoDestination is transactional, that is,
@@ -187,8 +183,7 @@ public abstract class DestinationFactoryUtils {
 	 * @return the transactional JCoDestination, or <code>null</code> if none found
 	 * @throws JCoException in case of failure
 	 */
-	public static JCoDestination doGetTransactionalDestination(SapSystem sapSystem, ResourceFactory resourceFactory) throws JCoException
-			{
+	public static JCoDestination doGetTransactionalDestination(SapSystem sapSystem, ResourceFactory resourceFactory) throws JCoException {
 
 		Assert.notNull(sapSystem, "SapSystem must not be null");
 		Assert.notNull(resourceFactory, "ResourceFactory must not be null");
@@ -323,5 +318,4 @@ public abstract class DestinationFactoryUtils {
 			}
 		}
 	}
-
 }

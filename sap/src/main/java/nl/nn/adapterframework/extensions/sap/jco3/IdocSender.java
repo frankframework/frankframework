@@ -77,7 +77,7 @@ public class IdocSender extends SapSenderBase {
 			IDocDocument idoc = parseIdoc(sapSystem,message);
 			
 			try {
-				log.debug(getLogPrefix()+"checking syntax");
+				log.trace(getLogPrefix()+"checking syntax");
 				idoc.checkSyntax();
 			}
 			catch ( IDocException e ) {

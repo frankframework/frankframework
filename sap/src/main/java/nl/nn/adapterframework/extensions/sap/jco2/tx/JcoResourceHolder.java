@@ -28,6 +28,7 @@ import org.springframework.transaction.support.ResourceHolderSupport;
 import org.springframework.util.Assert;
 
 import com.sap.mw.jco.JCO;
+import com.sap.mw.jco.JCO.Client;
 
 /**
  * Connection holder, wrapping a Jco client.
@@ -40,17 +41,16 @@ import com.sap.mw.jco.JCO;
  * @since   4.8
  */
 public class JcoResourceHolder extends ResourceHolderSupport {
-//	private static final Logger logger = LogUtil.getLogger(JcoResourceHolder.class);
 
 	private SapSystem sapSystem;
 
 	private boolean frozen = false;
 
-	private final List clients = new LinkedList();
+	private final List<JCO.Client> clients = new LinkedList<JCO.Client>();
 
-	private final List tids = new LinkedList();
+	private final List<String> tids = new LinkedList<String>();
 
-	private final Map tidsPerClient = new HashMap();
+	private final Map<Client, List<String>> tidsPerClient = new HashMap<Client, List<String>>();
 
 
 	/**
@@ -106,6 +106,10 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 		this.frozen = true;
 	}
 
+	public SapSystem getSapSystem() {
+		return sapSystem;
+	}
+
 
 	public final boolean isFrozen() {
 		return this.frozen;
@@ -126,9 +130,9 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 		if (!this.tids.contains(tid)) {
 			this.tids.add(tid);
 			if (client != null) {
-				List tids = (List) this.tidsPerClient.get(client);
+				List<String> tids = this.tidsPerClient.get(client);
 				if (tids == null) {
-					tids = new LinkedList();
+					tids = new LinkedList<String>();
 					this.tidsPerClient.put(client, tids);
 				}
 				tids.add(tid);
@@ -150,22 +154,22 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 
 	public String getTid(JCO.Client client) {
 		Assert.notNull(client, "Client must not be null");
-		List tids = (List) this.tidsPerClient.get(client);
+		List<String> tids = this.tidsPerClient.get(client);
 		if (tids==null) {
 			return null;
 		}
-		return (String) tids.get(tids.size()-1);
+		return tids.get(tids.size()-1);
 	}
 
 
 	public void commitAll() throws SapException {
-		for (Iterator itc = this.clients.iterator(); itc.hasNext();) {
-			JCO.Client client = (JCO.Client)itc.next();
-			List tids = (List)this.tidsPerClient.get(client);
-			for (Iterator itt = tids.iterator(); itt.hasNext();) {
-				String tid = (String)itt.next();
+		for (Iterator<Client> itc = this.clients.iterator(); itc.hasNext();) {
+			JCO.Client client = itc.next();
+			List<String> tids = this.tidsPerClient.get(client);
+			for (Iterator<String> itt = tids.iterator(); itt.hasNext();) {
+				String tid = itt.next();
 				try {
-					client.confirmTID(tid);						
+					client.confirmTID(tid);
 				} catch (Throwable t) {
 					throw new SapException("Could not confirm TID ["+tid+"]");
 				}
@@ -174,10 +178,9 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 	}
 
 	public void closeAll() {
-		for (Iterator itc = this.clients.iterator(); itc.hasNext();) {
-			JCO.Client client = (JCO.Client)itc.next();
+		for (Iterator<Client> itc = this.clients.iterator(); itc.hasNext();) {
+			JCO.Client client = itc.next();
 			JCO.releaseClient(client);
 		}
 	}
-
 }
