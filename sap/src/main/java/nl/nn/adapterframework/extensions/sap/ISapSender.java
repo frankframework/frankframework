@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden
+   Copyright 2013,2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,23 @@
 */
 package nl.nn.adapterframework.extensions.sap;
 
+import nl.nn.adapterframework.core.ISenderWithParameters;
+
 /**
- * Use JCO3 by default
+ * Common interface to be implemented by SapSender implementations.
+ * 
+ * @author Gerrit van Brakel
+ * @since  7.3
  */
-public class SapSender extends nl.nn.adapterframework.extensions.sap.jco3.SapSender {
+public interface ISapSender extends ISenderWithParameters,ISapFunctionFacade {
+
+	public void setSynchronous(boolean b);
+
+	public void setFunctionName(String string);
+	public void setFunctionNameParam(String string);
+	public void setLuwHandleSessionKey(String string);
+
+	public void setSapSystemNameParam(String string);
+	public String getRequestFieldName();
+
 }

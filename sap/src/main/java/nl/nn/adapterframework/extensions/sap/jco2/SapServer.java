@@ -48,6 +48,7 @@ public class SapServer extends JCoIDoc.Server implements JCO.ServerExceptionList
 //		JCO.addServerErrorListener(this);
 	}
   	
+	@Override
 	public void stop() {
 		//abort("Ibis disconnects");
 		super.stop();
@@ -56,8 +57,8 @@ public class SapServer extends JCoIDoc.Server implements JCO.ServerExceptionList
 	/*
 	 *  Not really necessary to override this function but for demonstration purposes...
 	 */
-	protected JCO.Function getFunction(String function_name)
-	{
+	@Override
+	protected JCO.Function getFunction(String function_name) {
 	  JCO.Function function = super.getFunction(function_name);
 	  return function;
 	}
@@ -65,17 +66,16 @@ public class SapServer extends JCoIDoc.Server implements JCO.ServerExceptionList
 	/*
 	 *  Not really necessary to override this method but for demonstration purposes...
 	 */
-	protected boolean checkAuthorization(String function_name, int authorization_mode,
-		String authorization_partner, byte[] authorization_key)
-	{
+	@Override
+	protected boolean checkAuthorization(String function_name, int authorization_mode, String authorization_partner, byte[] authorization_key) {
 	  /*Simply allow everyone to invoke the services */
 	  return true;
 	}
 
 
 
-	protected void handleRequest(JCO.Function function)
-	{
+	@Override
+	protected void handleRequest(JCO.Function function) {
 		try {
 			log.info(getLogPrefix()+"sap function called: "+function.getName());
 			handler.processFunctionCall(function);
@@ -85,8 +85,8 @@ public class SapServer extends JCoIDoc.Server implements JCO.ServerExceptionList
 		}
 	}
 	
-	protected void handleRequest(IDoc.DocumentList documentList)
-	{
+	@Override
+	protected void handleRequest(IDoc.DocumentList documentList) {
 		log.debug(getLogPrefix()+"Incoming IDoc list request containing " + documentList.getNumDocuments() + " documents...");
 
 		IDoc.DocumentIterator iterator = documentList.iterator();
@@ -118,8 +118,8 @@ public class SapServer extends JCoIDoc.Server implements JCO.ServerExceptionList
 	 *  @param tid the transaction ID
 	 *  @return <code>true</code> if the ID is valid and not in use otherwise, <code>false</code> otherwise
 	 */
-	protected boolean onCheckTID(String tid)
-	{
+	@Override
+	protected boolean onCheckTID(String tid) {
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix()+"is requested to check TID ["+tid+"]; (currently ignored)");
 		}
@@ -133,8 +133,8 @@ public class SapServer extends JCoIDoc.Server implements JCO.ServerExceptionList
 	 *  Derived servers must override this method to actually implement the transaction ID management.
 	 *  @param tid the transaction ID
 	 */
-	protected void onConfirmTID(String tid)
-	{
+	@Override
+	protected void onConfirmTID(String tid) {
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix()+"is requested to confirm TID ["+tid+"]; (currently ignored)");
 		}
@@ -147,8 +147,8 @@ public class SapServer extends JCoIDoc.Server implements JCO.ServerExceptionList
 	 *  Derived servers can override this method to locally commit the transaction.
 	 *  @param tid the transaction ID
 	 */
-	protected void onCommit(String tid)
-	{
+	@Override
+	protected void onCommit(String tid) {
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix()+"is requested to commit TID ["+tid+"]; (currently ignored)");
 		}
@@ -161,8 +161,8 @@ public class SapServer extends JCoIDoc.Server implements JCO.ServerExceptionList
 	 *  Derived servers can override this method to locally rollback the transaction.
 	 *  @param tid the transaction ID
 	 */
-	protected void onRollback(String tid)
-	{
+	@Override
+	protected void onRollback(String tid) {
 		if (log.isDebugEnabled()) {
 			log.warn(getLogPrefix()+"is requested to rollback TID ["+tid+"]; (currently ignored)");
 		}
@@ -170,12 +170,13 @@ public class SapServer extends JCoIDoc.Server implements JCO.ServerExceptionList
 
 	
 
+	@Override
 	public void serverExceptionOccurred(JCO.Server server, Exception e) {
 		log.error(getLogPrefix()+"exception occurred", e);
 	}
 
-	public void serverErrorOccurred(JCO.Server server, Error err)
-	{
+	@Override
+	public void serverErrorOccurred(JCO.Server server, Error err) {
 		log.error(getLogPrefix()+"error occurred", err);
 	}
 

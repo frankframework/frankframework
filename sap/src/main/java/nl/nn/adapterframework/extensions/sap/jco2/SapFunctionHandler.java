@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco2;
 
+import nl.nn.adapterframework.extensions.sap.SapException;
+
 import com.sap.mw.jco.JCO;
 import com.sap.mw.idoc.IDoc;
 

@@ -32,6 +32,7 @@ public class RecordHandler extends Handler {
 		this.record = record;
 	}
 
+	@Override
 	protected void startElement(String localName) {
 		if (record.getMetaData().hasField(localName)) {
 			childHandler = getHandler(record, localName);
@@ -44,6 +45,7 @@ public class RecordHandler extends Handler {
 		}
 	}
 
+	@Override
 	protected void endElement(String localName) {
 		if (parsedStringField) {
 			endStringField(localName, record);

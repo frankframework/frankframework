@@ -16,18 +16,7 @@
 package nl.nn.adapterframework.extensions.sap.jco3;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.extensions.sap.jco3.handlers.Handler;
-import nl.nn.adapterframework.parameters.ParameterValue;
-import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -36,6 +25,15 @@ import com.sap.conn.jco.JCoFunction;
 import com.sap.conn.jco.JCoFunctionTemplate;
 import com.sap.conn.jco.JCoParameterList;
 import com.sap.conn.jco.JCoStructure;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.extensions.sap.ISapFunctionFacade;
+import nl.nn.adapterframework.extensions.sap.SapException;
+import nl.nn.adapterframework.extensions.sap.jco3.handlers.Handler;
+import nl.nn.adapterframework.parameters.ParameterValue;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Wrapper round SAP-functions, either SAP calling Ibis, or Ibis calling SAP.
  * <p><b>Configuration:</b>
@@ -57,12 +55,12 @@ import com.sap.conn.jco.JCoStructure;
  * @author  Jaco de Groot
  * @since   5.0
  */
-public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
+public abstract class SapFunctionFacade implements ISapFunctionFacade {
 	protected static Logger log = LogUtil.getLogger(SapFunctionFacade.class);
 
 	private String name;
 	private String sapSystemName;
-	
+
 	private int correlationIdFieldIndex=0;
 	private String correlationIdFieldName;
 	private int requestFieldIndex=0;
@@ -72,9 +70,6 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 
 	private JCoFunctionTemplate ftemplate;
 	private SapSystem sapSystem;
-	private boolean fieldIndicesCalculated=false;
-
-	static Map extractors = new HashMap();
 
 	protected String getLogPrefix() {
 		return this.getClass().getName()+" ["+getName()+"] ";
@@ -89,38 +84,48 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 			if (sapSystem==null) {
 				throw new ConfigurationException(getLogPrefix()+"cannot find SapSystem ["+getSapSystemName()+"]");
 			}
- 		} else {
- 			SapSystem.configureAll();
- 		}
+		} else {
+			SapSystem.configureAll();
+		}
 	}
 
 	public void openFacade() throws SapException {
 		if (sapSystem!=null) {
 			sapSystem.openSystem();
-			if (!StringUtils.isEmpty(getFunctionName())) {
+			log.info("open SapSystem ["+sapSystem.toString()+"]");
+
+			//Something has changed, so remove the cached templates
+			SapSystemDataProvider.getInstance().updateSystem(sapSystem);
+
+			if (StringUtils.isNotEmpty(getFunctionName())) { //Listeners and IdocSenders don't use a functionName
 				ftemplate = getFunctionTemplate(sapSystem, getFunctionName());
+				log.debug("found JCoFunctionTemplate ["+ftemplate.toString()+"]");
 				try {
 					calculateStaticFieldIndices(ftemplate);
-					fieldIndicesCalculated=true;
 				} catch (Exception e) {
 					throw new SapException(getLogPrefix()+"Exception calculation field-indices ["+getFunctionName()+"]", e);
 				}
 			}
 		} else {
+			log.info("open ALL SapSystems");
 			SapSystem.openSystems();
 		}
 	}
 
 	public void closeFacade() {
-		if (sapSystem!=null) {
+		log.info("trying to close all SapSystem resources");
+
+		if (sapSystem != null) {
 			sapSystem.closeSystem();
+			log.debug("closed local defined sapSystem");
 		} else {
 			SapSystem.closeSystems();
+			log.debug("closed all sapSystems");
 		}
-		fieldIndicesCalculated=false;
 		ftemplate = null;
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		String result;
 		if (sapSystem==null) {
@@ -161,43 +166,53 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 	 * @param ft
 	 */
 	protected void calculateStaticFieldIndices(JCoFunctionTemplate ft) {
-		if (getRequestFieldIndex()== 0) {	
+		log.info("calculate static field indexes for JCOFunctionTemplate ["+(ft!=null?ft.getName():"unknown")+"]");
+		if (getRequestFieldIndex()== 0) {
 			if (StringUtils.isEmpty(getRequestFieldName())) {
 				setRequestFieldIndex(-1);
+				log.debug("requestFieldName not set, using index [-1]");
 			} else {
 				if (ft!=null) {
 					setRequestFieldIndex(1+ft.getImportParameterList().indexOf(getRequestFieldName()));
-				}				
+					log.debug("searching for requestFieldName ["+getRequestFieldName()+"] in JCOFunctionTemplate Parameters ["+ft.getImportParameterList()+"]");
+				}
 			}
 		}
-		if (getReplyFieldIndex()== 0) {	
+		if (getReplyFieldIndex()== 0) {
 			if (StringUtils.isEmpty(getReplyFieldName())) {
 				setReplyFieldIndex(-1);
+				log.debug("replyFieldIndex not set, using index [-1]");
 			} else {
 				if (ft!=null) {
 					setReplyFieldIndex(1+ft.getExportParameterList().indexOf(getReplyFieldName()));
-				}				
+					log.debug("searching for replyFieldName ["+getReplyFieldName()+"] in JCOFunctionTemplate Parameters ["+ft.getImportParameterList()+"]");
+				}
 			}
 		}
-		if (getCorrelationIdFieldIndex()== 0) {	
+		if (getCorrelationIdFieldIndex()== 0) {
 			if (StringUtils.isEmpty(getCorrelationIdFieldName())) {
 				setCorrelationIdFieldIndex(-1);
+				log.debug("correlationIdFieldIndex not set, using index [-1]");
 			} else {
 				if (ft!=null) {
 					setCorrelationIdFieldIndex(1+ft.getImportParameterList().indexOf(getCorrelationIdFieldName()));
-				}				
+					log.debug("searching for correlationIdFieldName ["+getCorrelationIdFieldName()+"] in JCOFunctionTemplate Parameters ["+ft.getImportParameterList()+"]");
+				}
 			}
 		}
 	}
 
 	/**
-	 * Calculate the index of the field that correspondes with the message as a whole.
+	 * Calculate the index of the field that corresponds with the message as a whole.
 	 * 
 	 * return values
 	 *  >0 : the required index
 	 *  0  : no index found, convert all fields to/from xml.
 	 */
 	protected int findFieldIndex(JCoParameterList params, int index, String name) {
+		if(name != null && params != null && log.isTraceEnabled())
+			log.trace("find FieldIndex for name ["+name+"] in JCoParameterList ["+params.toString()+"]");
+
 		if (index!=0 || StringUtils.isEmpty(name)) {
 			return index;
 		}
@@ -220,18 +235,19 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 
 	public String functionCall2message(JCoFunction function) {
 		JCoParameterList input = function.getImportParameterList();
-		
+
 		int messageFieldIndex = findFieldIndex(input, getRequestFieldIndex(), getRequestFieldName());
 		String result=null;
-		if (messageFieldIndex>0) {
+		if (messageFieldIndex > 0) {
 			if (input!=null) {
 				result = input.getString(messageFieldIndex-1);
 			}
-		} else {
+		}
+		else {
 			result = "<request function=\""+function.getName()+"\">";
-	
+
 			JCoParameterList tables = function.getTableParameterList();
-			
+
 			if (input!=null) {
 				result+=input.toXML();
 			}
@@ -335,6 +351,7 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 		return functionTemplate;
 	}
 
+	
 	public int getCorrelationIdFieldIndex() {
 		return correlationIdFieldIndex;
 	}
@@ -359,34 +376,42 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 		return requestFieldName;
 	}
 
+	@Override
 	public void setCorrelationIdFieldIndex(int i) {
 		correlationIdFieldIndex = i;
 	}
 
+	@Override
 	public void setCorrelationIdFieldName(String string) {
 		correlationIdFieldName = string;
 	}
 
+	@Override
 	public void setReplyFieldIndex(int i) {
 		replyFieldIndex = i;
 	}
 
+	@Override
 	public void setReplyFieldName(String string) {
 		replyFieldName = string;
 	}
 
+	@Override
 	public void setRequestFieldIndex(int i) {
 		requestFieldIndex = i;
 	}
 
+	@Override
 	public void setRequestFieldName(String string) {
 		requestFieldName = string;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	public void setName(String string) {
 		name = string;
 	}
@@ -395,12 +420,14 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 		return sapSystemName;
 	}
 
+	@Override
 	public void setSapSystemName(String string) {
 		sapSystemName = string;
 	}
 
-	protected String getFunctionName() {
-		return null;
-	}
+	/**
+	 * Listeners and IdocSenders don't use a functionName
+	 */
+	protected abstract String getFunctionName();
 
 }

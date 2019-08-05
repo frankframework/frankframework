@@ -34,7 +34,7 @@ import com.sap.conn.jco.JCoRecord;
  * @author  Jaco de Groot
  * @since   5.0
  */
-public class Handler extends DefaultHandler {
+public abstract class Handler extends DefaultHandler {
 	protected Logger log = LogUtil.getLogger(this);
 
 	protected Handler childHandler;
@@ -43,6 +43,11 @@ public class Handler extends DefaultHandler {
 	protected int unknownElementDepth = 0;
 	protected boolean done = false;
 
+	protected abstract void startElement(String localName);
+	protected abstract void endElement(String localName);
+	
+	
+	@Override
 	public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
 		if (childHandler != null) {
 			childHandler.startElement(namespaceURI, localName, qName, atts);
@@ -55,14 +60,13 @@ public class Handler extends DefaultHandler {
 		}
 	}
 
-	protected void startElement(String localName) {
-	}
 
 	protected void startStringField(String localName, JCoRecord structure) {
 		parsedStringField = true;
 		stringFieldValue.setLength(0);
 	}
 
+	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
 		if (childHandler != null) {
 			childHandler.characters(ch, start, length);
@@ -73,6 +77,7 @@ public class Handler extends DefaultHandler {
 		}
 	}
 
+	@Override
 	public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
 		if (childHandler != null) {
 			childHandler.endElement(namespaceURI, localName, qName);
@@ -88,12 +93,10 @@ public class Handler extends DefaultHandler {
 		}
 	}
 
-	protected void endElement(String localName) {
-	}
 
 	protected void endStringField(String localName, JCoRecord record) {
 		if (record.getMetaData().hasField(localName)) {
-			log.debug("setting field [" + localName + "] to value [" + stringFieldValue + "]");
+			if(log.isTraceEnabled()) log.trace("setting field [" + localName + "] to value [" + stringFieldValue + "]");
 			record.setValue(localName,stringFieldValue.toString());
 		} else {
 			log.warn("unknown field [" + localName + "] for value [" + stringFieldValue + "]");
@@ -102,7 +105,7 @@ public class Handler extends DefaultHandler {
 	}
 
 	protected void finished(String localName) {
-		log.debug("finished parsing '" + localName + "'");
+		if(log.isTraceEnabled()) log.trace("finished parsing '" + localName + "'");
 		done = true;
 	}
 
@@ -116,7 +119,7 @@ public class Handler extends DefaultHandler {
 	}
 
 	protected Handler getHandler(JCoParameterList jcoParameterList) {
-		log.debug("new ParameterListHandler for '" + jcoParameterList.getMetaData().getName() + "'");
+		if(log.isDebugEnabled()) log.debug("new ParameterListHandler for '" + jcoParameterList.getMetaData().getName() + "'");
 		return new ParameterListHandler(jcoParameterList);
 	}
 
@@ -127,10 +130,10 @@ public class Handler extends DefaultHandler {
 	protected Handler getHandler(JCoRecord jcoRecord, String fieldName, boolean warnWhenNoHandler) {
 		int jcoMetaDataType = jcoRecord.getMetaData().getType(fieldName);
 		if (jcoMetaDataType == JCoMetaData.TYPE_TABLE) {
-			log.debug("new TableHandler for '" + fieldName + "'");
+			if(log.isTraceEnabled()) log.trace("new TableHandler for '" + fieldName + "'");
 			return new TableHandler(jcoRecord.getTable(fieldName));
 		} else if (jcoMetaDataType == JCoMetaData.TYPE_STRUCTURE) {
-			log.debug("new StructureHandler for '" + fieldName + "'");
+			if(log.isTraceEnabled()) log.trace("new StructureHandler for '" + fieldName + "'");
 			return new StructureHandler(jcoRecord.getStructure(fieldName));
 		} else {
 			if (warnWhenNoHandler) {

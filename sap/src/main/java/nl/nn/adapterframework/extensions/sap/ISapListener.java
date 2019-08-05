@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013,2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,28 +13,19 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.extensions.sap.jco2;
+package nl.nn.adapterframework.extensions.sap;
 
-import nl.nn.adapterframework.core.IbisException;
+import nl.nn.adapterframework.core.IPushingListener;
 
 /**
- * Exception thrown by classes in the sap-package (implementation) to notify
- * various problems.
+ * Common interface to be implemented by SapListener implementations.
  * 
  * @author  Gerrit van Brakel
+ * @since   7.3
  */
-public class SapException extends IbisException {
-		
-	public SapException() {
-		super();
-	}
-	public SapException(String errMsg) {
-		super(errMsg);
-	}
-	public SapException(String errMsg, Throwable t) {
-		super(errMsg, t);
-	}
-	public SapException(Throwable t) {
-		super(t);
-	}
+public interface ISapListener<F> extends IPushingListener<F>, ISapFunctionFacade {
+
+	public void setProgid(String string);
+	public void setConnectionCount(String connectionCount);
+
 }
