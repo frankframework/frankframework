@@ -29,8 +29,10 @@ import com.sap.conn.jco.JCoDestinationManager;
 import com.sap.conn.jco.JCoException;
 import com.sap.conn.jco.JCoRepository;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.extensions.sap.ISapSystemJco3;
 import nl.nn.adapterframework.extensions.sap.SapException;
+import nl.nn.adapterframework.extensions.sap.SapSystemFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.GlobalListItem;
 /**
@@ -169,6 +171,12 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 			SapSystem system = getSystem(systemName);
 			system.closeSystem();
 		}
+	}
+
+	@Override
+	public void registerItem(Object dummyParent) {
+		super.registerItem(dummyParent);
+		SapSystemFactory.getInstance().registerSapSystem(this, getName());
 	}
 
 	public void clearCache() {
@@ -402,7 +410,10 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 	}
 
 	@Override
-	public void setSncQop(int qop) {
+	public void setSncQop(int qop) throws ConfigurationException {
+		if(qop < 1 || qop > 9)
+			throw new ConfigurationException("SNC QOP cannot be smaller then 0 or larger then 9");
+
 		this.qop = qop;
 	}
 	public String getSncQop() {
