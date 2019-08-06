@@ -7,9 +7,9 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.pipes.J2V8;
-import nl.nn.adapterframework.pipes.JavascriptEngine;
-import nl.nn.adapterframework.pipes.Rhino;
+import nl.nn.adapterframework.extensions.javascript.J2V8;
+import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
+import nl.nn.adapterframework.extensions.javascript.Rhino;
 
 import java.net.URL;
 import java.util.Iterator;

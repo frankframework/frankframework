@@ -24,8 +24,8 @@ import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
 
-import nl.nn.adapterframework.pipes.J2V8;
-import nl.nn.adapterframework.pipes.JavascriptEngine;
+import nl.nn.adapterframework.extensions.javascript.J2V8;
+import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
