@@ -1,22 +1,18 @@
 package nl.nn.adapterframework.senders;
 
-import com.amazonaws.internal.Releasable;
-import com.eclipsesource.v8.JavaVoidCallback;
-import com.eclipsesource.v8.V8;
-import com.eclipsesource.v8.V8Array;
-import com.eclipsesource.v8.V8Object;
-import com.eclipsesource.v8.V8ScriptCompilationException;
-import com.eclipsesource.v8.V8ScriptExecutionException;
-
+import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.pipes.J2V8;
+import nl.nn.adapterframework.pipes.JavascriptEngine;
+import nl.nn.adapterframework.pipes.Rhino;
 
 import java.net.URL;
+import java.util.Iterator;
 
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
@@ -24,15 +20,32 @@ import nl.nn.adapterframework.util.Misc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 
-//Sender used to run javascript code using J2V8
+/**
+ * Sender used to run javascript code using J2V8 or Rhino
+ * 
+ * This sender can execute a function of a given javascript file, the result of the function will be the output of the sender.
+ * The parameters of the javascript function to run are given as parameters by the adapter configuration
+ * The input of the sender can only be used if it is given as a parameter using the originalMessage SessionKey.
+ * It is recommended to have the result of the javascript function be of type String, as the output of the sender will be 
+ * of type String.
+ * 
+ * @author Jarno Huibers
+ * @since 7.3
+ */
 
-public class JavascriptSender extends SenderWithParametersBase {
+public class JavascriptSender extends SenderSeries {
 
 	private String fileInput;
 	private String inputString;
 	private String jsFileName;
 	private String jsFunctionName = "main";
+	private String engine = "J2V8";
 	
+	@Override
+	protected boolean isSenderConfigured() {
+		return true;
+	}
+
 	//Open function used to load the JavascriptFile
 	public void open() throws SenderException {
 		super.open();
@@ -66,16 +79,16 @@ public class JavascriptSender extends SenderWithParametersBase {
 			throw new SenderException(
 				getLogPrefix() + "JavaScript FunctionName not specified!");
 		}
-
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
 		if (message==null) {
 			throw new SenderException(getLogPrefix()+"got null input");
 		}
-		
+				
 		Object jsResult = "";
 		int numberOfParameters = 0;
+		JavascriptEngine jsInstance;
 		
 		//Create a Parameter Value List
 		ParameterValueList pvl;
@@ -93,34 +106,28 @@ public class JavascriptSender extends SenderWithParametersBase {
 			jsParameters[i] = pv.getValue();
 		}
 		
-		//This allows the Javascript function to use a Java function, in this case it is used to send output to the logging.
-		JavaVoidCallback callback = new JavaVoidCallback() {
-			public void invoke(final V8Object receiver, final V8Array parameters) {
-				if (parameters.length() > 0) {
-					Object arg1 = parameters.get(0);
-					log.debug(arg1);
-					if (arg1 instanceof Releasable) {
-						((Releasable) arg1).release();
-					}
-				}
-			}
-		};
-		
-		try {
-
-			//Start using J2V8
-			V8 v8 = V8.createV8Runtime();
-			//Javascript can now use log() to use the Java function log.debug()
-			v8.registerJavaMethod(callback, "log");
-			v8.executeScript(fileInput);
-			jsResult = v8.executeJSFunction(jsFunctionName, jsParameters);
-		} catch (V8ScriptExecutionException e) {
-			throw new SenderException(getLogPrefix()+" javascript function does not exist or contains an error", e);
-		} catch (V8ScriptCompilationException e) {
-	    	throw new SenderException(getLogPrefix()+" invalid javascript syntax given", e);		
+		//Start using an engine
+		if(engine.equalsIgnoreCase("Rhino")) {
+			jsInstance = new Rhino();
+			jsInstance.startRuntime();
 		}
+		else {
+			jsInstance = new J2V8();
+			jsInstance.startRuntime();
+			for (Iterator<ISender> iterator = getSenderIterator(); iterator.hasNext();) {
+				ISender sender = iterator.next();
+				jsInstance.registerCallback(sender, prc);
+			} 
+		}
+		
+		//Compile the given Javascript and execute the given Javascript function
+		jsInstance.executeScript(fileInput);	
+		jsResult = jsInstance.executeFunction(jsFunctionName, jsParameters);
+		
+		jsInstance.closeRuntime();
         
-	    //Pass jsResult, the result of the Javascript function
+	    /*Pass jsResult, the result of the Javascript function.
+		It is recommended to have the result of the Javascript function be of type String, which will be the output of the sender */
 		return jsResult.toString();
 	}
 
@@ -140,6 +147,15 @@ public class JavascriptSender extends SenderWithParametersBase {
 
 	public String getjsFunctionName() {
 		return jsFunctionName;
+	}
+	
+	@IbisDoc({"the name of the javascript engine to be used", "J2V8"})
+	public void setengineName(String engineName) {
+		this.engine = engineName;
+	}
+	
+	public String getEngine() {
+		return engine;
 	}
 
 }

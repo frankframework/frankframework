@@ -1,16 +1,15 @@
 function main(){
-	log("This is the main function");
-	return 0;
+	return "0";
 }
 
 function f1(){
-	log("HelloWorld!");
-	return 1;
+	var result = 8 - 7;
+	return ""+result;
 }
 
 function f2(x,y){
 	var result = x + y;
-	return result;
+	return ""+result;
 }
 
 function f3(x,y,z){
@@ -18,7 +17,23 @@ function f3(x,y,z){
 	if(z) {
 		result = x + y;
 	}
-	return result;
+	return ""+result;
+}
+
+function f4(x, y) {
+	var a = x * 5;
+	var b = y * 2;
+
+	log(a);
+	log(b);
+
+	return a-b;
+}
+
+function f5(x, y){
+	file("Hello World!");
+	
+	return "FileSender";
 }
 
 //Used to test the performance.
@@ -37,5 +52,7 @@ function performance(x){
 			}
 		}
 	}
-	return 1;
+	return "1";
 }
+
+

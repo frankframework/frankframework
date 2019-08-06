@@ -2,10 +2,15 @@ package nl.nn.adapterframework.senders;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Collection;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import edu.emory.mathcs.backport.java.util.Arrays;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
@@ -16,6 +21,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
+@RunWith(Parameterized.class)
 public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
     private IPipeLineSession session = new PipeLineSessionBase();
@@ -28,11 +34,22 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
         return new JavascriptSender();
     }
     
+    //Tests will be executed for the Rhino engine and the J2V8 engine
+    @Parameterized.Parameter(0)
+    public String engine;
+    
+    @Parameterized.Parameters
+    public static Collection<Object[]> data() {
+    	Object[][] data = new Object[][] {{"J2V8"}, {"Rhino"}};
+    	return Arrays.asList(data);
+    }
+    
     //Test without a given jsFunctionName. Will call the javascript function main as default
     @Test
     public void callMain() throws ConfigurationException, SenderException, TimeOutException {
         String dummyInput = "dummyinput";
         sender.setjsFileName("Javascript/JavascriptTest.js"); 
+        sender.setengineName(engine);
         
         ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
         
@@ -42,12 +59,13 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
         assertEquals("0", sender.sendMessage(null,dummyInput,prc));
     }
     
-    //Test without parameters. Prints "HelloWorld" to the logging and returns 1
+    //Test without parameters, returns the result of a subtraction
     @Test
     public void noParameters() throws ConfigurationException, SenderException, TimeOutException {
         String dummyInput = "dummyinput";
         sender.setjsFileName("Javascript/JavascriptTest.js"); 
         sender.setjsFunctionName("f1");
+        sender.setengineName(engine);
         
         ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
         
@@ -65,6 +83,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
         String dummyInput = "dummyinput";
         sender.setjsFileName("Javascript/JavascriptTest.js"); 
         sender.setjsFunctionName("f2");
+        sender.setengineName(engine);
         
         ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
 		
@@ -94,6 +113,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
         String Input = "10";
         sender.setjsFileName("Javascript/JavascriptTest.js"); 
         sender.setjsFunctionName("f2");
+        sender.setengineName(engine);
         
         session.put("originalMessage", Input);
         
@@ -125,6 +145,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
         String Input = "Hello";
         sender.setjsFileName("Javascript/JavascriptTest.js"); 
         sender.setjsFunctionName("f2");
+        sender.setengineName(engine);
         
         session.put("originalMessage", Input);
         
@@ -145,8 +166,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
         assertEquals("Hello World!", sender.sendMessage(null,Input,prc));
     }
-    
-    
+       
     /*Test with three given parameters. The integer values of the first two given parameters will be added and the result
     is given as the output of the pipe, if the value of the last parameter is set to true. If the value of the last parameter is 
     set to false, the function will return 0 */
@@ -156,6 +176,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
         String dummyInput = "dummyinput";
         sender.setjsFileName("Javascript/JavascriptTest.js"); 
         sender.setjsFunctionName("f3");
+        sender.setengineName(engine);
 		
         ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
         
@@ -192,6 +213,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
         String dummyInput = "dummyinput";
         sender.setjsFileName("Javascript/JavascriptTest.js"); 
         sender.setjsFunctionName("f3");
+        sender.setengineName(engine);
 		
         ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
         
@@ -226,6 +248,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
         String dummyInput = "dummyinput";
         sender.setjsFileName("Nonexisting.js"); 
         sender.setjsFunctionName("f1");
+        sender.setengineName(engine);
         
         ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
         
@@ -242,6 +265,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
         String dummyInput = "dummyinput";
         sender.setjsFileName(""); 
         sender.setjsFunctionName("f1");
+        sender.setengineName(engine);
         
         ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
         
@@ -251,13 +275,13 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
         assertEquals("1", sender.sendMessage(null,dummyInput,prc));
     }
     
-    //If the given FunctionName is not a function of the given javascript file a SenderException is given.
-    @Test
+    //If the given FunctionName is not a function of the given javascript file a RuntimeException is given.
+    @Test(expected = RuntimeException.class)
     public void invalidFunctionGivenException() throws ConfigurationException, SenderException, TimeOutException {
-    	exception.expectMessage("javascript function does not exist or contains an error");
         String dummyInput = "dummyinput";
         sender.setjsFileName("Javascript/JavascriptTest.js"); 
         sender.setjsFunctionName("nonexisting");
+        sender.setengineName(engine);
         
         ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
         
@@ -274,6 +298,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
         String dummyInput = "dummyinput";
         sender.setjsFileName("Javascript/JavascriptTest.js"); 
         sender.setjsFunctionName("");
+        sender.setengineName(engine);
         
         ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
         
@@ -283,12 +308,12 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
         assertEquals("1", sender.sendMessage(null,dummyInput,prc));
     }
     
-    //If there is a syntax error in the given Javascript file a SenderException is given.
-    @Test
+    //If there is a syntax error in the given Javascript file a RuntimeException is given.
+    @Test(expected = RuntimeException.class)
     public void invalidJavascriptSyntax() throws ConfigurationException, SenderException, TimeOutException {
-    	exception.expectMessage("invalid javascript syntax given");
         String dummyInput = "dummyinput";
         sender.setjsFileName("Javascript/IncorrectJavascript.js"); 
+        sender.setengineName(engine);
         
         ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
         
@@ -298,13 +323,13 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
         assertEquals("1", sender.sendMessage(null,dummyInput,prc));
     }
     
-    /*This test uses a Javascript file which contains a function call to a function which does not exist. A SenderException
+    /*This test uses a Javascript file which contains a function call to a function which does not exist. A RuntimeException
     is given if the used javascript function gives an error. */
-    @Test
+    @Test(expected = RuntimeException.class)
     public void errorInJavascriptCode() throws ConfigurationException, SenderException, TimeOutException {
-    	exception.expectMessage("javascript function does not exist or contains an error");
         String dummyInput = "dummyinput";
         sender.setjsFileName("Javascript/IncorrectJavascript2.js"); 
+        sender.setengineName(engine);
         
         ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
         
@@ -315,12 +340,13 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
     }
     
     //The input is expected to be of type integer but an input of type Sting is given.
-    @Test(expected = SenderException.class)
+    //@Test(expected = SenderException.class)
     public void wrongInputAsFirstParameter() throws ConfigurationException, SenderException, TimeOutException {
     	
         String Input = "Stringinput";
         sender.setjsFileName("Javascript/JavascriptTest.js"); 
         sender.setjsFunctionName("f2");
+        sender.setengineName(engine);
         
         session.put("originalMessage", Input);
         
@@ -351,6 +377,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
         String dummyInput = "dummyinput";
         sender.setjsFileName("Javascript/JavascriptTest.js"); 
         sender.setjsFunctionName("performance");
+        sender.setengineName(engine);
         
         ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
 		
@@ -363,6 +390,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
+		System.out.println("Start timer");
 		long startTime = System.nanoTime();
 
         assertEquals("1", sender.sendMessage(null,dummyInput,prc));
@@ -371,5 +399,5 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		double duration = (double)(endTime - startTime)/1000000000; 
 		System.out.println("Run time: " + duration + " seconds");
     }
-    
+
 }

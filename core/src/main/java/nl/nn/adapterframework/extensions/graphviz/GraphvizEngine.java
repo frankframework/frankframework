@@ -1,12 +1,10 @@
 /*
    Copyright 2018 Nationale-Nederlanden
-
+   
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
-
        http://www.apache.org/licenses/LICENSE-2.0
-
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,6 +24,8 @@ import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
 
+import nl.nn.adapterframework.pipes.J2V8;
+import nl.nn.adapterframework.pipes.JavascriptEngine;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.Misc;
 public class GraphvizEngine {
 	protected Logger log = LogUtil.getLogger(this);
 	private static final ThreadLocal<Env> ENVS = new ThreadLocal<Env>();
-	private String graphvizVersion = "2.0.0";
+	private String graphvizVersion = AppConstants.getInstance().getProperty("graphviz.js.version", "2.0.0");
 
 	/**
 	 * Create a new GraphvizEngine instance. Using version 2.0.0
@@ -57,7 +57,7 @@ public class GraphvizEngine {
 	 * @throws IOException 
 	 */
 	public GraphvizEngine(String graphvizVersion) throws IOException {
-		if(graphvizVersion != null)
+		if(StringUtils.isNotEmpty(graphvizVersion))
 			this.graphvizVersion = graphvizVersion;
 
 		//Create the GraphvizEngine, make sure it can find and load the required libraries
@@ -160,7 +160,7 @@ public class GraphvizEngine {
 	private static class Env {
 		protected Logger log = LogUtil.getLogger(this);
 
-		final V8 v8;
+		JavascriptEngine<V8> V8Instance = new J2V8();
 		final ResultHandler resultHandler = new ResultHandler();
 
 		/**
@@ -169,17 +169,17 @@ public class GraphvizEngine {
 		 */
 		Env(String initScript, String graphvisJsLibrary, String alias, String tempDirectory) {
 			log.info("starting V8 runtime...");
-			v8 = V8.createV8Runtime(alias, tempDirectory);
+			V8Instance.startRuntime();
 			log.info("started V8 runtime. Initializing graphviz...");
-			v8.executeVoidScript(graphvisJsLibrary);
-			v8.executeVoidScript(initScript);
-			v8.registerJavaMethod(new JavaVoidCallback() {
+			V8Instance.executeScript(graphvisJsLibrary);
+			V8Instance.executeScript(initScript);
+			V8Instance.get().registerJavaMethod(new JavaVoidCallback() {
 				@Override
 				public void invoke(V8Object receiver, V8Array parameters) {
 					resultHandler.setResult(parameters.getString(0));
 				}
 			}, "result");
-			v8.registerJavaMethod(new JavaVoidCallback() {
+			V8Instance.get().registerJavaMethod(new JavaVoidCallback() {
 				@Override
 				public void invoke(V8Object receiver, V8Array parameters) {
 					resultHandler.setError(parameters.getString(0));
@@ -190,7 +190,7 @@ public class GraphvizEngine {
 
 		public String execute(String call) throws GraphvizException {
 			try {
-				v8.executeVoidScript(call);
+				V8Instance.executeScript(call);
 				return resultHandler.waitFor();
 			} catch (Exception e) {
 				throw new GraphvizException(e);
@@ -198,7 +198,7 @@ public class GraphvizEngine {
 		}
 
 		public void close() {
-			v8.release(true);
+			V8Instance.closeRuntime();
 		}
 	}
 }
