@@ -65,11 +65,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	@Override
 	public void open() throws ListenerException {
 		super.open();
-		try {
-			ApiServiceDispatcher.getInstance().registerServiceClient(this);
-		} catch (ConfigurationException e) {
-			throw new ListenerException(e);
-		}
+
+		ApiServiceDispatcher.getInstance().registerServiceClient(this);
 	}
 
 	@Override
