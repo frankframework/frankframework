@@ -171,8 +171,8 @@ public class XsltSender extends SenderWithParametersBase {
 //				log.debug(getLogPrefix()+" transformerPool ["+transformerPool+"] transforming using prc ["+prc+"] and parameterValues ["+parametervalues+"]");
 //				log.debug(getLogPrefix()+" prc.inputsource ["+prc.getInputSource()+"]");
 //			}
-			
-			stringResult = transformerPool.transform(inputMsg, parametervalues); 
+
+			stringResult = transformerPool.transform(inputMsg, parametervalues);
 
 			if (isSkipEmptyTags()) {
 				log.debug(getLogPrefix()+ " skipping empty tags from result [" + stringResult + "]");

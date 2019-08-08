@@ -334,7 +334,7 @@ public class TransformerPool {
 			if (StringUtils.isNotEmpty(styleSheetName)) {
 				throw new ConfigurationException(logPrefix+" cannot have both an xpathExpression and a styleSheetName specified");
 			}
-			return XmlUtils.getXPathTransformerPool(namespaceDefs, xPathExpression, outputType, includeXmlDeclaration, params);
+			return XmlUtils.getXPathTransformerPool(namespaceDefs, xPathExpression, outputType, includeXmlDeclaration, params, xsltVersion);
 		} 
 		if (!StringUtils.isEmpty(styleSheetName)) {
 			if (StringUtils.isNotEmpty(namespaceDefs)) {
