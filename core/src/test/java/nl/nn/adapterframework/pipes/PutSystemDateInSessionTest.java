@@ -15,6 +15,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 
 public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSession>{
@@ -112,6 +113,9 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	}
 	@Test
 	public void testConfigureIsReturnFixedDatewithoutStub() throws PipeRunException, ConfigurationException {
+		//Make sure stubbing is disabled to test the config error
+		AppConstants.getInstance().putPropertyPlaceholderConfigurerProperty("stub4testtool.configuration", "false");
+
 		expectedEx.expectMessage("returnFixedDate only allowed in stub mode");
 		pipe.setSessionKey("dummy");
 		pipe.setReturnFixedDate(true);

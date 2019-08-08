@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.wsdl.WSDLException;
 
+import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -45,6 +46,12 @@ public class WsdlXmlValidatorTest extends Mockito {
     private static final String BASIC                 = ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl";
 
     private IPipeLineSession session = mock(IPipeLineSession.class);
+
+	@After
+	public void tearDown() {
+		//After running all tests, set the stub property back to false!
+		AppConstants.getInstance().putPropertyPlaceholderConfigurerProperty("stub4testtool.configuration", "false");
+	}
 
     @Test
     public void wsdlValidate() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
@@ -232,7 +239,7 @@ public class WsdlXmlValidatorTest extends Mockito {
 
 	@Test
 	public void warnSchemaLocationAlreadyDefaultValue() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
-		AppConstants.getInstance().setProperty("stub4testtool.configuration", "true");
+		AppConstants.getInstance().putPropertyPlaceholderConfigurerProperty("stub4testtool.configuration", "true");
 
 		// Mock a configuration with an adapter in it
 		IbisManager ibisManager = spy(new DefaultIbisManager());
@@ -273,7 +280,7 @@ public class WsdlXmlValidatorTest extends Mockito {
 
 	@Test
 	public void warnUseSoapBodyNameSpace() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
-		AppConstants.getInstance().setProperty("stub4testtool.configuration", "true");
+		AppConstants.getInstance().putPropertyPlaceholderConfigurerProperty("stub4testtool.configuration", "true");
 
 		// Mock a configuration with an adapter in it
 		IbisManager ibisManager = spy(new DefaultIbisManager());
