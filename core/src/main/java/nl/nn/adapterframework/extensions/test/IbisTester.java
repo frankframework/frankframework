@@ -327,7 +327,7 @@ public class IbisTester {
 					error(scenarioInfo + " failed");
 				} else {
 					if (result.resultString != null
-						&& (result.resultString.contains("passed")
+						&& result.resultString.contains("passed")
 					) {
 						debug(scenarioInfo + " passed in [" + result.duration
 								+ "] msec");
