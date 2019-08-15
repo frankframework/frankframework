@@ -17,7 +17,7 @@ td, th {
 
 table {
   border-collapse: collapse;
-  min-width: 100%;
+  width: 100%;
 }
 
 a {
@@ -97,3 +97,22 @@ input {
 .exampleLink, .javadocLink {
   font-size: 12px;
 }
+
+.attributeName {
+  width: 15%;
+}
+
+.attributeDesc {
+  width: 75%;
+}
+
+.attributeDV {
+  width: 10%;
+}
+
+.foundnothing {
+  font-style: italic;
+  color: #808080;
+  padding-left: 10px;
+}
+
