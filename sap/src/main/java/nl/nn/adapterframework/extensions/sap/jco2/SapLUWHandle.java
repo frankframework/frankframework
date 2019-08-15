@@ -103,7 +103,7 @@ public class SapLUWHandle {
 	
 	public void release() {
 		sapSystem.releaseClient(client);
-		log.debug("release: releaseed connection to System");
+		log.debug("release: released connection to System");
 	}
 
 	public JCO.Client getClient() {

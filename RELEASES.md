@@ -9,8 +9,17 @@ Ibis AdapterFramework release notes
 Upcoming
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.3...HEAD)
+[Commits](https://github.com/ibissource/iaf/compare/v7.4...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+
+
+
+
+7.4
+--------
+
+[Commits](https://github.com/ibissource/iaf/compare/v7.3...v7.4)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.4)](https://travis-ci.org/ibissource/iaf)
 
 - Improve validation config warnings
 - ShowConfigurationStatus - improve error view
@@ -18,6 +27,13 @@ Upcoming
     - UploadConfigService adapter
     - Facility to (de)activate configs
 - Add Samba2Filesystem, used in SambaSender, SambaPipe and SambaListener
+- Fix scheduler seconds/miliseconds bug
+- Fix ability to run xslt1 xPath expressions with the xsltpipe and sender
+- SAP clear function template cache at configuration reload
+- Upgrade javassist dependency version to support java 8+
+- Make sure FlowDiagrams are rendered upon ibis startup
+
+
 
 7.3
 --------

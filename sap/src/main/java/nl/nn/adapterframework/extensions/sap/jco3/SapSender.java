@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,18 +15,19 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco3;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.parameters.ParameterValue;
-import nl.nn.adapterframework.parameters.ParameterValueList;
-
 import org.apache.commons.lang.StringUtils;
 
 import com.sap.conn.jco.JCoDestination;
 import com.sap.conn.jco.JCoFunction;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.extensions.sap.ISapSender;
+import nl.nn.adapterframework.extensions.sap.SapException;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValue;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 
 /**
  * Implementation of {@link nl.nn.adapterframework.core.ISender sender} that calls a SAP RFC-function.
@@ -65,7 +66,7 @@ import com.sap.conn.jco.JCoFunction;
  * @author  Jaco de Groot
  * @since   5.0
  */
-public class SapSender extends SapSenderBase {
+public class SapSender extends SapSenderBase implements ISapSender {
 	
 	private String functionName=null;
 	private String functionNameParam="functionName";
@@ -75,6 +76,7 @@ public class SapSender extends SapSenderBase {
 		setSynchronous(true);
 	}
 	
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getFunctionName())) {
@@ -89,14 +91,6 @@ public class SapSender extends SapSenderBase {
 				throw new ConfigurationException(getLogPrefix()+"functionName cannot be specified both in attribute functionName ["+getFunctionName()+"] and via parameter ["+getFunctionNameParam()+"]");
 			}
 		}
-	}
-
-	public void open() throws SenderException {
-		super.open();
-	}
-	
-	public void close() {
-		super.close();
 	}
 
 	public JCoFunction getFunction(SapSystem sapSystem, ParameterValueList pvl) throws SapException {
@@ -120,13 +114,12 @@ public class SapSender extends SapSenderBase {
 		return getFunctionTemplate(sapSystem, functionName).getFunction();
 	}
 
+	@Override
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		String tid=null;
 		try {
 			ParameterValueList pvl = null;
-			if (prc!=null) {
-				pvl=prc.getValues(paramList);
-			}
+			pvl=prc.getValues(paramList);
 			SapSystem sapSystem = getSystem(pvl);
 			
 			JCoFunction function=getFunction(sapSystem, pvl);
@@ -158,19 +151,23 @@ public class SapSender extends SapSenderBase {
 		}
 	}
 
+	@Override
 	public void setSynchronous(boolean b) {
 		super.setSynchronous(b);
 	}
 
 
+	@Override
 	public String getFunctionName() {
 		return functionName;
 	}
+	@Override
 	public void setFunctionName(String string) {
 		functionName = string;
 	}
 
 
+	@Override
 	public void setFunctionNameParam(String string) {
 		functionNameParam = string;
 	}

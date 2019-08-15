@@ -69,7 +69,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
-import org.quartz.Scheduler;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -391,7 +390,7 @@ public class JobDef {
 	private TransactionDefinition txDef=null;
 	private PlatformTransactionManager txManager;
 
-	private String jobGroup = Scheduler.DEFAULT_GROUP;
+	private String jobGroup = SchedulerHelper.DEFAULT_GROUP;
 
 	private List<DirectoryCleaner> directoryCleaners = new ArrayList<DirectoryCleaner>();
 
@@ -533,17 +532,17 @@ public class JobDef {
 	}
 
 	public JobDetail getJobDetail(IbisManager ibisManager) {
-		
+
 		JobDataMap jobDataMap = new JobDataMap();
-		jobDataMap.put("manager", ibisManager);
-		jobDataMap.put("jobdef", this);
-		
+		jobDataMap.put(ConfiguredJob.MANAGER_KEY, ibisManager);
+		jobDataMap.put(ConfiguredJob.JOBDEF_KEY, this);
+
 		JobDetail jobDetail = newJob(ConfiguredJob.class)
 				.withIdentity(getName(), getJobGroup())
 				.setJobData(jobDataMap)
 				.withDescription(StringUtils.isNotEmpty(getDescription()) ? getDescription() : null)
 				.build();
-		
+
 		return jobDetail;
 	}
 

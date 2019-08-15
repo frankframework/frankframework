@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.Misc;
 public class GraphvizEngine {
 	protected Logger log = LogUtil.getLogger(this);
 	private static final ThreadLocal<Env> ENVS = new ThreadLocal<Env>();
-	private String graphvizVersion = "2.0.0";
+	private String graphvizVersion = AppConstants.getInstance().getProperty("graphviz.js.version", "2.0.0");
 
 	/**
 	 * Create a new GraphvizEngine instance. Using version 2.0.0
@@ -57,7 +57,7 @@ public class GraphvizEngine {
 	 * @throws IOException 
 	 */
 	public GraphvizEngine(String graphvizVersion) throws IOException {
-		if(graphvizVersion != null)
+		if(StringUtils.isNotEmpty(graphvizVersion))
 			this.graphvizVersion = graphvizVersion;
 
 		//Create the GraphvizEngine, make sure it can find and load the required libraries

@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Integration Partners B.V.
+Copyright 2017 - 2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.util.Iterator;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
@@ -75,7 +75,7 @@ public class ApiServiceDispatcher {
 		return config;
 	}
 
-	public void registerServiceClient(ApiListener listener) throws ConfigurationException {
+	public void registerServiceClient(ApiListener listener) throws ListenerException {
 		String uriPattern = listener.getCleanPattern();
 		String method = listener.getMethod();
 
@@ -104,5 +104,4 @@ public class ApiServiceDispatcher {
 	public SortedMap<String, ApiDispatchConfig> getPatternClients() {
 		return patternClients;
 	}
-
 }

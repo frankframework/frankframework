@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,11 +18,9 @@ package nl.nn.adapterframework.extensions.sap.jco3;
 import java.lang.reflect.Field;
 import java.util.Iterator;
 
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.GlobalListItem;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+
 import com.sap.conn.idoc.IDocRepository;
 import com.sap.conn.idoc.jco.JCoIDoc;
 import com.sap.conn.jco.JCo;
@@ -30,6 +28,13 @@ import com.sap.conn.jco.JCoDestination;
 import com.sap.conn.jco.JCoDestinationManager;
 import com.sap.conn.jco.JCoException;
 import com.sap.conn.jco.JCoRepository;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.extensions.sap.ISapSystemJco3;
+import nl.nn.adapterframework.extensions.sap.SapException;
+import nl.nn.adapterframework.extensions.sap.SapSystemFactory;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.GlobalListItem;
 /**
  * A SapSystem is a provider of repository information and connections to a SAP-system.
  * <p><b>Configuration:</b>
@@ -69,7 +74,7 @@ import com.sap.conn.jco.JCoRepository;
  * @author  Niels Meijer
  * @since   5.0
  */
-public class SapSystem extends GlobalListItem {
+public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 
 	private String host;
 	private String ashost;
@@ -108,12 +113,12 @@ public class SapSystem extends GlobalListItem {
 	}
 
 	private void clearSystem() {
-		SapSystemDataProvider.getInstance().unregisterSystem(this);
+		SapSystemDataProvider.getInstance().deleteSystem(this);
 	}
 
 	private void initSystem() throws SapException {
 		try {
-			SapSystemDataProvider.getInstance().registerSystem(this);
+			SapSystemDataProvider.getInstance().updateSystem(this);
 			if (log.isDebugEnabled() && getTraceLevel()>0) {
 				String logPath=AppConstants.getInstance().getResolvedProperty("logging.path");
 				JCo.setTrace(getTraceLevel(), logPath);
@@ -124,8 +129,8 @@ public class SapSystem extends GlobalListItem {
 	}
 
 	public static void configureAll() {
-		for(Iterator it = getRegisteredNames(); it.hasNext();) {
-			String systemName=(String)it.next();
+		for(Iterator<String> it = getRegisteredNames(); it.hasNext();) {
+			String systemName = it.next();
 			SapSystem system = getSystem(systemName);
 			system.configure();
 		}
@@ -141,6 +146,7 @@ public class SapSystem extends GlobalListItem {
 	}
 
 	public synchronized void closeSystem() {
+		clearCache();
 		if (--referenceCount<=0) {
 			log.debug(getLogPrefix()+"reference count ["+referenceCount+"], closing system");
 			referenceCount=0;
@@ -152,19 +158,36 @@ public class SapSystem extends GlobalListItem {
 	}
 
 	public static void openSystems() throws SapException {
-		for(Iterator it = getRegisteredNames(); it.hasNext();) {
-			String systemName=(String)it.next();
+		for(Iterator<String> it = getRegisteredNames(); it.hasNext();) {
+			String systemName = it.next();
 			SapSystem system = getSystem(systemName);
 			system.openSystem();
 		}
 	}
 
 	public static void closeSystems() {
-		for(Iterator it = getRegisteredNames(); it.hasNext();) {
-			String systemName=(String)it.next();
+		for(Iterator<String> it = getRegisteredNames(); it.hasNext();) {
+			String systemName = it.next();
 			SapSystem system = getSystem(systemName);
 			system.closeSystem();
 		}
+	}
+
+	@Override
+	public void registerItem(Object dummyParent) {
+		super.registerItem(dummyParent);
+		SapSystemFactory.getInstance().registerSapSystem(this, getName());
+	}
+
+	public void clearCache() {
+		log.debug("start clearing cache of SapSystem ["+getName()+"]");
+		try {
+			JCoRepository jcoRepository = getJcoRepository();
+			jcoRepository.clear();
+		} catch (JCoException e) {
+			log.warn("cannot clear function template cache",e);
+		}
+		log.debug("end clearing cache of SapSystem ["+getName()+"]");
 	}
 
 	public JCoDestination getDestination() throws JCoException {
@@ -184,19 +207,23 @@ public class SapSystem extends GlobalListItem {
 		return "SapSystem ["+getName()+"] "; 
 	}
 
+	@Override
 	public String toString() {
 		//return ToStringBuilder.reflectionToString(this);
 		return (new ReflectionToStringBuilder(this) {
+			@Override
 			protected boolean accept(Field f) {
 				return super.accept(f) && !f.getName().equals("passwd");
 			}
 		}).toString();
 	}
 
+	@Override
 	public void setHost(String host) {
 		this.host = host;
 	}
 
+	@Override
 	public void setAshost(String ashost) {
 		this.ashost = ashost;
 	}
@@ -209,6 +236,7 @@ public class SapSystem extends GlobalListItem {
 		}
 	}
 
+	@Override
 	public void setSystemnr(String string) {
 		systemnr = string;
 	}
@@ -217,6 +245,7 @@ public class SapSystem extends GlobalListItem {
 		return systemnr;
 	}
 
+	@Override
 	public void setGroup(String group) {
 		this.group = group;
 	}
@@ -225,6 +254,7 @@ public class SapSystem extends GlobalListItem {
 		return group;
 	}
 
+	@Override
 	public void setR3name(String r3name) {
 		this.r3name = r3name;
 	}
@@ -233,6 +263,7 @@ public class SapSystem extends GlobalListItem {
 		return r3name;
 	}
 
+	@Override
 	public void setMshost(String mshost) {
 		this.mshost = mshost;
 	}
@@ -256,10 +287,12 @@ public class SapSystem extends GlobalListItem {
 		return msservOffset;
 	}
 
+	@Override
 	public void setMsservOffset(int i) {
 		msservOffset = i;
 	}
 
+	@Override
 	public void setGwhost(String string) {
 		gwhost = string;
 	}
@@ -279,6 +312,7 @@ public class SapSystem extends GlobalListItem {
 		return String.valueOf(getGwservOffset() + Integer.parseInt(getSystemnr()));
 	}
 
+	@Override
 	public void setGwservOffset(int i) {
 		gwservOffset = i;
 	}
@@ -287,6 +321,7 @@ public class SapSystem extends GlobalListItem {
 		return gwservOffset;
 	}
 
+	@Override
 	public void setMandant(String string) {
 		mandant = string;
 	}
@@ -295,6 +330,7 @@ public class SapSystem extends GlobalListItem {
 		return mandant;
 	}
 
+	@Override
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
@@ -303,6 +339,7 @@ public class SapSystem extends GlobalListItem {
 		return authAlias;
 	}
 
+	@Override
 	public void setUserid(String string) {
 		userid = string;
 	}
@@ -311,6 +348,7 @@ public class SapSystem extends GlobalListItem {
 		return userid;
 	}
 
+	@Override
 	public void setPasswd(String string) {
 		passwd = string;
 	}
@@ -323,10 +361,12 @@ public class SapSystem extends GlobalListItem {
 		return language;
 	}
 
+	@Override
 	public void setLanguage(String string) {
 		language = string;
 	}
 
+	@Override
 	public void setUnicode(boolean b) {
 		unicode = b;
 	}
@@ -335,6 +375,7 @@ public class SapSystem extends GlobalListItem {
 		return unicode;
 	}
 
+	@Override
 	public void setMaxConnections(int i) {
 		maxConnections = i;
 	}
@@ -343,6 +384,7 @@ public class SapSystem extends GlobalListItem {
 		return maxConnections;
 	}
 
+	@Override
 	public void setTraceLevel(int i) {
 		traceLevel = i;
 	}
@@ -351,6 +393,7 @@ public class SapSystem extends GlobalListItem {
 		return traceLevel;
 	}
 
+	@Override
 	public void setSncEnabled(boolean sncEnabled) {
 		this.sncEnabled = sncEnabled;
 	}
@@ -358,6 +401,7 @@ public class SapSystem extends GlobalListItem {
 		return sncEnabled;
 	}
 
+	@Override
 	public void setSncLibrary(String sncLibPath) {
 		this.sncLibPath = sncLibPath;
 	}
@@ -365,13 +409,18 @@ public class SapSystem extends GlobalListItem {
 		return sncLibPath;
 	}
 
-	public void setSncQop(int qop) {
+	@Override
+	public void setSncQop(int qop) throws ConfigurationException {
+		if(qop < 1 || qop > 9)
+			throw new ConfigurationException("SNC QOP cannot be smaller then 0 or larger then 9");
+
 		this.qop = qop;
 	}
 	public String getSncQop() {
 		return qop+"";
 	}
 
+	@Override
 	public void setMyName(String myName) {
 		this.myName = myName;
 	}
@@ -379,6 +428,7 @@ public class SapSystem extends GlobalListItem {
 		return myName;
 	}
 
+	@Override
 	public void setPartnerName(String partnerName) {
 		this.partnerName = partnerName;
 	}
@@ -386,6 +436,7 @@ public class SapSystem extends GlobalListItem {
 		return partnerName;
 	}
 
+	@Override
 	public void setSncAuthMethod(String sncAuthMethod) {
 		this.authMethod = sncAuthMethod;
 	}
@@ -393,10 +444,16 @@ public class SapSystem extends GlobalListItem {
 		return authMethod;
 	}
 
+	@Override
 	public void setSncSSO2(String sncSSO2) {
 		this.sncSSO2 = sncSSO2;
 	}
 	public String getSncSSO2() {
 		return sncSSO2;
+	}
+
+	@Override
+	public void setServiceOffset(int i) {
+		log.warn("setServiceOffset not used in JCo3");
 	}
 }

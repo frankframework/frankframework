@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.extensions.sap.jco3;
+package nl.nn.adapterframework.extensions.sap;
 
 import nl.nn.adapterframework.core.IbisException;
 
@@ -26,16 +26,21 @@ import nl.nn.adapterframework.core.IbisException;
  * @since   5.0
  */
 public class SapException extends IbisException {
-		
+
+	private static final long serialVersionUID = 1L;
+
 	public SapException() {
 		super();
 	}
+
 	public SapException(String errMsg) {
 		super(errMsg);
 	}
+
 	public SapException(String errMsg, Throwable t) {
 		super(errMsg, t);
 	}
+
 	public SapException(Throwable t) {
 		super(t);
 	}
