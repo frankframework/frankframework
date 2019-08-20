@@ -50,23 +50,23 @@ public class JavascriptSender extends SenderSeries {
 	public void open() throws SenderException {
 		super.open();
 
-		if (StringUtils.isNotEmpty(getjsFileName())) {
+		if (StringUtils.isNotEmpty(getJsFileName())) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(getClassLoader(), getjsFileName());
+				resource = ClassUtils.getResourceURL(getClassLoader(), getJsFileName());
 			} catch (Throwable e) {
 				throw new SenderException(
-					getLogPrefix() + "got exception searching for [" + getjsFileName() + "]", e);
+					getLogPrefix() + "got exception searching for [" + getJsFileName() + "]", e);
 			}
 			if (resource == null) {
 				throw new SenderException(
-					getLogPrefix() + "cannot find resource [" + getjsFileName() + "]");
+					getLogPrefix() + "cannot find resource [" + getJsFileName() + "]");
 			}
 			try {
 				fileInput = Misc.resourceToString(resource, SystemUtils.LINE_SEPARATOR);
 			} catch (Throwable e) {
 				throw new SenderException(
-					getLogPrefix() + "got exception loading [" + getjsFileName() + "]", e);
+					getLogPrefix() + "got exception loading [" + getJsFileName() + "]", e);
 			}
 		}
 		if ((StringUtils.isEmpty(fileInput)) && inputString == null) { 
@@ -125,32 +125,32 @@ public class JavascriptSender extends SenderSeries {
 		jsResult = jsInstance.executeFunction(jsFunctionName, jsParameters);
 		
 		jsInstance.closeRuntime();
-        
-	    /*Pass jsResult, the result of the Javascript function.
+
+		/*Pass jsResult, the result of the Javascript function.
 		It is recommended to have the result of the Javascript function be of type String, which will be the output of the sender */
 		return jsResult.toString();
 	}
 
 	@IbisDoc({"the name of the javascript file containing the functions to run", ""})
-	public void setjsFileName(String jsFileName) {
+	public void setJsFileName(String jsFileName) {
 		this.jsFileName = jsFileName;
 	}
 	
-	public String getjsFileName() {
+	public String getJsFileName() {
 		return jsFileName;
 	}
 	
 	@IbisDoc({"the name of the javascript function that will be called (first)", "main"})
-	public void setjsFunctionName(String jsFunctionName) {
+	public void setJsFunctionName(String jsFunctionName) {
 		this.jsFunctionName = jsFunctionName;
 	}
 
-	public String getjsFunctionName() {
+	public String getJsFunctionName() {
 		return jsFunctionName;
 	}
 	
 	@IbisDoc({"the name of the javascript engine to be used", "J2V8"})
-	public void setengineName(String engineName) {
+	public void setEngineName(String engineName) {
 		this.engine = engineName;
 	}
 	

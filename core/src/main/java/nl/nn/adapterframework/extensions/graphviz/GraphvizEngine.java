@@ -1,6 +1,6 @@
 /*
    Copyright 2018 Nationale-Nederlanden
-   
+
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
@@ -20,12 +20,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.eclipsesource.v8.JavaVoidCallback;
-import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
 
 import nl.nn.adapterframework.extensions.javascript.J2V8;
-import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -160,7 +158,7 @@ public class GraphvizEngine {
 	private static class Env {
 		protected Logger log = LogUtil.getLogger(this);
 
-		JavascriptEngine<V8> V8Instance = new J2V8();
+		J2V8 V8Instance = new J2V8();
 		final ResultHandler resultHandler = new ResultHandler();
 
 		/**

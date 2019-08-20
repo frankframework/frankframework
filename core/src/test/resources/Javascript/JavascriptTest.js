@@ -20,7 +20,7 @@ function f3(x,y,z){
 	return ""+result;
 }
 
-function f4(x, y) {
+function f4(x,y) {
 	var a = x * 5;
 	var b = y * 2;
 

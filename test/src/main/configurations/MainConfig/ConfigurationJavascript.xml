@@ -68,4 +68,38 @@
 			</pipe>
 		</pipeline>
 	</adapter>
+	<adapter name="JavascriptCallback" description="Call a sender with javascript code">
+		<receiver
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="JavascriptCallback"
+			>
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4test-JavascriptCallback"
+			/>
+		</receiver>
+		<pipeline firstPipe="JavascriptCallback">
+			<exits>
+				<exit path="EXIT" state="success"/>
+			</exits>
+			<pipe name="JavascriptCallback"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+					<sender className="nl.nn.adapterframework.senders.JavascriptSender"
+						jsFileName="JavaScript/JavascriptTest.js"
+						jsFunctionName="f5"
+						engineName="J2V8">
+						<param name="x" type="integer" sessionKey="originalMessage"/>
+						<param name="y" type="integer" value="2"/>
+						<sender name = "file"
+							className="nl.nn.adapterframework.senders.FileSender"
+							directory= "."
+							actions= "write_append, delete"
+							fileName="WriteFile.txt">
+						</sender>
+					</sender>
+				<forward name="success" path="EXIT" />
+				<forward name="exception" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
 </ibis>

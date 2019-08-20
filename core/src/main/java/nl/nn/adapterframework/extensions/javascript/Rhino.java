@@ -34,7 +34,7 @@ public class Rhino implements JavascriptEngine<Context> {
 
 	@Override
 	public void registerCallback(ISender sender, ParameterResolutionContext prc) {
-		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Rhino callback functionality not implemented");
 		
 	}
 
