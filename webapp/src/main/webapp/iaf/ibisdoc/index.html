@@ -13,7 +13,7 @@
     <div class="folders" ng-controller="foldersCtrl">
 
       <div ng-repeat="folder in folders">
-        <p class="clickableFolders" ng-click="showClasses(folder.name)"> {{ folder.name }}</p>
+        <p id="{{ folder.name }}" class="clickableFolders" ng-click="showClasses(folder.name)"> {{ folder.name }}</p>
       </div>
 
     </div>
@@ -62,7 +62,7 @@
       <div class="outerDescription">
         <div class="innerDescription">
           <div class="javadocLink">
-              <a ng-href=" https://javadoc.ibissource.org/latest/{{ methods[0].javadocLink}}.html" target="_blank">Javadoc</a>
+            <a ng-href=" https://javadoc.ibissource.org/latest/{{ methods[0].javadocLink}}.html" target="_blank">Javadoc</a>
           </div>
 
           <br>

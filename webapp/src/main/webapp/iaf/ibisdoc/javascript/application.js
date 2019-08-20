@@ -63,6 +63,15 @@ app.controller("foldersCtrl", function($scope, dataService, classesService, meth
 
   $scope.showClasses = function(folderName) {
     angular.forEach($scope.folders, function(folder) {
+      var resetFolders = angular.element(document.querySelector('#' + folder.name));
+      console.log(resetFolders);
+      resetFolders[0].style.color = "black";
+
+    });
+    var oneFolder = angular.element( document.querySelector('#' + folderName));
+    oneFolder[0].style.color = "blue";
+
+    angular.forEach($scope.folders, function(folder) {
       if (angular.equals(folder.name, folderName)) {
         classesService.setClasses(folder.classes);
       }
