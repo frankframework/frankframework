@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,22 +18,23 @@ package nl.nn.adapterframework.http;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.http.HttpHost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
-import org.mockito.Mockito;
 
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
-public abstract class BaseHttpSender<S extends HttpSenderBase> extends Mockito {
+public abstract class HttpSenderTestBase<S extends HttpSenderBase> extends SenderTestBase<S> {
 
-	protected S sender;
-	public abstract S createSender();
+	public S getSender() throws Exception {
+		return getSender(true);
+	}
 
-	public S getSender() throws IOException {
+	public S getSender(boolean addCustomHeader) throws Exception {
 		sender = createSender();
 		if(sender == null)
 			fail("sender not initialized");
@@ -47,15 +48,22 @@ public abstract class BaseHttpSender<S extends HttpSenderBase> extends Mockito {
 
 		//Some default settings, url will be mocked.
 		sender.setUrl("http://127.0.0.1/");
-		sender.setIgnoreRedirects(true);
 		sender.setVerifyHostname(false);
 		sender.setAllowSelfSignedCertificates(true);
+
+		if(addCustomHeader) {
+			sender.setHeadersParams("custom-header");
+			Parameter headerParameter = new Parameter();
+			headerParameter.setName("custom-header");
+			headerParameter.setValue("value");
+			sender.addParameter(headerParameter);
+		}
 
 		return sender;
 	}
 
 	private final String BASEDIR = "/nl/nn/adapterframework/http/response/";
-	protected String getFile(String file) throws IOException, TimeoutException {
+	protected String getFile(String file) throws IOException {
 		return TestFileUtils.getTestFile(BASEDIR+file);
 //		URL url = this.getClass().getResource(BASEDIR+file);
 //		if (url == null) {

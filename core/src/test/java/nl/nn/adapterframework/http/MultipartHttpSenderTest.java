@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2019 Nationale-Nederlanden
+   Copyright 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,185 +21,25 @@ import java.io.ByteArrayInputStream;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 import org.junit.Test;
 
-public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
+public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSender> {
 
 	@Override
-	public HttpSender createSender() {
-		return spy(new HttpSender());
+	public MultipartHttpSender createSender() {
+		return spy(new MultipartHttpSender());
 	}
 
 	@Test
-	public void simpleMockedHttpGetWithoutPRC() throws Throwable {
-		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
-		String input = "hallo";
-
-		try {
-			sender.setMethodType("GET");
-
-			sender.configure();
-			sender.open();
-
-			String result = sender.sendMessage(null, input);
-			assertEquals(getFile("simpleMockedHttpGetWithoutPRC.txt"), result.trim());
-		} catch (SenderException e) {
-			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.close();
-			}
-		}
-	}
-
-	@Test
-	public void simpleMockedHttpGet() throws Throwable {
-		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
-		String input = "hallo";
-
-		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
-
-			sender.setMethodType("GET");
-
-			sender.configure();
-			sender.open();
-
-			String result = sender.sendMessage(null, input, prc);
-			assertEquals(getFile("simpleMockedHttpGet.txt"), result.trim());
-		} catch (SenderException e) {
-			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.close();
-			}
-		}
-	}
-
-	@Test
-	public void simpleMockedHttpGetWithParams() throws Throwable {
-		HttpSender sender = getSender();
-		String input = "hallo";
-
-		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
-
-			Parameter param1 = new Parameter();
-			param1.setName("key");
-			param1.setValue("value");
-			sender.addParameter(param1);
-
-			Parameter param2 = new Parameter();
-			param2.setName("otherKey");
-			param2.setValue("otherValue");
-			sender.addParameter(param2);
-
-			sender.setMethodType("GET");
-
-			sender.configure();
-			sender.open();
-
-			String result = sender.sendMessage(null, input, prc);
-			assertEquals(getFile("simpleMockedHttpGetWithParams.txt"), result.trim());
-		} catch (SenderException e) {
-			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.close();
-			}
-		}
-	}
-
-	@Test
-	public void simpleMockedHttpUnknownHeaderParam() throws Throwable {
-		HttpSender sender = getSender();
-		String input = "hallo";
-
-		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
-
-			Parameter param1 = new Parameter();
-			param1.setName("key");
-			param1.setValue("value");
-			sender.addParameter(param1);
-
-			Parameter param2 = new Parameter();
-			param2.setName("otherKey");
-			param2.setValue("otherValue");
-			sender.addParameter(param2);
-
-			sender.setMethodType("GET");
-			sender.setHeadersParams("custom-header, doesn-t-exist");
-
-			sender.configure();
-			sender.open();
-
-			String result = sender.sendMessage(null, input, prc);
-			assertEquals(getFile("simpleMockedHttpGetWithParams.txt"), result.trim());
-		} catch (SenderException e) {
-			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.close();
-			}
-		}
-	}
-
-	@Test
-	public void simpleMockedHttpPost() throws Throwable {
-		HttpSender sender = getSender();
+	public void simpleMockedMultipartHttp1() throws Throwable {
+		MultipartHttpSender sender = getSender();
 		String input = "<xml>input</xml>";
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
 			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
-
-			Parameter param1 = new Parameter();
-			param1.setName("key");
-			param1.setValue("value");
-			sender.addParameter(param1);
-
-			Parameter param2 = new Parameter();
-			param2.setName("otherKey");
-			param2.setValue("otherValue");
-			sender.addParameter(param2);
-
-			sender.setMethodType("POST");
-			sender.setParamsInUrl(false);
-			sender.setInputMessageParam("nameOfTheFirstContentId");
-
-			sender.configure();
-			sender.open();
-
-			String result = sender.sendMessage(null, input, prc);
-			assertEquals(getFile("simpleMockedHttpPost.txt"), result);
-		} catch (SenderException e) {
-			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.close();
-			}
-		}
-	}
-
-	@Test
-	public void simpleMockedHttpMultipart() throws Throwable {
-		HttpSender sender = getSender();
-		String input = "<xml>input</xml>";
-
-		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
-
-			sender.setMethodType("POST");
-			sender.setParamsInUrl(false);
-			sender.setInputMessageParam("request");
 
 			String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
 					+ "sessionKey=\"part_file\" size=\"72833\" "
@@ -213,7 +53,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.open();
 
 			String result = sender.sendMessage(null, input, prc);
-			assertEquals(getFile("simpleMockedHttpMultipart.txt"), result.trim());
+			assertEquals(getFile("simpleMockedMultipartHttp1.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {
@@ -224,17 +64,75 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	}
 
 	@Test
-	public void simpleMockedHttpMtom() throws Throwable {
-		HttpSender sender = getSender();
+	public void simpleMockedMultipartHttp2() throws Throwable {
+		MultipartHttpSender sender = getSender();
 		String input = "<xml>input</xml>";
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase(session);
 			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
-			sender.setMethodType("POST");
-			sender.setParamsInUrl(false);
-			sender.setInputMessageParam("request");
+			String xmlMultipart = "<parts><part name=\"dummy\" filename=\"document.pdf\" "
+					+ "sessionKey=\"part_file\" size=\"72833\" "
+					+ "mimeType=\"application/pdf\"/></parts>";
+			pls.put("multipartXml", xmlMultipart);
+			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+
+			sender.setMultipartXmlSessionKey("multipartXml");
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(null, input, prc);
+			assertEquals(getFile("simpleMockedMultipartHttp2.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void simpleMockedMultipartHttp3() throws Throwable {
+		MultipartHttpSender sender = getSender();
+		String input = "<xml>input</xml>";
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
+
+			String xmlMultipart = "<parts><part name=\"dummy\" "
+					+ "value=\"{json:true}\" size=\"72833\" "
+					+ "mimeType=\"application/json\"/></parts>";
+			pls.put("multipartXml", xmlMultipart);
+			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+
+			sender.setMultipartXmlSessionKey("multipartXml");
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(null, input, prc);
+			assertEquals(getFile("simpleMockedMultipartHttp3.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void simpleMockedMultipartMtom1() throws Throwable {
+		MultipartHttpSender sender = getSender();
+		String input = "<xml>input</xml>";
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
 					+ "sessionKey=\"part_file\" size=\"72833\" "
@@ -249,7 +147,71 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			sender.open();
 
 			String result = sender.sendMessage(null, input, prc);
-			assertEquals(getFile("simpleMockedHttpMtom.txt"), result.trim());
+			assertEquals(getFile("simpleMockedMultipartMtom1.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void simpleMockedMultipartMtom2() throws Throwable {
+		MultipartHttpSender sender = getSender();
+		String input = "<xml>input</xml>";
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
+
+			String xmlMultipart = "<parts><part name=\"dummy\" filename=\"document.pdf\" "
+					+ "sessionKey=\"part_file\" size=\"72833\" "
+					+ "mimeType=\"application/pdf\"/></parts>";
+			pls.put("multipartXml", xmlMultipart);
+			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+
+			sender.setMtomEnabled(true);
+			sender.setMultipartXmlSessionKey("multipartXml");
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(null, input, prc);
+			assertEquals(getFile("simpleMockedMultipartMtom2.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void simpleMockedMultipartMtom3() throws Throwable {
+		MultipartHttpSender sender = getSender();
+		String input = "<xml>input</xml>";
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
+
+			String xmlMultipart = "<parts><part name=\"dummy\" "
+					+ "value=\"{json:true}\" size=\"72833\" "
+					+ "mimeType=\"application/json\"/></parts>";
+			pls.put("multipartXml", xmlMultipart);
+			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+
+			sender.setMtomEnabled(true);
+			sender.setMultipartXmlSessionKey("multipartXml");
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(null, input, prc);
+			assertEquals(getFile("simpleMockedMultipartMtom3.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {

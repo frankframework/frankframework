@@ -4,13 +4,13 @@ custom-header: value
 Content-Type: multipart/form-data; boundary=IGNORE; charset=UTF-8
 
 --IGNORE
-Content-Disposition: form-data; name="request"
+Content-Disposition: form-data; name="message"
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 <xml>input</xml>
 --IGNORE
-Content-Disposition: form-data; name="part_file"; filename="document.pdf"
+Content-Disposition: form-data; name="dummy"; filename="document.pdf"
 Content-Type: application/pdf; charset=UTF-8
 Content-Transfer-Encoding: binary
 

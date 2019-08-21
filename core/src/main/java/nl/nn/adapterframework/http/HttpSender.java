@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2018 Nationale-Nederlanden
+   Copyright 2013, 2016-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import javax.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -150,7 +149,7 @@ import org.w3c.dom.Node;
  * @version 2.0
  */
 
-public class HttpSender extends HttpSenderBase implements HasPhysicalDestination {
+public class HttpSender extends HttpSenderBase {
 
 	private String streamResultToFileNameSessionKey = null;
 	private String storeResultAsStreamInSessionKey;
@@ -158,14 +157,27 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 	private boolean base64=false;
 	private boolean streamResultToServlet=false;
 
+	private boolean paramsInUrl=true;
+	private boolean ignoreRedirects=false;
+	private String inputMessageParam=null;
+
 	private boolean multipart=false;
 	private boolean multipartResponse=false;
 	private String multipartXmlSessionKey;
 	private boolean mtomEnabled = false;
-	private String mtomContentTransferEncoding = null;
+	private String mtomContentTransferEncoding = null; //Defaults to 8-bit for normal String messages, 7-bit for e-mails and binary for streams
 
 	public void configure() throws ConfigurationException {
 		super.configure();
+
+		if (!getMethodType().equals("POST")) {
+			if (!isParamsInUrl()) {
+				throw new ConfigurationException(getLogPrefix()+"paramsInUrl can only be set to false for methodType POST");
+			}
+			if (StringUtils.isNotEmpty(getInputMessageParam())) {
+				throw new ConfigurationException(getLogPrefix()+"inputMessageParam can only be set for methodType POST");
+			}
+		}
 
 		if(StringUtils.isEmpty(getContentType()) && !getMethodType().equalsIgnoreCase("POST"))
 			setContentType("text/html; charset="+getCharSet());
@@ -183,7 +195,7 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 			boolean queryParametersAppended = false;
 
 			StringBuffer path = new StringBuffer(uri.getPath());
-			
+
 			if (uri.getQueryParams().size() > 0) {
 				path.append("?");
 				for (Iterator<NameValuePair> it=uri.getQueryParams().iterator(); it.hasNext(); ) {
@@ -193,16 +205,14 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 				}
 				queryParametersAppended = true;
 			}
-			
+
 			if (getMethodType().equals("GET")) {
 				if (parameters!=null) {
 					queryParametersAppended = appendParameters(queryParametersAppended,path,parameters,headersParamsMap);
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"path after appending of parameters ["+path.toString()+"]");
 				}
 				HttpGet method = new HttpGet(path+(parameters==null? message:""));
-				for (String param: headersParamsMap.keySet()) {
-					method.setHeader(param, headersParamsMap.get(param));
-				}
+
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+method.getURI().getQuery()+"]");
 				return method;
 			} else if (getMethodType().equals("POST")) {
@@ -215,9 +225,6 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 					} else {
 						message=msg.toString();
 					}
-				}
-				for (String param: headersParamsMap.keySet()) {
-					method.setHeader(param, headersParamsMap.get(param));
 				}
 				HttpEntity entity = new ByteArrayEntity(message.getBytes(getCharSet()));
 				method.setEntity(entity);
@@ -279,13 +286,13 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 						ParameterValue pv = parameters.getParameterValue(i);
 						String name = pv.getDefinition().getName();
 						String value = pv.asStringValue("");
-						if (headersParamsMap.keySet().contains(name)) {
-							hmethod.addHeader(name,value);
-							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended header ["+name+"] with value ["+value+"]");
-						} else {
-							requestFormElements.add(new BasicNameValuePair(name,value));
-							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+name+"] with value ["+value+"]");
-						}
+
+						// Skip parameters that have been added as headers
+						if (headersParamsMap.keySet().contains(name))
+							continue;
+
+						requestFormElements.add(new BasicNameValuePair(name,value));
+						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+name+"] with value ["+value+"]");
 					}
 				}
 				try {
@@ -295,7 +302,7 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 				}
 			}
 			else {
-				HttpEntity requestEntity = createMultiPartEntity(message, parameters, session);
+				HttpEntity requestEntity = createMultiPartEntity(message, parameters, headersParamsMap, session);
 				hmethod.setEntity(requestEntity);
 			}
 		return hmethod;
@@ -327,13 +334,14 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 	}
 
 	protected FormBodyPart createMultipartBodypart(String name, InputStream is, String fileName, String contentType) {
+		log.debug(getLogPrefix()+"appending filepart ["+name+"] with value ["+is+"] fileName ["+fileName+"] and contentType ["+contentType+"]");
 		FormBodyPartBuilder bodyPart = FormBodyPartBuilder.create()
 			.setName(name)
 			.setBody(new InputStreamBody(is, ContentType.create(contentType, getCharSet()), fileName));
 		return bodyPart.build();
 	}
 
-	protected HttpEntity createMultiPartEntity(String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+	protected HttpEntity createMultiPartEntity(String message, ParameterValueList parameters, Map<String, String> headersParamsMap, IPipeLineSession session) throws SenderException {
 		MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 
 		entity.setCharset(Charset.forName(getCharSet()));
@@ -349,6 +357,11 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 				ParameterValue pv = parameters.getParameterValue(i);
 				String paramType = pv.getDefinition().getType();
 				String name = pv.getDefinition().getName();
+
+				// Skip parameters that have been added as headers
+				if (headersParamsMap.keySet().contains(name))
+					continue;
+
 
 				if (Parameter.TYPE_INPUTSTREAM.equals(paramType)) {
 					Object value = pv.getValue();
@@ -392,28 +405,30 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 					Iterator<Node> iter = parts.iterator();
 					while (iter.hasNext()) {
 						Element partElement = (Element) iter.next();
-						//String partType = partElement.getAttribute("type");
-						String partName = partElement.getAttribute("name");
-						String partSessionKey = partElement.getAttribute("sessionKey");
-						String partMimeType = partElement.getAttribute("mimeType");
-						Object partObject = session.get(partSessionKey);
-						if (partObject instanceof InputStream) {
-							InputStream fis = (InputStream) partObject;
-
-							entity.addPart(createMultipartBodypart(partSessionKey, fis, partName, partMimeType));
-							log.debug(getLogPrefix()+"appended filepart ["+partSessionKey+"] with value ["+partObject+"] and name ["+partName+"]");
-						} else {
-							String partValue = (String) session.get(partSessionKey);
-
-							entity.addPart(createMultipartBodypart(partName, partValue, partMimeType));
-							log.debug(getLogPrefix()+"appended stringpart ["+partSessionKey+"] with value ["+partValue+"]");
-						}
+						entity.addPart(elementToFormBodyPart(partElement, session));
 					}
 				}
 			}
 		}
 
 		return entity.build();
+	}
+
+	protected FormBodyPart elementToFormBodyPart(Element element, IPipeLineSession session) {
+		String partName = element.getAttribute("name"); //Name of the part
+		String partSessionKey = element.getAttribute("sessionKey"); //SessionKey to retrieve data from
+		String partMimeType = element.getAttribute("mimeType"); //MimeType of the part
+		Object partObject = session.get(partSessionKey);
+
+		if (partObject instanceof InputStream) {
+			InputStream fis = (InputStream) partObject;
+
+			return createMultipartBodypart(partSessionKey, fis, partName, partMimeType);
+		} else {
+			String partValue = (String) session.get(partSessionKey);
+
+			return createMultipartBodypart(partName, partValue, partMimeType);
+		}
 	}
 
 	protected String extractResult(HttpResponseHandler responseHandler, ParameterResolutionContext prc) throws SenderException, IOException {
@@ -572,6 +587,41 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 		}
 	}
 
+	/**
+	 * When false and methodeType=POST, request parameters are put in the request body instead of in the url
+	 * @IbisDoc.default true
+	 */
+	@IbisDoc({"when false and <code>methodetype=post</code>, request parameters are put in the request body instead of in the url", "true"})
+	public void setParamsInUrl(boolean b) {
+		paramsInUrl = b;
+	}
+	public boolean isParamsInUrl() {
+		return paramsInUrl;
+	}
+
+	/**
+	 * Only used when methodeType=POST and paramsInUrl=false.
+	 * Name of the request parameter which is used to put the input message in
+	 * @param inputMessageParam
+	 */
+	@IbisDoc({"(only used when <code>methodetype=post</code> and <code>paramsinurl=false</code>) name of the request parameter which is used to put the input message in", ""})
+	public void setInputMessageParam(String inputMessageParam) {
+		this.inputMessageParam = inputMessageParam;
+	}
+	public String getInputMessageParam() {
+		return inputMessageParam;
+	}
+
+	/**
+	 * When true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful
+	 */
+	@IbisDoc({"when true, besides http status code 200 (ok) also the code 301 (moved_permanently), 302 (moved_temporarily) and 307 (temporary_redirect) are considered successful", "false"})
+	public void setIgnoreRedirects(boolean b) {
+		ignoreRedirects = b;
+	}
+	public boolean isIgnoreRedirects() {
+		return ignoreRedirects;
+	}
 
 	public String getStreamResultToFileNameSessionKey() {
 		return streamResultToFileNameSessionKey;
@@ -630,13 +680,13 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 		return multipartResponse;
 	}
 
-	public String getMultipartXmlSessionKey() {
-		return multipartXmlSessionKey;
-	}
-
 	@IbisDoc({"if set and <code>methodetype=post</code> and <code>paramsinurl=false</code>, a multipart/form-data entity is created instead of a request body. for each part element in the session key a part in the multipart entity is created", ""})
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
+	}
+
+	public String getMultipartXmlSessionKey() {
+		return multipartXmlSessionKey;
 	}
 
 	public boolean isMtomEnabled() {
