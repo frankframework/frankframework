@@ -248,12 +248,11 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 		} else {
 			if (statusCode==HttpServletResponse.SC_OK) {
 				ok = true;
-			} else {
-				if (isIgnoreRedirects()) {
-					if (statusCode==HttpServletResponse.SC_MOVED_PERMANENTLY || statusCode==HttpServletResponse.SC_MOVED_TEMPORARILY || statusCode==HttpServletResponse.SC_TEMPORARY_REDIRECT) {
-						ok = true;
-					}
-				}
+			} else if (isFollowRedirects() && 
+					statusCode == HttpServletResponse.SC_MOVED_PERMANENTLY || 
+					statusCode == HttpServletResponse.SC_MOVED_TEMPORARILY || 
+					statusCode == HttpServletResponse.SC_TEMPORARY_REDIRECT) {
+				ok = true;
 			}
 		}
 
