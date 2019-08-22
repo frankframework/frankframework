@@ -15,10 +15,7 @@ public class J2V8 implements JavascriptEngine<V8> {
 	private V8 v8;
 	
 	public void startRuntime() {
-		String tempDir = AppConstants.getInstance().getString("log.dir", null);
-		if(tempDir != null && tempDir.isEmpty()) //Make sure to not pass an empty directory
-			tempDir = null;
-		v8 = V8.createV8Runtime(null, tempDir);
+		v8 = V8.createV8Runtime();
 	}
 	
 	public void executeScript(String script) {
