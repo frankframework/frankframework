@@ -315,13 +315,17 @@ public class HttpSender extends HttpSenderBase {
 		if(isMtomEnabled())
 			return createMultipartBodypart(name, message, "application/xop+xml");
 		else
-			return createMultipartBodypart(name, message, ContentType.DEFAULT_TEXT.getMimeType());
+			return createMultipartBodypart(name, message, null);
 	}
 
 	protected FormBodyPart createMultipartBodypart(String name, String message, String contentType) {
+		ContentType cType = ContentType.DEFAULT_TEXT;
+		if(StringUtils.isNotEmpty(contentType))
+			cType = ContentType.create(contentType, getCharSet());
+
 		FormBodyPartBuilder bodyPart = FormBodyPartBuilder.create()
 			.setName(name)
-			.setBody(new StringBody(message, ContentType.create(contentType, getCharSet())));
+			.setBody(new StringBody(message, cType));
 
 		if (StringUtils.isNotEmpty(getMtomContentTransferEncoding()))
 			bodyPart.setField(MIME.CONTENT_TRANSFER_ENC, getMtomContentTransferEncoding());

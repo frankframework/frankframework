@@ -43,7 +43,7 @@ public interface IMessageHandler<M> {
 	public void processRawMessage(IListener<M> origin, M message) throws ListenerException;
 	
 	/**
-	 * Alternative to functions above, wil NOT use getIdFromRawMessage() and getStringFromRawMessage().
+	 * Alternative to functions above, will NOT use getIdFromRawMessage() and getStringFromRawMessage().
 	 */
 	public String processRequest(IListener<M> origin, String message) throws ListenerException;
 

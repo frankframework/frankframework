@@ -31,7 +31,7 @@ import nl.nn.adapterframework.http.PushingListenerAdapter;
  * @author Niels Meijer
  *
  */
-public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination {
+public class ApiListener extends PushingListenerAdapter<String> implements HasPhysicalDestination {
 
 	private String uriPattern;
 	private boolean updateEtag = true;
