@@ -18,6 +18,10 @@ public class J2V8 implements JavascriptEngine<V8> {
 		v8 = V8.createV8Runtime();
 	}
 	
+	public void startRuntime(String alias, String tempDirectory) {
+		v8 = V8.createV8Runtime(alias, tempDirectory);
+	}
+	
 	public void executeScript(String script) {
 		v8.executeScript(script);
 	}
