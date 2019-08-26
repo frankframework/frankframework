@@ -44,7 +44,7 @@ public class TestXml2Map extends AlignTestBase {
 				fail("expected to fail");
 			}
 	    	if (mapString==null) {
-	    		fail("no expected input file!");
+	    		fail("no .properties file for ["+inputFile+"]!");
 	    	}
 	    	assertEquals(mapString.trim(), MatchUtils.mapToString(result).trim());
 		} catch (Exception e) {

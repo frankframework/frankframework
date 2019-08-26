@@ -65,7 +65,7 @@ public class JsonElementContainer implements ElementContainer {
 	}
 	
 	public static final CharSequenceTranslator ESCAPE_JSON = new AggregateTranslator(new CharSequenceTranslator[] {
-			new LookupTranslator(new String[][] { { "\"", "\\\"" }, { "\\", "\\\\" }, { "/", "\\/" } }),
+			new LookupTranslator(new String[][] { { "\"", "\\\"" }, { "\\", "\\\\" } }),
 			new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE())});
 
 	@Override
