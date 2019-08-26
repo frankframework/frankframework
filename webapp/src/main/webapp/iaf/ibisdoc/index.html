@@ -38,7 +38,7 @@
           <th> Default value </th>
           <th> Class name </th>
           <th> Parent name </th>
-          <th> Folder name </th>
+          <th> Category </th>
         </tr>
         <tr ng-repeat="method in allMethods | filter:searchAllMethods as filteredMethods">
           <td> {{ method.name }} </td>
@@ -98,7 +98,7 @@
       </div>
 
       <div ng-repeat="parent in parents | orderBy: 'parentIndex' " >
-        <h3> {{ parent.name }}</h3>
+        <p class="otherClasses" > {{ parent.name }}</p>
         <table>
           <tr>
             <th class="attributeName"> Name </th>
