@@ -76,7 +76,7 @@ TagDatabase
 			</column>
 			<column name="VALUE" type="java.sql.Types.VARCHAR(100)"/>
 			<column name="LASTMODDATE" type="DATETIME"/>
-			<column name="LASTMODBY" type="java.sql.Types.VARCHAR(32)"/>
+			<column name="LASTMODBY" type="java.sql.Types.VARCHAR(100)"/>
 		</createTable>
 	</changeSet>
 
