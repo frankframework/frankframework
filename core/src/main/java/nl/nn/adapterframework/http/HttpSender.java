@@ -319,7 +319,7 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	protected FormBodyPart createMultipartBodypart(String name, String message, String contentType) {
-		ContentType cType = ContentType.DEFAULT_TEXT;
+		ContentType cType = ContentType.create("text/plain", getCharSet());
 		if(StringUtils.isNotEmpty(contentType))
 			cType = ContentType.create(contentType, getCharSet());
 
