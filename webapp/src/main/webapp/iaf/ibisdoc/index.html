@@ -18,7 +18,7 @@
 
     </div>
     <div class="classes" ng-controller="classesCtrl">
-      <input type="text" spellcheck="false" placeholder="Search in {{ classes[0].methods[0].folderName }}... " ng-model="searchClass" ng-click="onKey($event)">
+      <input type="text" spellcheck="false" placeholder="Search in {{ folderName }} ... " ng-model="searchClass" ng-click="onKey($event)">
       <div ng-repeat="class in classes | filter:searchClass as filteredClasses">
         <p class="clickableClasses" ng-click="showMethods(class.name)"> {{ class.name }}</p>
       </div>

@@ -64,7 +64,6 @@ app.controller("foldersCtrl", function($scope, dataService, classesService, meth
   $scope.showClasses = function(folderName) {
     angular.forEach($scope.folders, function(folder) {
       var resetFolders = angular.element(document.querySelector('#' + folder.name));
-      console.log(resetFolders);
       resetFolders[0].style.color = "black";
 
     });
@@ -76,6 +75,8 @@ app.controller("foldersCtrl", function($scope, dataService, classesService, meth
         classesService.setClasses(folder.classes);
       }
     });
+
+    $rootScope.$broadcast('folderNameBar', folderName);
   };
 });
 
@@ -88,6 +89,10 @@ app.controller("classesCtrl", function($scope, classesService, methodsService) {
   $scope.onKey = function($event) {
     $scope.searching = true;
   };
+
+  $scope.$on('folderNameBar', function(event, folderName) {
+    $scope.folderName = folderName;
+  });
 
   $scope.showMethods = function(className) {
     angular.forEach($scope.classes, function(clas) {
