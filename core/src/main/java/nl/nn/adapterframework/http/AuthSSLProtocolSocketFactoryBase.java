@@ -258,7 +258,7 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
 
 	protected static void addProvider(String name) {
 		try {
-			Class clazz = Class.forName(name);
+			Class<?> clazz = Class.forName(name);
 			java.security.Security.addProvider((java.security.Provider)clazz.newInstance());
 		} catch (Throwable t) {
 			log.error("cannot add provider ["+name+"], "+t.getClass().getName(),t);
@@ -305,7 +305,7 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
         KeyStore keystore  = KeyStore.getInstance(keyStoreType);
         keystore.load(url.openStream(), password != null ? password.toCharArray(): null);
 		if (log.isInfoEnabled()) {
-			Enumeration aliases = keystore.aliases();
+			Enumeration<?> aliases = keystore.aliases();
 			while (aliases.hasMoreElements()) {
 				String alias = (String)aliases.nextElement();
 				log.info(prefix+" '" + alias + "':");

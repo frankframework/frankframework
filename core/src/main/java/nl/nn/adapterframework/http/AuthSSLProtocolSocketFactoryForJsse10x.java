@@ -55,6 +55,7 @@ import com.sun.net.ssl.X509TrustManager;
  * 
  */
 
+@SuppressWarnings({"restriction", "deprecation"})
 public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocketFactoryBase {
 
     /**
@@ -92,7 +93,7 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
 		System.setProperty("java.protocol.handler.pkgs","com.sun.net.ssl.internal.www.protocol");
 	}
     
-    private static KeyManager[] createKeyManagers(final KeyStore keystore, final String password, String algorithm)
+	private static KeyManager[] createKeyManagers(final KeyStore keystore, final String password, String algorithm)
         throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException 
     {
         if (keystore == null) {
