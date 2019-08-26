@@ -41,7 +41,7 @@ app.factory('methodsService', function() {
         },
         setParents: function(parentArray) {
             parents = parentArray;
-        }
+        },
     };
 });
 
@@ -85,12 +85,12 @@ app.controller("foldersCtrl", function($scope, dataService, classesService, meth
     };
 });
 
-app.controller("classesCtrl", function($scope, classesService, methodsService) {
+app.controller("classesCtrl", function($scope, $rootScope, classesService, methodsService) {
     $scope.$watch(classesService.getClasses, function(change) {
         $scope.classes = change;
         $scope.searching = false;
     }.bind(this));
-
+    
     $scope.onKey = function($event) {
         $scope.searching = true;
     };
@@ -103,6 +103,7 @@ app.controller("classesCtrl", function($scope, classesService, methodsService) {
         angular.forEach($scope.classes, function(clas) {
             if (angular.equals(clas.name, className)) {
                 $scope.parentClasses = [];
+                $rootScope.$broadcast('packageName', clas.packageName);
 
                 angular.forEach(clas.methods, function(method) {
 
@@ -150,11 +151,13 @@ app.controller("methodsCtrl", function($scope, methodsService) {
         $scope.parents = change;
     }.bind(this));
 
-
     $scope.$on('givingAllMethhods', function(event, allMethods) {
         $scope.searching = true;
         $scope.allMethods = allMethods;
-        console.log(allMethods.length);
+    });
+
+    $scope.$on('packageName', function(event, packageName) {
+        $scope.packageName = packageName;
     });
 
     $scope.onKey = function($event) {
