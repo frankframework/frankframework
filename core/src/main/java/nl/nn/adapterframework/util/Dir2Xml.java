@@ -74,7 +74,7 @@ public class Dir2Xml  {
 		}
 		
 		// TODO: implement includeDirectories on WildCardFilter
-		if (includeDirectories && !wildcard.equals("*.*")) {
+		if (includeDirectories && !"*.*".equals(wildcard)) {
 			dirXml.addAttribute("count", count);
 		} else {
 			dirXml.addAttribute("count", count - numberOfDirectories);
