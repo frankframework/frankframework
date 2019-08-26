@@ -1,11 +1,11 @@
 var app = angular.module("myApp", ['ngSanitize']);
 
 app.factory('dataService', ['$http', function($http) {
-  function parseJson() {
-    return $http.get('../../rest/ibisdoc/ibisdoc.json').then(function(data) {
-      return data.data;
-    })
-  }
+    function parseJson() {
+        return $http.get('../../rest/ibisdoc/ibisdoc.json').then(function(data) {
+            return data.data;
+        })
+    }
 
     return {
         getData : parseJson
@@ -58,7 +58,12 @@ app.controller("foldersCtrl", function($scope, dataService, classesService, meth
             })
         });
 
-        $rootScope.$broadcast('givingAllMethhods', $scope.methods);
+        $scope.onKey = function($event) {
+            $rootScope.$broadcast('givingAllMethhods', $scope.methods.filter(function (method) {
+                return (method.name.toLowerCase() == $event.target.value.toLowerCase());
+            }));
+            $rootScope.$broadcast('searching');
+        }
     });
 
     $scope.showClasses = function(folderName) {
@@ -147,7 +152,9 @@ app.controller("methodsCtrl", function($scope, methodsService) {
 
 
     $scope.$on('givingAllMethhods', function(event, allMethods) {
+        $scope.searching = true;
         $scope.allMethods = allMethods;
+        console.log(allMethods.length);
     });
 
     $scope.onKey = function($event) {

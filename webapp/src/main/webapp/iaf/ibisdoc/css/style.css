@@ -62,6 +62,9 @@ input {
   float: left;
 }
 
+.methods {
+  width: 100%;
+}
 
 .methods, .classes {
   overflow-y: auto;

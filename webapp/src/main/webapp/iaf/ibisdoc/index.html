@@ -11,6 +11,7 @@
 <div ng-app="myApp" class="wrapper">
   <div class="left-wrapper">
     <div class="folders" ng-controller="foldersCtrl">
+      <input type="text" spellcheck="false" placeholder="Search all attributes..." ng-model="searchAllMethods" ng-keyup="onKey($event)">
 
       <div ng-repeat="folder in folders">
         <p id="{{ folder.name }}" class="clickableFolders" ng-click="showClasses(folder.name)"> {{ folder.name }}</p>
@@ -28,11 +29,9 @@
 
   <div class="methods" ng-controller="methodsCtrl">
 
-    <input type="text" spellcheck="false" placeholder="Search all attributes..." ng-model="searchAllMethods" ng-click="onKey($event)">
-
     <div ng-if="searching && allMethods.length > 0">
       <table>
-        <tr ng-if="filteredMethods.length > 0">
+        <tr ng-if="allMethods.length > 0">
           <th> Name </th>
           <th> Description </th>
           <th> Default value </th>
@@ -40,7 +39,7 @@
           <th> Parent name </th>
           <th> Category </th>
         </tr>
-        <tr ng-repeat="method in allMethods | filter:searchAllMethods as filteredMethods">
+        <tr ng-repeat="method in allMethods">
           <td> {{ method.name }} </td>
           <td ng-bind-html="method.description"> {{ method.description }} </td>
           <td ng-bind-html="method.defaultValue"> {{ method.defaultValue }} </td>
@@ -49,8 +48,8 @@
           <td> {{ method.folderName }}</td>
         </tr>
       </table>
-      <p class="foundnothing" ng-if="filteredMethods.length == 0"> No matches </p>
     </div>
+    <p class="foundnothing" ng-if="allMethods.length == 0 && searching"> No matches </p>
 
     <div ng-if="methods.length > 0 && !searching">
       <input class="searchBarMethods" type="text" spellcheck="false" placeholder="Search in {{ methods[0].className }}..." ng-model="searchMethod">
