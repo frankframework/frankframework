@@ -1,2 +1,0 @@
-shutdown IMMEDIATE;
-exit
