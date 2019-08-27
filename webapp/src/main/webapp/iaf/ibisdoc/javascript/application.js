@@ -102,16 +102,11 @@ app.controller("foldersCtrl", function($scope, dataService, classesService, meth
 
 // The classes div
 app.controller("classesCtrl", function($scope, $rootScope, classesService, methodsService) {
-    // When we change the list of classes, change to the new list and reset the searchbar
+    // When we change the list of classes, change to the new list
     $scope.$watch(classesService.getClasses, function(change) {
         $scope.classes = change;
-        $scope.searching = false;
     }.bind(this));
 
-    // When typing in searchbar notify that we are searching// TODO: Check if this is necessary
-    $scope.onKey = function($event) {
-        $scope.searching = true;
-    };
 
     // Receive the notification of the foldersCtrl in which folder we currently are
     $scope.$on('folderNameBar', function(event, folderName) {
