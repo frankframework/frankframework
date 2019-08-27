@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.processors;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Iterator;
 
 import javax.xml.transform.TransformerException;
@@ -24,6 +25,8 @@ import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IOutputStreamConsumer;
+import nl.nn.adapterframework.core.IOutputStreamProvider;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineExitHandler;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -171,7 +174,11 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		try {
 			while (!ready){
 
-				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, messageId, object, pipeLineSession);
+				pipeRunResult = processPipeStreaming(pipeToRun, pipeLine, messageId, message, pipeLineSession);
+				if (pipeRunResult==null) {
+					// if streaming did not work, process the pipe classically.
+					pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, messageId, object, pipeLineSession);
+				}
 				object=pipeRunResult.getResult();
 
 				if (!(pipeToRun instanceof AbstractPipe)) {
@@ -294,5 +301,35 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			}
 		}
 		return pipeLineResult;
+	}
+	
+	public PipeRunResult processPipeStreaming(IPipe pipeToRun, PipeLine pipeLine, String messageId, String message, IPipeLineSession pipeLineSession) throws PipeRunException {
+		if (pipeToRun instanceof IOutputStreamConsumer) {
+			IOutputStreamConsumer streamConsumer = (IOutputStreamConsumer)pipeToRun;
+			if (streamConsumer.canStreamToOutputStreamAndHappyForwardAlreadyKnown()) {
+				PipeForward consumerForward = streamConsumer.getForwardToOutputStreamProvider();
+				if (consumerForward==null) {
+					throw new PipeRunException(pipeToRun, "Received null forward to OutputStreamProvider");
+				}
+				IPipe nextPipe = pipeLine.getPipe(consumerForward.getPath());
+				if (nextPipe instanceof IOutputStreamProvider) {
+					IOutputStreamProvider streamProvider = (IOutputStreamProvider)nextPipe;
+					if (streamProvider.canProvideOutputStream()) {
+						PipeRunResult providerResult = streamProvider.provideOutputStream(messageId, message, pipeLineSession);
+						OutputStream stream = (OutputStream)providerResult.getResult();
+						String streamToSessionKey = streamConsumer.getStreamToSessionKey();
+						if (StringUtils.isEmpty(streamToSessionKey)) {
+							streamToSessionKey = pipeLine.getOwner().getName()+"/"+pipeToRun.getName()+" OutputStream";
+							streamConsumer.setStreamToSessionKey(streamToSessionKey);
+						}
+						pipeLineSession.put(streamToSessionKey, stream);
+						PipeRunResult pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, messageId, message, pipeLineSession);
+						pipeRunResult.setPipeForward(providerResult.getPipeForward());
+						return pipeRunResult;
+					}
+				}
+			}
+		}
+		return null;
 	}
 }

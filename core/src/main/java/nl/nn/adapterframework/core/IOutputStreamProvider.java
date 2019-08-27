@@ -13,4 +13,10 @@ public interface IOutputStreamProvider {
 	public void setCreateStreamSessionKey(String createStreamSessionKey);
 	public String getCreateStreamSessionKey();
 	
+	public boolean canProvideOutputStream();  
+	/**
+	 * Must supply OutputStream in pipeRunResult.result.
+	 */
+	public PipeRunResult provideOutputStream(String messageId, Object message, IPipeLineSession pipeLineSession) throws PipeRunException;
+
 }
