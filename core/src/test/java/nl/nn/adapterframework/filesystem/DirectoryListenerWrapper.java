@@ -22,6 +22,11 @@ public class DirectoryListenerWrapper extends DirectoryListener implements IFile
 	}
 
 	@Override
+	public void setErrorFolder(String errorFolder) {
+		setOutputDirectory(errorFolder);
+	}
+
+	@Override
 	public void setMessageType(String messageType) {
 		throw new NotImplementedException("messageType");
 	}
