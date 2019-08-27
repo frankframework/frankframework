@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IOutputStreamConsumer;
+import nl.nn.adapterframework.core.IOutputStreamConsumerPipe;
 import nl.nn.adapterframework.core.IOutputStreamProvider;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineExitHandler;
@@ -181,6 +181,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				}
 				object=pipeRunResult.getResult();
 
+				// this should be moved to a StatisticsPipeProcessor
 				if (!(pipeToRun instanceof AbstractPipe)) {
 					if (object!=null && object instanceof String) {
 						StatisticsKeeper sizeStat = pipeLine.getPipeSizeStatistics(pipeToRun);
@@ -304,9 +305,9 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 	}
 	
 	public PipeRunResult processPipeStreaming(IPipe pipeToRun, PipeLine pipeLine, String messageId, String message, IPipeLineSession pipeLineSession) throws PipeRunException {
-		if (pipeToRun instanceof IOutputStreamConsumer) {
-			IOutputStreamConsumer streamConsumer = (IOutputStreamConsumer)pipeToRun;
-			if (streamConsumer.canStreamToOutputStreamAndHappyForwardAlreadyKnown()) {
+		if (pipeToRun instanceof IOutputStreamConsumerPipe) {
+			IOutputStreamConsumerPipe streamConsumer = (IOutputStreamConsumerPipe)pipeToRun;
+			if (streamConsumer.isStreamingToOutputStreamPossible()) {
 				PipeForward consumerForward = streamConsumer.getForwardToOutputStreamProvider();
 				if (consumerForward==null) {
 					throw new PipeRunException(pipeToRun, "Received null forward to OutputStreamProvider");
@@ -315,8 +316,16 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				if (nextPipe instanceof IOutputStreamProvider) {
 					IOutputStreamProvider streamProvider = (IOutputStreamProvider)nextPipe;
 					if (streamProvider.canProvideOutputStream()) {
-						PipeRunResult providerResult = streamProvider.provideOutputStream(messageId, message, pipeLineSession);
-						OutputStream stream = (OutputStream)providerResult.getResult();
+						String createStreamSessionKey = streamProvider.getCreateStreamSessionKey();
+						if (StringUtils.isEmpty(createStreamSessionKey)) {
+							createStreamSessionKey = pipeLine.getOwner().getName()+"/"+nextPipe.getName()+" ProvidedOutputStream";
+							streamProvider.setCreateStreamSessionKey(createStreamSessionKey);
+						}
+						PipeRunResult providerResult = pipeProcessor.processPipe(pipeLine, nextPipe, messageId, message, pipeLineSession);
+						OutputStream stream = (OutputStream)pipeLineSession.get(createStreamSessionKey);
+						if (stream==null) {
+							throw new PipeRunException(nextPipe,"Pipe should have provided OutputStream in session variable ["+createStreamSessionKey+"]");
+						}
 						String streamToSessionKey = streamConsumer.getStreamToSessionKey();
 						if (StringUtils.isEmpty(streamToSessionKey)) {
 							streamToSessionKey = pipeLine.getOwner().getName()+"/"+pipeToRun.getName()+" OutputStream";
@@ -324,8 +333,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 						}
 						pipeLineSession.put(streamToSessionKey, stream);
 						PipeRunResult pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, messageId, message, pipeLineSession);
-						pipeRunResult.setPipeForward(providerResult.getPipeForward());
-						return pipeRunResult;
+						return providerResult; // return providerResult, as it may contain the filename or something like that.
 					}
 				}
 			}

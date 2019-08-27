@@ -17,16 +17,15 @@ package nl.nn.adapterframework.pipes;
 
 import javax.xml.transform.TransformerException;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IOutputStreamConsumer;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -50,7 +49,7 @@ import nl.nn.adapterframework.senders.XsltSender;
  * @author Johan Verrips
  */
 
-public class XsltPipe extends FixedForwardPipe implements IOutputStreamConsumer {
+public class XsltPipe extends OutputStreamConsumerBase {
 
 	private String sessionKey=null;
 	
@@ -146,6 +145,12 @@ public class XsltPipe extends FixedForwardPipe implements IOutputStreamConsumer 
 	        throw new PipeRunException(this, getLogPrefix(session)+" Exception on transforming input", e);
 	    } 
 	}
+
+	@Override
+	public boolean isStreamingToOutputStreamPossible() {
+		return super.isStreamingToOutputStreamPossible() && sender.isStreamingToOutputStreamPossible();
+	}
+	
 
 	/**
 	 * Specify the stylesheet to use
@@ -269,7 +274,7 @@ public class XsltPipe extends FixedForwardPipe implements IOutputStreamConsumer 
 		super.setName(name);
 		sender.setName("Sender of Pipe ["+name+"]");
 	}
-	
+
 	@IbisDoc({"When set, no String output will be returned, but the output will be written to the {@link OutputStream} provided in the session variable. The pipe will return its input message", ""})
 	@Override
 	public void setStreamToSessionKey(String streamToSessionKey) {

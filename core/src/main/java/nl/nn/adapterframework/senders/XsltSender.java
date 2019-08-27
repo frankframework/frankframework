@@ -179,9 +179,12 @@ public class XsltSender extends SenderWithParametersBase implements IOutputStrea
 //				log.debug(getLogPrefix()+" prc.inputsource ["+prc.getInputSource()+"]");
 //			}
 			
-			if (StringUtils.isNotEmpty(getStreamToSessionKey())) {
+			OutputStream outputStream=null;
+			if (isStreamingToOutputStreamPossible() && StringUtils.isNotEmpty(getStreamToSessionKey())) {
 				Object streamToObject = prc.getSession().get(getStreamToSessionKey());
-				OutputStream outputStream = (OutputStream)streamToObject;
+				outputStream = (OutputStream)streamToObject;
+			}
+			if (outputStream!=null) {
 				StreamResult streamResult = new StreamResult(outputStream);
 				transformerPool.transform(inputMsg, streamResult, parametervalues); 
 				stringResult=message;
@@ -314,6 +317,11 @@ public class XsltSender extends SenderWithParametersBase implements IOutputStrea
 	@Override
 	public String getStreamToSessionKey() {
 		return streamToSessionKey;
+	}
+
+	@Override
+	public boolean isStreamingToOutputStreamPossible() {
+		return !isSkipEmptyTags();
 	}
 
 }

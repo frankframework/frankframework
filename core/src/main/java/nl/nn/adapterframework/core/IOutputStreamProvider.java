@@ -12,11 +12,11 @@ public interface IOutputStreamProvider {
 	@IbisDoc({"When set, an {@link OutputStream} will be provided in this session variable, that the next pipe can use to write it's output to.", ""})
 	public void setCreateStreamSessionKey(String createStreamSessionKey);
 	public String getCreateStreamSessionKey();
-	
-	public boolean canProvideOutputStream();  
-	/**
-	 * Must supply OutputStream in pipeRunResult.result.
+
+	/*
+	 * When this returns true AND createStreamSessionKey is set 
+	 * then doPipe must return an OutputStream in this sessionKey.
 	 */
-	public PipeRunResult provideOutputStream(String messageId, Object message, IPipeLineSession pipeLineSession) throws PipeRunException;
+	public boolean canProvideOutputStream();  
 
 }

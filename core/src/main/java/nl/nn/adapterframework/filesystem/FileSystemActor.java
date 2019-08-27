@@ -337,5 +337,10 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return createStreamSessionKey;
 	}
 
+	@Override
+	public boolean canProvideOutputStream() {
+		return ACTION_WRITE1.equals(getAction());
+	}
+
 
 }

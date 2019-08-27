@@ -135,6 +135,11 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 		actor.addActions(specificActions);
 	}
 
+	@Override
+	public boolean canProvideOutputStream() {
+		return actor.canProvideOutputStream();
+	}
+
 	@IbisDoc({"1", "possible values: list, read, delete, move, mkdir, rmdir, write, rename", "" })
 	public void setAction(String action) {
 		actor.setAction(action);
