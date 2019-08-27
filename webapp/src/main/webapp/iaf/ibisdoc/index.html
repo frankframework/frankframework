@@ -83,12 +83,12 @@
             </div>
             <table>
                 <tr>
-                    <th class="attributeName"> Name </th>
+                    <th sort by="order" reverse="'order'" order="'name'" class="attributeName"> Name </th>
                     <th class="attributeDesc"> Description</th>
                     <th class="attributeDV"> Default value</th>
                 </tr>
 
-                <tr ng-repeat="method in methods | filter:searchMethod | orderBy: 'order'">
+                <tr ng-repeat="method in methods | filter:searchMethod | orderBy:order:reverse">
                     <td ng-if="method.className === method.originalClassName"> {{ method.name }}</td>
                     <td ng-if="method.className === method.originalClassName" ng-bind-html="method.description"> {{ method.description }}</td>
                     <td ng-if="method.className === method.originalClassName" ng-bind-html="method.defaultValue"> {{ method.defaultValue }}</td>
@@ -104,12 +104,12 @@
                 <p class="otherClasses" > {{ parent.name }}</p>
                 <table>
                     <tr>
-                        <th class="attributeName"> Name </th>
+                        <th sort by="order" reverse="'order'" order="'name'" class="attributeName"> Name </th>
                         <th class="attributeDesc"> Description</th>
                         <th class="attributeDV"> Default value</th>
                     </tr>
 
-                    <tr ng-repeat="method in parent.attributes | filter:searchMethod | orderBy: 'order'">
+                    <tr ng-repeat="method in parent.attributes | filter:searchMethod |orderBy:order:reverse">
                         <td> {{ method.name }}</td>
                         <td ng-bind-html="method.description"> {{ method.description }}</td>
                         <td ng-bind-html="method.defaultValue"> {{ method.defaultValue }}</td>

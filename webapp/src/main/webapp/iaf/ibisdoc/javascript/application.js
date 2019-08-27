@@ -90,7 +90,8 @@ app.controller("classesCtrl", function($scope, $rootScope, classesService, metho
         $scope.classes = change;
         $scope.searching = false;
     }.bind(this));
-    
+
+
     $scope.onKey = function($event) {
         $scope.searching = true;
     };
@@ -158,9 +159,36 @@ app.controller("methodsCtrl", function($scope, methodsService) {
 
     $scope.$on('packageName', function(event, packageName) {
         $scope.packageName = packageName;
-    });
+    })
 
     $scope.onKey = function($event) {
         $scope.searching = true;
     };
+}).directive("sort", function() {
+    return {
+        restrict: 'A',
+        transclude: true,
+        template :
+            '<a ng-click="onClick()">'+
+            '<span ng-transclude></span>'+
+            '<button class="glyphicon" ng-class="{\'glyphicon-sort-by-alphabet\' : order === by && !\'order\',  \'glyphicon-sort-by-alphabet-alt\' : order===by && \'order\'}"> {{ by }}</button>'+
+            '</a>',
+        scope: {
+            order: '=',
+            by: '=',
+            reverse : '='
+        },
+        link: function(scope, element, attrs) {
+            scope.by = 'order';
+            scope.onClick = function () {
+                if(scope.by ===  'alphabetical') {
+                    scope.order = 'order';
+                    scope.by = 'order';
+                } else {
+                    scope.by = 'alphabetical' ;
+                    scope.order = 'alphabetical';
+                }
+            }
+        }
+    }
 });
