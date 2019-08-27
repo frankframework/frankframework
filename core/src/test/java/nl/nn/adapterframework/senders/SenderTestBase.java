@@ -54,7 +54,7 @@ public abstract class SenderTestBase<S extends ISender> extends Mockito {
 	}
 
 	@After
-	public void setDown() throws SenderException {
+	public void tearDown() throws SenderException {
 		if (sender != null) {
 			sender.close();
 			sender = null;

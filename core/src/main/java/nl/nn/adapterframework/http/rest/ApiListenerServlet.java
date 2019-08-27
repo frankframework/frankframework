@@ -334,10 +334,10 @@ public class ApiListenerServlet extends HttpServlet {
 							String contentType = item.getContentType();
 							if(contentType != null) {
 								String mimeType = contentType;
-								int colon = contentType.indexOf(";");
-								if(colon >= 0) {
-									mimeType = contentType.substring(0, colon);
-									String mightContainCharSet = contentType.substring(colon+1).trim();
+								int semicolon = contentType.indexOf(";");
+								if(semicolon >= 0) {
+									mimeType = contentType.substring(0, semicolon);
+									String mightContainCharSet = contentType.substring(semicolon+1).trim();
 									if(mightContainCharSet.contains("charset=")) {
 										String charSet = mightContainCharSet.substring(mightContainCharSet.indexOf("charset=")+8);
 										attachment.addAttribute("charSet", charSet);

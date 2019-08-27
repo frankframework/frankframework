@@ -338,7 +338,7 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	protected FormBodyPart createMultipartBodypart(String name, InputStream is, String fileName, String contentType) {
-		log.debug(getLogPrefix()+"appending filepart ["+name+"] with value ["+is+"] fileName ["+fileName+"] and contentType ["+contentType+"]");
+		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending filepart ["+name+"] with value ["+is+"] fileName ["+fileName+"] and contentType ["+contentType+"]");
 		FormBodyPartBuilder bodyPart = FormBodyPartBuilder.create()
 			.setName(name)
 			.setBody(new InputStreamBody(is, ContentType.create(contentType, getCharSet()), fileName));
@@ -354,7 +354,7 @@ public class HttpSender extends HttpSenderBase {
 
 		if (StringUtils.isNotEmpty(getInputMessageParam())) {
 			entity.addPart(createMultipartBodypart(getInputMessageParam(), message));
-			log.debug(getLogPrefix()+"appended stringpart ["+getInputMessageParam()+"] with value ["+message+"]");
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+getInputMessageParam()+"] with value ["+message+"]");
 		}
 		if (parameters!=null) {
 			for(int i=0; i<parameters.size(); i++) {
@@ -378,14 +378,14 @@ public class HttpSender extends HttpSenderBase {
 						}
 
 						entity.addPart(createMultipartBodypart(name, fis, fileName));
-						log.debug(getLogPrefix()+"appended filepart ["+name+"] with value ["+value+"] and name ["+fileName+"]");
+						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended filepart ["+name+"] with value ["+value+"] and name ["+fileName+"]");
 					} else {
 						throw new SenderException(getLogPrefix()+"unknown inputstream ["+value.getClass()+"] for parameter ["+name+"]");
 					}
 				} else {
 					String value = pv.asStringValue("");
 					entity.addPart(createMultipartBodypart(name, value));
-					log.debug(getLogPrefix()+"appended stringpart ["+name+"] with value ["+value+"]");
+					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+name+"] with value ["+value+"]");
 				}
 			}
 		}
