@@ -9,7 +9,9 @@
 </head>
 <body>
 <div ng-app="myApp" class="wrapper">
+    <!-- The left bar -->
     <div class="left-wrapper">
+        <!-- The top left bar representing the folders and the searchbar for all attributes -->
         <div class="folders" ng-controller="foldersCtrl">
             <input type="text" spellcheck="false" placeholder="Search all attributes..." ng-model="searchAllMethods" ng-keyup="onKey($event)">
 
@@ -18,6 +20,8 @@
             </div>
 
         </div>
+
+        <!-- The bottom left bar representing the classes and the searchbar for the classes -->
         <div class="classes" ng-controller="classesCtrl">
             <input type="text" spellcheck="false" placeholder="Search in {{ folderName }} ... " ng-model="searchClass" ng-click="onKey($event)">
             <div ng-repeat="class in classes | filter:searchClass as filteredClasses">
@@ -27,8 +31,10 @@
         </div>
     </div>
 
+    <!-- The right page (of a class) -->
     <div class="methods" ng-controller="methodsCtrl">
 
+        <!-- Display of results when searching accross all attributes -->
         <div ng-if="searching && allMethods.length > 0">
             <table>
                 <tr ng-if="allMethods.length > 0">
@@ -51,6 +57,7 @@
         </div>
         <p class="foundnothing" ng-if="allMethods.length == 0 && searching"> No matches </p>
 
+        <!-- Display of an actual page for attributes concerning a certain class -->
         <div ng-if="methods.length > 0 && !searching">
             <input class="searchBarMethods" type="text" spellcheck="false" placeholder="Search in {{ methods[0].className }}..." ng-model="searchMethod">
 
