@@ -62,6 +62,10 @@ input {
   float: left;
 }
 
+.orderIcon:hover {
+  cursor: pointer;
+}
+
 .methods {
   width: 100%;
 }

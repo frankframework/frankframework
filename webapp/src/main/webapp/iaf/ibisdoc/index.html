@@ -83,9 +83,9 @@
             </div>
             <table>
                 <tr>
-                    <th sort by="order" reverse="'order'" order="'name'" class="attributeName"> Name </th>
+                    <th sort by="order" class="attributeName"> Name </th>
                     <th class="attributeDesc"> Description</th>
-                    <th class="attributeDV"> Default value</th>
+                    <th filled fill="order" class="attributeDV"> Default Value </th>
                 </tr>
 
                 <tr ng-repeat="method in methods | filter:searchMethod | orderBy:order:reverse">
@@ -104,12 +104,12 @@
                 <p class="otherClasses" > {{ parent.name }}</p>
                 <table>
                     <tr>
-                        <th sort by="order" reverse="'order'" order="'name'" class="attributeName"> Name </th>
+                        <th sort by="order" class="attributeName"> Name </th>
                         <th class="attributeDesc"> Description</th>
-                        <th class="attributeDV"> Default value</th>
+                        <th filled fill="order" class="attributeDV"> Default Value </th>
                     </tr>
 
-                    <tr ng-repeat="method in parent.attributes | filter:searchMethod |orderBy:order:reverse">
+                    <tr ng-repeat="method in parent.attributes | filter:searchMethod |orderBy:order">
                         <td> {{ method.name }}</td>
                         <td ng-bind-html="method.description"> {{ method.description }}</td>
                         <td ng-bind-html="method.defaultValue"> {{ method.defaultValue }}</td>

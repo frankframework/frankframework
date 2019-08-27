@@ -169,24 +169,44 @@ app.controller("methodsCtrl", function($scope, methodsService) {
         restrict: 'A',
         transclude: true,
         template :
-            '<a ng-click="onClick()">'+
+            '<p ng-click="onClick()">'+
             '<span ng-transclude></span>'+
-            '<button class="glyphicon" ng-class="{\'glyphicon-sort-by-alphabet\' : order === by && !\'order\',  \'glyphicon-sort-by-alphabet-alt\' : order===by && \'order\'}"> {{ by }}</button>'+
-            '</a>',
+            '<a class=\'orderIcon\' ng-if=\'by === "order"\'><img src="images/alphabet.png" alt=""></a>'+
+            '<a class=\'orderIcon\' ng-if=\'by === "alphabetical"\'><img src="images/numeric.png" alt=""></a>'+
+            '</p>',
         scope: {
-            order: '=',
-            by: '=',
-            reverse : '='
+            by: '='
         },
         link: function(scope, element, attrs) {
             scope.by = 'order';
             scope.onClick = function () {
                 if(scope.by ===  'alphabetical') {
-                    scope.order = 'order';
                     scope.by = 'order';
                 } else {
                     scope.by = 'alphabetical' ;
-                    scope.order = 'alphabetical';
+                }
+            }
+        }
+    }
+}).directive("filled", function() {
+    return {
+        restrict: 'A',
+        transclude: true,
+        template :
+            '<p ng-click="onClick()">'+
+            '<span ng-transclude></span>'+
+            '<a class=\'orderIcon\'><img src="images/alphabet.png" alt=""></a>'+
+            '</p>',
+        scope: {
+            fill: '='
+        },
+        link: function(scope, element, attrs) {
+            scope.fill = 'order';
+            scope.onClick = function() {
+                if (scope.fill === 'order') {
+                    scope.fill = '-defaultValue';
+                } else {
+                    scope.fill = 'order';
                 }
             }
         }
