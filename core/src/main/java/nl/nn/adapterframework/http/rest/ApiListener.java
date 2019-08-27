@@ -24,6 +24,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
 
 /**
@@ -44,6 +45,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 
 	private MediaType consumes = MediaType.ANY;
 	private MediaType produces = MediaType.ANY;
+	private String multipartBodyName = null;
 
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
@@ -95,6 +97,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		return destinationName;
 	}
 
+	@IbisDoc({"uri pattern to register this listener on", ""})
 	public void setUriPattern(String uriPattern) {
 		this.uriPattern = uriPattern;
 	}
@@ -115,6 +118,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 	public String getMethod() {
 		return method;
 	}
+	@IbisDoc({"HTTP method eq. GET POST PUT DELETE", ""})
 	public void setMethod(String method) {
 		this.method = method.toUpperCase();
 	}
@@ -128,6 +132,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		return this.authenticationMethod;
 	}
 
+	@IbisDoc({"the specified contentType on requests, if it doesn't match the request will fail", "ANY"})
 	public void setConsumes(String value) {
 		String consumes = null;
 		if(StringUtils.isEmpty(value))
@@ -145,6 +150,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		return consumes.isConsumable(contentType);
 	}
 
+	@IbisDoc({"the specified contentType on response", "ANY"})
 	public void setProduces(String value) {
 		String produces = null;
 		if(StringUtils.isEmpty(value))
@@ -173,5 +179,16 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 	public String toString() {
 		return this.getClass().toString() + "["+getPhysicalDestinationName()+"] "
 				+ "contentType["+getContentType()+"] updateEtag["+getUpdateEtag()+"]";
+	}
+
+	@IbisDoc({"specify the form-part you wish to enter the pipeline", "first form-part"})
+	public void setMultipartBodyName(String multipartBodyName) {
+		this.multipartBodyName = multipartBodyName;
+	}
+	public String getMultipartBodyName() {
+		if(StringUtils.isNotEmpty(multipartBodyName))
+			return multipartBodyName;
+
+		return null;
 	}
 }

@@ -47,7 +47,7 @@ public class ApiListenerServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	private final String CHARSET="UTF-8";
-	private List<String> IGNORE_HEADERS = Arrays.asList("connection", "transfer-encoding", "content-type");
+	private List<String> IGNORE_HEADERS = Arrays.asList("connection", "transfer-encoding", "content-type", "authorization");
 
 	protected Logger log = LogUtil.getLogger(this);
 	private ApiServiceDispatcher dispatcher = null;
@@ -302,55 +302,56 @@ public class ApiListenerServlet extends HttpServlet {
 				List<FileItem> items = servletFileUpload.parseRequest(request);
 				XmlBuilder attachments = new XmlBuilder("parts");
 				int i = 0;
+				String multipartBodyName = listener.getMultipartBodyName();
 				for (FileItem item : items) {
-					//First part -> pipeline input
-					if(i == 0) {
+					String fieldName = item.getFieldName();
+					//First part -> pipeline input when multipartBodyName=null
+					if((i == 0 && multipartBodyName == null) || fieldName.equalsIgnoreCase(multipartBodyName)) {
+						//TODO this is possible because it's been read from disk multiple times, ideally you want to stream it directly!
 						body = Misc.streamToString(item.getInputStream(),"\n",false);
 					}
-					else {
-						XmlBuilder attachment = new XmlBuilder("part");
-						String fieldName = item.getFieldName();
-						attachment.addAttribute("name", fieldName);
-						if (item.isFormField()) {
-							// Process regular form field (input type="text|radio|checkbox|etc", select, etc).
-							String fieldValue = item.getString();
-							log.trace("setting multipart formField ["+fieldName+"] to ["+fieldValue+"]");
-							messageContext.put(fieldName, fieldValue);
-							attachment.addAttribute("type", "text");
-							attachment.addAttribute("value", fieldValue);
-						} else {
-							// Process form file field (input type="file").
-							String fieldNameName = fieldName + "Name";
-							String fileName = FilenameUtils.getName(item.getName());
-							log.trace("setting multipart formFile ["+fieldNameName+"] to ["+fileName+"]");
-							messageContext.put(fieldNameName, fileName);
-							log.trace("setting parameter ["+fieldName+"] to input stream of file ["+fileName+"]");
-							messageContext.put(fieldName, item.getInputStream());
-	
-							attachment.addAttribute("type", "file");
-							attachment.addAttribute("filename", fileName);
-							attachment.addAttribute("size", item.getSize());
-							attachment.addAttribute("sessionKey", fieldName);
-							String contentType = item.getContentType();
-							if(contentType != null) {
-								String mimeType = contentType;
-								int semicolon = contentType.indexOf(";");
-								if(semicolon >= 0) {
-									mimeType = contentType.substring(0, semicolon);
-									String mightContainCharSet = contentType.substring(semicolon+1).trim();
-									if(mightContainCharSet.contains("charset=")) {
-										String charSet = mightContainCharSet.substring(mightContainCharSet.indexOf("charset=")+8);
-										attachment.addAttribute("charSet", charSet);
-									}
+
+					XmlBuilder attachment = new XmlBuilder("part");
+					attachment.addAttribute("name", fieldName);
+					if (item.isFormField()) {
+						// Process regular form field (input type="text|radio|checkbox|etc", select, etc).
+						String fieldValue = item.getString();
+						log.trace("setting multipart formField ["+fieldName+"] to ["+fieldValue+"]");
+						messageContext.put(fieldName, fieldValue);
+						attachment.addAttribute("type", "text");
+						attachment.addAttribute("value", fieldValue);
+					} else {
+						// Process form file field (input type="file").
+						String fieldNameName = fieldName + "Name";
+						String fileName = FilenameUtils.getName(item.getName());
+						log.trace("setting multipart formFile ["+fieldNameName+"] to ["+fileName+"]");
+						messageContext.put(fieldNameName, fileName);
+						log.trace("setting parameter ["+fieldName+"] to input stream of file ["+fileName+"]");
+						messageContext.put(fieldName, item.getInputStream());
+
+						attachment.addAttribute("type", "file");
+						attachment.addAttribute("filename", fileName);
+						attachment.addAttribute("size", item.getSize());
+						attachment.addAttribute("sessionKey", fieldName);
+						String contentType = item.getContentType();
+						if(contentType != null) {
+							String mimeType = contentType;
+							int semicolon = contentType.indexOf(";");
+							if(semicolon >= 0) {
+								mimeType = contentType.substring(0, semicolon);
+								String mightContainCharSet = contentType.substring(semicolon+1).trim();
+								if(mightContainCharSet.contains("charset=")) {
+									String charSet = mightContainCharSet.substring(mightContainCharSet.indexOf("charset=")+8);
+									attachment.addAttribute("charSet", charSet);
 								}
-								else {
-									mimeType = contentType;
-								}
-								attachment.addAttribute("mimeType", mimeType);
 							}
+							else {
+								mimeType = contentType;
+							}
+							attachment.addAttribute("mimeType", mimeType);
 						}
-						attachments.addSubElement(attachment);
 					}
+					attachments.addSubElement(attachment);
 
 					i++;
 				}
