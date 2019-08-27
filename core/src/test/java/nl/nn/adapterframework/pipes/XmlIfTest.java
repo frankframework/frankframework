@@ -247,6 +247,39 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
+	public void xsltVersion1Success() throws ConfigurationException, PipeStartException, PipeRunException{
+		pipe.setXpathExpression("number(count(/results/result[contains(@name , 'test')]))>1");
+		pipe.setXsltVersion(1);
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult pipeRunResult = pipe.doPipe("<results><result name=\"test\"></result><result name=\"test\"></result></results>", session);
+		Assert.assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
+	}
+
+	@Test(expected = ConfigurationException.class)
+	public void xsltVersion1Error() throws ConfigurationException, PipeStartException, PipeRunException{
+		pipe.setXpathExpression("number(count(/results/result[contains(@name , lower-case('test'))]))>1");
+		pipe.setXsltVersion(1); //current default
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult pipeRunResult = pipe.doPipe("<results><result name=\"test\"></result><result name=\"test\"></result></results>", session);
+		Assert.assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
+	}
+
+	@Test
+	public void xsltVersion2Success() throws ConfigurationException, PipeStartException, PipeRunException{
+		pipe.setXpathExpression("number(count(/results/result[contains(@name , lower-case('test'))]))>1");
+		pipe.setXsltVersion(2); //current default
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult pipeRunResult = pipe.doPipe("<results><result name=\"test\"></result><result name=\"test\"></result></results>", session);
+		Assert.assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
+	}
+
+	@Test
 	public void dummyNamedElsePipe() throws ConfigurationException, PipeStartException, PipeRunException{
 		exception.expect(PipeRunException.class);
 		pipe.setXpathExpression("/test");

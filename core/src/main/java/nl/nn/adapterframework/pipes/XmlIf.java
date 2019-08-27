@@ -24,6 +24,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -43,17 +44,19 @@ public class XmlIf extends AbstractPipe {
 	private String thenForwardName = "then";
 	private String elseForwardName = "else";
 	private String regex = null;
+	private int xsltVersion = XmlUtils.DEFAULT_XSLT_VERSION;
 
 	private TransformerPool tp = null;
-	
+
 	{
 		setNamespaceAware(true);
 	}
 
 	protected String makeStylesheet(String xpathExpression, String resultVal) {
+	
 	String result = 
 		// "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">" +
+		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\""+getXsltVersion()+".0\">" +
 		"<xsl:output method=\"text\" omit-xml-declaration=\"yes\"/>" +
 		"<xsl:strip-space elements=\"*\"/>" +
 		"<xsl:template match=\"/\">" +
@@ -190,5 +193,13 @@ public class XmlIf extends AbstractPipe {
 	}
 	public String getRegex(){
 		return regex;
+	}
+
+	@IbisDoc({"specifies the version of xslt to use", "1"})
+	public void setXsltVersion(int xsltVersion) {
+		this.xsltVersion = xsltVersion;
+	}
+	public int getXsltVersion() {
+		return xsltVersion;
 	}
 }
