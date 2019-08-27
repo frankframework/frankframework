@@ -79,6 +79,9 @@ public class HttpResponseHandler {
 	}
 
 	public String getHeader(String header) {
+		if(httpResponse.getFirstHeader(header) == null)
+			return null;
+
 		return httpResponse.getFirstHeader(header).getValue();
 	}
 

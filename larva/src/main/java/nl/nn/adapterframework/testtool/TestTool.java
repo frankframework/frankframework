@@ -2242,7 +2242,11 @@ public class TestTool {
 						wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
 					}
 				}
-				webServiceSender.close();
+				try {
+					webServiceSender.close();
+				} catch (SenderException e) {
+					//Ignore
+				}
 				debugMessage("Closed webservice sender '" + queueName + "'", writers);
 			}
 		}
