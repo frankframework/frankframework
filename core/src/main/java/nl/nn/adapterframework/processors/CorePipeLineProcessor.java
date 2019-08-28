@@ -50,10 +50,8 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 	private Logger log = LogUtil.getLogger(this);
 	private PipeProcessor pipeProcessor;
 
-	public void setPipeProcessor(PipeProcessor pipeProcessor) {
-		this.pipeProcessor = pipeProcessor;
-	}
-
+	private boolean useStreamingOptimization=false;
+	
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, String message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		// Object is the object that is passed to and returned from Pipes
 		Object object = (Object) message;
@@ -305,6 +303,9 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 	}
 	
 	public PipeRunResult processPipeStreaming(IPipe pipeToRun, PipeLine pipeLine, String messageId, String message, IPipeLineSession pipeLineSession) throws PipeRunException {
+		if (!isUseStreamingOptimization()) {
+			return null;
+		}			
 		if (pipeToRun instanceof IOutputStreamConsumerPipe) {
 			IOutputStreamConsumerPipe streamConsumer = (IOutputStreamConsumerPipe)pipeToRun;
 			if (streamConsumer.isStreamingToOutputStreamPossible()) {
@@ -340,4 +341,16 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		}
 		return null;
 	}
+	
+	public void setPipeProcessor(PipeProcessor pipeProcessor) {
+		this.pipeProcessor = pipeProcessor;
+	}
+
+	public boolean isUseStreamingOptimization() {
+		return useStreamingOptimization;
+	}
+	public void setUseStreamingOptimization(boolean useStreamingOptimization) {
+		this.useStreamingOptimization = useStreamingOptimization;
+	}
+
 }
