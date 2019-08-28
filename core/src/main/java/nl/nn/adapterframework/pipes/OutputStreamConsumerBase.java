@@ -9,10 +9,10 @@ public class OutputStreamConsumerBase extends FixedForwardPipe implements IOutpu
 	private String streamToSessionKey;
 	
 
-	@Override
-	public PipeForward getForwardToOutputStreamProvider() {
-		return getForward();
-	}
+//	@Override
+//	public PipeForward getForwardToOutputStreamProvider() {
+//		return getForward();
+//	}
 
 	/**
 	 * When this returns true AND an OutputStream is provided in the session variable referred to by getStreamToSessionKey(), 

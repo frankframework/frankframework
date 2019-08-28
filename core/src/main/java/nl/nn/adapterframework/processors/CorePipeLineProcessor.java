@@ -172,11 +172,11 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		try {
 			while (!ready){
 
-				pipeRunResult = processPipeStreaming(pipeToRun, pipeLine, messageId, message, pipeLineSession);
-				if (pipeRunResult==null) {
-					// if streaming did not work, process the pipe classically.
+//				pipeRunResult = processPipeStreaming(pipeToRun, pipeLine, messageId, message, pipeLineSession);
+//				if (pipeRunResult==null) {
+//					// if streaming did not work, process the pipe classically.
 					pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, messageId, object, pipeLineSession);
-				}
+//				}
 				object=pipeRunResult.getResult();
 
 				// this should be moved to a StatisticsPipeProcessor
@@ -302,55 +302,55 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		return pipeLineResult;
 	}
 	
-	public PipeRunResult processPipeStreaming(IPipe pipeToRun, PipeLine pipeLine, String messageId, String message, IPipeLineSession pipeLineSession) throws PipeRunException {
-		if (!isUseStreamingOptimization()) {
-			return null;
-		}			
-		if (pipeToRun instanceof IOutputStreamConsumerPipe) {
-			IOutputStreamConsumerPipe streamConsumer = (IOutputStreamConsumerPipe)pipeToRun;
-			if (streamConsumer.isStreamingToOutputStreamPossible()) {
-				PipeForward consumerForward = streamConsumer.getForwardToOutputStreamProvider();
-				if (consumerForward==null) {
-					throw new PipeRunException(pipeToRun, "Received null forward to OutputStreamProvider");
-				}
-				IPipe nextPipe = pipeLine.getPipe(consumerForward.getPath());
-				if (nextPipe instanceof IOutputStreamProvider) {
-					IOutputStreamProvider streamProvider = (IOutputStreamProvider)nextPipe;
-					if (streamProvider.canProvideOutputStream()) {
-						String createStreamSessionKey = streamProvider.getCreateStreamSessionKey();
-						if (StringUtils.isEmpty(createStreamSessionKey)) {
-							createStreamSessionKey = pipeLine.getOwner().getName()+"/"+nextPipe.getName()+" ProvidedOutputStream";
-							streamProvider.setCreateStreamSessionKey(createStreamSessionKey);
-						}
-						PipeRunResult providerResult = pipeProcessor.processPipe(pipeLine, nextPipe, messageId, message, pipeLineSession);
-						OutputStream stream = (OutputStream)pipeLineSession.get(createStreamSessionKey);
-						if (stream==null) {
-							throw new PipeRunException(nextPipe,"Pipe should have provided OutputStream in session variable ["+createStreamSessionKey+"]");
-						}
-						String streamToSessionKey = streamConsumer.getStreamToSessionKey();
-						if (StringUtils.isEmpty(streamToSessionKey)) {
-							streamToSessionKey = pipeLine.getOwner().getName()+"/"+pipeToRun.getName()+" OutputStream";
-							streamConsumer.setStreamToSessionKey(streamToSessionKey);
-						}
-						pipeLineSession.put(streamToSessionKey, stream);
-						PipeRunResult pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, messageId, message, pipeLineSession);
-						return providerResult; // return providerResult, as it may contain the filename or something like that.
-					}
-				}
-			}
-		}
-		return null;
-	}
+//	public PipeRunResult processPipeStreaming(IPipe pipeToRun, PipeLine pipeLine, String messageId, String message, IPipeLineSession pipeLineSession) throws PipeRunException {
+//		if (!isUseStreamingOptimization()) {
+//			return null;
+//		}			
+//		if (pipeToRun instanceof IOutputStreamConsumerPipe) {
+//			IOutputStreamConsumerPipe streamConsumer = (IOutputStreamConsumerPipe)pipeToRun;
+//			if (streamConsumer.isStreamingToOutputStreamPossible()) {
+//				PipeForward consumerForward = streamConsumer.getForwardToOutputStreamProvider();
+//				if (consumerForward==null) {
+//					throw new PipeRunException(pipeToRun, "Received null forward to OutputStreamProvider");
+//				}
+//				IPipe nextPipe = pipeLine.getPipe(consumerForward.getPath());
+//				if (nextPipe instanceof IOutputStreamProvider) {
+//					IOutputStreamProvider streamProvider = (IOutputStreamProvider)nextPipe;
+//					if (streamProvider.canProvideOutputStream()) {
+//						String createStreamSessionKey = streamProvider.getCreateStreamSessionKey();
+//						if (StringUtils.isEmpty(createStreamSessionKey)) {
+//							createStreamSessionKey = pipeLine.getOwner().getName()+"/"+nextPipe.getName()+" ProvidedOutputStream";
+//							streamProvider.setCreateStreamSessionKey(createStreamSessionKey);
+//						}
+//						PipeRunResult providerResult = pipeProcessor.processPipe(pipeLine, nextPipe, messageId, message, pipeLineSession);
+//						OutputStream stream = (OutputStream)pipeLineSession.get(createStreamSessionKey);
+//						if (stream==null) {
+//							throw new PipeRunException(nextPipe,"Pipe should have provided OutputStream in session variable ["+createStreamSessionKey+"]");
+//						}
+//						String streamToSessionKey = streamConsumer.getStreamToSessionKey();
+//						if (StringUtils.isEmpty(streamToSessionKey)) {
+//							streamToSessionKey = pipeLine.getOwner().getName()+"/"+pipeToRun.getName()+" OutputStream";
+//							streamConsumer.setStreamToSessionKey(streamToSessionKey);
+//						}
+//						pipeLineSession.put(streamToSessionKey, stream);
+//						PipeRunResult pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, messageId, message, pipeLineSession);
+//						return providerResult; // return providerResult, as it may contain the filename or something like that.
+//					}
+//				}
+//			}
+//		}
+//		return null;
+//	}
 	
 	public void setPipeProcessor(PipeProcessor pipeProcessor) {
 		this.pipeProcessor = pipeProcessor;
 	}
 
-	public boolean isUseStreamingOptimization() {
-		return useStreamingOptimization;
-	}
-	public void setUseStreamingOptimization(boolean useStreamingOptimization) {
-		this.useStreamingOptimization = useStreamingOptimization;
-	}
+//	public boolean isUseStreamingOptimization() {
+//		return useStreamingOptimization;
+//	}
+//	public void setUseStreamingOptimization(boolean useStreamingOptimization) {
+//		this.useStreamingOptimization = useStreamingOptimization;
+//	}
 
 }

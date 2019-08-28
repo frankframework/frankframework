@@ -7,6 +7,6 @@ public interface IOutputStreamConsumerPipe extends IOutputStreamConsumer {
 	 * then doPipe() should write to this OutputStream, what otherwise would be the result of the pipe. When streaming optimization is used,
 	 * the actual result of the doPipe will be ignored then. 
 	 */
-	public PipeForward getForwardToOutputStreamProvider(); 
+	//public PipeForward getForwardToOutputStreamProvider(); 
 	
 }
