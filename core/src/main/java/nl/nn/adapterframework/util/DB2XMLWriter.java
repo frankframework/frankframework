@@ -91,6 +91,10 @@ public class DB2XMLWriter {
 	          case Types.TINYINT: return ("TINYINT");
 	          case Types.TIME: return ("TIME");
 	          case Types.REAL: return ("REAL");
+	          case Types.BOOLEAN: return ("BOOLEAN");
+	          case Types.BIT: return ("BIT");
+	          case Types.BIGINT: return ("BIGINT");
+	          case Types.SMALLINT: return ("SMALLINT");
 		}
      	return ("Unknown");
     }

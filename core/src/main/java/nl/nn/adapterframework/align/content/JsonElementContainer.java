@@ -25,7 +25,11 @@ import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
 import org.apache.commons.lang3.text.translate.EntityArrays;
 import org.apache.commons.lang3.text.translate.LookupTranslator;
 import org.apache.log4j.Logger;
+import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
+import org.apache.xerces.xs.XSTypeDefinition;
+
+import nl.nn.adapterframework.align.ScalarType;
 
 /**
  * Helper class to construct JSON from XML events.
@@ -40,8 +44,7 @@ public class JsonElementContainer implements ElementContainer {
 	private boolean repeatedElement;
 	private boolean skipArrayElementContainers;
 	private boolean nil=false;
-	private boolean bool=false;
-	private boolean numeric=false;
+	private ScalarType type=ScalarType.UNKNOWN;
 	private String attributePrefix;
 
 	public String stringContent;
@@ -50,16 +53,19 @@ public class JsonElementContainer implements ElementContainer {
 	
 	private final boolean DEBUG=false;
 	
-	public JsonElementContainer(String name, boolean xmlArrayContainer, boolean repeatedElement, boolean skipArrayElementContainers, String attributePrefix) {
+	public JsonElementContainer(String name, boolean xmlArrayContainer, boolean repeatedElement, boolean skipArrayElementContainers, String attributePrefix, XSTypeDefinition typeDefinition) {
 		this.name=name;
 		this.xmlArrayContainer=xmlArrayContainer;
 		this.repeatedElement=repeatedElement;
 		this.skipArrayElementContainers=skipArrayElementContainers;
 		this.attributePrefix=attributePrefix;
+		if (typeDefinition instanceof XSSimpleType) {
+			setType(ScalarType.findType(((XSSimpleType)typeDefinition)));
+		}
 	}
 	
 	public static final CharSequenceTranslator ESCAPE_JSON = new AggregateTranslator(new CharSequenceTranslator[] {
-			new LookupTranslator(new String[][] { { "\"", "\\\"" }, { "\\", "\\\\" }, { "/", "\\/" } }),
+			new LookupTranslator(new String[][] { { "\"", "\\\"" }, { "\\", "\\\\" } }),
 			new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE())});
 
 	@Override
@@ -69,22 +75,13 @@ public class JsonElementContainer implements ElementContainer {
 
 	@Override
 	public void setAttribute(String name, String value, XSSimpleTypeDefinition attTypeDefinition) {
-		JsonElementContainer attributeContainer = new JsonElementContainer(attributePrefix+name, false, false, false, attributePrefix);
-		if (attTypeDefinition.getNumeric()) {
-			attributeContainer.setNumeric(true);
-		}
+		JsonElementContainer attributeContainer = new JsonElementContainer(attributePrefix+name, false, false, false, attributePrefix, attTypeDefinition);
 		attributeContainer.setContent(value);
 		addContent(attributeContainer);
 	}
 
 	@Override
-	public void characters(char[] ch, int start, int length, boolean numericType, boolean booleanType) {
-		if (numericType) {
-			setNumeric(true);
-		}
-		if (booleanType) {
-			setBool(true);
-		}
+	public void characters(char[] ch, int start, int length) {
 		setContent(new String(ch,start,length));
 	}
 
@@ -136,8 +133,7 @@ public class JsonElementContainer implements ElementContainer {
 		if (isXmlArrayContainer() && content.isRepeatedElement() && skipArrayElementContainers) {
 			if (array==null) {
 				array=new LinkedList<Object>();
-				setNumeric(content.isNumeric());
-				setBool(content.isBool());
+				setType(content.getType());
 			} 
 			array.add(content.getContent());
 			return;
@@ -186,16 +182,17 @@ public class JsonElementContainer implements ElementContainer {
 			return null;
 		}
 		if (stringContent!=null) {
-			if (isBool()) {
+	        switch (getType()) {
+	        case BOOLEAN:
 				return stringContent;
-			}
-			if (isNumeric()) {
+	        case NUMERIC:
 				return stripLeadingZeroes(stringContent);
-			}
-			if (DEBUG) log.debug("getContent quoted stringContent ["+stringContent+"]");
+			default:
+				if (DEBUG) log.debug("getContent quoted stringContent ["+stringContent+"]");
 //				String result=StringEscapeUtils.escapeJson(stringContent.toString()); // this also converts diacritics into unicode escape sequences
-			String result=ESCAPE_JSON.translate(stringContent.toString()); 
-			return '"'+result+'"';
+				String result=ESCAPE_JSON.translate(stringContent.toString()); 
+				return '"'+result+'"';
+			}
 		}
 		if (array!=null) {
 			return array;
@@ -205,6 +202,9 @@ public class JsonElementContainer implements ElementContainer {
 		}
 		if (isXmlArrayContainer() && skipArrayElementContainers) {
 			return "[]";
+		}
+		if (getType()==ScalarType.STRING) {
+			return "\"\"";
 		}
 		return "{}";
 	}
@@ -220,19 +220,11 @@ public class JsonElementContainer implements ElementContainer {
 		return repeatedElement;
 	}
 
-	public boolean isBool() {
-		return bool;
+	public ScalarType getType() {
+		return type;
 	}
-	public void setBool(boolean bool) {
-		this.bool = bool;
-	}
-
-	public boolean isNumeric() {
-		return numeric;
-	}
-	public void setNumeric(boolean numeric) {
-		this.numeric = numeric;
+	public void setType(ScalarType type) {
+		this.type = type;
 	}
 
-	
 }

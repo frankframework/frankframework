@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2018 Nationale-Nederlanden
+   Copyright 2016, 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
-import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -31,6 +31,7 @@ import nl.nn.adapterframework.extensions.graphviz.GraphvizEngine;
 import nl.nn.adapterframework.extensions.graphviz.GraphvizException;
 import nl.nn.adapterframework.extensions.graphviz.Options;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -44,8 +45,9 @@ import org.apache.log4j.Logger;
 public class FlowDiagram {
 	private static Logger log = LogUtil.getLogger(FlowDiagram.class);
 
-	private File adapterFlowDir = new File(AppConstants.getInstance().getResolvedProperty("flow.adapter.dir"));
-	private File configFlowDir = new File(AppConstants.getInstance().getResolvedProperty("flow.config.dir"));
+	private final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	private File adapterFlowDir = new File(APP_CONSTANTS.getResolvedProperty("flow.adapter.dir"));
+	private File configFlowDir = new File(APP_CONSTANTS.getResolvedProperty("flow.config.dir"));
 
 	private static final String CONFIG2DOT_XSLT = "/IAF_WebControl/GenerateFlowDiagram/xsl/config2dot.xsl";
 	private static final String IBIS2DOT_XSLT = "/IAF_WebControl/GenerateFlowDiagram/xsl/ibis2dot.xsl";
@@ -54,15 +56,18 @@ public class FlowDiagram {
 	private Options options = Options.create();
 	private Format format = Format.SVG;
 
-	public FlowDiagram() {
+	private TransformerPool transformerPoolConfig;
+	private TransformerPool transformerPoolIbis;
+
+	public FlowDiagram() throws TransformerConfigurationException, IOException {
 		this(null);
 	}
 
-	public FlowDiagram(String format) {
+	public FlowDiagram(String format) throws TransformerConfigurationException, IOException {
 		this(format, null);
 	}
 
-	public FlowDiagram(String format, String version) {
+	public FlowDiagram(String format, String version) throws TransformerConfigurationException, IOException {
 		if (!adapterFlowDir.exists()) {
 			if (!adapterFlowDir.mkdirs()) {
 				throw new IllegalStateException(adapterFlowDir.getPath() + " does not exist and could not be created");
@@ -77,16 +82,24 @@ public class FlowDiagram {
 
 		engine = new GraphvizEngine(version);
 
-		if(format != null) {
-			try {
-				this.format = Format.valueOf(format.toUpperCase());
-			}
-			catch(IllegalArgumentException e) {
-				throw new IllegalArgumentException("unknown format["+format.toUpperCase()+"], must be one of "+Format.values());
-			}
+		String graphvizJsFormat = APP_CONSTANTS.getProperty("graphviz.js.format", "SVG");
+		if(StringUtils.isNotEmpty(format)) {
+			graphvizJsFormat = format;
+		}
+		try {
+			this.format = Format.valueOf(graphvizJsFormat.toUpperCase());
+		}
+		catch(IllegalArgumentException e) {
+			throw new IllegalArgumentException("unknown format["+format.toUpperCase()+"], must be one of "+Format.values());
 		}
 
 		options = options.format(this.format);
+
+		URL xsltSourceConfig = ClassUtils.getResourceURL(this, CONFIG2DOT_XSLT);
+		transformerPoolConfig = TransformerPool.getInstance(xsltSourceConfig, 2);
+
+		URL xsltSourceIbis = ClassUtils.getResourceURL(this, IBIS2DOT_XSLT);
+		transformerPoolIbis = TransformerPool.getInstance(xsltSourceIbis, 2);
 	}
 
 	public void generate(IAdapter adapter) throws ConfigurationException, IOException, GraphvizException {
@@ -99,11 +112,8 @@ public class FlowDiagram {
 		String dotOutput = null;
 
 		try {
-			URL xsltSource = ClassUtils.getResourceURL(this, CONFIG2DOT_XSLT);
-			Transformer transformer = XmlUtils.createTransformer(xsltSource);
-			dotOutput = XmlUtils.transformXml(transformer, dotInput);
-		}
-		catch(Exception e) {
+			dotOutput = transformerPoolConfig.transform(dotInput, null);
+		} catch(Exception e) {
 			log.warn("failed to create dot file for adapter["+adapter.getName()+"]", e);
 		}
 
@@ -121,11 +131,8 @@ public class FlowDiagram {
 		String dotOutput = null;
 
 		try {
-			URL xsltSource = ClassUtils.getResourceURL(this, IBIS2DOT_XSLT);
-			Transformer transformer = XmlUtils.createTransformer(xsltSource);
-			dotOutput = XmlUtils.transformXml(transformer, dotInput);
-		}
-		catch(Exception e) {
+			dotOutput = transformerPoolIbis.transform(dotInput, null);
+		} catch(Exception e) {
 			log.warn("failed to create dot file for configuration["+configuration.getName()+"]", e);
 		}
 
@@ -147,9 +154,7 @@ public class FlowDiagram {
 		String dotOutput = null;
 
 		try {
-			URL xsltSource = ClassUtils.getResourceURL(this, IBIS2DOT_XSLT);
-			Transformer transformer = XmlUtils.createTransformer(xsltSource);
-			dotOutput = XmlUtils.transformXml(transformer, dotInput);
+			dotOutput = transformerPoolIbis.transform(dotInput, null);
 		}
 		catch(Exception e) {
 			log.warn("failed to create dot file for configurations"+configurations.toString()+"", e);

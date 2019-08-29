@@ -98,7 +98,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 	}
 	private static List<String> overwriteMaxOccursToUnbounded = new ArrayList<String>();
 	static {
-		// The setSender in ParallelSenders adds senders to a list. When setSender has been renamed to addSender this
+		// The setSender in ParallelSenders adds senders to a list. When setSender  has been renamed to addSender this
 		// workaround can be removed.
 		overwriteMaxOccursToUnbounded.add("parallelSendersSender");
 	}
@@ -313,11 +313,16 @@ public class IbisDocPipe extends FixedForwardPipe {
 		} else if ("/ibisdoc/uglify_lookup.xml".equals(uri)) {
 			result = getUglifyLookup();
 			contentType = "application/xml";
+		} else if ("/ibisdoc/ibisdoc.json".equals(uri)) {
+			result = getJson();
+			contentType = "application/json";
 		} else if ("/ibisdoc".equals(uri)) {
 			result = "<html>\n"
-					+ "  <a href=\"ibisdoc/ibisdoc.html\">ibisdoc.html</a><br/>\n"
+					+ "  <a href=\"ibisdoc/ibisdoc.html\">ibisdoc.html (deprecated)</a><br/>\n"
 					+ "  <a href=\"ibisdoc/ibisdoc.xsd\">ibisdoc.xsd</a><br/>\n"
 					+ "  <a href=\"ibisdoc/uglify_lookup.xml\">uglify_lookup.xml</a><br/>\n"
+					+ "  <a href=\"ibisdoc/ibisdoc.json\">ibisdoc.json</a><br/>\n"
+					+ "  <a href=\"../../iaf/ibisdoc\">The new ibisdoc application</a><br/>\n"
 					+ "</html>";
 		} else if ("/ibisdoc/ibisdoc.html".equals(uri)) {
 			result = "<html>\n"
@@ -377,6 +382,101 @@ public class IbisDocPipe extends FixedForwardPipe {
 		}
 		session.put("contentType", contentType);
 		return new PipeRunResult(getForward(), result);
+	}
+
+	private String getJson() {
+		Map<String, TreeSet<IbisBean>> groups = getGroups();
+		IbisDocExtractor extractor = new IbisDocExtractor();
+
+		// For all folders
+		for (String folder : groups.keySet()) {
+
+			// For all classes
+			for (IbisBean ibisBean : groups.get(folder)) {
+
+				// Copy the properties of FileSender into FilePipe so that the properties of FileHandler are also in FilePipe
+				Map<String, Method> beanProperties = getBeanProperties(ibisBean.getClazz());
+				if (beanProperties != null) {
+
+					if (ibisBean.getName().equals("FilePipe")) {
+						for (IbisBean bean : groups.get("Senders")) {
+							if (bean.getName().equals("FileSender")) {
+								Map<String, Method> senderProperties = getBeanProperties(bean.getClazz());
+								if (senderProperties != null) {
+									beanProperties.putAll(senderProperties);
+								}
+								break;
+							}
+						}
+					}
+
+					// For each method in the class
+					Iterator<String> iterator = new TreeSet<>(beanProperties.keySet()).iterator();
+
+					while (iterator.hasNext()) {
+
+						// Get the method
+						String property = iterator.next();
+						Method method = beanProperties.get(property);
+
+						// Get the ibisdoc of the method
+						IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
+
+						// Create an array for the superclasses of this method's class
+						ArrayList<String> superClasses = new ArrayList<String>();
+
+						// Get the class
+                        Class clazz = ibisBean.getClazz();
+						int index = 0;
+
+						// For each superclass
+                        while (clazz.getSuperclass() != null) {
+
+                        	// Assign a string with a priority number attached to it and add it to the array of superclasses
+                        	String str = Integer.toString(index);
+                        	superClasses.add(clazz.getSimpleName() + str);
+                            clazz = clazz.getSuperclass();
+                            index++;
+                        }
+
+                        String javadocLink = ibisBean.getClazz().getName().replaceAll("\\.", "/");
+
+						// If there is an IbisDoc of the method
+						if (ibisDoc != null) {
+
+							// Get the values (description and default value)
+							String[] ibisDocValues = ibisDoc.value();
+
+							int order;
+							int desc;
+							int def;
+
+							// If it doesnt have anything
+							if (ibisDocValues[0].matches("\\d+")) {
+								order = Integer.parseInt(ibisDocValues[0]);
+								desc = 1;
+								def = 2;
+							} else {
+								order = 999;
+								desc = 0;
+								def = 1;
+							}
+
+							if (ibisDocValues.length > def) {
+								extractor.addMethods(folder, ibisBean.getName(), property, ibisDocValues[desc], ibisDocValues[def], method.getDeclaringClass().getSimpleName(), superClasses, javadocLink, order);
+							} else {
+								extractor.addMethods(folder, ibisBean.getName(), property, ibisDocValues[desc], "", method.getDeclaringClass().getSimpleName(), superClasses, javadocLink, order);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		extractor.addAllFolder();
+		extractor.writeToJsonUrl();
+
+		return extractor.getJsonString();
 	}
 
 	private String getSchema() throws PipeRunException {
@@ -726,6 +826,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 		if (allHtml == null)  allHtml = new StringBuffer();
 		if (groupsHtml == null) groupsHtml = new HashMap<String, String>();
 		Map<String, TreeSet<IbisBean>> groups = getGroups();
+
 		for (String group : groups.keySet()) {
 			topmenuHtml.append("<a href='" + group + ".html' target='submenuFrame'>" + group + "</a><br/>\n");
 			StringBuffer submenuHtml = new StringBuffer();

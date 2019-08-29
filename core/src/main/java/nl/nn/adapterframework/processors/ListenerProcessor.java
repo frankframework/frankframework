@@ -23,9 +23,9 @@ import nl.nn.adapterframework.core.TimeOutException;
 /**
  * @author Jaco de Groot
  */
-public interface ListenerProcessor {
+public interface ListenerProcessor<M> {
 
-	public String getMessage(ICorrelatedPullingListener listener,
+	public String getMessage(ICorrelatedPullingListener<M> listener,
 			String correlationID, IPipeLineSession pipeLineSession
 			) throws ListenerException, TimeOutException;
 

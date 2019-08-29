@@ -897,11 +897,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		Date tsReceived = null;
 		Date tsSent = null;
 		if (context!=null) {
+			//TODO ClassCasting Exceptions occur when using PipeLineSessionBase.setListenerParameters
 			tsReceived = (Date)context.get(IPipeLineSession.tsReceivedKey);
 			tsSent = (Date)context.get(IPipeLineSession.tsSentKey);
 		} else {
 			context=new HashMap();
 		}
+
 		PipeLineSessionBase.setListenerParameters(context, null, correlationId, tsReceived, tsSent);
 		return processMessageInAdapter(origin, message, message, null, correlationId, context, waitingTime, false);
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2018 Integration Partners
+   Copyright 2017-2019 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.Misc;
@@ -169,7 +170,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	private int timeout = 10000;
 	private int maxConnections = 10;
 	private int maxExecuteRetries = 1;
-	private PoolingHttpClientConnectionManager connectionManager;
 	private SSLConnectionSocketFactory sslSocketFactory = null;
 	private HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
 	private HttpClientContext httpClientContext = HttpClientContext.create();
@@ -204,18 +204,16 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	private boolean verifyHostname=true;
 	private boolean ignoreCertificateExpiredException=false;
 
-	private String inputMessageParam=null;
 	private String headersParams=null;
 	private boolean followRedirects=true;
 	private boolean staleChecking=true;
 	private int staleTimeout = 5000;
 	private boolean encodeMessages=false;
-	private boolean paramsInUrl=true;
-	private boolean ignoreRedirects=false;
 	private boolean xhtml=false;
 	private String styleSheetName=null;
 	private String protocol=null;
 	private String resultStatusCodeSessionKey;
+	private final boolean APPEND_MESSAGEID_HEADER = AppConstants.getInstance().getBoolean("http.headers.messageid", true);
 
 	private TransformerPool transformerPool=null;
 
@@ -260,15 +258,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	public void configure() throws ConfigurationException {
 		super.configure();
-
-		if (!getMethodType().equals("POST")) {
-			if (!isParamsInUrl()) {
-				throw new ConfigurationException(getLogPrefix()+"paramsInUrl can only be set to false for methodType POST");
-			}
-			if (StringUtils.isNotEmpty(getInputMessageParam())) {
-				throw new ConfigurationException(getLogPrefix()+"inputMessageParam can only be set for methodType POST");
-			}
-		}
 
 		/**
 		 * TODO find out if this really breaks proxy authentication or not.
@@ -432,6 +421,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	public void open() throws SenderException {
 		// In order to support multiThreading and connectionPooling
 		// If a sslSocketFactory has been defined, the connectionManager has to be initialized with the sslSocketFactory
+		PoolingHttpClientConnectionManager connectionManager;
 		if(sslSocketFactory != null) {
 			Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
 				.register("http", PlainConnectionSocketFactory.getSocketFactory())
@@ -471,9 +461,13 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return httpClient;
 	}
 
-	public void close() {
-		connectionManager.shutdown();
-		connectionManager = null;
+	public void close() throws SenderException {
+		try {
+			//Close the HttpClient and ConnectionManager to release resources and potential open connections
+			getHttpClient().close();
+		} catch (IOException e) {
+			throw new SenderException(e);
+		}
 
 		if (transformerPool!=null) {
 			transformerPool.close();
@@ -494,9 +488,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 				continue;
 			}
 			ParameterValue pv = parameters.getParameterValue(i);
-			if (headersParamsMap.keySet().contains(pv.getDefinition().getName())) {
-				headersParamsMap.put(pv.getDefinition().getName(), pv.asStringValue(""));
-			} else {
+			if (!headersParamsMap.keySet().contains(pv.getDefinition().getName())) {
 				try {
 					if (parametersAppended) {
 						path.append("&");
@@ -566,7 +558,10 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 			if (headersParams != null) {
 				StringTokenizer st = new StringTokenizer(headersParams, ",");
 				while (st.hasMoreElements()) {
-					headersParamsMap.put(st.nextToken(), null);
+					String paramName = st.nextToken();
+					ParameterValue paramValue = pvl.getParameterValue(paramName);
+					if(paramValue != null)
+						headersParamsMap.put(paramName, paramValue.asStringValue(null));
 				}
 			}
 
@@ -578,6 +573,13 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 			if(httpRequestBase == null)
 				throw new MethodNotSupportedException("could not find implementation for method ["+getMethodType()+"]");
 
+			//Set all headers
+			if(prc != null && APPEND_MESSAGEID_HEADER) {
+				httpRequestBase.setHeader("Message-Id", prc.getSession().getMessageId());
+			}
+			for (String param: headersParamsMap.keySet()) {
+				httpRequestBase.setHeader(param, headersParamsMap.get(param));
+			}
 			if (StringUtils.isNotEmpty(getContentType())) {
 				httpRequestBase.setHeader("Content-Type", getContentType());
 			}
@@ -943,14 +945,13 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return keyManagerAlgorithm;
 	}
 
-	
-	public String getTruststore() {
-		return truststore;
-	}
-
 	@IbisDoc({"resource url to truststore to be used for authentication", ""})
 	public void setTruststore(String string) {
 		truststore = string;
+	}
+
+	public String getTruststore() {
+		return truststore;
 	}
 
 	public String getTruststoreAuthAlias() {
@@ -1052,20 +1053,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return followRedirects;
 	}
 
-	
-	/**
-	 * Only used when methodeType=POST and paramsInUrl=false.
-	 * Name of the request parameter which is used to put the input message in
-	 * @param inputMessageParam
-	 */
-	@IbisDoc({"(only used when <code>methodetype=post</code> and <code>paramsinurl=false</code>) name of the request parameter which is used to put the input message in", ""})
-	public void setInputMessageParam(String inputMessageParam) {
-		this.inputMessageParam = inputMessageParam;
-	}
-	public String getInputMessageParam() {
-		return inputMessageParam;
-	}
-
 	/**
 	 * Comma separated list of parameter names which should be set as http headers
 	 */
@@ -1078,17 +1065,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	}
 
 	/**
-	 * When true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful
-	 */
-	@IbisDoc({"when true, besides http status code 200 (ok) also the code 301 (moved_permanently), 302 (moved_temporarily) and 307 (temporary_redirect) are considered successful", "false"})
-	public void setIgnoreRedirects(boolean b) {
-		ignoreRedirects = b;
-	}
-	public boolean isIgnoreRedirects() {
-		return ignoreRedirects;
-	}
-
-	/**
 	 * The CertificateExpiredException is ignored when set to true
 	 * @IbisDoc.default false
 	 */
@@ -1098,18 +1074,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	}
 	public boolean isIgnoreCertificateExpiredException() {
 		return ignoreCertificateExpiredException;
-	}
-
-	/**
-	 * When false and methodeType=POST, request parameters are put in the request body instead of in the url
-	 * @IbisDoc.default true
-	 */
-	@IbisDoc({"when false and <code>methodetype=post</code>, request parameters are put in the request body instead of in the url", "true"})
-	public void setParamsInUrl(boolean b) {
-		paramsInUrl = b;
-	}
-	public boolean isParamsInUrl() {
-		return paramsInUrl;
 	}
 
 	/**

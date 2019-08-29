@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2017, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@ package nl.nn.adapterframework.configuration;
 
 import org.apache.log4j.Logger;
 
+import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.util.ClassUtils;
+
 /**
  * Singleton class that has the configuration warnings for this application.
  * 
@@ -32,6 +35,12 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 		}
 		return self;
 	}
+	
+	public static void add(INamedObject object, Logger log, String message) {
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = ClassUtils.nameOf(object) +"["+object.getName()+"]: "+message;
+		configWarnings.add(log, msg);		
+	}
 
 	public boolean add(Logger log, String msg) {
 		return add(log, msg, null, false);
@@ -45,11 +54,20 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 		return add(log, msg, null, onlyOnce);
 	}
 
+	@Override
 	public boolean add(Logger log, String msg, Throwable t, boolean onlyOnce) {
-		if (activeConfiguration!=null) {
-			return activeConfiguration.getConfigurationWarnings().add(log, msg, t, onlyOnce);
+		return add(log, msg, null, onlyOnce, null);
+	}
+
+	public boolean add(Logger log, String msg, Throwable t, boolean onlyOnce, Configuration config) {
+		if (config!=null) {
+			return config.getConfigurationWarnings().add(log, msg, t, onlyOnce);
 		} else {
-			return super.add(log, msg, t, onlyOnce);
+			if (activeConfiguration!=null) {
+				return activeConfiguration.getConfigurationWarnings().add(log, msg, t, onlyOnce);
+			} else {
+				return super.add(log, msg, t, onlyOnce);
+			}
 		}
 	}
 

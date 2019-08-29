@@ -29,6 +29,7 @@ import java.util.List;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
@@ -53,6 +54,7 @@ import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.task.TimeoutGuard;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DirectoryCleaner;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Locker;
@@ -67,7 +69,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
-import org.quartz.Scheduler;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -360,6 +361,9 @@ public class JobDef {
 	public static final String JOB_FUNCTION_RECOVER_ADAPTERS="recoverAdapters";
 	public static final String JOB_FUNCTION_CHECK_RELOAD="checkReload";
 
+	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.autoDatabaseClassLoader", false);
+
     private String name;
     private String cronExpression;
     private long interval = -1;
@@ -386,7 +390,7 @@ public class JobDef {
 	private TransactionDefinition txDef=null;
 	private PlatformTransactionManager txManager;
 
-	private String jobGroup = Scheduler.DEFAULT_GROUP;
+	private String jobGroup = SchedulerHelper.DEFAULT_GROUP;
 
 	private List<DirectoryCleaner> directoryCleaners = new ArrayList<DirectoryCleaner>();
 
@@ -528,17 +532,17 @@ public class JobDef {
 	}
 
 	public JobDetail getJobDetail(IbisManager ibisManager) {
-		
+
 		JobDataMap jobDataMap = new JobDataMap();
-		jobDataMap.put("manager", ibisManager);
-		jobDataMap.put("jobdef", this);
-		
+		jobDataMap.put(ConfiguredJob.MANAGER_KEY, ibisManager);
+		jobDataMap.put(ConfiguredJob.JOBDEF_KEY, this);
+
 		JobDetail jobDetail = newJob(ConfiguredJob.class)
 				.withIdentity(getName(), getJobGroup())
 				.setJobData(jobDataMap)
 				.withDescription(StringUtils.isNotEmpty(getDescription()) ? getDescription() : null)
 				.build();
-		
+
 		return jobDetail;
 	}
 
@@ -784,11 +788,20 @@ public class JobDef {
 	}
 
 	private void checkReload(IbisManager ibisManager) {
+		if (ibisManager.getIbisContext().isLoadingConfigs()) {
+			String msg = "skipping checkReload because one or more configurations are currently loading";
+			getMessageKeeper().add(msg, MessageKeeperMessage.INFO_LEVEL);
+			log.info(getLogPrefix() + msg);
+			return;
+		}
+		
 		String configJmsRealm = JmsRealmFactory.getInstance()
 				.getFirstDatasourceJmsRealm();
-		List<String> configsToReload = new ArrayList<String>();
 
 		if (StringUtils.isNotEmpty(configJmsRealm)) {
+			List<String> configNames = new ArrayList<String>();
+			List<String> configsToReload = new ArrayList<String>();
+
 			Connection conn = null;
 			ResultSet rs = null;
 			FixedQuerySender qs = (FixedQuerySender) ibisManager
@@ -804,6 +817,7 @@ public class JobDef {
 				PreparedStatement stmt = conn.prepareStatement(selectQuery);
 				for (Configuration configuration : ibisManager
 						.getConfigurations()) {
+					configNames.add(configuration.getName());
 					if ("DatabaseClassLoader"
 							.equals(configuration.getClassLoaderType())) {
 						String configName = configuration.getName();
@@ -814,15 +828,18 @@ public class JobDef {
 							String configVersion = configuration.getVersion();
 							if (!StringUtils.equalsIgnoreCase(ibisConfigVersion,
 									configVersion)) {
+								log.info(getLogPrefix() + "configuration ["
+										+ configName + "] with version ["
+										+ configVersion
+										+ "] will be reloaded with new version ["
+										+ ibisConfigVersion + "]");
 								configsToReload.add(configName);
 							}
 						}
 					}
 				}
 			} catch (Exception e) {
-				String msg = "error while executing query [" + selectQuery
-						+ "] (as part of scheduled job execution): "
-						+ e.getMessage();
+				String msg = "error while executing query [" + selectQuery	+ "] (as part of scheduled job execution): " + e.getMessage();
 				getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
 				log.error(getLogPrefix() + msg);
 			} finally {
@@ -842,11 +859,49 @@ public class JobDef {
 					}
 				}
 			}
-		}
 
-		if (!configsToReload.isEmpty()) {
-			for (String configToReload : configsToReload) {
-				ibisManager.getIbisContext().reload(configToReload);
+			if (!configsToReload.isEmpty()) {
+				for (String configToReload : configsToReload) {
+					ibisManager.getIbisContext().reload(configToReload);
+				}
+			}
+			
+			if (CONFIG_AUTO_DB_CLASSLOADER) {
+				// load new (activated) configs
+				List<String> dbConfigNames = null;
+				try {
+					dbConfigNames = ConfigurationUtils
+							.retrieveConfigNamesFromDatabase(
+									ibisManager.getIbisContext(), configJmsRealm);
+				} catch (ConfigurationException e) {
+					String msg = "error while retrieving configuration names from database: "
+							+ e.getMessage();
+					getMessageKeeper().add(msg,
+							MessageKeeperMessage.ERROR_LEVEL);
+					log.error(getLogPrefix() + msg);
+				}
+				if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
+					for (String currentDbConfigurationName : dbConfigNames) {
+						if (!configNames
+								.contains(currentDbConfigurationName)) {
+							ibisManager.getIbisContext()
+									.load(currentDbConfigurationName);
+						}
+					}
+				}
+				// unload old (deactivated) configs
+				if (configNames != null && !configNames.isEmpty()) {
+					for (String currentConfigurationName : configNames) {
+						if (!dbConfigNames.contains(currentConfigurationName)
+								&& "DatabaseClassLoader".equals(ibisManager
+										.getConfiguration(
+												currentConfigurationName)
+										.getClassLoaderType())) {
+							ibisManager.getIbisContext()
+									.unload(currentConfigurationName);
+						}
+					}
+				}
 			}
 		}
 	}
@@ -855,7 +910,7 @@ public class JobDef {
 		DirectQuerySender qs;
 		qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 		try {
-			qs.setName("QuerySender");
+			qs.setName("executeQueryJob");
 			qs.setJmsRealm(getJmsRealm());
 			qs.setQueryType("other");
 			qs.setTimeout(getQueryTimeout());
@@ -897,7 +952,7 @@ public class JobDef {
 			}
 		}
 		catch(Exception e) {
-			String msg = "Error while sending message (as part of scheduled job execution): " + e.getMessage();
+			String msg = "error while sending message (as part of scheduled job execution): " + e.getMessage();
 			getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
 			log.error(getLogPrefix()+msg, e);
 		}

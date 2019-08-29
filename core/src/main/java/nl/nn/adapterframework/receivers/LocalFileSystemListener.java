@@ -17,17 +17,20 @@ package nl.nn.adapterframework.receivers;
 
 import java.io.File;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.FileSystemListener;
 import nl.nn.adapterframework.filesystem.LocalFileSystem;
 
 public class LocalFileSystemListener extends FileSystemListener<File, LocalFileSystem>{
 
-	public LocalFileSystemListener() {
-		setFileSystem(new LocalFileSystem());
+	@Override
+	protected LocalFileSystem createFileSystem() {
+		return new LocalFileSystem();
 	}
 	
+	@IbisDoc({"optional base folder, that serves as root for all other folders", ""})
 	public void setRoot(String root) {
 		getFileSystem().setRoot(root);
 	}
-	
+
 }

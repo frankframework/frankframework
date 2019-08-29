@@ -135,18 +135,11 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
 		XSSimpleType simpleType=aligner.getElementType();
-		boolean numericType=false;
-		boolean booleanType=false;
-		if (simpleType!=null) {
-			if (DEBUG) log.debug("characters for SimpleType ["+new String(ch,start,length)+"]");
-			if (simpleType.getNumeric()) {
-				numericType=true;
-			}
-			if (simpleType.getBuiltInKind()==XSConstants.BOOLEAN_DT) {
-				booleanType=true;
-			}
+		ScalarType scalarType=ScalarType.findType(simpleType);
+		if (DEBUG && simpleType!=null) {
+			log.debug("SimpleType ["+simpleType+"] ScalarType ["+scalarType+"] characters ["+new String(ch,start,length)+"]");
 		}
-		documentContainer.characters(ch, start, length, numericType, booleanType);
+		documentContainer.characters(ch, start, length);
 		super.characters(ch, start, length);
 	}
 

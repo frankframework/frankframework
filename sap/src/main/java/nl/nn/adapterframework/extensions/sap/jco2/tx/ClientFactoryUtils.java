@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco2.tx;
 
-import nl.nn.adapterframework.extensions.sap.jco2.SapException;
+import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.extensions.sap.jco2.SapSystem;
 import nl.nn.adapterframework.util.LogUtil;
 

@@ -124,6 +124,7 @@ public class CmisHttpInvoker implements HttpInvoker {
 				sender.setTimeout(timeout);
 			}
 
+			sender.setMethodType("custom");
 			sender.configure();
 			sender.open();
 		}
@@ -161,10 +162,10 @@ public class CmisHttpInvoker implements HttpInvoker {
 
 		log.debug("Session "+session.getSessionId()+": "+method+" "+url);
 
-		if(url.toString().equals(CmisSender.OVERRIDE_WSDL_URL)) {
+		if(url.toString().equals(CmisSessionBuilder.OVERRIDE_WSDL_URL)) {
 			try {
 				Map<String, List<String>> headerFields = new HashMap<String, List<String>>();
-				String wsdl = (String) session.get(CmisSender.OVERRIDE_WSDL_KEY);
+				String wsdl = (String) session.get(CmisSessionBuilder.OVERRIDE_WSDL_KEY);
 				InputStream inputStream = new ByteArrayInputStream(wsdl.getBytes(Misc.DEFAULT_INPUT_STREAM_ENCODING));
 				return new Response(200, "ok", headerFields, inputStream, null);
 			} catch (UnsupportedEncodingException e) {
@@ -180,13 +181,13 @@ public class CmisHttpInvoker implements HttpInvoker {
 			if(sender == null)
 				throw new CmisConnectionException("Failed to create IbisHttpSender");
 
-			sender.setMethodType(method);
-			if (contentType != null)
-				sender.setContentType(contentType);
-
 			// init headers if not exist
 			if(headers == null)
 				headers = new HashMap<String, String>();
+
+			if (contentType != null)
+				headers.put("Content-Type", contentType);
+
 			headers.put("User-Agent", (String) session.get(SessionParameter.USER_AGENT, ClientVersion.OPENCMIS_USER_AGENT));
 
 			// offset
@@ -242,7 +243,7 @@ public class CmisHttpInvoker implements HttpInvoker {
 
 			log.trace("invoking CmisHttpSender: content-type["+contentType+"] headers["+headers.toString()+"]");
 
-			response = sender.invoke(url.toString(), headers, writer, session, offset, length);
+			response = sender.invoke(method, url.toString(), headers, writer, session);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new CmisConnectionException(url.toString(), -1, e);

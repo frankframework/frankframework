@@ -1,7 +1,6 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -9,15 +8,26 @@ import java.util.List;
 
 import javax.wsdl.WSDLException;
 
+import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.configuration.BasicAdapterServiceImpl;
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
 import nl.nn.adapterframework.validation.XmlValidatorException;
 
@@ -26,11 +36,13 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
   * @author Michiel Meeuwissen
  */
 
-public class WsdlXmlValidatorTest {
+public class WsdlXmlValidatorTest extends Mockito {
     private static final String SIMPLE                = ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/SimpleWsdl/simple.wsdl";
     private static final String SIMPLE_WITH_INCLUDE   = ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/SimpleWsdl/simple_withinclude.wsdl";
     private static final String SIMPLE_WITH_REFERENCE = ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/SimpleWsdl/simple_withreference.wsdl";
     private static final String TIBCO                 = ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1.wsdl";
+    private static final String DOUBLE_BODY           = ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetails/GetPolicyDetailsDoubleBody.wsdl";
+    private static final String BASIC                 = ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl";
 
     private IPipeLineSession session = mock(IPipeLineSession.class);
 
@@ -203,6 +215,97 @@ public class WsdlXmlValidatorTest {
 		assertEquals("/xml: Unknown namespace ''", lines.get(3));
 		assertEquals("/Envelope/Body: Element(s) 'TradePriceRequest' not found", lines.get(4));
 		assertEquals("/: Element(s) 'Envelope' not found", lines.get(5));
+	}
+
+	@Test(expected = ConfigurationException.class)
+	public void wSoapBodyExistsMultipleTimes() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
+		WsdlXmlValidator val = new WsdlXmlValidator();
+		val.setWsdl(DOUBLE_BODY);
+		val.setSoapHeader("MessageHeader");
+		val.setSoapBody("GetPolicyDetails_Request");
+		val.setSoapBodyNamespace("http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1");
+		val.setAddNamespaceToSchema(true);
+		val.setThrowException(true);
+		val.registerForward(new PipeForward("success", null));
+		val.configure();
+	}
+
+	@Test
+	public void warnSchemaLocationAlreadyDefaultValue() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
+		// Mock a configuration with an adapter in it
+		IbisManager ibisManager = spy(new DefaultIbisManager());
+		ibisManager.setIbisContext(spy(new IbisContext()));
+		Configuration configuration = new Configuration(new BasicAdapterServiceImpl());
+		configuration.setName("dummyConfiguration");
+		configuration.setVersion("1");
+		configuration.setIbisManager(ibisManager);
+
+		IAdapter adapter = spy(new Adapter());
+		adapter.setName("dummy");
+		PipeLine pl = new PipeLine();
+		pl.setFirstPipe("dummy");
+
+		WsdlXmlValidator val = new WsdlXmlValidator();
+		val.setName("dummy");
+		val.setWsdl(BASIC);
+		val.setSoapHeader("MessageHeader");
+		val.setSoapBody("GetPolicyDetails_Request");
+		val.setAddNamespaceToSchema(true);
+		val.setSchemaLocation("http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2 http://ibissource.org/XSD/Generic/MessageHeader/2 schema1 ");
+		val.setThrowException(true);
+		val.registerForward(new PipeForward("success", null));
+
+		pl.addPipe(val);
+		PipeLineExit ple = new PipeLineExit();
+		ple.setPath("success");
+		ple.setState("success");
+		pl.registerPipeLineExit(ple);
+		adapter.registerPipeLine(pl);
+
+		adapter.setConfiguration(configuration);
+		configuration.registerAdapter(adapter);
+
+		assertEquals(1, configuration.getConfigurationWarnings().size());
+		assertEquals("Pipe [dummy] attribute [schemaLocation] for wsdl [/Validation/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl] already has a default value [http://ibissource.org/XSD/Generic/MessageHeader/2 schema1 http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2]", configuration.getConfigurationWarnings().getFirst());
+	}
+
+	@Test
+	public void warnUseSoapBodyNameSpace() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
+		// Mock a configuration with an adapter in it
+		IbisManager ibisManager = spy(new DefaultIbisManager());
+		ibisManager.setIbisContext(spy(new IbisContext()));
+		Configuration configuration = new Configuration(new BasicAdapterServiceImpl());
+		configuration.setName("dummyConfiguration");
+		configuration.setVersion("1");
+		configuration.setIbisManager(ibisManager);
+
+		IAdapter adapter = spy(new Adapter());
+		adapter.setName("dummy");
+		PipeLine pl = new PipeLine();
+		pl.setFirstPipe("dummy");
+
+		WsdlXmlValidator val = new WsdlXmlValidator();
+		val.setName("dummy");
+		val.setWsdl(BASIC);
+		val.setSoapHeader("MessageHeader");
+		val.setSoapBody("GetPolicyDetails_Request");
+		val.setAddNamespaceToSchema(true);
+		val.setSchemaLocation("http://ibissource.org/XSD/Generic/MessageHeader/2 schema1 http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/2 schema2");
+		val.setThrowException(true);
+		val.registerForward(new PipeForward("success", null));
+
+		pl.addPipe(val);
+		PipeLineExit ple = new PipeLineExit();
+		ple.setPath("success");
+		ple.setState("success");
+		pl.registerPipeLineExit(ple);
+		adapter.registerPipeLine(pl);
+
+		adapter.setConfiguration(configuration);
+		configuration.registerAdapter(adapter);
+
+		assertEquals(1, configuration.getConfigurationWarnings().size());
+		assertEquals("Pipe [dummy] use attribute [soapBodyNamespace] instead of attribute [schemaLocation] with value [http://ibissource.org/XSD/Generic/MessageHeader/2 schema1 http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2] for wsdl [/Validation/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl]", configuration.getConfigurationWarnings().getFirst());
 	}
 }
 

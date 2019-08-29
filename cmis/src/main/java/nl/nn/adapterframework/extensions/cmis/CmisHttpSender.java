@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package nl.nn.adapterframework.extensions.cmis;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
@@ -28,6 +27,7 @@ import org.apache.chemistry.opencmis.client.bindings.spi.http.Output;
 import org.apache.chemistry.opencmis.client.bindings.spi.http.Response;
 import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.MethodNotSupportedException;
 import org.apache.http.StatusLine;
@@ -51,25 +51,22 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 
 public class CmisHttpSender extends HttpSenderBase {
 
-	private Map<String, String> headers;
-
 	public CmisHttpSender() {
-	}
-
-	@Override
-	public boolean isSynchronous() {
-		return false;
 	}
 
 	@Override
 	public HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList pvl, Map<String, String> headersParamsMap, IPipeLineSession session) throws SenderException {
 		HttpRequestBase method = null;
 
+		String methodType = (String) session.get("method");
+		if(StringUtils.isEmpty(methodType))
+			throw new SenderException("unable to determine method from pipeline session");
+
 		try {
-			if(getMethodType().equals("GET")) {
+			if(methodType.equals("GET")) {
 				method = new HttpGet(uri.build());
 			}
-			else if (getMethodType().equals("POST")) {
+			else if (methodType.equals("POST")) {
 				HttpPost httpPost = new HttpPost(uri.build());
 
 				// send data
@@ -92,7 +89,7 @@ public class CmisHttpSender extends HttpSenderBase {
 					method = httpPost;
 				}
 			}
-			else if (getMethodType().equals("PUT")) {
+			else if (methodType.equals("PUT")) {
 				HttpPut httpPut = new HttpPut(uri.build());
 
 				// send data
@@ -115,27 +112,28 @@ public class CmisHttpSender extends HttpSenderBase {
 					method = httpPut;
 				}
 			}
-			else if (getMethodType().equals("DELETE")) {
+			else if (methodType.equals("DELETE")) {
 				method = new HttpDelete(uri.build());
 			}
 			else {
-				throw new MethodNotSupportedException("method ["+getMethodType()+"] not implemented");
+				throw new MethodNotSupportedException("method ["+methodType+"] not implemented");
 			}
 		}
 		catch (Exception e) {
 			throw new SenderException(e);
 		}
 
-		for(Map.Entry<String, String> entry : headers.entrySet()) {
-			log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
+		if (session.get("headers") != null) {
+			Map<String, String> headers = (Map<String, String>) session.get("headers");
 
-			method.addHeader(entry.getKey(), entry.getValue());
+			for(Map.Entry<String, String> entry : headers.entrySet()) {
+				log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
+
+				method.addHeader(entry.getKey(), entry.getValue());
+			}
 		}
 
-		//Cmis creates it's own contentType depending on the method and bindingType
-		method.setHeader("Content-Type", getContentType());
-
-		log.debug(getLogPrefix()+"HttpSender constructed "+getMethodType()+"-method ["+method.getURI()+"] query ["+method.getURI().getQuery()+"] ");
+		log.debug(getLogPrefix()+"HttpSender constructed "+methodType+"-method ["+method.getURI()+"] query ["+method.getURI().getQuery()+"] ");
 		return method;
 	}
 
@@ -165,14 +163,16 @@ public class CmisHttpSender extends HttpSenderBase {
 		return "response";
 	}
 
-	public Response invoke(String url, Map<String, String> headers, Output writer, BindingSession session, BigInteger offset, BigInteger length) throws SenderException, TimeOutException {
+	public Response invoke(String method, String url, Map<String, String> headers, Output writer, BindingSession session) throws SenderException, TimeOutException {
 		//Prepare the message. We will overwrite things later...
-		this.headers = headers;
+
 		int responseCode = -1;
 
 		IPipeLineSession pls = new PipeLineSessionBase();
 		pls.put("writer", writer);
 		pls.put("url", url);
+		pls.put("method", method);
+		pls.put("headers", headers);
 
 		ParameterResolutionContext prc = new ParameterResolutionContext("", pls);
 		try {

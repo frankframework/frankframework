@@ -8,6 +8,7 @@
 	<xsl:variable name="brvbar" select="'&#166;'" />
 	<xsl:variable name="allConfigs" select="root/registeredAdapters/@all" />
 	<xsl:variable name="alert" select="root/registeredAdapters/@alert" />
+	<xsl:variable name="log" select="root/registeredAdapters/@log" />
 	<xsl:variable name="encodedConfigName" select="encode-for-uri($configurationName)" />
 	<xsl:template match="/">
 		<page title="Show configuration status">
@@ -185,31 +186,41 @@
 		<contentTable width="100%">
 			<tbody>
 				<tr>
-					<subHeader colspan="10" align="center">
+					<subHeader colspan="13" align="center">
 						<h7>Summary</h7>
 					</subHeader>
 				</tr>
 				<tr>
-					<subHeader>State</subHeader>
-					<subHeader align="center">
+					<subHeader rowspan="2">State</subHeader>
+					<subHeader rowspan="2" align="center">
 						<image type="started" title="started" />
 					</subHeader>
-					<subHeader align="center">
+					<subHeader rowspan="2" align="center">
 						<image type="starting" title="starting" />
 					</subHeader>
-					<subHeader align="center">
+					<subHeader rowspan="2" align="center">
 						<image type="stopped" title="stopped" />
 					</subHeader>
-					<subHeader align="center">
+					<subHeader rowspan="2" align="center">
 						<image type="stopping" title="stopping" />
 					</subHeader>
-					<subHeader align="center">
+					<subHeader rowspan="2" align="center">
 						<image type="error" title="error" />
 					</subHeader>
-					<subHeader align="center">INFO messages</subHeader>
-					<subHeader align="center">WARN messages</subHeader>
-					<subHeader align="center">ERROR messages</subHeader>
-					<subHeader>Actions</subHeader>
+					<subHeader colspan="3" align="center">Last message state</subHeader>
+					<subHeader rowspan="2" align="center">INFO messages</subHeader>
+					<subHeader rowspan="2" align="center">WARN messages</subHeader>
+					<subHeader rowspan="2" align="center">ERROR messages</subHeader>
+					<subHeader rowspan="2">Actions</subHeader>
+				</tr>
+				<tr>
+					<subHeader align="center">
+						<image type="check" title="ok" />
+					</subHeader>
+					<subHeader align="center">-</subHeader>
+					<subHeader align="center">
+						<image type="delete" title="error" />
+					</subHeader>
 				</tr>
 				<xsl:variable name="configFlowUrl" select="concat($srcPrefix,'rest/showFlowDiagram?configuration=',$encodedConfigName)" />
 				<tr>
@@ -228,6 +239,15 @@
 					</td>
 					<td class="receiverRow" align="right">
 						<xsl:value-of select="//root/registeredAdapters/summary/adapterState/@error" />
+					</td>
+					<td class="receiverRow" align="right">
+						<xsl:value-of select="//root/registeredAdapters/summary/lastMsgProcessState/@ok" />
+					</td>
+					<td class="receiverRow" align="right">
+						<xsl:value-of select="//root/registeredAdapters/summary/lastMsgProcessState/@notApplicable" />
+					</td>
+					<td class="receiverRow" align="right">
+						<xsl:value-of select="//root/registeredAdapters/summary/lastMsgProcessState/@error" />
 					</td>
 					<td rowspan="2" class="receiverRow" align="right">
 						<xsl:value-of select="//root/registeredAdapters/summary/messageLevel/@info" />
@@ -280,7 +300,14 @@
 				<tr>
 					<subHeader>Receivers</subHeader>
 					<td class="receiverRow" align="right">
-						<xsl:value-of select="//root/registeredAdapters/summary/receiverState/@started" />
+						<xsl:choose>
+							<xsl:when test="number(//root/registeredAdapters/summary/receiverState/@startedNotAvailable)=0">
+								<xsl:value-of select="//root/registeredAdapters/summary/receiverState/@started" />
+							</xsl:when>
+							<xsl:otherwise>
+								<xsl:value-of select="concat(//root/registeredAdapters/summary/receiverState/@started,'/',//root/registeredAdapters/summary/receiverState/@startedNotAvailable)" />
+							</xsl:otherwise>
+						</xsl:choose>
 					</td>
 					<td class="receiverRow" align="right">
 						<xsl:value-of select="//root/registeredAdapters/summary/receiverState/@starting" />
@@ -294,17 +321,18 @@
 					<td class="receiverRow" align="right">
 						<xsl:value-of select="//root/registeredAdapters/summary/receiverState/@error" />
 					</td>
+					<td colspan="3" class="receiverRow"/>
 				</tr>
 				<xsl:for-each select="//root/registeredAdapters/configurationMessages">
 					<tr>
-						<subHeader colspan="9">Messages</subHeader>
+						<subHeader colspan="12">Messages</subHeader>
 						<subHeader>Flow</subHeader>
 					</tr>
 					<xsl:variable name="nrOfConfigurationMessages" select="count(configurationMessage)" />
 					<xsl:for-each select="configurationMessage">
 						<xsl:variable name="posMessages" select="position()" />
 						<tr>
-							<td colspan="9" class="messagesRow">
+							<td colspan="12" class="messagesRow">
 								<xsl:choose>
 									<xsl:when test="@level='ERROR'">
 										<font color="red">
@@ -361,53 +389,92 @@
 		<contentTable width="100%">
 			<tbody>
 				<tr>
-					<xsl:choose>
-						<xsl:when test="$alert='true'">
-							<subHeader colspan="9" align="center">
+					<subHeader colspan="10" align="center">
+						<xsl:variable name="txt_all" select="'*all*'"/>
+						<xsl:variable name="txt_only_state_alerts" select="'only state alerts'"/>
+						<xsl:variable name="txt_only_log_alerts" select="'only log alerts'"/>
+						<xsl:choose>
+							<xsl:when test="$alert='true'">
+								<xsl:choose>
+									<xsl:when test="$log='true'">
+										<h7>
+											<a name="Adapters"></a>
+											<xsl:text>Adapters (only log alerts)</xsl:text>
+											<span style="display:inline-block; width: 10px;"></span>
+											<a>
+												<xsl:attribute name="href" select="concat($srcPrefix,'rest/showConfigurationStatus?alert=false#Adapters')" />
+												<xsl:attribute name="alt" select="$txt_all" />
+												<xsl:attribute name="text" select="$txt_all" />
+												<xsl:value-of select="$txt_all" />
+											</a>
+											<span style="display:inline-block; width: 10px;"></span>
+											<a>
+												<xsl:attribute name="href" select="concat($srcPrefix,'rest/showConfigurationStatus?alert=true#Adapters')" />
+												<xsl:attribute name="alt" select="$txt_only_state_alerts" />
+												<xsl:attribute name="text" select="$txt_only_state_alerts" />
+												<xsl:value-of select="$txt_only_state_alerts" />
+											</a>
+										</h7>
+									</xsl:when>
+									<xsl:otherwise>
+										<h7>
+											<a name="Adapters"></a>
+											<xsl:text>Adapters (only state alerts)</xsl:text>
+											<span style="display:inline-block; width: 10px;"></span>
+											<a>
+												<xsl:attribute name="href" select="concat($srcPrefix,'rest/showConfigurationStatus?alert=false#Adapters')" />
+												<xsl:attribute name="alt" select="$txt_all" />
+												<xsl:attribute name="text" select="$txt_all" />
+												<xsl:value-of select="$txt_all" />
+											</a>
+											<span style="display:inline-block; width: 10px;"></span>
+											<a>
+												<xsl:attribute name="href" select="concat($srcPrefix,'rest/showConfigurationStatus?alert=true&amp;log=true#Adapters')" />
+												<xsl:attribute name="alt" select="$txt_only_log_alerts" />
+												<xsl:attribute name="text" select="$txt_only_log_alerts" />
+												<xsl:value-of select="$txt_only_log_alerts" />
+											</a>
+										</h7>
+									</xsl:otherwise>
+								</xsl:choose>
+							</xsl:when>
+							<xsl:otherwise>	
 								<h7>
 									<a name="Adapters"></a>
-									<xsl:text>Adapters (only alerts)</xsl:text>
+									<xsl:text>Adapters (*all*)</xsl:text>
+									<span style="display:inline-block; width: 10px;"></span>
+									<a>
+										<xsl:attribute name="href" select="concat($srcPrefix,'rest/showConfigurationStatus?alert=true#Adapters')" />
+										<xsl:attribute name="alt" select="$txt_only_state_alerts" />
+										<xsl:attribute name="text" select="$txt_only_state_alerts" />
+										<xsl:value-of select="$txt_only_state_alerts" />
+									</a>
+									<span style="display:inline-block; width: 10px;"></span>
+									<a>
+										<xsl:attribute name="href" select="concat($srcPrefix,'rest/showConfigurationStatus?alert=true&amp;log=true#Adapters')" />
+										<xsl:attribute name="alt" select="$txt_only_log_alerts" />
+										<xsl:attribute name="text" select="$txt_only_log_alerts" />
+										<xsl:value-of select="$txt_only_log_alerts" />
+									</a>
 								</h7>
-							</subHeader>
-							<subHeader align="center">
-								<imagelink type="starting" alt="all">
-									<xsl:attribute name="href" select="concat($srcPrefix,'rest/showConfigurationStatus')" />
-									<parameter name="alert">false#Adapters</parameter>
-								</imagelink>
-							</subHeader>
-						</xsl:when>
-						<xsl:otherwise>
-							<subHeader colspan="9" align="center">
-								<h7>
-									<a name="Adapters"></a>
-									<xsl:text>Adapters</xsl:text>
-								</h7>
-							</subHeader>
-							<subHeader align="center">
-								<imagelink type="stopping" alt="only alerts">
-									<xsl:attribute name="href" select="concat($srcPrefix,'rest/showConfigurationStatus')" />
-									<parameter name="alert">true#Adapters</parameter>
-								</imagelink>
-							</subHeader>
-						</xsl:otherwise>
-					</xsl:choose>
+							</xsl:otherwise>
+						</xsl:choose>
+					</subHeader>
 				</tr>
 				<tr>
 					<subHeader>Configuration</subHeader>
 					<subHeader>Name</subHeader>
 					<subHeader>State</subHeader>
 					<subHeader>Up since</subHeader>
-					<subHeader>Last message</subHeader>
+					<subHeader colspan="2">Last message</subHeader>
 					<subHeader>Messages with error</subHeader>
 					<subHeader>Messages processed/in process</subHeader>
 					<subHeader>State receiver(s)</subHeader>
 					<subHeader>Log I/W/E</subHeader>
-					<subHeader>Last Log</subHeader>
 				</tr>
 				<xsl:for-each select="adapter">
 					<xsl:sort select="concat(@configUC,'|',@nameUC)" />
-					<xsl:variable name="stateAlert" select="@stateAlert" />
-					<xsl:if test="not($alert='true') or ($alert='true' and $stateAlert='true')">
+					<xsl:if test="not($alert='true') or ($alert='true' and not($log='true') and @stateAlert='true') or ($alert='true' and $log='true' and @logAlert='true')">
 						<tr ref="adapterRow">
 							<td>
 								<xsl:value-of select="@config" />
@@ -435,6 +502,19 @@
 									<xsl:value-of select="concat(' (',@lastMessageDateAge,')')" />
 								</xsl:if>
 							</td>
+							<td>
+								<xsl:choose>
+									<xsl:when test="@lastMsgProcessState='OK'">
+										<image type="check" title="ok" />
+									</xsl:when>
+									<xsl:when test="@lastMsgProcessState='ERROR'">
+										<image type="delete" title="error" />
+									</xsl:when>
+									<xsl:otherwise>
+									<xsl:value-of select="@lastMsgProcessState" />
+									</xsl:otherwise>
+								</xsl:choose>
+							</td>
 							<td align="right">
 								<xsl:value-of select="@messagesInError" />
 							</td>
@@ -445,24 +525,12 @@
 								<xsl:for-each select="receivers/receiver">
 									<xsl:call-template name="runStateImage">
 										<xsl:with-param name="state" select="@state" />
+										<xsl:with-param name="isAvailable" select="@isAvailable" />
 									</xsl:call-template>
 								</xsl:for-each>
 							</td>
 							<td align="right">
 								<xsl:value-of select="concat(adapterMessages/@info,'/',adapterMessages/@warn,'/',adapterMessages/@error)" />
-							</td>
-							<td>
-								<xsl:choose>
-									<xsl:when test="adapterMessages/@lastMessageLevel='error'">
-										<image type="delete" title="error" />
-									</xsl:when>
-									<xsl:when test="adapterMessages/@lastMessageLevel='warn'">
-										<image type="error" title="warn" />
-									</xsl:when>
-									<xsl:otherwise>
-										<image type="check" title="info" />
-									</xsl:otherwise>
-								</xsl:choose>
 							</td>
 						</tr>
 					</xsl:if>
@@ -480,7 +548,7 @@
 				<tbody>
 					<xsl:variable name="adapterState" select="@state" />
 					<tr>
-						<subHeader colspan="7">
+						<subHeader colspan="8">
 							<h8>
 								<a>
 									<xsl:attribute name="name" select="@name" />
@@ -496,7 +564,7 @@
 						<subHeader>State</subHeader>
 						<subHeader>Configured</subHeader>
 						<subHeader>Up since</subHeader>
-						<subHeader>Last message</subHeader>
+						<subHeader colspan="2">Last message</subHeader>
 						<subHeader>Messages with error</subHeader>
 						<subHeader>Messages processed/in process</subHeader>
 						<subHeader>Actions</subHeader>
@@ -523,6 +591,19 @@
 							<xsl:if test="@lastMessageDateAge!=''">
 								<xsl:value-of select="concat(' (',@lastMessageDateAge,')')" />
 							</xsl:if>
+						</td>
+						<td>
+							<xsl:choose>
+								<xsl:when test="@lastMsgProcessState='OK'">
+									<image type="check" title="ok" />
+								</xsl:when>
+								<xsl:when test="@lastMsgProcessState='ERROR'">
+									<image type="delete" title="error" />
+								</xsl:when>
+								<xsl:otherwise>
+								<xsl:value-of select="@lastMsgProcessState" />
+								</xsl:otherwise>
+							</xsl:choose>
 						</td>
 						<td align="right">
 							<xsl:value-of select="@messagesInError" />
@@ -569,11 +650,11 @@
 							<subHeader colspan="2">Receiver name</subHeader>
 							<xsl:choose>
 								<xsl:when test="count(receiver[@pendingMessagesCount!=''])!=0">
-									<subHeader>Listener/Sender</subHeader>
+									<subHeader colspan="2">Listener/Sender</subHeader>
 									<subHeader>Messages pending</subHeader>
 								</xsl:when>
 								<xsl:otherwise>
-									<subHeader colspan="2">Listener/Sender</subHeader>
+									<subHeader colspan="3">Listener/Sender</subHeader>
 								</xsl:otherwise>
 							</xsl:choose>
 							<subHeader>Messages received/retried/rejected</subHeader>
@@ -594,19 +675,15 @@
 								<td class="receiverRow">
 									<xsl:call-template name="runStateImage">
 										<xsl:with-param name="state" select="@state" />
+										<xsl:with-param name="isAvailable" select="@isAvailable" />
 									</xsl:call-template>
-									<xsl:if test="@isRestListener='true' and not(@isAvailable='true')">
-										<booleanImage>
-											<xsl:attribute name="value" select="@isAvailable" />
-										</booleanImage>
-									</xsl:if>
 								</td>
 								<td colspan="2" class="receiverRow">
 									<xsl:value-of select="@name" />
 								</td>
 								<xsl:choose>
 									<xsl:when test="@pendingMessagesCount!=''">
-										<td class="receiverRow">
+										<td colspan="2" class="receiverRow">
 											<xsl:call-template name="receiverInfo">
 												<xsl:with-param name="encodedAdapterName" select="$encodedAdapterName" />
 												<xsl:with-param name="encodedReceiverName" select="$encodedReceiverName" />
@@ -624,7 +701,7 @@
 										</td>
 									</xsl:when>
 									<xsl:otherwise>
-										<td colspan="2" class="receiverRow">
+										<td colspan="3" class="receiverRow">
 											<xsl:call-template name="receiverInfo">
 												<xsl:with-param name="encodedAdapterName" select="$encodedAdapterName" />
 												<xsl:with-param name="encodedReceiverName" select="$encodedReceiverName" />
@@ -670,7 +747,7 @@
 										<xsl:if test="@isEsbJmsFFListener='true'">
 											<imagelink type="move" alt="move message">
 												<xsl:attribute name="href" select="concat($srcPrefix, 'adapterHandler.do')" />
-												<parameter name="action">type="move" alt="move message"</parameter>
+												<parameter name="action">movemessage</parameter>
 												<parameter name="adapterName">
 													<xsl:value-of select="$encodedAdapterName" />
 												</parameter>
@@ -727,7 +804,7 @@
 					<xsl:if test="count(pipes/pipe[@sender!='' and (not(@isJdbcSender='true') or @hasMessageLog='true')])!=0">
 						<tr>
 							<subHeader colspan="3">Message sending pipes</subHeader>
-							<subHeader colspan="3">Sender/Listener</subHeader>
+							<subHeader colspan="4">Sender/Listener</subHeader>
 							<subHeader>Show log</subHeader>
 						</tr>
 						<xsl:for-each select="pipes/pipe[@sender!='' and (not(@isJdbcSender='true') or @hasMessageLog='true')]">
@@ -738,7 +815,7 @@
 								<td colspan="3" class="receiverRow">
 									<xsl:value-of select="@name" />
 								</td>
-								<td colspan="3" class="receiverRow">
+								<td colspan="4" class="receiverRow">
 									<xsl:value-of select="@sender" />
 									<xsl:if test="@destination!=''">
 										<xsl:value-of select="concat(' (',@destination,')')" />
@@ -778,14 +855,14 @@
 					</xsl:if>
 					<xsl:for-each select="adapterMessages">
 						<tr>
-							<subHeader colspan="6">Messages</subHeader>
+							<subHeader colspan="7">Messages</subHeader>
 							<subHeader>Flow</subHeader>
 						</tr>
 						<xsl:variable name="nrOfAdapterMessages" select="count(adapterMessage)" />
 						<xsl:for-each select="adapterMessage">
 							<xsl:variable name="posMessages" select="position()" />
 							<tr>
-								<td colspan="6" class="messagesRow">
+								<td colspan="7" class="messagesRow">
 									<xsl:choose>
 										<xsl:when test="@level='ERROR'">
 											<font color="red">
@@ -842,12 +919,20 @@
 	</xsl:template>
 	<xsl:template name="runStateImage">
 		<xsl:param name="state" />
+		<xsl:param name="isAvailable" />
 		<xsl:choose>
 			<xsl:when test="$state='Stopped'">
 				<image type="stopped" title="stopped" />
 			</xsl:when>
 			<xsl:when test="$state='Started'">
-				<image type="started" title="started" />
+				<xsl:choose>
+					<xsl:when test="$isAvailable='false'">
+						<image type="no" title="started_not_available" />
+					</xsl:when>
+					<xsl:otherwise>
+						<image type="started" title="started" />
+					</xsl:otherwise>
+				</xsl:choose>
 			</xsl:when>
 			<xsl:when test="$state='**ERROR**'">
 				<image type="error" title="error" />

@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class MockFileSystem extends MockFolder implements IWritableFileSystem<MockFile> {
+public class MockFileSystem<M extends MockFile> extends MockFolder implements IWritableFileSystem<M> {
 	
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -73,20 +73,20 @@ public class MockFileSystem extends MockFolder implements IWritableFileSystem<Mo
 	}
 
 	@Override
-	public MockFile toFile(String filename) throws FileSystemException {
+	public M toFile(String filename) throws FileSystemException {
 		checkOpen();
-		MockFile result = getFiles().get(filename);
+		M result = (M)getFiles().get(filename);
 		if (result!=null) {
 			return result;
 		}
-		return new MockFile(filename,this);
+		return (M)new MockFile(filename,this);
 	}
 
 	@Override
-	public Iterator<MockFile> listFiles(String folderName) throws FileSystemException {
+	public Iterator<M> listFiles(String folderName) throws FileSystemException {
 		checkOpen();
 		MockFolder folder=folderName==null?this:getFolders().get(folderName);
-		return folder.getFiles().values().iterator();
+		return (Iterator<M>)folder.getFiles().values().iterator();
 	}
 
 	@Override
@@ -131,7 +131,7 @@ public class MockFileSystem extends MockFolder implements IWritableFileSystem<Mo
 	}
 
 	@Override
-	public MockFile renameFile(MockFile f, String newName, boolean force) throws FileSystemException {
+	public M renameFile(M f, String newName, boolean force) throws FileSystemException {
 		checkOpenAndExists(null,f);
 		if (getFiles().containsKey(newName)) {
 			throw new FileSystemException("Cannot rename file. Destination file already exists.");
@@ -143,7 +143,7 @@ public class MockFileSystem extends MockFolder implements IWritableFileSystem<Mo
 	}
 
 	@Override
-	public MockFile moveFile(MockFile f, String destinationFolderName, boolean createFolder) throws FileSystemException {
+	public M moveFile(M f, String destinationFolderName, boolean createFolder) throws FileSystemException {
 		//checkOpenAndExists(f.getOwner().getName(),f);
 		MockFolder destFolder= destinationFolderName==null?this:getFolders().get(destinationFolderName);
 		if (destFolder==null) {
@@ -159,26 +159,26 @@ public class MockFileSystem extends MockFolder implements IWritableFileSystem<Mo
 	}
 
 	@Override
-	public long getFileSize(MockFile f) throws FileSystemException {
+	public long getFileSize(M f) throws FileSystemException {
 //		checkOpenAndExists(f);
 		byte[] contents = f.getContents();
 		return contents==null?0:contents.length;
 	}
 
 	@Override
-	public String getName(MockFile f) {
+	public String getName(M f) {
 //		checkOpenAndExists(f);
 		return f.getName();
 	}
 
 	@Override
-	public String getCanonicalName(MockFile f) throws FileSystemException {
+	public String getCanonicalName(M f) throws FileSystemException {
 		checkOpenAndExists(null,f);
 		return f.getName();
 	}
 
 	@Override
-	public Date getModificationTime(MockFile f) throws FileSystemException {
+	public Date getModificationTime(M f) throws FileSystemException {
 //		checkOpenAndExists(f);
 		return f.getLastModified();
 	}
@@ -216,7 +216,7 @@ public class MockFileSystem extends MockFolder implements IWritableFileSystem<Mo
 	}
 
 	@Override
-	public Map<String, Object> getAdditionalFileProperties(MockFile f) {
+	public Map<String, Object> getAdditionalFileProperties(M f) {
 		checkOpen();
 		return f.getAdditionalProperties();
 	}

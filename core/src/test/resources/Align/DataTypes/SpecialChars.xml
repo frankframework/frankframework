@@ -10,5 +10,7 @@
 		<String>Smiley 1 [😊]</String>
 		<String>Smiley 2 [😀]</String>
 		<String>Huh ? [¿]</String>
+		<String>Slash [/]</String>
+		<String>Backslash [\]</String>
 	</Strings>
 </DataTypes>

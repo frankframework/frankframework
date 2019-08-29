@@ -68,7 +68,7 @@ public final class BrowseJdbcTable extends Base {
 	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
 		initBase(servletConfig);
 
-		String realm = null, tableName = null, where = "", order = null;
+		String realm = null, tableName = null, where = "", order = "";
 		Boolean rowNumbersOnly = false;
 		int minRow = 1, maxRow = 100;
 

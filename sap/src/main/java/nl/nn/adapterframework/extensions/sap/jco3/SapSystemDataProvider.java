@@ -17,6 +17,7 @@ package nl.nn.adapterframework.extensions.sap.jco3;
 
 import java.util.Properties;
 
+import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -52,6 +53,7 @@ public class SapSystemDataProvider implements DestinationDataProvider {
 		return self;
 	}
 
+	@Override
 	public Properties getDestinationProperties(String destinationName) {
 		SapSystem sapSystem = SapSystem.getSystem(destinationName);
 		if (sapSystem == null) {
@@ -98,22 +100,33 @@ public class SapSystemDataProvider implements DestinationDataProvider {
 		}
 	}
 
+	@Override
 	public void setDestinationDataEventListener(DestinationDataEventListener destinationDataEventListener) {
 		this.destinationDataEventListener = destinationDataEventListener;
 	}
 
+	@Override
 	public boolean supportsEvents() {
 		return true;
 	}
 
-	public synchronized void registerSystem(SapSystem sapSytem) throws SapException {
-		log.debug("Register " + sapSytem.getName());
-		destinationDataEventListener.updated(sapSytem.getName());
+	@Deprecated
+	public synchronized void registerSystem(SapSystem sapSystem) throws SapException {
+		registerSystem(sapSystem);
 	}
 
-	public synchronized void unregisterSystem(SapSystem sapSytem) {
-		log.debug("Unregister " + sapSytem.getName());
-		destinationDataEventListener.deleted(sapSytem.getName());
+	public synchronized void updateSystem(SapSystem sapSystem) throws SapException {
+		log.debug("Update " + sapSystem.getName());
+		destinationDataEventListener.updated(sapSystem.getName());
 	}
 
+	@Deprecated
+	public synchronized void unregisterSystem(SapSystem sapSystem) {
+		deleteSystem(sapSystem);
+	}
+
+	public synchronized void deleteSystem(SapSystem sapSystem) {
+		log.debug("Delete " + sapSystem.getName());
+		destinationDataEventListener.deleted(sapSystem.getName());
+	}
 }

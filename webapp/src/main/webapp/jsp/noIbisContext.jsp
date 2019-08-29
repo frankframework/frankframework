@@ -1,7 +1,3 @@
-<%@ taglib uri="/WEB-INF/struts-bean.tld" prefix="bean" %>
-<%@ taglib uri="/WEB-INF/struts-html.tld" prefix="html" %>
-<%@ taglib uri="http://jakarta.apache.org/taglibs/xtags-1.0" prefix="xtags" %>
-
 <page title="IBIS startup failed">
 	<p><b>For some reason, the IBIS application failed to start up.</b></p>
 	<p style="margin-top: 10px;">Please examine the startup-log and try restarting the server.</p>

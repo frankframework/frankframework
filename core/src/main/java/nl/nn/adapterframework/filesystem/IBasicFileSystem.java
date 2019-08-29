@@ -62,6 +62,10 @@ public interface IBasicFileSystem<F> {
 	public void deleteFile(F f) throws FileSystemException;
 	public F moveFile(F f, String destinationFolder, boolean createFolder) throws FileSystemException;
 
+	public void createFolder(String folder) throws FileSystemException;
+	public void removeFolder(String folder) throws FileSystemException;
+
+
 	public long getFileSize(F f) throws FileSystemException;
 	public String getCanonicalName(F f) throws FileSystemException;
 	public Date getModificationTime(F f) throws FileSystemException;

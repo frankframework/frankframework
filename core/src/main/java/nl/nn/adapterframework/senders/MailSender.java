@@ -139,6 +139,7 @@ public class MailSender extends MailSenderBase {
 	private Session session;
 	private Properties properties;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getSmtpHost())) {
@@ -162,6 +163,7 @@ public class MailSender extends MailSenderBase {
 	/**
 	 * Create a <code>Session</code> and <code>Transport</code> to the smtp host.
 	 */
+	@Override
 	public void open() throws SenderException {
 		try {
 			getSession();
@@ -174,6 +176,7 @@ public class MailSender extends MailSenderBase {
 	/**
 	 * Close the <code>transport</code> layer.
 	 */
+	@Override
 	public void close() throws SenderException {
 		/*
 		try {
@@ -186,6 +189,7 @@ public class MailSender extends MailSenderBase {
 		*/
 	}
 
+	@Override
 	public boolean isSynchronous() {
 		return false;
 	}

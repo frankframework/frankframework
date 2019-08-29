@@ -15,20 +15,23 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
 import nl.nn.adapterframework.configuration.classloaders.BasePathClassLoader;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.extensions.graphviz.GraphvizEngine;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.jdbc.migration.Migrator;
 import nl.nn.adapterframework.receivers.JavaListener;
@@ -56,8 +59,10 @@ import nl.nn.adapterframework.util.MessageKeeperMessage;
  */
 public class IbisContext extends IbisApplicationContext {
 	private final static Logger LOG = LogUtil.getLogger(IbisContext.class);
+
+	private final static Logger secLog = LogUtil.getLogger("SEC");
+
 	private static final String INSTANCE_NAME = APP_CONSTANTS.getResolvedProperty("instance.name");
-	private static final String CONFIGURATIONS = APP_CONSTANTS.getResolvedProperty("configurations.names.application");
 	private static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
 	private static final long UPTIME = System.currentTimeMillis();
 
@@ -97,6 +102,7 @@ public class IbisContext extends IbisApplicationContext {
 	private int messageKeeperSize = 10;
 	private FlowDiagram flowDiagram;
 	private ClassLoaderManager classLoaderManager = null;
+	private static List<String> loadingConfigs = new ArrayList<String>();
 
 	public void setDefaultApplicationServerType(String defaultApplicationServerType) {
 		if (defaultApplicationServerType.equals(getApplicationServerType())) {
@@ -170,14 +176,15 @@ public class IbisContext extends IbisApplicationContext {
 			classLoaderManager = new ClassLoaderManager(this);
 
 			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
-			LOG.debug("found configurations to load ["+CONFIGURATIONS+"]");
+
+			try {
+				flowDiagram = new FlowDiagram();
+			} catch (IllegalStateException e) {
+				log(null, null, "failed to initalize GraphVizEngine", MessageKeeperMessage.ERROR_LEVEL, e, true);
+			}
+
 			load();
 			getMessageKeeper().setMaxSize(Math.max(messageKeeperSize, getMessageKeeper().size()));
-
-			//TODO consider moving this to #FlowDiagram
-			String graphvizJsVersion = APP_CONSTANTS.getProperty("graphviz.js.version", null);
-			String graphvizJsFormat = APP_CONSTANTS.getProperty("graphviz.js.format", null);
-			flowDiagram = new FlowDiagram(graphvizJsFormat, graphvizJsVersion);
 
 			log("startup in " + (System.currentTimeMillis() - start) + " ms");
 		}
@@ -211,6 +218,11 @@ public class IbisContext extends IbisApplicationContext {
 	}
 
 	public synchronized void reload(String configurationName) {
+		unload(configurationName);
+		load(configurationName);
+	}
+
+	public void unload(String configurationName) {
 		Configuration configuration = ibisManager.getConfiguration(configurationName);
 		if (configuration != null) {
 			long start = System.currentTimeMillis();
@@ -224,14 +236,14 @@ public class IbisContext extends IbisApplicationContext {
 			// garbage collection will be easier.
 			configuration.setAdapterService(null);
 			String configurationVersion = configuration.getVersion();
-			log(configurationName, configurationVersion, "unload in "
-					+ (System.currentTimeMillis() - start) + " ms");
+			String msg = "unload in " + (System.currentTimeMillis() - start) + " ms";
+			log(configurationName, configurationVersion, msg);
+			secLog.info("Configuration [" + configurationName + "] [" + configurationVersion+"] " + msg);
 		} else {
 			log("Configuration [" + configurationName + "] to unload not found",
 					MessageKeeperMessage.WARN_LEVEL);
 		}
 		JdbcUtil.resetJdbcProperties();
-		load(configurationName);
 	}
 
 	/**
@@ -241,6 +253,12 @@ public class IbisContext extends IbisApplicationContext {
 	 * @see #init()
 	 */
 	public synchronized void fullReload() {
+		if (isLoadingConfigs()) {
+			log("Skipping fullReload because one or more configurations are currently loading",
+					MessageKeeperMessage.WARN_LEVEL);
+			return;
+		}
+
 		destroy();
 		Set<String> javaListenerNames = JavaListener.getListenerNames();
 		if (javaListenerNames.size() > 0) {
@@ -267,15 +285,21 @@ public class IbisContext extends IbisApplicationContext {
 	 * @see #load(String)
 	 */
 	public void load() {
-		load(null);
+		try {
+			loadingConfigs.add("*ALL*");
+			load(null);
+		} finally {
+			loadingConfigs.remove("*ALL*");
+		}
 	}
 
 	/**
-	 * Loads, digests and starts a specified configuration
+	 * Loads, digests and starts the specified configuration, or all configurations
 	 * 
 	 * @param configurationName name of the configuration to load or null when you want to load all configurations
 	 * 
 	 * @see ClassLoaderManager#get(String)
+	 * @see ConfigurationUtils#retrieveAllConfigNames(IbisContext)
 	 * @see #digestClassLoaderConfiguration(ClassLoader, ConfigurationDigester, String, ConfigurationException)
 	 */
 	public void load(String configurationName) {
@@ -283,9 +307,11 @@ public class IbisContext extends IbisApplicationContext {
 
 		//We have an ordered list with all configurations, lets loop through!
 		ConfigurationDigester configurationDigester = new ConfigurationDigester();
-		StringTokenizer tokenizer = new StringTokenizer(CONFIGURATIONS, ",");
-		while (tokenizer.hasMoreTokens()) {
-			String currentConfigurationName = tokenizer.nextToken();
+
+		Map<String, String> allConfigNamesItems = ConfigurationUtils.retrieveAllConfigNames(this);
+		for (Entry<String, String> currentConfigNameItem : allConfigNamesItems.entrySet()) {
+			String currentConfigurationName = currentConfigNameItem.getKey();
+			String classLoaderType = currentConfigNameItem.getValue();
 
 			if (configurationName == null || configurationName.equals(currentConfigurationName)) {
 				configFound = true;
@@ -293,10 +319,10 @@ public class IbisContext extends IbisApplicationContext {
 				ConfigurationException customClassLoaderConfigurationException = null;
 				ClassLoader classLoader = null;
 				try {
-					classLoader = classLoaderManager.get(currentConfigurationName);
+					classLoader = classLoaderManager.get(currentConfigurationName, classLoaderType);
 
 					//An error occurred but we don't want to throw any exceptions.
-					//Skip the config so it can be initialized at a later time.
+					//Skip configuration digesting so it can be done at a later time.
 					if(classLoader == null)
 						continue;
 
@@ -304,15 +330,19 @@ public class IbisContext extends IbisApplicationContext {
 					customClassLoaderConfigurationException = e;
 				}
 
-				digestClassLoaderConfiguration(classLoader, configurationDigester, currentConfigurationName, customClassLoaderConfigurationException);
+				try {
+					loadingConfigs.add(currentConfigurationName);
+					digestClassLoaderConfiguration(classLoader, configurationDigester, currentConfigurationName, customClassLoaderConfigurationException);
+				} finally {
+					loadingConfigs.remove(currentConfigurationName);
+				}
 			}
 		}
 
 		generateFlow();
 		//Check if the configuration we try to reload actually exists
 		if (!configFound) {
-			log(configurationName, configurationName + " not found in '"
-					+ CONFIGURATIONS + "'", MessageKeeperMessage.ERROR_LEVEL);
+			log(configurationName, configurationName + " not found in ["+allConfigNamesItems.keySet().toString()+"]", MessageKeeperMessage.ERROR_LEVEL);
 		}
 	}
 
@@ -389,15 +419,16 @@ public class IbisContext extends IbisApplicationContext {
 							messageKeepers.remove(currentConfigurationName));
 				}
 
+				String msg;
 				if (configuration.isAutoStart()) {
 					ibisManager.startConfiguration(configuration);
-					log(currentConfigurationName, currentConfigurationVersion,
-							"startup in " + (System.currentTimeMillis() - start) + " ms");
+					msg = "startup in " + (System.currentTimeMillis() - start) + " ms";
 				}
 				else {
-					log(currentConfigurationName, currentConfigurationVersion,
-							"configured in " + (System.currentTimeMillis() - start) + " ms");
+					msg = "configured in " + (System.currentTimeMillis() - start) + " ms";
 				}
+				log(currentConfigurationName, currentConfigurationVersion, msg);
+				secLog.info("Configuration [" + currentConfigurationName + "] [" + currentConfigurationVersion+"] " + msg);
 				generateFlows(configuration, currentConfigurationName, currentConfigurationVersion);
 			} else {
 				throw customClassLoaderConfigurationException;
@@ -463,11 +494,11 @@ public class IbisContext extends IbisApplicationContext {
 		log(configurationName, configurationVersion, message, MessageKeeperMessage.INFO_LEVEL);
 	}
 
-	private void log(String configurationName, String configurationVersion, String message, String level) {
+	public void log(String configurationName, String configurationVersion, String message, String level) {
 		log(configurationName, configurationVersion, message, level, null, false);
 	}
 
-	private void log(String configurationName, String configurationVersion, String message, String level, Exception e) {
+	public void log(String configurationName, String configurationVersion, String message, String level, Exception e) {
 		log(configurationName, configurationVersion, message, level, e, false);
 	}
 
@@ -576,6 +607,10 @@ public class IbisContext extends IbisApplicationContext {
 		return DateUtils.format(getUptimeDate(), dateFormat);
 	}
 
+	public boolean isLoadingConfigs() {
+		return !loadingConfigs.isEmpty();
+	}
+	
 	public static void main(String[] args) {
 		IbisContext ibisContext = new IbisContext();
 		ibisContext.init();

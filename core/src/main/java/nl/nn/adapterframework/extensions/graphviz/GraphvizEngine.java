@@ -18,6 +18,7 @@ package nl.nn.adapterframework.extensions.graphviz;
 import java.io.IOException;
 import java.net.URL;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.eclipsesource.v8.JavaVoidCallback;
@@ -40,22 +41,27 @@ import nl.nn.adapterframework.util.Misc;
 public class GraphvizEngine {
 	protected Logger log = LogUtil.getLogger(this);
 	private static final ThreadLocal<Env> ENVS = new ThreadLocal<Env>();
-	private String graphvizVersion = "2.0.0";
+	private String graphvizVersion = AppConstants.getInstance().getProperty("graphviz.js.version", "2.0.0");
 
 	/**
 	 * Create a new GraphvizEngine instance. Using version 2.0.0
+	 * @throws IOException 
 	 */
-	public GraphvizEngine() {
+	public GraphvizEngine() throws IOException {
 		this(null);
 	}
 
 	/**
 	 * Create a new GraphvizEngine instance
 	 * @param graphvizVersion version of the the VisJs engine to initiate
+	 * @throws IOException 
 	 */
-	public GraphvizEngine(String graphvizVersion) {
-		if(graphvizVersion != null)
+	public GraphvizEngine(String graphvizVersion) throws IOException {
+		if(StringUtils.isNotEmpty(graphvizVersion))
 			this.graphvizVersion = graphvizVersion;
+
+		//Create the GraphvizEngine, make sure it can find and load the required libraries
+		getEnv();
 	}
 
 	/**
@@ -78,24 +84,18 @@ public class GraphvizEngine {
 	 * @throws GraphvizException when some V8 engine error occurs
 	 */
 	public String execute(String src, Options options) throws IOException, GraphvizException {
+		if(StringUtils.isEmpty(src)) {
+			throw new GraphvizException("no dot-file provided");
+		}
+
 		long start = 0;
 		if(log.isDebugEnabled()) {
 			log.debug("executing VizJS src["+src+"] options["+options.toString()+"]");
 			start = System.currentTimeMillis();
 		}
 
-		final Env env = ENVS.get();
-		if (env == null) {
-			log.debug("creating new VizJs engine");
-			String visJsSource = getVizJsSource(graphvizVersion);
-			String tempDir = AppConstants.getInstance().getString("log.dir", null);
-			if(tempDir != null && tempDir.isEmpty()) //Make sure to not pass an empty directory
-				tempDir = null;
-			ENVS.set(new Env(getVisJsWrapper(), visJsSource, "GraphvizJS", tempDir));
-		}
-
 		String call = jsVizExec(src, options);
-		String result = ENVS.get().execute(call);
+		String result = getEnv().execute(call);
 		if(start > 0) {
 			log.debug("executed VisJs in ["+(System.currentTimeMillis() - start)+"]ms");
 		}
@@ -116,6 +116,23 @@ public class GraphvizEngine {
 		if(api == null || engine == null)
 			throw new IOException("failed to open vizjs file for version["+version+"]");
 		return Misc.streamToString(api.openStream()) + Misc.streamToString(engine.openStream());
+	}
+
+
+	/**
+	 * Creates the GraphvizEngine instance
+	 * @throws IOException when the VizJS file can't be found
+	 */
+	private Env getEnv() throws IOException {
+		if(null == ENVS.get()) {
+			log.debug("creating new VizJs engine");
+			String visJsSource = getVizJsSource(graphvizVersion);
+			String tempDir = AppConstants.getInstance().getString("log.dir", null);
+			if(tempDir != null && tempDir.isEmpty()) //Make sure to not pass an empty directory
+				tempDir = null;
+			ENVS.set(new Env(getVisJsWrapper(), visJsSource, "GraphvizJS", tempDir));
+		}
+		return ENVS.get();
 	}
 
 	/**

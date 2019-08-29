@@ -18,21 +18,21 @@ package nl.nn.adapterframework.extensions.sap.jco2;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+
+import com.sap.mw.jco.IFunctionTemplate;
+import com.sap.mw.jco.IRepository;
+import com.sap.mw.jco.JCO;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.extensions.sap.ISapFunctionFacade;
+import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.digester.Digester;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-
-import com.sap.mw.jco.IFunctionTemplate;
-import com.sap.mw.jco.JCO;
 /**
  * Wrapper round SAP-functions, either SAP calling Ibis, or Ibis calling SAP.
  * <p><b>Configuration:</b>
@@ -53,7 +53,7 @@ import com.sap.mw.jco.JCO;
  * @author  Gerrit van Brakel
  * @since   4.2
  */
-public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
+public class SapFunctionFacade implements ISapFunctionFacade {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -68,9 +68,8 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 
 	private IFunctionTemplate ftemplate;
 	private SapSystem sapSystem;
-	private boolean fieldIndicesCalculated=false;
 
-	static Map extractors = new HashMap();
+	private static Map<String,TransformerPool> extractors = new HashMap<String,TransformerPool>();
 
 	protected String getLogPrefix() {
 		return this.getClass().getName()+" ["+getName()+"] ";
@@ -97,7 +96,6 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 				ftemplate = getFunctionTemplate(sapSystem, getFunctionName());
 				try {
 					calculateStaticFieldIndices(ftemplate);
-					fieldIndicesCalculated=true;
 				} catch (Exception e) {
 					throw new SapException(getLogPrefix()+"Exception calculation field-indices ["+getFunctionName()+"]", e);
 				}
@@ -113,11 +111,11 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 		} else {
 			SapSystem.closeSystems();
 		}
-		fieldIndicesCalculated=false;
 		ftemplate = null;
 	}
 
 
+	@Override
 	public String getPhysicalDestinationName() {
 		String result;
 		if (sapSystem==null) {
@@ -372,6 +370,21 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 		return functionTemplate;
 	}
 
+	public void clearCache() throws SapException {
+		IRepository jcoRepository = sapSystem.getJcoRepository();
+		String[] cachedFunctionInterfaces=jcoRepository.getCachedFunctionInterfaces();
+		if (cachedFunctionInterfaces!=null) {
+			for (int i=0;i<cachedFunctionInterfaces.length;i++) {
+				jcoRepository.removeFunctionInterfaceFromCache(cachedFunctionInterfaces[i]);
+			}
+		}
+		String[] cachedStructureDefinitions=jcoRepository.getCachedStructureDefinitions();
+		if (cachedStructureDefinitions!=null) {
+			for (int i=0;i<cachedStructureDefinitions.length;i++) {
+				jcoRepository.removeStructureDefinitionFromCache(cachedStructureDefinitions[i]);
+			}
+		}
+	}
 
 	public int getCorrelationIdFieldIndex() {
 		return correlationIdFieldIndex;
@@ -397,34 +410,41 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 		return requestFieldName;
 	}
 
+	@Override
 	public void setCorrelationIdFieldIndex(int i) {
 		correlationIdFieldIndex = i;
 	}
 
+	@Override
 	public void setCorrelationIdFieldName(String string) {
 		correlationIdFieldName = string;
 	}
 
+	@Override
 	public void setReplyFieldIndex(int i) {
 		replyFieldIndex = i;
 	}
 
+	@Override
 	public void setReplyFieldName(String string) {
 		replyFieldName = string;
 	}
 
+	@Override
 	public void setRequestFieldIndex(int i) {
 		requestFieldIndex = i;
 	}
 
+	@Override
 	public void setRequestFieldName(String string) {
 		requestFieldName = string;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
-
+	@Override
 	public void setName(String string) {
 		name = string;
 	}
@@ -435,10 +455,10 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 	}
 
 
+	@Override
 	public void setSapSystemName(String string) {
 		sapSystemName = string;
 	}
-
 	protected String getFunctionName() {
 		return null;
 	}

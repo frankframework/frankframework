@@ -35,14 +35,12 @@ import com.sap.conn.jco.JCoException;
 public class SapLUWHandle {
 	protected static Logger log = LogUtil.getLogger(SapLUWHandle.class);
 
-	private SapSystem sapSystem;
 	private JCoDestination destination;
 	private String tid;
 	private boolean useTid=false;
 	
 	private SapLUWHandle(SapSystem sapSystem) throws JCoException {
 		super();
-		this.sapSystem = sapSystem;
 		this.destination = sapSystem.getDestination();
 	}
 

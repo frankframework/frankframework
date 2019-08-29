@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018 Nationale-Nederlanden
+   Copyright 2013, 2016, 2018 - 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
@@ -599,9 +598,11 @@ public final class ShowSecurityItems extends ActionBase {
 	private void addAuthEntries(XmlBuilder securityItems) {
 		XmlBuilder aes = new XmlBuilder("authEntries");
 		try {
-			List entries = new ArrayList();
+			List<String> entries = new ArrayList<String>();
 			for (Configuration configuration : ibisManager.getConfigurations()) {
 				String configString = configuration.getLoadedConfiguration();
+				if(configString == null) continue; //If a configuration can't be found, continue...
+
 				Collection<String> c = XmlUtils.evaluateXPathNodeSet(configString, "//@*[starts-with(name(),'authAlias') or ends-with(name(),'AuthAlias')]");
 				if (c != null && !c.isEmpty()) {
 					for (Iterator<String> cit = c.iterator(); cit.hasNext();) {
@@ -609,7 +610,7 @@ public final class ShowSecurityItems extends ActionBase {
 						if (!entries.contains(entry)) {
 							entries.add(entry);
 						}
-					}						
+					}
 				}
 			}
 			if (entries == null || entries.isEmpty()) {
@@ -617,9 +618,9 @@ public final class ShowSecurityItems extends ActionBase {
 				aes.setCdataValue("No authEntry found");
 			} else {
 				Collections.sort(entries);
-				Iterator iter = entries.iterator();
+				Iterator<String> iter = entries.iterator();
 				while (iter.hasNext()) {
-					String alias = (String) iter.next();
+					String alias = iter.next();
 					CredentialFactory cf = new CredentialFactory(alias, null, null);
 					XmlBuilder ae = new XmlBuilder("entry");
 					aes.addSubElement(ae);
@@ -639,6 +640,7 @@ public final class ShowSecurityItems extends ActionBase {
 				}
 			}
 		} catch (Exception e) {
+			log.warn("an error occurred while checking auth entries", e);
 			aes.addAttribute("error", "true");
 			aes.setCdataValue(e.getMessage());
 		}

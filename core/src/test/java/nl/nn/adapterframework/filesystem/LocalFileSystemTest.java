@@ -20,7 +20,6 @@ public class LocalFileSystemTest extends FileSystemTest<File, LocalFileSystem>{
 	}
 
 	@Override
-	@Before
 	public void setUp() throws Exception {
 		folder = new TemporaryFolder();
 		folder.create();

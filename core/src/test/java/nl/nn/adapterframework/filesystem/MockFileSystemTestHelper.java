@@ -6,12 +6,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class MockFileSystemTestHelper implements IFileSystemTestHelper {
+public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystemTestHelper {
 
-	private MockFileSystem fileSystem;
+	private MockFileSystem<F> fileSystem;
 	
+	protected MockFileSystemTestHelper(MockFileSystem<F> fileSystem) {
+		this.fileSystem=fileSystem;
+	}
+
 	public MockFileSystemTestHelper() {
-		fileSystem=new MockFileSystem();
+		this(new MockFileSystem<F>());
 	}
 
 	@Override
@@ -48,6 +52,10 @@ public class MockFileSystemTestHelper implements IFileSystemTestHelper {
 		folder.getFiles().remove(filename);	
 	}
 
+	protected F createNewFile(MockFolder folder, String filename) {
+		return (F)new MockFile(filename,folder);
+	}
+	
 	@Override
 	public OutputStream _createFile(String folderName, String filename) throws Exception {
 		MockFolder folder = folderName==null?fileSystem:fileSystem.getFolders().get(folderName);
@@ -55,7 +63,7 @@ public class MockFileSystemTestHelper implements IFileSystemTestHelper {
 			folder=new MockFolder(folderName,fileSystem);
 			fileSystem.getFolders().put(folderName,folder);
 		}
-		final MockFile mf = new MockFile(filename,folder);
+		final MockFile mf = createNewFile(folder,filename);
 		
 		//log.debug("created file ["+filename+"] in folder ["+folderName+"]");
 		
@@ -97,7 +105,7 @@ public class MockFileSystemTestHelper implements IFileSystemTestHelper {
 		fileSystem.getFolders().remove(folderName);
 	}
 
-	public MockFileSystem getFileSystem() {
+	public MockFileSystem<F> getFileSystem() {
 		return fileSystem;
 	}
 

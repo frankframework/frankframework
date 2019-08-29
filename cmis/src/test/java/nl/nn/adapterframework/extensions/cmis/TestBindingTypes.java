@@ -105,7 +105,7 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public CmisSender createSender() {
+	public CmisSender createSender() throws ConfigurationException {
 		CmisSender sender = spy(new CmisSender());
 
 		sender.setUrl("http://dummy.url");
@@ -146,7 +146,7 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 		doReturn(query).when(cmisSession).query(anyString(), anyBoolean(), any(OperationContext.class));
 
 		try {
-			doReturn(cmisSession).when(sender).getSession(any(ParameterResolutionContext.class));
+			doReturn(cmisSession).when(sender).createSession(any(ParameterResolutionContext.class));
 		} catch (SenderException e) {
 			//Since we stub the entire session it won't throw exceptions
 		}
