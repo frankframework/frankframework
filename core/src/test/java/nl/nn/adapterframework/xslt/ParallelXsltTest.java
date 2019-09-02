@@ -2,6 +2,7 @@ package nl.nn.adapterframework.xslt;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -121,19 +122,19 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 	@Test
     @Ignore("configwarning test fails when run in parallel, won't fix")
 	public void testConfigWarnings() {
-		throw new IllegalStateException("Test should have been ignored");
+		fail("Test should have been ignored");
 	}
 	@Override
 	@Test
     @Ignore("error handling is different in parallel")
 	public void documentNotFoundXslt1() throws Exception {
-		throw new IllegalStateException("Test should have been ignored");
+		fail("Test should have been ignored");
 	}
 	@Override
 	@Test
     @Ignore("error handling is different in parallel")
 	public void documentNotFoundXslt2() throws Exception {
-		throw new IllegalStateException("Test should have been ignored");
+		fail("Test should have been ignored");
 	}
 	
 	@Override
