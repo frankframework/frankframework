@@ -8,9 +8,6 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-
 import org.junit.Test;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -110,7 +107,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
     
 	private class SwitchCounter {
 		public int count;
-		String prevLabel;
+		private String prevLabel;
 		
 		public void mark(String label) {
 			if (prevLabel==null || !prevLabel.equals(label)) {
@@ -130,7 +127,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 			this.sc=sc;
 		}
 		private void print(String string) {
-			System.out.println(prefix+" "+string);
+			log.debug(prefix+" "+string);
 			sc.mark(prefix);
 		}
 		
@@ -178,7 +175,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		}
 
 		private void print(String string) {
-			System.out.println("in-> "+string);
+			log.debug("in-> "+string);
 			sc.mark("in");
 		}
 
@@ -191,10 +188,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		@Override
 		public int read(byte[] buf, int off, int len) throws IOException {
-			if (len>blocksize) {
-				len=blocksize;
-			}
-			int l=super.read(buf, off, len);
+			int l=super.read(buf, off, len<blocksize?len:blocksize);
 			if (l<0) {
 				print("{EOF}");
 			} else {
