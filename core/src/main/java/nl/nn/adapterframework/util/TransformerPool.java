@@ -42,6 +42,7 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.parameters.ParameterList;
 
 /**
@@ -56,7 +57,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 public class TransformerPool {
 	private static final boolean USE_CACHING = AppConstants.getInstance().getBoolean("transformerPool.useCaching", false);
 
-	protected Logger log = LogUtil.getLogger(this);
+	protected static Logger log = LogUtil.getLogger(TransformerPool.class);
 
 	private TransformerFactory tFactory;
 
@@ -357,6 +358,13 @@ public class TransformerPool {
 			}
 			try {
 				result = TransformerPool.getInstance(resource, xsltVersion);
+				if (xsltVersion!=0) {
+					int styleSheetVersion=XmlUtils.detectXsltVersion(resource);
+					if (xsltVersion!=styleSheetVersion) {
+						ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+						configWarnings.add(log, logPrefix+"configured xsltVersion ["+xsltVersion+"] does not match xslt version ["+styleSheetVersion+"] declared in stylesheet ["+resource.toExternalForm()+"]");
+					}
+				}
 			} catch (IOException e) {
 				throw new ConfigurationException(logPrefix+"cannot retrieve ["+ styleSheetName + "], resource ["+resource.toString()+"]", e);
 			} catch (TransformerConfigurationException te) {
