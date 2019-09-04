@@ -28,7 +28,7 @@ import nl.nn.adapterframework.core.SenderException;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public class ReaderLineIterator implements IDataIterator {
+public class ReaderLineIterator implements IDataIterator<String> {
 
 	BufferedReader reader;
 	String line;
@@ -43,11 +43,13 @@ public class ReaderLineIterator implements IDataIterator {
 		}
 	}
 
+	@Override
 	public boolean hasNext() {
 		return line!=null;
 	}
 
-	public Object next() throws SenderException {
+	@Override
+	public String next() throws SenderException {
 		String result=line;
 		try {
 			line = reader.readLine();
@@ -57,6 +59,7 @@ public class ReaderLineIterator implements IDataIterator {
 		return result; 
 	}
 
+	@Override
 	public void close() throws SenderException {
 		try {
 			reader.close();

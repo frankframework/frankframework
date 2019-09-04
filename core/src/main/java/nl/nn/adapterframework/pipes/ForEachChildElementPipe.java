@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013,2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -53,14 +53,16 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Gerrit van Brakel
  * @since 4.6.1
  */
-public class ForEachChildElementPipe extends IteratingPipe {
+public class ForEachChildElementPipe extends IteratingPipe<String> {
 
-	private String elementXPathExpression=null;
+	public final int DEFAULT_XSLT_VERSION=1; // currently only Xalan supports XSLT Streaming
+	
 	private boolean processFile=false;
+	private String elementXPathExpression=null;
 	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+	private int xsltVersion=DEFAULT_XSLT_VERSION; 
 
 	private TransformerPool extractElementsTp=null;
-	private int xsltVersion=0; // set to 0 for auto detect.
 
 	{ 
 		setNamespaceAware(true);
@@ -71,7 +73,13 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		super.configure();
 		try {
 			if (StringUtils.isNotEmpty(getElementXPathExpression())) {
-				extractElementsTp=TransformerPool.getInstance(makeEncapsulatingXslt("root",getElementXPathExpression()), getXsltVersion());
+				if (getXsltVersion()==0) {
+					setXsltVersion(DEFAULT_XSLT_VERSION);
+				}
+				if (getXsltVersion()!=DEFAULT_XSLT_VERSION) {
+					ConfigurationWarnings.add(this, log, "XsltProcessor xsltVersion ["+getXsltVersion()+"] currently does not support streaming XSLT, might lead to memory problems for large messages");
+				}
+				extractElementsTp=TransformerPool.getInstance(makeEncapsulatingXslt("root",getElementXPathExpression(), getXsltVersion()), getXsltVersion());
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix(null)+"elementXPathExpression ["+getElementXPathExpression()+"]",e);
@@ -98,9 +106,9 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		super.stop();
 	}
 
-	protected String makeEncapsulatingXslt(String rootElementname,String xpathExpression) {
+	protected String makeEncapsulatingXslt(String rootElementname,String xpathExpression, int xsltVersion) {
 		return 
-		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
+		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\""+xsltVersion+".0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
 		"<xsl:output method=\"xml\" omit-xml-declaration=\"yes\"/>" +
 		"<xsl:strip-space elements=\"*\"/>" +
 		"<xsl:template match=\"/\">" +
@@ -225,7 +233,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 
 
 	@Override
-	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException, TimeOutException {
+	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
 		Reader reader=null;
 		try {
 			if (input instanceof Reader) {
@@ -284,95 +292,6 @@ public class ForEachChildElementPipe extends IteratingPipe {
 	}
 
 	
-//	public class ElementIterator implements IDataIterator {
-//		private static final boolean elementsOnly=true;
-//
-//		Node node;
-//		boolean nextElementReady;
-//
-//		public ElementIterator(String inputString) throws SenderException {
-//			super();
-//
-//			Reader reader=null;
-//			if (isProcessFile()) {
-//				try {
-//					// TODO: arrange for non-namespace aware processing of files
-//					reader=new InputStreamReader(new FileInputStream(inputString));
-//				} catch (FileNotFoundException e) {
-//					throw new SenderException("could not find file ["+inputString+"]",e);
-//				}
-//			}
-//
-//			if (getExtractElementsTp()!=null) {
-//				log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
-//				try {
-//					DOMResult fullMessage = new DOMResult();
-//					Source src;
-//					if (reader!=null) {
-//						src=new StreamSource(reader);
-//					} else {
-//						src = XmlUtils.stringToSourceForSingleUse(inputString, isNamespaceAware());
-//					}
-//					getExtractElementsTp().transform(src, fullMessage, null);
-//					node=fullMessage.getNode().getFirstChild();
-//				} catch (Exception e) {
-//					throw new SenderException("Could not extract list of elements using xpath ["+getElementXPathExpression()+"]");
-//				}
-//			} else {
-//				Document fullMessage;
-//				try {
-//					if (reader!=null) {
-//						fullMessage=XmlUtils.buildDomDocument(reader, isNamespaceAware());
-//					} else {
-//						fullMessage=XmlUtils.buildDomDocument(inputString, isNamespaceAware());
-//					}
-//					node=fullMessage.getDocumentElement().getFirstChild();
-//				} catch (DomBuilderException e) {
-//					throw new SenderException("Could not build elements",e);
-//				}
-//			}
-//			nextElementReady=false;
-//		}
-//
-//		private void findNextElement() {
-//			if (elementsOnly) {
-//				while (node!=null && !(node instanceof Element)) { 
-//					node=node.getNextSibling();
-//				}
-//			}
-//		}
-//
-//		public boolean hasNext() {
-//			findNextElement();
-//			return node!=null;
-//		}
-//
-//		public Object next() throws SenderException {
-//			findNextElement();
-//			if (node==null) {
-//				return null;
-//			}
-//			DOMSource src = new DOMSource(node);
-//			String result;
-//			try {
-//				result = getIdentityTp().transform(src, null);
-//			} catch (Exception e) {
-//				throw new SenderException("could not extract element",e);
-//			}
-//			if (node!=null) {
-//				node=node.getNextSibling();
-//			} 
-//			return result; 
-//		}
-//
-//		public void close() {
-//		}
-//	}
-
-	
-//	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
-//		return new ElementIterator((String)input);
-//	}
 
 	protected TransformerPool getExtractElementsTp() {
 		return extractElementsTp;
@@ -380,15 +299,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 
 
 
-	@IbisDoc({"expression used to determine the set of elements iterated over, i.e. the set of child elements", ""})
-	public void setElementXPathExpression(String string) {
-		elementXPathExpression = string;
-	}
-	public String getElementXPathExpression() {
-		return elementXPathExpression;
-	}
-
-	@IbisDoc({"when set <code>true</code>, the input is assumed to be the name of a file to be processed. otherwise, the input itself is transformed", "application default"})
+	@IbisDoc({"1", "When set <code>true</code>, the input is assumed to be the name of a file to be processed. otherwise, the input itself is transformed", "false"})
 	public void setProcessFile(boolean b) {
 		processFile = b;
 	}
@@ -396,7 +307,15 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		return processFile;
 	}
 
-	@IbisDoc({"characterset used for reading file or inputstream, only used when {@link #setProcessFile(boolean) processFile} is <code>true</code>, or the input is of type InputStream", "utf-8"})
+	@IbisDoc({"2", "expression used to determine the set of elements to be iterated over, i.e. the set of child elements.", ""})
+	public void setElementXPathExpression(String string) {
+		elementXPathExpression = string;
+	}
+	public String getElementXPathExpression() {
+		return elementXPathExpression;
+	}
+
+	@IbisDoc({"3", "characterset used for reading file or inputstream, only used when {@link #setProcessFile(boolean) processFile} is <code>true</code>, or the input is of type InputStream", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}
@@ -404,7 +323,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		return charset;
 	}
 
-	@IbisDoc({"when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
+	@IbisDoc({"4", "when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, supporting XPath 2.0, otherwise xslt processor 1.0 (org.apache.xalan), supporting XPath 1.0. N.B. Be aware that setting this other than 1 might cause the input file being read as a whole in to memory, as Xslt Streaming is currently only supported by the XsltProcessor that is used for xsltVersion=1", "1"})
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
 	}
@@ -412,14 +331,14 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		return xsltVersion;
 	}
 
-	@IbisDoc({"Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
+	@IbisDoc({"5", "Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
 	/**
 	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
 	 */
 	@Deprecated
 	public void setXslt2(boolean b) {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'xslt2' has been deprecated. Its value is now auto detected. If necessary, replace with a setting of xsltVersion";
+		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'xslt2' has been deprecated. If necessary, replace with a setting of xsltVersion";
 		configWarnings.add(log, msg);
 		xsltVersion=b?2:1;
 	}

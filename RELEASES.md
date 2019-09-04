@@ -12,6 +12,8 @@ Upcoming
 [Commits](https://github.com/ibissource/iaf/compare/v7.4...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
+- Make ForEachChildElementPipe streaming when using elementXPathExpression
+  Make Xslt streaming default for xsltVersion=1
 
 
 

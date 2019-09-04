@@ -115,6 +115,7 @@ public class XmlUtils {
 	static final String JAXP_SCHEMA_SOURCE =   "http://java.sun.com/xml/jaxp/properties/schemaSource";
 
 	public static final String NAMESPACE_AWARE_BY_DEFAULT_KEY = "xml.namespaceAware.default";
+	public static final String XSLT_STREAMING_BY_DEFAULT_KEY = "xslt.streaming.default";
 	public static final String AUTO_RELOAD_KEY = "xslt.auto.reload";
 	public static final String XSLT_BUFFERSIZE_KEY = "xslt.bufsize";
 	public static final int XSLT_BUFFERSIZE_DEFAULT=4096;
@@ -126,6 +127,7 @@ public class XmlUtils {
 	public static final String OPEN_FROM_XML = "xml";
 
 	private static Boolean namespaceAwareByDefault = null;
+	private static Boolean xsltStreamingByDefault = null;
 	private static Boolean includeFieldDefinitionByDefault = null;
 	private static Boolean autoReload = null;
 	private static Integer buffersize=null;
@@ -442,26 +444,30 @@ public class XmlUtils {
 
 	public static synchronized boolean isNamespaceAwareByDefault() {
 		if (namespaceAwareByDefault==null) {
-			boolean aware=AppConstants.getInstance().getBoolean(NAMESPACE_AWARE_BY_DEFAULT_KEY, false);
-			namespaceAwareByDefault = new Boolean(aware);
+			namespaceAwareByDefault=AppConstants.getInstance().getBoolean(NAMESPACE_AWARE_BY_DEFAULT_KEY, false);
 		}
-		return namespaceAwareByDefault.booleanValue();
+		return namespaceAwareByDefault;
+	}
+
+	public static synchronized boolean isXsltStreamingByDefault() {
+		if (xsltStreamingByDefault==null) {
+			xsltStreamingByDefault=AppConstants.getInstance().getBoolean(XSLT_STREAMING_BY_DEFAULT_KEY, false);
+		}
+		return xsltStreamingByDefault;
 	}
 
 	public static synchronized boolean isIncludeFieldDefinitionByDefault() {
 		if (includeFieldDefinitionByDefault==null) {
-			boolean definition=AppConstants.getInstance().getBoolean(INCLUDE_FIELD_DEFINITION_BY_DEFAULT_KEY, true);
-			includeFieldDefinitionByDefault = new Boolean(definition);
+			includeFieldDefinitionByDefault=AppConstants.getInstance().getBoolean(INCLUDE_FIELD_DEFINITION_BY_DEFAULT_KEY, true);
 		}
-		return includeFieldDefinitionByDefault.booleanValue();
+		return includeFieldDefinitionByDefault;
 	}
 
 	public static synchronized boolean isAutoReload() {
 		if (autoReload==null) {
-			boolean reload=AppConstants.getInstance().getBoolean(AUTO_RELOAD_KEY, false);
-			autoReload = new Boolean(reload);
+			autoReload=AppConstants.getInstance().getBoolean(AUTO_RELOAD_KEY, false);
 		}
-		return autoReload.booleanValue();
+		return autoReload;
 	}
 
 	public static synchronized int getBufSize() {
@@ -1028,9 +1034,10 @@ public class XmlUtils {
 	}
 
 	public static synchronized TransformerFactory getTransformerFactory(int xsltVersion) {
+		TransformerFactory factory;
 		switch (xsltVersion) {
 		case 2:
-			TransformerFactory factory = new net.sf.saxon.TransformerFactoryImpl();
+			factory = new net.sf.saxon.TransformerFactoryImpl();
 			// Use ErrorListener to prevent warning "Stylesheet module ....xsl
 			// is included or imported more than once. This is permitted, but
 			// may lead to errors or unexpected behavior"
@@ -1039,7 +1046,11 @@ public class XmlUtils {
 			factory.setErrorListener(new TransformerErrorListener());
 			return factory;
 		default:
-			return new org.apache.xalan.processor.TransformerFactoryImpl();
+			factory=new org.apache.xalan.processor.TransformerFactoryImpl();
+			if (isXsltStreamingByDefault()) {
+				factory.setAttribute(org.apache.xalan.processor.TransformerFactoryImpl.FEATURE_INCREMENTAL, Boolean.TRUE);
+			}
+			return factory;
 		}
 	}
 
