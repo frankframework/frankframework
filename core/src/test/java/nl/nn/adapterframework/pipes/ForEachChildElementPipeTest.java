@@ -166,7 +166,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 	private class LoggingInputStream extends FilterInputStream {
 
-		int blocksize=10;
+		private int blocksize=10;
 		private SwitchCounter sc;
 		
 		public LoggingInputStream(InputStream arg0, SwitchCounter sc) {
