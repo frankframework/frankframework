@@ -444,34 +444,30 @@ public class XmlUtils {
 
 	public static synchronized boolean isNamespaceAwareByDefault() {
 		if (namespaceAwareByDefault==null) {
-			boolean aware=AppConstants.getInstance().getBoolean(NAMESPACE_AWARE_BY_DEFAULT_KEY, false);
-			namespaceAwareByDefault = new Boolean(aware);
+			namespaceAwareByDefault=AppConstants.getInstance().getBoolean(NAMESPACE_AWARE_BY_DEFAULT_KEY, false);
 		}
-		return namespaceAwareByDefault.booleanValue();
+		return namespaceAwareByDefault;
 	}
 
 	public static synchronized boolean isXsltStreamingByDefault() {
 		if (xsltStreamingByDefault==null) {
-			boolean aware=AppConstants.getInstance().getBoolean(XSLT_STREAMING_BY_DEFAULT_KEY, false);
-			xsltStreamingByDefault = new Boolean(aware);
+			xsltStreamingByDefault=AppConstants.getInstance().getBoolean(XSLT_STREAMING_BY_DEFAULT_KEY, false);
 		}
-		return xsltStreamingByDefault.booleanValue();
+		return xsltStreamingByDefault;
 	}
 
 	public static synchronized boolean isIncludeFieldDefinitionByDefault() {
 		if (includeFieldDefinitionByDefault==null) {
-			boolean definition=AppConstants.getInstance().getBoolean(INCLUDE_FIELD_DEFINITION_BY_DEFAULT_KEY, true);
-			includeFieldDefinitionByDefault = new Boolean(definition);
+			includeFieldDefinitionByDefault=AppConstants.getInstance().getBoolean(INCLUDE_FIELD_DEFINITION_BY_DEFAULT_KEY, true);
 		}
-		return includeFieldDefinitionByDefault.booleanValue();
+		return includeFieldDefinitionByDefault;
 	}
 
 	public static synchronized boolean isAutoReload() {
 		if (autoReload==null) {
-			boolean reload=AppConstants.getInstance().getBoolean(AUTO_RELOAD_KEY, false);
-			autoReload = new Boolean(reload);
+			autoReload=AppConstants.getInstance().getBoolean(AUTO_RELOAD_KEY, false);
 		}
-		return autoReload.booleanValue();
+		return autoReload;
 	}
 
 	public static synchronized int getBufSize() {
