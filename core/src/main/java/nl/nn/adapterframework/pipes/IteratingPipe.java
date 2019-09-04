@@ -179,7 +179,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	
 	/**
 	 * Alternative way to provide iteration, for classes that cannot provide an Iterator via {@link getIterator}.
-	 * For each item in the input callback.handleItem is called.
+	 * For each item in the input callback.handleItem(item) is called.
 	 */
 	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
 		 throw new SenderException("Could not obtain iterator and no iterateInput method provided by class ["+ClassUtils.nameOf(this)+"]");
@@ -360,7 +360,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						throw new TimeOutException("Thread has been interrupted");
 					}
 					StringBuffer items = new StringBuffer();
-					if (getBlockSize()>0) {
+					if (getBlockSize()>0) { // blockSize>0 requires item type 'I' to be String
 						items.append(getBlockPrefix());
 						for (int i=0; i<getBlockSize() && it.hasNext(); i++) {
 							String item = (String)it.next();
@@ -509,7 +509,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 
-	@IbisDoc({"6", "key of session variable to store number of item processed.", ""})
+	@IbisDoc({"6", "key of session variable to store number of items processed, i.e. the position or index in the set of items to be processed.", ""})
 	public void setItemNoSessionKey(String string) {
 		itemNoSessionKey = string;
 	}

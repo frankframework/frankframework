@@ -115,6 +115,7 @@ public class XmlUtils {
 	static final String JAXP_SCHEMA_SOURCE =   "http://java.sun.com/xml/jaxp/properties/schemaSource";
 
 	public static final String NAMESPACE_AWARE_BY_DEFAULT_KEY = "xml.namespaceAware.default";
+	public static final String XSLT_STREAMING_BY_DEFAULT_KEY = "xslt.streaming.default";
 	public static final String AUTO_RELOAD_KEY = "xslt.auto.reload";
 	public static final String XSLT_BUFFERSIZE_KEY = "xslt.bufsize";
 	public static final int XSLT_BUFFERSIZE_DEFAULT=4096;
@@ -126,6 +127,7 @@ public class XmlUtils {
 	public static final String OPEN_FROM_XML = "xml";
 
 	private static Boolean namespaceAwareByDefault = null;
+	private static Boolean xsltStreamingByDefault = null;
 	private static Boolean includeFieldDefinitionByDefault = null;
 	private static Boolean autoReload = null;
 	private static Integer buffersize=null;
@@ -446,6 +448,14 @@ public class XmlUtils {
 			namespaceAwareByDefault = new Boolean(aware);
 		}
 		return namespaceAwareByDefault.booleanValue();
+	}
+
+	public static synchronized boolean isXsltStreamingByDefault() {
+		if (xsltStreamingByDefault==null) {
+			boolean aware=AppConstants.getInstance().getBoolean(XSLT_STREAMING_BY_DEFAULT_KEY, false);
+			xsltStreamingByDefault = new Boolean(aware);
+		}
+		return xsltStreamingByDefault.booleanValue();
 	}
 
 	public static synchronized boolean isIncludeFieldDefinitionByDefault() {
@@ -1028,9 +1038,10 @@ public class XmlUtils {
 	}
 
 	public static synchronized TransformerFactory getTransformerFactory(int xsltVersion) {
+		TransformerFactory factory;
 		switch (xsltVersion) {
 		case 2:
-			TransformerFactory factory = new net.sf.saxon.TransformerFactoryImpl();
+			factory = new net.sf.saxon.TransformerFactoryImpl();
 			// Use ErrorListener to prevent warning "Stylesheet module ....xsl
 			// is included or imported more than once. This is permitted, but
 			// may lead to errors or unexpected behavior"
@@ -1039,7 +1050,11 @@ public class XmlUtils {
 			factory.setErrorListener(new TransformerErrorListener());
 			return factory;
 		default:
-			return new org.apache.xalan.processor.TransformerFactoryImpl();
+			factory=new org.apache.xalan.processor.TransformerFactoryImpl();
+			if (isXsltStreamingByDefault()) {
+				factory.setAttribute(org.apache.xalan.processor.TransformerFactoryImpl.FEATURE_INCREMENTAL, Boolean.TRUE);
+			}
+			return factory;
 		}
 	}
 
