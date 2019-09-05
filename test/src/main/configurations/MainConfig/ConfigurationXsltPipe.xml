@@ -5,10 +5,16 @@
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-XsltPipe" />
 		</receiver>
-		<pipeline firstPipe="SwitchAction">
+		<pipeline firstPipe="StylesheetPathSessionKey">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
+				
+			<pipe name="StylesheetPathSessionKey" className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="stylesheetPath" value="request/@stylesheetPath">
+				<forward name="failure" path="SwitchAction" />
+				<forward name="success" path="SwitchAction" />
+			</pipe>
 
 			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
 				xpathExpression="request/@action" notFoundForwardName="copy" />
