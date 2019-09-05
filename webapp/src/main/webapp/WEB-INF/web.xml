@@ -84,7 +84,7 @@
 		<description>Initializes the configuration</description>
 		<display-name>Ibis Application Servlet</display-name>
 		<servlet-name>IbisApplicationServlet</servlet-name>
-		<servlet-class>nl.nn.adapterframework.webcontrol.IbisApplicationServlet</servlet-class>
+		<servlet-class>nl.nn.adapterframework.lifecycle.IbisApplicationServlet</servlet-class>
 		<load-on-startup>0</load-on-startup>
 	</servlet>
 
@@ -327,11 +327,6 @@
 			</param-value>
 		</init-param>
 	</servlet>
-	<servlet>
-		<display-name>APIListener</display-name>
-		<servlet-name>APIListener</servlet-name>
-		<servlet-class>nl.nn.adapterframework.http.rest.ApiListenerServlet</servlet-class>
-	</servlet>
 	<servlet-mapping>
 		<servlet-name>FileViewerServlet</servlet-name>
 		<url-pattern>/FileViewerServlet</url-pattern>
@@ -363,10 +358,6 @@
 	<servlet-mapping>
 		<servlet-name>IAFAPI</servlet-name>
 		<url-pattern>/iaf/api/*</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>APIListener</servlet-name>
-		<url-pattern>/api/*</url-pattern>
 	</servlet-mapping>
 
 	<servlet-mapping>

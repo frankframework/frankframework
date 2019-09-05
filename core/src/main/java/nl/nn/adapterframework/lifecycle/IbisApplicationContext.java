@@ -13,34 +13,55 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.configuration;
+package nl.nn.adapterframework.lifecycle;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.servlet.ServletException;
+import javax.validation.spi.BootstrapState;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.cxf.NamespaceUriProviderManager;
+import nl.nn.adapterframework.http.MtomCmisProxy;
+import nl.nn.adapterframework.http.rest.ApiListenerServlet;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.webcontrol.IbisApplicationServlet;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.log4j.Logger;
+import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.CannotLoadBeanClassException;
+import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.core.type.filter.AssignableTypeFilter;
+import org.springframework.web.context.ServletConfigAware;
+import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 
@@ -61,17 +82,24 @@ import org.springframework.web.context.support.XmlWebApplicationContext;
  *
  */
 public class IbisApplicationContext {
+	enum BootState {
+		FIRST_START,STARTING,STARTED,STOPPING,STOPPED;
+	}
 
 	private AbstractApplicationContext applicationContext;
 	private IbisApplicationServlet servlet = null;
 	public static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	private static final boolean SPRING_AUTOWIRE = true;
 	private Logger log = LogUtil.getLogger(this);
 	private final String SPRINGCONTEXT = "/springContext.xml";
+	private ServletManager servletManager = null;
+	private BootState STATE = BootState.FIRST_START;
 
 	private NamespaceUriProviderManager namespaceUriProviderManager = new NamespaceUriProviderManager();
 
 	public void setServletConfig(IbisApplicationServlet servletConfig) {
 		this.servlet = servletConfig;
+		servletManager = new ServletManager(servletConfig);
 	}
 
 	/**
@@ -85,6 +113,9 @@ public class IbisApplicationContext {
 	 */
 	public void createApplicationContext() throws BeansException {
 		log.debug("creating Spring Application Context");
+		if(!STATE.equals(BootState.FIRST_START))
+			STATE = BootState.STARTING;
+
 		long start = System.currentTimeMillis();
 
 		if(servlet == null) {
@@ -102,6 +133,7 @@ public class IbisApplicationContext {
 		registerApplicationModules();
 
 		log.info("created "+applicationContext.getClass().getSimpleName()+" in " + (System.currentTimeMillis() - start) + " ms");
+		STATE = BootState.STARTED;
 	}
 
 	/**
@@ -119,9 +151,13 @@ public class IbisApplicationContext {
 
 		applicationContext.setConfigLocation(springContext);
 		applicationContext.setServletConfig(servlet.getServletConfig());
+
 		applicationContext.refresh();
 
-		//Makes it possible to retrieve the Application Context through the Spring WebApplicationContextUtils class
+		//Look for IbisInitializer annotations, parse them as beans and 'autowire' *-aware interfaces
+		loadIbisInitializers(applicationContext);
+
+		//Makes it possible to retrieve the Application Context through the Spring WebApplicationContextUtils class (e.q. cxf)
 		//@see org.springframework.web.context.support.WebApplicationContextUtils#getWebApplicationContext
 		servlet.getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext);
 
@@ -132,6 +168,51 @@ public class IbisApplicationContext {
 			BusFactory.setDefaultBus(bus);
 		}
 
+
+//		ServletManager servletManager = new ServletManager(servlet);
+//		IbisServletRegistrator registrator = (IbisServletRegistrator) createBeanAutowireByName(IbisServletRegistrator.class);
+//		IbisServletRegistrator registrator = (IbisServletRegistrator) applicationContext.getBean("IbisServletRegistrator");
+//		System.out.println(registrator);
+//		System.out.println(applicationContext.getBean("IbisServletRegistrator"));
+//		IbisServletRegistrator b = new IbisServletRegistrator(this.servlet.getServletContext());
+
+//		servletManager.register("ApiListenerServlet", ApiListenerServlet.class, "/private-api/*");
+//		servletManager.declareRoles("IbisApi");
+
+//		IbisServletManager.getInstance().register("ApiListenerServlet2", ApiListenerServlet.class, "/private2-api/*");
+
+//		servlet.ApiListenerServlet.securityroles=IbisObserver,IbisWebService,IbisApi
+//		servlet.ApiListenerServlet.transportGuarantee=confidential
+
+//		servlet.customServlets=PrivateApiListenerServlet
+//		servlet.PrivateApiListenerServlet.securityroles=IbisObserver,IbisWebService
+//		servlet.PrivateApiListenerServlet.transportGuarantee=confidential
+//		servlet.PrivateApiListenerServlet.className=nl.nn.adapterframework.http.rest.ApiListenerServlet
+//		servlet.PrivateApiListenerServlet.urlMapping=/private-api/*
+
+		//kan maar 1 keer, bij opstarten war/ear. bij spring reload gaat kapot
+//		ServletManager.addServlet("MtomCmisProxy", MtomCmisProxy.class, "/cmis/proxy/*");
+//		ServletManager.addServlet("ApiListenerServlet", ApiListenerServlet.class, "/api/*");
+
+
+
+
+//		ServletRegistration.Dynamic serv = this.servlet.getServletContext().addServlet("ApiListenerServlet", ApiListenerServlet.class);
+//		ServletSecurity.TransportGuarantee transportGuarantee = ServletSecurity.TransportGuarantee.NONE;
+//		String constraintType = System.getProperty("property", null);
+//		if (constraintType != null) {
+//			transportGuarantee = ServletSecurity.TransportGuarantee.valueOf(constraintType);
+//		}
+//		EmptyRoleSemantic sematic = EmptyRoleSemantic.PERMIT;
+//		String[] roleNames = "IbisObserver,IbisTester".split(",");
+//		HttpConstraintElement httpConstraintElement = new HttpConstraintElement(sematic, transportGuarantee, roleNames);
+//		ServletSecurityElement constraint = new ServletSecurityElement(httpConstraintElement);
+//		serv.addMapping("/api/*");
+//		serv.setLoadOnStartup(0);
+//		serv.setServletSecurity(constraint);
+
+
+
 		//Initialize the servlet
 		try {
 			servlet.doInit();
@@ -140,6 +221,100 @@ public class IbisApplicationContext {
 		}
 
 		return applicationContext;
+	}
+
+	private void loadIbisInitializers(AbstractApplicationContext applicationContext) {
+		BeanDefinitionRegistry factory = (BeanDefinitionRegistry) applicationContext.getAutowireCapableBeanFactory();
+		try {
+			Map<String, Object> interfaces = applicationContext.getBeansWithAnnotation(IbisInitializer.class);
+
+			for (String beanName : interfaces.keySet()) {
+				Object clazz = interfaces.get(beanName);
+				if(servlet != null)
+					servlet.getServletContext().log("Autowiring IbisInitializer ["+beanName+"]");
+
+				if(clazz != null) {
+					if(!SPRING_AUTOWIRE) {
+						if(clazz instanceof ApplicationContextAware) {
+							((ApplicationContextAware) clazz).setApplicationContext(applicationContext);
+						}
+						if(servlet != null) {
+							if(clazz instanceof ServletConfigAware) {
+								((ServletConfigAware) clazz).setServletConfig(servlet.getServletConfig());
+							}
+							if(clazz instanceof ServletContextAware) {
+								((ServletContextAware) clazz).setServletContext(servlet.getServletConfig().getServletContext());
+							}
+						}
+					}
+
+					if(servlet != null && STATE.equals(BootState.FIRST_START) && clazz instanceof DynamicRegistration.Servlet) {
+						DynamicRegistration.Servlet servlet = (DynamicRegistration.Servlet) clazz;
+						log.info("Autowiring DynamicRegistration ["+servlet.getName()+"]");
+						servletManager.register(servlet);
+						factory.removeBeanDefinition(beanName);
+						log.debug("unwired DynamicRegistration.Servlet ["+beanName+"]");
+					}
+
+					log.debug("instantiated IbisInitializer ["+beanName+"]");
+				}
+			}
+		}
+		catch(Throwable t) {
+			t.printStackTrace();
+		}
+	}
+
+	private void loadIbisInitializers2(AbstractApplicationContext applicationContext) {
+		try {
+//			ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
+
+			BeanDefinitionRegistry beanDefinitionRegistry = new SimpleBeanDefinitionRegistry();
+			ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry);
+
+//			scanner.addIncludeFilter(new AnnotationTypeFilter(IbisInitializer.class));
+			scanner.addIncludeFilter(new AssignableTypeFilter(DynamicRegistration.class));
+
+			for (BeanDefinition bd : scanner.findCandidateComponents("nl.nn.adapterframework")) {
+				Object clazz = null;
+				String beanName = bd.getBeanClassName();
+				try {
+					servlet.getServletContext().log("Initializing IbisApplicationInitializer ["+beanName+"]");
+					Class<?> clas = ClassUtils.loadClass(beanName);
+					Constructor<?> con = clas.getConstructor();
+					clazz = con.newInstance();
+				}
+				catch (Throwable t) {
+					t.printStackTrace();
+					log.error("unable to instantiate class ["+beanName+"]", t);
+				}
+	
+				if(clazz != null) {
+					if(!SPRING_AUTOWIRE) {
+						if(clazz instanceof ApplicationContextAware) {
+							((ApplicationContextAware) clazz).setApplicationContext(applicationContext);
+						}
+						if(clazz instanceof ServletConfigAware) {
+							((ServletConfigAware) clazz).setServletConfig(servlet.getServletConfig());
+						}
+						if(clazz instanceof ServletContextAware) {
+							((ServletContextAware) clazz).setServletContext(servlet.getServletConfig().getServletContext());
+						}
+					}
+
+					if(STATE.equals(BootState.FIRST_START) && clazz instanceof DynamicRegistration.Servlet) {
+						DynamicRegistration.Servlet servlet = (DynamicRegistration.Servlet) clazz;
+						log.info("Autowiring DynamicRegistration ["+servlet.getName()+"]");
+						servletManager.register(servlet);
+					}
+
+					log.debug("successfully instantiated IbisApplicationInitializer ["+beanName+"]");
+				}
+			}
+		}
+		catch(Throwable t) {
+			t.printStackTrace();
+		}
 	}
 
 	/**
@@ -163,21 +338,21 @@ public class IbisApplicationContext {
 	 * Destroys the Spring context
 	 */
 	protected void destroyApplicationContext() {
+		String oldContextName = applicationContext.getDisplayName();
+		log.debug("destroying Ibis Application Context ["+oldContextName+"]");
 
 		namespaceUriProviderManager.destroy();
 
 		if (applicationContext != null) {
-			String oldContextName = applicationContext.getDisplayName();
-			log.debug("destroying Ibis Application Context ["+oldContextName+"]");
 			((ConfigurableApplicationContext)applicationContext).close();
 
 			if(servlet != null)
 				servlet.doDestroy();
 
 			applicationContext = null;
-			log.info("destroyed Ibis Application Context ["+oldContextName+"]");
 		}
 
+		log.info("destroyed Ibis Application Context ["+oldContextName+"]");
 	}
 
 	public Object getBean(String beanName) {

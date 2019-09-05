@@ -13,18 +13,37 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.configuration;
+package nl.nn.adapterframework.lifecycle;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
+import org.springframework.web.SpringServletContainerInitializer;
 import org.springframework.web.WebApplicationInitializer;
 
+/**
+ * Interface to be implemented in Servlet 3.0+ environments in order to configure the
+ * {@link ServletContext} programmatically -- as opposed to (or possibly in conjunction
+ * with) the traditional {@code web.xml}-based approach.
+ *
+ * <p>Implementations of this SPI will be detected automatically by {@link
+ * SpringServletContainerInitializer}, which itself is bootstrapped automatically
+ * by any Servlet 3.0 container. See {@linkplain SpringServletContainerInitializer its
+ * Javadoc} for details on this bootstrapping mechanism.
+ * 
+ * 
+ * @see https://docs.oracle.com/javase/tutorial/ext/basics/spi.html
+ * 
+ * @author Niels Meijer
+ *
+ */
 public class IbisApplicationInitializer implements WebApplicationInitializer {
 
 	@Override
 	public void onStartup(ServletContext servletContext) throws ServletException {
 		servletContext.log("Starting IBIS Application");
+
+		//TODO start the springContext from here!
 	}
 
 }
