@@ -59,6 +59,16 @@ public class IbisDocExtractor {
         return this.json;
     }
 
+    public void addAllFolder() {
+        AFolder allFolder = new AFolder("All");
+        for (AFolder folder : folders) {
+            for (AClass clazz : folder.getClasses()) {
+                allFolder.addClass(clazz);
+            }
+        }
+        folders.add(allFolder);
+    }
+
     public void addMethods(String currentFolder, String currentClass, String methodName, String description, String defaultValue, String originalClassName, ArrayList<String> superClasses, String javadocLink, int order) {
 
         // Check if the folder already exists (there is only one of each)

@@ -163,21 +163,21 @@ public class IbisApplicationContext {
 	 * Destroys the Spring context
 	 */
 	protected void destroyApplicationContext() {
-		String oldContextName = applicationContext.getDisplayName();
-		log.debug("destroying Ibis Application Context ["+oldContextName+"]");
 
 		namespaceUriProviderManager.destroy();
 
 		if (applicationContext != null) {
+			String oldContextName = applicationContext.getDisplayName();
+			log.debug("destroying Ibis Application Context ["+oldContextName+"]");
 			((ConfigurableApplicationContext)applicationContext).close();
 
 			if(servlet != null)
 				servlet.doDestroy();
 
 			applicationContext = null;
+			log.info("destroyed Ibis Application Context ["+oldContextName+"]");
 		}
 
-		log.info("destroyed Ibis Application Context ["+oldContextName+"]");
 	}
 
 	public Object getBean(String beanName) {

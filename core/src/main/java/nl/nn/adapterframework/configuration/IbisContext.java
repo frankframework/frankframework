@@ -177,17 +177,14 @@ public class IbisContext extends IbisApplicationContext {
 
 			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
 
-			load();
-			getMessageKeeper().setMaxSize(Math.max(messageKeeperSize, getMessageKeeper().size()));
-
-			//TODO consider moving this to #FlowDiagram
-			String graphvizJsVersion = APP_CONSTANTS.getProperty("graphviz.js.version", null);
-			String graphvizJsFormat = APP_CONSTANTS.getProperty("graphviz.js.format", null);
 			try {
-				flowDiagram = new FlowDiagram(graphvizJsFormat, graphvizJsVersion);
+				flowDiagram = new FlowDiagram();
 			} catch (IllegalStateException e) {
 				log(null, null, "failed to initalize GraphVizEngine", MessageKeeperMessage.ERROR_LEVEL, e, true);
 			}
+
+			load();
+			getMessageKeeper().setMaxSize(Math.max(messageKeeperSize, getMessageKeeper().size()));
 
 			log("startup in " + (System.currentTimeMillis() - start) + " ms");
 		}

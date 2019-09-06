@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Integration Partners B.V.
+Copyright 2017 - 2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ListenerException;
 
 public class ApiDispatchConfig {
 	private String uriPattern;
@@ -29,10 +29,10 @@ public class ApiDispatchConfig {
 		this.uriPattern = uriPattern;
 	}
 
-	public void register(String method, ApiListener listener) throws ConfigurationException {
+	public void register(String method, ApiListener listener) throws ListenerException {
 		method = method.toUpperCase();
 		if(methods.containsKey(method))
-			throw new ConfigurationException("ApiListener for uriPattern ["+uriPattern+"] method ["+method+"] has already registered");
+			throw new ListenerException("ApiListener for uriPattern ["+uriPattern+"] method ["+method+"] has already registered");
 		methods.put(method, listener);
 	}
 

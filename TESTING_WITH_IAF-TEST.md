@@ -32,12 +32,10 @@ The module's test scenarios can be run manually with the Larva testtool. This wi
 4. In the Project Explorer, right-click the iaf-test module and select Properties. Go to Deployment Assembly, press [ Add... ]. Select Folder, press [ Next ]. Select the src/main/configurations folder, and press Finish. In the text field right of your new src/main/configurations item, enter `WEB-INF/classes/configurations`.
 5. Do the same for the src/test/testtool folder. For that, enter `testtool` as deploy path.
 
-## 3. Ant builds
+## 3. Ant build
 
-To make sure our database contains the data the tests need, we'll have to run some ant scripts. Navigate to _iaf-test/src/main/tools_ in your Project Explorer. Run the following files as ant builds, in order:
-1. _/setupDir/setupDir.xml_
-2. _/setupDB/Oracle/create_user.xml_
-3. _/setupDB/Oracle/create_database.xml_
+To make sure our database can be used, we'll have to run an ant script. Navigate to _iaf-test/src/main/tools_ in your Project Explorer. Run the following file as ant build:
+* _/setupDB/Oracle/create_user.xml_
 
 ## 4. Running the test scenarios
 

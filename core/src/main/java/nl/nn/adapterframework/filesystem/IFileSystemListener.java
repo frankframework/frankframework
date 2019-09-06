@@ -118,7 +118,10 @@ public interface IFileSystemListener<F> extends IPullingListener<F> {
 
 	@IbisDoc({"folder where files are stored <i>after</i> being processed", ""})
 	public void setProcessedFolder(String processedFolder);
-	
+
+	@IbisDoc({"folder where files are stored <i>after</i> being processed, in case the exit-state was not equal to <code>success</code>", ""})
+	public void setErrorFolder(String errorFolder);
+
 //	@IbisDoc({"number of copies held of a file with the same name. backup files have a dot and a number suffixed to their name. if set to 0, no backups will be kept.", "5"})
 //	public void setNumberOfBackups(int i) {
 //		numberOfBackups = i;

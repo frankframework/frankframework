@@ -39,7 +39,7 @@ import org.apache.log4j.Logger;
 public class GlobalListItem implements INamedObject {
 	protected Logger log = LogUtil.getLogger(this);
 
-    private static Hashtable items = new Hashtable();
+    private static Hashtable<String, GlobalListItem> items = new Hashtable<String, GlobalListItem>();
     private String name;
     private String aliasFor;
 
@@ -49,7 +49,6 @@ public class GlobalListItem implements INamedObject {
 	protected void configure() {
 	}
 
-
     /**
      * Get an item by Name.
      * Descender classes should implement a similar method, that returns an object of its own type.
@@ -57,7 +56,7 @@ public class GlobalListItem implements INamedObject {
     protected static GlobalListItem getItem(String itemName) {
 		GlobalListItem result = null;
 
-		result = (GlobalListItem)items.get(itemName);
+		result = items.get(itemName);
 		if (result==null) {
 			throw new NullPointerException("no list item found for name ["+itemName+"]");
 		}
@@ -74,18 +73,18 @@ public class GlobalListItem implements INamedObject {
      * Get the system names as an Iterator, alphabetically sorted
      * @return Iterator with the realm names, alphabetically sorted
      */
-    public static Iterator getRegisteredNames() {
-        SortedSet sortedKeys = new TreeSet(items.keySet());
+    public static Iterator<String> getRegisteredNames() {
+        SortedSet<String> sortedKeys = new TreeSet<String>(items.keySet());
         return sortedKeys.iterator();
     }
     /**
      * Gets a list with system names.
      */
-    public static List getRegisteredNamesAsList() {
-        Iterator it = getRegisteredNames();
-        List result = new ArrayList();
+    public static List<String> getRegisteredNamesAsList() {
+        Iterator<String> it = getRegisteredNames();
+        List<String> result = new ArrayList<String>();
         while (it.hasNext()) {
-            result.add((String) it.next());
+            result.add(it.next());
         }
         return result;
     }
@@ -114,7 +113,6 @@ public class GlobalListItem implements INamedObject {
 	public String getName() {
 		return name;
 	}
-
 
 	/**
 	 * If this attribute is set, the item is only an alias for another item.

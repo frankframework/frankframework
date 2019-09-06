@@ -19,6 +19,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.util.DateUtils;
 
 public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> extends HelperedFileSystemTestBase {
@@ -311,7 +312,9 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 		F rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		fileSystemListener.afterMessageProcessed(null, rawMessage, null);
+		PipeLineResult processResult = new PipeLineResult();
+		processResult.setState("success");
+		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
 		waitForActionToFinish();
 		// test
 		assertFalse("Expected file [" + filename + "] not to be present", _fileExists(filename));
@@ -342,7 +345,9 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 		F rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		fileSystemListener.afterMessageProcessed(null, rawMessage, null);
+		PipeLineResult processResult = new PipeLineResult();
+		processResult.setState("success");
+		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
 		waitForActionToFinish();
 		
 		
@@ -350,5 +355,104 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		assertTrue("Destination must exist",_fileExists(processedFolder, fileName));
 		assertFalse("Origin must have disappeared",_fileExists(fileName));
 	}
+
+	@Test
+	public void fileListenerTestAfterMessageProcessedErrorDelete() throws Exception {
+		String filename = "AfterMessageProcessedDelete" + FILE1;
+		
+		fileSystemListener.setMinStableTime(0);
+		fileSystemListener.setDelete(true);
+		fileSystemListener.configure();
+		fileSystemListener.open();
+
+		createFile(null, filename, "maakt niet uit");
+		waitForActionToFinish();
+		// test
+		existsCheck(filename);
+
+		F rawMessage=fileSystemListener.getRawMessage(threadContext);
+		assertNotNull(rawMessage);
+		PipeLineResult processResult = new PipeLineResult();
+		processResult.setState("error");
+		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
+		waitForActionToFinish();
+		// test
+		assertFalse("Expected file [" + filename + "] not to be present", _fileExists(filename));
+	}
+
+
+	@Test
+	public void fileListenerTestAfterMessageProcessedErrorMoveFileToErrorFolder() throws Exception {
+		String fileName = "fileTobeMoved.txt";
+		String processedFolder = "destinationFolder";
+		String errorFolder = "errorFolder";
+		
+		createFile(null,fileName, "");
+		waitForActionToFinish();
+		
+		assertTrue(_fileExists(fileName));
+		
+		_createFolder(processedFolder);
+		_createFolder(errorFolder);
+		waitForActionToFinish();
+
+		fileSystemListener.setMinStableTime(0);
+		fileSystemListener.setProcessedFolder(fileAndFolderPrefix+processedFolder);
+		fileSystemListener.setErrorFolder(fileAndFolderPrefix+errorFolder);
+		fileSystemListener.configure();
+		fileSystemListener.open();
+
+
+		assertTrue(_fileExists(fileName));
+		assertTrue(_folderExists(processedFolder));
+
+		F rawMessage=fileSystemListener.getRawMessage(threadContext);
+		assertNotNull(rawMessage);
+		PipeLineResult processResult = new PipeLineResult();
+		processResult.setState("error");
+		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
+		waitForActionToFinish();
+		
+		
+		assertTrue("Error folder must exist",_folderExists(processedFolder));
+		assertTrue("Destination must exist in error folder",_fileExists(errorFolder, fileName));
+		assertTrue("Destination must not exist in processed folder",!_fileExists(processedFolder, fileName));
+		assertFalse("Origin must have disappeared",_fileExists(fileName));
+	}
+	@Test
+	public void fileListenerTestAfterMessageProcessedErrorMoveFileToProcessedFolder() throws Exception {
+		String fileName = "fileTobeMoved.txt";
+		String processedFolder = "destinationFolder";
+		
+		createFile(null,fileName, "");
+		waitForActionToFinish();
+		
+		assertTrue(_fileExists(fileName));
+		
+		_createFolder(processedFolder);
+		waitForActionToFinish();
+
+		fileSystemListener.setMinStableTime(0);
+		fileSystemListener.setProcessedFolder(fileAndFolderPrefix+processedFolder);
+		fileSystemListener.configure();
+		fileSystemListener.open();
+
+
+		assertTrue(_fileExists(fileName));
+		assertTrue(_folderExists(processedFolder));
+
+		F rawMessage=fileSystemListener.getRawMessage(threadContext);
+		assertNotNull(rawMessage);
+		PipeLineResult processResult = new PipeLineResult();
+		processResult.setState("error");
+		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
+		waitForActionToFinish();
+		
+		
+		assertTrue("Error folder must exist",_folderExists(processedFolder));
+		assertTrue("Destination must exist in processed folder",_fileExists(processedFolder, fileName));
+		assertFalse("Origin must have disappeared",_fileExists(fileName));
+	}
+
 
 }

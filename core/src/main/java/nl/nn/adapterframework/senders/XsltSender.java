@@ -178,6 +178,7 @@ public class XsltSender extends SenderWithParametersBase implements IOutputStrea
 //				log.debug(getLogPrefix()+" transformerPool ["+transformerPool+"] transforming using prc ["+prc+"] and parameterValues ["+parametervalues+"]");
 //				log.debug(getLogPrefix()+" prc.inputsource ["+prc.getInputSource()+"]");
 //			}
+<<<<<<< HEAD
 			
 			OutputStream outputStream=null;
 			if (isStreamingToOutputStreamPossible() && StringUtils.isNotEmpty(getStreamToSessionKey())) {
@@ -198,6 +199,17 @@ public class XsltSender extends SenderWithParametersBase implements IOutputStrea
 					//stringResult = XmlUtils.transformXml(transformer, stringResult);
 					stringResult = transformerPoolSkipEmptyTags.transform(XmlUtils.stringToSourceForSingleUse(stringResult, isNamespaceAware()), null); 
 				}
+=======
+
+			stringResult = transformerPool.transform(inputMsg, parametervalues);
+
+			if (isSkipEmptyTags()) {
+				log.debug(getLogPrefix()+ " skipping empty tags from result [" + stringResult + "]");
+				//URL xsltSource = ClassUtils.getResourceURL( this, skipEmptyTags_xslt);
+				//Transformer transformer = XmlUtils.createTransformer(xsltSource);
+				//stringResult = XmlUtils.transformXml(transformer, stringResult);
+				stringResult = transformerPoolSkipEmptyTags.transform(XmlUtils.stringToSourceForSingleUse(stringResult, isNamespaceAware()), null); 
+>>>>>>> refs/heads/master
 			}
 //			if (log.isDebugEnabled()) {
 //				log.debug(getLogPrefix()+" transformed input ["+message+"] to ["+stringResult+"]");

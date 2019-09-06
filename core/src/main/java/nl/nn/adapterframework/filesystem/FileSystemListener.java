@@ -26,6 +26,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -49,6 +50,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private String inputFolder;
 	private String inProcessFolder;
 	private String processedFolder;
+	private String errorFolder;
 
 	private boolean createFolders=false;
 	private boolean delete = false;
@@ -97,13 +99,23 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					}
 				}
 			} else {
-				ConfigurationWarnings.add(this, log, "attribute 'inProcessFolder' has not been set. This listener can only run in a single thread");			}
+				ConfigurationWarnings.add(this, log, "attribute 'inProcessFolder' has not been set. This listener can only run in a single thread");			
+			}
 			if (StringUtils.isNotEmpty(getProcessedFolder())) {
 				if (!fileSystem.folderExists(getProcessedFolder())) {
 					if (isCreateFolders()) {
 						fileSystem.createFolder(getProcessedFolder());
 					} else { 
 						throw new ListenerException("The value for processedFolder [" + getProcessedFolder() + "] is invalid. It is not a folder.");
+					}
+				}
+			}
+			if (StringUtils.isNotEmpty(getErrorFolder())) {
+				if (!fileSystem.folderExists(getErrorFolder())) {
+					if (isCreateFolders()) {
+						fileSystem.createFolder(getErrorFolder());
+					} else { 
+						throw new ListenerException("The value for errorFolder [" + getErrorFolder() + "] is invalid. It is not a folder.");
 					}
 				}
 			}
@@ -189,7 +201,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		String filename=null;
 		try {
 			filename=fileSystem.getName(file);
-			F newFile = fileSystem.moveFile(file, destinationFolder, false);
+			F newFile = fileSystem.moveFile(file, destinationFolder, isCreateFolders());
 			if (newFile == null) {
 				throw new ListenerException(getName() + " was unable to move file [" + filename + "] to [" + destinationFolder + "]");
 			}
@@ -204,12 +216,18 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public void afterMessageProcessed(PipeLineResult processResult, F rawMessage, Map<String,Object> context) throws ListenerException {
 		FS fileSystem=getFileSystem();
 		try {
+			if (!PipeLineExit.EXIT_STATE_SUCCESS.equals(processResult.getState())) {
+				if (StringUtils.isNotEmpty(getErrorFolder())) {
+					fileSystem.moveFile(rawMessage, getErrorFolder(), isCreateFolders());
+					return;
+				}
+			}
 			if (isDelete()) {
 				fileSystem.deleteFile(rawMessage);
 				return;
 			}
-			if (StringUtils.isNotEmpty( getProcessedFolder())) {
-				fileSystem.moveFile(rawMessage, getProcessedFolder(), false);
+			if (StringUtils.isNotEmpty(getProcessedFolder())) {
+				fileSystem.moveFile(rawMessage, getProcessedFolder(), isCreateFolders());
 			}
 		} catch (FileSystemException e) {
 			throw new ListenerException("Could not move or delete file ["+fileSystem.getName(rawMessage)+"]",e);
@@ -383,7 +401,15 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return processedFolder;
 	}
 
-	@IbisDoc({"5", "when set to <code>true</code>, the folders to look for files and to move files to when being processed and after being processed are created if they are specified and do not exist", "false"})
+	@IbisDoc({"5", "folder where files are stored <i>after</i> being processed, in case the exit-state was not equal to <code>success</code>", ""})
+	public void setErrorFolder(String errorFolder) {
+		this.errorFolder = errorFolder;
+	}
+	public String getErrorFolder() {
+		return errorFolder;
+	}
+
+	@IbisDoc({"6", "when set to <code>true</code>, the folders to look for files and to move files to when being processed and after being processed are created if they are specified and do not exist", "false"})
 	public void setCreateFolders(boolean createFolders) {
 		this.createFolders = createFolders;
 	}
@@ -397,7 +423,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		setCreateFolders(createInputDirectory);
 	}
 
-	@IbisDoc({"6", "when set <code>true</code>, the file processed will deleted after being processed, and not stored", "false"})
+	@IbisDoc({"7", "when set <code>true</code>, the file processed will deleted after being processed, and not stored", "false"})
 	public void setDelete(boolean b) {
 		delete = b;
 	}
@@ -440,7 +466,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 //	}
 
 
-	@IbisDoc({"7", "when <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before", "false"})
+	@IbisDoc({"8", "when <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before", "false"})
 	public void setFileTimeSensitive(boolean b) {
 		fileTimeSensitive = b;
 	}
@@ -449,7 +475,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	@Override
-	@IbisDoc({"8", "determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'contents' for the contents of the file. For any other value, the attributes of the file are searched and used", "name"})
+	@IbisDoc({"9", "determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'contents' for the contents of the file. For any other value, the attributes of the file are searched and used", "name"})
 	public void setMessageType(String messageType) {
 		this.messageType = messageType;
 	}
@@ -458,7 +484,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 
-	@IbisDoc({"9", "minimal age of file in milliseconds, to avoid receiving a file while it is still being written", "1000 [ms]"})
+	@IbisDoc({"10", "minimal age of file in milliseconds, to avoid receiving a file while it is still being written", "1000 [ms]"})
 	public void setMinStableTime(long minStableTime) {
 		this.minStableTime = minStableTime;
 	}

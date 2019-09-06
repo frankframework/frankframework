@@ -20,6 +20,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.extensions.sap.jco3.tx.DestinationFactoryUtils;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -61,8 +62,8 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 	private boolean synchronous=false;
 
 	protected ParameterList paramList = null;
-	
-	
+
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (paramList!=null) {
@@ -81,6 +82,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		}
 	}
 
+	@Override
 	public void open() throws SenderException {
 		try {
 			openFacade();
@@ -90,11 +92,13 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 			throw new SenderException(getLogPrefix()+"exception starting", e);
 		}
 	}
-	
+
+	@Override
 	public void close() {
 		closeFacade();
 	}
 
+	@Override
 	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
 		return sendMessage(correlationID,message,null);
 	}
@@ -149,14 +153,13 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		return DestinationFactoryUtils.getTransactionalTid(sapSystem,destination,true);
 	}
 
+	@Override
 	public void addParameter(Parameter p) {
 		if (paramList==null) {
 			paramList=new ParameterList();
 		}
 		paramList.add(p);
 	}
-
-
 
 	public void setLuwHandleSessionKey(String string) {
 		luwHandleSessionKey = string;
@@ -175,6 +178,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 	protected void setSynchronous(boolean b) {
 		synchronous = b;
 	}
+	@Override
 	public boolean isSynchronous() {
 		return synchronous;
 	}

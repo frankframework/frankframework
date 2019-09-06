@@ -1,0 +1,69 @@
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+<!-- When using one of the following commands, a rollback script is not required
+AddColumn
+AddDefaultValue
+AddForeignKeyConstraint
+AddLookupTable
+AddNotNullConstraint
+AddPrimaryKey
+AddUniqueConstraint
+CreateIndex
+CreateSequence
+CreateTable
+CreateView
+DropNotNullConstraint
+RenameColumn
+RenameTable
+RenameView
+TagDatabase
+-->
+ 	<changeSet id="IAF_Util:4" author="Niels Meijer">
+ 		<validCheckSum>7:2ae1c6a4b4240ddb782c33365ebd1003</validCheckSum>
+ 		<update tableName="IBISPROP">
+       		<column name="LASTMODBY" type="java.sql.Types.VARCHAR(100)"/>
+		</update>
+ 	</changeSet>
+ 	
+	<changeSet id="IBISDATA" author="Robert Karajev">
+		<comment>Add IBISDATA Table</comment>
+		<createTable tableName="IBISDATA">
+			<column name="DATAKEY" type="java.sql.Types.DECIMAL(10)" autoIncrement="true">
+				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_IBISDATA"/>
+			</column>
+			<column name="DATA" type="BLOB"/>
+		</createTable>
+	</changeSet>
+
+	<changeSet id="IBISTEMP" author="Robert Karajev">
+		<comment>Add IBISTEMP Table</comment>
+		<createTable tableName="IBISTEMP">
+			<column name="TKEY" type="java.sql.Types.DECIMAL(10)" autoIncrement="true">
+				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_IBISTEMP"/>
+			</column>
+			<column name="TCHAR" type="java.sql.Types.CHAR(1)"/>
+			<column name="TVARCHAR" type="java.sql.Types.VARCHAR(100)"/>
+			<column name="TNUMBER" type="java.sql.Types.DECIMAL(17, 5)"/>
+			<column name="TTIMESTAMP" type="DATETIME"/>
+			<column name="TDATE" type="TIME"/>
+			<column name="TBLOB1" type="BLOB"/>
+			<column name="TCLOB" type="CLOB"/>
+			<column name="TBLOB2" type="BLOB"/>
+		</createTable>
+	</changeSet>
+
+	<changeSet id="IBISDATA_SEQ" author="Robert Karajev" onValidationFail="MARK_RAN">
+		<comment>Set sequence for IBISDATA Table</comment>
+		<createSequence sequenceName="SEQ_IBISDATA" startValue="34567" maxValue="999999999999999999" minValue="1"/>
+	</changeSet>
+
+	<changeSet id="IBISTEMP_SEQ" author="Robert Karajev" onValidationFail="MARK_RAN">
+		<comment>Set sequence for IBISTEMP Table</comment>
+		<createSequence sequenceName="SEQ_IBISTEMP" startValue="56789" maxValue="999999999999999999" minValue="1"/>
+	</changeSet>
+
+</databaseChangeLog>

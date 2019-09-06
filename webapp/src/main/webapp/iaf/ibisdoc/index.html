@@ -11,7 +11,6 @@
 <div ng-app="myApp" class="wrapper">
   <div class="left-wrapper">
     <div class="folders" ng-controller="foldersCtrl">
-      <input type="text" spellcheck="false" placeholder="Search all attributes..." ng-model="searchAllMethods" ng-keyup="onKey($event)">
 
       <div ng-repeat="folder in folders">
         <p class="clickableFolders" ng-click="showClasses(folder.name)"> {{ folder.name }}</p>
@@ -19,16 +18,40 @@
 
     </div>
     <div class="classes" ng-controller="classesCtrl">
-      <div ng-if="classes.length > 0">
-        <input type="text" spellcheck="false" placeholder="Search in {{ classes[0].methods[0].folderName }}... " ng-model="searchClass">
-      </div>
-      <div ng-repeat="class in classes | filter:searchClass">
+      <input type="text" spellcheck="false" placeholder="Search in {{ classes[0].methods[0].folderName }}... " ng-model="searchClass" ng-click="onKey($event)">
+      <div ng-repeat="class in classes | filter:searchClass as filteredClasses">
         <p class="clickableClasses" ng-click="showMethods(class.name)"> {{ class.name }}</p>
       </div>
+      <p class="foundnothing" ng-show="filteredClasses.length == 0"> No matches </p>
     </div>
   </div>
 
   <div class="methods" ng-controller="methodsCtrl">
+
+    <input type="text" spellcheck="false" placeholder="Search all attributes..." ng-model="searchAllMethods" ng-click="onKey($event)">
+
+    <div ng-if="searching && allMethods.length > 0">
+      <table>
+        <tr ng-if="filteredMethods.length > 0">
+          <th> Name </th>
+          <th> Description </th>
+          <th> Default value </th>
+          <th> Class name </th>
+          <th> Parent name </th>
+          <th> Folder name </th>
+        </tr>
+        <tr ng-repeat="method in allMethods | filter:searchAllMethods as filteredMethods">
+          <td> {{ method.name }} </td>
+          <td ng-bind-html="method.description"> {{ method.description }} </td>
+          <td ng-bind-html="method.defaultValue"> {{ method.defaultValue }} </td>
+          <td> {{ method.className }} </td>
+          <td> {{ method.originalClassName }}</td>
+          <td> {{ method.folderName }}</td>
+        </tr>
+      </table>
+      <p class="foundnothing" ng-if="filteredMethods.length == 0"> No matches </p>
+    </div>
+
     <div ng-if="methods.length > 0 && !searching">
       <input class="searchBarMethods" type="text" spellcheck="false" placeholder="Search in {{ methods[0].className }}..." ng-model="searchMethod">
 
@@ -57,15 +80,15 @@
       </div>
       <table>
         <tr>
-          <th> Name </th>
-          <th> Description</th>
-          <th> Default value</th>
+          <th class="attributeName"> Name </th>
+          <th class="attributeDesc"> Description</th>
+          <th class="attributeDV"> Default value</th>
         </tr>
 
         <tr ng-repeat="method in methods | filter:searchMethod | orderBy: 'order'">
-          <td class="attributeName" ng-if="method.className === method.originalClassName"> {{ method.name }}</td>
-          <td class="attributeDesc" ng-if="method.className === method.originalClassName" ng-bind-html="method.description"> {{ method.description }}</td>
-          <td class="attributeDV" ng-if="method.className === method.originalClassName" ng-bind-html="method.defaultValue"> {{ method.defaultValue }}</td>
+          <td ng-if="method.className === method.originalClassName"> {{ method.name }}</td>
+          <td ng-if="method.className === method.originalClassName" ng-bind-html="method.description"> {{ method.description }}</td>
+          <td ng-if="method.className === method.originalClassName" ng-bind-html="method.defaultValue"> {{ method.defaultValue }}</td>
         </tr>
       </table>
 
@@ -74,46 +97,24 @@
         Inherited Attributes
       </div>
 
-      <div ng-repeat="parent in parents | orderBy: 'parentIndex' ">
+      <div ng-repeat="parent in parents | orderBy: 'parentIndex' " >
         <h3> {{ parent.name }}</h3>
         <table>
           <tr>
-            <th> Name </th>
-            <th> Description </th>
-            <th> Default value </th>
+            <th class="attributeName"> Name </th>
+            <th class="attributeDesc"> Description</th>
+            <th class="attributeDV"> Default value</th>
           </tr>
 
           <tr ng-repeat="method in parent.attributes | filter:searchMethod | orderBy: 'order'">
-            <td class="attributeName"> {{ method.name }}</td>
-            <td class="attributeDesc" ng-bind-html="method.description"> {{ method.description }}</td>
-            <td class="attributeDV" ng-bind-html="method.defaultValue"> {{ method.defaultValue }}</td>
+            <td> {{ method.name }}</td>
+            <td ng-bind-html="method.description"> {{ method.description }}</td>
+            <td ng-bind-html="method.defaultValue"> {{ method.defaultValue }}</td>
           </tr>
         </table>
         <br>
         <br>
       </div>
-
-    </div>
-
-    <div ng-if="allMethods.length > 0 && searching">
-      <table>
-        <tr>
-          <th> Name </th>
-          <th> Description</th>
-          <th> Default value</th>
-          <th> Class name </th>
-          <th> Parent name </th>
-          <th> Folder name </th>
-        </tr>
-        <tr ng-repeat="method in allMethods">
-          <td> {{ method.name }} </td>
-          <td ng-bind-html="method.description"> {{ method.description }} </td>
-          <td ng-bind-html="method.defaultValue"> {{ method.defaultValue }} </td>
-          <td> {{ method.className }} </td>
-          <td> {{ method.originalClassName }}</td>
-          <td> {{ method.folderName }}</td>
-        </tr>
-      </table>
     </div>
   </div>
 </div>

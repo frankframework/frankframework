@@ -98,7 +98,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 	}
 	private static List<String> overwriteMaxOccursToUnbounded = new ArrayList<String>();
 	static {
-		// The setSender in ParallelSenders adds senders to a list. When setSender has been renamed to addSender this
+		// The setSender in ParallelSenders adds senders to a list. When setSender  has been renamed to addSender this
 		// workaround can be removed.
 		overwriteMaxOccursToUnbounded.add("parallelSendersSender");
 	}
@@ -394,12 +394,25 @@ public class IbisDocPipe extends FixedForwardPipe {
 			// For all classes
 			for (IbisBean ibisBean : groups.get(folder)) {
 
-				// Get the class
+				// Copy the properties of FileSender into FilePipe so that the properties of FileHandler are also in FilePipe
 				Map<String, Method> beanProperties = getBeanProperties(ibisBean.getClazz());
 				if (beanProperties != null) {
 
+					if (ibisBean.getName().equals("FilePipe")) {
+						for (IbisBean bean : groups.get("Senders")) {
+							if (bean.getName().equals("FileSender")) {
+								Map<String, Method> senderProperties = getBeanProperties(bean.getClazz());
+								if (senderProperties != null) {
+									beanProperties.putAll(senderProperties);
+								}
+								break;
+							}
+						}
+					}
+
 					// For each method in the class
-					Iterator<String> iterator = new TreeSet<String>(beanProperties.keySet()).iterator();
+					Iterator<String> iterator = new TreeSet<>(beanProperties.keySet()).iterator();
+
 					while (iterator.hasNext()) {
 
 						// Get the method
@@ -433,7 +446,6 @@ public class IbisDocPipe extends FixedForwardPipe {
 
 							// Get the values (description and default value)
 							String[] ibisDocValues = ibisDoc.value();
-							String description = "";
 
 							int order;
 							int desc;
@@ -460,6 +472,8 @@ public class IbisDocPipe extends FixedForwardPipe {
 				}
 			}
 		}
+
+		extractor.addAllFolder();
 		extractor.writeToJsonUrl();
 
 		return extractor.getJsonString();

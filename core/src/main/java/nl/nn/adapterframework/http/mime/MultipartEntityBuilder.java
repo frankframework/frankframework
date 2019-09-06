@@ -112,7 +112,7 @@ public class MultipartEntityBuilder {
 				contentID = "<"+bodyPart.getName()+">";
 			}
 			else {
-				bodyPart.addField("Content-Disposition", "attachment; name=\""+fileName+"\"; filename=\""+fileName+"\"");
+				bodyPart.addField("Content-Disposition", "attachment; name=\""+bodyPart.getName()+"\"; filename=\""+fileName+"\"");
 				contentID = "<"+fileName+">";
 			}
 			bodyPart.addField("Content-ID", contentID);

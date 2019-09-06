@@ -137,7 +137,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 
 
 
-	@IbisDoc({"roottag for the generated xml document", "record"})
+	@IbisDoc({"roottag for the generated xml document that will be send to the Sender", "record"})
 	public void setRootTag(String string) {
 		rootTag = string;
 	}
