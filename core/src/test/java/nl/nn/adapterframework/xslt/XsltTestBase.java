@@ -95,9 +95,13 @@ public abstract class XsltTestBase<P extends IPipe> extends PipeTestBase<P> {
 		setXslt2(false);
 		pipe.configure();
 		assertTrue("Expected some config warnings",warnings.size()>1);
+		for (int i=0;i<warnings.size();i++) {
+			System.out.println(i+" "+warnings.get(i));
+		}
 		assertThat(warnings.get(0), StringContains.containsString("the attribute 'xslt2' has been deprecated. Its value is now auto detected. If necessary, replace with a setting of xsltVersion"));
-		assertThat(warnings.get(1), StringContains.containsString("configured xsltVersion [1] does not match xslt version [2] declared in stylesheet"));
-		assertThat(warnings.get(1), StringContains.containsString(styleSheetName));
+		int nextPos=warnings.size()>4?warnings.size()-2:1;
+		assertThat(warnings.get(nextPos), StringContains.containsString("configured xsltVersion [1] does not match xslt version [2] declared in stylesheet"));
+		assertThat(warnings.get(nextPos), StringContains.containsString(styleSheetName));
 	}
 
 	public void testSkipEmptyTags(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws DomBuilderException, TransformerException, IOException, ConfigurationException, PipeStartException, PipeRunException {

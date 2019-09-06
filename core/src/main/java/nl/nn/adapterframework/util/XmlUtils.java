@@ -1040,13 +1040,13 @@ public class XmlUtils {
 			factory = new net.sf.saxon.TransformerFactoryImpl();
 			// Use ErrorListener to prevent warning "Stylesheet module ....xsl
 			// is included or imported more than once. This is permitted, but
-			// may lead to errors or unexpected behavior"
-			// written to System.err
+			// may lead to errors or unexpected behavior" written to System.err
 			// (https://stackoverflow.com/questions/10096086/how-to-handle-duplicate-imports-in-xslt)
 			factory.setErrorListener(new TransformerErrorListener());
 			return factory;
 		default:
 			factory=new org.apache.xalan.processor.TransformerFactoryImpl();
+			factory.setErrorListener(new TransformerErrorListener());
 			if (isXsltStreamingByDefault()) {
 				factory.setAttribute(org.apache.xalan.processor.TransformerFactoryImpl.FEATURE_INCREMENTAL, Boolean.TRUE);
 			}
