@@ -1,28 +1,28 @@
-<request xmlns="http://www.ibissource.org/tom" stylesheetPath="XsltPipe/TransformXSLT1.xsl" action="namespaceAware">
+<request xmlns="http://www.ibissource.org/tom" action="SetSessionKeyName">
 	<ReturnCode>1</ReturnCode>
 	<NumberOfParties>1</NumberOfParties>
 	<Party>
-		<Id>6942069</Id>
+		<Id>35053738</Id>
 		<PartyType>1</PartyType>
 		<Person>
 			<PersonName>
-				<Id>1888538</Id>
+				<Id>55391058</Id>
 				<Use>6</Use>
-				<Initials>D</Initials>
-				<BasicLastName>Ummy</BasicLastName>
+				<Initials>L</Initials>
+				<BasicLastName>Oreal</BasicLastName>
 			</PersonName>
 			<Demographics>
 				<Gender>1</Gender>
-				<BirthDate>2015-02-25</BirthDate>
+				<BirthDate>2020-02-26</BirthDate>
 			</Demographics>
 		</Person>
 		<PostalAddressContactPointUsage>
 			<ContactPointUsageType>99</ContactPointUsageType>
 			<PostalAddress>
-				<Id>8008580</Id>
-				<Street>Kikkerpad</Street>
-				<HouseNumber>77</HouseNumber>
-				<Postalcode>9375XP</Postalcode>
+				<Id>76463338</Id>
+				<Street>Plantsoen</Street>
+				<HouseNumber>56</HouseNumber>
+				<Postalcode>5086FB</Postalcode>
 				<Addressformat>2</Addressformat>
 				<City>Stad</City>
 				<CountryCode>NL</CountryCode>

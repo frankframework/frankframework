@@ -171,7 +171,7 @@ public class XsltSender extends SenderWithParametersBase {
 //				log.debug(getLogPrefix()+" transformerPool ["+transformerPool+"] transforming using prc ["+prc+"] and parameterValues ["+parametervalues+"]");
 //				log.debug(getLogPrefix()+" prc.inputsource ["+prc.getInputSource()+"]");
 //			}
-
+			
 			stringResult = transformerPool.transform(inputMsg, parametervalues);
 
 			if (isSkipEmptyTags()) {
@@ -190,6 +190,16 @@ public class XsltSender extends SenderWithParametersBase {
 			throw new SenderException(getLogPrefix()+" Exception on transforming input", e);
 		} 
 		return stringResult;
+	}
+	
+	public void setStyleSheetNameFromSessionKey(String stylesheetName) throws SenderException {
+		System.out.println("StylesheetName found: " + stylesheetName);
+		try {
+			setStyleSheetName(stylesheetName);
+			transformerPool = TransformerPool.configureTransformer(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), stylesheetName, getOutputType(), !isOmitXmlDeclaration(), getParameterList());
+		} catch (Exception e) {
+			throw new SenderException(getLogPrefix()+" Exception on reading provided stylesheet", e);
+		}
 	}
 
 	@Override

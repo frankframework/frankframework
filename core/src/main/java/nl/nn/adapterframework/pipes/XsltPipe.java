@@ -52,6 +52,7 @@ import nl.nn.adapterframework.senders.XsltSender;
 public class XsltPipe extends FixedForwardPipe {
 
 	private String sessionKey=null;
+	private String styleSheetLocationSessionKey=null;
 	
 	private XsltSender sender = new XsltSender();
 
@@ -115,7 +116,11 @@ public class XsltPipe extends FixedForwardPipe {
 	 */
 	protected String transform(Object input, IPipeLineSession session) throws SenderException, TransformerException {
  	    String inputXml=getInputXml(input, session);
-		ParameterResolutionContext prc = new ParameterResolutionContext(inputXml, session, isNamespaceAware()); 
+		ParameterResolutionContext prc = new ParameterResolutionContext(inputXml, session, isNamespaceAware());
+		
+		if(getStyleSheetLocationSessionKey() != null && !getStyleSheetLocationSessionKey().isEmpty()) {
+			sender.setStyleSheetNameFromSessionKey(session.get(getStyleSheetLocationSessionKey()).toString());
+		}
 		return sender.sendMessage(null, inputXml, prc);
 	}
 	/**
@@ -196,6 +201,12 @@ public class XsltPipe extends FixedForwardPipe {
 		return sessionKey;
 	}
 
+	public void setStyleSheetLocationSessionKey(String newSessionKey) {
+		styleSheetLocationSessionKey = newSessionKey;
+	}
+	public String getStyleSheetLocationSessionKey() {
+		return styleSheetLocationSessionKey;
+	}
 
 	@IbisDoc({"either 'text' or 'xml'. only valid for xpathexpression", "text"})
 	public void setOutputType(String string) {

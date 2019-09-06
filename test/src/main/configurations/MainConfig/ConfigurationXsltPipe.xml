@@ -5,20 +5,26 @@
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-XsltPipe" />
 		</receiver>
-		<pipeline firstPipe="StylesheetPathSessionKey">
+		<pipeline firstPipe="StylesheetLocationSessionKey">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
 				
-			<pipe name="StylesheetPathSessionKey" className="nl.nn.adapterframework.pipes.PutInSession"
-				sessionKey="stylesheetPath" value="request/@stylesheetPath">
+			<pipe name="StylesheetLocationSessionKey" className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="stylesheetLocation" value="XsltPipe/TransformXSLT1.xsl">
 				<forward name="failure" path="SwitchAction" />
 				<forward name="success" path="SwitchAction" />
 			</pipe>
-
+			
 			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
 				xpathExpression="request/@action" notFoundForwardName="copy" />
 
+			<pipe name="SetSessionKeyName" className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetLocationSessionKey="stylesheetLocation"
+				styleSheetName="XsltPipe/TransformXSLT1.xsl">
+				<forward name="success" path="EXIT" />
+			</pipe>
+			
 			<pipe name="genericFunctions" className="nl.nn.adapterframework.pipes.XsltPipe"
 				styleSheetName="XsltPipe/TransformGenericFunctions.xsl">
 				<forward name="success" path="EXIT" />
