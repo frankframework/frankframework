@@ -1,6 +1,8 @@
 package nl.nn.adapterframework.xslt;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -8,9 +10,11 @@ import java.io.OutputStream;
 
 import javax.xml.transform.TransformerException;
 
+import org.hamcrest.core.StringContains;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
@@ -91,6 +95,23 @@ public abstract class XsltTestBase<P extends IPipe> extends PipeTestBase<P> {
 		Boolean removeNamespaces=null;
 		Boolean xslt2=true;
 		testXslt(styleSheetName, input, expected, omitXmlDeclaration, indent, skipEmptyTags, removeNamespaces, xslt2, false);
+	}
+
+	/*
+	 * Beware, this test could fail when run multi threaded
+	 */
+	@Test
+	public void testConfigWarnings() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		ConfigurationWarnings warnings = ConfigurationWarnings.getInstance();
+		warnings.clear(); 
+		String styleSheetName=  "/Xslt3/orgchart.xslt";
+		setStyleSheetName(styleSheetName);
+		setXslt2(false);
+		pipe.configure();
+		assertTrue("Expected some config warnings",warnings.size()>1);
+		assertThat(warnings.get(0), StringContains.containsString("the attribute 'xslt2' has been deprecated. Its value is now auto detected. If necessary, replace with a setting of xsltVersion"));
+		assertThat(warnings.get(1), StringContains.containsString("configured xsltVersion [1] does not match xslt version [2] declared in stylesheet"));
+		assertThat(warnings.get(1), StringContains.containsString(styleSheetName));
 	}
 
 	public void testSkipEmptyTags(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws DomBuilderException, TransformerException, IOException, ConfigurationException, PipeStartException, PipeRunException {
