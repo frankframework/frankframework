@@ -83,51 +83,51 @@ public class XsltStreamingTest {
 	}
 	
 	
-	@Test()
-	public void testStreamingXsltViaTransformerHandlerAndEvents() throws SAXException, DomBuilderException, TransformerException, IOException {
-		/*
-		 * create transformer
-		 * feed SAX source events
-		 * receive SAX destination events
-		 * received events and source events should be mixed
-		 */
-		
-		SwitchCounter sc = new SwitchCounter();
-		
-		String xpath="/root/a";
-		TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(null, xpath,"xml", false, null, false, false, null, 1));
-		
-		SAXResult result = new SAXResult();
-		SaxLogger resultfilter = new SaxLogger("out>",sc);
-		result.setHandler(resultfilter);
-
-		TransformerHandler handler = tp.getTransformerHandler();
-		handler.setResult(result);
-		
-		SaxLogger inputfilter = new SaxLogger("in>",sc);
-		
-		inputfilter.setContentHandler(handler);
-
-//		tp.transform(source, result, null);
-		inputfilter.startDocument();
-		String uri="";
-		Attributes attributes=new AttributesImpl();
-		inputfilter.startElement(uri, "root", "root", attributes);
-		for(int i=0; i<10; i++) {
-			String localName="a";
-			String qName="a";
-			inputfilter.startElement(uri, localName, qName, attributes);
-			inputfilter.startElement(uri, "b", "b", attributes);
-			inputfilter.endElement(uri, "b", "b");
-			inputfilter.endElement(uri, localName, qName);
-			inputfilter.startElement(uri, "c", "c", attributes);
-			inputfilter.endElement(uri, "c", "c");
-		}
-		inputfilter.endElement(uri, "root", "root");
-		inputfilter.endDocument();
-		
-		assertTrue("switch count ["+sc.count+"] should be larger than 2",sc.count>2);
-	}
+//	@Test()
+//	public void testStreamingXsltViaTransformerHandlerAndEvents() throws SAXException, DomBuilderException, TransformerException, IOException {
+//		/*
+//		 * create transformer
+//		 * feed SAX source events
+//		 * receive SAX destination events
+//		 * received events and source events should be mixed
+//		 */
+//		
+//		SwitchCounter sc = new SwitchCounter();
+//		
+//		String xpath="/root/a";
+//		TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(null, xpath,"xml", false, null, false, false, null, 1));
+//		
+//		SAXResult result = new SAXResult();
+//		SaxLogger resultfilter = new SaxLogger("out>",sc);
+//		result.setHandler(resultfilter);
+//
+//		TransformerHandler handler = tp.getTransformerHandler();
+//		handler.setResult(result);
+//		
+//		SaxLogger inputfilter = new SaxLogger("in>",sc);
+//		
+//		inputfilter.setContentHandler(handler);
+//
+////		tp.transform(source, result, null);
+//		inputfilter.startDocument();
+//		String uri="";
+//		Attributes attributes=new AttributesImpl();
+//		inputfilter.startElement(uri, "root", "root", attributes);
+//		for(int i=0; i<10; i++) {
+//			String localName="a";
+//			String qName="a";
+//			inputfilter.startElement(uri, localName, qName, attributes);
+//			inputfilter.startElement(uri, "b", "b", attributes);
+//			inputfilter.endElement(uri, "b", "b");
+//			inputfilter.endElement(uri, localName, qName);
+//			inputfilter.startElement(uri, "c", "c", attributes);
+//			inputfilter.endElement(uri, "c", "c");
+//		}
+//		inputfilter.endElement(uri, "root", "root");
+//		inputfilter.endDocument();
+//		
+//		assertTrue("switch count ["+sc.count+"] should be larger than 2",sc.count>2);
+//	}
 	
 	
 	private class LoggingInputStream extends FilterInputStream {
