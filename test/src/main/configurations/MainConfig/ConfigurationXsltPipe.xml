@@ -11,7 +11,7 @@
 			</exits>
 				
 			<pipe name="StylesheetLocationSessionKey" className="nl.nn.adapterframework.pipes.PutInSession"
-				sessionKey="stylesheetLocation" value="XsltPipe/TransformXSLT1.xsl">
+				sessionKey="stylesheetLocation" value="XsltPipe/namespaceAware.xsl">
 				<forward name="failure" path="SwitchAction" />
 				<forward name="success" path="SwitchAction" />
 			</pipe>
@@ -20,8 +20,20 @@
 				xpathExpression="request/@action" notFoundForwardName="copy" />
 
 			<pipe name="SetSessionKeyName" className="nl.nn.adapterframework.pipes.XsltPipe"
-				styleSheetLocationSessionKey="stylesheetLocation"
+				styleSheetLocationSessionKey="stylesheetLocation" namespaceAware="true"
 				styleSheetName="XsltPipe/TransformXSLT1.xsl">
+				<forward name="success" path="StylesheetLocationSessionKey2" />
+			</pipe>
+				
+			<pipe name="StylesheetLocationSessionKey2" className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="stylesheetLocation" value="XsltPipe/TransformXSLT1.xsl">
+				<forward name="failure" path="SetSessionKeyName2" />
+				<forward name="success" path="SetSessionKeyName2" />
+			</pipe>
+
+			<pipe name="SetSessionKeyName2" className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetLocationSessionKey="stylesheetLocation"
+				styleSheetName="XsltPipe/namespaceAware.xsl">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			

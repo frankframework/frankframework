@@ -9,9 +9,12 @@ import org.mockito.Mock;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class XsltPipeTest extends PipeTestBase<XsltPipe> {
@@ -39,4 +42,20 @@ public class XsltPipeTest extends PipeTestBase<XsltPipe> {
 		assertEquals(expected,xmlOut.trim());
 	}
 
+	@Test
+	public void testDynamicStylesheet() throws ConfigurationException, IOException, PipeRunException, PipeStartException {
+		pipe.setStyleSheetName("/Xslt/dynamicStylesheet/wrongDummy.xsl");
+		pipe.configure();
+		pipe.start();
+
+		session = new PipeLineSessionBase();
+		session.put("stylesheetLocation", "/Xslt/dynamicStylesheet/correctDummy.xsl");
+		pipe.setStyleSheetLocationSessionKey("stylesheetLocation");
+
+		String input = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/in.xml");
+		log.debug("inputfile ["+input+"]");
+		String expected = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/out.txt");
+		
+		assertEquals(expected, pipe.doPipe(input, session).getResult().toString());
+	}
 }

@@ -192,11 +192,10 @@ public class XsltSender extends SenderWithParametersBase {
 		return stringResult;
 	}
 	
-	public void setStyleSheetNameFromSessionKey(String stylesheetName) throws SenderException {
-		System.out.println("StylesheetName found: " + stylesheetName);
+	public void setStyleSheetNameFromSessionKeyValue(String value) throws SenderException {
 		try {
-			setStyleSheetName(stylesheetName);
-			transformerPool = TransformerPool.configureTransformer(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), stylesheetName, getOutputType(), !isOmitXmlDeclaration(), getParameterList());
+			setStyleSheetName(value);
+			transformerPool = TransformerPool.configureTransformer(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), value, getOutputType(), !isOmitXmlDeclaration(), getParameterList());
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix()+" Exception on reading provided stylesheet", e);
 		}

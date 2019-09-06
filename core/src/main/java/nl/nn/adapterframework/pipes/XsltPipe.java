@@ -119,7 +119,7 @@ public class XsltPipe extends FixedForwardPipe {
 		ParameterResolutionContext prc = new ParameterResolutionContext(inputXml, session, isNamespaceAware());
 		
 		if(getStyleSheetLocationSessionKey() != null && !getStyleSheetLocationSessionKey().isEmpty()) {
-			sender.setStyleSheetNameFromSessionKey(session.get(getStyleSheetLocationSessionKey()).toString());
+			sender.setStyleSheetNameFromSessionKeyValue(session.get(getStyleSheetLocationSessionKey()).toString());
 		}
 		return sender.sendMessage(null, inputXml, prc);
 	}
