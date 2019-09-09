@@ -41,21 +41,4 @@ public class XsltPipeTest extends PipeTestBase<XsltPipe> {
 		String xmlOut=(String)prr.getResult();
 		assertEquals(expected,xmlOut.trim());
 	}
-
-	@Test
-	public void testDynamicStylesheet() throws ConfigurationException, IOException, PipeRunException, PipeStartException {
-		pipe.setStyleSheetName("/Xslt/dynamicStylesheet/wrongDummy.xsl");
-		pipe.configure();
-		pipe.start();
-
-		session = new PipeLineSessionBase();
-		session.put("stylesheetLocation", "/Xslt/dynamicStylesheet/correctDummy.xsl");
-		pipe.setStyleSheetLocationSessionKey("stylesheetLocation");
-
-		String input = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/in.xml");
-		log.debug("inputfile ["+input+"]");
-		String expected = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/out.txt");
-		
-		assertEquals(expected, pipe.doPipe(input, session).getResult().toString());
-	}
 }

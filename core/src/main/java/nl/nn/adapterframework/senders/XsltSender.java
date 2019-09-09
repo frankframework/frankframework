@@ -16,11 +16,15 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -61,9 +65,14 @@ public class XsltSender extends SenderWithParametersBase {
 	private int xsltVersion=0; // set to 0 for auto detect.
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
 
-	private TransformerPool transformerPool;
 	private TransformerPool transformerPoolSkipEmptyTags;
 	private TransformerPool transformerPoolRemoveNamespaces;
+	
+	private LRUMap transformerPoolMap;
+	private int transformerPoolMapSize = 100;
+	
+	private String defaultStyleSheetName;
+	private String styleSheetNameSessionKey=null;
 
 	/**
 	 * The <code>configure()</code> method instantiates a transformer for the specified
@@ -72,8 +81,12 @@ public class XsltSender extends SenderWithParametersBase {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-	
-		transformerPool = TransformerPool.configureTransformer0(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), getXsltVersion());
+		
+		transformerPoolMap = new LRUMap(transformerPoolMapSize);
+		
+		defaultStyleSheetName = getStyleSheetName();
+		transformerPoolMap.put(defaultStyleSheetName,
+				TransformerPool.configureTransformer0(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), defaultStyleSheetName, getOutputType(), !isOmitXmlDeclaration(), getParameterList(), getXsltVersion()));
 		if (isSkipEmptyTags()) {
 			transformerPoolSkipEmptyTags = XmlUtils.getSkipEmptyTagsTransformerPool(isOmitXmlDeclaration(),isIndentXml());
 		}
@@ -99,9 +112,11 @@ public class XsltSender extends SenderWithParametersBase {
 	@Override
 	public void open() throws SenderException {
 		super.open();
-		if (transformerPool!=null) {
+
+		TransformerPool defaultPool = (TransformerPool) transformerPoolMap.get(defaultStyleSheetName);
+		if (defaultPool!=null) {
 			try {
-				transformerPool.open();
+				defaultPool.open();
 			} catch (Exception e) {
 				throw new SenderException(getLogPrefix()+"cannot start TransformerPool", e);
 			}
@@ -125,8 +140,11 @@ public class XsltSender extends SenderWithParametersBase {
 	@Override
 	public void close() throws SenderException {
 		super.close();
-		if (transformerPool!=null) {
-			transformerPool.close();
+		
+		if (!transformerPoolMap.isEmpty()) {
+			for(Object tp : transformerPoolMap.values()) {
+				((TransformerPool)tp).close();
+			}
 		}
 		if (transformerPoolSkipEmptyTags!=null) {
 			transformerPoolSkipEmptyTags.close();
@@ -171,8 +189,23 @@ public class XsltSender extends SenderWithParametersBase {
 //				log.debug(getLogPrefix()+" transformerPool ["+transformerPool+"] transforming using prc ["+prc+"] and parameterValues ["+parametervalues+"]");
 //				log.debug(getLogPrefix()+" prc.inputsource ["+prc.getInputSource()+"]");
 //			}
+
+			Map<String, TransformerPool> map = Collections.synchronizedMap(transformerPoolMap);
+			String styleSheetNameToUse = defaultStyleSheetName;
+			TransformerPool poolToUse = map.get(defaultStyleSheetName);
 			
-			stringResult = transformerPool.transform(inputMsg, parametervalues);
+			if(styleSheetNameSessionKey != null && !styleSheetNameSessionKey.isEmpty()) {
+				styleSheetNameToUse = prc.getSession().get(styleSheetNameSessionKey).toString();
+
+				if(!map.containsKey(styleSheetNameToUse)) {
+					map.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), styleSheetNameToUse, getOutputType(), !isOmitXmlDeclaration(), getParameterList()));
+					poolToUse.open();
+				} else {
+					poolToUse = map.get(styleSheetNameToUse);
+				}
+			}
+			
+			stringResult = poolToUse.transform(inputMsg, parametervalues);
 
 			if (isSkipEmptyTags()) {
 				log.debug(getLogPrefix()+ " skipping empty tags from result [" + stringResult + "]");
@@ -190,15 +223,6 @@ public class XsltSender extends SenderWithParametersBase {
 			throw new SenderException(getLogPrefix()+" Exception on transforming input", e);
 		} 
 		return stringResult;
-	}
-	
-	public void setStyleSheetNameFromSessionKeyValue(String value) throws SenderException {
-		try {
-			setStyleSheetName(value);
-			transformerPool = TransformerPool.configureTransformer(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), value, getOutputType(), !isOmitXmlDeclaration(), getParameterList());
-		} catch (Exception e) {
-			throw new SenderException(getLogPrefix()+" Exception on reading provided stylesheet", e);
-		}
 	}
 
 	@Override
@@ -299,4 +323,17 @@ public class XsltSender extends SenderWithParametersBase {
 		return namespaceAware;
 	}
 
+	public void setStyleSheetNameSessionKey(String newSessionKey) {
+		styleSheetNameSessionKey = newSessionKey;
+	}
+	public String getStyleSheetNameSessionKey() {
+		return styleSheetNameSessionKey;
+	}
+
+	public void setStyleSheetCacheSize(int size) {
+		transformerPoolMapSize = size;
+	}
+	public int getStyleSheetCacheSize() {
+		return transformerPoolMapSize;
+	}
 }

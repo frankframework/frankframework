@@ -52,7 +52,6 @@ import nl.nn.adapterframework.senders.XsltSender;
 public class XsltPipe extends FixedForwardPipe {
 
 	private String sessionKey=null;
-	private String styleSheetLocationSessionKey=null;
 	
 	private XsltSender sender = new XsltSender();
 
@@ -116,11 +115,7 @@ public class XsltPipe extends FixedForwardPipe {
 	 */
 	protected String transform(Object input, IPipeLineSession session) throws SenderException, TransformerException {
  	    String inputXml=getInputXml(input, session);
-		ParameterResolutionContext prc = new ParameterResolutionContext(inputXml, session, isNamespaceAware());
-		
-		if(getStyleSheetLocationSessionKey() != null && !getStyleSheetLocationSessionKey().isEmpty()) {
-			sender.setStyleSheetNameFromSessionKeyValue(session.get(getStyleSheetLocationSessionKey()).toString());
-		}
+		ParameterResolutionContext prc = new ParameterResolutionContext(inputXml, session, isNamespaceAware()); 
 		return sender.sendMessage(null, inputXml, prc);
 	}
 	/**
@@ -201,11 +196,18 @@ public class XsltPipe extends FixedForwardPipe {
 		return sessionKey;
 	}
 
-	public void setStyleSheetLocationSessionKey(String newSessionKey) {
-		styleSheetLocationSessionKey = newSessionKey;
+	public void setStyleSheetNameSessionKey(String newSessionKey) {
+		sender.setStyleSheetNameSessionKey(newSessionKey);
 	}
-	public String getStyleSheetLocationSessionKey() {
-		return styleSheetLocationSessionKey;
+	public String getStyleSheetNameSessionKey() {
+		return sender.getStyleSheetNameSessionKey();
+	}
+
+	public void setStyleSheetCacheSize(int size) {
+		sender.setStyleSheetCacheSize(size);
+	}
+	public int getStyleSheetCacheSize() {
+		return sender.getStyleSheetCacheSize();
 	}
 
 	@IbisDoc({"either 'text' or 'xml'. only valid for xpathexpression", "text"})

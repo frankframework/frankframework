@@ -5,9 +5,13 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 import org.junit.Test;
 
@@ -90,5 +94,23 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		String result = sender.sendMessage(null, input, prc);
 
 		assertEquals("2", result);
+	}
+
+	@Test
+	public void testDynamicStylesheet() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException {
+		sender.setStyleSheetName("/Xslt/dynamicStylesheet/wrongDummy.xsl");
+		sender.configure();
+		sender.open();
+
+		session = new PipeLineSessionBase();
+		session.put("stylesheetName", "/Xslt/dynamicStylesheet/correctDummy.xsl");
+		sender.setStyleSheetNameSessionKey("stylesheetName");
+
+		String input = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/in.xml");
+		log.debug("inputfile ["+input+"]");
+		String expected = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/out.txt");
+
+		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
+		assertEquals(expected, sender.sendMessage(null, input, prc));
 	}
 }
