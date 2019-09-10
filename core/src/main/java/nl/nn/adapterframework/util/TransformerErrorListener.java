@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017,2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -48,11 +48,12 @@ public class TransformerErrorListener implements ErrorListener {
 		if (throwException) {
 			throw transformerException;
 		}
-		log.warn("Nonfatal transformation error: " + transformerException.getMessage());
+		log.warn("Nonfatal transformation error: " + transformerException.getMessageAndLocation());
 	}
 
 	@Override
 	public void fatalError(TransformerException transformerException) throws TransformerException {
+		log.warn("Fatal transformation error: " + transformerException.getMessageAndLocation());
 		if (throwException) {
 			throw transformerException;
 		}
@@ -61,22 +62,22 @@ public class TransformerErrorListener implements ErrorListener {
 
 	@Override
 	public void warning(TransformerException transformerException) throws TransformerException {
-		log.warn("Nonfatal transformation warning: "+ transformerException.getMessage());
+		log.warn("Nonfatal transformation warning: " + transformerException.getMessageAndLocation());
 	}
 
-	public void setFatalTransformerException(
-			TransformerException fatalTransformerException) {
+	public void setFatalTransformerException(TransformerException fatalTransformerException) {
 		this.fatalTransformerException = fatalTransformerException;
 	}
-
 	public TransformerException getFatalTransformerException() {
 		return fatalTransformerException;
 	}
 
 	public void setFatalIOException(IOException fatalIOException) {
+		if (this.fatalIOException!=null && this.fatalIOException!=fatalIOException) {
+			log.warn("replacing fatalIOException",this.fatalIOException);
+		}
 		this.fatalIOException = fatalIOException;
 	}
-
 	public IOException getFatalIOException() {
 		return fatalIOException;
 	}

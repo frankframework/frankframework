@@ -2,11 +2,11 @@ package nl.nn.adapterframework.xslt;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.core.task.TaskExecutor;
@@ -24,6 +24,12 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 
 	public int NUM_SENDERS=10;
 	private List<XsltSender> xsltSenders;
+	boolean expectExtraParamWarning=false;
+	
+	@Before
+	public void clear() {
+		expectExtraParamWarning=false;
+	}
 	
 	
 	protected SenderSeries createSenderContainer() {
@@ -108,8 +114,8 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 
 	@Override
 	protected void checkTestAppender(int expectedSize, String expectedString) {
-		super.checkTestAppender(expectedSize+1,expectedString);
-		assertThat(testAppender.toString(),containsString("are not available for use by nested Senders"));
+		super.checkTestAppender(expectedSize+(expectExtraParamWarning?1:0),expectedString);
+		if (expectExtraParamWarning) assertThat(testAppender.toString(),containsString("are not available for use by nested Senders"));
 	}
 
 	
@@ -119,22 +125,23 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 	}
 
 	@Override
-	@Test
-    @Ignore("configwarning test fails when run in parallel, won't fix")
-	public void testConfigWarnings() {
-		fail("Test should have been ignored");
+	public void duplicateImportErrorAlertsXslt1() throws Exception {
+		expectExtraParamWarning=true;
+		super.duplicateImportErrorAlertsXslt1();
 	}
 	@Override
+	public void duplicateImportErrorAlertsXslt2() throws Exception {
+		expectExtraParamWarning=true;
+		super.duplicateImportErrorAlertsXslt2();
+	}
+	
 	@Test
     @Ignore("error handling is different in parallel")
 	public void documentNotFoundXslt1() throws Exception {
-		fail("Test should have been ignored");
 	}
-	@Override
 	@Test
     @Ignore("error handling is different in parallel")
 	public void documentNotFoundXslt2() throws Exception {
-		fail("Test should have been ignored");
 	}
 	
 	@Override
