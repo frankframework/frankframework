@@ -50,7 +50,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 	private final static String GET_RESULT_TO_SERVLET= "";
 
 	private final static String GET_RESULT_FOR_GET_PROPERTIES = "<cmis><properties>"
-			+ "<property name=\"cmis:name\">dummy</property>"
+			+ "<property name=\"cmis:name\" type=\"id\">dummy</property>"
 			+ "<property name=\"project:number\" type=\"integer\">123456789</property>"
 			+ "<property name=\"project:lastModified\" type=\"datetime\">2019-02-26T16:31:15</property>"
 			+ "<property name=\"project:onTime\" type=\"boolean\">true</property></properties></cmis>";
