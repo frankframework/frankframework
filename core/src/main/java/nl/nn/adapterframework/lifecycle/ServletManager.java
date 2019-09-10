@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.lifecycle;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -43,8 +44,8 @@ public class ServletManager {
 	public ServletManager(IbisApplicationServlet servlet) {
 		this.servlet = servlet;
 
-		//Register the default IBIS roles
-		declareRoles("IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService");
+		//Add the default IBIS roles
+		registeredRoles.addAll(Arrays.asList("IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService"));
 	}
 
 	private ServletContext getServletContext() {
