@@ -20,18 +20,12 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import javax.servlet.ServletException;
-import javax.validation.spi.BootstrapState;
-
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.cxf.NamespaceUriProviderManager;
-import nl.nn.adapterframework.http.MtomCmisProxy;
-import nl.nn.adapterframework.http.rest.ApiListenerServlet;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -40,10 +34,7 @@ import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.log4j.Logger;
-import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.CannotLoadBeanClassException;
-import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -51,14 +42,11 @@ import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
-import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.web.context.ServletConfigAware;
 import org.springframework.web.context.ServletContextAware;
@@ -230,6 +218,8 @@ public class IbisApplicationContext {
 
 			for (String beanName : interfaces.keySet()) {
 				Object clazz = interfaces.get(beanName);
+//				IbisInitializer metaData = clazz.getClass().getAnnotation(IbisInitializer.class);
+
 				if(servlet != null)
 					servlet.getServletContext().log("Autowiring IbisInitializer ["+beanName+"]");
 
@@ -248,10 +238,13 @@ public class IbisApplicationContext {
 						}
 					}
 
-					if(servlet != null && STATE.equals(BootState.FIRST_START) && clazz instanceof DynamicRegistration.Servlet) {
-						DynamicRegistration.Servlet servlet = (DynamicRegistration.Servlet) clazz;
-						log.info("Autowiring DynamicRegistration ["+servlet.getName()+"]");
-						servletManager.register(servlet);
+					if(servlet != null && STATE.equals(BootState.FIRST_START)) {
+						if(clazz instanceof DynamicRegistration.Servlet) {
+							DynamicRegistration.Servlet servlet = (DynamicRegistration.Servlet) clazz;
+							log.info("adding servlet ["+servlet.getName()+"] to context");
+							servletManager.register(servlet);
+						}
+
 						factory.removeBeanDefinition(beanName);
 						log.debug("unwired DynamicRegistration.Servlet ["+beanName+"]");
 					}

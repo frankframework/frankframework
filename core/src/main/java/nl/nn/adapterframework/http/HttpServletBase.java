@@ -25,7 +25,7 @@ public abstract class HttpServletBase extends HttpServlet implements DynamicRegi
 	}
 
 	@Override
-	public HttpServlet getServletClass() {
+	public HttpServlet getServlet() {
 		return this;
 	}
 

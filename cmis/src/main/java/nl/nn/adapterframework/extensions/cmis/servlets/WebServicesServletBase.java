@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,49 +13,56 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.extensions.cmis.server;
+package nl.nn.adapterframework.extensions.cmis.servlets;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.lifecycle.DynamicRegistration;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 import org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.log4j.Logger;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  * It is important that we register the correct CXF bus, or else JAX-RS won't work properly
  * 
  * @author Niels Meijer
  */
-public class WebServicesServlet extends CmisWebServicesServlet {
+public abstract class WebServicesServletBase extends CmisWebServicesServlet implements DynamicRegistration.ServletWithParameters, ApplicationContextAware {
 
 	private static final long serialVersionUID = 1L;
 	private final Logger log = LogUtil.getLogger(this);
-	private IbisContext ibisContext = null;
+	private ApplicationContext applicationContext = null;
 
 	@Override
-	public void init(ServletConfig sc) throws ServletException {
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
+	}
 
-		AppConstants appConstants = AppConstants.getInstance();
-		String ibisContextKey = appConstants.getResolvedProperty(ConfigurationServlet.KEY_CONTEXT);
-		ibisContext = (IbisContext)sc.getServletContext().getAttribute(ibisContextKey);
-		if(ibisContext.getIbisManager() == null)
-			throw new ServletException("failed to retreive ibisContext from servletContext, did the IBIS start up correctly?");
+	protected abstract String getCmisVersion();
 
-		super.init(sc);
+	@Override
+	public Map<String, String> getParameters() {
+		Map<String, String> returnMap = new HashMap<String, String>();
+		returnMap.put(PARAM_CMIS_VERSION, getCmisVersion());
+
+		return returnMap;
 	}
 
 	@Override
 	protected void loadBus(ServletConfig sc) {
 		log.debug("loading cxf bus for servlet["+sc.getServletName()+"]");
 
-		Bus originalBus = (Bus)ibisContext.getBean("cxf");
+		Bus originalBus = (Bus) applicationContext.getBean("cxf");
 		setBus(originalBus);
 
 		//We have to call the original loadBus in order to register the CMIS endpoints. These will be added to a separate bus, which should not impact the IBIS.
@@ -65,4 +72,23 @@ public class WebServicesServlet extends CmisWebServicesServlet {
 		BusFactory.setDefaultBus(originalBus);
 	}
 
+	@Override
+	public String getName() {
+		return this.getClass().getSimpleName();
+	}
+
+	@Override
+	public int loadOnStartUp() {
+		return -1;
+	}
+
+	@Override
+	public HttpServlet getServlet() {
+		return this;
+	}
+
+	@Override
+	public String[] getRoles() {
+		return "IbisWebService,IbisTester".split(",");
+	}
 }
