@@ -9,10 +9,10 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			
+
 			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
 				xpathExpression="request/@action" notFoundForwardName="copy" />
-			
+
 			<pipe name="genericFunctions" className="nl.nn.adapterframework.pipes.XsltPipe"
 				styleSheetName="XsltPipe/TransformGenericFunctions.xsl">
 				<forward name="success" path="EXIT" />
