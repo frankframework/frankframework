@@ -35,6 +35,18 @@ import org.apache.log4j.Priority;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
+/**
+ * Enables the use of programmatically adding servlets to the given ServletContext<br/>
+ * <br/>
+ * The following properties can be set to change the DynamicRegistration.Servlet registration behaviour<br/>
+ * <code>servlet.<name>.transportGuarantee</code> - forces https when set to CONFIDENTIAL<br/>
+ * <code>servlet.<name>.securityroles</code> - use the default IBIS roles or create your own<br/>
+ * <code>servlet.<name>.urlMapping</code> - path the servlet listens to<br/>
+ * <code>servlet.<name>.loadOnStartup</code> - automatically load or use lazyloading<br/>
+ * 
+ * @author Niels Meijer
+ *
+ */
 public class ServletManager {
 
 	private IbisApplicationServlet servlet = null;

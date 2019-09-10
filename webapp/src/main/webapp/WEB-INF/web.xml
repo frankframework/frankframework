@@ -298,17 +298,17 @@
 		</taglib>
 	</jsp-config>
 
+	<login-config>
+		<auth-method>BASIC</auth-method>
+		<realm-name>Ibis</realm-name>
+	</login-config>
+
 	<!--
 	When a security-constraint element is present Tomcat will autenticate the
 	user for all url's whereas WebSphere does this only for the url's mentioned
 	in the security constraint(s). The PublicAccess security constraint will
 	make Tomcat behave the same as WebSphere.
 	-->
-
-	<login-config>
-		<auth-method>BASIC</auth-method>
-		<realm-name>Ibis</realm-name>
-	</login-config>
 
 	<!-- security-constraint>
 		<web-resource-collection>

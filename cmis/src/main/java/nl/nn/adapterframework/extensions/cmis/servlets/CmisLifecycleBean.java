@@ -29,6 +29,12 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.context.ServletContextAware;
 
+/**
+ * Autowires the CMIS RepositoryConnectorFactory
+ * 
+ * @author Niels Meijer
+ *
+ */
 @IbisInitializer
 public class CmisLifecycleBean implements ServletContextAware, InitializingBean, DisposableBean {
 
