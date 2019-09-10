@@ -5,37 +5,13 @@
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-XsltPipe" />
 		</receiver>
-		<pipeline firstPipe="StylesheetLocationSessionKey">
+		<pipeline firstPipe="SwitchAction">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-				
-			<pipe name="StylesheetLocationSessionKey" className="nl.nn.adapterframework.pipes.PutInSession"
-				sessionKey="stylesheetLocation" value="XsltPipe/namespaceAware.xsl">
-				<forward name="failure" path="SwitchAction" />
-				<forward name="success" path="SwitchAction" />
-			</pipe>
 			
 			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
 				xpathExpression="request/@action" notFoundForwardName="copy" />
-
-			<pipe name="SetSessionKeyName" className="nl.nn.adapterframework.pipes.XsltPipe"
-				styleSheetLocationSessionKey="stylesheetLocation" namespaceAware="true"
-				styleSheetName="XsltPipe/TransformXSLT1.xsl">
-				<forward name="success" path="StylesheetLocationSessionKey2" />
-			</pipe>
-				
-			<pipe name="StylesheetLocationSessionKey2" className="nl.nn.adapterframework.pipes.PutInSession"
-				sessionKey="stylesheetLocation" value="XsltPipe/TransformXSLT1.xsl">
-				<forward name="failure" path="SetSessionKeyName2" />
-				<forward name="success" path="SetSessionKeyName2" />
-			</pipe>
-
-			<pipe name="SetSessionKeyName2" className="nl.nn.adapterframework.pipes.XsltPipe"
-				styleSheetLocationSessionKey="stylesheetLocation"
-				styleSheetName="XsltPipe/namespaceAware.xsl">
-				<forward name="success" path="EXIT" />
-			</pipe>
 			
 			<pipe name="genericFunctions" className="nl.nn.adapterframework.pipes.XsltPipe"
 				styleSheetName="XsltPipe/TransformGenericFunctions.xsl">
@@ -74,6 +50,18 @@
 
 			<pipe name="copy" className="nl.nn.adapterframework.pipes.XsltPipe"
 				styleSheetName="XsltPipe/copy.xsl">
+				<forward name="success" path="EXIT" />
+			</pipe>
+			
+			<pipe name="StylesheetNameSessionKey" className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="stylesheetLocation" value="XsltPipe/namespaceAware.xsl">
+				<forward name="success" path="SetSessionKeyName" />
+				<forward name="failure" path="EXIT" />
+			</pipe>
+
+			<pipe name="SetSessionKeyName" className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetNameSessionKey="stylesheetLocation" namespaceAware="true"
+				styleSheetName="XsltPipe/TransformXSLT1.xsl">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

@@ -1,4 +1,4 @@
-<request xmlns="http://www.ibissource.org/tom" action="SetSessionKeyName">
+<request xmlns="http://www.ibissource.org/tom" action="StylesheetNameSessionKey">
 	<ReturnCode>1</ReturnCode>
 	<NumberOfParties>1</NumberOfParties>
 	<Party>

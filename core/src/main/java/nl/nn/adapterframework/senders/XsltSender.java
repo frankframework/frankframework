@@ -17,9 +17,7 @@ package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
