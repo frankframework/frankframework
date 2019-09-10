@@ -15,6 +15,7 @@
  */
 package nl.nn.adapterframework.extensions.cmis;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -34,6 +35,9 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.extensions.cmis.server.CmisSecurityHandler;
+import nl.nn.adapterframework.extensions.cmis.server.HttpSessionCmisService;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -77,6 +81,7 @@ import org.apache.chemistry.opencmis.commons.enums.PropertyType;
 import org.apache.chemistry.opencmis.commons.enums.SupportedPermissions;
 import org.apache.chemistry.opencmis.commons.enums.Updatability;
 import org.apache.chemistry.opencmis.commons.enums.CapabilityChanges;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.AbstractPropertyDefinition;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.AclCapabilitiesDataImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.AllowableActionsImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.CreatablePropertyTypesImpl;
@@ -92,7 +97,9 @@ import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyBooleanImp
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyDateTimeDefinitionImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyDateTimeImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyDecimalDefinitionImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyDecimalImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyHtmlDefinitionImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyHtmlImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIdDefinitionImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIdImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIntegerDefinitionImpl;
@@ -100,10 +107,12 @@ import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIntegerImp
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyStringDefinitionImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyStringImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyUriDefinitionImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyUriImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.RepositoryCapabilitiesImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.RepositoryInfoImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.TypeDefinitionContainerImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.TypeMutabilityImpl;
+import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.server.support.TypeDefinitionFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -113,9 +122,26 @@ import org.w3c.dom.Node;
 public class CmisUtils {
 
 	public final static String FORMATSTRING_BY_DEFAULT = "yyyy-MM-dd'T'HH:mm:ss";
-	public static final String ORIGINAL_OBJECT_KEY = "originalObject";
+	public final static String ORIGINAL_OBJECT_KEY = "originalObject";
+	public final static String CMIS_VERSION_KEY = "cmisVersion";
+	public final static String CMIS_BINDING_KEY = "cmisBinding";
 
 	private static Logger log = LogUtil.getLogger(CmisUtils.class);
+
+	public static IPipeLineSession createPipeLineSession() {
+		PipeLineSessionBase session = new PipeLineSessionBase();
+		populateCmisAttributes(session);
+		return session;
+	}
+	public static void populateCmisAttributes(IPipeLineSession session) {
+		CallContext callContext = HttpSessionCmisService.callContext.get();
+		if(callContext != null) {
+			session.put(CMIS_VERSION_KEY, callContext.getCmisVersion());
+			session.put(CMIS_BINDING_KEY, callContext.getBinding());
+			session.setSecurityHandler(new CmisSecurityHandler(callContext));
+		}
+	}
+
 
 	public static XmlBuilder buildXml(String name, Object value) {
 		XmlBuilder filterXml = new XmlBuilder(name);
@@ -128,30 +154,64 @@ public class CmisUtils {
 
 	public static XmlBuilder getPropertyXml(PropertyData<?> property) {
 		XmlBuilder propertyXml = new XmlBuilder("property");
-		String name = property.getId();
-		propertyXml.addAttribute("name", name);
-		Object value = property.getFirstValue();
 
+		propertyXml.addAttribute("name", property.getId());
+		propertyXml.addAttribute("displayName", property.getDisplayName());
+		propertyXml.addAttribute("localName", property.getLocalName());
+		propertyXml.addAttribute("queryName", property.getQueryName());
+
+		PropertyType propertyType = PropertyType.STRING;
+		if(property instanceof Property) {
+			propertyType = ((Property<?>) property).getType();
+		}
+		//If it's not a property, what would it be? assume its a string...
+
+		propertyXml.addAttribute("type", propertyType.value());
+
+		Object value = property.getFirstValue();
 		if (value == null) {
 			propertyXml.addAttribute("isNull", "true");
 		}
-		if (value instanceof BigInteger) {
-			BigInteger bi = (BigInteger) property.getFirstValue();
-			propertyXml.setValue(String.valueOf(bi));
-			propertyXml.addAttribute("type", "integer");
-		} else if (value instanceof Boolean) {
-			Boolean b = (Boolean) property.getFirstValue();
-			propertyXml.setValue(String.valueOf(b));
-			propertyXml.addAttribute("type", "boolean");
-		} else if (value instanceof GregorianCalendar) {
-			GregorianCalendar gc = (GregorianCalendar) property.getFirstValue();
-			SimpleDateFormat sdf = new SimpleDateFormat(FORMATSTRING_BY_DEFAULT);
-			propertyXml.setValue(sdf.format(gc.getTime()));
-			propertyXml.addAttribute("type", "datetime");
-		} else {
-			propertyXml.setValue((String) property.getFirstValue());
+		else {
+			switch (propertyType) {
+			case INTEGER:
+				BigInteger bi = (BigInteger) value;
+				propertyXml.setValue(String.valueOf(bi));
+				break;
+			case BOOLEAN:
+				Boolean b = (Boolean) value;
+				propertyXml.setValue(String.valueOf(b));
+				break;
+			case DATETIME:
+				GregorianCalendar gc = (GregorianCalendar) value;
+				SimpleDateFormat sdf = new SimpleDateFormat(FORMATSTRING_BY_DEFAULT);
+				propertyXml.setValue(sdf.format(gc.getTime()));
+				break;
+	
+			default: // String/ID/HTML/URI
+				propertyXml.setValue((String) value);
+				break;
+			}
 		}
+
 		return propertyXml;
+	}
+
+	private static <T> AbstractPropertyDefinition<T> addStandardDefinitions(AbstractPropertyDefinition<T> propertyDefinition, Element propertyElement, PropertyType propertyType) {
+
+		String nameAttr = propertyElement.getAttribute("name");
+		String displayNameAttr = propertyElement.getAttribute("displayName");
+		String localNameAttr = propertyElement.getAttribute("localName");
+		String queryNameAttr = propertyElement.getAttribute("queryName");
+
+		propertyDefinition.setId(nameAttr);
+		propertyDefinition.setDisplayName(displayNameAttr);
+		propertyDefinition.setLocalName(localNameAttr);
+		propertyDefinition.setQueryName(queryNameAttr);
+		propertyDefinition.setCardinality(Cardinality.SINGLE);
+		propertyDefinition.setPropertyType(propertyType);
+
+		return propertyDefinition;
 	}
 
 	public static Properties processProperties(Element cmisElement) {
@@ -165,79 +225,74 @@ public class CmisUtils {
 			String nameAttr = propertyElement.getAttribute("name");
 			String typeAttr = propertyElement.getAttribute("type");
 			PropertyType propertyType = PropertyType.STRING;
-			if(StringUtils.isNotEmpty(typeAttr))
+			if(StringUtils.isNotEmpty(typeAttr)) {
 				propertyType = PropertyType.fromValue(typeAttr);
+			}
+			if(StringUtils.isEmpty(typeAttr) && nameAttr.startsWith("cmis:")) {
+				propertyType = PropertyType.ID;
+			}
 
 			boolean isNull = Boolean.parseBoolean(propertyElement.getAttribute("isNull"));
 			if(isNull)
 				propertyValue = null;
 
-			if (StringUtils.isEmpty(typeAttr) || typeAttr.equalsIgnoreCase("string")) {
-				PropertyStringDefinitionImpl propertyDefinition = new PropertyStringDefinitionImpl();
-				propertyDefinition.setId(nameAttr);
-				propertyDefinition.setDisplayName(nameAttr);
-				propertyDefinition.setLocalName(nameAttr);
-				propertyDefinition.setQueryName(nameAttr);
-				propertyDefinition.setCardinality(Cardinality.SINGLE);
-				propertyDefinition.setPropertyType(propertyType);
-
-				if(nameAttr.startsWith("cmis:")) {
-					propertyDefinition.setPropertyType(PropertyType.ID);
-					properties.addProperty(new PropertyIdImpl(propertyDefinition, propertyValue));
+			switch (propertyType) {
+			case ID:
+				properties.addProperty(new PropertyIdImpl(addStandardDefinitions(new PropertyIdDefinitionImpl(), propertyElement, propertyType), propertyValue));
+				break;
+			case STRING:
+				properties.addProperty(new PropertyStringImpl(addStandardDefinitions(new PropertyStringDefinitionImpl(), propertyElement, propertyType), propertyValue));
+				break;
+			case INTEGER:
+				BigInteger bigInt = null;
+				if(StringUtils.isNotEmpty(propertyValue)) {
+					bigInt = new BigInteger(propertyValue);
 				}
-				else {
-					propertyDefinition.setPropertyType(PropertyType.STRING);
-					properties.addProperty(new PropertyStringImpl(propertyDefinition, propertyValue));
+				properties.addProperty(new PropertyIntegerImpl(addStandardDefinitions(new PropertyIntegerDefinitionImpl(), propertyElement, propertyType), bigInt));
+				break;
+			case DATETIME:
+				GregorianCalendar gregorian = null;
+				if(StringUtils.isNotEmpty(propertyValue)) {
+					String formatStringAttr = propertyElement.getAttribute("formatString");
+					if (StringUtils.isEmpty(formatStringAttr)) {
+						formatStringAttr = CmisUtils.FORMATSTRING_BY_DEFAULT;
+					}
+					DateFormat df = new SimpleDateFormat(formatStringAttr);
+					try {
+						Date date = df.parse(propertyValue);
+						gregorian = new GregorianCalendar();
+						gregorian.setTime(date);
+					} catch (ParseException e) {
+						log.warn("exception parsing date [" + propertyValue + "] using formatString [" + formatStringAttr + "]", e);
+					}
 				}
-			} else if (typeAttr.equalsIgnoreCase("integer")) {
-
-				PropertyIntegerDefinitionImpl propertyDefinition = new PropertyIntegerDefinitionImpl();
-				propertyDefinition.setId(nameAttr);
-				propertyDefinition.setDisplayName(nameAttr);
-				propertyDefinition.setLocalName(nameAttr);
-				propertyDefinition.setQueryName(nameAttr);
-				propertyDefinition.setCardinality(Cardinality.SINGLE);
-				propertyDefinition.setPropertyType(propertyType);
-
-				properties.addProperty(new PropertyIntegerImpl(propertyDefinition, new BigInteger(propertyValue)));
-			} else if (typeAttr.equalsIgnoreCase("boolean")) {
-
-				PropertyBooleanDefinitionImpl propertyDefinition = new PropertyBooleanDefinitionImpl();
-				propertyDefinition.setId(nameAttr);
-				propertyDefinition.setDisplayName(nameAttr);
-				propertyDefinition.setLocalName(nameAttr);
-				propertyDefinition.setQueryName(nameAttr);
-				propertyDefinition.setCardinality(Cardinality.SINGLE);
-				propertyDefinition.setPropertyType(propertyType);
-
-				properties.addProperty(new PropertyBooleanImpl(propertyDefinition, Boolean.parseBoolean(propertyValue)));
-			} else if (typeAttr.equalsIgnoreCase("datetime")) {
-
-				PropertyDateTimeDefinitionImpl propertyDefinition = new PropertyDateTimeDefinitionImpl();
-				propertyDefinition.setId(nameAttr);
-				propertyDefinition.setDisplayName(nameAttr);
-				propertyDefinition.setLocalName(nameAttr);
-				propertyDefinition.setQueryName(nameAttr);
-				propertyDefinition.setCardinality(Cardinality.SINGLE);
-				propertyDefinition.setPropertyType(propertyType);
-
-				String formatStringAttr = propertyElement.getAttribute("formatString");
-				if (StringUtils.isEmpty(formatStringAttr)) {
-					formatStringAttr = CmisUtils.FORMATSTRING_BY_DEFAULT;
+				properties.addProperty(new PropertyDateTimeImpl(addStandardDefinitions(new PropertyDateTimeDefinitionImpl(), propertyElement, propertyType), gregorian));
+				break;
+			case BOOLEAN:
+				Boolean bool = null;
+				if(StringUtils.isNotEmpty(propertyValue)) {
+					bool = Boolean.parseBoolean(propertyValue);
 				}
-				DateFormat df = new SimpleDateFormat(formatStringAttr);
-				try {
-					Date date = df.parse(propertyValue);
-					GregorianCalendar gregorian = new GregorianCalendar();
-					gregorian.setTime(date);
-
-					properties.addProperty(new PropertyDateTimeImpl(propertyDefinition, gregorian));
-				} catch (ParseException e) {
-					log.warn("exception parsing date [" + propertyValue + "] using formatString [" + formatStringAttr + "]", e);
+				properties.addProperty(new PropertyBooleanImpl(addStandardDefinitions(new PropertyBooleanDefinitionImpl(), propertyElement, propertyType), bool));
+				break;
+			case DECIMAL:
+				BigDecimal decimal = null;
+				if(StringUtils.isNotEmpty(propertyValue)) {
+					decimal = new BigDecimal(propertyValue);
 				}
-			} else {
+				properties.addProperty(new PropertyDecimalImpl(addStandardDefinitions(new PropertyDecimalDefinitionImpl(), propertyElement, propertyType), decimal));
+				break;
+			case URI:
+				properties.addProperty(new PropertyUriImpl(addStandardDefinitions(new PropertyUriDefinitionImpl(), propertyElement, propertyType), propertyValue));
+				break;
+			case HTML:
+				properties.addProperty(new PropertyHtmlImpl(addStandardDefinitions(new PropertyHtmlDefinitionImpl(), propertyElement, propertyType), propertyValue));
+				break;
+			default:
 				log.warn("unparsable type [" + typeAttr + "] for property ["+propertyValue+"]");
+				continue; //Skip all and continue with the next property!
 			}
+
 			log.debug("set property name [" + nameAttr + "] value [" + propertyValue + "]");
 		}
 
@@ -912,7 +967,8 @@ public class CmisUtils {
 		}
 
 		cmisXml.addAttribute("id", object.getId());
-		cmisXml.addAttribute("baseTypeId", object.getBaseTypeId().name());
+		if(object.getBaseTypeId() != null)
+			cmisXml.addAttribute("baseTypeId", object.getBaseTypeId().name());
 
 		PolicyIdList policies = object.getPolicyIds();
 		if(policies != null) {

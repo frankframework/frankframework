@@ -68,8 +68,8 @@ public class IbisDiscoveryService implements DiscoveryService {
 			Holder<String> changeLogToken, Boolean includeProperties,
 			String filter, Boolean includePolicyIds, Boolean includeAcl,
 			BigInteger maxItems, ExtensionsData extension) {
-		// TODO Auto-generated method stub
-		return null;
+
+		return discoveryService.getContentChanges(repositoryId, changeLogToken, includeProperties, filter, includePolicyIds, includeAcl, maxItems, extension);
 	}
 	
 }

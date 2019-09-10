@@ -738,8 +738,10 @@ public class CmisSender extends SenderWithParametersBase {
 					processProperties(propertiesElement, props);
 				}
 
+				ObjectId folderId = null;
 				String folderIdstr = XmlUtils.getChildTagAsString(requestElement, "folderId");
-				ObjectId folderId = session.createObjectId(folderIdstr);
+				if(StringUtils.isNotEmpty(folderIdstr))
+					folderId = session.createObjectId(folderIdstr);
 
 				String versioningStatestr = XmlUtils.getChildTagAsString(requestElement, "versioningState");
 				VersioningState state = VersioningState.valueOf(versioningStatestr);

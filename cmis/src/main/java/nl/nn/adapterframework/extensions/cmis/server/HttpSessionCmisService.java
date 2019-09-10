@@ -44,6 +44,7 @@ public class HttpSessionCmisService extends CachedBindingCmisService {
 
 	private static final long serialVersionUID = 1L;
 	private final Logger log = LogUtil.getLogger(this);
+	public static ThreadLocal<CallContext> callContext = new ThreadLocal<CallContext>();
 
 	/** Key in the HTTP session. **/
 	public static final String CMIS_BINDING = "org.apache.chemistry.opencmis.bridge.binding";
@@ -52,8 +53,7 @@ public class HttpSessionCmisService extends CachedBindingCmisService {
 
 	public HttpSessionCmisService(CallContext context) {
 		setCallContext(context);
-//		context.getUsername();
-//		context.getPassword();
+		callContext.set(context);
 	}
 
 	@Override
@@ -123,7 +123,7 @@ public class HttpSessionCmisService extends CachedBindingCmisService {
 
 			//Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
 			Object castValue = getCastValue(method.getParameterTypes()[0], value);
-			log.debug("trying to set property ["+PROPERTY_PREFIX+setter+"] with value ["+value+"] of type ["+castValue.getClass().getCanonicalName()+"] on ["+sessionBuilder.toString()+"]");
+			log.debug("trying to set property ["+PROPERTY_PREFIX+setter+"] with value ["+value+"] of type ["+castValue.getClass().getCanonicalName()+"] on ["+sessionBuilder+"]");
 
 			try {
 				method.invoke(sessionBuilder, castValue);
@@ -163,7 +163,7 @@ public class HttpSessionCmisService extends CachedBindingCmisService {
 
 	@Override
 	public RepositoryService getRepositoryService() {
-		return new IbisRepositoryService(super.getRepositoryService(), getCallContext().getCmisVersion());
+		return new IbisRepositoryService(super.getRepositoryService());
 	}
 
 	@Override
