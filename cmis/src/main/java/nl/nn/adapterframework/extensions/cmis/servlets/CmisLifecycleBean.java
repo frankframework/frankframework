@@ -56,13 +56,16 @@ public class CmisLifecycleBean implements ServletContextAware, InitializingBean,
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if (factory == null) {
+		if (factory == null && servletContext != null) {
 			factory = createServiceFactory();
 			factory.init(new HashMap<String, String>());
 			String key = CmisRepositoryContextListener.SERVICES_FACTORY;
 			servletContext.setAttribute(key, factory);
 
 			if(log.isDebugEnabled()) log.debug("created and stored CmisServiceFactory in ServletContext under key ["+key+"]");
+		}
+		else {
+			log.error("failed to initialize ["+this.getClass().getSimpleName()+"]");
 		}
 	}
 
