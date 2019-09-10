@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javax.mail.BodyPart;
 import javax.mail.MessagingException;
@@ -183,14 +182,14 @@ public class HttpSender extends HttpSenderBase {
 			setContentType("text/html; charset="+getCharSet());
 	}
 
-	protected HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap, IPipeLineSession session) throws SenderException {
+	protected HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
 		if(isParamsInUrl())
-			return getMethod(uri, message, parameters, headersParamsMap);
+			return getMethod(uri, message, parameters);
 		else
-			return getPostMethodWithParamsInBody(uri, message, parameters, headersParamsMap, session);
+			return getPostMethodWithParamsInBody(uri, message, parameters, session);
 	}
 
-	protected HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap) throws SenderException {
+	protected HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters) throws SenderException {
 		try { 
 			boolean queryParametersAppended = false;
 
@@ -208,7 +207,7 @@ public class HttpSender extends HttpSenderBase {
 
 			if (getMethodType().equals("GET")) {
 				if (parameters!=null) {
-					queryParametersAppended = appendParameters(queryParametersAppended,path,parameters,headersParamsMap);
+					queryParametersAppended = appendParameters(queryParametersAppended,path,parameters);
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"path after appending of parameters ["+path.toString()+"]");
 				}
 				HttpGet method = new HttpGet(path+(parameters==null? message:""));
@@ -219,7 +218,7 @@ public class HttpSender extends HttpSenderBase {
 				HttpPost method = new HttpPost(path.toString());
 				if (parameters!=null) {
 					StringBuffer msg = new StringBuffer(message);
-					appendParameters(true,msg,parameters,headersParamsMap);
+					appendParameters(true,msg,parameters);
 					if (StringUtils.isEmpty(message) && msg.length()>1) {
 						message=msg.substring(1);
 					} else {
@@ -234,7 +233,7 @@ public class HttpSender extends HttpSenderBase {
 				HttpPut method = new HttpPut(path.toString());
 				if (parameters!=null) {
 					StringBuffer msg = new StringBuffer(message);
-					appendParameters(true,msg,parameters,headersParamsMap);
+					appendParameters(true,msg,parameters);
 					if (StringUtils.isEmpty(message) && msg.length()>1) {
 						message=msg.substring(1);
 					} else {
@@ -270,7 +269,7 @@ public class HttpSender extends HttpSenderBase {
 		}
 	}
 
-	protected HttpPost getPostMethodWithParamsInBody(URIBuilder uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap, IPipeLineSession session) throws SenderException {
+	protected HttpPost getPostMethodWithParamsInBody(URIBuilder uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
 		try {
 			HttpPost hmethod = new HttpPost(uri.build());
 
@@ -287,8 +286,8 @@ public class HttpSender extends HttpSenderBase {
 						String name = pv.getDefinition().getName();
 						String value = pv.asStringValue("");
 
-						// Skip parameters that have been added as headers
-						if (headersParamsMap.keySet().contains(name))
+						// Skip parameters that are configured as ignored
+						if (skipParameter(name))
 							continue;
 
 						requestFormElements.add(new BasicNameValuePair(name,value));
@@ -302,7 +301,7 @@ public class HttpSender extends HttpSenderBase {
 				}
 			}
 			else {
-				HttpEntity requestEntity = createMultiPartEntity(message, parameters, headersParamsMap, session);
+				HttpEntity requestEntity = createMultiPartEntity(message, parameters, session);
 				hmethod.setEntity(requestEntity);
 			}
 		return hmethod;
@@ -345,7 +344,7 @@ public class HttpSender extends HttpSenderBase {
 		return bodyPart.build();
 	}
 
-	protected HttpEntity createMultiPartEntity(String message, ParameterValueList parameters, Map<String, String> headersParamsMap, IPipeLineSession session) throws SenderException {
+	protected HttpEntity createMultiPartEntity(String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
 		MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 
 		entity.setCharset(Charset.forName(getCharSet()));
@@ -362,8 +361,8 @@ public class HttpSender extends HttpSenderBase {
 				String paramType = pv.getDefinition().getType();
 				String name = pv.getDefinition().getName();
 
-				// Skip parameters that have been added as headers
-				if (headersParamsMap.keySet().contains(name))
+				// Skip parameters that are configured as ignored
+				if (skipParameter(name))
 					continue;
 
 

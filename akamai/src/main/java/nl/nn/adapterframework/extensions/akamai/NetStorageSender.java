@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 - 2018 Nationale-Nederlanden
+   Copyright 2017-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -161,7 +161,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	}
 
 	@Override
-	public HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap, IPipeLineSession session) throws SenderException {
+	public HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
 
 		NetStorageAction netStorageAction = new NetStorageAction(getAction());
 		netStorageAction.setVersion(actionVersion);
@@ -184,7 +184,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 
 			if (getMethodType().equals("GET")) {
 				if (parameters!=null) {
-					queryParametersAppended = appendParameters(queryParametersAppended,path,parameters,headersParamsMap);
+					queryParametersAppended = appendParameters(queryParametersAppended,path,parameters);
 					log.debug(getLogPrefix()+"path after appending of parameters ["+path.toString()+"]");
 				}
 				HttpGet method = new HttpGet(uri.build());
