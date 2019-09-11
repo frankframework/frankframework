@@ -13,10 +13,15 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
+	
 	@Override
 	public XsltSender createSender() {
 		return new XsltSender();
@@ -99,12 +104,12 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	@Test
 	public void testDynamicStylesheet() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException {
 		sender.setStyleSheetName("/Xslt/dynamicStylesheet/wrongDummy.xsl");
+		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
 		sender.open();
 
 		session = new PipeLineSessionBase();
 		session.put("stylesheetName", "/Xslt/dynamicStylesheet/correctDummy.xsl");
-		sender.setStyleSheetNameSessionKey("stylesheetName");
 
 		String input = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/in.xml");
 		log.debug("inputfile ["+input+"]");
@@ -113,4 +118,55 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
 		assertEquals(expected, sender.sendMessage(null, input, prc));
 	}
+	
+	@Test
+	public void testDynamicStylesheetWithoutDefault() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException {
+		sender.setStyleSheetNameSessionKey("stylesheetName");
+		sender.configure();
+		sender.open();
+
+		session = new PipeLineSessionBase();
+		session.put("stylesheetName", "/Xslt/dynamicStylesheet/correctDummy.xsl");
+
+		String input = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/in.xml");
+		log.debug("inputfile ["+input+"]");
+		String expected = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/out.txt");
+
+		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
+		assertEquals(expected, sender.sendMessage(null, input, prc));
+	}
+	
+	@Test
+	public void useDefaultStylesheetWithEmptySessionKey() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException {
+		sender.setStyleSheetName("/Xslt/dynamicStylesheet/correctDummy.xsl");
+		sender.setStyleSheetNameSessionKey("stylesheetName");
+		sender.configure();
+		sender.open();
+
+		session = new PipeLineSessionBase();
+
+		String input = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/in.xml");
+		log.debug("inputfile ["+input+"]");
+		String expected = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/out.txt");
+
+		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
+		assertEquals(expected, sender.sendMessage(null, input, prc));
+	}
+	
+	@Test
+	public void noStylesheetOrXpathOrSessionKeyGiven() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException {
+		exception.expectMessage("one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified");
+		sender.configure();
+		sender.open();
+
+		session = new PipeLineSessionBase();
+
+		String input = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/in.xml");
+		log.debug("inputfile ["+input+"]");
+		String expected = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/out.txt");
+
+		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
+		assertEquals(expected, sender.sendMessage(null, input, prc));
+	}
+	
 }

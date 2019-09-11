@@ -318,7 +318,7 @@ public class TransformerPool {
 	public static TransformerPool configureTransformer(String logPrefix, ClassLoader classLoader, String namespaceDefs, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params, boolean mandatory) throws ConfigurationException {
 		if (mandatory || StringUtils.isNotEmpty(xPathExpression) || StringUtils.isNotEmpty(styleSheetName)) {
 			return configureTransformer(logPrefix,classLoader,namespaceDefs,xPathExpression,styleSheetName, outputType, includeXmlDeclaration, params);
-		}
+		} 
 		return null;
 	}
 	

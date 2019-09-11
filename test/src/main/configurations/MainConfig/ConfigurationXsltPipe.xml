@@ -54,7 +54,7 @@
 			</pipe>
 			
 			<pipe name="StylesheetNameSessionKey" className="nl.nn.adapterframework.pipes.PutInSession"
-				sessionKey="stylesheetLocation" value="XsltPipe/namespaceAware.xsl">
+				sessionKey="stylesheetLocation" value="XsltPipe/GenericFunctions.xsl">
 				<forward name="success" path="SetSessionKeyName" />
 				<forward name="failure" path="EXIT" />
 			</pipe>

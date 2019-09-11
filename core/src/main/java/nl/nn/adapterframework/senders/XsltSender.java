@@ -63,13 +63,13 @@ public class XsltSender extends SenderWithParametersBase {
 	private int xsltVersion=0; // set to 0 for auto detect.
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
 
+	private TransformerPool transformerPool;
 	private TransformerPool transformerPoolSkipEmptyTags;
 	private TransformerPool transformerPoolRemoveNamespaces;
 	
-	private LRUMap transformerPoolMap;
+	private Map<String, TransformerPool> dynamicTransformerPoolMap;
 	private int transformerPoolMapSize = 100;
 	
-	private String defaultStyleSheetName;
 	private String styleSheetNameSessionKey=null;
 
 	/**
@@ -80,11 +80,15 @@ public class XsltSender extends SenderWithParametersBase {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		
-		transformerPoolMap = new LRUMap(transformerPoolMapSize);
+		dynamicTransformerPoolMap = Collections.synchronizedMap(new LRUMap(transformerPoolMapSize));
 		
-		defaultStyleSheetName = getStyleSheetName();
-		transformerPoolMap.put(defaultStyleSheetName,
-				TransformerPool.configureTransformer0(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), defaultStyleSheetName, getOutputType(), !isOmitXmlDeclaration(), getParameterList(), getXsltVersion()));
+		if(!StringUtils.isEmpty(getStyleSheetName()) || !StringUtils.isEmpty(getXpathExpression())) {
+			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), getXsltVersion());
+		}
+		else if(StringUtils.isEmpty(getStyleSheetNameSessionKey())) {
+			throw new ConfigurationException(getLogPrefix()+" one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified");
+		}
+		
 		if (isSkipEmptyTags()) {
 			transformerPoolSkipEmptyTags = XmlUtils.getSkipEmptyTagsTransformerPool(isOmitXmlDeclaration(),isIndentXml());
 		}
@@ -111,10 +115,9 @@ public class XsltSender extends SenderWithParametersBase {
 	public void open() throws SenderException {
 		super.open();
 
-		TransformerPool defaultPool = (TransformerPool) transformerPoolMap.get(defaultStyleSheetName);
-		if (defaultPool!=null) {
+		if (transformerPool!=null) {
 			try {
-				defaultPool.open();
+				transformerPool.open();
 			} catch (Exception e) {
 				throw new SenderException(getLogPrefix()+"cannot start TransformerPool", e);
 			}
@@ -139,9 +142,13 @@ public class XsltSender extends SenderWithParametersBase {
 	public void close() throws SenderException {
 		super.close();
 		
-		if (!transformerPoolMap.isEmpty()) {
-			for(Object tp : transformerPoolMap.values()) {
-				((TransformerPool)tp).close();
+		if (transformerPool!=null) {
+			transformerPool.close();
+		}
+		
+		if (!dynamicTransformerPoolMap.isEmpty()) {
+			for(TransformerPool tp : dynamicTransformerPoolMap.values()) {
+				tp.close();
 			}
 		}
 		if (transformerPoolSkipEmptyTags!=null) {
@@ -188,18 +195,16 @@ public class XsltSender extends SenderWithParametersBase {
 //				log.debug(getLogPrefix()+" prc.inputsource ["+prc.getInputSource()+"]");
 //			}
 
-			Map<String, TransformerPool> map = Collections.synchronizedMap(transformerPoolMap);
-			String styleSheetNameToUse = defaultStyleSheetName;
-			TransformerPool poolToUse = map.get(defaultStyleSheetName);
+			TransformerPool poolToUse = transformerPool;
 			
-			if(styleSheetNameSessionKey != null && !styleSheetNameSessionKey.isEmpty()) {
-				styleSheetNameToUse = prc.getSession().get(styleSheetNameSessionKey).toString();
+			if(prc.getSession().get(styleSheetNameSessionKey) != null) {
+				String styleSheetNameToUse = prc.getSession().get(styleSheetNameSessionKey).toString();
 
-				if(!map.containsKey(styleSheetNameToUse)) {
-					map.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), styleSheetNameToUse, getOutputType(), !isOmitXmlDeclaration(), getParameterList()));
+				if(!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
+					dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), styleSheetNameToUse, getOutputType(), !isOmitXmlDeclaration(), getParameterList()));
 					poolToUse.open();
 				} else {
-					poolToUse = map.get(styleSheetNameToUse);
+					poolToUse = dynamicTransformerPoolMap.get(styleSheetNameToUse);
 				}
 			}
 			
