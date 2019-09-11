@@ -5,8 +5,10 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,21 +55,27 @@ public class SlidesConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	void convert(MediaType mediaType, InputStream inputStream, File fileDest, CisConversionResult result,
-			ConversionOption conversionOption) throws Exception {
+	void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption)
+			throws Exception {
 
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
 			// mediaType should always be supported otherwise there a program error because
 			// the supported media types should be part of the map
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
-
-		Presentation presentation = new Presentation(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		presentation.save(outputStream, SaveFormat.Pdf);
-		presentation.dispose();
-		InputStream inStream = new ByteArrayInputStream(outputStream.toByteArray());
-		result.setFileStream(inStream);
+		try (FileInputStream inputStream = new FileInputStream(file)) {
+			Presentation presentation = new Presentation(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			long startTime = new Date().getTime();
+			presentation.save(outputStream, SaveFormat.Pdf);
+			long endTime = new Date().getTime();
+			System.err.println(
+					"Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
+			presentation.dispose();
+			InputStream inStream = new ByteArrayInputStream(outputStream.toByteArray());
+			result.setFileStream(inStream);
+			outputStream.close();
+		}
 		// result.setMetaData(new MetaData(getNumberOfPages(inStream)));
 	}
 

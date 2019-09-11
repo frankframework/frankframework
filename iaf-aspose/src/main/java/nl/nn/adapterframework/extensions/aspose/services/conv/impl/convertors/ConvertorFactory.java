@@ -12,9 +12,10 @@ import org.apache.tika.mime.MediaType;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
 
 /**
- * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
- *         Hoorn</a> (d937275)
+ * Convertor factory instantiates all convertor types and keeps them in a map.
  * 
+ * @author M64D844
+ *
  */
 public class ConvertorFactory {
 
@@ -27,11 +28,9 @@ public class ConvertorFactory {
 		addToConvertorLookupMap(new PdfStandaardConvertor(pdfOutputlocation));
 		addToConvertorLookupMap(new PdfConvertor(pdfOutputlocation));
 		addToConvertorLookupMap(new PdfImageConvertor(pdfOutputlocation));
-		addToConvertorLookupMap(new WordConvertor(pdfOutputlocation));
+		addToConvertorLookupMap(new WordConvertor(cisConversionService, pdfOutputlocation));
 		addToConvertorLookupMap(new CellsConvertor(pdfOutputlocation));
 		addToConvertorLookupMap(new SlidesConvertor(pdfOutputlocation));
-		// addToConvertorLookupMap(new XpsConvertor(pdfOutputlocation));
-		// addToConvertorLookupMap(new HtmlConvertor(pdfOutputlocation));
 	}
 
 	private void addToConvertorLookupMap(Convertor convertor) {
@@ -44,7 +43,7 @@ public class ConvertorFactory {
 	}
 
 	/**
-	 * Return <code>null</code> when one no convertor is found.
+	 * Return <code>null</code> when no convertor is found.
 	 * 
 	 * @param mediaType
 	 * @return

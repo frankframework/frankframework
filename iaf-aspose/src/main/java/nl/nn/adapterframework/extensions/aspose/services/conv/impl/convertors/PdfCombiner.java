@@ -4,6 +4,7 @@
 package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import org.apache.log4j.Logger;
@@ -72,7 +73,7 @@ public class PdfCombiner {
 			File singlePdf = UniqueFileGenerator.getUniqueFile(pdfOutputlocation, this.getClass().getSimpleName(),
 					"pdf");
 			Files.copy(cisConversionResultInput.getPdfResultFile(), singlePdf);
-			PdfAttachmentUtil.addAttachmentInSinglePdf(result.getAttachments(), singlePdf);
+			PdfAttachmentUtil.addAttachmentInSinglePdf(result.getAttachments(), new FileInputStream(singlePdf));
 			result.setPdfResultFile(singlePdf);
 		}
 
@@ -95,7 +96,7 @@ public class PdfCombiner {
 	 */
 	private CisConversionResult createCisConversionResultWithoutAttachments(CisConversionResult copy) {
 		return CisConversionResult.createCisConversionResult(copy.getConversionOption(), copy.getMediaType(),
-				copy.getMetaData(), copy.getDocumentName(), null, copy.getFailureReason(), null);
+				copy.getDocumentName(), null, copy.getFailureReason(), null);
 	}
 
 }

@@ -10,17 +10,14 @@ import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.mime.MediaType;
 
 /**
- * Specific class used by the {@link CisConversionServiceImpl} class.
- * 
- * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
- *         Hoorn</a> (d937275)
+ * Specific class to detect media type used by CisConversionServiceImpl
  *
  */
 class MediaTypeValidator {
 
 	private Tika tika;
 
-	private TemporaryResources tmp;
+	private String pdfOutputlocation;
 
 	/**
 	 * Package default access because it specific for the conversion.
@@ -30,23 +27,23 @@ class MediaTypeValidator {
 		// (see
 		// http://stackoverflow.com/questions/10190980/spring-tika-integration-is-my-approach-thread-safe)
 		tika = new Tika();
-		tmp = new TemporaryResources();
-		tmp.setTemporaryFileDirectory(Paths.get(pdfOutputlocation));
+		this.pdfOutputlocation = pdfOutputlocation;
 	}
 
 	/**
-	 * The stream will be reset back to the point as received used the marked and
-	 * reset method are supported by the given inputstream.
+	 * Detects media type from input stream
 	 * 
 	 * @param inputStream
-	 * @return returns the media type. If media type could not be detected
-	 *         <code>null</code> is returned.
+	 * @param filename
+	 * @return
 	 * @throws IOException
 	 */
 	MediaType getMediaType(InputStream inputStream, String filename) throws IOException {
+		// Create every time as TemporaryResources is not thread-safe
+		TemporaryResources tmp = new TemporaryResources();
+		tmp.setTemporaryFileDirectory(Paths.get(pdfOutputlocation));
 		try (TikaInputStream tis = TikaInputStream.get(inputStream, tmp)) {
 			String type = tika.detect(tis, filename);
-			System.out.println(type);
 			return MediaType.parse(type);
 		}
 	}

@@ -26,7 +26,6 @@ public class CisConversionResult {
 	private ConversionOption ConversionOption;
 	private MediaType mediaType;
 	private String documentName;
-	private MetaData metaData;
 	private String failureReason;
 	private InputStream fileStream;
 
@@ -51,7 +50,6 @@ public class CisConversionResult {
 	 * 
 	 * @param ConversionOption
 	 * @param mediaType
-	 * @param metaData
 	 * @param documentName
 	 * @param pdfResultFile
 	 * @param failureReason
@@ -59,13 +57,11 @@ public class CisConversionResult {
 	 * @return
 	 */
 	public static CisConversionResult createCisConversionResult(ConversionOption ConversionOption, MediaType mediaType,
-			MetaData metaData, String documentName, File pdfResultFile, String failureReason,
-			List<CisConversionResult> argAttachments) {
+			String documentName, File pdfResultFile, String failureReason, List<CisConversionResult> argAttachments) {
 
 		CisConversionResult cisConversionResult = new CisConversionResult();
 		cisConversionResult.setConversionOption(ConversionOption);
 		cisConversionResult.setMediaType(mediaType);
-		cisConversionResult.setMetaData(metaData);
 		cisConversionResult.setDocumentName(documentName);
 		cisConversionResult.setPdfResultFile(pdfResultFile);
 		cisConversionResult.setFailureReason(failureReason);
@@ -85,40 +81,38 @@ public class CisConversionResult {
 	 *
 	 * @param ConversionOption
 	 * @param mediaTypeReceived
-	 * @param metaData
 	 * @param documentNameOriginal
 	 * @param pdfResultFile
 	 * @param attachments
 	 * @return
 	 */
 	public static CisConversionResult createSuccessResult(ConversionOption ConversionOption,
-			MediaType mediaTypeReceived, MetaData metaData, String documentName, File pdfResultFile,
+			MediaType mediaTypeReceived, String documentName, File pdfResultFile,
 			List<CisConversionResult> attachments) {
-		return createCisConversionResult(ConversionOption, mediaTypeReceived, metaData, documentName, pdfResultFile,
-				null, attachments);
+		return createCisConversionResult(ConversionOption, mediaTypeReceived, documentName, pdfResultFile, null,
+				attachments);
 	}
 
 	public static CisConversionResult createFailureResult(ConversionOption ConversionOption,
-			MediaType mediaTypeReceived, MetaData metaData, String documentName, String failureReason) {
-		return createCisConversionResult(ConversionOption, mediaTypeReceived, metaData, documentName, null,
-				failureReason, null);
+			MediaType mediaTypeReceived, String documentName, String failureReason) {
+		return createCisConversionResult(ConversionOption, mediaTypeReceived, documentName, null, failureReason, null);
 	}
 
 	public static CisConversionResult createFailureResult(ConversionOption ConversionOption,
-			MediaType mediaTypeReceived, MetaData metaData, String documentName, String failureReason,
+			MediaType mediaTypeReceived, String documentName, String failureReason,
 			List<CisConversionResult> attachments) {
-		return createCisConversionResult(ConversionOption, mediaTypeReceived, metaData, documentName, null,
-				failureReason, attachments);
+		return createCisConversionResult(ConversionOption, mediaTypeReceived, documentName, null, failureReason,
+				attachments);
 	}
 
 	public static CisConversionResult createPasswordFailureResult(String filename, ConversionOption ConversionOption,
-			MediaType mediaTypeReceived, MetaData metaData) {
+			MediaType mediaTypeReceived) {
 		StringBuilder msg = new StringBuilder();
 		if (filename != null) {
 			msg.append(filename);
 		}
 		msg.append(" " + PASSWORD_MESSAGE);
-		return createFailureResult(ConversionOption, mediaTypeReceived, metaData, filename, msg.toString(), null);
+		return createFailureResult(ConversionOption, mediaTypeReceived, filename, msg.toString(), null);
 	}
 
 	public CisConversionResult() {
@@ -146,14 +140,6 @@ public class CisConversionResult {
 
 	public void setDocumentName(String documentName) {
 		this.documentName = documentName;
-	}
-
-	public MetaData getMetaData() {
-		return metaData;
-	}
-
-	public void setMetaData(MetaData metaData) {
-		this.metaData = metaData;
 	}
 
 	public File getPdfResultFile() {
@@ -195,7 +181,7 @@ public class CisConversionResult {
 	@Override
 	public final String toString() {
 		return MoreObjects.toStringHelper(this).add("ConversionOption", getConversionOption())
-				.add("mediaType", getMediaType()).add("documentName", getDocumentName()).add("metaData", getMetaData())
+				.add("mediaType", getMediaType()).add("documentName", getDocumentName())
 				.add("pdfResultFile", getPdfResultFile() == null ? "null" : getPdfResultFile().getName())
 				.add("failureReason", getFailureReason()).add("attachments", getAttachments()).toString();
 	}

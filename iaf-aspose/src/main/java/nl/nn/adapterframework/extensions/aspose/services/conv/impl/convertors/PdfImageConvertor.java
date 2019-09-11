@@ -8,8 +8,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -70,8 +70,8 @@ public class PdfImageConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	void convert(MediaType mediaType, InputStream inputStream, File fileDest, CisConversionResult result,
-			ConversionOption conversionOption) throws Exception {
+	void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption)
+			throws Exception {
 
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
 			// mediaType should always be supported otherwise there a program error because
@@ -79,7 +79,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
 
-		File tmpImageFile = null;
+		// File tmpImageFile = null;
 		com.aspose.imaging.Image image = null;
 		Document doc = new Document();
 		try {
@@ -95,11 +95,12 @@ public class PdfImageConvertor extends AbstractConvertor {
 			// than load it into
 			// the pdf. The image itself can not be loaded into the pdf because it will be
 			// blured with orange.
-			tmpImageFile = UniqueFileGenerator.getUniqueFile(getPdfOutputlocation(), this.getClass().getSimpleName(),
-					mediaType.getSubtype());
-			Files.copy(inputStream, tmpImageFile.toPath());
+			// tmpImageFile = UniqueFileGenerator.getUniqueFile(getPdfOutputlocation(),
+			// this.getClass().getSimpleName(),
+			// mediaType.getSubtype());
+			// Files.copy(inputStream, tmpImageFile.toPath());
 
-			image = com.aspose.imaging.Image.load(tmpImageFile.getAbsolutePath());
+			image = com.aspose.imaging.Image.load(file.getAbsolutePath());
 
 			BufferedImage bufferedImage = ImageExtensions.toJava(image);
 			LOGGER.debug("Image info height:" + bufferedImage.getHeight() + " width:" + bufferedImage.getWidth());
@@ -125,7 +126,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 			}
 
 			Image pdfImage = new Image();
-			pdfImage.setFile(tmpImageFile.getAbsolutePath());
+			pdfImage.setFile(file.getAbsolutePath());
 			// pdfImage.setBufferedImage(bufferedImage);
 
 			// do not set scale if the image type is tiff
@@ -135,9 +136,14 @@ public class PdfImageConvertor extends AbstractConvertor {
 
 			page.getParagraphs().add(pdfImage);
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			long startTime = new Date().getTime();
 			doc.save(outputStream, SaveFormat.Pdf);
+			long endTime = new Date().getTime();
+			System.err.println(
+					"Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
 			InputStream inStream = new ByteArrayInputStream(outputStream.toByteArray());
 			result.setFileStream(inStream);
+			outputStream.close();
 			// result.setMetaData(new MetaData(getNumberOfPages(inStream)));
 
 		} finally {
@@ -150,10 +156,10 @@ public class PdfImageConvertor extends AbstractConvertor {
 				image = null;
 			}
 			// Delete always the temporary file.
-			if (tmpImageFile != null) {
-				// Delete alwasy the temporary file.
-				Files.delete(tmpImageFile.toPath());
-			}
+			// if (tmpImageFile != null) {
+			// // Delete alwasy the temporary file.
+			// Files.delete(tmpImageFile.toPath());
+			// }
 		}
 	}
 

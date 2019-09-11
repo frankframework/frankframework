@@ -28,17 +28,12 @@ import com.aspose.words.FolderFontSource;
 import com.aspose.words.FontSettings;
 import com.aspose.words.FontSourceBase;
 
-import nl.nn.adapterframework.extensions.aspose.services.util.FileUtil;
-
 /**
  * Cleanup the tmp directory before this class is started. This is because the
  * fonts will be stored in a subdirectory in DDCCS_PdfOutputLocation.
  * 
  * @author Gerard van der Hoorn
  */
-// @Singleton
-// @Startup
-// @DependsOn("CleanupTmpDirStartup")
 public class AsposeLicenseLoader {
 
 	private static final String ASPOSE_LICENSE_RESOURCE_NAME = "/Aspose.Total.Java.lic";
@@ -51,16 +46,27 @@ public class AsposeLicenseLoader {
 
 	private String pathToExtractFonts = null;
 	private String license = null;
+	private GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+	private boolean stateOpen = false;
 
-	public AsposeLicenseLoader(String asposeLicenseLocation) {
+	public AsposeLicenseLoader(String asposeLicenseLocation, String fontsDirectory) {
 		license = asposeLicenseLocation;
+		pathToExtractFonts = fontsDirectory;
 	}
 
 	public void loadLicense() throws IOException {
-		// loadLicences();
 		loadAsposeLicense();
 
-		pathToExtractFonts = Files.createTempDirectory("").toString();
+		if (pathToExtractFonts == null) {
+			pathToExtractFonts = Files.createTempDirectory("").toString();
+		}
+
+		if (Files.notExists(Paths.get(pathToExtractFonts))) {
+			String userPath = pathToExtractFonts;
+			pathToExtractFonts = Files.createTempDirectory("").toString();
+			LOGGER.warn("Path to extract fonts does not exist:" + userPath + " Temp location will be used "
+					+ pathToExtractFonts);
+		}
 		String pathToFonts = pathToExtractFonts + FONTS_RESOURCE_DIR;
 
 		unpackFontsZip(pathToFonts);
@@ -78,6 +84,17 @@ public class AsposeLicenseLoader {
 		setFontDirectory(pathToFonts);
 	}
 
+	public void open() throws IOException {
+		if (!stateOpen) {
+			loadLicense();
+			stateOpen = true;
+		}
+	}
+
+	public void close() {
+		stateOpen = false;
+	}
+
 	/**
 	 * Zet de directory waar de fonts zich bevinden. Nodig omdat aspose op een unix
 	 * bak ze anders niet kan vinden.
@@ -88,34 +105,34 @@ public class AsposeLicenseLoader {
 		CellsHelper.getFontDirs().add(pathToFonts);
 	}
 
-	private void unpackFontsZip(String fontsDir) {
+	private void unpackFontsZip(String fontsDir) throws IOException {
 
-		try {
-			InputStream inputStream = new BufferedInputStream(
-					this.getClass().getResource(FONTS_RESOURCE_NAME).openStream());
+		try (InputStream inputStream = new BufferedInputStream(
+				this.getClass().getResource(FONTS_RESOURCE_NAME).openStream())) {
 
 			Path fontsDirPath = Paths.get(fontsDir);
 			if (!Files.exists(fontsDirPath)) {
 				fontsDirPath = Files.createDirectory(fontsDirPath);
 			}
-			FileUtil.deleteDirectoryContents(fontsDirPath.toFile());
+			// FileUtil.deleteDirectoryContents(fontsDirPath.toFile());
 
-			ZipInputStream zipInputStream = new ZipInputStream(inputStream);
-			while (true) {
-				ZipEntry entry = zipInputStream.getNextEntry();
-				if (entry == null) {
-					break;
+			try (ZipInputStream zipInputStream = new ZipInputStream(inputStream)) {
+				while (true) {
+					ZipEntry entry = zipInputStream.getNextEntry();
+					if (entry == null) {
+						break;
+					}
+					Path target = fontsDirPath.resolve(entry.getName());
+					if (Files.notExists(target)) {
+						Files.copy(zipInputStream, target);
+					}
+					zipInputStream.closeEntry();
 				}
-				Path target = fontsDirPath.resolve(entry.getName());
-
-				Files.copy(zipInputStream, target);
-				zipInputStream.closeEntry();
 			}
-			zipInputStream.close();
-			inputStream.close();
+
 		} catch (IOException e) {
 			LOGGER.error("Unpacking fonts failed!", e);
-			throw new RuntimeException(e);
+			throw e;
 		}
 	}
 
@@ -127,39 +144,51 @@ public class AsposeLicenseLoader {
 			@Override
 			public void loadLicense(InputStream licenseInputStream) throws Exception {
 				com.aspose.words.License asposeLicense = new com.aspose.words.License();
-				asposeLicense.setLicense(licenseInputStream);
+				if (!asposeLicense.isLicensed()) {
+					asposeLicense.setLicense(licenseInputStream);
+					LOGGER.warn("Aspose loading License for words...");
+				}
 			}
 		}, "words");
 
 		// cells
-		loadAsposeLicense(new LicenseLoader() {
+		if (!com.aspose.cells.License.isLicenseSet()) {
+			loadAsposeLicense(new LicenseLoader() {
 
-			@Override
-			public void loadLicense(InputStream licenseInputStream) throws Exception {
-				com.aspose.cells.License asposeLicense = new com.aspose.cells.License();
-				asposeLicense.setLicense(licenseInputStream);
-			}
-		}, "cells");
-
+				@Override
+				public void loadLicense(InputStream licenseInputStream) throws Exception {
+					com.aspose.cells.License asposeLicense = new com.aspose.cells.License();
+					asposeLicense.setLicense(licenseInputStream);
+					LOGGER.warn("Aspose loading License for cells...");
+				}
+			}, "cells");
+		}
 		// email
 		loadAsposeLicense(new LicenseLoader() {
 
 			@Override
 			public void loadLicense(InputStream licenseInputStream) throws Exception {
 				com.aspose.email.License asposeLicense = new com.aspose.email.License();
-				asposeLicense.setLicense(licenseInputStream);
+				if (!asposeLicense.isLicensed()) {
+					asposeLicense.setLicense(licenseInputStream);
+					LOGGER.warn("Aspose loading License for email...");
+				}
+
 			}
 		}, "email");
 
 		// pdf
-		loadAsposeLicense(new LicenseLoader() {
+		if (!com.aspose.pdf.Document.isLicensed()) {
+			loadAsposeLicense(new LicenseLoader() {
 
-			@Override
-			public void loadLicense(InputStream licenseInputStream) throws Exception {
-				com.aspose.pdf.License asposeLicense = new com.aspose.pdf.License();
-				asposeLicense.setLicense(licenseInputStream);
-			}
-		}, "pdf");
+				@Override
+				public void loadLicense(InputStream licenseInputStream) throws Exception {
+					com.aspose.pdf.License asposeLicense = new com.aspose.pdf.License();
+					asposeLicense.setLicense(licenseInputStream);
+					LOGGER.warn("Aspose loading License for pdf...");
+				}
+			}, "pdf");
+		}
 		//
 		// slides
 		loadAsposeLicense(new LicenseLoader() {
@@ -167,19 +196,26 @@ public class AsposeLicenseLoader {
 			@Override
 			public void loadLicense(InputStream licenseInputStream) throws Exception {
 				com.aspose.slides.License asposeLicense = new com.aspose.slides.License();
-				asposeLicense.setLicense(licenseInputStream);
+				if (!asposeLicense.isLicensed()) {
+					asposeLicense.setLicense(licenseInputStream);
+					LOGGER.warn("Aspose loading License for slides...");
+				}
 			}
 		}, "slides");
 
 		// imaging
-		loadAsposeLicense(new LicenseLoader() {
+		if (!com.aspose.imaging.License.isLicensed()) {
+			loadAsposeLicense(new LicenseLoader() {
 
-			@Override
-			public void loadLicense(InputStream licenseInputStream) throws Exception {
-				com.aspose.imaging.License asposeLicense = new com.aspose.imaging.License();
-				asposeLicense.setLicense(licenseInputStream);
-			}
-		}, "imaging");
+				@Override
+				public void loadLicense(InputStream licenseInputStream) throws Exception {
+					com.aspose.imaging.License asposeLicense = new com.aspose.imaging.License();
+					asposeLicense.setLicense(licenseInputStream);
+					LOGGER.warn("Aspose loading License for imaging...");
+				}
+
+			}, "imaging");
+		}
 
 	}
 
@@ -190,12 +226,9 @@ public class AsposeLicenseLoader {
 		}
 		try (InputStream inputStream = this.getClass().getResource(license).openStream()) {
 			licenseLoader.loadLicense(inputStream);
-
 			LOGGER.info("Aspose " + asposeLibrayName + " license loaded!");
-			System.out.println("Aspose " + asposeLibrayName + " license loaded!");
 		} catch (Exception e) {
 			String message = "Loading Aspose " + asposeLibrayName + " license failed!";
-			System.out.println(message);
 			LOGGER.fatal(message, e);
 			throw new RuntimeException(message, e);
 		}
@@ -251,27 +284,25 @@ public class AsposeLicenseLoader {
 		LOGGER.info("--------- fonts ---------  end  --------- " + msg);
 	}
 
-	private void loadFonts(String pathToFonts) {
-
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+	private void loadFonts(String pathToFonts) throws IOException {
+		List<Font> fonts = Arrays.asList(ge.getAllFonts());
 		for (String filename : new File(pathToFonts).list()) {
 			File fontFile = new File(pathToFonts, filename);
 
-			try {
-				FileInputStream fis = new FileInputStream(fontFile);
-				InputStream fontInputStream = new BufferedInputStream(fis);
-				Font newFont = createFont(fontInputStream, fontFile.getName());
+			try (InputStream fontInputStream = new BufferedInputStream(new FileInputStream(fontFile))) {
 
+				Font newFont = createFont(fontInputStream, fontFile.getName());
 				LOGGER.debug("Register font " + newFont);
 
-				if (!ge.registerFont(newFont)) {
-					// LOGGER.warn("Font not registered!" + newFont.getFontName());
+				if (!fonts.contains(newFont)) {
+					if (!ge.registerFont(newFont)) {
+						// LOGGER.warn("Font not registered!" + newFont.getFontName());
+					}
 				}
-				fontInputStream.close();
-				fis.close();
+
 			} catch (IOException e) {
 				LOGGER.error("Loading fonts failed!", e);
-				throw new RuntimeException(e);
+				throw e;
 			}
 		}
 		ge.preferProportionalFonts();
@@ -285,7 +316,7 @@ public class AsposeLicenseLoader {
 	 * @return the font or <code>null</code>.
 	 */
 	private Font createFont(InputStream fontEntry, String name) {
-		if (!name.toString().toLowerCase().endsWith(TRUETYPE_FONT_EXT)) {
+		if (!name.toLowerCase().endsWith(TRUETYPE_FONT_EXT)) {
 			throw new IllegalArgumentException(
 					"Unexpected extension! (file: " + name + " expected extension: " + TRUETYPE_FONT_EXT + ")");
 		}
@@ -301,5 +332,13 @@ public class AsposeLicenseLoader {
 
 	private interface LicenseLoader {
 		void loadLicense(InputStream licenseInputStream) throws Exception;
+	}
+
+	public String getPathToExtractFonts() {
+		return pathToExtractFonts;
+	}
+
+	public void setPathToExtractFonts(String pathToExtractFonts) {
+		this.pathToExtractFonts = pathToExtractFonts;
 	}
 }

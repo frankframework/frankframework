@@ -4,7 +4,11 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -20,33 +24,41 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResul
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.AsposeLicenseLoader;
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.CisConversionServiceImpl;
+import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.PdfAttachmentUtil;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.XmlBuilder;
 
+/**
+ * 
+ * @author M64D844
+ *
+ */
 public class PdfPipe extends FixedForwardPipe {
 
 	private static final Logger LOGGER = Logger.getLogger(PdfPipe.class);
-
+	private static final String CONVERSION_OPTION = "CONVERSION_OPTION";
 	private boolean saveSeparate = false;
 	private CisConversionService cisConversionService;
 	private String pdfOutputLocation = null;
+	private String fontsDirectory;
 	private String license = null;
-	private AsposeLicenseLoader loader;
+	private String action = null;
+	private List<String> availableActions = Arrays.asList("combine", "convert");
+	private String mainDocumentSessionKey = "defaultMainDocumentSessionKey";
+	private String fileNameToAttachSessionKey = "defaultFileNameToAttachSessionKey";
+	protected String charset = "ISO-8859-1";
+	private int sessionkeyPostfixCounter = 0;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(pdfOutputLocation)) {
-			LOGGER.debug(
-					"PDF output location is not set. Temporary directory will be created to store converted files.");
 			try {
 				pdfOutputLocation = Files.createTempDirectory("Pdf").toString();
-				LOGGER.debug("Temporary directory path : " + pdfOutputLocation);
+				LOGGER.info("Temporary directory path : " + pdfOutputLocation);
 			} catch (IOException e) {
 				throw new ConfigurationException(e);
 			}
-			// throw new ConfigurationException("Pdf output location cannot be null. Please
-			// specify a location.");
 		}
 
 		File outputLocation = new File(pdfOutputLocation);
@@ -58,15 +70,19 @@ public class PdfPipe extends FixedForwardPipe {
 		if (!outputLocation.isDirectory()) {
 			throw new ConfigurationException("Pdf output location is not directory. Please specify a diretory");
 		}
-
+		if (!availableActions.contains(action)) {
+			throw new ConfigurationException(
+					"Please specify an action for pdf pipe. Possible values: {convert, combine}");
+		}
+		AsposeLicenseLoader loader;
 		try {
-			loader = new AsposeLicenseLoader(license);
+			loader = new AsposeLicenseLoader(license, fontsDirectory);
 			loader.loadLicense();
 		} catch (Exception e) {
 			throw new ConfigurationException(e);
 		}
-		System.err.println("NEW VERSION");
-		cisConversionService = new CisConversionServiceImpl(pdfOutputLocation);
+		cisConversionService = new CisConversionServiceImpl(pdfOutputLocation, loader.getPathToExtractFonts());
+
 	}
 
 	@Override
@@ -77,77 +93,119 @@ public class PdfPipe extends FixedForwardPipe {
 
 	@Override
 	public void stop() {
-		// TODO cleanup iets
+		try {
+			Files.delete(Paths.get(pdfOutputLocation));
+		} catch (IOException e) {
+			LOGGER.debug("Could not delete the temp folder " + pdfOutputLocation);
+		}
 		super.stop();
 	}
 
 	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+		long start = new Date().getTime();
 		InputStream binaryInputStream = null;
-
 		if (input instanceof InputStream) {
 			binaryInputStream = (InputStream) input;
 		} else if (input instanceof byte[]) {
 			binaryInputStream = new ByteArrayInputStream((byte[]) input);
 		} else {
-			// TODO: do something here (ask about string)
+			try {
+				binaryInputStream = (input == null) ? null
+						: new ByteArrayInputStream(input.toString().getBytes(charset));
+			} catch (UnsupportedEncodingException e) {
+				throw new PipeRunException(this,
+						getLogPrefix(session) + "cannot encode message using charset [" + getCharset() + "]", e);
+			}
 		}
-		String fileName = (String) session.get("fileName");
-		String conversionOption = (String) session.get("attachmentOption");
-		CisConversionResult cisConversionResult = cisConversionService.convertToPdf(binaryInputStream, fileName,
-				ConversionOption.valueOf(conversionOption));
-		System.err.println(cisConversionResult.toString());
-		if (cisConversionResult.getFailureReason() != null) {
 
+		if ("combine".equalsIgnoreCase(action)) {
+			// Get main document to attach attachments
+			InputStream mainPdf = null;
+			Object mainPdfObject = session.get(mainDocumentSessionKey);
+			if (mainPdfObject instanceof InputStream) {
+				mainPdf = (InputStream) mainPdfObject;
+			} else if (mainPdfObject instanceof byte[]) {
+				mainPdf = new ByteArrayInputStream((byte[]) mainPdfObject);
+			} else {
+				try {
+					mainPdf = (mainPdfObject == null) ? null
+							: new ByteArrayInputStream(mainPdfObject.toString().getBytes(charset));
+				} catch (UnsupportedEncodingException e) {
+					throw new PipeRunException(this,
+							getLogPrefix(session) + "cannot encode message using charset [" + getCharset() + "]", e);
+				}
+			}
+			// Get file name of attachment
+			String fileNameToAttach = (String) session.get(fileNameToAttachSessionKey);
+
+			InputStream result = PdfAttachmentUtil.combineFiles(mainPdf, binaryInputStream, fileNameToAttach + ".pdf");
+
+			session.put(CONVERSION_OPTION, ConversionOption.SINGLEPDF);
+			session.put(mainDocumentSessionKey, result);
+
+		} else if ("convert".equalsIgnoreCase(action)) {
+			String fileName = (String) session.get("fileName");
+			// String conversionOption = (String) session.get("attachmentOption");
+			long tsBeforeConvert = new Date().getTime();
+			CisConversionResult cisConversionResult = cisConversionService.convertToPdf(binaryInputStream, fileName,
+					ConversionOption.SEPERATEPDF);
+			long tsAfterConvert = new Date().getTime();
+			System.err.println("PDFPipe cisConversionService.convertToPdf( takes ::::: "
+					+ (tsAfterConvert - tsBeforeConvert) + " ms");
+			System.err.println(cisConversionResult.toString());
+
+			if (cisConversionResult.isConversionSuccessfull()) {
+				System.err.println("Conversion was successful");
+			}
+			session.put(CONVERSION_OPTION, cisConversionResult.getConversionOption().getValue());
+			session.put("MEDIA_TYPE", cisConversionResult.getMediaType().toString());
+			session.put("DOCUMENT_NAME", cisConversionResult.getDocumentName());
+			session.put("FAILURE_REASON", cisConversionResult.getFailureReason());
+			session.put("PARENT_CONVERSION_ID", null);
+			session.put("CONVERTED_DOCUMENT", cisConversionResult.getFileStream());
+
+			XmlBuilder main = new XmlBuilder("main");
+			main.addAttribute(CONVERSION_OPTION, cisConversionResult.getConversionOption().getValue());
+			main.addAttribute("MEDIA_TYPE", cisConversionResult.getMediaType().toString());
+			main.addAttribute("DOCUMENT_NAME", cisConversionResult.getDocumentName());
+			main.addAttribute("FAILURE_REASON", cisConversionResult.getFailureReason());
+			main.addAttribute("PARENT_CONVERSION_ID", null);
+			main.addAttribute("CONVERTED_DOCUMENT_SESSION_KEY", "main");
+
+			buildXmlFromResult(main, cisConversionResult, session);
+			session.put("documents", main.toXML());
+			sessionkeyPostfixCounter = 0;
 		}
-		session.put("result", cisConversionResult);
-		session.put("CONVERSION_OPTION", cisConversionResult.getConversionOption().getValue());
-		session.put("MEDIA_TYPE", cisConversionResult.getMediaType().toString());
-		session.put("DOCUMENT_NAME", cisConversionResult.getDocumentName());
-		session.put("FAILURE_REASON", cisConversionResult.getFailureReason());
-		session.put("PARENT_CONVERSION_ID", null);
-		session.put("CONVERTED_DOCUMENT", cisConversionResult.getFileStream());
+		long end = new Date().getTime();
+		System.err.println("PDFPipe doPipe takes ::::: " + (end - start) + " ms");
+		LOGGER.error("PDFPipe doPipe takes ::::: " + (end - start) + " ms");
+		return new PipeRunResult(getForward(), "");
+	}
+
+	private void buildXmlFromResult(XmlBuilder main, CisConversionResult cisConversionResult,
+			IPipeLineSession session) {
 
 		List<CisConversionResult> attachments = cisConversionResult.getAttachments();
-
-		XmlBuilder attachmentsAsXml = new XmlBuilder("attachments");
-
-		if (attachments != null) {
+		if (attachments != null && !attachments.isEmpty()) {
+			XmlBuilder attachmentsAsXml = new XmlBuilder("attachments");
 			for (int i = 0; i < attachments.size(); i++) {
 				CisConversionResult attachment = attachments.get(i);
 
 				XmlBuilder attachmentAsXml = new XmlBuilder("attachment");
-
-				XmlBuilder conversionOptionAsXml = new XmlBuilder("conversionOption");
-				conversionOptionAsXml.setValue(attachment.getConversionOption().getValue() + "");
-
-				XmlBuilder mediaTypeAsXml = new XmlBuilder("mediaType");
-				mediaTypeAsXml.setValue(cisConversionResult.getMediaType().toString());
-
-				XmlBuilder documentNameAsXml = new XmlBuilder("documentName");
-				documentNameAsXml.setValue(cisConversionResult.getDocumentName());
-
-				XmlBuilder failureReasonAsXml = new XmlBuilder("failureReason");
-				failureReasonAsXml.setValue(cisConversionResult.getFailureReason());
-
-				XmlBuilder convertedDocumentAsXml = new XmlBuilder("convertedDocumentSessionKey");
-				convertedDocumentAsXml.setValue("attachment" + i);
-
-				session.put("attachment" + i, attachment.getFileStream());
-
-				attachmentAsXml.addSubElement(conversionOptionAsXml);
-				attachmentAsXml.addSubElement(mediaTypeAsXml);
-				attachmentAsXml.addSubElement(documentNameAsXml);
-				attachmentAsXml.addSubElement(failureReasonAsXml);
-				attachmentAsXml.addSubElement(convertedDocumentAsXml);
-
+				attachmentAsXml.addAttribute("conversionOption", attachment.getConversionOption().getValue() + "");
+				attachmentAsXml.addAttribute("mediaType", attachment.getMediaType().toString());
+				attachmentAsXml.addAttribute("documentName", attachment.getDocumentName());
+				attachmentAsXml.addAttribute("failureReason", attachment.getFailureReason());
+				attachmentAsXml.addAttribute("convertedDocumentSessionKey", sessionkeyPostfixCounter + "");
+				session.put(sessionkeyPostfixCounter + "", attachment.getFileStream());
 				attachmentsAsXml.addSubElement(attachmentAsXml);
+				sessionkeyPostfixCounter++;
+
+				buildXmlFromResult(attachmentAsXml, attachment, session);
 			}
+			main.addSubElement(attachmentsAsXml);
 		}
-
-		session.put("ATTACHMENTS", attachmentsAsXml.toXML());
-
-		return new PipeRunResult(getForward(), "");
 	}
 
 	public boolean isSaveSeparate() {
@@ -164,5 +222,45 @@ public class PdfPipe extends FixedForwardPipe {
 
 	public void setPdfOutputLocation(String pdfOutputLocation) {
 		this.pdfOutputLocation = pdfOutputLocation;
+	}
+
+	public String getAction() {
+		return action;
+	}
+
+	public void setAction(String action) {
+		this.action = action;
+	}
+
+	public String getMainDocumentSessionKey() {
+		return mainDocumentSessionKey;
+	}
+
+	public void setMainDocumentSessionKey(String mainDocumentSessionKey) {
+		this.mainDocumentSessionKey = mainDocumentSessionKey;
+	}
+
+	public String getFileNameToAttachSessionKey() {
+		return fileNameToAttachSessionKey;
+	}
+
+	public void setFileNameToAttachSessionKey(String fileNameToAttachSessionKey) {
+		this.fileNameToAttachSessionKey = fileNameToAttachSessionKey;
+	}
+
+	public String getFontsDirectory() {
+		return fontsDirectory;
+	}
+
+	public void setFontsDirectory(String fontsDirectory) {
+		this.fontsDirectory = fontsDirectory;
+	}
+
+	public String getCharset() {
+		return charset;
+	}
+
+	public void setCharset(String charset) {
+		this.charset = charset;
 	}
 }

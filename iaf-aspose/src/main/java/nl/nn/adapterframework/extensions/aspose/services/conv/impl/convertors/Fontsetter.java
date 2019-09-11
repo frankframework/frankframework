@@ -11,7 +11,11 @@ import com.aspose.words.FontSourceBase;
 
 public class Fontsetter {
 	private static final String FONTS_RESOURCE_DIR = "/fonts/";
-	private String pdfOutputlocation = "C:/aspose/2pdf";
+	private String fontFilesLocation = null;
+
+	public Fontsetter(String pdfOutputLocation) {
+		fontFilesLocation = pdfOutputLocation;
+	}
 
 	/**
 	 * Set Fontsettings for this particular document. Cf.
@@ -20,7 +24,7 @@ public class Fontsetter {
 	 * @param doc
 	 */
 	public void setFontSettings(Document doc) {
-		String pathToFonts = pdfOutputlocation + FONTS_RESOURCE_DIR;
+		String pathToFonts = fontFilesLocation + FONTS_RESOURCE_DIR;
 		FontSettings fontSettings = new FontSettings();
 
 		// Retrieve the array of environment-dependent font sources that are searched by
@@ -47,4 +51,5 @@ public class Fontsetter {
 		fontSettings.setFontsSources(updatedFontSources);
 		doc.setFontSettings(fontSettings);
 	}
+
 }

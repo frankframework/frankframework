@@ -49,4 +49,5 @@ public interface CisConversionService {
 	 */
 	CisConversionResult combineToSinglePdf(CisConversionResult cisConversionResult);
 
+	String getFontsDirectory();
 }

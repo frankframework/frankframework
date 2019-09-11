@@ -42,14 +42,16 @@ public class CisConversionServiceImpl implements CisConversionService {
 
 	private MediaTypeValidator mediaTypeValidator;
 
+	private String fontsDirectory;
+
 	private static AtomicInteger atomicCount = new AtomicInteger(1);
 
-	private AsposeLicenseLoader loader;
-
-	public CisConversionServiceImpl(String pdfOutputLocation) {
+	public CisConversionServiceImpl(String pdfOutputLocation, String fontsDirectory) {
 		this.pdfOutputlocation = pdfOutputLocation;
+		this.setFontsDirectory(fontsDirectory);
 		convertorFactory = new ConvertorFactory(this, pdfOutputlocation);
 		mediaTypeValidator = new MediaTypeValidator(pdfOutputlocation);
+
 	}
 
 	@Override
@@ -70,48 +72,29 @@ public class CisConversionServiceImpl implements CisConversionService {
 
 		try {
 
-			// Temporary file (because first we need to check the file contents for the file
-			// type.
-			// and because in some circumstances the inputstream can not reset back by tika
-			// we
-			// store the inputstream to a file after which we can start an input stream
-			// again.
 			tmpFile = getUniqueFile();
+			// Create tmp file to prevent processes consuming inputstream
 			Files.copy(inputStream, tmpFile.toPath());
-
-			// // Check the size before the Virusscan is called.
-			// long fileSize = Files.size(tmpFile.c toPath());
-			// if (fileSize > DdccsConversionConstants.MAX_BESTAND_SIZE_IN_BYTES) {
-			// return CisConversionResult.createFailureResult(conversionOption, null, null,
-			// filename,
-			// "Bestand is groter (" + NumberFormat.getInstance(new Locale("nl",
-			// "NL")).format(fileSize)
-			// + " bytes) dan de toegestane grootte van " +
-			// DdccsConversionConstants.MAX_BESTAND_SIZE_HUMAN_READABLE + ".");
-			// }
-
 			return convertToPdf(tmpFile, filename, conversionOption);
 
 		} catch (IOException e) {
 			LOGGER.error("Fout bij conversie van bestand " + filename + "naar PDF", e);
 			throw createCisConversionException(e);
 		} finally {
+			// delete previously created temporary file
 			FileUtil.deleteFile(tmpFile);
 			tmpFile = null;
 		}
 	}
 
-	private CisConversionResult convertToPdf(File file, String filename, ConversionOption conversionOption)
-			throws IOException {
+	private CisConversionResult convertToPdf(File file, String filename, ConversionOption conversionOption) {
 
 		CisConversionResult result = null;
-		MediaType mediaType = null;
-
-		mediaType = getMediaType(file, filename);
+		MediaType mediaType = getMediaType(file, filename);
 
 		if (isPasswordProtected(mediaType)) {
 
-			result = CisConversionResult.createPasswordFailureResult(filename, conversionOption, mediaType, null);
+			result = CisConversionResult.createPasswordFailureResult(filename, conversionOption, mediaType);
 
 		} else {
 			// Get the convertor for the given mediatype.
@@ -127,18 +110,14 @@ public class CisConversionServiceImpl implements CisConversionService {
 			} else {
 
 				long startTime = System.currentTimeMillis();
-
-				// Convertor found so convert the file.
-				try (InputStream inputStream = new BufferedInputStream(new FileInputStream(file))) {
-					result = convertor.convertToPdf(mediaType, filename, inputStream, conversionOption);
-				}
+				// Convertor found, convert the file
+				result = convertor.convertToPdf(mediaType, filename, file, conversionOption);
 
 				LOGGER.info(String.format("Convert (in %d msec): mediatype: %s, filename: %s, attachmentoptions: %s",
 						System.currentTimeMillis() - startTime, mediaType, filename, conversionOption));
 			}
 		}
 		return result;
-
 	}
 
 	private CisConversionResult createFailureResult(String filename, ConversionOption conversionOption,
@@ -152,7 +131,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 
 		LOGGER.info("Conversion not supported: " + msg.toString());
 
-		result = CisConversionResult.createFailureResult(conversionOption, mediaType, null, filename, msg.toString());
+		result = CisConversionResult.createFailureResult(conversionOption, mediaType, filename, msg.toString());
 		return result;
 	}
 
@@ -189,9 +168,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 
 		MediaType mediaType = null;
 		try (InputStream inputStream = new BufferedInputStream(new FileInputStream(file))) {
-
 			mediaType = mediaTypeValidator.getMediaType(inputStream, filename);
-
 			LOGGER.debug("Mediatype received: " + mediaType);
 		} catch (IOException e) {
 			throw new CisConversionException(
@@ -222,7 +199,15 @@ public class CisConversionServiceImpl implements CisConversionService {
 
 	public void setPdfOutputLocation(String pdfOutputLocation) {
 		this.pdfOutputlocation = pdfOutputLocation;
+	}
 
+	@Override
+	public String getFontsDirectory() {
+		return fontsDirectory;
+	}
+
+	public void setFontsDirectory(String fontsDirectory) {
+		this.fontsDirectory = fontsDirectory;
 	}
 
 }

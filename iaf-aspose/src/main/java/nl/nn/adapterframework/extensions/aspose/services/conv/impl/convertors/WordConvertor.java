@@ -2,8 +2,10 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,9 +17,11 @@ import com.aspose.words.IncorrectPasswordException;
 import com.aspose.words.LoadFormat;
 import com.aspose.words.LoadOptions;
 import com.aspose.words.SaveFormat;
+import com.aspose.words.SaveOptions;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
 
 /**
  * Converts the files which are required and supported by the aspose words
@@ -31,6 +35,8 @@ class WordConvertor extends AbstractConvertor {
 	// contains mapping from MediaType to the LoadOption for the aspose word
 	// conversion.
 	private static final Map<MediaType, LoadOptions> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
+
+	private CisConversionService cisConversionService;
 
 	static {
 		Map<MediaType, LoadOptions> map = new HashMap<>();
@@ -54,31 +60,38 @@ class WordConvertor extends AbstractConvertor {
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
-	WordConvertor(String pdfOutputLocation) {
+	WordConvertor(CisConversionService cisConversionService, String pdfOutputLocation) {
 		// Give the supported media types.
 		super(pdfOutputLocation,
 				MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
+		this.cisConversionService = cisConversionService;
 	}
 
 	@Override
-	void convert(MediaType mediaType, InputStream inputStream, File fileDest, CisConversionResult result,
-			ConversionOption conversionOption) throws Exception {
+	void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption)
+			throws Exception {
 
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
 			// mediaType should always be supported otherwise there a program error because
 			// the supported media types should be part of the map
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
-		// HtmlLoadOptions load = new
-		// HtmlLoadOptions("C:/Users/alisihab/Desktop/PDFconversionTestFiles/");
 
-		Document doc = new Document(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
-		new Fontsetter().setFontSettings(doc);
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		doc.save(outputStream, SaveFormat.PDF);
-		InputStream inStream = new ByteArrayInputStream(outputStream.toByteArray());
-		result.setFileStream(inStream);
-		// result.setMetaData(new MetaData(getNumberOfPages(inStream)));
+		try (FileInputStream inputStream = new FileInputStream(file)) {
+			Document doc = new Document(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
+			new Fontsetter(cisConversionService.getFontsDirectory()).setFontSettings(doc);
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			SaveOptions saveOptions = SaveOptions.createSaveOptions(SaveFormat.PDF);
+			saveOptions.setMemoryOptimization(true);
+			long startTime = new Date().getTime();
+			doc.save(outputStream, saveOptions);
+			long endTime = new Date().getTime();
+			System.err.println(
+					"Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
+			InputStream inStream = new ByteArrayInputStream(outputStream.toByteArray());
+			result.setFileStream(inStream);
+			outputStream.close();
+		}
 	}
 
 	@Override

@@ -1,7 +1,6 @@
 package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.File;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -34,12 +33,12 @@ abstract class AbstractConvertor implements Convertor {
 
 	/**
 	 * Converts the the inputstream to the given file the builder object can also be
-	 * updated (metaData set and any attachements added).
+	 * updated (metaData set and any attachments added).
 	 * 
 	 * @param mediaType
 	 * @param conversionOption
 	 */
-	abstract void convert(MediaType mediaType, InputStream inputStream, File fileDest, CisConversionResult builder,
+	abstract void convert(MediaType mediaType, File file, CisConversionResult builder,
 			ConversionOption conversionOption) throws Exception;
 
 	@Override
@@ -87,63 +86,33 @@ abstract class AbstractConvertor implements Convertor {
 	 * Should not be overloaded by the concrete classes.
 	 */
 	@Override
-	public final CisConversionResult convertToPdf(MediaType mediaType, String filename, InputStream inputStream,
+	public final CisConversionResult convertToPdf(MediaType mediaType, String filename, File file,
 			ConversionOption conversionOption) {
 
 		checkForSupportedMediaType(mediaType);
 
 		CisConversionResult result = new CisConversionResult();
-		File file = null;
 
 		try {
-			// Save to disc
-			file = UniqueFileGenerator.getUniqueFile(pdfOutputlocation, this.getClass().getSimpleName(), "pdf");
-
 			result.setConversionOption(conversionOption);
 			result.setMediaType(mediaType);
 			result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(filename));
-			result.setPdfResultFile(file);
 
-			LOGGER.debug("Convert to file...        " + file.getName());
-			convert(mediaType, inputStream, file, result, conversionOption);
+			LOGGER.debug("Convert to file... " + file.getName());
+			convert(mediaType, file, result, conversionOption);
 			LOGGER.debug("Convert to file finished. " + file.getName());
 
 		} catch (Exception e) {
-
-			// Delete file if it exists.
-			deleteFile(file);
-
 			if (isPasswordException(e)) {
-				result = CisConversionResult.createPasswordFailureResult(filename, conversionOption, mediaType, null);
+				result = CisConversionResult.createPasswordFailureResult(filename, conversionOption, mediaType);
 			} else {
 				result.setFailureReason(createTechnishefoutMsg(e));
 			}
-
 			// Clear the file to state that the conversion has failed.
 			result.setPdfResultFile(null);
 		}
 		return result;
 	}
-
-	// protected Integer getNumberOfPages(InputStream inputStream) {
-	// Integer result = null;
-	//
-	// if (inputStream != null) {
-	// try {
-	// BufferedInputStream bufferedInputStream = new
-	// BufferedInputStream(inputStream);
-	// // Open document
-	// Document doc = new Document(bufferedInputStream);
-	//
-	// result = doc.getPages().size();
-	//// doc.close();
-	// } catch (Exception e) {
-	// LOGGER.warn("Het bepalen van het aantal paginas niet mogelijk", e);
-	// }
-	// }
-	//
-	// return result;
-	// }
 
 	protected String getPdfOutputlocation() {
 		return pdfOutputlocation;

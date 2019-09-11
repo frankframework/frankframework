@@ -6,6 +6,7 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
@@ -58,25 +59,25 @@ public class PdfConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	void convert(MediaType mediaType, InputStream inputStream, File fileDest, CisConversionResult result,
-			ConversionOption conversionOption) throws Exception {
+	void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption)
+			throws Exception {
 
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
 			// mediaType should always be supported otherwise there a program error because
 			// the supported media types should be part of the map
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
-		HtmlLoadOptions load = new HtmlLoadOptions("C:/Users/alisihab/Desktop/PDFconversionTestFiles/");
-		load.getPageInfo().setLandscape(true);
-		Document doc = new Document(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		doc.save(outputStream, SaveFormat.Pdf);
-		doc.freeMemory();
-		doc.dispose();
-		doc.close();
+		try (InputStream inputStream = new FileInputStream(file)) {
+			Document doc = new Document(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
+			doc.save(outputStream, SaveFormat.Pdf);
+			doc.freeMemory();
+			doc.dispose();
+			doc.close();
+		}
 		InputStream inStream = new ByteArrayInputStream(outputStream.toByteArray());
-		// result.setMetaData(new MetaData(getNumberOfPages(inStream)));
 		result.setFileStream(inStream);
+		outputStream.close();
 	}
 
 	@Override

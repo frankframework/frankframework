@@ -217,67 +217,52 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.7</version>
 		</dependency>
-		<!-- Aspose PDF Converter -->
-		
-		<dependency>
-			<groupId>com.aspose</groupId>
-			<artifactId>aspose-xps</artifactId>
-			<version>19.1</version>
-		</dependency>
-		
+		<!-- ASPOSE LIBRARIES -->
 		<dependency>
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-pdf</artifactId>
-			<version>16.10.0</version>
+			<version>19.1</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-email</artifactId>
-			<version>16.10.0</version>
+			<version>19.1</version>
 			<classifier>jdk16</classifier>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-words</artifactId>
-			<version>16.11.0</version>
+			<version>19.1</version>
 			<classifier>jdk16</classifier>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-cells</artifactId>
-			<version>8.8.2</version>
+			<version>19.1</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-slides</artifactId>
-			<version>16.5.0</version>
+			<version>19.1</version>
+			<classifier>jdk16</classifier>
+			<scope>provided</scope>
 		</dependency>
 	
-		<dependency>
+		<dependency> 
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-imaging</artifactId>
-			<version>3.6.0</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>com.aspose</groupId>
-			<artifactId>aspose-html</artifactId>
-			<version>19.6</version>
+			<version>18.11</version>
+			<scope>provided</scope>
 		</dependency>
 
-
-
-<!-- 		<dependency> -->
-<!-- 			<groupId>com.aspose</groupId> -->
-<!-- 			<artifactId>aspose-imaging</artifactId> -->
-<!-- 			<version>19.4</version> -->
-<!-- 		</dependency> -->
-
-		
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

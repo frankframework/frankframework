@@ -1,6 +1,5 @@
 package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -20,12 +19,8 @@ import com.aspose.email.AttachmentCollection;
 import com.aspose.email.MailAddress;
 import com.aspose.email.MailMessage;
 import com.aspose.email.MhtFormatOptions;
-import com.aspose.email.MhtMessageFormatter;
 import com.aspose.email.MhtSaveOptions;
-import com.aspose.email.SaveOptions;
 import com.aspose.email.TnefLoadOptions;
-import com.aspose.pdf.FileSpecification;
-import com.aspose.pdf.PageMode;
 import com.aspose.words.Document;
 import com.aspose.words.HtmlLoadOptions;
 import com.aspose.words.LoadFormat;
@@ -39,7 +34,6 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResul
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertUtil;
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertorUtil;
-import nl.nn.adapterframework.extensions.aspose.services.util.StringsUtil;
 
 class MailConvertor extends AbstractConvertor {
 
@@ -75,88 +69,73 @@ class MailConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	void convert(MediaType mediaType, InputStream inputStream, File fileDest, CisConversionResult result,
-			ConversionOption conversionOption) throws Exception {
+	void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption)
+			throws Exception {
+		MailMessage eml = null;
 
-		MailMessage eml = MailMessage.load(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
+		try (FileInputStream inputStream = new FileInputStream(file)) {
+			eml = MailMessage.load(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
 
-		LOGGER.info("Convert mail with messageId: " + eml.getMessageId() + ", from: " + eml.getFrom() + ", subject: "
-				+ eml.getSubject());
+			AttachmentCollection attachments = eml.getAttachments();
 
-		AttachmentCollection attachments = eml.getAttachments();
+			LOGGER.debug("cc : " + toString(eml.getCC()));
+			LOGGER.debug("bcc : " + toString(eml.getBcc()));
+			LOGGER.debug("sender : " + toString(eml.getSender()));
+			LOGGER.debug("from : " + toString(eml.getFrom()));
+			LOGGER.debug("sent on : " + toString(eml.getLocalDate()));
+			LOGGER.debug("to : " + toString(eml.getTo()));
+			LOGGER.debug("reversePath : " + toString(eml.getReversePath()));
+			LOGGER.debug("subject : " + eml.getSubject());
 
-		LOGGER.debug("cc          : " + toString(eml.getCC()));
-		LOGGER.debug("bcc         : " + toString(eml.getBcc()));
-		LOGGER.debug("sender      : " + toString(eml.getSender()));
-		LOGGER.debug("from        : " + toString(eml.getFrom()));
-		LOGGER.debug("sent on     : " + toString(eml.getLocalDate()));
-		LOGGER.debug("to          : " + toString(eml.getTo()));
-		LOGGER.debug("reversePath : " + toString(eml.getReversePath()));
-		LOGGER.debug("subject     : " + eml.getSubject());
+			MhtSaveOptions options = com.aspose.email.MhtSaveOptions.getDefaultMhtml();
+			options.setMhtFormatOptions(MhtFormatOptions.WriteHeader);
+			options.getFormatTemplates().get_Item("From").replace("From:", "Afzender:");
+			options.getFormatTemplates().get_Item("Sent").replace("Sent:", "Verzonden:");
+			options.getFormatTemplates().get_Item("Subject").replace("Subject:", "Onderwerp:");
+			options.getFormatTemplates().get_Item("Importance").replace("To:", "Aan:");
+			options.getFormatTemplates().get_Item("Cc").replace("Cc:", "Afzender:");
+			// Overrules the default documentname.
+			result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(eml.getSubject()));
 
-		// Change mail headers (From, Sent, To, ...) to Dutch (also MhtFormatOptions on
-		// None so the English headers are suppressed).
-		MhtMessageFormatter messageformatter = new MhtMessageFormatter();
-		messageformatter.setFromFormat(messageformatter.getFromFormat().replace("From:", "Afzender:"));
-		messageformatter.setSentFormat(messageformatter.getSentFormat().replace("Sent:", "Verzonden:"));
-		messageformatter.setSubjectFormat(messageformatter.getSubjectFormat().replace("Subject:", "Onderwerp:"));
-		messageformatter.setToFormat(messageformatter.getToFormat().replace("To:", "Aan:"));
-		messageformatter.setCcFormat(messageformatter.getCcFormat().replace("??:", "Cc:"));
-		messageformatter
-				.setImportanceFormat(messageformatter.getImportanceFormat().replace("Importance:", "Belangrijk:"));
-		messageformatter.setBccFormat(messageformatter.getBccFormat().replace("Bcc:", "Bcc:"));
-		messageformatter
-				.setAttachmentFormat(messageformatter.getAttachmentFormat().replace("Attachments:", "Attachments:"));
-		messageformatter.format(eml);
+			// Save the Message to output stream in MHTML format
+			ByteArrayOutputStream emlStream = new ByteArrayOutputStream();
 
-		MailAddress from = eml.getFrom();
+			eml.save(emlStream, options);
 
-		// Overrules the default documentname.
-		result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(eml.getSubject()));
+			// Load the stream in Word document
+			HtmlLoadOptions loadOptions = new HtmlLoadOptions();
+			loadOptions.setLoadFormat(LoadFormat.MHTML);
+			loadOptions.setWebRequestTimeout(0);
 
-		// Save the Message to output stream in MHTML format
-		ByteArrayOutputStream emlStream = new ByteArrayOutputStream();
-		MhtSaveOptions saveOptions = SaveOptions.getDefaultMhtml();
-		saveOptions.setMhtFormatOptions(MhtFormatOptions.None);
-		eml.save(emlStream, saveOptions);
+			Long startTime = new Date().getTime();
+			Document doc = new Document(new ByteArrayInputStream(emlStream.toByteArray()), loadOptions);
+			emlStream.close();
+			new Fontsetter(cisConversionService.getFontsDirectory()).setFontSettings(doc);
+			resizeInlineImages(doc);
 
-		// Load the stream in Word document
-		HtmlLoadOptions loadOptions = new HtmlLoadOptions();
-		loadOptions.setLoadFormat(LoadFormat.MHTML);
-		loadOptions.setWebRequestTimeout(0);
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			long start = new Date().getTime();
+			doc.save(outputStream, SaveFormat.PDF);
+			long end = new Date().getTime();
+			System.err.println("Conversion(save operation in convert method) takes  :::  " + (end - start) + " ms");
+			InputStream inStream = new ByteArrayInputStream(outputStream.toByteArray());
+			result.setFileStream(inStream);
+			outputStream.close();
+			Long endTime = new Date().getTime();
+			LOGGER.error("Conversion completed in " + (endTime - startTime) + "ms");
+			System.err.println("Conversion completed in " + (endTime - startTime) + "ms");
 
-		Document doc = new Document(new ByteArrayInputStream(emlStream.toByteArray()), loadOptions);
-		new Fontsetter().setFontSettings(doc);
-		resizeInlineImages(doc);
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		doc.save(outputStream, SaveFormat.PDF);
-		InputStream inStream = new ByteArrayInputStream(outputStream.toByteArray());
-		result.setFileStream(inStream);
+			// Convert and (optional add) any attachment of the mail.
+			for (int index = 0; index < attachments.size(); index++) {
+				// Initialize Attachment object and Get the indexed Attachment reference
+				Attachment attachment = attachments.get_Item(index);
 
-		// result.setMetaData(new MailMetaData(getNumberOfPages(inStream),
-		// toUserFormat(from), eml.getLocalDate(),
-		// toUserFormat(eml.getTo()), eml.getSubject()));
-
-		// Convert and (optional add) any attachment of the mail.
-		for (int index = 0; index < attachments.size(); index++) {
-			// Initialize Attachment object and Get the indexed Attachment reference
-			Attachment attachment = attachments.get_Item(index);
-
-			// Convert the attachment.
-			CisConversionResult cisConversionResultAttachment = convertAttachmentInPdf(attachment, conversionOption);
-			LOGGER.debug("Mail attachment : " + cisConversionResultAttachment);
-
-			// If it is an singlepdf add the file to the the current pdf.
-			if ((ConversionOption.SINGLEPDF.equals(conversionOption))
-					&& (cisConversionResultAttachment.isConversionSuccessfull())) {
-				// If conversion successful add the converted pdf to the pdf.
-				addAttachmentInPdf(cisConversionResultAttachment, fileDest);
+				// Convert the attachment.
+				CisConversionResult cisConversionResultAttachment = convertAttachmentInPdf(attachment,
+						conversionOption);
+				result.addAttachment(cisConversionResultAttachment);
 			}
-			// Add the conversion information to the result (even if the conversion
-			// failed!).
-			result.addAttachment(cisConversionResultAttachment);
 		}
-
 	}
 
 	private void resizeInlineImages(Document doc) throws Exception {
@@ -187,8 +166,7 @@ class MailConvertor extends AbstractConvertor {
 	 * @return
 	 * @throws IOException
 	 */
-	private CisConversionResult convertAttachmentInPdf(Attachment attachment, ConversionOption conversionOption)
-			throws IOException {
+	private CisConversionResult convertAttachmentInPdf(Attachment attachment, ConversionOption conversionOption) {
 
 		LOGGER.debug("Convert attachment... (" + attachment.getName() + ")");
 
@@ -196,65 +174,7 @@ class MailConvertor extends AbstractConvertor {
 		String[] segments = attachment.getName().split("/");
 		String segmentFilename = segments[segments.length - 1];
 
-		// Create a bufferedInputStream because that support markSupported as is
-		// required for the tika library.
-		try (InputStream inputStream = new BufferedInputStream(attachment.getContentStream())) {
-			// Convert the attachment to pdf.
-			return cisConversionService.convertToPdf(inputStream, segmentFilename, conversionOption);
-		} finally {
-			LOGGER.debug("Convert attachment finished. (" + attachment.getName() + ")");
-		}
-	}
-
-	/**
-	 * Adds a file (in cisConversieResultBuilder) to the given (fileCombined).
-	 * 
-	 * @param cisConversieResultBuilder
-	 * @param fileCombined
-	 * @throws IOException
-	 */
-	// TODO GH Merge deze operatie met PdfAttachmentUtil.addAttachmentInSinglePdf
-	private void addAttachmentInPdf(CisConversionResult cisConversieResult, File fileCombined) throws IOException {
-
-		LOGGER.debug("Adding attachment... (" + cisConversieResult.getDocumentName() + ")");
-
-		if (!cisConversieResult.isConversionSuccessfull()) {
-			throw new IllegalArgumentException("Only successfull converted files can be added!");
-		}
-
-		// Open a document
-		com.aspose.pdf.Document pdfDocument = new com.aspose.pdf.Document(fileCombined.getAbsolutePath());
-		String documentName = ConvertorUtil.createTidyPdfFilename(cisConversieResult.getDocumentName());
-
-		LOGGER.debug("Adding attachments... (" + documentName + ")");
-
-		try (InputStream attachmentDocumentStream = new BufferedInputStream(
-				new FileInputStream(cisConversieResult.getPdfResultFile()))) {
-
-			// Set up a new file to be added as attachment
-			FileSpecification fileSpecification = new FileSpecification(attachmentDocumentStream, documentName);
-
-			// Add an attachment to document's attachment collection
-			pdfDocument.getEmbeddedFiles().add(fileSpecification);
-
-			// UseOC means "Optional attachments panel set to visible" used so that the
-			// attachments are shown.
-			pdfDocument.setPageMode(PageMode.UseAttachments);
-
-			// Save the updated document
-			pdfDocument.save();
-		} finally {
-			pdfDocument.freeMemory();
-			pdfDocument.dispose();
-			pdfDocument.close();
-
-			deleteFile(cisConversieResult.getPdfResultFile());
-
-			// Clear the file because it is now incorporated in the file it self.
-			cisConversieResult.setPdfResultFile(null);
-		}
-
-		LOGGER.debug("Adding attachment finished. (" + documentName + ")");
+		return cisConversionService.convertToPdf(attachment.getContentStream(), segmentFilename, conversionOption);
 	}
 
 	private String toString(Iterable<MailAddress> iterable) {
@@ -291,43 +211,6 @@ class MailConvertor extends AbstractConvertor {
 			result.append(mailAddress.getOriginalAddressString());
 			result.append(" displayName:");
 			result.append(mailAddress.getDisplayName());
-		}
-
-		return result.toString();
-	}
-
-	private String toUserFormat(Iterable<MailAddress> iterable) {
-		StringBuilder result = new StringBuilder();
-
-		if (iterable != null) {
-			boolean first = true;
-			for (MailAddress mailAddress : iterable) {
-				if (!first) {
-					result.append(", ");
-				}
-				result.append(toUserFormat(mailAddress));
-				first = false;
-			}
-		}
-
-		return result.toString();
-	}
-
-	/**
-	 * Adds first the displayname or user name when available. Adds than the email
-	 * address (the original or when not available the address).
-	 * 
-	 * @param mailAddress
-	 * @return
-	 */
-	private String toUserFormat(MailAddress mailAddress) {
-		StringBuilder result = new StringBuilder();
-		if (mailAddress != null) {
-			if (!StringsUtil.isBlank(mailAddress.getAddress())) {
-				result.append(mailAddress.getAddress());
-			} else if (!StringsUtil.isBlank(mailAddress.getOriginalAddressString())) {
-				result.append(mailAddress.getOriginalAddressString());
-			}
 		}
 
 		return result.toString();
