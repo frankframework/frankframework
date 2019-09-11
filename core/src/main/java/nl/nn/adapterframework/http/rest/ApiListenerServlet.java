@@ -283,17 +283,19 @@ public class ApiListenerServlet extends HttpServletBase {
 			Enumeration<String> headers = request.getHeaderNames();
 			XmlBuilder headersXml = new XmlBuilder("headers");
 			while (headers.hasMoreElements()) {
-				String header = headers.nextElement().toLowerCase();
-				if(IGNORE_HEADERS.contains(header))
+				String headerName = headers.nextElement().toLowerCase();
+				if(IGNORE_HEADERS.contains(headerName))
 					continue;
 
+				String headerValue = request.getHeader(headerName);
 				try {
-					XmlBuilder headerXml = new XmlBuilder(header);
-					headerXml.setValue(request.getHeader(header));
+					XmlBuilder headerXml = new XmlBuilder("header");
+					headerXml.addAttribute("name", headerName);
+					headerXml.setValue(headerValue);
 					headersXml.addSubElement(headerXml);
 				}
 				catch (Throwable t) {
-					log.info("ignoring header ["+header+"]");
+					log.info("unable to convert header to xml name["+headerName+"] value["+headerValue+"]");
 				}
 			}
 			messageContext.put("headers", headersXml.toXML());
