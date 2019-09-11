@@ -25,6 +25,7 @@ import nl.nn.adapterframework.extensions.cmis.CmisSessionException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.extensions.cmis.server.impl.IbisDiscoveryService;
+import nl.nn.adapterframework.extensions.cmis.server.impl.IbisNavigationService;
 import nl.nn.adapterframework.extensions.cmis.server.impl.IbisObjectService;
 import nl.nn.adapterframework.extensions.cmis.server.impl.IbisRepositoryService;
 
@@ -33,6 +34,7 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.spi.CmisBinding;
 import org.apache.chemistry.opencmis.commons.spi.DiscoveryService;
+import org.apache.chemistry.opencmis.commons.spi.NavigationService;
 import org.apache.chemistry.opencmis.commons.spi.ObjectService;
 import org.apache.chemistry.opencmis.commons.spi.RepositoryService;
 import org.apache.log4j.Logger;
@@ -169,5 +171,10 @@ public class HttpSessionCmisService extends CachedBindingCmisService {
 	@Override
 	public DiscoveryService getDiscoveryService() {
 		return new IbisDiscoveryService(super.getDiscoveryService());
+	}
+
+	@Override
+	public NavigationService getNavigationService() {
+		return new IbisNavigationService(super.getNavigationService());
 	}
 }

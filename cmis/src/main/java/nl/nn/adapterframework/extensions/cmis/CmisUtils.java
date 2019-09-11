@@ -52,11 +52,21 @@ import org.apache.chemistry.opencmis.commons.data.AclCapabilities;
 import org.apache.chemistry.opencmis.commons.data.CreatablePropertyTypes;
 import org.apache.chemistry.opencmis.commons.data.NewTypeSettableAttributes;
 import org.apache.chemistry.opencmis.commons.data.ObjectData;
+import org.apache.chemistry.opencmis.commons.data.ObjectInFolderData;
+import org.apache.chemistry.opencmis.commons.data.ObjectInFolderList;
 import org.apache.chemistry.opencmis.commons.data.ObjectList;
 import org.apache.chemistry.opencmis.commons.data.PermissionMapping;
 import org.apache.chemistry.opencmis.commons.data.PolicyIdList;
 import org.apache.chemistry.opencmis.commons.data.Properties;
+import org.apache.chemistry.opencmis.commons.data.PropertyBoolean;
 import org.apache.chemistry.opencmis.commons.data.PropertyData;
+import org.apache.chemistry.opencmis.commons.data.PropertyDateTime;
+import org.apache.chemistry.opencmis.commons.data.PropertyDecimal;
+import org.apache.chemistry.opencmis.commons.data.PropertyHtml;
+import org.apache.chemistry.opencmis.commons.data.PropertyId;
+import org.apache.chemistry.opencmis.commons.data.PropertyInteger;
+import org.apache.chemistry.opencmis.commons.data.PropertyString;
+import org.apache.chemistry.opencmis.commons.data.PropertyUri;
 import org.apache.chemistry.opencmis.commons.data.RepositoryCapabilities;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.definitions.MutablePropertyDefinition;
@@ -87,6 +97,8 @@ import org.apache.chemistry.opencmis.commons.impl.dataobjects.AllowableActionsIm
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.CreatablePropertyTypesImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.NewTypeSettableAttributesImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ObjectDataImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.ObjectInFolderDataImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.ObjectInFolderListImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ObjectListImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PermissionDefinitionDataImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PermissionMappingDataImpl;
@@ -163,6 +175,25 @@ public class CmisUtils {
 		PropertyType propertyType = PropertyType.STRING;
 		if(property instanceof Property) {
 			propertyType = ((Property<?>) property).getType();
+		}
+		else {
+			if(property instanceof PropertyId) {
+				propertyType = PropertyType.ID;
+			} else if(property instanceof PropertyBoolean) {
+				propertyType = PropertyType.BOOLEAN;
+			} else if(property instanceof PropertyUri) {
+				propertyType = PropertyType.URI;
+			} else if(property instanceof PropertyInteger) {
+				propertyType = PropertyType.INTEGER;
+			} else if(property instanceof PropertyHtml) {
+				propertyType = PropertyType.HTML;
+			} else if(property instanceof PropertyDecimal) {
+				propertyType = PropertyType.DECIMAL;
+			} else if(property instanceof PropertyString) {
+				propertyType = PropertyType.STRING;
+			} else if(property instanceof PropertyDateTime) {
+				propertyType = PropertyType.DATETIME;
+			}
 		}
 		//If it's not a property, what would it be? assume its a string...
 
@@ -939,6 +970,12 @@ public class CmisUtils {
 	public static XmlBuilder objectData2Xml(ObjectData object) {
 		return CmisUtils.objectData2Xml(object, new XmlBuilder("objectData"));
 	}
+
+	/**
+	 * @param object to translate to xml
+	 * @param cmisXml root XML element (defaults to creating a new 'objectData' element)
+	 * @return the root XML element
+	 */
 	public static XmlBuilder objectData2Xml(ObjectData object, XmlBuilder cmisXml) {
 
 		if(object.getProperties() != null) {
@@ -1013,7 +1050,10 @@ public class CmisUtils {
 		}
 
 		// Handle isExactAcl
-		impl.setIsExactAcl(XmlUtils.getChildTagAsBoolean(cmisElement, "isExactAcl"));
+		String isExactAcl = XmlUtils.getChildTagAsString(cmisElement, "isExactAcl");
+		if(isExactAcl != null) {
+			impl.setIsExactAcl(Boolean.parseBoolean(isExactAcl));
+		}
 
 		// If the original object exists copy the permissions over. These cannot (and shouldn't) be changed)
 		if(context != null) {
@@ -1090,5 +1130,46 @@ public class CmisUtils {
 		objectListXml.addSubElement(objectDataXml);
 
 		return objectListXml;
+	}
+
+	public static ObjectInFolderList xml2ObjectsInFolderList(Element result) {
+		ObjectInFolderListImpl objectInFolderList = new ObjectInFolderListImpl();
+		objectInFolderList.setNumItems(CmisUtils.parseBigIntegerAttr(result, "numberOfItems"));
+		objectInFolderList.setHasMoreItems(CmisUtils.parseBooleanAttr(result, "hasMoreItems"));
+
+		List<ObjectInFolderData> objects = new ArrayList<ObjectInFolderData>();
+		Element objectsElem = XmlUtils.getFirstChildTag(result, "objects");
+		for (Node type : XmlUtils.getChildTags(objectsElem, "object")) {
+			ObjectInFolderDataImpl oifd = new ObjectInFolderDataImpl();
+			String pathSegment = CmisUtils.parseStringAttr(result, "pathSegment");
+			oifd.setPathSegment(pathSegment);
+
+			ObjectData objectData = xml2ObjectData((Element) type, null);
+			oifd.setObject(objectData);
+			objects.add(oifd);
+		}
+		objectInFolderList.setObjects(objects);
+
+		return objectInFolderList;
+	}
+
+	public static XmlBuilder objectInFolderList2xml(ObjectInFolderList oifs) {
+		XmlBuilder objectInFolderListXml = new XmlBuilder("objectInFolderList");
+		if(oifs.getNumItems() != null)
+			objectInFolderListXml.addAttribute("numberOfItems", oifs.getNumItems().toString());
+		if(oifs.hasMoreItems() != null)
+			objectInFolderListXml.addAttribute("hasMoreItems", oifs.hasMoreItems());
+
+		XmlBuilder objectDataListXml = new XmlBuilder("objects");
+		for (ObjectInFolderData objectData : oifs.getObjects()) {
+			XmlBuilder objectDataXml = new XmlBuilder("object");
+			String path = objectData.getPathSegment();
+			objectDataXml.addAttribute("pathSegment", path);
+			CmisUtils.objectData2Xml(objectData.getObject(), objectDataXml);
+			objectDataListXml.addSubElement(objectDataXml);
+		}
+		objectInFolderListXml.addSubElement(objectDataListXml);
+
+		return objectInFolderListXml;
 	}
 }

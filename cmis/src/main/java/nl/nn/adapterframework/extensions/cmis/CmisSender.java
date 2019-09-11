@@ -64,6 +64,7 @@ import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.client.api.Tree;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
+import org.apache.chemistry.opencmis.commons.data.ObjectInFolderList;
 import org.apache.chemistry.opencmis.commons.data.ObjectList;
 import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
@@ -850,6 +851,25 @@ public class CmisSender extends SenderWithParametersBase {
 				ObjectList result = session.getBinding().getDiscoveryService().query(repositoryQueryId, statement, 
 						searchAllVersions, includeAllowableActions, includeRelationships, renditionFilter, maxItems, skipCount, null);
 				resultXml.addSubElement(CmisUtils.objectList2xml(result));
+				break;
+
+			case GET_CHILDREN:
+				String rid = XmlUtils.getChildTagAsString(requestElement, "repositoryId");
+				String fid = XmlUtils.getChildTagAsString(requestElement, "folderId");
+				String getChildren_repositoryFilter = XmlUtils.getChildTagAsString(requestElement, "filter");
+				String getChildren_repositoryOrderBy = XmlUtils.getChildTagAsString(requestElement, "orderBy");
+				Boolean getChildren_includeAllowableActions = XmlUtils.getChildTagAsBoolean(requestElement, "includeAllowableActions");
+				IncludeRelationships getChildren_includeRelationships = IncludeRelationships.valueOf(XmlUtils.getChildTagAsString(requestElement, "includeRelationships"));
+				String getChildren_renditionFilter = XmlUtils.getChildTagAsString(requestElement, "renditionFilter");
+				Boolean getChildren_includePathSegment = XmlUtils.getChildTagAsBoolean(requestElement, "includePathSegment");
+				BigInteger getChildren_maxItems = BigInteger.valueOf(XmlUtils.getChildTagAsLong(requestElement, "maxItems"));
+				BigInteger getChildren_skipCount = BigInteger.valueOf(XmlUtils.getChildTagAsLong(requestElement, "skipCount"));
+
+				ObjectInFolderList oifs = session.getBinding().getNavigationService().getChildren(rid, fid, getChildren_repositoryFilter, 
+						getChildren_repositoryOrderBy, getChildren_includeAllowableActions, getChildren_includeRelationships, 
+						getChildren_renditionFilter, getChildren_includePathSegment, getChildren_maxItems, getChildren_skipCount, null);
+
+				resultXml.addSubElement(CmisUtils.objectInFolderList2xml(oifs));
 				break;
 
 			case GET_PROPERTIES:
