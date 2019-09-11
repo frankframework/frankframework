@@ -197,7 +197,8 @@ public class XsltSender extends SenderWithParametersBase {
 
 			TransformerPool poolToUse = transformerPool;
 			
-			if(prc.getSession().get(styleSheetNameSessionKey) != null) {
+			
+			if(!StringUtils.isEmpty(styleSheetNameSessionKey) && prc.getSession().get(styleSheetNameSessionKey) != null) {
 				String styleSheetNameToUse = prc.getSession().get(styleSheetNameSessionKey).toString();
 
 				if(!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
