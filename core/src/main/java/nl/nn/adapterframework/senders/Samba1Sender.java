@@ -26,34 +26,34 @@ public class Samba1Sender extends FileSystemSender<SmbFile, Samba1FileSystem> {
 		setFileSystem(new Samba1FileSystem());
 	}
 
-	@IbisDoc({ "in case the user account is bound to a domain", "" })
-	public void setDomain(String domain) {
-		getFileSystem().setDomain(domain);
+	@IbisDoc({ "1", "Shared folder name in the samba server", "" })
+	public void setShare(String share) {
+		getFileSystem().setShare(share);
 	}
 
-	@IbisDoc({ "the smb share username", "" })
+	@IbisDoc({"2", "the smb share username", "" })
 	public void setUsername(String username) {
 		getFileSystem().setUsername(username);
 	}
 
-	@IbisDoc({ "the smb share password", "" })
+	@IbisDoc({ "3", "the smb share password", "" })
 	public void setPassword(String password) {
 		getFileSystem().setPassword(password);
 	}
 
-	@IbisDoc({ "alias used to obtain credentials for the smb share", "" })
+	@IbisDoc({ "4", "alias used to obtain credentials for the smb share", "" })
 	public void setAuthAlias(String authAlias) {
 		getFileSystem().setAuthAlias(authAlias);
 	}
 
-	@IbisDoc({ "used when creating folders or overwriting existing files (when renaming or moving)", "false" })
-	public void setForce(boolean force) {
-		getFileSystem().setForce(force);
+	@IbisDoc({ "5", "in case the user account is bound to a domain", "" })
+	public void setDomain(String domain) {
+		getFileSystem().setDomain(domain);
 	}
 
-	@IbisDoc({ "Shared folder name in the samba server", "" })
-	public void setShare(String share) {
-		getFileSystem().setShare(share);
+	@IbisDoc({ "7", "controls whether hidden files are seen or not", "false" })
+	public void setForce(boolean force) {
+		getFileSystem().setForce(force);
 	}
 
 }

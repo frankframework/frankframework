@@ -1,3 +1,18 @@
+/*
+   Copyright 2019 Nationale-Nederlanden
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.scheduler;
 
 import static org.junit.Assert.assertEquals;
@@ -11,16 +26,8 @@ import java.util.LinkedList;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.quartz.CronScheduleBuilder;
-import org.quartz.CronTrigger;
 import org.quartz.JobDataMap;
-import org.quartz.JobDetail;
-import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
-import org.quartz.SimpleScheduleBuilder;
-import org.quartz.SimpleTrigger;
-import org.quartz.TriggerBuilder;
-import org.quartz.impl.StdSchedulerFactory;
 import org.quartz.impl.calendar.HolidayCalendar;
 
 import nl.nn.adapterframework.configuration.Configuration;
@@ -31,44 +38,41 @@ public class SchedulerAdapterTest extends SchedulerTestBase {
 	private static final String JAVALISTENER = "javaListener";
 	private static final String CORRELATIONID = "correlationId";
 	private static final String MESSAGE = "message";
-	
-	// @Mock
+
 	private SchedulerAdapter schedulerAdapter;
-	private Scheduler scheduler;
-	
+
 	@Before
-	public void setup() throws SchedulerException {
+	public void setUp() throws SchedulerException, ParseException {
+		super.setUp();
 		schedulerAdapter = new SchedulerAdapter();
-		scheduler = StdSchedulerFactory.getDefaultScheduler();
-		scheduler.clear();
 	}
-	
+
 	@Test
 	public void testGetJobGroupNamesWithJobsToXml() throws SchedulerException, ParseException {
-		scheduleDummyTrigger("DummyJob", "DummyGroup A", 1);
-		scheduleDummyTrigger("DummyJob", "DummyGroup B", 2);
+		scheduleDummyTrigger("DummyJob", "DummyGroup A");
+		scheduleDummyTrigger("DummyJob", "DummyGroup B");
 
-		String result = schedulerAdapter.getJobGroupNamesWithJobsToXml(scheduler, null).toXML();
+		String result = schedulerAdapter.getJobGroupNamesWithJobsToXml(schedulerHelper.getScheduler(), null).toXML();
 		assertTrue(result.contains("DummyGroup A") && result.contains("DummyGroup B"));
 	}
-	
+
 	@Test
 	public void testGetJobGroupNamesWithJobsToXmlWithMocks() throws SchedulerException, ParseException {
-		scheduleDummyTrigger("DummyJob", "DummyGroup A", 1);
-		scheduleDummyTrigger("DummyJob", "DummyGroup B", 2);
-		
+		scheduleDummyTrigger("DummyJob", "DummyGroup A");
+		scheduleDummyTrigger("DummyJob", "DummyGroup B");
+
 		IbisManager ibisManager = mock(IbisManager.class);
 		when(ibisManager.getConfigurations()).thenReturn(new LinkedList<Configuration>());
 
-		String result = schedulerAdapter.getJobGroupNamesWithJobsToXml(scheduler, ibisManager).toXML();
+		String result = schedulerAdapter.getJobGroupNamesWithJobsToXml(schedulerHelper.getScheduler(), ibisManager).toXML();
 		assertTrue(result.contains("DummyGroup A") && result.contains("DummyGroup B"));
 	}
-	
+
 	@Test
 	public void testGetJobMessages() throws SchedulerException {
 		assertEquals("<jobMessages />", schedulerAdapter.getJobMessages(null).toXML().trim());
 	}
-	
+
 	@Test
 	public void testJobDataMapToXmlBuilder() throws SchedulerException {
 		JobDataMap jobDataMap = new JobDataMap();
@@ -78,75 +82,40 @@ public class SchedulerAdapterTest extends SchedulerTestBase {
 		
 		assertEquals("<jobMessages />", schedulerAdapter.getJobMessages(null).toXML().trim());
 	}
-	
+
 	@Test
 	public void testGetSchedulerCalendarNamesToXml() throws SchedulerException {
-		scheduler.addCalendar("DummyCalendar A", new HolidayCalendar(), false, false);
-		scheduler.addCalendar("DummyCalendar B", new HolidayCalendar(), false, false);
-		
-		String result = schedulerAdapter.getSchedulerCalendarNamesToXml(scheduler).toXML();
+		schedulerHelper.getScheduler().addCalendar("DummyCalendar A", new HolidayCalendar(), false, false);
+		schedulerHelper.getScheduler().addCalendar("DummyCalendar B", new HolidayCalendar(), false, false);
+
+		String result = schedulerAdapter.getSchedulerCalendarNamesToXml(schedulerHelper.getScheduler()).toXML();
 		assertTrue(result.contains("DummyCalendar A") && result.contains("DummyCalendar B"));
 	}
-	
+
 	@Test
 	public void testGetSchedulerMetaDataToXml() throws SchedulerException {
-		assertTrue(schedulerAdapter.getSchedulerMetaDataToXml(scheduler).toXML().contains("<schedulerMetaData "));
+		assertTrue(schedulerAdapter.getSchedulerMetaDataToXml(schedulerHelper.getScheduler()).toXML().contains("<schedulerMetaData "));
 	}
-	
-	private void scheduleDummyTrigger(String jobName, String groupName, int amtOfTriggers) throws SchedulerException, ParseException {
-		JobDetail jobDetail = createDummyJob(jobName, groupName);
-		
-		for(int i = 0; i < amtOfTriggers; i++) {
-			SimpleTrigger trigger = TriggerBuilder.newTrigger()
-					.withIdentity(jobName+" "+(i+1), groupName)
-					.forJob(jobDetail)
-					.withSchedule(SimpleScheduleBuilder.simpleSchedule()
-							.withIntervalInSeconds(133780085)
-							.repeatForever())
-					.build();
-			
-			if(i == 0) {
-				scheduler.scheduleJob(jobDetail, trigger);
-			} else {
-				scheduler.scheduleJob(trigger);
-			}
-		}
+
+	private void scheduleDummyTrigger(String jobName, String groupName) throws SchedulerException, ParseException {
+		schedulerHelper.scheduleJob(createServiceJob(jobName, groupName), "0 0 5 * * ?)");
 	}
-	
+
 	@Test
 	public void testGetTriggerGroupNamesWithTriggersToXml() throws SchedulerException, ParseException {
-		scheduleDummyTrigger("DummyJob", "DummyGroup A", 1);
-		scheduleDummyTrigger("DummyJob", "DummyGroup B", 5);
-		
+		scheduleDummyTrigger("DummyJob", "DummyGroup A");
+		scheduleDummyTrigger("DummyJob", "DummyGroup B");
+
 		// TODO: Triggers aren't added to the XML's list of triggers (for reference, see SchedulerAdapter coverage)
-		String result = schedulerAdapter.getTriggerGroupNamesWithTriggersToXml(scheduler).toXML();
+		String result = schedulerAdapter.getTriggerGroupNamesWithTriggersToXml(schedulerHelper.getScheduler()).toXML();
 		assertTrue(result.contains("DummyGroup A") && result.contains("DummyGroup B"));
 	}
-	
+
 	@Test
 	public void testTriggerToXmlBuilderWithCronSchedule() throws SchedulerException, ParseException {
-		JobDetail jobDetail = createDummyJob();
-		
-		CronTrigger trigger = TriggerBuilder.newTrigger()
-				.withIdentity("DummyJob", "DummyGroup")
-				.withSchedule(CronScheduleBuilder.cronSchedule("0 0 5 * * ?)"))
-				.build();
-		
-		scheduler.scheduleJob(jobDetail, trigger);
-		
-		assertTrue(schedulerAdapter.triggerToXmlBuilder(scheduler, "DummyJob", "DummyGroup").toXML().contains("cronExpression="));
+		schedulerHelper.scheduleJob(createServiceJob("DummyJob", "DummyGroup"), "0 0 5 * * ?)");
+
+		assertTrue(schedulerAdapter.triggerToXmlBuilder(schedulerHelper.getScheduler(), "DummyJob", "DummyGroup")
+				.toXML().contains("cronExpression="));
 	}
-	
-//	@Test
-//	public void testTriggerToXmlBuilderWithoutSchedule() throws SchedulerException, ParseException {
-//		JobDetail jobDetail = createDummyJob();
-//
-//		Trigger trigger = TriggerBuilder.newTrigger()
-//				.withIdentity("DummyJob", "DummyGroup")
-//				.build();
-//		
-//		scheduler.scheduleJob(jobDetail, trigger);
-//		
-//		assertTrue(schedulerAdapter.triggerToXmlBuilder(scheduler, "DummyJob", "DummyGroup").toXML().contains("unknown"));
-//	}
 }

@@ -18,11 +18,13 @@ package nl.nn.adapterframework.http.rest;
 import java.io.Serializable;
 import java.util.Date;
 
+import nl.nn.adapterframework.util.AppConstants;
+
 public class ApiPrincipal implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	public long init = (new Date()).getTime();
-	public long ttl = 60*60*24*1000;
+	public long ttl = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7);
 	public long expires = 0;
 
 	public String data = null;
@@ -31,6 +33,11 @@ public class ApiPrincipal implements Serializable {
 	public ApiPrincipal() {
 		updateExpiry();
 	}
+
+	/**
+	 * TimeToLive in seconds
+	 * @param ttl
+	 */
 	public ApiPrincipal(int ttl) {
 		this.ttl = ttl*1000;
 		updateExpiry();

@@ -63,15 +63,13 @@ public class IbisConsoleTest {
 		assertNull(testResult,testResult);
 		ibisContext = ibisTester.getIbisContext();
 
-		URL showConfigurationStatusUrl = ClassUtils.getResourceURL(IbisConsoleTest.class,
-				SHOW_CONFIGURATION_STATUS_XSLT);
+		URL showConfigurationStatusUrl = ClassUtils.getResourceURL(IbisConsoleTest.class, SHOW_CONFIGURATION_STATUS_XSLT);
 		if (showConfigurationStatusUrl == null) {
 			throw new ConfigurationException("cannot find resource [" + SHOW_CONFIGURATION_STATUS_XSLT + "]");
 		}
 		showConfigurationStatusTransformer = XmlUtils.createTransformer(showConfigurationStatusUrl);
 
-		URL showEnvironmentVariablesUrl = ClassUtils.getResourceURL(IbisConsoleTest.class,
-				SHOW_ENVIRONMENT_VARIABLES_XSLT);
+		URL showEnvironmentVariablesUrl = ClassUtils.getResourceURL(IbisConsoleTest.class, SHOW_ENVIRONMENT_VARIABLES_XSLT);
 		if (showEnvironmentVariablesUrl == null) {
 			throw new ConfigurationException("cannot find resource [" + SHOW_ENVIRONMENT_VARIABLES_XSLT + "]");
 		}
@@ -79,12 +77,10 @@ public class IbisConsoleTest {
 	}
 
 	@Test
-	public void ShowConfigurationStatus_all() throws ConfigurationException, PipeRunException, DomBuilderException,
-			SAXException, IOException, TransformerException {
+	public void ShowConfigurationStatus_all() throws ConfigurationException, PipeRunException, DomBuilderException, SAXException, IOException, TransformerException {
 		ShowConfigurationStatus showConfigurationStatus = new ShowConfigurationStatus();
 		PipeLine pipeLine = new PipeLine();
-		Adapter adapter = (Adapter) ibisContext.getIbisManager()
-				.getRegisteredAdapter("WebControlShowConfigurationStatus");
+		Adapter adapter = (Adapter) ibisContext.getIbisManager().getRegisteredAdapter("WebControlShowConfigurationStatus");
 		pipeLine.setAdapter(adapter);
 		showConfigurationStatus.registerForward(createPipeSuccessForward());
 		showConfigurationStatus.configure(pipeLine);
@@ -98,12 +94,10 @@ public class IbisConsoleTest {
 	}
 
 	@Test
-	public void ShowConfigurationStatus_single() throws ConfigurationException, PipeRunException, DomBuilderException,
-			SAXException, IOException, TransformerException {
+	public void ShowConfigurationStatus_single() throws ConfigurationException, PipeRunException, DomBuilderException, SAXException, IOException, TransformerException {
 		ShowConfigurationStatus showConfigurationStatus = new ShowConfigurationStatus();
 		PipeLine pipeLine = new PipeLine();
-		Adapter adapter = (Adapter) ibisContext.getIbisManager()
-				.getRegisteredAdapter("WebControlShowConfigurationStatus");
+		Adapter adapter = (Adapter) ibisContext.getIbisManager().getRegisteredAdapter("WebControlShowConfigurationStatus");
 		pipeLine.setAdapter(adapter);
 		showConfigurationStatus.registerForward(createPipeSuccessForward());
 		showConfigurationStatus.configure(pipeLine);
@@ -117,12 +111,10 @@ public class IbisConsoleTest {
 	}
 
 	@Test
-	public void showEnvironmentVariables() throws ConfigurationException, PipeRunException, DomBuilderException,
-			SAXException, IOException, TransformerException {
+	public void showEnvironmentVariables() throws ConfigurationException, PipeRunException, DomBuilderException, SAXException, IOException, TransformerException {
 		ShowEnvironmentVariables showEnvironmentVariables = new ShowEnvironmentVariables();
 		PipeLine pipeLine = new PipeLine();
-		Adapter adapter = (Adapter) ibisContext.getIbisManager()
-				.getRegisteredAdapter("WebControlShowEnvironmentVariables");
+		Adapter adapter = (Adapter) ibisContext.getIbisManager().getRegisteredAdapter("WebControlShowEnvironmentVariables");
 		pipeLine.setAdapter(adapter);
 		showEnvironmentVariables.registerForward(createPipeSuccessForward());
 		showEnvironmentVariables.configure(pipeLine);
@@ -137,7 +129,8 @@ public class IbisConsoleTest {
 
 	@AfterClass
 	public static void closeTest() {
-		ibisTester.closeTest();
+		if(ibisTester != null)
+			ibisTester.closeTest();
 	}
 
 	private PipeForward createPipeSuccessForward() {
@@ -146,8 +139,7 @@ public class IbisConsoleTest {
 		return pipeForward;
 	}
 
-	private void compareXML(String expectedFile, String result)
-			throws SAXException, IOException, DomBuilderException, TransformerException {
+	private void compareXML(String expectedFile, String result) throws SAXException, IOException, DomBuilderException, TransformerException {
 		URL expectedUrl = ClassUtils.getResourceURL(this, expectedFile);
 		if (expectedUrl == null) {
 			throw new IOException("cannot find resource [" + expectedUrl + "]");

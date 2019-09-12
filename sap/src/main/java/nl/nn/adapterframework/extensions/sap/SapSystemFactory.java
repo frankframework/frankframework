@@ -54,8 +54,8 @@ public class SapSystemFactory {
 	public String getSapSystemInfo(String sapSystemName) {
 		Object sapSystem = sapSystems.get(sapSystemName);
 		if (sapSystem == null) {
-			log.error("no SapSystem found under name [" + sapSystem
-					+ "], factory contents [" + toString() + "]");
+			log.error("no SapSystem found under name [" + sapSystem	+ "], factory contents [" + toString() + "]");
+			return null;
 		}
 		if (sapSystem instanceof nl.nn.adapterframework.extensions.sap.jco3.SapSystem) {
 			nl.nn.adapterframework.extensions.sap.jco3.SapSystem sapSystem3 = (nl.nn.adapterframework.extensions.sap.jco3.SapSystem) sapSystem;
@@ -91,6 +91,7 @@ public class SapSystemFactory {
 				+ sapSystem.toString() + "]");
 	}
 
+	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
 	}

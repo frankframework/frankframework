@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Integration Partners B.V.
+Copyright 2017 - 2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,19 +18,21 @@ package nl.nn.adapterframework.http.rest;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
 
 /**
- * The new and improved RESTful Listener now available for use!
  * 
  * @author Niels Meijer
  *
  */
-public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination {
+public class ApiListener extends PushingListenerAdapter<String> implements HasPhysicalDestination {
 
 	private String uriPattern;
 	private boolean updateEtag = true;
@@ -41,9 +43,9 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private String authenticationMethod = null;
 	private List<String> authenticationMethods = Arrays.asList("COOKIE", "HEADER");
 
-	private String consumes = "ANY";
-	private String produces = "ANY";
-	private List<String> mediaTypes = Arrays.asList("ANY", "XML", "JSON", "TEXT", "MULTIPART");
+	private MediaType consumes = MediaType.ANY;
+	private MediaType produces = MediaType.ANY;
+	private String multipartBodyName = null;
 
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
@@ -58,12 +60,6 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		if(!methods.contains(getMethod()))
 			throw new ConfigurationException("Method ["+method+"] not yet implemented, supported methods are "+methods.toString()+"");
 
-		if(!mediaTypes.contains(getProduces()))
-			throw new ConfigurationException("Unknown mediatype ["+produces+"]");
-
-		if(!mediaTypes.contains(getConsumes()))
-			throw new ConfigurationException("Unknown mediatype ["+consumes+"]");
-
 		if(getAuthenticationMethod() != null && !authenticationMethods.contains(getAuthenticationMethod()))
 			throw new ConfigurationException("Unknown authenticationMethod ["+authenticationMethod+"]");
 	}
@@ -71,13 +67,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	@Override
 	public void open() throws ListenerException {
 		super.open();
-		try {
-			ApiServiceDispatcher.getInstance().registerServiceClient(this);
-		} catch (ConfigurationException e) {
-			throw new ListenerException(e);
-		}
+
+		ApiServiceDispatcher.getInstance().registerServiceClient(this);
 	}
-	
+
 	@Override
 	public void close() {
 		super.close();
@@ -96,13 +89,15 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	public String getPhysicalDestinationName() {
 		String destinationName = "uriPattern: "+getCleanPattern()+"; method: "+getMethod();
-		if(!getConsumes().equals("ANY"))
+		if(!MediaType.ANY.equals(consumes))
 			destinationName += "; consumes: "+getConsumes();
-		if(!getProduces().equals("ANY"))
+		if(!MediaType.ANY.equals(produces))
 			destinationName += "; produces: "+getProduces();
+
 		return destinationName;
 	}
 
+	@IbisDoc({"uri pattern to register this listener on", ""})
 	public void setUriPattern(String uriPattern) {
 		this.uriPattern = uriPattern;
 	}
@@ -123,6 +118,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	public String getMethod() {
 		return method;
 	}
+	@IbisDoc({"HTTP method eq. GET POST PUT DELETE", ""})
 	public void setMethod(String method) {
 		this.method = method.toUpperCase();
 	}
@@ -136,42 +132,40 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return this.authenticationMethod;
 	}
 
-	public void setConsumes(String consumes) {
-		this.consumes = consumes.toUpperCase();
+	@IbisDoc({"the specified contentType on requests, if it doesn't match the request will fail", "ANY"})
+	public void setConsumes(String value) {
+		String consumes = null;
+		if(StringUtils.isEmpty(value))
+			consumes = "ANY";
+		else
+			consumes = value.toUpperCase();
+
+		this.consumes = MediaType.valueOf(consumes);
 	}
 	public String getConsumes() {
-		return consumes;
+		return consumes.name();
 	}
+
 	public boolean isConsumable(String contentType) {
-		if(getConsumes().equals("ANY"))
-			return true;
-
-		String mediaType = "text/plain";
-		if(getConsumes().equals("XML"))
-			mediaType = "application/xml";
-		else if(getConsumes().equals("JSON"))
-			mediaType = "application/json";
-		else if(getConsumes().equals("MULTIPART"))
-			mediaType = "multipart/"; //There are different multipart contentTypes, see: https://msdn.microsoft.com/en-us/library/ms527355(v=exchg.10).aspx
-
-		return contentType.contains(mediaType);
+		return consumes.isConsumable(contentType);
 	}
 
-	public void setProduces(String produces) {
-		this.produces = produces.toUpperCase();
+	@IbisDoc({"the specified contentType on response", "ANY"})
+	public void setProduces(String value) {
+		String produces = null;
+		if(StringUtils.isEmpty(value))
+			produces = "ANY";
+		else
+			produces = value.toUpperCase();
+
+		this.produces = MediaType.valueOf(produces);
 	}
 	public String getProduces() {
-		return produces;
+		return produces.name();
 	}
+
 	public String getContentType() {
-		String contentType = "*/*";
-		if(getProduces().equals("XML"))
-			contentType = "application/xml";
-		else if(getProduces().equals("JSON"))
-			contentType = "application/json";
-		else if(getProduces().equals("TEXT"))
-			contentType = "text/plain";
-		return contentType;
+		return produces.getContentType();
 	}
 
 	public void setUpdateEtag(boolean updateEtag) {
@@ -185,5 +179,16 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	public String toString() {
 		return this.getClass().toString() + "["+getPhysicalDestinationName()+"] "
 				+ "contentType["+getContentType()+"] updateEtag["+getUpdateEtag()+"]";
+	}
+
+	@IbisDoc({"specify the form-part you wish to enter the pipeline", "first form-part"})
+	public void setMultipartBodyName(String multipartBodyName) {
+		this.multipartBodyName = multipartBodyName;
+	}
+	public String getMultipartBodyName() {
+		if(StringUtils.isNotEmpty(multipartBodyName))
+			return multipartBodyName;
+
+		return null;
 	}
 }

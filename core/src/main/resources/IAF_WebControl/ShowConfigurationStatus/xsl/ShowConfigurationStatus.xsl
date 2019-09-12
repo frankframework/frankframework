@@ -747,7 +747,7 @@
 										<xsl:if test="@isEsbJmsFFListener='true'">
 											<imagelink type="move" alt="move message">
 												<xsl:attribute name="href" select="concat($srcPrefix, 'adapterHandler.do')" />
-												<parameter name="action">type="move" alt="move message"</parameter>
+												<parameter name="action">movemessage</parameter>
 												<parameter name="adapterName">
 													<xsl:value-of select="$encodedAdapterName" />
 												</parameter>

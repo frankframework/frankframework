@@ -34,6 +34,7 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.extensions.graphviz.GraphvizEngine;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.jdbc.migration.Migrator;
+import nl.nn.adapterframework.lifecycle.IbisApplicationContext;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -177,17 +178,14 @@ public class IbisContext extends IbisApplicationContext {
 
 			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
 
-			load();
-			getMessageKeeper().setMaxSize(Math.max(messageKeeperSize, getMessageKeeper().size()));
-
-			//TODO consider moving this to #FlowDiagram
-			String graphvizJsVersion = APP_CONSTANTS.getProperty("graphviz.js.version", null);
-			String graphvizJsFormat = APP_CONSTANTS.getProperty("graphviz.js.format", null);
 			try {
-				flowDiagram = new FlowDiagram(graphvizJsFormat, graphvizJsVersion);
+				flowDiagram = new FlowDiagram();
 			} catch (IllegalStateException e) {
 				log(null, null, "failed to initalize GraphVizEngine", MessageKeeperMessage.ERROR_LEVEL, e, true);
 			}
+
+			load();
+			getMessageKeeper().setMaxSize(Math.max(messageKeeperSize, getMessageKeeper().size()));
 
 			log("startup in " + (System.currentTimeMillis() - start) + " ms");
 		}

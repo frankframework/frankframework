@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.wsdl.WSDLException;
 
+import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -27,7 +28,6 @@ import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
 import nl.nn.adapterframework.validation.XmlValidatorException;
 
@@ -232,8 +232,6 @@ public class WsdlXmlValidatorTest extends Mockito {
 
 	@Test
 	public void warnSchemaLocationAlreadyDefaultValue() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
-		AppConstants.getInstance().setProperty("stub4testtool.configuration", "true");
-
 		// Mock a configuration with an adapter in it
 		IbisManager ibisManager = spy(new DefaultIbisManager());
 		ibisManager.setIbisContext(spy(new IbisContext()));
@@ -273,8 +271,6 @@ public class WsdlXmlValidatorTest extends Mockito {
 
 	@Test
 	public void warnUseSoapBodyNameSpace() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
-		AppConstants.getInstance().setProperty("stub4testtool.configuration", "true");
-
 		// Mock a configuration with an adapter in it
 		IbisManager ibisManager = spy(new DefaultIbisManager());
 		ibisManager.setIbisContext(spy(new IbisContext()));

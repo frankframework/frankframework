@@ -9,7 +9,7 @@ import nl.nn.adapterframework.extensions.cmis.server.CmisEventDispatcher;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
 import nl.nn.adapterframework.receivers.ReceiverAware;
 
-public class CmisEventListener extends PushingListenerAdapter implements HasPhysicalDestination, ReceiverAware {
+public class CmisEventListener extends PushingListenerAdapter<String> implements HasPhysicalDestination, ReceiverAware {
 
 	private IReceiver receiver = null;
 	private CmisEvent cmisEvent = null;

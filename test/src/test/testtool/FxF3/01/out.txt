@@ -1,1 +1,1 @@
-c:/temp/testdata/fxf\NNX01234\in\file.txt
+c:/temp/testdata\NNX01234\in\file.txt

@@ -557,7 +557,30 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 		return folderId;
 	}
 
-	
+	@Override
+	public void createFolder(String folderName) throws FileSystemException {
+		try {
+			Folder folder = new Folder(exchangeService);
+			folder.setDisplayName(folderName);
+			folder.save(new FolderId(WellKnownFolderName.Inbox, new Mailbox(getMailAddress())));
+		} catch (Exception e) {
+			throw new FileSystemException(e);
+		}
+	}
+
+
+	@Override
+	public void removeFolder(String folderName) throws FileSystemException {
+		try {
+			FolderId folderId = getFolderIdByFolderName(folderName);
+			Folder folder = Folder.bind(exchangeService, folderId);
+			folder.delete(DeleteMode.HardDelete);
+		} catch (Exception e) {
+			throw new FileSystemException(e);
+		}
+	}
+
+
 //	
 //	
 //	@Override
@@ -820,6 +843,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 	public ExchangeService getExchangeService() {
 		return exchangeService;
 	}
+
 
 
 }

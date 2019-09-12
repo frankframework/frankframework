@@ -15,10 +15,7 @@
 */
 package nl.nn.adapterframework.doc;
 
-import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -35,7 +32,6 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-import org.apache.xalan.xsltc.compiler.util.ResultTreeType;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
@@ -102,7 +98,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 	}
 	private static List<String> overwriteMaxOccursToUnbounded = new ArrayList<String>();
 	static {
-		// The setSender in ParallelSenders adds senders to a list. When setSender has been renamed to addSender this
+		// The setSender in ParallelSenders adds senders to a list. When setSender  has been renamed to addSender this
 		// workaround can be removed.
 		overwriteMaxOccursToUnbounded.add("parallelSendersSender");
 	}
@@ -390,18 +386,33 @@ public class IbisDocPipe extends FixedForwardPipe {
 
 	private String getJson() {
 		Map<String, TreeSet<IbisBean>> groups = getGroups();
+		IbisDocExtractor extractor = new IbisDocExtractor();
 
-		ResultsTesting rt = new ResultsTesting();
 		// For all folders
 		for (String folder : groups.keySet()) {
+
 			// For all classes
 			for (IbisBean ibisBean : groups.get(folder)) {
-				// Get the class
+
+				// Copy the properties of FileSender into FilePipe so that the properties of FileHandler are also in FilePipe
 				Map<String, Method> beanProperties = getBeanProperties(ibisBean.getClazz());
 				if (beanProperties != null) {
 
+					if (ibisBean.getName().equals("FilePipe")) {
+						for (IbisBean bean : groups.get("Senders")) {
+							if (bean.getName().equals("FileSender")) {
+								Map<String, Method> senderProperties = getBeanProperties(bean.getClazz());
+								if (senderProperties != null) {
+									beanProperties.putAll(senderProperties);
+								}
+								break;
+							}
+						}
+					}
+
 					// For each method in the class
-					Iterator<String> iterator = new TreeSet<String>(beanProperties.keySet()).iterator();
+					Iterator<String> iterator = new TreeSet<>(beanProperties.keySet()).iterator();
+
 					while (iterator.hasNext()) {
 
 						// Get the method
@@ -410,21 +421,62 @@ public class IbisDocPipe extends FixedForwardPipe {
 
 						// Get the ibisdoc of the method
 						IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
+
+						// Create an array for the superclasses of this method's class
+						ArrayList<String> superClasses = new ArrayList<String>();
+
+						// Get the class
+                        Class clazz = ibisBean.getClazz();
+						int index = 0;
+
+						// For each superclass
+                        while (clazz.getSuperclass() != null) {
+
+                        	// Assign a string with a priority number attached to it and add it to the array of superclasses
+                        	String str = Integer.toString(index);
+                        	superClasses.add(clazz.getSimpleName() + str);
+                            clazz = clazz.getSuperclass();
+                            index++;
+                        }
+
+                        String javadocLink = ibisBean.getClazz().getName().replaceAll("\\.", "/");
+
+						// If there is an IbisDoc of the method
 						if (ibisDoc != null) {
+
+							// Get the values (description and default value)
 							String[] ibisDocValues = ibisDoc.value();
-							if (ibisDocValues.length > 1) {
-								rt.addMethods(folder, ibisBean.getName(), property, ibisDocValues[0], ibisDocValues[1], method.getDeclaringClass().getSimpleName());
+
+							int order;
+							int desc;
+							int def;
+
+							// If it doesnt have anything
+							if (ibisDocValues[0].matches("\\d+")) {
+								order = Integer.parseInt(ibisDocValues[0]);
+								desc = 1;
+								def = 2;
 							} else {
-								rt.addMethods(folder, ibisBean.getName(), property, ibisDocValues[0], "", method.getDeclaringClass().getSimpleName());
+								order = 999;
+								desc = 0;
+								def = 1;
+							}
+
+							if (ibisDocValues.length > def) {
+								extractor.addMethods(folder, ibisBean.getName(), property, ibisDocValues[desc], ibisDocValues[def], method.getDeclaringClass().getSimpleName(), superClasses, javadocLink, order);
+							} else {
+								extractor.addMethods(folder, ibisBean.getName(), property, ibisDocValues[desc], "", method.getDeclaringClass().getSimpleName(), superClasses, javadocLink, order);
 							}
 						}
 					}
 				}
 			}
 		}
-		rt.writeToJsonUrl();
 
-		return rt.getJsonString();
+		extractor.addAllFolder();
+		extractor.writeToJsonUrl();
+
+		return extractor.getJsonString();
 	}
 
 	private String getSchema() throws PipeRunException {

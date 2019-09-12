@@ -58,6 +58,11 @@ public class ParameterValueList {
 		return map.get(name);
 	}
 
+	public boolean containsKey(String name) {
+		return map.containsKey(name);
+	}
+
+
 	public ParameterValue removeParameterValue(String name) {
 		ParameterValue pv = map.remove(name);
 		if (pv!=null) {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017-2018 Nationale-Nederlanden
+   Copyright 2013, 2017-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.http;
 
 import java.io.IOException;
-import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -85,9 +84,11 @@ public class WebServiceSender extends HttpSender {
 
 		if (paramList!=null && StringUtils.isNotEmpty(getSoapActionParam())) {
 			soapActionParameter=paramList.findParameter(getSoapActionParam());
+			if(soapActionParameter != null)
+				addParameterToSkip(soapActionParameter.getName());
 			serviceNamespaceURIParameter=paramList.findParameter(getServiceNamespaceParam());
-			addParameterToSkip(soapActionParameter);
-			addParameterToSkip(serviceNamespaceURIParameter);
+			if(serviceNamespaceURIParameter != null)
+				addParameterToSkip(serviceNamespaceURIParameter.getName());
 		}
 
 		if (StringUtils.isNotEmpty(getWssAuthAlias()) || 
@@ -98,13 +99,13 @@ public class WebServiceSender extends HttpSender {
 	}
 
 	@Override
-	protected HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, Map<String,String> headersParamsMap) throws SenderException {
+	protected HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters) throws SenderException {
 		setContentType("text/xml; charset="+Misc.DEFAULT_INPUT_STREAM_ENCODING);
-		return super.getMethod(uri, message, parameters, headersParamsMap);
+		return super.getMethod(uri, message, parameters);
 	}
 
 	@Override
-	protected HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap, IPipeLineSession session) throws SenderException {
+	protected HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
 
 		String serviceNamespaceURI;
 		if (serviceNamespaceURIParameter!=null) {
@@ -132,7 +133,7 @@ public class WebServiceSender extends HttpSender {
 		}
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"SOAPMSG [" + soapmsg + "]");
 
-		HttpRequestBase method = super.getMethod(uri, soapmsg, parameters, headersParamsMap, session);
+		HttpRequestBase method = super.getMethod(uri, soapmsg, parameters, session);
 		log.debug(getLogPrefix()+"setting SOAPAction header ["+soapActionURI+"]");
 		method.setHeader("SOAPAction", soapActionURI);
 		return method;

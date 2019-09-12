@@ -103,6 +103,7 @@ public class UnzipPipe extends FixedForwardPipe {
 	private File dir; // File representation of directory
 	private List<String> base64Extensions;
 
+	private boolean checkDirectory=false;
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -112,11 +113,13 @@ public class UnzipPipe extends FixedForwardPipe {
 			}
 		} else {
 			dir = new File(getDirectory());
-			if (!dir.exists()) {
-				throw new ConfigurationException(getLogPrefix(null)+"directory ["+getDirectory()+"] does not exist");
-			}
-			if (!dir.isDirectory()) {
-				throw new ConfigurationException(getLogPrefix(null)+"directory ["+getDirectory()+"] is not a directory");
+			if(!isCheckDirectory()) {
+				if (!dir.exists()) {
+					throw new ConfigurationException(getLogPrefix(null)+"directory ["+getDirectory()+"] does not exist");
+				}
+				if (!dir.isDirectory()) {
+					throw new ConfigurationException(getLogPrefix(null)+"directory ["+getDirectory()+"] is not a directory");
+				}
 			}
 		}
 		if (StringUtils.isEmpty(getCollectFileContentsBase64Encoded())) {
@@ -326,5 +329,15 @@ public class UnzipPipe extends FixedForwardPipe {
 	}
 	public boolean isCreateSubdirectories() {
 		return createSubdirectories;
+	}
+	
+	@IbisDoc({"if set <code>true</code>, validation on directory is ignored", "false"})
+	public boolean isCheckDirectory()
+	{
+		return checkDirectory;
+	}
+	public void setCheckDirectory(boolean checkDirectory)
+	{
+		this.checkDirectory = checkDirectory;
 	}
 }

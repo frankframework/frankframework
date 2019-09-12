@@ -74,7 +74,13 @@ public class ConfigurationUtils {
 	private static final String CONFIGURATIONS = APP_CONSTANTS.getResolvedProperty("configurations.names.application");
 
 	public static boolean stubConfiguration() {
-		return APP_CONSTANTS.getBoolean(STUB4TESTTOOL_CONFIGURATION_KEY, false);
+		return stubConfiguration(null);
+	}
+	/**
+	 * TODO: make this method public and create STUB per configuration
+	 */
+	private static boolean stubConfiguration(ClassLoader classLoader) {
+		return AppConstants.getInstance(classLoader).getBoolean(STUB4TESTTOOL_CONFIGURATION_KEY, false);
 	}
 
 	public static String getStubbedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
@@ -344,7 +350,6 @@ public class ConfigurationUtils {
 	 * 
 	 * @param ibisContext
 	 * @return A map with all configurations to load (KEY = configName, VALUE = ClassLoader)
-	 * @throws ConfigurationException
 	 */
 	public static Map<String, String> retrieveAllConfigNames(IbisContext ibisContext) {
 		// For now only database configurations are returned, but also

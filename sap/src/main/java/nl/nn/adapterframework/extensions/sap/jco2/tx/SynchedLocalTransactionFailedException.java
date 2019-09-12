@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco2.tx;
 
-import nl.nn.adapterframework.extensions.sap.jco2.SapException;
+import nl.nn.adapterframework.extensions.sap.SapException;
 
 /**
  * Exception thrown when a synchronized local transaction failed to complete

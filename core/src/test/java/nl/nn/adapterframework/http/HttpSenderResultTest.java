@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,8 +24,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Map;
+
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.Misc;
 
@@ -33,16 +35,18 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.StatusLine;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HttpContext;
+import org.junit.After;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 public class HttpSenderResultTest extends Mockito {
+
+	private HttpSender sender = null;
 
 	public HttpSender createHttpSender() throws IOException {
 		InputStream dummyXmlString = new ByteArrayInputStream("<dummy result/>".getBytes());
@@ -77,16 +81,8 @@ public class HttpSenderResultTest extends Mockito {
 		sender.setVerifyHostname(false);
 		sender.setAllowSelfSignedCertificates(true);
 
+		this.sender = sender;
 		return sender;
-	}
-
-	private final String BASEDIR = "/nl/nn/adapterframework/http/";
-	private InputStream getFile(String file) throws IOException {
-		URL url = this.getClass().getResource(BASEDIR+file);
-		if (url == null) {
-			throw new IOException("file not found");
-		}
-		return url.openStream();
 	}
 
 	public HttpSender createHttpSenderFromFile(String testFile) throws IOException {
@@ -110,55 +106,56 @@ public class HttpSenderResultTest extends Mockito {
 		return createHttpSender(dummyXmlString, contentType);
 	}
 
-	@Test
-	public void simpleMockedHttpGet() throws ClientProtocolException, IOException {
-		HttpSender sender = createHttpSender();
-
-		try {
-			IPipeLineSession pls = new PipeLineSessionBase();
-			ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
-
-			sender.setMethodType("GET");
-
-			sender.configure();
-			sender.open();
-
-			//Use InputStream 'content' as result.
-			String result = sender.sendMessage(null, "", prc);
-			assertEquals("<dummy result/>", result);
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (sender != null) {
-				sender.close();
-			}
+	@After
+	public void setDown() throws SenderException {
+		if (sender != null) {
+			sender.close();
+			sender = null;
 		}
 	}
 
+	private final String BASEDIR = "/nl/nn/adapterframework/http/";
+	private InputStream getFile(String file) throws IOException {
+		URL url = this.getClass().getResource(BASEDIR+file);
+		if (url == null) {
+			throw new IOException("file not found");
+		}
+		return url.openStream();
+	}
+
 	@Test
-	public void simpleBase64MockedHttpGet() throws ClientProtocolException, IOException {
+	public void simpleMockedHttpGet() throws Exception {
 		HttpSender sender = createHttpSender();
 
-		try {
-			IPipeLineSession pls = new PipeLineSessionBase();
-			ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
+		IPipeLineSession pls = new PipeLineSessionBase();
+		ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
 
-			sender.setMethodType("GET");
-			sender.setBase64(true);
+		sender.setMethodType("GET");
 
-			sender.configure();
-			sender.open();
+		sender.configure();
+		sender.open();
 
-			//Use InputStream 'content' as result.
-			String result = sender.sendMessage(null, "", prc);
-			assertEquals("PGR1bW15IHJlc3VsdC8+", result.trim());
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (sender != null) {
-				sender.close();
-			}
-		}
+		//Use InputStream 'content' as result.
+		String result = sender.sendMessage(null, "", prc);
+		assertEquals("<dummy result/>", result);
+	}
+
+	@Test
+	public void simpleBase64MockedHttpGet() throws Exception {
+		HttpSender sender = createHttpSender();
+
+		IPipeLineSession pls = new PipeLineSessionBase();
+		ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
+
+		sender.setMethodType("GET");
+		sender.setBase64(true);
+
+		sender.configure();
+		sender.open();
+
+		//Use InputStream 'content' as result.
+		String result = sender.sendMessage(null, "", prc);
+		assertEquals("PGR1bW15IHJlc3VsdC8+", result.trim());
 	}
 
 	@Test
@@ -170,226 +167,173 @@ public class HttpSenderResultTest extends Mockito {
 	}
 
 	@Test
-	public void simpleBase64MockedHttpPost() throws ClientProtocolException, IOException {
+	public void simpleBase64MockedHttpPost() throws Exception {
 		HttpSender sender = createHttpSender();
 
-		try {
-			IPipeLineSession pls = new PipeLineSessionBase();
-			ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
+		IPipeLineSession pls = new PipeLineSessionBase();
+		ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
 
-			sender.setParamsInUrl(false);
-			sender.setInputMessageParam("inputMessageParam");
-			sender.setMethodType("POST");
-			sender.setBase64(true);
+		sender.setParamsInUrl(false);
+		sender.setInputMessageParam("inputMessageParam");
+		sender.setMethodType("POST");
+		sender.setBase64(true);
 
-			sender.configure();
-			sender.open();
+		sender.configure();
+		sender.open();
 
-			//Use InputStream 'content' as result.
-			String result = sender.sendMessage(null, "tralala", prc);
-			assertEquals("PGR1bW15IHJlc3VsdC8+", result.trim());
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (sender != null) {
-				sender.close();
-			}
-		}
+		//Use InputStream 'content' as result.
+		String result = sender.sendMessage(null, "tralala", prc);
+		assertEquals("PGR1bW15IHJlc3VsdC8+", result.trim());
 	}
 
 	@Test
-	public void simpleByteArrayInSessionKeyMockedHttpGet() throws ClientProtocolException, IOException {
+	public void simpleByteArrayInSessionKeyMockedHttpGet() throws Exception {
 		HttpSender sender = createHttpSender();
 		String SESSIONKEY_KEY = "result";
-		try {
-			IPipeLineSession pls = new PipeLineSessionBase();
-			ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
 
-			sender.setMethodType("GET");
-			sender.setStoreResultAsByteArrayInSessionKey(SESSIONKEY_KEY);
+		IPipeLineSession pls = new PipeLineSessionBase();
+		ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
 
-			sender.configure();
-			sender.open();
+		sender.setMethodType("GET");
+		sender.setStoreResultAsByteArrayInSessionKey(SESSIONKEY_KEY);
 
-			//Use InputStream 'content' as result.
-			String result = sender.sendMessage(null, "tralala", prc);
-			assertEquals("", result);
-			pls = prc.getSession();
+		sender.configure();
+		sender.open();
 
-			byte[] byteArray = (byte[])pls.get(SESSIONKEY_KEY);
-			assertEquals("<dummy result/>", new String(byteArray, "UTF-8"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (sender != null) {
-				sender.close();
-			}
-		}
+		//Use InputStream 'content' as result.
+		String result = sender.sendMessage(null, "tralala", prc);
+		assertEquals("", result);
+		pls = prc.getSession();
+
+		byte[] byteArray = (byte[])pls.get(SESSIONKEY_KEY);
+		assertEquals("<dummy result/>", new String(byteArray, "UTF-8"));
 	}
 
 	@Test
-	public void simpleByteArrayInSessionKeyMockedHttpPost() throws ClientProtocolException, IOException {
+	public void simpleByteArrayInSessionKeyMockedHttpPost() throws Exception {
 		HttpSender sender = createHttpSender();
 		String SESSIONKEY_KEY = "result";
-		try {
-			IPipeLineSession pls = new PipeLineSessionBase();
-			ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
 
-			sender.setMethodType("POST");
-			sender.setStoreResultAsByteArrayInSessionKey(SESSIONKEY_KEY);
+		IPipeLineSession pls = new PipeLineSessionBase();
+		ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
 
-			sender.configure();
-			sender.open();
+		sender.setMethodType("POST");
+		sender.setStoreResultAsByteArrayInSessionKey(SESSIONKEY_KEY);
 
-			//Use InputStream 'content' as result.
-			String result = sender.sendMessage(null, "tralala", prc);
-			assertEquals("", result);
-			pls = prc.getSession();
+		sender.configure();
+		sender.open();
 
-			byte[] byteArray = (byte[])pls.get(SESSIONKEY_KEY);
-			assertEquals("<dummy result/>", new String(byteArray, "UTF-8"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (sender != null) {
-				sender.close();
-			}
-		}
+		//Use InputStream 'content' as result.
+		String result = sender.sendMessage(null, "tralala", prc);
+		assertEquals("", result);
+		pls = prc.getSession();
+
+		byte[] byteArray = (byte[])pls.get(SESSIONKEY_KEY);
+		assertEquals("<dummy result/>", new String(byteArray, "UTF-8"));
 	}
 
 	@Test
-	public void simpleResultAsStreamMockedHttpGet() throws ClientProtocolException, IOException {
+	public void simpleResultAsStreamMockedHttpGet() throws Exception {
 		HttpSender sender = createHttpSender();
 		String SESSIONKEY_KEY = "result";
-		try {
-			IPipeLineSession pls = new PipeLineSessionBase();
-			ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
 
-			sender.setMethodType("GET");
-			sender.setStoreResultAsStreamInSessionKey(SESSIONKEY_KEY);
+		IPipeLineSession pls = new PipeLineSessionBase();
+		ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
 
-			sender.configure();
-			sender.open();
+		sender.setMethodType("GET");
+		sender.setStoreResultAsStreamInSessionKey(SESSIONKEY_KEY);
 
-			//Use InputStream 'content' as result.
-			String result = sender.sendMessage(null, "tralala", prc);
-			assertEquals("", result);
-			pls = prc.getSession();
+		sender.configure();
+		sender.open();
 
-			InputStream stream = (InputStream)pls.get(SESSIONKEY_KEY);
-			assertEquals("<dummy result/>", Misc.streamToString(stream));
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (sender != null) {
-				sender.close();
-			}
-		}
+		//Use InputStream 'content' as result.
+		String result = sender.sendMessage(null, "tralala", prc);
+		assertEquals("", result);
+		pls = prc.getSession();
+
+		InputStream stream = (InputStream)pls.get(SESSIONKEY_KEY);
+		assertEquals("<dummy result/>", Misc.streamToString(stream));
 	}
 
 	@Test
-	public void simpleResultAsStreamMockedHttpPost() throws ClientProtocolException, IOException {
+	public void simpleResultAsStreamMockedHttpPost() throws Exception {
 		HttpSender sender = createHttpSender();
 		String SESSIONKEY_KEY = "result";
-		try {
-			IPipeLineSession pls = new PipeLineSessionBase();
-			ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
 
-			sender.setMethodType("POST");
-			sender.setStoreResultAsStreamInSessionKey(SESSIONKEY_KEY);
+		IPipeLineSession pls = new PipeLineSessionBase();
+		ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
 
-			sender.configure();
-			sender.open();
+		sender.setMethodType("POST");
+		sender.setStoreResultAsStreamInSessionKey(SESSIONKEY_KEY);
 
-			//Use InputStream 'content' as result.
-			String result = sender.sendMessage(null, "tralala", prc);
-			assertEquals("", result);
-			pls = prc.getSession();
+		sender.configure();
+		sender.open();
 
-			InputStream stream = (InputStream)pls.get(SESSIONKEY_KEY);
-			assertEquals("<dummy result/>", Misc.streamToString(stream));
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (sender != null) {
-				sender.close();
-			}
-		}
+		//Use InputStream 'content' as result.
+		String result = sender.sendMessage(null, "tralala", prc);
+		assertEquals("", result);
+		pls = prc.getSession();
+
+		InputStream stream = (InputStream)pls.get(SESSIONKEY_KEY);
+		assertEquals("<dummy result/>", Misc.streamToString(stream));
 	}
 
 	@Test
-	public void simpleMultiPartResponseMockedHttpGet() throws ClientProtocolException, IOException {
+	public void simpleMultiPartResponseMockedHttpGet() throws Exception {
 		HttpSender sender = createHttpSenderFromFile("multipart1.txt");
 
-		try {
-			IPipeLineSession pls = new PipeLineSessionBase();
-			ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
+		IPipeLineSession pls = new PipeLineSessionBase();
+		ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
 
-			sender.setMethodType("GET");
-			sender.setMultipartResponse(true);
+		sender.setMethodType("GET");
+		sender.setMultipartResponse(true);
 
-			sender.configure();
-			sender.open();
+		sender.configure();
+		sender.open();
 
-			String result = sender.sendMessage(null, "tralala", prc);
-			assertEquals("text default", result);
-			pls = prc.getSession();
+		String result = sender.sendMessage(null, "tralala", prc);
+		assertEquals("text default", result);
+		pls = prc.getSession();
 
-			int multipartAttachmentCount = 0;
-			for (Map.Entry<String, Object> entry : pls.entrySet()) {
-				System.out.println("found multipart ["+entry.getKey()+"]");
-				multipartAttachmentCount++;
-			}
-			assertEquals(2, multipartAttachmentCount);
-
-			InputStream multipart1 = (InputStream)pls.get("multipart1");
-			assertEquals("Content of a txt file.", Misc.streamToString(multipart1).trim());
-
-			InputStream multipart2 = (InputStream)pls.get("multipart2");
-			assertEquals("<!DOCTYPE html><title>Content of a html file.</title>", Misc.streamToString(multipart2).trim());
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (sender != null) {
-				sender.close();
-			}
+		int multipartAttachmentCount = 0;
+		for (Map.Entry<String, Object> entry : pls.entrySet()) {
+			System.out.println("found multipart ["+entry.getKey()+"]");
+			multipartAttachmentCount++;
 		}
+		assertEquals(2, multipartAttachmentCount);
+
+		InputStream multipart1 = (InputStream)pls.get("multipart1");
+		assertEquals("Content of a txt file.", Misc.streamToString(multipart1).trim());
+
+		InputStream multipart2 = (InputStream)pls.get("multipart2");
+		assertEquals("<!DOCTYPE html><title>Content of a html file.</title>", Misc.streamToString(multipart2).trim());
 	}
 
 	@Test
-	public void simpleMtomResponseMockedHttpGet() throws ClientProtocolException, IOException {
+	public void simpleMtomResponseMockedHttpGet() throws Exception {
 		HttpSender sender = createHttpSenderFromFile("mtom-multipart.txt");
 
-		try {
-			IPipeLineSession pls = new PipeLineSessionBase();
-			ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
+		IPipeLineSession pls = new PipeLineSessionBase();
+		ParameterResolutionContext prc = new ParameterResolutionContext("dummy prc", pls);
 
-			sender.setMethodType("GET");
-			sender.setMultipartResponse(true);
+		sender.setMethodType("GET");
+		sender.setMultipartResponse(true);
 
-			sender.configure();
-			sender.open();
+		sender.configure();
+		sender.open();
 
-			String result = sender.sendMessage(null, "tralala", prc);
-			assertEquals("<soap:Envelope/>", result.trim());
+		String result = sender.sendMessage(null, "tralala", prc);
+		assertEquals("<soap:Envelope/>", result.trim());
 
-			pls = prc.getSession();
-			int multipartAttachmentCount = 0;
-			for (Map.Entry<String, Object> entry : pls.entrySet()) {
-				System.out.println("found multipart key["+entry.getKey()+"] type["+(entry.getValue().getClass())+"]");
-				multipartAttachmentCount++;
-			}
-			assertEquals(1, multipartAttachmentCount);
-
-			InputStream multipart1 = (InputStream)pls.get("multipart1");
-			assertEquals("PDF-1.4 content", Misc.streamToString(multipart1).trim());
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (sender != null) {
-				sender.close();
-			}
+		pls = prc.getSession();
+		int multipartAttachmentCount = 0;
+		for (Map.Entry<String, Object> entry : pls.entrySet()) {
+			System.out.println("found multipart key["+entry.getKey()+"] type["+(entry.getValue().getClass())+"]");
+			multipartAttachmentCount++;
 		}
+		assertEquals(1, multipartAttachmentCount);
+
+		InputStream multipart1 = (InputStream)pls.get("multipart1");
+		assertEquals("PDF-1.4 content", Misc.streamToString(multipart1).trim());
 	}
 }

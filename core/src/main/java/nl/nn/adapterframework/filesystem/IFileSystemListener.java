@@ -101,15 +101,11 @@ public interface IFileSystemListener<F> extends IPullingListener<F> {
 //		return passWithoutDirectory;
 //	}
 
-//	@IbisDoc({"when set to <code>true</code>, the directory to look for files is created if it does not exist", "false"})
-//	public void setCreateInputDirectory(boolean b) {
-//		createInputDirectory = b;
-//	}
+	@IbisDoc({"when set to <code>true</code>, the directory to look for files is created if it does not exist", "false"})
+	public void setCreateInputDirectory(boolean b);
 //
-//	public boolean isCreateInputDirectory() {
-//		return createInputDirectory;
-//	}
-
+//	public boolean isCreateInputDirectory();
+	
 //	/**
 //	 * @Deprecated replaced by processedFolder
 //	 */
@@ -122,7 +118,10 @@ public interface IFileSystemListener<F> extends IPullingListener<F> {
 
 	@IbisDoc({"folder where files are stored <i>after</i> being processed", ""})
 	public void setProcessedFolder(String processedFolder);
-	
+
+	@IbisDoc({"folder where files are stored <i>after</i> being processed, in case the exit-state was not equal to <code>success</code>", ""})
+	public void setErrorFolder(String errorFolder);
+
 //	@IbisDoc({"number of copies held of a file with the same name. backup files have a dot and a number suffixed to their name. if set to 0, no backups will be kept.", "5"})
 //	public void setNumberOfBackups(int i) {
 //		numberOfBackups = i;
@@ -136,10 +135,10 @@ public interface IFileSystemListener<F> extends IPullingListener<F> {
 //
 	@IbisDoc({"when set <code>true</code>, the file processed will deleted after being processed, and not stored", "false"})
 	public void setDelete(boolean b);
-//
-//	@IbisDoc({"when <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before", "false"})
-//	public void setFileTimeSensitive(boolean b);
-//
+
+	@IbisDoc({"when <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before", "false"})
+	public void setFileTimeSensitive(boolean b);
+
 	@IbisDoc({"determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'contents' for the contents of the file. For any other value, the attributes of the file are searched and used", "name"})
 	public void setMessageType(String messageType);
 

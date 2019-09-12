@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,11 +23,10 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.Misc;
 
 import org.junit.Test;
 
-public class HttpSenderTest extends BaseHttpSender<HttpSender> {
+public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Override
 	public HttpSender createSender() {
@@ -35,12 +34,34 @@ public class HttpSenderTest extends BaseHttpSender<HttpSender> {
 	}
 
 	@Test
-	public void simpleMockedHttpGet() throws Throwable {
-		HttpSender sender = getSender();
+	public void simpleMockedHttpGetWithoutPRC() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		String input = "hallo";
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase();
+			sender.setMethodType("GET");
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(null, input);
+			assertEquals(getFile("simpleMockedHttpGetWithoutPRC.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void simpleMockedHttpGet() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		String input = "hallo";
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
 			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			sender.setMethodType("GET");
@@ -65,7 +86,7 @@ public class HttpSenderTest extends BaseHttpSender<HttpSender> {
 		String input = "hallo";
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase();
+			IPipeLineSession pls = new PipeLineSessionBase(session);
 			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			Parameter param1 = new Parameter();
@@ -95,12 +116,48 @@ public class HttpSenderTest extends BaseHttpSender<HttpSender> {
 	}
 
 	@Test
+	public void simpleMockedHttpUnknownHeaderParam() throws Throwable {
+		HttpSender sender = getSender();
+		String input = "hallo";
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
+
+			Parameter param1 = new Parameter();
+			param1.setName("key");
+			param1.setValue("value");
+			sender.addParameter(param1);
+
+			Parameter param2 = new Parameter();
+			param2.setName("otherKey");
+			param2.setValue("otherValue");
+			sender.addParameter(param2);
+
+			sender.setMethodType("GET");
+			sender.setHeadersParams("custom-header, doesn-t-exist");
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(null, input, prc);
+			assertEquals(getFile("simpleMockedHttpGetWithParams.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
 	public void simpleMockedHttpPost() throws Throwable {
 		HttpSender sender = getSender();
 		String input = "<xml>input</xml>";
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase();
+			IPipeLineSession pls = new PipeLineSessionBase(session);
 			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			Parameter param1 = new Parameter();
@@ -137,7 +194,7 @@ public class HttpSenderTest extends BaseHttpSender<HttpSender> {
 		String input = "<xml>input</xml>";
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase();
+			IPipeLineSession pls = new PipeLineSessionBase(session);
 			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			sender.setMethodType("POST");
@@ -172,7 +229,7 @@ public class HttpSenderTest extends BaseHttpSender<HttpSender> {
 		String input = "<xml>input</xml>";
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase();
+			IPipeLineSession pls = new PipeLineSessionBase(session);
 			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			sender.setMethodType("POST");
@@ -193,6 +250,52 @@ public class HttpSenderTest extends BaseHttpSender<HttpSender> {
 
 			String result = sender.sendMessage(null, input, prc);
 			assertEquals(getFile("simpleMockedHttpMtom.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void parametersToSkip() throws Throwable {
+		HttpSender sender = getSender();
+		String input = "<xml>input</xml>";
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
+
+			sender.setMethodType("POST");
+			sender.setParamsInUrl(false);
+			sender.setInputMessageParam("request");
+
+			String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
+					+ "sessionKey=\"part_file\" size=\"72833\" "
+					+ "mimeType=\"application/pdf\"/></parts>";
+			pls.put("multipartXml", xmlMultipart);
+			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+
+			sender.setMtomEnabled(true);
+			sender.setMultipartXmlSessionKey("multipartXml");
+
+			Parameter urlParam = new Parameter();
+			urlParam.setName("url");
+			urlParam.setValue("http://ignore.me");
+			sender.addParameter(urlParam);
+
+			Parameter partParam = new Parameter();
+			partParam.setName("my-beautiful-part");
+			partParam.setValue("<partContent/>");
+			sender.addParameter(partParam);
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(null, input, prc);
+			assertEquals(getFile("parametersToSkip.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {
