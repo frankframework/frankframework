@@ -28,6 +28,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.extensions.cmis.CmisEventListener;
+import nl.nn.adapterframework.extensions.cmis.CmisUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -59,6 +60,8 @@ public class CmisEventDispatcher {
 	}
 
 	public Element trigger(CmisEvent event, String message, IPipeLineSession messageContext) {
+		CmisUtils.populateCmisAttributes(messageContext);
+
 		if(!eventListeners.containsKey(event))
 			throw new CmisRuntimeException("event ["+event.toString()+"] not found");
 

@@ -204,7 +204,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	private boolean verifyHostname=true;
 	private boolean ignoreCertificateExpiredException=false;
 
-	private String headersParams=null;
+	private String headersParams="";
 	private boolean followRedirects=true;
 	private boolean staleChecking=true;
 	private int staleTimeout = 5000;
@@ -222,12 +222,21 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	protected URIBuilder staticUri;
 	private CredentialFactory credentials;
 
-	private Set<Parameter> parametersToSkip=new HashSet<Parameter>();
+	private Set<String> parametersToSkip=new HashSet<String>();
 
-	protected void addParameterToSkip(Parameter param) {
-		if (param!=null) {
-			parametersToSkip.add(param);
+	protected void addParameterToSkip(String parameterName) {
+		if (parameterName != null) {
+			parametersToSkip.add(parameterName);
 		}
+	}
+
+	protected boolean skipParameter(String parameterName) {
+		for(String param : parametersToSkip) {
+			if(param.equalsIgnoreCase(parameterName))
+				return true;
+		}
+
+		return false;
 	}
 
 	protected URIBuilder getURI(String url) throws URISyntaxException {
@@ -274,7 +283,14 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 			paramList.configure();
 			if (StringUtils.isNotEmpty(getUrlParam())) {
 				urlParameter = paramList.findParameter(getUrlParam());
-				addParameterToSkip(urlParameter);
+				if(urlParameter != null)
+					addParameterToSkip(urlParameter.getName());
+			}
+
+			//Add all HeaderParams to paramIgnoreList
+			StringTokenizer st = new StringTokenizer(getHeadersParams(), ",");
+			while (st.hasMoreElements()) {
+				addParameterToSkip(st.nextToken());
 			}
 		}
 		if (getMaxConnections() <= 0) {
@@ -478,31 +494,29 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return true;
 	}
 
-	protected boolean appendParameters(boolean parametersAppended, StringBuffer path, ParameterValueList parameters, Map<String, String> headersParamsMap) throws SenderException {
+	protected boolean appendParameters(boolean parametersAppended, StringBuffer path, ParameterValueList parameters) throws SenderException {
 		if (parameters != null) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending ["+parameters.size()+"] parameters");
 		}
 		for(int i=0; i < parameters.size(); i++) {
-			if (parametersToSkip.contains(paramList.get(i))) {
+			if (skipParameter(paramList.get(i).getName())) {
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"skipping ["+paramList.get(i)+"]");
 				continue;
 			}
 			ParameterValue pv = parameters.getParameterValue(i);
-			if (!headersParamsMap.keySet().contains(pv.getDefinition().getName())) {
-				try {
-					if (parametersAppended) {
-						path.append("&");
-					} else {
-						path.append("?");
-						parametersAppended = true;
-					}
-
-					String parameterToAppend = pv.getDefinition().getName() +"="+ URLEncoder.encode(pv.asStringValue(""), getCharSet());
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending parameter ["+parameterToAppend+"]");
-					path.append(parameterToAppend);
-				} catch (UnsupportedEncodingException e) {
-					throw new SenderException(getLogPrefix()+"["+getCharSet()+"] encoding error. Failed to add parameter ["+pv.getDefinition().getName()+"]");
+			try {
+				if (parametersAppended) {
+					path.append("&");
+				} else {
+					path.append("?");
+					parametersAppended = true;
 				}
+
+				String parameterToAppend = pv.getDefinition().getName() +"="+ URLEncoder.encode(pv.asStringValue(""), getCharSet());
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending parameter ["+parameterToAppend+"]");
+				path.append(parameterToAppend);
+			} catch (UnsupportedEncodingException e) {
+				throw new SenderException(getLogPrefix()+"["+getCharSet()+"] encoding error. Failed to add parameter ["+pv.getDefinition().getName()+"]");
 			}
 		}
 		return parametersAppended;
@@ -518,7 +532,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	 * @return a {@link HttpRequestBase HttpRequest} object
 	 * @throws SenderException
 	 */
-	protected abstract HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap, IPipeLineSession session) throws SenderException;
+	protected abstract HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException;
 
 	/**
 	 * Custom implementation to extract the response and format it to a String result. <br/>
@@ -554,9 +568,10 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 			httpTarget = new HttpHost(uri.getHost(), getPort(uri), uri.getScheme());
 
+			// Resolve HeaderParameters
 			Map<String, String> headersParamsMap = new HashMap<String, String>();
 			if (headersParams != null) {
-				StringTokenizer st = new StringTokenizer(headersParams, ",");
+				StringTokenizer st = new StringTokenizer(getHeadersParams(), ",");
 				while (st.hasMoreElements()) {
 					String paramName = st.nextToken();
 					ParameterValue paramValue = pvl.getParameterValue(paramName);
@@ -569,7 +584,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 				message = URLEncoder.encode(message, getCharSet());
 			}
 
-			httpRequestBase = getMethod(uri, message, pvl, headersParamsMap, (prc==null) ? null : prc.getSession());
+			httpRequestBase = getMethod(uri, message, pvl, (prc==null) ? null : prc.getSession());
 			if(httpRequestBase == null)
 				throw new MethodNotSupportedException("could not find implementation for method ["+getMethodType()+"]");
 

@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.webcontrol;
+package nl.nn.adapterframework.lifecycle;
 
 import java.io.File;
 import java.net.URL;
@@ -35,7 +35,7 @@ import org.apache.cxf.transport.servlet.CXFServlet;
 import org.apache.log4j.Logger;
 
 /**
- * Start IAF with a servlet and register it in the Spring {@link nl.nn.adapterframework.configuration.IbisApplicationContext Application Context}.
+ * Start IAF with a servlet and register it in the Spring {@link nl.nn.adapterframework.lifecycle.IbisApplicationContext Application Context}.
  * This is important as we want to integrate CXF and run it on the existing {@link org.apache.cxf.bus.spring.SpringBus SpringBus}.
  * 
  * @author Niels Meijer
@@ -62,7 +62,7 @@ public class IbisApplicationServlet extends CXFServlet {
 	}
 
 	/**
-	 * Initializes the {@link nl.nn.adapterframework.configuration.IbisApplicationContext Ibis Application Context} 
+	 * Initializes the {@link nl.nn.adapterframework.lifecycle.IbisApplicationContext Ibis Application Context} 
 	 * which will in turn call {@link #doInit()} to initialize the CXF servlet
 	 */
 	@Override
@@ -118,7 +118,7 @@ public class IbisApplicationServlet extends CXFServlet {
 	}
 
 	/**
-	 * Should only be called by {@link nl.nn.adapterframework.configuration.IbisApplicationContext#createWebApplicationContext() createWebApplicationContext}
+	 * Should only be called by {@link nl.nn.adapterframework.lifecycle.IbisApplicationContext#createWebApplicationContext() createWebApplicationContext}
 	 * <br/>
 	 * Creates the CXF servlet context
 	 * @throws ServletException
@@ -129,7 +129,7 @@ public class IbisApplicationServlet extends CXFServlet {
 	}
 
 	/**
-	 * Destroy the {@link nl.nn.adapterframework.configuration.IbisApplicationContext Ibis Application Context}
+	 * Destroy the {@link nl.nn.adapterframework.lifecycle.IbisApplicationContext Ibis Application Context}
 	 * which will in turn call {@link #doDestroy()} to destroy the CXF servlet
 	 */
 	@Override
@@ -139,7 +139,7 @@ public class IbisApplicationServlet extends CXFServlet {
 	}
 
 	/**
-	 * Should only be called by {@link nl.nn.adapterframework.configuration.IbisApplicationContext#createWebApplicationContext() createWebApplicationContext}
+	 * Should only be called by {@link nl.nn.adapterframework.lifecycle.IbisApplicationContext#createWebApplicationContext() createWebApplicationContext}
 	 * <br/>
 	 * Destroys the CXF servlet context
 	 */

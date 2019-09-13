@@ -22,15 +22,16 @@ import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
+import nl.nn.adapterframework.http.HttpServletBase;
 import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
+import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -42,7 +43,8 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
-public class ApiListenerServlet extends HttpServlet {
+@IbisInitializer
+public class ApiListenerServlet extends HttpServletBase {
 
 	private static final long serialVersionUID = 1L;
 
@@ -281,13 +283,20 @@ public class ApiListenerServlet extends HttpServlet {
 			Enumeration<String> headers = request.getHeaderNames();
 			XmlBuilder headersXml = new XmlBuilder("headers");
 			while (headers.hasMoreElements()) {
-				String header = headers.nextElement().toLowerCase();
-				if(IGNORE_HEADERS.contains(header))
+				String headerName = headers.nextElement().toLowerCase();
+				if(IGNORE_HEADERS.contains(headerName))
 					continue;
 
-				XmlBuilder headerXml = new XmlBuilder(header);
-				headerXml.setValue(request.getHeader(header));
-				headersXml.addSubElement(headerXml);
+				String headerValue = request.getHeader(headerName);
+				try {
+					XmlBuilder headerXml = new XmlBuilder("header");
+					headerXml.addAttribute("name", headerName);
+					headerXml.setValue(headerValue);
+					headersXml.addSubElement(headerXml);
+				}
+				catch (Throwable t) {
+					log.info("unable to convert header to xml name["+headerName+"] value["+headerValue+"]");
+				}
 			}
 			messageContext.put("headers", headersXml.toXML());
 
@@ -438,5 +447,10 @@ public class ApiListenerServlet extends HttpServlet {
 				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
 		}
+	}
+
+	@Override
+	public String getUrlMapping() {
+		return "/api/*";
 	}
 }

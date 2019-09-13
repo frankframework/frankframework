@@ -13,18 +13,22 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.configuration;
+package nl.nn.adapterframework.extensions.cmis.servlets;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import nl.nn.adapterframework.lifecycle.IbisInitializer;
 
-import org.springframework.web.WebApplicationInitializer;
+@IbisInitializer
+public class WebServices11 extends WebServicesServletBase {
 
-public class IbisApplicationInitializer implements WebApplicationInitializer {
+	private static final long serialVersionUID = 1L;
 
 	@Override
-	public void onStartup(ServletContext servletContext) throws ServletException {
-		servletContext.log("Starting IBIS Application");
+	public String getUrlMapping() {
+		return "/cmis/webservices/*";
 	}
 
+	@Override
+	protected String getCmisVersion() {
+		return "1.1";
+	}
 }
