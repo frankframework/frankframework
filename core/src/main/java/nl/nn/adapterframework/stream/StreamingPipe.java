@@ -96,43 +96,69 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 		List<IOutputStreamingSupport> streamTargets = getStreamTargets(session);
 		if (streamTargets!=null && streamTargets.size()>0) {
 			try {
-				MessageOutputStream outputStream;
-					outputStream = getNextPipesOutputStream(streamTargets, session);
+				log.debug(getLogPrefix(session)+"obtaining outputstream");
+				MessageOutputStream outputStream = getNextPipesOutputStream(streamTargets, session);
+				log.debug(getLogPrefix(session)+"executing pipe with outputstream");
 				doPipe(input, session, outputStream);
 				PipeForward finalForward=getFinalForward(streamTargets);
+				log.debug(getLogPrefix(session)+"obtained forward ["+finalForward+"] from streamtargets");
 				return new PipeRunResult(finalForward, outputStream.getResponse());
 			} catch (StreamingException e) {
 				throw new PipeRunException(this,"Streaming exception", e);
 			}
 		} else {
+			log.debug(getLogPrefix(session)+"cannot stream, streamingActive ["+isStreamingActive()+"]");
 			return doPipe(input, session, null);
 		}
 	}
 
 	private List<IOutputStreamingSupport> getStreamTargets(IPipeLineSession session) {
 		PipeLine pipeline=getPipeLine();
-		if (!isStreamingActive() || pipeline==null) {
+		if (!isStreamingActive()) {
+			log.debug(getLogPrefix(session)+"cannot stream, streamingActive ["+isStreamingActive()+"]");
+			return null;
+		}
+		if (pipeline==null) {
+			log.debug(getLogPrefix(session)+"cannot stream, no pipeline");
 			return null;
 		}
 		List<IOutputStreamingSupport> streamTargets = new ArrayList<IOutputStreamingSupport>();
-		String forwardName=getForwardName();
+		PipeForward forward=getForward();
 		while (true) {
-			IPipe nextPipe=pipeline.getPipe(forwardName);
+			if (forward==null) {
+				log.debug(getLogPrefix(session)+"forward is null, streaming stops");
+				break;
+			}
+			String forwardPath=forward.getPath();
+			if (forwardPath==null) {
+				log.debug(getLogPrefix(session)+"forwardPath is null, streaming stops");
+				break;
+			}
+			IPipe nextPipe=pipeline.getPipe(forwardPath);
+			if (nextPipe==null) {
+				log.debug(getLogPrefix(session)+"pipeline ends here, streaming stops");
+				break;
+			}
 			if (!(nextPipe instanceof IOutputStreamingSupport)) {
+				log.debug(getLogPrefix(session)+"nextPipe ["+forwardPath+"] type ["+nextPipe.getClass().getSimpleName()+"] does not support streaming");
 				break;
 			}
 			if (nextPipe instanceof StreamingPipe && !((StreamingPipe)nextPipe).isStreamingActive()) {
+				log.debug(getLogPrefix(session)+"nextPipe ["+forwardPath+"] has not activated streaming");
 				break;
 			}
 			IOutputStreamingSupport streamTarget = (IOutputStreamingSupport)nextPipe;
 			if (!streamTarget.canProvideOutputStream()) {
+				log.debug(getLogPrefix(session)+"nextPipe ["+forwardPath+"] cannot provide outputstream");
 				break;
 			}
+			log.debug("adding nextPipe ["+forwardPath+"] to list of stream targets");
 			streamTargets.add(streamTarget);
 			if (!streamTarget.canStreamToTarget() || !(streamTarget instanceof FixedForwardPipe)) {
+				log.debug(getLogPrefix(session)+"nextPipe ["+forwardPath+"] cannot provide stream to its successor");
 				break;
 			}
-			forwardName = ((FixedForwardPipe)nextPipe).getForwardName();
+			forward = ((FixedForwardPipe)nextPipe).getForward();
 		}
 		return streamTargets;
 	}
