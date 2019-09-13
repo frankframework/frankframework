@@ -1,0 +1,160 @@
+/*
+   Copyright 2019 Integration Partners
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+package nl.nn.adapterframework.stream;
+
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamResult;
+
+import org.apache.commons.io.output.WriterOutputStream;
+import org.apache.log4j.Logger;
+import org.xml.sax.ContentHandler;
+
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
+
+public class MessageOutputStream {
+	protected Logger log = LogUtil.getLogger(this);
+	
+	private Object requestStream;
+	private Object response;
+	
+	private MessageOutputStream next;
+	private MessageOutputStream tail;
+
+	public MessageOutputStream(OutputStream stream, MessageOutputStream next) {
+		this.requestStream=stream;
+		connect(next);
+	}
+	
+	public MessageOutputStream(Writer writer, MessageOutputStream next) {
+		this.requestStream=writer;
+		connect(next);
+	}
+	
+	public MessageOutputStream(ContentHandler handler, MessageOutputStream next) {
+		this.requestStream=handler;
+		connect(next);
+	}
+	
+	public MessageOutputStream(OutputStream stream, MessageOutputStream next, Object response) {
+		this(stream,next);
+		this.response=response;
+	}
+	
+	public MessageOutputStream(Writer writer, MessageOutputStream next, Object response) {
+		this(writer,next);
+		this.response=response;
+	}
+	
+	public MessageOutputStream(ContentHandler handler, MessageOutputStream next, Object response) {
+		this(handler,next);
+		this.response=response;
+	}
+
+	private void connect(MessageOutputStream next) {
+		this.next=next;
+		if (next==null) {
+			tail=this;			
+		} else {
+			tail=next.tail;
+		}
+	}
+
+	public OutputStream asStream() throws StreamingException {
+    	if (requestStream instanceof OutputStream) {
+    		return (OutputStream)requestStream;
+    	}
+    	if (requestStream instanceof Writer) {
+    		return new WriterOutputStream((Writer)requestStream);
+    	}
+    	if (requestStream instanceof ContentHandler) {
+    		return new ContentHandlerOutputStream((ContentHandler)requestStream);
+    	}
+    	return null;
+	}
+	
+	public Writer asWriter() throws StreamingException {
+    	if (requestStream instanceof Writer) {
+    		return (Writer)requestStream;
+    	}
+    	if (requestStream instanceof OutputStream) {
+    		try {
+				return new OutputStreamWriter((OutputStream)requestStream,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			} catch (UnsupportedEncodingException e) {
+				throw new StreamingException(e);
+			}
+    	}
+    	if (requestStream instanceof ContentHandler) {
+    		try {
+    	   		return new OutputStreamWriter(new ContentHandlerOutputStream((ContentHandler)requestStream),StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			} catch (UnsupportedEncodingException e) {
+				throw new StreamingException(e);
+			}
+    	}
+    	return null;
+	}
+
+	public ContentHandler asContentHandler() throws StreamingException {
+    	if (requestStream instanceof ContentHandler) {
+    		return (ContentHandler)requestStream;
+    	}
+    	if (requestStream instanceof OutputStream) {
+            return streamAsContentHandler(new StreamResult((OutputStream)requestStream));
+    	}
+    	if (requestStream instanceof Writer) {
+            return streamAsContentHandler(new StreamResult((Writer)requestStream));
+    	}
+    	return null;
+		
+	}
+
+    private ContentHandler streamAsContentHandler(StreamResult result) throws StreamingException {
+    	try {
+	        SAXTransformerFactory tf = (SAXTransformerFactory)TransformerFactory.newInstance();
+	        TransformerHandler transformerHandler = tf.newTransformerHandler();
+	        transformerHandler.setResult(result);
+	        return transformerHandler;
+		} catch (TransformerException e) {
+			throw new StreamingException(e);
+		}
+    }
+
+
+    /**
+     * Response message, e.g. the filename, of the {IOutputStreamTarget target} after processing the stream. 
+     * It is the responsablity of the {IOutputStreamTarget target} to set this message.
+     */
+	public void setResponse(Object response) {
+		this.response = response;
+	}
+    
+    public Object getResponse() {
+		return tail.response;
+	}
+
+    public String getResponseAsString() {
+		return getResponse()==null?null:getResponse().toString();
+	}
+
+}
