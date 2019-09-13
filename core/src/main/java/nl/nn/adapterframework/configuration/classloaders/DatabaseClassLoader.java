@@ -33,22 +33,38 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 	public void configure(IbisContext ibisContext, String configurationName) throws ConfigurationException {
 		super.configure(ibisContext, configurationName);
 
-		reload();
+		loadNewConfigFromDatabase(false);
 	};
 
-	@Override
-	public void reload() throws ConfigurationException {
-		super.reload();
+	private String getErrorMessage(boolean reload) {
+		return "Could not get config '" + getConfigurationName() + "' from database" + (reload ? ", ignoring reload" : "");
+	}
+
+	private void loadNewConfigFromDatabase(boolean reload) throws ConfigurationException {
 		Map<String, Object> configuration = null;
-		configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), getConfigurationName(), null);
+		try { //Make sure there's a database present
+			configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), getConfigurationName(), null);
+		}
+		catch (Throwable t) {
+			//Make the error a little bit more IBIS-developer intuitive
+			throw new ConfigurationException(getErrorMessage(reload), t);
+		}
+
 		if (configuration == null) {
-			throw new ConfigurationException("Could not get config '" + getConfigurationName() + "' from database");
+			throw new ConfigurationException(getErrorMessage(reload));
 		} else {
+			super.reload(); //First check if a database is present before clearing all resources
+
 			byte[] jarBytes = (byte[]) configuration.get("CONFIG");
 			configuration.remove("CONFIG");
 			this.configuration = configuration;
 			readResources(jarBytes, getConfigurationName());
 		}
+	}
+
+	@Override
+	public void reload() throws ConfigurationException {
+		loadNewConfigFromDatabase(true);
 	}
 
 	public String getFileName() {
