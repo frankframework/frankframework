@@ -32,7 +32,7 @@ import org.springframework.web.WebApplicationInitializer;
  * Javadoc} for details on this bootstrapping mechanism.
  * 
  * 
- * @see https://docs.oracle.com/javase/tutorial/ext/basics/spi.html
+ * @see "https://docs.oracle.com/javase/tutorial/ext/basics/spi.html"
  * 
  * @author Niels Meijer
  *

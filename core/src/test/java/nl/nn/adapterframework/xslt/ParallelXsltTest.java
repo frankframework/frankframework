@@ -28,14 +28,6 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 	public int NUM_SENDERS=10;
 	private List<XsltSender> xsltSenders;
 	boolean expectExtraParamWarning=false;
-<<<<<<< HEAD
-=======
-	
-	@Before
-	public void clear() {
-		expectExtraParamWarning=false;
-	}
->>>>>>> refs/heads/master
 	
 	@Before
 	public void clear() {
@@ -149,18 +141,6 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 		expectExtraParamWarning=true;
 		super.duplicateImportErrorAlertsXslt1();
 	}
-
-	@Override
-	public void duplicateImportErrorAlertsXslt1() throws Exception {
-		expectExtraParamWarning=true;
-		super.duplicateImportErrorAlertsXslt1();
-	}
-	@Override
-	public void duplicateImportErrorAlertsXslt2() throws Exception {
-		expectExtraParamWarning=true;
-		super.duplicateImportErrorAlertsXslt2();
-	}
-	
 	@Override
 	public void duplicateImportErrorAlertsXslt2() throws Exception {
 		expectExtraParamWarning=true;
