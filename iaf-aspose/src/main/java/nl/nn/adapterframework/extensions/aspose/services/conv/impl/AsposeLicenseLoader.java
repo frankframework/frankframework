@@ -29,14 +29,12 @@ import com.aspose.words.FontSettings;
 import com.aspose.words.FontSourceBase;
 
 /**
- * Cleanup the tmp directory before this class is started. This is because the
- * fonts will be stored in a subdirectory in DDCCS_PdfOutputLocation.
  * 
- * @author Gerard van der Hoorn
+ * @author M64D844
+ *
  */
 public class AsposeLicenseLoader {
 
-	private static final String ASPOSE_LICENSE_RESOURCE_NAME = "/Aspose.Total.Java.lic";
 	private static final String FONTS_RESOURCE_NAME = "/font.zip";
 	private static final String FONTS_RESOURCE_DIR = "/fonts/";
 
@@ -47,7 +45,6 @@ public class AsposeLicenseLoader {
 	private String pathToExtractFonts = null;
 	private String license = null;
 	private GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-	private boolean stateOpen = false;
 
 	public AsposeLicenseLoader(String asposeLicenseLocation, String fontsDirectory) {
 		license = asposeLicenseLocation;
@@ -84,17 +81,6 @@ public class AsposeLicenseLoader {
 		setFontDirectory(pathToFonts);
 	}
 
-	public void open() throws IOException {
-		if (!stateOpen) {
-			loadLicense();
-			stateOpen = true;
-		}
-	}
-
-	public void close() {
-		stateOpen = false;
-	}
-
 	/**
 	 * Zet de directory waar de fonts zich bevinden. Nodig omdat aspose op een unix
 	 * bak ze anders niet kan vinden.
@@ -114,7 +100,6 @@ public class AsposeLicenseLoader {
 			if (!Files.exists(fontsDirPath)) {
 				fontsDirPath = Files.createDirectory(fontsDirPath);
 			}
-			// FileUtil.deleteDirectoryContents(fontsDirPath.toFile());
 
 			try (ZipInputStream zipInputStream = new ZipInputStream(inputStream)) {
 				while (true) {
@@ -220,11 +205,8 @@ public class AsposeLicenseLoader {
 	}
 
 	private void loadAsposeLicense(LicenseLoader licenseLoader, String asposeLibrayName) {
-		// TODO: remove this if statement
-		if (license == null) {
-			license = ASPOSE_LICENSE_RESOURCE_NAME;
-		}
-		try (InputStream inputStream = this.getClass().getResource(license).openStream()) {
+
+		try (InputStream inputStream = new FileInputStream(license)) {
 			licenseLoader.loadLicense(inputStream);
 			LOGGER.info("Aspose " + asposeLibrayName + " license loaded!");
 		} catch (Exception e) {
@@ -296,7 +278,7 @@ public class AsposeLicenseLoader {
 
 				if (!fonts.contains(newFont)) {
 					if (!ge.registerFont(newFont)) {
-						// LOGGER.warn("Font not registered!" + newFont.getFontName());
+						 LOGGER.warn("Font not registered!" + newFont.getFontName());
 					}
 				}
 

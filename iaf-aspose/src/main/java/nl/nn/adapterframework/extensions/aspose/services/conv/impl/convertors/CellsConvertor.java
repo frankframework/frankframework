@@ -70,8 +70,7 @@ class CellsConvertor extends AbstractConvertor {
 			long startTime = new Date().getTime();
 			workbook.save(outputStream, SaveFormat.PDF);
 			long endTime = new Date().getTime();
-			System.err.println(
-					"Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
+			LOGGER.info("Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
 			InputStream inStream = new ByteArrayInputStream(outputStream.toByteArray());
 			result.setFileStream(inStream);
 			outputStream.close();
@@ -89,7 +88,7 @@ class CellsConvertor extends AbstractConvertor {
 		convertOrg(file, result);
 		// Add original file as attachment to resulting pdf file.
 		try (FileInputStream inputStreamToAttach = new FileInputStream(file)) {
-			PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(null);
+			PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(null, result);
 			pdfAttachmentUtil.addAttachmentToPdf(result, inputStreamToAttach, result.getDocumentName(),
 					FILE_TYPE_MAP.get(mediaType));
 		}

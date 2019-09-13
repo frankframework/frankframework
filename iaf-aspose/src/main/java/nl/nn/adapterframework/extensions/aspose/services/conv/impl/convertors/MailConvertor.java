@@ -6,9 +6,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -117,15 +119,15 @@ class MailConvertor extends AbstractConvertor {
 			long start = new Date().getTime();
 			doc.save(outputStream, SaveFormat.PDF);
 			long end = new Date().getTime();
-			System.err.println("Conversion(save operation in convert method) takes  :::  " + (end - start) + " ms");
+			LOGGER.info("Conversion(save operation in convert method) takes  :::  " + (end - start) + " ms");
 			InputStream inStream = new ByteArrayInputStream(outputStream.toByteArray());
 			result.setFileStream(inStream);
 			outputStream.close();
 			Long endTime = new Date().getTime();
-			LOGGER.error("Conversion completed in " + (endTime - startTime) + "ms");
-			System.err.println("Conversion completed in " + (endTime - startTime) + "ms");
+			LOGGER.info("Conversion completed in " + (endTime - startTime) + "ms");
 
 			// Convert and (optional add) any attachment of the mail.
+			List<CisConversionResult> convertedAttachments = new ArrayList<CisConversionResult>();
 			for (int index = 0; index < attachments.size(); index++) {
 				// Initialize Attachment object and Get the indexed Attachment reference
 				Attachment attachment = attachments.get_Item(index);
@@ -133,8 +135,17 @@ class MailConvertor extends AbstractConvertor {
 				// Convert the attachment.
 				CisConversionResult cisConversionResultAttachment = convertAttachmentInPdf(attachment,
 						conversionOption);
+				if ((ConversionOption.SINGLEPDF.equals(conversionOption)) 
+						&& (cisConversionResultAttachment.isConversionSuccessfull())) {
+						// If conversion successful add the converted pdf to the pdf.
+						convertedAttachments.add(cisConversionResultAttachment);
+				}
 				result.addAttachment(cisConversionResultAttachment);
 			}
+			if(!convertedAttachments.isEmpty()) {
+				PdfAttachmentUtil.addAttachmentInSinglePdf(convertedAttachments, result);
+			}
+			
 		}
 	}
 

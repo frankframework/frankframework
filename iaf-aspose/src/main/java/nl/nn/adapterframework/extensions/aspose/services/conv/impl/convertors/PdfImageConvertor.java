@@ -139,8 +139,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 			long startTime = new Date().getTime();
 			doc.save(outputStream, SaveFormat.Pdf);
 			long endTime = new Date().getTime();
-			System.err.println(
-					"Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
+			LOGGER.info("Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
 			InputStream inStream = new ByteArrayInputStream(outputStream.toByteArray());
 			result.setFileStream(inStream);
 			outputStream.close();

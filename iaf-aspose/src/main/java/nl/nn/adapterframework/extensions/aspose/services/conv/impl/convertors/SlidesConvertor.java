@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.log4j.Logger;
 import org.apache.tika.mime.MediaType;
 
 import com.aspose.slides.InvalidPasswordException;
@@ -24,15 +25,13 @@ import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 
 /**
- * Converts the files which are required and supported by the aspose slides
- * library.
  * 
- * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
- *         Hoorn</a> (d937275)
+ * @author M64D844
  *
  */
 public class SlidesConvertor extends AbstractConvertor {
 
+	private static final Logger LOGGER = Logger.getLogger(SlidesConvertor.class);
 	// contains mapping from MediaType to the LoadOption for the aspose word
 	// conversion.
 	private static final Map<MediaType, LoadOptions> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
@@ -69,8 +68,7 @@ public class SlidesConvertor extends AbstractConvertor {
 			long startTime = new Date().getTime();
 			presentation.save(outputStream, SaveFormat.Pdf);
 			long endTime = new Date().getTime();
-			System.err.println(
-					"Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
+			LOGGER.info("Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
 			presentation.dispose();
 			InputStream inStream = new ByteArrayInputStream(outputStream.toByteArray());
 			result.setFileStream(inStream);

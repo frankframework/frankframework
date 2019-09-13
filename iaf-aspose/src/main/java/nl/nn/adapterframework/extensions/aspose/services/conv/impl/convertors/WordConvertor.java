@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.log4j.Logger;
 import org.apache.tika.mime.MediaType;
 
 import com.aspose.words.Document;
@@ -24,14 +25,13 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResul
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
 
 /**
- * Converts the files which are required and supported by the aspose words
- * library.
  * 
- * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
- *         Hoorn</a> (d937275)
+ * @author M64D844
+ *
  */
 class WordConvertor extends AbstractConvertor {
 
+	private static final Logger LOGGER = Logger.getLogger(WordConvertor.class);
 	// contains mapping from MediaType to the LoadOption for the aspose word
 	// conversion.
 	private static final Map<MediaType, LoadOptions> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
@@ -86,8 +86,7 @@ class WordConvertor extends AbstractConvertor {
 			long startTime = new Date().getTime();
 			doc.save(outputStream, saveOptions);
 			long endTime = new Date().getTime();
-			System.err.println(
-					"Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
+			LOGGER.info("Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
 			InputStream inStream = new ByteArrayInputStream(outputStream.toByteArray());
 			result.setFileStream(inStream);
 			outputStream.close();

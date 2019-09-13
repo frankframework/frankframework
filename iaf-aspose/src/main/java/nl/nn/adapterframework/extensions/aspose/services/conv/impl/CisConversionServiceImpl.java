@@ -22,7 +22,6 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResul
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.Convertor;
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.ConvertorFactory;
-import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.PdfCombiner;
 import nl.nn.adapterframework.extensions.aspose.services.util.DateUtil;
 import nl.nn.adapterframework.extensions.aspose.services.util.FileUtil;
 
@@ -137,19 +136,6 @@ public class CisConversionServiceImpl implements CisConversionService {
 
 	private boolean isPasswordProtected(MediaType mediaType) {
 		return ("x-tika-ooxml-protected".equals(mediaType.getSubtype()));
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public CisConversionResult combineToSinglePdf(CisConversionResult cisConversionResult) {
-
-		try {
-			return new PdfCombiner(pdfOutputlocation).combineToSinglePdf(cisConversionResult);
-		} catch (Exception e) {
-			throw createCisConversionException(e);
-		}
 	}
 
 	private CisConversionException createCisConversionException(Exception e) {

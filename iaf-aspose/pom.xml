@@ -12,7 +12,7 @@
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-parent</artifactId>
-		<version>7.4-SNAPSHOT</version>
+		<version>7.5-SNAPSHOT</version>
 	</parent>
 	<artifactId>ibis-adapterframework-aspose</artifactId>
 	<name>Ibis AdapterFramework support for Aspose</name>
@@ -198,13 +198,6 @@
 			<artifactId>mail</artifactId>
 		</dependency>
 
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.codehaus.jackson</groupId> -->
-<!-- 			<artifactId>jackson-jaxrs</artifactId> -->
-<!-- 			<version>1.6.2</version> -->
-<!-- 		</dependency> -->
-
-			
 		<!-- Logging -->
 		<dependency>
 			<groupId>log4j</groupId>
@@ -222,7 +215,7 @@
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-pdf</artifactId>
 			<version>19.1</version>
-			<scope>provided</scope>
+<!-- 			<scope>provided</scope> -->
 		</dependency>
 
 		<dependency>
@@ -230,7 +223,6 @@
 			<artifactId>aspose-email</artifactId>
 			<version>19.1</version>
 			<classifier>jdk16</classifier>
-			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -238,14 +230,12 @@
 			<artifactId>aspose-words</artifactId>
 			<version>19.1</version>
 			<classifier>jdk16</classifier>
-			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-cells</artifactId>
 			<version>19.1</version>
-			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -253,14 +243,12 @@
 			<artifactId>aspose-slides</artifactId>
 			<version>19.1</version>
 			<classifier>jdk16</classifier>
-			<scope>provided</scope>
 		</dependency>
 	
 		<dependency> 
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-imaging</artifactId>
 			<version>18.11</version>
-			<scope>provided</scope>
 		</dependency>
 
 		<dependency>

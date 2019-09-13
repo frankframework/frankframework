@@ -2,6 +2,8 @@ package nl.nn.adapterframework.extensions.aspose.pipe;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -19,6 +21,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
@@ -30,6 +33,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * 
+ * Converts files to pdf file.
  * @author M64D844
  *
  */
@@ -38,8 +42,7 @@ public class PdfPipe extends FixedForwardPipe {
 	private static final Logger LOGGER = Logger.getLogger(PdfPipe.class);
 	private static final String CONVERSION_OPTION = "CONVERSION_OPTION";
 	private boolean saveSeparate = false;
-	private CisConversionService cisConversionService;
-	private String pdfOutputLocation = null;
+	private String tempFolder = null;
 	private String fontsDirectory;
 	private String license = null;
 	private String action = null;
@@ -48,20 +51,21 @@ public class PdfPipe extends FixedForwardPipe {
 	private String fileNameToAttachSessionKey = "defaultFileNameToAttachSessionKey";
 	protected String charset = "ISO-8859-1";
 	private int sessionkeyPostfixCounter = 0;
-
+	private CisConversionService cisConversionService;
+	
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (StringUtils.isEmpty(pdfOutputLocation)) {
+		if (StringUtils.isEmpty(tempFolder)) {
 			try {
-				pdfOutputLocation = Files.createTempDirectory("Pdf").toString();
-				LOGGER.info("Temporary directory path : " + pdfOutputLocation);
+				tempFolder = Files.createTempDirectory("Pdf").toString();
+				LOGGER.info("Temporary directory path : " + tempFolder);
 			} catch (IOException e) {
 				throw new ConfigurationException(e);
 			}
 		}
 
-		File outputLocation = new File(pdfOutputLocation);
+		File outputLocation = new File(tempFolder);
 		if (!outputLocation.exists()) {
 			throw new ConfigurationException(
 					"Pdf output location does not exists. Please specify an existing location ");
@@ -70,10 +74,25 @@ public class PdfPipe extends FixedForwardPipe {
 		if (!outputLocation.isDirectory()) {
 			throw new ConfigurationException("Pdf output location is not directory. Please specify a diretory");
 		}
+		// action check
 		if (!availableActions.contains(action)) {
 			throw new ConfigurationException(
 					"Please specify an action for pdf pipe. Possible values: {convert, combine}");
 		}
+
+		// TODO: could be used without a license with a evaluation watermark on the converted file
+		// License check
+		if (StringUtils.isEmpty(license)) {
+			throw new ConfigurationException("Please specify the full path to aspose license including file name.");
+		}
+		try (InputStream inputStream = new FileInputStream(license)) {
+
+		} catch (FileNotFoundException notFound) {
+			throw new ConfigurationException("Specified file for aspose license is not found", notFound);
+		} catch (IOException e1) {
+			throw new ConfigurationException(e1);
+		}
+		// load license
 		AsposeLicenseLoader loader;
 		try {
 			loader = new AsposeLicenseLoader(license, fontsDirectory);
@@ -81,7 +100,7 @@ public class PdfPipe extends FixedForwardPipe {
 		} catch (Exception e) {
 			throw new ConfigurationException(e);
 		}
-		cisConversionService = new CisConversionServiceImpl(pdfOutputLocation, loader.getPathToExtractFonts());
+		cisConversionService = new CisConversionServiceImpl(tempFolder, loader.getPathToExtractFonts());
 
 	}
 
@@ -94,9 +113,9 @@ public class PdfPipe extends FixedForwardPipe {
 	@Override
 	public void stop() {
 		try {
-			Files.delete(Paths.get(pdfOutputLocation));
+			Files.delete(Paths.get(tempFolder));
 		} catch (IOException e) {
-			LOGGER.debug("Could not delete the temp folder " + pdfOutputLocation);
+			LOGGER.debug("Could not delete the temp folder " + tempFolder);
 		}
 		super.stop();
 	}
@@ -146,18 +165,14 @@ public class PdfPipe extends FixedForwardPipe {
 
 		} else if ("convert".equalsIgnoreCase(action)) {
 			String fileName = (String) session.get("fileName");
-			// String conversionOption = (String) session.get("attachmentOption");
 			long tsBeforeConvert = new Date().getTime();
 			CisConversionResult cisConversionResult = cisConversionService.convertToPdf(binaryInputStream, fileName,
-					ConversionOption.SEPERATEPDF);
+					saveSeparate ? ConversionOption.SEPERATEPDF : ConversionOption.SINGLEPDF);
 			long tsAfterConvert = new Date().getTime();
-			System.err.println("PDFPipe cisConversionService.convertToPdf( takes ::::: "
-					+ (tsAfterConvert - tsBeforeConvert) + " ms");
-			System.err.println(cisConversionResult.toString());
+			LOGGER.info("PDFPipe cisConversionService.convertToPdf( takes ::::: " + (tsAfterConvert - tsBeforeConvert)
+					+ " ms");
+			LOGGER.info(cisConversionResult.toString());
 
-			if (cisConversionResult.isConversionSuccessfull()) {
-				System.err.println("Conversion was successful");
-			}
 			session.put(CONVERSION_OPTION, cisConversionResult.getConversionOption().getValue());
 			session.put("MEDIA_TYPE", cisConversionResult.getMediaType().toString());
 			session.put("DOCUMENT_NAME", cisConversionResult.getDocumentName());
@@ -178,8 +193,7 @@ public class PdfPipe extends FixedForwardPipe {
 			sessionkeyPostfixCounter = 0;
 		}
 		long end = new Date().getTime();
-		System.err.println("PDFPipe doPipe takes ::::: " + (end - start) + " ms");
-		LOGGER.error("PDFPipe doPipe takes ::::: " + (end - start) + " ms");
+		LOGGER.info("PDFPipe doPipe takes ::::: " + (end - start) + " ms");
 		return new PipeRunResult(getForward(), "");
 	}
 
@@ -208,26 +222,15 @@ public class PdfPipe extends FixedForwardPipe {
 		}
 	}
 
-	public boolean isSaveSeparate() {
-		return saveSeparate;
-	}
-
-	public void setSaveSeparate(boolean saveSeparate) {
-		this.saveSeparate = saveSeparate;
-	}
-
-	public String getPdfOutputLocation() {
-		return pdfOutputLocation;
-	}
-
-	public void setPdfOutputLocation(String pdfOutputLocation) {
-		this.pdfOutputLocation = pdfOutputLocation;
+	public String getTempFolder() {
+		return tempFolder;
 	}
 
 	public String getAction() {
 		return action;
 	}
 
+	@IbisDoc({ "action to be processed by pdf pipe possible values:{combine, convert}", "null" })
 	public void setAction(String action) {
 		this.action = action;
 	}
@@ -236,6 +239,8 @@ public class PdfPipe extends FixedForwardPipe {
 		return mainDocumentSessionKey;
 	}
 
+	@IbisDoc({
+			"session key that contains the document that the attachments will be attached to. Only used when action is set to 'combine'", "defaultMainDocumentSessionKey" })
 	public void setMainDocumentSessionKey(String mainDocumentSessionKey) {
 		this.mainDocumentSessionKey = mainDocumentSessionKey;
 	}
@@ -244,6 +249,7 @@ public class PdfPipe extends FixedForwardPipe {
 		return fileNameToAttachSessionKey;
 	}
 
+	@IbisDoc({ "session key that contains the filename to be attached. Only used when the action is set to 'combine' ", "defaultFileNameToAttachSessionKey" })
 	public void setFileNameToAttachSessionKey(String fileNameToAttachSessionKey) {
 		this.fileNameToAttachSessionKey = fileNameToAttachSessionKey;
 	}
@@ -252,6 +258,7 @@ public class PdfPipe extends FixedForwardPipe {
 		return fontsDirectory;
 	}
 
+	@IbisDoc({"fonts folder to load the fonts. If not set then a temporary folder will be created to extract fonts from fonts.zip everytime. Having fontsDirectory to be set will improve startup time", "null" })
 	public void setFontsDirectory(String fontsDirectory) {
 		this.fontsDirectory = fontsDirectory;
 	}
@@ -260,7 +267,25 @@ public class PdfPipe extends FixedForwardPipe {
 		return charset;
 	}
 
+	@IbisDoc({ "charset to be used to encode the given input string ", "ISO-8859-1" })
 	public void setCharset(String charset) {
 		this.charset = charset;
+	}
+
+	public String getLicense() {
+		return license;
+	}
+
+	@IbisDoc({ "aspose license location including file name. Must be specified.", "" })
+	public void setLicense(String license) {
+		this.license = license;
+	}
+
+	public boolean isSaveSeparate() {
+		return saveSeparate;
+	}
+	@IbisDoc({ "when sets to false, converts the file including the attachments attached to the main file. when it is true, stores attachments in session keys. session keys will be consecutive numbers starting from 0", "false" })
+	public void setSaveSeparate(boolean saveSeparate) {
+		this.saveSeparate = saveSeparate;
 	}
 }

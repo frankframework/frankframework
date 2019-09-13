@@ -41,13 +41,5 @@ public interface CisConversionService {
 	 */
 	CisConversionResult convertToPdf(InputStream inputStream, ConversionOption conversionOption);
 
-	/**
-	 * Combines the given files in cisConversionResult to a single pdf.
-	 * 
-	 * @param cisConversionResult
-	 * @return
-	 */
-	CisConversionResult combineToSinglePdf(CisConversionResult cisConversionResult);
-
 	String getFontsDirectory();
 }

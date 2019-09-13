@@ -5,7 +5,6 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -27,8 +26,7 @@ import nl.nn.adapterframework.extensions.aspose.services.util.StringsUtil;
  * This class will combine seperate pdf files to a single pdf with attachments.
  * None existing files in a CisConversionResult will be skipped!
  * 
- * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
- *         Hoorn</a> (d937275)
+ * TODO: Refactor this class
  */
 public class PdfAttachmentUtil {
 
@@ -36,46 +34,37 @@ public class PdfAttachmentUtil {
 
 	private List<CisConversionResult> cisConversionResultList;
 
-	private InputStream rootPdf;
+	private CisConversionResult mainDoc;
 
 	private Document pdfDocument;
 
-	/**
-	 * Private constructor om te voorkomen dat deze klasse (met static methoden)
-	 * aangemaakt kan worden.
-	 */
-	private PdfAttachmentUtil(List<CisConversionResult> cisConversionResultList, InputStream rootPdf) {
+	public PdfAttachmentUtil(List<CisConversionResult> cisConversionResultList, CisConversionResult result) {
 		this.cisConversionResultList = cisConversionResultList;
-		this.rootPdf = rootPdf;
-	}
-
-	public PdfAttachmentUtil(CisConversionResult result) {
-		// TODO Auto-generated constructor stub
+		this.mainDoc = result;
 	}
 
 	/**
 	 * Adds the given files in cisConversionResultList to the given rootPdf file.
 	 * 
 	 * @param cisConversionResultList
-	 * @param rootPdf
+	 * @param result
 	 * @throws IOException
 	 */
-	static void addAttachmentInSinglePdf(List<CisConversionResult> cisConversionResultList, InputStream rootPdf)
+	static void addAttachmentInSinglePdf(List<CisConversionResult> cisConversionResultList, CisConversionResult result)
 			throws IOException {
-		PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(cisConversionResultList, rootPdf);
+		PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(cisConversionResultList, result);
 		try {
 			pdfAttachmentUtil.addAttachmentInSinglePdf();
 		} finally {
-			// TODO: fix this part
-			pdfAttachmentUtil.finit(null);
+			pdfAttachmentUtil.finit(result);
 		}
 	}
 
 	void addAttachmentToPdf(CisConversionResult result, InputStream fileToAttach, String filename, String extension)
 			throws IOException {
-		PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(null, result.getFileStream());
+		PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(null, result);
 		try (BufferedInputStream attachmentDocumentStream = new BufferedInputStream(fileToAttach)) {
-			pdfAttachmentUtil.addFileToPdf(attachmentDocumentStream, filename, extension, result);
+			pdfAttachmentUtil.addFileToPdf(attachmentDocumentStream, filename, extension, result.getFileStream());
 		} finally {
 			pdfAttachmentUtil.finit(result);
 		}
@@ -101,15 +90,9 @@ public class PdfAttachmentUtil {
 
 		for (CisConversionResult cisConversionResultAttachment : cisConversionResultList) {
 
-			if (cisConversionResultAttachment.getPdfResultFile() != null) {
-
-				try (InputStream attachmentDocumentStream = new BufferedInputStream(
-						new FileInputStream(cisConversionResultAttachment.getPdfResultFile()))) {
-
-					addFileToPdf(attachmentDocumentStream, cisConversionResultAttachment.getDocumentName(),
-							ConvertorUtil.PDF_FILETYPE, cisConversionResultAttachment);
-				}
-
+			if (cisConversionResultAttachment.getFileStream() != null) {
+				addFileToPdf(cisConversionResultAttachment.getFileStream(), cisConversionResultAttachment.getDocumentName(),
+				ConvertorUtil.PDF_FILETYPE, mainDoc.getFileStream());
 			} else {
 				LOGGER.debug("Skipping file because it is not available.");
 			}
@@ -133,7 +116,7 @@ public class PdfAttachmentUtil {
 	}
 
 	private void addFileToPdf(InputStream attachmentDocumentStream, String fileName, String extension,
-			CisConversionResult result) {
+			InputStream result) {
 		// Determine the document name to use. (Convert any invalid name to a valid
 		// filename.
 		String documentName = ConvertorUtil.createTidyFilename(convertToValidFileName(fileName), extension);
@@ -141,7 +124,7 @@ public class PdfAttachmentUtil {
 		LOGGER.debug("Adding attachment with document name \"" + documentName + "\" (original: \"" + fileName + "\")");
 
 		// Add an attachment to document's attachment collection
-		getPdfDocument(result.getFileStream()).getEmbeddedFiles()
+		getPdfDocument(result).getEmbeddedFiles()
 				.add(new FileSpecification(attachmentDocumentStream, documentName));
 	}
 
