@@ -177,7 +177,7 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 		return result;
 	}
 
-	@IbisDoc({"controls whether output streaming is used. Can be used to switch streaming off for debugging purposes","true"})
+	@IbisDoc({"controls whether output streaming is used. Can be used to switch streaming off for debugging purposes","set by appconstant streaming.auto"})
 	public void setStreamingActive(boolean streamingActive) {
 		this.streamingActive = streamingActive;
 	}

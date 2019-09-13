@@ -19,20 +19,21 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 
 public interface IOutputStreamingSupport {
 
-//	/**
-//	 * When set, the pipe will provide an {@link OutputStream} in this session variable, that the next pipe can use to write it's output to.
-//	 */
-//	@IbisDoc({"When set, an {@link OutputStream} will be provided in this session variable, that the next pipe can use to write it's output to.", ""})
-//	public void setCreateStreamSessionKey(String createStreamSessionKey);
-//	public String getCreateStreamSessionKey();
-
-	public boolean canStreamToTarget();  
-	/*
-	 * When this returns true AND createStreamSessionKey is set 
-	 * then doPipe must return an OutputStream in this sessionKey.
+	/**
+	 * When this returns <code>true</code> then a call to {{@link #provideOutputStream(String, IPipeLineSession, MessageOutputStream) provideOutputStream()} 
+	 * must return a {@link MessageOutputStream} that can be used to write a message to, that then will be processed in a streaming way.
 	 */
 	public boolean canProvideOutputStream();  
 	
+	/**
+	 * When this returns <code>true</code> then {{@link #provideOutputStream(String, IPipeLineSession, MessageOutputStream) provideOutputStream()} 
+	 * must use {@link MessageOutputStream target} to stream its own output to. 
+	 */
+	public boolean canStreamToTarget();  
+
+	/**
+	 * return a {@link MessageOutputStream} that can be used to write a message to, that then will be processed in a streaming way.
+	 */
 	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException;
 	
 }

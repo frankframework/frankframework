@@ -27,6 +27,12 @@ import org.xml.sax.XMLReader;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
+/**
+ * Helper class to convert character or byte based OutputStreams into a SAX event stream.
+ * Uses OS pipes to convert an OutputStream into an InputStream
+ * 
+ * @author Gerrit van Brakel
+ */
 public class ContentHandlerOutputStream extends PipedOutputStream {
 	protected Logger log = LogUtil.getLogger(this);
 

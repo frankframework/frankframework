@@ -39,7 +39,7 @@ public class MessageOutputStream {
 	private Object requestStream;
 	private Object response;
 	
-	private MessageOutputStream next;
+//	private MessageOutputStream next;
 	private MessageOutputStream tail;
 
 	public MessageOutputStream(OutputStream stream, MessageOutputStream next) {
@@ -73,7 +73,7 @@ public class MessageOutputStream {
 	}
 
 	private void connect(MessageOutputStream next) {
-		this.next=next;
+//		this.next=next;
 		if (next==null) {
 			tail=this;			
 		} else {
