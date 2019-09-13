@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
@@ -27,6 +28,12 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 
 	public int NUM_SENDERS=10;
 	private List<XsltSender> xsltSenders;
+	boolean expectExtraParamWarning=false;
+	
+	@Before
+	public void clear() {
+		expectExtraParamWarning=false;
+	}
 
 	@Parameters(name = "{index}: {0}: provide [{2}] stream out [{3}]")
     public static Collection<Object[]> data() {
@@ -120,8 +127,8 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 
 	@Override
 	protected void checkTestAppender(int expectedSize, String expectedString) {
-		super.checkTestAppender(expectedSize+1,expectedString);
-		assertThat(testAppender.toString(),containsString("are not available for use by nested Senders"));
+		super.checkTestAppender(expectedSize+(expectExtraParamWarning?1:0),expectedString);
+		if (expectExtraParamWarning) assertThat(testAppender.toString(),containsString("are not available for use by nested Senders"));
 	}
 
 	
@@ -136,6 +143,18 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 	public void testConfigWarnings() {
 		fail("Test should have been ignored");
 	}
+
+	@Override
+	public void duplicateImportErrorAlertsXslt1() throws Exception {
+		expectExtraParamWarning=true;
+		super.duplicateImportErrorAlertsXslt1();
+	}
+	@Override
+	public void duplicateImportErrorAlertsXslt2() throws Exception {
+		expectExtraParamWarning=true;
+		super.duplicateImportErrorAlertsXslt2();
+	}
+	
 	@Override
 	@Test
     @Ignore("error handling is different in parallel")
