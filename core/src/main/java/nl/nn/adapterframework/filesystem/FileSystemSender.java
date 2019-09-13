@@ -23,14 +23,16 @@ import org.apache.commons.codec.binary.Base64InputStream;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IOutputStreamProvider;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.StreamingException;
+import nl.nn.adapterframework.stream.StreamingSenderBase;
 import nl.nn.adapterframework.util.Misc;
 
 /**
@@ -50,7 +52,7 @@ import nl.nn.adapterframework.util.Misc;
  * 
  * @author Gerrit van Brakel
  */
-public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderWithParametersBase implements IOutputStreamProvider {
+public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends StreamingSenderBase {
 	
 	private FS fileSystem;
 	private FileSystemActor<F,FS> actor=new FileSystemActor<F,FS>();
@@ -83,7 +85,21 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public boolean canProvideOutputStream() {
+		return super.canProvideOutputStream() && actor.canProvideOutputStream();
+	}
+	@Override
+	public boolean canStreamToTarget() {
+		return super.canStreamToTarget() && actor.canStreamToTarget();  
+	}
+	
+	@Override
+	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+		return actor.provideOutputStream(correlationID, session, target);
+	}
+
+	@Override
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
 		ParameterValueList pvl = null;
 		
 		try {
@@ -135,10 +151,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 		actor.addActions(specificActions);
 	}
 
-	@Override
-	public boolean canProvideOutputStream() {
-		return actor.canProvideOutputStream();
-	}
+
 
 	@IbisDoc({"1", "possible values: list, read, delete, move, mkdir, rmdir, write, rename", "" })
 	public void setAction(String action) {
@@ -153,14 +166,5 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderW
 		actor.setInputFolder(inputFolder);
 	}
 
-	@IbisDoc({"3", "Only for action 'write': When set, an {@link OutputStream} will be provided in this session variable, that the next pipe can use to write it's output to.", ""})
-	@Override
-	public void setCreateStreamSessionKey(String createStreamSessionKey) {
-		actor.setCreateStreamSessionKey(createStreamSessionKey);
-	}
-	@Override
-	public String getCreateStreamSessionKey() {
-		return actor.getCreateStreamSessionKey();
-	}
 
 }

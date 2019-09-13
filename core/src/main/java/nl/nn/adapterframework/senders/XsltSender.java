@@ -16,25 +16,31 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Map;
 
+import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.lang.StringUtils;
+import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IOutputStreamConsumer;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.MessageOutputStreamCap;
+import nl.nn.adapterframework.stream.StreamingException;
+import nl.nn.adapterframework.stream.StreamingSenderBase;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -51,7 +57,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class XsltSender extends SenderWithParametersBase implements IOutputStreamConsumer {
+public class XsltSender extends StreamingSenderBase  {
 
 	private String xpathExpression=null;
 	private String namespaceDefs = null; 
@@ -63,7 +69,6 @@ public class XsltSender extends SenderWithParametersBase implements IOutputStrea
 	private boolean removeNamespaces=false;
 	private int xsltVersion=0; // set to 0 for auto detect.
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
-	private String streamToSessionKey;
 	
 	private TransformerPool transformerPool;
 	private TransformerPool transformerPoolSkipEmptyTags;
@@ -79,9 +84,6 @@ public class XsltSender extends SenderWithParametersBase implements IOutputStrea
 	
 		transformerPool = TransformerPool.configureTransformer0(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), getXsltVersion());
 		if (isSkipEmptyTags()) {
-			if (StringUtils.isNotEmpty(getStreamToSessionKey())) {
-				throw new ConfigurationException("Attribute 'streamToSessionKey' cannot be combined with 'skipEmptyTags'");
-			}
 			transformerPoolSkipEmptyTags = XmlUtils.getSkipEmptyTagsTransformerPool(isOmitXmlDeclaration(),isIndentXml());
 		}
 		if (isRemoveNamespaces()) {
@@ -153,13 +155,80 @@ public class XsltSender extends SenderWithParametersBase implements IOutputStrea
 		return prc.getInputSource(isNamespaceAware());
 	}
 
+	protected ContentHandler filterInput(ContentHandler input, ParameterResolutionContext prc) throws PipeRunException, DomBuilderException, TransformerException, IOException {
+		if (transformerPoolRemoveNamespaces!=null) {
+			log.debug(getLogPrefix()+ " providing filter to remove namespaces from input message");
+//			XMLFilterImpl filter = new NamespaceRemovingFilter();
+//			filter.setContentHandler(input);
+//			return filter;
+			TransformerHandler removeNamespaces = transformerPoolRemoveNamespaces.getTransformerHandler();
+			SAXResult result = new SAXResult();
+			result.setHandler(input);
+			removeNamespaces.setResult(result);
+			return removeNamespaces;
+		}
+		return input; // TODO might be necessary to do something about namespaceaware
+	}
+	
+	
+	@Override
+	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+		ContentHandler handler = null;
+
+		try {
+			Map<String,Object> parametervalues = null;
+			ParameterResolutionContext prc = new ParameterResolutionContext(null,session);
+			if (paramList!=null) {
+				parametervalues = prc.getValueMap(paramList);
+			}
+//			if (log.isDebugEnabled()) {
+//				log.debug(getLogPrefix()+" transformerPool ["+transformerPool+"] transforming using prc ["+prc+"] and parameterValues ["+parametervalues+"]");
+//				log.debug(getLogPrefix()+" prc.inputsource ["+prc.getInputSource()+"]");
+//			}
+			
+			Result result;
+			if (target!=null) {
+				if ("xml".equals(getOutputType())) {
+					SAXResult targetFeedingResult = new SAXResult();
+					targetFeedingResult.setHandler(target.asContentHandler());
+					result = targetFeedingResult;
+				} else {
+					result = new StreamResult(target.asWriter());
+				}
+			} else {
+				target = new MessageOutputStreamCap();
+				result = new StreamResult(target.asWriter());
+			}
+			
+			if (isSkipEmptyTags()) {
+				TransformerHandler skipEmptyTagsHandler = transformerPoolSkipEmptyTags.getTransformerHandler();
+				skipEmptyTagsHandler.setResult(result);
+				SAXResult skipEmptyTagsFeedingResult = new SAXResult();
+				skipEmptyTagsFeedingResult.setHandler(skipEmptyTagsHandler);
+				result=skipEmptyTagsFeedingResult;
+			}
+
+			TransformerHandler mainHandler = transformerPool.getTransformerHandler();
+			XmlUtils.setTransformerParameters(mainHandler.getTransformer(),parametervalues);
+			mainHandler.setResult(result);
+			handler=mainHandler;
+			
+			handler=filterInput(handler, prc);
+			
+			return new MessageOutputStream(handler,target);
+		} catch (Exception e) {
+			//log.warn(getLogPrefix()+"intermediate exception logging",e);
+			throw new StreamingException(getLogPrefix()+" Exception on transforming input", e);
+		} 
+	}
+
 	/**
 	 * Here the actual transforming is done. Under weblogic the transformer object becomes
 	 * corrupt when a not-well formed xml was handled. The transformer is then re-initialized
 	 * via the configure() and start() methods.
 	 */
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException {
 		String stringResult = null;
 		if (message==null) {
 			throw new SenderException(getLogPrefix()+"got null input");
@@ -179,14 +248,18 @@ public class XsltSender extends SenderWithParametersBase implements IOutputStrea
 //				log.debug(getLogPrefix()+" prc.inputsource ["+prc.getInputSource()+"]");
 //			}
 			
-			OutputStream outputStream=null;
-			if (isStreamingToOutputStreamPossible() && StringUtils.isNotEmpty(getStreamToSessionKey())) {
-				Object streamToObject = prc.getSession().get(getStreamToSessionKey());
-				outputStream = (OutputStream)streamToObject;
-			}
-			if (outputStream!=null) {
-				StreamResult streamResult = new StreamResult(outputStream);
-				transformerPool.transform(inputMsg, streamResult, parametervalues); 
+			if (target!=null) {
+				SAXResult mainResult = new SAXResult();
+				ContentHandler targetContentHandler = target.asContentHandler();
+				if (isSkipEmptyTags()) {
+					SAXResult skipEmptyTagsResult = new SAXResult();
+					skipEmptyTagsResult.setHandler(targetContentHandler);
+					TransformerHandler skipEmptyTagsHandler = transformerPoolSkipEmptyTags.getTransformerHandler();
+					mainResult.setHandler(skipEmptyTagsHandler);
+				} else {
+					mainResult.setHandler(targetContentHandler);
+				}
+				transformerPool.transform(inputMsg, mainResult, parametervalues); 
 				stringResult=message;
 			} else {
 				stringResult = transformerPool.transform(inputMsg, parametervalues); 
@@ -306,22 +379,6 @@ public class XsltSender extends SenderWithParametersBase implements IOutputStrea
 	}
 	public boolean isNamespaceAware() {
 		return namespaceAware;
-	}
-
-	
-	@IbisDoc({"When set, the pipe will not return a String output, but will write its output to the {@link OutputStream} provided in the session variable. The pipe will return its input message", ""})
-	@Override
-	public void setStreamToSessionKey(String streamToSessionKey) {
-		this.streamToSessionKey=streamToSessionKey;
-	}
-	@Override
-	public String getStreamToSessionKey() {
-		return streamToSessionKey;
-	}
-
-	@Override
-	public boolean isStreamingToOutputStreamPossible() {
-		return !isSkipEmptyTags();
 	}
 
 }

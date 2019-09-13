@@ -10,6 +10,7 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Writer;
 
 import org.hamcrest.core.IsInstanceOf;
 import org.junit.Before;
@@ -27,6 +28,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TestAssertions;
 
@@ -444,35 +446,38 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 //		InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
 		PipeLineSessionBase session = new PipeLineSessionBase();
 
+		ParameterList paramlist = new ParameterList();
+		Parameter param = new Parameter();
+		param.setName("filename");
+		param.setValue(filename);
+		paramlist.add(param);
+		paramlist.configure();
+		
 		actor.setAction("write");
-		actor.setCreateStreamSessionKey("createStreamSessionKey");
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem,paramlist,owner);
 		actor.open();
-
+		
+		assertTrue(actor.canProvideOutputStream());
+		
 		ParameterResolutionContext prc = new ParameterResolutionContext();
 		prc.setSession(session);
 		String message=filename;
 		//ParameterValueList pvl= createParameterValueList(params, message, session);
-		Object result = actor.doAction(message, null, session);
+		MessageOutputStream target = actor.provideOutputStream(null, session, null);
 
-		String stringResult=(String)result;
+		// stream the contents
+		try (Writer writer = target.asWriter()) {
+			writer.write(contents);
+		}
+
+		// verify the filename is properly returned
+		String stringResult=target.getResponseAsString();
 		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
 		
-		OutputStream outputStream = (OutputStream)session.get("createStreamSessionKey");
-		outputStream.write(contents.getBytes("UTF-8"));
-		outputStream.close();
-		
-		InputStream inputStream = _readFile(null, filename);
-		String actualContents= Misc.streamToString(inputStream);
-		assertEquals(contents,actualContents);
-
+		// verify the file contents
 		waitForActionToFinish();
-
-		String actual = readFile(null, filename);
-		// test
-		// TODO: evaluate 'result'
-		//assertEquals("result of sender should be input message",result,message);
-		assertEquals(contents.trim(), actual.trim());
+		String actualContents = readFile(null, filename);
+		assertEquals(contents,actualContents);
 	}
 
 

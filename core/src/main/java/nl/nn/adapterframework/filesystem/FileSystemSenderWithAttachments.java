@@ -24,11 +24,10 @@ import org.apache.commons.codec.binary.Base64InputStream;
 
 import microsoft.exchange.webservices.data.property.complex.FileAttachment;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -53,7 +52,7 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 	}
 	
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
 		if (!getAction().equalsIgnoreCase("listAttachments")) {
 			return super.sendMessage(correlationID, message);
 		} else {

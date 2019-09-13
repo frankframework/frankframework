@@ -19,7 +19,6 @@ import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IOutputStreamProvider;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -30,7 +29,9 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.StreamingException;
+import nl.nn.adapterframework.stream.StreamingPipe;
 
 /**
  * Base class for Pipes that use a {@link IBasicFileSystem FileSystem}.
@@ -49,7 +50,7 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
  * 
  * @author Gerrit van Brakel
  */
-public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends FixedForwardPipe implements HasPhysicalDestination, IOutputStreamProvider {
+public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends StreamingPipe implements HasPhysicalDestination {
 	
 	private FileSystemActor<F, FS> actor = new FileSystemActor<F, FS>();
 	private FS fileSystem;
@@ -87,7 +88,22 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends FixedForw
 	}
 
 	@Override
-	public PipeRunResult doPipe (Object input, IPipeLineSession session) throws PipeRunException {
+	public boolean canProvideOutputStream() {
+		return super.canProvideOutputStream() && actor.canProvideOutputStream();
+	}
+	@Override
+	public boolean canStreamToTarget() {
+		return super.canStreamToTarget() && actor.canStreamToTarget();  
+	}
+	
+	@Override
+	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+		return actor.provideOutputStream(correlationID, session, target);
+	}
+
+
+	@Override
+	public PipeRunResult doPipe (Object input, IPipeLineSession session, MessageOutputStream target) throws PipeRunException {
 		ParameterList paramList = getParameterList();
 		ParameterResolutionContext prc = new ParameterResolutionContext(input.toString(), session);
 		ParameterValueList pvl=null;
@@ -97,7 +113,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends FixedForw
 				pvl = prc.getValues(paramList);
 			}
 		} catch (ParameterException e) {
-			throw new PipeRunException(this,getLogPrefix(session) + "Sender [" + getName() + "] caught exception evaluating parameters", e);
+			throw new PipeRunException(this,getLogPrefix(session) + "Pipe [" + getName() + "] caught exception evaluating parameters", e);
 		}
 
 		Object result;
@@ -132,11 +148,6 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends FixedForw
 		actor.addActions(specificActions);
 	}
 
-	@Override
-	public boolean canProvideOutputStream() {
-		return actor.canProvideOutputStream();
-	}
-
 	@IbisDoc({"1", "possible values: list, read, delete, move, mkdir, rmdir, write, rename", "" })
 	public void setAction(String action) {
 		actor.setAction(action);
@@ -151,16 +162,6 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends FixedForw
 	}
 	public String getInputFolder() {
 		return actor.getInputFolder();
-	}
-
-	@IbisDoc({"3", "Only for action 'write': When set, an {@link OutputStream} will be provided in this session variable, that the next pipe can use to write it's output to. Cannot exist in combination with parameter 'contents'", ""})
-	@Override
-	public void setCreateStreamSessionKey(String createStreamSessionKey) {
-		actor.setCreateStreamSessionKey(createStreamSessionKey);
-	}
-	@Override
-	public String getCreateStreamSessionKey() {
-		return actor.getCreateStreamSessionKey();
 	}
 
 }

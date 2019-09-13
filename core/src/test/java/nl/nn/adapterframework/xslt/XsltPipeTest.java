@@ -45,9 +45,4 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 		pipe.setXslt2(xslt2);
 	}
 
-	@Override
-	protected void setStreamToSessionKey(String streamToSessionKey) {
-		pipe.setStreamToSessionKey(streamToSessionKey);
-	}
-
 }

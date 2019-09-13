@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,11 +25,15 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.XsltSender;
+import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.StreamingPipe;
+import nl.nn.adapterframework.stream.StreamingException;
 
 
 /**
@@ -49,7 +53,7 @@ import nl.nn.adapterframework.senders.XsltSender;
  * @author Johan Verrips
  */
 
-public class XsltPipe extends OutputStreamConsumerBase {
+public class XsltPipe extends StreamingPipe {
 
 	private String sessionKey=null;
 	
@@ -113,10 +117,10 @@ public class XsltPipe extends OutputStreamConsumerBase {
 	/*
 	 * Allow to override transformation, so JsonXslt can prefix and suffix...
 	 */
-	protected String transform(Object input, IPipeLineSession session) throws SenderException, TransformerException {
+	protected String transform(Object input, IPipeLineSession session, MessageOutputStream target) throws SenderException, TransformerException, TimeOutException {
  	    String inputXml=getInputXml(input, session);
 		ParameterResolutionContext prc = new ParameterResolutionContext(inputXml, session, isNamespaceAware()); 
-		return sender.sendMessage(null, inputXml, prc);
+		return sender.sendMessage(null, inputXml, prc, target);
 	}
 	/**
 	 * Here the actual transforming is done. Under weblogic the transformer object becomes
@@ -124,7 +128,7 @@ public class XsltPipe extends OutputStreamConsumerBase {
 	 * via the configure() and start() methods.
 	 */
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session, MessageOutputStream target) throws PipeRunException {
 		if (input==null) {
 			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
 		}
@@ -133,7 +137,7 @@ public class XsltPipe extends OutputStreamConsumerBase {
 	    }
 
 	    try {
-	    	String stringResult = transform(input, session);
+	    	String stringResult = transform(input, session, target);
 		
 			if (StringUtils.isEmpty(getSessionKey())){
 				return new PipeRunResult(getForward(), stringResult);
@@ -147,10 +151,10 @@ public class XsltPipe extends OutputStreamConsumerBase {
 	}
 
 	@Override
-	public boolean isStreamingToOutputStreamPossible() {
-		return super.isStreamingToOutputStreamPossible() && sender.isStreamingToOutputStreamPossible();
+	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+		return sender.provideOutputStream(correlationID, session, target);
 	}
-	
+
 
 	/**
 	 * Specify the stylesheet to use
@@ -275,14 +279,14 @@ public class XsltPipe extends OutputStreamConsumerBase {
 		sender.setName("Sender of Pipe ["+name+"]");
 	}
 
-	@IbisDoc({"When set, no String output will be returned, but the output will be written to the {@link OutputStream} provided in the session variable. The pipe will return its input message", ""})
 	@Override
-	public void setStreamToSessionKey(String streamToSessionKey) {
-		sender.setStreamToSessionKey(streamToSessionKey);
+	public boolean canProvideOutputStream() {
+		return super.canProvideOutputStream() && sender.canProvideOutputStream();
 	}
+
 	@Override
-	public String getStreamToSessionKey() {
-		return sender.getStreamToSessionKey();
+	public boolean canStreamToTarget() {
+		return super.canStreamToTarget() && sender.canStreamToTarget();
 	}
 
 }

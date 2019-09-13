@@ -4,34 +4,39 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
-
-import javax.xml.transform.TransformerException;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.GenericMessageSendingPipe;
 import nl.nn.adapterframework.senders.ParallelSenders;
 import nl.nn.adapterframework.senders.SenderSeries;
 import nl.nn.adapterframework.senders.XsltSender;
-import nl.nn.adapterframework.util.DomBuilderException;
 
 public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPipe> {
 	
 
 	public int NUM_SENDERS=10;
 	private List<XsltSender> xsltSenders;
-	
+
+	@Parameters(name = "{index}: {0}: provide [{2}] stream out [{3}]")
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+                 { "classic", 			false, false, false }, 
+                 { "new, no stream", 	 true, false, false }, 
+                 { "output to stream", 	 true, false, true  }  // no stream providing, cannot be done in parallel
+           });
+    }
+
 	
 	protected SenderSeries createSenderContainer() {
 		SenderSeries senders=new ParallelSenders() {
@@ -185,20 +190,6 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 		for (XsltSender sender:xsltSenders) {
 			sender.setXslt2(xslt2);
 		}
-	}
-
-	@Override
-	protected void setStreamToSessionKey(String streamToSessionKey) {
-		for (XsltSender sender:xsltSenders) {
-			sender.setStreamToSessionKey(streamToSessionKey);
-		}
-	}
-
-	@Test
-	@Override
-	@Ignore("Test currently not suitable for streaming")
-	public void testBasicNoOmitNoIndentStreaming() throws DomBuilderException, TransformerException, IOException, ConfigurationException, PipeStartException, PipeRunException {
-		super.testBasicNoOmitNoIndentStreaming();
 	}
 
 }

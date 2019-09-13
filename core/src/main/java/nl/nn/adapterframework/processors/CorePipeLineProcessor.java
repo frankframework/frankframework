@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.processors;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Iterator;
 
 import javax.xml.transform.TransformerException;
@@ -25,8 +24,6 @@ import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IOutputStreamConsumerPipe;
-import nl.nn.adapterframework.core.IOutputStreamProvider;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineExitHandler;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -59,32 +56,23 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		// the PipeLineResult
 		PipeLineResult pipeLineResult=new PipeLineResult();
 
-		if (object == null
-				|| (object instanceof String && StringUtils.isEmpty(object
-						.toString()))) {
+		if (object == null || (object instanceof String && StringUtils.isEmpty(object.toString()))) {
 			if (StringUtils.isNotEmpty(pipeLine.getAdapterToRunBeforeOnEmptyInput())) {
 				log.debug("running adapterBeforeOnEmptyInput");
 				IAdapter adapter = pipeLine
 						.getAdapter()
 						.getConfiguration()
 						.getIbisManager()
-						.getRegisteredAdapter(
-								pipeLine.getAdapterToRunBeforeOnEmptyInput());
+						.getRegisteredAdapter(pipeLine.getAdapterToRunBeforeOnEmptyInput());
 				if (adapter == null) {
-					log.warn("adapterToRunBefore with specified name ["
-							+ pipeLine.getAdapterToRunBeforeOnEmptyInput()
-							+ "] could not be retrieved");
+					log.warn("adapterToRunBefore with specified name [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] could not be retrieved");
 				} else {
-					PipeLineResult plr = adapter.processMessage(messageId,
-							message, pipeLineSession);
+					PipeLineResult plr = adapter.processMessage(messageId, message, pipeLineSession);
 					if (plr == null || !plr.getState().equals("success")) {
-						throw new PipeRunException(null, "adapterToRunBefore ["
-								+ pipeLine.getAdapterToRunBeforeOnEmptyInput()
-								+ "] ended with state [" + plr.getState() + "]");
+						throw new PipeRunException(null, "adapterToRunBefore [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] ended with state [" + plr.getState() + "]");
 					}
 					message = plr.getResult();
-					log.debug("input after running adapterBeforeOnEmptyInput ["
-							+ message + "]");
+					log.debug("input after running adapterBeforeOnEmptyInput [" + message + "]");
 					object = (Object) message;
 				}
 			}

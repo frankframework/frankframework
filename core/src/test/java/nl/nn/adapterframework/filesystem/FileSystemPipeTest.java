@@ -9,8 +9,8 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Writer;
 
-import org.apache.commons.codec.binary.Base64;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,6 +21,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TestAssertions;
 
@@ -179,27 +180,32 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		PipeLineSessionBase session = new PipeLineSessionBase();
 		//session.put("uploadActionTarget", stream);
 
+		Parameter param = new Parameter();
+		param.setName("filename");
+		param.setValue(filename);
+		fileSystemPipe.addParameter(param);
 		fileSystemPipe.setAction("upload");
-		fileSystemPipe.setCreateStreamSessionKey("createStreamSessionKey");
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 
-		String message=filename;
-		PipeRunResult prr = fileSystemPipe.doPipe(message, session);
-		String result=(String)prr.getResult();
-		TestAssertions.assertXpathValueEquals(filename, result, "file/@name");
-		
-		OutputStream outputStream = (OutputStream)session.get("createStreamSessionKey");
-		outputStream.write(contents.getBytes("UTF-8"));
-		outputStream.close();
-		
-		waitForActionToFinish();
+		assertTrue(fileSystemPipe.canProvideOutputStream());
 
-		String actual = readFile(null, filename);
-		// test
-		// TODO: evaluate 'result'
-		//assertEquals("result of sender should be input message",result,message);
-		assertEquals(contents.trim(), actual.trim());
+		String correlationId="fakecorrelationid";
+		MessageOutputStream target = fileSystemPipe.provideOutputStream(correlationId, session, null);
+
+		// stream the contents
+		try (Writer writer = target.asWriter()) {
+			writer.write(contents);
+		}
+
+		// verify the filename is properly returned
+		String stringResult=target.getResponseAsString();
+		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
+
+		// verify the file contents
+		waitForActionToFinish();
+		String actualContents = readFile(null, filename);
+		assertEquals(contents,actualContents);
 	}
 	
 	

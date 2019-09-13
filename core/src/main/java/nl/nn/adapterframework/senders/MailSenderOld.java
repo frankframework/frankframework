@@ -299,11 +299,6 @@ public class MailSenderOld extends SenderWithParametersBase {
 		return correlationID;
 	}
 	
-	public String sendMessage(String correlationID, String input) throws SenderException {
-		sendEmail(input, null);
-		return correlationID;
-	}
-	
 	private Collection<Recipient> retrieveRecipients(Collection<Node> recipientsNode) {
 		Collection<Recipient> recipients=null;
 		Iterator iter = recipientsNode.iterator();

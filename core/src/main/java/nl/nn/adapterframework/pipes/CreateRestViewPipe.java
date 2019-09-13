@@ -21,6 +21,8 @@ import java.util.Map;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -30,6 +32,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
@@ -37,8 +40,6 @@ import nl.nn.adapterframework.util.ProcessMetrics;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Create a view for {@link nl.nn.adapterframework.http.RestListener}.
@@ -158,7 +159,7 @@ public class CreateRestViewPipe extends XsltPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session, MessageOutputStream target) throws PipeRunException {
 		HttpServletRequest httpServletRequest = (HttpServletRequest) session.get(IPipeLineSession.HTTP_REQUEST_KEY);
 		String requestURL = httpServletRequest.getRequestURL().toString();
 		String servletPath = httpServletRequest.getServletPath();
@@ -169,7 +170,7 @@ public class CreateRestViewPipe extends XsltPipe {
 		log.debug(getLogPrefix(session) + "stored [" + srcPrefix
 				+ "] in pipeLineSession under key [" + SRCPREFIX + "]");
 
-		PipeRunResult prr = super.doPipe(input, session);
+		PipeRunResult prr = super.doPipe(input, session, target);
 		String result = (String) prr.getResult();
 
 		log.debug("transforming page [" + result + "] to view");
