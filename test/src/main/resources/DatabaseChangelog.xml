@@ -22,11 +22,12 @@ RenameTable
 RenameView
 TagDatabase
 -->
- 	<changeSet id="IAF_Util:4" author="Niels Meijer">
- 		<validCheckSum>7:2ae1c6a4b4240ddb782c33365ebd1003</validCheckSum>
- 		<update tableName="IBISPROP">
+ 	<changeSet id="UPDATE IBIS PROP TABLE" author="Niels Meijer">
+ 		<comment>For some reason oracle is a bit silly so we cant update?</comment>
+		<dropColumn tableName="IBISPROP" columnName="LASTMODBY"/>
+		<addColumn tableName="IBISPROP">
        		<column name="LASTMODBY" type="java.sql.Types.VARCHAR(100)"/>
-		</update>
+		</addColumn>
  	</changeSet>
  	
 	<changeSet id="IBISDATA" author="Robert Karajev">
