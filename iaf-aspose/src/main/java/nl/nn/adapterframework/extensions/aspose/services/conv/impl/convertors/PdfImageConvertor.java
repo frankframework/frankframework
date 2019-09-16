@@ -70,7 +70,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption)
+	public void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption)
 			throws Exception {
 
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
@@ -79,7 +79,6 @@ public class PdfImageConvertor extends AbstractConvertor {
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
 
-		// File tmpImageFile = null;
 		com.aspose.imaging.Image image = null;
 		Document doc = new Document();
 		try {
@@ -91,23 +90,10 @@ public class PdfImageConvertor extends AbstractConvertor {
 			page.getPageInfo().getMargin().setLeft(PageConvertUtil.convertCmToPoints(marginInCm));
 			page.getPageInfo().getMargin().setRight(PageConvertUtil.convertCmToPoints(marginInCm));
 
-			// Temporary file (because first we need to get image information (the size) and
-			// than load it into
-			// the pdf. The image itself can not be loaded into the pdf because it will be
-			// blured with orange.
-			// tmpImageFile = UniqueFileGenerator.getUniqueFile(getPdfOutputlocation(),
-			// this.getClass().getSimpleName(),
-			// mediaType.getSubtype());
-			// Files.copy(inputStream, tmpImageFile.toPath());
-
 			image = com.aspose.imaging.Image.load(file.getAbsolutePath());
 
 			BufferedImage bufferedImage = ImageExtensions.toJava(image);
 			LOGGER.debug("Image info height:" + bufferedImage.getHeight() + " width:" + bufferedImage.getWidth());
-
-			// BufferedImage bufferedImage = ImageIO.read(inputStream);
-			// LOGGER.debug("Image info height:" + bufferedImage.getHeight() + " width:" +
-			// bufferedImage.getWidth());
 
 			// page width in points is 595.0, height 842.0 ( page.getPageInfo().getHeight()
 			// page.getPageInfo().getWidth())

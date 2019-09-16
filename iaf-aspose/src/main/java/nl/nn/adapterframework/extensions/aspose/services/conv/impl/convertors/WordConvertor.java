@@ -55,8 +55,7 @@ class WordConvertor extends AbstractConvertor {
 		map.put(new MediaType("application", "rtf"), new LoadOptions(LoadFormat.fromName("RTF"), null, null));
 
 		map.put(new MediaType("application", "xml"), new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
-		// map.put(new MediaType("text", "html"), new HtmlLoadOptions());
-		// map.put(new MediaType("application", "xhtml+xml"), new HtmlLoadOptions());
+
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
@@ -68,7 +67,7 @@ class WordConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption)
+	public void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption)
 			throws Exception {
 
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
@@ -80,13 +79,17 @@ class WordConvertor extends AbstractConvertor {
 		try (FileInputStream inputStream = new FileInputStream(file)) {
 			Document doc = new Document(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
 			new Fontsetter(cisConversionService.getFontsDirectory()).setFontSettings(doc);
+			
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			SaveOptions saveOptions = SaveOptions.createSaveOptions(SaveFormat.PDF);
 			saveOptions.setMemoryOptimization(true);
+			
 			long startTime = new Date().getTime();
 			doc.save(outputStream, saveOptions);
 			long endTime = new Date().getTime();
+			
 			LOGGER.info("Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
+			
 			InputStream inStream = new ByteArrayInputStream(outputStream.toByteArray());
 			result.setFileStream(inStream);
 			outputStream.close();

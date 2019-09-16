@@ -54,13 +54,13 @@ public class CisConversionServiceImpl implements CisConversionService {
 	}
 
 	@Override
-	public CisConversionResult convertToPdf(InputStream inputStream, ConversionOption conversionOption) {
+	public CisConversionResult convertToPdf(InputStream inputStream, ConversionOption conversionOption) throws IOException {
 		return convertToPdf(inputStream, null, conversionOption);
 	}
 
 	@Override
 	public CisConversionResult convertToPdf(InputStream inputStream, String filename,
-			ConversionOption conversionOption) {
+			ConversionOption conversionOption) throws IOException {
 
 		// InputStream should always be available.
 		if (inputStream == null) {

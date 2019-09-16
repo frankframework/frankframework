@@ -59,7 +59,7 @@ public class PdfConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption)
+	public void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption)
 			throws Exception {
 
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {

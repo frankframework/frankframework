@@ -39,7 +39,7 @@ class CellsConvertor extends AbstractConvertor {
 		FILE_TYPE_MAP.put(XLSX_MEDIA_TYPE, "xlsx");
 	}
 
-	CellsConvertor(String pdfOutputLocation) {
+	protected CellsConvertor(String pdfOutputLocation) {
 		// Give the supported media types.
 		super(pdfOutputLocation, XLS_MEDIA_TYPE, XLS_MEDIA_TYPE_MACRO_ENABLED, XLSX_MEDIA_TYPE);
 	}
@@ -47,7 +47,7 @@ class CellsConvertor extends AbstractConvertor {
 	/**
 	 * Convert the document to PDF (as is done in all other converters)
 	 */
-	void convertOrg(File file, CisConversionResult result) throws Exception {
+	private void convertOrg(File file, CisConversionResult result) throws Exception {
 
 		try (FileInputStream inputStream = new FileInputStream(file)) {
 			Workbook workbook = new Workbook(inputStream);
@@ -82,7 +82,7 @@ class CellsConvertor extends AbstractConvertor {
 	 * {@inheritDoc} Convert to PDF and attach the original to it.
 	 */
 	@Override
-	void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption)
+	public void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption)
 			throws Exception {
 		// Convert Excel to pdf and store in result
 		convertOrg(file, result);

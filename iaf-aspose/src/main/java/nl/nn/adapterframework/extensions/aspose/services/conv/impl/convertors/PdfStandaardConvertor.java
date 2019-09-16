@@ -24,7 +24,7 @@ public class PdfStandaardConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption)
+	public void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption)
 			throws Exception {
 		try (FileInputStream inputStream = new FileInputStream(file)) {
 			byte[] array = Misc.streamToBytes(inputStream);

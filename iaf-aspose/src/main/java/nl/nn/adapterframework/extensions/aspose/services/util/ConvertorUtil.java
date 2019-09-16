@@ -32,7 +32,7 @@ public class ConvertorUtil {
 		}
 		if (filename.contains(".")) {
 			// Remove the file type.
-			filename = filename.substring(0, filename.lastIndexOf("."));
+			filename = filename.substring(0, filename.lastIndexOf('.'));
 		}
 
 		return filename;

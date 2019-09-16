@@ -105,12 +105,6 @@ public class PdfPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public void start() throws PipeStartException {
-		super.start();
-
-	}
-
-	@Override
 	public void stop() {
 		try {
 			Files.delete(Paths.get(tempFolder));
@@ -166,31 +160,37 @@ public class PdfPipe extends FixedForwardPipe {
 		} else if ("convert".equalsIgnoreCase(action)) {
 			String fileName = (String) session.get("fileName");
 			long tsBeforeConvert = new Date().getTime();
-			CisConversionResult cisConversionResult = cisConversionService.convertToPdf(binaryInputStream, fileName,
-					saveSeparate ? ConversionOption.SEPERATEPDF : ConversionOption.SINGLEPDF);
-			long tsAfterConvert = new Date().getTime();
-			LOGGER.info("PDFPipe cisConversionService.convertToPdf( takes ::::: " + (tsAfterConvert - tsBeforeConvert)
-					+ " ms");
-			LOGGER.info(cisConversionResult.toString());
+			CisConversionResult cisConversionResult = null;
+			try {
+				cisConversionResult = cisConversionService.convertToPdf(binaryInputStream, fileName,
+						saveSeparate ? ConversionOption.SEPERATEPDF : ConversionOption.SINGLEPDF);
+				long tsAfterConvert = new Date().getTime();
+				LOGGER.info("PDFPipe cisConversionService.convertToPdf( takes ::::: " + (tsAfterConvert - tsBeforeConvert)
+						+ " ms");
+				LOGGER.info(cisConversionResult.toString());
 
-			session.put(CONVERSION_OPTION, cisConversionResult.getConversionOption().getValue());
-			session.put("MEDIA_TYPE", cisConversionResult.getMediaType().toString());
-			session.put("DOCUMENT_NAME", cisConversionResult.getDocumentName());
-			session.put("FAILURE_REASON", cisConversionResult.getFailureReason());
-			session.put("PARENT_CONVERSION_ID", null);
-			session.put("CONVERTED_DOCUMENT", cisConversionResult.getFileStream());
+				session.put(CONVERSION_OPTION, cisConversionResult.getConversionOption().getValue());
+				session.put("MEDIA_TYPE", cisConversionResult.getMediaType().toString());
+				session.put("DOCUMENT_NAME", cisConversionResult.getDocumentName());
+				session.put("FAILURE_REASON", cisConversionResult.getFailureReason());
+				session.put("PARENT_CONVERSION_ID", null);
+				session.put("CONVERTED_DOCUMENT", cisConversionResult.getFileStream());
 
-			XmlBuilder main = new XmlBuilder("main");
-			main.addAttribute(CONVERSION_OPTION, cisConversionResult.getConversionOption().getValue());
-			main.addAttribute("MEDIA_TYPE", cisConversionResult.getMediaType().toString());
-			main.addAttribute("DOCUMENT_NAME", cisConversionResult.getDocumentName());
-			main.addAttribute("FAILURE_REASON", cisConversionResult.getFailureReason());
-			main.addAttribute("PARENT_CONVERSION_ID", null);
-			main.addAttribute("CONVERTED_DOCUMENT_SESSION_KEY", "main");
+				XmlBuilder main = new XmlBuilder("main");
+				main.addAttribute(CONVERSION_OPTION, cisConversionResult.getConversionOption().getValue());
+				main.addAttribute("MEDIA_TYPE", cisConversionResult.getMediaType().toString());
+				main.addAttribute("DOCUMENT_NAME", cisConversionResult.getDocumentName());
+				main.addAttribute("FAILURE_REASON", cisConversionResult.getFailureReason());
+				main.addAttribute("PARENT_CONVERSION_ID", null);
+				main.addAttribute("CONVERTED_DOCUMENT_SESSION_KEY", "main");
 
-			buildXmlFromResult(main, cisConversionResult, session);
-			session.put("documents", main.toXML());
-			sessionkeyPostfixCounter = 0;
+				buildXmlFromResult(main, cisConversionResult, session);
+				session.put("documents", main.toXML());
+				sessionkeyPostfixCounter = 0;
+			} catch (IOException e) {
+				throw new PipeRunException(this, "", e);
+			}
+			
 		}
 		long end = new Date().getTime();
 		LOGGER.info("PDFPipe doPipe takes ::::: " + (end - start) + " ms");

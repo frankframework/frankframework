@@ -54,7 +54,7 @@ public class SlidesConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption)
+	public void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption)
 			throws Exception {
 
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
@@ -64,17 +64,20 @@ public class SlidesConvertor extends AbstractConvertor {
 		}
 		try (FileInputStream inputStream = new FileInputStream(file)) {
 			Presentation presentation = new Presentation(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
+			
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			long startTime = new Date().getTime();
 			presentation.save(outputStream, SaveFormat.Pdf);
 			long endTime = new Date().getTime();
+			
 			LOGGER.info("Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
+			
 			presentation.dispose();
+			
 			InputStream inStream = new ByteArrayInputStream(outputStream.toByteArray());
 			result.setFileStream(inStream);
 			outputStream.close();
 		}
-		// result.setMetaData(new MetaData(getNumberOfPages(inStream)));
 	}
 
 	@Override

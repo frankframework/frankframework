@@ -22,7 +22,7 @@ class MediaTypeValidator {
 	/**
 	 * Package default access because it specific for the conversion.
 	 */
-	MediaTypeValidator(String pdfOutputlocation) {
+	public MediaTypeValidator(String pdfOutputlocation) {
 		// Create only once. Tika seems to be thread safe
 		// (see
 		// http://stackoverflow.com/questions/10190980/spring-tika-integration-is-my-approach-thread-safe)
@@ -38,7 +38,7 @@ class MediaTypeValidator {
 	 * @return
 	 * @throws IOException
 	 */
-	MediaType getMediaType(InputStream inputStream, String filename) throws IOException {
+	public MediaType getMediaType(InputStream inputStream, String filename) throws IOException {
 		// Create every time as TemporaryResources is not thread-safe
 		TemporaryResources tmp = new TemporaryResources();
 		tmp.setTemporaryFileDirectory(Paths.get(pdfOutputlocation));

@@ -16,6 +16,8 @@ import javax.xml.bind.DatatypeConverter;
  */
 public class ConvertUtil {
 
+	private ConvertUtil() {}
+	
 	public static String convertTimestampToStr(Date xsdDateTime) {
 		if (xsdDateTime != null) {
 			Calendar calendar = null;

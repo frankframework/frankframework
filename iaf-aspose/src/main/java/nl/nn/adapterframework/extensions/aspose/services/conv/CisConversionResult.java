@@ -23,7 +23,7 @@ public class CisConversionResult {
 
 	private final static String PASSWORD_MESSAGE = "Omzetten naar PDF mislukt. Reden: bestand is beveiligd met een wachtwoord!";
 
-	private ConversionOption ConversionOption;
+	private ConversionOption conversionOption;
 	private MediaType mediaType;
 	private String documentName;
 	private String failureReason;
@@ -48,7 +48,7 @@ public class CisConversionResult {
 	/**
 	 * CreateCisConversionResult
 	 * 
-	 * @param ConversionOption
+	 * @param conversionOption
 	 * @param mediaType
 	 * @param documentName
 	 * @param pdfResultFile
@@ -56,18 +56,16 @@ public class CisConversionResult {
 	 * @param argAttachments
 	 * @return
 	 */
-	public static CisConversionResult createCisConversionResult(ConversionOption ConversionOption, MediaType mediaType,
+	public static CisConversionResult createCisConversionResult(ConversionOption conversionOption, MediaType mediaType,
 			String documentName, File pdfResultFile, String failureReason, List<CisConversionResult> argAttachments) {
 
 		CisConversionResult cisConversionResult = new CisConversionResult();
-		cisConversionResult.setConversionOption(ConversionOption);
+		cisConversionResult.setConversionOption(conversionOption);
 		cisConversionResult.setMediaType(mediaType);
 		cisConversionResult.setDocumentName(documentName);
 		cisConversionResult.setPdfResultFile(pdfResultFile);
 		cisConversionResult.setFailureReason(failureReason);
-		if (argAttachments == null) {
-			argAttachments = Collections.emptyList();
-		} else {
+		if (argAttachments != null) {
 			for (CisConversionResult attachment : argAttachments) {
 				cisConversionResult.addAttachment(attachment);
 			}
@@ -79,51 +77,48 @@ public class CisConversionResult {
 	/**
 	 * Create a successful CisConversionResult
 	 *
-	 * @param ConversionOption
+	 * @param conversionOption
 	 * @param mediaTypeReceived
 	 * @param documentNameOriginal
 	 * @param pdfResultFile
 	 * @param attachments
 	 * @return
 	 */
-	public static CisConversionResult createSuccessResult(ConversionOption ConversionOption,
+	public static CisConversionResult createSuccessResult(ConversionOption conversionOption,
 			MediaType mediaTypeReceived, String documentName, File pdfResultFile,
 			List<CisConversionResult> attachments) {
-		return createCisConversionResult(ConversionOption, mediaTypeReceived, documentName, pdfResultFile, null,
+		return createCisConversionResult(conversionOption, mediaTypeReceived, documentName, pdfResultFile, null,
 				attachments);
 	}
 
-	public static CisConversionResult createFailureResult(ConversionOption ConversionOption,
+	public static CisConversionResult createFailureResult(ConversionOption conversionOption,
 			MediaType mediaTypeReceived, String documentName, String failureReason) {
-		return createCisConversionResult(ConversionOption, mediaTypeReceived, documentName, null, failureReason, null);
+		return createCisConversionResult(conversionOption, mediaTypeReceived, documentName, null, failureReason, null);
 	}
 
-	public static CisConversionResult createFailureResult(ConversionOption ConversionOption,
+	public static CisConversionResult createFailureResult(ConversionOption conversionOption,
 			MediaType mediaTypeReceived, String documentName, String failureReason,
 			List<CisConversionResult> attachments) {
-		return createCisConversionResult(ConversionOption, mediaTypeReceived, documentName, null, failureReason,
+		return createCisConversionResult(conversionOption, mediaTypeReceived, documentName, null, failureReason,
 				attachments);
 	}
 
-	public static CisConversionResult createPasswordFailureResult(String filename, ConversionOption ConversionOption,
+	public static CisConversionResult createPasswordFailureResult(String filename, ConversionOption conversionOption,
 			MediaType mediaTypeReceived) {
 		StringBuilder msg = new StringBuilder();
 		if (filename != null) {
 			msg.append(filename);
 		}
 		msg.append(" " + PASSWORD_MESSAGE);
-		return createFailureResult(ConversionOption, mediaTypeReceived, filename, msg.toString(), null);
-	}
-
-	public CisConversionResult() {
+		return createFailureResult(conversionOption, mediaTypeReceived, filename, msg.toString(), null);
 	}
 
 	public ConversionOption getConversionOption() {
-		return ConversionOption;
+		return conversionOption;
 	}
 
-	public void setConversionOption(ConversionOption ConversionOption) {
-		this.ConversionOption = ConversionOption;
+	public void setConversionOption(ConversionOption conversionOption) {
+		this.conversionOption = conversionOption;
 	}
 
 	public MediaType getMediaType() {

@@ -71,7 +71,7 @@ class MailConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption)
+	public void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption)
 			throws Exception {
 		MailMessage eml = null;
 
@@ -89,13 +89,13 @@ class MailConvertor extends AbstractConvertor {
 			LOGGER.debug("reversePath : " + toString(eml.getReversePath()));
 			LOGGER.debug("subject : " + eml.getSubject());
 
-			MhtSaveOptions options = com.aspose.email.MhtSaveOptions.getDefaultMhtml();
+			MhtSaveOptions options = MhtSaveOptions.getDefaultMhtml();
 			options.setMhtFormatOptions(MhtFormatOptions.WriteHeader);
-			options.getFormatTemplates().get_Item("From").replace("From:", "Afzender:");
-			options.getFormatTemplates().get_Item("Sent").replace("Sent:", "Verzonden:");
-			options.getFormatTemplates().get_Item("Subject").replace("Subject:", "Onderwerp:");
-			options.getFormatTemplates().get_Item("Importance").replace("To:", "Aan:");
-			options.getFormatTemplates().get_Item("Cc").replace("Cc:", "Afzender:");
+//			options.getFormatTemplates().get_Item("From").replace("From:", "Afzender:");
+//			options.getFormatTemplates().get_Item("Sent").replace("Sent:", "Verzonden:");
+//			options.getFormatTemplates().get_Item("Subject").replace("Subject:", "Onderwerp:");
+//			options.getFormatTemplates().get_Item("Importance").replace("To:", "Aan:");
+//			options.getFormatTemplates().get_Item("Cc").replace("Cc:", "Afzender:");
 			// Overrules the default documentname.
 			result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(eml.getSubject()));
 
@@ -119,15 +119,18 @@ class MailConvertor extends AbstractConvertor {
 			long start = new Date().getTime();
 			doc.save(outputStream, SaveFormat.PDF);
 			long end = new Date().getTime();
+			
 			LOGGER.info("Conversion(save operation in convert method) takes  :::  " + (end - start) + " ms");
+			
 			InputStream inStream = new ByteArrayInputStream(outputStream.toByteArray());
 			result.setFileStream(inStream);
 			outputStream.close();
-			Long endTime = new Date().getTime();
+			long endTime = new Date().getTime();
+			
 			LOGGER.info("Conversion completed in " + (endTime - startTime) + "ms");
 
 			// Convert and (optional add) any attachment of the mail.
-			List<CisConversionResult> convertedAttachments = new ArrayList<CisConversionResult>();
+			List<CisConversionResult> convertedAttachments = new ArrayList<>();
 			for (int index = 0; index < attachments.size(); index++) {
 				// Initialize Attachment object and Get the indexed Attachment reference
 				Attachment attachment = attachments.get_Item(index);
@@ -177,7 +180,7 @@ class MailConvertor extends AbstractConvertor {
 	 * @return
 	 * @throws IOException
 	 */
-	private CisConversionResult convertAttachmentInPdf(Attachment attachment, ConversionOption conversionOption) {
+	private CisConversionResult convertAttachmentInPdf(Attachment attachment, ConversionOption conversionOption) throws IOException {
 
 		LOGGER.debug("Convert attachment... (" + attachment.getName() + ")");
 

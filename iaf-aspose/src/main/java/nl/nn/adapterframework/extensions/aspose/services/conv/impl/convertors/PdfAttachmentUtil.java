@@ -50,7 +50,7 @@ public class PdfAttachmentUtil {
 	 * @param result
 	 * @throws IOException
 	 */
-	static void addAttachmentInSinglePdf(List<CisConversionResult> cisConversionResultList, CisConversionResult result)
+	protected static void addAttachmentInSinglePdf(List<CisConversionResult> cisConversionResultList, CisConversionResult result)
 			throws IOException {
 		PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(cisConversionResultList, result);
 		try {
@@ -60,7 +60,7 @@ public class PdfAttachmentUtil {
 		}
 	}
 
-	void addAttachmentToPdf(CisConversionResult result, InputStream fileToAttach, String filename, String extension)
+	protected void addAttachmentToPdf(CisConversionResult result, InputStream fileToAttach, String filename, String extension)
 			throws IOException {
 		PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(null, result);
 		try (BufferedInputStream attachmentDocumentStream = new BufferedInputStream(fileToAttach)) {
@@ -84,9 +84,8 @@ public class PdfAttachmentUtil {
 	 *            wiht the given pdf and its attachments.
 	 * @param rootPdf
 	 *            the pdf created with the attachments embedded.
-	 * @throws IOException
 	 */
-	private void addAttachmentInSinglePdf() throws IOException {
+	private void addAttachmentInSinglePdf() {
 
 		for (CisConversionResult cisConversionResultAttachment : cisConversionResultList) {
 

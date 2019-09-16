@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -38,7 +39,7 @@ abstract class AbstractConvertor implements Convertor {
 	 * @param mediaType
 	 * @param conversionOption
 	 */
-	abstract void convert(MediaType mediaType, File file, CisConversionResult builder,
+	public abstract void convert(MediaType mediaType, File file, CisConversionResult builder,
 			ConversionOption conversionOption) throws Exception;
 
 	@Override
@@ -46,7 +47,7 @@ abstract class AbstractConvertor implements Convertor {
 		return supportedMediaTypes;
 	}
 
-	void checkForSupportedMediaType(MediaType mediaType) {
+	private void checkForSupportedMediaType(MediaType mediaType) {
 
 		boolean supported = false;
 
@@ -130,7 +131,7 @@ abstract class AbstractConvertor implements Convertor {
 		return msg.toString();
 	}
 
-	protected void deleteFile(File file) {
+	protected void deleteFile(File file) throws IOException {
 		FileUtil.deleteFile(file);
 	}
 

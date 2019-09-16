@@ -3,6 +3,7 @@
  */
 package nl.nn.adapterframework.extensions.aspose.services.conv;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
@@ -24,10 +25,11 @@ public interface CisConversionService {
 	 *            (without the path). Is used to detect mediatype and inform the
 	 *            user of the name of the file. Is allowed to be null.
 	 * @return
+	 * @throws IOException 
 	 * @throws CisConversionException
 	 *             when a failure occurs.
 	 */
-	CisConversionResult convertToPdf(InputStream inputStream, String filename, ConversionOption conversionOption);
+	CisConversionResult convertToPdf(InputStream inputStream, String filename, ConversionOption conversionOption) throws IOException;
 
 	/**
 	 * This will try to convert the given inputStream to a pdf.
@@ -36,10 +38,11 @@ public interface CisConversionService {
 	 * 
 	 * @param inputStream
 	 * @return
+	 * @throws IOException 
 	 * @throws CisConversionException
 	 *             when a failure occurs.
 	 */
-	CisConversionResult convertToPdf(InputStream inputStream, ConversionOption conversionOption);
+	CisConversionResult convertToPdf(InputStream inputStream, ConversionOption conversionOption) throws IOException;
 
 	String getFontsDirectory();
 }

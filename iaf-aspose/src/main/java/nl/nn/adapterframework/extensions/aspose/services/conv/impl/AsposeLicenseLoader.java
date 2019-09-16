@@ -252,19 +252,19 @@ public class AsposeLicenseLoader {
 		FontsLoader.loadExternalFonts(fontDir);
 	}
 
-	private void logFonts(String msg) {
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		Font[] fontFamilies = ge.getAllFonts();
-
-		LOGGER.info("--------- fonts --------- start --------- " + msg);
-
-		int count = 1;
-		for (Font font : fontFamilies) {
-			LOGGER.info(count++ + " font: " + font.getName() + " fontFamily: " + font.getFamily());
-		}
-
-		LOGGER.info("--------- fonts ---------  end  --------- " + msg);
-	}
+//	private void logFonts(String msg) {
+//		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+//		Font[] fontFamilies = ge.getAllFonts();
+//
+//		LOGGER.info("--------- fonts --------- start --------- " + msg);
+//
+//		int count = 1;
+//		for (Font font : fontFamilies) {
+//			LOGGER.info(count++ + " font: " + font.getName() + " fontFamily: " + font.getFamily());
+//		}
+//
+//		LOGGER.info("--------- fonts ---------  end  --------- " + msg);
+//	}
 
 	private void loadFonts(String pathToFonts) throws IOException {
 		List<Font> fonts = Arrays.asList(ge.getAllFonts());
@@ -276,10 +276,8 @@ public class AsposeLicenseLoader {
 				Font newFont = createFont(fontInputStream, fontFile.getName());
 				LOGGER.debug("Register font " + newFont);
 
-				if (!fonts.contains(newFont)) {
-					if (!ge.registerFont(newFont)) {
-						 LOGGER.warn("Font not registered!" + newFont.getFontName());
-					}
+				if (!fonts.contains(newFont) && !ge.registerFont(newFont)) {
+					LOGGER.warn("Font not registered!" + newFont.getFontName());
 				}
 
 			} catch (IOException e) {

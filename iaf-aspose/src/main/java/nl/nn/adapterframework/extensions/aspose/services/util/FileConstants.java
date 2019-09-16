@@ -11,12 +11,6 @@ package nl.nn.adapterframework.extensions.aspose.services.util;
 public class FileConstants {
 
 	/**
-	 * Private constructor to prevent constructing this class.
-	 */
-	private FileConstants() {
-	}
-
-	/**
 	 * The specific allowed characters in a filename (with the exception of digits
 	 * and letters).
 	 */
@@ -44,5 +38,11 @@ public class FileConstants {
 	 * The replace character.
 	 */
 	public static final String REPLACE_CHARACTER = "_";
+	
+	/**
+	 * Private constructor to prevent constructing this class.
+	 */
+	private FileConstants() {
+	}
 
 }

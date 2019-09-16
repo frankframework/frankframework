@@ -41,15 +41,16 @@ public final class FileUtil {
 	 * runtimeexception when deleting fails.
 	 * 
 	 * @param file
+	 * @throws IOException 
 	 */
-	public static void deleteFile(File file) {
+	public static void deleteFile(File file) throws IOException {
 		// Delete always the temporary file if it exist.
 		if (file != null && Files.exists(file.toPath(), LinkOption.NOFOLLOW_LINKS)) {
 			try {
 				Files.delete(file.toPath());
 			} catch (IOException e) {
 				LOGGER.warn("Deleting file failed!", e);
-				throw new RuntimeException("Deleting file failed!", e);
+				throw new IOException("Deleting file failed!", e);
 			}
 		}
 
@@ -69,7 +70,6 @@ public final class FileUtil {
 
 		@Override
 		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-			// getLogger().debug("Delete file " + file);
 			Files.delete(file);
 			return FileVisitResult.CONTINUE;
 		}
