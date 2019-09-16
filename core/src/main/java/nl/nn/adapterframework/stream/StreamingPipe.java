@@ -20,7 +20,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
@@ -40,11 +40,6 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	
 	private List<IOutputStreamingSupport> streamTargets;
 	
-	@Override
-	public void configure() throws ConfigurationException {
-		super.configure();
-	}
-
 	@Override
 	public void start() throws PipeStartException {
 		super.start();
@@ -68,6 +63,11 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	@Override
 	public boolean canStreamToTarget() {
 		return StringUtils.isEmpty(this.getStoreResultInSessionKey());
+	}
+
+	@Override
+	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+		return null;
 	}
 
 	/**
@@ -111,7 +111,7 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 				log.debug("Cannot stream, no pipeline");
 				return null;
 			}
-			List<IOutputStreamingSupport> streamTargets = new ArrayList<IOutputStreamingSupport>();
+			List<IOutputStreamingSupport> myStreamTargets = new ArrayList<IOutputStreamingSupport>();
 			PipeForward forward=getForward();
 			while (true) {
 				if (forward==null) {
@@ -143,11 +143,11 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 					break;
 				}
 				log.debug("adding nextPipe ["+forwardPath+"] to list of stream targets");
-				streamTargets.add(streamTarget);
+				myStreamTargets.add(streamTarget);
 				
 				if (nextPipe instanceof StreamingPipe) {
 					log.debug("attach streamTargets of nextPipe ["+forwardPath+"]");
-					streamTargets.addAll(((StreamingPipe)nextPipe).getStreamTargets());
+					myStreamTargets.addAll(((StreamingPipe)nextPipe).getStreamTargets());
 					break;
 				}
 				// if next pipe is not a StreamingPipe, than add it's streaming targets manually
@@ -157,6 +157,8 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 				}
 				forward = ((FixedForwardPipe)nextPipe).getForward();
 			}
+			streamTargets=myStreamTargets;
+			
 		}
 		return streamTargets;
 	}
@@ -181,6 +183,24 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	}
 	public boolean isStreamingActive() {
 		return streamingActive;
+	}
+
+
+	// TODO: fix statistics handling: that is now kept in a list by name, and therefor not found anymore by show statistics
+	@Override
+	public String getName() {
+		if (streamTargets!=null) { // use cached copy of streamTargets, do not generate a new one; it might be too early to do that.
+			String result = "Stream: "+super.getName();
+			for(IOutputStreamingSupport step:streamTargets) {
+				if (step instanceof INamedObject) {
+					result+="->"+((INamedObject)step).getName();
+				} else {
+					result+="->"+step.getClass().getSimpleName();
+				}
+			}
+			return result;
+		}
+		return super.getName();
 	}
 
 
