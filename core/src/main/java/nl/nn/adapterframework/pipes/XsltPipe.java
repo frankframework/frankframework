@@ -196,6 +196,19 @@ public class XsltPipe extends FixedForwardPipe {
 		return sessionKey;
 	}
 
+	public void setStyleSheetNameSessionKey(String newSessionKey) {
+		sender.setStyleSheetNameSessionKey(newSessionKey);
+	}
+	public String getStyleSheetNameSessionKey() {
+		return sender.getStyleSheetNameSessionKey();
+	}
+
+	public void setStyleSheetCacheSize(int size) {
+		sender.setStyleSheetCacheSize(size);
+	}
+	public int getStyleSheetCacheSize() {
+		return sender.getStyleSheetCacheSize();
+	}
 
 	@IbisDoc({"either 'text' or 'xml'. only valid for xpathexpression", "text"})
 	public void setOutputType(String string) {
