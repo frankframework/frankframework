@@ -17,6 +17,7 @@ package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Collections;
 import java.util.Map;
 
 import javax.xml.transform.Result;
@@ -26,6 +27,7 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang.StringUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -76,6 +78,11 @@ public class XsltSender extends StreamingSenderBase  {
 	private TransformerPool transformerPool;
 	private TransformerPool transformerPoolSkipEmptyTags;
 	private TransformerPool transformerPoolRemoveNamespaces;
+	
+	private Map<String, TransformerPool> dynamicTransformerPoolMap;
+	private int transformerPoolMapSize = 100;
+	
+	private String styleSheetNameSessionKey=null;
 
 	/**
 	 * The <code>configure()</code> method instantiates a transformer for the specified
@@ -84,8 +91,16 @@ public class XsltSender extends StreamingSenderBase  {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-	
-		transformerPool = TransformerPool.configureTransformer0(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), getXsltVersion());
+		
+		dynamicTransformerPoolMap = Collections.synchronizedMap(new LRUMap(transformerPoolMapSize));
+		
+		if(StringUtils.isNotEmpty(getStyleSheetName()) || StringUtils.isNotEmpty(getXpathExpression())) {
+			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), getXsltVersion());
+		}
+		else if(StringUtils.isEmpty(getStyleSheetNameSessionKey())) {
+			throw new ConfigurationException(getLogPrefix()+" one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified");
+		}
+		
 		if (isSkipEmptyTags()) {
 			transformerPoolSkipEmptyTags = XmlUtils.getSkipEmptyTagsTransformerPool(isOmitXmlDeclaration(),isIndentXml());
 		}
@@ -111,6 +126,7 @@ public class XsltSender extends StreamingSenderBase  {
 	@Override
 	public void open() throws SenderException {
 		super.open();
+
 		if (transformerPool!=null) {
 			try {
 				transformerPool.open();
@@ -137,8 +153,15 @@ public class XsltSender extends StreamingSenderBase  {
 	@Override
 	public void close() throws SenderException {
 		super.close();
+		
 		if (transformerPool!=null) {
 			transformerPool.close();
+		}
+		
+		if (!dynamicTransformerPoolMap.isEmpty()) {
+			for(TransformerPool tp : dynamicTransformerPoolMap.values()) {
+				tp.close();
+			}
 		}
 		if (transformerPoolSkipEmptyTags!=null) {
 			transformerPoolSkipEmptyTags.close();
@@ -214,7 +237,19 @@ public class XsltSender extends StreamingSenderBase  {
 				result=skipEmptyTagsFeedingResult;
 			}
 
-			TransformerHandler mainHandler = transformerPool.getTransformerHandler();
+			TransformerPool poolToUse = transformerPool;
+			if(StringUtils.isNotEmpty(styleSheetNameSessionKey) && prc.getSession().get(styleSheetNameSessionKey) != null) {
+				String styleSheetNameToUse = prc.getSession().get(styleSheetNameSessionKey).toString();
+			
+				if(!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
+					dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), getClassLoader(), null, null, styleSheetNameToUse, null, !isOmitXmlDeclaration(), getParameterList()));
+					poolToUse.open();
+				} else {
+					poolToUse = dynamicTransformerPoolMap.get(styleSheetNameToUse);
+				}
+			}
+
+			TransformerHandler mainHandler = poolToUse.getTransformerHandler();
 			XmlUtils.setTransformerParameters(mainHandler.getTransformer(),parametervalues);
 			mainHandler.setResult(result);
 			handler=mainHandler;
@@ -276,6 +311,19 @@ public class XsltSender extends StreamingSenderBase  {
 //				log.debug(getLogPrefix()+" transformerPool ["+transformerPool+"] transforming using prc ["+prc+"] and parameterValues ["+parametervalues+"]");
 //				log.debug(getLogPrefix()+" prc.inputsource ["+prc.getInputSource()+"]");
 //			}
+						
+			TransformerPool poolToUse = transformerPool;
+			
+			if(StringUtils.isNotEmpty(styleSheetNameSessionKey) && prc.getSession().get(styleSheetNameSessionKey) != null) {
+				String styleSheetNameToUse = prc.getSession().get(styleSheetNameSessionKey).toString();
+			
+				if(!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
+					dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), getClassLoader(), null, null, styleSheetNameToUse, null, !isOmitXmlDeclaration(), getParameterList()));
+					poolToUse.open();
+				} else {
+					poolToUse = dynamicTransformerPoolMap.get(styleSheetNameToUse);
+				}
+			}
 			
 			if (target!=null) {
 				SAXResult mainResult = new SAXResult();
@@ -288,10 +336,10 @@ public class XsltSender extends StreamingSenderBase  {
 				} else {
 					mainResult.setHandler(targetContentHandler);
 				}
-				transformerPool.transform(inputMsg, mainResult, parametervalues); 
+				poolToUse.transform(inputMsg, mainResult, parametervalues); 
 				stringResult=message;
 			} else {
-				stringResult = transformerPool.transform(inputMsg, parametervalues); 
+				stringResult = poolToUse.transform(inputMsg, parametervalues); 
 	
 				if (isSkipEmptyTags()) {
 					log.debug(getLogPrefix()+ " skipping empty tags from result [" + stringResult + "]");
@@ -410,4 +458,17 @@ public class XsltSender extends StreamingSenderBase  {
 		return namespaceAware;
 	}
 
+	public void setStyleSheetNameSessionKey(String newSessionKey) {
+		styleSheetNameSessionKey = newSessionKey;
+	}
+	public String getStyleSheetNameSessionKey() {
+		return styleSheetNameSessionKey;
+	}
+
+	public void setStyleSheetCacheSize(int size) {
+		transformerPoolMapSize = size;
+	}
+	public int getStyleSheetCacheSize() {
+		return transformerPoolMapSize;
+	}
 }
