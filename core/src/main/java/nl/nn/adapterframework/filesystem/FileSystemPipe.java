@@ -39,13 +39,26 @@ import nl.nn.adapterframework.stream.StreamingPipe;
  * <table align="top">
  * <tr><th>Action</th><th>Description</th><th>Configuration</th></tr>
  * <tr><td>list</td><td>list files in a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>root folder</li></ol></td></tr>
- * <tr><td>read</td><td>read a file, returns an InputStream</td><td>filename: taken from input message</td><td>&nbsp;</td></tr>
- * <tr><td>move</td><td>move a file to another folder</td><td>filename: taken from input message<br/>parameter <code>destination</code></td></tr>
- * <tr><td>delete</td><td>delete a file</td><td>filename: taken from input message</td><td>&nbsp;</td></tr>
- * <tr><td>mkdir</td><td>create a folder/directory</td><td>folder: taken from input message</td><td>&nbsp;</td></tr>
- * <tr><td>rmdir</td><td>remove a folder/directory</td><td>folder: taken from input message</td><td>&nbsp;</td></tr>
- * <tr><td>write</td><td>write contents to a file<td>filename: taken from input message<br/>parameter <code>contents</code>: contents as either Stream, Bytes or String</td><td>&nbsp;</td></tr>
- * <tr><td>rename</td><td>change the name of a file</td><td>filename: taken from input message<br/>parameter <code>destination</code></td></tr>
+ * <tr><td>read</td><td>read a file, returns an InputStream</td><td>filename: taken from parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
+ * <tr><td>move</td><td>move a file to another folder</td><td>filename: taken from parameter <code>filename</code> or input message<br/>parameter <code>destination</code></td></tr>
+ * <tr><td>delete</td><td>delete a file</td><td>filename: taken from parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
+ * <tr><td>mkdir</td><td>create a folder/directory</td><td>folder: taken from parameter <code>foldername</code> or input message</td><td>&nbsp;</td></tr>
+ * <tr><td>rmdir</td><td>remove a folder/directory</td><td>folder: taken from parameter <code>foldername</code> or input message</td><td>&nbsp;</td></tr>
+ * <tr><td>write</td><td>write contents to a file<td>
+ *  filename: taken from parameter <code>filename</code> or input message<br/>
+ *  parameter <code>contents</code>: contents as either Stream, Bytes or String<br/>
+ *  At least one of the parameters must be specified.<br/>
+ *  The missing parameter defaults to the input message.<br/>
+ *  For streaming operation, the parameter <code>filename</code> must be specified.
+ *  </td><td>&nbsp;</td></tr>
+ * <tr><td>append</td><td>append contents to a file<br/>(only for filesystems that support 'append')<td>
+ *  filename: taken from parameter <code>filename</code> or input message<br/>
+ *  parameter <code>contents</code>: contents as either Stream, Bytes or String<br/>
+ *  At least one of the parameters must be specified.<br/>
+ *  The missing parameter defaults to the input message.<br/>
+ *  For streaming operation, the parameter <code>filename</code> must be specified.
+ *  </td><td>&nbsp;</td></tr>
+ * <tr><td>rename</td><td>change the name of a file</td><td>filename: taken from parameter <code>filename</code> or input message<br/>parameter <code>destination</code></td></tr>
  * <table>
  * 
  * @author Gerrit van Brakel

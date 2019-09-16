@@ -66,7 +66,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  *  The missing parameter defaults to the input message.<br/>
  *  For streaming operation, the parameter <code>filename</code> must be specified.
  *  </td><td>&nbsp;</td></tr>
- * <tr><td>append</td><td>append contents to a file (only for filesystems that support 'append')<td>
+ * <tr><td>append</td><td>append contents to a file<br/>(only for filesystems that support 'append')<td>
  *  filename: taken from parameter <code>filename</code> or input message<br/>
  *  parameter <code>contents</code>: contents as either Stream, Bytes or String<br/>
  *  At least one of the parameters must be specified.<br/>
