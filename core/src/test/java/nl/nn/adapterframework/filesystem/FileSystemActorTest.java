@@ -461,8 +461,6 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		
 		ParameterResolutionContext prc = new ParameterResolutionContext();
 		prc.setSession(session);
-		String message=filename;
-		//ParameterValueList pvl= createParameterValueList(params, message, session);
 		MessageOutputStream target = actor.provideOutputStream(null, session, null);
 
 		// stream the contents

@@ -47,8 +47,6 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 	private Logger log = LogUtil.getLogger(this);
 	private PipeProcessor pipeProcessor;
 
-	private boolean useStreamingOptimization=false;
-	
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, String message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		// Object is the object that is passed to and returned from Pipes
 		Object object = (Object) message;

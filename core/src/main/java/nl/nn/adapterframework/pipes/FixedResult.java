@@ -73,7 +73,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </p>
  * @author Johan Verrips
  */
-public class FixedResult extends StreamingPipe {
+public class FixedResult extends FixedForwardPipe {
 	
 	private final static String FILE_NOT_FOUND_FORWARD = "filenotfound";
 	
@@ -124,16 +124,7 @@ public class FixedResult extends StreamingPipe {
     }
     
 	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
-		return null;
-	}
-	@Override
-	public boolean canProvideOutputStream() {
-		return false;
-	}
-
-	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session, MessageOutputStream target) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		String result=returnString;
 		if ((StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime())
 				|| StringUtils.isNotEmpty(getFileNameSessionKey())) {
@@ -211,17 +202,7 @@ public class FixedResult extends StreamingPipe {
 		}
 
 	    log.debug(getLogPrefix(session)+ " returning fixed result [" + result + "]");
-	
-	    if (target!=null) {
-	   		try (Writer writer = target.asWriter()) {
-				writer.write(result);
-			} catch (IOException e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"caught IOException", e);
-			} catch (StreamingException e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"caught StreamingException", e);
-			}
-	  		return new PipeRunResult(getForward(), target.getResponse());
-	    }
+
    		return new PipeRunResult(getForward(), result);
 	}
 

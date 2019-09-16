@@ -29,11 +29,11 @@ public class AttributesWrapper implements Attributes {
 	List<Attribute> attributes = new ArrayList<Attribute>();
 	
 	private class Attribute {
-		String uri;
-		String localName;
-		String qName;
-		String type;
-		String value;
+		public String uri;
+		public String localName;
+		public String qName;
+		public String type;
+		public String value;
 	}
 	
 

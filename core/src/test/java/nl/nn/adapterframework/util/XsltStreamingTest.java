@@ -10,22 +10,19 @@ import java.io.InputStream;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.sax.SAXSource;
-import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
 import org.junit.Test;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 public class XsltStreamingTest {
 
 	private class SwitchCounter {
 		public int count;
-		String prevLabel;
+		private String prevLabel;
 		
 		public void mark(String label) {
 			if (prevLabel==null || !prevLabel.equals(label)) {
@@ -132,7 +129,7 @@ public class XsltStreamingTest {
 	
 	private class LoggingInputStream extends FilterInputStream {
 
-		int blocksize=10;
+		private int blocksize=10;
 		private SwitchCounter sc;
 		
 		public LoggingInputStream(InputStream arg0, SwitchCounter sc) {

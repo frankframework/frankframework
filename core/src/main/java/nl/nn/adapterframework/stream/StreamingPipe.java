@@ -36,39 +36,29 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 
 	public final String AUTOMATIC_STREAMING = "streaming.auto";
 
-	private boolean streamingActive=AppConstants.getInstance().getBoolean(AUTOMATIC_STREAMING, false);;
-//	private IPipe nextPipe;
+	private boolean streamingActive=AppConstants.getInstance().getBoolean(AUTOMATIC_STREAMING, false);
+	
+	private List<IOutputStreamingSupport> streamTargets;
 	
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-//		if (nextPipe!=null) {
-//			nextPipe.configure();
-//		}
 	}
 
 	@Override
 	public void start() throws PipeStartException {
 		super.start();
-//		if (nextPipe!=null) {
-//			nextPipe.start();
-//		}
+		getStreamTargets();
 	}
 
 	@Override
 	public void stop() {
-//		if (nextPipe!=null) {
-//			nextPipe.stop();
-//		}
 		super.stop();
 	}
 
-//	/**
-//	 * Registers a pipe as next pipe, and as potential streaming target.
-//	 */
-//	public void addPipe(IPipe pipe) throws ConfigurationException {
-//		nextPipe=pipe;
-//	}
+	public IPipe getNextPipe() {
+		return getPipeLine().getPipe(getForwardName());
+	}
 	
 	@Override
 	public boolean canProvideOutputStream() {
@@ -80,20 +70,14 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 		return StringUtils.isEmpty(this.getStoreResultInSessionKey());
 	}
 
-	public IPipe getNextPipe() {
-		return getPipeLine().getPipe(getForwardName());
-	}
 	/**
 	 * Descendants of this class must implement this method, and write to the outputStream when it is not null. 
-	 * @param input
-	 * @param session
-	 * @param outputStream
 	 */
 	public abstract PipeRunResult doPipe(Object input, IPipeLineSession session, MessageOutputStream outputStream) throws PipeRunException;
 	
 	@Override
 	public final PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		List<IOutputStreamingSupport> streamTargets = getStreamTargets(session);
+		List<IOutputStreamingSupport> streamTargets = getStreamTargets();
 		if (streamTargets!=null && streamTargets.size()>0) {
 			try {
 				log.debug(getLogPrefix(session)+"obtaining outputstream");
@@ -112,53 +96,67 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 		}
 	}
 
-	private List<IOutputStreamingSupport> getStreamTargets(IPipeLineSession session) {
-		PipeLine pipeline=getPipeLine();
-		if (!isStreamingActive()) {
-			log.debug(getLogPrefix(session)+"cannot stream, streamingActive ["+isStreamingActive()+"]");
-			return null;
-		}
-		if (pipeline==null) {
-			log.debug(getLogPrefix(session)+"cannot stream, no pipeline");
-			return null;
-		}
-		List<IOutputStreamingSupport> streamTargets = new ArrayList<IOutputStreamingSupport>();
-		PipeForward forward=getForward();
-		while (true) {
-			if (forward==null) {
-				log.debug(getLogPrefix(session)+"forward is null, streaming stops");
-				break;
+	
+	/**
+	 * return a list of down stream {@link IOutputStreamingSupport}s, that can be used to set up the chain of targets.
+	 */
+	public List<IOutputStreamingSupport> getStreamTargets() {
+		if (streamTargets==null) {
+			PipeLine pipeline=getPipeLine();
+			if (!isStreamingActive()) {
+				log.debug("Cannot stream, streamingActive ["+isStreamingActive()+"]");
+				return null;
 			}
-			String forwardPath=forward.getPath();
-			if (forwardPath==null) {
-				log.debug(getLogPrefix(session)+"forwardPath is null, streaming stops");
-				break;
+			if (pipeline==null) {
+				log.debug("Cannot stream, no pipeline");
+				return null;
 			}
-			IPipe nextPipe=pipeline.getPipe(forwardPath);
-			if (nextPipe==null) {
-				log.debug(getLogPrefix(session)+"pipeline ends here, streaming stops");
-				break;
+			List<IOutputStreamingSupport> streamTargets = new ArrayList<IOutputStreamingSupport>();
+			PipeForward forward=getForward();
+			while (true) {
+				if (forward==null) {
+					log.debug("Forward is null, streaming stops");
+					break;
+				}
+				String forwardPath=forward.getPath();
+				if (forwardPath==null) {
+					log.debug("ForwardPath is null, streaming stops");
+					break;
+				}
+				IPipe nextPipe=pipeline.getPipe(forwardPath);
+				if (nextPipe==null) {
+					log.debug("Pipeline ends here, streaming stops");
+					break;
+				}
+				if (!(nextPipe instanceof IOutputStreamingSupport)) {
+					log.debug("nextPipe ["+forwardPath+"] type ["+nextPipe.getClass().getSimpleName()+"] does not support streaming");
+					break;
+				}
+				
+				if (nextPipe instanceof StreamingPipe && !((StreamingPipe)nextPipe).isStreamingActive()) {
+					log.debug("nextPipe ["+forwardPath+"] has not activated streaming");
+					break;
+				}
+				IOutputStreamingSupport streamTarget = (IOutputStreamingSupport)nextPipe;
+				if (!streamTarget.canProvideOutputStream()) {
+					log.debug("nextPipe ["+forwardPath+"] cannot provide outputstream");
+					break;
+				}
+				log.debug("adding nextPipe ["+forwardPath+"] to list of stream targets");
+				streamTargets.add(streamTarget);
+				
+				if (nextPipe instanceof StreamingPipe) {
+					log.debug("attach streamTargets of nextPipe ["+forwardPath+"]");
+					streamTargets.addAll(((StreamingPipe)nextPipe).getStreamTargets());
+					break;
+				}
+				// if next pipe is not a StreamingPipe, than add it's streaming targets manually
+				if (!streamTarget.canStreamToTarget() || !(streamTarget instanceof FixedForwardPipe)) {
+					log.debug("nextPipe ["+forwardPath+"] cannot provide stream to its successor");
+					break;
+				}
+				forward = ((FixedForwardPipe)nextPipe).getForward();
 			}
-			if (!(nextPipe instanceof IOutputStreamingSupport)) {
-				log.debug(getLogPrefix(session)+"nextPipe ["+forwardPath+"] type ["+nextPipe.getClass().getSimpleName()+"] does not support streaming");
-				break;
-			}
-			if (nextPipe instanceof StreamingPipe && !((StreamingPipe)nextPipe).isStreamingActive()) {
-				log.debug(getLogPrefix(session)+"nextPipe ["+forwardPath+"] has not activated streaming");
-				break;
-			}
-			IOutputStreamingSupport streamTarget = (IOutputStreamingSupport)nextPipe;
-			if (!streamTarget.canProvideOutputStream()) {
-				log.debug(getLogPrefix(session)+"nextPipe ["+forwardPath+"] cannot provide outputstream");
-				break;
-			}
-			log.debug("adding nextPipe ["+forwardPath+"] to list of stream targets");
-			streamTargets.add(streamTarget);
-			if (!streamTarget.canStreamToTarget() || !(streamTarget instanceof FixedForwardPipe)) {
-				log.debug(getLogPrefix(session)+"nextPipe ["+forwardPath+"] cannot provide stream to its successor");
-				break;
-			}
-			forward = ((FixedForwardPipe)nextPipe).getForward();
 		}
 		return streamTargets;
 	}

@@ -26,7 +26,7 @@ public interface IOutputStreamingSupport {
 	public boolean canProvideOutputStream();  
 	
 	/**
-	 * When this returns <code>true</code> then {{@link #provideOutputStream(String, IPipeLineSession, MessageOutputStream) provideOutputStream()} 
+	 * When this returns <code>true</code> then {@link #provideOutputStream(String, IPipeLineSession, MessageOutputStream) provideOutputStream()} 
 	 * must use {@link MessageOutputStream target} to stream its own output to. 
 	 */
 	public boolean canStreamToTarget();  
@@ -35,5 +35,6 @@ public interface IOutputStreamingSupport {
 	 * return a {@link MessageOutputStream} that can be used to write a message to, that then will be processed in a streaming way.
 	 */
 	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException;
+	
 	
 }

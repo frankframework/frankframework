@@ -52,7 +52,7 @@ public class ContentHandlerOutputStream extends PipedOutputStream {
 		}
 	}
 
-	final Thread pipeReader=new Thread() {
+	private final Thread pipeReader=new Thread() {
 
 		@Override
 		public void run() {

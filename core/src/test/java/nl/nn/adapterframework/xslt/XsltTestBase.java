@@ -50,6 +50,15 @@ public abstract class XsltTestBase<P extends IPipe> extends PipeTestBase<P> {
 	protected abstract void setRemoveNamespaces(boolean removeNamespaces);
 	protected abstract void setXslt2(boolean xslt2);
  
+	@Parameter(0)
+	public String  description=null;
+	@Parameter(1)
+	public boolean classic=true;
+	@Parameter(2)
+	public boolean provideStreamForInput=false;
+	@Parameter(3)
+	public boolean writeOutputToStream=false;
+	
 	@Parameters(name = "{index}: {0}: provide [{2}] stream out [{3}]")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
@@ -60,15 +69,6 @@ public abstract class XsltTestBase<P extends IPipe> extends PipeTestBase<P> {
                  { "stream through",  	 true, true,  true  }
            });
     }
-	
-	@Parameter(0)
-	public String  description=null;
-	@Parameter(1)
-	public boolean classic=true;
-	@Parameter(2)
-	public boolean provideStreamForInput=false;
-	@Parameter(3)
-	public boolean writeOutputToStream=false;
 	
 	@Override
 	public void setup() throws ConfigurationException {

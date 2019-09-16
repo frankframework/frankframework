@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class MessageOutputStreamTest {
 
-	String testString="<root><sub>oh</sub><sub>ah</sub></root>";
+	protected String testString="<root><sub>oh</sub><sub>ah</sub></root>";
 	
 	
 	@Test
@@ -51,9 +51,9 @@ public class MessageOutputStreamTest {
 
 		MessageOutputStream stream = new MessageOutputStream(target,null);
 
-		OutputStream outputstream = stream.asStream();
-		outputstream.write(testString.getBytes());
-		outputstream.close();
+		try (OutputStream outputstream = stream.asStream()) {
+			outputstream.write(testString.getBytes());
+		}
 
 		String actual = new String (target.toByteArray());
 		assertEquals(testString, actual);
@@ -66,9 +66,9 @@ public class MessageOutputStreamTest {
 
 		MessageOutputStream stream = new MessageOutputStream(target,null);
 
-		Writer writer = stream.asWriter();
-		writer.write(testString);
-		writer.close();
+		try (Writer writer = stream.asWriter()) {
+			writer.write(testString);
+		}
 
 		String actual = new String (target.toString());
 		assertEquals(testString, actual);
@@ -81,9 +81,9 @@ public class MessageOutputStreamTest {
 
 		MessageOutputStream stream = new MessageOutputStream(target,null);
 
-		OutputStream outputstream = stream.asStream();
-		outputstream.write(testString.getBytes());
-		outputstream.close();
+		try (OutputStream outputstream = stream.asStream()) {
+			outputstream.write(testString.getBytes());
+		}
 
 		String actual = new String (target.toString());
 		assertEquals(testString, actual);
@@ -96,9 +96,9 @@ public class MessageOutputStreamTest {
 		
 		MessageOutputStream stream = new MessageOutputStream(target,null);
 		
-		Writer writer = stream.asWriter();
-		writer.write(testString);
-		writer.close();
+		try (Writer writer = stream.asWriter()) {
+			writer.write(testString);
+		}
 		
 		String actual = new String (target.toByteArray());
 		assertEquals(testString, actual);
@@ -115,9 +115,9 @@ public class MessageOutputStreamTest {
 
 		MessageOutputStream stream = new MessageOutputStream(transformerHandler,null);
 		
-		Writer writer = stream.asWriter();
-		writer.write(testString);
-		writer.close();
+		try (Writer writer = stream.asWriter()) {
+			writer.write(testString);
+		}
 		
 		String actual = new String (sw.toString());
 		assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+testString, actual);
@@ -156,9 +156,9 @@ public class MessageOutputStreamTest {
 		MessageOutputStream stream = new MessageOutputStream(target,null);
 
 		try {
-			OutputStream outputstream = stream.asStream();
-			outputstream.write(testString.getBytes());
-			outputstream.close();
+			try (OutputStream outputstream = stream.asStream()) {
+				outputstream.write(testString.getBytes());
+			}
 			fail("exception should be thrown");
 		} catch (Exception e) {
 			assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
@@ -180,9 +180,9 @@ public class MessageOutputStreamTest {
 		MessageOutputStream stream = new MessageOutputStream(target,null);
 		
 		try {
-			Writer writer = stream.asWriter();
-			writer.write(testString);
-			writer.close();
+			try (Writer writer = stream.asWriter()) {
+				writer.write(testString);
+			}
 			fail("exception should be thrown");
 		} catch (Exception e) {
 			assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
@@ -208,9 +208,9 @@ public class MessageOutputStreamTest {
 		MessageOutputStream stream = new MessageOutputStream(transformerHandler,null);
 		
 		try {
-			Writer writer = stream.asWriter();
-			writer.write(testString);
-			writer.close();
+			try (Writer writer = stream.asWriter()) {
+				writer.write(testString);
+			}
 			fail("exception should be thrown");
 		} catch (Exception e) {
 			assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));

@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.Map;
 
 import javax.xml.transform.Result;
@@ -27,6 +28,8 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.lang.StringUtils;
 import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -173,6 +176,14 @@ public class XsltSender extends StreamingSenderBase  {
 	
 	@Override
 	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+		if (target==null) {
+			target=new MessageOutputStreamCap();
+		}
+		ContentHandler handler = createHandler(correlationID, session, target);
+		return new MessageOutputStream(handler,target);
+	}
+
+	public ContentHandler createHandler(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
 		ContentHandler handler = null;
 
 		try {
@@ -187,16 +198,11 @@ public class XsltSender extends StreamingSenderBase  {
 //			}
 			
 			Result result;
-			if (target!=null) {
-				if ("xml".equals(getOutputType())) {
-					SAXResult targetFeedingResult = new SAXResult();
-					targetFeedingResult.setHandler(target.asContentHandler());
-					result = targetFeedingResult;
-				} else {
-					result = new StreamResult(target.asWriter());
-				}
+			if ("xml".equals(getOutputType())) {
+				SAXResult targetFeedingResult = new SAXResult();
+				targetFeedingResult.setHandler(target.asContentHandler());
+				result = targetFeedingResult;
 			} else {
-				target = new MessageOutputStreamCap();
 				result = new StreamResult(target.asWriter());
 			}
 			
@@ -215,13 +221,36 @@ public class XsltSender extends StreamingSenderBase  {
 			
 			handler=filterInput(handler, prc);
 			
-			return new MessageOutputStream(handler,target);
+			return handler;
 		} catch (Exception e) {
 			//log.warn(getLogPrefix()+"intermediate exception logging",e);
-			throw new StreamingException(getLogPrefix()+" Exception on transforming input", e);
+			throw new StreamingException(getLogPrefix()+"Exception on creating transformerHandler chain", e);
 		} 
 	}
 
+	/*
+	 * alternative implementation of send message, that should do the same as the origial, but reuses the streaming content handler
+	 */
+//	@Override
+	public String sendMessage2(String correlationID, String message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException {
+		if (message==null) {
+			throw new SenderException(getLogPrefix()+"got null input");
+		}
+		try {
+			if (target==null) {
+				target=new MessageOutputStreamCap();
+			}
+			InputSource source = new InputSource(new StringReader(message));
+			XMLReader reader = XmlUtils.getXMLReader(true, false);
+			ContentHandler handler = createHandler(correlationID, prc.getSession(), target);
+			reader.setContentHandler(handler);
+			reader.parse(source);
+			return target.getResponseAsString();
+		} catch (Exception e) {
+			throw new SenderException(getLogPrefix()+"Exception on transforming input", e);
+		}
+	}
+	
 	/**
 	 * Here the actual transforming is done. Under weblogic the transformer object becomes
 	 * corrupt when a not-well formed xml was handled. The transformer is then re-initialized
