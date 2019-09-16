@@ -169,4 +169,57 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		assertEquals(expected, sender.sendMessage(null, input, prc));
 	}
 	
+	@Test
+	public void stylesheetSessionKeyAndXpathGiven() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException {
+		sender.setXpathExpression("result");
+		sender.setStyleSheetNameSessionKey("stylesheetName");
+		sender.configure();
+		sender.open();
+
+		session = new PipeLineSessionBase();
+		session.put("stylesheetName", "/Xslt/dynamicStylesheet/correctDummy.xsl");
+
+		String input = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/in.xml");
+		log.debug("inputfile ["+input+"]");
+		String expected = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/out.txt");
+
+		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
+		assertEquals(expected, sender.sendMessage(null, input, prc));
+	}
+	
+	@Test
+	public void useDefaultXpathWithEmptySessionKey() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException {
+		sender.setXpathExpression("result");
+		sender.setStyleSheetNameSessionKey("stylesheetName");
+		sender.configure();
+		sender.open();
+
+		session = new PipeLineSessionBase();
+
+		String input = "<result>dummy</result>";
+		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
+		String result = sender.sendMessage(null, input, prc);
+
+		assertEquals("dummy", result);
+	}
+	
+	@Test
+	public void nonexistingStyleSheet() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException {
+		exception.expectMessage("cannot find [/Xslt/dynamicStylesheet/nonexistingDummy.xsl]");
+		sender.setXpathExpression("number(count(/results/result[contains(@name , 'test')]))");
+		sender.setStyleSheetNameSessionKey("stylesheetName");
+		sender.configure();
+		sender.open();
+
+		session = new PipeLineSessionBase();
+		session.put("stylesheetName", "/Xslt/dynamicStylesheet/nonexistingDummy.xsl");
+
+		String input = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/in.xml");
+		log.debug("inputfile ["+input+"]");
+		String expected = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/out.txt");
+
+		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
+		assertEquals(expected, sender.sendMessage(null, input, prc));
+	}
+	
 }
