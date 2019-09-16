@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
-import java.io.Writer;
 import java.net.URL;
 
 import javax.xml.transform.Transformer;
@@ -36,9 +35,6 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.stream.StreamingPipe;
-import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;

@@ -24,9 +24,9 @@ import org.xml.sax.Attributes;
 
 public class AttributesWrapper implements Attributes {
 	
-	Map<String,Integer> indexByQName=new LinkedHashMap<String,Integer>();
-	Map<String,Integer> indexByUriAndLocalName=new LinkedHashMap<String,Integer>();
-	List<Attribute> attributes = new ArrayList<Attribute>();
+	private Map<String,Integer> indexByQName=new LinkedHashMap<String,Integer>();
+	private Map<String,Integer> indexByUriAndLocalName=new LinkedHashMap<String,Integer>();
+	private List<Attribute> attributes = new ArrayList<Attribute>();
 	
 	private class Attribute {
 		public String uri;
