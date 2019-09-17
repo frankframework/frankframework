@@ -61,6 +61,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 	private String elementXPathExpression=null;
 	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private int xsltVersion=DEFAULT_XSLT_VERSION; 
+	private boolean removeNamespaces=true;
 
 	private TransformerPool extractElementsTp=null;
 
@@ -79,7 +80,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 				if (getXsltVersion()!=DEFAULT_XSLT_VERSION) {
 					ConfigurationWarnings.add(this, log, "XsltProcessor xsltVersion ["+getXsltVersion()+"] currently does not support streaming XSLT, might lead to memory problems for large messages");
 				}
-				extractElementsTp=TransformerPool.getInstance(makeEncapsulatingXslt("root",getElementXPathExpression(), getXsltVersion()), getXsltVersion());
+				extractElementsTp=TransformerPool.getInstance(makeEncapsulatingXslt("root",getElementXPathExpression(), getXsltVersion(), getNamespaceDefs()));
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix(null)+"elementXPathExpression ["+getElementXPathExpression()+"]",e);
@@ -106,14 +107,15 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		super.stop();
 	}
 
-	protected String makeEncapsulatingXslt(String rootElementname,String xpathExpression, int xsltVersion) {
+	protected String makeEncapsulatingXslt(String rootElementname, String xpathExpression, int xsltVersion, String namespaceDefs) throws TransformerConfigurationException {
+		String namespaceClause = XmlUtils.getNamespaceClause(namespaceDefs);
 		return 
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\""+xsltVersion+".0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
 		"<xsl:output method=\"xml\" omit-xml-declaration=\"yes\"/>" +
 		"<xsl:strip-space elements=\"*\"/>" +
 		"<xsl:template match=\"/\">" +
 		"<xsl:element name=\"" + rootElementname + "\">" +
-		"<xsl:copy-of select=\"" + XmlUtils.encodeChars(xpathExpression) + "\"/>" +
+		"<xsl:copy-of "+namespaceClause+" select=\"" + XmlUtils.encodeChars(xpathExpression) + "\"/>" +
 		"</xsl:element>" +
 		"</xsl:template>" +
 		"</xsl:stylesheet>";
@@ -123,6 +125,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 	private class ItemCallbackCallingHandler extends DefaultHandler {
 		
 		ItemCallback callback;
+		String namespaceClause;
 		
 		StringBuffer elementbuffer=new StringBuffer();
 		int elementLevel=0;
@@ -133,8 +136,9 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		boolean stopRequested;
 		TimeOutException timeOutException;
 		
-		public ItemCallbackCallingHandler(ItemCallback callback) {
+		public ItemCallbackCallingHandler(ItemCallback callback, String namespaceClause) {
 			this.callback=callback;
+			this.namespaceClause=namespaceClause;
 			elementbuffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 			if (getBlockSize()>0) {
 				elementbuffer.append(getBlockPrefix());
@@ -163,14 +167,32 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		}
 
 		@Override
-		public void endElement(String uri, String localName, String qname) throws SAXException {
+		public void startElement(String uri, String localName, String qName, Attributes attributes)	throws SAXException {
+			checkInterrupt();
+			if (elementLevel>1 && !contentSeen) {
+				elementbuffer.append(">");
+			}
+			if (++elementLevel>1) {
+				elementbuffer.append("<"+(isRemoveNamespaces()?localName:qName));
+				if (elementLevel==2 && !isRemoveNamespaces()) {
+					elementbuffer.append(namespaceClause);
+				}
+				for (int i=0; i<attributes.getLength(); i++) {
+					elementbuffer.append(" "+attributes.getLocalName(i)+"=\""+attributes.getValue(i)+"\"");
+				}
+				contentSeen=false;
+			}
+		}
+
+		@Override
+		public void endElement(String uri, String localName, String qName) throws SAXException {
 			checkInterrupt();
 			if (elementLevel>1) {
 				if (!contentSeen) {
 					contentSeen=true;
 					elementbuffer.append("/>");
 				} else {
-					elementbuffer.append("</"+localName+">");
+					elementbuffer.append("</"+(isRemoveNamespaces()?localName:qName)+">");
 				}
 			}
 			elementLevel--;
@@ -207,21 +229,6 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		}
 
 
-		@Override
-		public void startElement(String uri, String localName, String qName, Attributes attributes)	throws SAXException {
-			checkInterrupt();
-			if (elementLevel>1 && !contentSeen) {
-				elementbuffer.append(">");
-			}
-			if (++elementLevel>1) {
-				elementbuffer.append("<"+localName);
-				for (int i=0; i<attributes.getLength(); i++) {
-					elementbuffer.append(" "+attributes.getLocalName(i)+"=\""+attributes.getValue(i)+"\"");
-				}
-				contentSeen=false;
-			}
-		}
-
 		public boolean isStopRequested() {
 			return stopRequested;
 		}
@@ -249,7 +256,12 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		} catch (UnsupportedEncodingException e) {
 			throw new SenderException("could not use charset ["+getCharset()+"]",e);
 		}
-		ItemCallbackCallingHandler handler = new ItemCallbackCallingHandler(callback);
+		ItemCallbackCallingHandler handler;
+		try {
+			handler = new ItemCallbackCallingHandler(callback,XmlUtils.getNamespaceClause(getNamespaceDefs()));
+		} catch (TransformerConfigurationException e) {
+			throw new SenderException(e);
+		}
 		
 		if (getExtractElementsTp()!=null) {
 			log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
@@ -342,4 +354,14 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		configWarnings.add(log, msg);
 		xsltVersion=b?2:1;
 	}
+	
+	@IbisDoc({"6", "when set <code>true</code> namespaces (and prefixes) in the input message are removed before transformation", "true"})
+	public void setRemoveNamespaces(boolean b) {
+		removeNamespaces = b;
+	}
+	public boolean isRemoveNamespaces() {
+		return removeNamespaces;
+	}
+
+
 }
