@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,9 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
@@ -38,9 +41,6 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
 
 /**
  * Provides an example of a pipe. It may return the contents of a file
@@ -119,6 +119,7 @@ public class FixedResult extends FixedForwardPipe {
 		}
     }
     
+	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		String result=returnString;
 		if ((StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime())
@@ -186,19 +187,19 @@ public class FixedResult extends FixedForwardPipe {
 					result = xsltResult;
 				} catch (IOException e) {
 					throw new PipeRunException(this,getLogPrefix(session)+"cannot retrieve ["+ styleSheetName + "], resource [" + xsltSource.toString() + "]", e);
-				} catch (TransformerConfigurationException te) {
-					throw new PipeRunException(this,getLogPrefix(session)+"got error creating transformer from file [" + styleSheetName + "]", te);
-				} catch (TransformerException te) {
-					throw new PipeRunException(this,getLogPrefix(session)+"got error transforming resource [" + xsltSource.toString() + "] from [" + styleSheetName + "]", te);
-				} catch (DomBuilderException te) {
-					throw new PipeRunException(this,getLogPrefix(session)+"caught DomBuilderException", te);
+				} catch (TransformerConfigurationException e) {
+					throw new PipeRunException(this,getLogPrefix(session)+"got error creating transformer from file [" + styleSheetName + "]", e);
+				} catch (TransformerException e) {
+					throw new PipeRunException(this,getLogPrefix(session)+"got error transforming resource [" + xsltSource.toString() + "] from [" + styleSheetName + "]", e);
+				} catch (DomBuilderException e) {
+					throw new PipeRunException(this,getLogPrefix(session)+"caught DomBuilderException", e);
 				}
 			}
 		}
 
 	    log.debug(getLogPrefix(session)+ " returning fixed result [" + result + "]");
-	
-	    return new PipeRunResult(getForward(), result);
+
+   		return new PipeRunResult(getForward(), result);
 	}
 
 	public static String replace (String target, String from, String to) {   
@@ -296,4 +297,5 @@ public class FixedResult extends FixedForwardPipe {
 	public boolean isReplaceFixedParams(){
 		return replaceFixedParams;
 	}
+
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Nationale-Nederlanden
+   Copyright 2015, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.NDC;
 
@@ -35,8 +36,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * 
  * @author Peter Leeuwenburgh
  */
-public class TimeoutGuardSenderWithParametersBase extends
-		SenderWithParametersBase {
+public abstract class TimeoutGuardSenderWithParametersBase extends SenderWithParametersBase {
 
 	private boolean throwException = true;
 	private int tymeout = 30;
@@ -73,9 +73,8 @@ public class TimeoutGuardSenderWithParametersBase extends
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		SendMessage sendMessage = new SendMessage(correlationID, message, prc,
-				Thread.currentThread().getName(), NDC.peek());
+	public final String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+		SendMessage sendMessage = new SendMessage(correlationID, message, prc, Thread.currentThread().getName(), NDC.peek());
 		ExecutorService service = Executors.newSingleThreadExecutor();
 		Future<String> future = service.submit(sendMessage);
 		String result = null;
@@ -124,9 +123,7 @@ public class TimeoutGuardSenderWithParametersBase extends
 		return result;
 	}
 
-	public String sendMessageWithTimeoutGuarded(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		return null;
-	}
+	public abstract String sendMessageWithTimeoutGuarded(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException;
 
 	@IbisDoc({"when <code>true</code>, a senderexception (or timeoutexception) is thrown. otherwise the output is only logged as an error (and returned in a xml string with 'error' tags)", "true"})
 	public void setThrowException(boolean b) {

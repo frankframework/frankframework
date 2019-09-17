@@ -101,12 +101,12 @@ public final class ShowIbisstoreSummary extends Base {
 				qs.open();
 				result = qs.sendMessage("dummy", (query!=null?query:qs.getDbmsSupport().getIbisStoreSummaryQuery()));
 			} catch (Throwable t) {
-				throw new ApiException("An error occured on executing jdbc query: "+t.toString());
+				throw new ApiException("An error occured on executing jdbc query", t);
 			} finally {
 				qs.close();
 			}
 		} catch (Exception e) {
-			throw new ApiException("An error occured on creating or closing the connection: "+e.toString());
+			throw new ApiException("An error occured on creating or closing the connection", e);
 		}
 
 		List<Map<String, String>> resultMap = null;

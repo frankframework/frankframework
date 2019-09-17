@@ -452,6 +452,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		}
 
 		connectionManager.setMaxTotal(getMaxConnections());
+		connectionManager.setDefaultMaxPerRoute(getMaxConnections());
 
 		log.debug(getLogPrefix()+"set up connectionManager, inactivity checking ["+connectionManager.getValidateAfterInactivity()+"]");
 		boolean staleChecking = (connectionManager.getValidateAfterInactivity() >= 0);

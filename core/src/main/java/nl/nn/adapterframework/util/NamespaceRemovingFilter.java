@@ -1,3 +1,18 @@
+/*
+   Copyright 2019 Integration Partners
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.util;
 
 import org.xml.sax.Attributes;
@@ -8,20 +23,24 @@ import org.xml.sax.helpers.XMLFilterImpl;
 public class NamespaceRemovingFilter extends XMLFilterImpl {
 //	Logger log = LogUtil.getLogger(this.getClass());
 	
-	NamespaceRemovingFilter(XMLReader xmlReader) {
-		super(xmlReader);
+	public NamespaceRemovingFilter() {
+		super();
 	}
 		
+	public NamespaceRemovingFilter(XMLReader xmlReader) {
+		super(xmlReader);
+	}
+
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
 //		log.debug("startElement("+uri+","+localName+","+qName+")");
-		super.startElement("", localName, qName, new NamespaceRemovingAttributesWrapper(atts));
+		super.startElement("", localName, localName, new NamespaceRemovingAttributesWrapper(atts));
 	}
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		//log.debug("endElement("+uri+","+localName+","+qName+")");
-		super.endElement("", localName, qName);
+		super.endElement("", localName, localName);
 	}
 
 	@Override

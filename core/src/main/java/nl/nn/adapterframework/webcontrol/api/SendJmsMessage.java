@@ -97,7 +97,7 @@ public final class SendJmsMessage extends Base {
 				file = inputDataMap.get("file").get(0).getBody(InputStream.class, null);
 		}
 		catch (IOException e) {
-			throw new ApiException("Failed to parse one or more parameters!");
+			throw new ApiException("Failed to parse one or more parameters", e);
 		}
 
 		try {
@@ -124,7 +124,7 @@ public final class SendJmsMessage extends Base {
 			}
 		}
 		catch (Exception e) {
-			throw new ApiException("Failed to read message: " + e.getMessage());
+			throw new ApiException("Failed to read message", e);
 		}
 
 		if(message != null && message.length() > 0) {
@@ -204,12 +204,12 @@ public final class SendJmsMessage extends Base {
 			qms.open();
 			qms.sendMessage(technicalCorrelationId, message);
 		} catch (Exception e) {
-			throw new ApiException("Error occured sending message: " + e.getMessage());
+			throw new ApiException("Error occured sending message", e);
 		} 
 		try {
 			qms.close();
 		} catch (Exception e) {
-			throw new ApiException("Error occured on closing connection: " + e.getMessage());
+			throw new ApiException("Error occured on closing connection", e);
 		}
 	}
 }

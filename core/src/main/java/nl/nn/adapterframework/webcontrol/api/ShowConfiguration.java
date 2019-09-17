@@ -303,7 +303,7 @@ public final class ShowConfiguration extends Base {
 			}
 		}
 		catch (IOException e) {
-			throw new ApiException("Failed to parse one or more parameters!");
+			throw new ApiException("Failed to parse one or more parameters", e);
 		}
 
 		try {
@@ -340,7 +340,7 @@ public final class ShowConfiguration extends Base {
 
 			return Response.status(Response.Status.CREATED).entity(result).build();
 		} catch (Exception e) {
-			throw new ApiException("Failed to upload Configuration!");
+			throw new ApiException("Failed to upload Configuration", e);
 		}
 	}
 
@@ -364,7 +364,7 @@ public final class ShowConfiguration extends Base {
 					.header("Content-Disposition", "attachment; filename=\"" + configuration.get("FILENAME") + "\"")
 					.build();
 		} catch (Exception e) {
-			throw new ApiException("Could not find configuration!");
+			throw new ApiException(e);
 		}
 	}
 

@@ -45,5 +45,4 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 		pipe.setXslt2(xslt2);
 	}
 
-
 }

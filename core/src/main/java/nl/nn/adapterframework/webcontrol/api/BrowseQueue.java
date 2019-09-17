@@ -135,7 +135,7 @@ public final class BrowseQueue extends Base {
 
 		}
 		catch (Exception e) {
-			throw new ApiException("Error occured browsing messages: " + e.getMessage());
+			throw new ApiException("Error occured browsing messages", e);
 		}
 		finally {
 			try {
