@@ -83,12 +83,15 @@ public class MessageOutputStream {
 
 	public OutputStream asStream() throws StreamingException {
     	if (requestStream instanceof OutputStream) {
+    		log.debug("returning OutputStream as OutputStream");
     		return (OutputStream)requestStream;
     	}
     	if (requestStream instanceof Writer) {
-    		return new WriterOutputStream((Writer)requestStream);
+    		log.debug("returning Writer as OutputStream");
+    		return new WriterOutputStream((Writer)requestStream,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
     	}
     	if (requestStream instanceof ContentHandler) {
+    		log.debug("returning ContentHandler as OutputStream");
     		return new ContentHandlerOutputStream((ContentHandler)requestStream);
     	}
     	return null;
@@ -96,10 +99,12 @@ public class MessageOutputStream {
 	
 	public Writer asWriter() throws StreamingException {
     	if (requestStream instanceof Writer) {
+    		log.debug("returning Writer as Writer");
     		return (Writer)requestStream;
     	}
     	if (requestStream instanceof OutputStream) {
     		try {
+        		log.debug("returning OutputStream as Writer");
 				return new OutputStreamWriter((OutputStream)requestStream,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			} catch (UnsupportedEncodingException e) {
 				throw new StreamingException(e);
@@ -107,6 +112,7 @@ public class MessageOutputStream {
     	}
     	if (requestStream instanceof ContentHandler) {
     		try {
+        		log.debug("returning ContentHandler as Writer");
     	   		return new OutputStreamWriter(new ContentHandlerOutputStream((ContentHandler)requestStream),StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			} catch (UnsupportedEncodingException e) {
 				throw new StreamingException(e);
@@ -117,12 +123,15 @@ public class MessageOutputStream {
 
 	public ContentHandler asContentHandler() throws StreamingException {
     	if (requestStream instanceof ContentHandler) {
+    		log.debug("returning ContentHandler as ContentHandler");
     		return (ContentHandler)requestStream;
     	}
     	if (requestStream instanceof OutputStream) {
+    		log.debug("returning OutputStream as ContentHandler");
             return streamAsContentHandler(new StreamResult((OutputStream)requestStream));
     	}
     	if (requestStream instanceof Writer) {
+    		log.debug("returning Writer as ContentHandler");
             return streamAsContentHandler(new StreamResult((Writer)requestStream));
     	}
     	return null;
@@ -143,7 +152,7 @@ public class MessageOutputStream {
 
     /**
      * Response message, e.g. the filename, of the {IOutputStreamTarget target} after processing the stream. 
-     * It is the responsablity of the {IOutputStreamTarget target} to set this message.
+     * It is the responsability of the {@link MessageOutputStream target} to set this message.
      */
 	public void setResponse(Object response) {
 		this.response = response;

@@ -186,9 +186,8 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	}
 
 
-	// TODO: fix statistics handling: that is now kept in a list by name, and therefor not found anymore by show statistics
-	@Override
-	public String getName() {
+	// TODO: Arrange that this name is used in Ladybug and statistics display. Avoid changing the actual name, that will cause the pipe not being found anymore. 
+	public String geDisplayName() {
 		if (streamTargets!=null) { // use cached copy of streamTargets, do not generate a new one; it might be too early to do that.
 			String result = "Stream: "+super.getName();
 			for(IOutputStreamingSupport step:streamTargets) {
