@@ -64,14 +64,15 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class XsltSender extends StreamingSenderBase  {
 
+	private String styleSheetName;
+	private String styleSheetNameSessionKey=null;
 	private String xpathExpression=null;
 	private String namespaceDefs = null; 
 	private String outputType="text";
-	private String styleSheetName;
 	private boolean omitXmlDeclaration=true;
 	private boolean indentXml=true;
-	private boolean skipEmptyTags=false;
 	private boolean removeNamespaces=false;
+	private boolean skipEmptyTags=false;
 	private int xsltVersion=0; // set to 0 for auto detect.
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
 	
@@ -82,7 +83,6 @@ public class XsltSender extends StreamingSenderBase  {
 	private Map<String, TransformerPool> dynamicTransformerPoolMap;
 	private int transformerPoolMapSize = 100;
 	
-	private String styleSheetNameSessionKey=null;
 
 	/**
 	 * The <code>configure()</code> method instantiates a transformer for the specified
@@ -365,7 +365,7 @@ public class XsltSender extends StreamingSenderBase  {
 		return true;
 	}
 
-	@IbisDoc({"stylesheet to apply to the input message", ""})
+	@IbisDoc({"1", "Location of stylesheet to apply to the input message", ""})
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
@@ -373,16 +373,23 @@ public class XsltSender extends StreamingSenderBase  {
 		return styleSheetName;
 	}
 
-	@IbisDoc({"force the transformer generated from the xpath-expression to omit the xml declaration", "true"})
-	public void setOmitXmlDeclaration(boolean b) {
-		omitXmlDeclaration = b;
+	@IbisDoc({"2", "Session key to retrieve stylesheet location. Overrides stylesheetName or xpathExpression attribute", ""})
+	public void setStyleSheetNameSessionKey(String newSessionKey) {
+		styleSheetNameSessionKey = newSessionKey;
 	}
-	public boolean isOmitXmlDeclaration() {
-		return omitXmlDeclaration;
+	public String getStyleSheetNameSessionKey() {
+		return styleSheetNameSessionKey;
 	}
 
-
-	@IbisDoc({"alternatively: xpath-expression to create stylesheet from", ""})
+	@IbisDoc({"3", "Size of cache of stylesheets retrieved from styleSheetNameSessionKey", "100"})
+	public void setStyleSheetCacheSize(int size) {
+		transformerPoolMapSize = size;
+	}
+	public int getStyleSheetCacheSize() {
+		return transformerPoolMapSize;
+	}
+	
+	@IbisDoc({"4", "Alternatively: xpath-expression to create stylesheet from", ""})
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
 	}
@@ -390,7 +397,15 @@ public class XsltSender extends StreamingSenderBase  {
 		return xpathExpression;
 	}
 
-	@IbisDoc({"namespace defintions for xpathexpression. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
+	@IbisDoc({"5", "For xpathExpression only: force the transformer generated from the xpath-expression to omit the xml declaration", "true"})
+	public void setOmitXmlDeclaration(boolean b) {
+		omitXmlDeclaration = b;
+	}
+	public boolean isOmitXmlDeclaration() {
+		return omitXmlDeclaration;
+	}
+
+	@IbisDoc({"6", "For xpathExpression only: namespace defintions for xpathexpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
@@ -398,7 +413,7 @@ public class XsltSender extends StreamingSenderBase  {
 		return namespaceDefs;
 	}
 
-	@IbisDoc({"either 'text' or 'xml'. only valid for xpathexpression", "text"})
+	@IbisDoc({"7", "For xpathExpression only: either 'text' or 'xml'.", "text"})
 	public void setOutputType(String string) {
 		outputType = string;
 	}
@@ -406,16 +421,7 @@ public class XsltSender extends StreamingSenderBase  {
 		return outputType;
 	}
 
-
-	@IbisDoc({"when set <code>true</code> empty tags in the output are removed", "false"})
-	public void setSkipEmptyTags(boolean b) {
-		skipEmptyTags = b;
-	}
-	public boolean isSkipEmptyTags() {
-		return skipEmptyTags;
-	}
-
-	@IbisDoc({"when set <code>true</code>, result is pretty-printed. (only used when <code>skipemptytags=true</code>)", "true"})
+	@IbisDoc({"8", "when set <code>true</code>, result is pretty-printed. (only used when <code>skipemptytags=true</code>)", "true"})
 	public void setIndentXml(boolean b) {
 		indentXml = b;
 	}
@@ -423,7 +429,7 @@ public class XsltSender extends StreamingSenderBase  {
 		return indentXml;
 	}
 
-	@IbisDoc({"when set <code>true</code> namespaces (and prefixes) in the input message are removed", "false"})
+	@IbisDoc({"9", "when set <code>true</code> namespaces (and prefixes) in the input message are removed before transformation", "false"})
 	public void setRemoveNamespaces(boolean b) {
 		removeNamespaces = b;
 	}
@@ -431,7 +437,15 @@ public class XsltSender extends StreamingSenderBase  {
 		return removeNamespaces;
 	}
 
-	@IbisDoc({"when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
+	@IbisDoc({"10", "when set <code>true</code> empty tags in the output are removed after transformation", "false"})
+	public void setSkipEmptyTags(boolean b) {
+		skipEmptyTags = b;
+	}
+	public boolean isSkipEmptyTags() {
+		return skipEmptyTags;
+	}
+
+	@IbisDoc({"11", "when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
 	}
@@ -439,7 +453,15 @@ public class XsltSender extends StreamingSenderBase  {
 		return xsltVersion;
 	}
 
-	@IbisDoc({"Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
+	@IbisDoc({"12", "", "true"})
+	public void setNamespaceAware(boolean b) {
+		namespaceAware = b;
+	}
+	public boolean isNamespaceAware() {
+		return namespaceAware;
+	}
+
+	@IbisDoc({"13", "Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
 	/**
 	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
 	 */
@@ -451,24 +473,4 @@ public class XsltSender extends StreamingSenderBase  {
 		xsltVersion=b?2:1;
 	}
 
-	public void setNamespaceAware(boolean b) {
-		namespaceAware = b;
-	}
-	public boolean isNamespaceAware() {
-		return namespaceAware;
-	}
-
-	public void setStyleSheetNameSessionKey(String newSessionKey) {
-		styleSheetNameSessionKey = newSessionKey;
-	}
-	public String getStyleSheetNameSessionKey() {
-		return styleSheetNameSessionKey;
-	}
-
-	public void setStyleSheetCacheSize(int size) {
-		transformerPoolMapSize = size;
-	}
-	public int getStyleSheetCacheSize() {
-		return transformerPoolMapSize;
-	}
 }
