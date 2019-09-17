@@ -163,7 +163,7 @@ public final class ShowMonitors extends Base {
 				log.info("clearing monitor ["+monitor.getName()+"]");
 				monitor.changeState(new Date(),false,SeverityEnum.WARNING,null,null,null);
 			} catch (MonitorException e) {
-				throw new ApiException("Failed to change monitor state!");
+				throw new ApiException("Failed to change monitor state", e);
 			}
 		}
 		
@@ -172,7 +172,7 @@ public final class ShowMonitors extends Base {
 				log.info("raising monitor ["+monitor.getName()+"]");
 				monitor.changeState(new Date(), true, SeverityEnum.WARNING, null, null, null);
 			} catch (MonitorException e) {
-				throw new ApiException("Failed to change monitor state!");
+				throw new ApiException("Failed to change monitor state", e);
 			}
 		}
 
@@ -228,7 +228,7 @@ public final class ShowMonitors extends Base {
 					destinations.addAll((ArrayList<String>) entry.getValue());
 				}
 				catch(Exception e) {
-					throw new ApiException("Failed to parse destinations!");
+					throw new ApiException("Failed to parse destinations", e);
 				}
 			}
 		}

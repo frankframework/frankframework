@@ -85,7 +85,7 @@ public final class ShowScheduler extends Base {
 			scheduler = sh.getScheduler();
 		}
 		catch(Exception e) {
-			throw new ApiException("Failed to parse destinations!");
+			throw new ApiException("Failed to parse destinations", e);
 		}
 		
 		try {
@@ -93,7 +93,7 @@ public final class ShowScheduler extends Base {
 			returnMap.put("jobs", getJobGroupNamesWithJobs(scheduler));
 		}
 		catch(Exception e) {
-			throw new ApiException("Failed to parse destinations!");
+			throw new ApiException("Failed to parse destinations", e);
 		}
 
 		return Response.status(Response.Status.OK).entity(returnMap).build();
@@ -254,7 +254,7 @@ public final class ShowScheduler extends Base {
 			}
 		}
 		catch(Exception e) {
-			throw new ApiException("Failed to get JobTriggers!");
+			throw new ApiException("Failed to get JobTriggers", e);
 		}
 		return jobTriggers;
 	}
@@ -314,7 +314,7 @@ public final class ShowScheduler extends Base {
 			scheduler = sh.getScheduler();
 		}
 		catch (SchedulerException e) {
-			throw new ApiException("Cannot find scheduler"); 
+			throw new ApiException("Cannot find scheduler", e); 
 		}
 
 		String action = null;
@@ -383,7 +383,7 @@ public final class ShowScheduler extends Base {
 			scheduler = sh.getScheduler();
 		}
 		catch (SchedulerException e) {
-			throw new ApiException("Cannot find scheduler"); 
+			throw new ApiException("Cannot find scheduler", e); 
 		}
 
 		try {
@@ -395,7 +395,7 @@ public final class ShowScheduler extends Base {
 			scheduler.triggerJob(JobKey.jobKey(jobName, groupName));
 
 		} catch (Exception e) {
-			throw new ApiException("Failed to trigger job"); 
+			throw new ApiException("Failed to trigger job", e); 
 		}
 
 		return Response.status(Response.Status.OK).build();
@@ -417,7 +417,7 @@ public final class ShowScheduler extends Base {
 			scheduler = sh.getScheduler();
 		}
 		catch (SchedulerException e) {
-			throw new ApiException("Cannot find scheduler"); 
+			throw new ApiException("Cannot find scheduler", e); 
 		}
 
 		try	{
@@ -428,7 +428,7 @@ public final class ShowScheduler extends Base {
 			log.info("delete job jobName [" + jobName + "] groupName [" + groupName + "] " + commandIssuedBy);
 			scheduler.deleteJob(JobKey.jobKey(jobName, groupName));
 		} catch (Exception e) {
-			throw new ApiException("Failed to delete job"); 
+			throw new ApiException("Failed to delete job", e); 
 		}
 		return Response.status(Response.Status.OK).build();
 	}
