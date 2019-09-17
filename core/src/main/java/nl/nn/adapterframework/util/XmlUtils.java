@@ -790,14 +790,8 @@ public class XmlUtils {
 		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, paramNames, stripSpace, false, null, 0);
 	}
 
-	/*
-	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of, and enables use of parameters.
-	 * TODO when xslt version equals 1, namespaces are ignored by default, setting 'ignoreNamespaces' to true will generate a non-xslt1-parsable xslt
-	 */
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace, boolean ignoreNamespaces, String separator, int xsltVersion) throws TransformerConfigurationException {
-		if (StringUtils.isEmpty(XPathExpression))
-			throw new TransformerConfigurationException("XPathExpression must be filled");
-
+	
+	public static String getNamespaceClause(String namespaceDefs) throws TransformerConfigurationException {
 		String namespaceClause = "";
 		if (namespaceDefs != null) {
 			StringTokenizer st1 = new StringTokenizer(namespaceDefs,", \t\r\n\f");
@@ -811,6 +805,19 @@ public class XmlUtils {
 				}
 			}
 		}
+		return namespaceClause;
+	}
+	
+	
+	/*
+	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of, and enables use of parameters.
+	 * TODO when xslt version equals 1, namespaces are ignored by default, setting 'ignoreNamespaces' to true will generate a non-xslt1-parsable xslt
+	 */
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace, boolean ignoreNamespaces, String separator, int xsltVersion) throws TransformerConfigurationException {
+		if (StringUtils.isEmpty(XPathExpression))
+			throw new TransformerConfigurationException("XPathExpression must be filled");
+
+		String namespaceClause = getNamespaceClause(namespaceDefs);
 
 		//xslt version 1 ignores namespaces by default, setting this to true will generate a different non-xslt1-parsable xslt
 		if(xsltVersion == 1 && ignoreNamespaces)
