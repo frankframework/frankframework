@@ -24,6 +24,7 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.XsltSender;
+import nl.nn.adapterframework.stream.MessageOutputStream;
 
 public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElementPipe> {
 
@@ -47,9 +48,9 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
     	XsltSender sender = new XsltSender() {
 
 			@Override
-			public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
+			public String sendMessage(String correlationID, String message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException {
 				if (sc!=null) sc.mark("out");
-				return super.sendMessage(correlationID, message, prc);
+				return super.sendMessage(correlationID, message, prc, target);
 			}
     		
     	};

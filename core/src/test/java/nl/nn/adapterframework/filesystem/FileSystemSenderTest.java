@@ -9,6 +9,7 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Writer;
 
 import org.apache.commons.codec.binary.Base64;
 import org.junit.After;
@@ -19,6 +20,8 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.util.TestAssertions;
 
 public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
 
@@ -160,6 +163,46 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		// TODO: evaluate 'result'
 		//assertEquals("result of sender should be input message",result,message);
 		assertEquals(contents.trim(), actual.trim());
+	}
+
+	@Test
+	public void fileSystemSenderUploadActionTestWithOutputStream() throws Exception {
+		String filename = "uploadedwithInputStream" + FILE1;
+		String contents = "Some text content to test upload action\n";
+		
+		if (_fileExists(filename)) {
+			_deleteFile(null, filename);
+		}
+
+		PipeLineSessionBase session = new PipeLineSessionBase();
+
+		Parameter param = new Parameter();
+		param.setName("filename");
+		param.setValue(filename);
+		fileSystemSender.addParameter(param);
+
+		fileSystemSender.setAction("upload");
+		fileSystemSender.configure();
+		fileSystemSender.open();
+
+		assertTrue(fileSystemSender.canProvideOutputStream());
+
+		String correlationId="fakecorrelationid";
+		MessageOutputStream target = fileSystemSender.provideOutputStream(correlationId, session, null);
+
+		// stream the contents
+		try (Writer writer = target.asWriter()) {
+			writer.write(contents);
+		}
+
+		// verify the filename is properly returned
+		String stringResult=target.getResponseAsString();
+		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
+
+		// verify the file contents
+		waitForActionToFinish();
+		String actualContents = readFile(null, filename);
+		assertEquals(contents,actualContents);
 	}
 
 	@Test

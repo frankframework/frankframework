@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.util.ClassUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -39,8 +40,8 @@ public class FileLineIteratorPipe extends StreamLineIteratorPipe {
 	private String move2dirAfterTransform;
 	private String move2dirAfterError;
 
-	
-	protected Reader getReader(Object input, IPipeLineSession session, String correlationID, Map threadContext) throws SenderException {
+	@Override
+	protected Reader getReader(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext) throws SenderException {
 		if (input==null) {
 			throw new SenderException("got null input instead of String containing filename");
 		}
@@ -63,7 +64,8 @@ public class FileLineIteratorPipe extends StreamLineIteratorPipe {
 	 * 
 	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
 	 */
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Object input, IPipeLineSession session, MessageOutputStream target) throws PipeRunException {
 		if (input==null) {
 			throw new PipeRunException(this,"got null input instead of String containing filename");
 		}
@@ -75,7 +77,7 @@ public class FileLineIteratorPipe extends StreamLineIteratorPipe {
 
 		try {
 			
-			PipeRunResult result = super.doPipe(file,session);
+			PipeRunResult result = super.doPipe(file,session,target);
 			if (! StringUtils.isEmpty(getMove2dirAfterTransform())) {
 				File move2 = new File(getMove2dirAfterTransform(), file.getName());
 				file.renameTo(move2); 

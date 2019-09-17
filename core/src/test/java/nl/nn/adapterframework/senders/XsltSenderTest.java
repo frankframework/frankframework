@@ -102,7 +102,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 
 	@Test
-	public void testDynamicStylesheet() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException {
+	public void testDynamicStylesheet() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeOutException {
 		sender.setStyleSheetName("/Xslt/dynamicStylesheet/wrongDummy.xsl");
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
@@ -120,7 +120,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 	
 	@Test
-	public void testDynamicStylesheetWithoutDefault() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException {
+	public void testDynamicStylesheetWithoutDefault() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeOutException {
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
 		sender.open();
@@ -137,7 +137,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 	
 	@Test
-	public void useDefaultStylesheetWithEmptySessionKey() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException {
+	public void useDefaultStylesheetWithEmptySessionKey() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeOutException {
 		sender.setStyleSheetName("/Xslt/dynamicStylesheet/correctDummy.xsl");
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
@@ -154,7 +154,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 	
 	@Test
-	public void noStylesheetOrXpathOrSessionKeyGiven() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException {
+	public void noStylesheetOrXpathOrSessionKeyGiven() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeOutException {
 		exception.expectMessage("one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified");
 		sender.configure();
 		sender.open();
@@ -170,7 +170,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 	
 	@Test
-	public void stylesheetSessionKeyAndXpathGiven() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException {
+	public void stylesheetSessionKeyAndXpathGiven() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeOutException {
 		sender.setXpathExpression("result");
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
@@ -188,7 +188,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 	
 	@Test
-	public void useDefaultXpathWithEmptySessionKey() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException {
+	public void useDefaultXpathWithEmptySessionKey() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeOutException {
 		sender.setXpathExpression("result");
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
@@ -204,7 +204,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 	
 	@Test
-	public void nonexistingStyleSheet() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException {
+	public void nonexistingStyleSheet() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeOutException {
 		exception.expectMessage("cannot find [/Xslt/dynamicStylesheet/nonexistingDummy.xsl]");
 		sender.setXpathExpression("number(count(/results/result[contains(@name , 'test')]))");
 		sender.setStyleSheetNameSessionKey("stylesheetName");

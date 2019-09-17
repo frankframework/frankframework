@@ -38,7 +38,7 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException  {
+	public final String sendMessage(String correlationID, String message) throws SenderException, TimeOutException  {
 		return sendMessage(correlationID,message,null);
 	}
 
