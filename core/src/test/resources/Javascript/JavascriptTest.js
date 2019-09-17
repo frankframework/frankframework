@@ -24,16 +24,10 @@ function f4(x,y) {
 	var a = x * 5;
 	var b = y * 2;
 
-	log(a);
-	log(b);
+	var c = myFunction(a);
+	var d = myFunction(b);
 
-	return a-b;
-}
-
-function f5(x, y){
-	file("Hello World!");
-	
-	return "FileSender";
+	return a == c && b == d;
 }
 
 //Used to test the performance.

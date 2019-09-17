@@ -1,9 +1,10 @@
-package nl.nn.adapterframework.senders;
+package nl.nn.adapterframework.extensions.javascript;
 
 import static org.junit.Assert.assertEquals;
 
 import java.util.Collection;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -12,24 +13,22 @@ import org.junit.runners.Parameterized;
 
 import edu.emory.mathcs.backport.java.util.Arrays;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.senders.JavascriptSender;
+import nl.nn.adapterframework.senders.SenderTestBase;
 
 @RunWith(Parameterized.class)
 public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
-	private IPipeLineSession session = new PipeLineSessionBase();
-
 	//Tests will be executed for the Rhino engine and the J2V8 engine
 	@Parameterized.Parameter(0)
 	public String engine;
-	
+
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
@@ -371,7 +370,8 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	}
 	
 	//This test is used to compare the performance of J2V8 to that of Nashorn. J2V8 should finish about ten times faster than Nashorn.
-	//@Test
+	@Test
+	@Ignore
 	public void performance() throws ConfigurationException, SenderException, TimeOutException {
 		
 		String dummyInput = "dummyinput";

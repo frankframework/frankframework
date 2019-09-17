@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.senders;
+package nl.nn.adapterframework.extensions.javascript;
 
 import static org.junit.Assert.assertEquals;
 
@@ -7,16 +7,15 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.senders.EchoSender;
+import nl.nn.adapterframework.senders.JavascriptSender;
+import nl.nn.adapterframework.senders.SenderTestBase;
 
 public class J2V8CallbackTest extends SenderTestBase<JavascriptSender> {
-
-	private IPipeLineSession session = new PipeLineSessionBase();
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
@@ -26,9 +25,36 @@ public class J2V8CallbackTest extends SenderTestBase<JavascriptSender> {
 		return new JavascriptSender();
 	}
 
-	//A LogSender will be called in the javascript code.
 	@Test
-	public void logWithSender() throws ConfigurationException, SenderException, TimeOutException {
+	public void simpleSenderNoCallbacks() throws ConfigurationException, SenderException, TimeOutException {
+		String dummyInput = "dummyinput";
+		sender.setJsFileName("Javascript/JavascriptTest.js"); 
+		sender.setJsFunctionName("f2");
+		sender.setEngineName("J2V8");
+
+		ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
+
+		Parameter param = new Parameter();
+		param.setName("x");
+		param.setType("integer");
+		param.setValue("3");
+		sender.addParameter(param);
+
+		Parameter param2 = new Parameter();
+		param2.setName("y");
+		param2.setType("integer");
+		param2.setValue("4");
+		sender.addParameter(param2);
+
+		sender.configure();
+		sender.open();
+
+		assertEquals("7", sender.sendMessage(null, dummyInput, prc));
+	}
+
+	//An EchoSender will be called in the javascript code.
+	@Test
+	public void javaScriptSenderWithNestedEchoSender() throws ConfigurationException, SenderException, TimeOutException {
 		String dummyInput = "dummyinput";
 		sender.setJsFileName("Javascript/JavascriptTest.js"); 
 		sender.setJsFunctionName("f4");
@@ -41,56 +67,21 @@ public class J2V8CallbackTest extends SenderTestBase<JavascriptSender> {
 		param.setType("integer");
 		param.setValue("3");
 		sender.addParameter(param);
-	
+
 		Parameter param2 = new Parameter();
 		param2.setName("y");
 		param2.setType("integer");
 		param2.setValue("4");
 		sender.addParameter(param2);
-		
-		LogSender log = new LogSender();
-		log.setName("log");
+
+		EchoSender log = new EchoSender();
+		log.setName("myFunction");
 		sender.setSender(log);
 
 		sender.configure();
 		sender.open();
 
-		assertEquals("7", sender.sendMessage(null,dummyInput,prc));
+		// See function 4, validates if input to the nested sender is the same as the output of the nested sender
+		assertEquals("true", sender.sendMessage(null,dummyInput,prc));
 	}
-
-	//A FileSender will be called in the javascript function to write something to a new file and afterwards delete the file.
-	@Test
-	public void writeFileWithSender() throws ConfigurationException, SenderException, TimeOutException {
-		String dummyInput = "dummyinput";
-		sender.setJsFileName("Javascript/JavascriptTest.js"); 
-		sender.setJsFunctionName("f5");
-		sender.setEngineName("J2V8");
-
-		ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
-
-		Parameter param = new Parameter();
-		param.setName("x");
-		param.setType("integer");
-		param.setValue("3");
-		sender.addParameter(param);
-
-		Parameter param2 = new Parameter();
-		param2.setName("y");
-		param2.setType("integer");
-		param2.setValue("4");
-		sender.addParameter(param2);
-
-		FileSender file = new FileSender();
-		file.setDirectory("./src/test/resources/Javascript");
-		file.setActions("write_append, delete");
-		file.setName("file");
-		file.setFileName("WriteFile.txt");
-		sender.setSender(file);
-
-		sender.configure();
-		sender.open();
-
-		assertEquals("FileSender", sender.sendMessage(null,dummyInput,prc));
-	}
-
 }

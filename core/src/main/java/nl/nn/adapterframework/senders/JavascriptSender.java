@@ -1,3 +1,18 @@
+/*
+   Copyright 2019 Integration Partners
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.core.ISender;
@@ -25,12 +40,13 @@ import org.apache.commons.lang.SystemUtils;
  * 
  * This sender can execute a function of a given javascript file, the result of the function will be the output of the sender.
  * The parameters of the javascript function to run are given as parameters by the adapter configuration
- * The input of the sender can only be used if it is given as a parameter using the originalMessage SessionKey.
+ * The sender doesn't accept nor uses the given input, instead for each argument for the {@link #jsFunctionName} method, 
+ * you will need to create a parameter on the sender.
  * It is recommended to have the result of the javascript function be of type String, as the output of the sender will be 
  * of type String.
  * 
  * @author Jarno Huibers
- * @since 7.3
+ * @since 7.4
  */
 
 public class JavascriptSender extends SenderSeries {
@@ -40,7 +56,7 @@ public class JavascriptSender extends SenderSeries {
 	private String jsFileName;
 	private String jsFunctionName = "main";
 	private String engine = "J2V8";
-	
+
 	@Override
 	protected boolean isSenderConfigured() {
 		return true;
@@ -82,14 +98,11 @@ public class JavascriptSender extends SenderSeries {
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
-		if (message==null) {
-			throw new SenderException(getLogPrefix()+"got null input");
-		}
-				
+
 		Object jsResult = "";
 		int numberOfParameters = 0;
-		JavascriptEngine jsInstance;
-		
+		JavascriptEngine<?> jsInstance;
+
 		//Create a Parameter Value List
 		ParameterValueList pvl;
 		try {
@@ -99,13 +112,14 @@ public class JavascriptSender extends SenderSeries {
 		}
 		if(pvl != null)
 			numberOfParameters = pvl.size();
+
 		//This array will contain the parameters given in the configuration
 		Object[] jsParameters = new Object[numberOfParameters];
 		for (int i=0; i<numberOfParameters; i++) {
 			ParameterValue pv = pvl.getParameterValue(i);
 			jsParameters[i] = pv.getValue();
 		}
-		
+
 		//Start using an engine
 		if(engine.equalsIgnoreCase("Rhino")) {
 			jsInstance = new Rhino();
@@ -114,20 +128,21 @@ public class JavascriptSender extends SenderSeries {
 		else {
 			jsInstance = new J2V8();
 			jsInstance.startRuntime();
+
 			for (Iterator<ISender> iterator = getSenderIterator(); iterator.hasNext();) {
 				ISender sender = iterator.next();
 				jsInstance.registerCallback(sender, prc);
 			} 
 		}
-		
+
 		//Compile the given Javascript and execute the given Javascript function
-		jsInstance.executeScript(fileInput);	
+		jsInstance.executeScript(fileInput);
 		jsResult = jsInstance.executeFunction(jsFunctionName, jsParameters);
-		
+
 		jsInstance.closeRuntime();
 
-		/*Pass jsResult, the result of the Javascript function.
-		It is recommended to have the result of the Javascript function be of type String, which will be the output of the sender */
+		// Pass jsResult, the result of the Javascript function.
+		// It is recommended to have the result of the Javascript function be of type String, which will be the output of the sender
 		return jsResult.toString();
 	}
 
@@ -135,27 +150,23 @@ public class JavascriptSender extends SenderSeries {
 	public void setJsFileName(String jsFileName) {
 		this.jsFileName = jsFileName;
 	}
-	
-	public String getJsFileName() {
+		public String getJsFileName() {
 		return jsFileName;
 	}
-	
+
 	@IbisDoc({"the name of the javascript function that will be called (first)", "main"})
 	public void setJsFunctionName(String jsFunctionName) {
 		this.jsFunctionName = jsFunctionName;
 	}
-
 	public String getJsFunctionName() {
 		return jsFunctionName;
 	}
-	
+
 	@IbisDoc({"the name of the javascript engine to be used", "J2V8"})
 	public void setEngineName(String engineName) {
 		this.engine = engineName;
 	}
-	
 	public String getEngine() {
 		return engine;
 	}
-
 }
