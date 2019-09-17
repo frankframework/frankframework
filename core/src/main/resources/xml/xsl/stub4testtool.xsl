@@ -149,6 +149,9 @@
 							<xsl:when test="@className='nl.nn.adapterframework.senders.FileSender'">
 								<xsl:call-template name="copy" />
 							</xsl:when>
+							<xsl:when test="@className='nl.nn.adapterframework.senders.JavascriptSender'">
+								<xsl:call-template name="copy" /> 
+							</xsl:when>
 							<xsl:when test="@className='nl.nn.adapterframework.jdbc.MessageStoreSender'">
 								<xsl:call-template name="copy" />
 							</xsl:when>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
- */
+*/
 package nl.nn.adapterframework.extensions.graphviz;
 
 import java.io.IOException;
@@ -22,10 +22,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.eclipsesource.v8.JavaVoidCallback;
-import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
 
+import nl.nn.adapterframework.extensions.javascript.J2V8;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -160,7 +160,7 @@ public class GraphvizEngine {
 	private static class Env {
 		protected Logger log = LogUtil.getLogger(this);
 
-		final V8 v8;
+		J2V8 V8Instance = new J2V8();
 		final ResultHandler resultHandler = new ResultHandler();
 
 		/**
@@ -169,17 +169,17 @@ public class GraphvizEngine {
 		 */
 		Env(String initScript, String graphvisJsLibrary, String alias, String tempDirectory) {
 			log.info("starting V8 runtime...");
-			v8 = V8.createV8Runtime(alias, tempDirectory);
+			V8Instance.startRuntime(alias, tempDirectory);
 			log.info("started V8 runtime. Initializing graphviz...");
-			v8.executeVoidScript(graphvisJsLibrary);
-			v8.executeVoidScript(initScript);
-			v8.registerJavaMethod(new JavaVoidCallback() {
+			V8Instance.executeScript(graphvisJsLibrary);
+			V8Instance.executeScript(initScript);
+			V8Instance.getEngine().registerJavaMethod(new JavaVoidCallback() {
 				@Override
 				public void invoke(V8Object receiver, V8Array parameters) {
 					resultHandler.setResult(parameters.getString(0));
 				}
 			}, "result");
-			v8.registerJavaMethod(new JavaVoidCallback() {
+			V8Instance.getEngine().registerJavaMethod(new JavaVoidCallback() {
 				@Override
 				public void invoke(V8Object receiver, V8Array parameters) {
 					resultHandler.setError(parameters.getString(0));
@@ -190,7 +190,7 @@ public class GraphvizEngine {
 
 		public String execute(String call) throws GraphvizException {
 			try {
-				v8.executeVoidScript(call);
+				V8Instance.executeScript(call);
 				return resultHandler.waitFor();
 			} catch (Exception e) {
 				throw new GraphvizException(e);
@@ -198,7 +198,7 @@ public class GraphvizEngine {
 		}
 
 		public void close() {
-			v8.release(true);
+			V8Instance.closeRuntime();
 		}
 	}
 }
