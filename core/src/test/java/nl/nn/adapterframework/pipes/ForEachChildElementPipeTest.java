@@ -28,23 +28,23 @@ import nl.nn.adapterframework.stream.MessageOutputStream;
 
 public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElementPipe> {
 
-	private String messageBasicNoNS="<root><sub>abc</sub><sub>def</sub></root>";
-	private String messageBasicNS="<ns:root xmlns:ns=\"urn:test\"><ns:sub>abc</ns:sub><ns:sub>def</ns:sub></ns:root>";
+	private String messageBasicNoNS="<root><sub>abc&amp;</sub><sub>CDATA[<a>a&amp;b</a>]</sub></root>";
+	private String messageBasicNS="<ns:root xmlns:ns=\"urn:test\"><ns:sub>abc&amp;</ns:sub><ns:sub>CDATA[<a>a&amp;b</a>]</ns:sub></ns:root>";
 
 	private String expectedBasicNoNS="<results count=\"2\">\n"+
 			"<result item=\"1\">\n"+
-			"<sub>abc</sub>\n"+
+			"<sub>abc&amp;</sub>\n"+
 			"</result>\n"+
 			"<result item=\"2\">\n"+
-			"<sub>def</sub>\n"+
+			"<sub>CDATA[<a>a&amp;b</a>]</sub>\n"+
 			"</result>\n</results>";
 
 	private String expectedBasicNS="<results count=\"2\">\n"+
 			"<result item=\"1\">\n"+
-			"<ns:sub xmlns:ns=\"urn:test\">abc</ns:sub>\n"+
+			"<ns:sub xmlns:ns=\"urn:test\">abc&amp;</ns:sub>\n"+
 			"</result>\n"+
 			"<result item=\"2\">\n"+
-			"<ns:sub xmlns:ns=\"urn:test\">def</ns:sub>\n"+
+			"<ns:sub xmlns:ns=\"urn:test\">CDATA[<a>a&amp;b</a>]</ns:sub>\n"+
 			"</result>\n</results>";
 
 	private IPipeLineSession session = new PipeLineSessionBase();
