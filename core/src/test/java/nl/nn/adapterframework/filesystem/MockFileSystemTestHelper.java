@@ -5,8 +5,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Date;
 
-public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystemTestHelper {
+public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystemTestHelperFullControl {
 
 	private MockFileSystem<F> fileSystem;
 	
@@ -93,6 +94,21 @@ public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystem
 		return new ByteArrayInputStream( mf.getContents());
 	}
 
+
+	@Override
+	public void setFileDate(String folderName, String filename, Date modifiedDate) throws Exception {
+		MockFolder folder = folderName==null?fileSystem:fileSystem.getFolders().get(folderName);
+		if (folder==null) {
+			throw new IllegalStateException("folder ["+folderName+"] for file ["+filename+"] does not exist");
+		}
+		MockFile mf = folder.getFiles().get(filename);
+		if (mf==null || mf.getContents()==null) {
+			throw new IllegalStateException("file ["+filename+"] in folder ["+folderName+"] does not exist");
+		}
+		mf.setLastModified(modifiedDate);
+	}
+
+
 	@Override
 	public void _createFolder(String filename) throws Exception {
 		MockFolder mf = new MockFolder(filename,fileSystem);
@@ -108,5 +124,4 @@ public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystem
 	public MockFileSystem<F> getFileSystem() {
 		return fileSystem;
 	}
-
 }

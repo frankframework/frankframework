@@ -243,5 +243,8 @@ public class DateUtils {
 		return result;
 	}
 
+	public static boolean isSameDay(Date date1, Date date2) {
+		return org.apache.commons.lang.time.DateUtils.isSameDay(date1, date2);
+	}
 
 }
