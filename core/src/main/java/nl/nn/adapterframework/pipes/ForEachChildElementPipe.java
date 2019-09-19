@@ -125,18 +125,18 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 
 	private class ItemCallbackCallingHandler extends DefaultHandler implements LexicalHandler {
 		
-		ItemCallback callback;
-		String namespaceClause;
+		private ItemCallback callback;
+		private String namespaceClause;
 		
-		StringBuffer elementbuffer=new StringBuffer();
-		int elementLevel=0;
-		int itemCounter=0;
-		Exception rootException=null;
-		int startLength;		
-		boolean contentSeen;
-		boolean stopRequested;
-		TimeOutException timeOutException;
-		boolean inCdata;
+		private StringBuffer elementbuffer=new StringBuffer();
+		private int elementLevel=0;
+		private int itemCounter=0;
+		private Exception rootException=null;
+		private int startLength;		
+		private boolean contentSeen;
+		private boolean stopRequested;
+		private TimeOutException timeOutException;
+		private boolean inCdata;
 
 		
 		public ItemCallbackCallingHandler(ItemCallback callback, String namespaceClause) {
