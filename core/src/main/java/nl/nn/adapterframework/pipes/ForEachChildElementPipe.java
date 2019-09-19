@@ -32,6 +32,7 @@ import org.apache.commons.lang.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.DefaultHandler;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -122,7 +123,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 	}
 
 
-	private class ItemCallbackCallingHandler extends DefaultHandler {
+	private class ItemCallbackCallingHandler extends DefaultHandler implements LexicalHandler {
 		
 		ItemCallback callback;
 		String namespaceClause;
@@ -135,11 +136,13 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		boolean contentSeen;
 		boolean stopRequested;
 		TimeOutException timeOutException;
+		boolean inCdata;
+
 		
 		public ItemCallbackCallingHandler(ItemCallback callback, String namespaceClause) {
 			this.callback=callback;
 			this.namespaceClause=namespaceClause;
-			elementbuffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+			//elementbuffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 			if (getBlockSize()>0) {
 				elementbuffer.append(getBlockPrefix());
 			}
@@ -162,7 +165,11 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 					contentSeen=true;
 					elementbuffer.append(">");
 				}
-				elementbuffer.append(XmlUtils.encodeChars(ch, start, length));
+				if (inCdata) {
+					elementbuffer.append("<![CDATA[").append(new String(ch, start, length)).append("]]>");
+				} else {
+					elementbuffer.append(XmlUtils.encodeChars(new String(ch, start, length)));
+				}
 			}
 		}
 
@@ -178,7 +185,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 					elementbuffer.append(namespaceClause);
 				}
 				for (int i=0; i<attributes.getLength(); i++) {
-					elementbuffer.append(" "+attributes.getLocalName(i)+"=\""+attributes.getValue(i)+"\"");
+					elementbuffer.append(" "+attributes.getLocalName(i)+"=\""+XmlUtils.encodeChars(attributes.getValue(i))+"\"");
 				}
 				contentSeen=false;
 			}
@@ -228,7 +235,49 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 			}
 		}
 
+		@Override
+		public void comment(char[] ch, int start, int length) throws SAXException {
+//			try {
+//				if (includeComments) {
+//					writer.append("<!--").append(new String(ch, start, length)).append("-->");
+//				}
+//			} catch (IOException e) {
+//				throw new SAXException(e);
+//			}
+		}
 
+		@Override
+		public void startDTD(String arg0, String arg1, String arg2) throws SAXException {
+//			System.out.println("startDTD");
+		}
+
+		@Override
+		public void endDTD() throws SAXException {
+//			System.out.println("endDTD");
+		}
+
+		@Override
+		public void startCDATA() throws SAXException {
+//			System.out.println("startCDATA");
+			inCdata=true;
+		}
+
+		@Override
+		public void endCDATA() throws SAXException {
+//			System.out.println("endCDATA");
+			inCdata=false;
+		}
+
+		@Override
+		public void startEntity(String arg0) throws SAXException {
+//			System.out.println("startEntity ["+arg0+"]");
+		}
+		@Override
+		public void endEntity(String arg0) throws SAXException {
+//			System.out.println("endEntity ["+arg0+"]");
+		}
+
+		
 		public boolean isStopRequested() {
 			return stopRequested;
 		}
