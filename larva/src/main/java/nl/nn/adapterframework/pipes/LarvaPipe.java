@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -29,6 +30,8 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.testtool.MessageListener;
+import nl.nn.adapterframework.testtool.TestPreparer;
 import nl.nn.adapterframework.testtool.TestTool;
 import nl.nn.adapterframework.util.AppConstants;
 
@@ -60,6 +63,9 @@ import nl.nn.adapterframework.util.AppConstants;
  */
 public class LarvaPipe extends FixedForwardPipe {
 	
+	@Autowired
+	IbisContext ibisContext;
+	
 	public final String DEFAULT_LOG_LEVEL = "wrong pipeline messages";
 	public final String FORWARD_FAIL="fail";
 	
@@ -79,7 +85,7 @@ public class LarvaPipe extends FixedForwardPipe {
 			log.warn("no log level specified, setting to default ["+DEFAULT_LOG_LEVEL+"]");
 			setLogLevel(DEFAULT_LOG_LEVEL);
 		} else {
-			String[] LOG_LEVELS = TestTool.LOG_LEVEL_ORDER.split(",\\s*");
+			String[] LOG_LEVELS = (String[]) MessageListener.getLogLevels().toArray();
 			if (!Arrays.asList(LOG_LEVELS).contains("["+getLogLevel()+"]")) {
 				throw new ConfigurationException("illegal log level ["+getLogLevel()+"]");
 			}
@@ -95,18 +101,18 @@ public class LarvaPipe extends FixedForwardPipe {
 	
 	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
-		AppConstants appConstants = TestTool.getAppConstants(ibisContext);
+		//IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
+		AppConstants appConstants = TestTool.getAppConstants();
 		// Property webapp.realpath is not available in appConstants which was
 		// created with AppConstants.getInstance(ClassLoader classLoader), this
 		// should be fixed but for now use AppConstants.getInstance().
 		String realPath = AppConstants.getInstance().getResolvedProperty("webapp.realpath") + "larva/";
 		List<String> scenariosRootDirectories = new ArrayList<String>();
 		List<String> scenariosRootDescriptions = new ArrayList<String>();
-		String currentScenariosRootDirectory = TestTool.initScenariosRootDirectories(
+		String currentScenariosRootDirectory = TestPreparer.initScenariosRootDirectories(
 				appConstants, realPath,
 				null, scenariosRootDirectories,
-				scenariosRootDescriptions, null);
+				scenariosRootDescriptions);
 		String paramScenariosRootDirectory = currentScenariosRootDirectory;
 		String paramExecute = currentScenariosRootDirectory;
 		if (StringUtils.isNotEmpty(execute)) {
@@ -120,12 +126,13 @@ public class LarvaPipe extends FixedForwardPipe {
 		out.setWriteToLog(writeToLog);
 		out.setWriteToSystemOut(writeToSystemOut);
 		boolean silent = true;
+		int numberOfThreads = 1;
 		TestTool.setTimeout(getTimeout());
-		int numScenariosFailed=TestTool.runScenarios(ibisContext, appConstants, paramLogLevel,
-								paramAutoScroll, paramExecute,
+		int numScenariosFailed=TestTool.runScenarios(appConstants, paramLogLevel,
+								paramExecute,
 								paramWaitBeforeCleanUp, realPath,
 								paramScenariosRootDirectory,
-								out, silent);
+								numberOfThreads, silent);
 		PipeForward forward=numScenariosFailed==0? getForward(): failForward;
 		return new PipeRunResult(forward, out.toString());
 	}
