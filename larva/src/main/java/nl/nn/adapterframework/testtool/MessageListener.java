@@ -11,10 +11,12 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import com.sun.xml.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
@@ -34,40 +36,63 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class MessageListener {
 	
 	//public static final String LOG_LEVEL_ORDER = "[debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]";
-	private static Map<String, Integer> LOG_LEVEL;
 	private static Logger logger = LogUtil.getLogger(TestTool.class);
-	private static List<Message> messages;
+	private static LinkedList<Message> messages  = new LinkedList<Message>();
+	private static int selectedLogLevel = 0;
+	private static final List<String> LOG_LEVEL = new ArrayList<String>() {{
+		// CAUTION! Order matters!!
+		add("Debug");
+		add("Pipeline Messages Prepared For Diff");
+		add("Pipeline Messages");
+		add("Wrong Pipeline Messages");
+		add("Step Passed/Failed");
+		add("Scenario Passed/Failed");
+		add("Scenario Failed");
+		add("Total");
+		add("Errors");
+	}};
 	
-	
-	public MessageListener() {
-		if(messages == null)
-			messages = new LinkedList<Message>();
-		
-		LOG_LEVEL = new HashMap<String, Integer>();
-		LOG_LEVEL.put("DEBUG", 0);
-		LOG_LEVEL.put("Pipeline Messages Prepared For Diff", 1);
-		LOG_LEVEL.put("Pipeline Messages", 2);
-		LOG_LEVEL.put("Wrong Pipeline Messages", 3);
-		LOG_LEVEL.put("Step Passed/Failed", 4);
-		LOG_LEVEL.put("Scenario Passed/Failed", 5);
-		LOG_LEVEL.put("Scenario Failed", 6);
-		LOG_LEVEL.put("Total", 7);
-		LOG_LEVEL.put("Errors", 8);
+	/**
+	 * @return Returns all messages above selected log level.
+	 */
+	public static List<Message> getMessages() {
+		return getMessages(0);
 	}
-
+	
+	/**
+	 * Returns messages after the given timestamp and above the selected log level.
+	 * @param timestamp for filtering messages based on time.
+	 * @return list of messages that fit the criteria.
+	 */
+	public static List<Message> getMessages(long timestamp){
+		List<Message> result = new ArrayList<>();
+		
+		for(Message m : messages) {
+			if(m.timestamp >= timestamp && m.logLevel >= selectedLogLevel)
+				result.add(m);
+			
+			// Since it is linked list, it will be ordered by their insertion time (in reverse order)
+			// So the moment message timestamp is before what we want, we can say no other message will be later than timestamp
+			if(m.timestamp < timestamp)
+				break;
+		}
+		
+		return result;
+	}
+	
 	public static void debugMessage(String message) {
 		Map<String, String> map = new HashMap<>(1);
 		map.put("Message", message);
-		Message m = new Message(map, LOG_LEVEL.get("DEBUG"), System.currentTimeMillis());
+		Message m = new Message(map, LOG_LEVEL.indexOf("DEBUG"), System.currentTimeMillis());
 		messages.add(m);
-		
-		logger.debug(message);
+		System.out.println(message);
+		logger.error(message);
 	}
 
 	public static void singleMessage(String message, String debugLevel) {
 		Map<String, String> map = new HashMap<>(1);
 		map.put("Message", message);
-		Message m = new Message(map, LOG_LEVEL.get(debugLevel), System.currentTimeMillis());
+		Message m = new Message(map, LOG_LEVEL.indexOf(debugLevel), System.currentTimeMillis());
 		messages.add(m);		
 	}
 	
@@ -76,7 +101,7 @@ public class MessageListener {
 		map.put("Step Display Name", stepDisplayName);
 		map.put("Message", message);
 		map.put("Pipeline Message", pipelineMessage);
-		Message m = new Message(map, LOG_LEVEL.get("Pipeline Messages"), System.currentTimeMillis());
+		Message m = new Message(map, LOG_LEVEL.indexOf("Pipeline Messages"), System.currentTimeMillis());
 		messages.add(m);
 	}
 
@@ -85,7 +110,7 @@ public class MessageListener {
 		map.put("Step Display Name", stepDisplayName);
 		map.put("Message", message);
 		map.put("Pipeline Message", pipelineMessage);
-		Message m = new Message(map, LOG_LEVEL.get("Pipeline Messages Prepared For Diff"), System.currentTimeMillis());
+		Message m = new Message(map, LOG_LEVEL.indexOf("Pipeline Messages Prepared For Diff"), System.currentTimeMillis());
 		messages.add(m);
 	}
 
@@ -93,7 +118,7 @@ public class MessageListener {
 		Map<String, String> map = new HashMap<>(2);
 		map.put("Message", message);
 		map.put("Pipeline Message", pipelineMessage);
-		Message m = new Message(map, LOG_LEVEL.get("Pipeline Messages Prepared For Diff"), System.currentTimeMillis());
+		Message m = new Message(map, LOG_LEVEL.indexOf("Pipeline Messages Prepared For Diff"), System.currentTimeMillis());
 		messages.add(m);
 	}
 
@@ -103,7 +128,7 @@ public class MessageListener {
 		map.put("Message", message);
 		map.put("Pipeline Message", pipelineMessage);
 		map.put("pipelineMessageExpected", pipelineMessage);
-		Message m = new Message(map, LOG_LEVEL.get("Wrong Pipeline Messages"), System.currentTimeMillis());
+		Message m = new Message(map, LOG_LEVEL.indexOf("Wrong Pipeline Messages"), System.currentTimeMillis());
 		messages.add(m);
 	}
 	
@@ -112,7 +137,7 @@ public class MessageListener {
 		map.put("Step Display Name", stepDisplayName);
 		map.put("Pipeline Message", pipelineMessagePreparedForDiff);
 		map.put("Pipeline Message Expected", pipelineMessageExpectedPreparedForDiff);
-		Message m = new Message(map, LOG_LEVEL.get("Wrong Pipeline Messages"), System.currentTimeMillis());
+		Message m = new Message(map, LOG_LEVEL.indexOf("Wrong Pipeline Messages"), System.currentTimeMillis());
 		messages.add(m);
 	}
 		
@@ -183,7 +208,23 @@ public class MessageListener {
 		}
 		
 		map.put("Stack Trace", stacktrace);
-		Message m = new Message(map, LOG_LEVEL.get("Errors"), System.currentTimeMillis());
+		Message m = new Message(map, LOG_LEVEL.indexOf("Errors"), System.currentTimeMillis());
 		messages.add(m);
+	}
+	
+	public static int getSelectedLogLevel() {
+		return selectedLogLevel;
+	}
+
+	public static void setSelectedLogLevel(String selectedLogLevel) {
+		MessageListener.selectedLogLevel = LOG_LEVEL.indexOf(selectedLogLevel);
+	}
+
+	public static List<String> getLogLevels() {
+		return LOG_LEVEL;
+	}
+	
+	public static int getLevelOfLog(String logLevel) {
+		return LOG_LEVEL.indexOf(logLevel);
 	}
 }
