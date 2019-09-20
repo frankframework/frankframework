@@ -28,7 +28,9 @@ import nl.nn.adapterframework.senders.IbisJavaSender;
 import nl.nn.adapterframework.testtool.ListenerMessageHandler;
 import nl.nn.adapterframework.testtool.MessageListener;
 import nl.nn.adapterframework.testtool.ResultComparer;
+import nl.nn.adapterframework.testtool.ScenarioTester;
 import nl.nn.adapterframework.testtool.SenderThread;
+import nl.nn.adapterframework.testtool.TestPreparer;
 import nl.nn.adapterframework.testtool.TestTool;
 
 /**
@@ -58,15 +60,15 @@ public class SenderController {
 			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
 
 			if (ibisHost == null) {
-				TestTool.closeQueues(queues, properties);
+				ScenarioTester.closeQueues(queues, properties);
 				queues = null;
 				MessageListener.errorMessage("Could not find ibisHost property for " + name);
 			} else if (ibisInstance == null) {
-				TestTool.closeQueues(queues, properties);
+				ScenarioTester.closeQueues(queues, properties);
 				queues = null;
 				MessageListener.errorMessage("Could not find ibisInstance property for " + name);
 			} else if (serviceName == null) {
-				TestTool.closeQueues(queues, properties);
+				ScenarioTester.closeQueues(queues, properties);
 				queues = null;
 				MessageListener.errorMessage("Could not find serviceName property for " + name);
 			} else {
@@ -79,13 +81,13 @@ public class SenderController {
 					ibisWebServiceSender.configure();
 				} catch(ConfigurationException e) {
 					MessageListener.errorMessage("Could not configure '" + name + "': " + e.getMessage(), e);
-					TestTool.closeQueues(queues, properties);
+					ScenarioTester.closeQueues(queues, properties);
 					queues = null;
 				}
 				try {
 					ibisWebServiceSender.open();
 				} catch (SenderException e) {
-					TestTool.closeQueues(queues, properties);
+					ScenarioTester.closeQueues(queues, properties);
 					queues = null;
 					MessageListener.errorMessage("Could not open '" + name + "': " + e.getMessage(), e);
 				}
@@ -125,7 +127,7 @@ public class SenderController {
 			String multipartString = (String)properties.get(name + ".multipart");
  			String styleSheetName = (String)properties.get(name + ".styleSheetName");
 			if (url == null) {
-				TestTool.closeQueues(queues, properties);
+				ScenarioTester.closeQueues(queues, properties);
 				queues = null;
 				MessageListener.errorMessage("Could not find url property for " + name);
 			} else {
@@ -165,7 +167,7 @@ public class SenderController {
 					}
 					parameterResolutionContext = new ParameterResolutionContext();
 					parameterResolutionContext.setSession(new PipeLineSessionBase());
-					Map<String, Object> paramPropertiesMap = TestTool.createParametersMapFromParamProperties(properties, name, true, parameterResolutionContext);
+					Map<String, Object> paramPropertiesMap = TestPreparer.createParametersMapFromParamProperties(properties, name, true, parameterResolutionContext);
 					Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
 					while (parameterNameIterator.hasNext()) {
 						String parameterName = (String)parameterNameIterator.next();
@@ -175,7 +177,7 @@ public class SenderController {
 					httpSender.configure();
 				} catch(ConfigurationException e) {
 					MessageListener.errorMessage("Could not configure '" + name + "': " + e.getMessage(), e);
-					TestTool.closeQueues(queues, properties);
+					ScenarioTester.closeQueues(queues, properties);
 					queues = null;
 				} finally {
 					if (originalClassLoader != null) {
@@ -186,7 +188,7 @@ public class SenderController {
 					try {
 						httpSender.open();
 					} catch (SenderException e) {
-						TestTool.closeQueues(queues, properties);
+						ScenarioTester.closeQueues(queues, properties);
 						queues = null;
 						MessageListener.errorMessage("Could not open '" + name + "': " + e.getMessage(), e);
 					}
@@ -218,7 +220,7 @@ public class SenderController {
 			String serviceName = (String)properties.get(name + ".serviceName");
 			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
 			if (serviceName == null) {
-				TestTool.closeQueues(queues, properties);
+				ScenarioTester.closeQueues(queues, properties);
 				queues = null;
 				MessageListener.errorMessage("Could not find serviceName property for " + name);
 			} else {
@@ -227,7 +229,7 @@ public class SenderController {
 				ibisJavaSender.setServiceName(serviceName);
 				ParameterResolutionContext parameterResolutionContext = new ParameterResolutionContext();
 				parameterResolutionContext.setSession(new PipeLineSessionBase());
-				Map<String, Object> paramPropertiesMap = TestTool.createParametersMapFromParamProperties(properties, name, true, parameterResolutionContext);
+				Map<String, Object> paramPropertiesMap = TestPreparer.createParametersMapFromParamProperties(properties, name, true, parameterResolutionContext);
 				Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
 				while (parameterNameIterator.hasNext()) {
 					String parameterName = (String)parameterNameIterator.next();
@@ -238,14 +240,14 @@ public class SenderController {
 					ibisJavaSender.configure();
 				} catch(ConfigurationException e) {
 					MessageListener.errorMessage("Could not configure '" + name + "': " + e.getMessage(), e);
-					TestTool.closeQueues(queues, properties);
+					ScenarioTester.closeQueues(queues, properties);
 					queues = null;
 				}
 				if (queues != null) {
 					try {
 						ibisJavaSender.open();
 					} catch (SenderException e) {
-						TestTool.closeQueues(queues, properties);
+						ScenarioTester.closeQueues(queues, properties);
 						queues = null;
 						MessageListener.errorMessage("Could not open '" + name + "': " + e.getMessage(), e);
 					}

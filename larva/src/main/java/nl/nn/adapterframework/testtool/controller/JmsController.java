@@ -21,6 +21,7 @@ import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
 import nl.nn.adapterframework.testtool.MessageListener;
 import nl.nn.adapterframework.testtool.ResultComparer;
+import nl.nn.adapterframework.testtool.ScenarioTester;
 import nl.nn.adapterframework.testtool.TestTool;
 
 /**
@@ -45,7 +46,7 @@ public class JmsController {
 			String queueName = (String)iterator.next();
 			String queue = (String)properties.get(queueName + ".queue");
 			if (queue == null) {
-				TestTool.closeQueues(queues, properties);
+				ScenarioTester.closeQueues(queues, properties);
 				queues = null;
 				MessageListener.errorMessage("Could not find property '" + queueName + ".queue'");
 			} else {
@@ -119,7 +120,7 @@ public class JmsController {
 			}
 
 			if (queue == null) {
-				TestTool.closeQueues(queues, properties);
+				ScenarioTester.closeQueues(queues, properties);
 				queues = null;
 				MessageListener.errorMessage("Could not find property '" + queueName + ".queue'");
 			} else {

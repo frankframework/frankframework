@@ -18,6 +18,7 @@ import nl.nn.adapterframework.testtool.ListenerMessage;
 import nl.nn.adapterframework.testtool.ListenerMessageHandler;
 import nl.nn.adapterframework.testtool.MessageListener;
 import nl.nn.adapterframework.testtool.ResultComparer;
+import nl.nn.adapterframework.testtool.ScenarioTester;
 import nl.nn.adapterframework.testtool.SenderThread;
 import nl.nn.adapterframework.testtool.TestTool;
 
@@ -46,7 +47,7 @@ public class WebServiceController {
 			String soap = (String)properties.get(name + ".soap");
 			String allowSelfSignedCertificates = (String)properties.get(name + ".allowSelfSignedCertificates");
 			if (url == null) {
-				TestTool.closeQueues(queues, properties);
+				ScenarioTester.closeQueues(queues, properties);
 				queues = null;
 				MessageListener.errorMessage("Could not find url property for " + name);
 			} else {
@@ -73,14 +74,14 @@ public class WebServiceController {
 					webServiceSender.configure();
 				} catch(ConfigurationException e) {
 					MessageListener.errorMessage("Could not configure '" + name + "': " + e.getMessage(), e);
-					TestTool.closeQueues(queues, properties);
+					ScenarioTester.closeQueues(queues, properties);
 					queues = null;
 				}
 				if (queues != null) {
 					try {
 						webServiceSender.open();
 					} catch (SenderException e) {
-						TestTool.closeQueues(queues, properties);
+						ScenarioTester.closeQueues(queues, properties);
 						queues = null;
 						MessageListener.errorMessage("Could not open '" + name + "': " + e.getMessage(), e);
 					}
@@ -113,7 +114,7 @@ public class WebServiceController {
 			String serviceNamespaceURI = (String)properties.get(name + ".serviceNamespaceURI");
 
 			if (serviceNamespaceURI == null) {
-				TestTool.closeQueues(queues, properties);
+				ScenarioTester.closeQueues(queues, properties);
 				queues = null;
 				MessageListener.errorMessage("Could not find property '" + name + ".serviceNamespaceURI'");
 			} else {
@@ -139,7 +140,7 @@ public class WebServiceController {
 				try {
 					webServiceListener.open();
 				} catch (ListenerException e) {
-					TestTool.closeQueues(queues, properties);
+					ScenarioTester.closeQueues(queues, properties);
 					queues = null;
 					MessageListener.errorMessage("Could not open web service listener '" + name + "': " + e.getMessage(), e);
 				}
@@ -152,7 +153,7 @@ public class WebServiceController {
 					serviceDispatcher.registerServiceClient(serviceNamespaceURI, webServiceListener);
 					MessageListener.debugMessage("Opened web service listener '" + name + "'");
 				} catch(ListenerException e) {
-					TestTool.closeQueues(queues, properties);
+					ScenarioTester.closeQueues(queues, properties);
 					queues = null;
 					MessageListener.errorMessage("Could not open web service listener '" + name + "': " + e.getMessage(), e);
 				}

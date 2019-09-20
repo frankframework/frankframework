@@ -16,6 +16,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.testtool.MessageListener;
 import nl.nn.adapterframework.testtool.ResultComparer;
+import nl.nn.adapterframework.testtool.ScenarioTester;
 import nl.nn.adapterframework.testtool.TestTool;
 import nl.nn.adapterframework.util.AppConstants;
 
@@ -54,7 +55,7 @@ public class JdbcFixedQueryController {
 				getBlobSmart = Boolean.valueOf(getBlobSmartString).booleanValue();
 			}
 			if (datasourceName == null) {
-				TestTool.closeQueues(queues, properties);
+				ScenarioTester.closeQueues(queues, properties);
 				queues = null;
 				MessageListener.errorMessage("Could not find datasourceName property for " + name);
 			} else {
@@ -73,15 +74,15 @@ public class JdbcFixedQueryController {
 							deleteQuerySender.sendMessage(TestTool.TESTTOOL_CORRELATIONID, TestTool.TESTTOOL_DUMMY_MESSAGE);
 							deleteQuerySender.close();
 						} catch(ConfigurationException e) {
-							TestTool.closeQueues(queues, properties);
+							ScenarioTester.closeQueues(queues, properties);
 							queues = null;
 							MessageListener.errorMessage("Could not configure '" + name + "': " + e.getMessage(), e);
 						} catch(TimeOutException e) {
-							TestTool.closeQueues(queues, properties);
+							ScenarioTester.closeQueues(queues, properties);
 							queues = null;
 							MessageListener.errorMessage("Time out on execute pre delete query for '" + name + "': " + e.getMessage(), e);
 						} catch(SenderException e) {
-							TestTool.closeQueues(queues, properties);
+							ScenarioTester.closeQueues(queues, properties);
 							queues = null;
 							MessageListener.errorMessage("Could not execute pre delete query for '" + name + "': " + e.getMessage(), e);
 						}
@@ -103,7 +104,7 @@ public class JdbcFixedQueryController {
 						try {
 							prePostFixedQuerySender.configure();
 						} catch(ConfigurationException e) {
-							TestTool.closeQueues(queues, properties);
+							ScenarioTester.closeQueues(queues, properties);
 							queues = null;
 							MessageListener.errorMessage("Could not configure '" + name + "': " + e.getMessage(), e);
 						}
@@ -111,7 +112,7 @@ public class JdbcFixedQueryController {
 							try {
 								prePostFixedQuerySender.open();
 							} catch(SenderException e) {
-								TestTool.closeQueues(queues, properties);
+								ScenarioTester.closeQueues(queues, properties);
 								queues = null;
 								MessageListener.errorMessage("Could not open (pre/post) '" + name + "': " + e.getMessage(), e);
 							}
@@ -122,11 +123,11 @@ public class JdbcFixedQueryController {
 								querySendersInfo.put("prePostQueryFixedQuerySender", prePostFixedQuerySender);
 								querySendersInfo.put("prePostQueryResult", result);
 							} catch(TimeOutException e) {
-								TestTool.closeQueues(queues, properties);
+								ScenarioTester.closeQueues(queues, properties);
 								queues = null;
 								MessageListener.errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e);
 							} catch(SenderException e) {
-								TestTool.closeQueues(queues, properties);
+								ScenarioTester.closeQueues(queues, properties);
 								queues = null;
 								MessageListener.errorMessage("Could not execute query for '" + name + "': " + e.getMessage(), e);
 							}
@@ -153,7 +154,7 @@ public class JdbcFixedQueryController {
 						try {
 							readQueryFixedQuerySender.configure();
 						} catch(ConfigurationException e) {
-							TestTool.closeQueues(queues, properties);
+							ScenarioTester.closeQueues(queues, properties);
 							queues = null;
 							MessageListener.errorMessage("Could not configure '" + name + "': " + e.getMessage(), e);
 						}
@@ -162,7 +163,7 @@ public class JdbcFixedQueryController {
 								readQueryFixedQuerySender.open();
 								querySendersInfo.put("readQueryQueryFixedQuerySender", readQueryFixedQuerySender);
 							} catch(SenderException e) {
-								TestTool.closeQueues(queues, properties);
+								ScenarioTester.closeQueues(queues, properties);
 								queues = null;
 								MessageListener.errorMessage("Could not open '" + name + "': " + e.getMessage(), e);
 							}

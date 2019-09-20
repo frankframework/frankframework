@@ -17,6 +17,7 @@ import nl.nn.adapterframework.testtool.FileSender;
 import nl.nn.adapterframework.testtool.ListenerMessageHandler;
 import nl.nn.adapterframework.testtool.MessageListener;
 import nl.nn.adapterframework.testtool.ResultComparer;
+import nl.nn.adapterframework.testtool.ScenarioTester;
 import nl.nn.adapterframework.testtool.TestTool;
 
 /**
@@ -39,7 +40,7 @@ public class FileController {
 			String queueName = (String)iterator.next();
 			String filename  = (String)properties.get(queueName + ".filename");
 			if (filename == null) {
-				TestTool.closeQueues(queues, properties);
+				ScenarioTester.closeQueues(queues, properties);
 				queues = null;
 				MessageListener.errorMessage("Could not find filename property for " + queueName);
 			} else {
@@ -132,11 +133,11 @@ public class FileController {
 				wildcard = (String)properties.get(queueName + ".wildcard");
 			}
 			if (filename == null && directory == null) {
-				TestTool.closeQueues(queues, properties);
+				ScenarioTester.closeQueues(queues, properties);
 				queues = null;
 				MessageListener.errorMessage("Could not find filename or directory property for " + queueName);
 			} else if (directory != null && wildcard == null) {
-				TestTool.closeQueues(queues, properties);
+				ScenarioTester.closeQueues(queues, properties);
 				queues = null;
 				MessageListener.errorMessage("Could not find wildcard property for " + queueName);
 			} else {

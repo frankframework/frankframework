@@ -12,6 +12,7 @@ import nl.nn.adapterframework.testtool.ListenerMessage;
 import nl.nn.adapterframework.testtool.ListenerMessageHandler;
 import nl.nn.adapterframework.testtool.MessageListener;
 import nl.nn.adapterframework.testtool.ResultComparer;
+import nl.nn.adapterframework.testtool.ScenarioTester;
 import nl.nn.adapterframework.testtool.TestTool;
 import nl.nn.adapterframework.testtool.XsltProviderListener;
 
@@ -34,7 +35,7 @@ public class ListenerController {
 			String name = (String)iterator.next();
 			String serviceName = (String)properties.get(name + ".serviceName");
 			if (serviceName == null) {
-				TestTool.closeQueues(queues, properties);
+				ScenarioTester.closeQueues(queues, properties);
 				queues = null;
 				MessageListener.errorMessage("Could not find property '" + name + ".serviceName'");
 			} else {
@@ -63,7 +64,7 @@ public class ListenerController {
 					queues.put(name, javaListenerInfo);
 					MessageListener.debugMessage("Opened java listener '" + name + "'");
 				} catch(ListenerException e) {
-					TestTool.closeQueues(queues, properties);
+					ScenarioTester.closeQueues(queues, properties);
 					queues = null;
 					MessageListener.errorMessage("Could not open java listener '" + name + "': " + e.getMessage(), e);
 				}
@@ -85,7 +86,7 @@ public class ListenerController {
 			String queueName = (String)iterator.next();
 			String filename  = (String)properties.get(queueName + ".filename");
 			if (filename == null) {
-				TestTool.closeQueues(queues, properties);
+				ScenarioTester.closeQueues(queues, properties);
 				queues = null;
 				MessageListener.errorMessage("Could not find filename property for " + queueName);
 			} else {
@@ -130,7 +131,7 @@ public class ListenerController {
 					queues.put(queueName, xsltProviderListenerInfo);
 					MessageListener.debugMessage("Opened xslt provider listener '" + queueName + "'");
 				} catch(ListenerException e) {
-					TestTool.closeQueues(queues, properties);
+					ScenarioTester.closeQueues(queues, properties);
 					queues = null;
 					MessageListener.errorMessage("Could not create xslt provider listener for '" + queueName + "': " + e.getMessage(), e);
 				}
