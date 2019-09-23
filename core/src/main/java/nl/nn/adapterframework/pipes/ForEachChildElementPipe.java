@@ -151,6 +151,8 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		private boolean stopRequested;
 		private TimeOutException timeOutException;
 		private boolean inCdata;
+		private StringBuffer firstLevelNamespaceDefinitions=new StringBuffer();
+		private StringBuffer namespaceDefinitions=new StringBuffer();
 
 		
 		public ItemCallbackCallingHandler(ItemCallback callback, String namespaceClause) {
@@ -171,19 +173,47 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 			}
 		}
 		
+		private void appendAttributes(StringBuffer output, Attributes attributes) {
+			for (int i=0; i<attributes.getLength(); i++) {
+				output.append(" "+(isRemoveNamespaces()?attributes.getLocalName(i):attributes.getQName(i))+"=\""+XmlUtils.encodeChars(attributes.getValue(i))+"\"");
+			}
+		}
+		
+		private void appendNamespaceMapping(StringBuffer output, String prefix, String uri) {
+			output.append(" xmlns");
+			if (StringUtils.isNotEmpty(prefix) ) {
+				output.append(":").append(prefix);
+			}
+			output.append("=\"").append(XmlUtils.encodeChars(uri)).append("\"");
+		}
+
+		@Override
+		public void startPrefixMapping(String prefix, String uri) throws SAXException {
+			log.debug("startPrefixMapping ["+prefix+"]=["+uri+"]");
+			if (!isRemoveNamespaces()) {
+				if (elementLevel==0) {
+					appendNamespaceMapping(firstLevelNamespaceDefinitions, prefix, uri);
+				} else {
+					appendNamespaceMapping(namespaceDefinitions, prefix, uri);
+				}
+			}
+		}
+
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes)	throws SAXException {
 			checkInterrupt();
 			if (elementLevel>1 && !charactersSeen) {
 				elementbuffer.append(">");
 			}
-			if (++elementLevel>1) {
+			if (elementLevel++>0) {
 				elementbuffer.append("<"+(isRemoveNamespaces()?localName:qName));
-				if (elementLevel==2 && !isRemoveNamespaces()) {
-					elementbuffer.append(namespaceClause);
-				}
-				for (int i=0; i<attributes.getLength(); i++) {
-					elementbuffer.append(" "+attributes.getLocalName(i)+"=\""+XmlUtils.encodeChars(attributes.getValue(i))+"\"");
+				appendAttributes(elementbuffer,attributes);
+				if (!isRemoveNamespaces()) {
+					if (elementLevel==2) {
+						elementbuffer.append(firstLevelNamespaceDefinitions);
+					}
+					elementbuffer.append(namespaceDefinitions);
+					namespaceDefinitions.setLength(0);
 				}
 				charactersSeen=false;
 			}
@@ -204,8 +234,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 			if (elementLevel == 1) {
 				itemCounter++;
 			}
-			if ((elementLevel == 1 && itemCounter >= getBlockSize())
-					|| (elementLevel == 0 && itemCounter > 0)) {
+			if ((elementLevel == 1 && itemCounter >= getBlockSize()) || (elementLevel == 0 && itemCounter > 0)) {
 				try {
 					if (getBlockSize()>0) {
 						elementbuffer.append(getBlockSuffix());
@@ -303,6 +332,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		public TimeOutException getTimeOutException() {
 			return timeOutException;
 		}
+
 	}
 
 
