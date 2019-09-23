@@ -318,6 +318,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			itemResult = "<result item=\"" + count + "\">\n"+itemInput+itemResult+"\n</result>";
 			results.append(itemResult+"\n");
 		}
+		
 		public StringBuffer getResults() throws SenderException {
 			if (isParallel()) {
 				try {
@@ -339,6 +340,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			}
 			return results;
 		}
+		
 		public int getCount() {
 			return count;
 		}
@@ -437,6 +439,12 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				} 
 			}
 		}
+	}
+
+	@Override
+	public boolean canStreamToTarget() {
+		//return super.canStreamToTarget();
+		return false; // TODO must modify result collection to support output streaming 
 	}
 
 	protected I getItem(IDataIterator<I> it) throws SenderException {

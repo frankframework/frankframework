@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.stream;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,26 +41,26 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 	protected PipeRunResult doPipe(P pipe, Object input, IPipeLineSession session) throws Exception {
 		PipeRunResult prr;
 		if (provideStreamForInput) {
-			MessageOutputStream target;
-			if (writeOutputToStream) {
-				target = pipe.provideOutputStream(null, session, new MessageOutputStreamCap());
-			} else {
-				target = pipe.provideOutputStream(null, session, null);
-			}
-			
+			MessageOutputStreamCap cap=writeOutputToStream?new MessageOutputStreamCap():null;
+			MessageOutputStream target = pipe.provideOutputStream(null, session, cap);
+		
 			try (Writer writer = target.asWriter()) {
 				writer.write((String)input); // TODO: proper conversion of non-string classes..
 			}
+			
 			Object result=target.getResponse();
+			if (cap!=null) {
+				assertEquals("PipeResult must be equal to result of cap",result,cap.getResponse());
+			}
 			return new PipeRunResult(null, result);
 		} else {
 			if (classic) {
 				prr = pipe.doPipe(input,session);
 			} else {
-				if (writeOutputToStream) {
-					prr = pipe.doPipe(input,session,new MessageOutputStreamCap());
-				} else {
-					prr = pipe.doPipe(input,session,null);
+				MessageOutputStreamCap cap=writeOutputToStream?new MessageOutputStreamCap():null;
+				prr = pipe.doPipe(input,session,cap);
+				if (cap!=null) {
+					assertEquals("PipeResult must be equal to result of cap",prr.getResult(),cap.getResponse());
 				}
 			}		
 			return prr;

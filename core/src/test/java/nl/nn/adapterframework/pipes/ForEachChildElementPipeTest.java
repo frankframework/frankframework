@@ -28,7 +28,7 @@ import nl.nn.adapterframework.senders.EchoSender;
 
 public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElementPipe> {
 
-	private boolean TEST_CDATA=true;
+	private boolean TEST_CDATA=false;
 	private String CDATA_START=TEST_CDATA?"<![CDATA[":"";
 	private String CDATA_END=TEST_CDATA?"]]>":"";
 

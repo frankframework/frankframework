@@ -17,19 +17,15 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
-import javax.xml.transform.Source;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.stream.StreamSource;
+import javax.xml.transform.sax.TransformerHandler;
 
 import org.apache.commons.lang.StringUtils;
 import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
@@ -38,10 +34,13 @@ import org.xml.sax.helpers.DefaultHandler;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.InputMessageAdapter;
+import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -122,6 +121,21 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		"</xsl:stylesheet>";
 	}
 
+	
+	@Override
+	protected boolean senderAffectsStreamProvidingCapability() {
+		return false;
+	}
+
+	@Override
+	protected boolean senderAffectsStreamWritingCapability() {
+		return false;
+	}
+
+	@Override
+	protected String sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, MessageOutputStream target) throws SenderException, TimeOutException {
+		return super.sendMessage(input, session, correlationID, sender, threadContext, null);
+	}
 
 	private class ItemCallbackCallingHandler extends DefaultHandler implements LexicalHandler {
 		
@@ -133,7 +147,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		private int itemCounter=0;
 		private Exception rootException=null;
 		private int startLength;		
-		private boolean contentSeen;
+		private boolean charactersSeen;
 		private boolean stopRequested;
 		private TimeOutException timeOutException;
 		private boolean inCdata;
@@ -158,25 +172,9 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		}
 		
 		@Override
-		public void characters(char[] ch, int start, int length) throws SAXException {
-			checkInterrupt();
-			if (elementLevel>1) {
-				if (!contentSeen) {
-					contentSeen=true;
-					elementbuffer.append(">");
-				}
-				if (inCdata) {
-					elementbuffer.append("<![CDATA[").append(new String(ch, start, length)).append("]]>");
-				} else {
-					elementbuffer.append(XmlUtils.encodeChars(new String(ch, start, length)));
-				}
-			}
-		}
-
-		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes)	throws SAXException {
 			checkInterrupt();
-			if (elementLevel>1 && !contentSeen) {
+			if (elementLevel>1 && !charactersSeen) {
 				elementbuffer.append(">");
 			}
 			if (++elementLevel>1) {
@@ -187,7 +185,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 				for (int i=0; i<attributes.getLength(); i++) {
 					elementbuffer.append(" "+attributes.getLocalName(i)+"=\""+XmlUtils.encodeChars(attributes.getValue(i))+"\"");
 				}
-				contentSeen=false;
+				charactersSeen=false;
 			}
 		}
 
@@ -195,8 +193,8 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		public void endElement(String uri, String localName, String qName) throws SAXException {
 			checkInterrupt();
 			if (elementLevel>1) {
-				if (!contentSeen) {
-					contentSeen=true;
+				if (!charactersSeen) {
+					charactersSeen=true;
 					elementbuffer.append("/>");
 				} else {
 					elementbuffer.append("</"+(isRemoveNamespaces()?localName:qName)+">");
@@ -236,6 +234,22 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		}
 
 		@Override
+		public void characters(char[] ch, int start, int length) throws SAXException {
+			checkInterrupt();
+			if (elementLevel>1) {
+				if (!charactersSeen) {
+					charactersSeen=true;
+					elementbuffer.append(">");
+				}
+				if (inCdata) {
+					elementbuffer.append(new String(ch, start, length));
+				} else {
+					elementbuffer.append(XmlUtils.encodeChars(new String(ch, start, length)));
+				}
+			}
+		}
+
+		@Override
 		public void comment(char[] ch, int start, int length) throws SAXException {
 //			try {
 //				if (includeComments) {
@@ -258,13 +272,17 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 
 		@Override
 		public void startCDATA() throws SAXException {
-//			System.out.println("startCDATA");
+			if (!charactersSeen) {
+				charactersSeen=true;
+				elementbuffer.append(">");
+			}
+			elementbuffer.append("<![CDATA[");
 			inCdata=true;
 		}
 
 		@Override
 		public void endCDATA() throws SAXException {
-//			System.out.println("endCDATA");
+			elementbuffer.append("]]>");
 			inCdata=false;
 		}
 
@@ -290,63 +308,45 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 
 	@Override
 	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
-		Reader reader=null;
-		try {
-			if (input instanceof Reader) {
-				reader = (Reader)input;
-			} else 	if (input instanceof InputStream) {
-				reader=new InputStreamReader((InputStream)input,getCharset());
-			} else 	if (isProcessFile()) {
-				// TODO: arrange for non-namespace aware processing of files
-				reader=new InputStreamReader(new FileInputStream((String)input),getCharset());
+		InputSource src;
+		if (isProcessFile()) {
+			try {
+				src = new InputSource(new FileInputStream((String)input));
+			} catch (FileNotFoundException e) {
+				throw new SenderException("could not find file ["+input+"]",e);
 			}
-		} catch (FileNotFoundException e) {
-			throw new SenderException("could not find file ["+input+"]",e);
-		} catch (UnsupportedEncodingException e) {
-			throw new SenderException("could not use charset ["+getCharset()+"]",e);
+		} else {
+			src = new InputMessageAdapter(input).asInputSource();
 		}
-		ItemCallbackCallingHandler handler;
+		ItemCallbackCallingHandler itemHandler;
+		ContentHandler inputHandler;
 		try {
-			handler = new ItemCallbackCallingHandler(callback,XmlUtils.getNamespaceClause(getNamespaceDefs()));
+			itemHandler = new ItemCallbackCallingHandler(callback,XmlUtils.getNamespaceClause(getNamespaceDefs()));
+			inputHandler=itemHandler;
+			String errorMessage="Could not parse input";
+			
+			if (getExtractElementsTp()!=null) {
+				log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
+				SAXResult transformedStream = new SAXResult();
+				transformedStream.setHandler(itemHandler);
+				transformedStream.setLexicalHandler(itemHandler);
+				TransformerHandler xphandler = getExtractElementsTp().getTransformerHandler();
+				xphandler.setResult(transformedStream);
+				inputHandler = xphandler;
+				errorMessage="Could not extract list of elements using xpath ["+getElementXPathExpression()+"]";
+			} 
 		} catch (TransformerConfigurationException e) {
 			throw new SenderException(e);
 		}
-		
-		if (getExtractElementsTp()!=null) {
-			log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
-			try {
-				SAXResult transformedStream = new SAXResult();
-				Source src;
-				if (reader!=null) {
-					src=new StreamSource(reader);
-				} else {
-					src = XmlUtils.stringToSourceForSingleUse((String)input, isNamespaceAware());
-				}
-				transformedStream.setHandler(handler);
-				getExtractElementsTp().transform(src, transformedStream, null);
-			} catch (Exception e) {
-				if (handler.getTimeOutException()!=null) {
-					throw handler.getTimeOutException();
-				}
-				if (!handler.isStopRequested()) {
-					throw new SenderException("Could not extract list of elements using xpath ["+getElementXPathExpression()+"]",e);
-				}
+
+		try {
+			XmlUtils.parseXml(inputHandler,src);
+		} catch (Exception e) {
+			if (itemHandler.getTimeOutException()!=null) {
+				throw itemHandler.getTimeOutException();
 			}
-		} else {
-			
-			try {
-				if (reader!=null) {
-					XmlUtils.parseXml(handler,new InputSource(reader));
-				} else {
-					XmlUtils.parseXml(handler,(String)input);
-				}
-			} catch (Exception e) {
-				if (handler.getTimeOutException()!=null) {
-					throw handler.getTimeOutException();
-				}
-				if (!handler.isStopRequested()) {
-					throw new SenderException("Could not parse input",e);
-				}
+			if (!itemHandler.isStopRequested()) {
+				throw new SenderException("Could not parse input",e);
 			}
 		}
 		

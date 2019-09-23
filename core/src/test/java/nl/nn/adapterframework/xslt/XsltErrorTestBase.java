@@ -216,6 +216,10 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			assertThat(errorMessage,containsString("java.io.FileNotFoundException"));
 		}
 		checkTestAppender(EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING,null);
+		System.out.println("ErrorMessage: "+errorMessage);
+		System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
+		System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
+		errorOutputStream=new ErrorOutputStream();
 	}
 
 	@Test
