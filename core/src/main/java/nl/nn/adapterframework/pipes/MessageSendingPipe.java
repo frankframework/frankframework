@@ -67,8 +67,9 @@ import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.stream.StreamingException;
+import nl.nn.adapterframework.stream.StreamingPipe;
+import nl.nn.adapterframework.stream.StreamingSenderBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -452,7 +453,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 	
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session, MessageOutputStream outputStream) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session, MessageOutputStream target) throws PipeRunException {
 		String originalMessage = input.toString();
 		String result = null;
 		String correlationID = session.getMessageId();
@@ -520,7 +521,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 				while (retriesLeft-->=1 && !replyIsValid) {
 					try {
-						sendResult = sendMessage(input, session, correlationID, getSender(), threadContext);
+						sendResult = sendMessage(input, session, correlationID, getSender(), threadContext, target);
 						if (retryTp!=null) {
 							String retry=retryTp.transform(sendResult,null);
 							if (retry.equalsIgnoreCase("true")) {
@@ -757,7 +758,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return validResult;
 	}
 
-	protected String sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeOutException, InterruptedException {
+	protected String sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, MessageOutputStream target) throws SenderException, TimeOutException, InterruptedException {
 		long startTime = System.currentTimeMillis();
 		String sendResult = null;
 		String exitState = null;
@@ -779,7 +780,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 			}
 			try {
-				sendResult = sendTextMessage(input, session, correlationID, getSender(), threadContext);
+				sendResult = sendTextMessage(input, session, correlationID, getSender(), threadContext, target);
 			} catch (SenderException se) {
 				exitState = EXCEPTION_FORWARD;
 				throw se;
@@ -822,7 +823,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return sendResult;
 	}
 	
-	protected String sendTextMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeOutException {
+	protected String sendTextMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, MessageOutputStream target) throws SenderException, TimeOutException {
 		if (input!=null && !(input instanceof String)) {
 			throw new SenderException("String expected, got a [" + input.getClass().getName() + "]");
 		}
@@ -830,6 +831,9 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		if (sender instanceof ISenderWithParameters) { // do not only check own parameters, sender may have them by itself
 			ISenderWithParameters psender = (ISenderWithParameters) sender;
 			ParameterResolutionContext prc = new ParameterResolutionContext((String)input, session, isNamespaceAware());
+			if (sender instanceof StreamingSenderBase) {
+				return ((StreamingSenderBase)sender).sendMessage(correlationID, (String) input, prc, target);
+			}
 			return psender.sendMessage(correlationID, (String) input, prc);
 		} 
 		return sender.sendMessage(correlationID, (String) input);

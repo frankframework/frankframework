@@ -22,29 +22,33 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.senders.XsltSender;
-import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.senders.EchoSender;
 
 public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElementPipe> {
 
-	private String messageBasicNoNS="<root><sub>abc&amp;</sub><sub>CDATA[<a>a&amp;b</a>]</sub></root>";
-	private String messageBasicNS="<ns:root xmlns:ns=\"urn:test\"><ns:sub>abc&amp;</ns:sub><ns:sub>CDATA[<a>a&amp;b</a>]</ns:sub></ns:root>";
+	private boolean TEST_CDATA=true;
+	private String CDATA_START=TEST_CDATA?"<![CDATA[":"";
+	private String CDATA_END=TEST_CDATA?"]]>":"";
+
+	private String messageBasicNoNS="<root><sub name=\"p &amp; Q\">A &amp; B</sub><sub>"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub></root>";
+	private String messageBasicNS="<ns:root xmlns:ns=\"urn:test\"><ns:sub name=\"p &amp; Q\">A &amp; B</ns:sub><ns:sub>"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</ns:sub></ns:root>";
 
 	private String expectedBasicNoNS="<results count=\"2\">\n"+
 			"<result item=\"1\">\n"+
-			"<sub>abc&amp;</sub>\n"+
+			"<sub name=\"p &amp; Q\">A &amp; B</sub>\n"+
 			"</result>\n"+
 			"<result item=\"2\">\n"+
-			"<sub>CDATA[<a>a&amp;b</a>]</sub>\n"+
+			"<sub>"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub>\n"+
 			"</result>\n</results>";
 
 	private String expectedBasicNS="<results count=\"2\">\n"+
 			"<result item=\"1\">\n"+
-			"<ns:sub xmlns:ns=\"urn:test\">abc&amp;</ns:sub>\n"+
+			"<ns:sub xmlns:ns=\"urn:test\" name=\"p &amp; Q\">A &amp; B</ns:sub>\n"+
 			"</result>\n"+
 			"<result item=\"2\">\n"+
-			"<ns:sub xmlns:ns=\"urn:test\">CDATA[<a>a&amp;b</a>]</ns:sub>\n"+
+			"<ns:sub xmlns:ns=\"urn:test\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</ns:sub>\n"+
 			"</result>\n</results>";
 
 	private IPipeLineSession session = new PipeLineSessionBase();
@@ -55,18 +59,15 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
     }
 
     protected ISender getElementRenderer(final SwitchCounter sc) {
-    	XsltSender sender = new XsltSender() {
+    	EchoSender sender = new EchoSender() {
 
 			@Override
-			public String sendMessage(String correlationID, String message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException {
+			public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 				if (sc!=null) sc.mark("out");
-				return super.sendMessage(correlationID, message, prc, target);
+				return super.sendMessage(correlationID, message, prc);
 			}
     		
     	};
-    	sender.setXpathExpression("*");
-    	sender.setOutputType("xml");
-    	sender.setNamespaceDefs("ns=urn:test");
     	return sender;
     }
 
@@ -113,7 +114,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
     public void testXPath() throws PipeRunException, ConfigurationException, PipeStartException {
     	SwitchCounter sc = new SwitchCounter();
     	pipe.setElementXPathExpression("/root/sub");
-    	pipe.setNamespaceAware(true);
+    	//pipe.setNamespaceAware(true);
     	pipe.setSender(getElementRenderer(sc));
     	configurePipe();
     	pipe.start();

@@ -39,6 +39,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.ParallelSenderExecutor;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Guard;
@@ -344,7 +345,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 	@Override
-	protected String sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeOutException {
+	protected String sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, MessageOutputStream target) throws SenderException, TimeOutException {
 		// sendResult has a messageID for async senders, the result for sync senders
 		boolean keepGoing = true;
 		IDataIterator<I> it=null;

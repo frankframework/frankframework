@@ -266,8 +266,8 @@ public class XsltSender extends StreamingSenderBase  {
 	/*
 	 * alternative implementation of send message, that should do the same as the origial, but reuses the streaming content handler
 	 */
-//	@Override
-	public String sendMessage2(String correlationID, String message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException {
+	@Override
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException {
 		if (message==null) {
 			throw new SenderException(getLogPrefix()+"got null input");
 		}
@@ -276,9 +276,8 @@ public class XsltSender extends StreamingSenderBase  {
 				target=new MessageOutputStreamCap();
 			}
 			InputSource source = new InputSource(new StringReader(message));
-			XMLReader reader = XmlUtils.getXMLReader(true, false);
 			ContentHandler handler = createHandler(correlationID, prc.getSession(), target);
-			reader.setContentHandler(handler);
+			XMLReader reader = XmlUtils.getXMLReader(true, false, handler);
 			reader.parse(source);
 			return target.getResponseAsString();
 		} catch (Exception e) {
@@ -291,8 +290,8 @@ public class XsltSender extends StreamingSenderBase  {
 	 * corrupt when a not-well formed xml was handled. The transformer is then re-initialized
 	 * via the configure() and start() methods.
 	 */
-	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException {
+//	@Override
+	public String sendMessage1(String correlationID, String message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException {
 		String stringResult = null;
 		if (message==null) {
 			throw new SenderException(getLogPrefix()+"got null input");
