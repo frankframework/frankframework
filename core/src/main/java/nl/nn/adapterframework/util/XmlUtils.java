@@ -87,17 +87,19 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.ContentHandler;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
+import org.xml.sax.ext.LexicalHandler;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
 import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
+import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
 
 /**
  * Some utilities for working with XML.
@@ -483,16 +485,43 @@ public class XmlUtils {
 	}
 
 	public static void parseXml(ContentHandler handler, InputSource source) throws IOException, SAXException {
+		boolean namespaceAware=true;
+		boolean resolveExternalEntities=false;
 		XMLReader parser;
-		parser = getParser();
-		parser.setContentHandler(handler);
+		try {
+			parser = getXMLReader(namespaceAware, resolveExternalEntities, handler);
+		} catch (ParserConfigurationException e) {
+			throw new SAXException("Cannot configure parser",e);
+		}
 		parser.parse(source);
 	}
 
-	private static XMLReader getParser() throws SAXException {
-		return XMLReaderFactory.createXMLReader();
+	public static XMLReader getXMLReader(boolean namespaceAware, boolean resolveExternalEntities, ContentHandler handler) throws ParserConfigurationException, SAXException {
+		XMLReader xmlReader = getXMLReader(namespaceAware, resolveExternalEntities);
+		xmlReader.setContentHandler(handler);
+		if (handler instanceof LexicalHandler) {
+			xmlReader.setProperty("http://xml.org/sax/properties/lexical-handler", handler);
+		}
+		if (handler instanceof ErrorHandler) {
+			xmlReader.setErrorHandler((ErrorHandler)handler);
+		}
+		return xmlReader;
 	}
+	
+	public static XMLReader getXMLReader(boolean namespaceAware, boolean resolveExternalEntities) throws ParserConfigurationException, SAXException {
+		SAXParserFactory factory = getSAXParserFactory(namespaceAware);
+		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+		XMLReader xmlReader = factory.newSAXParser().getXMLReader();
+		if (!resolveExternalEntities) {
+			xmlReader.setEntityResolver(new XmlExternalEntityResolver());
+		}
 
+		if (!XPATH_NAMESPACE_REMOVAL_VIA_XSLT && !namespaceAware) {
+			return new NamespaceRemovingFilter(xmlReader);
+		}
+		return xmlReader;
+	}
+	
 	public static Document buildDomDocument(File file)
 		throws DomBuilderException {
 		Reader in;
@@ -940,21 +969,7 @@ public class XmlUtils {
 			throw new DomBuilderException(e);
 		}
 	}
-	
-	public static XMLReader getXMLReader(boolean namespaceAware, boolean resolveExternalEntities) throws ParserConfigurationException, SAXException {
-		SAXParserFactory factory = getSAXParserFactory(namespaceAware);
-		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-		XMLReader xmlReader = factory.newSAXParser().getXMLReader();
-		if (!resolveExternalEntities) {
-			xmlReader.setEntityResolver(new XmlExternalEntityResolver());
-		}
 
-		if (!XPATH_NAMESPACE_REMOVAL_VIA_XSLT && !namespaceAware) {
-			return new NamespaceRemovingFilter(xmlReader);
-		}
-		return xmlReader;
-	}
-	
 	
 	public static int interpretXsltVersion(String xsltVersion) throws TransformerException, IOException {
 		if (StringUtils.isEmpty(xsltVersion)) {

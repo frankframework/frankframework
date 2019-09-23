@@ -18,8 +18,13 @@ package nl.nn.adapterframework.core;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.springframework.transaction.TransactionDefinition;
 
 import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.cache.ICacheEnabled;
@@ -28,8 +33,8 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.jms.JmsException;
-import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.pipes.AbstractPipe;
+import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.processors.PipeLineProcessor;
 import nl.nn.adapterframework.receivers.ReceiverBase;
@@ -42,10 +47,6 @@ import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.springframework.transaction.TransactionDefinition;
 
 /**
  * Processor and keeper of a line of {@link IPipe Pipes}.
@@ -133,7 +134,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 
 	private TransactionDefinition txDef = null;
 
-    private Map<String, IPipe> pipesByName = new Hashtable<String, IPipe>(); // needless synchronization?
+    private Map<String, IPipe> pipesByName = new LinkedHashMap<String, IPipe>();
     private List<IPipe> pipes              = new ArrayList<IPipe>();
     // set of exits paths with their state
     private Map<String, PipeLineExit> pipeLineExits = new Hashtable<String, PipeLineExit>();
@@ -262,8 +263,11 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	    if (pipeLineExits.size() < 1) {
 		    throw new ConfigurationException("no PipeLine Exits specified");
 	    }
+	    if (pipes.isEmpty()) {
+		    throw new ConfigurationException("no Pipes in PipeLine");
+	    }
 	    if (this.firstPipe == null) {
-		    throw new ConfigurationException("no firstPipe defined");
+		    firstPipe=pipes.get(0).getName();
 	    }
 	    if (getPipe(firstPipe) == null) {
 		    throw new ConfigurationException("no pipe found for firstPipe [" + firstPipe + "]");
