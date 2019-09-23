@@ -28,11 +28,13 @@
 		</xsl:copy>
 	</xsl:template>
 	
-	<!--
-	Ignore content of timestamp tag:
-	<xsl:template match="timestamp">
-		<TIMESTAMP-IGNORED/>
-	</xsl:template>
-	 -->
-	 
+	<!-- Ignore content of timestamp element -->
+	<!-- <xsl:template match="timestamp"><TIMESTAMP-IGNORED/></xsl:template> -->
+
+	<!-- Ignore content of Timestamp element in xml messages with namespaces (e.g. in case of SOAP messages) -->
+	<!-- <xsl:template match="*[local-name()='Timestamp']"><xsl:element name="TIMESTAMP-IGNORED" namespace="{namespace-uri()}"/></xsl:template> -->
+
+	<!-- Ignore content of elements which content is ID:something -->
+	<!-- <xsl:template match="*[matches(text(), 'ID:.*')]">ID:IGNORED</xsl:template> -->
+
 </xsl:stylesheet>

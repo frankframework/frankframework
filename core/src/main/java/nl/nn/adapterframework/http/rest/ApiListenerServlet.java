@@ -1,5 +1,5 @@
 /*
-Copyright 2017 - 2018 Integration Partners B.V.
+Copyright 2017-2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,22 +16,26 @@ limitations under the License.
 package nl.nn.adapterframework.http.rest;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
+import nl.nn.adapterframework.http.HttpServletBase;
 import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
+import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -39,11 +43,13 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
-public class ApiListenerServlet extends HttpServlet {
+@IbisInitializer
+public class ApiListenerServlet extends HttpServletBase {
 
 	private static final long serialVersionUID = 1L;
 
 	private final String CHARSET="UTF-8";
+	private List<String> IGNORE_HEADERS = Arrays.asList("connection", "transfer-encoding", "content-type", "authorization");
 
 	protected Logger log = LogUtil.getLogger(this);
 	private ApiServiceDispatcher dispatcher = null;
@@ -83,7 +89,7 @@ public class ApiListenerServlet extends HttpServlet {
 				log.warn("Aborting request with status [400], empty uri");
 				return;
 			}
-			
+
 			if(uri.startsWith("/"))
 				uri = uri.substring(1);
 			if(uri.endsWith("/"))
@@ -183,8 +189,10 @@ public class ApiListenerServlet extends HttpServlet {
 				cache.put(authorizationToken, userPrincipal, authTTL);
 				messageContext.put("authorizationToken", authorizationToken);
 			}
+			//Remove this? it's now available as header value
 			messageContext.put("remoteAddr", request.getRemoteAddr());
-			messageContext.put(IPipeLineSession.API_PRINCIPAL_KEY, userPrincipal);
+			if(userPrincipal != null)
+				messageContext.put(IPipeLineSession.API_PRINCIPAL_KEY, userPrincipal);
 			messageContext.put("uri", uri);
 
 			/**
@@ -270,31 +278,93 @@ public class ApiListenerServlet extends HttpServlet {
 			}
 
 			/**
+			 * Map headers into messageContext
+			 */
+			Enumeration<String> headers = request.getHeaderNames();
+			XmlBuilder headersXml = new XmlBuilder("headers");
+			while (headers.hasMoreElements()) {
+				String headerName = headers.nextElement().toLowerCase();
+				if(IGNORE_HEADERS.contains(headerName))
+					continue;
+
+				String headerValue = request.getHeader(headerName);
+				try {
+					XmlBuilder headerXml = new XmlBuilder("header");
+					headerXml.addAttribute("name", headerName);
+					headerXml.setValue(headerValue);
+					headersXml.addSubElement(headerXml);
+				}
+				catch (Throwable t) {
+					log.info("unable to convert header to xml name["+headerName+"] value["+headerValue+"]");
+				}
+			}
+			messageContext.put("headers", headersXml.toXML());
+
+			/**
 			 * Map multipart parts into messageContext
 			 */
+			String body = "";
 			if (ServletFileUpload.isMultipartContent(request)) {
 				DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
 				ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
 				servletFileUpload.setHeaderEncoding(CHARSET);
 				List<FileItem> items = servletFileUpload.parseRequest(request);
+				XmlBuilder attachments = new XmlBuilder("parts");
+				int i = 0;
+				String multipartBodyName = listener.getMultipartBodyName();
 				for (FileItem item : items) {
+					String fieldName = item.getFieldName();
+					//First part -> pipeline input when multipartBodyName=null
+					if((i == 0 && multipartBodyName == null) || fieldName.equalsIgnoreCase(multipartBodyName)) {
+						//TODO this is possible because it's been read from disk multiple times, ideally you want to stream it directly!
+						body = Misc.streamToString(item.getInputStream(),"\n",false);
+					}
+
+					XmlBuilder attachment = new XmlBuilder("part");
+					attachment.addAttribute("name", fieldName);
 					if (item.isFormField()) {
 						// Process regular form field (input type="text|radio|checkbox|etc", select, etc).
-						String fieldName = item.getFieldName();
 						String fieldValue = item.getString();
 						log.trace("setting multipart formField ["+fieldName+"] to ["+fieldValue+"]");
 						messageContext.put(fieldName, fieldValue);
+						attachment.addAttribute("type", "text");
+						attachment.addAttribute("value", fieldValue);
 					} else {
 						// Process form file field (input type="file").
-						String fieldName = item.getFieldName();
 						String fieldNameName = fieldName + "Name";
 						String fileName = FilenameUtils.getName(item.getName());
 						log.trace("setting multipart formFile ["+fieldNameName+"] to ["+fileName+"]");
 						messageContext.put(fieldNameName, fileName);
 						log.trace("setting parameter ["+fieldName+"] to input stream of file ["+fileName+"]");
 						messageContext.put(fieldName, item.getInputStream());
+
+						attachment.addAttribute("type", "file");
+						attachment.addAttribute("filename", fileName);
+						attachment.addAttribute("size", item.getSize());
+						attachment.addAttribute("sessionKey", fieldName);
+						String contentType = item.getContentType();
+						if(contentType != null) {
+							String mimeType = contentType;
+							int semicolon = contentType.indexOf(";");
+							if(semicolon >= 0) {
+								mimeType = contentType.substring(0, semicolon);
+								String mightContainCharSet = contentType.substring(semicolon+1).trim();
+								if(mightContainCharSet.contains("charset=")) {
+									String charSet = mightContainCharSet.substring(mightContainCharSet.indexOf("charset=")+8);
+									attachment.addAttribute("charSet", charSet);
+								}
+							}
+							else {
+								mimeType = contentType;
+							}
+							attachment.addAttribute("mimeType", mimeType);
+						}
 					}
+					attachments.addSubElement(attachment);
+
+					i++;
 				}
+				messageContext.put("multipartAttachments", attachments.toXML());
 			}
 
 			/**
@@ -310,11 +380,10 @@ public class ApiListenerServlet extends HttpServlet {
 			/**
 			 * Process the request through the pipeline
 			 */
-
-			String body = "";
 			if (!ServletFileUpload.isMultipartContent(request)) {
-				body=Misc.streamToString(request.getInputStream(),"\n",false);
+				body = Misc.streamToString(request.getInputStream(),"\n",false);
 			}
+			//TODO: String correlationId = request.getHeader("message-id");
 			String result = listener.processRequest(null, body, messageContext);
 
 			/**
@@ -378,5 +447,10 @@ public class ApiListenerServlet extends HttpServlet {
 				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
 		}
+	}
+
+	@Override
+	public String getUrlMapping() {
+		return "/api/*";
 	}
 }

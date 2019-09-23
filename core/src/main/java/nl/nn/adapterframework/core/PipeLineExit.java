@@ -51,6 +51,8 @@ import nl.nn.adapterframework.doc.IbisDoc;
  */
 public class PipeLineExit {
 	
+	public static final String EXIT_STATE_SUCCESS = "success";
+	
 	private String path;
 	private String state;
 	private int exitCode = 0;

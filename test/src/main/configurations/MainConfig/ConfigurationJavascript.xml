@@ -1,0 +1,105 @@
+<ibis>
+	<adapter name="Javascript" description="Execute javascript using the JavascriptSender">
+		<receiver
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="Javascript"
+			>
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4test-Javascript"
+			/>
+		</receiver>
+		<pipeline firstPipe="Javascript">
+			<exits>
+				<exit path="EXIT" state="success"/>
+			</exits>
+			<pipe name="Javascript"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+					<sender className="nl.nn.adapterframework.senders.JavascriptSender"
+						jsFileName="JavaScript/JavascriptTest.js"
+						jsFunctionName="f2"
+						engineName="Rhino">
+						<param name="x" type="integer" sessionKey="originalMessage"/>
+						<param name="y" type="integer" value="2"/>
+					</sender>
+				<forward name="success" path="EXIT" />
+				<forward name="exception" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="JavascriptDouble" description="Execute javascript using the JavascriptSender">
+		<receiver
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="JavascriptDouble"
+			>
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4test-JavascriptDouble"
+			/>
+		</receiver>
+		<pipeline firstPipe="Javascript">
+			<exits>
+				<exit path="EXIT" state="success"/>
+			</exits>
+			<pipe name="Javascript"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				storeResultInSessionKey = "resultSessionKey">
+					<sender className="nl.nn.adapterframework.senders.JavascriptSender"
+						jsFileName="JavaScript/JavascriptTest.js"
+						jsFunctionName="f2"
+						engineName="J2V8">
+						<param name="x" type="integer" sessionKey="originalMessage"/>
+						<param name="y" type="integer" value="2"/>
+					</sender>
+				<forward name="success" path="Javascript2" />
+				<forward name="exception" path="EXIT" />
+			</pipe>
+			<pipe name="Javascript2"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+					<sender className="nl.nn.adapterframework.senders.JavascriptSender"
+						jsFileName="JavaScript/JavascriptTest.js"
+						jsFunctionName="f2"
+						engineName="J2V8">
+						<param name="x" type="integer" sessionKey="resultSessionKey"/>
+						<param name="y" type="integer" value="5"/>
+					</sender>
+				<forward name="success" path="EXIT" />
+				<forward name="exception" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="JavascriptCallback" description="Call a sender with javascript code">
+		<receiver
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="JavascriptCallback"
+			>
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4test-JavascriptCallback"
+			/>
+		</receiver>
+		<pipeline firstPipe="JavascriptCallback">
+			<exits>
+				<exit path="EXIT" state="success"/>
+			</exits>
+			<pipe name="JavascriptCallback"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+					<sender className="nl.nn.adapterframework.senders.JavascriptSender"
+						jsFileName="JavaScript/JavascriptTest.js"
+						jsFunctionName="f5"
+						engineName="J2V8">
+						<param name="x" type="integer" sessionKey="originalMessage"/>
+						<param name="y" type="integer" value="2"/>
+						<sender name = "file"
+							className="nl.nn.adapterframework.senders.FileSender"
+							directory= "."
+							actions= "write_append, delete"
+							fileName="WriteFile.txt">
+						</sender>
+					</sender>
+				<forward name="success" path="EXIT" />
+				<forward name="exception" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</ibis>

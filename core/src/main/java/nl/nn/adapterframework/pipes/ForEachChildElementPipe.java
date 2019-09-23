@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013,2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.apache.commons.lang.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.DefaultHandler;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -53,14 +54,17 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Gerrit van Brakel
  * @since 4.6.1
  */
-public class ForEachChildElementPipe extends IteratingPipe {
+public class ForEachChildElementPipe extends IteratingPipe<String> {
 
-	private String elementXPathExpression=null;
+	public final int DEFAULT_XSLT_VERSION=1; // currently only Xalan supports XSLT Streaming
+	
 	private boolean processFile=false;
+	private String elementXPathExpression=null;
 	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+	private int xsltVersion=DEFAULT_XSLT_VERSION; 
+	private boolean removeNamespaces=true;
 
 	private TransformerPool extractElementsTp=null;
-	private int xsltVersion=0; // set to 0 for auto detect.
 
 	{ 
 		setNamespaceAware(true);
@@ -71,7 +75,13 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		super.configure();
 		try {
 			if (StringUtils.isNotEmpty(getElementXPathExpression())) {
-				extractElementsTp=TransformerPool.getInstance(makeEncapsulatingXslt("root",getElementXPathExpression()), getXsltVersion());
+				if (getXsltVersion()==0) {
+					setXsltVersion(DEFAULT_XSLT_VERSION);
+				}
+				if (getXsltVersion()!=DEFAULT_XSLT_VERSION) {
+					ConfigurationWarnings.add(this, log, "XsltProcessor xsltVersion ["+getXsltVersion()+"] currently does not support streaming XSLT, might lead to memory problems for large messages");
+				}
+				extractElementsTp=TransformerPool.getInstance(makeEncapsulatingXslt("root",getElementXPathExpression(), getXsltVersion(), getNamespaceDefs()));
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix(null)+"elementXPathExpression ["+getElementXPathExpression()+"]",e);
@@ -98,36 +108,41 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		super.stop();
 	}
 
-	protected String makeEncapsulatingXslt(String rootElementname,String xpathExpression) {
+	protected String makeEncapsulatingXslt(String rootElementname, String xpathExpression, int xsltVersion, String namespaceDefs) throws TransformerConfigurationException {
+		String namespaceClause = XmlUtils.getNamespaceClause(namespaceDefs);
 		return 
-		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
+		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\""+xsltVersion+".0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
 		"<xsl:output method=\"xml\" omit-xml-declaration=\"yes\"/>" +
 		"<xsl:strip-space elements=\"*\"/>" +
 		"<xsl:template match=\"/\">" +
 		"<xsl:element name=\"" + rootElementname + "\">" +
-		"<xsl:copy-of select=\"" + XmlUtils.encodeChars(xpathExpression) + "\"/>" +
+		"<xsl:copy-of "+namespaceClause+" select=\"" + XmlUtils.encodeChars(xpathExpression) + "\"/>" +
 		"</xsl:element>" +
 		"</xsl:template>" +
 		"</xsl:stylesheet>";
 	}
 
 
-	private class ItemCallbackCallingHandler extends DefaultHandler {
+	private class ItemCallbackCallingHandler extends DefaultHandler implements LexicalHandler {
 		
-		ItemCallback callback;
+		private ItemCallback callback;
+		private String namespaceClause;
 		
-		StringBuffer elementbuffer=new StringBuffer();
-		int elementLevel=0;
-		int itemCounter=0;
-		Exception rootException=null;
-		int startLength;		
-		boolean contentSeen;
-		boolean stopRequested;
-		TimeOutException timeOutException;
+		private StringBuffer elementbuffer=new StringBuffer();
+		private int elementLevel=0;
+		private int itemCounter=0;
+		private Exception rootException=null;
+		private int startLength;		
+		private boolean contentSeen;
+		private boolean stopRequested;
+		private TimeOutException timeOutException;
+		private boolean inCdata;
+
 		
-		public ItemCallbackCallingHandler(ItemCallback callback) {
+		public ItemCallbackCallingHandler(ItemCallback callback, String namespaceClause) {
 			this.callback=callback;
-			elementbuffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+			this.namespaceClause=namespaceClause;
+			//elementbuffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 			if (getBlockSize()>0) {
 				elementbuffer.append(getBlockPrefix());
 			}
@@ -150,19 +165,41 @@ public class ForEachChildElementPipe extends IteratingPipe {
 					contentSeen=true;
 					elementbuffer.append(">");
 				}
-				elementbuffer.append(XmlUtils.encodeChars(ch, start, length));
+				if (inCdata) {
+					elementbuffer.append("<![CDATA[").append(new String(ch, start, length)).append("]]>");
+				} else {
+					elementbuffer.append(XmlUtils.encodeChars(new String(ch, start, length)));
+				}
 			}
 		}
 
 		@Override
-		public void endElement(String uri, String localName, String qname) throws SAXException {
+		public void startElement(String uri, String localName, String qName, Attributes attributes)	throws SAXException {
+			checkInterrupt();
+			if (elementLevel>1 && !contentSeen) {
+				elementbuffer.append(">");
+			}
+			if (++elementLevel>1) {
+				elementbuffer.append("<"+(isRemoveNamespaces()?localName:qName));
+				if (elementLevel==2 && !isRemoveNamespaces()) {
+					elementbuffer.append(namespaceClause);
+				}
+				for (int i=0; i<attributes.getLength(); i++) {
+					elementbuffer.append(" "+attributes.getLocalName(i)+"=\""+XmlUtils.encodeChars(attributes.getValue(i))+"\"");
+				}
+				contentSeen=false;
+			}
+		}
+
+		@Override
+		public void endElement(String uri, String localName, String qName) throws SAXException {
 			checkInterrupt();
 			if (elementLevel>1) {
 				if (!contentSeen) {
 					contentSeen=true;
 					elementbuffer.append("/>");
 				} else {
-					elementbuffer.append("</"+localName+">");
+					elementbuffer.append("</"+(isRemoveNamespaces()?localName:qName)+">");
 				}
 			}
 			elementLevel--;
@@ -198,22 +235,49 @@ public class ForEachChildElementPipe extends IteratingPipe {
 			}
 		}
 
-
 		@Override
-		public void startElement(String uri, String localName, String qName, Attributes attributes)	throws SAXException {
-			checkInterrupt();
-			if (elementLevel>1 && !contentSeen) {
-				elementbuffer.append(">");
-			}
-			if (++elementLevel>1) {
-				elementbuffer.append("<"+localName);
-				for (int i=0; i<attributes.getLength(); i++) {
-					elementbuffer.append(" "+attributes.getLocalName(i)+"=\""+attributes.getValue(i)+"\"");
-				}
-				contentSeen=false;
-			}
+		public void comment(char[] ch, int start, int length) throws SAXException {
+//			try {
+//				if (includeComments) {
+//					writer.append("<!--").append(new String(ch, start, length)).append("-->");
+//				}
+//			} catch (IOException e) {
+//				throw new SAXException(e);
+//			}
 		}
 
+		@Override
+		public void startDTD(String arg0, String arg1, String arg2) throws SAXException {
+//			System.out.println("startDTD");
+		}
+
+		@Override
+		public void endDTD() throws SAXException {
+//			System.out.println("endDTD");
+		}
+
+		@Override
+		public void startCDATA() throws SAXException {
+//			System.out.println("startCDATA");
+			inCdata=true;
+		}
+
+		@Override
+		public void endCDATA() throws SAXException {
+//			System.out.println("endCDATA");
+			inCdata=false;
+		}
+
+		@Override
+		public void startEntity(String arg0) throws SAXException {
+//			System.out.println("startEntity ["+arg0+"]");
+		}
+		@Override
+		public void endEntity(String arg0) throws SAXException {
+//			System.out.println("endEntity ["+arg0+"]");
+		}
+
+		
 		public boolean isStopRequested() {
 			return stopRequested;
 		}
@@ -225,7 +289,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 
 
 	@Override
-	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException, TimeOutException {
+	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
 		Reader reader=null;
 		try {
 			if (input instanceof Reader) {
@@ -241,7 +305,12 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		} catch (UnsupportedEncodingException e) {
 			throw new SenderException("could not use charset ["+getCharset()+"]",e);
 		}
-		ItemCallbackCallingHandler handler = new ItemCallbackCallingHandler(callback);
+		ItemCallbackCallingHandler handler;
+		try {
+			handler = new ItemCallbackCallingHandler(callback,XmlUtils.getNamespaceClause(getNamespaceDefs()));
+		} catch (TransformerConfigurationException e) {
+			throw new SenderException(e);
+		}
 		
 		if (getExtractElementsTp()!=null) {
 			log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
@@ -284,95 +353,6 @@ public class ForEachChildElementPipe extends IteratingPipe {
 	}
 
 	
-//	public class ElementIterator implements IDataIterator {
-//		private static final boolean elementsOnly=true;
-//
-//		Node node;
-//		boolean nextElementReady;
-//
-//		public ElementIterator(String inputString) throws SenderException {
-//			super();
-//
-//			Reader reader=null;
-//			if (isProcessFile()) {
-//				try {
-//					// TODO: arrange for non-namespace aware processing of files
-//					reader=new InputStreamReader(new FileInputStream(inputString));
-//				} catch (FileNotFoundException e) {
-//					throw new SenderException("could not find file ["+inputString+"]",e);
-//				}
-//			}
-//
-//			if (getExtractElementsTp()!=null) {
-//				log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
-//				try {
-//					DOMResult fullMessage = new DOMResult();
-//					Source src;
-//					if (reader!=null) {
-//						src=new StreamSource(reader);
-//					} else {
-//						src = XmlUtils.stringToSourceForSingleUse(inputString, isNamespaceAware());
-//					}
-//					getExtractElementsTp().transform(src, fullMessage, null);
-//					node=fullMessage.getNode().getFirstChild();
-//				} catch (Exception e) {
-//					throw new SenderException("Could not extract list of elements using xpath ["+getElementXPathExpression()+"]");
-//				}
-//			} else {
-//				Document fullMessage;
-//				try {
-//					if (reader!=null) {
-//						fullMessage=XmlUtils.buildDomDocument(reader, isNamespaceAware());
-//					} else {
-//						fullMessage=XmlUtils.buildDomDocument(inputString, isNamespaceAware());
-//					}
-//					node=fullMessage.getDocumentElement().getFirstChild();
-//				} catch (DomBuilderException e) {
-//					throw new SenderException("Could not build elements",e);
-//				}
-//			}
-//			nextElementReady=false;
-//		}
-//
-//		private void findNextElement() {
-//			if (elementsOnly) {
-//				while (node!=null && !(node instanceof Element)) { 
-//					node=node.getNextSibling();
-//				}
-//			}
-//		}
-//
-//		public boolean hasNext() {
-//			findNextElement();
-//			return node!=null;
-//		}
-//
-//		public Object next() throws SenderException {
-//			findNextElement();
-//			if (node==null) {
-//				return null;
-//			}
-//			DOMSource src = new DOMSource(node);
-//			String result;
-//			try {
-//				result = getIdentityTp().transform(src, null);
-//			} catch (Exception e) {
-//				throw new SenderException("could not extract element",e);
-//			}
-//			if (node!=null) {
-//				node=node.getNextSibling();
-//			} 
-//			return result; 
-//		}
-//
-//		public void close() {
-//		}
-//	}
-
-	
-//	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
-//		return new ElementIterator((String)input);
-//	}
 
 	protected TransformerPool getExtractElementsTp() {
 		return extractElementsTp;
@@ -380,15 +360,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 
 
 
-	@IbisDoc({"expression used to determine the set of elements iterated over, i.e. the set of child elements", ""})
-	public void setElementXPathExpression(String string) {
-		elementXPathExpression = string;
-	}
-	public String getElementXPathExpression() {
-		return elementXPathExpression;
-	}
-
-	@IbisDoc({"when set <code>true</code>, the input is assumed to be the name of a file to be processed. otherwise, the input itself is transformed", "application default"})
+	@IbisDoc({"1", "When set <code>true</code>, the input is assumed to be the name of a file to be processed. otherwise, the input itself is transformed", "false"})
 	public void setProcessFile(boolean b) {
 		processFile = b;
 	}
@@ -396,7 +368,15 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		return processFile;
 	}
 
-	@IbisDoc({"characterset used for reading file or inputstream, only used when {@link #setProcessFile(boolean) processFile} is <code>true</code>, or the input is of type InputStream", "utf-8"})
+	@IbisDoc({"2", "expression used to determine the set of elements to be iterated over, i.e. the set of child elements.", ""})
+	public void setElementXPathExpression(String string) {
+		elementXPathExpression = string;
+	}
+	public String getElementXPathExpression() {
+		return elementXPathExpression;
+	}
+
+	@IbisDoc({"3", "characterset used for reading file or inputstream, only used when {@link #setProcessFile(boolean) processFile} is <code>true</code>, or the input is of type InputStream", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}
@@ -404,7 +384,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		return charset;
 	}
 
-	@IbisDoc({"when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
+	@IbisDoc({"4", "when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, supporting XPath 2.0, otherwise xslt processor 1.0 (org.apache.xalan), supporting XPath 1.0. N.B. Be aware that setting this other than 1 might cause the input file being read as a whole in to memory, as Xslt Streaming is currently only supported by the XsltProcessor that is used for xsltVersion=1", "1"})
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
 	}
@@ -412,15 +392,25 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		return xsltVersion;
 	}
 
-	@IbisDoc({"Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
+	@IbisDoc({"5", "Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
 	/**
 	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
 	 */
 	@Deprecated
 	public void setXslt2(boolean b) {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'xslt2' has been deprecated. Its value is now auto detected. If necessary, replace with a setting of xsltVersion";
+		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'xslt2' has been deprecated. If necessary, replace with a setting of xsltVersion";
 		configWarnings.add(log, msg);
 		xsltVersion=b?2:1;
 	}
+	
+	@IbisDoc({"6", "when set <code>true</code> namespaces (and prefixes) in the input message are removed before transformation", "true"})
+	public void setRemoveNamespaces(boolean b) {
+		removeNamespaces = b;
+	}
+	public boolean isRemoveNamespaces() {
+		return removeNamespaces;
+	}
+
+
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -86,14 +86,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLFilter;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLFilterImpl;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -109,14 +106,16 @@ import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
  */
 public class XmlUtils {
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
-	
+
 	public static final boolean XPATH_NAMESPACE_REMOVAL_VIA_XSLT=true;
+	public static final int DEFAULT_XSLT_VERSION = 2;
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
 	static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
 	static final String JAXP_SCHEMA_SOURCE =   "http://java.sun.com/xml/jaxp/properties/schemaSource";
 
 	public static final String NAMESPACE_AWARE_BY_DEFAULT_KEY = "xml.namespaceAware.default";
+	public static final String XSLT_STREAMING_BY_DEFAULT_KEY = "xslt.streaming.default";
 	public static final String AUTO_RELOAD_KEY = "xslt.auto.reload";
 	public static final String XSLT_BUFFERSIZE_KEY = "xslt.bufsize";
 	public static final int XSLT_BUFFERSIZE_DEFAULT=4096;
@@ -128,6 +127,7 @@ public class XmlUtils {
 	public static final String OPEN_FROM_XML = "xml";
 
 	private static Boolean namespaceAwareByDefault = null;
+	private static Boolean xsltStreamingByDefault = null;
 	private static Boolean includeFieldDefinitionByDefault = null;
 	private static Boolean autoReload = null;
 	private static Integer buffersize=null;
@@ -444,26 +444,30 @@ public class XmlUtils {
 
 	public static synchronized boolean isNamespaceAwareByDefault() {
 		if (namespaceAwareByDefault==null) {
-			boolean aware=AppConstants.getInstance().getBoolean(NAMESPACE_AWARE_BY_DEFAULT_KEY, false);
-			namespaceAwareByDefault = new Boolean(aware);
+			namespaceAwareByDefault=AppConstants.getInstance().getBoolean(NAMESPACE_AWARE_BY_DEFAULT_KEY, false);
 		}
-		return namespaceAwareByDefault.booleanValue();
+		return namespaceAwareByDefault;
+	}
+
+	public static synchronized boolean isXsltStreamingByDefault() {
+		if (xsltStreamingByDefault==null) {
+			xsltStreamingByDefault=AppConstants.getInstance().getBoolean(XSLT_STREAMING_BY_DEFAULT_KEY, false);
+		}
+		return xsltStreamingByDefault;
 	}
 
 	public static synchronized boolean isIncludeFieldDefinitionByDefault() {
 		if (includeFieldDefinitionByDefault==null) {
-			boolean definition=AppConstants.getInstance().getBoolean(INCLUDE_FIELD_DEFINITION_BY_DEFAULT_KEY, true);
-			includeFieldDefinitionByDefault = new Boolean(definition);
+			includeFieldDefinitionByDefault=AppConstants.getInstance().getBoolean(INCLUDE_FIELD_DEFINITION_BY_DEFAULT_KEY, true);
 		}
-		return includeFieldDefinitionByDefault.booleanValue();
+		return includeFieldDefinitionByDefault;
 	}
 
 	public static synchronized boolean isAutoReload() {
 		if (autoReload==null) {
-			boolean reload=AppConstants.getInstance().getBoolean(AUTO_RELOAD_KEY, false);
-			autoReload = new Boolean(reload);
+			autoReload=AppConstants.getInstance().getBoolean(AUTO_RELOAD_KEY, false);
 		}
-		return autoReload.booleanValue();
+		return autoReload;
 	}
 
 	public static synchronized int getBufSize() {
@@ -786,14 +790,8 @@ public class XmlUtils {
 		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, paramNames, stripSpace, false, null, 0);
 	}
 
-	/*
-	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of, and enables use of parameters.
-	 * TODO when xslt version equals 1, namespaces are ignored by default, setting 'ignoreNamespaces' to true will generate a non-xslt1-parsable xslt
-	 */
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace, boolean ignoreNamespaces, String separator, int xsltVersion) throws TransformerConfigurationException {
-		if (StringUtils.isEmpty(XPathExpression))
-			throw new TransformerConfigurationException("XPathExpression must be filled");
-
+	
+	public static String getNamespaceClause(String namespaceDefs) throws TransformerConfigurationException {
 		String namespaceClause = "";
 		if (namespaceDefs != null) {
 			StringTokenizer st1 = new StringTokenizer(namespaceDefs,", \t\r\n\f");
@@ -807,6 +805,19 @@ public class XmlUtils {
 				}
 			}
 		}
+		return namespaceClause;
+	}
+	
+	
+	/*
+	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of, and enables use of parameters.
+	 * TODO when xslt version equals 1, namespaces are ignored by default, setting 'ignoreNamespaces' to true will generate a non-xslt1-parsable xslt
+	 */
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace, boolean ignoreNamespaces, String separator, int xsltVersion) throws TransformerConfigurationException {
+		if (StringUtils.isEmpty(XPathExpression))
+			throw new TransformerConfigurationException("XPathExpression must be filled");
+
+		String namespaceClause = getNamespaceClause(namespaceDefs);
 
 		//xslt version 1 ignores namespaces by default, setting this to true will generate a different non-xslt1-parsable xslt
 		if(xsltVersion == 1 && ignoreNamespaces)
@@ -829,11 +840,11 @@ public class XmlUtils {
 		if (separator != null) {
 			separatorString = " separator=\"" + separator + "\"";
 		}
-		String version = (xsltVersion == 1) ? "1.0" : "2.0"; //Defaults to xslt version 2
+		int version = (xsltVersion == 0) ? DEFAULT_XSLT_VERSION : xsltVersion;
 
 		String xsl =
 			// "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-			"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\""+version+"\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
+			"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\""+version+".0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
 			"<xsl:output method=\""+outputMethod+"\" omit-xml-declaration=\""+ (includeXmlDeclaration ? "no": "yes") +"\"/>" +
 			(stripSpace?"<xsl:strip-space elements=\"*\"/>":"") +
 			paramsString +
@@ -1030,18 +1041,23 @@ public class XmlUtils {
 	}
 
 	public static synchronized TransformerFactory getTransformerFactory(int xsltVersion) {
+		TransformerFactory factory;
 		switch (xsltVersion) {
 		case 2:
-			TransformerFactory factory = new net.sf.saxon.TransformerFactoryImpl();
+			factory = new net.sf.saxon.TransformerFactoryImpl();
 			// Use ErrorListener to prevent warning "Stylesheet module ....xsl
 			// is included or imported more than once. This is permitted, but
-			// may lead to errors or unexpected behavior"
-			// written to System.err
+			// may lead to errors or unexpected behavior" written to System.err
 			// (https://stackoverflow.com/questions/10096086/how-to-handle-duplicate-imports-in-xslt)
 			factory.setErrorListener(new TransformerErrorListener());
 			return factory;
 		default:
-			return new org.apache.xalan.processor.TransformerFactoryImpl();
+			factory=new org.apache.xalan.processor.TransformerFactoryImpl();
+			factory.setErrorListener(new TransformerErrorListener());
+			if (isXsltStreamingByDefault()) {
+				factory.setAttribute(org.apache.xalan.processor.TransformerFactoryImpl.FEATURE_INCREMENTAL, Boolean.TRUE);
+			}
+			return factory;
 		}
 	}
 

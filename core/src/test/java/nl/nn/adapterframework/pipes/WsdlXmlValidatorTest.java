@@ -28,7 +28,6 @@ import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
 import nl.nn.adapterframework.validation.XmlValidatorException;
 
@@ -46,12 +45,6 @@ public class WsdlXmlValidatorTest extends Mockito {
     private static final String BASIC                 = ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl";
 
     private IPipeLineSession session = mock(IPipeLineSession.class);
-
-	@After
-	public void tearDown() {
-		//After running all tests, set the stub property back to false!
-		AppConstants.getInstance().putPropertyPlaceholderConfigurerProperty("stub4testtool.configuration", "false");
-	}
 
     @Test
     public void wsdlValidate() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
@@ -239,8 +232,6 @@ public class WsdlXmlValidatorTest extends Mockito {
 
 	@Test
 	public void warnSchemaLocationAlreadyDefaultValue() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
-		AppConstants.getInstance().putPropertyPlaceholderConfigurerProperty("stub4testtool.configuration", "true");
-
 		// Mock a configuration with an adapter in it
 		IbisManager ibisManager = spy(new DefaultIbisManager());
 		ibisManager.setIbisContext(spy(new IbisContext()));
@@ -280,8 +271,6 @@ public class WsdlXmlValidatorTest extends Mockito {
 
 	@Test
 	public void warnUseSoapBodyNameSpace() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
-		AppConstants.getInstance().putPropertyPlaceholderConfigurerProperty("stub4testtool.configuration", "true");
-
 		// Mock a configuration with an adapter in it
 		IbisManager ibisManager = spy(new DefaultIbisManager());
 		ibisManager.setIbisContext(spy(new IbisContext()));

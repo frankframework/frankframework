@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.StringReader;
-import java.io.StringWriter;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -24,13 +23,14 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXSource;
-import javax.xml.transform.stream.StreamResult;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.JsonXmlReader;
 import nl.nn.adapterframework.util.XmlJsonWriter;
@@ -55,9 +55,17 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class JsonXsltPipe extends XsltPipe {
 
-//	{
-//		setXslt2(true);
-//	}
+	@Override
+	public boolean canProvideOutputStream() {
+		// TODO Json<->Xml conversion needs pre and/or post processing, that is not yet implemented for streaming
+		return false;
+	}
+
+	@Override
+	public boolean canStreamToTarget() {
+		// TODO Json<->Xml conversion needs pre and/or post processing, that is not yet implemented for streaming
+		return false;
+	}
 
 	private String jsonToXml(String json) throws TransformerException {
 		XMLReader reader=new JsonXmlReader();
@@ -105,8 +113,8 @@ public class JsonXsltPipe extends XsltPipe {
 	}
 	
 	@Override
-	protected String transform(Object input, IPipeLineSession session) throws SenderException, TransformerException {
-		String xmlResult=super.transform(input, session);
+	protected String transform(Object input, IPipeLineSession session, MessageOutputStream target) throws SenderException, TransformerException, TimeOutException {
+		String xmlResult=super.transform(input, session, target);
 		try {
 			return xml2Json(xmlResult);
 		} catch (DomBuilderException e) {
@@ -120,5 +128,6 @@ public class JsonXsltPipe extends XsltPipe {
 //		tp.transform(source, result, parametervalues);
 //		return xjw.toString();
 //	}
+
 	
 }

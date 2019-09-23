@@ -22,6 +22,7 @@ import java.util.List;
 import nl.nn.adapterframework.extensions.cmis.CmisUtils;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEventDispatcher;
+import nl.nn.adapterframework.extensions.cmis.server.HttpSessionCmisService;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -31,6 +32,7 @@ import org.apache.chemistry.opencmis.commons.definitions.TypeDefinition;
 import org.apache.chemistry.opencmis.commons.definitions.TypeDefinitionContainer;
 import org.apache.chemistry.opencmis.commons.definitions.TypeDefinitionList;
 import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
+import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.spi.RepositoryService;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -39,15 +41,18 @@ public class IbisRepositoryService implements RepositoryService {
 
 	private RepositoryService repositoryService;
 	private CmisEventDispatcher eventDispatcher = CmisEventDispatcher.getInstance();
-	private CmisVersion cmisVersion = CmisVersion.CMIS_1_1;
 
 	public IbisRepositoryService(RepositoryService repositoryService) {
 		this.repositoryService = repositoryService;
 	}
 
-	public IbisRepositoryService(RepositoryService repositoryService, CmisVersion cmisVersion) {
-		this.repositoryService = repositoryService;
-		this.cmisVersion = cmisVersion;
+	private CmisVersion getCmisVersion() {
+		CallContext context = HttpSessionCmisService.callContext.get();
+		if(context != null) {
+			return HttpSessionCmisService.callContext.get().getCmisVersion();
+		}
+
+		return CmisVersion.CMIS_1_1;
 	}
 
 	private XmlBuilder buildXml(String name, Object value) {
@@ -120,7 +125,7 @@ public class IbisRepositoryService implements RepositoryService {
 			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_TYPE_DESCENDANTS, cmisXml.toXML());
 			Element typesXml = XmlUtils.getFirstChildTag(cmisResult, "typeDescendants");
 
-			return CmisUtils.xml2TypeDescendants(typesXml, cmisVersion);
+			return CmisUtils.xml2TypeDescendants(typesXml, getCmisVersion());
 		}
 	}
 
@@ -139,7 +144,7 @@ public class IbisRepositoryService implements RepositoryService {
 
 			Element typesXml = XmlUtils.getFirstChildTag(cmisResult, "typeDefinitions");
 
-			return CmisUtils.xml2TypeDefinition(XmlUtils.getFirstChildTag(typesXml, "typeDefinition"), cmisVersion);
+			return CmisUtils.xml2TypeDefinition(XmlUtils.getFirstChildTag(typesXml, "typeDefinition"), getCmisVersion());
 		}
 	}
 

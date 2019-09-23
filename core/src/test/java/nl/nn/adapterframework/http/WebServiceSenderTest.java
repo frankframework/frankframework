@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,11 +23,9 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.Misc;
-
 import org.junit.Test;
 
-public class WebServiceSenderTest extends BaseHttpSender<WebServiceSender> {
+public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 
 	@Override
 	public WebServiceSender createSender() {
@@ -42,7 +40,7 @@ public class WebServiceSenderTest extends BaseHttpSender<WebServiceSender> {
 		String input = "<hallo/>";
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase();
+			IPipeLineSession pls = new PipeLineSessionBase(session);
 			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			sender.configure();
@@ -52,10 +50,6 @@ public class WebServiceSenderTest extends BaseHttpSender<WebServiceSender> {
 			assertEquals(getFile("simpleMockedWss.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.close();
-			}
 		}
 	}
 
@@ -65,7 +59,7 @@ public class WebServiceSenderTest extends BaseHttpSender<WebServiceSender> {
 		String input = "<hallo/>";
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase();
+			IPipeLineSession pls = new PipeLineSessionBase(session);
 			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			sender.setSoapAction(sender.getUrl());
@@ -77,10 +71,6 @@ public class WebServiceSenderTest extends BaseHttpSender<WebServiceSender> {
 			assertEquals(getFile("simpleMockedWssSoapAction.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.close();
-			}
 		}
 	}
 
@@ -90,7 +80,7 @@ public class WebServiceSenderTest extends BaseHttpSender<WebServiceSender> {
 		String input = "<xml>input</xml>";
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase();
+			IPipeLineSession pls = new PipeLineSessionBase(session);
 			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			sender.setMethodType("POST");
@@ -112,10 +102,6 @@ public class WebServiceSenderTest extends BaseHttpSender<WebServiceSender> {
 			assertEquals(getFile("simpleMockedWssMultipart.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.close();
-			}
 		}
 	}
 
@@ -125,7 +111,7 @@ public class WebServiceSenderTest extends BaseHttpSender<WebServiceSender> {
 		String input = "<xml>input</xml>";
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase();
+			IPipeLineSession pls = new PipeLineSessionBase(session);
 			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			sender.setMethodType("POST");
@@ -149,10 +135,6 @@ public class WebServiceSenderTest extends BaseHttpSender<WebServiceSender> {
 			assertEquals(getFile("simpleMockedWssMultipart2.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.close();
-			}
 		}
 	}
 
@@ -162,7 +144,7 @@ public class WebServiceSenderTest extends BaseHttpSender<WebServiceSender> {
 		String input = "<xml>input</xml>";
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase();
+			IPipeLineSession pls = new PipeLineSessionBase(session);
 			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
 			sender.setMethodType("POST");
@@ -185,10 +167,6 @@ public class WebServiceSenderTest extends BaseHttpSender<WebServiceSender> {
 			assertEquals(getFile("simpleMockedWssMtom.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.close();
-			}
 		}
 	}
 }

@@ -50,7 +50,6 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 			$scope.config_database = false;
 			Hooks.register("appConstants:once", function(data) {
 				$scope.monitoring = (data["monitoring.enabled"] === 'true');
-				$scope.config_database = (data["active.config.database"] === 'true');
 			});
 		},
 		templateUrl: "views/common/content.html",

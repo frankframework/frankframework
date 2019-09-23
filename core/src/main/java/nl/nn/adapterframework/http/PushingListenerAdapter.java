@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017 Nationale-Nederlanden
+   Copyright 2013, 2017, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
@@ -38,10 +37,10 @@ import org.apache.log4j.Logger;
  * @author  Gerrit van Brakel 
  * @since   4.12
  */
-public class PushingListenerAdapter implements IPushingListener, ServiceClient {
+public class PushingListenerAdapter<M> implements IPushingListener<M>, ServiceClient {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private IMessageHandler handler;
+	private IMessageHandler<M> handler;
 	private String name;
 	private boolean applicationFaultsAsExceptions=true;
 //	private IbisExceptionListener exceptionListener;
@@ -64,13 +63,13 @@ public class PushingListenerAdapter implements IPushingListener, ServiceClient {
 	}
 
 
-	public String getIdFromRawMessage(Object rawMessage, Map threadContext) {
+	public String getIdFromRawMessage(M rawMessage, Map<String, Object> threadContext) {
 		return null;
 	}
-	public String getStringFromRawMessage(Object rawMessage, Map threadContext) {
+	public String getStringFromRawMessage(M rawMessage, Map<String, Object> threadContext) {
 		return (String) rawMessage;
 	}
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, M rawMessage, Map<String, Object> threadContext) throws ListenerException {
 	}
 
 	@Override
@@ -102,7 +101,7 @@ public class PushingListenerAdapter implements IPushingListener, ServiceClient {
 		this.name=name;
 	}
 
-	public void setHandler(IMessageHandler handler) {
+	public void setHandler(IMessageHandler<M> handler) {
 		this.handler=handler;
 	}
 	public void setExceptionListener(IbisExceptionListener exceptionListener) {

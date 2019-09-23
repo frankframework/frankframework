@@ -4,10 +4,14 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
@@ -23,7 +27,22 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 
 	public int NUM_SENDERS=10;
 	private List<XsltSender> xsltSenders;
+	boolean expectExtraParamWarning=false;
 	
+	@Before
+	public void clear() {
+		expectExtraParamWarning=false;
+	}
+
+	@Parameters(name = "{index}: {0}: provide [{2}] stream out [{3}]")
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+                 { "classic", 			false, false, false }, 
+                 { "new, no stream", 	 true, false, false }, 
+                 { "output to stream", 	 true, false, true  }  // no stream providing, cannot be done in parallel
+           });
+    }
+
 	
 	protected SenderSeries createSenderContainer() {
 		SenderSeries senders=new ParallelSenders() {
@@ -107,8 +126,8 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 
 	@Override
 	protected void checkTestAppender(int expectedSize, String expectedString) {
-		super.checkTestAppender(expectedSize+1,expectedString);
-		assertThat(testAppender.toString(),containsString("are not available for use by nested Senders"));
+		super.checkTestAppender(expectedSize+(expectExtraParamWarning?1:0),expectedString);
+		if (expectExtraParamWarning) assertThat(testAppender.toString(),containsString("are not available for use by nested Senders"));
 	}
 
 	
@@ -117,6 +136,17 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 		return NUM_SENDERS;
 	}
 
+	@Override
+	public void duplicateImportErrorAlertsXslt1() throws Exception {
+		expectExtraParamWarning=true;
+		super.duplicateImportErrorAlertsXslt1();
+	}
+	@Override
+	public void duplicateImportErrorAlertsXslt2() throws Exception {
+		expectExtraParamWarning=true;
+		super.duplicateImportErrorAlertsXslt2();
+	}
+	
 	@Test
     @Ignore("error handling is different in parallel")
 	public void documentNotFoundXslt1() throws Exception {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016, 2018 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016, 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -65,6 +65,10 @@ import nl.nn.adapterframework.senders.MailSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.stream.IOutputStreamingSupport;
+import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.StreamingPipe;
+import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -133,7 +137,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Gerrit van Brakel
  */
 
-public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
+public class MessageSendingPipe extends StreamingPipe implements HasSender, HasStatistics, EventThrowing {
 	protected Logger msgLog = LogUtil.getLogger("MSG");
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
@@ -417,9 +421,38 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		registerEvent(PIPE_EXCEPTION_MONITOR_EVENT);
 	}
 
+	@Override
+	public boolean canProvideOutputStream() {
+		return super.canProvideOutputStream() 
+				&& sender instanceof IOutputStreamingSupport 
+				&& ((IOutputStreamingSupport)sender).canProvideOutputStream()
+				&& getInputWrapper()==null;
+	}
+
+	@Override
+	public boolean canStreamToTarget() {
+		return super.canStreamToTarget() 
+				&& sender instanceof IOutputStreamingSupport 
+				&& ((IOutputStreamingSupport)sender).canStreamToTarget()
+				&& getOutputWrapper()==null
+				&& !isStreamResultToServlet();
+	}
+
+	@Override
+	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+
+		// TODO insert output validator
+		// TODO insert output wrapper
+		IOutputStreamingSupport streamingSender = (IOutputStreamingSupport)sender;
+		MessageOutputStream result = streamingSender.provideOutputStream(correlationID, session, target);
+		// TODO insert input wrapper
+		// TODO insert input validator
+		return result;
+	}
+
 	
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)	throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session, MessageOutputStream outputStream) throws PipeRunException {
 		String originalMessage = input.toString();
 		String result = null;
 		String correlationID = session.getMessageId();

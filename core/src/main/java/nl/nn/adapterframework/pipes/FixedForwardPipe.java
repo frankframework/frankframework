@@ -117,7 +117,7 @@ public class FixedForwardPipe extends AbstractPipe {
 		return null;
 	}
 
-    protected PipeForward getForward() {
+    public PipeForward getForward() {
 		return forward;
 	}
     

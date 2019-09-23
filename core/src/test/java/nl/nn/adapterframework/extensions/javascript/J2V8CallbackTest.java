@@ -1,0 +1,87 @@
+package nl.nn.adapterframework.extensions.javascript;
+
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.senders.EchoSender;
+import nl.nn.adapterframework.senders.JavascriptSender;
+import nl.nn.adapterframework.senders.SenderTestBase;
+
+public class J2V8CallbackTest extends SenderTestBase<JavascriptSender> {
+
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
+
+	@Override
+	public JavascriptSender createSender() {
+		return new JavascriptSender();
+	}
+
+	@Test
+	public void simpleSenderNoCallbacks() throws ConfigurationException, SenderException, TimeOutException {
+		String dummyInput = "dummyinput";
+		sender.setJsFileName("Javascript/JavascriptTest.js"); 
+		sender.setJsFunctionName("f2");
+		sender.setEngineName("J2V8");
+
+		ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
+
+		Parameter param = new Parameter();
+		param.setName("x");
+		param.setType("integer");
+		param.setValue("3");
+		sender.addParameter(param);
+
+		Parameter param2 = new Parameter();
+		param2.setName("y");
+		param2.setType("integer");
+		param2.setValue("4");
+		sender.addParameter(param2);
+
+		sender.configure();
+		sender.open();
+
+		assertEquals("7", sender.sendMessage(null, dummyInput, prc));
+	}
+
+	//An EchoSender will be called in the javascript code.
+	@Test
+	public void javaScriptSenderWithNestedEchoSender() throws ConfigurationException, SenderException, TimeOutException {
+		String dummyInput = "dummyinput";
+		sender.setJsFileName("Javascript/JavascriptTest.js"); 
+		sender.setJsFunctionName("f4");
+		sender.setEngineName("J2V8");
+
+		ParameterResolutionContext prc = new ParameterResolutionContext(dummyInput, session);
+
+		Parameter param = new Parameter();
+		param.setName("x");
+		param.setType("integer");
+		param.setValue("3");
+		sender.addParameter(param);
+
+		Parameter param2 = new Parameter();
+		param2.setName("y");
+		param2.setType("integer");
+		param2.setValue("4");
+		sender.addParameter(param2);
+
+		EchoSender log = new EchoSender();
+		log.setName("myFunction");
+		sender.setSender(log);
+
+		sender.configure();
+		sender.open();
+
+		// See function 4, validates if input to the nested sender is the same as the output of the nested sender
+		assertEquals("true", sender.sendMessage(null,dummyInput,prc));
+	}
+}

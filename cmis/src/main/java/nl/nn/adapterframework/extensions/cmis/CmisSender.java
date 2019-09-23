@@ -64,6 +64,7 @@ import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.client.api.Tree;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
+import org.apache.chemistry.opencmis.commons.data.ObjectInFolderList;
 import org.apache.chemistry.opencmis.commons.data.ObjectList;
 import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
@@ -738,8 +739,10 @@ public class CmisSender extends SenderWithParametersBase {
 					processProperties(propertiesElement, props);
 				}
 
+				ObjectId folderId = null;
 				String folderIdstr = XmlUtils.getChildTagAsString(requestElement, "folderId");
-				ObjectId folderId = session.createObjectId(folderIdstr);
+				if(StringUtils.isNotEmpty(folderIdstr))
+					folderId = session.createObjectId(folderIdstr);
 
 				String versioningStatestr = XmlUtils.getChildTagAsString(requestElement, "versioningState");
 				VersioningState state = VersioningState.valueOf(versioningStatestr);
@@ -848,6 +851,25 @@ public class CmisSender extends SenderWithParametersBase {
 				ObjectList result = session.getBinding().getDiscoveryService().query(repositoryQueryId, statement, 
 						searchAllVersions, includeAllowableActions, includeRelationships, renditionFilter, maxItems, skipCount, null);
 				resultXml.addSubElement(CmisUtils.objectList2xml(result));
+				break;
+
+			case GET_CHILDREN:
+				String rid = XmlUtils.getChildTagAsString(requestElement, "repositoryId");
+				String fid = XmlUtils.getChildTagAsString(requestElement, "folderId");
+				String getChildren_repositoryFilter = XmlUtils.getChildTagAsString(requestElement, "filter");
+				String getChildren_repositoryOrderBy = XmlUtils.getChildTagAsString(requestElement, "orderBy");
+				Boolean getChildren_includeAllowableActions = XmlUtils.getChildTagAsBoolean(requestElement, "includeAllowableActions");
+				IncludeRelationships getChildren_includeRelationships = IncludeRelationships.valueOf(XmlUtils.getChildTagAsString(requestElement, "includeRelationships"));
+				String getChildren_renditionFilter = XmlUtils.getChildTagAsString(requestElement, "renditionFilter");
+				Boolean getChildren_includePathSegment = XmlUtils.getChildTagAsBoolean(requestElement, "includePathSegment");
+				BigInteger getChildren_maxItems = BigInteger.valueOf(XmlUtils.getChildTagAsLong(requestElement, "maxItems"));
+				BigInteger getChildren_skipCount = BigInteger.valueOf(XmlUtils.getChildTagAsLong(requestElement, "skipCount"));
+
+				ObjectInFolderList oifs = session.getBinding().getNavigationService().getChildren(rid, fid, getChildren_repositoryFilter, 
+						getChildren_repositoryOrderBy, getChildren_includeAllowableActions, getChildren_includeRelationships, 
+						getChildren_renditionFilter, getChildren_includePathSegment, getChildren_maxItems, getChildren_skipCount, null);
+
+				resultXml.addSubElement(CmisUtils.objectInFolderList2xml(oifs));
 				break;
 
 			case GET_PROPERTIES:
@@ -1019,6 +1041,11 @@ public class CmisSender extends SenderWithParametersBase {
 			return action.toLowerCase();
 
 		return null;
+	}
+
+	@IbisDoc({"the maximum number of concurrent connections", "10"})
+	public void setMaxConnections(int i) throws ConfigurationException {
+		sessionBuilder.setMaxConnections(i);
 	}
 
 	@IbisDoc({"url to connect to", ""})

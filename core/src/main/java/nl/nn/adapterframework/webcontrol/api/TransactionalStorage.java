@@ -714,7 +714,7 @@ public class TransactionalStorage extends Base {
 						throw new ApiException("could not to parse date from ["+startDateMask+"]");
 				}
 				catch(CalendarParserException ex) {
-					throw new ApiException("could not parse date from ["+startDateMask+"] msg["+ex.toString()+"]");
+					throw new ApiException("could not parse date from ["+startDateMask+"] msg["+ex.getMessage()+"]");
 				}
 			}
 		}
@@ -727,7 +727,7 @@ public class TransactionalStorage extends Base {
 						throw new ApiException("could not to parse date from ["+endDateMask+"]");
 				}
 				catch(CalendarParserException ex) {
-					throw new ApiException("could not parse date from ["+endDateMask+"] msg["+ex.toString()+"]");
+					throw new ApiException("could not parse date from ["+endDateMask+"] msg["+ex.getMessage()+"]");
 				}
 			}
 		}

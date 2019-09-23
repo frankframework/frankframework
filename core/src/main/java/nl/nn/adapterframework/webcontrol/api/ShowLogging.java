@@ -84,7 +84,7 @@ public final class ShowLogging extends Base {
 			returnMap.put("sizeFormat", sizeFormat);
 			returnMap.put("wildcard", wildcard);
 		} catch (IOException e) {
-			throw new ApiException("Error while trying to retreive directory information");
+			throw new ApiException("Error while trying to retreive directory information", e);
 		}
 
 		return Response.status(Response.Status.OK).entity(returnMap).build();

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,6 +32,8 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.lang.StringUtils;
@@ -42,6 +44,7 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.parameters.ParameterList;
 
 /**
@@ -56,7 +59,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 public class TransformerPool {
 	private static final boolean USE_CACHING = AppConstants.getInstance().getBoolean("transformerPool.useCaching", false);
 
-	protected Logger log = LogUtil.getLogger(this);
+	protected static Logger log = LogUtil.getLogger(TransformerPool.class);
 
 	private TransformerFactory tFactory;
 
@@ -357,6 +360,13 @@ public class TransformerPool {
 			}
 			try {
 				result = TransformerPool.getInstance(resource, xsltVersion);
+				if (xsltVersion!=0) {
+					int styleSheetVersion=XmlUtils.detectXsltVersion(resource);
+					if (xsltVersion!=styleSheetVersion) {
+						ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+						configWarnings.add(log, logPrefix+"configured xsltVersion ["+xsltVersion+"] does not match xslt version ["+styleSheetVersion+"] declared in stylesheet ["+resource.toExternalForm()+"]");
+					}
+				}
 			} catch (IOException e) {
 				throw new ConfigurationException(logPrefix+"cannot retrieve ["+ styleSheetName + "], resource ["+resource.toString()+"]", e);
 			} catch (TransformerConfigurationException te) {
@@ -426,23 +436,23 @@ public class TransformerPool {
 		return t;
 	}
 
-	public String transform(Document d, Map parameters)	throws TransformerException, IOException {
+	public String transform(Document d, Map<String,Object> parameters)	throws TransformerException, IOException {
 		return transform(new DOMSource(d),parameters);
 	}
 
-	public String transform(String s, Map parameters) throws TransformerException, IOException, DomBuilderException {
+	public String transform(String s, Map<String,Object> parameters) throws TransformerException, IOException, DomBuilderException {
 		return transform(XmlUtils.stringToSourceForSingleUse(s),parameters);
 	}
 
-	public String transform(String s, Map parameters, boolean namespaceAware) throws TransformerException, IOException, DomBuilderException {
+	public String transform(String s, Map<String,Object> parameters, boolean namespaceAware) throws TransformerException, IOException, DomBuilderException {
 		return transform(XmlUtils.stringToSourceForSingleUse(s, namespaceAware),parameters);
 	}
 
-	public String transform(Source s, Map parameters) throws TransformerException, IOException {
+	public String transform(Source s, Map<String,Object> parameters) throws TransformerException, IOException {
 		return transform(s, null, parameters);
 	}
 
-	public String transform(Source s, Result r, Map parameters) throws TransformerException, IOException {
+	public String transform(Source s, Result r, Map<String,Object> parameters) throws TransformerException, IOException {
 		Transformer transformer = getTransformer();
 		try {
 			XmlUtils.setTransformerParameters(transformer, parameters);
@@ -474,6 +484,17 @@ public class TransformerPool {
 			}
 		}
 		return null;
+	}
+	
+	public TransformerHandler getTransformerHandler() throws TransformerConfigurationException {
+	      TransformerHandler handler = ((SAXTransformerFactory)tFactory).newTransformerHandler(templates);
+	      Transformer transformer = handler.getTransformer();
+	      transformer.setErrorListener(new TransformerErrorListener());
+			// Set URIResolver on transformer for Xalan. Setting it on the factory
+			// doesn't work for Xalan. See
+			// https://www.oxygenxml.com/archives/xsl-list/200306/msg00021.html
+	      transformer.setURIResolver(classLoaderURIResolver);
+	      return handler;
 	}
 	
 	public static List<String> getTransformerPoolsKeys() {
