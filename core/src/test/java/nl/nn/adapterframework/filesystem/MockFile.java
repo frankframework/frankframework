@@ -73,6 +73,10 @@ public class MockFile {
 	public Date getLastModified() {
 		return lastModified;
 	}
+	public void setLastModified(Date lastModified) {
+		this.lastModified = lastModified;
+	}
+
 	
 	public byte[] getContents() {
 		return contents;
