@@ -245,7 +245,18 @@ public class Parameter implements INamedObject, IWithParameters {
 		} 
 		return pool.transform(xmlSource,prc.getValueMap(paramList));
 	}
-
+	
+	public boolean requiresInputValueForResolution() {
+		if (transformerPoolSessionKey != null) {
+			return true;
+		}
+		if ((StringUtils.isNotEmpty(getSessionKey()) || StringUtils.isNotEmpty(getValue()) || StringUtils.isNotEmpty(getPattern()))
+				&& (StringUtils.isEmpty(getDefaultValueMethods()) || !getDefaultValueMethods().contains("input"))) {
+			return false;
+		}
+		return true;
+	}
+ 
 	/**
 	 * determines the raw value 
 	 */
@@ -256,15 +267,15 @@ public class Parameter implements INamedObject, IWithParameters {
 			throw new ParameterException("Parameter ["+getName()+"] not configured");
 		}
 		
-		String retrievedSessionKey;
+		String requestedSessionKey;
 		if (transformerPoolSessionKey != null) {
 			try {
-				retrievedSessionKey = transformerPoolSessionKey.transform(prc.getInput(), null);
+				requestedSessionKey = transformerPoolSessionKey.transform(prc.getInput(), null);
 			} catch (Exception e) {
 				throw new ParameterException("SessionKey for parameter ["+getName()+"] exception on transformation to get name", e);
 			}
 		} else {
-			retrievedSessionKey = getSessionKey();
+			requestedSessionKey = getSessionKey();
 		}
 		
 		TransformerPool pool = getTransformerPool();
@@ -274,11 +285,10 @@ public class Parameter implements INamedObject, IWithParameters {
 				Source source=null;
 				if (StringUtils.isNotEmpty(getValue())) {
 					source = XmlUtils.stringToSourceForSingleUse(getValue(), prc.isNamespaceAware());
-				} else if (StringUtils.isNotEmpty(retrievedSessionKey)) {
+				} else if (StringUtils.isNotEmpty(requestedSessionKey)) {
 					String sourceString;
-					Object sourceObject = prc.getSession().get(retrievedSessionKey);
-					if (TYPE_LIST.equals(getType())
-							&& sourceObject instanceof List) {
+					Object sourceObject = prc.getSession().get(requestedSessionKey);
+					if (TYPE_LIST.equals(getType())	&& sourceObject instanceof List) {
 						List<String> items = (List<String>) sourceObject;
 						XmlBuilder itemsXml = new XmlBuilder("items");
 						for (Iterator<String> it = items.iterator(); it.hasNext();) {
@@ -288,8 +298,7 @@ public class Parameter implements INamedObject, IWithParameters {
 							itemsXml.addSubElement(itemXml);
 						}
 						sourceString = itemsXml.toXML();
-					} else if (TYPE_MAP.equals(getType())
-								&& sourceObject instanceof Map) {
+					} else if (TYPE_MAP.equals(getType()) && sourceObject instanceof Map) {
 						Map<String, String> items = (Map<String, String>) sourceObject;
 						XmlBuilder itemsXml = new XmlBuilder("items");
 						for (Iterator<String> it = items.keySet().iterator(); it.hasNext();) {
@@ -304,10 +313,10 @@ public class Parameter implements INamedObject, IWithParameters {
 						sourceString = (String) sourceObject;
 					}
 					if (StringUtils.isNotEmpty(sourceString)) {
-						log.debug("Parameter ["+getName()+"] using sessionvariable ["+retrievedSessionKey+"] as source for transformation");
+						log.debug("Parameter ["+getName()+"] using sessionvariable ["+requestedSessionKey+"] as source for transformation");
 						source = XmlUtils.stringToSourceForSingleUse(sourceString, prc.isNamespaceAware());
 					} else {
-						log.debug("Parameter ["+getName()+"] sessionvariable ["+retrievedSessionKey+"] empty, no transformation will be performed");
+						log.debug("Parameter ["+getName()+"] sessionvariable ["+requestedSessionKey+"] empty, no transformation will be performed");
 					}
 				} else if (StringUtils.isNotEmpty(getPattern())) {
 					String sourceString = format(alreadyResolvedParameters, prc);
@@ -334,8 +343,8 @@ public class Parameter implements INamedObject, IWithParameters {
 				throw new ParameterException("Parameter ["+getName()+"] exception on transformation to get parametervalue", e);
 			}
 		} else {
-			if (StringUtils.isNotEmpty(retrievedSessionKey)) {
-				result=prc.getSession().get(retrievedSessionKey);
+			if (StringUtils.isNotEmpty(requestedSessionKey)) {
+				result=prc.getSession().get(requestedSessionKey);
 			} else if (StringUtils.isNotEmpty(getPattern())) {
 				result=format(alreadyResolvedParameters, prc);
 			} else if (StringUtils.isNotEmpty(getValue())) {
@@ -356,7 +365,7 @@ public class Parameter implements INamedObject, IWithParameters {
 				if ("defaultValue".equals(token)) {
 					result = getDefaultValue();
 				} else if ("sessionKey".equals(token)) {
-					result = prc.getSession().get(retrievedSessionKey);
+					result = prc.getSession().get(requestedSessionKey);
 				} else if ("pattern".equals(token)) {
 					result = format(alreadyResolvedParameters, prc);
 				} else if ("value".equals(token)) {
@@ -596,7 +605,7 @@ public class Parameter implements INamedObject, IWithParameters {
 		return transformerPool;
 	}
 
-	@IbisDoc({"key of a pipelinesession-variable. is specified, the value of the pipelinesession variable is used as input for the xpathexpression or stylesheet, instead of the current input message. if no xpathexpression or stylesheet are specified, the value itself is returned. if the value '*' is specified, all existing sessionkeys are added as parameter of which the name starts with the name of this parameter. if also the name of the parameter has the value '*' then all existing sessionkeys are added as parameter (except tsreceived)", ""})
+	@IbisDoc({"key of a pipelinesession-variable. If specified, the value of the pipelinesession variable is used as input for the xpathexpression or stylesheet, instead of the current input message. If no xpathexpression or stylesheet are specified, the value itself is returned. If the value '*' is specified, all existing sessionkeys are added as parameter of which the name starts with the name of this parameter. If also the name of the parameter has the value '*' then all existing sessionkeys are added as parameter (except tsreceived)", ""})
 	public void setSessionKey(String string) {
 		sessionKey = string;
 	}
@@ -670,7 +679,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	/**
 	 * @param string with pattern to be used, follows MessageFormat syntax with named parameters
 	 */
-	@IbisDoc({"value of parameter is determined using substitution and formating. the expression can contain references to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.messageformat. {now}, {uid}, {uuid}, {hostname} and {fixeddate} are named constants that can be used in the expression. if fname is a parameter or session variable that resolves to eric, then the pattern 'hi {fname}, hoe gaat het?' resolves to 'hi eric, hoe gaat het?'. a guid can be generated using {hostname}_{uid}, see also <a href=\"http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html\">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html</a> for more information about (g)uid's or <a href=\"http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html\">http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html</a> for more information about uuid's.", ""})
+	@IbisDoc({"Value of parameter is determined using substitution and formating. The expression can contain references to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat. {now}, {uid}, {uuid}, {hostname} and {fixeddate} are named constants that can be used in the expression. If fname is a parameter or session variable that resolves to eric, then the pattern 'hi {fname}, hoe gaat het?' resolves to 'hi eric, hoe gaat het?'. a guid can be generated using {hostname}_{uid}, see also <a href=\"http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html\">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html</a> for more information about (g)uid's or <a href=\"http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html\">http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html</a> for more information about uuid's.", ""})
 	public void setPattern(String string) {
 		pattern = string;
 	}

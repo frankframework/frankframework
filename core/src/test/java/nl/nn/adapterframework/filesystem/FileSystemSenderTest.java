@@ -223,6 +223,29 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		String message=filename;
 		String result = fileSystemSender.sendMessage(correlationId, message, prc);
 		
+		// test
+		assertEquals("result should be base64 of file content", contents.trim(), result.trim());
+	}
+
+	@Test
+	public void fileSystemSenderDownloadActionBase64Test() throws Exception {
+		String filename = "sender" + FILE1;
+		String contents = "Tekst om te lezen";
+		
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+
+		fileSystemSender.setAction("download");
+		fileSystemSender.configure();
+		fileSystemSender.setBase64("encode");
+		fileSystemSender.open();
+		
+		ParameterResolutionContext prc = new ParameterResolutionContext();
+		prc.setSession(new PipeLineSessionBase());
+		String correlationId="fakecorrelationid";
+		String message=filename;
+		String result = fileSystemSender.sendMessage(correlationId, message, prc);
+		
 		String contentsBase64 = Base64.encodeBase64String(contents.getBytes());
 		// test
 		assertEquals("result should be base64 of file content", contentsBase64.trim(), result.trim());

@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.stream;
 
+import java.io.IOException;
+
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
@@ -25,25 +27,19 @@ public abstract class StreamingSenderBase extends SenderWithParametersBase imple
 
 //	private final boolean TEST_STREAMING_VIA_SEND_MESSAGE=false;
 	
-	public abstract String sendMessage(String correlationID, String message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException;
+	public abstract Object sendMessage(String correlationID, Object message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException;
 	@Override
 	public abstract MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException;
 
 	
 	@Override
 	public final String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-//		if (TEST_STREAMING_VIA_SEND_MESSAGE && canProvideOutputStream()) {
-//			try {
-//				MessageOutputStream target = provideOutputStream(correlationID, prc.getSession(), null);
-//				try (Writer writer = target.asWriter()) {
-//					writer.write(message);
-//				}
-//				return target.getResponseAsString();
-//			} catch (StreamingException|IOException e) {
-//				throw new SenderException(e);
-//			}
-//		}
-		return sendMessage(correlationID, message, prc, null);
+		Object result = sendMessage(correlationID, message, prc, null);
+		try {
+			return result==null?null:new MessageInputAdapter(result).asString();
+		} catch (IOException e) {
+			throw new SenderException(e);
+		}
 	}
 
 	@Override

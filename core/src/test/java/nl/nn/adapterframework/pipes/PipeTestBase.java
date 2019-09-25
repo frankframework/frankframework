@@ -1,5 +1,10 @@
 package nl.nn.adapterframework.pipes;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
@@ -13,6 +18,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.senders.SenderTestBase;
 
 public abstract class PipeTestBase<P extends IPipe> {
 	protected Log log = LogFactory.getLog(this.getClass());
@@ -52,4 +58,23 @@ public abstract class PipeTestBase<P extends IPipe> {
 	protected PipeRunResult doPipe(P pipe, Object input, IPipeLineSession session) throws Exception {
 		return pipe.doPipe(input, session);
 	}
+	
+	protected String readLines(Reader reader) throws IOException {
+		BufferedReader buf = new BufferedReader(reader);
+		StringBuilder string = new StringBuilder();
+		String line = buf.readLine();
+		while (line != null) {
+			string.append(line);
+			line = buf.readLine();
+			if (line != null) {
+				string.append("\n");
+			}
+		}
+		return string.toString();
+	}
+
+	protected String getFile(String file) throws IOException {
+		return readLines(new InputStreamReader(SenderTestBase.class.getResourceAsStream(file)));
+	}
+
 }

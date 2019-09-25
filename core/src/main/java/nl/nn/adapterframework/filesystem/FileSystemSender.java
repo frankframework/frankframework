@@ -112,7 +112,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
+	public Object sendMessage(String correlationID, Object message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
 		ParameterValueList pvl = null;
 		
 		try {
@@ -125,20 +125,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		}
 
 		try {
-			Object result = actor.doAction(message, pvl, prc.getSession());
-			if (result==null) {
-				return null;
-			} else {
-				if (result instanceof InputStream) {
-					try (InputStream is = new Base64InputStream((InputStream)result, true)) {
-						return Misc.streamToString(is);
-					} catch (IOException e) {
-						throw new SenderException(e);
-					}
-				} else {
-					return result.toString();
-				}
-			}
+			return actor.doAction(message, pvl, prc.getSession());
 		} catch (FileSystemException e) {
 			throw new SenderException(e);
 		}
@@ -179,5 +166,9 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		actor.setInputFolder(inputFolder);
 	}
 
+	@IbisDoc({"3", "Can be set to 'encode' or 'decode' for actions read, write and append. When set the stream is base64 encoded or decoded, respectively", ""})
+	public void setBase64(String base64) {
+		actor.setBase64(base64);
+	}
 
 }

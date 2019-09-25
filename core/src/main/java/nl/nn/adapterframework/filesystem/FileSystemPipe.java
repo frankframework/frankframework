@@ -177,4 +177,10 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 		return actor.getInputFolder();
 	}
 
+	@IbisDoc({"3", "Can be set to 'encode' or 'decode' for actions read, write and append. When set the stream is base64 encoded or decoded, respectively", ""})
+	public void setBase64(String base64) {
+		actor.setBase64(base64);
+	}
+
+
 }

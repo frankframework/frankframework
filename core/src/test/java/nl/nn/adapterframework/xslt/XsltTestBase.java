@@ -166,4 +166,19 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		testBasic("<root><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a><b/><c/></root>",false,false);
 	}
 
+//	public void testDuplicateImport(boolean xslt2) throws Exception {
+//		String input=getFile("/Xslt/duplicateImport/in.xml");
+//		String expected=getFile("/Xslt/duplicateImport/out.xml");
+//		testXslt("/Xslt/duplicateImport/root.xsl", input, expected.replaceAll("\t",""), null, true, null, null, xslt2);
+//	}
+//	
+//	@Test
+//	public void testDuplicateImportXslt1() throws Exception {
+//		testDuplicateImport(false);
+//	}
+//	
+//	@Test
+//	public void testDuplicateImportXslt2() throws Exception {
+//		testDuplicateImport(true);
+//	}
 }

@@ -38,6 +38,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 public class MessageOutputStreamTest {
 
@@ -112,6 +113,7 @@ public class MessageOutputStreamTest {
 	public void testContentHandlerAsWriter() throws Exception {
 		
 		XmlWriter target = new XmlWriter();
+		target.setSkipXmlDeclaration(true);
 
 		MessageOutputStream stream = new MessageOutputStream(target,null);
 		

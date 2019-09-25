@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.codec.binary.Base64InputStream;
+import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -99,12 +101,15 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public final String PARAMETER_INPUTFOLDER="inputFolder";			// folder for actions list, mkdir and rmdir. This is a sub folder of baseFolder
 	public final String PARAMETER_DESTINATION="destination";	// destination for action rename and move
 	
+	public final String BASE64_ENCODE="encode";
+	public final String BASE64_DECODE="decode";
 	
 	public final String[] ACTIONS_BASIC= {ACTION_LIST, ACTION_READ1, ACTION_READ2, ACTION_MOVE, ACTION_DELETE, ACTION_MKDIR, ACTION_RMDIR};
 	public final String[] ACTIONS_WRITABLE_FS= {ACTION_WRITE1, ACTION_WRITE2, ACTION_APPEND, ACTION_RENAME};
 
 	private String action;
 	private String inputFolder; // folder for action=list
+	private String base64;
 
 	private Set<String> actions = new LinkedHashSet<String>(Arrays.asList(ACTIONS_BASIC));
 	
@@ -131,6 +136,12 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		if (getAction().equals(ACTION_WRITE2)) {
 			ConfigurationWarnings.add(owner, log, "action ["+ACTION_WRITE2+"] has been replaced with ["+ACTION_WRITE1+"]");
 			setAction(ACTION_WRITE1);
+		}
+		
+		if (StringUtils.isNotEmpty(getBase64())) {
+			if (!(getBase64().equals(BASE64_ENCODE) || getBase64().equals(BASE64_DECODE))) {
+				throw new ConfigurationException("attribute 'base64' can have value '"+BASE64_ENCODE+"' or '"+BASE64_DECODE+"' or can be left empty");
+			}
 		}
 		
 		if (parameterList!=null && parameterList.findParameter(PARAMETER_CONTENTS2) != null && parameterList.findParameter(PARAMETER_CONTENTS1) == null) {
@@ -220,7 +231,11 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				fileSystem.deleteFile(file);
 			} else if (action.equalsIgnoreCase(ACTION_READ1)) {
 				F file=getFile(input, pvl);
-				return fileSystem.readFile(file);
+				InputStream in = fileSystem.readFile(file);
+				if (StringUtils.isNotEmpty(getBase64())) {
+					in = new Base64InputStream(in, getBase64().equals(BASE64_ENCODE));
+				}
+				return in;
 			} else if (action.equalsIgnoreCase(ACTION_LIST)) {
 				String folder = determineInputFoldername(input, pvl);
 				Iterator<F> fileList = fileSystem.listFiles(folder);
@@ -281,6 +296,9 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			 contents=pvl.getParameterValue(PARAMETER_CONTENTS1).getValue();
 		} else {
 			contents=input;
+		}
+		if (StringUtils.isNotEmpty(getBase64())) {
+			out = new Base64OutputStream(out, getBase64().equals(BASE64_ENCODE));
 		}
 		if (contents instanceof InputStream) {
 			Misc.streamToStream((InputStream)contents, out, true);
@@ -377,7 +395,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		actions.addAll(specificActions);
 	}
 
-	@IbisDoc({"1", "possible values: list, read, delete, move, mkdir, rmdir, write, append, rename", "" })
+	@IbisDoc({"1", "Possible values: list, read, delete, move, mkdir, rmdir, write, append, rename", "" })
 	public void setAction(String action) {
 		this.action = action;
 	}
@@ -385,7 +403,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return action;
 	}
 
-	@IbisDoc({"2", "folder that is scanned for files when action=list. When not set, the root is scanned", ""})
+	@IbisDoc({"2", "Folder that is scanned for files when action=list. When not set, the root is scanned", ""})
 	public void setInputFolder(String inputFolder) {
 		this.inputFolder = inputFolder;
 	}
@@ -393,8 +411,12 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return inputFolder;
 	}
 
-
-
-
+	@IbisDoc({"3", "Can be set to 'encode' or 'decode' for actions read, write and append. When set the stream is base64 encoded or decoded, respectively", ""})
+	public void setBase64(String base64) {
+		this.base64 = base64;
+	}
+	public String getBase64() {
+		return base64;
+	}
 
 }

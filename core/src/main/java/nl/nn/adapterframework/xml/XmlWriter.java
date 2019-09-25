@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.stream;
+package nl.nn.adapterframework.xml;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -22,6 +22,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -37,9 +38,11 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	
 	private Writer writer;
 	private boolean includeComments=true;
+	private boolean skipXmlDeclaration=false;
 	
 	private boolean elementJustStarted=false;
 	private boolean inCdata;
+	private StringBuffer namespaceDefinitions=new StringBuffer();
 
 	public XmlWriter() {
 		writer=new StringWriter();
@@ -47,6 +50,11 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	
 	public XmlWriter(Writer writer) {
 		this.writer=writer;
+	}
+	
+	public XmlWriter(Writer writer, boolean skipXmlDeclaration) {
+		this.writer=writer;
+		this.skipXmlDeclaration=skipXmlDeclaration;
 	}
 	
 	public XmlWriter(OutputStream stream) {
@@ -58,12 +66,38 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	}
 
 	@Override
+	public void startDocument() throws SAXException {
+		try {
+			if (!isSkipXmlDeclaration()) {
+				writer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+			}
+		} catch (IOException e) {
+			throw new SAXException(e);
+		}
+	}
+
+
+	@Override
 	public void endDocument() throws SAXException {
 		try {
 			writer.flush();
 		} catch (IOException e) {
 			throw new SAXException(e);
 		}
+	}
+
+	private void appendNamespaceMapping(StringBuffer output, String prefix, String uri) {
+		output.append(" xmlns");
+		if (StringUtils.isNotEmpty(prefix) ) {
+			output.append(":").append(prefix);
+		}
+		output.append("=\"").append(XmlUtils.encodeChars(uri)).append("\"");
+	}
+
+	@Override
+	public void startPrefixMapping(String prefix, String uri) throws SAXException {
+		log.debug("startPrefixMapping ["+prefix+"]=["+uri+"]");
+		appendNamespaceMapping(namespaceDefinitions, prefix, uri);
 	}
 
 	@Override
@@ -76,6 +110,8 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 			for (int i=0; i<attributes.getLength(); i++) {
 				writer.append(" "+attributes.getQName(i)+"=\""+XmlUtils.encodeChars(attributes.getValue(i))+"\"");
 			}
+			writer.append(namespaceDefinitions);
+			namespaceDefinitions.setLength(0);
 			elementJustStarted=true;
 		} catch (IOException e) {
 			throw new SAXException(e);
@@ -104,7 +140,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 				writer.append(">");
 			}
 			if (inCdata) {
-				writer.append("<![CDATA[").append(new String(ch, start, length)).append("]]>");
+				writer.append(new String(ch, start, length));
 			} else {
 				writer.append(XmlUtils.encodeChars(new String(ch, start, length)));
 			}
@@ -136,13 +172,25 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 
 	@Override
 	public void startCDATA() throws SAXException {
-//		System.out.println("startCDATA");
+		try {
+			if (elementJustStarted) {
+				elementJustStarted=false;
+				writer.append(">");
+			}
+			writer.append("<![CDATA[");
+		} catch (IOException e) {
+			throw new SAXException(e);
+		}
 		inCdata=true;
 	}
 
 	@Override
 	public void endCDATA() throws SAXException {
-//		System.out.println("endCDATA");
+		try {
+			writer.append("]]>");
+		} catch (IOException e) {
+			throw new SAXException(e);
+		}
 		inCdata=false;
 	}
 
@@ -160,5 +208,18 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 		return writer.toString();
 	}
 
+	public void setIncludeComments(boolean includeComments) {
+		this.includeComments = includeComments;
+	}
+	public boolean isIncludeComments() {
+		return includeComments;
+	}
+
+	public void setSkipXmlDeclaration(boolean skipXmlDeclaration) {
+		this.skipXmlDeclaration = skipXmlDeclaration;
+	}
+	public boolean isSkipXmlDeclaration() {
+		return skipXmlDeclaration;
+	}
 
 }

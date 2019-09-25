@@ -16,10 +16,10 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.Collections;
 import java.util.Map;
 
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
@@ -31,18 +31,19 @@ import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang.StringUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.MessageInputAdapter;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.MessageOutputStreamCap;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -173,7 +174,7 @@ public class XsltSender extends StreamingSenderBase  {
 		}
 	}
 
-	protected Source adaptInput(String input, ParameterResolutionContext prc) throws PipeRunException, DomBuilderException, TransformerException, IOException {
+	protected Source adaptInput(String input, ParameterResolutionContext prc) throws DomBuilderException, TransformerException, IOException {
 		if (transformerPoolRemoveNamespaces!=null) {
 			log.debug(getLogPrefix()+ " removing namespaces from input message");
 			input = transformerPoolRemoveNamespaces.transform(prc.getInputSource(true), null); 
@@ -183,7 +184,7 @@ public class XsltSender extends StreamingSenderBase  {
 		return prc.getInputSource(isNamespaceAware());
 	}
 
-	protected ContentHandler filterInput(ContentHandler input, ParameterResolutionContext prc) throws PipeRunException, DomBuilderException, TransformerException, IOException {
+	protected ContentHandler filterInput(ContentHandler input, ParameterResolutionContext prc) {
 		if (transformerPoolRemoveNamespaces!=null) {
 			log.debug(getLogPrefix()+ " providing filter to remove namespaces from input message");
 			XMLFilterImpl filter = new NamespaceRemovingFilter();
@@ -208,7 +209,7 @@ public class XsltSender extends StreamingSenderBase  {
 		return new MessageOutputStream(handler,target);
 	}
 
-	public ContentHandler createHandler(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+	protected ContentHandler createHandler(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
 		ContentHandler handler = null;
 
 		try {
@@ -219,6 +220,22 @@ public class XsltSender extends StreamingSenderBase  {
 			}
 
 			Result result;
+//			if (isSkipEmptyTags()) {
+//				EmptyTagsSkippingFilter filter = new EmptyTagsSkippingFilter();
+//				filter.setContentHandler(target.asContentHandler());
+//				SAXResult filterResult = new SAXResult();
+//				filterResult.setHandler(filter);
+//				result = filterResult;
+//			} else {
+//				if ("xml".equals(getOutputType())) {
+//					SAXResult targetFeedingResult = new SAXResult();
+//					targetFeedingResult.setHandler(target.asContentHandler());
+//					result = targetFeedingResult;
+//				} else {
+//					result = new StreamResult(target.asWriter());
+//				}
+//			}
+
 			if ("xml".equals(getOutputType())) {
 				SAXResult targetFeedingResult = new SAXResult();
 				targetFeedingResult.setHandler(target.asContentHandler());
@@ -261,11 +278,16 @@ public class XsltSender extends StreamingSenderBase  {
 		} 
 	}
 
+	protected void parseInputSource(InputSource source, ContentHandler handler) throws IOException, SAXException, ParserConfigurationException {
+		XMLReader reader = XmlUtils.getXMLReader(true, false, handler);
+		reader.parse(source);
+	}
+	
 	/*
 	 * alternative implementation of send message, that should do the same as the origial, but reuses the streaming content handler
 	 */
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException {
+	public Object sendMessage(String correlationID, Object message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException {
 		if (message==null) {
 			throw new SenderException(getLogPrefix()+"got null input");
 		}
@@ -273,11 +295,10 @@ public class XsltSender extends StreamingSenderBase  {
 			if (target==null) {
 				target=new MessageOutputStreamCap();
 			}
-			InputSource source = new InputSource(new StringReader(message));
+			InputSource source = new MessageInputAdapter(message).asInputSource();
 			ContentHandler handler = createHandler(correlationID, prc.getSession(), target);
-			XMLReader reader = XmlUtils.getXMLReader(true, false, handler);
-			reader.parse(source);
-			return target.getResponseAsString();
+			parseInputSource(source, handler);
+			return target.getResponse();
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix()+"Exception on transforming input", e);
 		}

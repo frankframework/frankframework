@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.stream;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -29,12 +30,12 @@ import org.xml.sax.InputSource;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
-public class InputMessageAdapter {
+public class MessageInputAdapter {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private Object request;
 	
-	public InputMessageAdapter(Object request) {
+	public MessageInputAdapter(Object request) {
 		this.request=request;
 	}
 	
@@ -43,10 +44,12 @@ public class InputMessageAdapter {
 			return null;
 		}
 		if (request instanceof Reader) {
+    		log.debug("returning Reader as Reader");
 			return(Reader)request;
 		} 
 		if (request instanceof InputStream) {
 			try {
+	    		log.debug("returning InputStream as Reader");
 				return new InputStreamReader((InputStream)request,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			} catch (UnsupportedEncodingException e) {
 				log.warn(e);;
@@ -55,12 +58,14 @@ public class InputMessageAdapter {
 		}
 		if (request instanceof byte[]) {
 			try {
+	    		log.debug("returning byte[] as Reader");
 				return new InputStreamReader(new ByteArrayInputStream((byte[])request),StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			} catch (UnsupportedEncodingException e) {
 				log.warn(e);
 				return null;
 			}
 		}
+		log.debug("returning String as Reader");
 		return new StringReader(request.toString());
 	}
 
@@ -69,15 +74,19 @@ public class InputMessageAdapter {
 			return null;
 		}
 		if (request instanceof InputStream) {
+			log.debug("returning InputStream as InputStream");
 			return(InputStream)request;
 		} 
 		if (request instanceof Reader) {
+			log.debug("returning Reader as InputStream");
 			return new ReaderInputStream((Reader)request,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		}
 		if (request instanceof byte[]) {
+			log.debug("returning byte[] as InputStream");
 			return new ByteArrayInputStream((byte[])request);
 		}
 		try {
+			log.debug("returning String as InputStream");
 			return new ByteArrayInputStream(request.toString().getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
 		} catch (UnsupportedEncodingException e) {
 			log.warn(e);;
@@ -90,17 +99,33 @@ public class InputMessageAdapter {
 			return null;
 		}
 		if (request instanceof InputSource) {
+			log.debug("returning InputSource as InputSource");
 			return(InputSource)request;
 		} 
 		if (request instanceof InputStream) {
+			log.debug("returning InputStream as InputSource");
 			return(new InputSource((InputStream)request));
 		} 
 		if (request instanceof Reader) {
+			log.debug("returning Reader as InputSource");
 			return(new InputSource((Reader)request));
 		}
 		if (request instanceof byte[]) {
+			log.debug("returning byte[] as InputSource");
 			return(new InputSource(new ByteArrayInputStream((byte[])request)));
 		}
+		log.debug("returning String as InputSource");
 		return(new InputSource(new StringReader(request.toString())));
 	}
+
+	public String asString() throws IOException {
+		if (request==null) {
+			return null;
+		}
+		if (request instanceof String) {
+			return (String)request;
+		}
+		return StreamUtil.readerToString(asReader(),null);
+	}
+	
 }

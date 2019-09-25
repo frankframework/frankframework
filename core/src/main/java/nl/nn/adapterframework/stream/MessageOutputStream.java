@@ -26,6 +26,7 @@ import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 public class MessageOutputStream {
 	protected Logger log = LogUtil.getLogger(this);
@@ -126,7 +127,7 @@ public class MessageOutputStream {
     	}
     	if (requestStream instanceof Writer) {
     		log.debug("returning Writer as ContentHandler");
-    		return new XmlWriter((Writer)requestStream);
+    		return new XmlWriter((Writer)requestStream,true);
     	}
     	return null;
 		

@@ -76,6 +76,6 @@ public abstract class SenderTestBase<S extends ISender> extends Mockito {
 	}
 
 	protected String getFile(String file) throws IOException {
-		return readLines(new InputStreamReader(XmlValidator.class.getResourceAsStream(file)));
+		return readLines(new InputStreamReader(this.getClass().getResourceAsStream(file)));
 	}
 }

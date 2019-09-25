@@ -32,8 +32,8 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.XsltSender;
 import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.stream.StreamingException;
+import nl.nn.adapterframework.stream.StreamingPipe;
 
 
 /**
@@ -104,8 +104,8 @@ public class XsltPipe extends StreamingPipe {
 //		return new ParameterResolutionContext(input, session, isNamespaceAware());
 //	}
 
-	protected String getInputXml(Object input, IPipeLineSession session) throws TransformerException {
-		return (String)input;
+	protected Object getInputXml(Object input, IPipeLineSession session) throws TransformerException {
+		return input;
 	}
 	
 //	/*
@@ -117,9 +117,9 @@ public class XsltPipe extends StreamingPipe {
 	/*
 	 * Allow to override transformation, so JsonXslt can prefix and suffix...
 	 */
-	protected String transform(Object input, IPipeLineSession session, MessageOutputStream target) throws SenderException, TransformerException, TimeOutException {
- 	    String inputXml=getInputXml(input, session);
-		ParameterResolutionContext prc = new ParameterResolutionContext(inputXml, session, isNamespaceAware()); 
+	protected Object transform(Object input, IPipeLineSession session, MessageOutputStream target) throws SenderException, TransformerException, TimeOutException {
+ 	    Object inputXml=getInputXml(input, session);
+		ParameterResolutionContext prc = new ParameterResolutionContext((String)inputXml, session, isNamespaceAware()); 
 		return sender.sendMessage(null, inputXml, prc, target);
 	}
 	/**
@@ -137,7 +137,7 @@ public class XsltPipe extends StreamingPipe {
 	    }
 
 	    try {
-	    	String stringResult = transform(input, session, target);
+	    	Object stringResult = transform(input, session, target);
 		
 			if (StringUtils.isEmpty(getSessionKey())){
 				return new PipeRunResult(getForward(), stringResult);

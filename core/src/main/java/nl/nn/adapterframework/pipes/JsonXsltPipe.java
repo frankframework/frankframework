@@ -99,7 +99,7 @@ public class JsonXsltPipe extends XsltPipe {
 	@Override
 	protected String getInputXml(Object input, IPipeLineSession session) throws TransformerException {
 		//TODO: GvB: use SAXSource for primary transformation, instead of first converting to XML String. However, there appears to be a problem with that currently.
-		return jsonToXml(super.getInputXml(input, session));
+		return jsonToXml((String)super.getInputXml(input, session));
 //		return super.getInput(xml, session);
 
 //		Node node = jsonToDom(input);
@@ -113,10 +113,10 @@ public class JsonXsltPipe extends XsltPipe {
 	}
 	
 	@Override
-	protected String transform(Object input, IPipeLineSession session, MessageOutputStream target) throws SenderException, TransformerException, TimeOutException {
-		String xmlResult=super.transform(input, session, target);
+	protected Object transform(Object input, IPipeLineSession session, MessageOutputStream target) throws SenderException, TransformerException, TimeOutException {
+		Object xmlResult=super.transform(input, session, target);
 		try {
-			return xml2Json(xmlResult);
+			return xml2Json(xmlResult.toString());
 		} catch (DomBuilderException e) {
 			throw new TransformerException(e);
 		}
