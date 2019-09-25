@@ -98,7 +98,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public final String PARAMETER_CONTENTS1="contents";
 	public final String PARAMETER_CONTENTS2="file";
 	public final String PARAMETER_FILENAME="filename";
-	public final String PARAMETER_INPUTFOLDER="inputFolder";			// folder for actions list, mkdir and rmdir. This is a sub folder of baseFolder
+	public final String PARAMETER_INPUTFOLDER="inputFolder";	// folder for actions list, mkdir and rmdir. This is a sub folder of baseFolder
 	public final String PARAMETER_DESTINATION="destination";	// destination for action rename and move
 	
 	public final String BASE64_ENCODE="encode";
@@ -109,7 +109,12 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 	private String action;
 	private String inputFolder; // folder for action=list
+
 	private String base64;
+	private int rotateDays=0;
+	private int rotateSize=0;
+	private int numberOfBackups=0;
+	
 
 	private Set<String> actions = new LinkedHashSet<String>(Arrays.asList(ACTIONS_BASIC));
 	
@@ -251,12 +256,24 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				return dirXml.toXML();
 			} else if (action.equalsIgnoreCase(ACTION_WRITE1)) {
 				F file=getFile(input, pvl);
+				if (getNumberOfBackups()>0 && fileSystem.exists(file)) {
+					rolloverByNumber(file);
+					file=getFile(input, pvl); // reobtain the file, as the object itself may have changed because of the rollover
+				}
 				try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).createFile(file)) {
 					writeContentsToFile(out, input, pvl);
 				}
 				return getFileAsXmlBuilder(file, "file").toXML();
 			} else if (action.equalsIgnoreCase(ACTION_APPEND)) {
 				F file=getFile(input, pvl);
+				if (getRotateDays()>0 && fileSystem.exists(file)) {
+					rolloverByDay(file);
+					file=getFile(input, pvl); // reobtain the file, as the object itself may have changed because of the rollover
+				}
+				if (getRotateSize()>0 && fileSystem.exists(file)) {
+					rolloverBySize(file);
+					file=getFile(input, pvl); // reobtain the file, as the object itself may have changed because of the rollover
+				}
 				try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).appendFile(file)) {
 					writeContentsToFile(out, input, pvl);
 				}
@@ -288,6 +305,68 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		}
 
 		return input;
+	}
+	
+	private void rolloverByNumber(F file) throws FileSystemException {
+		IWritableFileSystem<F> wfs = (IWritableFileSystem<F>)fileSystem;
+		
+		if (!fileSystem.exists(file)) {
+			return;
+		}
+		
+		String srcFilename = fileSystem.getName(file);
+		int number = getNumberOfBackups();
+		
+		log.debug("Rotating files with a name starting with ["+srcFilename+"] and keeping ["+number+"] backups");
+		F lastFile=fileSystem.toFile(srcFilename+"."+number);
+		if (fileSystem.exists(lastFile)) {
+			log.debug("deleting file  ["+srcFilename+"."+number+"]");
+			fileSystem.deleteFile(lastFile);
+		}
+		
+		for(int i=number-1;i>0;i--) {
+			F source=fileSystem.toFile(srcFilename+"."+i);
+			if (fileSystem.exists(source)) {
+				log.debug("moving file ["+srcFilename+"."+i+"] to file ["+srcFilename+"."+(i+1)+"]");
+				wfs.renameFile(source, srcFilename+"."+(i+1), true);
+			} else {
+				log.debug("file ["+srcFilename+"."+i+"] does not exist, no need to move");
+			}
+		}
+		log.debug("moving file ["+srcFilename+"] to file ["+srcFilename+".1]");
+		wfs.renameFile(file, srcFilename+".1", true);
+	}
+	
+	private void rolloverBySize(F file) throws FileSystemException {
+		if (fileSystem.getFileSize(file)>getRotateSize()) {
+			rolloverByNumber(file);
+		}
+	}
+
+	private void rolloverByDay(F file) throws FileSystemException {
+		final long millisPerDay = 24 * 60 * 60 * 1000;
+		
+		Date lastModified = fileSystem.getModificationTime(file);
+		Date sysTime = new Date();
+		if (DateUtils.isSameDay(lastModified, sysTime) || lastModified.after(sysTime)) {
+			return;
+		}
+		String srcFilename = fileSystem.getName(file);
+		
+		log.debug("Deleting files in folder ["+getInputFolder()+"] that have a name starting with ["+srcFilename+"] and are older than ["+getRotateDays()+"] days");
+		long threshold = sysTime.getTime()- getRotateDays()*millisPerDay;
+		Iterator<F> it = fileSystem.listFiles(getInputFolder());
+		while(it.hasNext()) {
+			F f=it.next();
+			String filename=fileSystem.getName(f);
+			if (filename!=null && filename.startsWith(srcFilename) && fileSystem.getModificationTime(f).getTime()<threshold) {
+				log.debug("deleting file ["+filename+"]");
+				fileSystem.deleteFile(f);
+			}
+		}
+
+		String tgtFilename = srcFilename+"."+DateUtils.format(fileSystem.getModificationTime(file), DateUtils.shortIsoFormat);
+		((IWritableFileSystem<F>)fileSystem).renameFile(file, tgtFilename, true);
 	}
 
 	private void writeContentsToFile(OutputStream out, Object input, ParameterValueList pvl) throws IOException, FileSystemException {
@@ -417,6 +496,30 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 	public String getBase64() {
 		return base64;
+	}
+
+	@IbisDoc({"4", "for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept", "0"})
+	public void setRotateDays(int rotateDays) {
+		this.rotateDays = rotateDays;
+	}
+	public int getRotateDays() {
+		return rotateDays;
+	}
+
+	@IbisDoc({"5", "for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept", "0"})
+	public void setRotateSize(int rotateSize) {
+		this.rotateSize = rotateSize;
+	}
+	public int getRotateSize() {
+		return rotateSize;
+	}
+
+	@IbisDoc({"6", "for action=write, and for action=append with rotateSize>0: the number of backup files that is kept", "0"})
+	public void setNumberOfBackups(int numberOfBackups) {
+		this.numberOfBackups = numberOfBackups;
+	}
+	public int getNumberOfBackups() {
+		return numberOfBackups;
 	}
 
 }

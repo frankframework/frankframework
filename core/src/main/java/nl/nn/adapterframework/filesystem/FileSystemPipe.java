@@ -182,5 +182,19 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 		actor.setBase64(base64);
 	}
 
+	@IbisDoc({"4", "for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept", "0"})
+	public void setRotateDays(int rotateDays) {
+		actor.setRotateDays(rotateDays);
+	}
+
+	@IbisDoc({"5", "for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept", "0"})
+	public void setRotateSize(int rotateSize) {
+		actor.setRotateSize(rotateSize);
+	}
+
+	@IbisDoc({"6", "for action=write, and for action=append with rotateSize>0: the number of backup files that is kept", "0"})
+	public void setNumberOfBackups(int numberOfBackups) {
+		actor.setNumberOfBackups(numberOfBackups);
+	}
 
 }
