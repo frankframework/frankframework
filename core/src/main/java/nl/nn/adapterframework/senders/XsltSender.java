@@ -43,7 +43,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.stream.MessageInputAdapter;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.MessageOutputStreamCap;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -214,7 +214,7 @@ public class XsltSender extends StreamingSenderBase  {
 
 		try {
 			Map<String,Object> parametervalues = null;
-			ParameterResolutionContext prc = new ParameterResolutionContext(null,session);
+			ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
 			if (paramList!=null) {
 				parametervalues = prc.getValueMap(paramList);
 			}
@@ -287,7 +287,7 @@ public class XsltSender extends StreamingSenderBase  {
 	 * alternative implementation of send message, that should do the same as the origial, but reuses the streaming content handler
 	 */
 	@Override
-	public Object sendMessage(String correlationID, Object message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException {
+	public Object sendMessage(String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException {
 		if (message==null) {
 			throw new SenderException(getLogPrefix()+"got null input");
 		}
@@ -295,7 +295,7 @@ public class XsltSender extends StreamingSenderBase  {
 			if (target==null) {
 				target=new MessageOutputStreamCap();
 			}
-			InputSource source = new MessageInputAdapter(message).asInputSource();
+			InputSource source = new Message(message).asInputSource();
 			ContentHandler handler = createHandler(correlationID, prc.getSession(), target);
 			parseInputSource(source, handler);
 			return target.getResponse();

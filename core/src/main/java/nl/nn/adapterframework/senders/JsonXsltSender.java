@@ -27,7 +27,7 @@ import org.xml.sax.XMLReader;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.stream.MessageInputAdapter;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -60,7 +60,7 @@ public class JsonXsltSender extends XsltSender {
 
 	private String jsonToXml(Object json) throws TransformerException {
 		XMLReader reader=new JsonXmlReader();
-		Source source=new SAXSource(reader, new MessageInputAdapter(json).asInputSource());
+		Source source=new SAXSource(reader, new Message(json).asInputSource());
 		return XmlUtils.source2String(source, false);
 	}
 
@@ -99,7 +99,7 @@ public class JsonXsltSender extends XsltSender {
 //	}
 
 	@Override
-	public Object sendMessage(String correlationID, Object message, ParameterResolutionContext prc,MessageOutputStream target) throws SenderException {
+	public Object sendMessage(String correlationID, Message message, ParameterResolutionContext prc,MessageOutputStream target) throws SenderException {
 		try {
 			String xml=jsonToXml(message);
 			Object result = super.sendMessage(correlationID, xml, prc, target);

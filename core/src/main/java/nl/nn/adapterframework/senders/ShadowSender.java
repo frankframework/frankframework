@@ -121,7 +121,7 @@ public class ShadowSender extends ParallelSenders {
 			ISender sender = it.next();
 			guard.addResource();
 			ParameterResolutionContext newPrc = new ParameterResolutionContext(
-					prc.getInput(), prc.getSession());
+					prc.getMessage(), prc.getSession());
 			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender,
 					correlationID, message, newPrc, guard,
 					getStatisticsKeeper(sender));

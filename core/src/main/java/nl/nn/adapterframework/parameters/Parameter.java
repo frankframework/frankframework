@@ -46,6 +46,7 @@ import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.PutSystemDateInSession;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -270,14 +271,14 @@ public class Parameter implements INamedObject, IWithParameters {
 		String requestedSessionKey;
 		if (transformerPoolSessionKey != null) {
 			try {
-				requestedSessionKey = transformerPoolSessionKey.transform(prc.getInput(), null);
+				requestedSessionKey = transformerPoolSessionKey.transform(prc.getMessage().asSource(), null);
 			} catch (Exception e) {
 				throw new ParameterException("SessionKey for parameter ["+getName()+"] exception on transformation to get name", e);
 			}
 		} else {
 			requestedSessionKey = getSessionKey();
 		}
-		
+		Message message = prc.getMessage();
 		TransformerPool pool = getTransformerPool();
 		if (pool != null) {
 			try {
@@ -327,7 +328,7 @@ public class Parameter implements INamedObject, IWithParameters {
 						log.debug("Parameter ["+getName()+"] pattern ["+getPattern()+"] empty, no transformation will be performed");
 					}
 				} else {
-					source = prc.getInputSource();
+					source = message.asSource();
 				}
 				if (source!=null) {
 					if (transformerPoolRemoveNamespaces != null) {
@@ -350,7 +351,12 @@ public class Parameter implements INamedObject, IWithParameters {
 			} else if (StringUtils.isNotEmpty(getValue())) {
 				result = getValue();
 			} else {
-				result=prc.getInput();
+				try {
+					message.preserveInputStream();
+					result=message.asString();
+				} catch (IOException e) {
+					throw new ParameterException(e);
+				}
 			}
 		}
 		if (result != null) {
@@ -371,7 +377,12 @@ public class Parameter implements INamedObject, IWithParameters {
 				} else if ("value".equals(token)) {
 					result = getValue();
 				} else if ("input".equals(token)) {
-					result = prc.getInput();
+					try {
+						message.preserveInputStream();
+						result=message.asString();
+					} catch (IOException e) {
+						throw new ParameterException(e);
+					}
 				}
 			}
 			log.debug("Parameter ["+getName()+"] resolved to defaultvalue ["+(isHidden()?hide(result.toString()):result)+"]");

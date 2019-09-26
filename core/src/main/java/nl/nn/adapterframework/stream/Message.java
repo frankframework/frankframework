@@ -23,6 +23,9 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
+
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.log4j.Logger;
 import org.xml.sax.InputSource;
@@ -30,15 +33,32 @@ import org.xml.sax.InputSource;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
-public class MessageInputAdapter {
+public class Message {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private Object request;
 	
-	public MessageInputAdapter(Object request) {
+	public Message(Object request) {
 		this.request=request;
 	}
+
+	public void preserveInputStream() throws IOException {
+		if (request==null) {
+			return;
+		}
+		if (request instanceof Reader) {
+    		log.debug("preserving Reader as String");
+			request = StreamUtil.readerToString((Reader)request, null);
+			return;
+		}
+		if (request instanceof InputStream) {
+    		log.debug("preserving InputStream as byte[]");
+			request = StreamUtil.streamToByteArray((InputStream)request, false);
+			return;
+		}
+	}
 	
+
 	public Reader asReader() {
 		if (request==null) {
 			return null;
@@ -116,6 +136,30 @@ public class MessageInputAdapter {
 		}
 		log.debug("returning String as InputSource");
 		return(new InputSource(new StringReader(request.toString())));
+	}
+
+	public Source asSource() {
+		if (request==null) {
+			return null;
+		}
+		if (request instanceof Source) {
+			log.debug("returning Source as Source");
+			return(Source)request;
+		} 
+		if (request instanceof InputStream) {
+			log.debug("returning InputStream as InputSource");
+			return(new StreamSource((InputStream)request));
+		} 
+		if (request instanceof Reader) {
+			log.debug("returning Reader as InputSource");
+			return(new StreamSource((Reader)request));
+		}
+		if (request instanceof byte[]) {
+			log.debug("returning byte[] as InputSource");
+			return(new StreamSource(new ByteArrayInputStream((byte[])request)));
+		}
+		log.debug("returning String as InputSource");
+		return(new StreamSource(new StringReader(request.toString())));
 	}
 
 	public String asString() throws IOException {

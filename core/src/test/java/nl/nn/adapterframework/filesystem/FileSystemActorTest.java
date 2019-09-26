@@ -746,7 +746,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	
 	protected ParameterValueList createParameterValueList(ParameterList paramList, String input, PipeLineSessionBase session) throws ParameterException {
-		ParameterResolutionContext prc = new ParameterResolutionContext(input,session);
+		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
 		ParameterValueList pvl = prc.getValues(paramList);
 		return pvl;
 	}

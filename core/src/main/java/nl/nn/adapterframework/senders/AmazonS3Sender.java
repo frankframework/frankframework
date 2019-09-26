@@ -33,7 +33,7 @@ import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.stream.MessageInputAdapter;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 
 /**
@@ -89,7 +89,7 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 	}
 
 	@Override
-	public Object sendMessage(String correlationID, Object message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
+	public Object sendMessage(String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
 		if (!specificActions.contains(getAction())) {
 			return super.sendMessage(correlationID, message, prc, target);
 		}
@@ -97,7 +97,7 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 		String result = null;
 		String fileName;
 		try {
-			fileName = new MessageInputAdapter(message).asString();
+			fileName = message.asString();
 		} catch (IOException e) {
 			throw new SenderException(e);
 		}

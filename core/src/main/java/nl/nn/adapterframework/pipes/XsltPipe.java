@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
+
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
@@ -31,6 +33,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.XsltSender;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
@@ -119,7 +122,7 @@ public class XsltPipe extends StreamingPipe {
 	 */
 	protected Object transform(Object input, IPipeLineSession session, MessageOutputStream target) throws SenderException, TransformerException, TimeOutException {
  	    Object inputXml=getInputXml(input, session);
-		ParameterResolutionContext prc = new ParameterResolutionContext((String)inputXml, session, isNamespaceAware()); 
+		ParameterResolutionContext prc = new ParameterResolutionContext(inputXml, session, isNamespaceAware()); 
 		return sender.sendMessage(null, inputXml, prc, target);
 	}
 	/**
@@ -132,12 +135,14 @@ public class XsltPipe extends StreamingPipe {
 		if (input==null) {
 			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
 		}
- 	    if (!(input instanceof String)) {
-	        throw new PipeRunException(this, getLogPrefix(session)+"got an invalid type as input, expected String, got " + input.getClass().getName());
-	    }
-
+		String inputAsString;
+		try {
+			inputAsString = new Message(input).asString();
+		} catch (IOException e1) {
+	        throw new PipeRunException(this, getLogPrefix(session)+"could not convert input to String, got " + input.getClass().getName());
+		}
 	    try {
-	    	Object stringResult = transform(input, session, target);
+	    	Object stringResult = transform(inputAsString, session, target);
 		
 			if (StringUtils.isEmpty(getSessionKey())){
 				return new PipeRunResult(getForward(), stringResult);

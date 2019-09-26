@@ -403,7 +403,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 	@Override
 	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
-		ParameterResolutionContext prc = new ParameterResolutionContext("", session);
+		ParameterResolutionContext prc = new ParameterResolutionContext(null, session);
 		ParameterValueList pvl=null;
 		
 		try {

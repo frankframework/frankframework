@@ -85,7 +85,7 @@ public class ParallelSenders extends SenderSeries {
 			// XsltSender and IbisLocalSender).
 			
 			ParameterResolutionContext newPrc = new ParameterResolutionContext(
-					prc.getInput(), prc.getSession());
+					prc.getMessage(), prc.getSession());
 			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender,
 					correlationID, message, newPrc, guard,
 					getStatisticsKeeper(sender));

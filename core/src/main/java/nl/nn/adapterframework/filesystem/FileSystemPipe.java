@@ -118,7 +118,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	@Override
 	public PipeRunResult doPipe (Object input, IPipeLineSession session, MessageOutputStream target) throws PipeRunException {
 		ParameterList paramList = getParameterList();
-		ParameterResolutionContext prc = new ParameterResolutionContext(input.toString(), session);
+		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
 		ParameterValueList pvl=null;
 		
 		try {

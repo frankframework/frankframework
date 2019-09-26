@@ -67,7 +67,7 @@ import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
-import nl.nn.adapterframework.stream.MessageInputAdapter;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
@@ -502,7 +502,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			ParameterList pl = getParameterList();
 			result=returnString;
 			if (pl != null) {
-				ParameterResolutionContext prc = new ParameterResolutionContext((String)input, session);
+				ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
 				Map params;
 				try {
 					params = prc.getValueMap(pl);
@@ -544,7 +544,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					try {
 						sendResult = sendMessage(input, session, correlationID, getSender(), threadContext, target);
 						if (retryTp!=null) {
-							String retry=retryTp.transform(new MessageInputAdapter(sendResult).asString(),null);
+							String retry=retryTp.transform(new Message(sendResult).asString(),null);
 							if (retry.equalsIgnoreCase("true")) {
 								if (retriesLeft>=1) {
 									retryInterval = increaseRetryIntervalAndWait(session, retryInterval, "xpathRetry result ["+retry+"], retries left [" + retriesLeft + "]");
@@ -580,14 +580,14 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					}
 					result = sendResult;
 				} else {
-					messageID = new MessageInputAdapter(sendResult).asString();
+					messageID = new Message(sendResult).asString();
 					if (log.isInfoEnabled()) {
 						log.info(getLogPrefix(session) + "sent message to [" + getSender().getName()+ "] messageID ["+ messageID+ "] correlationID ["+ correlationID+ "] linkMethod ["+ getLinkMethod()	+ "]");
 					}
 					// if linkMethod is MESSAGEID overwrite correlationID with the messageID
 					// as this will be used with the listener
 					if (getLinkMethod().equalsIgnoreCase("MESSAGEID")) {
-						correlationID = new MessageInputAdapter(sendResult).asString();
+						correlationID = new Message(sendResult).asString();
 						if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"setting correlationId to listen for to messageId ["+correlationID+"]");
 					}
 				}
@@ -757,7 +757,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		}
 
 		if (isStreamResultToServlet()) {
-			MessageInputAdapter mia = new MessageInputAdapter(result);
+			Message mia = new Message(result);
 			InputStream resultStream=new Base64InputStream(mia.asInputStream(),false);
 			
 			try {
@@ -778,7 +778,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	private boolean validResult(Object result) throws IOException {
 		boolean validResult = true;
 		if (isCheckXmlWellFormed()  || StringUtils.isNotEmpty(getCheckRootTag())) {
-			if (!XmlUtils.isWellFormed(new MessageInputAdapter(result).asString(), getCheckRootTag())) {
+			if (!XmlUtils.isWellFormed(new Message(result).asString(), getCheckRootTag())) {
 				validResult = false;
 			}
 		}
@@ -857,9 +857,10 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		// sendResult has a messageID for async senders, the result for sync senders
 		if (sender instanceof ISenderWithParameters) { // do not only check own parameters, sender may have them by itself
 			ISenderWithParameters psender = (ISenderWithParameters) sender;
-			ParameterResolutionContext prc = new ParameterResolutionContext((String)input, session, isNamespaceAware());
+			ParameterResolutionContext prc = new ParameterResolutionContext(input, session, isNamespaceAware());
 			if (sender instanceof StreamingSenderBase) {
-				return ((StreamingSenderBase)sender).sendMessage(correlationID, input, prc, target);
+				Message message = new Message(input);
+				return ((StreamingSenderBase)sender).sendMessage(correlationID, message, prc, target);
 			}
 			return psender.sendMessage(correlationID, (String) input, prc);
 		} 
