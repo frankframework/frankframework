@@ -27,16 +27,16 @@ public abstract class StreamingSenderBase extends SenderWithParametersBase imple
 
 //	private final boolean TEST_STREAMING_VIA_SEND_MESSAGE=false;
 	
-	public abstract Object sendMessage(String correlationID, Object message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException;
+	public abstract Object sendMessage(String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException;
 	@Override
 	public abstract MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException;
 
 	
 	@Override
 	public final String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		Object result = sendMessage(correlationID, message, prc, null);
+		Object result = sendMessage(correlationID, new Message(message), prc, null);
 		try {
-			return result==null?null:new MessageInputAdapter(result).asString();
+			return result==null?null:new Message(result).asString();
 		} catch (IOException e) {
 			throw new SenderException(e);
 		}
