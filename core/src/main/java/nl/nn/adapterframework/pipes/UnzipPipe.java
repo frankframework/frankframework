@@ -153,10 +153,10 @@ public class UnzipPipe extends FixedForwardPipe {
 				dir = new File(directory);
 				if (!dir.exists()) {
 					if (!isCollectFileContents()) {
-						throw new PipeRunException(this, "directorySessionKey ["+directory+"] does not exist");
+						throw new PipeRunException(this, "Directory ["+directory+"] does not exist");
 					}
 				} else if (!dir.isDirectory()) {
-					throw new PipeRunException(this, "directorySessionKey ["+directory+"] is not a directory");
+					throw new PipeRunException(this, "Directory ["+directory+"] is not a directory");
 				}
 			}
 		}
