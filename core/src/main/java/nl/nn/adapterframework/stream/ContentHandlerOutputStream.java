@@ -33,41 +33,47 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  * @author Gerrit van Brakel
  */
-public class ContentHandlerOutputStream extends PipedOutputStream {
+public class ContentHandlerOutputStream extends PipedOutputStream implements Thread.UncaughtExceptionHandler {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private ContentHandler handler;
 	
 	private PipedInputStream pipedInputStream=new PipedInputStream();
-	private Exception exception;
+	private final EventConsumer pipeReader=new EventConsumer();
+	private Throwable exception;
 	
 	public ContentHandlerOutputStream(ContentHandler handler) throws StreamingException {
 		this.handler=handler;
 		try {
 			pipedInputStream=new PipedInputStream();
 			connect(pipedInputStream);
+			pipeReader.setUncaughtExceptionHandler(this);
 			pipeReader.start();
 		} catch (IOException e) {
 			throw new StreamingException(e);
 		}
 	}
 
-	private final Thread pipeReader=new Thread() {
+	private class EventConsumer extends Thread {
 
+		boolean inCdata=false;
+		
 		@Override
 		public void run() {
 			try {
 				boolean namespaceAware=true;
 				boolean resolveExternalEntities=false;
 				InputSource inputSource = new InputSource(pipedInputStream);
-				XMLReader xmlReader = XmlUtils.getXMLReader(namespaceAware, resolveExternalEntities);
-				xmlReader.setContentHandler(handler);
+				XMLReader xmlReader = XmlUtils.getXMLReader(namespaceAware, resolveExternalEntities, handler);
 				xmlReader.parse(inputSource);
 			} catch (Exception e) {
-				setException(e);
+				StreamingException se = new StreamingException(e);
+				setException(se);
 			}
 		}
-	};
+		
+	}
+	
 	
 	@Override
 	public void close() throws IOException {
@@ -81,12 +87,16 @@ public class ContentHandlerOutputStream extends PipedOutputStream {
 			log.warn(e);
 		}
 	}
+
+	@Override
+	public void uncaughtException(Thread arg0, Throwable t) {
+		setException(t);
+	}
 	
-	public void setException(Exception exception) {
+	public void setException(Throwable exception) {
 		this.exception = exception;
 	}
-	public Exception getException() {
+	public Throwable getException() {
 		return exception;
 	}
-	
 }

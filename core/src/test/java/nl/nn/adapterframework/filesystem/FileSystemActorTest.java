@@ -38,7 +38,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	protected FileSystemActor<F, FS> actor;
 
 	protected FS fileSystem;
-	private INamedObject owner;
+	protected INamedObject owner;
 	private IPipeLineSession session;
 
 	@Rule
@@ -478,7 +478,95 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		assertEquals(contents,actualContents);
 	}
 
+	@Test
+	public void fileSystemActorWriteActionWithBackup() throws Exception {
+		String filename = "uploadedwithString" + FILE1;
+		String contents = "text content:";
+		int numOfBackups=3;
+		int numOfWrites=5;
+		
+		if (_fileExists(filename)) {
+			_deleteFile(null, filename);
+		}
 
+		PipeLineSessionBase session = new PipeLineSessionBase();
+
+		ParameterList params = new ParameterList();
+		Parameter p = new Parameter();
+		p.setName("contents");
+		p.setSessionKey("uploadActionTargetwString");
+
+		params.add(p);
+		actor.setAction("write");
+		actor.setNumberOfBackups(numOfBackups);
+		params.configure();
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+
+		String message=filename;
+		for (int i=0;i<numOfWrites;i++) {
+			session.put("uploadActionTargetwString", contents+i);
+			ParameterValueList pvl= createParameterValueList(params, message, session);
+			Object result = actor.doAction(message, pvl, null);
+
+			String stringResult=(String)result;
+			TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
+		}
+		waitForActionToFinish();
+		
+		
+		String actualContents = readFile(null, filename);
+		assertEquals(contents.trim()+(numOfWrites-1), actualContents.trim());
+		
+		for (int i=1;i<=numOfBackups;i++) {
+			String actualContentsi = readFile(null, filename+"."+i);
+			assertEquals(contents.trim()+(numOfWrites-1-i), actualContentsi.trim());
+		}
+	}
+
+	@Test
+	public void fileSystemActorAppendActionWithRolloverBySize() throws Exception {
+		String filename = "rolloverBySize" + FILE1;
+		String contents = "thanos car ";
+		int numOfBackups = 3;
+		int numOfWrites = 5;
+		int rotateSize = 10;
+		
+		if(_fileExists(filename)) {
+			_deleteFile(null, filename);
+		}
+		createFile(null, filename, "thanos car ");
+		
+		PipeLineSessionBase session = new PipeLineSessionBase();
+		ParameterList params = new ParameterList();
+		
+		Parameter p = new Parameter();
+		p.setName("contents");
+		p.setSessionKey("appendActionwString");
+		params.add(p);
+		params.configure();
+		
+		actor.setAction("append");
+		actor.setRotateSize(rotateSize);
+		actor.setNumberOfBackups(numOfBackups);
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+		
+		String message = filename;
+		for(int i=0; i<numOfWrites; i++) {
+			session.put("appendActionwString", contents+i);
+			ParameterValueList pvl = createParameterValueList(params, message, session);
+			String result = (String)actor.doAction(message, pvl, null);
+
+			TestAssertions.assertXpathValueEquals(filename, result, "file/@name");
+		}
+
+		assertTrue(fileSystem.exists(fileSystem.toFile(filename+"."+(numOfWrites<numOfBackups?numOfWrites:numOfBackups))));
+		for (int i=1;i<=numOfBackups;i++) {
+			String actualContentsi = readFile(null, filename+"."+i);
+			assertEquals((contents+(numOfWrites-1-i)).trim(), actualContentsi.trim());
+		}
+	}
 	
 	
 	public void fileSystemActorMoveActionTest(String folder1, String folder2) throws Exception {
@@ -657,7 +745,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	
-	private ParameterValueList createParameterValueList(ParameterList paramList, String input, PipeLineSessionBase session) throws ParameterException {
+	protected ParameterValueList createParameterValueList(ParameterList paramList, String input, PipeLineSessionBase session) throws ParameterException {
 		ParameterResolutionContext prc = new ParameterResolutionContext(input,session);
 		ParameterValueList pvl = prc.getValues(paramList);
 		return pvl;

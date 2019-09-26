@@ -472,7 +472,14 @@
 		<user-data-constraint>
 			<transport-guarantee>NONE</transport-guarantee>
 		</user-data-constraint>
-	</security-constraint -->
+	</security-constraint>
+
+	<security-role>
+		<description>Dummy role to fix maven IbisWarPluginMojo</description>
+		<role-name>Dummy</role-name>
+	</security-role -->
+
+  
 
 	<security-role>
 		<description>can call Ibis WebServices</description>

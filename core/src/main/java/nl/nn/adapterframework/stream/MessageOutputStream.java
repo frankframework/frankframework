@@ -20,12 +20,6 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamResult;
-
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.log4j.Logger;
 import org.xml.sax.ContentHandler;
@@ -128,26 +122,15 @@ public class MessageOutputStream {
     	}
     	if (requestStream instanceof OutputStream) {
     		log.debug("returning OutputStream as ContentHandler");
-            return streamAsContentHandler(new StreamResult((OutputStream)requestStream));
+    		return new XmlWriter((OutputStream)requestStream);
     	}
     	if (requestStream instanceof Writer) {
     		log.debug("returning Writer as ContentHandler");
-            return streamAsContentHandler(new StreamResult((Writer)requestStream));
+    		return new XmlWriter((Writer)requestStream);
     	}
     	return null;
 		
 	}
-
-    private ContentHandler streamAsContentHandler(StreamResult result) throws StreamingException {
-    	try {
-	        SAXTransformerFactory tf = (SAXTransformerFactory)TransformerFactory.newInstance();
-	        TransformerHandler transformerHandler = tf.newTransformerHandler();
-	        transformerHandler.setResult(result);
-	        return transformerHandler;
-		} catch (TransformerException e) {
-			throw new StreamingException(e);
-		}
-    }
 
 
     /**

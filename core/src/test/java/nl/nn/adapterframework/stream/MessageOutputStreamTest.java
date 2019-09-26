@@ -41,7 +41,11 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class MessageOutputStreamTest {
 
-	protected String testString="<root><sub>oh</sub><sub>ah</sub></root>";
+	private boolean TEST_CDATA=true;
+	private String CDATA_START=TEST_CDATA?"<![CDATA[":"";
+	private String CDATA_END=TEST_CDATA?"]]>":"";
+
+	protected String testString="<root><sub>abc&amp;&lt;&gt;</sub><sub>"+CDATA_START+"<a>a&amp;b</a>"+CDATA_END+"</sub></root>";
 	
 	
 	@Test
@@ -107,20 +111,17 @@ public class MessageOutputStreamTest {
 	@Test
 	public void testContentHandlerAsWriter() throws Exception {
 		
-        SAXTransformerFactory tf = (SAXTransformerFactory)TransformerFactory.newInstance();
-        TransformerHandler transformerHandler = tf.newTransformerHandler();
-        StringWriter sw = new StringWriter();
-        Result result = new StreamResult(sw);
-        transformerHandler.setResult(result);
+		XmlWriter target = new XmlWriter();
 
-		MessageOutputStream stream = new MessageOutputStream(transformerHandler,null);
+		MessageOutputStream stream = new MessageOutputStream(target,null);
 		
 		try (Writer writer = stream.asWriter()) {
 			writer.write(testString);
 		}
 		
-		String actual = new String (sw.toString());
-		assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+testString, actual);
+		String actual = new String (target.toString());
+		//assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+testString, actual);
+		assertEquals(testString, actual);
 	}
 
 	@Test
@@ -133,12 +134,12 @@ public class MessageOutputStreamTest {
 		ContentHandler handler = stream.asContentHandler();
 
 		InputSource inputSource = new InputSource(new StringReader(testString)); 
-		XMLReader reader =XmlUtils.getXMLReader(true, false);
-		reader.setContentHandler(handler);
+		XMLReader reader =XmlUtils.getXMLReader(true, false, handler);
 		reader.parse(inputSource);
 		
 		String actual = new String (target.toString());
-		assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+testString, actual);
+		//assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+testString, actual);
+		assertEquals(testString, actual);
 	}
 
 	@Test
@@ -224,7 +225,32 @@ public class MessageOutputStreamTest {
 
 			@Override
 			public void write(char[] arg0, int arg1, int arg2) {
-				throw new RuntimeException("fakeFailure");
+				throw new RuntimeException("fakeFailure 1");
+			}
+
+			@Override
+			public StringWriter append(char arg0) {
+				throw new RuntimeException("fakeFailure 2");
+			}
+
+			@Override
+			public StringWriter append(CharSequence arg0, int arg1, int arg2) {
+				throw new RuntimeException("fakeFailure 3");
+			}
+
+			@Override
+			public StringWriter append(CharSequence arg0) {
+				throw new RuntimeException("fakeFailure 4");
+			}
+
+			@Override
+			public void write(String arg0, int arg1, int arg2) {
+				throw new RuntimeException("fakeFailure 5");
+			}
+
+			@Override
+			public void write(String arg0) {
+				throw new RuntimeException("fakeFailure 6");
 			}
 			
 		};
@@ -235,8 +261,7 @@ public class MessageOutputStreamTest {
 
 		try {
 			InputSource inputSource = new InputSource(new StringReader(testString)); 
-			XMLReader reader =XmlUtils.getXMLReader(true, false);
-			reader.setContentHandler(handler);
+			XMLReader reader =XmlUtils.getXMLReader(true, false, handler);
 			reader.parse(inputSource);
 			fail("exception should be thrown");
 		} catch (Exception e) {

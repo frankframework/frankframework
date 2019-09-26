@@ -39,6 +39,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.ParallelSenderExecutor;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Guard;
@@ -317,6 +318,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			itemResult = "<result item=\"" + count + "\">\n"+itemInput+itemResult+"\n</result>";
 			results.append(itemResult+"\n");
 		}
+		
 		public StringBuffer getResults() throws SenderException {
 			if (isParallel()) {
 				try {
@@ -338,13 +340,14 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			}
 			return results;
 		}
+		
 		public int getCount() {
 			return count;
 		}
 	}
 
 	@Override
-	protected String sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeOutException {
+	protected String sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, MessageOutputStream target) throws SenderException, TimeOutException {
 		// sendResult has a messageID for async senders, the result for sync senders
 		boolean keepGoing = true;
 		IDataIterator<I> it=null;
@@ -436,6 +439,12 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				} 
 			}
 		}
+	}
+
+	@Override
+	public boolean canStreamToTarget() {
+		//return super.canStreamToTarget();
+		return false; // TODO must modify result collection to support output streaming 
 	}
 
 	protected I getItem(IDataIterator<I> it) throws SenderException {

@@ -32,6 +32,7 @@ import org.apache.commons.lang.StringUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLFilterImpl;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -50,6 +51,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
 
 /**
  * Perform an XSLT transformation with a specified stylesheet or XPath-expression.
@@ -184,14 +186,14 @@ public class XsltSender extends StreamingSenderBase  {
 	protected ContentHandler filterInput(ContentHandler input, ParameterResolutionContext prc) throws PipeRunException, DomBuilderException, TransformerException, IOException {
 		if (transformerPoolRemoveNamespaces!=null) {
 			log.debug(getLogPrefix()+ " providing filter to remove namespaces from input message");
-//			XMLFilterImpl filter = new NamespaceRemovingFilter();
-//			filter.setContentHandler(input);
-//			return filter;
-			TransformerHandler removeNamespaces = transformerPoolRemoveNamespaces.getTransformerHandler();
-			SAXResult result = new SAXResult();
-			result.setHandler(input);
-			removeNamespaces.setResult(result);
-			return removeNamespaces;
+			XMLFilterImpl filter = new NamespaceRemovingFilter();
+			filter.setContentHandler(input);
+			return filter;
+//			TransformerHandler removeNamespaces = transformerPoolRemoveNamespaces.getTransformerHandler();
+//			SAXResult result = new SAXResult();
+//			result.setHandler(input);
+//			removeNamespaces.setResult(result);
+//			return removeNamespaces;
 		}
 		return input; // TODO might be necessary to do something about namespaceaware
 	}
@@ -215,11 +217,7 @@ public class XsltSender extends StreamingSenderBase  {
 			if (paramList!=null) {
 				parametervalues = prc.getValueMap(paramList);
 			}
-//			if (log.isDebugEnabled()) {
-//				log.debug(getLogPrefix()+" transformerPool ["+transformerPool+"] transforming using prc ["+prc+"] and parameterValues ["+parametervalues+"]");
-//				log.debug(getLogPrefix()+" prc.inputsource ["+prc.getInputSource()+"]");
-//			}
-			
+
 			Result result;
 			if ("xml".equals(getOutputType())) {
 				SAXResult targetFeedingResult = new SAXResult();
@@ -266,8 +264,8 @@ public class XsltSender extends StreamingSenderBase  {
 	/*
 	 * alternative implementation of send message, that should do the same as the origial, but reuses the streaming content handler
 	 */
-//	@Override
-	public String sendMessage2(String correlationID, String message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException {
+	@Override
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException {
 		if (message==null) {
 			throw new SenderException(getLogPrefix()+"got null input");
 		}
@@ -276,9 +274,8 @@ public class XsltSender extends StreamingSenderBase  {
 				target=new MessageOutputStreamCap();
 			}
 			InputSource source = new InputSource(new StringReader(message));
-			XMLReader reader = XmlUtils.getXMLReader(true, false);
 			ContentHandler handler = createHandler(correlationID, prc.getSession(), target);
-			reader.setContentHandler(handler);
+			XMLReader reader = XmlUtils.getXMLReader(true, false, handler);
 			reader.parse(source);
 			return target.getResponseAsString();
 		} catch (Exception e) {
@@ -291,8 +288,8 @@ public class XsltSender extends StreamingSenderBase  {
 	 * corrupt when a not-well formed xml was handled. The transformer is then re-initialized
 	 * via the configure() and start() methods.
 	 */
-	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException {
+//	@Override
+	public String sendMessage1(String correlationID, String message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException {
 		String stringResult = null;
 		if (message==null) {
 			throw new SenderException(getLogPrefix()+"got null input");
