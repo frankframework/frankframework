@@ -67,6 +67,7 @@ import microsoft.exchange.webservices.data.search.ItemView;
 import microsoft.exchange.webservices.data.search.filter.SearchFilter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
@@ -84,7 +85,6 @@ import nl.nn.adapterframework.util.StreamUtil;
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBaseFolder(String) basefolder}</td><td>folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFilter(String) filter}</td><td>If empty, all mails are retrieved. If 'NDR' only Non-Delivery Report mails ('bounces') are retrieved</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSimple(boolean) simple}</td><td>when set to <code>true</code>, the xml string passed to the pipeline contains minimum information about the mail (to save memory)</td><td>false</td></tr>
  * </table>
  * </p>
  * 
@@ -101,15 +101,14 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 	private String password;
 	private String basefolder;
 	private String filter;
-	private boolean simple = false;
 	private boolean readMimeContents=false;
 	private int maxNumberOfMessagesToList=10;
 
 	private String proxyHost = null;
 	private int proxyPort = 8080;
-	private String proxyAuthAlias = null;
 	private String proxyUsername = null;
 	private String proxyPassword = null;
+	private String proxyAuthAlias = null;
 	private String proxyDomain = null;
 
 	private ExchangeService exchangeService;
@@ -581,119 +580,6 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 	}
 
 
-//	
-//	
-//	@Override
-//	public OutputStream createFile(Item f) throws FileSystemException, IOException {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//	@Override
-//	public OutputStream appendFile(Item f) throws FileSystemException, IOException {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//	@Override
-//	public void renameTo(Item f, String destination) throws FileSystemException {
-//		throw new NotImplementedException("Exchange does not support rename");
-//	}
-
-//	/*
-//	 * addEmailInfo copied from ExchangListener, to have ideas what could be useful for getAdditionalFileProperties()
-//	 */
-//	private void addEmailInfo(EmailMessage emailMessage, XmlBuilder emailXml) throws Exception {
-//		XmlBuilder recipientsXml = new XmlBuilder("recipients");
-//		EmailAddressCollection eacTo = emailMessage.getToRecipients();
-//		if (eacTo != null) {
-//			for (Iterator it = eacTo.iterator(); it.hasNext();) {
-//				XmlBuilder recipientXml = new XmlBuilder("recipient");
-//				EmailAddress ea = (EmailAddress) it.next();
-//				recipientXml.addAttribute("type", "to");
-//				recipientXml.setValue(ea.getAddress());
-//				recipientsXml.addSubElement(recipientXml);
-//			}
-//		}
-//		EmailAddressCollection eacCc = emailMessage.getCcRecipients();
-//		if (eacCc != null) {
-//			for (Iterator it = eacCc.iterator(); it.hasNext();) {
-//				XmlBuilder recipientXml = new XmlBuilder("recipient");
-//				EmailAddress ea = (EmailAddress) it.next();
-//				recipientXml.addAttribute("type", "cc");
-//				recipientXml.setValue(ea.getAddress());
-//				recipientsXml.addSubElement(recipientXml);
-//			}
-//		}
-//		EmailAddressCollection eacBcc = emailMessage.getBccRecipients();
-//		if (eacBcc != null) {
-//			for (Iterator it = eacBcc.iterator(); it.hasNext();) {
-//				XmlBuilder recipientXml = new XmlBuilder("recipient");
-//				EmailAddress ea = (EmailAddress) it.next();
-//				recipientXml.addAttribute("type", "bcc");
-//				recipientXml.setValue(ea.getAddress());
-//				recipientsXml.addSubElement(recipientXml);
-//			}
-//		}
-//		emailXml.addSubElement(recipientsXml);
-//		XmlBuilder fromXml = new XmlBuilder("from");
-//		fromXml.setValue(emailMessage.getFrom().getAddress());
-//		emailXml.addSubElement(fromXml);
-//		XmlBuilder subjectXml = new XmlBuilder("subject");
-//		subjectXml.setCdataValue(emailMessage.getSubject());
-//		emailXml.addSubElement(subjectXml);
-//		XmlBuilder messageXml = new XmlBuilder("message");
-//		messageXml.setCdataValue(MessageBody
-//				.getStringFromMessageBody(emailMessage.getBody()));
-//		emailXml.addSubElement(messageXml);
-//		XmlBuilder attachmentsXml = new XmlBuilder("attachments");
-//		AttachmentCollection ac = emailMessage.getAttachments();
-//		if (ac != null) {
-//			for (Iterator it = ac.iterator(); it.hasNext();) {
-//				XmlBuilder attachmentXml = new XmlBuilder("attachment");
-//				Attachment att = (Attachment) it.next();
-//				att.load();
-//				attachmentXml.addAttribute("name", att.getName());
-//				if (att instanceof ItemAttachment) {
-//					ItemAttachment ia = (ItemAttachment) att;
-//					Item aItem = ia.getItem();
-//					if (aItem instanceof EmailMessage) {
-//						EmailMessage em;
-//						em = (EmailMessage) aItem;
-//						addEmailInfo(em, attachmentXml);
-//					}
-//				}
-//				attachmentsXml.addSubElement(attachmentXml);
-//			}
-//		}
-//		emailXml.addSubElement(attachmentsXml);
-//		XmlBuilder headersXml = new XmlBuilder("headers");
-//		InternetMessageHeaderCollection imhc = null;
-//		try {
-//			imhc = emailMessage.getInternetMessageHeaders();
-//		} catch (Exception e) {
-//			log.info("error occurred during getting internet message headers: "
-//					+ e.getMessage());
-//		}
-//		if (imhc != null) {
-//			for (Iterator it = imhc.iterator(); it.hasNext();) {
-//				XmlBuilder headerXml = new XmlBuilder("header");
-//				InternetMessageHeader imh = (InternetMessageHeader) it.next();
-//				headerXml.addAttribute("name", imh.getName());
-//				headerXml.setCdataValue(imh.getValue());
-//				headersXml.addSubElement(headerXml);
-//			}
-//		}
-//		emailXml.addSubElement(headersXml);
-//		SimpleDateFormat sdf = new SimpleDateFormat(
-//				"yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-//		Date dateTimeSend = emailMessage.getDateTimeSent();
-//		XmlBuilder dateTimeSentXml = new XmlBuilder("dateTimeSent");
-//		dateTimeSentXml.setValue(sdf.format(dateTimeSend));
-//		emailXml.addSubElement(dateTimeSentXml);
-//		Date dateTimeReceived = emailMessage.getDateTimeReceived();
-//		XmlBuilder dateTimeReceivedXml = new XmlBuilder("dateTimeReceived");
-//		dateTimeReceivedXml.setValue(sdf.format(dateTimeReceived));
-//		emailXml.addSubElement(dateTimeReceivedXml);
-//	}
 
 
 	@Override
@@ -706,7 +592,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 	}
 
 
-
+	@IbisDoc({"1", "The mail address of the mailbox connected to (also used for auto discovery)", ""})
 	public void setMailAddress(String mailAddress) {
 		this.mailAddress = mailAddress;
 	}
@@ -714,6 +600,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 		return mailAddress;
 	}
 
+	@IbisDoc({"2", "When <code>true</code>, all redirect uris are accepted when connecting to the server", "true"})
 	public boolean isValidateAllRedirectUrls() {
 		return validateAllRedirectUrls;
 	}
@@ -721,6 +608,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 		this.validateAllRedirectUrls = validateAllRedirectUrls;
 	}
 
+	@IbisDoc({"3", "url of the Exchange server. Set to e.g. https://outlook.office365.com/EWS/Exchange.asmx to speed up start up, leave empty to use autodiscovery", ""})
 	public void setUrl(String url) {
 		this.url = url;
 	}
@@ -728,13 +616,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 		return url;
 	}
 
-	public void setAuthAlias(String authAlias) {
-		this.authAlias = authAlias;
-	}
-	public String getAuthAlias() {
-		return authAlias;
-	}
-
+	@IbisDoc({"4", "username for authentication to exchange mail server", ""})
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -742,6 +624,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 		return username;
 	}
 
+	@IbisDoc({"5", "password for authentication to exchange mail server", ""})
 	public void setPassword(String password) {
 		this.password = password;
 	}
@@ -749,6 +632,16 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 		return password;
 	}
 	
+	@IbisDoc({"6", "alias used to obtain credentials for authentication to exchange mail server", ""})
+	public void setAuthAlias(String authAlias) {
+		this.authAlias = authAlias;
+	}
+	public String getAuthAlias() {
+		return authAlias;
+	}
+
+	
+	@IbisDoc({"7", "folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used", ""})
 	public void setBaseFolder(String basefolder) {
 		this.basefolder = basefolder;
 	}
@@ -756,6 +649,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 		return basefolder;
 	}
 
+	@IbisDoc({"8", "If empty, all mails are retrieved. If set to <code>NDR</code> only Non-Delivery Report mails ('bounces') are retrieved", ""})
 	public void setFilter(String filter) {
 		this.filter = filter;
 	}
@@ -763,19 +657,9 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 		return filter;
 	}
 
-	public void setSimple(boolean b) {
-		simple = b;
-	}
-	public boolean isSimple() {
-		return simple;
-	}
-
-
 	public boolean isReadMimeContents() {
 		return readMimeContents;
 	}
-
-
 	public void setReadMimeContents(boolean readMimeContents) {
 		this.readMimeContents = readMimeContents;
 	}
@@ -784,12 +668,11 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 	public int getMaxNumberOfMessagesToList() {
 		return maxNumberOfMessagesToList;
 	}
-
-
 	public void setMaxNumberOfMessagesToList(int maxNumberOfMessagesToList) {
 		this.maxNumberOfMessagesToList = maxNumberOfMessagesToList;
 	}
 
+	@IbisDoc({"9", "proxy host", ""})
 	public void setProxyHost(String proxyHost) {
 		this.proxyHost = proxyHost;
 	}
@@ -797,6 +680,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 		return proxyHost;
 	}
 
+	@IbisDoc({"10", "proxy port", ""})
 	public void setProxyPort(int proxyPort) {
 		this.proxyPort = proxyPort;
 	}
@@ -804,13 +688,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 		return proxyPort;
 	}
 
-	public void setProxyAuthAlias(String proxyAuthAlias) {
-		this.proxyAuthAlias = proxyAuthAlias;
-	}
-	public String getProxyAuthAlias() {
-		return proxyAuthAlias;
-	}
-
+	@IbisDoc({"11", "proxy username", ""})
 	public void setProxyUsername(String proxyUsername) {
 		this.proxyUsername = proxyUsername;
 	}
@@ -818,6 +696,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 		return proxyUsername;
 	}
 
+	@IbisDoc({"12", "proxy password", ""})
 	public void setProxyPassword(String proxyPassword) {
 		this.proxyPassword = proxyPassword;
 	}
@@ -825,6 +704,15 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 		return proxyPassword;
 	}
 
+	@IbisDoc({"12", "proxy authAlias", ""})
+	public void setProxyAuthAlias(String proxyAuthAlias) {
+		this.proxyAuthAlias = proxyAuthAlias;
+	}
+	public String getProxyAuthAlias() {
+		return proxyAuthAlias;
+	}
+
+	@IbisDoc({"13", "proxy domain", ""})
 	public void setProxyDomain(String proxyDomain) {
 		this.proxyDomain = proxyDomain;
 	}
