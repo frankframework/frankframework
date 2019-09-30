@@ -30,6 +30,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc;
 
 public class LocalFileSystem implements IWritableFileSystem<File> {
 
@@ -154,14 +155,6 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 		}
 	}
 
-	public String getRoot() {
-		return root;
-	}
-
-	public void setRoot(String root) {
-		this.root = root;
-	}
-
 	@Override
 	public File renameFile(File f, String newName, boolean force) throws FileSystemException {
 		File dest;
@@ -228,5 +221,15 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 	public Map<String, Object> getAdditionalFileProperties(File f) {
 		return null;
 	}
+
+
+	@IbisDoc({"1", "the folder that serves as the root of this virtual filesystem", "" })
+	public void setRoot(String root) {
+		this.root = root;
+	}
+	public String getRoot() {
+		return root;
+	}
+
 
 }

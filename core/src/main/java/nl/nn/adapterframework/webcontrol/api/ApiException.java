@@ -43,15 +43,25 @@ public class ApiException extends WebApplicationException implements Serializabl
 		super();
 	}
 
-	public ApiException(Exception e) {
-		this(e, 500);
+	public ApiException(Throwable t) {
+		this(t, 500);
 	}
 
-	public ApiException(Exception e, int status) {
-		super(e, formatException(e.getMessage(), Status.fromStatusCode(status), MediaType.APPLICATION_JSON));
-
-		log.error(e.getMessage(), e);
+	public ApiException(String msg, Throwable t) {
+		this(msg, t, Status.INTERNAL_SERVER_ERROR);
 	}
+
+	public ApiException(Throwable t, int status) {
+		this(t.getMessage(), t, Status.fromStatusCode(status));
+	}
+
+	public ApiException(String msg, Throwable t, Status status) {
+		super(t, formatException(msg, status, MediaType.APPLICATION_JSON));
+
+		log.error(msg, t);
+	}
+
+
 
 	public ApiException(String msg) {
 		super(formatException(msg, Status.INTERNAL_SERVER_ERROR, MediaType.APPLICATION_JSON));

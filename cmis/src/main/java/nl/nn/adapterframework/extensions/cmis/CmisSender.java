@@ -1043,6 +1043,11 @@ public class CmisSender extends SenderWithParametersBase {
 		return null;
 	}
 
+	@IbisDoc({"the maximum number of concurrent connections", "10"})
+	public void setMaxConnections(int i) throws ConfigurationException {
+		sessionBuilder.setMaxConnections(i);
+	}
+
 	@IbisDoc({"url to connect to", ""})
 	public void setUrl(String url) throws ConfigurationException {
 		sessionBuilder.setUrl(url);

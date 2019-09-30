@@ -47,10 +47,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 	private Logger log = LogUtil.getLogger(this);
 	private PipeProcessor pipeProcessor;
 
-	public void setPipeProcessor(PipeProcessor pipeProcessor) {
-		this.pipeProcessor = pipeProcessor;
-	}
-
+	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, String message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		// Object is the object that is passed to and returned from Pipes
 		Object object = (Object) message;
@@ -58,32 +55,23 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		// the PipeLineResult
 		PipeLineResult pipeLineResult=new PipeLineResult();
 
-		if (object == null
-				|| (object instanceof String && StringUtils.isEmpty(object
-						.toString()))) {
+		if (object == null || (object instanceof String && StringUtils.isEmpty(object.toString()))) {
 			if (StringUtils.isNotEmpty(pipeLine.getAdapterToRunBeforeOnEmptyInput())) {
 				log.debug("running adapterBeforeOnEmptyInput");
 				IAdapter adapter = pipeLine
 						.getAdapter()
 						.getConfiguration()
 						.getIbisManager()
-						.getRegisteredAdapter(
-								pipeLine.getAdapterToRunBeforeOnEmptyInput());
+						.getRegisteredAdapter(pipeLine.getAdapterToRunBeforeOnEmptyInput());
 				if (adapter == null) {
-					log.warn("adapterToRunBefore with specified name ["
-							+ pipeLine.getAdapterToRunBeforeOnEmptyInput()
-							+ "] could not be retrieved");
+					log.warn("adapterToRunBefore with specified name [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] could not be retrieved");
 				} else {
-					PipeLineResult plr = adapter.processMessage(messageId,
-							message, pipeLineSession);
+					PipeLineResult plr = adapter.processMessage(messageId, message, pipeLineSession);
 					if (plr == null || !plr.getState().equals("success")) {
-						throw new PipeRunException(null, "adapterToRunBefore ["
-								+ pipeLine.getAdapterToRunBeforeOnEmptyInput()
-								+ "] ended with state [" + plr.getState() + "]");
+						throw new PipeRunException(null, "adapterToRunBefore [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] ended with state [" + (plr==null?"null":plr.getState()) + "]");
 					}
 					message = plr.getResult();
-					log.debug("input after running adapterBeforeOnEmptyInput ["
-							+ message + "]");
+					log.debug("input after running adapterBeforeOnEmptyInput [" + message + "]");
 					object = (Object) message;
 				}
 			}
@@ -174,6 +162,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, messageId, object, pipeLineSession);
 				object=pipeRunResult.getResult();
 
+				// TODO: this should be moved to a StatisticsPipeProcessor
 				if (!(pipeToRun instanceof AbstractPipe)) {
 					if (object!=null && object instanceof String) {
 						StatisticsKeeper sizeStat = pipeLine.getPipeSizeStatistics(pipeToRun);
@@ -295,4 +284,10 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		}
 		return pipeLineResult;
 	}
+	
+	
+	public void setPipeProcessor(PipeProcessor pipeProcessor) {
+		this.pipeProcessor = pipeProcessor;
+	}
+
 }

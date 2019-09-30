@@ -29,7 +29,9 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.StreamingException;
+import nl.nn.adapterframework.stream.StreamingPipe;
 
 /**
  * Base class for Pipes that use a {@link IBasicFileSystem FileSystem}.
@@ -37,21 +39,35 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
  * <table align="top">
  * <tr><th>Action</th><th>Description</th><th>Configuration</th></tr>
  * <tr><td>list</td><td>list files in a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>root folder</li></ol></td></tr>
- * <tr><td>read</td><td>read a file, returns an InputStream</td><td>filename: taken from input message</td><td>&nbsp;</td></tr>
- * <tr><td>move</td><td>move a file to another folder</td><td>filename: taken from input message<br/>parameter <code>destination</code></td></tr>
- * <tr><td>delete</td><td>delete a file</td><td>filename: taken from input message</td><td>&nbsp;</td></tr>
- * <tr><td>mkdir</td><td>create a folder/directory</td><td>folder: taken from input message</td><td>&nbsp;</td></tr>
- * <tr><td>rmdir</td><td>remove a folder/directory</td><td>folder: taken from input message</td><td>&nbsp;</td></tr>
- * <tr><td>write</td><td>write contents to a file<td>filename: taken from input message<br/>parameter <code>contents</code>: contents as either Stream, Bytes or String</td><td>&nbsp;</td></tr>
- * <tr><td>rename</td><td>change the name of a file</td><td>filename: taken from input message<br/>parameter <code>destination</code></td></tr>
+ * <tr><td>read</td><td>read a file, returns an InputStream</td><td>filename: taken from parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
+ * <tr><td>move</td><td>move a file to another folder</td><td>filename: taken from parameter <code>filename</code> or input message<br/>parameter <code>destination</code></td></tr>
+ * <tr><td>delete</td><td>delete a file</td><td>filename: taken from parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
+ * <tr><td>mkdir</td><td>create a folder/directory</td><td>folder: taken from parameter <code>foldername</code> or input message</td><td>&nbsp;</td></tr>
+ * <tr><td>rmdir</td><td>remove a folder/directory</td><td>folder: taken from parameter <code>foldername</code> or input message</td><td>&nbsp;</td></tr>
+ * <tr><td>write</td><td>write contents to a file<td>
+ *  filename: taken from parameter <code>filename</code> or input message<br/>
+ *  parameter <code>contents</code>: contents as either Stream, Bytes or String<br/>
+ *  At least one of the parameters must be specified.<br/>
+ *  The missing parameter defaults to the input message.<br/>
+ *  For streaming operation, the parameter <code>filename</code> must be specified.
+ *  </td><td>&nbsp;</td></tr>
+ * <tr><td>append</td><td>append contents to a file<br/>(only for filesystems that support 'append')<td>
+ *  filename: taken from parameter <code>filename</code> or input message<br/>
+ *  parameter <code>contents</code>: contents as either Stream, Bytes or String<br/>
+ *  At least one of the parameters must be specified.<br/>
+ *  The missing parameter defaults to the input message.<br/>
+ *  For streaming operation, the parameter <code>filename</code> must be specified.
+ *  </td><td>&nbsp;</td></tr>
+ * <tr><td>rename</td><td>change the name of a file</td><td>filename: taken from parameter <code>filename</code> or input message<br/>parameter <code>destination</code></td></tr>
  * <table>
  * 
  * @author Gerrit van Brakel
  */
-public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends FixedForwardPipe implements HasPhysicalDestination {
+public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends StreamingPipe implements HasPhysicalDestination {
 	
 	private FileSystemActor<F, FS> actor = new FileSystemActor<F, FS>();
 	private FS fileSystem;
+	
 	
 	
 	@Override
@@ -85,7 +101,22 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends FixedForw
 	}
 
 	@Override
-	public PipeRunResult doPipe (Object input, IPipeLineSession session) throws PipeRunException {
+	public boolean canProvideOutputStream() {
+		return super.canProvideOutputStream() && actor.canProvideOutputStream();
+	}
+	@Override
+	public boolean canStreamToTarget() {
+		return super.canStreamToTarget() && actor.canStreamToTarget();  
+	}
+	
+	@Override
+	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+		return actor.provideOutputStream(correlationID, session, target);
+	}
+
+
+	@Override
+	public PipeRunResult doPipe (Object input, IPipeLineSession session, MessageOutputStream target) throws PipeRunException {
 		ParameterList paramList = getParameterList();
 		ParameterResolutionContext prc = new ParameterResolutionContext(input.toString(), session);
 		ParameterValueList pvl=null;
@@ -95,12 +126,12 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends FixedForw
 				pvl = prc.getValues(paramList);
 			}
 		} catch (ParameterException e) {
-			throw new PipeRunException(this,getLogPrefix(session) + "Sender [" + getName() + "] caught exception evaluating parameters", e);
+			throw new PipeRunException(this,getLogPrefix(session) + "Pipe [" + getName() + "] caught exception evaluating parameters", e);
 		}
 
 		Object result;
 		try {
-			result = actor.doAction(input, pvl);
+			result = actor.doAction(input, pvl, session);
 		} catch (FileSystemException | TimeOutException e) {
 			throw new PipeRunException(this, "cannot perform action", e);
 		}
