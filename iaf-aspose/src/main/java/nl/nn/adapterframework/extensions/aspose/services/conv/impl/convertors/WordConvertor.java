@@ -80,18 +80,15 @@ class WordConvertor extends AbstractConvertor {
 		try (FileInputStream inputStream = new FileInputStream(file)) {
 			Document doc = new Document(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
 			new Fontsetter(cisConversionService.getFontsDirectory()).setFontSettings(doc);
-//			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			SaveOptions saveOptions = SaveOptions.createSaveOptions(SaveFormat.PDF);
 			saveOptions.setMemoryOptimization(true);
 			
 			long startTime = new Date().getTime();
 			doc.save(result.getPdfResultFile().getAbsolutePath(), saveOptions);
 			long endTime = new Date().getTime();
-			System.err.println(
+			LOGGER.debug(
 					"Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
-//			BufferedInputStream inStream = new BufferedInputStream(new ByteArrayInputStream(outputStream.toByteArray()));
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
-//			outputStream.close();
 		}
 	}
 

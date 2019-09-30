@@ -19,6 +19,10 @@ class UniqueFileGenerator {
 
 	private static AtomicInteger atomicCount = new AtomicInteger(1);
 
+	private UniqueFileGenerator() {
+		
+	}
+	
 	/**
 	 * Create a unique file in the pdfOutputLocation with the given extension
 	 * 
@@ -26,7 +30,7 @@ class UniqueFileGenerator {
 	 *            is allowed to be null.
 	 * @return
 	 */
-	static File getUniqueFile(String directory, String prefix, String extension) {
+	public static File getUniqueFile(String directory, String prefix, String extension) {
 
 		SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 		int count = atomicCount.addAndGet(1);

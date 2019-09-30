@@ -2,7 +2,6 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -61,10 +60,7 @@ class CellsConvertor extends AbstractConvertor {
 			Style style = workbook.getDefaultStyle();
 			LOGGER.debug("Default font: " + style.getFont());
 
-
-			long startTime = new Date().getTime();
 			workbook.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.PDF);
-			long endTime = new Date().getTime();
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 		}
 
@@ -80,7 +76,7 @@ class CellsConvertor extends AbstractConvertor {
 		convertOrg(file, result);
 		// Add original file as attachment to resulting pdf file.
 		try (FileInputStream inputStreamToAttach = new FileInputStream(file)) {
-			PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(null);
+			PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil();
 			pdfAttachmentUtil.addAttachmentToPdf(result, inputStreamToAttach, result.getDocumentName(),
 					FILE_TYPE_MAP.get(mediaType));
 		}

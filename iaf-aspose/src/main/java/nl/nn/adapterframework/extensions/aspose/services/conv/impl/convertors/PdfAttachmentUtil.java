@@ -5,7 +5,6 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,21 +35,18 @@ public class PdfAttachmentUtil {
 
 	private List<CisConversionResult> cisConversionResultList;
 
-	private File rootPdf;
-
 	private Document pdfDocument;
 
 	/**
 	 * Private constructor om te voorkomen dat deze klasse (met static methoden)
 	 * aangemaakt kan worden.
 	 */
-	private PdfAttachmentUtil(List<CisConversionResult> cisConversionResultList, File file) {
+	private PdfAttachmentUtil(List<CisConversionResult> cisConversionResultList) {
 		this.cisConversionResultList = cisConversionResultList;
-		this.rootPdf = file;
 	}
-
-	public PdfAttachmentUtil(CisConversionResult result) {
-		// TODO Auto-generated constructor stub
+	
+	public PdfAttachmentUtil() {
+		
 	}
 
 	/**
@@ -60,24 +56,23 @@ public class PdfAttachmentUtil {
 	 * @param rootPdf
 	 * @throws IOException
 	 */
-	static void addAttachmentInSinglePdf(List<CisConversionResult> cisConversionResultList, File rootPdf)
+	public static void addAttachmentInSinglePdf(List<CisConversionResult> cisConversionResultList)
 			throws IOException {
-		PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(cisConversionResultList, rootPdf);
+		PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(cisConversionResultList);
 		try {
 			pdfAttachmentUtil.addAttachmentInSinglePdf();
 		} finally {
-			// TODO: fix this part
-			pdfAttachmentUtil.finit(null);
+			pdfAttachmentUtil.finit();
 		}
 	}
 
 	protected void addAttachmentToPdf(CisConversionResult result, InputStream fileToAttach, String filename, String extension)
 			throws IOException {
-		PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(null, result.getPdfResultFile());
+		PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil();
 		try (BufferedInputStream attachmentDocumentStream = new BufferedInputStream(fileToAttach)) {
 			pdfAttachmentUtil.addFileToPdf(attachmentDocumentStream, filename, extension, result);
 		} finally {
-			pdfAttachmentUtil.finit(result);
+			pdfAttachmentUtil.finit();
 		}
 	}
 
@@ -116,7 +111,7 @@ public class PdfAttachmentUtil {
 		}
 	}
 
-	private void finit(CisConversionResult result) {
+	private void finit() {
 		if (pdfDocument != null) {
 
 			pdfDocument.save();

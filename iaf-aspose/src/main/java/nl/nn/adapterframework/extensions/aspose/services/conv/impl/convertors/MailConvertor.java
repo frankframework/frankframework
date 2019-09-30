@@ -86,7 +86,7 @@ class MailConvertor extends AbstractConvertor {
 			LOGGER.debug("reversePath : " + toString(eml.getReversePath()));
 			LOGGER.debug("subject : " + eml.getSubject());
 
-			MhtSaveOptions options = com.aspose.email.MhtSaveOptions.getDefaultMhtml();
+			MhtSaveOptions options = MhtSaveOptions.getDefaultMhtml();
 			options.setMhtFormatOptions(MhtFormatOptions.WriteHeader);
 			options.getFormatTemplates().get_Item("From").replace("From:", "Afzender:");
 			options.getFormatTemplates().get_Item("Sent").replace("Sent:", "Verzonden:");
@@ -113,14 +113,11 @@ class MailConvertor extends AbstractConvertor {
 			new Fontsetter(cisConversionService.getFontsDirectory()).setFontSettings(doc);
 			resizeInlineImages(doc);
 
-			long start = new Date().getTime();
 			doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.PDF);
-			long end = new Date().getTime();
 			
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 			Long endTime = new Date().getTime();
-			LOGGER.error("Conversion completed in " + (endTime - startTime) + "ms");
-			System.err.println("Conversion completed in " + (endTime - startTime) + "ms");
+			LOGGER.debug("Conversion completed in " + (endTime - startTime) + "ms");
 
 			// Convert and (optional add) any attachment of the mail.
 			for (int index = 0; index < attachments.size(); index++) {

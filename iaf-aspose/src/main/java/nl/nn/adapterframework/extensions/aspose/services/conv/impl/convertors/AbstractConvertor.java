@@ -43,7 +43,7 @@ abstract class AbstractConvertor implements Convertor {
 	 * @param mediaType
 	 * @param conversionOption
 	 */
-	abstract void convert(MediaType mediaType, File file, CisConversionResult builder,
+	protected abstract void convert(MediaType mediaType, File file, CisConversionResult builder,
 			ConversionOption conversionOption) throws Exception;
 
 	@Override
