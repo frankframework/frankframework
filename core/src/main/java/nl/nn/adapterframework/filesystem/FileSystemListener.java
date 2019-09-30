@@ -144,10 +144,10 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	public String getPhysicalDestinationName() {
-		if (getFileSystem() instanceof HasPhysicalDestination) {
-			return ((HasPhysicalDestination)getFileSystem()).getPhysicalDestinationName();
-		}
-		return null;
+		String result=getFileSystem() instanceof HasPhysicalDestination?((HasPhysicalDestination)getFileSystem()).getPhysicalDestinationName()+" ":"";
+		result+= "inputFolder [" + (getInputFolder() == null ? "" : getInputFolder()) + "] inProcessFolder [" + (getInProcessFolder() == null ? "" : getInProcessFolder()) +
+				"] processedFolder [" + (getProcessedFolder() == null ? "" : getProcessedFolder()) + "] errorFolder [" + (getErrorFolder() == null ? "" : getErrorFolder()) + "]";
+		return result;
 	}
 
 	public FS getFileSystem() {
