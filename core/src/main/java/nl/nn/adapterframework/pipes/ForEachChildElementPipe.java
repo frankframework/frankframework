@@ -252,7 +252,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 					while (rootCause.getCause()!=null) {
 						rootCause=rootCause.getCause();
 					}
-					SAXException se = new SAXException(e);
+					SAXException se = new SAXException(e.getMessage()); // do not set cause via new SAXException(e); this causes the message to be duplicated multiple times
 					se.setStackTrace(rootCause.getStackTrace());
 					throw se;
 					
