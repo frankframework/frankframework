@@ -3,8 +3,6 @@
  */
 package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -15,7 +13,6 @@ import java.util.Map;
 import org.apache.tika.mime.MediaType;
 
 import com.aspose.pdf.Document;
-import com.aspose.pdf.HtmlLoadOptions;
 import com.aspose.pdf.LoadOptions;
 import com.aspose.pdf.SaveFormat;
 import com.aspose.pdf.XpsLoadOptions;
@@ -44,8 +41,8 @@ public class PdfConvertor extends AbstractConvertor {
 		// The string value is defined in com.aspose.pdf.LoadOptions.
 		// CIS-44: Tijdelijk gedisabled omdat html conversie op A (en P) niet goed gaat.
 		// Moet nog worden geanalyseerd.
-		map.put(new MediaType("text", "html"), new HtmlLoadOptions());
-		map.put(new MediaType("application", "xhtml+xml"), new HtmlLoadOptions());
+//		map.put(new MediaType("text", "html"), new HtmlLoadOptions());
+//		map.put(new MediaType("application", "xhtml+xml"), new HtmlLoadOptions());
 		map.put(new MediaType("application", "vnd.ms-xpsdocument"), new XpsLoadOptions());
 		map.put(new MediaType("application", "x-tika-ooxml"), new XpsLoadOptions());
 
@@ -67,17 +64,14 @@ public class PdfConvertor extends AbstractConvertor {
 			// the supported media types should be part of the map
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		try (InputStream inputStream = new FileInputStream(file)) {
 			Document doc = new Document(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
-			doc.save(outputStream, SaveFormat.Pdf);
+			doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.Pdf);
 			doc.freeMemory();
 			doc.dispose();
 			doc.close();
 		}
-		InputStream inStream = new ByteArrayInputStream(outputStream.toByteArray());
-		result.setFileStream(inStream);
-		outputStream.close();
+		result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 	}
 
 	@Override

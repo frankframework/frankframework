@@ -1,7 +1,9 @@
 package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -10,6 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 import org.apache.tika.mime.MediaType;
+
+import com.aspose.pdf.Document;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
@@ -39,7 +43,7 @@ abstract class AbstractConvertor implements Convertor {
 	 * @param mediaType
 	 * @param conversionOption
 	 */
-	public abstract void convert(MediaType mediaType, File file, CisConversionResult builder,
+	abstract void convert(MediaType mediaType, File file, CisConversionResult builder,
 			ConversionOption conversionOption) throws Exception;
 
 	@Override
@@ -93,12 +97,15 @@ abstract class AbstractConvertor implements Convertor {
 		checkForSupportedMediaType(mediaType);
 
 		CisConversionResult result = new CisConversionResult();
-
+		File resultFile = null;
 		try {
+			resultFile = UniqueFileGenerator.getUniqueFile(pdfOutputlocation, this.getClass().getSimpleName(), "pdf");
 			result.setConversionOption(conversionOption);
 			result.setMediaType(mediaType);
 			result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(filename));
-
+			result.setPdfResultFile(resultFile);
+			result.setResultFilePath(resultFile.getAbsolutePath());
+			
 			LOGGER.debug("Convert to file... " + file.getName());
 			convert(mediaType, file, result, conversionOption);
 			LOGGER.debug("Convert to file finished. " + file.getName());
@@ -117,6 +124,21 @@ abstract class AbstractConvertor implements Convertor {
 
 	protected String getPdfOutputlocation() {
 		return pdfOutputlocation;
+	}
+	
+	protected int getNumberOfPages(File file) {
+		int result = 0;
+		if(file != null) {
+			try (InputStream inStream = new FileInputStream(file)){
+				Document doc = new Document(inStream);
+				result = doc.getPages().size();
+				System.out.println(" get number of pages has ben executed  "+result);
+			} catch (IOException e) {
+				System.out.println(e);
+			}
+		}
+		
+		return result;
 	}
 
 	protected String createTechnishefoutMsg(Exception e) {
@@ -147,7 +169,6 @@ abstract class AbstractConvertor implements Convertor {
 		SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 		int count = atomicCount.addAndGet(1);
 
-		// Save to disc
 		String fileNamePdf = String.format("conv_%s_%s_%05d%s", this.getClass().getSimpleName(),
 				format.format(new Date()), count, ".bin");
 		return new File(pdfOutputlocation, fileNamePdf);

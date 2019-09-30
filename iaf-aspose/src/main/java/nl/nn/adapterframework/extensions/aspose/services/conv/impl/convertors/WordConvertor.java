@@ -1,19 +1,17 @@
 package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.log4j.Logger;
 import org.apache.tika.mime.MediaType;
 
 import com.aspose.words.Document;
+import com.aspose.words.HtmlLoadOptions;
 import com.aspose.words.IncorrectPasswordException;
 import com.aspose.words.LoadFormat;
 import com.aspose.words.LoadOptions;
@@ -25,6 +23,8 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResul
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
 
 /**
+ * Converts the files which are required and supported by the aspose words
+ * library.
  * 
  * @author M64D844
  *
@@ -55,7 +55,8 @@ class WordConvertor extends AbstractConvertor {
 		map.put(new MediaType("application", "rtf"), new LoadOptions(LoadFormat.fromName("RTF"), null, null));
 
 		map.put(new MediaType("application", "xml"), new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
-
+		 map.put(new MediaType("text", "html"), new HtmlLoadOptions());
+		 map.put(new MediaType("application", "xhtml+xml"), new HtmlLoadOptions());
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
@@ -79,20 +80,18 @@ class WordConvertor extends AbstractConvertor {
 		try (FileInputStream inputStream = new FileInputStream(file)) {
 			Document doc = new Document(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
 			new Fontsetter(cisConversionService.getFontsDirectory()).setFontSettings(doc);
-			
-			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+//			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			SaveOptions saveOptions = SaveOptions.createSaveOptions(SaveFormat.PDF);
 			saveOptions.setMemoryOptimization(true);
 			
 			long startTime = new Date().getTime();
-			doc.save(outputStream, saveOptions);
+			doc.save(result.getPdfResultFile().getAbsolutePath(), saveOptions);
 			long endTime = new Date().getTime();
-			
-			LOGGER.info("Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
-			
-			InputStream inStream = new ByteArrayInputStream(outputStream.toByteArray());
-			result.setFileStream(inStream);
-			outputStream.close();
+			System.err.println(
+					"Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
+//			BufferedInputStream inStream = new BufferedInputStream(new ByteArrayInputStream(outputStream.toByteArray()));
+			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
+//			outputStream.close();
 		}
 	}
 

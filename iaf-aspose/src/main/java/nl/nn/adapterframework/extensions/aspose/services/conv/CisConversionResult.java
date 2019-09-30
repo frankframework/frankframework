@@ -4,7 +4,6 @@
 package nl.nn.adapterframework.extensions.aspose.services.conv;
 
 import java.io.File;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,8 +26,8 @@ public class CisConversionResult {
 	private MediaType mediaType;
 	private String documentName;
 	private String failureReason;
-	private InputStream fileStream;
-
+	private int numberOfPages;
+	private String resultFilePath;
 	/**
 	 * List with documents which where part of the source document (e.g. attachments
 	 * in mails). Will be an empty list if there are no attachments.
@@ -165,12 +164,20 @@ public class CisConversionResult {
 		return failureReason == null;
 	}
 
-	public InputStream getFileStream() {
-		return fileStream;
+	public int getNumberOfPages() {
+		return numberOfPages;
 	}
 
-	public void setFileStream(InputStream fileStream) {
-		this.fileStream = fileStream;
+	public void setNumberOfPages(int numberOfPages) {
+		this.numberOfPages = numberOfPages;
+	}
+
+	public String getResultFilePath() {
+		return resultFilePath;
+	}
+
+	public void setResultFilePath(String resultFilePath) {
+		this.resultFilePath = resultFilePath;
 	}
 
 	@Override
