@@ -35,6 +35,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	private String messageBasicNoNS="<root><sub name=\"p &amp; Q\">A &amp; B</sub><sub>"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub></root>";
 	private String messageBasicNS1="<root xmlns=\"urn:test\"><sub name=\"p &amp; Q\">A &amp; B</sub><sub>"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub></root>";
 	private String messageBasicNS2="<ns:root xmlns:ns=\"urn:test\"><ns:sub name=\"p &amp; Q\">A &amp; B</ns:sub><ns:sub>"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</ns:sub></ns:root>";
+	private String messageError="<root><sub name=\"a\">B</sub><sub>error</sub><sub>tail</sub></root>";
 
 	private String expectedBasicNoNS="<results count=\"2\">\n"+
 			"<result item=\"1\">\n"+
@@ -72,6 +73,9 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 			@Override
 			public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 				if (sc!=null) sc.mark("out");
+				if (message.contains("error")) {
+					throw new SenderException("Exception triggered");
+				}
 				return super.sendMessage(correlationID, message, prc);
 			}
     		
@@ -90,6 +94,27 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
         String actual=prr.getResult().toString();
         
         assertEquals(expectedBasicNoNS, actual);
+    }
+
+    @Test
+    public void testError() throws PipeRunException, ConfigurationException, PipeStartException {
+    	pipe.setSender(getElementRenderer(null));
+    	configurePipe();
+    	pipe.start();
+
+    	exception.expectMessage("Exception triggered");
+        PipeRunResult prr = pipe.doPipe(messageError, session);
+    }
+
+    @Test
+    public void testErrorXpath() throws PipeRunException, ConfigurationException, PipeStartException {
+    	pipe.setSender(getElementRenderer(null));
+    	pipe.setElementXPathExpression("/root/sub");
+    	configurePipe();
+    	pipe.start();
+
+    	exception.expectMessage("Exception triggered");
+        PipeRunResult prr = pipe.doPipe(messageError, session);
     }
 
     @Test
