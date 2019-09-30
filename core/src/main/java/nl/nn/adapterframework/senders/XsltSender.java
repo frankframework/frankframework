@@ -204,16 +204,16 @@ public class XsltSender extends StreamingSenderBase  {
 		if (target==null) {
 			target=new MessageOutputStreamCap();
 		}
-		ContentHandler handler = createHandler(correlationID, session, target);
+		ContentHandler handler = createHandler(correlationID, null, session, target);
 		return new MessageOutputStream(handler,target);
 	}
 
-	public ContentHandler createHandler(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+	private ContentHandler createHandler(String correlationID, String input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
 		ContentHandler handler = null;
 
 		try {
 			Map<String,Object> parametervalues = null;
-			ParameterResolutionContext prc = new ParameterResolutionContext(null,session);
+			ParameterResolutionContext prc = new ParameterResolutionContext(input,session);
 			if (paramList!=null) {
 				parametervalues = prc.getValueMap(paramList);
 			}
@@ -274,7 +274,7 @@ public class XsltSender extends StreamingSenderBase  {
 				target=new MessageOutputStreamCap();
 			}
 			InputSource source = new InputSource(new StringReader(message));
-			ContentHandler handler = createHandler(correlationID, prc.getSession(), target);
+			ContentHandler handler = createHandler(correlationID, message, prc.getSession(), target);
 			XMLReader reader = XmlUtils.getXMLReader(true, false, handler);
 			reader.parse(source);
 			return target.getResponseAsString();
