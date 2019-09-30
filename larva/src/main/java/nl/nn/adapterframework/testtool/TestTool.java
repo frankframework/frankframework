@@ -53,6 +53,7 @@ import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.test.Test;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.dom4j.DocumentException;
@@ -163,30 +164,30 @@ public class TestTool {
 		return appConstants;
 	}
 
-	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
-		runScenarios(application, request, out, false);
-	}
-
-	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out,
-			boolean silent) {
-		String paramLogLevel = request.getParameter("loglevel");
-		//String paramExecute = request.getParameter("execute");
-		String paramExecute = "/home/mkmeral/eclipse-workspace/.metadata/.plugins/org.eclipse.wst.server.core/tmp0/wtpwebapps/iaf-test/testtool/WebServiceListenerSender";
-		String paramWaitBeforeCleanUp = request.getParameter("waitbeforecleanup");
-		String servletPath = request.getServletPath();
-		int i = servletPath.lastIndexOf('/');
-		String realPath = application.getRealPath(servletPath.substring(0, i));
-		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
-		// int numberOfThreads =
-		// Integer.parseInt(request.getParameter("numberofthreads"));
-		int numberOfThreads = 1;
-		// IbisContext ibisContext = getIbisContext(application);
-		if (ibisContext == null)
-			ibisContext = getIbisContext(application);
-		AppConstants appConstants = getAppConstants();
-		runScenarios(appConstants, paramLogLevel, paramExecute, paramWaitBeforeCleanUp, realPath,
-				paramScenariosRootDirectory, numberOfThreads, silent);
-	}
+//	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
+//		runScenarios(application, request, out, false);
+//	}
+//
+//	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out,
+//			boolean silent) {
+//		String paramLogLevel = request.getParameter("loglevel");
+//		//String paramExecute = request.getParameter("execute");
+//		String paramExecute = "/home/mkmeral/eclipse-workspace/.metadata/.plugins/org.eclipse.wst.server.core/tmp0/wtpwebapps/iaf-test/testtool/WebServiceListenerSender";
+//		String paramWaitBeforeCleanUp = request.getParameter("waitbeforecleanup");
+//		String servletPath = request.getServletPath();
+//		int i = servletPath.lastIndexOf('/');
+//		String realPath = application.getRealPath(servletPath.substring(0, i));
+//		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
+//		// int numberOfThreads =
+//		// Integer.parseInt(request.getParameter("numberofthreads"));
+//		int numberOfThreads = 1;
+//		// IbisContext ibisContext = getIbisContext(application);
+//		if (ibisContext == null)
+//			ibisContext = getIbisContext(application);
+//		AppConstants appConstants = getAppConstants();
+//		runScenarios(appConstants, paramLogLevel, paramExecute, paramWaitBeforeCleanUp, realPath,
+//				paramScenariosRootDirectory, numberOfThreads, silent);
+//	}
 
 	public static final int ERROR_NO_SCENARIO_DIRECTORIES_FOUND = -1;
 
@@ -195,9 +196,8 @@ public class TestTool {
 	 * @return negative: error condition 0: all scenarios passed positive: number of
 	 *         scenarios that failed
 	 */
-	public static int runScenarios(AppConstants appConstants, String paramLogLevel, String paramExecute,
-			String paramWaitBeforeCleanUp, String realPath, String paramScenariosRootDirectory, int numberOfThreads,
-			boolean silent) {
+	public static int runScenarios(AppConstants appConstants, String paramExecute,
+			int waitBeforeCleanUp, String currentScenariosRootDirectory, int numberOfThreads) {
 
 		MessageListener.debugMessage("Start logging to logbuffer until form is written");
 		String asd = appConstants.getResolvedProperty("larva.diffs.autosave");
@@ -205,45 +205,13 @@ public class TestTool {
 			autoSaveDiffs = Boolean.parseBoolean(asd);
 		}
 
-		// Get directories
-		MessageListener.debugMessage("Initialize scenarios root directories");
-		List<String> scenariosRootDirectories = new ArrayList<String>();
-		List<String> scenariosRootDescriptions = new ArrayList<String>();
-		String currentScenariosRootDirectory = TestPreparer.initScenariosRootDirectories(appConstants, realPath,
-				paramScenariosRootDirectory, scenariosRootDirectories, scenariosRootDescriptions);
-		if (scenariosRootDirectories.size() == 0) {
-			MessageListener.debugMessage("Stop logging to logbuffer");
-
-			MessageListener.errorMessage("No scenarios root directories found");
-			return ERROR_NO_SCENARIO_DIRECTORIES_FOUND;
-		}
-		appConstants = TestPreparer.getAppConstantsFromDirectory(currentScenariosRootDirectory, appConstants);
-
-		int waitBeforeCleanUp = 100;
-		if (paramWaitBeforeCleanUp != null) {
-			try {
-				waitBeforeCleanUp = Integer.parseInt(paramWaitBeforeCleanUp);
-			} catch (NumberFormatException e) {
-			}
-		}
 		MessageListener.debugMessage(
 				"Execute scenario(s) if execute parameter present and scenarios root directory did not change");
 
 		// Get Ready For Execution
 		int[] scenarioResults = { 0, 0, 0 }; // [0] is for errors, [1] is for ok, [2] is for autosaved. positions
-												// correspond to constants.
-		Map<String, List<File>> scenarioFiles = TestPreparer.readScenarioFiles(appConstants,
-				currentScenariosRootDirectory, true);
-		Map<String, String> scenarioList = TestPreparer.getScenariosList(scenariosRootDirectories, scenariosRootDescriptions,
-				currentScenariosRootDirectory, appConstants, scenarioFiles, waitBeforeCleanUp);
-		try {
-			FileWriter fw = new FileWriter(new File("/home/mkmeral/Desktop/try.txt"));
-			fw.write(scenarioList.toString());
-			fw.close();
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-		
+
+
 		if (paramExecute != null) {
 			String paramExecuteCanonicalPath;
 			String scenariosRootDirectoryCanonicalPath;
@@ -268,9 +236,9 @@ public class TestTool {
 				MessageListener.debugMessage("Initialize statistics variables");
 				long startTime = System.currentTimeMillis();
 				MessageListener.debugMessage("Execute scenario('s)");
-				Iterator<Entry<String, List<File>>> scenarioFilesIterator = scenarioFiles.entrySet().iterator();
+				Iterator<Entry<String, List<File>>> scenarioFilesIterator = TestPreparer.scenarioFiles.entrySet().iterator();
 
-				int scenariosTotal = TestPreparer.getNumberOfScenarios(scenarioFiles); // TODO: FIND A BETTER SOLUTION
+				int scenariosTotal = TestPreparer.getNumberOfScenarios(TestPreparer.scenarioFiles); // TODO: FIND A BETTER SOLUTION
 																						// FOR THIS!
 
 				ExecutorService threadPool = Executors.newFixedThreadPool(numberOfThreads);
@@ -358,10 +326,7 @@ public class TestTool {
 			String servletPath = request.getServletPath();
 			int i = servletPath.lastIndexOf('/');
 			String realPath = application.getRealPath(servletPath.substring(0, i));
-			List<String> scenariosRootDirectories = new ArrayList<String>();
-			List<String> scenariosRootDescriptions = new ArrayList<String>();
-			String currentScenariosRootDirectory = TestPreparer.initScenariosRootDirectories(appConstants, realPath,
-					null, scenariosRootDirectories, scenariosRootDescriptions);
+			String currentScenariosRootDirectory = TestPreparer.initScenariosRootDirectories(realPath, null);
 			windiffCommand = currentScenariosRootDirectory + "..\\..\\IbisAlgemeenWasbak\\WinDiff\\WinDiff.Exe";
 		}
 		File tempFileResult = writeTempFile(expectedFileName, result);

@@ -28,6 +28,7 @@ import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.io.FilenameUtils;
 import org.bouncycastle.crypto.engines.ISAACEngine;
+import org.bouncycastle.util.test.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockMultipartHttpServletRequest;
 
@@ -48,9 +49,11 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  */
 public class TestPreparer {
+	public static Map<String, List<File>> scenarioFiles;
+	public static Map<String, String> scenariosRootDirectories;
 
 	public static AppConstants getAppConstantsFromDirectory(String currentScenariosRootDirectory,
-			AppConstants appConstants) {
+															AppConstants appConstants) {
 		String appConstantsDirectory = appConstants.getResolvedProperty("larva.appconstants.directory");
 		if (appConstantsDirectory != null) {
 			appConstantsDirectory = TestPreparer.getAbsolutePath(currentScenariosRootDirectory, appConstantsDirectory);
@@ -66,10 +69,11 @@ public class TestPreparer {
 		return appConstants;
 	}
 
-	public static Map<String, String> getScenariosList(List<String> scenariosRootDirectories,
-			List<String> scenariosRootDescriptions, String scenariosRootDirectory, AppConstants appConstants,
-			Map<String, List<File>> scenarioFiles, int waitBeforeCleanUp) {
+	public static Map<String, String> getScenariosList(String scenariosRootDirectory, AppConstants appConstants) {
 
+		if(scenarioFiles == null) {
+			readScenarioFiles(scenariosRootDirectory, true);
+		}
 		MessageListener.debugMessage("Listing possible executable scenarios.");
 		Map<String, String> scenarios = new HashMap<>();
 		Iterator<Entry<String, List<File>>> mapIterator = scenarioFiles.entrySet().iterator();
@@ -116,10 +120,10 @@ public class TestPreparer {
 		return scenarios;
 	}
 
-	public static String initScenariosRootDirectories(AppConstants appConstants, String realPath,
-			String paramScenariosRootDirectory, List<String> scenariosRootDirectories,
-			List<String> scenariosRootDescriptions) {
+	public static String initScenariosRootDirectories(String realPath, String paramScenariosRootDirectory) {
+		AppConstants appConstants = TestTool.getAppConstants();
 		String currentScenariosRootDirectory = null;
+		String firstScenarioRootDirectory = null;
 		if (realPath == null) {
 			MessageListener.errorMessage("Could not read webapp real path");
 		} else {
@@ -164,16 +168,20 @@ public class TestPreparer {
 			Iterator<String> iterator = treeSet.iterator();
 			while (iterator.hasNext()) {
 				description = (String) iterator.next();
-				scenariosRootDescriptions.add(description);
-				scenariosRootDirectories.add(scenariosRoots.get(description));
+				scenariosRootDirectories.put(description, scenariosRoots.get(description));
+				if(firstScenarioRootDirectory == null) {
+					firstScenarioRootDirectory = scenariosRoots.get(description);
+				}
 			}
 			treeSet.clear();
 			treeSet.addAll(scenariosRootsBroken.keySet());
 			iterator = treeSet.iterator();
 			while (iterator.hasNext()) {
 				description = (String) iterator.next();
-				scenariosRootDescriptions.add("X " + description);
-				scenariosRootDirectories.add(scenariosRootsBroken.get(description));
+				scenariosRootDirectories.put("X " + description, scenariosRootsBroken.get(description));
+				if(firstScenarioRootDirectory == null) {
+					firstScenarioRootDirectory = scenariosRoots.get(description);
+				}
 			}
 			MessageListener.debugMessage("Read scenariosrootdirectory parameter");
 			MessageListener.debugMessage("Get current scenarios root directory");
@@ -183,7 +191,7 @@ public class TestPreparer {
 					currentScenariosRootDirectory = scenariosRoots.get(scenariosRootDefault);
 				}
 				if (currentScenariosRootDirectory == null && scenariosRootDirectories.size() > 0) {
-					currentScenariosRootDirectory = (String) scenariosRootDirectories.get(0);
+					currentScenariosRootDirectory = firstScenarioRootDirectory;
 				}
 			} else {
 				currentScenariosRootDirectory = paramScenariosRootDirectory;
@@ -195,9 +203,7 @@ public class TestPreparer {
 	/**
 	 * Reads all scenario files in a given directory, and groups them by their
 	 * parent path for multithreading.
-	 * 
-	 * @param appConstants
-	 *            Constants to use for reading property files.
+	 *
 	 * @param scenariosDirectory
 	 *            Root directory to start the search from.
 	 * @param forMultiThreading
@@ -206,10 +212,9 @@ public class TestPreparer {
 	 * @return map that contains path names and list of scenarios that are in the
 	 *         path.
 	 */
-	public static Map<String, List<File>> readScenarioFiles(AppConstants appConstants, String scenariosDirectory,
-			boolean forMultiThreading) {
+	public static Map<String, List<File>> readScenarioFiles(String scenariosDirectory, boolean forMultiThreading) {
 		MessageListener.debugMessage("Read scenarios from directory '" + scenariosDirectory + "'");
-		Map<String, List<File>> scenarioFiles = new HashMap<>();
+		scenarioFiles = new HashMap<>();
 		String generalKey = "";
 		// If only one scenario is selected
 		if (scenariosDirectory.endsWith(".properties")) {
@@ -232,7 +237,7 @@ public class TestPreparer {
 			for (int i = 0; i < files.length; i++) {
 				File file = files[i];
 				if (file.getName().endsWith(".properties")) {
-					Properties properties = readProperties(appConstants, file);
+					Properties properties = readProperties(TestTool.getAppConstants(), file);
 					if (properties != null && properties.get("scenario.description") != null) {
 						String active = properties.getProperty("scenario.active", "true");
 						String unstable = properties.getProperty("adapter.unstable", "false");
@@ -246,7 +251,7 @@ public class TestPreparer {
 						}
 					}
 				} else if (file.isDirectory() && (!file.getName().equals("CVS"))) {
-					Map<String, List<File>> recursiveOutput = readScenarioFiles(appConstants, file.getAbsolutePath(),
+					Map<String, List<File>> recursiveOutput = readScenarioFiles(file.getAbsolutePath(),
 							forMultiThreading);
 					Iterator<Entry<String, List<File>>> mapIterator = recursiveOutput.entrySet().iterator();
 					while (mapIterator.hasNext()) {
@@ -268,7 +273,7 @@ public class TestPreparer {
 
 	/**
 	 * Returns the total number of scenarios stored in the map
-	 * 
+	 *
 	 * @param scenarios
 	 *            Map that contains scenario files
 	 * @return total number of scenarios that are in the map.
@@ -345,7 +350,7 @@ public class TestPreparer {
 	/**
 	 * Returns the absolute pathname for the child pathname. The parent pathname is
 	 * used as a prefix when the child pathname is an not absolute.
-	 * 
+	 *
 	 * @param parent
 	 *            the parent pathname to use
 	 * @param child
@@ -478,16 +483,13 @@ public class TestPreparer {
 	 * with a the .valuefile suffix can be used as an alternative for a property
 	 * with a .value suffix to specify the file to read the value for the Map from.
 	 * More than one param can be specified by using param2, param3 etc.
-	 * 
-	 * @param propertiesDirectory
-	 *            suffix for filenames specified by properties with a .valuefile
-	 *            suffix. Can be left empty.
+	 *
 	 * @param properties
 	 * @param property
 	 * @return A map with parameters
 	 */
 	public static Map<String, Object> createParametersMapFromParamProperties(Properties properties, String property,
-			boolean createParameterObjects, ParameterResolutionContext parameterResolutionContext) {
+																			 boolean createParameterObjects, ParameterResolutionContext parameterResolutionContext) {
 		MessageListener.debugMessage("Search parameters for property '" + property + "'");
 		Map<String, Object> result = new HashMap<String, Object>();
 		boolean processed = false;
