@@ -11,6 +11,7 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.TestAssertions;
 
@@ -53,7 +54,7 @@ public abstract class FileSystemActorExtraTest<F,FS extends IWritableFileSystem<
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 
-		String message = filename;
+		Message message = new Message(filename);
 		for(int i=0; i<numOfWrites; i++) {
 			setFileDate(null, filename, new Date(firstDate.getTime() + (millisPerDay * i)));
 			

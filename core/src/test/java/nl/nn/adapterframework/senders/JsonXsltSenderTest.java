@@ -16,7 +16,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.stream.MessageOutputStreamCap;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
@@ -57,7 +57,8 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		String input=TestFileUtils.getTestFile("/Xslt3/employees.json");
 		log.debug("inputfile ["+input+"]");
 		String expectedJson=TestFileUtils.getTestFile("/Xslt3/orgchart.json");
-		Object result = sender.sendMessage("fakecorrelationid", input, new ParameterResolutionContext(input,null), null);
+		Message message = new Message(input);
+		Object result = sender.sendMessage("fakecorrelationid", message, new ParameterResolutionContext(message,null), null);
 		String jsonOut=result.toString();
 		assertJsonEqual(null,expectedJson,jsonOut);
 	}

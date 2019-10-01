@@ -205,11 +205,11 @@ public class XsltSender extends StreamingSenderBase  {
 		if (target==null) {
 			target=new MessageOutputStreamCap();
 		}
-		ContentHandler handler = createHandler(correlationID, session, target);
+		ContentHandler handler = createHandler(correlationID, null, session, target);
 		return new MessageOutputStream(handler,target);
 	}
 
-	protected ContentHandler createHandler(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+	private ContentHandler createHandler(String correlationID, Message input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
 		ContentHandler handler = null;
 
 		try {
@@ -295,8 +295,8 @@ public class XsltSender extends StreamingSenderBase  {
 			if (target==null) {
 				target=new MessageOutputStreamCap();
 			}
-			InputSource source = new Message(message).asInputSource();
-			ContentHandler handler = createHandler(correlationID, prc.getSession(), target);
+			ContentHandler handler = createHandler(correlationID, message, prc.getSession(), target);
+			InputSource source = message.asInputSource();
 			parseInputSource(source, handler);
 			return target.getResponse();
 		} catch (Exception e) {

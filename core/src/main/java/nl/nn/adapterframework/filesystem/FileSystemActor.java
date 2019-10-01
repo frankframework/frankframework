@@ -43,6 +43,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.util.DateUtils;
@@ -201,39 +202,48 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 //		}
 //	}
 	
-	private String determineFilename(Object input, ParameterValueList pvl) {
+	private String determineFilename(Message input, ParameterValueList pvl) throws FileSystemException {
 //		if (StringUtils.isNotEmpty(configuredFileName)) {
 //			return configuredFileName;
 //		}
 		if (pvl!=null && pvl.containsKey(PARAMETER_FILENAME)) {
 			return pvl.getParameterValue(PARAMETER_FILENAME).asStringValue("");
 		}
-		return input.toString();
+		try {
+			return input.asString();
+		} catch (IOException e) {
+			throw new FileSystemException(e);
+		}
 	}
 
-	private F getFile(Object input, ParameterValueList pvl) throws FileSystemException {
+	private F getFile(Message input, ParameterValueList pvl) throws FileSystemException {
 		String filename=determineFilename(input, pvl);
 		return fileSystem.toFile(filename);
 	}
 	
-	private String determineInputFoldername(Object input, ParameterValueList pvl) {
+	private String determineInputFoldername(Message input, ParameterValueList pvl) throws FileSystemException {
 		if (StringUtils.isNotEmpty(getInputFolder())) {
 			return getInputFolder();
 		}
 		if (pvl!=null && pvl.containsKey(PARAMETER_INPUTFOLDER)) {
 			return pvl.getParameterValue(PARAMETER_INPUTFOLDER).asStringValue("");
 		}
-		if (input==null || StringUtils.isEmpty(input.toString())) {
-			return null;
+		try {
+			if (input==null || StringUtils.isEmpty(input.asString())) {
+				return null;
+			}
+			return input.asString();
+		} catch (IOException e) {
+			throw new FileSystemException(e);
 		}
-		return input.toString();
 	}
 	
-	public Object doAction(Object input, ParameterValueList pvl, IPipeLineSession session) throws FileSystemException, TimeOutException {
+	public Object doAction(Message input, ParameterValueList pvl, IPipeLineSession session) throws FileSystemException, TimeOutException {
 		try {
 			if (action.equalsIgnoreCase(ACTION_DELETE)) {
 				F file=getFile(input, pvl);
 				fileSystem.deleteFile(file);
+				return fileSystem.getName(file);
 			} else if (action.equalsIgnoreCase(ACTION_READ1)) {
 				F file=getFile(input, pvl);
 				InputStream in = fileSystem.readFile(file);
@@ -281,9 +291,11 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else if (action.equalsIgnoreCase(ACTION_MKDIR)) {
 				String folder = determineInputFoldername(input, pvl);
 				fileSystem.createFolder(folder);
+				return folder;
 			} else if (action.equalsIgnoreCase(ACTION_RMDIR)) {
 				String folder = determineInputFoldername(input, pvl);
 				fileSystem.removeFolder(folder);
+				return folder;
 			} else if (action.equalsIgnoreCase(ACTION_RENAME)) {
 				F file=getFile(input, pvl);
 				String destination = (String) pvl.getParameterValue(PARAMETER_DESTINATION).getValue();
@@ -291,6 +303,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					throw new SenderException("unknown destination [" + destination + "]");
 				}
 				((IWritableFileSystem<F>)fileSystem).renameFile(file, destination, false);
+				return destination;
 			} else if (action.equalsIgnoreCase(ACTION_MOVE)) {
 				F file=getFile(input, pvl);
 				String destinationFolder = (String) pvl.getParameterValue(PARAMETER_DESTINATION).getValue();

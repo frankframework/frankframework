@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
+import java.io.StringWriter;
 
 import javax.xml.transform.TransformerException;
 
@@ -123,7 +124,7 @@ public class XsltPipe extends StreamingPipe {
 	protected Object transform(Object input, IPipeLineSession session, MessageOutputStream target) throws SenderException, TransformerException, TimeOutException {
  	    Object inputXml=getInputXml(input, session);
 		ParameterResolutionContext prc = new ParameterResolutionContext(inputXml, session, isNamespaceAware()); 
-		return sender.sendMessage(null, inputXml, prc, target);
+		return sender.sendMessage(null, new Message(inputXml), prc, target);
 	}
 	/**
 	 * Here the actual transforming is done. Under weblogic the transformer object becomes
@@ -143,7 +144,10 @@ public class XsltPipe extends StreamingPipe {
 		}
 	    try {
 	    	Object stringResult = transform(inputAsString, session, target);
-		
+	    	if (stringResult instanceof StringWriter) {
+	    		stringResult = stringResult.toString();
+	    	}
+ 		
 			if (StringUtils.isEmpty(getSessionKey())){
 				return new PipeRunResult(getForward(), stringResult);
 			}

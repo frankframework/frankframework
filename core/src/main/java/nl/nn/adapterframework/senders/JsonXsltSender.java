@@ -58,9 +58,9 @@ public class JsonXsltSender extends XsltSender {
 		return false;
 	}
 
-	private String jsonToXml(Object json) throws TransformerException {
+	private String jsonToXml(Message json) throws TransformerException {
 		XMLReader reader=new JsonXmlReader();
-		Source source=new SAXSource(reader, new Message(json).asInputSource());
+		Source source=new SAXSource(reader, json.asInputSource());
 		return XmlUtils.source2String(source, false);
 	}
 
@@ -102,7 +102,7 @@ public class JsonXsltSender extends XsltSender {
 	public Object sendMessage(String correlationID, Message message, ParameterResolutionContext prc,MessageOutputStream target) throws SenderException {
 		try {
 			String xml=jsonToXml(message);
-			Object result = super.sendMessage(correlationID, xml, prc, target);
+			Object result = super.sendMessage(correlationID, new Message(xml), prc, target);
 			result = xml2Json(result.toString());
 			return result;
 		} catch (DomBuilderException|TransformerException e) {

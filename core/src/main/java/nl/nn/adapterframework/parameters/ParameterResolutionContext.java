@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.parameters;
 
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -30,6 +31,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
  
@@ -176,17 +178,21 @@ public class ParameterResolutionContext {
 ////		return getInputSource(isNamespaceAware());
 ////	}
 //	
-//	public Source getInputSource(boolean namespaceAware) throws DomBuilderException {
-//		Source result = xmlSource!=null?xmlSource.get(namespaceAware):null;
-//		if (result == null) {
-//			log.debug("Constructing InputSource for ParameterResolutionContext");
-//			result = XmlUtils.stringToSource(input,namespaceAware); 
-//			if (xmlSource!=null) {
-//				xmlSource.put(namespaceAware, result);
-//			}
-//		}
-//		return result;
-//	}
+	public Source getInputSource(boolean namespaceAware) throws DomBuilderException {
+		Source result = xmlSource!=null?xmlSource.get(namespaceAware):null;
+		if (result == null) {
+			log.debug("Constructing InputSource for ParameterResolutionContext");
+			try {
+				result = XmlUtils.stringToSource(message.asString(),namespaceAware);
+			} catch (IOException e) {
+				throw new DomBuilderException(e);
+			} 
+			if (xmlSource!=null) {
+				xmlSource.put(namespaceAware, result);
+			}
+		}
+		return result;
+	}
 
 //	/**
 //	 * Returns (possibly xml formatted) input message

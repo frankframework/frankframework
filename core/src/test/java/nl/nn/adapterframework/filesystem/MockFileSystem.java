@@ -86,7 +86,14 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	public Iterator<M> listFiles(String folderName) throws FileSystemException {
 		checkOpen();
 		MockFolder folder=folderName==null?this:getFolders().get(folderName);
-		return (Iterator<M>)folder.getFiles().values().iterator();
+		if (folder==null) {
+			throw new FileSystemException("folder ["+folderName+"] is null");
+		}
+		Map<String,MockFile>files = folder.getFiles();
+		if (files==null) {
+			throw new FileSystemException("files in folder ["+folderName+"] is null");
+		}
+		return (Iterator<M>)files.values().iterator();
 	}
 
 	@Override

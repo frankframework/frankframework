@@ -31,7 +31,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
 
-public class MessageInputAdapterTest {
+public class MessageTest {
 
 	private boolean TEST_CDATA=true;
 	private String CDATA_START=TEST_CDATA?"<![CDATA[":"";
