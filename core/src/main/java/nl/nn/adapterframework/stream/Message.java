@@ -39,7 +39,7 @@ public class Message {
 	private Object request;
 	
 	public Message(Object request) {
-		this.request=request;
+		this.request=(request!=null && request instanceof Message)?((Message)request).asObject():request;
 	}
 
 	public void preserveInputStream() throws IOException {
@@ -59,6 +59,10 @@ public class Message {
 	}
 	
 
+	public Object asObject() {
+		return request;
+	}
+	
 	public Reader asReader() {
 		if (request==null) {
 			return null;
@@ -170,6 +174,15 @@ public class Message {
 			return (String)request;
 		}
 		return StreamUtil.readerToString(asReader(),null);
+	}
+
+	@Override
+	public String toString() {
+		try {
+			return asString();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 }

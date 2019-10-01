@@ -851,8 +851,13 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	}
 	
 	protected Object sendTextMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, MessageOutputStream target) throws SenderException, TimeOutException {
-		if (input!=null && !(input instanceof String)) {
-			throw new SenderException("String expected, got a [" + input.getClass().getName() + "]");
+		if (input!=null) {
+//			if (input instanceof StringWriter) {
+//				input = input.toString();
+//			}
+			if (!(input instanceof String)) {
+				throw new SenderException("String expected, got a [" + input.getClass().getName() + "]");
+			}
 		}
 		// sendResult has a messageID for async senders, the result for sync senders
 		if (sender instanceof ISenderWithParameters) { // do not only check own parameters, sender may have them by itself

@@ -15,11 +15,7 @@
 */
 package nl.nn.adapterframework.filesystem;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
-
-import org.apache.commons.codec.binary.Base64InputStream;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -34,7 +30,6 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingSenderBase;
-import nl.nn.adapterframework.util.Misc;
 
 /**
  * Base class for Senders that use a {@link IBasicFileSystem FileSystem}.
