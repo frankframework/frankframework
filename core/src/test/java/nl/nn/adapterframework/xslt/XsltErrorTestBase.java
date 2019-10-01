@@ -200,9 +200,11 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		}
 		assertThat(testAppender.toString(),containsString("java.io.FileNotFoundException"));
 		System.out.println("ErrorMessage: "+errorMessage);
-		System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
-		System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
-		errorOutputStream=new ErrorOutputStream();
+		if (testForEmptyOutputStream) {
+			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
+			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
+			errorOutputStream=new ErrorOutputStream();
+		}
 	}
 
 	@Test
@@ -223,9 +225,11 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		}
 		checkTestAppender(EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING,null);
 		System.out.println("ErrorMessage: "+errorMessage);
-		System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
-		System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
-		errorOutputStream=new ErrorOutputStream();
+		if (testForEmptyOutputStream) {
+			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
+			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
+			errorOutputStream=new ErrorOutputStream();
+		}
 	}
 
 	@Test
