@@ -2,9 +2,9 @@ package nl.nn.adapterframework.filesystem;
 
 import org.apache.commons.lang3.NotImplementedException;
 
-import nl.nn.adapterframework.receivers.DirectoryListener;
+import nl.nn.adapterframework.receivers.DirectoryListenerOld;
 
-public class DirectoryListenerWrapper extends DirectoryListener implements IFileSystemListener {
+public class DirectoryListenerWrapper extends DirectoryListenerOld implements IFileSystemListener {
 
 	@Override
 	public void setInputFolder(String inputDirectory) {

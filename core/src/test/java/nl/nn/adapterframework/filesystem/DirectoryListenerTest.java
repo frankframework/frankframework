@@ -4,7 +4,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import nl.nn.adapterframework.receivers.LocalFileSystemListener;
+import nl.nn.adapterframework.receivers.DirectoryListener;
 
 public class DirectoryListenerTest extends FileSystemListenerTest {
 
@@ -16,7 +16,7 @@ public class DirectoryListenerTest extends FileSystemListenerTest {
 	public IFileSystemListener createFileSystemListener() {
 		IFileSystemListener result;
 		if (testForCompatibilityOfLocalFileSystemListenerToReplaceDirectoryListener) {
-			LocalFileSystemListener localFileSystemListener=new LocalFileSystemListener();
+			DirectoryListener localFileSystemListener=new DirectoryListener();
 			localFileSystemListener.setInputDirectory(folder.getRoot().getAbsolutePath());
 			result=localFileSystemListener;
 		} else {
