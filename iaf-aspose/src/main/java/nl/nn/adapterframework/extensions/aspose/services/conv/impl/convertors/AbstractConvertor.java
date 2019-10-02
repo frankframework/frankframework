@@ -1,3 +1,18 @@
+/*
+   Copyright 2019 Integration Partners
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.File;
@@ -18,8 +33,8 @@ import com.aspose.pdf.Document;
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertorUtil;
-import nl.nn.adapterframework.extensions.aspose.services.util.DateUtil;
 import nl.nn.adapterframework.extensions.aspose.services.util.FileUtil;
+import nl.nn.adapterframework.util.DateUtils;
 
 abstract class AbstractConvertor implements Convertor {
 
@@ -126,15 +141,14 @@ abstract class AbstractConvertor implements Convertor {
 		return pdfOutputlocation;
 	}
 	
-	protected int getNumberOfPages(File file) {
+	protected int getNumberOfPages(File file) throws IOException {
 		int result = 0;
 		if(file != null) {
 			try (InputStream inStream = new FileInputStream(file)){
 				Document doc = new Document(inStream);
 				result = doc.getPages().size();
-				System.out.println(" get number of pages has ben executed  "+result);
 			} catch (IOException e) {
-				System.out.println(e);
+				throw e;
 			}
 		}
 		
@@ -142,7 +156,7 @@ abstract class AbstractConvertor implements Convertor {
 	}
 
 	protected String createTechnishefoutMsg(Exception e) {
-		String tijdstip = DateUtil.getDateFormatSecondsHuman().format(new Date());
+		String tijdstip = DateUtils.format(new Date(), "dd-MM-yyyy HH:mm:ss");
 		LOGGER.warn("Conversion in " + this.getClass().getSimpleName() + " failed! (Tijdstip: " + tijdstip + ")", e);
 		StringBuilder msg = new StringBuilder();
 		msg.append(

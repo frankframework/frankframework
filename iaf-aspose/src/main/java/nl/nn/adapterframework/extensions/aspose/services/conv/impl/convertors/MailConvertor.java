@@ -1,3 +1,18 @@
+/*
+   Copyright 2019 Integration Partners
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.ByteArrayInputStream;
@@ -5,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -31,7 +47,6 @@ import com.aspose.words.Shape;
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
-import nl.nn.adapterframework.extensions.aspose.services.util.ConvertUtil;
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertorUtil;
 
 class MailConvertor extends AbstractConvertor {
@@ -81,26 +96,18 @@ class MailConvertor extends AbstractConvertor {
 			LOGGER.debug("bcc : " + toString(eml.getBcc()));
 			LOGGER.debug("sender : " + toString(eml.getSender()));
 			LOGGER.debug("from : " + toString(eml.getFrom()));
-			LOGGER.debug("sent on : " + toString(eml.getLocalDate()));
 			LOGGER.debug("to : " + toString(eml.getTo()));
 			LOGGER.debug("reversePath : " + toString(eml.getReversePath()));
 			LOGGER.debug("subject : " + eml.getSubject());
 
 			MhtSaveOptions options = MhtSaveOptions.getDefaultMhtml();
 			options.setMhtFormatOptions(MhtFormatOptions.WriteHeader);
-			options.getFormatTemplates().get_Item("From").replace("From:", "Afzender:");
-			options.getFormatTemplates().get_Item("Sent").replace("Sent:", "Verzonden:");
-			options.getFormatTemplates().get_Item("Subject").replace("Subject:", "Onderwerp:");
-			options.getFormatTemplates().get_Item("Importance").replace("To:", "Aan:");
-			options.getFormatTemplates().get_Item("Cc").replace("Cc:", "Afzender:\t");
 
 			// Overrules the default documentname.
 			result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(eml.getSubject()));
 
-			// Save the Message to output stream in MHTML format
-			ByteArrayOutputStream emlStream = new ByteArrayOutputStream();
-
-			eml.save(emlStream, options);
+			File tempMHtmlFile = UniqueFileGenerator.getUniqueFile(getPdfOutputlocation(), this.getClass().getSimpleName(), null);
+			eml.save(tempMHtmlFile.getAbsolutePath(), options);
 
 			// Load the stream in Word document
 			HtmlLoadOptions loadOptions = new HtmlLoadOptions();
@@ -108,16 +115,20 @@ class MailConvertor extends AbstractConvertor {
 			loadOptions.setWebRequestTimeout(0);
 
 			Long startTime = new Date().getTime();
-			Document doc = new Document(new ByteArrayInputStream(emlStream.toByteArray()), loadOptions);
-			emlStream.close();
-			new Fontsetter(cisConversionService.getFontsDirectory()).setFontSettings(doc);
-			resizeInlineImages(doc);
+			try(FileInputStream fis = new FileInputStream(tempMHtmlFile)){
+				Document doc = new Document(fis, loadOptions);
+				new Fontsetter(cisConversionService.getFontsDirectory()).setFontSettings(doc);
+				resizeInlineImages(doc);
 
-			doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.PDF);
+				doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.PDF);
+				
+				result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
+				Long endTime = new Date().getTime();
+				LOGGER.info("Conversion completed in " + (endTime - startTime) + "ms");
+			}finally {
+				Files.delete(tempMHtmlFile.toPath());
+			}
 			
-			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
-			Long endTime = new Date().getTime();
-			LOGGER.debug("Conversion completed in " + (endTime - startTime) + "ms");
 
 			// Convert and (optional add) any attachment of the mail.
 			for (int index = 0; index < attachments.size(); index++) {
@@ -127,6 +138,22 @@ class MailConvertor extends AbstractConvertor {
 				// Convert the attachment.
 				CisConversionResult cisConversionResultAttachment = convertAttachmentInPdf(attachment,
 						conversionOption);
+				// If it is an singlepdf add the file to the the current pdf.
+				if ((ConversionOption.SINGLEPDF.equals(conversionOption)) 
+					&& (cisConversionResultAttachment.isConversionSuccessfull())) {
+					try {
+						PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(cisConversionResultAttachment, result.getPdfResultFile());
+						pdfAttachmentUtil.addAttachmentInSinglePdf();
+					} finally {
+						
+						deleteFile(cisConversionResultAttachment.getPdfResultFile());
+						
+						// Clear the file because it is now incorporated in the file it self. 
+						cisConversionResultAttachment.setPdfResultFile(null);
+						cisConversionResultAttachment.setResultFilePath(null);
+					}
+					
+				}
 				result.addAttachment(cisConversionResultAttachment);
 			}
 		}
@@ -209,14 +236,6 @@ class MailConvertor extends AbstractConvertor {
 		}
 
 		return result.toString();
-	}
-
-	private String toString(Date date) {
-		if (date == null) {
-			return "(null)";
-		} else {
-			return ConvertUtil.convertTimestampToStr(date);
-		}
 	}
 
 	@Override

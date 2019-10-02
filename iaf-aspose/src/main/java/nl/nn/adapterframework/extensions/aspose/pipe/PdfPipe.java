@@ -1,3 +1,18 @@
+/*
+   Copyright 2019 Integration Partners
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.extensions.aspose.pipe;
 
 import java.io.ByteArrayInputStream;
@@ -42,23 +57,22 @@ public class PdfPipe extends FixedForwardPipe {
 	private static final Logger LOGGER = Logger.getLogger(PdfPipe.class);
 	private static final String CONVERSION_OPTION = "CONVERSION_OPTION";
 	private boolean saveSeparate = false;
-	private String tempFolder = null;
+	private String pdfOutputLocation = null;
 	private String fontsDirectory;
 	private String license = null;
 	private String action = null;
 	private List<String> availableActions = Arrays.asList("combine", "convert");
 	private String mainDocumentSessionKey = "defaultMainDocumentSessionKey";
 	private String fileNameToAttachSessionKey = "defaultFileNameToAttachSessionKey";
-	protected String charset = "ISO-8859-1";
-	private int sessionkeyPostfixCounter = 0;
+	protected String charset = "UTF-8";
 	private boolean isTempDirCreated = false;
 	private AsposeLicenseLoader loader;
 	
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if(StringUtils.isNotEmpty(tempFolder)) {
-			File outputLocation = new File(tempFolder);
+		if(StringUtils.isNotEmpty(pdfOutputLocation)) {
+			File outputLocation = new File(pdfOutputLocation);
 			if (!outputLocation.exists()) {
 				throw new ConfigurationException(
 						"Pdf output location does not exist. Please specify an existing location ");
@@ -93,16 +107,15 @@ public class PdfPipe extends FixedForwardPipe {
 		} catch (Exception e) {
 			throw new ConfigurationException(e);
 		}
-
 	}
 
 	@Override
 	public void start() throws PipeStartException {
 		super.start();
-		if (StringUtils.isEmpty(tempFolder)) {
+		if (StringUtils.isEmpty(pdfOutputLocation)) {
 			try {
-				tempFolder = Files.createTempDirectory("Pdf").toString();
-				LOGGER.info("Temporary directory path : " + tempFolder);
+				pdfOutputLocation = Files.createTempDirectory("Pdf").toString();
+				LOGGER.info("Temporary directory path : " + pdfOutputLocation);
 				isTempDirCreated = true;
 			} catch (IOException e) {
 				throw new PipeStartException(e);
@@ -115,11 +128,11 @@ public class PdfPipe extends FixedForwardPipe {
 	public void stop() {
 		if(isTempDirCreated) {
 			try {
-				Files.delete(Paths.get(tempFolder));
-				LOGGER.info("Temporary directory is deleted : " + tempFolder);
-				tempFolder="";
+				Files.delete(Paths.get(pdfOutputLocation));
+				LOGGER.info("Temporary directory is deleted : " + pdfOutputLocation);
+				pdfOutputLocation="";
 			} catch (IOException e) {
-				LOGGER.debug("Could not delete the temp folder " + tempFolder);
+				LOGGER.debug("Could not delete the temp folder " + pdfOutputLocation);
 			}
 		}
 		super.stop();
@@ -170,35 +183,22 @@ public class PdfPipe extends FixedForwardPipe {
 
 		} else if ("convert".equalsIgnoreCase(action)) {
 			String fileName = (String) session.get("fileName");
-			long tsBeforeConvert = new Date().getTime();
 			CisConversionResult cisConversionResult = null;
 			try {
-				CisConversionService cisConversionService = new CisConversionServiceImpl(tempFolder, loader.getPathToExtractFonts());
+				CisConversionService cisConversionService = new CisConversionServiceImpl(pdfOutputLocation, loader.getPathToExtractFonts());
 				cisConversionResult = cisConversionService.convertToPdf(binaryInputStream, fileName,
-						saveSeparate ? ConversionOption.SEPERATEPDF : ConversionOption.SINGLEPDF);
-				long tsAfterConvert = new Date().getTime();
-				LOGGER.info("PDFPipe cisConversionService.convertToPdf( takes ::::: " + (tsAfterConvert - tsBeforeConvert)
-						+ " ms");
-				LOGGER.info(cisConversionResult.toString());
-
-				session.put(CONVERSION_OPTION, cisConversionResult.getConversionOption().getValue());
-				session.put("MEDIA_TYPE", cisConversionResult.getMediaType().toString());
-				session.put("DOCUMENT_NAME", cisConversionResult.getDocumentName());
-				session.put("FAILURE_REASON", cisConversionResult.getFailureReason());
-				session.put("PARENT_CONVERSION_ID", null);
-				session.put("CONVERTED_DOCUMENT", cisConversionResult.getResultFilePath());
-
+						saveSeparate ? ConversionOption.SEPARATEPDF : ConversionOption.SINGLEPDF);
 				XmlBuilder main = new XmlBuilder("main");
 				main.addAttribute(CONVERSION_OPTION, cisConversionResult.getConversionOption().getValue());
 				main.addAttribute("MEDIA_TYPE", cisConversionResult.getMediaType().toString());
 				main.addAttribute("DOCUMENT_NAME", cisConversionResult.getDocumentName());
 				main.addAttribute("FAILURE_REASON", cisConversionResult.getFailureReason());
 				main.addAttribute("PARENT_CONVERSION_ID", null);
-				main.addAttribute("CONVERTED_DOCUMENT_SESSION_KEY", "main");
+				main.addAttribute("NUMBER_OF_PAGES", cisConversionResult.getNumberOfPages());
+				main.addAttribute("CONVERTED_DOCUMENT", cisConversionResult.getResultFilePath());
 
 				buildXmlFromResult(main, cisConversionResult, session);
 				session.put("documents", main.toXML());
-				sessionkeyPostfixCounter = 0;
 			} catch (IOException e) {
 				throw new PipeRunException(this, "", e);
 			}
@@ -229,10 +229,8 @@ public class PdfPipe extends FixedForwardPipe {
 				attachmentAsXml.addAttribute("documentName", attachment.getDocumentName());
 				attachmentAsXml.addAttribute("failureReason", attachment.getFailureReason());
 				attachmentAsXml.addAttribute("numberOfPages", attachment.getNumberOfPages());
-				attachmentAsXml.addAttribute("convertedDocumentSessionKey", sessionkeyPostfixCounter + "");
-				session.put(sessionkeyPostfixCounter + "", attachment.getResultFilePath());
+				attachmentAsXml.addAttribute("filePath", attachment.getResultFilePath());
 				attachmentsAsXml.addSubElement(attachmentAsXml);
-				sessionkeyPostfixCounter++;
 
 				buildXmlFromResult(attachmentAsXml, attachment, session);
 			}
@@ -281,7 +279,7 @@ public class PdfPipe extends FixedForwardPipe {
 		return charset;
 	}
 
-	@IbisDoc({ "charset to be used to encode the given input string ", "ISO-8859-1" })
+	@IbisDoc({ "charset to be used to encode the given input string ", "UTF-8" })
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}
@@ -298,8 +296,17 @@ public class PdfPipe extends FixedForwardPipe {
 	public boolean isSaveSeparate() {
 		return saveSeparate;
 	}
-	@IbisDoc({ "when sets to false, converts the file including the attachments attached to the main file. when it is true, stores attachments in session keys. session keys will be consecutive numbers starting from 0", "false" })
+	@IbisDoc({ "when sets to false, converts the file including the attachments attached to the main file. when it is true, saves each attachment separately", "false" })
 	public void setSaveSeparate(boolean saveSeparate) {
 		this.saveSeparate = saveSeparate;
+	}
+
+	public String getPdfOutputLocation() {
+		return pdfOutputLocation;
+	}
+	
+	@IbisDoc({ "directory to save resulting pdf files after conversion. If not set then a temporary directory will be created and the conversion results will be stored in that directory.", "null" })
+	public void setPdfOutputLocation(String pdfOutputLocation) {
+		this.pdfOutputLocation = pdfOutputLocation;
 	}
 }
