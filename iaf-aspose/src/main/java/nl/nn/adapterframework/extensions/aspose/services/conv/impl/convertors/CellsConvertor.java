@@ -63,15 +63,6 @@ class CellsConvertor extends AbstractConvertor {
 		try (FileInputStream inputStream = new FileInputStream(file)) {
 			Workbook workbook = new Workbook(inputStream);
 
-			LOGGER.debug("Aangetroffen locale: " + workbook.getSettings().getLocale() + " en region: "
-					+ workbook.getSettings().getRegion());
-
-			workbook.getSettings().setLocale(Locale.GERMAN);
-			workbook.getSettings().setRegion(CountryCode.GERMANY);
-
-			LOGGER.debug("Overschreven met locale: " + workbook.getSettings().getLocale() + " en region: "
-					+ workbook.getSettings().getRegion());
-
 			Style style = workbook.getDefaultStyle();
 			LOGGER.debug("Default font: " + style.getFont());
 
