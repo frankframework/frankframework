@@ -14,6 +14,7 @@ public class DirectoryListenerTest extends FileSystemListenerTest<File, LocalFil
 	public IFileSystemListener<File> createFileSystemListener() {
 		DirectoryListener result=new DirectoryListener();
 		result.setInputDirectory(folder.getRoot().getAbsolutePath());
+		fileAndFolderPrefix=folder.getRoot().getAbsolutePath()+"/";
 		return result;
 	}
 	
