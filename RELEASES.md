@@ -15,9 +15,10 @@ Upcoming
 - Make ForEachChildElementPipe streaming when using elementXPathExpression
   Make Xslt streaming default for xsltVersion=1
 
-- Make DirectoryListener extend FileSystemListener. It no longer supports attributes wildcard, excludeWildcard, 
-  fileList, fileListForcedAfter, outputFilenamePattern, passWithoutDirectory, numberOfBackups, overwrite and random.
-  For compatibility with those attributes, the (deprecated) class DirectoryListenerOld is provided.
+### Non backwards compatible changes
+
+- Make DirectoryListener extend FileSystemListener. It no longer supports attributes fileList, 
+  fileListForcedAfter, outputFilenamePattern, passWithoutDirectory, numberOfBackups, overwrite and random.
 
 7.4
 --------

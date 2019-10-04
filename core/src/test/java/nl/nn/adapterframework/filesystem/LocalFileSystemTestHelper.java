@@ -52,7 +52,11 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 	@Override
 	public OutputStream _createFile(String folder, String filename) throws IOException {
 		File f = getFileHandle(folder, filename);
-		f.createNewFile();
+		try {
+			f.createNewFile();
+		} catch (IOException e) {
+			throw new IOException("Cannot create file ["+f.getAbsolutePath()+"]",e);
+		}
 		return new FileOutputStream(f);
 	}
 
