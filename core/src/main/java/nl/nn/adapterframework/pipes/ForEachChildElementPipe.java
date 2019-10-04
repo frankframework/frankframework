@@ -368,8 +368,8 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 				inputHandler = xphandler;
 				errorMessage="Could not process list of elements using xpath ["+getElementXPathExpression()+"]";
 			} 
-		} catch (TransformerConfigurationException e) {
-			throw new SenderException(e);
+		} catch (TransformerException e) {
+			throw new SenderException(errorMessage, e);
 		}
 
 		try {
@@ -386,11 +386,11 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		if (errorListener!=null) {
 			TransformerException tex = errorListener.getFatalTransformerException();
 			if (tex!=null) {
-				throw new SenderException(tex);
+				throw new SenderException(errorMessage,tex);
 			}
 			IOException iox = errorListener.getFatalIOException();
 			if (iox!=null) {
-				throw new SenderException(iox);
+				throw new SenderException(errorMessage,iox);
 			}
 		}
 	}
