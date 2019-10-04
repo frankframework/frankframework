@@ -21,6 +21,12 @@ public class XsltSenderTest extends XsltErrorTestBase<GenericMessageSendingPipe>
 		sender.setStyleSheetName(styleSheetName);		
 	}
 	
+
+	@Override
+	protected void setXpathExpression(String xpathExpression) {
+		sender.setXpathExpression(xpathExpression);		
+	}
+
 	@Override
 	protected void setOmitXmlDeclaration(boolean omitXmlDeclaration) {
 		sender.setOmitXmlDeclaration(omitXmlDeclaration);
