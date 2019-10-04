@@ -17,6 +17,7 @@ package nl.nn.adapterframework.senders;
 
 import java.io.File;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.LocalFileSystem;
 
@@ -26,8 +27,19 @@ public class LocalFileSystemSender extends FileSystemSender<File, LocalFileSyste
 		setFileSystem(new LocalFileSystem());
 	}
 	
+	@IbisDoc({"1", "Optional base folder, that serves as root for all other folders", ""})
 	public void setRoot(String root) {
 		getFileSystem().setRoot(root);
 	}
-	
+
+	@IbisDoc({"2", "Filter of files to look for in inputdirectory, e.g. '*.inp'", ""})
+	public void setWildcard(String wildcard) {
+		getFileSystem().setWildcard(wildcard);
+	}
+
+	@IbisDoc({"3", "Filter of files to be excluded when looking in inputdirectory", ""})
+	public void setExcludeWildcard(String excludeWildcard) {
+		getFileSystem().setExcludeWildcard(excludeWildcard);
+	}
+
 }

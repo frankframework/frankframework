@@ -31,10 +31,13 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.util.WildCardFilter;
 
 public class LocalFileSystem implements IWritableFileSystem<File> {
 
 	private String root;
+	private String wildcard;
+	private String excludeWildcard;
 
 	private class FilePathIterator implements Iterator<File> {
 
@@ -92,12 +95,17 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 				path+="/"+folder;
 			}
 		}
-		File dir = StringUtils.isNotEmpty(path)?new File(path):new File("/");
+		final File dir = StringUtils.isNotEmpty(path)?new File(path):new File("/");
+		final WildCardFilter wildcardfilter =  StringUtils.isEmpty(getWildcard()) ? null : new WildCardFilter(getWildcard());
+		final WildCardFilter excludeFilter =  StringUtils.isEmpty(getExcludeWildcard()) ? null : new WildCardFilter(getExcludeWildcard());
+
 		FileFilter filter = new FileFilter() {
 
 			@Override
-			public boolean accept(File pathname) {
-				return pathname.isFile();
+			public boolean accept(File file) {
+				return file.isFile() 
+						&& (wildcardfilter==null || wildcardfilter.accept(dir, file.getName()))
+						&& (excludeFilter==null || !excludeFilter.accept(dir, file.getName()));
 			}
 			
 		};
@@ -231,5 +239,20 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 		return root;
 	}
 
+	@IbisDoc({"2", "filter of files to look for in inputdirectory, e.g. '*.inp'", ""})
+	public void setWildcard(String wildcard) {
+		this.wildcard = wildcard;
+	}
+	public String getWildcard() {
+		return wildcard;
+	}
+
+	@IbisDoc({"3", "filter of files to be excluded when looking in inputdirectory", ""})
+	public void setExcludeWildcard(String excludeWildcard) {
+		this.excludeWildcard = excludeWildcard;
+	}
+	public String getExcludeWildcard() {
+		return excludeWildcard;
+	}
 
 }
