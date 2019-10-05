@@ -44,6 +44,7 @@ import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
@@ -112,7 +113,15 @@ public class ConfigurationDigester {
 	}
 
 	public Digester getDigester(Configuration configuration) throws SAXNotSupportedException, SAXNotRecognizedException {
-		Digester digester = new Digester();
+		Digester digester = new Digester() {
+			@Override
+			public SAXException createSAXException(String message, Exception e) {
+				// do additional logging, as the creation of a SAXException appears to discard the proper stacktrace
+				log.warn("Exception while digesting: "+message,e);
+				return super.createSAXException(message, e);
+			}
+		};
+		
 		digester.setUseContextClassLoader(true);
 		digester.push(configuration);
 
