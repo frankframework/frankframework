@@ -1,0 +1,84 @@
+<div class="wrapper wrapper-content animated fadeInRight" ng-controller="LarvaCtrl">
+    <div class="row">
+<!--        Form to execute tests..-->
+        <form>
+            <div class="form-row">
+                <div class="form-group col-lg-8">
+                    <label for="scenarios">Scenarios:</label>
+                    <select class="form-control" id="scenarios" ng-model="form.scenarios">
+                        <option ng-repeat="scenario in scenarios">{{scenario.name}}</option>
+                    </select>
+                </div>
+                <div class="form-group col-lg-4">
+                    <label for="threads">Number of Threads:</label>
+                    <input type="number" min="1" class="form-control" id="threads" value="1" data-toggle="tooltip" title="Number of threads to use for running the tests. (default: 1)" ng-model="form.threads"/>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-lg-6">
+                    <label for="root-directories">Root Directory:</label>
+                    <select class="form-control" id="root-directories" ng-model="form.rootDirectories">
+                        <option ng-repeat="directory in rootDirectories">{{directory.shortname}}</option>
+                    </select>
+                </div>
+                <div class="form-group col-lg-1">
+                    <label for="waitcleanup">Wait before clean up:</label>
+                    <input type="number" min="1" class="form-control" id="waitcleanup" name="waitcleanup"/>
+                </div>
+                <div class="form-group col-lg-2">
+                    <label for="log-level">Log Level:</label>
+                    <select class="form-control" id="log-level" ng-model="form.logLevel">
+                        <option ng-repeat="level in logLevels">{{level}}</option>
+                    </select>
+                </div>
+                <div class="form-group col-lg-1">
+                    <input type="checkbox" class="form-check-input" id="autoscroll" name="autoscroll"/>
+                    <label class="form-check-label" for="autoscroll">Auto Scroll</label>
+                </div>
+                <div class="form-group col-lg-1">
+                    <button type="submit" class="btn btn-primary form-control" name="run">Run</button>
+                </div>
+            </div>
+        </form>
+    </div>
+<!--    Table for displaying status of running tests-->
+    <div class="row">
+        <table class="table table-condensed" style="border-collapse: collapse;">
+            <thead>
+            <tr>
+                <td>
+                    Scenario Name
+                </td>
+                <td>
+                    Status
+                </td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="test in tests" ng-click="testDetails(test)" ng-class="assignClass(test)">
+                <td>{{test.name}}</td>
+                <td>{{test.status}}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<!--Modal for detailed test output explanation -->
+<div class="modal fade" id="test-details" tabindex="-1" role="dialog" aria-labelledby="testDetailsModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTestTitle">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+<!--                To be populated when any of the row is clicked-->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
