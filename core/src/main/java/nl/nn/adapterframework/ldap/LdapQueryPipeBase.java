@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2019 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
 /**
  * Base pipe for querying LDAP.
  * 
- * @author Peter Leeuwenburgh
+ * @author Gerrit van Brakel
  */
 public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 	
@@ -178,7 +178,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 	}
 
 
-	@IbisDoc({"9", "pipeforward used when an exception is caught", ""})
+	@IbisDoc({"9", "PipeForward used when an exception is caught", ""})
 	public void setExceptionForwardName(String string) {
 		exceptionForwardName = string;
 	}

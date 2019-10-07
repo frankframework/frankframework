@@ -35,10 +35,33 @@ import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * Pipe that returns the memberships of a userDN.
+ * The input is a fullDn, of a user or a group.
+ * </pre></code> <br/>
+ * Sample result:<br/><code><pre>
+ *	&lt;ldap&gt;
+ *	 &lt;entry name="CN=ni83nz,OU=Users,OU=PRD,OU=AB,OU=Tenants,DC=INSIM,DC=BIZ"&gt;
+ *	   &lt;attributes&gt;
+ *	    &lt;attribute&gt;
+ *	    &lt;attribute name="memberOf" value="Extern"/&gt;
+ *	    &lt;attribute name="roomNumber" value="DP 2.13.025"/&gt;
+ *	    &lt;attribute name="departmentCode" value="358000"/&gt;
+ *	    &lt;attribute name="organizationalHierarchy"&gt;
+ *	        &lt;item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
+ *	        &lt;item value="ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
+ *	        &lt;item value="ou=000001,ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
+ *	    &lt;/attribute>
+ *	    &lt;attribute name="givenName" value="Gerrit"/>
+ *	   &lt;/attributes&gt;
+ *	  &lt;/entry&gt;
+ *   &lt;entry&gt; .... &lt;/entry&gt;
+ *   .....
+ *	&lt;/ldap&gt;
+ * </pre></code> <br/>
+
  * 
  * @author Gerrit van Brakel
  */
-public class LdapFindMembershipsPipe extends LdapQueryPipeBase implements ICacheEnabled<String,Set<String>> {
+public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements ICacheEnabled<String,Set<String>> {
 	
 	private boolean recursiveSearch = true;
 	
@@ -94,9 +117,15 @@ public class LdapFindMembershipsPipe extends LdapQueryPipeBase implements ICache
 			} else {
 				memberships= ldapClient.searchObjectForMultiValuedAttribute(searchedDN, getBaseDN(), "memberOf");
 			}
-			XmlBuilder result = new XmlBuilder("memberships");
+			XmlBuilder result = new XmlBuilder("ldap");
+			result.addSubElement("entryName", searchedDN);
+			XmlBuilder attributes = new XmlBuilder("attributes");
+			result.addSubElement(attributes);
 			for (String membership:memberships) {
-				result.addSubElement("membership", membership);
+				XmlBuilder attribute = new XmlBuilder("attribute");
+				attribute.addAttribute("attrID", "memberOf");
+				attribute.setValue(membership,true);
+				attributes.addSubElement(attribute);
 			}
 			return new PipeRunResult(getForward(), result.toXML());
 		} catch (NamingException e) {
