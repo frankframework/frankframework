@@ -72,6 +72,7 @@ public class ConfigurationUtils {
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.autoDatabaseClassLoader", false);
 	private static final String CONFIGURATIONS = APP_CONSTANTS.getResolvedProperty("configurations.names.application");
+	public static String ADDITIONAL_PROPERTIES_FILE_SUFFIX = APP_CONSTANTS.getString("ADDITIONAL.PROPERTIES.FILE.SUFFIX", null);
 
 	public static boolean stubConfiguration() {
 		return stubConfiguration(null);
@@ -283,7 +284,77 @@ public class ConfigurationUtils {
 		}
 	}
 
-	public static boolean makeConfigActive(IbisContext ibisContext, String name, String version, String jmsRealm) throws ConfigurationException {
+	/**
+	 * Set the all ACTIVECONFIG to false and specified version to true
+	 * @param value 
+	 */
+	public static boolean activateConfig(IbisContext ibisContext, String name, String version, boolean value, String jmsRealm) throws SenderException, ConfigurationException, JdbcException, SQLException {
+		String workJmsRealm = jmsRealm;
+		if (StringUtils.isEmpty(workJmsRealm)) {
+			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
+			if (StringUtils.isEmpty(workJmsRealm)) {
+				return false;
+			}
+		}
+
+		Connection conn = null;
+		ResultSet rs = null;
+		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		qs.setJmsRealm(workJmsRealm);
+		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
+		qs.configure();
+		String booleanValueFalse = qs.getDbmsSupport().getBooleanValue(false);
+		String booleanValueTrue = qs.getDbmsSupport().getBooleanValue(true);
+
+		try {
+			qs.open();
+			conn = qs.getConnection();
+			int updated = 0;
+
+			String selectQuery = "SELECT NAME FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
+			PreparedStatement selectStmt = conn.prepareStatement(selectQuery);
+			selectStmt.setString(1, name);
+			selectStmt.setString(2, version);
+			rs = selectStmt.executeQuery();
+			if(rs.next()) {
+				String query = "UPDATE IBISCONFIG SET ACTIVECONFIG='"+booleanValueFalse+"' WHERE NAME=?";
+
+				PreparedStatement stmt = conn.prepareStatement(query);
+				stmt.setString(1, name);
+				updated = stmt.executeUpdate();
+
+				if(updated > 0) {
+					String query2 = "UPDATE IBISCONFIG SET ACTIVECONFIG='"+booleanValueTrue+"' WHERE NAME=? AND VERSION=?";
+					PreparedStatement stmt2 = conn.prepareStatement(query2);
+					stmt2.setString(1, name);
+					stmt2.setString(2, version);
+					return (stmt2.executeUpdate() > 0) ? true : false;
+				}
+			}
+		} finally {
+			qs.close();
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					log.warn("Could not close resultset", e);
+				}
+			}
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					log.warn("Could not close connection", e);
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Toggle AUTORELOAD
+	 */
+	public static boolean autoReloadConfig(IbisContext ibisContext, String name, String version, boolean booleanValue, String jmsRealm) throws SenderException, ConfigurationException, JdbcException, SQLException {
 		String workJmsRealm = jmsRealm;
 		if (StringUtils.isEmpty(workJmsRealm)) {
 			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
@@ -302,7 +373,6 @@ public class ConfigurationUtils {
 		try {
 			qs.open();
 			conn = qs.getConnection();
-			int updated = 0;
 
 			String selectQuery = "SELECT NAME FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
 			PreparedStatement selectStmt = conn.prepareStatement(selectQuery);
@@ -310,25 +380,13 @@ public class ConfigurationUtils {
 			selectStmt.setString(2, version);
 			rs = selectStmt.executeQuery();
 			if(rs.next()) {
-				String query = ("UPDATE IBISCONFIG SET ACTIVECONFIG = '"+(qs.getDbmsSupport().getBooleanValue(false))+"' WHERE NAME=?");
+				String query = "UPDATE IBISCONFIG SET AUTORELOAD='"+qs.getDbmsSupport().getBooleanValue(booleanValue)+"' WHERE NAME=? AND VERSION=?";
+
 				PreparedStatement stmt = conn.prepareStatement(query);
 				stmt.setString(1, name);
-				updated = stmt.executeUpdate();
-	
-				if(updated > 0) {
-					String query2 = ("UPDATE IBISCONFIG SET ACTIVECONFIG = '"+(qs.getDbmsSupport().getBooleanValue(true))+"' WHERE NAME=? AND VERSION=?");
-					PreparedStatement stmt2 = conn.prepareStatement(query2);
-					stmt2.setString(1, name);
-					stmt2.setString(2, version);
-					return (stmt2.executeUpdate() > 0) ? true : false;
-				}
+				stmt.setString(2, version);
+				return stmt.executeUpdate() > 0;
 			}
-		} catch (SenderException e) {
-			throw new ConfigurationException(e);
-		} catch (JdbcException e) {
-			throw new ConfigurationException(e);
-		} catch (SQLException e) {
-			throw new ConfigurationException(e);
 		} finally {
 			qs.close();
 			if (rs != null) {
@@ -456,7 +514,12 @@ public class ConfigurationUtils {
 			if (!zipEntry.isDirectory()) {
 				String entryName = zipEntry.getName();
 				String entryNameMinusPath = FilenameUtils.getName(entryName);
-				if ("BuildInfo_SC.properties".equals(entryNameMinusPath)) {
+
+				String buildInfoFilename = "BuildInfo";
+				if(StringUtils.isNotEmpty(ADDITIONAL_PROPERTIES_FILE_SUFFIX))
+					buildInfoFilename += ADDITIONAL_PROPERTIES_FILE_SUFFIX;
+
+				if((buildInfoFilename+".properties").equals(entryNameMinusPath)) {
 					name = FilenameUtils.getPathNoEndSeparator(entryName);
 					byte[] b = new byte[4096];
 					int rb = 0;
