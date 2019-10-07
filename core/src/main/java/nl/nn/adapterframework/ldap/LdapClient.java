@@ -1,86 +1,18 @@
 /*
- * $Log$
- * Revision 1.25  2016/05/09 12:11:33  L190409
- * removed unused imports
- *
- * Revision 1.24  2016/05/09 09:57:05  L190409
- * log cert path validator errors
- *
- * Revision 1.23  2016/03/14 20:31:23  L190409
- * WIS-543 renamed groupsMembershipsCache into attributeCache
- *
- * Revision 1.22  2016/03/14 16:07:49  L190409
- * WIS-543 generic support for caching
- *
- * Revision 1.21  2016/02/10 09:44:51  L190409
- * simplified recursive search, improved logging
- *
- * Revision 1.20  2016/01/27 16:27:09  L190409
- * modified search functions, to include searches for multiple and multi valued attributes
- *
- * Revision 1.19  2015/07/13 12:59:03  L190409
- * improved logging
- *
- * Revision 1.18  2015/06/08 09:52:35  L190409
- * WIS-118 made LDAP JVM properties configurable
- *
- * Revision 1.17  2015/04/30 14:41:07  m98c853
- * Javadoc updated to have configuration details.
- *
- * Revision 1.16  2015/04/29 07:06:42  L190409
- * cosmetics
- *
- * Revision 1.15  2015/04/24 15:28:26  m98c853
- * configureLDAPPoolProperties() removed as all custom properties are set through LDAP.properties.
- *
- * Revision 1.14  2015/04/24 14:31:18  m98c853
- * LDAP connection pool custom properties updated in static block during first access of the LDAPClient
- *
- * Revision 1.13  2015/04/22 11:02:32  m98c853
- * Mothods to update LDAP connection pool settings added.
- *
- * Revision 1.12  2015/04/16 16:00:08  m98c853
- * Updated so that authentication calls are not pooled.
- *
- * Revision 1.11  2014/12/22 13:25:03  L190409
- * increased default groupsMemberships cache timeout to 3600s
- *
- * Revision 1.10  2014/10/01 11:26:52  L190409
- * enable caching of memberships of groups
- *
- * Revision 1.9  2014/07/31 14:43:05  L190409
- * make alias key public
- *
- * Revision 1.8  2014/04/02 06:31:08  L190409
- * avoid threading problems
- *
- * Revision 1.7  2014/03/10 15:05:17  L190409
- * avoid NPE with empty username or password
- *
- * Revision 1.6  2014/03/05 00:07:48  L190409
- * iufdirmig rework
- *
- * Revision 1.5  2014/02/11 14:56:31  L190409
- * avoid pooling in authentication
- *
- * Revision 1.4  2014/02/10 15:40:49  L190409
- * close context after every search
- *
- * Revision 1.3  2014/02/07 01:05:38  L190409
- * sync with iufdirmig version
- *
- * Revision 1.2  2013/12/24 07:27:42  L190409
- * introduction of LoginModules
- *
- * Revision 1.1  2013/03/27 09:39:40  m06e523
- * changed project. Added EncryptedLinkTAI and made project maven ready by changing the source directory structure. Renewed the build to use a two step build. the dist directory holds the files that should be distributed.
- *
- * Revision 1.2  2012/10/22 11:26:33  l190409
- * cosmetic
- *
- * Revision 1.1  2011/09/26 14:27:33  l190409
- * first version
- *
+/*
+   Copyright 2019 Integration Partners
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
  */
 package nl.nn.adapterframework.ldap;
 
