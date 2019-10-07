@@ -114,11 +114,16 @@ In some cases you might want/need to:
 ## Developing with IntelliJ
 
 - Clone this any way you like. E.g. at the commandline: git clone git@github.com:ibissource/iaf.git
-- File -> Open project, and select the pom.xml which just appeared.
-- To use git via intellij you need to install the git and/or github plugin.
-- You can add a tomcat configuration via Run-> Edit Configuration -> + -> Tomcat Server -> Local -> Add example webapp under deployments tab.
-- Run it
-
+- From File -> Open... Select iaf folder and import it as a Maven project.
+- Make sure to select Java 7 or Java 8 as a default JDK.
+- Download Tomcat 8.5 from https://tomcat.apache.org/download-80.cgi and export it anywhere you like. (On windows make sure to extract it on a folder which can be edited by non-admin users.)
+- On top right click "Add Configurations..." then click + button. Click "More items" on the bottom of the list and select Tomcat Server -> Local from the new list.
+- Click Configure next to the Application Server and Select your Tomcat Home directory.
+- Add -Dotap.stage=LOC to the VM Options
+- On deployment tab click + -> artifacts... and then select ibis-adapterframework-example:war
+- Name your configuration and save it
+- Open Maven window by clicking Maven button on your right and open execution window by clicking "m" button. Then run command "mvn clean install -Dmaven.javadoc.skip=true verify"
+- Run your configuration and you are ready to go.
 
 Thanks,
 The IAF Team
