@@ -51,6 +51,9 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
 	public void configure() throws ConfigurationException {
+		if(StringUtils.isEmpty(getUriPattern()))
+			throw new ConfigurationException("uriPattern cannot be empty");
+
 		if(!getConsumes().equals("ANY")) {
 			if(getMethod().equals("GET"))
 				throw new ConfigurationException("cannot set consumes attribute when using method [GET]");
@@ -104,8 +107,16 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 	public String getUriPattern() {
 		return uriPattern;
 	}
+
+	/**
+	 * returns the clear pattern, replaces everything between <code>{}</code> to <code>*</code>
+	 * @return null if no pattern is found
+	 */
 	public String getCleanPattern() {
-		String pattern = uriPattern;
+		String pattern = getUriPattern();
+		if(StringUtils.isEmpty(pattern))
+			return null;
+
 		if(pattern.startsWith("/"))
 			pattern = pattern.substring(1);
 
@@ -177,7 +188,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 
 	@Override
 	public String toString() {
-		return this.getClass().toString() + "["+getPhysicalDestinationName()+"] "
+		return this.getClass().toString() + "uriPattern["+getUriPattern()+"] produces["+getProduces()+"] consumes["+getConsumes()+"] "
 				+ "contentType["+getContentType()+"] updateEtag["+getUpdateEtag()+"]";
 	}
 

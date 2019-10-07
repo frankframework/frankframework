@@ -55,8 +55,9 @@ public class ApiCacheManager {
 
 	public static String getParentCacheKey(ApiListener listener, String uri) {
 		String method = listener.getMethod();
+		String pattern = listener.getCleanPattern();
 		// Not only remove the eTag for the selected resources but also the collection
-		if((method.equals("PUT") || method.equals("DELETE")) && listener.getCleanPattern().endsWith("/*")) {
+		if((method.equals("PUT") || method.equals("DELETE")) && pattern != null && pattern.endsWith("/*")) {
 			//Check the amount of asterisks, if there is only 1, this will return false
 			if(listener.getCleanPattern().indexOf("*") < listener.getCleanPattern().lastIndexOf("*")) {
 				//Get collection uri

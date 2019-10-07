@@ -77,6 +77,9 @@ public class ApiServiceDispatcher {
 
 	public void registerServiceClient(ApiListener listener) throws ListenerException {
 		String uriPattern = listener.getCleanPattern();
+		if(uriPattern == null)
+			throw new ListenerException("uriPattern cannot be null or empty");
+
 		String method = listener.getMethod();
 
 		ApiDispatchConfig dispatchConfig = null;
@@ -94,11 +97,15 @@ public class ApiServiceDispatcher {
 	public void unregisterServiceClient(ApiListener listener) {
 		String method = listener.getMethod();
 		String uriPattern = listener.getCleanPattern();
+		if(uriPattern == null) {
+			log.warn("uriPattern cannot be null or empty, unable to unregister ServiceClient");
+		}
+		else {
+			ApiDispatchConfig dispatchConfig = patternClients.get(uriPattern);
+			dispatchConfig.destroy(method);
 
-		ApiDispatchConfig dispatchConfig = patternClients.get(uriPattern);
-		dispatchConfig.destroy(method);
-
-		log.trace("ApiServiceDispatcher successfully unregistered uriPattern ["+uriPattern+"] method ["+method+"]");
+			log.trace("ApiServiceDispatcher successfully unregistered uriPattern ["+uriPattern+"] method ["+method+"]");
+		}
 	}
 	
 	public SortedMap<String, ApiDispatchConfig> getPatternClients() {
