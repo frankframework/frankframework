@@ -117,11 +117,11 @@ public class ConfigurationDigester {
 			@Override
 			public SAXException createSAXException(String message, Exception e) {
 				// do additional logging, as the creation of a SAXException appears to discard the proper stacktrace
-				log.warn("Exception while digesting: "+message,e);
+				LOG.warn("Exception while digesting: "+message,e);
 				return super.createSAXException(message, e);
 			}
 		};
-		
+
 		digester.setUseContextClassLoader(true);
 		digester.push(configuration);
 
