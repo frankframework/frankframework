@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -55,7 +56,7 @@ class MailConvertor extends AbstractConvertor {
 			.convertCmToPoints(PageConvertUtil.PAGE_WIDHT_IN_CM - 2 * 1.1f);
 	private static final float MaxImageHeightInPoints = PageConvertUtil
 			.convertCmToPoints(PageConvertUtil.PAGE_HEIGTH_IN_CM - 2 * 1.1f);
-
+	private final String eMailHeaderDateFormat = "dd-MM-yyyy HH:mm:ss";
 	private CisConversionService cisConversionService;
 
 	// contains mapping from MediaType to the LoadOption for the aspose word
@@ -100,11 +101,12 @@ class MailConvertor extends AbstractConvertor {
 
 			MhtSaveOptions options = MhtSaveOptions.getDefaultMhtml();
 			options.setMhtFormatOptions(MhtFormatOptions.WriteHeader);
-
+			options.setPreserveOriginalDate(true);
 			// Overrules the default documentname.
 			result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(eml.getSubject()));
 
 			File tempMHtmlFile = UniqueFileGenerator.getUniqueFile(getPdfOutputlocation(), this.getClass().getSimpleName(), null);
+			eml.getHeaders().set_Item("Date", new SimpleDateFormat(eMailHeaderDateFormat).format(eml.getDate()));
 			eml.save(tempMHtmlFile.getAbsolutePath(), options);
 
 			// Load the stream in Word document

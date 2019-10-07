@@ -25,6 +25,7 @@ import org.apache.tika.mime.MediaType;
 import com.google.common.base.MoreObjects;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
+import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
@@ -198,5 +199,42 @@ public class CisConversionResult {
 				.add("mediaType", getMediaType()).add("documentName", getDocumentName())
 				.add("pdfResultFile", getPdfResultFile() == null ? "null" : getPdfResultFile().getName())
 				.add("failureReason", getFailureReason()).add("attachments", getAttachments()).toString();
+	}
+
+	/**
+	 * Creates and xml containing conversion results both attachments and the main document.
+	 * @param main
+	 * @param cisConversionResult 
+	 * @param session
+	 */
+	public void buildXmlFromResult(XmlBuilder main, CisConversionResult cisConversionResult, boolean isRoot) {
+		if(isRoot) {
+			main.addAttribute("CONVERSION_OPTION", this.getConversionOption().getValue());
+			main.addAttribute("MEDIA_TYPE", this.getMediaType().toString());
+			main.addAttribute("DOCUMENT_NAME", this.getDocumentName());
+			main.addAttribute("FAILURE_REASON", this.getFailureReason());
+			main.addAttribute("PARENT_CONVERSION_ID", null);
+			main.addAttribute("NUMBER_OF_PAGES", this.getNumberOfPages());
+			main.addAttribute("CONVERTED_DOCUMENT", this.getResultFilePath());
+		}
+		List<CisConversionResult> attachmentList = cisConversionResult.getAttachments();
+		if (attachmentList != null && !attachmentList.isEmpty()) {
+			XmlBuilder attachmentsAsXml = new XmlBuilder("attachments");
+			for (int i = 0; i < attachmentList.size(); i++) {
+				CisConversionResult attachment = attachmentList.get(i);
+
+				XmlBuilder attachmentAsXml = new XmlBuilder("attachment");
+				attachmentAsXml.addAttribute("conversionOption", attachment.getConversionOption().getValue() + "");
+				attachmentAsXml.addAttribute("mediaType", attachment.getMediaType().toString());
+				attachmentAsXml.addAttribute("documentName", attachment.getDocumentName());
+				attachmentAsXml.addAttribute("failureReason", attachment.getFailureReason());
+				attachmentAsXml.addAttribute("numberOfPages", attachment.getNumberOfPages());
+				attachmentAsXml.addAttribute("filePath", attachment.getResultFilePath());
+				attachmentsAsXml.addSubElement(attachmentAsXml);
+
+				buildXmlFromResult(attachmentAsXml, attachment, false);
+			}
+			main.addSubElement(attachmentsAsXml);
+		}
 	}
 }

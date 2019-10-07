@@ -124,7 +124,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 				// Convertor found, convert the file
 				result = convertor.convertToPdf(mediaType, filename, file, conversionOption);
 
-				LOGGER.info(String.format("Convert (in %d msec): mediatype: %s, filename: %s, attachmentoptions: %s",
+				LOGGER.debug(String.format("Convert (in %d msec): mediatype: %s, filename: %s, attachmentoptions: %s",
 						System.currentTimeMillis() - startTime, mediaType, filename, conversionOption));
 			}
 		}
@@ -140,7 +140,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 		}
 		msg.append(" " + message);
 
-		LOGGER.info("Conversion not supported: " + msg.toString());
+		LOGGER.warn("Conversion not supported: " + msg.toString());
 
 		result = CisConversionResult.createFailureResult(conversionOption, mediaType, filename, msg.toString());
 		return result;

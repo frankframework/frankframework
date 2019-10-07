@@ -25,11 +25,9 @@ import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -54,8 +52,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class PdfPipe extends FixedForwardPipe {
 
-	private static final Logger LOGGER = Logger.getLogger(PdfPipe.class);
-	private static final String CONVERSION_OPTION = "CONVERSION_OPTION";
 	private boolean saveSeparate = false;
 	private String pdfOutputLocation = null;
 	private String fontsDirectory;
@@ -115,7 +111,7 @@ public class PdfPipe extends FixedForwardPipe {
 		if (StringUtils.isEmpty(pdfOutputLocation)) {
 			try {
 				pdfOutputLocation = Files.createTempDirectory("Pdf").toString();
-				LOGGER.info("Temporary directory path : " + pdfOutputLocation);
+				log.info("Temporary directory path : " + pdfOutputLocation);
 				isTempDirCreated = true;
 			} catch (IOException e) {
 				throw new PipeStartException(e);
@@ -129,10 +125,10 @@ public class PdfPipe extends FixedForwardPipe {
 		if(isTempDirCreated) {
 			try {
 				Files.delete(Paths.get(pdfOutputLocation));
-				LOGGER.info("Temporary directory is deleted : " + pdfOutputLocation);
+				log.info("Temporary directory is deleted : " + pdfOutputLocation);
 				pdfOutputLocation="";
 			} catch (IOException e) {
-				LOGGER.debug("Could not delete the temp folder " + pdfOutputLocation);
+				log.debug("Could not delete the temp folder " + pdfOutputLocation);
 			}
 		}
 		super.stop();
@@ -140,7 +136,6 @@ public class PdfPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		long start = new Date().getTime();
 		InputStream binaryInputStream = null;
 		if (input instanceof InputStream) {
 			binaryInputStream = (InputStream) input;
@@ -178,7 +173,7 @@ public class PdfPipe extends FixedForwardPipe {
 
 			InputStream result = PdfAttachmentUtil.combineFiles(mainPdf, binaryInputStream, fileNameToAttach + ".pdf");
 
-			session.put(CONVERSION_OPTION, ConversionOption.SINGLEPDF);
+			session.put("CONVERSION_OPTION", ConversionOption.SINGLEPDF);
 			session.put(mainDocumentSessionKey, result);
 
 		} else if ("convert".equalsIgnoreCase(action)) {
@@ -189,53 +184,14 @@ public class PdfPipe extends FixedForwardPipe {
 				cisConversionResult = cisConversionService.convertToPdf(binaryInputStream, fileName,
 						saveSeparate ? ConversionOption.SEPARATEPDF : ConversionOption.SINGLEPDF);
 				XmlBuilder main = new XmlBuilder("main");
-				main.addAttribute(CONVERSION_OPTION, cisConversionResult.getConversionOption().getValue());
-				main.addAttribute("MEDIA_TYPE", cisConversionResult.getMediaType().toString());
-				main.addAttribute("DOCUMENT_NAME", cisConversionResult.getDocumentName());
-				main.addAttribute("FAILURE_REASON", cisConversionResult.getFailureReason());
-				main.addAttribute("PARENT_CONVERSION_ID", null);
-				main.addAttribute("NUMBER_OF_PAGES", cisConversionResult.getNumberOfPages());
-				main.addAttribute("CONVERTED_DOCUMENT", cisConversionResult.getResultFilePath());
-
-				buildXmlFromResult(main, cisConversionResult, session);
+				cisConversionResult.buildXmlFromResult(main, cisConversionResult, true);
+				
 				session.put("documents", main.toXML());
 			} catch (IOException e) {
 				throw new PipeRunException(this, "", e);
 			}
-			
 		}
-		long end = new Date().getTime();
-		LOGGER.info("PDFPipe doPipe takes ::::: " + (end - start) + " ms");
 		return new PipeRunResult(getForward(), "");
-	}
-	/**
-	 * Creates and xml containing conversion results both attachments and the main document.
-	 * @param main
-	 * @param cisConversionResult
-	 * @param session
-	 */
-	private void buildXmlFromResult(XmlBuilder main, CisConversionResult cisConversionResult,
-			IPipeLineSession session) {
-
-		List<CisConversionResult> attachments = cisConversionResult.getAttachments();
-		if (attachments != null && !attachments.isEmpty()) {
-			XmlBuilder attachmentsAsXml = new XmlBuilder("attachments");
-			for (int i = 0; i < attachments.size(); i++) {
-				CisConversionResult attachment = attachments.get(i);
-
-				XmlBuilder attachmentAsXml = new XmlBuilder("attachment");
-				attachmentAsXml.addAttribute("conversionOption", attachment.getConversionOption().getValue() + "");
-				attachmentAsXml.addAttribute("mediaType", attachment.getMediaType().toString());
-				attachmentAsXml.addAttribute("documentName", attachment.getDocumentName());
-				attachmentAsXml.addAttribute("failureReason", attachment.getFailureReason());
-				attachmentAsXml.addAttribute("numberOfPages", attachment.getNumberOfPages());
-				attachmentAsXml.addAttribute("filePath", attachment.getResultFilePath());
-				attachmentsAsXml.addSubElement(attachmentAsXml);
-
-				buildXmlFromResult(attachmentAsXml, attachment, session);
-			}
-			main.addSubElement(attachmentsAsXml);
-		}
 	}
 
 	public String getAction() {

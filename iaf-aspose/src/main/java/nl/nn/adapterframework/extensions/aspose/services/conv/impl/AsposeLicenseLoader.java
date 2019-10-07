@@ -143,7 +143,7 @@ public class AsposeLicenseLoader {
 				com.aspose.words.License asposeLicense = new com.aspose.words.License();
 				if (!asposeLicense.isLicensed()) {
 					asposeLicense.setLicense(licenseInputStream);
-					LOGGER.warn("Aspose loading License for words...");
+					LOGGER.info("Aspose loading License for words...");
 				}
 			}
 		}, "words");
@@ -156,7 +156,7 @@ public class AsposeLicenseLoader {
 				public void loadLicense(InputStream licenseInputStream) throws Exception {
 					com.aspose.cells.License asposeLicense = new com.aspose.cells.License();
 					asposeLicense.setLicense(licenseInputStream);
-					LOGGER.warn("Aspose loading License for cells...");
+					LOGGER.info("Aspose loading License for cells...");
 				}
 			}, "cells");
 		}
@@ -168,7 +168,7 @@ public class AsposeLicenseLoader {
 				com.aspose.email.License asposeLicense = new com.aspose.email.License();
 				if (!asposeLicense.isLicensed()) {
 					asposeLicense.setLicense(licenseInputStream);
-					LOGGER.warn("Aspose loading License for email...");
+					LOGGER.info("Aspose loading License for email...");
 				}
 
 			}
@@ -182,7 +182,7 @@ public class AsposeLicenseLoader {
 				public void loadLicense(InputStream licenseInputStream) throws Exception {
 					com.aspose.pdf.License asposeLicense = new com.aspose.pdf.License();
 					asposeLicense.setLicense(licenseInputStream);
-					LOGGER.warn("Aspose loading License for pdf...");
+					LOGGER.info("Aspose loading License for pdf...");
 				}
 			}, "pdf");
 		}
@@ -195,7 +195,7 @@ public class AsposeLicenseLoader {
 				com.aspose.slides.License asposeLicense = new com.aspose.slides.License();
 				if (!asposeLicense.isLicensed()) {
 					asposeLicense.setLicense(licenseInputStream);
-					LOGGER.warn("Aspose loading License for slides...");
+					LOGGER.info("Aspose loading License for slides...");
 				}
 			}
 		}, "slides");
@@ -208,7 +208,7 @@ public class AsposeLicenseLoader {
 				public void loadLicense(InputStream licenseInputStream) throws Exception {
 					com.aspose.imaging.License asposeLicense = new com.aspose.imaging.License();
 					asposeLicense.setLicense(licenseInputStream);
-					LOGGER.warn("Aspose loading License for imaging...");
+					LOGGER.info("Aspose loading License for imaging...");
 				}
 
 			}, "imaging");

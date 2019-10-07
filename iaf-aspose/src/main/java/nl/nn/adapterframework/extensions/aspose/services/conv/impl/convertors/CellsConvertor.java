@@ -18,13 +18,11 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.apache.tika.mime.MediaType;
 
-import com.aspose.cells.CountryCode;
 import com.aspose.cells.SaveFormat;
 import com.aspose.cells.Style;
 import com.aspose.cells.Workbook;
@@ -69,7 +67,6 @@ class CellsConvertor extends AbstractConvertor {
 			workbook.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.PDF);
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 		}
-
 	}
 
 	/**
@@ -83,7 +80,7 @@ class CellsConvertor extends AbstractConvertor {
 		// Add original file as attachment to resulting pdf file.
 		try (FileInputStream inputStreamToAttach = new FileInputStream(file)) {
 			PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(result.getPdfResultFile());
-			pdfAttachmentUtil.addAttachmentToPdf(result, inputStreamToAttach, result.getDocumentName(),
+			pdfAttachmentUtil.addAttachmentToPdf(inputStreamToAttach, result.getDocumentName(),
 					FILE_TYPE_MAP.get(mediaType));
 		}
 	}

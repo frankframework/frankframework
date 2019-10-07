@@ -27,6 +27,8 @@ import org.apache.log4j.Logger;
 import org.apache.tika.mime.MediaType;
 
 import com.aspose.imaging.extensions.ImageExtensions;
+import com.aspose.imaging.fileformats.tiff.enums.TiffExpectedFormat;
+import com.aspose.imaging.imageoptions.TiffOptions;
 import com.aspose.pdf.Document;
 import com.aspose.pdf.Image;
 import com.aspose.pdf.LoadOptions;
@@ -89,9 +91,10 @@ public class PdfImageConvertor extends AbstractConvertor {
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
 
-		 File tmpImageFile = null;
+		File tmpImageFile = null;
 		com.aspose.imaging.Image image = null;
 		Document doc = new Document();
+		float scaleFactor = 0;
 		try {
 			// Set borders on 0.5cm.
 			float marginInCm = 0.0f;
@@ -104,37 +107,34 @@ public class PdfImageConvertor extends AbstractConvertor {
 			// Temporary file (because first we need to get image information (the size) and than load it into 
 			// the pdf. The image itself can not be loaded into the pdf because it will be blured with orange.
 			tmpImageFile = UniqueFileGenerator.getUniqueFile(getPdfOutputlocation(), this.getClass().getSimpleName(), mediaType.getSubtype());
-			Files.copy(file.toPath(), tmpImageFile.toPath());
+			image =  com.aspose.imaging.Image.load(file.getAbsolutePath());
+			if(mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
+				try(TiffOptions options = new TiffOptions(TiffExpectedFormat.TiffJpegRgb)){
+					image.save(tmpImageFile.getAbsolutePath(), options);
+				}
+			}else {
+				Files.copy(file.toPath(), tmpImageFile.toPath());
+				BufferedImage bufferedImage = ImageExtensions.toJava(image);
+				LOGGER.debug("Image info height:" + bufferedImage.getHeight() + " width:" + bufferedImage.getWidth());
 
-			image = com.aspose.imaging.Image.load(tmpImageFile.getAbsolutePath());
+				float maxImageWidthInPoints = PageConvertUtil
+						.convertCmToPoints(PageConvertUtil.PAGE_WIDHT_IN_CM - NUMBER_OF_MARGINS * marginInCm);
+				float maxImageHeightInPoints = PageConvertUtil
+						.convertCmToPoints(PageConvertUtil.PAGE_HEIGTH_IN_CM - NUMBER_OF_MARGINS * marginInCm);
 
-			BufferedImage bufferedImage = ImageExtensions.toJava(image);
-			LOGGER.debug("Image info height:" + bufferedImage.getHeight() + " width:" + bufferedImage.getWidth());
+				float scaleWidth = maxImageWidthInPoints / bufferedImage.getWidth();
+				float scaleHeight = maxImageHeightInPoints / bufferedImage.getHeight();
 
-//			 BufferedImage bufferedImage = ImageIO.read(inputStream);
-//			 LOGGER.debug("Image info height:" + bufferedImage.getHeight() + " width:" +
-//			 bufferedImage.getWidth());
-
-			// page width in points is 595.0, height 842.0 ( page.getPageInfo().getHeight()
-			// page.getPageInfo().getWidth())
-			float maxImageWidthInPoints = PageConvertUtil
-					.convertCmToPoints(PageConvertUtil.PAGE_WIDHT_IN_CM - NUMBER_OF_MARGINS * marginInCm);
-			float maxImageHeightInPoints = PageConvertUtil
-					.convertCmToPoints(PageConvertUtil.PAGE_HEIGTH_IN_CM - NUMBER_OF_MARGINS * marginInCm);
-
-			float scaleWidth = maxImageWidthInPoints / bufferedImage.getWidth();
-			float scaleHeight = maxImageHeightInPoints / bufferedImage.getHeight();
-
-			// Get the smallest scale factor so it will fit on the paper.
-			float scaleFactor = Math.min(scaleWidth, scaleHeight);
-			if (scaleFactor > NO_SCALE_FACTOR) {
-				scaleFactor = NO_SCALE_FACTOR;
+				// Get the smallest scale factor so it will fit on the paper.
+				scaleFactor = Math.min(scaleWidth, scaleHeight);
+				if (scaleFactor > NO_SCALE_FACTOR) {
+					scaleFactor = NO_SCALE_FACTOR;
+				}
 			}
-
+			
 			Image pdfImage = new Image();
 			pdfImage.setFile(tmpImageFile.getAbsolutePath());
-			// pdfImage.setBufferedImage(bufferedImage);
-
+			
 			// do not set scale if the image type is tiff
 			if (!mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
 				pdfImage.setImageScale(scaleFactor);
@@ -147,7 +147,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 			LOGGER.info(
 					"Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
-
+			
 		} finally {
 			doc.freeMemory();
 			doc.dispose();
@@ -159,7 +159,6 @@ public class PdfImageConvertor extends AbstractConvertor {
 			}
 			// Delete always the temporary file.
 			 if (tmpImageFile != null) {
-			 // Delete alwasy the temporary file.
 				 Files.delete(tmpImageFile.toPath());
 			 }
 		}

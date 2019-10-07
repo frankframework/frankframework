@@ -62,10 +62,10 @@ public class PdfAttachmentUtil {
 		this.rootPdf = pdfResultFile;
 	}
 
-	protected void addAttachmentToPdf(CisConversionResult result, InputStream fileToAttach, String filename, String extension)
+	protected void addAttachmentToPdf(InputStream fileToAttach, String filename, String extension)
 			throws IOException {
 		try (BufferedInputStream attachmentDocumentStream = new BufferedInputStream(fileToAttach)) {
-			addFileToPdf(attachmentDocumentStream, filename, extension, result);
+			addFileToPdf(attachmentDocumentStream, filename, extension);
 		} finally {
 			finish();
 		}
@@ -97,7 +97,7 @@ public class PdfAttachmentUtil {
 							new FileInputStream(cisConversionResultAttachment.getPdfResultFile()))) {
 
 						addFileToPdf(attachmentDocumentStream, cisConversionResultAttachment.getDocumentName(),
-								ConvertorUtil.PDF_FILETYPE, cisConversionResultAttachment);
+								ConvertorUtil.PDF_FILETYPE);
 					}
 
 				} else {
@@ -122,8 +122,7 @@ public class PdfAttachmentUtil {
 		}
 	}
 
-	private void addFileToPdf(InputStream attachmentDocumentStream, String fileName, String extension,
-			CisConversionResult result) {
+	private void addFileToPdf(InputStream attachmentDocumentStream, String fileName, String extension) {
 		// Determine the document name to use. (Convert any invalid name to a valid
 		// filename.
 		String documentName = ConvertorUtil.createTidyFilename(convertToValidFileName(fileName), extension);
