@@ -18,12 +18,16 @@ package nl.nn.adapterframework.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -144,6 +148,22 @@ public class ClassUtils {
 		return url;
 	}
 
+ 	public static InputStream urlToStream(URL url, int timeoutMs) throws IOException {
+		URLConnection conn = url.openConnection();
+		conn.setConnectTimeout(timeoutMs);
+		conn.setReadTimeout(timeoutMs);
+		return conn.getInputStream(); //SCRV_269S#072 //SCRV_286S#077
+	}
+
+	public static Reader urlToReader(URL url, int timeoutMs) throws IOException {
+		try {
+			return new InputStreamReader(urlToStream(url,timeoutMs),StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		} catch (UnsupportedEncodingException e) {
+			throw new IOException(e);
+		}
+	}
+
+	
     /**
      * Tests if a class implements a given interface
      *

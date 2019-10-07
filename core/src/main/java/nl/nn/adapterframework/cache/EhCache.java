@@ -35,7 +35,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * @author  Gerrit van Brakel
  * @since   4.11
  */
-public class EhCache extends CacheAdapterBase {
+public class EhCache<V> extends CacheAdapterBase<V> {
 	
 	private final String KEY_PREFIX="cache.default."; 
 	private final String KEY_MAX_ELEMENTS_IN_MEMORY=KEY_PREFIX+"maxElementsInMemory"; 
@@ -75,6 +75,7 @@ public class EhCache extends CacheAdapterBase {
 		diskExpiryThreadIntervalSeconds=ac.getInt(KEY_DISK_EXPIRY_THREAD_INTERVAL_SECONDS, diskExpiryThreadIntervalSeconds);
 	}
 	
+	@Override
 	public void configure(String ownerName) throws ConfigurationException {
 		super.configure(ownerName);
 		if (isDiskPersistent() && !isOverflowToDisk()) {
@@ -84,6 +85,7 @@ public class EhCache extends CacheAdapterBase {
 		MemoryStoreEvictionPolicy.fromString(getMemoryStoreEvictionPolicy()); 
 	}
 	
+	@Override
 	public void open() {
 		Cache configCache = new Cache(
 				getName(),
@@ -104,6 +106,7 @@ public class EhCache extends CacheAdapterBase {
 		cache = cacheManager.addCache(configCache);
 	}
 
+	@Override
 	public void close() {
 		if (isDiskPersistent()) {
 			log.debug("cache ["+getName()+"] flushing to disk");
@@ -119,19 +122,22 @@ public class EhCache extends CacheAdapterBase {
 		cache=null;
 	}
 
-	protected Serializable getElement(String key) {
+	@Override
+	protected V getElement(String key) {
 		Element element = cache.get(key);
 		if (element==null) {
 			return null;
 		}
-		return element.getValue();
+		return (V)element.getValue();
 	}
 
-	protected void putElement(String key, Serializable value) {
+	@Override
+	protected void putElement(String key, Object value) {
 		Element element=new Element(key,value);
 		cache.put(element);
 	}
 
+	@Override
 	protected Object getElementObject(Object key) {
 		Element element = cache.get(key);
 		if (element==null) {
@@ -140,11 +146,13 @@ public class EhCache extends CacheAdapterBase {
 		return element.getObjectValue();
 	}
 
+	@Override
 	protected void putElementObject(Object key, Object value) {
 		Element element = new Element(key,value);
 		cache.put(element);
 	}
 
+	@Override
 	protected boolean removeElement(Object key) {
 		return cache.remove(key);
 	}

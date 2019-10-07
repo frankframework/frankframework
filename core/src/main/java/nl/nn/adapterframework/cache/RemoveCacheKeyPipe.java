@@ -135,7 +135,7 @@ class KeyTransformer extends CacheAdapterBase {
 	}
 
 	@Override
-	protected void putElement(String arg0, Serializable arg1) {
+	protected void putElement(String arg0, Object arg1) {
 	}
 
 	@Override
