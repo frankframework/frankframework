@@ -30,7 +30,7 @@ import nl.nn.adapterframework.senders.SenderWrapperBase;
 public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
 	
 	public String sendMessage(SenderWrapperBase senderWrapperBase, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		ICacheAdapter cache=senderWrapperBase.getCache();
+		ICacheAdapter<String,String> cache=senderWrapperBase.getCache();
 		if (cache==null) {
 			return senderWrapperProcessor.sendMessage(senderWrapperBase, correlationID, message, prc);
 		}

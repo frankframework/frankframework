@@ -30,7 +30,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 public class CachePipeLineProcessor extends PipeLineProcessorBase {
 	
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, String message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
-		ICacheAdapter cache=pipeLine.getCache();
+		ICacheAdapter<String,String> cache=pipeLine.getCache();
 		if (cache==null) {
 			return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 		}
