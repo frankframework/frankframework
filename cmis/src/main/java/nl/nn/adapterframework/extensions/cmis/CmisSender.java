@@ -1055,7 +1055,7 @@ public class CmisSender extends SenderWithParametersBase {
 		sessionBuilder.setMaxConnections(i);
 	}
 
-	@IbisDoc({"the connection timeout", "10"})
+	@IbisDoc({"the connection timeout in seconds", "10"})
 	public void setTimeout(int i) throws ConfigurationException {
 		sessionBuilder.setTimeout(i);
 	}
