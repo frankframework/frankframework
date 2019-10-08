@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TimeZone;
 import java.util.TreeSet;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -285,6 +286,7 @@ public class CmisUtils {
 				GregorianCalendar gregorian = null;
 				if(StringUtils.isNotEmpty(propertyValue)) {
 					String formatStringAttr = propertyElement.getAttribute("formatString");
+					String timezoneAttr = propertyElement.getAttribute("timezone");
 					if (StringUtils.isEmpty(formatStringAttr)) {
 						formatStringAttr = CmisUtils.FORMATSTRING_BY_DEFAULT;
 					}
@@ -293,6 +295,9 @@ public class CmisUtils {
 						Date date = df.parse(propertyValue);
 						gregorian = new GregorianCalendar();
 						gregorian.setTime(date);
+						if(StringUtils.isNotEmpty(timezoneAttr)) {
+							gregorian.setTimeZone(TimeZone.getTimeZone(timezoneAttr));
+						}
 					} catch (ParseException e) {
 						log.warn("exception parsing date [" + propertyValue + "] using formatString [" + formatStringAttr + "]", e);
 					}
