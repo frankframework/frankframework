@@ -269,16 +269,15 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.directive('icheck', ['$timeout', function($timeout) {
+.directive('icheck', ['$timeout', '$parse', function($timeout, $parse) {
 	return {
 		restrict: 'A',
 		require: 'ngModel',
 		link: function($scope, element, $attrs, ngModel) {
 			return $timeout(function() {
-				var value;
-				value = $attrs['value'];
+				var value = $attrs['value'];
 
-				$scope.$watch($attrs['ngModel'], function(newValue){
+				$scope.$watch($attrs['ngModel'], function(newValue) {
 					$(element).iCheck('update');
 				});
 
@@ -295,6 +294,31 @@ angular.module('iaf.beheerconsole')
 						if ($(element).attr('type') === 'radio' && $attrs['ngModel']) {
 							return $scope.$apply(function() {
 								return ngModel.$setViewValue(value);
+							});
+						}
+					});
+			});
+		}
+	};
+}])
+
+.directive('icheckRadius', ['$timeout', '$parse', function($timeout, $parse) {
+	return {
+		restrict: 'A',
+		require: 'ngModel',
+		link: function($scope, element, $attrs, ngModel) {
+			return $timeout(function() {
+
+				$scope.$watch($attrs['ngModel'], function(newValue) {
+					$(element).iCheck('update');
+				});
+
+				return $(element).iCheck({
+					checkboxClass: 'iradio_square-green',
+				}).on('ifChanged', function(event) {
+						if ($(element).attr('type') === 'checkbox' && $attrs['ngModel']) {
+							$scope.$apply(function() {
+								return ngModel.$setViewValue(event.target.checked);
 							});
 						}
 					});
