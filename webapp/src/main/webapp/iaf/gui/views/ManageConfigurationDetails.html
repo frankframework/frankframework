@@ -2,7 +2,7 @@
 <div ui-view></div>
 
 <div class="wrapper wrapper-content animated fadeInRight" ng-controller="ManageConfigurationDetailsCtrl">
-	<uib-alert ng-repeat="alert in state" type="{{alert.type}}">{{alert.message}}</uib-alert>
+	<uib-alert ng-repeat="alert in state" type="{{alert.type}}" close="closeNote($index)">{{alert.message}}</uib-alert>
 	<div class="row">
 		<div class="col-lg-12 table-responsive">
 			<div class="ibox float-e-margins">
@@ -14,30 +14,29 @@
 				</div>
 				<div class="ibox-content">
 					<h2>Version History</h2>
-					<table class="table">
+					<table class="table table-hover">
 						<thead>
 							<tr>
 								<th>Version</th>
 								<th>Filename</th>
 								<th>Created At</th>
 								<th>User</th>
-								<th>Active</th>
-								<th>Loaded</th>
+								<th title="The configuration that's loaded upon IBIS startup">Startup Config</th>
+								<th title="The configuration will be loaded on the next scheduled interval">Auto Reload</th>
+								<th title="The configuration that's currently in use">Running Config</th>
 								<th></th>
 							</tr>
 						</thead>
 						<tbody>
-							<tr ng-repeat="config in versions | orderBy:'-version'" class="hideBtn1170">
+							<tr ng-repeat="config in versions | orderBy:'-version'">
 								<td>{{config.version}}</td>
 								<td>{{config.filename}}</td>
 								<td>{{config.created}}</td>
 								<td>{{config.user}}</td>
-								<td ng-if="config.active"><i class="fa fa-check btn-xs" aria-hidden="true"></i></td>
-								<td ng-if="!config.active">
-									<button ng-click="activate(config)" class="btn btn-xs " type="button"><i class="fa fa-power-off aria-hidden="true"></i> <span>Activate</span></button>
-								</td>
-								<td><i ng-if="config.loaded" class="fa fa-check btn-xs" aria-hidden="true"></i></td>
-								<td>
+								<td><input icheck-radius type="checkbox" ng-change="activate(config)" ng-model="config.actived"/></td>
+								<td><input icheck type="checkbox" ng-change="scheduleReload(config)" ng-model="config.autoreload"/></td>
+								<td><i class="fa fa-check btn-xs" ng-if="config.loaded" aria-hidden="true"></i></td>
+								<td class="hideBtn1170 minw180px">
 									<button ng-click="download(config)" class="btn btn-xs btn-info pull-right" type="button"><i class="fa fa-cloud-download aria-hidden="true"></i> <span>Download</span></button>
 								</td>
 							</tr>

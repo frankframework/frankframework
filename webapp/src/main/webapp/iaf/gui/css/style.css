@@ -6694,6 +6694,9 @@ body.body-small .vote-icon {
   cursor: pointer;
   font-size: 16px;
 }
+.hideBtn1170.minw180px {
+  min-width: 180px;
+}
 
 @media (max-width: 1170px) {
   .hideBtn1170 span {
