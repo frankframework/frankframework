@@ -29,17 +29,17 @@ import org.apache.log4j.Logger;
  * @author Peter Leeuwenburgh
  */
 public class TransformerErrorListener implements ErrorListener {
-	static Logger log = LogUtil.getLogger(XmlUtils.class);
+	static Logger log = LogUtil.getLogger(TransformerErrorListener.class);
 
 	private boolean throwException;
 	private TransformerException fatalTransformerException;
 	private IOException fatalIOException;
 
-	TransformerErrorListener() {
+	public TransformerErrorListener() {
 		this(true);
 	}
 
-	TransformerErrorListener(boolean throwException) {
+	public TransformerErrorListener(boolean throwException) {
 		this.throwException = throwException;
 	}
 
@@ -54,10 +54,10 @@ public class TransformerErrorListener implements ErrorListener {
 	@Override
 	public void fatalError(TransformerException transformerException) throws TransformerException {
 		log.warn("Fatal transformation error: " + transformerException.getMessageAndLocation());
+		this.setFatalTransformerException(transformerException);
 		if (throwException) {
 			throw transformerException;
 		}
-		this.setFatalTransformerException(transformerException);
 	}
 
 	@Override
@@ -81,4 +81,19 @@ public class TransformerErrorListener implements ErrorListener {
 	public IOException getFatalIOException() {
 		return fatalIOException;
 	}
+
+//	@Override
+//	public void error(SAXParseException e) throws SAXException {
+//		log.error("SAX error",e);
+//	}
+//
+//	@Override
+//	public void fatalError(SAXParseException e) throws SAXException {
+//		log.error("SAX fatalError",e);
+//	}
+//
+//	@Override
+//	public void warning(SAXParseException e) throws SAXException {
+//		log.warn("SAX warning",e);
+//	}
 }

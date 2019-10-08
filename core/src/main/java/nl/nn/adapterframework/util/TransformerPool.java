@@ -304,7 +304,16 @@ public class TransformerPool {
 			source.setSystemId(sysId);
 			log.debug("setting systemId to ["+sysId+"]");
 		}
-		templates=tFactory.newTemplates(source);
+		try {
+			templates=tFactory.newTemplates(source);
+		} catch (TransformerConfigurationException e) {
+			TransformerErrorListener tel = (TransformerErrorListener)tFactory.getErrorListener();
+			TransformerException te=tel.getFatalTransformerException();
+			if (te!=null) {
+				throw new TransformerConfigurationException(te);
+			}
+			throw e;
+		}
 	}
 
 	private void reloadTransformerPool() throws TransformerConfigurationException, IOException {

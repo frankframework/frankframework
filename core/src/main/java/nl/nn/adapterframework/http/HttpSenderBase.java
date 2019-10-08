@@ -254,9 +254,9 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		int port = uri.getPort();
 		if (port<1) {
 			try {
-				log.debug(getLogPrefix()+"looking up protocol for scheme ["+uri.getScheme()+"]");
 				URL url = uri.build().toURL();
 				port = url.getDefaultPort();
+				log.debug(getLogPrefix()+"looked up protocol for scheme ["+uri.getScheme()+"] to be port ["+port+"]");
 			} catch (Exception e) {
 				log.debug(getLogPrefix()+"protocol for scheme ["+uri.getScheme()+"] not found, setting port to 80",e);
 				port=80; 

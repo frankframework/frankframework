@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,19 +25,15 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.ldap.InitialLdapContext;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.pipes.FixedForwardPipe;
-import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.webcontrol.DummySSLSocketFactory;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Pipe that checks if a specified dn exists as 'member' in another specified dn
@@ -45,69 +41,23 @@ import org.apache.commons.lang.StringUtils;
  * 
  * @author Peter Leeuwenburgh
  */
-public class LdapFindMemberPipe extends FixedForwardPipe {
-	private String authAlias;
-	private String userName;
-	private String password;
-	private String host;
-	private int port = -1;
-	private boolean useSsl = false;
+public class LdapFindMemberPipe extends LdapQueryPipeBase {
 	private String dnSearchIn;
 	private String dnFind;
 	private boolean recursiveSearch = true;
-	private String notFoundForwardName = "notFound";
-	private String exceptionForwardName = null;
 
-	private CredentialFactory cf;
-	protected PipeForward notFoundForward;
-	protected PipeForward exceptionForward;
 
-	public void configure() throws ConfigurationException {
-		super.configure();
-		if (getHost() == null) {
-			throw new ConfigurationException(getLogPrefix(null)
-					+ "host must be set");
-		}
-		cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
-		if (StringUtils.isNotEmpty(getNotFoundForwardName())) {
-			notFoundForward = findForward(getNotFoundForwardName());
-		}
-		if (StringUtils.isNotEmpty(getExceptionForwardName())) {
-			exceptionForward = findForward(getExceptionForwardName());
-		}
-	}
-
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
-			throws PipeRunException {
-		if (exceptionForward != null) {
-			try {
-				return doPipeWithException(input, session);
-			} catch (Throwable t) {
-				log.warn(
-						getLogPrefix(session)
-								+ "exception occured, forwarding to exception-forward ["
-								+ exceptionForward.getPath()
-								+ "], exception:\n", t);
-				return new PipeRunResult(exceptionForward, input);
-			}
-		} else {
-			return doPipeWithException(input, session);
-		}
-	}
-
-	public PipeRunResult doPipeWithException(Object input,
-			IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipeWithException(Object input, IPipeLineSession session) throws PipeRunException {
 		String dnSearchIn_work;
 		String dnFind_work;
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
-			ParameterResolutionContext prc = new ParameterResolutionContext(
-					(String) input, session);
+			ParameterResolutionContext prc = new ParameterResolutionContext((String) input, session);
 			try {
 				pvl = prc.getValues(getParameterList());
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session)
-						+ "exception on extracting parameters", e);
+				throw new PipeRunException(this, getLogPrefix(session) + "exception on extracting parameters", e);
 			}
 		}
 		dnSearchIn_work = getParameterValue(pvl, "dnSearchIn");
@@ -123,21 +73,14 @@ public class LdapFindMemberPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(dnSearchIn_work)
 				&& StringUtils.isNotEmpty(dnFind_work)) {
 			try {
-				found = findMember(getHost(), getPort(), dnSearchIn_work,
-						isUseSsl(), dnFind_work, isRecursiveSearch());
+				found = findMember(getHost(), getPort(), dnSearchIn_work, isUseSsl(), dnFind_work, isRecursiveSearch());
 			} catch (NamingException e) {
-				throw new PipeRunException(this, getLogPrefix(session)
-						+ "exception on ldap lookup", e);
+				throw new PipeRunException(this, getLogPrefix(session) + "exception on ldap lookup", e);
 			}
 		}
 
 		if (!found) {
-			String msg = getLogPrefix(session)
-					+ "dn ["
-					+ dnFind_work
-					+ "] not found as member in url ["
-					+ retrieveUrl(getHost(), getPort(), dnSearchIn_work,
-							isUseSsl()) + "]";
+			String msg = getLogPrefix(session) + "dn [" + dnFind_work + "] not found as member in url [" + retrieveUrl(getHost(), getPort(), dnSearchIn_work, isUseSsl()) + "]";
 			if (notFoundForward == null) {
 				throw new PipeRunException(this, msg);
 			} else {
@@ -148,12 +91,9 @@ public class LdapFindMemberPipe extends FixedForwardPipe {
 		return new PipeRunResult(getForward(), input);
 	}
 
-	private boolean findMember(String host, int port, String dnSearchIn,
-			boolean useSsl, String dnFind, boolean recursiveSearch)
-			throws NamingException {
-		Hashtable env = new Hashtable();
-		env.put(Context.INITIAL_CONTEXT_FACTORY,
-				"com.sun.jndi.ldap.LdapCtxFactory");
+	private boolean findMember(String host, int port, String dnSearchIn, boolean useSsl, String dnFind, boolean recursiveSearch) throws NamingException {
+		Hashtable<String,Object> env = new Hashtable<String,Object>();
+		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 		String provUrl = retrieveUrl(host, port, dnSearchIn, useSsl);
 		env.put(Context.PROVIDER_URL, provUrl);
 		if (StringUtils.isNotEmpty(cf.getUsername())) {
@@ -168,11 +108,8 @@ public class LdapFindMemberPipe extends FixedForwardPipe {
 			try {
 				ctx = new InitialDirContext(env);
 			} catch (CommunicationException e) {
-				log.info("Cannot create constructor for DirContext ("
-						+ e.getMessage()
-						+ "], will try again with dummy SocketFactory");
-				env.put("java.naming.ldap.factory.socket",
-						DummySSLSocketFactory.class.getName());
+				log.info("Cannot create constructor for DirContext ["+ e.getMessage() + "], will try again with dummy SocketFactory",e);
+				env.put("java.naming.ldap.factory.socket", DummySSLSocketFactory.class.getName());
 				ctx = new InitialLdapContext(env, null);
 			}
 			Attribute attrs = ctx.getAttributes("").get("member");
@@ -203,101 +140,26 @@ public class LdapFindMemberPipe extends FixedForwardPipe {
 		return false;
 	}
 
-	private String retrieveUrl(String host, int port, String dnSearchIn,
-			boolean useSsl) {
-		String s = useSsl ? "ldaps://" : "ldap://";
-		String h = (host != null) ? host : "";
-		String p = (port != -1) ? (":" + port) : "";
-		String d = (dnSearchIn != null) ? ("/" + dnSearchIn.replaceAll("\\s",
-				"%20")) : "";
-		return s + h + p + d;
-	}
-
-	public String getAuthAlias() {
-		return authAlias;
-	}
-
-	public void setAuthAlias(String string) {
-		authAlias = string;
-	}
-
-	public String getUserName() {
-		return userName;
-	}
-
-	public void setUserName(String string) {
-		userName = string;
-	}
-
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String string) {
-		password = string;
-	}
-
-	public String getHost() {
-		return host;
-	}
-
-	public void setHost(String string) {
-		host = string;
-	}
-
-	public int getPort() {
-		return port;
-	}
-
-	public void setPort(int i) {
-		port = i;
-	}
-
-	public boolean isUseSsl() {
-		return useSsl;
-	}
-
-	public void setUseSsl(boolean b) {
-		useSsl = b;
-	}
-
-	public String getDnSearchIn() {
-		return dnSearchIn;
-	}
 
 	public void setDnSearchIn(String string) {
 		dnSearchIn = string;
 	}
-
-	public String getDnFind() {
-		return dnFind;
+	public String getDnSearchIn() {
+		return dnSearchIn;
 	}
 
 	public void setDnFind(String string) {
 		dnFind = string;
 	}
-
-	public boolean isRecursiveSearch() {
-		return recursiveSearch;
+	public String getDnFind() {
+		return dnFind;
 	}
 
 	public void setRecursiveSearch(boolean b) {
 		recursiveSearch = b;
 	}
-
-	public String getNotFoundForwardName() {
-		return notFoundForwardName;
+	public boolean isRecursiveSearch() {
+		return recursiveSearch;
 	}
 
-	public void setNotFoundForwardName(String string) {
-		notFoundForwardName = string;
-	}
-
-	public String getExceptionForwardName() {
-		return exceptionForwardName;
-	}
-
-	public void setExceptionForwardName(String string) {
-		exceptionForwardName = string;
-	}
 }

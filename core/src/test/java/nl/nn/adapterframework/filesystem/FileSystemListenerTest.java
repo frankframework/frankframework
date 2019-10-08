@@ -223,7 +223,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 	@Test
 	public void fileListenerTestGetStringFromRawMessageContents() throws Exception {
-		String filename=fileAndFolderPrefix+"rawMessageFile";
+		String filename="rawMessageFile";
 		String contents="Test Message Contents";
 		
 		fileSystemListener.setMinStableTime(0);

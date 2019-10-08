@@ -17,9 +17,11 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Map;
 
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.TransformerHandler;
 
@@ -43,6 +45,7 @@ import nl.nn.adapterframework.stream.InputMessageAdapter;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.TransformerErrorListener;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -140,7 +143,6 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 	private class ItemCallbackCallingHandler extends DefaultHandler implements LexicalHandler {
 		
 		private ItemCallback callback;
-		private String namespaceClause;
 		
 		private StringBuffer elementbuffer=new StringBuffer();
 		private int elementLevel=0;
@@ -155,9 +157,8 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		private StringBuffer namespaceDefinitions=new StringBuffer();
 
 		
-		public ItemCallbackCallingHandler(ItemCallback callback, String namespaceClause) {
+		public ItemCallbackCallingHandler(ItemCallback callback) {
 			this.callback=callback;
-			this.namespaceClause=namespaceClause;
 			//elementbuffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 			if (getBlockSize()>0) {
 				elementbuffer.append(getBlockPrefix());
@@ -251,7 +252,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 					while (rootCause.getCause()!=null) {
 						rootCause=rootCause.getCause();
 					}
-					SAXException se = new SAXException(e);
+					SAXException se = new SAXException(e.getMessage()); // do not set cause via new SAXException(e); this causes the message to be duplicated multiple times
 					se.setStackTrace(rootCause.getStackTrace());
 					throw se;
 					
@@ -350,10 +351,11 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		}
 		ItemCallbackCallingHandler itemHandler;
 		ContentHandler inputHandler;
+		String errorMessage="Could not parse input";
+		TransformerErrorListener errorListener=null;
 		try {
-			itemHandler = new ItemCallbackCallingHandler(callback,XmlUtils.getNamespaceClause(getNamespaceDefs()));
+			itemHandler = new ItemCallbackCallingHandler(callback);
 			inputHandler=itemHandler;
-			String errorMessage="Could not parse input";
 			
 			if (getExtractElementsTp()!=null) {
 				log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
@@ -361,12 +363,13 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 				transformedStream.setHandler(itemHandler);
 				transformedStream.setLexicalHandler(itemHandler);
 				TransformerHandler xphandler = getExtractElementsTp().getTransformerHandler();
+				errorListener=(TransformerErrorListener)xphandler.getTransformer().getErrorListener();
 				xphandler.setResult(transformedStream);
 				inputHandler = xphandler;
-				errorMessage="Could not extract list of elements using xpath ["+getElementXPathExpression()+"]";
+				errorMessage="Could not process list of elements using xpath ["+getElementXPathExpression()+"]";
 			} 
-		} catch (TransformerConfigurationException e) {
-			throw new SenderException(e);
+		} catch (TransformerException e) {
+			throw new SenderException(errorMessage, e);
 		}
 
 		try {
@@ -376,10 +379,20 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 				throw itemHandler.getTimeOutException();
 			}
 			if (!itemHandler.isStopRequested()) {
-				throw new SenderException("Could not parse input",e);
+				throw new SenderException(errorMessage,e);
 			}
 		}
 		
+		if (errorListener!=null) {
+			TransformerException tex = errorListener.getFatalTransformerException();
+			if (tex!=null) {
+				throw new SenderException(errorMessage,tex);
+			}
+			IOException iox = errorListener.getFatalIOException();
+			if (iox!=null) {
+				throw new SenderException(errorMessage,iox);
+			}
+		}
 	}
 
 	

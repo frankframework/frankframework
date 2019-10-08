@@ -166,7 +166,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				stopConditionTp=TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(null,getStopConditionXPathExpression(),"xml",false));
 			}
 		} catch (TransformerConfigurationException e) {
-			throw new ConfigurationException(e);
+			throw new ConfigurationException("Cannot compile stylesheet from stopConditionXPathExpression ["+getStopConditionXPathExpression()+"]", e);
 		}
 	}
 
@@ -493,7 +493,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return xpathExpression;
 	}
 
-	@IbisDoc({"3", "namespace defintions for xpathexpression. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
+	@IbisDoc({"3", "namespace defintions for xpathexpression. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. One entry can be without a prefix, that will define the default namespace.", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}

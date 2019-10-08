@@ -827,11 +827,8 @@ public class XmlUtils {
 			while (st1.hasMoreTokens()) {
 				String namespaceDef = st1.nextToken();
 				int separatorPos = namespaceDef.indexOf('=');
-				if (separatorPos < 1) {
-					throw new TransformerConfigurationException("cannot parse namespace definition from string [" + namespaceDef + "]");
-				} else {
-					namespaceClause += " xmlns:" + namespaceDef.substring(0, separatorPos) + "=\"" + namespaceDef.substring(separatorPos + 1) + "\"";
-				}
+				String prefixClause=separatorPos < 1?"":":"+namespaceDef.substring(0, separatorPos);
+				namespaceClause += " xmlns" + prefixClause + "=\"" + namespaceDef.substring(separatorPos + 1) + "\"";
 			}
 		}
 		return namespaceClause;

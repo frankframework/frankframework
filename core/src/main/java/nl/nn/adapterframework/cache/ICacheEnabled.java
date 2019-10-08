@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.cache;
 
-
 /**
  * Interface to be implemented by classes that could use a cache. 
  * Implementers will be notified of a cache that is configured via registerCache().
@@ -25,8 +24,8 @@ package nl.nn.adapterframework.cache;
  * @author  Gerrit van Brakel
  * @since   4.11
  */
-public interface ICacheEnabled {
+public interface ICacheEnabled<K,V> {
 
-	void registerCache(ICacheAdapter cache);
-	ICacheAdapter getCache();
+	void registerCache(ICacheAdapter<K,V> cache);
+	ICacheAdapter<K,V> getCache();
 }
