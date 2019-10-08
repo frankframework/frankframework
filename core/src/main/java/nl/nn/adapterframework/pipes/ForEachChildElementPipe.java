@@ -405,7 +405,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		return processFile;
 	}
 
-	@IbisDoc({"2", "expression used to determine the set of elements to be iterated over, i.e. the set of child elements.", ""})
+	@IbisDoc({"2", "Expression used to determine the set of elements to be iterated over, i.e. the set of child elements. When empty, the effective value is /*/*, i.e. the pipe will iterate over each direct child element of the root", ""})
 	public void setElementXPathExpression(String string) {
 		elementXPathExpression = string;
 	}
@@ -413,7 +413,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		return elementXPathExpression;
 	}
 
-	@IbisDoc({"3", "characterset used for reading file or inputstream, only used when {@link #setProcessFile(boolean) processFile} is <code>true</code>, or the input is of type InputStream", "utf-8"})
+	@IbisDoc({"3", "Characterset used for reading file or inputstream, only used when {@link #setProcessFile(boolean) processFile} is <code>true</code>, or the input is of type InputStream", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}
@@ -421,7 +421,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		return charset;
 	}
 
-	@IbisDoc({"4", "when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, supporting XPath 2.0, otherwise xslt processor 1.0 (org.apache.xalan), supporting XPath 1.0. N.B. Be aware that setting this other than 1 might cause the input file being read as a whole in to memory, as Xslt Streaming is currently only supported by the XsltProcessor that is used for xsltVersion=1", "1"})
+	@IbisDoc({"4", "When set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, supporting XPath 2.0, otherwise xslt processor 1.0 (org.apache.xalan), supporting XPath 1.0. N.B. Be aware that setting this other than 1 might cause the input file being read as a whole in to memory, as Xslt Streaming is currently only supported by the XsltProcessor that is used for xsltVersion=1", "1"})
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
 	}
@@ -441,7 +441,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		xsltVersion=b?2:1;
 	}
 	
-	@IbisDoc({"6", "when set <code>true</code> namespaces (and prefixes) in the input message are removed before transformation", "true"})
+	@IbisDoc({"6", "When set <code>true</code> namespaces (and prefixes) in the input message are removed before transformation", "true"})
 	public void setRemoveNamespaces(boolean b) {
 		removeNamespaces = b;
 	}
