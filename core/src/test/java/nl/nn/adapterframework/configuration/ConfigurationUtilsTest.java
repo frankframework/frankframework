@@ -15,10 +15,12 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.IOException;
 import java.net.URL;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 
 public class ConfigurationUtilsTest {
@@ -39,7 +41,7 @@ public class ConfigurationUtilsTest {
 	}
 
 	@Test
-	public void retrieveBuildInfo_SC() throws IOException {
+	public void retrieveBuildInfoSC() throws IOException {
 		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
 		assertNotNull("BuildInfoZip not found", zip);
 
@@ -54,7 +56,7 @@ public class ConfigurationUtilsTest {
 	}
 
 	@Test
-	public void retrieveBuildInfo_CUSTOM() throws IOException {
+	public void retrieveBuildInfoCUSTOM() throws IOException {
 		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
 		assertNotNull("BuildInfoZip not found", zip);
 
