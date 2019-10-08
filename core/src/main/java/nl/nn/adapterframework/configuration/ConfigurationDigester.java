@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018 Nationale-Nederlanden
+   Copyright 2013, 2016, 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.SaxException;
 
 import org.apache.commons.digester.Digester;
 import org.apache.commons.digester.Rule;
@@ -43,6 +44,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
@@ -98,14 +100,17 @@ public class ConfigurationDigester {
 	String lastResolvedEntity = null;
 
 	private class XmlErrorHandler implements ErrorHandler  {
+		@Override
 		public void warning(SAXParseException exception) throws SAXParseException {
 			LOG.error(exception);
 			throw(exception);
 		}
+		@Override
 		public void error(SAXParseException exception) throws SAXParseException {
 			LOG.error(exception);
 			throw(exception);
 		}
+		@Override
 		public void fatalError(SAXParseException exception) throws SAXParseException {
 			LOG.error(exception);
 			throw(exception);
@@ -114,11 +119,14 @@ public class ConfigurationDigester {
 
 	public Digester getDigester(Configuration configuration) throws SAXNotSupportedException, SAXNotRecognizedException {
 		Digester digester = new Digester() {
+			// override Digester.createSAXException() implementations to obtain a clear unduplicated message and a properly nested stacktrace on IBM JDK 
 			@Override
 			public SAXException createSAXException(String message, Exception e) {
-				// do additional logging, as the creation of a SAXException appears to discard the proper stacktrace
-				LOG.warn("Exception while digesting: "+message,e);
-				return super.createSAXException(message, e);
+				return SaxException.createSaxException(message, locator, e);
+			}
+			@Override
+			public SAXException createSAXException(Exception e) {
+				return SaxException.createSaxException(null, locator, e);
 			}
 		};
 
@@ -244,20 +252,10 @@ public class ConfigurationDigester {
 		String directoryName = AppConstants.getInstance().getResolvedProperty("log.dir");
 		String fileName = AppConstants.getInstance().getResolvedProperty("instance.name.lc")+"-config.xml";
 		File file = new File(directoryName, fileName);
-		FileWriter fileWriter = null;
-		try {
-			fileWriter = new FileWriter(file, append);
+		try (FileWriter fileWriter = new FileWriter(file, append)) {
 			fileWriter.write(config);
 		} catch (IOException e) {
 			LOG.warn("Could not write configuration to file ["+file.getPath()+"]",e);
-		} finally {
-			if (fileWriter!=null) {
-				try {
-					fileWriter.close();
-				} catch (Exception e) {
-					LOG.warn("Could not close configuration file ["+file.getPath()+"]",e);
-				}
-			}
 		}
 	}
 	
@@ -273,10 +271,10 @@ public class ConfigurationDigester {
 		configString=XmlUtils.identityTransform(configuration.getClassLoader(), configString);
 		String attributes = XmlUtils.transformXml(transformer, configString);
 		Element attributesElement = XmlUtils.buildElement(attributes);
-		Collection attributeElements =	XmlUtils.getChildTags(attributesElement, "attribute");
-		Iterator iter = attributeElements.iterator();
+		Collection<Node> attributeElements =	XmlUtils.getChildTags(attributesElement, "attribute");
+		Iterator<Node> iter = attributeElements.iterator();
 		while (iter.hasNext()) {
-			Element attributeElement = (Element) iter.next();
+			Element attributeElement = (Element)iter.next();
 			Element valueElement = XmlUtils.getFirstChildTag(attributeElement, "value");
 			String value = XmlUtils.getStringValue(valueElement);
 			if (value.startsWith("${") && value.endsWith("}")) {

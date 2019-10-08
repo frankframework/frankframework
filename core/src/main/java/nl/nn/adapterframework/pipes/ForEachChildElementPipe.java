@@ -48,6 +48,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerErrorListener;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.SaxException;
 
 /**
  * Sends a message to a Sender for each child element of the input XML.
@@ -247,14 +248,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 					if (e instanceof TimeOutException) {
 						timeOutException = (TimeOutException)e;
 					}
-					rootException =e;
-					Throwable rootCause = e;
-					while (rootCause.getCause()!=null) {
-						rootCause=rootCause.getCause();
-					}
-					SAXException se = new SAXException(e.getMessage()); // do not set cause via new SAXException(e); this causes the message to be duplicated multiple times
-					se.setStackTrace(rootCause.getStackTrace());
-					throw se;
+					throw new SaxException(e);
 					
 				}
 				if (stopRequested) {
@@ -286,7 +280,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 //					writer.append("<!--").append(new String(ch, start, length)).append("-->");
 //				}
 //			} catch (IOException e) {
-//				throw new SAXException(e);
+//				throw new SaxException(e);
 //			}
 		}
 

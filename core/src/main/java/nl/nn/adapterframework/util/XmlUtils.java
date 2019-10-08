@@ -100,6 +100,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
 import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
 import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
+import nl.nn.adapterframework.xml.SaxException;
 
 /**
  * Some utilities for working with XML.
@@ -491,7 +492,7 @@ public class XmlUtils {
 		try {
 			parser = getXMLReader(namespaceAware, resolveExternalEntities, handler);
 		} catch (ParserConfigurationException e) {
-			throw new SAXException("Cannot configure parser",e);
+			throw new SaxException("Cannot configure parser",e);
 		}
 		parser.parse(source);
 	}
