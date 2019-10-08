@@ -51,6 +51,7 @@ import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -193,20 +194,7 @@ public class ConfigurationUtils {
 			throw new ConfigurationException(e);
 		} finally {
 			qs.close();
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException e) {
-					log.warn("Could not close resultset", e);
-				}
-			}
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					log.warn("Could not close connection", e);
-				}
-			}
+			JdbcUtil.fullClose(conn, rs);
 		}
 	}
 
@@ -267,20 +255,7 @@ public class ConfigurationUtils {
 			throw new ConfigurationException(e);
 		} finally {
 			qs.close();
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException e) {
-					log.warn("Could not close resultset", e);
-				}
-			}
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					log.warn("Could not close connection", e);
-				}
-			}
+			JdbcUtil.fullClose(conn, rs);
 		}
 	}
 
@@ -333,20 +308,7 @@ public class ConfigurationUtils {
 			}
 		} finally {
 			qs.close();
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException e) {
-					log.warn("Could not close resultset", e);
-				}
-			}
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					log.warn("Could not close connection", e);
-				}
-			}
+			JdbcUtil.fullClose(conn, rs);
 		}
 		return false;
 	}
@@ -389,20 +351,7 @@ public class ConfigurationUtils {
 			}
 		} finally {
 			qs.close();
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException e) {
-					log.warn("Could not close resultset", e);
-				}
-			}
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					log.warn("Could not close connection", e);
-				}
-			}
+			JdbcUtil.fullClose(conn, rs);
 		}
 		return false;
 	}
@@ -484,20 +433,7 @@ public class ConfigurationUtils {
 			throw new ConfigurationException(e);
 		} finally {
 			qs.close();
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException e) {
-					log.warn("Could not close resultset", e);
-				}
-			}
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					log.warn("Could not close connection", e);
-				}
-			}
+			JdbcUtil.fullClose(conn, rs);
 		}
 	}
 
