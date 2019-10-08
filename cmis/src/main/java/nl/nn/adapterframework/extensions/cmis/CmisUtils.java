@@ -298,7 +298,6 @@ public class CmisUtils {
 						if(StringUtils.isNotEmpty(timezoneAttr)) {
 							gregorian.setTimeZone(TimeZone.getTimeZone(timezoneAttr));
 						}
-						gregorian.setTimeZone(TimeZone.getTimeZone("GMT"));
 					} catch (ParseException e) {
 						log.warn("exception parsing date [" + propertyValue + "] using formatString [" + formatStringAttr + "]", e);
 					}
