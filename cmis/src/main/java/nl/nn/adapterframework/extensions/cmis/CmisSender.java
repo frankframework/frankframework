@@ -837,10 +837,17 @@ public class CmisSender extends SenderWithParametersBase {
 				String includeRelationshipsEnum = XmlUtils.getChildTagAsString(requestElement, "includeRelationships");
 				IncludeRelationships includeRelationships = IncludeRelationships.valueOf(includeRelationshipsEnum);
 				String renditionFilter = XmlUtils.getChildTagAsString(requestElement, "renditionFilter");
-				Long maxItemsLong = XmlUtils.getChildTagAsLong(requestElement, "maxItems");
-				BigInteger maxItems = BigInteger.valueOf(maxItemsLong);
-				Long skipCountLong = XmlUtils.getChildTagAsLong(requestElement, "skipCount");
-				BigInteger skipCount = BigInteger.valueOf(skipCountLong);
+
+				BigInteger maxItems = null;
+				String maxItemsString = XmlUtils.getChildTagAsString(requestElement, "maxItems");
+				if (StringUtils.isNotEmpty(maxItemsString)) {
+					maxItems = BigInteger.valueOf(Long.parseLong(maxItemsString));
+				}
+				BigInteger skipCount = null;
+				String skipCountString = XmlUtils.getChildTagAsString(requestElement, "skipCount");
+				if (StringUtils.isNotEmpty(skipCountString)) {
+					skipCount = BigInteger.valueOf(Long.parseLong(skipCountString));
+				}
 
 				//Create a operationContext and do session.query?
 //				OperationContext context = session.createOperationContext();
@@ -1046,6 +1053,11 @@ public class CmisSender extends SenderWithParametersBase {
 	@IbisDoc({"the maximum number of concurrent connections", "10"})
 	public void setMaxConnections(int i) throws ConfigurationException {
 		sessionBuilder.setMaxConnections(i);
+	}
+
+	@IbisDoc({"the connection timeout in seconds", "10"})
+	public void setTimeout(int i) throws ConfigurationException {
+		sessionBuilder.setTimeout(i);
 	}
 
 	@IbisDoc({"url to connect to", ""})

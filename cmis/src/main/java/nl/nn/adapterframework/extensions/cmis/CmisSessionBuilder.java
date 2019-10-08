@@ -86,6 +86,7 @@ public class CmisSessionBuilder {
 	private ClassLoader classLoader = this.getClass().getClassLoader();
 
 	private int maxConnections = 0;
+	private int timeout = 0;
 
 	public CmisSessionBuilder() {
 	}
@@ -213,6 +214,9 @@ public class CmisSessionBuilder {
 
 		if(maxConnections > 0)
 			parameterMap.put("maxConnections", maxConnections);
+
+		if(timeout > 0)
+			parameterMap.put(SessionParameter.CONNECT_TIMEOUT, timeout);
 
 		// Custom IBIS HttpSender to support ssl connections and proxies
 		parameterMap.setHttpInvoker(nl.nn.adapterframework.extensions.cmis.CmisHttpInvoker.class);
@@ -395,6 +399,17 @@ public class CmisSessionBuilder {
 			throw new ConfigurationException("illegal value ["+i+"] for maxConnections, must be 0 or larger");
 
 		maxConnections = i;
+		return this;
+	}
+
+	/**
+	 * the maximum number of concurrent connections, 0 uses default
+	 */
+	public CmisSessionBuilder setTimeout(int i) throws ConfigurationException {
+		if(i < 1)
+			throw new ConfigurationException("illegal value ["+i+"] for timeout, must be 1 or larger");
+
+		timeout = i;
 		return this;
 	}
 
