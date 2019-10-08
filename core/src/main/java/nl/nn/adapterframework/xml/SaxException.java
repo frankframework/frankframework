@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.xml;
 
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
@@ -40,6 +41,18 @@ public class SaxException extends SAXException {
 		super(message);
 	}
 
+	public static String getLocatedMessage(Locator locator, String message) {
+		StringBuilder buf = new StringBuilder();
+		if (locator.getPublicId() != null)   buf.append("publicId [").append(locator.getPublicId()).append("] ");
+		if (locator.getSystemId() != null)   buf.append("systemId [").append(locator.getSystemId()).append("] ");
+		if (locator.getLineNumber() != -1)   buf.append("line [").append(locator.getLineNumber()).append("] ");
+		if (locator.getColumnNumber() != -1) buf.append("column [").append(locator.getColumnNumber()).append("] ");
+		if (StringUtils.isNotEmpty(message)) {
+			buf.append(message);
+		}
+		return buf.toString();
+	}
+
 	@Override
 	public String toString() {
 		return getClass().getName()+": "+getMessage(); // avoid duplicates in stack traces
@@ -47,7 +60,9 @@ public class SaxException extends SAXException {
 
 	public static SAXException createSaxException(String message, Locator locator, Exception e) {
 		if (locator!=null) {
-			return new SaxParseException(message, locator, e);
+			// prefer this solution of creating a SaxException with locatin info in the messgage over creating 
+			// a SaxParseException, because that causes the location info to be duplicated in a combined errormessage
+			return new SaxException(getLocatedMessage(locator,message), e); 
 		}
 		return new SaxException(message, e);
 	}
