@@ -220,22 +220,6 @@ public class XsltSender extends StreamingSenderBase  {
 			}
 
 			Result result;
-//			if (isSkipEmptyTags()) {
-//				EmptyTagsSkippingFilter filter = new EmptyTagsSkippingFilter();
-//				filter.setContentHandler(target.asContentHandler());
-//				SAXResult filterResult = new SAXResult();
-//				filterResult.setHandler(filter);
-//				result = filterResult;
-//			} else {
-//				if ("xml".equals(getOutputType())) {
-//					SAXResult targetFeedingResult = new SAXResult();
-//					targetFeedingResult.setHandler(target.asContentHandler());
-//					result = targetFeedingResult;
-//				} else {
-//					result = new StreamResult(target.asWriter());
-//				}
-//			}
-
 			if ("xml".equals(getOutputType())) {
 				SAXResult targetFeedingResult = new SAXResult();
 				targetFeedingResult.setHandler(target.asContentHandler());
@@ -423,7 +407,7 @@ public class XsltSender extends StreamingSenderBase  {
 		return omitXmlDeclaration;
 	}
 
-	@IbisDoc({"6", "For xpathExpression only: namespace defintions for xpathexpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
+	@IbisDoc({"6", "For xpathExpression only: namespace defintions for xpathexpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. One entry can be without a prefix, that will define the default namespace", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}

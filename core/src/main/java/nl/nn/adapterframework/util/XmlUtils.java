@@ -100,6 +100,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
 import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
 import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
+import nl.nn.adapterframework.xml.SaxException;
 
 /**
  * Some utilities for working with XML.
@@ -491,7 +492,7 @@ public class XmlUtils {
 		try {
 			parser = getXMLReader(namespaceAware, resolveExternalEntities, handler);
 		} catch (ParserConfigurationException e) {
-			throw new SAXException("Cannot configure parser",e);
+			throw new SaxException("Cannot configure parser",e);
 		}
 		parser.parse(source);
 	}
@@ -827,11 +828,8 @@ public class XmlUtils {
 			while (st1.hasMoreTokens()) {
 				String namespaceDef = st1.nextToken();
 				int separatorPos = namespaceDef.indexOf('=');
-				if (separatorPos < 1) {
-					throw new TransformerConfigurationException("cannot parse namespace definition from string [" + namespaceDef + "]");
-				} else {
-					namespaceClause += " xmlns:" + namespaceDef.substring(0, separatorPos) + "=\"" + namespaceDef.substring(separatorPos + 1) + "\"";
-				}
+				String prefixClause=separatorPos < 1?"":":"+namespaceDef.substring(0, separatorPos);
+				namespaceClause += " xmlns" + prefixClause + "=\"" + namespaceDef.substring(separatorPos + 1) + "\"";
 			}
 		}
 		return namespaceClause;

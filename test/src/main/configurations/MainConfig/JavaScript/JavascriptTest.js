@@ -14,7 +14,8 @@ function f4(x,y) {
 }
 
 function f5(x, y){
-	file("Hello World!");
-	
-	return "FileSender";
+	var a = x * y;
+	var b = echoFunction(a);
+
+	return b;
 }

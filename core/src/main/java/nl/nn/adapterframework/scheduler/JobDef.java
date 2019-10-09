@@ -804,23 +804,20 @@ public class JobDef {
 
 			Connection conn = null;
 			ResultSet rs = null;
-			FixedQuerySender qs = (FixedQuerySender) ibisManager
-					.getIbisContext()
-					.createBeanAutowireByName(FixedQuerySender.class);
+			FixedQuerySender qs = (FixedQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
 			qs.setJmsRealm(configJmsRealm);
 			qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
-			String selectQuery = "SELECT VERSION FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG = 'TRUE' and AUTORELOAD = 'TRUE'";
+			String booleanValueTrue = qs.getDbmsSupport().getBooleanValue(true);
+			String selectQuery = "SELECT VERSION FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG = '"+booleanValueTrue+"' and AUTORELOAD = '"+booleanValueTrue+"'";
 			try {
 				qs.configure();
 				qs.open();
 				conn = qs.getConnection();
 				PreparedStatement stmt = conn.prepareStatement(selectQuery);
-				for (Configuration configuration : ibisManager
-						.getConfigurations()) {
-					configNames.add(configuration.getName());
-					if ("DatabaseClassLoader"
-							.equals(configuration.getClassLoaderType())) {
-						String configName = configuration.getName();
+				for (Configuration configuration : ibisManager.getConfigurations()) {
+					String configName = configuration.getName();
+					configNames.add(configName);
+					if ("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
 						stmt.setString(1, configName);
 						rs = stmt.executeQuery();
 						if (rs.next()) {

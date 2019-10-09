@@ -90,11 +90,8 @@
 						engineName="J2V8">
 						<param name="x" type="integer" sessionKey="originalMessage"/>
 						<param name="y" type="integer" value="2"/>
-						<sender name = "file"
-							className="nl.nn.adapterframework.senders.FileSender"
-							directory= "."
-							actions= "write_append, delete"
-							fileName="WriteFile.txt">
+						<sender name = "echoFunction"
+							className="nl.nn.adapterframework.senders.EchoSender">
 						</sender>
 					</sender>
 				<forward name="success" path="EXIT" />

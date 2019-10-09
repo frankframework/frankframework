@@ -167,6 +167,13 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 	}
 	
 	@Override
+	protected void setXpathExpression(String xpathExpression) {
+		for (XsltSender sender:xsltSenders) {
+			sender.setXpathExpression(xpathExpression);	
+		}
+	}
+
+	@Override
 	protected void setOmitXmlDeclaration(boolean omitXmlDeclaration) {
 		for (XsltSender sender:xsltSenders) {
 			sender.setOmitXmlDeclaration(omitXmlDeclaration);

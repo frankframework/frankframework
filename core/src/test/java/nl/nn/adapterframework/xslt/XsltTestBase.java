@@ -27,6 +27,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 
 	protected IPipeLineSession session;
 
+	protected abstract void setXpathExpression(String xpathExpression);
 	protected abstract void setStyleSheetName(String styleSheetName);
 	protected abstract void setOmitXmlDeclaration(boolean omitXmlDeclaration);
 	protected abstract void setIndent(boolean indent);

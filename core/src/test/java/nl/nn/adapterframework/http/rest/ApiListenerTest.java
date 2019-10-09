@@ -36,6 +36,7 @@ public class ApiListenerTest {
 		listener = new ApiListener();
 		listener.setName("my-api-listener");
 		listener.setMethod("put");
+		listener.setUriPattern("dummy");
 	}
 
 	@Test

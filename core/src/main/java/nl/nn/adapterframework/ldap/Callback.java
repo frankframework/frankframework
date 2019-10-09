@@ -12,25 +12,11 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-*/
-package nl.nn.adapterframework.receivers;
+ */
+package nl.nn.adapterframework.ldap;
 
-import java.io.File;
-
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.filesystem.FileSystemListener;
-import nl.nn.adapterframework.filesystem.LocalFileSystem;
-
-public class LocalFileSystemListener extends FileSystemListener<File, LocalFileSystem>{
-
-	@Override
-	protected LocalFileSystem createFileSystem() {
-		return new LocalFileSystem();
-	}
+public interface Callback<K,V> {
 	
-	@IbisDoc({"optional base folder, that serves as root for all other folders", ""})
-	public void setRoot(String root) {
-		getFileSystem().setRoot(root);
-	}
+	public void handle(K key, V value);
 
 }

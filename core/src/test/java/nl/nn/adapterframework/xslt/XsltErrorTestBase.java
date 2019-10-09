@@ -2,9 +2,7 @@ package nl.nn.adapterframework.xslt;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.isEmptyString;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -38,6 +36,10 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	private PrintStream prevStdErr;
 	public static int EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING=1;
 	public static int EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS=1; // this should be one, but for the time being we're happy that there is logging
+	
+	private final String FILE_NOT_EXCEPTION="FileNotFoundException";
+	
+	private final boolean testForEmptyOutputStream=false;
 	
 	protected int getMultiplicity() {
 		return 1;
@@ -108,17 +110,21 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	public void init() {
 		testAppender = new TestAppender();
 		LogUtil.getRootLogger().addAppender(testAppender);
-		errorOutputStream = new ErrorOutputStream();
-		prevStdErr=System.err;
-		System.setErr(new PrintStream(errorOutputStream));
+		if (testForEmptyOutputStream) {
+			errorOutputStream = new ErrorOutputStream();
+			prevStdErr=System.err;
+			System.setErr(new PrintStream(errorOutputStream));
+		}
 	}
 
 	@After
 	public void finalChecks() {
-		// Xslt processing should not log to stderr
-		System.setErr(prevStdErr);
-		System.err.println("ErrorStream:"+errorOutputStream);
-		assertThat(errorOutputStream.toString(), isEmptyString());
+		if (testForEmptyOutputStream) {
+			// Xslt processing should not log to stderr
+			System.setErr(prevStdErr);
+			System.err.println("ErrorStream:"+errorOutputStream);
+			assertThat(errorOutputStream.toString(), isEmptyString());
+		}
 	}
 	
 	
@@ -190,13 +196,15 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		} catch (PipeRunException e) {
 			errorMessage = e.getMessage();
 			//System.out.println("ErrorMessage: "+errorMessage);
-			assertThat(errorMessage,containsString("java.io.FileNotFoundException"));
+			assertThat(errorMessage,containsString(FILE_NOT_EXCEPTION));
 		}
-		assertThat(testAppender.toString(),containsString("java.io.FileNotFoundException"));
+		assertThat(testAppender.toString(),containsString(FILE_NOT_EXCEPTION));
 		System.out.println("ErrorMessage: "+errorMessage);
-		System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
-		System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
-		errorOutputStream=new ErrorOutputStream();
+		if (testForEmptyOutputStream) {
+			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
+			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
+			errorOutputStream=new ErrorOutputStream();
+		}
 	}
 
 	@Test
@@ -213,13 +221,15 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			fail("Expected to run into an exception");
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
-			assertThat(errorMessage,containsString("java.io.FileNotFoundException"));
+			assertThat(errorMessage,containsString(FILE_NOT_EXCEPTION));
 		}
 		checkTestAppender(EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING,null);
 		System.out.println("ErrorMessage: "+errorMessage);
-		System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
-		System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
-		errorOutputStream=new ErrorOutputStream();
+		if (testForEmptyOutputStream) {
+			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
+			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
+			errorOutputStream=new ErrorOutputStream();
+		}
 	}
 
 	@Test
@@ -234,7 +244,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString("FileNotFoundException"));
 		}
-		checkTestAppender((EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING)*getMultiplicity()+1,"java.io.FileNotFoundException");
+		checkTestAppender((EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING)*getMultiplicity()+1,FILE_NOT_EXCEPTION);
 	}
 
 	@Test
@@ -247,9 +257,9 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			fail("expected configuration to fail because an import could not be found");
 		} catch (ConfigurationException e) {
 			errorMessage = e.getMessage();
-			assertThat(errorMessage,containsString("Failed to compile stylesheet"));
+			assertThat(errorMessage,containsString("FileNotFoundException"));
 		}
-		checkTestAppender((EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING)*getMultiplicity()+1,"java.io.FileNotFoundException");
+		checkTestAppender((EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING)*getMultiplicity()+1,FILE_NOT_EXCEPTION);
 	}
 
 	@Test
@@ -263,10 +273,32 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		} catch (ConfigurationException e) {
 			log.warn("final exception: "+e.getMessage());
 			errorMessage = e.getMessage();
-			assertThat(errorMessage,containsString("Failed to compile stylesheet"));
+			assertThat(errorMessage,containsString("Cannot find a matching 2-argument function named {http://exslt.org/strings}tokenize()"));
 		}
 		assertThat(testAppender.getNumberOfAlerts(),is(getMultiplicity()+1+EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS));
 
+	}
+
+	@Test
+	public void illegalXPathExpressionXslt2() throws Exception {
+		// error not during configure(), but during doPipe()
+		setXpathExpression("position()='1'");
+		setXslt2(true);
+		String errorMessage = null;
+		try {
+			pipe.configure();
+			fail("Expected to run into an exception");
+		} catch (Exception e) {
+			errorMessage = e.getMessage();
+			assertThat(errorMessage,containsString("Cannot compare xs:integer to xs:string"));
+		}
+		checkTestAppender(EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING+getMultiplicity(),null);
+		System.out.println("ErrorMessage: "+errorMessage);
+		if (testForEmptyOutputStream) {
+			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
+			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
+			errorOutputStream=new ErrorOutputStream();
+		}
 	}
 
 }

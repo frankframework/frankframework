@@ -663,29 +663,63 @@ angular.module('iaf.beheerconsole')
 
 //** Ctrls **//
 
-.controller('ManageConfigurationDetailsCtrl', ['$scope', '$state', 'Api', 'Debug', 'Misc', function($scope, $state, Api, Debug, Misc) {
+.controller('ManageConfigurationDetailsCtrl', ['$scope', '$state', 'Api', 'Debug', 'Misc', '$interval', function($scope, $state, Api, Debug, Misc, $interval) {
 	$scope.state = [];
+	$scope.loading = false;
 	$scope.addNote = function(type, message) {
 		$scope.state.push({type:type, message: message});
 	};
+	$scope.setNote = function(type, message) {
+		$scope.state = [];
+		$scope.addNote(type, message);
+	};
+	$scope.closeNote = function(index) {
+		$scope.state.splice(index, 1);
+	};
+
+	$interval(function() {
+		update();
+	}, 30000);
 
 	$scope.configuration = $state.params.name;
 	function update() {
-		Api.Get("configurations/manage/"+$state.params.name, function(data) {
+		$scope.loading = true;
+		Api.Get("configurations/"+$state.params.name+"/manage", function(data) {
+			for(x in data) {
+				var configs = data[x];
+				if(configs.active) {
+					configs.actived = true;
+				}
+			}
+
 			$scope.versions = data;
+			$scope.loading = false;
 		});
 	};
 	update();
 	$scope.download = function(config) {
-		window.open(Misc.getServerPath() + "iaf/api/configurations/download/"+config.name+"?version="+config.version);
+		window.open(Misc.getServerPath() + "iaf/api/configurations/"+config.name+"/download?version="+config.version);
 	};
+
 	$scope.activate = function(config) {
-		$scope.state = [];
-		Api.Get("configurations/manage/"+config.name+"/activate/"+config.version, function(data) {
-			$scope.addNote("success", "Successfully changed version '"+config.version+"' to active.");
-			update();
+		for(x in $scope.versions) {
+			var configs = $scope.versions[x];
+			if(configs.version != config.version)
+				configs.actived = false;
+		}
+		Api.Put("configurations/"+config.name+"/manage/"+config.version, {activate:config.active}, function(data) {
+			$scope.setNote("success", "Successfully changed startup config to version '"+config.version+"'");
 		}, function() {
-			$scope.addNote("danger", "An error occured while changing active configuration");
+			update();
+			$scope.setNote("danger", "An error occured while changing default configuration version");
+		});
+	};
+
+	$scope.scheduleReload = function(config) {
+		Api.Put("configurations/"+config.name+"/manage/"+config.version, {autoreload:config.autoreload}, function(data) {
+			$scope.setNote("success", "Successfully "+(config.autoreload ? "enabled" : "disabled")+" Auto Reload for version '"+config.version+"'");
+		}, function() {
+			$scope.setNote("danger", "An error occured while changing Auto Reload setting");
 		});
 	};
 }])
