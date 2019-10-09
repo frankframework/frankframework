@@ -67,7 +67,7 @@ public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<
 		String propvalue1="propvalue1";
 		String propvalue2="propvalue2";
 		
-		String expected="<results count=\"1\">\n"+
+		String expected="<results>\n"+
            "<result item=\"1\">\n"+
            "<attachment name=\"testAttachmentName\" filename=\"testAttachmentFileName\" contentType=\"testAttachmentContentType\" size=\"18\">\r\n"+
            "  <properties>\r\n"+
