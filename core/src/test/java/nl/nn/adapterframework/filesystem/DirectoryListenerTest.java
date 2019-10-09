@@ -11,7 +11,7 @@ public class DirectoryListenerTest extends FileSystemListenerTest<File, LocalFil
 	public TemporaryFolder folder;
 	
 	@Override
-	public IFileSystemListener<File> createFileSystemListener() {
+	public FileSystemListener<File, LocalFileSystem> createFileSystemListener() {
 		DirectoryListener result=new DirectoryListener();
 		result.setInputDirectory(folder.getRoot().getAbsolutePath());
 		fileAndFolderPrefix=folder.getRoot().getAbsolutePath()+"/";
