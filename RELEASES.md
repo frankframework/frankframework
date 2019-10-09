@@ -12,6 +12,9 @@ Upcoming
 [Commits](https://github.com/ibissource/iaf/compare/v7.4...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
+- Make attribute firstPipe in PipeLine optional. When empty, the first Pipe in the Pipeline configuration
+  is considedred to be the first. Similarly the success forward defaults to the next Pipe in the PipeLine.
+
 - Make ForEachChildElementPipe streaming when using elementXPathExpression
   Make Xslt streaming default for xsltVersion=1
 
