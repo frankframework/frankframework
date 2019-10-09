@@ -100,7 +100,10 @@ class MailConvertor extends AbstractConvertor {
 			LOGGER.debug("subject : " + eml.getSubject());
 
 			MhtSaveOptions options = MhtSaveOptions.getDefaultMhtml();
-			options.setMhtFormatOptions(MhtFormatOptions.WriteHeader);
+			options.setMhtFormatOptions(MhtFormatOptions.HideExtraPrintHeader | MhtFormatOptions.WriteHeader | 
+					MhtFormatOptions.WriteCompleteBccEmailAddress | MhtFormatOptions.WriteCompleteCcEmailAddress | 
+					MhtFormatOptions.WriteCompleteEmailAddress | MhtFormatOptions.WriteCompleteFromEmailAddress | 
+					MhtFormatOptions.WriteCompleteToEmailAddress);
 			options.setPreserveOriginalDate(true);
 			// Overrules the default documentname.
 			result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(eml.getSubject()));
