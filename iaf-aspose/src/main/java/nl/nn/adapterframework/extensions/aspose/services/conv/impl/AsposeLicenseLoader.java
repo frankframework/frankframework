@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.aspose.cells.CellsHelper;
@@ -39,6 +40,8 @@ import com.aspose.slides.FontsLoader;
 import com.aspose.words.FolderFontSource;
 import com.aspose.words.FontSettings;
 import com.aspose.words.FontSourceBase;
+
+import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * 
@@ -63,8 +66,10 @@ public class AsposeLicenseLoader {
 		pathToExtractFonts = fontsDirectory;
 	}
 
-	public void loadLicense() throws IOException {
-		loadAsposeLicense();
+	public void loadLicense() throws Exception {
+		if(StringUtils.isNotEmpty(license)) {
+			loadAsposeLicense();
+		}
 
 		if (pathToExtractFonts == null) {
 			pathToExtractFonts = Files.createTempDirectory("").toString();
@@ -133,7 +138,7 @@ public class AsposeLicenseLoader {
 		}
 	}
 
-	private void loadAsposeLicense() {
+	private void loadAsposeLicense() throws Exception {
 
 		// words
 		loadAsposeLicense(new LicenseLoader() {
@@ -216,15 +221,14 @@ public class AsposeLicenseLoader {
 
 	}
 
-	private void loadAsposeLicense(LicenseLoader licenseLoader, String asposeLibrayName) {
+	private void loadAsposeLicense(LicenseLoader licenseLoader, String asposeLibrayName) throws Exception {
 
-		try (InputStream inputStream = new FileInputStream(license)) {
+		try (InputStream inputStream = ClassUtils.urlToStream(ClassUtils.getResourceURL(this, license), 10000)) {
 			licenseLoader.loadLicense(inputStream);
 			LOGGER.info("Aspose " + asposeLibrayName + " license loaded!");
 		} catch (Exception e) {
 			String message = "Loading Aspose " + asposeLibrayName + " license failed!";
-			LOGGER.fatal(message, e);
-			throw new RuntimeException(message, e);
+			throw new Exception(message, e);
 		}
 	}
 

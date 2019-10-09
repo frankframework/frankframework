@@ -17,8 +17,6 @@ package nl.nn.adapterframework.extensions.aspose.pipe;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -30,6 +28,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -42,6 +41,7 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.impl.AsposeLicense
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.CisConversionServiceImpl;
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.PdfAttachmentUtil;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -87,21 +87,18 @@ public class PdfPipe extends FixedForwardPipe {
 		// TODO: could be used without a license with a evaluation watermark on the converted file
 		// License check
 		if (StringUtils.isEmpty(license)) {
-			throw new ConfigurationException("Please specify the full path to aspose license including file name.");
+			ConfigurationWarnings.add(this, log, "Aspose License is not configured. There will be evaluation watermarks on the converted documents. There are also some restrictions in the API use. License field could be set with a valid information to avoid this. ");
+		}else {
+			if(ClassUtils.getResourceURL(this, license) == null) {
+				throw new ConfigurationException("Specified file for aspose license is not found");
+			}
 		}
-		try (InputStream inputStream = new FileInputStream(license)) {
-
-		} catch (FileNotFoundException notFound) {
-			throw new ConfigurationException("Specified file for aspose license is not found", notFound);
-		} catch (IOException e1) {
-			throw new ConfigurationException(e1);
-		}
-		// load license
+		// load license 
 		try {
 			loader = new AsposeLicenseLoader(license, fontsDirectory);
 			loader.loadLicense();
 		} catch (Exception e) {
-			throw new ConfigurationException(e);
+			throw new ConfigurationException("Error occured while loading the license", e);
 		}
 	}
 
@@ -244,7 +241,7 @@ public class PdfPipe extends FixedForwardPipe {
 		return license;
 	}
 
-	@IbisDoc({ "aspose license location including file name. Must be specified.", "" })
+	@IbisDoc({ "aspose license location including the file name. It can also be used without license but there some restrictions on usage. If license is in resource, license attribute can be license file name. If the license is in somewhere in filesystem then it should be full path to file including filename and starting with file://// prefix. classloader.allowed.protocols property should contain 'file' protocol", "" })
 	public void setLicense(String license) {
 		this.license = license;
 	}
