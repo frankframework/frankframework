@@ -30,7 +30,6 @@ import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.receivers.DirectoryListener;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -41,9 +40,9 @@ import nl.nn.adapterframework.util.StreamUtil;
  * The name of the moved file is passed to the pipeline.  
  *
  *
- * @author Gerrit van Brakel, after {@link DirectoryListener} by John Dekker
+ * @author Gerrit van Brakel
  */
-public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F>, IFileSystemListener<F> {
+public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -289,18 +288,8 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		}
 	}
 
-	
-	
-//	public String toString() {
-//		String result = super.toString();
-//		ToStringBuilder ts = new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE);
-//		ts.append("name", getName());
-//		ts.append("inputDirectory", getInputDirectory());
-//		ts.append("wildcard", getWildcard());
-//		ts.append("excludeWildcard", getExcludeWildcard());
-//		result += ts.toString();
-//		return result;
-//	}
+
+
 
 
 	@Override
@@ -329,45 +318,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return inputFolder;
 	}
 
-
-//	/**
-//	 * set the {@link nl.nn.adapterframework.util.WildCardFilter wildcard}  to look for files in the specifiek directory, e.g. "*.inp"
-//	 */
-//	@IbisDoc({"filter of files to look for in inputdirectory", ""})
-//	public void setWildcard(String wildcard) {
-//		this.wildcard = wildcard;
-//	}
-//	/**
-//	* get the {@link nl.nn.adapterframework.util.WildCardFilter wildcard}  to look for files in the specifiek directory, e.g. "*.inp"
-//	*/
-//	public String getWildcard() {
-//		return wildcard;
-//	}
-//
-//	@IbisDoc({"filter of files to be excluded when looking in inputdirectory", ""})
-//	public void setExcludeWildcard(String excludeWildcard) {
-//		this.excludeWildcard = excludeWildcard;
-//	}
-//
-//	public String getExcludeWildcard() {
-//		return excludeWildcard;
-//	}
-
-//	@IbisDoc({"when set a list of files in xml format (&lt;files&gt;&lt;file&gt;/file/name&lt;/file&gt;&lt;file&gt;/another/file/name&lt;/file&gt;&lt;/files&gt;) is passed to the pipleline instead of 1 file name when the specified amount of files is present in the input directory. when set to -1 the list of files is passed to the pipleline whenever one of more files are present.", ""})
-//	public void setFileList(Integer fileList) {
-//		this.fileList = fileList;
-//	}
-//	public Integer getFileList() {
-//		return fileList;
-//	}
-//	
-//	@IbisDoc({"when set along with filelist a list of files is passed to the pipleline when the specified amount of ms has passed since the first file for a new list of files was found even if the amount of files specified by filelist isn't present in the input directory yet", ""})
-//	public void setFileListForcedAfter(Long fileListForcedAfter) {
-//		this.fileListForcedAfter = fileListForcedAfter;
-//	}
-//	public Long getFileListForcedAfter() {
-//		return fileListForcedAfter;
-//	}
 
 	/**
 	 * @Deprecated replaced by inProcessFolder
@@ -417,7 +367,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return createFolders;
 	}
 	
-	@Override
 	public void setCreateInputDirectory(boolean createInputDirectory) {
 		ConfigurationWarnings.add(this, log, "attribute 'createInputDirectory' has been replaced by 'createFolders'");
 		setCreateFolders(createInputDirectory);
@@ -474,7 +423,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return fileTimeSensitive;
 	}
 
-	@Override
 	@IbisDoc({"9", "determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'contents' for the contents of the file. For any other value, the attributes of the file are searched and used", "name"})
 	public void setMessageType(String messageType) {
 		this.messageType = messageType;

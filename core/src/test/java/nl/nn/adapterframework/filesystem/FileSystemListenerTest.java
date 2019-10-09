@@ -28,14 +28,14 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	protected String fileAndFolderPrefix="";
 	protected boolean testFullErrorMessages=true;
 
-	private IFileSystemListener<F> fileSystemListener;
-	private Map<String,Object> threadContext;
+	protected FileSystemListener<F,FS> fileSystemListener;
+	protected Map<String,Object> threadContext;
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
 	
-	public abstract IFileSystemListener<F> createFileSystemListener();
+	public abstract FileSystemListener<F,FS> createFileSystemListener();
 
 	@Override
 	@Before
@@ -177,31 +177,6 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		fileListenerTestGetRawMessage(null,"inProcessFolder");
 	}
 
-	@Test
-	public void fileListenerTestGetRawMessageDelayed() throws Exception {
-		int stabilityTimeUnit=1000; // ms
-		fileSystemListener.setMinStableTime(2*stabilityTimeUnit);
-		String filename="rawMessageFile";
-		String contents="Test Message Contents";
-		
-		fileSystemListener.configure();
-		fileSystemListener.open();
-		
-		long beforeCreateFile=System.currentTimeMillis();
-		createFile(null, filename, contents);
-		long afterCreateFile=System.currentTimeMillis();
-		log.debug("beforeCreateFile ["+beforeCreateFile+"] afterCreateFile ["+afterCreateFile+"]");
-		Thread.sleep(1*stabilityTimeUnit);
-		long afterSleep=System.currentTimeMillis();
-		log.debug("afterSleep ["+afterSleep+"]");
-		
-		F rawMessage=fileSystemListener.getRawMessage(threadContext);
-		assertNull("raw message must be null when not yet stable for "+(2*stabilityTimeUnit)+"ms",rawMessage);
-		
-		Thread.sleep(2*stabilityTimeUnit);
-		rawMessage=fileSystemListener.getRawMessage(threadContext);
-		assertNotNull("raw message must be not null when stable for "+(3*stabilityTimeUnit)+"ms",rawMessage);
-	}
 
 	@Test
 	public void fileListenerTestGetStringFromRawMessageFilename() throws Exception {

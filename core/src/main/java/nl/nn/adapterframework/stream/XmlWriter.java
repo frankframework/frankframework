@@ -31,6 +31,7 @@ import org.xml.sax.helpers.DefaultHandler;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.SaxException;
 
 public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	protected Logger log = LogUtil.getLogger(this);
@@ -62,7 +63,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 		try {
 			writer.flush();
 		} catch (IOException e) {
-			throw new SAXException(e);
+			throw new SaxException(e);
 		}
 	}
 
@@ -78,7 +79,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 			}
 			elementJustStarted=true;
 		} catch (IOException e) {
-			throw new SAXException(e);
+			throw new SaxException(e);
 		}
 	}
 
@@ -92,7 +93,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 				writer.append("</"+qName+">");
 			}
 		} catch (IOException e) {
-			throw new SAXException(e);
+			throw new SaxException(e);
 		}
 	}
 
@@ -109,7 +110,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 				writer.append(XmlUtils.encodeChars(new String(ch, start, length)));
 			}
 		} catch (IOException e) {
-			throw new SAXException(e);
+			throw new SaxException(e);
 		}
 	}
 
@@ -120,7 +121,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 				writer.append("<!--").append(new String(ch, start, length)).append("-->");
 			}
 		} catch (IOException e) {
-			throw new SAXException(e);
+			throw new SaxException(e);
 		}
 	}
 
