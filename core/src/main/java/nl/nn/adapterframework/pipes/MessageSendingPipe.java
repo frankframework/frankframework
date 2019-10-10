@@ -725,8 +725,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					return new PipeRunResult(exceptionForward,resultmsg);
 				}
 				throw new PipeRunException(this, getLogPrefix(session) + "caught exception", t);
-					}
 			}
+		}
 		if (!validResult(result)) {
 			PipeForward illegalResultForward = findForward(ILLEGAL_RESULT_FORWARD);
 			return new PipeRunResult(illegalResultForward, result);

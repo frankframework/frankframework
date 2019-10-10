@@ -421,7 +421,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			String results = "";
 			if (isCollectResults()) {
 				StringBuffer callbackResults = callback.getResults();
-				callbackResults.insert(0, "<results count=\""+callback.getCount()+"\">\n");
+				callbackResults.insert(0, "<results>\n");
 				callbackResults.append("</results>");
 				results = callbackResults.toString();
 			} else {
@@ -530,8 +530,8 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	+ "Iteration stops if condition returns anything other than <code>false</code> or an empty result."
 	+ "For example, to stop after the second child element has been processed, one of the following expressions could be used:"
 	+ "<table> "
-	+ "<tr><td><li><code>result[position()='2']</code></td><td>returns result element after second child element has been processed</td></tr>"
-	+ "<tr><td><li><code>position()='2'</code></td><td>returns <code>false</code> after second child element has been processed, <code>true</code> for others</td></tr>"
+	+ "<tr><td><li><code>result[position()=2]</code></td><td>returns result element after second child element has been processed</td></tr>"
+	+ "<tr><td><li><code>position()=2</code></td><td>returns <code>false</code> after second child element has been processed, <code>true</code> for others</td></tr>"
 	+ "</table> ", ""})
 	public void setStopConditionXPathExpression(String string) {
 		stopConditionXPathExpression = string;

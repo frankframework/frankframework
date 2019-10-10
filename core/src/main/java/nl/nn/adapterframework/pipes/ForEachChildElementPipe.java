@@ -48,6 +48,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerErrorListener;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.FullXmlFilter;
 import nl.nn.adapterframework.xml.SaxException;
 
 /**
@@ -251,9 +252,6 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 					throw new SaxException(e);
 					
 				}
-				if (stopRequested) {
-					throw new SAXException("stop requested");
-				}
 			}
 		}
 
@@ -330,6 +328,21 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 
 	}
 
+	private class StopSensor extends FullXmlFilter {
+		
+		private ItemCallbackCallingHandler itemHandler;
+		
+		public StopSensor(ItemCallbackCallingHandler itemHandler) {
+			this.itemHandler=itemHandler;
+		}
+		@Override
+		public void endElement(String uri, String localName, String qName) throws SAXException {
+			super.endElement(uri, localName, qName);
+			if (itemHandler.isStopRequested()) {
+				throw new SAXException("stop requested");
+			}
+		}
+	}
 
 	@Override
 	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
@@ -365,6 +378,10 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		} catch (TransformerException e) {
 			throw new SenderException(errorMessage, e);
 		}
+		
+		StopSensor stopSensor = new StopSensor(itemHandler);
+		stopSensor.setContentHandler(inputHandler);
+		inputHandler=stopSensor;
 
 		try {
 			XmlUtils.parseXml(inputHandler,src);

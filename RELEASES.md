@@ -17,13 +17,14 @@ Upcoming
 - Enable to specify a namespace without a prefix in attribute namespaceDefs, to help simplify xpathExpressions
   e.g. into '/root/sub' instead of '/\*[local-name()='root']/\*[local-name()='sub'.
 
-- Make ForEachChildElementPipe streaming when using elementXPathExpression
+- Make ForEachChildElementPipe streaming when using elementXPathExpression too
   Make Xslt streaming default for xsltVersion=1
 
 ### Non backwards compatible changes
 
 - Make DirectoryListener extend FileSystemListener. It no longer supports attributes fileList, 
   fileListForcedAfter, outputFilenamePattern, passWithoutDirectory, numberOfBackups, overwrite and random.
+- Remove attribute 'count' from result of iterating pipes like ForEachChildElementPipe, to enable streaming output.
 
 7.4
 --------
