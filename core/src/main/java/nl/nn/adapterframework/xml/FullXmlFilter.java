@@ -29,7 +29,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public class FullXmlFilter extends XMLFilterImpl implements LexicalHandler {
 	protected Logger log = LogUtil.getLogger(this);
 
-	LexicalHandler lexicalHandler;
+	private LexicalHandler lexicalHandler;
 	
 	public FullXmlFilter() {
 		super();
@@ -66,33 +66,33 @@ public class FullXmlFilter extends XMLFilterImpl implements LexicalHandler {
 	@Override
 	public void comment(char[] ch, int start, int length) throws SAXException {
 		if (lexicalHandler!=null) {
-			lexicalHandler.comment(ch, start, length);;
+			lexicalHandler.comment(ch, start, length);
 		}
 	}
 
 	@Override
 	public void startCDATA() throws SAXException {
 		if (lexicalHandler!=null) {
-			lexicalHandler.startCDATA();;
+			lexicalHandler.startCDATA();
 		}
 	}
 	@Override
 	public void endCDATA() throws SAXException {
 		if (lexicalHandler!=null) {
-			lexicalHandler.endCDATA();;
+			lexicalHandler.endCDATA();
 		}
 	}
 
 	@Override
 	public void startDTD(String name, String publicId, String systemId) throws SAXException {
 		if (lexicalHandler!=null) {
-			lexicalHandler.startDTD(name, publicId, systemId);;
+			lexicalHandler.startDTD(name, publicId, systemId);
 		}
 	}
 	@Override
 	public void endDTD() throws SAXException {
 		if (lexicalHandler!=null) {
-			lexicalHandler.endDTD();;
+			lexicalHandler.endDTD();
 		}
 	}
 
