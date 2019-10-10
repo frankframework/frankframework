@@ -13,7 +13,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -66,21 +65,25 @@ public class ScenarioTester extends Thread {
 		String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
 		String longName = scenarioFile.getAbsolutePath();
 		String shortName = longName.substring(currentScenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
-		
-		
-		MessageListener.debugMessage("Read property file " + scenarioFile.getName());
+		String testName = shortName;
+
+		MessageListener.debugMessage("General", "Read property file " + scenarioFile.getName());
 		Properties properties = TestPreparer.readProperties(appConstants, scenarioFile);
+
 		List<String> steps = null;
 
 		if (properties != null) {
-			MessageListener.debugMessage("Read steps from property file");
+			testName = properties.getProperty("scenario.description", shortName);
+			MessageListener.testPropertyMessage(testName, longName);
+
+			MessageListener.debugMessage(testName, "Read steps from property file");
 			steps = TestPreparer.getSteps(properties);
 			if (steps != null) {
 				synchronized(STEP_SYNCHRONIZER) {
-					MessageListener.debugMessage("Open queues");
-					Map<String, Map<String, Object>> queues = openQueues(scenarioDirectory, steps, properties, ibisContext, appConstants);
+					MessageListener.debugMessage(testName, "Open queues");
+					Map<String, Map<String, Object>> queues = openQueues(scenarioDirectory, steps, properties, testName, ibisContext, appConstants);
 					if (queues != null) {
-						MessageListener.debugMessage("Execute steps");
+						MessageListener.debugMessage(testName, "Execute steps");
 						boolean allStepsPassed = true;
 						boolean autoSaved = false;
 						Iterator<String> iterator = steps.iterator();
@@ -90,15 +93,15 @@ public class ScenarioTester extends Thread {
 						while (allStepsPassed && iterator.hasNext()) {
 							String step = (String)iterator.next();
 							String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
-							MessageListener.debugMessage("Execute step '" + stepDisplayName + "'");
-							int stepPassed = executeStep(step, properties, stepDisplayName, queues);
+							MessageListener.debugMessage(testName, "Execute step '" + stepDisplayName + "'");
+							int stepPassed = executeStep(step, properties, testName, stepDisplayName, queues);
 							if (stepPassed==TestTool.RESULT_OK) {
-								MessageListener.stepMessage("Step '" + stepDisplayName + "' passed");
+								MessageListener.stepMessage(testName, "Step '" + stepDisplayName + "' passed");
 							} else if (stepPassed==TestTool.RESULT_AUTOSAVED) {
-								MessageListener.stepMessage("Step '" + stepDisplayName + "' passed after autosave");
+								MessageListener.stepMessage(testName, "Step '" + stepDisplayName + "' passed after autosave");
 								autoSaved = true;
 							} else {
-								MessageListener.stepMessage("Step '" + stepDisplayName + "' failed");
+								MessageListener.stepMessage(testName, "Step '" + stepDisplayName + "' failed");
 								allStepsPassed = false;
 							}
 						}
@@ -112,15 +115,15 @@ public class ScenarioTester extends Thread {
 								scenarioPassed = TestTool.RESULT_OK;
 							}
 						}
-						MessageListener.debugMessage("Wait " + waitBeforeCleanUp + " ms before clean up");
+						MessageListener.debugMessage(testName, "Wait " + waitBeforeCleanUp + " ms before clean up");
 						try {
 							Thread.sleep(waitBeforeCleanUp);
 						} catch(InterruptedException e) {
 						}
-						MessageListener.debugMessage("Close queues");
+						MessageListener.debugMessage(testName, "Close queues");
 						boolean remainingMessagesFound = closeQueues(queues, properties);
 						if (remainingMessagesFound) {
-							MessageListener.stepMessage("Found one or more messages on queues or in database after scenario executed");
+							MessageListener.stepMessage(testName, "Found one or more messages on queues or in database after scenario executed");
 							scenarioPassed = TestTool.RESULT_ERROR;
 						}
 					}
@@ -133,21 +136,21 @@ public class ScenarioTester extends Thread {
 			scenarioResults[scenarioPassed]++;
 			switch (scenarioPassed) {
 			case TestTool.RESULT_OK:
-				MessageListener.scenarioMessage("Scenario '" + shortName + " - "
+				MessageListener.scenarioMessage(testName, "Scenario '" + shortName + " - "
 						+ properties.getProperty("scenario.description") + "' passed (" + scenarioResults[0] + "/"
 						+ scenarioResults[1] + "/" + scenariosTotal + ")");
 				break;
 			case TestTool.RESULT_AUTOSAVED:
-				MessageListener.scenarioMessage("Scenario '" + shortName + " - "
+				MessageListener.scenarioMessage(testName, "Scenario '" + shortName + " - "
 						+ properties.getProperty("scenario.description") + "' passed after autosave");
 				break;
 			case TestTool.RESULT_ERROR:
-				MessageListener.scenarioFailedMessage("Scenario '" + shortName + " - "
+				MessageListener.scenarioFailedMessage(testName, "Scenario '" + shortName + " - "
 						+ properties.getProperty("scenario.description") + "' failed (" + scenarioResults[0] + "/"
 						+ scenarioResults[1] + "/" + scenariosTotal + ")");
 				break;
 			default:
-				MessageListener.errorMessage("Could not retrieve the result of the test " + shortName);
+				MessageListener.errorMessage(testName, "Could not retrieve the result of the test " + shortName);
 				break;
 			}
 		}
@@ -184,7 +187,7 @@ public class ScenarioTester extends Thread {
 	}
 	*/
 	
-	public static int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Map<String, Object>> queues) {
+	public static int executeStep(String step, Properties properties, String testName, String stepDisplayName, Map<String, Map<String, Object>> queues) {
 		int stepPassed = TestTool.RESULT_ERROR;
 		String fileName = properties.getProperty(step);
 		String fileNameAbsolutePath = properties.getProperty(step + ".absolutepath");
@@ -196,12 +199,12 @@ public class ScenarioTester extends Thread {
 		
 		//inlezen file voor deze stap
 		if ("".equals(fileName)) {
-			MessageListener.errorMessage("No file specified for step '" + step + "'");
+			MessageListener.errorMessage(testName, "No file specified for step '" + step + "'");
 		} else {
-			MessageListener.debugMessage("Read file " + fileName);
+			MessageListener.debugMessage(testName, "Read file " + fileName);
 			fileContent = TestPreparer.readFile(fileNameAbsolutePath);
 			if (fileContent == null) {
-				MessageListener.errorMessage("Could not read file '" + fileName + "'");
+				MessageListener.errorMessage(testName, "Could not read file '" + fileName + "'");
 			} else {
 				if (step.endsWith(".read")) {
 					queueName = step.substring(i + 1, step.length() - 5);
@@ -223,13 +226,13 @@ public class ScenarioTester extends Thread {
 					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = WebServiceController.read(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);
 					} else if ("nl.nn.adapterframework.testtool.FileListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = FileController.executeListenerRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);
+						stepPassed = FileController.executeListenerRead(testName, step, stepDisplayName, properties, queues, queueName, fileName, fileContent);
 					} else if ("nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = FileController.executeSenderRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);
+						stepPassed = FileController.executeSenderRead(testName, step, stepDisplayName, properties, queues, queueName, fileName, fileContent);
 					} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = ListenerController.executeXsltProviderListenerRead(stepDisplayName, properties, queues, queueName, fileContent, TestPreparer.createParametersMapFromParamProperties(properties, step, false, null));
 					} else {
-						MessageListener.errorMessage("Property '" + queueName + ".className' not found or not valid");
+						MessageListener.errorMessage(testName, "Property '" + queueName + ".className' not found or not valid");
 					}
 				} else {
 					queueName = step.substring(i + 1, step.length() - 6);
@@ -237,27 +240,27 @@ public class ScenarioTester extends Thread {
 					
 
 					if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = JmsController.write(stepDisplayName, queues, queueName, fileContent);
+						stepPassed = JmsController.write(testName, stepDisplayName, queues, queueName, fileContent);
 					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = SenderController.executeSenderWrite(stepDisplayName, queues, queueName, "ibisWebService", fileContent);
+						stepPassed = SenderController.executeSenderWrite(testName, stepDisplayName, queues, queueName, "ibisWebService", fileContent);
 					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = SenderController.executeSenderWrite(stepDisplayName, queues, queueName, "webService", fileContent);
+						stepPassed = SenderController.executeSenderWrite(testName, stepDisplayName, queues, queueName, "webService", fileContent);
 					} else if ("nl.nn.adapterframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = WebServiceController.write(stepDisplayName, queues, queueName, fileContent);
+						stepPassed = WebServiceController.write(testName, stepDisplayName, queues, queueName, fileContent);
 					} else if ("nl.nn.adapterframework.http.HttpSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = SenderController.executeSenderWrite(stepDisplayName, queues, queueName, "http", fileContent);
+						stepPassed = SenderController.executeSenderWrite(testName, stepDisplayName, queues, queueName, "http", fileContent);
 					} else if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = SenderController.executeSenderWrite(stepDisplayName, queues, queueName, "ibisJava", fileContent);
+						stepPassed = SenderController.executeSenderWrite(testName, stepDisplayName, queues, queueName, "ibisJava", fileContent);
 					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = WebServiceController.write(stepDisplayName, queues, queueName, fileContent);
+						stepPassed = WebServiceController.write(testName, stepDisplayName, queues, queueName, fileContent);
 					} else if ("nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = FileController.executeSenderWrite(stepDisplayName, queues, queueName, fileContent);
+						stepPassed = FileController.executeSenderWrite(testName, stepDisplayName, queues, queueName, fileContent);
 					} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = ListenerController.executeXsltProviderListenerWrite(step, stepDisplayName, queues, queueName, fileName, fileContent, properties);
 					} else if ("nl.nn.adapterframework.senders.DelaySender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = SenderController.executeDelaySenderWrite(stepDisplayName, queues, queueName, fileContent);
+						stepPassed = SenderController.executeDelaySenderWrite(testName, stepDisplayName, queues, queueName, fileContent);
 					} else {
-						MessageListener.errorMessage("Property '" + queueName + ".className' not found or not valid");
+						MessageListener.errorMessage(testName, "Property '" + queueName + ".className' not found or not valid");
 					}
 				}
 			}
@@ -268,9 +271,9 @@ public class ScenarioTester extends Thread {
 
 
 	public static Map<String, Map<String, Object>> openQueues(String scenarioDirectory, List<String> steps,
-			Properties properties, IbisContext ibisContext, AppConstants appConstants) {
+			Properties properties, String testName, IbisContext ibisContext, AppConstants appConstants) {
 		Map<String, Map<String, Object>> queues = new HashMap<String, Map<String, Object>>();
-		MessageListener.debugMessage("Get all queue names");
+		MessageListener.debugMessage(testName, "Get all queue names");
 		List<String> jmsSenders = new ArrayList<String>();
 		List<String> jmsListeners = new ArrayList<String>();
 		List<String> jdbcFixedQuerySenders = new ArrayList<String>();
@@ -293,58 +296,58 @@ public class ScenarioTester extends Thread {
 				int j = key.indexOf('.', i + 1);
 				if (j != -1) {
 					String queueName = key.substring(0, j);
-					MessageListener.debugMessage("queuename openqueue: " + queueName);
+					MessageListener.debugMessage(testName, "queuename openqueue: " + queueName);
 					if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))
 							&& !jmsSenders.contains(queueName)) {
-						MessageListener.debugMessage("Adding jmsSender queue: " + queueName);
+						MessageListener.debugMessage(testName, "Adding jmsSender queue: " + queueName);
 						jmsSenders.add(queueName);
 					} else if ("nl.nn.adapterframework.jms.JmsListener".equals(properties.get(queueName + ".className"))
 							&& !jmsListeners.contains(queueName)) {
-						MessageListener.debugMessage("Adding jmsListener queue: " + queueName);
+						MessageListener.debugMessage(testName, "Adding jmsListener queue: " + queueName);
 						jmsListeners.add(queueName);
 					} else if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(
 							properties.get(queueName + ".className")) && !jdbcFixedQuerySenders.contains(queueName)) {
-						MessageListener.debugMessage("Adding jdbcFixedQuerySender queue: " + queueName);
+						MessageListener.debugMessage(testName, "Adding jdbcFixedQuerySender queue: " + queueName);
 						jdbcFixedQuerySenders.add(queueName);
 					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(
 							properties.get(queueName + ".className")) && !ibisWebServiceSenders.contains(queueName)) {
-						MessageListener.debugMessage("Adding ibisWebServiceSender queue: " + queueName);
+						MessageListener.debugMessage(testName, "Adding ibisWebServiceSender queue: " + queueName);
 						ibisWebServiceSenders.add(queueName);
 					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(
 							properties.get(queueName + ".className")) && !webServiceSenders.contains(queueName)) {
-						MessageListener.debugMessage("Adding webServiceSender queue: " + queueName);
+						MessageListener.debugMessage(testName, "Adding webServiceSender queue: " + queueName);
 						webServiceSenders.add(queueName);
 					} else if ("nl.nn.adapterframework.http.WebServiceListener".equals(
 							properties.get(queueName + ".className")) && !webServiceListeners.contains(queueName)) {
-						MessageListener.debugMessage("Adding webServiceListener queue: " + queueName);
+						MessageListener.debugMessage(testName, "Adding webServiceListener queue: " + queueName);
 						webServiceListeners.add(queueName);
 					} else if ("nl.nn.adapterframework.http.HttpSender".equals(properties.get(queueName + ".className"))
 							&& !httpSenders.contains(queueName)) {
-						MessageListener.debugMessage("Adding httpSender queue: " + queueName);
+						MessageListener.debugMessage(testName, "Adding httpSender queue: " + queueName);
 						httpSenders.add(queueName);
 					} else if ("nl.nn.adapterframework.senders.IbisJavaSender"
 							.equals(properties.get(queueName + ".className")) && !ibisJavaSenders.contains(queueName)) {
-						MessageListener.debugMessage("Adding ibisJavaSender queue: " + queueName);
+						MessageListener.debugMessage(testName, "Adding ibisJavaSender queue: " + queueName);
 						ibisJavaSenders.add(queueName);
 					} else if ("nl.nn.adapterframework.senders.DelaySender"
 							.equals(properties.get(queueName + ".className")) && !delaySenders.contains(queueName)) {
-						MessageListener.debugMessage("Adding delaySender queue: " + queueName);
+						MessageListener.debugMessage(testName, "Adding delaySender queue: " + queueName);
 						delaySenders.add(queueName);
 					} else if ("nl.nn.adapterframework.receivers.JavaListener"
 							.equals(properties.get(queueName + ".className")) && !javaListeners.contains(queueName)) {
-						MessageListener.debugMessage("Adding javaListener queue: " + queueName);
+						MessageListener.debugMessage(testName, "Adding javaListener queue: " + queueName);
 						javaListeners.add(queueName);
 					} else if ("nl.nn.adapterframework.testtool.FileSender"
 							.equals(properties.get(queueName + ".className")) && !fileSenders.contains(queueName)) {
-						MessageListener.debugMessage("Adding fileSender queue: " + queueName);
+						MessageListener.debugMessage(testName, "Adding fileSender queue: " + queueName);
 						fileSenders.add(queueName);
 					} else if ("nl.nn.adapterframework.testtool.FileListener"
 							.equals(properties.get(queueName + ".className")) && !fileListeners.contains(queueName)) {
-						MessageListener.debugMessage("Adding fileListener queue: " + queueName);
+						MessageListener.debugMessage(testName, "Adding fileListener queue: " + queueName);
 						fileListeners.add(queueName);
 					} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(
 							properties.get(queueName + ".className")) && !xsltProviderListeners.contains(queueName)) {
-						MessageListener.debugMessage("Adding xsltProviderListeners queue: " + queueName);
+						MessageListener.debugMessage(testName, "Adding xsltProviderListeners queue: " + queueName);
 						xsltProviderListeners.add(queueName);
 					}
 				}

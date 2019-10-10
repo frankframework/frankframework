@@ -38,7 +38,8 @@ public class JdbcFixedQueryController {
 	 * @param appConstants constants required for database access.
 	 */
 	public static void initSender(Map<String, Map<String, Object>> queues, List<String> jdbcFixedQuerySenders, Properties properties, AppConstants appConstants) {
-		MessageListener.debugMessage("Initialize jdbc fixed query senders");
+		String testName = properties.getProperty("scenario.description");
+		MessageListener.debugMessage(testName, "Initialize jdbc fixed query senders");
 		Iterator<String> iterator = jdbcFixedQuerySenders.iterator();
 		while (queues != null && iterator.hasNext()) {
 			String name = (String)iterator.next();
@@ -57,7 +58,7 @@ public class JdbcFixedQueryController {
 			if (datasourceName == null) {
 				ScenarioTester.closeQueues(queues, properties);
 				queues = null;
-				MessageListener.errorMessage("Could not find datasourceName property for " + name);
+				MessageListener.errorMessage(testName, "Could not find datasourceName property for " + name);
 			} else {
 				Map<String, Object> querySendersInfo = new HashMap<String, Object>();
 				while (!allFound && queues != null) {
@@ -76,15 +77,15 @@ public class JdbcFixedQueryController {
 						} catch(ConfigurationException e) {
 							ScenarioTester.closeQueues(queues, properties);
 							queues = null;
-							MessageListener.errorMessage("Could not configure '" + name + "': " + e.getMessage(), e);
+							MessageListener.errorMessage(testName, "Could not configure '" + name + "': " + e.getMessage(), e);
 						} catch(TimeOutException e) {
 							ScenarioTester.closeQueues(queues, properties);
 							queues = null;
-							MessageListener.errorMessage("Time out on execute pre delete query for '" + name + "': " + e.getMessage(), e);
+							MessageListener.errorMessage(testName, "Time out on execute pre delete query for '" + name + "': " + e.getMessage(), e);
 						} catch(SenderException e) {
 							ScenarioTester.closeQueues(queues, properties);
 							queues = null;
-							MessageListener.errorMessage("Could not execute pre delete query for '" + name + "': " + e.getMessage(), e);
+							MessageListener.errorMessage(testName, "Could not execute pre delete query for '" + name + "': " + e.getMessage(), e);
 						}
 						preDeleteIndex++;
 					} else {
@@ -106,7 +107,7 @@ public class JdbcFixedQueryController {
 						} catch(ConfigurationException e) {
 							ScenarioTester.closeQueues(queues, properties);
 							queues = null;
-							MessageListener.errorMessage("Could not configure '" + name + "': " + e.getMessage(), e);
+							MessageListener.errorMessage(testName, "Could not configure '" + name + "': " + e.getMessage(), e);
 						}
 						if (queues != null) {
 							try {
@@ -114,7 +115,7 @@ public class JdbcFixedQueryController {
 							} catch(SenderException e) {
 								ScenarioTester.closeQueues(queues, properties);
 								queues = null;
-								MessageListener.errorMessage("Could not open (pre/post) '" + name + "': " + e.getMessage(), e);
+								MessageListener.errorMessage(testName, "Could not open (pre/post) '" + name + "': " + e.getMessage(), e);
 							}
 						}
 						if (queues != null) {
@@ -125,11 +126,11 @@ public class JdbcFixedQueryController {
 							} catch(TimeOutException e) {
 								ScenarioTester.closeQueues(queues, properties);
 								queues = null;
-								MessageListener.errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e);
+								MessageListener.errorMessage(testName, "Time out on execute query for '" + name + "': " + e.getMessage(), e);
 							} catch(SenderException e) {
 								ScenarioTester.closeQueues(queues, properties);
 								queues = null;
-								MessageListener.errorMessage("Could not execute query for '" + name + "': " + e.getMessage(), e);
+								MessageListener.errorMessage(testName, "Could not execute query for '" + name + "': " + e.getMessage(), e);
 							}
 						}
 					}
@@ -156,7 +157,7 @@ public class JdbcFixedQueryController {
 						} catch(ConfigurationException e) {
 							ScenarioTester.closeQueues(queues, properties);
 							queues = null;
-							MessageListener.errorMessage("Could not configure '" + name + "': " + e.getMessage(), e);
+							MessageListener.errorMessage(testName, "Could not configure '" + name + "': " + e.getMessage(), e);
 						}
 						if (queues != null) {
 							try {
@@ -165,7 +166,7 @@ public class JdbcFixedQueryController {
 							} catch(SenderException e) {
 								ScenarioTester.closeQueues(queues, properties);
 								queues = null;
-								MessageListener.errorMessage("Could not open '" + name + "': " + e.getMessage(), e);
+								MessageListener.errorMessage(testName, "Could not open '" + name + "': " + e.getMessage(), e);
 							}
 						}
 					}
@@ -176,11 +177,11 @@ public class JdbcFixedQueryController {
 						try {
 							querySendersInfo.put("readQueryWaitBeforeRead", new Integer(waitBeforeRead));
 						} catch(NumberFormatException e) {
-							MessageListener.errorMessage("Value of '" + name + ".waitBeforeRead' not a number: " + e.getMessage(), e);
+							MessageListener.errorMessage(testName, "Value of '" + name + ".waitBeforeRead' not a number: " + e.getMessage(), e);
 						}
 					}
 					queues.put(name, querySendersInfo);
-					MessageListener.debugMessage("Opened jdbc connection '" + name + "'");
+					MessageListener.debugMessage(testName, "Opened jdbc connection '" + name + "'");
 				}
 			}
 		}
@@ -194,8 +195,9 @@ public class JdbcFixedQueryController {
 	 * @return true if there are still messages remaining for this pipe.
 	 */
 	public static boolean closeConnection(Map<String, Map<String, Object>> queues, Properties properties) {
+		String testName = properties.getProperty("scenario.description");
 		boolean remainingMessagesFound = false;
-		MessageListener.debugMessage("Close jdbc connections");
+		MessageListener.debugMessage(testName, "Close jdbc connections");
 		Iterator iterator = queues.keySet().iterator();
 		while (iterator.hasNext()) {
 			String name = (String)iterator.next();
@@ -218,12 +220,12 @@ public class JdbcFixedQueryController {
 							try {
 								message = readQueryFixedQuerySender.sendMessage(TestTool.TESTTOOL_CORRELATIONID, TestTool.TESTTOOL_DUMMY_MESSAGE);
 							} catch(TimeOutException e) {
-								MessageListener.errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e);
+								MessageListener.errorMessage(testName, "Time out on execute query for '" + name + "': " + e.getMessage(), e);
 							} catch(SenderException e) {
-								MessageListener.errorMessage("Could not execute query for '" + name + "': " + e.getMessage(), e);
+								MessageListener.errorMessage(testName, "Could not execute query for '" + name + "': " + e.getMessage(), e);
 							}
 							if (message != null) {
-								MessageListener.wrongPipelineMessage("Found remaining message on '" + name + "'", message);
+								MessageListener.wrongPipelineMessage(testName, "Found remaining message on '" + name + "'", message);
 							}
 
 							remainingMessagesFound = true;
@@ -231,9 +233,9 @@ public class JdbcFixedQueryController {
 						}
 						prePostFixedQuerySender.close();
 					} catch(TimeOutException e) {
-						MessageListener.errorMessage("Time out on close (pre/post) '" + name + "': " + e.getMessage(), e);
+						MessageListener.errorMessage(testName, "Time out on close (pre/post) '" + name + "': " + e.getMessage(), e);
 					} catch(SenderException e) {
-						MessageListener.errorMessage("Could not close (pre/post) '" + name + "': " + e.getMessage(), e);
+						MessageListener.errorMessage(testName, "Could not close (pre/post) '" + name + "': " + e.getMessage(), e);
 					}
 				}
 				FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
@@ -256,7 +258,7 @@ public class JdbcFixedQueryController {
 	 */
 	public static int read(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, String queueName, String fileName, String fileContent) {
 		int result = TestTool.RESULT_ERROR;
-		
+		String testName = properties.getProperty("scenario.description");
 		Map querySendersInfo = (Map)queues.get(queueName);
 		Integer waitBeforeRead = (Integer)querySendersInfo.get("readQueryWaitBeforeRead");
 
@@ -271,9 +273,9 @@ public class JdbcFixedQueryController {
 		if (prePostFixedQuerySender != null) {
 			try {
 				String preResult = (String)querySendersInfo.get("prePostQueryResult");
-				MessageListener.debugPipelineMessage(stepDisplayName, "Pre result '" + queueName + "':", preResult);
+				MessageListener.debugPipelineMessage(testName, stepDisplayName, "Pre result '" + queueName + "':", preResult);
 				String postResult = prePostFixedQuerySender.sendMessage(TestTool.TESTTOOL_CORRELATIONID, TestTool.TESTTOOL_DUMMY_MESSAGE);
-				MessageListener.debugPipelineMessage(stepDisplayName, "Post result '" + queueName + "':", postResult);
+				MessageListener.debugPipelineMessage(testName, stepDisplayName, "Post result '" + queueName + "':", postResult);
 				if (preResult.equals(postResult)) {
 					newRecordFound = false;
 				}
@@ -282,9 +284,9 @@ public class JdbcFixedQueryController {
 				 */
 				querySendersInfo.put("prePostQueryResult", postResult);
 			} catch(TimeOutException e) {
-				MessageListener.errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e);
+				MessageListener.errorMessage(testName, "Time out on execute query for '" + queueName + "': " + e.getMessage(), e);
 			} catch(SenderException e) {
-				MessageListener.errorMessage("Could not execute query for '" + queueName + "': " + e.getMessage(), e);
+				MessageListener.errorMessage(testName, "Could not execute query for '" + queueName + "': " + e.getMessage(), e);
 			}
 		}
 		String message = null;
@@ -293,20 +295,20 @@ public class JdbcFixedQueryController {
 			try {
 				message = readQueryFixedQuerySender.sendMessage(TestTool.TESTTOOL_CORRELATIONID, TestTool.TESTTOOL_DUMMY_MESSAGE);
 			} catch(TimeOutException e) {
-				MessageListener.errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e);
+				MessageListener.errorMessage(testName, "Time out on execute query for '" + queueName + "': " + e.getMessage(), e);
 			} catch(SenderException e) {
-				MessageListener.errorMessage("Could not execute query for '" + queueName + "': " + e.getMessage(), e);
+				MessageListener.errorMessage(testName, "Could not execute query for '" + queueName + "': " + e.getMessage(), e);
 			}
 		}
 		if (message == null) {
 			if ("".equals(fileName)) {
 				result = TestTool.RESULT_OK;
 			} else {
-				MessageListener.errorMessage("Could not read jdbc message (null returned) or no new message found (pre result equals post result)");
+				MessageListener.errorMessage(testName, "Could not read jdbc message (null returned) or no new message found (pre result equals post result)");
 			}
 		} else {
 			if ("".equals(fileName)) {
-				MessageListener.debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message);
+				MessageListener.debugPipelineMessage(testName, stepDisplayName, "Unexpected message read from '" + queueName + "':", message);
 			} else {
 				result = ResultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName);
 			}

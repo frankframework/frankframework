@@ -12,11 +12,13 @@ import java.util.Map;
  */
 class Message{
 	Map<String, String> message;
+	String testName;
 	int logLevel;
 	long timestamp;
 	
-	public Message(Map<String, String> message, int logLevel, long timestamp) {
+	Message(String testName, Map<String, String> message, int logLevel, long timestamp) {
 		super();
+		this.testName = testName;
 		this.message = message;
 		this.logLevel = logLevel;
 		this.timestamp = timestamp;

@@ -49,7 +49,8 @@ public class SenderController {
 	 * @param properties properties defined by scenario file and global app constants.
 	 */
 	public static void initIbisWebSender(Map<String, Map<String, Object>> queues, List<String> ibisWebServiceSenders, Properties properties) {
-		MessageListener.debugMessage("Initialize ibis web service senders");
+		String testName = properties.getProperty("scenario.description");
+		MessageListener.debugMessage(testName, "Initialize ibis web service senders");
 		Iterator<String> iterator = ibisWebServiceSenders.iterator();
 		while (queues != null && iterator.hasNext()) {
 			String name = (String)iterator.next();
@@ -62,15 +63,15 @@ public class SenderController {
 			if (ibisHost == null) {
 				ScenarioTester.closeQueues(queues, properties);
 				queues = null;
-				MessageListener.errorMessage("Could not find ibisHost property for " + name);
+				MessageListener.errorMessage(testName, "Could not find ibisHost property for " + name);
 			} else if (ibisInstance == null) {
 				ScenarioTester.closeQueues(queues, properties);
 				queues = null;
-				MessageListener.errorMessage("Could not find ibisInstance property for " + name);
+				MessageListener.errorMessage(testName, "Could not find ibisInstance property for " + name);
 			} else if (serviceName == null) {
 				ScenarioTester.closeQueues(queues, properties);
 				queues = null;
-				MessageListener.errorMessage("Could not find serviceName property for " + name);
+				MessageListener.errorMessage(testName, "Could not find serviceName property for " + name);
 			} else {
 				IbisWebServiceSender ibisWebServiceSender = new IbisWebServiceSender();
 				ibisWebServiceSender.setName("Test Tool IbisWebServiceSender");
@@ -80,7 +81,7 @@ public class SenderController {
 				try {
 					ibisWebServiceSender.configure();
 				} catch(ConfigurationException e) {
-					MessageListener.errorMessage("Could not configure '" + name + "': " + e.getMessage(), e);
+					MessageListener.errorMessage(testName, "Could not configure '" + name + "': " + e.getMessage(), e);
 					ScenarioTester.closeQueues(queues, properties);
 					queues = null;
 				}
@@ -89,14 +90,14 @@ public class SenderController {
 				} catch (SenderException e) {
 					ScenarioTester.closeQueues(queues, properties);
 					queues = null;
-					MessageListener.errorMessage("Could not open '" + name + "': " + e.getMessage(), e);
+					MessageListener.errorMessage(testName, "Could not open '" + name + "': " + e.getMessage(), e);
 				}
 				if (queues != null) {
 					Map<String, Object> ibisWebServiceSenderInfo = new HashMap<String, Object>();
 					ibisWebServiceSenderInfo.put("ibisWebServiceSender", ibisWebServiceSender);
 					ibisWebServiceSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
 					queues.put(name, ibisWebServiceSenderInfo);
-					MessageListener.debugMessage("Opened ibis web service sender '" + name + "'");
+					MessageListener.debugMessage(testName, "Opened ibis web service sender '" + name + "'");
 				}
 			}
 		}
@@ -111,7 +112,8 @@ public class SenderController {
 	 * @param scenarioDirectory directory to load neccessary classes.
 	 */
 	public static void initHttpSender(Map<String, Map<String, Object>> queues, List<String> httpSenders, Properties properties, String scenarioDirectory) {
-		MessageListener.debugMessage("Initialize http senders");
+		String testName = properties.getProperty("scenario.description");
+		MessageListener.debugMessage(testName, "Initialize http senders");
 		Iterator<String> iterator = httpSenders.iterator();
 		while (queues != null && iterator.hasNext()) {
 			String name = (String)iterator.next();
@@ -129,7 +131,7 @@ public class SenderController {
 			if (url == null) {
 				ScenarioTester.closeQueues(queues, properties);
 				queues = null;
-				MessageListener.errorMessage("Could not find url property for " + name);
+				MessageListener.errorMessage(testName, "Could not find url property for " + name);
 			} else {
 				HttpSender httpSender = null;
 				ParameterResolutionContext parameterResolutionContext = null;
@@ -176,7 +178,7 @@ public class SenderController {
 					}
 					httpSender.configure();
 				} catch(ConfigurationException e) {
-					MessageListener.errorMessage("Could not configure '" + name + "': " + e.getMessage(), e);
+					MessageListener.errorMessage(testName, "Could not configure '" + name + "': " + e.getMessage(), e);
 					ScenarioTester.closeQueues(queues, properties);
 					queues = null;
 				} finally {
@@ -190,7 +192,7 @@ public class SenderController {
 					} catch (SenderException e) {
 						ScenarioTester.closeQueues(queues, properties);
 						queues = null;
-						MessageListener.errorMessage("Could not open '" + name + "': " + e.getMessage(), e);
+						MessageListener.errorMessage(testName, "Could not open '" + name + "': " + e.getMessage(), e);
 					}
 					if (queues != null) {
 						Map<String, Object> httpSenderInfo = new HashMap<String, Object>();
@@ -198,7 +200,7 @@ public class SenderController {
 						httpSenderInfo.put("parameterResolutionContext", parameterResolutionContext);
 						httpSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
 						queues.put(name, httpSenderInfo);
-						MessageListener.debugMessage("Opened http sender '" + name + "'");
+						MessageListener.debugMessage(testName, "Opened http sender '" + name + "'");
 					}
 				}
 			}
@@ -213,7 +215,8 @@ public class SenderController {
 	 * @param properties properties defined by scenario file and global app constants.
 	 */
 	public static void initIbisJavaSender(Map<String, Map<String, Object>> queues, List<String> ibisJavaSenders, Properties properties) {
-		MessageListener.debugMessage("Initialize ibis java senders");
+		String testName = properties.getProperty("scenario.description");
+		MessageListener.debugMessage(testName, "Initialize ibis java senders");
 		Iterator<String> iterator = ibisJavaSenders.iterator();
 		while (queues != null && iterator.hasNext()) {
 			String name = (String)iterator.next();
@@ -222,7 +225,7 @@ public class SenderController {
 			if (serviceName == null) {
 				ScenarioTester.closeQueues(queues, properties);
 				queues = null;
-				MessageListener.errorMessage("Could not find serviceName property for " + name);
+				MessageListener.errorMessage(testName, "Could not find serviceName property for " + name);
 			} else {
 				IbisJavaSender ibisJavaSender = new IbisJavaSender();
 				ibisJavaSender.setName("Test Tool IbisJavaSender");
@@ -239,7 +242,7 @@ public class SenderController {
 				try {
 					ibisJavaSender.configure();
 				} catch(ConfigurationException e) {
-					MessageListener.errorMessage("Could not configure '" + name + "': " + e.getMessage(), e);
+					MessageListener.errorMessage(testName, "Could not configure '" + name + "': " + e.getMessage(), e);
 					ScenarioTester.closeQueues(queues, properties);
 					queues = null;
 				}
@@ -249,7 +252,7 @@ public class SenderController {
 					} catch (SenderException e) {
 						ScenarioTester.closeQueues(queues, properties);
 						queues = null;
-						MessageListener.errorMessage("Could not open '" + name + "': " + e.getMessage(), e);
+						MessageListener.errorMessage(testName, "Could not open '" + name + "': " + e.getMessage(), e);
 					}
 					if (queues != null) {
 						Map<String, Object> ibisJavaSenderInfo = new HashMap<String, Object>();
@@ -257,7 +260,7 @@ public class SenderController {
 						ibisJavaSenderInfo.put("parameterResolutionContext", parameterResolutionContext);
 						ibisJavaSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
 						queues.put(name, ibisJavaSenderInfo);
-						MessageListener.debugMessage("Opened ibis java sender '" + name + "'");
+						MessageListener.debugMessage(testName, "Opened ibis java sender '" + name + "'");
 					}
 				}
 			}
@@ -271,8 +274,9 @@ public class SenderController {
 	 * @param properties properties defined by scenario file and global app constants.
 	 */
 	public static void initDelaySender(Map<String, Map<String, Object>> queues, List<String> delaySenders, Properties properties) {
+		String testName = properties.getProperty("scenario.description");
 
-		MessageListener.debugMessage("Initialize delay senders");
+		MessageListener.debugMessage(testName, "Initialize delay senders");
 		Iterator<String> iterator = delaySenders.iterator();
 		while (queues != null && iterator.hasNext()) {
 			String name = (String)iterator.next();
@@ -287,7 +291,7 @@ public class SenderController {
 			delaySenderInfo.put("delaySender", delaySender);
 			delaySenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
 			queues.put(name, delaySenderInfo);
-			MessageListener.debugMessage("Opened delay sender '" + name + "'");
+			MessageListener.debugMessage(testName, "Opened delay sender '" + name + "'");
 		}
 
 	}
@@ -298,7 +302,8 @@ public class SenderController {
 	 * @param properties properties defined by scenario file and global app constants.
 	 */
 	public static void closeIbisWebSender(Map<String, Map<String, Object>> queues, Properties properties) {
-		MessageListener.debugMessage("Close ibis webservice senders");
+		String testName = properties.getProperty("scenario.description");
+		MessageListener.debugMessage(testName, "Close ibis webservice senders");
 		Iterator iterator = queues.keySet().iterator();
 		while (iterator.hasNext()) {
 			String queueName = (String)iterator.next();
@@ -307,26 +312,26 @@ public class SenderController {
 				Map<?, ?> ibisWebServiceSenderInfo = (Map<?, ?>)queues.get(queueName);
 				SenderThread senderThread = (SenderThread)ibisWebServiceSenderInfo.remove("ibisWebServiceSenderThread");
 				if (senderThread != null) {
-					MessageListener.debugMessage("Found remaining SenderThread");
+					MessageListener.debugMessage(testName, "Found remaining SenderThread");
 					SenderException senderException = senderThread.getSenderException();
 					if (senderException != null) {
-						MessageListener.errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException);
+						MessageListener.errorMessage(testName, "Found remaining SenderException: " + senderException.getMessage(), senderException);
 					}
 					TimeOutException timeOutException = senderThread.getTimeOutException();
 					if (timeOutException != null) {
-						MessageListener.errorMessage("Found remaining TimeOutException: " + timeOutException.getMessage(), timeOutException);
+						MessageListener.errorMessage(testName, "Found remaining TimeOutException: " + timeOutException.getMessage(), timeOutException);
 					}
 					String message = senderThread.getResponse();
 					if (message != null) {
-						MessageListener.wrongPipelineMessage("Found remaining message on '" + queueName + "'", message);
+						MessageListener.wrongPipelineMessage(testName, "Found remaining message on '" + queueName + "'", message);
 					}
 				}
 
 				try {
 					ibisWebServiceSender.close();
-					MessageListener.debugMessage("Closed ibis webservice sender '" + queueName + "'");
+					MessageListener.debugMessage(testName, "Closed ibis webservice sender '" + queueName + "'");
 				} catch(SenderException e) {
-					MessageListener.errorMessage("Could not close '" + queueName + "': " + e.getMessage(), e);
+					MessageListener.errorMessage(testName, "Could not close '" + queueName + "': " + e.getMessage(), e);
 				}
 			}
 		}
@@ -338,7 +343,8 @@ public class SenderController {
 	 * @param properties properties defined by scenario file and global app constants.
 	 */
 	public static void closeIbisJavaSender(Map<String, Map<String, Object>> queues, Properties properties) {
-		MessageListener.debugMessage("Close ibis java senders");
+		String testName = properties.getProperty("scenario.description");
+		MessageListener.debugMessage(testName, "Close ibis java senders");
 		Iterator iterator = queues.keySet().iterator();
 		while (iterator.hasNext()) {
 			String queueName = (String)iterator.next();
@@ -348,26 +354,26 @@ public class SenderController {
 				Map<?, ?> ibisJavaSenderInfo = (Map<?, ?>)queues.get(queueName);
 				SenderThread ibisJavaSenderThread = (SenderThread)ibisJavaSenderInfo.remove("ibisJavaSenderThread");
 				if (ibisJavaSenderThread != null) {
-					MessageListener.debugMessage("Found remaining SenderThread");
+					MessageListener.debugMessage(testName, "Found remaining SenderThread");
 					SenderException senderException = ibisJavaSenderThread.getSenderException();
 					if (senderException != null) {
-						MessageListener.errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException);
+						MessageListener.errorMessage(testName, "Found remaining SenderException: " + senderException.getMessage(), senderException);
 					}
 					TimeOutException timeOutException = ibisJavaSenderThread.getTimeOutException();
 					if (timeOutException != null) {
-						MessageListener.errorMessage("Found remaining TimeOutException: " + timeOutException.getMessage(), timeOutException);
+						MessageListener.errorMessage(testName, "Found remaining TimeOutException: " + timeOutException.getMessage(), timeOutException);
 					}
 					String message = ibisJavaSenderThread.getResponse();
 					if (message != null) {
-						MessageListener.wrongPipelineMessage("Found remaining message on '" + queueName + "'", message);
+						MessageListener.wrongPipelineMessage(testName, "Found remaining message on '" + queueName + "'", message);
 					}
 				}
 
 				try {
 				ibisJavaSender.close();
-					MessageListener.debugMessage("Closed ibis java sender '" + queueName + "'");
+					MessageListener.debugMessage(testName, "Closed ibis java sender '" + queueName + "'");
 				} catch(SenderException e) {
-					MessageListener.errorMessage("Could not close '" + queueName + "': " + e.getMessage(), e);
+					MessageListener.errorMessage(testName, "Could not close '" + queueName + "': " + e.getMessage(), e);
 				}
 			}
 		}
@@ -379,7 +385,8 @@ public class SenderController {
 	 * @param properties properties defined by scenario file and global app constants.
 	 */
 	public static void closeDelaySender(Map<String, Map<String, Object>> queues, Properties properties) {
-		MessageListener.debugMessage("Close delay senders");
+		String testName = properties.getProperty("scenario.description");
+		MessageListener.debugMessage(testName, "Close delay senders");
 		Iterator iterator = queues.keySet().iterator();
 		while (iterator.hasNext()) {
 			String queueName = (String)iterator.next();
@@ -387,9 +394,9 @@ public class SenderController {
 				DelaySender delaySender = (DelaySender)((Map<?, ?>)queues.get(queueName)).get("delaySender");
 				try {
 					delaySender.close();
-					MessageListener.debugMessage("Closed delay sender '" + queueName + "'");
+					MessageListener.debugMessage(testName, "Closed delay sender '" + queueName + "'");
 				} catch(SenderException e) {
-					MessageListener.errorMessage("Could not close delay sender '" + queueName + "': " + e.getMessage(), e);
+					MessageListener.errorMessage(testName, "Could not close delay sender '" + queueName + "': " + e.getMessage(), e);
 				}
 			}
 		}
@@ -409,11 +416,12 @@ public class SenderController {
 	 */
 	public static int executeSenderRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, String queueName, String senderType, String fileName, String fileContent) {
 		int result = TestTool.RESULT_ERROR;
+		String testName = properties.getProperty("scenario.description");
 	
 		Map<?, ?> senderInfo = (Map<?, ?>)queues.get(queueName);
 		SenderThread senderThread = (SenderThread)senderInfo.remove(senderType + "SenderThread");
 		if (senderThread == null) {
-			MessageListener.errorMessage("No SenderThread found, no " + senderType + "Sender.write request?");
+			MessageListener.errorMessage(testName, "No SenderThread found, no " + senderType + "Sender.write request?");
 		} else {
 			SenderException senderException = senderThread.getSenderException();
 			if (senderException == null) {
@@ -424,20 +432,20 @@ public class SenderController {
 						if ("".equals(fileName)) {
 							result = TestTool.RESULT_OK;
 						} else {
-							MessageListener.errorMessage("Could not read " + senderType + "Sender message (null returned)");
+							MessageListener.errorMessage(testName, "Could not read " + senderType + "Sender message (null returned)");
 						}
 					} else {
 						if ("".equals(fileName)) {
-							MessageListener.debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message);
+							MessageListener.debugPipelineMessage(testName, stepDisplayName, "Unexpected message read from '" + queueName + "':", message);
 						} else {
 							result = ResultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName);
 						}
 					}
 				} else {
-					MessageListener.errorMessage("Could not read " + senderType + "Sender message (TimeOutException): " + timeOutException.getMessage(), timeOutException);
+					MessageListener.errorMessage(testName, "Could not read " + senderType + "Sender message (TimeOutException): " + timeOutException.getMessage(), timeOutException);
 				}
 			} else {
-				MessageListener.errorMessage("Could not read " + senderType + "Sender message (SenderException): " + senderException.getMessage(), senderException);
+				MessageListener.errorMessage(testName, "Could not read " + senderType + "Sender message (SenderException): " + senderException.getMessage(), senderException);
 			}
 		}
 		
@@ -453,7 +461,7 @@ public class SenderController {
 	 * @param fileContent string that contains the content to be written.
 	 * @return 1 if started successfully, 1 if there has been an error.
 	 */
-	public static int executeSenderWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, String queueName, String senderType, String fileContent) {
+	public static int executeSenderWrite(String testName, String stepDisplayName, Map<String, Map<String, Object>> queues, String queueName, String senderType, String fileContent) {
 		int result = TestTool.RESULT_ERROR;
 		Map senderInfo = (Map)queues.get(queueName);
 		ISender sender = (ISender)senderInfo.get(senderType + "Sender");
@@ -467,8 +475,8 @@ public class SenderController {
 		}
 		senderThread.start();
 		senderInfo.put(senderType + "SenderThread", senderThread);
-		MessageListener.debugPipelineMessage(stepDisplayName, "Successfully started thread writing to '" + queueName + "':", fileContent);
-		MessageListener.debugMessage("Successfully started thread writing to '" + queueName + "'");
+		MessageListener.debugPipelineMessage(testName, stepDisplayName, "Successfully started thread writing to '" + queueName + "':", fileContent);
+		MessageListener.debugMessage(testName, "Successfully started thread writing to '" + queueName + "'");
 		result = TestTool.RESULT_OK;
 		return result;
 	}
@@ -481,16 +489,16 @@ public class SenderController {
 	 * @param fileContent string that contains the content to be written.
 	 * @return 1 if everything was written successfully, 0 if there has been an error.
 	 */
-	public static int executeDelaySenderWrite(String stepDisplayName, Map<String, Map<String, Object>> queues, String queueName, String fileContent) {
+	public static int executeDelaySenderWrite(String testName, String stepDisplayName, Map<String, Map<String, Object>> queues, String queueName, String fileContent) {
 		int result = TestTool.RESULT_ERROR;
 		Map<?, ?> delaySenderInfo = (Map<?, ?>)queues.get(queueName);
 		DelaySender delaySender = (DelaySender)delaySenderInfo.get("delaySender");
 		try {
 			delaySender.sendMessage(null, fileContent);
-			MessageListener.debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent);
+			MessageListener.debugPipelineMessage(testName, stepDisplayName, "Successfully written to '" + queueName + "':", fileContent);
 			result = TestTool.RESULT_OK;
 		} catch(Exception e) {
-			MessageListener.errorMessage("Exception writing to file: " + e.getMessage(), e);
+			MessageListener.errorMessage(testName, "Exception writing to file: " + e.getMessage(), e);
 		}
 		return result;
 	}
