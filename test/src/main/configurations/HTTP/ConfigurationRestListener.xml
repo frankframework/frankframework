@@ -51,7 +51,7 @@
 			<pipe name="callRest"
 				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
-					methodType="POST" url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/rest/doc"
+					methodType="POST" url="${web.protocol}://${web.host}:${web.port}/${web.contextpath}rest/doc"
 					paramsInUrl="false" multipart="true">
 					<param name="key01" value="every cloud has a silver lining" />
 					<param name="key02" sessionKey="originalMessage" />
@@ -151,7 +151,7 @@
 				styleSheetName="RestListener/xsl/GetUrl.xsl" sessionKey="url"
 				getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="baseUrl"
-					value="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/rest/doc" />
+					value="${web.protocol}://${web.host}:${web.port}/${web.contextpath}rest/doc" />
 				<param name="docId" sessionKey="docId" />
 				<forward name="success" path="callRest" />
 			</pipe>
@@ -190,7 +190,7 @@
 			<pipe name="getUrl" className="nl.nn.adapterframework.pipes.XsltPipe"
 				styleSheetName="RestListener/xsl/GetUrl.xsl" sessionKey="url">
 				<param name="baseUrl"
-					value="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/rest/doc2" />
+					value="${web.protocol}://${web.host}:${web.port}/${web.contextpath}rest/doc2" />
 				<param name="docId" xpathExpression="id" />
 				<forward name="success" path="callRest" />
 			</pipe>
@@ -258,7 +258,7 @@
 				styleSheetName="RestListener/xsl/GetUrl.xsl" sessionKey="url"
 				getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="baseUrl"
-					value="${web.protocol}://${web.host}:${web.port}/${web.contextpath}/rest/doc3" />
+					value="${web.protocol}://${web.host}:${web.port}/${web.contextpath}rest/doc3" />
 				<param name="docId" value="0" />
 				<forward name="success" path="callRest" />
 			</pipe>
