@@ -518,7 +518,8 @@ angular.module('iaf.beheerconsole')
 		});
 	}])
 	.service('Debug', function() {
-		var level = 0;
+		var level = 0; //ERROR
+		var levelEnums = ["ERROR", "WARN", "INFO", "DEBUG"];
 		var inGroup = false;
 		this.getLevel = function() {
 			return level;
@@ -526,21 +527,24 @@ angular.module('iaf.beheerconsole')
 		this.setLevel = function(l) {
 			l = Math.min(3, Math.max(0, l));
 			if(l == level) return;
-			console.info(this.head() + " Setting DEBUG level to ["+l+"]");
+			console.info(this.head() + " Setting LOG level to ["+levelEnums[l]+"]");
 			level = l;
 		};
-		this.head = function() {
+		this.head = function(level) {
 			var d = new Date();
 			var date = ('0' + d.getUTCDate()).slice(-2)+"-"+('0' + d.getUTCMonth()).slice(-2)+"-"+d.getUTCFullYear();
 			date += " "+('0' + d.getSeconds()).slice(-2)+":"+('0' + d.getMinutes()).slice(-2)+":"+('0' + d.getHours()).slice(-2);
-			return date + " -";
+			if(level != undefined)
+				return date + " ["+levelEnums[level]+"] -";
+			else
+				return date + " -";
 		};
 		this.log = function() {
 			if(level < 3) return;
 			var args = arguments || [];
 			var func = window.console.log;
 			if(!inGroup)
-				Array.prototype.unshift.call(args, this.head());
+				Array.prototype.unshift.call(args, this.head(3));
 			try {
 				func.apply(window.console, args);
 			} catch (e) {
@@ -569,7 +573,7 @@ angular.module('iaf.beheerconsole')
 			var args = arguments || [];
 			var func = window.console.info;
 			if(!inGroup)
-				Array.prototype.unshift.call(args, this.head());
+				Array.prototype.unshift.call(args, this.head(2));
 			try {
 				func.apply(window.console, args);
 			} catch (e) {
@@ -582,7 +586,7 @@ angular.module('iaf.beheerconsole')
 			var args = arguments || [];
 			var func = window.console.warn;
 			if(!inGroup)
-				Array.prototype.unshift.call(args, this.head());
+				Array.prototype.unshift.call(args, this.head(1));
 			try {
 				func.apply(window.console, args);
 			} catch (e) {
@@ -594,7 +598,7 @@ angular.module('iaf.beheerconsole')
 			var args = arguments || [];
 			var func = window.console.error;
 			if(!inGroup)
-				Array.prototype.unshift.call(args, this.head());
+				Array.prototype.unshift.call(args, this.head(0));
 			try {
 				func.apply(window.console, args);
 			} catch (e) {

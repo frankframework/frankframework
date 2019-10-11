@@ -698,7 +698,7 @@ angular.module('iaf.beheerconsole')
 	};
 	update();
 	$scope.download = function(config) {
-		window.open(Misc.getServerPath() + "iaf/api/configurations/"+config.name+"/download?version="+config.version);
+		window.open(Misc.getServerPath() + "iaf/api/configurations/"+config.name+"/download?version="+encodeURIComponent(config.version));
 	};
 
 	$scope.activate = function(config) {
@@ -707,19 +707,26 @@ angular.module('iaf.beheerconsole')
 			if(configs.version != config.version)
 				configs.actived = false;
 		}
-		Api.Put("configurations/"+config.name+"/manage/"+config.version, {activate:config.active}, function(data) {
+		Api.Put("configurations/"+config.name+"/manage/"+encodeURIComponent(config.version), {activate:config.active}, function(data) {
 			$scope.setNote("success", "Successfully changed startup config to version '"+config.version+"'");
-		}, function() {
+		}, function(_, status, statusText) {
 			update();
-			$scope.setNote("danger", "An error occured while changing default configuration version");
+			if(status == 403)
+				$scope.setNote("danger", "403 - Forbidden; you do not have enough access rights to complete this action!");
+			else
+				$scope.setNote("danger", "An error occured while changing default configuration version");
 		});
 	};
 
 	$scope.scheduleReload = function(config) {
-		Api.Put("configurations/"+config.name+"/manage/"+config.version, {autoreload:config.autoreload}, function(data) {
+		Api.Put("configurations/"+config.name+"/manage/"+encodeURIComponent(config.version), {autoreload:config.autoreload}, function(data) {
 			$scope.setNote("success", "Successfully "+(config.autoreload ? "enabled" : "disabled")+" Auto Reload for version '"+config.version+"'");
-		}, function() {
-			$scope.setNote("danger", "An error occured while changing Auto Reload setting");
+		}, function(_, status, statusText) {
+			update();
+			if(status == 403)
+				$scope.setNote("danger", "403 - Forbidden; you do not have enough access rights to complete this action!");
+			else
+				$scope.setNote("danger", "An error occured while changing Auto Reload setting");
 		});
 	};
 }])

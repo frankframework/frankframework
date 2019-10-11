@@ -374,5 +374,9 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		}
 	};
 
+	$rootScope.setLogLevel = function(level) {
+		Debug.setLevel(level);
+	};
+
 	gTag.setTrackingId("UA-111373008-1");
 }]);
