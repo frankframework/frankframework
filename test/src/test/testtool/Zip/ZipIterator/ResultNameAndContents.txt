@@ -1,6 +1,6 @@
-<results count="3">
+<results>
 <result item="1">
-<results count="3">
+<results>
 <result item="1">
 name: 3-c.txt
 contents: 
@@ -19,7 +19,7 @@ file 3 b
 </results>
 </result>
 <result item="2">
-<results count="1">
+<results>
 <result item="1">
 name: 1-a.txt
 contents: 
@@ -28,7 +28,7 @@ file 1 a
 </results>
 </result>
 <result item="3">
-<results count="2">
+<results>
 <result item="1">
 name: 2-b.txt
 contents: 

@@ -20,10 +20,8 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
-import org.xml.sax.helpers.XMLFilterImpl;
 
-public class NamespaceRemovingFilter extends XMLFilterImpl implements LexicalHandler {
-//	Logger log = LogUtil.getLogger(this.getClass());
+public class NamespaceRemovingFilter extends FullXmlFilter {
 	
 	private LexicalHandler lexicalHandler;
 	
