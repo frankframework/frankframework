@@ -18,6 +18,8 @@ package nl.nn.adapterframework.webcontrol.api;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -224,13 +226,20 @@ public final class ShowConfiguration extends Base {
 	@Path("/configurations/{configuration}/manage/{version}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response manageConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String version, @QueryParam("realm") String jmsRealm, LinkedHashMap<String, Object> json) throws ApiException {
+	public Response manageConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String encodedVersion, @QueryParam("realm") String jmsRealm, LinkedHashMap<String, Object> json) throws ApiException {
 		initBase(servletConfig);
 
 		Configuration configuration = ibisManager.getConfiguration(configurationName);
 
 		if(configuration == null){
 			throw new ApiException("Configuration not found!");
+		}
+
+		String version = null;
+		try {
+			version = URLDecoder.decode(encodedVersion, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new ApiException("unable to decode encodedVersion ["+encodedVersion+"] with charset [UTF-8]", e);
 		}
 
 		try {

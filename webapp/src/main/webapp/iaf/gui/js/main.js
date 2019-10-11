@@ -46,6 +46,10 @@ $(document).ready(function () {
 function foist(callback) {
 	angular.element(document.body).scope().foist(callback);
 }
+//Changes the log level to; 0 - error, 1 - warn, 2 - info, 3 - debug
+function setLogLevel(level) {
+	angular.element(document.body).scope().setLogLevel(level);
+}
 
 // Automatically minimalize menu when screen is less than 768px
 $(function() {
