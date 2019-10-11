@@ -20,7 +20,6 @@ import java.awt.FontFormatException;
 import java.awt.GraphicsEnvironment;
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -287,18 +286,11 @@ public class AsposeLicenseLoader {
 		for (String filename : new File(pathToFonts).list()) {
 			File fontFile = new File(pathToFonts, filename);
 
-			try (InputStream fontInputStream = new BufferedInputStream(new FileInputStream(fontFile))) {
+			Font newFont = createFont(fontFile, fontFile.getName());
+			LOGGER.debug("Register font " + newFont);
 
-				Font newFont = createFont(fontInputStream, fontFile.getName());
-				LOGGER.debug("Register font " + newFont);
-
-				if (!fonts.contains(newFont) && !ge.registerFont(newFont)) {
-					LOGGER.warn("Font not registered!" + newFont.getFontName());
-				}
-
-			} catch (IOException e) {
-				LOGGER.error("Loading fonts failed!", e);
-				throw e;
+			if (!fonts.contains(newFont) && !ge.registerFont(newFont)) {
+				LOGGER.warn("Font not registered!" + newFont.getFontName());
 			}
 		}
 		ge.preferProportionalFonts();
@@ -308,18 +300,17 @@ public class AsposeLicenseLoader {
 	 * Get the font. When retrieving the font fails it is logged and
 	 * <code>null</code> is returned.
 	 * 
-	 * @param fontEntry
+	 * @param fontFile
 	 * @return the font or <code>null</code>.
 	 */
-	private Font createFont(InputStream fontEntry, String name) {
+	private Font createFont(File fontFile, String name) {
 		if (!name.toLowerCase().endsWith(TRUETYPE_FONT_EXT)) {
 			throw new IllegalArgumentException(
 					"Unexpected extension! (file: " + name + " expected extension: " + TRUETYPE_FONT_EXT + ")");
 		}
 		Font result = null;
 		try {
-			result = Font.createFont(Font.TRUETYPE_FONT, fontEntry);
-			fontEntry.close();
+			result = Font.createFont(Font.TRUETYPE_FONT, fontFile);
 		} catch (FontFormatException | IOException e) {
 			LOGGER.error("Loading font failed! (file: " + name + ")", e);
 		}

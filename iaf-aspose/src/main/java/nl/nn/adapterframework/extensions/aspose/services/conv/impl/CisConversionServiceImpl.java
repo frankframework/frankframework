@@ -93,6 +93,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 			throw createCisConversionException(e);
 		} finally {
 			// delete previously created temporary file
+			com.aspose.pdf.MemoryCleaner.clearAllTempFiles();
 			FileUtil.deleteFile(tmpFile);
 			tmpFile = null;
 		}
