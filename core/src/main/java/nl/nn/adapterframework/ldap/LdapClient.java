@@ -51,6 +51,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Client for LDAP.<br/>
@@ -86,7 +87,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * 
  */
 public class LdapClient implements ICacheEnabled<String,Set<String>> {
-	protected static Logger log =  Logger.getLogger(LdapClient.class);
+	protected static Logger log =  LogUtil.getLogger(LdapClient.class);
 
     private String DEFAULT_INITIAL_CONTEXT_FACTORY_NAME = "com.sun.jndi.ldap.LdapCtxFactory";
     public static String JNDI_AUTH_ALIAS_KEY = "jndiAuthAlias";
