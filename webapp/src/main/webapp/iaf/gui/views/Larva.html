@@ -1,63 +1,83 @@
 <div class="wrapper wrapper-content animated fadeInRight" ng-controller="LarvaCtrl">
     <div class="row">
 <!--        Form to execute tests..-->
-        <form>
+        <form role="form" ng-submit="submit(form)">
             <div class="form-row">
                 <div class="form-group col-lg-8">
                     <label for="scenarios">Scenarios:</label>
-                    <select class="form-control" id="scenarios" ng-model="form.scenarios">
-                        <option ng-repeat="scenario in scenarios">{{scenario.name}}</option>
+                    <select class="form-control" id="scenarios" name="scenarios" ng-model="formScenarios">
+                        <option ng-repeat="scenario in scenarios" value="{{scenario.value}}">{{scenario.name}}</option>
                     </select>
                 </div>
-                <div class="form-group col-lg-4">
+                <div class="form-group col-lg-4" title="Number of threads to use for running the tests. (default: 1)">
                     <label for="threads">Number of Threads:</label>
-                    <input type="number" min="1" class="form-control" id="threads" value="1" data-toggle="tooltip" title="Number of threads to use for running the tests. (default: 1)" ng-model="form.threads"/>
+                    <input type="number" min="1" class="form-control" id="threads" value="1" data-toggle="tooltip" name="threads" ng-model="formThreads"/>
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group col-lg-6">
                     <label for="root-directories">Root Directory:</label>
-                    <select class="form-control" id="root-directories" ng-model="form.rootDirectories">
-                        <option ng-repeat="directory in rootDirectories">{{directory.shortname}}</option>
+                    <select
+                            class="form-control"
+                            id="root-directories"
+                            name="rootDirectories"
+                            ng-model="formRootDirectories"
+                            ng-options="directory.value as directory.name for directory in rootDirectories"
+                    >
                     </select>
                 </div>
-                <div class="form-group col-lg-1">
+                <div class="form-group col-lg-2">
                     <label for="waitcleanup">Wait before clean up:</label>
-                    <input type="number" min="1" class="form-control" id="waitcleanup" name="waitcleanup"/>
+                    <input type="number" min="0" class="form-control" id="waitcleanup" name="waitcleanup" ng-model="formWaitcleanup"/>
                 </div>
                 <div class="form-group col-lg-2">
                     <label for="log-level">Log Level:</label>
-                    <select class="form-control" id="log-level" ng-model="form.logLevel">
-                        <option ng-repeat="level in logLevels">{{level}}</option>
+                    <select
+                            class="form-control"
+                            id="log-level"
+                            name="logLevel"
+                            ng-model="formLogLevel"
+                            ng-options="level as level for level in logLevels"
+                    >
                     </select>
                 </div>
                 <div class="form-group col-lg-1">
-                    <input type="checkbox" class="form-check-input" id="autoscroll" name="autoscroll"/>
-                    <label class="form-check-label" for="autoscroll">Auto Scroll</label>
-                </div>
-                <div class="form-group col-lg-1">
+                    <br>
                     <button type="submit" class="btn btn-primary form-control" name="run">Run</button>
                 </div>
             </div>
         </form>
     </div>
+    <div class="row">
+        <div class="panel-group">
+            <div class="panel" ng-repeat="message in displayMessages" ng-click="removeDisplayMessage(message.message)" ng-class="assignDisplayMessageClass(message)">
+                <div class="panel-heading">{{message.message}}</div>
+            </div>
+        </div>
+    </div>
 <!--    Table for displaying status of running tests-->
     <div class="row">
-        <table class="table table-condensed" style="border-collapse: collapse;">
+        <table class="table table-hover">
             <thead>
             <tr>
                 <td>
-                    Scenario Name
+                    <strong>Scenario Description</strong>
                 </td>
                 <td>
-                    Status
+                    <strong>Status</strong>
                 </td>
             </tr>
             </thead>
             <tbody>
-            <tr ng-repeat="test in tests" ng-click="testDetails(test)" ng-class="assignClass(test)">
-                <td>{{test.name}}</td>
+            <tr ng-repeat="test in tests" ng-click="testDetails(test)" ng-class="assignClass(test)" >
+                <td title="{{test.directory}}">{{test.name}}</td>
                 <td>{{test.status}}</td>
+                <td><i class="fa fa-chevron-down"></i> </td>
+            </tr>
+            <tr>
+                <td>
+                    <button type="button" class="btn btn-info" ng-show="tests.length > 0" ng-click="downloadMessages()">Download Logs</button>
+                </td>
             </tr>
             </tbody>
         </table>
@@ -74,10 +94,12 @@
                 </button>
             </div>
             <div class="modal-body">
+                <div class="panel-group" id="test-details-body">
 <!--                To be populated when any of the row is clicked-->
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary right" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
