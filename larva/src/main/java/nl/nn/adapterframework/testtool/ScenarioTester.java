@@ -60,7 +60,7 @@ public class ScenarioTester extends Thread {
 		}
 	}
 
-	public void testScenario(File scenarioFile) {
+	private void testScenario(File scenarioFile) {
 		int scenarioPassed = TestTool.RESULT_ERROR;
 		String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
 		String longName = scenarioFile.getAbsolutePath();
@@ -74,7 +74,7 @@ public class ScenarioTester extends Thread {
 
 		if (properties != null) {
 			testName = properties.getProperty("scenario.description", shortName);
-			MessageListener.testPropertyMessage(testName, longName);
+			MessageListener.testInitiationMessage(testName, longName);
 
 			MessageListener.debugMessage(testName, "Read steps from property file");
 			steps = TestPreparer.getSteps(properties);
@@ -136,15 +136,18 @@ public class ScenarioTester extends Thread {
 			scenarioResults[scenarioPassed]++;
 			switch (scenarioPassed) {
 			case TestTool.RESULT_OK:
+				MessageListener.testStatusMessage(testName, "OK");
 				MessageListener.scenarioMessage(testName, "Scenario '" + shortName + " - "
 						+ properties.getProperty("scenario.description") + "' passed (" + scenarioResults[0] + "/"
 						+ scenarioResults[1] + "/" + scenariosTotal + ")");
 				break;
 			case TestTool.RESULT_AUTOSAVED:
+				MessageListener.testStatusMessage(testName, "AUTOSAVED");
 				MessageListener.scenarioMessage(testName, "Scenario '" + shortName + " - "
 						+ properties.getProperty("scenario.description") + "' passed after autosave");
 				break;
 			case TestTool.RESULT_ERROR:
+				MessageListener.testStatusMessage(testName, "ERROR");
 				MessageListener.scenarioFailedMessage(testName, "Scenario '" + shortName + " - "
 						+ properties.getProperty("scenario.description") + "' failed (" + scenarioResults[0] + "/"
 						+ scenarioResults[1] + "/" + scenariosTotal + ")");
@@ -187,7 +190,7 @@ public class ScenarioTester extends Thread {
 	}
 	*/
 	
-	public static int executeStep(String step, Properties properties, String testName, String stepDisplayName, Map<String, Map<String, Object>> queues) {
+	private static int executeStep(String step, Properties properties, String testName, String stepDisplayName, Map<String, Map<String, Object>> queues) {
 		int stepPassed = TestTool.RESULT_ERROR;
 		String fileName = properties.getProperty(step);
 		String fileNameAbsolutePath = properties.getProperty(step + ".absolutepath");
@@ -270,8 +273,8 @@ public class ScenarioTester extends Thread {
 	}
 
 
-	public static Map<String, Map<String, Object>> openQueues(String scenarioDirectory, List<String> steps,
-			Properties properties, String testName, IbisContext ibisContext, AppConstants appConstants) {
+	private static Map<String, Map<String, Object>> openQueues(String scenarioDirectory, List<String> steps,
+															   Properties properties, String testName, IbisContext ibisContext, AppConstants appConstants) {
 		Map<String, Map<String, Object>> queues = new HashMap<String, Map<String, Object>>();
 		MessageListener.debugMessage(testName, "Get all queue names");
 		List<String> jmsSenders = new ArrayList<String>();
@@ -374,24 +377,22 @@ public class ScenarioTester extends Thread {
 	}
 
 	public static boolean closeQueues(Map<String, Map<String, Object>> queues, Properties properties) {
-		boolean remainingMessagesFound = false;
+		boolean remainingMessagesFound;
 
 		JmsController.closeSenders(queues, properties);
 		remainingMessagesFound = JmsController.closeListeners(queues, properties);
 
-		remainingMessagesFound = JdbcFixedQueryController.closeConnection(queues, properties) ? true
-				: remainingMessagesFound;
+		remainingMessagesFound = JdbcFixedQueryController.closeConnection(queues, properties) || remainingMessagesFound;
 
 		SenderController.closeIbisWebSender(queues, properties);
 		WebServiceController.closeSender(queues, properties);
 
-		remainingMessagesFound = WebServiceController.closeListener(queues, properties) ? true : remainingMessagesFound;
+		remainingMessagesFound = WebServiceController.closeListener(queues, properties) || remainingMessagesFound;
 
 		SenderController.closeIbisJavaSender(queues, properties);
 		SenderController.closeDelaySender(queues, properties);
 
-		remainingMessagesFound = ListenerController.closeJavaListener(queues, properties) ? true
-				: remainingMessagesFound;
+		remainingMessagesFound = ListenerController.closeJavaListener(queues, properties) || remainingMessagesFound;
 
 		FileController.closeListener(queues, properties);
 		ListenerController.closeXsltProviderListener(queues, properties);
