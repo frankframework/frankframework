@@ -1473,4 +1473,199 @@ angular.module('iaf.beheerconsole')
 			$scope.processingMessage = false;
 		});
 	};
+}])
+
+.controller('LarvaCtrl', ['$scope', 'Api', 'Alert', 'Poller', function($scope, Api, Alert, Poller) {
+	$scope.lastMessageArrived = 0;
+	$scope.messages = {};
+	$scope.tests = [];
+	$scope.displayMessages = [];
+	$scope.addDisplayMessage = function(level, message) {
+		$scope.displayMessages.push({
+			"message": message,			"level": level
+		})
+	};
+	$scope.removeDisplayMessage = function(message) {
+		var i = 0;
+		while(i<$scope.displayMessages.length) {
+			if($scope.displayMessages[i]["message"] === message) {
+				$scope.displayMessages.splice(i, 1);
+				i--;
+			}
+			i++;
+		}
+	};
+	$scope.assignDisplayMessageClass = function(message) {
+		return message.level;
+	};
+
+
+	$scope.setForm = function() {
+		Api.Get("larva/params", function (data) {
+			$scope.logLevels = data["logLevels"][0];
+			var scenarios = [];
+			var a;
+			console.log(data);
+			console.log("Default Root Directory: " + data["defaultRootDirectory"]);
+
+			for(key in data["scenarios"][0]) {
+				scenarios.push({"name": data["scenarios"][0][key], "value": key});
+			}
+			var rootDirectories = [];
+			for(key in data["rootDirectories"][0]) {
+				rootDirectories.push({"name": key, "value": data["rootDirectories"][0][key]});
+			}
+
+			scenarios.sort(function (a1, b) {
+				return a1[Object.keys(a1)[0]].localeCompare(b[Object.keys(b)[0]]);
+			});
+
+			$scope.formLogLevel = data["selectedLogLevel"][0];
+			$scope.formRootDirectories = data["defaultRootDirectory"][0];
+			$scope.formScenarios = scenarios[0]["value"];
+			console.log(scenarios[1]["value"]);
+			console.log($scope.formRootDirectories);
+			console.log($scope.formLogLevel);
+			$scope.scenarios = scenarios;
+			$scope.rootDirectories = rootDirectories;
+
+		});
+	};
+
+	$scope.startPolling = function () {
+		console.log("Inside start poller");
+		var generator = {
+			/**
+			 * @return {string}
+			 */
+			"LarvaMessagePoller": function() {
+			console.log("Inside URI Generator.");
+			var toreturn = "larva/messages/" + ($scope.lastMessageArrived + 1);
+			console.log(toreturn);
+			return toreturn;
+		}};
+		var callback = function(data) {
+			console.log("Inside poll callback.");
+			if(data.length === 0)
+				return;
+
+			data.sort(function (a, b) {
+				return a["timestamp"] - b["timestamp"];
+			});
+			console.log(data);
+			$scope.lastMessageArrived = data[data.length - 1]["timestamp"];
+
+			data.forEach(function (element) {
+				if(element["logLevel"] === "Test Properties") {
+					console.log(element);
+
+					var testIndex = $scope.tests.map(function (value) { return value["name"] }).indexOf(element["name"]);
+					if (testIndex === -1){
+						var test = {"name": element["name"], "status": element["messages"]["status"]? element["messages"]["status"] : "RUNNING", "directory":element["messages"]["directory"]? element["messages"]["directory"] : "directory"};
+						$scope.tests.push(test);
+					}else {
+						$scope.tests[testIndex]["status"] = element["messages"]["status"] ? element["messages"]["status"] : $scope.tests[testIndex]["status"];
+						$scope.tests[testIndex]["directory"] = element["messages"]["directory"] ? element["messages"]["directory"] : $scope.tests[testIndex]["directory"];
+					}
+				}else if(element["logLevel"] === "Total") {
+					Poller.remove("LarvaMessagePoller");
+					console.log("Stop Poller.");
+					$scope.addDisplayMessage("panel-info", element["messages"]["Message"]);
+				}
+
+				if(!$scope.messages[element["name"]]){
+					$scope.messages[element["name"]] = [];
+				}
+				$scope.messages[element["name"]].push(element);
+			});
+
+
+			console.log("Finishing poll callback");
+		};
+		Poller.add(generator, callback, true, 500);
+	};
+
+	$scope.assignClass = function(test) {
+		switch (test.status) {
+			case "RUNNING":
+				return "";
+			case "OK":
+				return "success";
+			case "AUTOSAVED":
+				return "info";
+			case "ERROR":
+				return "danger";
+		}
+		return "danger";
+	};
+
+	$scope.submit = function () {
+		console.log("Inside submit");
+		var fd = new FormData();
+
+		if($scope.formWaitcleanup !== "")
+			fd.append("waitBeforeCleanup", $scope.formWaitcleanup);
+
+		if($scope.formThreads !== "")
+			fd.append("numberOfThreads", $scope.formThreads);
+
+		if($scope.formScenarios === ""){
+			$scope.addDisplayMessage("panel-warning", "Make sure scenarios are selected.");
+			return;
+		}
+		fd.append("scenario", $scope.formScenarios);
+		if($scope.formRootDirectories === ""){
+			$scope.addDisplayMessage("panel-warning", "Make sure root directory is selected.");
+			return;
+		}
+		fd.append("rootDirectory", $scope.formRootDirectories);
+
+		var success = function() {
+			console.log("Started testing with success.");
+			$scope.startPolling();
+		};
+		var error = function(errorData, status, errorMsg) {
+			console.log("Error Data:\n" + errorData);
+			$scope.addDisplayMessage("panel-danger",  status + ": Could not execute tests. " + errorMsg);
+		};
+		console.log("Calling POST");
+		Api.Post("larva/execute", fd,  { 'Content-Type': undefined }, success, error);
+	};
+
+	$scope.testDetails = function (test) {
+		$('#modalTestTitle').text(test.name);
+		$('#test-details-body').empty();
+		$scope.messages[test.name].forEach(function(element) {
+			var header = "";
+			if(element.hasOwnProperty("Step Display Name") && element["Step Display Name"] !== ""){
+				header = '<div class="panel-heading>"' + element["Step Display Name"] + '</div>';
+			}
+			$('#test-details-body').append(
+				'<div class="panel panel-default">' + header +
+				'<div class="panel-body>' + JSON.stringify(element) + '</div></div>');
+		});
+		$('#test-details').modal();
+	};
+
+	$scope.downloadMessages = function() {
+		var dataStr = JSON.stringify($scope.messages);
+		var dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+
+		var today = new Date();
+		var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+		var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+		var dateTime = date+' '+time;
+
+		var exportFileDefaultName = 'Larva Log ' + dateTime + '.json';
+
+		var linkElement = document.createElement('a');
+		linkElement.setAttribute('href', dataUri);
+		linkElement.setAttribute('download', exportFileDefaultName);
+		linkElement.click();
+	};
+
+	// Generate form and set default values.
+	$scope.setForm();
+	$scope.formThreads = 1;
+	$scope.formWaitcleanup = 100;
 }]);
