@@ -100,6 +100,10 @@ angular.module('iaf.beheerconsole')
 	}]).service('Poller', ['Api', 'appConstants', 'Debug', function(Api, appConstants, Debug) {
 		var data = {};
 		this.createPollerObject = function(uri, callback) {
+			// A URI can be either string or object with key as description and value as generator function
+			// E.g. {"description": callback}
+			var uriFunction = (typeof uri === "string") ? null : uri[Object.keys(uri)[0]];
+			uri = (typeof uri === "string") ? uri : Object.keys(uri)[0];
 			this.uri = uri;
 			this.waiting = true;
 			this.pollerInterval = appConstants["console.pollerInterval"];
@@ -149,7 +153,7 @@ angular.module('iaf.beheerconsole')
 				var runOnce = !!runOnce;
 				var poller = data[uri];
 				poller.fired++;
-				Api.Get(uri, callback, function() {
+				Api.Get((uriFunction === null) ? uri : uriFunction(), callback, function() {
 					poller.addError();
 
 					var e = 0;
@@ -222,6 +226,7 @@ angular.module('iaf.beheerconsole')
 		},
 		this.add = function (uri, callback, autoStart, interval) {
 			var poller = new this.createPollerObject(uri, callback);
+			uri = (typeof uri === "string") ? uri : Object.keys(uri)[0];
 			data[uri] = poller;
 			if(!!autoStart)
 				poller.fn();
