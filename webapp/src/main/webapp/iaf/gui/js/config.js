@@ -311,14 +311,10 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 	})
 	.state('pages.larva', {
 		url: "/testing/larva",
-		templateUrl: "views/iFrame.html",
+		templateUrl: "views/Larva.html",
 		data: {
-			pageTitle: 'Larva',
-			breadcrumbs: 'Test > Larva',
-			iframe: true
-		},
-		controller: function($scope, Misc, $interval){
-			$scope.url = Misc.getServerPath() + "larva";
+			pageTitle: 'Larva Unit Testing',
+			breadcrumbs: 'Test > Larva'
 		}
 	})
 	.state('pages.ladybug', {
