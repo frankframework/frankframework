@@ -61,7 +61,7 @@ import org.apache.log4j.Logger;
 
 
 /**
- * Miscellanous conversion functions.
+ * Miscellaneous conversion functions.
  */
 public class Misc {
 	static Logger log = LogUtil.getLogger(Misc.class);
@@ -185,20 +185,9 @@ public class Misc {
 		}
 	}
 
-	public static void streamToFile(InputStream inputStream, File file)
-			throws IOException {
-		OutputStream fileOut = null;
-		try {
-			fileOut = new FileOutputStream(file);
+	public static void streamToFile(InputStream inputStream, File file) throws IOException {
+		try (OutputStream fileOut = new FileOutputStream(file)) {
 			Misc.streamToStream(inputStream, fileOut);
-		} finally {
-			try {
-				if (fileOut != null) {
-					fileOut.close();
-				}
-			} catch (IOException e) {
-				log.warn("exception closing outputstream", e);
-			}
 		}
 	}
 
@@ -222,13 +211,16 @@ public class Misc {
 	}
 	public static void readerToWriter(Reader reader, Writer writer, boolean closeInput) throws IOException {
 		if (reader!=null) {
-			char[] buffer=new char[BUFFERSIZE];
-			int charsRead;
-			while ((charsRead=reader.read(buffer,0,BUFFERSIZE))>-1) {
-				writer.write(buffer,0,charsRead);
-			}
-			if (closeInput) {
-				reader.close();
+			try {
+				char[] buffer=new char[BUFFERSIZE];
+				int charsRead;
+				while ((charsRead=reader.read(buffer,0,BUFFERSIZE))>-1) {
+					writer.write(buffer,0,charsRead);
+				}
+			} finally {
+				if (closeInput) {
+					reader.close();
+				}
 			}
 		}
 	}
@@ -249,12 +241,8 @@ public class Misc {
 	  * Please consider using resourceToString() instead of relying on files.
 	 */
 	public static String fileToString(String fileName, String endOfLineString, boolean xmlEncode) throws IOException {
-		FileReader reader = new FileReader(fileName);
-		try {
+		try (FileReader reader = new FileReader(fileName)) {
 			return readerToString(reader, endOfLineString, xmlEncode);
-		}
-		finally {
-			reader.close();
 		}
 	}
 
@@ -263,25 +251,29 @@ public class Misc {
 		StringBuilder sb = new StringBuilder();
 		int curChar = -1;
 		int prevChar = -1;
-		while ((curChar = reader.read()) != -1 || prevChar == '\r') {
-			if (prevChar == '\r' || curChar == '\n') {
-				if (endOfLineString == null) {
-					if (prevChar == '\r')
-						sb.append((char) prevChar);
-					if (curChar == '\n')
-						sb.append((char) curChar);
+		try {
+			while ((curChar = reader.read()) != -1 || prevChar == '\r') {
+				if (prevChar == '\r' || curChar == '\n') {
+					if (endOfLineString == null) {
+						if (prevChar == '\r')
+							sb.append((char) prevChar);
+						if (curChar == '\n')
+							sb.append((char) curChar);
+					}
+					else {
+						sb.append(endOfLineString);
+					}
 				}
-				else {
-					sb.append(endOfLineString);
+				if (curChar != '\r' && curChar != '\n' && curChar != -1) {
+					String appendStr =""+(char) curChar;
+					sb.append(xmlEncode ? XmlUtils.encodeChars(appendStr) : appendStr);
 				}
+				prevChar = curChar;
 			}
-			if (curChar != '\r' && curChar != '\n' && curChar != -1) {
-				String appendStr =""+(char) curChar;
-				sb.append(xmlEncode ? XmlUtils.encodeChars(appendStr) : appendStr);
-			}
-			prevChar = curChar;
+			return sb.toString();
+		} finally {
+			reader.close();
 		}
-		return sb.toString();
 	}
 
 	public static String streamToString(InputStream stream) throws IOException {
@@ -292,24 +284,17 @@ public class Misc {
 		return streamToString(stream, null, streamEncoding, false);
 	}
 
-	public static String streamToString(InputStream stream, String endOfLineString, boolean xmlEncode)
-		throws IOException {
+	public static String streamToString(InputStream stream, String endOfLineString, boolean xmlEncode) throws IOException {
 		return streamToString(stream,endOfLineString, DEFAULT_INPUT_STREAM_ENCODING, xmlEncode);
 	}
 
-	public static String streamToString(InputStream stream, String endOfLineString, String streamEncoding, boolean xmlEncode)
-		throws IOException {
+	public static String streamToString(InputStream stream, String endOfLineString, String streamEncoding, boolean xmlEncode) throws IOException {
 		return readerToString(new InputStreamReader(stream, streamEncoding), endOfLineString, xmlEncode);
 	}
 
 	public static String resourceToString(URL resource, String endOfLineString, boolean xmlEncode) throws IOException {
 		InputStream stream = resource.openStream();
-		try {
-			return streamToString(stream, endOfLineString, xmlEncode);
-		}
-		finally {
-			stream.close();
-		}
+		return streamToString(stream, endOfLineString, xmlEncode);
 	}
 
 	public static String resourceToString(URL resource) throws IOException {
@@ -321,12 +306,8 @@ public class Misc {
 	}
 
 	public static void stringToFile(String string, String fileName) throws IOException {
-		FileWriter fw = new FileWriter(fileName);
-		try {
+		try (FileWriter fw = new FileWriter(fileName)) {
 			fw.write(string);
-		}
-		finally {
-			fw.close();
 		}
 	}
 
@@ -543,7 +524,7 @@ public class Misc {
 		return localHost;
 	}
 
-	public static void copyContext(String keys, Map from, Map to) {
+	public static void copyContext(String keys, Map<String,Object> from, Map<String,Object> to) {
 		if (StringUtils.isNotEmpty(keys) && from!=null && to!=null) {
 			StringTokenizer st = new StringTokenizer(keys,",;");
 			while (st.hasMoreTokens()) {
