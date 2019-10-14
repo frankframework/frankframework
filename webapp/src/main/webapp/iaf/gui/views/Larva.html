@@ -27,7 +27,11 @@
                 <div class="form-group col-lg-1">
                     <br>
                     <div class="file-control">
-                        <button type="button" class="btn btn-default form-control"  onclick="document.getElementById('fileInput').click();">Upload</button>
+                        <button
+                                type="button"
+                                class="btn btn-default form-control"
+                                onclick="document.getElementById('fileInput').click();"
+                                title="Load a local messages file.">Upload</button>
                         <input type="file" id="fileInput" class="btn btn-default file-box" custom-on-change="fileChanged" style="display: none;" accept=".json">
                     </div>
                 </div>
@@ -35,9 +39,9 @@
             <br>
             <br>
             <br>
-            <div>
+            <div data-toggle="collapse" data-target="#advancedSettings" aria-expanded="false" aria-controls="advancedSettings">
                 Advanced Settings &nbsp;
-                <i class="fa fa-chevron-down" data-toggle="collapse" data-target="#advancedSettings" aria-expanded="false" aria-controls="advancedSettings"></i>
+                <i class="fa fa-chevron-down"></i>
             </div>
             <div class="collapse" id="advancedSettings">
                 <div class="form-row">
@@ -49,6 +53,7 @@
                                 name="rootDirectories"
                                 ng-model="formRootDirectories"
                                 ng-options="directory.value as directory.name for directory in rootDirectories"
+                                ng-change="getScenarios()"
                         >
                         </select>
                     </div>

@@ -1701,7 +1701,23 @@ angular.module('iaf.beheerconsole')
 		linkElement.click();
 	};
 
+	$scope.getScenarios = function() {
+		Api.Post(
+			"larva/scenarios",
+			JSON.stringify({"rootDirectory": $scope.formRootDirectories}),
+			function (data) {
+				var scenarios = [];
+				for(key in data["scenarios"]) {
+					scenarios.push({"name": data["scenarios"][key], "value": key});
+				}
 
+				scenarios.sort(function (a1, b) {
+					return a1[Object.keys(a1)[0]].localeCompare(b[Object.keys(b)[0]]);
+				});
+				$scope.scenarios = scenarios;
+			}
+			)
+	}
 
 	// Generate form and set default values.
 	$scope.setForm();
