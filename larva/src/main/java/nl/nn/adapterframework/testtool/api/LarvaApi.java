@@ -88,7 +88,7 @@ public class LarvaApi {
 
     /**
      * Executes the tests with the given parameters.
-     * @param input Form Data that contains scenario and rootDirectory (required); and waitBeforeCleanup and numberOfThreads (optionally)
+     * @param input Form Data that contains scenario and rootDirectory (required); and logLevel, waitBeforeCleanup and numberOfThreads (optionally)
      * @return Status.OK if the execution started successfully.
      */
     @POST
@@ -110,6 +110,15 @@ public class LarvaApi {
         }catch (IOException | NullPointerException | ExceptionAdapter e) {
             e.printStackTrace();
             logger.error("Could not decode waitBeforeCleanup, using default instead.\n");
+        }
+        try {
+            String logLevel = data.get("logLevel").get(0).getBodyAsString();
+            MessageListener.setSelectedLogLevel(logLevel);
+        } catch (IOException | NullPointerException | ExceptionAdapter e) {
+            logger.debug("No log level found.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("Error setting the log level: " + e.getMessage());
         }
         try {
             numberOfThreads = data.get("numberOfThreads").get(0).getBody(Integer.class, int.class);

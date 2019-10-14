@@ -1603,6 +1603,9 @@ angular.module('iaf.beheerconsole')
 		console.log("Inside submit");
 		var fd = new FormData();
 
+		if($scope.formLogLevel !== "")
+			fd.append("logLevel", $scope.formLogLevel);
+
 		if($scope.formWaitcleanup !== "")
 			fd.append("waitBeforeCleanup", $scope.formWaitcleanup);
 
