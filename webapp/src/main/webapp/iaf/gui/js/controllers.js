@@ -1501,6 +1501,15 @@ angular.module('iaf.beheerconsole')
 
 
 	$scope.setForm = function() {
+		// Check for the various File API support.
+		if (window.File && window.FileReader && window.FileList && window.Blob) {
+			$scope.showFileSelector = true;
+			// Great success! All the File APIs are supported.
+		} else {
+			$scope.showFileSelector = false;
+			console.log("HTML 5 File API is not supported by this browser.");
+		}
+
 		Api.Get("larva/params", function (data) {
 			$scope.logLevels = data["logLevels"][0];
 			var scenarios = [];
@@ -1523,13 +1532,48 @@ angular.module('iaf.beheerconsole')
 			$scope.formLogLevel = data["selectedLogLevel"][0];
 			$scope.formRootDirectories = data["defaultRootDirectory"][0];
 			$scope.formScenarios = scenarios[0]["value"];
-			console.log(scenarios[1]["value"]);
-			console.log($scope.formRootDirectories);
-			console.log($scope.formLogLevel);
 			$scope.scenarios = scenarios;
 			$scope.rootDirectories = rootDirectories;
-
 		});
+	};
+
+	$scope.setMessages = function(data) {
+		console.log("Inside poll callback.");
+		if(data.length === 0)
+			return;
+
+		data.sort(function (a, b) {
+			return a["timestamp"] - b["timestamp"];
+		});
+		console.log(data);
+		$scope.lastMessageArrived = data[data.length - 1]["timestamp"];
+
+		data.forEach(function (element) {
+			if(element["logLevel"] === "Test Properties") {
+				console.log(element);
+
+				var testIndex = $scope.tests.map(function (value) { return value["name"] }).indexOf(element["name"]);
+				if (testIndex === -1){
+					var test = {"name": element["name"], "status": element["messages"]["status"]? element["messages"]["status"] : "RUNNING", "directory":element["messages"]["directory"]? element["messages"]["directory"] : "directory"};
+					$scope.tests.push(test);
+				}else {
+					$scope.tests[testIndex]["status"] = element["messages"]["status"] ? element["messages"]["status"] : $scope.tests[testIndex]["status"];
+					$scope.tests[testIndex]["directory"] = element["messages"]["directory"] ? element["messages"]["directory"] : $scope.tests[testIndex]["directory"];
+				}
+			}else if(element["logLevel"] === "Total" && !$scope.file) {
+				Poller.remove("LarvaMessagePoller");
+				console.log("Stop Poller.");
+				$scope.addDisplayMessage("panel-info", element["messages"]["Message"]);
+			}
+
+			if(!$scope.messages[element["name"]]){
+				$scope.messages[element["name"]] = [];
+			}
+			$scope.messages[element["name"]].push(element);
+		});
+
+
+		console.log("Finishing poll callback");
 	};
 
 	$scope.startPolling = function () {
@@ -1544,45 +1588,8 @@ angular.module('iaf.beheerconsole')
 			console.log(toreturn);
 			return toreturn;
 		}};
-		var callback = function(data) {
-			console.log("Inside poll callback.");
-			if(data.length === 0)
-				return;
 
-			data.sort(function (a, b) {
-				return a["timestamp"] - b["timestamp"];
-			});
-			console.log(data);
-			$scope.lastMessageArrived = data[data.length - 1]["timestamp"];
-
-			data.forEach(function (element) {
-				if(element["logLevel"] === "Test Properties") {
-					console.log(element);
-
-					var testIndex = $scope.tests.map(function (value) { return value["name"] }).indexOf(element["name"]);
-					if (testIndex === -1){
-						var test = {"name": element["name"], "status": element["messages"]["status"]? element["messages"]["status"] : "RUNNING", "directory":element["messages"]["directory"]? element["messages"]["directory"] : "directory"};
-						$scope.tests.push(test);
-					}else {
-						$scope.tests[testIndex]["status"] = element["messages"]["status"] ? element["messages"]["status"] : $scope.tests[testIndex]["status"];
-						$scope.tests[testIndex]["directory"] = element["messages"]["directory"] ? element["messages"]["directory"] : $scope.tests[testIndex]["directory"];
-					}
-				}else if(element["logLevel"] === "Total") {
-					Poller.remove("LarvaMessagePoller");
-					console.log("Stop Poller.");
-					$scope.addDisplayMessage("panel-info", element["messages"]["Message"]);
-				}
-
-				if(!$scope.messages[element["name"]]){
-					$scope.messages[element["name"]] = [];
-				}
-				$scope.messages[element["name"]].push(element);
-			});
-
-
-			console.log("Finishing poll callback");
-		};
-		Poller.add(generator, callback, true, 500);
+		Poller.add(generator, $scope.setMessages, true, 500);
 	};
 
 	$scope.assignClass = function(test) {
@@ -1600,6 +1607,7 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.submit = function () {
+		$scope.file = undefined;
 		console.log("Inside submit");
 		var fd = new FormData();
 
@@ -1635,6 +1643,32 @@ angular.module('iaf.beheerconsole')
 		Api.Post("larva/execute", fd,  { 'Content-Type': undefined }, success, error);
 	};
 
+	$scope.fileChanged = function(event) {
+		console.log("Inside file changed");
+		$scope.file = event.target.files[0];
+		$scope.loadFile();
+	};
+
+	$scope.loadFile = function() {
+		console.log("Inside load file");
+		if(!$scope.file)
+			$scope.addDisplayMessage("danger", "You need to select a json file!");
+
+		var fileReader = new FileReader();
+		fileReader.onload = (e) => {
+			console.log(fileReader.result);
+			var fileData= JSON.parse(fileReader.result);
+			console.log(fileData);
+			var data = [];
+			for(test in fileData) {
+				data = data.concat(fileData[test]);
+			}
+			console.log(data);
+			$scope.setMessages(data);
+		}
+		fileReader.readAsText(this.file);
+	};
+
 	$scope.testDetails = function (test) {
 		$('#modalTestTitle').text(test.name);
 		$('#test-details-body').empty();
@@ -1666,6 +1700,8 @@ angular.module('iaf.beheerconsole')
 		linkElement.setAttribute('download', exportFileDefaultName);
 		linkElement.click();
 	};
+
+
 
 	// Generate form and set default values.
 	$scope.setForm();

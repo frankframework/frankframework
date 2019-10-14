@@ -9,27 +9,6 @@
                         <option ng-repeat="scenario in scenarios" value="{{scenario.value}}">{{scenario.name}}</option>
                     </select>
                 </div>
-                <div class="form-group col-lg-4" title="Number of threads to use for running the tests. (default: 1)">
-                    <label for="threads">Number of Threads:</label>
-                    <input type="number" min="1" class="form-control" id="threads" value="1" data-toggle="tooltip" name="threads" ng-model="formThreads"/>
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group col-lg-6">
-                    <label for="root-directories">Root Directory:</label>
-                    <select
-                            class="form-control"
-                            id="root-directories"
-                            name="rootDirectories"
-                            ng-model="formRootDirectories"
-                            ng-options="directory.value as directory.name for directory in rootDirectories"
-                    >
-                    </select>
-                </div>
-                <div class="form-group col-lg-2">
-                    <label for="waitcleanup">Wait before clean up:</label>
-                    <input type="number" min="0" class="form-control" id="waitcleanup" name="waitcleanup" ng-model="formWaitcleanup"/>
-                </div>
                 <div class="form-group col-lg-2">
                     <label for="log-level">Log Level:</label>
                     <select
@@ -42,8 +21,56 @@
                     </select>
                 </div>
                 <div class="form-group col-lg-1">
-                    <br>
+                    <br/>
                     <button type="submit" class="btn btn-primary form-control" name="run">Run</button>
+                </div>
+                <div class="form-group col-lg-1">
+                    <br>
+                    <div class="file-control">
+                        <button type="button" class="btn btn-default form-control"  onclick="document.getElementById('fileInput').click();">Upload</button>
+                        <input type="file" id="fileInput" class="btn btn-default file-box" custom-on-change="fileChanged" style="display: none;" accept=".json">
+                    </div>
+                </div>
+            </div>
+            <br>
+            <br>
+            <br>
+            <div>
+                Advanced Settings &nbsp;
+                <i class="fa fa-chevron-down" data-toggle="collapse" data-target="#advancedSettings" aria-expanded="false" aria-controls="advancedSettings"></i>
+            </div>
+            <div class="collapse" id="advancedSettings">
+                <div class="form-row">
+                    <div class="form-group col-lg-8">
+                        <label for="root-directories">Root Directory:</label>
+                        <select
+                                class="form-control"
+                                id="root-directories"
+                                name="rootDirectories"
+                                ng-model="formRootDirectories"
+                                ng-options="directory.value as directory.name for directory in rootDirectories"
+                        >
+                        </select>
+                    </div>
+                    <div class="form-group col-lg-4">
+                        <label for="ignoreCaseDiff">Ignore Case for Diff:</label><br>
+                        <input type="checkbox" style="margin: 11px;" class="checkbox" ng-model="formIgnoreCaseDiff" name="ignoreCaseDiff" id="ignoreCaseDiff">
+                    </div>
+
+                </div> <br>
+                <div class="form-row">
+                    <div class="form-group col-lg-4">
+                        <label for="timeout">Global Timeout:</label>
+                        <input type="number" min="1" class="form-control" id="timeout" value="1" name="timeout" ng-model="formTimeout"/>
+                    </div>
+                    <div class="form-group col-lg-4">
+                        <label for="waitcleanup">Wait before clean up:</label>
+                        <input type="number" min="0" class="form-control" id="waitcleanup" name="waitcleanup" ng-model="formWaitcleanup"/>
+                    </div>
+                    <div class="form-group col-lg-4" title="Number of threads to use for running the tests. (default: 1)">
+                        <label for="threads">Number of Threads:</label>
+                        <input type="number" min="1" class="form-control" id="threads" value="1" data-toggle="tooltip" name="threads" ng-model="formThreads"/>
+                    </div>
                 </div>
             </div>
         </form>
