@@ -17,7 +17,6 @@ public class MiscTest {
 		String tekst = "dit is een string";
 		ByteArrayInputStream bais = new ByteArrayInputStream(tekst.getBytes());
 		
-		final Boolean inputStreamClosed = new Boolean(false);
 		CloseChecker closeChecker = new CloseChecker(bais); 
 		String actual = Misc.streamToString(closeChecker);
 		
