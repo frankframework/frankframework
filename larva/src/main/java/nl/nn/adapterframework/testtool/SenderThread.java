@@ -25,7 +25,7 @@ public class SenderThread extends Thread {
     private TimeOutException timeOutException;
     private boolean convertExceptionToMessage = false;
 
-    SenderThread(ISender sender, String request, boolean convertExceptionToMessage) {
+    public SenderThread(ISender sender, String request, boolean convertExceptionToMessage) {
 		name = sender.getName();
 		this.sender = sender;
         this.request = request;
@@ -34,7 +34,7 @@ public class SenderThread extends Thread {
 		log.debug("Request: " + request);
     }
 
-	SenderThread(ISenderWithParameters senderWithParameters, String request, ParameterResolutionContext parameterResolutionContext, boolean convertExceptionToMessage) {
+	public SenderThread(ISenderWithParameters senderWithParameters, String request, ParameterResolutionContext parameterResolutionContext, boolean convertExceptionToMessage) {
 		name = senderWithParameters.getName();
 		this.senderWithParameters = senderWithParameters;
 		this.parameterResolutionContext = parameterResolutionContext;
