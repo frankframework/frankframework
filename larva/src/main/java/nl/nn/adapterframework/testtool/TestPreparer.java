@@ -49,7 +49,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  */
 public class TestPreparer {
-	public static Map<String, List<File>> scenarioFiles;
 	public static Map<String, String> scenariosRootDirectories;
 
 	public static AppConstants getAppConstantsFromDirectory(String currentScenariosRootDirectory,
@@ -59,22 +58,21 @@ public class TestPreparer {
 			appConstantsDirectory = TestPreparer.getAbsolutePath(currentScenariosRootDirectory, appConstantsDirectory);
 			if (new File(currentScenariosRootDirectory).exists()) {
 				if (new File(appConstantsDirectory).exists()) {
-					MessageListener.debugMessage("Get AppConstants from directory: " + appConstantsDirectory);
+					MessageListener.debugMessage("Preparer", "Get AppConstants from directory: " + appConstantsDirectory);
 					appConstants = AppConstants.getInstance(appConstantsDirectory);
 				} else {
-					MessageListener.errorMessage("Directory for AppConstans not found");
+					MessageListener.errorMessage("Preparer", "Directory for AppConstans not found");
 				}
 			}
 		}
 		return appConstants;
 	}
 
-	public static Map<String, String> getScenariosList(String scenariosRootDirectory, AppConstants appConstants) {
-
+	public static Map<String, String> getScenariosList(Map<String, List<File>> scenarioFiles, String scenariosRootDirectory, AppConstants appConstants) {
 		if(scenarioFiles == null) {
-			readScenarioFiles(scenariosRootDirectory, true);
+			readScenarioFiles(scenariosRootDirectory, true, appConstants);
 		}
-		MessageListener.debugMessage("Listing possible executable scenarios.");
+		MessageListener.debugMessage("Preparer", "Listing possible executable scenarios.");
 		Map<String, String> scenarios = new HashMap<>();
 		Iterator<Entry<String, List<File>>> mapIterator = scenarioFiles.entrySet().iterator();
 		while(mapIterator.hasNext()) {
@@ -84,7 +82,7 @@ public class TestPreparer {
 				File scenarioFile = (File) scenarioFilesIterator.next();
 				String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
 				Properties properties = readProperties(appConstants, scenarioFile);
-				MessageListener.debugMessage("Add parent directories of '" + scenarioDirectory + "'");
+				MessageListener.debugMessage("Preparer", "Add parent directories of '" + scenarioDirectory + "'");
 				int i = -1;
 				String scenarioDirectoryCanonicalPath;
 				String scenariosRootDirectoryCanonicalPath;
@@ -94,7 +92,7 @@ public class TestPreparer {
 				} catch (IOException e) {
 					scenarioDirectoryCanonicalPath = scenarioDirectory;
 					scenariosRootDirectoryCanonicalPath = scenariosRootDirectory;
-					MessageListener.errorMessage("Could not get canonical path: " + e.getMessage(), e);
+					MessageListener.errorMessage("Preparer", "Could not get canonical path: " + e.getMessage(), e);
 				}
 				if (scenarioDirectoryCanonicalPath.startsWith(scenariosRootDirectoryCanonicalPath)) {
 					i = scenariosRootDirectory.length() - 1;
@@ -103,7 +101,7 @@ public class TestPreparer {
 						if (!scenarios.containsKey(longName)) {
 							String shortName = scenarioDirectory.substring(scenariosRootDirectory.length() - 1, i + 1);
 							MessageListener
-									.debugMessage("Added '" + longName + "' as '" + shortName + "' to the scenarios list.");
+									.debugMessage("Preparer", "Added '" + longName + "' as '" + shortName + "' to the scenarios list.");
 
 							scenarios.put(longName, shortName);
 						}
@@ -112,7 +110,7 @@ public class TestPreparer {
 					String longName = scenarioFile.getAbsolutePath();
 					String shortName = longName.substring(scenariosRootDirectory.length() - 1,
 							longName.length() - ".properties".length());
-					MessageListener.debugMessage("Added '" + longName + "' as '" + shortName + "' to the scenarios list.");
+					MessageListener.debugMessage("Preparer", "Added '" + longName + "' as '" + shortName + "' to the scenarios list.");
 					scenarios.put(longName, shortName);
 				}
 			}
@@ -120,12 +118,12 @@ public class TestPreparer {
 		return scenarios;
 	}
 
-	public static String initScenariosRootDirectories(String realPath, String paramScenariosRootDirectory) {
-		AppConstants appConstants = TestTool.getAppConstants();
+	public static String initScenariosRootDirectories(String realPath, String paramScenariosRootDirectory, AppConstants appConstants) {
+		scenariosRootDirectories = new HashMap<String, String>();
 		String currentScenariosRootDirectory = null;
 		String firstScenarioRootDirectory = null;
 		if (realPath == null) {
-			MessageListener.errorMessage("Could not read webapp real path");
+			MessageListener.errorMessage("Preparer", "Could not read webapp real path");
 		} else {
 			if (!realPath.endsWith(File.separator)) {
 				realPath = realPath + File.separator;
@@ -137,19 +135,19 @@ public class TestPreparer {
 			String description = appConstants.getResolvedProperty("scenariosroot" + j + ".description");
 			while (directory != null) {
 				if (description == null) {
-					MessageListener.errorMessage("Could not find description for root directory '" + directory + "'");
+					MessageListener.errorMessage("Preparer", "Could not find description for root directory '" + directory + "'");
 				} else if (scenariosRoots.get(description) != null) {
-					MessageListener.errorMessage("A root directory named '" + description + "' already exist");
+					MessageListener.errorMessage("Preparer", "A root directory named '" + description + "' already exist");
 				} else {
 					String parent = realPath;
 					String m2eFileName = appConstants.getResolvedProperty("scenariosroot" + j + ".m2e.pom.properties");
 					if (m2eFileName != null) {
 						File m2eFile = new File(realPath, m2eFileName);
 						if (m2eFile.exists()) {
-							MessageListener.debugMessage("Read m2e pom.properties: " + m2eFileName);
+							MessageListener.debugMessage("Preparer", "Read m2e pom.properties: " + m2eFileName);
 							Properties m2eProperties = readProperties(null, m2eFile, false);
 							parent = m2eProperties.getProperty("m2e.projectLocation");
-							MessageListener.debugMessage("Use m2e parent: " + parent);
+							MessageListener.debugMessage("Preparer", "Use m2e parent: " + parent);
 						}
 					}
 					directory = getAbsolutePath(parent, directory, true);
@@ -180,11 +178,11 @@ public class TestPreparer {
 				description = (String) iterator.next();
 				scenariosRootDirectories.put("X " + description, scenariosRootsBroken.get(description));
 				if(firstScenarioRootDirectory == null) {
-					firstScenarioRootDirectory = scenariosRoots.get(description);
+					firstScenarioRootDirectory = scenariosRootsBroken.get(description);
 				}
 			}
-			MessageListener.debugMessage("Read scenariosrootdirectory parameter");
-			MessageListener.debugMessage("Get current scenarios root directory");
+			MessageListener.debugMessage("Preparer", "Read scenariosrootdirectory parameter");
+			MessageListener.debugMessage("Preparer", "Get current scenarios root directory");
 			if (paramScenariosRootDirectory == null || paramScenariosRootDirectory.equals("")) {
 				String scenariosRootDefault = appConstants.getResolvedProperty("scenariosroot.default");
 				if (scenariosRootDefault != null) {
@@ -212,32 +210,36 @@ public class TestPreparer {
 	 * @return map that contains path names and list of scenarios that are in the
 	 *         path.
 	 */
-	public static Map<String, List<File>> readScenarioFiles(String scenariosDirectory, boolean forMultiThreading) {
-		MessageListener.debugMessage("Read scenarios from directory '" + scenariosDirectory + "'");
+	public static Map<String, List<File>> readScenarioFiles(String scenariosDirectory, boolean forMultiThreading, AppConstants appConstants) {
+		Map<String, List<File>> scenarioFiles;
+		MessageListener.debugMessage("Preparer", "Read scenarios from directory '" + scenariosDirectory + "'");
 		scenarioFiles = new HashMap<>();
 		String generalKey = "";
+		if(!forMultiThreading) {
+			scenarioFiles.put(generalKey, new ArrayList<File>());
+		}
 		// If only one scenario is selected
 		if (scenariosDirectory.endsWith(".properties")) {
-			MessageListener.debugMessage("Only one scenario detected!");
+			MessageListener.debugMessage("Preparer", "Only one scenario detected!");
 			List<File> fileList = new ArrayList<>();
 			fileList.add(new File(scenariosDirectory));
 			scenarioFiles.put(scenariosDirectory, fileList);
 			return scenarioFiles;
 		}
 
-		MessageListener.debugMessage("List all files in directory '" + scenariosDirectory + "'");
+		MessageListener.debugMessage("Preparer", "List all files in directory '" + scenariosDirectory + "'");
 		File[] files = new File(scenariosDirectory).listFiles();
 		if (files == null) {
-			MessageListener.debugMessage("Could not read files from directory '" + scenariosDirectory + "'");
+			MessageListener.debugMessage("Preparer", "Could not read files from directory '" + scenariosDirectory + "'");
 		} else {
 			// This will later be helpful, when we want to execute scenarios sequentially.
-			MessageListener.debugMessage("Sort files");
+			MessageListener.debugMessage("Preparer", "Sort files");
 			Arrays.sort(files);
-			MessageListener.debugMessage("Filter out property files containing a 'scenario.description' property");
+			MessageListener.debugMessage("Preparer", "Filter out property files containing a 'scenario.description' property");
 			for (int i = 0; i < files.length; i++) {
 				File file = files[i];
 				if (file.getName().endsWith(".properties")) {
-					Properties properties = readProperties(TestTool.getAppConstants(), file);
+					Properties properties = readProperties(appConstants, file);
 					if (properties != null && properties.get("scenario.description") != null) {
 						String active = properties.getProperty("scenario.active", "true");
 						String unstable = properties.getProperty("adapter.unstable", "false");
@@ -252,7 +254,7 @@ public class TestPreparer {
 					}
 				} else if (file.isDirectory() && (!file.getName().equals("CVS"))) {
 					Map<String, List<File>> recursiveOutput = readScenarioFiles(file.getAbsolutePath(),
-							forMultiThreading);
+							forMultiThreading, appConstants);
 					Iterator<Entry<String, List<File>>> mapIterator = recursiveOutput.entrySet().iterator();
 					while (mapIterator.hasNext()) {
 						Map.Entry<String, List<File>> entry = mapIterator.next();
@@ -267,7 +269,7 @@ public class TestPreparer {
 				}
 			}
 		}
-		MessageListener.debugMessage(scenarioFiles.size() + " scenario files found");
+		MessageListener.debugMessage("Preparer", scenarioFiles.size() + " scenario files found");
 		return scenarioFiles;
 	}
 
@@ -312,7 +314,7 @@ public class TestPreparer {
 				includeFilename = properties.getProperty("include" + i);
 			}
 			while (includeFilename != null) {
-				MessageListener.debugMessage("Load include file: " + includeFilename);
+				MessageListener.debugMessage("Preparer", "Load include file: " + includeFilename);
 				File includeFile = new File(getAbsolutePath(directory, includeFilename));
 				Properties includeProperties = readProperties(appConstants, includeFile, false);
 				includedProperties.putAll(includeProperties);
@@ -327,16 +329,16 @@ public class TestPreparer {
 				}
 				addAbsolutePathProperties(directory, properties);
 			}
-			MessageListener.debugMessage(properties.size() + " properties found");
+			MessageListener.debugMessage("Preparer", properties.size() + " properties found");
 		} catch (Exception e) {
 			properties = null;
-			MessageListener.errorMessage("Could not read properties file: " + e.getMessage(), e);
+			MessageListener.errorMessage("Preparer", "Could not read properties file: " + e.getMessage(), e);
 			if (fileInputStreamPropertiesFile != null) {
 				try {
 					fileInputStreamPropertiesFile.close();
 				} catch (Exception e2) {
 					MessageListener.errorMessage(
-							"Could not close file '" + propertiesFile.getAbsolutePath() + "': " + e2.getMessage(), e);
+							"Preparer", "Could not close file '" + propertiesFile.getAbsolutePath() + "': " + e2.getMessage(), e);
 				}
 			}
 		}
@@ -406,9 +408,9 @@ public class TestPreparer {
 					if (!stepFound) {
 						steps.add(key);
 						stepFound = true;
-						MessageListener.debugMessage("Added step '" + key + "'");
+						MessageListener.debugMessage("Preparer", "Added step '" + key + "'");
 					} else {
-						MessageListener.errorMessage("More than one step" + i + " properties found, already found '"
+						MessageListener.errorMessage("Preparer", "More than one step" + i + " properties found, already found '"
 								+ steps.get(steps.size() - 1) + "' before finding '" + key + "'");
 					}
 				}
@@ -418,7 +420,7 @@ public class TestPreparer {
 			}
 			i++;
 		}
-		MessageListener.debugMessage(steps.size() + " steps found");
+		MessageListener.debugMessage("Preparer", steps.size() + " steps found");
 		return steps;
 	}
 
@@ -441,7 +443,7 @@ public class TestPreparer {
 				xmlReader.close();
 			} catch (IOException e) {
 				MessageListener
-						.errorMessage("Could not determine encoding for file '" + fileName + "': " + e.getMessage(), e);
+						.errorMessage("Preparer", "Could not determine encoding for file '" + fileName + "': " + e.getMessage(), e);
 			}
 		} else if (fileName.endsWith(".utf8")) {
 			encoding = "UTF-8";
@@ -461,13 +463,13 @@ public class TestPreparer {
 				}
 				result = stringBuffer.toString();
 			} catch (Exception e) {
-				MessageListener.errorMessage("Could not read file '" + fileName + "': " + e.getMessage(), e);
+				MessageListener.errorMessage("Preparer", "Could not read file '" + fileName + "': " + e.getMessage(), e);
 			} finally {
 				if (inputStreamReader != null) {
 					try {
 						inputStreamReader.close();
 					} catch (Exception e) {
-						MessageListener.errorMessage("Could not close file '" + fileName + "': " + e.getMessage(), e);
+						MessageListener.errorMessage("Preparer", "Could not close file '" + fileName + "': " + e.getMessage(), e);
 					}
 				}
 			}
@@ -490,7 +492,7 @@ public class TestPreparer {
 	 */
 	public static Map<String, Object> createParametersMapFromParamProperties(Properties properties, String property,
 																			 boolean createParameterObjects, ParameterResolutionContext parameterResolutionContext) {
-		MessageListener.debugMessage("Search parameters for property '" + property + "'");
+		MessageListener.debugMessage("Preparer", "Search parameters for property '" + property + "'");
 		Map<String, Object> result = new HashMap<String, Object>();
 		boolean processed = false;
 		int i = 1;
@@ -541,7 +543,7 @@ public class TestPreparer {
 										parts.add(filePart);
 									} catch (FileNotFoundException e) {
 										MessageListener.errorMessage(
-												"Could not read file '" + partFile + "': " + e.getMessage(), e);
+												"Preparer", "Could not read file '" + partFile + "': " + e.getMessage(), e);
 									}
 								} else {
 									String string = readFile(partFile);
@@ -560,7 +562,7 @@ public class TestPreparer {
 						try {
 							multipartRequestEntity.writeRequest(requestContent);
 						} catch (IOException e) {
-							MessageListener.errorMessage("Could not create multipart: " + e.getMessage(), e);
+							MessageListener.errorMessage("Preparer", "Could not create multipart: " + e.getMessage(), e);
 						}
 						request.setContent(requestContent.toByteArray());
 						request.setContentType(multipartRequestEntity.getContentType());
@@ -583,7 +585,7 @@ public class TestPreparer {
 									value = new FileInputStream(inputStreamFilename);
 								} catch (FileNotFoundException e) {
 									MessageListener.errorMessage(
-											"Could not read file '" + inputStreamFilename + "': " + e.getMessage(), e);
+											"Preparer", "Could not read file '" + inputStreamFilename + "': " + e.getMessage(), e);
 								}
 							}
 						}
@@ -595,14 +597,14 @@ public class TestPreparer {
 							value = XmlUtils.buildNode((String) value, true);
 						} catch (DomBuilderException e) {
 							MessageListener.errorMessage(
-									"Could not build node for parameter '" + name + "' with value: " + value, e);
+									"Preparer", "Could not build node for parameter '" + name + "' with value: " + value, e);
 						}
 					} else if ("domdoc".equals(properties.getProperty(property + ".param" + i + ".type"))) {
 						try {
 							value = XmlUtils.buildDomDocument((String) value, true);
 						} catch (DomBuilderException e) {
 							MessageListener.errorMessage(
-									"Could not build node for parameter '" + name + "' with value: " + value, e);
+									"Preparer", "Could not build node for parameter '" + name + "' with value: " + value, e);
 						}
 					} else if ("list".equals(properties.getProperty(property + ".param" + i + ".type"))) {
 						List<String> parts = new ArrayList<String>(
@@ -631,7 +633,7 @@ public class TestPreparer {
 					String pattern = properties.getProperty(property + ".param" + i + ".pattern");
 					if (value == null && pattern == null) {
 						MessageListener.errorMessage(
-								"Property '" + property + ".param" + i + " doesn't have a value or pattern");
+								"Preparer", "Property '" + property + ".param" + i + " doesn't have a value or pattern");
 					} else {
 						try {
 							Parameter parameter = new Parameter();
@@ -645,21 +647,21 @@ public class TestPreparer {
 							}
 							parameter.configure();
 							result.put(name, parameter);
-							MessageListener.debugMessage("Add param with name '" + name + "', value '" + value
+							MessageListener.debugMessage("Preparer", "Add param with name '" + name + "', value '" + value
 									+ "' and pattern '" + pattern + "' for property '" + property + "'");
 						} catch (ConfigurationException e) {
-							MessageListener.errorMessage("Parameter '" + name + "' could not be configured");
+							MessageListener.errorMessage("Preparer", "Parameter '" + name + "' could not be configured");
 						}
 					}
 				} else {
 					if (value == null) {
-						MessageListener.errorMessage("Property '" + property + ".param" + i + ".value' or '" + property
+						MessageListener.errorMessage("Preparer", "Property '" + property + ".param" + i + ".value' or '" + property
 								+ ".param" + i + ".valuefile' or '" + property + ".param" + i
 								+ ".valuefileinputstream' not found while property '" + property + ".param" + i
 								+ ".name' exist");
 					} else {
 						result.put(name, value);
-						MessageListener.debugMessage("Add param with name '" + name + "' and value '" + value
+						MessageListener.debugMessage("Preparer", "Add param with name '" + name + "' and value '" + value
 								+ "' for property '" + property + "'");
 					}
 				}
