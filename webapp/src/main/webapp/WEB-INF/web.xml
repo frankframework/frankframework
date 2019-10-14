@@ -324,6 +324,7 @@
 				nl.nn.adapterframework.webcontrol.api.BrowseQueue,
 				nl.nn.adapterframework.webcontrol.api.SendJmsMessage,
 				nl.nn.adapterframework.webcontrol.api.TransactionalStorage,
+				nl.nn.adapterframework.testtool.api.LarvaApi,
 			</param-value>
 		</init-param>
 	</servlet>
