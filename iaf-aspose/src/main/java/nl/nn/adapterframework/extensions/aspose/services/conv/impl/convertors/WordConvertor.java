@@ -46,7 +46,7 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionServi
  */
 class WordConvertor extends AbstractConvertor {
 
-	private static final Logger LOGGER = Logger.getLogger(WordConvertor.class);
+	private static final Logger LOGGER = LogUtil.getLogger(WordConvertor.class);
 	// contains mapping from MediaType to the LoadOption for the aspose word
 	// conversion.
 	private static final Map<MediaType, LoadOptions> MEDIA_TYPE_LOAD_FORMAT_MAPPING;

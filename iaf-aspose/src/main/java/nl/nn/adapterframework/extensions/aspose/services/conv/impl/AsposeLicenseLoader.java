@@ -52,7 +52,7 @@ public class AsposeLicenseLoader {
 	private static final String FONTS_RESOURCE_NAME = "/font.zip";
 	private static final String FONTS_RESOURCE_DIR = "/fonts/";
 
-	private static final Logger LOGGER = Logger.getLogger(AsposeLicenseLoader.class);
+	private static final Logger LOGGER = LogUtil.getLogger(AsposeLicenseLoader.class);
 
 	private static final String TRUETYPE_FONT_EXT = ".ttf";
 

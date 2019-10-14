@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
  */
 public final class FileUtil {
 
-	private static final Logger LOGGER = Logger.getLogger(FileUtil.class);
+	private static final Logger LOGGER = LogUtil.getLogger(FileUtil.class);
 
 	private FileUtil() {
 	}

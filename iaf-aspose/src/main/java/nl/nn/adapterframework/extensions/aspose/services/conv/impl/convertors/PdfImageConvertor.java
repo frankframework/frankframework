@@ -56,7 +56,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 
 	private static final String TIFF = "tiff";
 
-	private static final Logger LOGGER = Logger.getLogger(PdfImageConvertor.class);
+	private static final Logger LOGGER = LogUtil.getLogger(PdfImageConvertor.class);
 
 	// contains mapping from MediaType to the LoadOption for the aspose word
 	// conversion.

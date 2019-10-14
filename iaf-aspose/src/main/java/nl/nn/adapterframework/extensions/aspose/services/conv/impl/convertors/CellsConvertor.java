@@ -40,7 +40,7 @@ class CellsConvertor extends AbstractConvertor {
 
 	private static final Map<MediaType, String> FILE_TYPE_MAP = new HashMap<>();
 
-	private static final Logger LOGGER = Logger.getLogger(CellsConvertor.class);
+	private static final Logger LOGGER = LogUtil.getLogger(CellsConvertor.class);
 
 	static {
 		FILE_TYPE_MAP.put(XLS_MEDIA_TYPE, "xls");

@@ -38,7 +38,7 @@ import nl.nn.adapterframework.util.DateUtils;
 
 abstract class AbstractConvertor implements Convertor {
 
-	private static final Logger LOGGER = Logger.getLogger(AbstractConvertor.class);
+	private static final Logger LOGGER = LogUtil.getLogger(AbstractConvertor.class);
 
 	private List<MediaType> supportedMediaTypes;
 
