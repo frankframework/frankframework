@@ -30,6 +30,7 @@ import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 
 import nl.nn.adapterframework.align.ScalarType;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Helper class to construct JSON from XML events.
@@ -37,7 +38,7 @@ import nl.nn.adapterframework.align.ScalarType;
  * @author Gerrit van Brakel
  */
 public class JsonElementContainer implements ElementContainer {
-	protected Logger log = Logger.getLogger(this.getClass());
+	protected Logger log = LogUtil.getLogger(this.getClass());
 	
 	private String name;
 	private boolean xmlArrayContainer;

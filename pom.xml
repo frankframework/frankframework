@@ -409,6 +409,7 @@
         <module>webapp</module>
         <module>test</module>
         <module>ladybug</module>
+<!--        <module>iaf-aspose</module> -->
       </modules>
     </profile>
     <profile>

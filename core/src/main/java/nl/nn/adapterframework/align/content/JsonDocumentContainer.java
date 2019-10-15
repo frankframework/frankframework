@@ -25,13 +25,15 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.log4j.Logger;
 import org.apache.xerces.xs.XSTypeDefinition;
 
+import nl.nn.adapterframework.util.LogUtil;
+
 /**
  * Helper class to construct JSON from XML events.
  * 
  * @author Gerrit van Brakel
  */
 public class JsonDocumentContainer extends TreeContentContainer<JsonElementContainer>{
-	protected Logger log = Logger.getLogger(this.getClass());
+	protected Logger log = LogUtil.getLogger(this.getClass());
 	
 	private String name;
 	private boolean skipArrayElementContainers;

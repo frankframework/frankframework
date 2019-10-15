@@ -42,7 +42,7 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResul
  */
 public class SlidesConvertor extends AbstractConvertor {
 
-	private static final Logger LOGGER = Logger.getLogger(SlidesConvertor.class);
+	private static final Logger LOGGER = LogUtil.getLogger(SlidesConvertor.class);
 	// contains mapping from MediaType to the LoadOption for the aspose word
 	// conversion.
 	private static final Map<MediaType, LoadOptions> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
