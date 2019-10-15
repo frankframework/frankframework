@@ -23,9 +23,9 @@ import java.util.List;
 
 import javax.activation.DataHandler;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.xerces.impl.dv.util.Base64;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -197,7 +197,7 @@ public class SendGridSender extends MailSenderBase {
 					} else {
 						aTextBytes = text.getBytes();
 					}
-					attachmentElement.setAttachmentText(Base64.encode(aTextBytes));
+					attachmentElement.setAttachmentText(Base64.encodeBase64(aTextBytes));
 				}
 				attachment.setContent((String) attachmentElement.getAttachmentText());
 				attachment.setFilename(attachmentElement.getAttachmentName());
