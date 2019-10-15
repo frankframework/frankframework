@@ -406,6 +406,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return encodedfile;
 	}
 
+	@Override
 	public boolean isSynchronous() {
 		return false;
 	}
