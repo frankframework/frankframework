@@ -17,19 +17,17 @@ package nl.nn.adapterframework.xml;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
-
-import nl.nn.adapterframework.configuration.classloaders.BytesClassLoader;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
-import org.xml.sax.InputSource;
+
+import nl.nn.adapterframework.configuration.classloaders.BytesClassLoader;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Xerces native EntityResolver. Appears to be only used in XercesXmlValidator currently.

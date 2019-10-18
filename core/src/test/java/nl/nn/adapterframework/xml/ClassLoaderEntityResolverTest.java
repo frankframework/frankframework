@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.jar.JarFile;
 
-import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.junit.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
