@@ -1475,7 +1475,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('LarvaCtrl', ['$scope', 'Api', 'Alert', 'Poller', function($scope, Api, Alert, Poller) {
+.controller('LarvaCtrl', ['$scope', '$compile', 'Api', 'Alert', 'Poller', function($scope, $compile, Api, Alert, Poller) {
 	$scope.lastMessageArrived = 0;
 	$scope.messages = {};
 	$scope.tests = [];
@@ -1708,10 +1708,10 @@ angular.module('iaf.beheerconsole')
 			var textClass = "";
 			switch (word[0]) {
 				case 1:
-					textClass = "bg-success";
+					textClass = "text-info";
 					break;
 				case -1:
-					textClass = "bg-danger";
+					textClass = "text-danger";
 					break;
 			}
 			if(word[0] !== 0)
@@ -1732,7 +1732,7 @@ angular.module('iaf.beheerconsole')
 			case "Step Passed/Failed":
 			case "Scenario Passed/Failed":
 				headerText = message["messages"]["Message"];
-				panelClass = (message["messages"]["Message"].includes("pass")) ? "panel-info" : "panel-danger";
+				panelClass = (message["messages"]["Message"].includes("pass")) ? "panel-primary" : "panel-danger";
 				break;
 			case "Pipeline Messages Prepared For Diff":
 			case "Pipeline Messages":
@@ -1740,14 +1740,8 @@ angular.module('iaf.beheerconsole')
 				bodyText = message["messages"]["Pipeline Message"];
 				break;
 			case "Wrong Pipeline Messages":
-				var dmp = new diff_match_patch();
-				var pipelineMessage = message["messages"]["Pipeline Message"] ? message["messages"]["Pipeline Message"] : "";
-				var expectedMessage = message["messages"]["Pipeline Message Expected"] ? message["messages"]["Pipeline Message Expected"] : "";
-				var diff = $scope.diff_lineMode(pipelineMessage, expectedMessage);
-				bodyText = $scope.diff2text(diff);
-				panelClass = "panel-danger";
-				headerText = (message["messages"]["Step Display Name"]) ? message["messages"]["Step Display Name"] : "";
-				//bodyText = message["messages"]["Pipeline Message"] + "\n ___________ EXPECTED: \n" + message["messages"]["Pipeline Message Expected"];
+				headerText = (message["messages"]["Step Display Name"]) ? message["messages"]["Step Display Name"] : message["messages"]["Message"];
+				bodyText = message["messages"]["Message"] + '\n' + message["messages"]["Pipeline Message"];
 				break;
 			case "Scenario Failed":
 				panelClass = "panel-danger";
@@ -1758,23 +1752,47 @@ angular.module('iaf.beheerconsole')
 		}
 		var properties = {"class": panelClass, "header": jQuery('<div />').text(headerText).html(), "body": jQuery('<div />').text(bodyText).html()};
 
-		// Escape span for diff from escape.
-		if(message["logLevel"] === "Wrong Pipeline Messages") {
-			properties['body'] = properties['body'].replace(/\&lt\;span class\=\"(\w+)-(\w+)\"&gt\;/g, '<span class=\"$1-$2\">');
-			properties['body'] = properties['body'].replace(/&lt;\/span&gt;/g, "</span>");
-		}
 		return properties;
 	};
+
+	$scope.savePipelineMessage = function(testName, index) {
+		Api.Post("larva/save", JSON.stringify({"content": $scope.messages[testName][index]["messages"]["Pipeline Message"], "filepath": $scope.messages[testName][index]["messages"]["Filepath"]}), function (data) {
+			alert("New pipeline output has been saved.");
+		}, function () {
+			alert("There has been an error!");
+		});
+	}
+
+	$scope.createErrorMessagesForDiff = function(div, message, testName, index) {
+		var diff = $scope.diff_lineMode(message["messages"]["Pipeline Message Expected"], message["messages"]["Pipeline Message"]);
+		var bodyText = jQuery('<div />').text($scope.diff2text(diff)).html();
+		var headerText = jQuery('<div />').text("Diff for " + message["messages"]["Step Display Name"]).html();
+
+		bodyText = bodyText.replace(/\&lt\;span class\=\"(\w+)-(\w+)\"&gt\;/g, '<span class=\"$1-$2\">');
+		bodyText = bodyText.replace(/&lt;\/span&gt;/g, "</span>");
+
+		var button = '<button type="button" class="label label-info pull-right" ng-click="savePipelineMessage(\'' + testName + '\',' + index + ')">Save</button>';
+		button = $compile(button)($scope);
+		var header = '<div class="panel-heading" id="larva-test-details-' + index + '">' + headerText + '</div>';
+		var body = '<div class="panel-body"><pre lang="xml">' + bodyText + '</pre></div>';
+		$('#test-details-body').append('<div class="panel panel-danger">' + header + body + '</div>');
+		$('#larva-test-details-' + index).append(button);
+	}
 
 	$scope.testDetails = function (test) {
 		$('#modalTestTitle').text(test.name);
 		$('#test-details-body').empty();
-		var messages2display = $scope.messages[test.name];
-		messages2display.sort(function(a,b) {
+		$scope.messages[test.name].sort(function(a,b) {
 			a["timestamp"] - b["timestamp"];
 		});
-		messages2display.forEach(function(element) {
+		$scope.messages[test.name].forEach(function(element, index) {
 			if(["Total", "Test Properties", ""].indexOf(element["logLevel"]) > -1)	return;
+
+			if(element['logLevel'] === 'Wrong Pipeline Messages with Diff') {
+				$scope.createErrorMessagesForDiff($('#test-details-body'), element, test.name, index);
+				return;
+			}
+
 			var properties = $scope.messageDisplayProperties(element);
 
 			var header = (properties["header"] !== "") ? '<div class="panel-heading">' + properties["header"] + '</div>' : '';
