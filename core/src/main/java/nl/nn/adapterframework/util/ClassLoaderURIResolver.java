@@ -47,19 +47,19 @@ public class ClassLoaderURIResolver implements URIResolver {
 		String ref1;
 		String ref2=null;
 		String protocol=null;
-		if (href.startsWith("/") || href.contains(":/")) {
+		if (href.startsWith("/") || href.contains(":")) {
 			// href is absolute, search on the full classpath
 			ref1=href;
-			if (href.contains(":/")) {
-				protocol=href.substring(0,href.indexOf(":/"));
+			if (href.contains(":")) {
+				protocol=href.substring(0,href.indexOf(":"));
 			}
 		} else {
 			// href is relative, construct href from base
 			if (base != null && base.contains("/")) {
 				ref1 = base.substring(0, base.lastIndexOf("/") + 1) + href; // This is not the real root of the classpath, as that cannot be determined from the base.
 				ref2 = href; // if ref1 fails, try href on the global classpath
-				if (base.contains(":/")) {
-					protocol=base.substring(0,base.indexOf(":/"));
+				if (base.contains(":")) {
+					protocol=base.substring(0,base.indexOf(":"));
 				}
 			} else {
 				// cannot use base to prefix href

@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.configuration.classloaders.BytesClassLoader;
 
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.log4j.Logger;
@@ -130,11 +131,14 @@ public class ClassUtils {
 		if (resource.startsWith("/")) {
 			resource = resource.substring(1);
 		}
+		if (resource.startsWith(BytesClassLoader.PROTOCOL+":")) {
+			resource=resource.substring((BytesClassLoader.PROTOCOL+":").length());
+		}
 		URL url = classLoader.getResource(resource);
 
 		// then try to get it as a URL
 		if (url == null) {
-			if (resource.contains(":/")) {
+			if (resource.contains(":")) {
 				String protocol = resource.substring(0, resource.indexOf(":"));
 				if (allowedProtocols != null && !allowedProtocols.isEmpty()) {
 					//log.debug("Could not find resource ["+resource+"] in classloader ["+classLoader+"] now trying via protocol ["+protocol+"]");
