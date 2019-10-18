@@ -699,7 +699,19 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		return commitOnState;
 	}
 
-
+	@IbisDoc({"Determines the transactional behavior while executing the pipeline. "
+	          + "Must be one of (case insensitive):"
+			  + "<ul>"
+	          + "<li><b>Required</b>: Support a current transaction; create a new one if none exists."
+			  + "<li><b>RequiresNew</b>: Always create a new transaction."
+	          + "If a transaction exists it is unclear whether it will be properly suspended and resumed."
+	          + "<li><b>Mandatory</b>: Support a current transaction; throw an exception if no current transaction exists."
+			  + "<li><b>NotSupported</b>: Do not support a current transaction; rather always execute non-transactionally."
+	          + "If a transaction exists, it is unclear whether it will be properly suspended and resumed."
+	          + "<li><b>Supports</b>: Support a current transaction; execute non-transactionally if none exists."
+	          + "Use with care because there are some caveats."
+			  + "<li><b>Never</b>: Do not support a current transaction; throw an exception if a current transaction exists."
+	          + "</ul>"})
 	public void setTransactionAttribute(String attribute) throws ConfigurationException {
 		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
 		if (transactionAttribute<0) {
