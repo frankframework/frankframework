@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.validation.ClassLoaderXmlEntityResolver;
 
 /**
  * Resolve URIs used in document(), xsl:import, and xsl:include.

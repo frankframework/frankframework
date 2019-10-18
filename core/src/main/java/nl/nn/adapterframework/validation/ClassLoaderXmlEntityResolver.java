@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.xml;
+package nl.nn.adapterframework.validation;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,14 +23,17 @@ import java.net.URL;
 import nl.nn.adapterframework.configuration.classloaders.BytesClassLoader;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.xml.ClassLoaderURIResolver;
 
 import org.apache.log4j.Logger;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
+import org.xml.sax.InputSource;
 
 /**
+ * Xerces native EntityResolver. Appears to be only used in XercesXmlValidator currently.
  * @author Jaco de Groot
  * @see ClassLoaderURIResolver
  */
@@ -43,8 +46,8 @@ public class ClassLoaderXmlEntityResolver implements XMLEntityResolver {
 	}
 
 	@Override
-	public XMLInputSource resolveEntity(XMLResourceIdentifier resourceIdentifier)
-			throws XNIException, IOException {
+	public XMLInputSource resolveEntity(XMLResourceIdentifier resourceIdentifier) throws XNIException, IOException {
+		if (log.isDebugEnabled()) log.debug("resolveEntity publicId ["+resourceIdentifier.getPublicId()+"] expandedSystemId ["+resourceIdentifier.getExpandedSystemId()+"] literalSystemId ["+resourceIdentifier.getLiteralSystemId()+"] namespace ["+resourceIdentifier.getNamespace()+"]");
 		String systemId = resourceIdentifier.getExpandedSystemId();
 		if (resourceIdentifier.getBaseSystemId() == null
 				&& resourceIdentifier.getExpandedSystemId() == null
@@ -73,22 +76,16 @@ public class ClassLoaderXmlEntityResolver implements XMLEntityResolver {
 		// standard url's but for our custom class loader we need to do it
 		// manually.
 		URL url = null;
-		if (systemId.startsWith(BytesClassLoader.PROTOCOL + ":")) {
-			systemId = systemId.substring(BytesClassLoader.PROTOCOL.length() + 1);
+		try {
 			url = ClassUtils.getResourceURL(classLoader, systemId);
-			if (url == null) {
-				String message = "Cannot get resource for systemId '" + systemId + "'";
-				log.warn(message);
-				throw new IOException(message);
+			if (url==null) {
+				log.error("cannot find resource for entity [" + systemId + "]");
+				return null;
 			}
-		} else {
-			try {
-				url = new URL(systemId);
-			} catch(MalformedURLException e) {
-				String message = "Cannot convert systemId '"  + systemId + "' to URL";
-				log.warn(message);
-				throw new IOException(message);
-			}
+		} catch (Exception e) {
+			log.error("Exception resolving entity [" + systemId + "]",e);
+			// No action; just let the null InputSource pass through
+			return null;
 		}
 		InputStream inputStream = url.openStream();
 		return new XMLInputSource(null, resourceIdentifier.getExpandedSystemId(), null, inputStream, null);

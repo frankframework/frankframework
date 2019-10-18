@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.xml;
+package nl.nn.adapterframework.util;
 import java.io.IOException;
 import java.net.URL;
 
@@ -22,14 +22,9 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
-
 /**
- * @author Frits Berger RSD SF OJM
  * @see org.xml.sax.EntityResolver
- * This class offers the resolveEntity method to resolve a systemId to
- * a resource on the classpath.
+ * This class offers the resolveEntity method to resolve a systemId to a resource on the classpath.
  * @since 4.1.1
  */
 
@@ -50,20 +45,20 @@ public class ClassPathEntityResolver implements EntityResolver {
 		String classPathEntityUrl = systemId;
 	
 		// strip any file info from systemId 
-		int idx = classPathEntityUrl.lastIndexOf("/");
-		if (idx >= 0) {
-			classPathEntityUrl = classPathEntityUrl.substring(idx + 1);
-		}
+//		int idx = classPathEntityUrl.lastIndexOf("/");
+//		if (idx >= 0) {
+//			classPathEntityUrl = classPathEntityUrl.substring(idx + 1);
+//		}
+		log.debug("Resolving [" + classPathEntityUrl+"]");
 		try {
-			log.debug("Resolving [" + systemId + "] to [" + classPathEntityUrl+"]");
 			URL url = ClassUtils.getResourceURL(classLoader, classPathEntityUrl);
 			if (url==null) {
-				log.error("cannot find resource for ClassPathEntity [" + systemId + "] from Url [" + classPathEntityUrl+"]");
+				log.error("cannot find resource for entity [" + classPathEntityUrl + "]");
 				return null;
 			}
 			inputSource = new InputSource(url.openStream());
 		} catch (Exception e) {
-			log.error("Exception resolving ClassPathEntity [" + systemId + "] to [" + classPathEntityUrl+"]",e);
+			log.error("Exception resolving entity [" + classPathEntityUrl + "]",e);
 			// No action; just let the null InputSource pass through
 		}
 
