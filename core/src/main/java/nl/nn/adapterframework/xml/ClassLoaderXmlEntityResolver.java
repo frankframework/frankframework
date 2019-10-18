@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.validation;
+package nl.nn.adapterframework.xml;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,7 +23,6 @@ import java.net.URL;
 import nl.nn.adapterframework.configuration.classloaders.BytesClassLoader;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.xml.ClassLoaderURIResolver;
 
 import org.apache.log4j.Logger;
 import org.apache.xerces.xni.XMLResourceIdentifier;

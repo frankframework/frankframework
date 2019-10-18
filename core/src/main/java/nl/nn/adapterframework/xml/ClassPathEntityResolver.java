@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.util;
+package nl.nn.adapterframework.xml;
 import java.io.IOException;
 import java.net.URL;
 
@@ -21,6 +21,9 @@ import org.apache.log4j.Logger;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * @see org.xml.sax.EntityResolver

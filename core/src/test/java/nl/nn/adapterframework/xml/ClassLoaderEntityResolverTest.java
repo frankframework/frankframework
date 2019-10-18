@@ -13,7 +13,6 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
-import nl.nn.adapterframework.util.ClassPathEntityResolver;
 
 public class ClassLoaderEntityResolverTest {
 
