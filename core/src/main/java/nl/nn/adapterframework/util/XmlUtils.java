@@ -99,7 +99,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
 import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
-import nl.nn.adapterframework.xml.ClassPathEntityResolver;
+import nl.nn.adapterframework.xml.ClassLoaderEntityResolver;
 import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
 import nl.nn.adapterframework.xml.SaxException;
 
@@ -1677,7 +1677,7 @@ public class XmlUtils {
 			DocumentBuilderFactory factory = getDocumentBuilderFactory();
 			Document document;
 			DocumentBuilder builder = factory.newDocumentBuilder();
-			builder.setEntityResolver(new ClassPathEntityResolver(classLoader));
+			builder.setEntityResolver(new ClassLoaderEntityResolver(classLoader));
 			StringReader sr = new StringReader(input);
 			InputSource src = new InputSource(sr);
 			document = builder.parse(src);
