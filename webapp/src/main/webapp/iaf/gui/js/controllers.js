@@ -1561,9 +1561,13 @@ angular.module('iaf.beheerconsole')
 					$scope.tests[testIndex]["directory"] = element["messages"]["directory"] ? element["messages"]["directory"] : $scope.tests[testIndex]["directory"];
 				}
 			}else if(element["logLevel"] === "Total" && !$scope.file) {
-				Poller.remove("LarvaMessagePoller");
+				if (Poller.get("LarvaMessagePoller")) {
+					Poller.remove("LarvaMessagePoller");
+				}
 				console.log("Stop Poller.");
-				$scope.addDisplayMessage("panel-info", element["messages"]["Message"]);
+				$scope.addDisplayMessage(
+					(element["messages"]["Message"].includes("failed")) ? "panel-danger" : "panel-info",
+					element["messages"]["Message"]);
 			}
 
 			if(!$scope.messages[element["name"]]){
@@ -1632,6 +1636,9 @@ angular.module('iaf.beheerconsole')
 		fd.append("rootDirectory", $scope.formRootDirectories);
 
 		var success = function() {
+			$scope.lastMessageArrived = 0;
+			$scope.messages = {};
+			$scope.tests = [];
 			console.log("Started testing with success.");
 			$scope.startPolling();
 		};
@@ -1655,7 +1662,7 @@ angular.module('iaf.beheerconsole')
 			$scope.addDisplayMessage("danger", "You need to select a json file!");
 
 		var fileReader = new FileReader();
-		fileReader.onload = (e) => {
+		fileReader.onload = function(e) {
 			console.log(fileReader.result);
 			var fileData= JSON.parse(fileReader.result);
 			console.log(fileData);
@@ -1669,17 +1676,104 @@ angular.module('iaf.beheerconsole')
 		fileReader.readAsText(this.file);
 	};
 
+	$scope.diff_lineMode = function (text1, text2) {
+		var dmp = new diff_match_patch();
+		var a = dmp.diff_linesToChars_(text1, text2);
+		var lineText1 = a.chars1;
+		var lineText2 = a.chars2;
+		var lineArray = a.lineArray;
+		var diffs = dmp.diff_main(lineText1, lineText2, false);
+		dmp.diff_charsToLines_(diffs, lineArray);
+		return diffs;
+	}
+
+	$scope.diff2text = function(diff) {
+		var current = 0;
+		var text = "";
+		diff.forEach(function (word) {
+			if (word[0] === current) {
+				text += word[1];
+				return;
+			}
+			if(current !== 0)
+				text += '</span>';
+			current = word[0];
+			var textClass = "";
+			switch (word[0]) {
+				case 1:
+					textClass = "bg-success";
+					break;
+				case -1:
+					textClass = "bg-danger";
+					break;
+			}
+			if(word[0] !== 0)
+				text += '<span class="' + textClass + '">';
+			text += word[1];
+		});
+		return text;
+	}
+
+	$scope.messageDisplayProperties = function(message) {
+		var panelClass = "panel-default";
+		var bodyText = "";
+		var headerText = "";
+		switch (message["logLevel"]) {
+			case "Debug":
+				bodyText = message["messages"]["Message"];
+				break;
+			case "Step Passed/Failed":
+			case "Scenario Passed/Failed":
+				headerText = message["messages"]["Message"];
+				panelClass = (message["messages"]["Message"].includes("pass")) ? "panel-info" : "panel-danger";
+				break;
+			case "Pipeline Messages Prepared For Diff":
+			case "Pipeline Messages":
+				headerText = (message["messages"]["Step Display Name"]) ? message["messages"]["Step Display Name"] : message["messages"]["Message"];
+				bodyText = message["messages"]["Pipeline Message"];
+				break;
+			case "Wrong Pipeline Messages":
+				var dmp = new diff_match_patch();
+				var pipelineMessage = message["messages"]["Pipeline Message"] ? message["messages"]["Pipeline Message"] : "";
+				var expectedMessage = message["messages"]["Pipeline Message Expected"] ? message["messages"]["Pipeline Message Expected"] : "";
+				var diff = $scope.diff_lineMode(pipelineMessage, expectedMessage);
+				bodyText = $scope.diff2text(diff);
+				panelClass = "panel-danger";
+				headerText = (message["messages"]["Step Display Name"]) ? message["messages"]["Step Display Name"] : "";
+				//bodyText = message["messages"]["Pipeline Message"] + "\n ___________ EXPECTED: \n" + message["messages"]["Pipeline Message Expected"];
+				break;
+			case "Scenario Failed":
+				panelClass = "panel-danger";
+				headerText = message["messages"]["Message"]
+				break;
+			default:
+				bodyText = JSON.stringify(message);
+		}
+		var properties = {"class": panelClass, "header": jQuery('<div />').text(headerText).html(), "body": jQuery('<div />').text(bodyText).html()};
+
+		// Escape span for diff from escape.
+		if(message["logLevel"] === "Wrong Pipeline Messages") {
+			properties['body'] = properties['body'].replace(/\&lt\;span class\=\"(\w+)-(\w+)\"&gt\;/g, '<span class=\"$1-$2\">');
+			properties['body'] = properties['body'].replace(/&lt;\/span&gt;/g, "</span>");
+		}
+		return properties;
+	};
+
 	$scope.testDetails = function (test) {
 		$('#modalTestTitle').text(test.name);
 		$('#test-details-body').empty();
-		$scope.messages[test.name].forEach(function(element) {
-			var header = "";
-			if(element.hasOwnProperty("Step Display Name") && element["Step Display Name"] !== ""){
-				header = '<div class="panel-heading>"' + element["Step Display Name"] + '</div>';
-			}
-			$('#test-details-body').append(
-				'<div class="panel panel-default">' + header +
-				'<div class="panel-body>' + JSON.stringify(element) + '</div></div>');
+		var messages2display = $scope.messages[test.name];
+		messages2display.sort(function(a,b) {
+			a["timestamp"] - b["timestamp"];
+		});
+		messages2display.forEach(function(element) {
+			if(["Total", "Test Properties", ""].indexOf(element["logLevel"]) > -1)	return;
+			var properties = $scope.messageDisplayProperties(element);
+
+			var header = (properties["header"] !== "") ? '<div class="panel-heading">' + properties["header"] + '</div>' : '';
+			var body = (properties["body"] !== "") ? '<div class="panel-body"><pre lang="xml">' + properties["body"] + '</pre></div>' : '';
+
+			$('#test-details-body').append('<div class="panel ' + properties['class'] + '">' + header + body + '</div>');
 		});
 		$('#test-details').modal();
 	};

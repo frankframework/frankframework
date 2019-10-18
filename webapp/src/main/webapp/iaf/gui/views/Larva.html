@@ -1,3 +1,9 @@
+<style>
+    /*TODO: move this block.*/
+    .modal-dialog {
+        width: 65%;
+    }
+</style>
 <div class="wrapper wrapper-content animated fadeInRight" ng-controller="LarvaCtrl">
     <div class="row">
 <!--        Form to execute tests..-->
@@ -125,8 +131,12 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
-                <div class="panel-group" id="test-details-body">
+            <div class="modal-body"  id="test-details-body" >
+                <div class="panel panel-default">
+                    <div class="panel-heading">Heading</div>
+                    <div class="panel-body">Body</div>
+                </div>
+                <div class="panel-group">
 <!--                To be populated when any of the row is clicked-->
                 </div>
             </div>
