@@ -64,7 +64,7 @@ public class ClassLoaderXmlEntityResolver implements XMLEntityResolver {
 		}
 		if (systemId.length() == 0 || systemId.equals(BytesClassLoader.PROTOCOL + ":")) {
 			String message = "Cannot resolve entity with empty systemId";
-			log.warn(message);
+			log.warn(message); // TODO remove this warning, when sure IOException is properly logged
 			throw new IOException(message);
 		}
 		// Apparently the resource was already resolved to a URL as the
@@ -76,13 +76,14 @@ public class ClassLoaderXmlEntityResolver implements XMLEntityResolver {
 		try {
 			url = ClassUtils.getResourceURL(classLoader, systemId);
 			if (url==null) {
-				log.error("cannot find resource for entity [" + systemId + "]");
-				return null;
+				String message = "cannot find resource for entity [" + systemId + "]";
+				log.warn(message); // TODO remove this warning, when sure IOException is properly logged
+				throw new IOException(message);
 			}
 		} catch (Exception e) {
-			log.error("Exception resolving entity [" + systemId + "]",e);
-			// No action; just let the null InputSource pass through
-			return null;
+			String message = "Exception resolving entity [" + systemId + "]";
+			log.warn(message,e); // TODO remove this warning, when sure IOException is properly logged
+			throw new IOException(message,e);
 		}
 		InputStream inputStream = url.openStream();
 		return new XMLInputSource(null, resourceIdentifier.getExpandedSystemId(), null, inputStream, null);

@@ -51,7 +51,7 @@ public class ClassLoaderEntityResolver implements EntityResolver {
 		// strip any file info from systemId 
 		int idx = systemId.lastIndexOf("/");
 		if (idx >= 0) {
-			ref2 = systemId.substring(idx + 1); // this appear to be necessary to load configurations
+			ref2 = systemId.substring(idx + 1); // this appears to be necessary to load configurations
 		}
 		log.debug("Resolving [" + ref1 +"]");
 		try {
