@@ -87,6 +87,28 @@ public class ClassLoaderURIResolverTest {
 	}
 
 	@Test
+	public void bytesClassPathRelativeWithScheme() throws TransformerException, IOException, ConfigurationException {
+		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
+
+		URL file = this.getClass().getResource("/classLoader-test.zip");
+		assertNotNull("jar url not found", file);
+		JarFile jarFile = new JarFile(file.getFile());
+		assertNotNull("jar file not found",jarFile);
+
+		JarFileClassLoader cl = new JarFileClassLoader(localClassLoader);
+		cl.setJar(file.getFile());
+		cl.configure(null, "");
+
+		URL xslt = ClassUtils.getResourceURL(cl, "/Xslt/root.xsl");
+		assertNotNull("root.xsl not found", xslt);
+
+		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(cl);
+
+		Source source = resolver.resolve("bytesclassloader:Xslt/names.xsl", xslt.toString());
+		assertNotNull(source);
+	}
+
+	@Test
 	public void bytesClassPathBaseAndResourceFromLocalClasspathAbsolute() throws TransformerException, IOException, ConfigurationException {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 

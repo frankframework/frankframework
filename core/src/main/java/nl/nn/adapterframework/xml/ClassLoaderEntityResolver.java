@@ -31,11 +31,11 @@ import nl.nn.adapterframework.util.LogUtil;
  * @since 4.1.1
  */
 
-public class ClassPathEntityResolver implements EntityResolver {
+public class ClassLoaderEntityResolver implements EntityResolver {
 	protected Logger log = LogUtil.getLogger(this);
 	private ClassLoader classLoader;
 
-	public ClassPathEntityResolver(ClassLoader classLoader) {
+	public ClassLoaderEntityResolver(ClassLoader classLoader) {
 		this.classLoader = classLoader;
 	}
 	/**
