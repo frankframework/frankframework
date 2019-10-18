@@ -45,23 +45,28 @@ public class ClassPathEntityResolver implements EntityResolver {
 	public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
 		InputSource inputSource = null;
 
-		String classPathEntityUrl = systemId;
-	
+		String ref1 = systemId;
+		String ref2=null;
+
 		// strip any file info from systemId 
-//		int idx = classPathEntityUrl.lastIndexOf("/");
-//		if (idx >= 0) {
-//			classPathEntityUrl = classPathEntityUrl.substring(idx + 1);
-//		}
-		log.debug("Resolving [" + classPathEntityUrl+"]");
+		int idx = systemId.lastIndexOf("/");
+		if (idx >= 0) {
+			ref2 = systemId.substring(idx + 1); // this appear to be necessary to load configurations
+		}
+		log.debug("Resolving [" + ref1 +"]");
 		try {
-			URL url = ClassUtils.getResourceURL(classLoader, classPathEntityUrl);
+			URL url = ClassUtils.getResourceURL(classLoader, ref1);
+			if (url==null && ref2!=null) {
+				log.warn("could not get entity via ["+ref1+"], now trying  via ["+ref2+"]");
+				url = ClassUtils.getResourceURL(classLoader, ref2);
+			}
 			if (url==null) {
-				log.error("cannot find resource for entity [" + classPathEntityUrl + "]");
+				log.error("cannot find resource for entity [" + ref1 + "]"+(ref2==null?"":" or [" + ref2 + "]"));
 				return null;
 			}
 			inputSource = new InputSource(url.openStream());
 		} catch (Exception e) {
-			log.error("Exception resolving entity [" + classPathEntityUrl + "]",e);
+			log.error("Exception resolving entity [" + ref1 + "]"+(ref2==null?"":" or [" + ref2 + "]"),e);
 			// No action; just let the null InputSource pass through
 		}
 
