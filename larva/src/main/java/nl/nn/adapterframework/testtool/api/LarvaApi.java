@@ -200,17 +200,23 @@ public class LarvaApi {
 
     /**
      * Returns the scenarios in a given directory.
-     * @param rootDirectory Directory to start the search from.
+     * @param input JSON object containing the directory to start the search from.
      * @return List of scenarios in the given directory.
      */
-    @GET
+    @POST
     @RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-    @Path("/larva/scenarios/{rootDirectory}")
+    @Path("/larva/scenarios/")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response getScenarios(@PathParam("rootDirectory") String rootDirectory){
+    public Response getScenarios(Map<String, Object> input){
         getContext();
-        Map<String, Object> list = getScenarioList(rootDirectory, TestTool.getAppConstants(ibisContext), null);
-        return Response.status(Response.Status.OK).entity(list).build();
+        String rootDirectory = input.get("rootDirectory").toString();
+        System.out.println(rootDirectory);
+        Map<String, Object> list = getScenarioList(rootDirectory, TestTool.getAppConstants(ibisContext), realPath);
+        if(list.size() == 0) {
+           return Response.status(Response.Status.NO_CONTENT).build();
+        }
+
+        return Response.status(Response.Status.OK).entity(new JSONObject(list).toString()).build();
     }
 
     /**
