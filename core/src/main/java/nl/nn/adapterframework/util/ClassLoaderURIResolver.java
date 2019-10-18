@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.util;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.xml.transform.Source;
@@ -24,15 +23,15 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.stream.StreamSource;
 
-import nl.nn.adapterframework.configuration.classloaders.BytesClassLoader;
-import nl.nn.adapterframework.validation.ClassLoaderXmlEntityResolver;
-
 import org.apache.log4j.Logger;
+
+import nl.nn.adapterframework.validation.ClassLoaderXmlEntityResolver;
 
 /**
  * Resolve URIs used in document(), xsl:import, and xsl:include.
  * 
  * @author Jaco de Groot
+ * @author Gerrit van Brakel
  * @see ClassLoaderXmlEntityResolver
  */
 public class ClassLoaderURIResolver implements URIResolver {
@@ -40,40 +39,56 @@ public class ClassLoaderURIResolver implements URIResolver {
 	private ClassLoader classLoader;
 
 	ClassLoaderURIResolver(ClassLoader classLoader) {
+		if (log.isDebugEnabled()) log.debug("ClassLoaderURIResolver init with classloader ["+classLoader+"]");
 		this.classLoader = classLoader;
 	}
 
+	@Override
 	public Source resolve(String href, String base) throws TransformerException {
-		String absoluteHref = href;
-		if (base != null && base.contains("/")) {
-			absoluteHref = base.substring(0, base.lastIndexOf("/") + 1) + href;
-		}
-		// Convert String to URL which the JVM is able to do for standard url's
-		// but for our custom class loader we need to do it manually.
-		URL url = null;
-		if (absoluteHref.startsWith(BytesClassLoader.PROTOCOL + ":")) {
-			url = ClassUtils.getResourceURL(classLoader,
-					absoluteHref.substring(BytesClassLoader.PROTOCOL.length() + 1));
-			if (url == null) {
-				String message = "Cannot get resource for href '" + href + "' with base '" + base + "'";
-				log.warn(message);
-				throw new TransformerException(message);
+		String ref1;
+		String ref2=null;
+		String protocol=null;
+		if (href.startsWith("/") || href.contains(":")) {
+			// href is absolute, search on the full classpath
+			ref1=href;
+			if (href.contains(":")) {
+				protocol=href.substring(0,href.indexOf(":"));
 			}
 		} else {
-			try {
-				url = new URL(absoluteHref);
-			} catch(MalformedURLException e) {
-				String message = "Cannot convert href '" + href + "' with base '" + base + "' to URL";
-				log.warn(message);
-				throw new TransformerException(message);
+			// href is relative, construct href from base
+			if (base != null && base.contains("/")) {
+				ref1 = base.substring(0, base.lastIndexOf("/") + 1) + href;
+				ref2 = href; // if ref1 fails, try href on the global classpath
+				if (base.contains(":")) {
+					protocol=base.substring(0,base.indexOf(":"));
+				}
+			} else {
+				// cannot use base to prefix href
+				ref1=href;
 			}
 		}
+
+		String ref=ref1;
+		URL url = ClassUtils.getResourceURL(classLoader, ref, protocol);
+		if (url==null && ref2!=null) {
+			log.debug("Could not resolve href ["+href+"] base ["+base+"] as ["+ref+"], now trying ref2 ["+ref2+"] protocol ["+protocol+"]");
+			ref=ref2;
+			url = ClassUtils.getResourceURL(classLoader, ref, protocol);
+		}
+		if (url==null) {
+			String message = "Cannot get resource for href [" + href + "] with base [" + base + "] as ref ["+ref+"]" +(ref2==null?"":" nor as ref ["+ref1+"]")+" protocol ["+protocol+"] classloader ["+classLoader+"]";
+			log.warn(message);
+			throw new TransformerException(message);
+		}
+		log.debug("resolved href ["+href+"] base ["+base+"] to ["+url+"]");
+		
 		try {
-			StreamSource streamSource = new StreamSource(url.openStream(), absoluteHref);
+			StreamSource streamSource = new StreamSource(url.openStream(), ref);
 			return streamSource;
 		} catch (IOException e) {
 			throw new TransformerException(e);
 		}
 	}
 
+	
 }

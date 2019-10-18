@@ -28,7 +28,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
 public abstract class BytesClassLoader extends ClassLoaderBase {
-	public static String PROTOCOL = "bytesclassloader";
+	public static final String PROTOCOL = "bytesclassloader";
 	protected Logger log = LogUtil.getLogger(this);
 	protected Map<String, byte[]> resources = new HashMap<String, byte[]>();
 
