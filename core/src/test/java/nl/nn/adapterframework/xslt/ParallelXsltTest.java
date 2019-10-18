@@ -130,8 +130,18 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 		if (expectExtraParamWarning) assertThat(testAppender.toString(),containsString("are not available for use by nested Senders"));
 	}
 
+	@Override
 	@Ignore("test fails in parallel")
 	public void documentIncludedInSourceNotFoundXslt2() throws Exception {
+	}
+	
+	@Override
+	@Ignore("test fails in parallel")
+	public void documentIncludedInSourceXslt1() throws Exception {
+	}
+	@Override
+	@Ignore("test fails in parallel")
+	public void documentIncludedInSourceXslt2() throws Exception {
 	}
 	
 	@Override
@@ -150,15 +160,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 		super.duplicateImportErrorAlertsXslt2();
 	}
 	
-	@Test
-    @Ignore("error handling is different in parallel")
-	public void documentNotFoundXslt1() throws Exception {
-	}
-	@Test
-    @Ignore("error handling is different in parallel")
-	public void documentNotFoundXslt2() throws Exception {
-	}
-	
+
 	@Override
 	protected void setStyleSheetName(String styleSheetName) {
 		for (XsltSender sender:xsltSenders) {

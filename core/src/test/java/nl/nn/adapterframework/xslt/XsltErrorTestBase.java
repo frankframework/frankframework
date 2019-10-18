@@ -184,12 +184,12 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 
 	@Test
 	public void documentIncludedInSourceNotFoundXslt1() throws Exception {
-		setStyleSheetName("/Xslt/documentNotFound/root.xsl");
+		setStyleSheetName("/Xslt/importDocument/importNotFound1.xsl");
 		setXslt2(false);
 		setIndent(true);
 		pipe.configure();
 		pipe.start();
-		String input = TestFileUtils.getTestFile("/Xslt/documentNotFound/in.xml");
+		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
 		String errorMessage = null;
 		try {
 			doPipe(pipe, input, session);
@@ -210,11 +210,11 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	@Test
 	public void documentIncludedInSourceNotFoundXslt2() throws Exception {
 		// error not during configure(), but during doPipe()
-		setStyleSheetName("/Xslt/documentNotFound/root2.xsl");
+		setStyleSheetName("/Xslt/importDocument/importNotFound2.xsl");
 		setXslt2(true);
 		pipe.configure();
 		pipe.start();
-		String input = TestFileUtils.getTestFile("/Xslt/documentNotFound/in.xml");
+		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
 		String errorMessage = null;
 		try {
 			doPipe(pipe, input, session);

@@ -20,6 +20,7 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.TestAssertions;
 
 public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPipeTestBase<P> {
 	
@@ -165,6 +166,72 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	@Test
 	public void testBasicNoOmitNoIndent() throws Exception {
 		testBasic("<root><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a><b/><c/></root>",false,false);
+	}
+
+	@Test
+	public void documentIncludedInSourceRelativeXslt1() throws Exception {
+		setStyleSheetName("/Xslt/importDocument/importLookupRelative1.xsl");
+		setXslt2(false);
+		setRemoveNamespaces(true);
+		setIndent(true);
+		pipe.configure();
+		pipe.start();
+		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String result = prr.getResult().toString();
+		
+		TestAssertions.assertEqualsIgnoreWhitespaces(expected, result);
+	}
+
+	@Test
+	public void documentIncludedInSourceRelativeXslt2() throws Exception {
+		setStyleSheetName("/Xslt/importDocument/importLookupRelative2.xsl");
+		setXslt2(false);
+		setRemoveNamespaces(true);
+		setIndent(true);
+		pipe.configure();
+		pipe.start();
+		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String result = prr.getResult().toString();
+		
+		TestAssertions.assertEqualsIgnoreWhitespaces(expected, result);
+	}
+
+	@Test
+	public void documentIncludedInSourceAbsoluteXslt1() throws Exception {
+		setStyleSheetName("/Xslt/importDocument/importLookupAbsolute1.xsl");
+		setXslt2(false);
+		setRemoveNamespaces(true);
+		setIndent(true);
+		pipe.configure();
+		pipe.start();
+		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String result = prr.getResult().toString();
+		
+		TestAssertions.assertEqualsIgnoreWhitespaces(expected, result);
+	}
+
+	@Test
+	public void documentIncludedInSourceAbsoluteXslt2() throws Exception {
+		setStyleSheetName("/Xslt/importDocument/importLookupAbsolute2.xsl");
+		setXslt2(false);
+		setRemoveNamespaces(true);
+		setIndent(true);
+		pipe.configure();
+		pipe.start();
+		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String result = prr.getResult().toString();
+		
+		TestAssertions.assertEqualsIgnoreWhitespaces(expected, result);
 	}
 
 }
