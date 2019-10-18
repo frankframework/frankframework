@@ -414,7 +414,7 @@ public class SenderController {
 	 * @param fileContent Content of the file that contains expected result.
 	 * @return 1 if no problems, 0 if error has occurred, 2 if it has been autosaved.
 	 */
-	public static int executeSenderRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, String queueName, String senderType, String fileName, String fileContent) {
+	public static int executeSenderRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, String queueName, String senderType, String fileName, String fileContent, String originalFilePath) {
 		int result = TestTool.RESULT_ERROR;
 		String testName = properties.getProperty("scenario.description");
 	
@@ -438,7 +438,7 @@ public class SenderController {
 						if ("".equals(fileName)) {
 							MessageListener.debugPipelineMessage(testName, stepDisplayName, "Unexpected message read from '" + queueName + "':", message);
 						} else {
-							result = ResultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName);
+							result = ResultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName, originalFilePath);
 						}
 					}
 				} else {

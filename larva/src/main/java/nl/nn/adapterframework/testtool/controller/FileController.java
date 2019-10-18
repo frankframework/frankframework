@@ -266,7 +266,7 @@ public class FileController {
 	 * @param fileContent Content of the file that contains expected result.
 	 * @return 1 if everything is ok, 0 if there has been an error.
 	 */
-	public static int executeListenerRead(String testName, String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, String queueName, String fileName, String fileContent) {
+	public static int executeListenerRead(String testName, String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, String queueName, String fileName, String fileContent, String  originalFilePath) {
 		int result = TestTool.RESULT_ERROR;
 		Map<?, ?> fileListenerInfo = (Map<?, ?>)queues.get(queueName);
 		FileListener fileListener = (FileListener)fileListenerInfo.get("fileListener");
@@ -285,7 +285,7 @@ public class FileController {
 				MessageListener.errorMessage(testName, "Could not read file (null returned)");
 			}
 		} else {
-			result = ResultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName);
+			result = ResultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName, originalFilePath);
 		}
 		return result;	
 	}
@@ -301,7 +301,7 @@ public class FileController {
 	 * @param fileContent Content of the file that contains expected result.
 	 * @return 1 if everything is ok, 0 if there has been an error.
 	 */
-	public static int executeSenderRead(String testName, String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, String queueName, String fileName, String fileContent) {
+	public static int executeSenderRead(String testName, String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, String queueName, String fileName, String fileContent, String originalFilePath) {
 		int result = TestTool.RESULT_ERROR;
 		Map<?, ?> fileSenderInfo = (Map<?, ?>)queues.get(queueName);
 		FileSender fileSender = (FileSender)fileSenderInfo.get("fileSender");
@@ -320,7 +320,7 @@ public class FileController {
 				MessageListener.errorMessage(testName, "Could not read file (null returned)");
 			}
 		} else {
-			result = ResultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName);
+			result = ResultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName, originalFilePath);
 		}
 		return result;	
 	}

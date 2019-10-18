@@ -314,7 +314,7 @@ public class JmsController {
 	 * @param fileContent expected output.
 	 * @return 1 if everything is ok, 0 if there has been an error, 2 if autosaved.
 	 */
-	public static int read(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, String queueName, String fileName, String fileContent) {
+	public static int read(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, String queueName, String fileName, String fileContent, String originalFilePath) {
 		int result = TestTool.RESULT_ERROR;
 		String testName = properties.getProperty("scenario.description");
 
@@ -351,7 +351,7 @@ public class JmsController {
 				MessageListener.errorMessage(testName, "Could not read jms message (null returned)");
 			}
 		} else {
-			result = ResultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName);
+			result = ResultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName, originalFilePath);
 		}
 
 		return result;	

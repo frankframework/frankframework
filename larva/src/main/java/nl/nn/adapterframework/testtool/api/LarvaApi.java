@@ -228,6 +228,32 @@ public class LarvaApi {
         return Response.status(Response.Status.OK).entity(new JSONObject(list).toString()).build();
     }
 
+    @POST
+    @RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+    @Path("/larva/save/")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response savePipelineMessage(Map<String, Object> input) {
+        String filePath, content;
+        try {
+            filePath = input.get("filepath").toString();
+            content = input.get("content").toString();
+            System.out.println("Got filepath " + filePath);
+            System.out.println("Got content " + content);
+            if(filePath == null || content == null)
+                return Response.status(Response.Status.BAD_REQUEST).build();
+        }catch (ClassCastException e) {
+            logger.error(e.getMessage());
+            throw new ApiException("Error getting the parameters: " + e.getMessage());
+        }
+        try {
+            TestTool.writeFile(filePath, content);
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+            throw new ApiException("Error saving the pipeline message: " + e.getMessage());
+        }
+        return Response.status(Response.Status.OK).build();
+    }
+
     /**
      * Returns the scenarios found and the root directory they were found in. If rootDirectory is null, it will search for root directories.
      * @param rootDirectory Directory to get the scenarios from.

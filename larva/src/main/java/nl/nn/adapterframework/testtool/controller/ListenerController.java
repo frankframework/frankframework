@@ -236,7 +236,7 @@ public class ListenerController {
 	 * @param properties properties defined by scenario file and global app constants.
 	 * @return 0 if no problems, 1 if error has occurred, 2 if it has been autosaved.
 	 */
-	public static int executeXsltProviderListenerWrite(String step, String stepDisplayName, Map<String, Map<String, Object>> queues, String queueName, String fileName, String fileContent, Properties properties) {
+	public static int executeXsltProviderListenerWrite(String step, String stepDisplayName, Map<String, Map<String, Object>> queues, String queueName, String fileName, String fileContent, Properties properties, String  originalFilePath) {
 		String testName = properties.getProperty("scenario.description");
 		int result = TestTool.RESULT_ERROR;
 		Map<?, ?> xsltProviderListenerInfo = (Map<?, ?>)queues.get(queueName);
@@ -249,7 +249,7 @@ public class ListenerController {
 				MessageListener.errorMessage(testName, "Could not read result (null returned)");
 			}
 		} else {
-			result = ResultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName);
+			result = ResultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName, originalFilePath);
 		}
 		return result;
 	}

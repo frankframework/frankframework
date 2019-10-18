@@ -206,7 +206,7 @@ public class WebServiceController {
 	 * @param fileContent Content of the file that contains expected result.
 	 * @return 0 if no problems, 1 if error has occurred, 2 if it has been autosaved.
 	 */
-	public static int read(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, String queueName, String fileName, String fileContent) {
+	public static int read(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, String queueName, String fileName, String fileContent, String  originalFilePath) {
 		int result = TestTool.RESULT_ERROR;
 		String testName = properties.getProperty("scenario.description");
 		Map listenerInfo = (Map)queues.get(queueName);
@@ -230,7 +230,7 @@ public class WebServiceController {
 				if ("".equals(fileName)) {
 					MessageListener.debugPipelineMessage(testName, stepDisplayName, "Unexpected message read from '" + queueName + "':", message);
 				} else {
-					result = ResultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName);
+					result = ResultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName, originalFilePath);
 					if (result!=TestTool.RESULT_OK) {
 						// Send a clean up reply because there is probably a
 						// thread waiting for a reply

@@ -31,7 +31,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class ResultComparer {
 
-	public static int compareResult(String step, String stepDisplayName, String fileName, String expectedResult, String actualResult, Properties properties, String queueName) {
+	public static int compareResult(String step, String stepDisplayName, String fileName, String expectedResult, String actualResult, Properties properties, String queueName, String originalFilePath) {
 		int ok = TestTool.RESULT_ERROR;
 		String testName = properties.getProperty("scenario.description");
 		String printableExpectedResult = XmlUtils.replaceNonValidXmlCharacters(expectedResult);
@@ -303,8 +303,8 @@ public class ResultComparer {
 					message = "Exception during XML diff: " + diffException.getMessage();
 					MessageListener.errorMessage(testName, "Exception during XML diff: ", diffException);
 				}
-				MessageListener.wrongPipelineMessage(testName, stepDisplayName, message, printableActualResult, printableExpectedResult);
-				MessageListener.wrongPipelineMessagePreparedForDiff(testName, stepDisplayName, preparedActualResult, preparedExpectedResult);
+				MessageListener.wrongPipelineMessage(testName, stepDisplayName, message, printableActualResult, printableExpectedResult, originalFilePath);
+				MessageListener.wrongPipelineMessagePreparedForDiff(testName, stepDisplayName, preparedActualResult, preparedExpectedResult, originalFilePath);
 				if (TestTool.autoSaveDiffs) {
 					String filenameAbsolutePath = (String)properties.get(step + ".absolutepath");
 					MessageListener.debugMessage(testName, "Copy actual result to ["+filenameAbsolutePath+"]");
@@ -356,8 +356,8 @@ public class ResultComparer {
 					diffExcpected.append(" ...");
 				}
 				message = message + " actual result is '" + diffActual + "' and expected result is '" + diffExcpected + "'";
-				MessageListener.wrongPipelineMessage(testName, stepDisplayName, message, printableActualResult, printableExpectedResult);
-				MessageListener.wrongPipelineMessagePreparedForDiff(testName, stepDisplayName, preparedActualResult, preparedExpectedResult);
+				MessageListener.wrongPipelineMessage(testName, stepDisplayName, message, printableActualResult, printableExpectedResult, originalFilePath);
+				MessageListener.wrongPipelineMessagePreparedForDiff(testName, stepDisplayName, preparedActualResult, preparedExpectedResult, originalFilePath);
 				if (TestTool.autoSaveDiffs) {
 					String filenameAbsolutePath = (String)properties.get(step + ".absolutepath");
 					MessageListener.debugMessage(testName, "Copy actual result to ["+filenameAbsolutePath+"]");

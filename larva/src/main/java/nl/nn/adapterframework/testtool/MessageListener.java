@@ -29,6 +29,7 @@ public class MessageListener {
 		add("Debug");
 		add("Pipeline Messages Prepared For Diff");
 		add("Pipeline Messages");
+		add("Wrong Pipeline Messages with Diff");
 		add("Wrong Pipeline Messages");
 		add("Step Passed/Failed");
 		add("Test Properties");
@@ -140,7 +141,7 @@ public class MessageListener {
 		messages.add(m);
 	}
 
-	static void wrongPipelineMessage(String testName, String stepDisplayName, String message, String pipelineMessage, String pipelineMessageExpected) {
+	static void wrongPipelineMessage(String testName, String stepDisplayName, String message, String pipelineMessage, String pipelineMessageExpected, String originalFilePath) {
 		Map<String, String> map = new HashMap<>(3);
 		map.put("Step Display Name", stepDisplayName);
 		map.put("Message", message);
@@ -150,12 +151,13 @@ public class MessageListener {
 		messages.add(m);
 	}
 
-	static void wrongPipelineMessagePreparedForDiff(String testName, String stepDisplayName, String pipelineMessagePreparedForDiff, String pipelineMessageExpectedPreparedForDiff) {
+	static void wrongPipelineMessagePreparedForDiff(String testName, String stepDisplayName, String pipelineMessagePreparedForDiff, String pipelineMessageExpectedPreparedForDiff, String originalFilePath) {
 		Map<String, String> map = new HashMap<>(3);
 		map.put("Step Display Name", stepDisplayName);
 		map.put("Pipeline Message", pipelineMessagePreparedForDiff);
 		map.put("Pipeline Message Expected", pipelineMessageExpectedPreparedForDiff);
-		Message m = new Message(testName, map, LOG_LEVEL.indexOf("Wrong Pipeline Messages"), System.currentTimeMillis());
+		map.put("Filepath", originalFilePath);
+		Message m = new Message(testName, map, LOG_LEVEL.indexOf("Wrong Pipeline Messages with Diff"), System.currentTimeMillis());
 		messages.add(m);
 	}
 

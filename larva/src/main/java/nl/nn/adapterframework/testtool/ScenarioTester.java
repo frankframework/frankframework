@@ -197,10 +197,7 @@ public class ScenarioTester extends Thread {
 		int i = step.indexOf('.');
 		String queueName;
 		String fileContent;
-		// vul globale var
-		String zeefVijlNeem = fileNameAbsolutePath;
-		
-		//inlezen file voor deze stap
+
 		if ("".equals(fileName)) {
 			MessageListener.errorMessage(testName, "No file specified for step '" + step + "'");
 		} else {
@@ -213,25 +210,25 @@ public class ScenarioTester extends Thread {
 					queueName = step.substring(i + 1, step.length() - 5);
 
 					if ("nl.nn.adapterframework.jms.JmsListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = JmsController.read(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);	
+						stepPassed = JmsController.read(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, fileNameAbsolutePath);
 					} else 	if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = JdbcFixedQueryController.read(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);
+						stepPassed = JdbcFixedQueryController.read(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, fileNameAbsolutePath);
 					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = SenderController.executeSenderRead(step, stepDisplayName, properties, queues, queueName, "ibisWebService", fileName, fileContent);
+						stepPassed = SenderController.executeSenderRead(step, stepDisplayName, properties, queues, queueName, "ibisWebService", fileName, fileContent, fileNameAbsolutePath);
 					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = SenderController.executeSenderRead(step, stepDisplayName, properties, queues, queueName, "webService", fileName, fileContent);
+						stepPassed = SenderController.executeSenderRead(step, stepDisplayName, properties, queues, queueName, "webService", fileName, fileContent, fileNameAbsolutePath);
 					} else if ("nl.nn.adapterframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = WebServiceController.read(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);
+						stepPassed = WebServiceController.read(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, fileNameAbsolutePath);
 					} else if ("nl.nn.adapterframework.http.HttpSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = SenderController.executeSenderRead(step, stepDisplayName, properties, queues, queueName, "http", fileName, fileContent);
+						stepPassed = SenderController.executeSenderRead(step, stepDisplayName, properties, queues, queueName, "http", fileName, fileContent, fileNameAbsolutePath);
 					} else if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = SenderController.executeSenderRead(step, stepDisplayName, properties, queues, queueName, "ibisJava", fileName, fileContent);
+						stepPassed = SenderController.executeSenderRead(step, stepDisplayName, properties, queues, queueName, "ibisJava", fileName, fileContent, fileNameAbsolutePath);
 					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = WebServiceController.read(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);
+						stepPassed = WebServiceController.read(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, fileNameAbsolutePath);
 					} else if ("nl.nn.adapterframework.testtool.FileListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = FileController.executeListenerRead(testName, step, stepDisplayName, properties, queues, queueName, fileName, fileContent);
+						stepPassed = FileController.executeListenerRead(testName, step, stepDisplayName, properties, queues, queueName, fileName, fileContent, fileNameAbsolutePath);
 					} else if ("nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = FileController.executeSenderRead(testName, step, stepDisplayName, properties, queues, queueName, fileName, fileContent);
+						stepPassed = FileController.executeSenderRead(testName, step, stepDisplayName, properties, queues, queueName, fileName, fileContent, fileNameAbsolutePath);
 					} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = ListenerController.executeXsltProviderListenerRead(stepDisplayName, properties, queues, queueName, fileContent, TestPreparer.createParametersMapFromParamProperties(properties, step, false, null));
 					} else {
@@ -259,7 +256,7 @@ public class ScenarioTester extends Thread {
 					} else if ("nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = FileController.executeSenderWrite(testName, stepDisplayName, queues, queueName, fileContent);
 					} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = ListenerController.executeXsltProviderListenerWrite(step, stepDisplayName, queues, queueName, fileName, fileContent, properties);
+						stepPassed = ListenerController.executeXsltProviderListenerWrite(step, stepDisplayName, queues, queueName, fileName, fileContent, properties, fileNameAbsolutePath);
 					} else if ("nl.nn.adapterframework.senders.DelaySender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = SenderController.executeDelaySenderWrite(testName, stepDisplayName, queues, queueName, fileContent);
 					} else {
