@@ -30,7 +30,8 @@ import nl.nn.adapterframework.validation.ClassLoaderXmlEntityResolver;
 /**
  * Resolve URIs used in document(), xsl:import, and xsl:include.
  * 
- * @author Jaco de Groot, Gerrit van Brakel
+ * @author Jaco de Groot
+ * @author Gerrit van Brakel
  * @see ClassLoaderXmlEntityResolver
  */
 public class ClassLoaderURIResolver implements URIResolver {
@@ -56,7 +57,7 @@ public class ClassLoaderURIResolver implements URIResolver {
 		} else {
 			// href is relative, construct href from base
 			if (base != null && base.contains("/")) {
-				ref1 = base.substring(0, base.lastIndexOf("/") + 1) + href; // This is not the real root of the classpath, as that cannot be determined from the base.
+				ref1 = base.substring(0, base.lastIndexOf("/") + 1) + href;
 				ref2 = href; // if ref1 fails, try href on the global classpath
 				if (base.contains(":")) {
 					protocol=base.substring(0,base.indexOf(":"));

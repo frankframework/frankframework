@@ -133,23 +133,28 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 	@Override
 	@Ignore("test fails in parallel")
 	public void documentIncludedInSourceNotFoundXslt2() throws Exception {
+		// test is ignored
 	}
 	
 	@Override
 	@Ignore("test fails in parallel")
 	public void documentIncludedInSourceRelativeXslt1() throws Exception {
+		// test is ignored
 	}
 	@Override
 	@Ignore("test fails in parallel")
 	public void documentIncludedInSourceRelativeXslt2() throws Exception {
+		// test is ignored
 	}
 	@Override
 	@Ignore("test fails in parallel")
 	public void documentIncludedInSourceAbsoluteXslt1() throws Exception {
+		// test is ignored
 	}
 	@Override
 	@Ignore("test fails in parallel")
 	public void documentIncludedInSourceAbsoluteXslt2() throws Exception {
+		// test is ignored
 	}
 	
 	@Override

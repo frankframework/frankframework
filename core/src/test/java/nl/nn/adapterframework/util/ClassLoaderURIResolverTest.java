@@ -9,11 +9,10 @@ import java.util.jar.JarFile;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.classloaders.BytesClassLoader;
-import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
-
 import org.junit.Test;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 
 public class ClassLoaderURIResolverTest {
 

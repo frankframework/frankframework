@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
-	<xsl:variable name="lookup" select="document('/Xslt/importDocument/lookup.xml')"/>  <!-- absolute is not really absolute, cannot be determined from base -->
+	<xsl:variable name="lookup" select="document('/Xslt/importDocument/lookup.xml')"/>
 	<xsl:template match="root">
 		<start>
 			<xsl:apply-templates select="names"/>
