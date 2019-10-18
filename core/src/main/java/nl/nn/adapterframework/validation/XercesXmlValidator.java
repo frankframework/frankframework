@@ -28,15 +28,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.xml.validation.ValidatorHandler;
 
-import nl.nn.adapterframework.cache.EhCache;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.validation.xerces_2_11.XMLSchemaFactory;
-
 import org.apache.log4j.Logger;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
@@ -59,6 +50,16 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
+
+import nl.nn.adapterframework.cache.EhCache;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.validation.xerces_2_11.XMLSchemaFactory;
+import nl.nn.adapterframework.xml.ClassLoaderXmlEntityResolver;
 
 
 /**

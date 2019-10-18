@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.util;
+package nl.nn.adapterframework.xml;
 
 import java.io.IOException;
 import java.net.URL;
@@ -25,7 +25,8 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
 
-import nl.nn.adapterframework.validation.ClassLoaderXmlEntityResolver;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Resolve URIs used in document(), xsl:import, and xsl:include.
@@ -38,7 +39,7 @@ public class ClassLoaderURIResolver implements URIResolver {
 	private Logger log = LogUtil.getLogger(this);
 	private ClassLoader classLoader;
 
-	ClassLoaderURIResolver(ClassLoader classLoader) {
+	public ClassLoaderURIResolver(ClassLoader classLoader) {
 		if (log.isDebugEnabled()) log.debug("ClassLoaderURIResolver init with classloader ["+classLoader+"]");
 		this.classLoader = classLoader;
 	}

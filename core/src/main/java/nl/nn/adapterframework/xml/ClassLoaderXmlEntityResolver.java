@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.validation;
+package nl.nn.adapterframework.xml;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,7 +21,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import nl.nn.adapterframework.configuration.classloaders.BytesClassLoader;
-import nl.nn.adapterframework.util.ClassLoaderURIResolver;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -39,7 +38,7 @@ public class ClassLoaderXmlEntityResolver implements XMLEntityResolver {
 	private Logger log = LogUtil.getLogger(this);
 	private ClassLoader classLoader;
 
-	ClassLoaderXmlEntityResolver(ClassLoader classLoader) {
+	public ClassLoaderXmlEntityResolver(ClassLoader classLoader) {
 		this.classLoader = classLoader;
 	}
 

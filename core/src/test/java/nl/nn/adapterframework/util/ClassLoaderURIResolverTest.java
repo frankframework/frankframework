@@ -13,6 +13,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
+import nl.nn.adapterframework.xml.ClassLoaderURIResolver;
 
 public class ClassLoaderURIResolverTest {
 
