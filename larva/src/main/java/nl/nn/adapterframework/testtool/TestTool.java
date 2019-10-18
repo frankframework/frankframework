@@ -98,11 +98,15 @@ public class TestTool {
 	 * @return negative: error condition 0: all scenarios passed positive: number of
 	 *         scenarios that failed
 	 */
-	public static int runScenarios(String paramExecute, int waitBeforeCleanUp, String currentScenariosRootDirectory, int numberOfThreads) {
+	public static int runScenarios(String paramExecute, int waitBeforeCleanUp, String currentScenariosRootDirectory, int numberOfThreads, int testTimeout) {
 		AppConstants appConstants = AppConstants.getInstance();
 		String asd = appConstants.getResolvedProperty("larva.diffs.autosave");
 		if (asd != null) {
 			autoSaveDiffs = Boolean.parseBoolean(asd);
+		}
+
+		if(testTimeout < 0) {
+			testTimeout = Integer.MAX_VALUE;
 		}
 
 		MessageListener.debugMessage(
@@ -157,7 +161,9 @@ public class TestTool {
 				try {
 					MessageListener.debugMessage("General", "Starting to await termination.");
 					threadPool.shutdown();
-					threadPool.awaitTermination(globalTimeout * scenariosTotal, TimeUnit.MILLISECONDS);
+					if(!threadPool.awaitTermination(testTimeout, TimeUnit.SECONDS)) {
+						MessageListener.errorMessage("General", "Timeout has occurred!");
+					}
 					MessageListener.debugMessage("General", "Finished await termination.");
 				} catch (InterruptedException e) {
 					MessageListener.errorMessage("General", "Scenario testing was interrupted: \n" + e.getMessage());
@@ -167,7 +173,7 @@ public class TestTool {
 				long executeTime = System.currentTimeMillis() - startTime;
 
 				MessageListener.debugMessage("General", "Print statistics information");
-
+				scenariosTotal = scenarioResults[0] + scenarioResults[1] + scenarioResults[2];
 				if (scenariosTotal == 0) {
 					MessageListener.scenariosTotalMessage("No scenarios found");
 				} else {
