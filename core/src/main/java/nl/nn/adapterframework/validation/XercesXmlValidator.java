@@ -36,6 +36,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.validation.xerces_2_11.XMLSchemaFactory;
+import nl.nn.adapterframework.xml.ClassLoaderXmlEntityResolver;
 
 import org.apache.log4j.Logger;
 import org.apache.xerces.impl.Constants;
