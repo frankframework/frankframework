@@ -3,6 +3,10 @@
     .modal-dialog {
         width: 65%;
     }
+    .table > thead > tr > th,
+    .table > tbody > tr > td{
+        padding: 10px;
+    }
 </style>
 <div class="wrapper wrapper-content animated fadeInRight" ng-controller="LarvaCtrl">
     <div class="row">
@@ -51,7 +55,7 @@
             </div>
             <div class="collapse" id="advancedSettings">
                 <div class="form-row">
-                    <div class="form-group col-lg-8">
+                    <div class="form-group col-lg-6">
                         <label for="root-directories">Root Directory:</label>
                         <select
                                 class="form-control"
@@ -63,22 +67,15 @@
                         >
                         </select>
                     </div>
-                    <div class="form-group col-lg-4">
-                        <label for="ignoreCaseDiff">Ignore Case for Diff:</label><br>
-                        <input type="checkbox" style="margin: 11px;" class="checkbox" ng-model="formIgnoreCaseDiff" name="ignoreCaseDiff" id="ignoreCaseDiff">
+                    <div class="form-group col-lg-2" alt="Set up a timeout (in seconds) for test execution. If value is -1, the value is infinite.">
+                        <label for="testTimeout">Test Timeout:</label>
+                        <input type="number" min="-1" class="form-control" id="testTimeout" value="-1" name="testTimeout" ng-model="formTimeout"/>
                     </div>
-
-                </div> <br>
-                <div class="form-row">
-                    <div class="form-group col-lg-4">
-                        <label for="timeout">Global Timeout:</label>
-                        <input type="number" min="1" class="form-control" id="timeout" value="1" name="timeout" ng-model="formTimeout"/>
-                    </div>
-                    <div class="form-group col-lg-4">
+                    <div class="form-group col-lg-2">
                         <label for="waitcleanup">Wait before clean up:</label>
                         <input type="number" min="0" class="form-control" id="waitcleanup" name="waitcleanup" ng-model="formWaitcleanup"/>
                     </div>
-                    <div class="form-group col-lg-4" title="Number of threads to use for running the tests. (default: 1)">
+                    <div class="form-group col-lg-2" title="Number of threads to use for running the tests. (default: 1)">
                         <label for="threads">Number of Threads:</label>
                         <input type="number" min="1" class="form-control" id="threads" value="1" data-toggle="tooltip" name="threads" ng-model="formThreads"/>
                     </div>

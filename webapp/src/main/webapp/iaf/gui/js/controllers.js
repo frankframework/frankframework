@@ -1570,6 +1570,10 @@ angular.module('iaf.beheerconsole')
 					element["messages"]["Message"]);
 			}
 
+			if(element["logLevel"] === "Errors") {
+				$scope.addDisplayMessage("panel-danger", element["messages"]["Message"]);
+			}
+
 			if(!$scope.messages[element["name"]]){
 				$scope.messages[element["name"]] = [];
 			}
@@ -1614,6 +1618,9 @@ angular.module('iaf.beheerconsole')
 		$scope.file = undefined;
 		console.log("Inside submit");
 		var fd = new FormData();
+
+		if($scope.formTimeout !== "")
+			fd.append("timeout", $scope.formTimeout);
 
 		if($scope.formLogLevel !== "")
 			fd.append("logLevel", $scope.formLogLevel);
@@ -1817,4 +1824,5 @@ angular.module('iaf.beheerconsole')
 	$scope.setForm();
 	$scope.formThreads = 1;
 	$scope.formWaitcleanup = 100;
+	$scope.formTimeout = -1;
 }]);

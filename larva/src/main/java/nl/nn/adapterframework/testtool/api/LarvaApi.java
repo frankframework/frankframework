@@ -99,6 +99,7 @@ public class LarvaApi {
         getContext();
         int waitBeforecleanup = 100;
         int numberOfThreads = 1;
+        int timeout = Integer.MAX_VALUE;
         String currentScenariosRootDirectory, paramExecute;
 
         MessageListener.cleanLogs(true);
@@ -127,6 +128,14 @@ public class LarvaApi {
             logger.error("Could not decode number of threads, using default instead." );
         }
         try {
+            timeout = data.get("timeout").get(0).getBody(Integer.class, int.class);
+            if (timeout == -1)
+                timeout = Integer.MAX_VALUE;
+        }catch (IOException | NullPointerException | ExceptionAdapter e) {
+            e.printStackTrace();
+            logger.error("Could not decode number of threads, using default instead." );
+        }
+        try {
             currentScenariosRootDirectory = data.get("rootDirectory").get(0).getBodyAsString();
             paramExecute = data.get("scenario").get(0).getBodyAsString();
         }catch (IOException | NullPointerException e) {
@@ -136,22 +145,22 @@ public class LarvaApi {
         logger.debug("Creating test runner thread.");
         Thread testRunner = new Thread() {
             String paramExecute, currentScenariosRootDirectory;
-            int paramWaitBeforeCleanUp, numberOfThreads;
+            int paramWaitBeforeCleanUp, numberOfThreads, timeout;
 
             @Override
             public void run() {
-                TestTool.runScenarios(paramExecute, paramWaitBeforeCleanUp, currentScenariosRootDirectory, numberOfThreads);
+                TestTool.runScenarios(paramExecute, paramWaitBeforeCleanUp, currentScenariosRootDirectory, numberOfThreads, timeout);
             }
 
-            Thread initTestParams(String paramExecute, int paramWaitBeforeCleanUp, String currentScenariosRootDirectory, int numberOfThreads) {
+            Thread initTestParams(String paramExecute, int paramWaitBeforeCleanUp, String currentScenariosRootDirectory, int numberOfThreads, int timeout) {
                 this.paramExecute = paramExecute;
                 this.paramWaitBeforeCleanUp = paramWaitBeforeCleanUp;
                 this.currentScenariosRootDirectory = currentScenariosRootDirectory;
                 this.numberOfThreads = numberOfThreads;
-
+                this.timeout = timeout;
                 return this;
             }
-        }.initTestParams(paramExecute, waitBeforecleanup, currentScenariosRootDirectory, numberOfThreads);
+        }.initTestParams(paramExecute, waitBeforecleanup, currentScenariosRootDirectory, numberOfThreads, timeout);
 
         logger.info("Starting to execute tests.");
         testRunner.start();
