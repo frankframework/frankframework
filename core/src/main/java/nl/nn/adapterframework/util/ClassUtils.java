@@ -133,15 +133,27 @@ public class ClassUtils {
 		URL url = classLoader.getResource(resource);
 
 		// then try to get it as a URL
-		if (url == null && allowedProtocols != null && !allowedProtocols.isEmpty() && resource.contains(":/")) {
-			String protocol = resource.substring(0, resource.indexOf(":"));
-			List<String> protocols = new ArrayList<String>(Arrays.asList(allowedProtocols.split(",")));
-			if(protocols.contains(protocol)) {
-				try {
-					url = new URL(Misc.replace(resource, " ", "%20"));
-				} catch(MalformedURLException e) {
-					log.debug("Could not find resource as URL [" + resource + "]: "+e.getMessage());
+		if (url == null) {
+			if (resource.contains(":/")) {
+				String protocol = resource.substring(0, resource.indexOf(":"));
+				if (allowedProtocols != null && !allowedProtocols.isEmpty()) {
+					//log.debug("Could not find resource ["+resource+"] in classloader ["+classLoader+"] now trying via protocol ["+protocol+"]");
+
+					List<String> protocols = new ArrayList<String>(Arrays.asList(allowedProtocols.split(",")));
+					if(protocols.contains(protocol)) {
+						try {
+							url = new URL(Misc.replace(resource, " ", "%20"));
+						} catch(MalformedURLException e) {
+							log.debug("Could not find resource ["+resource+"] in classloader ["+classLoader+"] and not as URL [" + resource + "]: "+e.getMessage());
+						}
+					} else if(log.isDebugEnabled()) {
+						log.debug("Cannot lookup resource ["+resource+"] in classloader ["+classLoader+"], not allowed with protocol ["+protocol+"] allowedProtocols "+protocols.toString());
+					}
+				} else {
+					log.debug("Could not find resource as URL [" + resource + "] in classloader ["+classLoader+"], with protocol ["+protocol+"], no allowedProtocols");
 				}
+			} else {
+				log.debug("Cannot lookup resource ["+resource+"] in classloader ["+classLoader+"] and no protocol to try as URL");
 			}
 		}
 
