@@ -21,9 +21,8 @@ public class MessageListener {
 
 	//public synchronized static final String LOG_LEVEL_ORDER = "[debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]";
 	private static Logger logger = LogUtil.getLogger(TestTool.class);
-	private static LinkedList<Message> archive;
-	private static LinkedList<Message> messages  = new LinkedList<Message>();
-	private static int selectedLogLevel = 0;
+	private LinkedList<Message> messages;
+	private int selectedLogLevel;
 	private static final List<String> LOG_LEVEL = new ArrayList<String>() {{
 		// CAUTION! Order matters!!
 		add("Debug");
@@ -38,11 +37,22 @@ public class MessageListener {
 		add("Total");
 		add("Errors");
 	}};
+	public static int DEFAULT_LOG_LEVEL = 3;
+
+	public MessageListener(LinkedList<Message> messages, String selectedLogLevel) {
+		this.messages = messages;
+		this.selectedLogLevel = LOG_LEVEL.indexOf(selectedLogLevel);
+	}
+
+	public MessageListener(){
+		this.messages = new LinkedList<>();
+		this.selectedLogLevel = MessageListener.DEFAULT_LOG_LEVEL;
+	}
 
 	/**
 	 * @return Returns all messages above selected log level.
 	 */
-	public synchronized static JSONArray getMessages() {
+	public synchronized JSONArray getMessages() {
 		return getMessages(0);
 	}
 
@@ -51,8 +61,8 @@ public class MessageListener {
 	 * @param timestamp timestamp for filtering messages.
 	 * @return JSONArray containing all the messages that fit the criteria.
 	 */
-	public synchronized static JSONArray getMessages(long timestamp) {
-		return getMessagesFromList(MessageListener.messages, timestamp);
+	public synchronized JSONArray getMessages(long timestamp) {
+		return getMessagesFromList(messages, timestamp);
 	}
 
 	/**
@@ -61,7 +71,7 @@ public class MessageListener {
 	 * @param timestamp for filtering messages based on time.
 	 * @return list of messages that fit the criteria.
 	 */
-	private synchronized static JSONArray getMessagesFromList(LinkedList<Message> messages, long timestamp){
+	private synchronized JSONArray getMessagesFromList(LinkedList<Message> messages, long timestamp){
 		if(messages == null)
 			return new JSONArray();
 
@@ -96,7 +106,7 @@ public class MessageListener {
 	 * that states the successful/autosaved/failed messages.
 	 * @return The last total message. Null, if there were no total messages.
 	 */
-	public synchronized static String getLastTotalMessage() {
+	public synchronized String getLastTotalMessage() {
 		Iterator<Message> messageIterator = messages.descendingIterator();
 		while(messageIterator.hasNext()) {
 			Message m = messageIterator.next();
@@ -107,7 +117,7 @@ public class MessageListener {
 		return null;
 	}
 
-	public synchronized static void debugMessage(String testName, String message) {
+	public synchronized void debugMessage(String testName, String message) {
 		Map<String, String> map = new HashMap<>(1);
 		map.put("Message", message);
 		Message m = new Message(testName, map, LOG_LEVEL.indexOf("DEBUG"), System.currentTimeMillis());
@@ -116,26 +126,26 @@ public class MessageListener {
 		logger.error(message);
 	}
 
-	private synchronized static void singleMessage(String testName, String message, String debugLevel) {
+	private synchronized void singleMessage(String testName, String message, String debugLevel) {
 		Map<String, String> map = new HashMap<>(1);
 		map.put("Message", message);
 		Message m = new Message(testName, map, LOG_LEVEL.indexOf(debugLevel), System.currentTimeMillis());
 		messages.add(m);
 	}
 
-	static void testInitiationMessage(String testName, String directory) {
+	void testInitiationMessage(String testName, String directory) {
 		Map<String, String> map = new HashMap<>();
 		map.put("directory", directory);
 		messages.add(new Message(testName, map, LOG_LEVEL.indexOf("Test Properties"), System.currentTimeMillis()));
 	}
 
-	static void testStatusMessage(String testName, String status) {
+	void testStatusMessage(String testName, String status) {
 		Map<String, String> map = new HashMap<>();
 		map.put("status", status);
 		messages.add(new Message(testName, map, LOG_LEVEL.indexOf("Test Properties"), System.currentTimeMillis()));
 	}
 
-	public synchronized static void debugPipelineMessage(String testName, String stepDisplayName, String message, String pipelineMessage) {
+	public synchronized void debugPipelineMessage(String testName, String stepDisplayName, String message, String pipelineMessage) {
 		Map<String, String> map = new HashMap<>(3);
 		map.put("Step Display Name", stepDisplayName);
 		map.put("Message", message);
@@ -144,7 +154,7 @@ public class MessageListener {
 		messages.add(m);
 	}
 
-	static void debugPipelineMessagePreparedForDiff(String testName, String stepDisplayName, String message, String pipelineMessage) {
+	void debugPipelineMessagePreparedForDiff(String testName, String stepDisplayName, String message, String pipelineMessage) {
 		Map<String, String> map = new HashMap<>(3);
 		map.put("Step Display Name", stepDisplayName);
 		map.put("Message", message);
@@ -153,7 +163,7 @@ public class MessageListener {
 		messages.add(m);
 	}
 
-	public synchronized static void wrongPipelineMessage(String testName, String message, String pipelineMessage) {
+	public synchronized void wrongPipelineMessage(String testName, String message, String pipelineMessage) {
 		Map<String, String> map = new HashMap<>(2);
 		map.put("Message", message);
 		map.put("Pipeline Message", pipelineMessage);
@@ -161,7 +171,7 @@ public class MessageListener {
 		messages.add(m);
 	}
 
-	static void wrongPipelineMessage(String testName, String stepDisplayName, String message, String pipelineMessage, String pipelineMessageExpected, String originalFilePath) {
+	void wrongPipelineMessage(String testName, String stepDisplayName, String message, String pipelineMessage, String pipelineMessageExpected, String originalFilePath) {
 		Map<String, String> map = new HashMap<>(3);
 		map.put("Step Display Name", stepDisplayName);
 		map.put("Message", message);
@@ -171,7 +181,7 @@ public class MessageListener {
 		messages.add(m);
 	}
 
-	static void wrongPipelineMessagePreparedForDiff(String testName, String stepDisplayName, String pipelineMessagePreparedForDiff, String pipelineMessageExpectedPreparedForDiff, String originalFilePath) {
+	void wrongPipelineMessagePreparedForDiff(String testName, String stepDisplayName, String pipelineMessagePreparedForDiff, String pipelineMessageExpectedPreparedForDiff, String originalFilePath) {
 		Map<String, String> map = new HashMap<>(3);
 		map.put("Step Display Name", stepDisplayName);
 		map.put("Pipeline Message", pipelineMessagePreparedForDiff);
@@ -181,39 +191,39 @@ public class MessageListener {
 		messages.add(m);
 	}
 
-	static void stepMessage(String testName, String message) {
+	void stepMessage(String testName, String message) {
 		singleMessage(testName, message , "Step Passed/Failed");
 	}
 
-	static void scenarioMessage(String testName, String message) {
+	void scenarioMessage(String testName, String message) {
 		singleMessage(testName, message, "Scenario Passed/Failed");
 	}
 
-	static void scenarioFailedMessage(String testName, String message) {
+	void scenarioFailedMessage(String testName, String message) {
 		singleMessage(testName, message, "Scenario Failed");
 	}
 
-	static void scenariosTotalMessage(String message) {
+	void scenariosTotalMessage(String message) {
 		singleMessage("General", message, "Total");
 	}
 
-	static void scenariosPassedTotalMessage(String message) {
+	void scenariosPassedTotalMessage(String message) {
 		singleMessage("General", message, "Total");
 	}
 
-	static void scenariosAutosavedTotalMessage(String message) {
+	void scenariosAutosavedTotalMessage(String message) {
 		singleMessage("General", message, "Total");
 	}
 
-	static void scenariosFailedTotalMessage(String message) {
+	void scenariosFailedTotalMessage(String message) {
 		singleMessage("General", message, "Total");
 	}
 
-	public synchronized static void errorMessage(String testName, String message) {
+	public synchronized void errorMessage(String testName, String message) {
 		singleMessage(testName, message, "Errors");
 	}
 
-	public synchronized static void errorMessage(String testName, String message, Exception exception) {
+	public synchronized void errorMessage(String testName, String message, Exception exception) {
 		Map<String, String> map = new HashMap<String, String>();
 		map.put("Message", message);
 
@@ -233,32 +243,25 @@ public class MessageListener {
 		messages.add(m);
 	}
 
-	public synchronized static String getSelectedLogLevel() {
+	public synchronized String getSelectedLogLevel() {
 		return LOG_LEVEL.get(selectedLogLevel);
 	}
 
-	public synchronized static void setSelectedLogLevel(String selectedLogLevel) throws Exception {
+	public synchronized void setSelectedLogLevel(String selectedLogLevel) throws Exception {
 		if (!LOG_LEVEL.contains(selectedLogLevel))
 			throw new Exception("Given log level does not exist!");
-		MessageListener.selectedLogLevel = LOG_LEVEL.indexOf(selectedLogLevel);
+		this.selectedLogLevel = LOG_LEVEL.indexOf(selectedLogLevel);
 	}
 
-	public synchronized static List<String> getLogLevels() {
+	public synchronized List<String> getLogLevels() {
 		return LOG_LEVEL;
 	}
 
-	public synchronized static int getLevelOfLog(String logLevel) {
+	private synchronized int getLevelOfLog(String logLevel) {
 		return LOG_LEVEL.indexOf(logLevel);
 	}
 
-	public synchronized static void cleanLogs(boolean archive) {
-		if(archive) {
-			MessageListener.archive = MessageListener.messages;
-		}
-		MessageListener.messages = new LinkedList<>();
-	}
-
-	public synchronized static JSONArray getArchive() {
-		return getMessagesFromList(MessageListener.archive, 0);
+	public synchronized void clean() {
+		messages = new LinkedList<Message>();
 	}
 }

@@ -15,11 +15,6 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.util.LogUtil;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -30,8 +25,8 @@ import nl.nn.adapterframework.testtool.MessageListener;
 import nl.nn.adapterframework.testtool.TestPreparer;
 import nl.nn.adapterframework.testtool.TestTool;
 import nl.nn.adapterframework.util.AppConstants;
-
-import java.io.StringWriter;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Call Larva Test Tool
@@ -67,7 +62,7 @@ public class LarvaPipe extends FixedForwardPipe {
 	
 	private final String DEFAULT_LOG_LEVEL = "Wrong Pipeline Messages";
 	private final String FORWARD_FAIL="fail";
-	
+
 	private boolean writeToLog = false;
 	private boolean writeToSystemOut = false;
 	private String execute;
@@ -77,17 +72,20 @@ public class LarvaPipe extends FixedForwardPipe {
 	private int timeout=30000;
 	
 	private PipeForward failForward;
+	private MessageListener messageListener;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+		if(messageListener == null)
+			messageListener = new MessageListener();
 		if (getLogLevel()==null) {
 			log("Warn","No log level detected, using [" + DEFAULT_LOG_LEVEL + "]");
 			setLogLevel(DEFAULT_LOG_LEVEL);
 		}
 		try {
 			log("Debug", "Setting log level to [" + getLogLevel() + "]");
-			MessageListener.setSelectedLogLevel(getLogLevel());
+			messageListener.setSelectedLogLevel(getLogLevel());
 		} catch (Exception e) {
 			throw new ConfigurationException("illegal log level ["+getLogLevel()+"]");
 		}
@@ -111,9 +109,10 @@ public class LarvaPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(execute)) {
 			paramExecute = paramExecute + execute;
 		}
-		int numScenariosFailed=TestTool.runScenarios(paramExecute, parseWaitBeforeCleanup(), currentScenariosRootDirectory, getNumberOfThreads(), getTimeout());
+		TestTool testTool = new TestTool(messageListener);
+		int numScenariosFailed=testTool.runScenarios(paramExecute, parseWaitBeforeCleanup(), currentScenariosRootDirectory, getNumberOfThreads(), getTimeout());
 		PipeForward forward=numScenariosFailed==0? getForward(): failForward;
-		return new PipeRunResult(forward, MessageListener.getLastTotalMessage());
+		return new PipeRunResult(forward, messageListener.getLastTotalMessage());
 	}
 
 	public void setWriteToLog(boolean writeToLog) {

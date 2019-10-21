@@ -1,10 +1,14 @@
 package nl.nn.adapterframework.testtool;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
+import org.custommonkey.xmlunit.XMLUnit;
+
+import javax.servlet.ServletContext;
+import java.io.*;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -13,56 +17,33 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.log4j.Logger;
-import org.custommonkey.xmlunit.XMLUnit;
-import org.dom4j.DocumentException;
-
-import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.FileUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.ProcessUtil;
-import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
-
 /**
  * @author Jaco de Groot, Murat Kaan Meral
  */
-
-/*
- * 
- * TODO: SEPERATE PREPARING - TESTING AND REPORTING!!!!
- * 
- */
-//////// Todo: seems to be executing all scenarios instead of paramExecute. Check that out!
-
 public class TestTool {
 //	@Autowired
 	private static IbisContext ibisContext;
-
-	private static Logger logger = LogUtil.getLogger(TestTool.class);
-	protected static final int DEFAULT_TIMEOUT = 30000;
+	private MessageListener messageListener;
 	public static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
 	protected static final String TESTTOOL_BIFNAME = "Test Tool bif name";
 	public static final String TESTTOOL_DUMMY_MESSAGE = "<TestTool>Dummy message</TestTool>";
 	public static final String TESTTOOL_CLEAN_UP_REPLY = "<TestTool>Clean up reply</TestTool>";
 	public static final int RESULT_ERROR = 0;
 	public static final int RESULT_OK = 1;
-	public static final int RESULT_AUTOSAVED = 2;
+	static final int RESULT_AUTOSAVED = 2;
 	// dirty solution by Marco de Reus:
 	private static String zeefVijlNeem = "";
 	private static Writer silentOut = null;
-	protected static boolean autoSaveDiffs = false;
+	static boolean autoSaveDiffs = false;
+	static final int DEFAULT_TIMEOUT = 30000;
 	static int globalTimeout = DEFAULT_TIMEOUT;
 
-	public static void setTimeout(int newTimeout) {
-		globalTimeout = newTimeout;
+	public static void setGlobalTimeout(int globalTimeout) {
+		TestTool.globalTimeout = globalTimeout;
+	}
+
+	public TestTool(MessageListener messageListener) {
+		this.messageListener = messageListener;
 	}
 
 	/*
@@ -91,14 +72,12 @@ public class TestTool {
 		return AppConstants.getInstance(configuration.getClassLoader());
 	}
 
-	public static final int ERROR_NO_SCENARIO_DIRECTORIES_FOUND = -1;
-
 	/**
 	 * 
 	 * @return negative: error condition 0: all scenarios passed positive: number of
 	 *         scenarios that failed
 	 */
-	public static int runScenarios(String paramExecute, int waitBeforeCleanUp, String currentScenariosRootDirectory, int numberOfThreads, int testTimeout) {
+	public int runScenarios(String paramExecute, int waitBeforeCleanUp, String currentScenariosRootDirectory, int numberOfThreads, int testTimeout) {
 		AppConstants appConstants = AppConstants.getInstance();
 		String asd = appConstants.getResolvedProperty("larva.diffs.autosave");
 		if (asd != null) {
@@ -109,7 +88,7 @@ public class TestTool {
 			testTimeout = Integer.MAX_VALUE;
 		}
 
-		MessageListener.debugMessage(
+		messageListener.debugMessage(
 				"General", "Execute scenario(s) if execute parameter present and scenarios root directory did not change");
 
 		// Get Ready For Execution
@@ -125,21 +104,21 @@ public class TestTool {
 			} catch (IOException e) {
 				paramExecuteCanonicalPath = paramExecute;
 				scenariosRootDirectoryCanonicalPath = currentScenariosRootDirectory;
-				MessageListener.errorMessage("General", "Could not get canonical path: " + e.getMessage(), e);
+				messageListener.errorMessage("General", "Could not get canonical path: " + e.getMessage(), e);
 			}
 			if (paramExecuteCanonicalPath.startsWith(scenariosRootDirectoryCanonicalPath)) {
 
-				MessageListener.debugMessage("General", "Initialize XMLUnit");
+				messageListener.debugMessage("General", "Initialize XMLUnit");
 				XMLUnit.setIgnoreWhitespace(true);
-				MessageListener.debugMessage("General", "Initialize 'scenario files' variable");
-				MessageListener.debugMessage("General", "Param execute: " + paramExecute);
+				messageListener.debugMessage("General", "Initialize 'scenario files' variable");
+				messageListener.debugMessage("General", "Param execute: " + paramExecute);
 
 				//Map<String, List<File>> scenarioFiles = TestPreparer.readScenarioFiles(appConstants, paramExecute,
 				//		(numberOfThreads > 1));
 
-				MessageListener.debugMessage("General", "Initialize statistics variables");
+				messageListener.debugMessage("General", "Initialize statistics variables");
 				long startTime = System.currentTimeMillis();
-				MessageListener.debugMessage("General", "Execute scenario('s)");
+				messageListener.debugMessage("General", "Execute scenario('s)");
 				Map<String, List<File>> scenarioFiles = TestPreparer.readScenarioFiles(paramExecute, (numberOfThreads > 1), appConstants);
 				Iterator<Entry<String, List<File>>> scenarioFilesIterator = scenarioFiles.entrySet().iterator();
 
@@ -152,119 +131,78 @@ public class TestTool {
 					Map.Entry<String, List<File>> scenarioEntry = scenarioFilesIterator.next();
 					List<File> scenarioFileList = scenarioEntry.getValue();
 
-					ScenarioTester scenarioThread = new ScenarioTester(scenarioFileList, currentScenariosRootDirectory,
+					ScenarioTester scenarioThread = new ScenarioTester(messageListener, scenarioFileList, currentScenariosRootDirectory,
 							appConstants, scenarioResults, waitBeforeCleanUp, scenariosTotal);
-					MessageListener.debugMessage("General", "Added a new.");
+					messageListener.debugMessage("General", "Added a new.");
 
 					threadPool.execute(scenarioThread);
 				}
 				try {
-					MessageListener.debugMessage("General", "Starting to await termination.");
+					messageListener.debugMessage("General", "Starting to await termination.");
 					threadPool.shutdown();
 					if(!threadPool.awaitTermination(testTimeout, TimeUnit.SECONDS)) {
-						MessageListener.errorMessage("General", "Timeout has occurred!");
+						messageListener.errorMessage("General", "Timeout has occurred!");
 					}
-					MessageListener.debugMessage("General", "Finished await termination.");
+					messageListener.debugMessage("General", "Finished await termination.");
 				} catch (InterruptedException e) {
-					MessageListener.errorMessage("General", "Scenario testing was interrupted: \n" + e.getMessage());
+					messageListener.errorMessage("General", "Scenario testing was interrupted: \n" + e.getMessage());
 				}
 				// End of scenarios
 
 				long executeTime = System.currentTimeMillis() - startTime;
 
-				MessageListener.debugMessage("General", "Print statistics information");
+				messageListener.debugMessage("General", "Print statistics information");
 				scenariosTotal = scenarioResults[0] + scenarioResults[1] + scenarioResults[2];
 				if (scenariosTotal == 0) {
-					MessageListener.scenariosTotalMessage("No scenarios found");
+					messageListener.scenariosTotalMessage("No scenarios found");
 				} else {
-					MessageListener.debugMessage("General", "Print statistics information");
+					messageListener.debugMessage("General", "Print statistics information");
 					if (scenarioResults[1] == scenariosTotal) {
 						if (scenariosTotal == 1) {
-							MessageListener.scenariosPassedTotalMessage(
+							messageListener.scenariosPassedTotalMessage(
 									"All scenarios passed (1 scenario executed in " + executeTime + " ms)");
 						} else {
-							MessageListener.scenariosPassedTotalMessage("All scenarios passed (" + scenariosTotal
+							messageListener.scenariosPassedTotalMessage("All scenarios passed (" + scenariosTotal
 									+ " scenarios executed in " + executeTime + " ms)");
 						}
 					} else if (scenarioResults[0] == scenariosTotal) {
 						if (scenariosTotal == 1) {
-							MessageListener.scenariosFailedTotalMessage(
+							messageListener.scenariosFailedTotalMessage(
 									"All scenarios failed (1 scenario executed in " + executeTime + " ms)");
 						} else {
-							MessageListener.scenariosFailedTotalMessage("All scenarios failed (" + scenariosTotal
+							messageListener.scenariosFailedTotalMessage("All scenarios failed (" + scenariosTotal
 									+ " scenarios executed in " + executeTime + " ms)");
 						}
 					} else {
 						if (scenariosTotal == 1) {
-							MessageListener.scenariosTotalMessage("1 scenario executed in " + executeTime + " ms");
+							messageListener.scenariosTotalMessage("1 scenario executed in " + executeTime + " ms");
 						} else {
-							MessageListener.scenariosTotalMessage(
+							messageListener.scenariosTotalMessage(
 									scenariosTotal + " scenarios executed in " + executeTime + " ms");
 						}
 						if (scenarioResults[1] == 1) {
-							MessageListener.scenariosPassedTotalMessage("1 scenario passed");
+							messageListener.scenariosPassedTotalMessage("1 scenario passed");
 						} else {
-							MessageListener.scenariosPassedTotalMessage(scenarioResults[1] + " scenarios passed");
+							messageListener.scenariosPassedTotalMessage(scenarioResults[1] + " scenarios passed");
 						}
 						if (autoSaveDiffs) {
 							if (scenarioResults[2] == 1) {
-								MessageListener.scenariosAutosavedTotalMessage("1 scenario passed after autosave");
+								messageListener.scenariosAutosavedTotalMessage("1 scenario passed after autosave");
 							} else {
-								MessageListener.scenariosAutosavedTotalMessage(
+								messageListener.scenariosAutosavedTotalMessage(
 										scenarioResults[2] + " scenarios passed after autosave");
 							}
 						}
 						if (scenarioResults[0] == 1) {
-							MessageListener.scenariosFailedTotalMessage("1 scenario failed");
+							messageListener.scenariosFailedTotalMessage("1 scenario failed");
 						} else {
-							MessageListener.scenariosFailedTotalMessage(scenarioResults[0] + " scenarios failed");
+							messageListener.scenariosFailedTotalMessage(scenarioResults[0] + " scenarios failed");
 						}
 					}
 				}
 			}
 		}
 		return scenarioResults[0];
-	}
-
-	// Used by saveResultToFile.jsp
-	public static void windiff(ServletContext application, HttpServletRequest request, String expectedFileName,
-			String result, String expected) throws IOException, DocumentException, SenderException {
-		AppConstants appConstants = AppConstants.getInstance();
-		String windiffCommand = appConstants.getResolvedProperty("larva.windiff.command");
-		if (windiffCommand == null) {
-			String servletPath = request.getServletPath();
-			int i = servletPath.lastIndexOf('/');
-			String realPath = application.getRealPath(servletPath.substring(0, i));
-			String currentScenariosRootDirectory = TestPreparer.initScenariosRootDirectories(realPath, null, appConstants);
-			windiffCommand = currentScenariosRootDirectory + "..\\..\\IbisAlgemeenWasbak\\WinDiff\\WinDiff.Exe";
-		}
-		File tempFileResult = writeTempFile(expectedFileName, result);
-		File tempFileExpected = writeTempFile(expectedFileName, expected);
-		String command = windiffCommand + " " + tempFileResult + " " + tempFileExpected;
-		ProcessUtil.executeCommand(command);
-	}
-
-	private static File writeTempFile(String originalFileName, String content) throws IOException, DocumentException {
-		String encoding = getEncoding(originalFileName, content);
-
-		String baseName = FileUtils.getBaseName(originalFileName);
-		String extensie = FileUtils.getFileNameExtension(originalFileName);
-
-		File tempFile = null;
-		tempFile = File.createTempFile("ibistesttool", "." + extensie);
-		tempFile.deleteOnExit();
-		String tempFileMessage;
-		if (extensie.equalsIgnoreCase("XML")) {
-			tempFileMessage = XmlUtils.canonicalize(content);
-		} else {
-			tempFileMessage = content;
-		}
-
-		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(tempFile, true), encoding);
-		outputStreamWriter.write(tempFileMessage);
-		outputStreamWriter.close();
-
-		return tempFile;
 	}
 
 	// Used by saveResultToFile.jsp

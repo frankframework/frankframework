@@ -30,15 +30,20 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  */
 public class ResultComparer {
+	private MessageListener messageListener;
 
-	public static int compareResult(String step, String stepDisplayName, String fileName, String expectedResult, String actualResult, Properties properties, String queueName, String originalFilePath) {
+	public ResultComparer(MessageListener messageListener) {
+		this.messageListener = messageListener;
+	}
+
+	public int compareResult(String step, String stepDisplayName, String fileName, String expectedResult, String actualResult, Properties properties, String queueName, String originalFilePath) {
 		int ok = TestTool.RESULT_ERROR;
 		String testName = properties.getProperty("scenario.description");
 		String printableExpectedResult = XmlUtils.replaceNonValidXmlCharacters(expectedResult);
 		String printableActualResult = XmlUtils.replaceNonValidXmlCharacters(actualResult);
 		String preparedExpectedResult = printableExpectedResult;
 		String preparedActualResult = printableActualResult;
-		MessageListener.debugMessage(testName, "Check decodeUnzipContentBetweenKeys properties");
+		messageListener.debugMessage(testName, "Check decodeUnzipContentBetweenKeys properties");
 		boolean decodeUnzipContentBetweenKeysProcessed = false;
 		int i = 1;
 		while (!decodeUnzipContentBetweenKeysProcessed) {
@@ -49,7 +54,7 @@ public class ResultComparer {
 				replaceNewlines = true;
 			}
 			if (key1 != null && key2 != null) {
-				MessageListener.debugMessage(testName, "Decode and unzip content between key1 '" + key1 + "' and key2 '" + key2 + "' (replaceNewlines is " + replaceNewlines + ")");
+				messageListener.debugMessage(testName, "Decode and unzip content between key1 '" + key1 + "' and key2 '" + key2 + "' (replaceNewlines is " + replaceNewlines + ")");
 				preparedExpectedResult = decodeUnzipContentBetweenKeys(testName, preparedExpectedResult, key1, key2, replaceNewlines);
 				preparedActualResult = decodeUnzipContentBetweenKeys(testName, preparedActualResult, key1, key2, replaceNewlines);
 				i++;
@@ -57,14 +62,14 @@ public class ResultComparer {
 				decodeUnzipContentBetweenKeysProcessed = true;
 			}
 		}
-		MessageListener.debugMessage(testName, "Check canonicaliseFilePathContentBetweenKeys properties");
+		messageListener.debugMessage(testName, "Check canonicaliseFilePathContentBetweenKeys properties");
 		boolean canonicaliseFilePathContentBetweenKeysProcessed = false;
 		i = 1;
 		while (!canonicaliseFilePathContentBetweenKeysProcessed) {
 			String key1 = properties.getProperty("canonicaliseFilePathContentBetweenKeys" + i + ".key1");
 			String key2 = properties.getProperty("canonicaliseFilePathContentBetweenKeys" + i + ".key2");
 			if (key1 != null && key2 != null) {
-				MessageListener.debugMessage(testName, "Canonicalise filepath content between key1 '" + key1 + "' and key2 '" + key2 + "'");
+				messageListener.debugMessage(testName, "Canonicalise filepath content between key1 '" + key1 + "' and key2 '" + key2 + "'");
 				preparedExpectedResult = canonicaliseFilePathContentBetweenKeys(testName, preparedExpectedResult, key1, key2);
 				preparedActualResult = canonicaliseFilePathContentBetweenKeys(testName, preparedActualResult, key1, key2);
 				i++;
@@ -72,13 +77,13 @@ public class ResultComparer {
 				canonicaliseFilePathContentBetweenKeysProcessed = true;
 			}
 		}
-		MessageListener.debugMessage(testName, "Check ignoreRegularExpressionKey properties");
+		messageListener.debugMessage(testName, "Check ignoreRegularExpressionKey properties");
 		boolean ignoreRegularExpressionKeyProcessed = false;
 		i = 1;
 		while (!ignoreRegularExpressionKeyProcessed) {
 			String key = properties.getProperty("ignoreRegularExpressionKey" + i + ".key");
 			if (key != null) {
-				MessageListener.debugMessage(testName, "Ignore regular expression key '" + key + "'");
+				messageListener.debugMessage(testName, "Ignore regular expression key '" + key + "'");
 				preparedExpectedResult = ignoreRegularExpression(preparedExpectedResult, key);
 				preparedActualResult = ignoreRegularExpression(preparedActualResult, key);
 				i++;
@@ -86,13 +91,13 @@ public class ResultComparer {
 				ignoreRegularExpressionKeyProcessed = true;
 			}
 		}
-		MessageListener.debugMessage(testName, "Check removeRegularExpressionKey properties");
+		messageListener.debugMessage(testName, "Check removeRegularExpressionKey properties");
 		boolean removeRegularExpressionKeyProcessed = false;
 		i = 1;
 		while (!removeRegularExpressionKeyProcessed) {
 			String key = properties.getProperty("removeRegularExpressionKey" + i + ".key");
 			if (key != null) {
-				MessageListener.debugMessage(testName, "Remove regular expression key '" + key + "'");
+				messageListener.debugMessage(testName, "Remove regular expression key '" + key + "'");
 				preparedExpectedResult = removeRegularExpression(preparedExpectedResult, key);
 				preparedActualResult = removeRegularExpression(preparedActualResult, key);
 				i++;
@@ -100,14 +105,14 @@ public class ResultComparer {
 				removeRegularExpressionKeyProcessed = true;
 			}
 		}
-		MessageListener.debugMessage(testName, "Check replaceRegularExpressionKeys properties");
+		messageListener.debugMessage(testName, "Check replaceRegularExpressionKeys properties");
 		boolean replaceRegularExpressionKeysProcessed = false;
 		i = 1;
 		while (!replaceRegularExpressionKeysProcessed) {
 			String key1 = properties.getProperty("replaceRegularExpressionKeys" + i + ".key1");
 			String key2 = properties.getProperty("replaceRegularExpressionKeys" + i + ".key2");
 			if (key1 != null && key2 != null) {
-				MessageListener.debugMessage(testName, "Replace regular expression from '" + key1 + "' to '" + key2 + "'");
+				messageListener.debugMessage(testName, "Replace regular expression from '" + key1 + "' to '" + key2 + "'");
 				preparedExpectedResult = replaceRegularExpression(preparedExpectedResult, key1, key2);
 				preparedActualResult = replaceRegularExpression(preparedActualResult, key1, key2);
 				i++;
@@ -115,14 +120,14 @@ public class ResultComparer {
 				replaceRegularExpressionKeysProcessed = true;
 			}
 		}
-		MessageListener.debugMessage(testName, "Check ignoreContentBetweenKeys properties");
+		messageListener.debugMessage(testName, "Check ignoreContentBetweenKeys properties");
 		boolean ignoreContentBetweenKeysProcessed = false;
 		i = 1;
 		while (!ignoreContentBetweenKeysProcessed) {
 			String key1 = properties.getProperty("ignoreContentBetweenKeys" + i + ".key1");
 			String key2 = properties.getProperty("ignoreContentBetweenKeys" + i + ".key2");
 			if (key1 != null && key2 != null) {
-				MessageListener.debugMessage(testName, "Ignore content between key1 '" + key1 + "' and key2 '" + key2 + "'");
+				messageListener.debugMessage(testName, "Ignore content between key1 '" + key1 + "' and key2 '" + key2 + "'");
 				preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, key1, key2);
 				preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, key1, key2);
 				i++;
@@ -130,14 +135,14 @@ public class ResultComparer {
 				ignoreContentBetweenKeysProcessed = true;
 			}
 		}
-		MessageListener.debugMessage(testName, "Check ignoreKeysAndContentBetweenKeys properties");
+		messageListener.debugMessage(testName, "Check ignoreKeysAndContentBetweenKeys properties");
 		boolean ignoreKeysAndContentBetweenKeysProcessed = false;
 		i = 1;
 		while (!ignoreKeysAndContentBetweenKeysProcessed) {
 			String key1 = properties.getProperty("ignoreKeysAndContentBetweenKeys" + i + ".key1");
 			String key2 = properties.getProperty("ignoreKeysAndContentBetweenKeys" + i + ".key2");
 			if (key1 != null && key2 != null) {
-				MessageListener.debugMessage(testName, "Ignore keys and content between key1 '" + key1 + "' and key2 '" + key2 + "'");
+				messageListener.debugMessage(testName, "Ignore keys and content between key1 '" + key1 + "' and key2 '" + key2 + "'");
 				preparedExpectedResult = ignoreKeysAndContentBetweenKeys(preparedExpectedResult, key1, key2);
 				preparedActualResult = ignoreKeysAndContentBetweenKeys(preparedActualResult, key1, key2);
 				i++;
@@ -145,14 +150,14 @@ public class ResultComparer {
 				ignoreKeysAndContentBetweenKeysProcessed = true;
 			}
 		}
-		MessageListener.debugMessage(testName, "Check removeKeysAndContentBetweenKeys properties");
+		messageListener.debugMessage(testName, "Check removeKeysAndContentBetweenKeys properties");
 		boolean removeKeysAndContentBetweenKeysProcessed = false;
 		i = 1;
 		while (!removeKeysAndContentBetweenKeysProcessed) {
 			String key1 = properties.getProperty("removeKeysAndContentBetweenKeys" + i + ".key1");
 			String key2 = properties.getProperty("removeKeysAndContentBetweenKeys" + i + ".key2");
 			if (key1 != null && key2 != null) {
-				MessageListener.debugMessage(testName, "Remove keys and content between key1 '" + key1 + "' and key2 '" + key2 + "'");
+				messageListener.debugMessage(testName, "Remove keys and content between key1 '" + key1 + "' and key2 '" + key2 + "'");
 				preparedExpectedResult = removeKeysAndContentBetweenKeys(preparedExpectedResult, key1, key2);
 				preparedActualResult = removeKeysAndContentBetweenKeys(preparedActualResult, key1, key2);
 				i++;
@@ -160,13 +165,13 @@ public class ResultComparer {
 				removeKeysAndContentBetweenKeysProcessed = true;
 			}
 		}
-		MessageListener.debugMessage(testName, "Check ignoreKey properties");
+		messageListener.debugMessage(testName, "Check ignoreKey properties");
 		boolean ignoreKeyProcessed = false;
 		i = 1;
 		while (!ignoreKeyProcessed) {
 			String key = properties.getProperty("ignoreKey" + i);
 			if (key != null) {
-				MessageListener.debugMessage(testName, "Ignore key '" + key + "'");
+				messageListener.debugMessage(testName, "Ignore key '" + key + "'");
 				preparedExpectedResult = ignoreKey(preparedExpectedResult, key);
 				preparedActualResult = ignoreKey(preparedActualResult, key);
 				i++;
@@ -174,13 +179,13 @@ public class ResultComparer {
 				ignoreKeyProcessed = true;
 			}
 		}
-		MessageListener.debugMessage(testName, "Check removeKey properties");
+		messageListener.debugMessage(testName, "Check removeKey properties");
 		boolean removeKeyProcessed = false;
 		i = 1;
 		while (!removeKeyProcessed) {
 			String key = properties.getProperty("removeKey" + i);
 			if (key != null) {
-				MessageListener.debugMessage(testName, "Remove key '" + key + "'");
+				messageListener.debugMessage(testName, "Remove key '" + key + "'");
 				preparedExpectedResult = removeKey(preparedExpectedResult, key);
 				preparedActualResult = removeKey(preparedActualResult, key);
 				i++;
@@ -188,14 +193,14 @@ public class ResultComparer {
 				removeKeyProcessed = true;
 			}
 		}
-		MessageListener.debugMessage(testName, "Check replaceKey properties");
+		messageListener.debugMessage(testName, "Check replaceKey properties");
 		boolean replaceKeyProcessed = false;
 		i = 1;
 		while (!replaceKeyProcessed) {
 			String key1 = properties.getProperty("replaceKey" + i + ".key1");
 			String key2 = properties.getProperty("replaceKey" + i + ".key2");
 			if (key1 != null && key2 != null) {
-				MessageListener.debugMessage(testName, "Replace key from '" + key1 + "' to '" + key2 + "'");
+				messageListener.debugMessage(testName, "Replace key from '" + key1 + "' to '" + key2 + "'");
 				preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
 				preparedActualResult = replaceKey(preparedActualResult, key1, key2);
 				i++;
@@ -203,14 +208,14 @@ public class ResultComparer {
 				replaceKeyProcessed = true;
 			}
 		}
-		MessageListener.debugMessage(testName, "Check replaceEverywhereKey properties");
+		messageListener.debugMessage(testName, "Check replaceEverywhereKey properties");
 		boolean replaceEverywhereKeyProcessed = false;
 		i = 1;
 		while (!replaceEverywhereKeyProcessed) {
 			String key1 = properties.getProperty("replaceEverywhereKey" + i + ".key1");
 			String key2 = properties.getProperty("replaceEverywhereKey" + i + ".key2");
 			if (key1 != null && key2 != null) {
-				MessageListener.debugMessage(testName, "Replace key from '" + key1 + "' to '" + key2 + "'");
+				messageListener.debugMessage(testName, "Replace key from '" + key1 + "' to '" + key2 + "'");
 				preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
 				preparedActualResult = replaceKey(preparedActualResult, key1, key2);
 				i++;
@@ -218,7 +223,7 @@ public class ResultComparer {
 				replaceEverywhereKeyProcessed = true;
 			}
 		}
-		MessageListener.debugMessage(testName, "Check ignoreCurrentTimeBetweenKeys properties");
+		messageListener.debugMessage(testName, "Check ignoreCurrentTimeBetweenKeys properties");
 		boolean ignoreCurrentTimeBetweenKeysProcessed = false;
 		i = 1;
 		while (!ignoreCurrentTimeBetweenKeysProcessed) {
@@ -231,17 +236,17 @@ public class ResultComparer {
 				errorMessageOnRemainingString = false;
 			}
 			if (key1 != null && key2 != null && margin != null) {
-				MessageListener.debugMessage(testName, "Ignore current time between key1 '" + key1 + "' and key2 '" + key2 + "' (errorMessageOnRemainingString is " + errorMessageOnRemainingString + ")");
-				MessageListener.debugMessage(testName, "For result string");
+				messageListener.debugMessage(testName, "Ignore current time between key1 '" + key1 + "' and key2 '" + key2 + "' (errorMessageOnRemainingString is " + errorMessageOnRemainingString + ")");
+				messageListener.debugMessage(testName, "For result string");
 				preparedActualResult = ignoreCurrentTimeBetweenKeys(testName, preparedActualResult, key1, key2, pattern, margin, errorMessageOnRemainingString, false);
-				MessageListener.debugMessage(testName, "For expected string");
+				messageListener.debugMessage(testName, "For expected string");
 				preparedExpectedResult = ignoreCurrentTimeBetweenKeys(testName, preparedExpectedResult, key1, key2, pattern, margin, errorMessageOnRemainingString, true);
 				i++;
 			} else {
 				ignoreCurrentTimeBetweenKeysProcessed = true;
 			}
 		}
-		MessageListener.debugMessage(testName, "Check ignoreContentBeforeKey properties");
+		messageListener.debugMessage(testName, "Check ignoreContentBeforeKey properties");
 		boolean ignoreContentBeforeKeyProcessed = false;
 		i = 1;
 		while (!ignoreContentBeforeKeyProcessed) {
@@ -250,7 +255,7 @@ public class ResultComparer {
 				key = properties.getProperty("ignoreContentBeforeKey" + i + ".key");
 			}
 			if (key != null) {
-				MessageListener.debugMessage(testName, "Ignore content before key '" + key + "'");
+				messageListener.debugMessage(testName, "Ignore content before key '" + key + "'");
 				preparedExpectedResult = ignoreContentBeforeKey(preparedExpectedResult, key);
 				preparedActualResult = ignoreContentBeforeKey(preparedActualResult, key);
 				i++;
@@ -258,7 +263,7 @@ public class ResultComparer {
 				ignoreContentBeforeKeyProcessed = true;
 			}
 		}
-		MessageListener.debugMessage(testName, "Check ignoreContentAfterKey properties");
+		messageListener.debugMessage(testName, "Check ignoreContentAfterKey properties");
 		boolean ignoreContentAfterKeyProcessed = false;
 		i = 1;
 		while (!ignoreContentAfterKeyProcessed) {
@@ -267,7 +272,7 @@ public class ResultComparer {
 				key = properties.getProperty("ignoreContentAfterKey" + i + ".key");
 			}
 			if (key != null) {
-				MessageListener.debugMessage(testName, "Ignore content after key '" + key + "'");
+				messageListener.debugMessage(testName, "Ignore content after key '" + key + "'");
 				preparedExpectedResult = ignoreContentAfterKey(preparedExpectedResult, key);
 				preparedActualResult = ignoreContentAfterKey(preparedActualResult, key);
 				i++;
@@ -275,7 +280,7 @@ public class ResultComparer {
 				ignoreContentAfterKeyProcessed = true;
 			}
 		}
-		MessageListener.debugMessage(testName, "Check ignoreContentAfterKey properties");
+		messageListener.debugMessage(testName, "Check ignoreContentAfterKey properties");
 		String diffType = properties.getProperty(step + ".diffType");
 		if ((diffType != null && (diffType.equals(".xml") || diffType.equals(".wsdl")))
 				|| (diffType == null && (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")))) {
@@ -291,23 +296,23 @@ public class ResultComparer {
 			}
 			if (identical) {
 				ok = TestTool.RESULT_OK;
-				MessageListener.debugMessage(testName, "Strings are identical");
-				MessageListener.debugPipelineMessage(testName, stepDisplayName, "Result", printableActualResult);
-				MessageListener.debugPipelineMessagePreparedForDiff(testName, stepDisplayName, "Result as prepared for diff", preparedActualResult);
+				messageListener.debugMessage(testName, "Strings are identical");
+				messageListener.debugPipelineMessage(testName, stepDisplayName, "Result", printableActualResult);
+				messageListener.debugPipelineMessagePreparedForDiff(testName, stepDisplayName, "Result as prepared for diff", preparedActualResult);
 			} else {
-				MessageListener.debugMessage(testName, "Strings are not identical");
+				messageListener.debugMessage(testName, "Strings are not identical");
 				String message;
 				if (diffException == null) {
 					message = diff.toString();
 				} else {
 					message = "Exception during XML diff: " + diffException.getMessage();
-					MessageListener.errorMessage(testName, "Exception during XML diff: ", diffException);
+					messageListener.errorMessage(testName, "Exception during XML diff: ", diffException);
 				}
-				MessageListener.wrongPipelineMessage(testName, stepDisplayName, message, printableActualResult, printableExpectedResult, originalFilePath);
-				MessageListener.wrongPipelineMessagePreparedForDiff(testName, stepDisplayName, preparedActualResult, preparedExpectedResult, originalFilePath);
+				messageListener.wrongPipelineMessage(testName, stepDisplayName, message, printableActualResult, printableExpectedResult, originalFilePath);
+				messageListener.wrongPipelineMessagePreparedForDiff(testName, stepDisplayName, preparedActualResult, preparedExpectedResult, originalFilePath);
 				if (TestTool.autoSaveDiffs) {
 					String filenameAbsolutePath = (String)properties.get(step + ".absolutepath");
-					MessageListener.debugMessage(testName, "Copy actual result to ["+filenameAbsolutePath+"]");
+					messageListener.debugMessage(testName, "Copy actual result to ["+filenameAbsolutePath+"]");
 					try {
 						org.apache.commons.io.FileUtils.writeStringToFile(new File(filenameAbsolutePath), actualResult);
 					} catch (IOException e) {
@@ -321,11 +326,11 @@ public class ResultComparer {
 			String formattedPreparedActualResult = formatString(testName, preparedActualResult);
 			if (formattedPreparedExpectedResult.equals(formattedPreparedActualResult)) {
 				ok = TestTool.RESULT_OK;
-				MessageListener.debugMessage(testName, "Strings are identical");
-				MessageListener.debugPipelineMessage(testName, stepDisplayName, "Result", printableActualResult);
-				MessageListener.debugPipelineMessagePreparedForDiff(testName, stepDisplayName, "Result as prepared for diff", preparedActualResult);
+				messageListener.debugMessage(testName, "Strings are identical");
+				messageListener.debugPipelineMessage(testName, stepDisplayName, "Result", printableActualResult);
+				messageListener.debugPipelineMessagePreparedForDiff(testName, stepDisplayName, "Result as prepared for diff", preparedActualResult);
 			} else {
-				MessageListener.debugMessage(testName, "Strings are not identical");
+				messageListener.debugMessage(testName, "Strings are not identical");
 				String message = null;
 				StringBuilder diffActual = new StringBuilder();
 				StringBuilder diffExcpected = new StringBuilder();
@@ -356,11 +361,11 @@ public class ResultComparer {
 					diffExcpected.append(" ...");
 				}
 				message = message + " actual result is '" + diffActual + "' and expected result is '" + diffExcpected + "'";
-				MessageListener.wrongPipelineMessage(testName, stepDisplayName, message, printableActualResult, printableExpectedResult, originalFilePath);
-				MessageListener.wrongPipelineMessagePreparedForDiff(testName, stepDisplayName, preparedActualResult, preparedExpectedResult, originalFilePath);
+				messageListener.wrongPipelineMessage(testName, stepDisplayName, message, printableActualResult, printableExpectedResult, originalFilePath);
+				messageListener.wrongPipelineMessagePreparedForDiff(testName, stepDisplayName, preparedActualResult, preparedExpectedResult, originalFilePath);
 				if (TestTool.autoSaveDiffs) {
 					String filenameAbsolutePath = (String)properties.get(step + ".absolutepath");
-					MessageListener.debugMessage(testName, "Copy actual result to ["+filenameAbsolutePath+"]");
+					messageListener.debugMessage(testName, "Copy actual result to ["+filenameAbsolutePath+"]");
 					try {
 						org.apache.commons.io.FileUtils.writeStringToFile(new File(filenameAbsolutePath), actualResult);
 					} catch (IOException e) {
@@ -372,23 +377,23 @@ public class ResultComparer {
 		return ok;
 	}
 
-	public static String decodeUnzipContentBetweenKeys(String testName, String string, String key1, String key2, boolean replaceNewlines) {
+	private String decodeUnzipContentBetweenKeys(String testName, String string, String key1, String key2, boolean replaceNewlines) {
 		String result = string;
 		int i = result.indexOf(key1);
 		while (i != -1 && result.length() > i + key1.length()) {
-			MessageListener.debugMessage(testName, "Key 1 found");
+			messageListener.debugMessage(testName, "Key 1 found");
 			int j = result.indexOf(key2, i + key1.length());
 			if (j != -1) {
-				MessageListener.debugMessage(testName, "Key 2 found");
+				messageListener.debugMessage(testName, "Key 2 found");
 				String encoded = result.substring(i + key1.length(), j);
 				String unzipped = null;
 				byte[] decodedBytes = null;
 				Base64 decoder = new Base64();
-				MessageListener.debugMessage(testName, "Decode");
+				messageListener.debugMessage(testName, "Decode");
 				decodedBytes = decoder.decodeBase64(encoded);
 				if (unzipped == null) {
 					try {
-						MessageListener.debugMessage(testName, "Unzip");
+						messageListener.debugMessage(testName, "Unzip");
 						StringBuffer stringBuffer = new StringBuffer();
 						stringBuffer.append("<tt:file xmlns:tt=\"testtool\">");
 						ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(decodedBytes));
@@ -408,7 +413,7 @@ public class ResultComparer {
 						stringBuffer.append("</tt:file>");
 						unzipped = stringBuffer.toString();
 					} catch(Exception e) {
-						MessageListener.errorMessage(testName, "Could not unzip: " + e.getMessage(), e);
+						messageListener.errorMessage(testName, "Could not unzip: " + e.getMessage(), e);
 						unzipped = encoded;
 					}
 				}
@@ -421,15 +426,15 @@ public class ResultComparer {
 		return result;
 	}
 
-	public static String ignoreCurrentTimeBetweenKeys(String testName, String string, String key1, String key2, String pattern, String margin, boolean errorMessageOnRemainingString, boolean isControlString) {
+	private String ignoreCurrentTimeBetweenKeys(String testName, String string, String key1, String key2, String pattern, String margin, boolean errorMessageOnRemainingString, boolean isControlString) {
 		String result = string;
 		String ignoreText = "IGNORE_CURRENT_TIME";
 		int i = result.indexOf(key1);
 		while (i != -1 && result.length() > i + key1.length()) {
-			MessageListener.debugMessage(testName, "Key 1 found");
+			messageListener.debugMessage(testName, "Key 1 found");
 			int j = result.indexOf(key2, i + key1.length());
 			if (j != -1) {
-				MessageListener.debugMessage(testName, "Key 2 found");
+				messageListener.debugMessage(testName, "Key 2 found");
 				String dateString = result.substring(i + key1.length(), j);
 				Date date;
 				boolean remainingString = false;
@@ -446,7 +451,7 @@ public class ResultComparer {
 							remainingString = true;
 							i = result.indexOf(key1, j + key2.length());
 							if (errorMessageOnRemainingString) {
-								MessageListener.errorMessage(testName, "Found remaining string after parsing date with pattern '"
+								messageListener.errorMessage(testName, "Found remaining string after parsing date with pattern '"
 											 + pattern + "': "
 											 + dateString.substring(parsePosition.getIndex()));
 							}
@@ -472,17 +477,17 @@ public class ResultComparer {
 								result = result.substring(0, i) + key1 + ignoreText + result.substring(j);
 								i = result.indexOf(key1, i + key1.length() + ignoreText.length() + key2.length());
 							} else {
-								MessageListener.errorMessage(testName, "Dates differ too much. Current time: '" + currentTime + "'. Result time: '" + dateString + "'");
+								messageListener.errorMessage(testName, "Dates differ too much. Current time: '" + currentTime + "'. Result time: '" + dateString + "'");
 								i = result.indexOf(key1, j + key2.length());
 							}
 						}
 					}
 				} catch(ParseException e) {
 					i = -1;
-					MessageListener.errorMessage(testName, "Could not parse margin or date: " + e.getMessage(), e);
+					messageListener.errorMessage(testName, "Could not parse margin or date: " + e.getMessage(), e);
 				} catch(NumberFormatException e) {
 					i = -1;
-					MessageListener.errorMessage(testName, "Could not parse long value: " + e.getMessage(), e);
+					messageListener.errorMessage(testName, "Could not parse long value: " + e.getMessage(), e);
 				}
 			} else {
 				i = -1;
@@ -491,14 +496,14 @@ public class ResultComparer {
 		return result;
 	}
 
-	public static String canonicaliseFilePathContentBetweenKeys(String testName, String string, String key1, String key2) {
+	private String canonicaliseFilePathContentBetweenKeys(String testName, String string, String key1, String key2) {
 		String result = string;
 		if (key1.equals("*") && key2.equals("*")) {
 			File file = new File(result);
 			try {
 				result = file.getCanonicalPath();
 			} catch (IOException e) {
-				MessageListener.errorMessage(testName, "Could not canonicalise filepath: " + e.getMessage(), e);
+				messageListener.errorMessage(testName, "Could not canonicalise filepath: " + e.getMessage(), e);
 			}
 			result = FilenameUtils.normalize(result);
 		} else {
@@ -511,7 +516,7 @@ public class ResultComparer {
 					try {
 						fileName = file.getCanonicalPath();
 					} catch (IOException e) {
-						MessageListener.errorMessage(testName, "Could not canonicalise filepath: " + e.getMessage(), e);
+						messageListener.errorMessage(testName, "Could not canonicalise filepath: " + e.getMessage(), e);
 					}
 					fileName = FilenameUtils.normalize(fileName);
 					result = result.substring(0, i) + key1 + fileName + result.substring(j);
@@ -524,7 +529,7 @@ public class ResultComparer {
 		return result;
 	}
 
-	public static String ignoreContentBeforeKey(String string, String key) {
+	private String ignoreContentBeforeKey(String string, String key) {
 		int i = string.indexOf(key);
 		if (i == -1) {
 			return string;
@@ -533,7 +538,7 @@ public class ResultComparer {
 		}
 	}
 
-	public static String ignoreContentAfterKey(String string, String key) {
+	private String ignoreContentAfterKey(String string, String key) {
 		int i = string.indexOf(key);
 		if (i == -1) {
 			return string;
@@ -542,19 +547,19 @@ public class ResultComparer {
 		}
 	}
 
-	public static String ignoreRegularExpression(String string, String regex) {
+	private String ignoreRegularExpression(String string, String regex) {
 		return string.replaceAll(regex, "IGNORE");
 	}
 
-	public static String removeRegularExpression(String string, String regex) {
+	private String removeRegularExpression(String string, String regex) {
 		return string.replaceAll(regex, "");
 	}
 
-	public static String replaceRegularExpression(String string, String from, String to) {
+	private String replaceRegularExpression(String string, String from, String to) {
 		return string.replaceAll(from, to);
 	}
 
-	public static String ignoreContentBetweenKeys(String string, String key1, String key2) {
+	private String ignoreContentBetweenKeys(String string, String key1, String key2) {
 		String result = string;
 		String ignoreText = "IGNORE";
 		int i = result.indexOf(key1);
@@ -570,7 +575,7 @@ public class ResultComparer {
 		return result;
 	}
 
-	public static String ignoreKeysAndContentBetweenKeys(String string, String key1, String key2) {
+	private String ignoreKeysAndContentBetweenKeys(String string, String key1, String key2) {
 		String result = string;
 		String ignoreText = "IGNORE";
 		int i = result.indexOf(key1);
@@ -586,7 +591,7 @@ public class ResultComparer {
 		return result;
 	}
 
-	public static String removeKeysAndContentBetweenKeys(String string, String key1, String key2) {
+	private String removeKeysAndContentBetweenKeys(String string, String key1, String key2) {
 		String result = string;
 		int i = result.indexOf(key1);
 		while (i != -1 && result.length() > i + key1.length()) {
@@ -601,7 +606,7 @@ public class ResultComparer {
 		return result;
 	}
 
-	public static String ignoreKey(String string, String key) {
+	private String ignoreKey(String string, String key) {
 		String result = string;
 		String ignoreText = "IGNORE";
 		int i = result.indexOf(key);
@@ -612,7 +617,7 @@ public class ResultComparer {
 		return result;
 	}
 
-	public static String removeKey(String string, String key) {
+	private String removeKey(String string, String key) {
 		String result = string;
 		int i = result.indexOf(key);
 		while (i != -1) {
@@ -622,7 +627,7 @@ public class ResultComparer {
 		return result;
 	}
 
-	public static String replaceKey(String string, String from, String to) {
+	private String replaceKey(String string, String from, String to) {
 		String result = string;
 		if (!from.equals(to)) {
 			int i = result.indexOf(from);
@@ -634,7 +639,7 @@ public class ResultComparer {
 		return result;
 	}
 
-	public static String formatString(String testName, String string) {
+	public String formatString(String testName, String string) {
 		StringBuffer sb = new StringBuffer();
 		try {
 			Reader reader = new StringReader(string);
@@ -649,7 +654,7 @@ public class ResultComparer {
 			}
 			br.close();
 		} catch(Exception e) {
-			MessageListener.errorMessage(testName, "Could not read string '" + string + "': " + e.getMessage(), e);
+			messageListener.errorMessage(testName, "Could not read string '" + string + "': " + e.getMessage(), e);
 		}
 		return sb.toString();
 	}

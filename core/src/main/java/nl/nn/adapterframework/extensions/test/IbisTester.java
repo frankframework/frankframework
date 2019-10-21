@@ -1,46 +1,25 @@
-package nl.nn.adapterframework.extensions.test;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.lang.reflect.InvocationTargetException;
-import java.security.AccessControlException;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.ServletException;
-
-import nl.nn.adapterframework.testtool.TestPreparer;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.bouncycastle.util.test.Test;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockServletContext;
+package nl.nn.adapterframework.testtool.test;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.ProcessMetrics;
-import nl.nn.adapterframework.util.RunStateEnum;
-import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
+import nl.nn.adapterframework.testtool.TestPreparer;
+import nl.nn.adapterframework.util.*;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
+import java.io.File;
+import java.io.IOException;
+import java.security.AccessControlException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class IbisTester {
 	private AppConstants appConstants;
-	String webAppPath;
-	IbisContext ibisContext;
+	private String webAppPath;
+	private IbisContext ibisContext;
 	//MockServletContext application;
 	private final int maxTries = 30;
 	private final int timeout = 1000;
@@ -56,7 +35,6 @@ public class IbisTester {
 	 * @return true if everything has been initialized successfully.
 	 */
 	public boolean initTester(){
-
 		try {
 			// fix for GitLab Runner
 			File file = new File("target/log");
@@ -92,6 +70,7 @@ public class IbisTester {
 
 		debug("Starting Ibis Context...");
 		ibisContext = new IbisContext();
+		debug("Initializing Ibis Context...");
 		long configLoadStartTime = System.currentTimeMillis();
 		ibisContext.init();
 		long configLoadEndTime = System.currentTimeMillis();
@@ -258,14 +237,9 @@ public class IbisTester {
 	public Map<String, String> getRootDirectories(boolean forceReread) {
 		String realPath = AppConstants.getInstance().getResolvedProperty("webapp.realpath") + "larva/";
 		if(forceReread || TestPreparer.scenariosRootDirectories == null)
-			TestPreparer.initScenariosRootDirectories(realPath, null);
+			TestPreparer.initScenariosRootDirectories(realPath, null, appConstants);
 
 		return (Map<String, String>) ((HashMap)TestPreparer.scenariosRootDirectories).clone();
-	}
-
-	public Map<String, String> getScenarioList(String rootDirectory) {
-		TestPreparer.getScenariosList(rootDirectory, appConstants);
-		return TestPreparer.getScenariosList(rootDirectory, appConstants);
 	}
 
 //

@@ -1,31 +1,12 @@
-/**
- * 
- */
 package nl.nn.adapterframework.testtool;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.testtool.controller.*;
+import nl.nn.adapterframework.util.AppConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.testtool.controller.FileController;
-import nl.nn.adapterframework.testtool.controller.JdbcFixedQueryController;
-import nl.nn.adapterframework.testtool.controller.JmsController;
-import nl.nn.adapterframework.testtool.controller.ListenerController;
-import nl.nn.adapterframework.testtool.controller.SenderController;
-import nl.nn.adapterframework.testtool.controller.WebServiceController;
-import nl.nn.adapterframework.util.AppConstants;
+import java.io.File;
+import java.util.*;
 
 /**
  * @author Murat Kaan Meral
@@ -40,17 +21,33 @@ public class ScenarioTester extends Thread {
 	private int waitBeforeCleanUp;
 	private int scenariosTotal;
 	private int[] scenarioResults;
+	private MessageListener messageListener;
+
+	private FileController fileController;
+	private JdbcFixedQueryController jdbcFixedQueryController;
+	private JmsController jmsController;
+	private ListenerController listenerController;
+	private SenderController senderController;
+	private WebServiceController webServiceController;
 	
 	@Autowired
 	static IbisContext ibisContext;
 	
-	public ScenarioTester(List<File> scenarioFile, String currentScenariosRootDirectory, AppConstants appConstants, int[] scenarioResults, int waitBeforeCleanUp, int scenariosTotal) {
+	public ScenarioTester(MessageListener messageListener, List<File> scenarioFile, String currentScenariosRootDirectory, AppConstants appConstants, int[] scenarioResults, int waitBeforeCleanUp, int scenariosTotal) {
+		this.messageListener = messageListener;
 		this.scenarioFile = scenarioFile;
 		this.currentScenariosRootDirectory = currentScenariosRootDirectory;
 		this.appConstants = appConstants;
 		this.waitBeforeCleanUp = waitBeforeCleanUp;
 		this.scenariosTotal = scenariosTotal;
 		this.scenarioResults = scenarioResults;
+
+		fileController = new FileController(this);
+		jdbcFixedQueryController = new JdbcFixedQueryController(this);
+		jmsController = new JmsController(this);
+		listenerController = new ListenerController(this);
+		senderController = new SenderController(this);
+		webServiceController = new WebServiceController(this);
 	}
 	
 	@Override
@@ -67,23 +64,23 @@ public class ScenarioTester extends Thread {
 		String shortName = longName.substring(currentScenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
 		String testName = shortName;
 
-		MessageListener.debugMessage("General", "Read property file " + scenarioFile.getName());
+		messageListener.debugMessage("General", "Read property file " + scenarioFile.getName());
 		Properties properties = TestPreparer.readProperties(appConstants, scenarioFile);
 
-		List<String> steps = null;
+		List<String> steps;
 
 		if (properties != null) {
 			testName = properties.getProperty("scenario.description", shortName);
-			MessageListener.testInitiationMessage(testName, longName);
+			messageListener.testInitiationMessage(testName, longName);
 
-			MessageListener.debugMessage(testName, "Read steps from property file");
+			messageListener.debugMessage(testName, "Read steps from property file");
 			steps = TestPreparer.getSteps(properties);
 			if (steps != null) {
 				synchronized(STEP_SYNCHRONIZER) {
-					MessageListener.debugMessage(testName, "Open queues");
+					messageListener.debugMessage(testName, "Open queues");
 					Map<String, Map<String, Object>> queues = openQueues(scenarioDirectory, steps, properties, testName, ibisContext, appConstants);
 					if (queues != null) {
-						MessageListener.debugMessage(testName, "Execute steps");
+						messageListener.debugMessage(testName, "Execute steps");
 						boolean allStepsPassed = true;
 						boolean autoSaved = false;
 						Iterator<String> iterator = steps.iterator();
@@ -93,15 +90,15 @@ public class ScenarioTester extends Thread {
 						while (allStepsPassed && iterator.hasNext()) {
 							String step = (String)iterator.next();
 							String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
-							MessageListener.debugMessage(testName, "Execute step '" + stepDisplayName + "'");
+							messageListener.debugMessage(testName, "Execute step '" + stepDisplayName + "'");
 							int stepPassed = executeStep(step, properties, testName, stepDisplayName, queues);
 							if (stepPassed==TestTool.RESULT_OK) {
-								MessageListener.stepMessage(testName, "Step '" + stepDisplayName + "' passed");
+								messageListener.stepMessage(testName, "Step '" + stepDisplayName + "' passed");
 							} else if (stepPassed==TestTool.RESULT_AUTOSAVED) {
-								MessageListener.stepMessage(testName, "Step '" + stepDisplayName + "' passed after autosave");
+								messageListener.stepMessage(testName, "Step '" + stepDisplayName + "' passed after autosave");
 								autoSaved = true;
 							} else {
-								MessageListener.stepMessage(testName, "Step '" + stepDisplayName + "' failed");
+								messageListener.stepMessage(testName, "Step '" + stepDisplayName + "' failed");
 								allStepsPassed = false;
 							}
 						}
@@ -115,15 +112,15 @@ public class ScenarioTester extends Thread {
 								scenarioPassed = TestTool.RESULT_OK;
 							}
 						}
-						MessageListener.debugMessage(testName, "Wait " + waitBeforeCleanUp + " ms before clean up");
+						messageListener.debugMessage(testName, "Wait " + waitBeforeCleanUp + " ms before clean up");
 						try {
 							Thread.sleep(waitBeforeCleanUp);
 						} catch(InterruptedException e) {
 						}
-						MessageListener.debugMessage(testName, "Close queues");
+						messageListener.debugMessage(testName, "Close queues");
 						boolean remainingMessagesFound = closeQueues(queues, properties);
 						if (remainingMessagesFound) {
-							MessageListener.stepMessage(testName, "Found one or more messages on queues or in database after scenario executed");
+							messageListener.stepMessage(testName, "Found one or more messages on queues or in database after scenario executed");
 							scenarioPassed = TestTool.RESULT_ERROR;
 						}
 					}
@@ -136,61 +133,30 @@ public class ScenarioTester extends Thread {
 			scenarioResults[scenarioPassed]++;
 			switch (scenarioPassed) {
 			case TestTool.RESULT_OK:
-				MessageListener.testStatusMessage(testName, "OK");
-				MessageListener.scenarioMessage(testName, "Scenario '" + shortName + " - "
+				messageListener.testStatusMessage(testName, "OK");
+				messageListener.scenarioMessage(testName, "Scenario '" + shortName + " - "
 						+ properties.getProperty("scenario.description") + "' passed (" + scenarioResults[0] + "/"
 						+ scenarioResults[1] + "/" + scenariosTotal + ")");
 				break;
 			case TestTool.RESULT_AUTOSAVED:
-				MessageListener.testStatusMessage(testName, "AUTOSAVED");
-				MessageListener.scenarioMessage(testName, "Scenario '" + shortName + " - "
+				messageListener.testStatusMessage(testName, "AUTOSAVED");
+				messageListener.scenarioMessage(testName, "Scenario '" + shortName + " - "
 						+ properties.getProperty("scenario.description") + "' passed after autosave");
 				break;
 			case TestTool.RESULT_ERROR:
-				MessageListener.testStatusMessage(testName, "ERROR");
-				MessageListener.scenarioFailedMessage(testName, "Scenario '" + shortName + " - "
+				messageListener.testStatusMessage(testName, "ERROR");
+				messageListener.scenarioFailedMessage(testName, "Scenario '" + shortName + " - "
 						+ properties.getProperty("scenario.description") + "' failed (" + scenarioResults[0] + "/"
 						+ scenarioResults[1] + "/" + scenariosTotal + ")");
 				break;
 			default:
-				MessageListener.errorMessage(testName, "Could not retrieve the result of the test " + shortName);
+				messageListener.errorMessage(testName, "Could not retrieve the result of the test " + shortName);
 				break;
 			}
 		}
 	}
-	/*
-	public static List<File> readScenarioFiles(AppConstants appConstants, String scenariosDirectory) {
-		List<File> scenarioFiles = new ArrayList<File>();
-		MessageListener.debugMessage("List all files in directory '" + scenariosDirectory + "'");
-		File[] files = new File(scenariosDirectory).listFiles();
-		if (files == null) {
-			MessageListener.debugMessage("Could not read files from directory '" + scenariosDirectory + "'");
-		} else {
-			MessageListener.debugMessage("Sort files");
-			Arrays.sort(files);
-			MessageListener.debugMessage("Filter out property files containing a 'scenario.description' property");
-			for (int i = 0; i < files.length; i++) {
-				File file = files[i];
-				if (file.getName().endsWith(".properties")) {
-					Properties properties = TestPreparer.readProperties(appConstants, file);
-					if (properties != null && properties.get("scenario.description") != null) {
-						String active = properties.getProperty("scenario.active", "true");
-						String unstable = properties.getProperty("adapter.unstable", "false");
-						if (active.equalsIgnoreCase("true") && unstable.equalsIgnoreCase("false")) {
-							scenarioFiles.add(file);
-						}
-					}
-				} else if (file.isDirectory() && (!file.getName().equals("CVS"))) {
-					scenarioFiles.addAll(readScenarioFiles(appConstants, file.getAbsolutePath()));
-				}
-			}
-		}
-		MessageListener.debugMessage(scenarioFiles.size() + " scenario files found");
-		return scenarioFiles;
-	}
-	*/
 	
-	private static int executeStep(String step, Properties properties, String testName, String stepDisplayName, Map<String, Map<String, Object>> queues) {
+	private int executeStep(String step, Properties properties, String testName, String stepDisplayName, Map<String, Map<String, Object>> queues) {
 		int stepPassed = TestTool.RESULT_ERROR;
 		String fileName = properties.getProperty(step);
 		String fileNameAbsolutePath = properties.getProperty(step + ".absolutepath");
@@ -199,68 +165,65 @@ public class ScenarioTester extends Thread {
 		String fileContent;
 
 		if ("".equals(fileName)) {
-			MessageListener.errorMessage(testName, "No file specified for step '" + step + "'");
+			messageListener.errorMessage(testName, "No file specified for step '" + step + "'");
 		} else {
-			MessageListener.debugMessage(testName, "Read file " + fileName);
+			messageListener.debugMessage(testName, "Read file " + fileName);
 			fileContent = TestPreparer.readFile(fileNameAbsolutePath);
 			if (fileContent == null) {
-				MessageListener.errorMessage(testName, "Could not read file '" + fileName + "'");
+				messageListener.errorMessage(testName, "Could not read file '" + fileName + "'");
 			} else {
 				if (step.endsWith(".read")) {
 					queueName = step.substring(i + 1, step.length() - 5);
 
 					if ("nl.nn.adapterframework.jms.JmsListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = JmsController.read(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, fileNameAbsolutePath);
+						stepPassed = jmsController.read(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, fileNameAbsolutePath);
 					} else 	if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = JdbcFixedQueryController.read(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, fileNameAbsolutePath);
+						stepPassed = jdbcFixedQueryController.read(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, fileNameAbsolutePath);
 					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = SenderController.executeSenderRead(step, stepDisplayName, properties, queues, queueName, "ibisWebService", fileName, fileContent, fileNameAbsolutePath);
+						stepPassed = senderController.executeSenderRead(step, stepDisplayName, properties, queues, queueName, "ibisWebService", fileName, fileContent, fileNameAbsolutePath);
 					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = SenderController.executeSenderRead(step, stepDisplayName, properties, queues, queueName, "webService", fileName, fileContent, fileNameAbsolutePath);
+						stepPassed = senderController.executeSenderRead(step, stepDisplayName, properties, queues, queueName, "webService", fileName, fileContent, fileNameAbsolutePath);
 					} else if ("nl.nn.adapterframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = WebServiceController.read(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, fileNameAbsolutePath);
+						stepPassed = webServiceController.read(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, fileNameAbsolutePath);
 					} else if ("nl.nn.adapterframework.http.HttpSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = SenderController.executeSenderRead(step, stepDisplayName, properties, queues, queueName, "http", fileName, fileContent, fileNameAbsolutePath);
+						stepPassed = senderController.executeSenderRead(step, stepDisplayName, properties, queues, queueName, "http", fileName, fileContent, fileNameAbsolutePath);
 					} else if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = SenderController.executeSenderRead(step, stepDisplayName, properties, queues, queueName, "ibisJava", fileName, fileContent, fileNameAbsolutePath);
+						stepPassed = senderController.executeSenderRead(step, stepDisplayName, properties, queues, queueName, "ibisJava", fileName, fileContent, fileNameAbsolutePath);
 					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = WebServiceController.read(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, fileNameAbsolutePath);
+						stepPassed = webServiceController.read(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, fileNameAbsolutePath);
 					} else if ("nl.nn.adapterframework.testtool.FileListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = FileController.executeListenerRead(testName, step, stepDisplayName, properties, queues, queueName, fileName, fileContent, fileNameAbsolutePath);
+						stepPassed = fileController.executeListenerRead(testName, step, stepDisplayName, properties, queues, queueName, fileName, fileContent, fileNameAbsolutePath);
 					} else if ("nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = FileController.executeSenderRead(testName, step, stepDisplayName, properties, queues, queueName, fileName, fileContent, fileNameAbsolutePath);
+						stepPassed = fileController.executeSenderRead(testName, step, stepDisplayName, properties, queues, queueName, fileName, fileContent, fileNameAbsolutePath);
 					} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = ListenerController.executeXsltProviderListenerRead(stepDisplayName, properties, queues, queueName, fileContent, TestPreparer.createParametersMapFromParamProperties(properties, step, false, null));
+						stepPassed = listenerController.executeXsltProviderListenerRead(stepDisplayName, properties, queues, queueName, fileContent, TestPreparer.createParametersMapFromParamProperties(properties, step, false, null));
 					} else {
-						MessageListener.errorMessage(testName, "Property '" + queueName + ".className' not found or not valid");
+						messageListener.errorMessage(testName, "Property '" + queueName + ".className' not found or not valid");
 					}
 				} else {
 					queueName = step.substring(i + 1, step.length() - 6);
-					Runnable a;
-					
-
 					if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = JmsController.write(testName, stepDisplayName, queues, queueName, fileContent);
+						stepPassed = jmsController.write(testName, stepDisplayName, queues, queueName, fileContent);
 					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = SenderController.executeSenderWrite(testName, stepDisplayName, queues, queueName, "ibisWebService", fileContent);
+						stepPassed = senderController.executeSenderWrite(testName, stepDisplayName, queues, queueName, "ibisWebService", fileContent);
 					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = SenderController.executeSenderWrite(testName, stepDisplayName, queues, queueName, "webService", fileContent);
+						stepPassed = senderController.executeSenderWrite(testName, stepDisplayName, queues, queueName, "webService", fileContent);
 					} else if ("nl.nn.adapterframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = WebServiceController.write(testName, stepDisplayName, queues, queueName, fileContent);
+						stepPassed = webServiceController.write(testName, stepDisplayName, queues, queueName, fileContent);
 					} else if ("nl.nn.adapterframework.http.HttpSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = SenderController.executeSenderWrite(testName, stepDisplayName, queues, queueName, "http", fileContent);
+						stepPassed = senderController.executeSenderWrite(testName, stepDisplayName, queues, queueName, "http", fileContent);
 					} else if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = SenderController.executeSenderWrite(testName, stepDisplayName, queues, queueName, "ibisJava", fileContent);
+						stepPassed = senderController.executeSenderWrite(testName, stepDisplayName, queues, queueName, "ibisJava", fileContent);
 					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = WebServiceController.write(testName, stepDisplayName, queues, queueName, fileContent);
+						stepPassed = webServiceController.write(testName, stepDisplayName, queues, queueName, fileContent);
 					} else if ("nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = FileController.executeSenderWrite(testName, stepDisplayName, queues, queueName, fileContent);
+						stepPassed = fileController.executeSenderWrite(testName, stepDisplayName, queues, queueName, fileContent);
 					} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = ListenerController.executeXsltProviderListenerWrite(step, stepDisplayName, queues, queueName, fileName, fileContent, properties, fileNameAbsolutePath);
+						stepPassed = listenerController.executeXsltProviderListenerWrite(step, stepDisplayName, queues, queueName, fileName, fileContent, properties, fileNameAbsolutePath);
 					} else if ("nl.nn.adapterframework.senders.DelaySender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = SenderController.executeDelaySenderWrite(testName, stepDisplayName, queues, queueName, fileContent);
+						stepPassed = senderController.executeDelaySenderWrite(testName, stepDisplayName, queues, queueName, fileContent);
 					} else {
-						MessageListener.errorMessage(testName, "Property '" + queueName + ".className' not found or not valid");
+						messageListener.errorMessage(testName, "Property '" + queueName + ".className' not found or not valid");
 					}
 				}
 			}
@@ -269,11 +232,10 @@ public class ScenarioTester extends Thread {
 		return stepPassed;
 	}
 
-
-	private static Map<String, Map<String, Object>> openQueues(String scenarioDirectory, List<String> steps,
+	private Map<String, Map<String, Object>> openQueues(String scenarioDirectory, List<String> steps,
 															   Properties properties, String testName, IbisContext ibisContext, AppConstants appConstants) {
 		Map<String, Map<String, Object>> queues = new HashMap<String, Map<String, Object>>();
-		MessageListener.debugMessage(testName, "Get all queue names");
+		messageListener.debugMessage(testName, "Get all queue names");
 		List<String> jmsSenders = new ArrayList<String>();
 		List<String> jmsListeners = new ArrayList<String>();
 		List<String> jdbcFixedQuerySenders = new ArrayList<String>();
@@ -296,58 +258,58 @@ public class ScenarioTester extends Thread {
 				int j = key.indexOf('.', i + 1);
 				if (j != -1) {
 					String queueName = key.substring(0, j);
-					MessageListener.debugMessage(testName, "queuename openqueue: " + queueName);
+					messageListener.debugMessage(testName, "queuename openqueue: " + queueName);
 					if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))
 							&& !jmsSenders.contains(queueName)) {
-						MessageListener.debugMessage(testName, "Adding jmsSender queue: " + queueName);
+						messageListener.debugMessage(testName, "Adding jmsSender queue: " + queueName);
 						jmsSenders.add(queueName);
 					} else if ("nl.nn.adapterframework.jms.JmsListener".equals(properties.get(queueName + ".className"))
 							&& !jmsListeners.contains(queueName)) {
-						MessageListener.debugMessage(testName, "Adding jmsListener queue: " + queueName);
+						messageListener.debugMessage(testName, "Adding jmsListener queue: " + queueName);
 						jmsListeners.add(queueName);
 					} else if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(
 							properties.get(queueName + ".className")) && !jdbcFixedQuerySenders.contains(queueName)) {
-						MessageListener.debugMessage(testName, "Adding jdbcFixedQuerySender queue: " + queueName);
+						messageListener.debugMessage(testName, "Adding jdbcFixedQuerySender queue: " + queueName);
 						jdbcFixedQuerySenders.add(queueName);
 					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(
 							properties.get(queueName + ".className")) && !ibisWebServiceSenders.contains(queueName)) {
-						MessageListener.debugMessage(testName, "Adding ibisWebServiceSender queue: " + queueName);
+						messageListener.debugMessage(testName, "Adding ibisWebServiceSender queue: " + queueName);
 						ibisWebServiceSenders.add(queueName);
 					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(
 							properties.get(queueName + ".className")) && !webServiceSenders.contains(queueName)) {
-						MessageListener.debugMessage(testName, "Adding webServiceSender queue: " + queueName);
+						messageListener.debugMessage(testName, "Adding webServiceSender queue: " + queueName);
 						webServiceSenders.add(queueName);
 					} else if ("nl.nn.adapterframework.http.WebServiceListener".equals(
 							properties.get(queueName + ".className")) && !webServiceListeners.contains(queueName)) {
-						MessageListener.debugMessage(testName, "Adding webServiceListener queue: " + queueName);
+						messageListener.debugMessage(testName, "Adding webServiceListener queue: " + queueName);
 						webServiceListeners.add(queueName);
 					} else if ("nl.nn.adapterframework.http.HttpSender".equals(properties.get(queueName + ".className"))
 							&& !httpSenders.contains(queueName)) {
-						MessageListener.debugMessage(testName, "Adding httpSender queue: " + queueName);
+						messageListener.debugMessage(testName, "Adding httpSender queue: " + queueName);
 						httpSenders.add(queueName);
 					} else if ("nl.nn.adapterframework.senders.IbisJavaSender"
 							.equals(properties.get(queueName + ".className")) && !ibisJavaSenders.contains(queueName)) {
-						MessageListener.debugMessage(testName, "Adding ibisJavaSender queue: " + queueName);
+						messageListener.debugMessage(testName, "Adding ibisJavaSender queue: " + queueName);
 						ibisJavaSenders.add(queueName);
 					} else if ("nl.nn.adapterframework.senders.DelaySender"
 							.equals(properties.get(queueName + ".className")) && !delaySenders.contains(queueName)) {
-						MessageListener.debugMessage(testName, "Adding delaySender queue: " + queueName);
+						messageListener.debugMessage(testName, "Adding delaySender queue: " + queueName);
 						delaySenders.add(queueName);
 					} else if ("nl.nn.adapterframework.receivers.JavaListener"
 							.equals(properties.get(queueName + ".className")) && !javaListeners.contains(queueName)) {
-						MessageListener.debugMessage(testName, "Adding javaListener queue: " + queueName);
+						messageListener.debugMessage(testName, "Adding javaListener queue: " + queueName);
 						javaListeners.add(queueName);
 					} else if ("nl.nn.adapterframework.testtool.FileSender"
 							.equals(properties.get(queueName + ".className")) && !fileSenders.contains(queueName)) {
-						MessageListener.debugMessage(testName, "Adding fileSender queue: " + queueName);
+						messageListener.debugMessage(testName, "Adding fileSender queue: " + queueName);
 						fileSenders.add(queueName);
 					} else if ("nl.nn.adapterframework.testtool.FileListener"
 							.equals(properties.get(queueName + ".className")) && !fileListeners.contains(queueName)) {
-						MessageListener.debugMessage(testName, "Adding fileListener queue: " + queueName);
+						messageListener.debugMessage(testName, "Adding fileListener queue: " + queueName);
 						fileListeners.add(queueName);
 					} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(
 							properties.get(queueName + ".className")) && !xsltProviderListeners.contains(queueName)) {
-						MessageListener.debugMessage(testName, "Adding xsltProviderListeners queue: " + queueName);
+						messageListener.debugMessage(testName, "Adding xsltProviderListeners queue: " + queueName);
 						xsltProviderListeners.add(queueName);
 					}
 				}
@@ -355,46 +317,49 @@ public class ScenarioTester extends Thread {
 		}
 
 		// Init senders
-		FileController.initSender(queues, fileSenders, properties);
-		JdbcFixedQueryController.initSender(queues, jdbcFixedQuerySenders, properties, appConstants);
-		JmsController.initSenders(queues, jmsSenders, properties);
-		SenderController.initDelaySender(queues, delaySenders, properties);
-		SenderController.initHttpSender(queues, httpSenders, properties, scenarioDirectory);
-		SenderController.initIbisJavaSender(queues, ibisJavaSenders, properties);
-		SenderController.initIbisWebSender(queues, ibisWebServiceSenders, properties);
+		fileController.initSender(queues, fileSenders, properties);
+		jdbcFixedQueryController.initSender(queues, jdbcFixedQuerySenders, properties, appConstants);
+		jmsController.initSenders(queues, jmsSenders, properties);
+		senderController.initDelaySender(queues, delaySenders, properties);
+		senderController.initHttpSender(queues, httpSenders, properties, scenarioDirectory);
+		senderController.initIbisJavaSender(queues, ibisJavaSenders, properties);
+		senderController.initIbisWebSender(queues, ibisWebServiceSenders, properties);
 
 		// Init listeners
-		FileController.initListener(queues, fileListeners, properties);
-		JmsController.initListeners(queues, jmsListeners, properties, TestTool.globalTimeout);
-		ListenerController.initJavaListener(queues, javaListeners, properties);
-		ListenerController.initXsltProviderListener(queues, xsltProviderListeners, properties);
-		WebServiceController.initListeners(queues, webServiceListeners, properties, TestTool.globalTimeout);
+		fileController.initListener(queues, fileListeners, properties);
+		jmsController.initListeners(queues, jmsListeners, properties, TestTool.globalTimeout);
+		listenerController.initJavaListener(queues, javaListeners, properties);
+		listenerController.initXsltProviderListener(queues, xsltProviderListeners, properties);
+		webServiceController.initListeners(queues, webServiceListeners, properties, TestTool.globalTimeout);
 
 		return queues;
 	}
 
-	public static boolean closeQueues(Map<String, Map<String, Object>> queues, Properties properties) {
+	public boolean closeQueues(Map<String, Map<String, Object>> queues, Properties properties) {
 		boolean remainingMessagesFound;
 
-		JmsController.closeSenders(queues, properties);
-		remainingMessagesFound = JmsController.closeListeners(queues, properties);
+		jmsController.closeSenders(queues, properties);
+		remainingMessagesFound = jmsController.closeListeners(queues, properties);
 
-		remainingMessagesFound = JdbcFixedQueryController.closeConnection(queues, properties) || remainingMessagesFound;
+		remainingMessagesFound = jdbcFixedQueryController.closeConnection(queues, properties) || remainingMessagesFound;
 
-		SenderController.closeIbisWebSender(queues, properties);
-		WebServiceController.closeSender(queues, properties);
+		senderController.closeIbisWebSender(queues, properties);
+		webServiceController.closeSender(queues, properties);
 
-		remainingMessagesFound = WebServiceController.closeListener(queues, properties) || remainingMessagesFound;
+		remainingMessagesFound = webServiceController.closeListener(queues, properties) || remainingMessagesFound;
 
-		SenderController.closeIbisJavaSender(queues, properties);
-		SenderController.closeDelaySender(queues, properties);
+		senderController.closeIbisJavaSender(queues, properties);
+		senderController.closeDelaySender(queues, properties);
 
-		remainingMessagesFound = ListenerController.closeJavaListener(queues, properties) || remainingMessagesFound;
+		remainingMessagesFound = listenerController.closeJavaListener(queues, properties) || remainingMessagesFound;
 
-		FileController.closeListener(queues, properties);
-		ListenerController.closeXsltProviderListener(queues, properties);
+		fileController.closeListener(queues, properties);
+		listenerController.closeXsltProviderListener(queues, properties);
 
 		return remainingMessagesFound;
 	}
 
+	public MessageListener getMessageListener() {
+		return messageListener;
+	}
 }

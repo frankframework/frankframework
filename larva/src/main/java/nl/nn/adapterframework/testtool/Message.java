@@ -1,14 +1,11 @@
-/**
- * 
- */
 package nl.nn.adapterframework.testtool;
 
 import java.util.Map;
 
 /**
- * @author Murat Kaan Meral
- *
  * Simple Message structure for message listener.
+ *
+ * @author Murat Kaan Meral
  */
 class Message{
 	Map<String, String> message;

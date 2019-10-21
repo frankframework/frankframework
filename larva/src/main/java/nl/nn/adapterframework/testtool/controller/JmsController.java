@@ -3,16 +3,6 @@
  */
 package nl.nn.adapterframework.testtool.controller;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.jms.Message;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
@@ -23,6 +13,10 @@ import nl.nn.adapterframework.testtool.MessageListener;
 import nl.nn.adapterframework.testtool.ResultComparer;
 import nl.nn.adapterframework.testtool.ScenarioTester;
 import nl.nn.adapterframework.testtool.TestTool;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.jms.Message;
+import java.util.*;
 
 /**
  * This class is used to initialize and execute JMS Senders and Listeners.
@@ -33,23 +27,33 @@ public class JmsController {
 	@Autowired
 	static IbisContext ibisContext;
 
+	private MessageListener messageListener;
+	private ScenarioTester scenarioTester;
+	private ResultComparer resultComparer;
+
+	public JmsController(ScenarioTester scenarioTester) {
+		this.scenarioTester = scenarioTester;
+		this.messageListener = scenarioTester.getMessageListener();
+		this.resultComparer = new ResultComparer(messageListener);
+	}
+
 	/**
 	 * Initializes senders and adds them to the queue.
 	 * @param queues Queue of steps to execute as well as the variables required to execute.
 	 * @param jmsSenders List of JMS senders to be initialized.
 	 * @param properties properties defined by scenario file and global app constants.
 	 */
-	public static void initSenders(Map<String, Map<String, Object>> queues, List<String> jmsSenders, Properties properties) {
+	public void initSenders(Map<String, Map<String, Object>> queues, List<String> jmsSenders, Properties properties) {
 		String testName = properties.getProperty("scenario.description");
-		MessageListener.debugMessage(testName, "Initialize jms senders");
+		messageListener.debugMessage(testName, "Initialize jms senders");
 		Iterator<String> iterator = jmsSenders.iterator();
 		while (queues != null && iterator.hasNext()) {
 			String queueName = (String)iterator.next();
 			String queue = (String)properties.get(queueName + ".queue");
 			if (queue == null) {
-				ScenarioTester.closeQueues(queues, properties);
+				scenarioTester.closeQueues(queues, properties);
 				queues = null;
-				MessageListener.errorMessage(testName, "Could not find property '" + queueName + ".queue'");
+				messageListener.errorMessage(testName, "Could not find property '" + queueName + ".queue'");
 			} else {
 				JmsSender jmsSender = (JmsSender)ibisContext.createBeanAutowireByName(JmsSender.class);
 				jmsSender.setName("Test Tool JmsSender");
@@ -63,26 +67,26 @@ public class JmsController {
 					jmsSender.setJmsRealm("default");
 				}
 				String deliveryMode = properties.getProperty(queueName + ".deliveryMode");
-				MessageListener.debugMessage(testName, "Property '" + queueName + ".deliveryMode': " + deliveryMode);
+				messageListener.debugMessage(testName, "Property '" + queueName + ".deliveryMode': " + deliveryMode);
 				String persistent = properties.getProperty(queueName + ".persistent");
-				MessageListener.debugMessage(testName, "Property '" + queueName + ".persistent': " + persistent);
+				messageListener.debugMessage(testName, "Property '" + queueName + ".persistent': " + persistent);
 				String useCorrelationIdFrom = properties.getProperty(queueName + ".useCorrelationIdFrom");
-				MessageListener.debugMessage(testName, "Property '" + queueName + ".useCorrelationIdFrom': " + useCorrelationIdFrom);
+				messageListener.debugMessage(testName, "Property '" + queueName + ".useCorrelationIdFrom': " + useCorrelationIdFrom);
 				String replyToName = properties.getProperty(queueName + ".replyToName");
-				MessageListener.debugMessage(testName, "Property '" + queueName + ".replyToName': " + replyToName);
+				messageListener.debugMessage(testName, "Property '" + queueName + ".replyToName': " + replyToName);
 				if (deliveryMode != null) {
-					MessageListener.debugMessage(testName, "Set deliveryMode to " + deliveryMode);
+					messageListener.debugMessage(testName, "Set deliveryMode to " + deliveryMode);
 					jmsSender.setDeliveryMode(deliveryMode);
 				}
 				if ("true".equals(persistent)) {
-					MessageListener.debugMessage(testName, "Set persistent to true");
+					messageListener.debugMessage(testName, "Set persistent to true");
 					jmsSender.setPersistent(true);
 				} else {
-					MessageListener.debugMessage(testName, "Set persistent to false");
+					messageListener.debugMessage(testName, "Set persistent to false");
 					jmsSender.setPersistent(false);
 				}
 				if (replyToName != null) {
-					MessageListener.debugMessage(testName, "Set replyToName to " + replyToName);
+					messageListener.debugMessage(testName, "Set replyToName to " + replyToName);
 					jmsSender.setReplyToName(replyToName);
 				}
 				Map<String, Object> jmsSenderInfo = new HashMap<String, Object>();
@@ -91,10 +95,10 @@ public class JmsController {
 				String correlationId = properties.getProperty(queueName + ".jmsCorrelationId");
 				if (correlationId!=null) {
 					jmsSenderInfo.put("jmsCorrelationId", correlationId);
-					MessageListener.debugMessage(testName, "Property '" + queueName + ".jmsCorrelationId': " + correlationId);
+					messageListener.debugMessage(testName, "Property '" + queueName + ".jmsCorrelationId': " + correlationId);
 				}
 				queues.put(queueName, jmsSenderInfo);
-				MessageListener.debugMessage(testName, "Opened jms sender '" + queueName + "'");
+				messageListener.debugMessage(testName, "Opened jms sender '" + queueName + "'");
 			}
 		}
 	}
@@ -106,9 +110,9 @@ public class JmsController {
 	 * @param properties properties defined by scenario file and global app constants.
 	 * @param globalTimeout timeout to set for JMS listeners.
 	 */
-	public static void initListeners(Map<String, Map<String, Object>> queues, List<String> jmsListeners, Properties properties, long globalTimeout) {
+	public void initListeners(Map<String, Map<String, Object>> queues, List<String> jmsListeners, Properties properties, long globalTimeout) {
 		String testName = properties.getProperty("scenario.description");
-		MessageListener.debugMessage(testName, "Initialize jms listeners");
+		messageListener.debugMessage(testName, "Initialize jms listeners");
 		Iterator<String> iterator = jmsListeners.iterator();
 		while (queues != null && iterator.hasNext()) {
 			String queueName = (String)iterator.next();
@@ -118,13 +122,13 @@ public class JmsController {
 			int nTimeout = (int) globalTimeout;
 			if (timeout != null && timeout.length() > 0) {
 				nTimeout = Integer.parseInt(timeout);
-				MessageListener.debugMessage(testName, "Overriding default timeout setting of "+globalTimeout+" with "+ nTimeout);
+				messageListener.debugMessage(testName, "Overriding default timeout setting of "+globalTimeout+" with "+ nTimeout);
 			}
 
 			if (queue == null) {
-				ScenarioTester.closeQueues(queues, properties);
+				scenarioTester.closeQueues(queues, properties);
 				queues = null;
-				MessageListener.errorMessage(testName, "Could not find property '" + queueName + ".queue'");
+				messageListener.errorMessage(testName, "Could not find property '" + queueName + ".queue'");
 			} else {
 				PullingJmsListener pullingJmsListener = (PullingJmsListener)ibisContext.createBeanAutowireByName(PullingJmsListener.class);
 				pullingJmsListener.setName("Test Tool JmsListener");
@@ -160,9 +164,9 @@ public class JmsController {
 				Map<String, Object> jmsListenerInfo = new HashMap<String, Object>();
 				jmsListenerInfo.put("jmsListener", pullingJmsListener);
 				queues.put(queueName, jmsListenerInfo);
-				MessageListener.debugMessage(testName, "Opened jms listener '" + queueName + "'");
+				messageListener.debugMessage(testName, "Opened jms listener '" + queueName + "'");
 				if (cleanup(testName, queueName, pullingJmsListener)) {
-					MessageListener.errorMessage(testName, "Found one or more old messages on queue '" + queueName + "', you might want to run your tests with a higher 'wait before clean up' value");
+					messageListener.errorMessage(testName, "Found one or more old messages on queue '" + queueName + "', you might want to run your tests with a higher 'wait before clean up' value");
 				}
 			}
 		}
@@ -173,16 +177,16 @@ public class JmsController {
 	 * @param queues Queue of steps to execute as well as the variables required to execute.
 	 * @param properties properties defined by scenario file and global app constants.
 	 */
-	public static void closeSenders(Map<String, Map<String, Object>> queues, Properties properties) {
+	public void closeSenders(Map<String, Map<String, Object>> queues, Properties properties) {
 		String testName = properties.getProperty("scenario.description");
-		MessageListener.debugMessage(testName, "Close jms senders");
+		messageListener.debugMessage(testName, "Close jms senders");
 		Iterator iterator = queues.keySet().iterator();
 		while (iterator.hasNext()) {
 			String queueName = (String)iterator.next();
 			if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
 				JmsSender jmsSender = (JmsSender)((Map<?, ?>)queues.get(queueName)).get("jmsSender");
 				jmsSender.close();
-				MessageListener.debugMessage(testName, "Closed jms sender '" + queueName + "'");
+				messageListener.debugMessage(testName, "Closed jms sender '" + queueName + "'");
 			}
 		}
 	}
@@ -192,10 +196,10 @@ public class JmsController {
 	 * @param queues Queue of steps to execute as well as the variables required to execute.
 	 * @param properties properties defined by scenario file and global app constants.
 	 */
-	public static boolean closeListeners(Map<String, Map<String, Object>> queues, Properties properties) {
+	public boolean closeListeners(Map<String, Map<String, Object>> queues, Properties properties) {
 		String testName = properties.getProperty("scenario.description");
 		boolean remainingMessagesFound = false;
-		MessageListener.debugMessage(testName, "Close jms listeners");
+		messageListener.debugMessage(testName, "Close jms listeners");
 		Iterator iterator = queues.keySet().iterator();
 		while (iterator.hasNext()) {
 			String queueName = (String)iterator.next();
@@ -205,7 +209,7 @@ public class JmsController {
 					remainingMessagesFound =  true;
 				}
 				pullingJmsListener.close();
-				MessageListener.debugMessage(testName, "Closed jms listener '" + queueName + "'");
+				messageListener.debugMessage(testName, "Closed jms listener '" + queueName + "'");
 			}
 		}
 		return remainingMessagesFound;
@@ -217,9 +221,9 @@ public class JmsController {
 	 * @param pullingJmsListener Jms Listener that requires cleaning.
 	 * @return True if there are any messages remaining.
 	 */
-	public static boolean cleanup(String testName, String queueName, PullingJmsListener pullingJmsListener) {
+	public boolean cleanup(String testName, String queueName, PullingJmsListener pullingJmsListener) {
 		boolean remainingMessagesFound = false;
-		MessageListener.debugMessage(testName, "Check for remaining messages on '" + queueName + "'");
+		messageListener.debugMessage(testName, "Check for remaining messages on '" + queueName + "'");
 		long oldTimeOut = pullingJmsListener.getTimeOut();
 		pullingJmsListener.setTimeOut(10);
 		boolean empty = false;
@@ -234,19 +238,19 @@ public class JmsController {
 					message = pullingJmsListener.getStringFromRawMessage(rawMessage, threadContext);
 					remainingMessagesFound = true;
 					if (message == null) {
-						MessageListener.errorMessage(testName, "Could not translate raw message from jms queue '" + queueName + "'");
+						messageListener.errorMessage(testName, "Could not translate raw message from jms queue '" + queueName + "'");
 					} else {
-						MessageListener.wrongPipelineMessage(testName, "Found remaining message on '" + queueName + "'", message);
+						messageListener.wrongPipelineMessage(testName, "Found remaining message on '" + queueName + "'", message);
 					}
 				}
 			} catch(ListenerException e) {
-				MessageListener.errorMessage(testName, "ListenerException on jms clean up '" + queueName + "': " + e.getMessage(), e);
+				messageListener.errorMessage(testName, "ListenerException on jms clean up '" + queueName + "': " + e.getMessage(), e);
 			} finally {
 				if (threadContext != null) {
 					try {
 						pullingJmsListener.closeThread(threadContext);
 					} catch(ListenerException e) {
-						MessageListener.errorMessage(testName, "Could not close thread on jms listener '" + queueName + "': " + e.getMessage(), e);
+						messageListener.errorMessage(testName, "Could not close thread on jms listener '" + queueName + "': " + e.getMessage(), e);
 					}
 				}
 			}
@@ -266,7 +270,7 @@ public class JmsController {
 	 * @param fileContent Content that will be send to the pipe.
 	 * @return 1 if everything is ok, 0 if there has been an error.
 	 */
-	public static int write(String testName, String stepDisplayName, Map<String, Map<String, Object>> queues, String queueName, String fileContent) {
+	public int write(String testName, String stepDisplayName, Map<String, Map<String, Object>> queues, String queueName, String fileContent) {
 		int result = TestTool.RESULT_ERROR;
 		
 		Map<?, ?> jmsSenderInfo = (Map<?, ?>)queues.get(queueName);
@@ -277,11 +281,11 @@ public class JmsController {
 			if (useCorrelationIdFrom != null) {
 				Map<?, ?> listenerInfo = (Map<?, ?>)queues.get(useCorrelationIdFrom);
 				if (listenerInfo == null) {
-					MessageListener.errorMessage(testName, "Could not find listener '" + useCorrelationIdFrom + "' to use correlation id from");
+					messageListener.errorMessage(testName, "Could not find listener '" + useCorrelationIdFrom + "' to use correlation id from");
 				} else {
 					correlationId = (String)listenerInfo.get("correlationId");
 					if (correlationId == null) {
-						MessageListener.errorMessage(testName, "Could not find correlation id from listener '" + useCorrelationIdFrom + "'");
+						messageListener.errorMessage(testName, "Could not find correlation id from listener '" + useCorrelationIdFrom + "'");
 					}
 				}
 			}
@@ -292,12 +296,12 @@ public class JmsController {
 				correlationId = TestTool.TESTTOOL_CORRELATIONID;
 			}
 			jmsSender.sendMessage(correlationId, fileContent);
-			MessageListener.debugPipelineMessage(testName, stepDisplayName, "Successfully written to '" + queueName + "':", fileContent);
+			messageListener.debugPipelineMessage(testName, stepDisplayName, "Successfully written to '" + queueName + "':", fileContent);
 			result = TestTool.RESULT_OK;
 		} catch(TimeOutException e) {
-			MessageListener.errorMessage(testName, "Time out sending jms message to '" + queueName + "': " + e.getMessage(), e);
+			messageListener.errorMessage(testName, "Time out sending jms message to '" + queueName + "': " + e.getMessage(), e);
 		} catch(SenderException e) {
-			MessageListener.errorMessage(testName, "Could not send jms message to '" + queueName + "': " + e.getMessage(), e);
+			messageListener.errorMessage(testName, "Could not send jms message to '" + queueName + "': " + e.getMessage(), e);
 		}
 		
 		return result;
@@ -314,7 +318,7 @@ public class JmsController {
 	 * @param fileContent expected output.
 	 * @return 1 if everything is ok, 0 if there has been an error, 2 if autosaved.
 	 */
-	public static int read(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, String queueName, String fileName, String fileContent, String originalFilePath) {
+	public int read(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, String queueName, String fileName, String fileContent, String originalFilePath) {
 		int result = TestTool.RESULT_ERROR;
 		String testName = properties.getProperty("scenario.description");
 
@@ -332,14 +336,14 @@ public class JmsController {
 			}
 		} catch(ListenerException e) {
 			if (!"".equals(fileName)) {
-				MessageListener.errorMessage(testName, "Could not read jms message from '" + queueName + "': " + e.getMessage(), e);
+				messageListener.errorMessage(testName, "Could not read jms message from '" + queueName + "': " + e.getMessage(), e);
 			}
 		} finally {
 			if (threadContext != null) {
 				try {
 					pullingJmsListener.closeThread(threadContext);
 				} catch(ListenerException e) {
-					MessageListener.errorMessage(testName, "Could not close thread on jms listener '" + queueName + "': " + e.getMessage(), e);
+					messageListener.errorMessage(testName, "Could not close thread on jms listener '" + queueName + "': " + e.getMessage(), e);
 				}
 			}
 		}
@@ -348,10 +352,10 @@ public class JmsController {
 			if ("".equals(fileName)) {
 				result = TestTool.RESULT_OK;
 			} else {
-				MessageListener.errorMessage(testName, "Could not read jms message (null returned)");
+				messageListener.errorMessage(testName, "Could not read jms message (null returned)");
 			}
 		} else {
-			result = ResultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName, originalFilePath);
+			result = resultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName, originalFilePath);
 		}
 
 		return result;	
