@@ -11,10 +11,10 @@ import java.io.StringWriter;
 import java.util.*;
 
 /**
- * @author Murat Kaan Meral
- *
  * Listener for all the activity in Larva Test Tool.
  * It contains each activity as a message object.
+ *
+ * @author Murat Kaan Meral
  *
  */
 public class MessageListener {
@@ -46,7 +46,11 @@ public class MessageListener {
 		return getMessages(0);
 	}
 
-
+	/**
+	 * Returns all of the messages after given timestamp, and above selected log level.
+	 * @param timestamp timestamp for filtering messages.
+	 * @return JSONArray containing all the messages that fit the criteria.
+	 */
 	public synchronized static JSONArray getMessages(long timestamp) {
 		return getMessagesFromList(MessageListener.messages, timestamp);
 	}
@@ -85,6 +89,22 @@ public class MessageListener {
 		}
 
 		return new JSONArray(result);
+	}
+
+	/**
+	 * Returns the last total message. After the execution finished, it will return the last output message
+	 * that states the successful/autosaved/failed messages.
+	 * @return The last total message. Null, if there were no total messages.
+	 */
+	public synchronized static String getLastTotalMessage() {
+		Iterator<Message> messageIterator = messages.descendingIterator();
+		while(messageIterator.hasNext()) {
+			Message m = messageIterator.next();
+			if (m.logLevel == getLevelOfLog("Total")) {
+				return m.message.get("Message");
+			}
+		}
+		return null;
 	}
 
 	public synchronized static void debugMessage(String testName, String message) {
@@ -159,25 +179,6 @@ public class MessageListener {
 		map.put("Filepath", originalFilePath);
 		Message m = new Message(testName, map, LOG_LEVEL.indexOf("Wrong Pipeline Messages with Diff"), System.currentTimeMillis());
 		messages.add(m);
-	}
-
-	private synchronized static String writeCommands(String testName, String target, boolean textArea, String customCommand) {
-		String commands = "";
-
-		commands += "<div class='commands'>";
-		commands += "<span class='widthCommands'><a href='javascript:void(0);' class='" + target + "|widthDown'>-</a><a href='javascript:void(0);' class='" + target + "|widthExact'>width</a><a href='javascript:void(0);' class='" + target + "|widthUp'>+</a></span>";
-		commands += "<span class='heightCommands'><a href='javascript:void(0);' class='" + target + "|heightDown'>-</a><a href='javascript:void(0);' class='" + target + "|heightExact'>height</a><a href='javascript:void(0);' class='" + target + "|heightUp'>+</a></span>";
-		if (textArea) {
-			commands += "<a href='javascript:void(0);' class='" + target + "|copy'>copy</a> ";
-			commands += "<a href='javascript:void(0);' class='" + target + "|xmlFormat'>indent</a>";
-		}
-		if (customCommand != null) {
-			commands += " " + customCommand;
-		}
-		commands += "</div>";
-
-
-		return commands;
 	}
 
 	static void stepMessage(String testName, String message) {
