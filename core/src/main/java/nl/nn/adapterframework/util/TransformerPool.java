@@ -46,6 +46,7 @@ import org.w3c.dom.Document;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.xml.ClassLoaderURIResolver;
 
 /**
  * Pool of transformers. As of IBIS 4.2.e the Templates object is used to
@@ -67,9 +68,7 @@ public class TransformerPool {
 	private URL reloadURL=null;
 	private int xsltVersion;
 
-	private ClassLoaderURIResolver classLoaderURIResolver =
-			new ClassLoaderURIResolver(
-					Thread.currentThread().getContextClassLoader());
+	private ClassLoaderURIResolver classLoaderURIResolver = new ClassLoaderURIResolver(Thread.currentThread().getContextClassLoader());
 
 	private static class TransformerPoolKey {
 		private String xsltString;
