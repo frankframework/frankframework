@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.core;
 
 /**
- * The <code>HasTransactionAttribute</code> is allows Pipes to declare that they have a transactionAttribute.
+ * The <code>HasTransactionAttribute</code> allows Pipes to declare transaction and isolation behavior.
  * The pipeline uses this to start a new transaction or suspend the current one when required.
  * Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. 
  * Possible values for transactionAttribute:
