@@ -265,6 +265,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return port;
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
@@ -434,6 +435,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		});
 	}
 
+	@Override
 	public void open() throws SenderException {
 		// In order to support multiThreading and connectionPooling
 		// If a sslSocketFactory has been defined, the connectionManager has to be initialized with the sslSocketFactory
@@ -478,6 +480,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return httpClient;
 	}
 
+	@Override
 	public void close() throws SenderException {
 		try {
 			//Close the HttpClient and ConnectionManager to release resources and potential open connections
@@ -491,6 +494,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		}
 	}
 
+	@Override
 	public boolean isSynchronous() {
 		return true;
 	}

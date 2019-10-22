@@ -1,5 +1,5 @@
 /*
-Copyright 2017 - 2019 Integration Partners B.V.
+Copyright 2017-2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,8 +15,10 @@ limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -40,16 +42,21 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 	private String method;
 	private List<String> methods = Arrays.asList("GET", "PUT", "POST", "DELETE");
 
-	private String authenticationMethod = null;
-	private List<String> authenticationMethods = Arrays.asList("COOKIE", "HEADER");
+	private AuthenticationMethods authenticationMethod = AuthenticationMethods.NONE;
+	private List<String> authenticationRoles = null;
 
-	private MediaType consumes = MediaType.ANY;
-	private MediaType produces = MediaType.ANY;
+	private MediaTypes consumes = MediaTypes.ANY;
+	private MediaTypes produces = MediaTypes.ANY;
 	private String multipartBodyName = null;
+
+	public enum AuthenticationMethods {
+		NONE, COOKIE, HEADER, AUTHROLE;
+	}
 
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
+	@Override
 	public void configure() throws ConfigurationException {
 		if(StringUtils.isEmpty(getUriPattern()))
 			throw new ConfigurationException("uriPattern cannot be empty");
@@ -63,8 +70,6 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		if(!methods.contains(getMethod()))
 			throw new ConfigurationException("Method ["+method+"] not yet implemented, supported methods are "+methods.toString()+"");
 
-		if(getAuthenticationMethod() != null && !authenticationMethods.contains(getAuthenticationMethod()))
-			throw new ConfigurationException("Unknown authenticationMethod ["+authenticationMethod+"]");
 	}
 
 	@Override
@@ -90,11 +95,12 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 			return result;
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		String destinationName = "uriPattern: "+getCleanPattern()+"; method: "+getMethod();
-		if(!MediaType.ANY.equals(consumes))
+		if(!MediaTypes.ANY.equals(consumes))
 			destinationName += "; consumes: "+getConsumes();
-		if(!MediaType.ANY.equals(produces))
+		if(!MediaTypes.ANY.equals(produces))
 			destinationName += "; produces: "+getProduces();
 
 		return destinationName;
@@ -136,11 +142,38 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 
 	//TODO add authenticationType
 
-	public void setAuthenticationMethod(String authenticationMethod) {
-		this.authenticationMethod = authenticationMethod.toUpperCase();
+	public void setAuthenticationMethod(String authenticationMethod) throws ConfigurationException {
+		try {
+			this.authenticationMethod = AuthenticationMethods.valueOf(authenticationMethod);
+		}
+		catch (IllegalArgumentException iae) {
+			throw new ConfigurationException("Unknown authenticationMethod ["+authenticationMethod+"]. Must be one of "+ Arrays.asList(AuthenticationMethods.values()));
+		}
 	}
-	public String getAuthenticationMethod() {
+	public AuthenticationMethods getAuthenticationMethod() {
+		if(authenticationMethod == null) {
+			authenticationMethod = AuthenticationMethods.NONE;
+		}
+
 		return this.authenticationMethod;
+	}
+
+	@IbisDoc({"comma separated list of authorization roles which are granted for this service, eq. ibistester,ibiswebservice", ""})
+	public void setAuthenticationRoles(String authRoles) {
+		List<String> roles = new ArrayList<String>();
+		if (StringUtils.isNotEmpty(authRoles)) {
+			StringTokenizer st = new StringTokenizer(authRoles, ",;");
+			while (st.hasMoreTokens()) {
+				String authRole = st.nextToken();
+				if(!roles.contains(authRole))
+					roles.add(authRole);
+			}
+		}
+
+		this.authenticationRoles = roles;
+	}
+	public List<String> getAuthenticationRoles() {
+		return authenticationRoles;
 	}
 
 	@IbisDoc({"the specified contentType on requests, if it doesn't match the request will fail", "ANY"})
@@ -151,7 +184,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		else
 			consumes = value.toUpperCase();
 
-		this.consumes = MediaType.valueOf(consumes);
+		this.consumes = MediaTypes.valueOf(consumes);
 	}
 	public String getConsumes() {
 		return consumes.name();
@@ -169,7 +202,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		else
 			produces = value.toUpperCase();
 
-		this.produces = MediaType.valueOf(produces);
+		this.produces = MediaTypes.valueOf(produces);
 	}
 	public String getProduces() {
 		return produces.name();

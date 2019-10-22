@@ -29,39 +29,39 @@ public class MediaTypeTest {
 	@Test
 	public void fromValue() {
 		//Test the 3 most commonly used mediaTypes
-		assertEquals("fromValue [XML]", MediaType.XML, MediaType.fromValue("application/xml"));
-		assertEquals("fromValue [JSON]", MediaType.JSON, MediaType.fromValue("application/json"));
-		assertEquals("fromValue [TEXT]", MediaType.TEXT, MediaType.fromValue("text/plain"));
+		assertEquals("fromValue [XML]", MediaTypes.XML, MediaTypes.fromValue("application/xml"));
+		assertEquals("fromValue [JSON]", MediaTypes.JSON, MediaTypes.fromValue("application/json"));
+		assertEquals("fromValue [TEXT]", MediaTypes.TEXT, MediaTypes.fromValue("text/plain"));
 	}
 
 	@Test(expected=IllegalArgumentException.class)
 	public void fromValueUnknown() {
-		MediaType.fromValue("something/unknown");
+		MediaTypes.fromValue("something/unknown");
 	}
 
 	@Test
 	public void isConsumableXML() {
 		String acceptHeader = "text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8";
 
-		assertTrue("can parse [XML]", MediaType.XML.isConsumable(acceptHeader));
+		assertTrue("can parse [XML]", MediaTypes.XML.isConsumable(acceptHeader));
 
-		assertFalse("can parse [JSON]", MediaType.JSON.isConsumable(acceptHeader));
+		assertFalse("can parse [JSON]", MediaTypes.JSON.isConsumable(acceptHeader));
 	}
 
 	@Test
 	public void isConsumableJSON() {
 		String acceptHeader = "text/html, application/json;q=0.9, */*;q=0.8";
 
-		assertFalse("can parse [XML]", MediaType.XML.isConsumable(acceptHeader));
+		assertFalse("can parse [XML]", MediaTypes.XML.isConsumable(acceptHeader));
 
-		assertTrue("can parse [JSON]", MediaType.JSON.isConsumable(acceptHeader));
+		assertTrue("can parse [JSON]", MediaTypes.JSON.isConsumable(acceptHeader));
 	}
 
 	@Test
 	public void isConsumableANY() {
 		String acceptHeader = "application/octet-stream";
 
-		assertTrue("can parse anything", MediaType.ANY.isConsumable(acceptHeader));
+		assertTrue("can parse anything", MediaTypes.ANY.isConsumable(acceptHeader));
 	}
 
 	@Test
@@ -76,7 +76,7 @@ public class MediaTypeTest {
 		for(String header : acceptHeaders) {
 			String acceptHeader = header + "; type=text/html; q=0.7, "+header+"; level=2; q=0.4; boundary=--my-top-notch-boundary-";
 
-			assertTrue("can parse ["+header+"]", MediaType.MULTIPART.isConsumable(acceptHeader));
+			assertTrue("can parse ["+header+"]", MediaTypes.MULTIPART.isConsumable(acceptHeader));
 		}
 	}
 }

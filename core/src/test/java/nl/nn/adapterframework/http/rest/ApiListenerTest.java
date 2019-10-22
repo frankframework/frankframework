@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -83,7 +84,7 @@ public class ApiListenerTest {
 
 	@Test
 	public void testContentTypes() throws ConfigurationException {
-		for(MediaType type : MediaType.values()) {
+		for(MediaTypes type : MediaTypes.values()) {
 			listener.setProduces(type.name());
 			listener.configure(); //Check if the mediatype passes the configure checks
 
@@ -142,5 +143,21 @@ public class ApiListenerTest {
 
 			assertTrue("can parse ["+header+"]", listener.isConsumable(acceptHeader));
 		}
+	}
+
+	@Test(expected = ConfigurationException.class)
+	public void testFaultyAuthMethod() throws ConfigurationException {
+		try{
+			listener.setAuthenticationMethod("unknown$df");
+		}
+		finally {
+			assertEquals("No authentication method should be set", AuthenticationMethods.NONE, listener.getAuthenticationMethod());
+		}
+	}
+
+	@Test
+	public void testAuthRoleMethod() throws ConfigurationException {
+		listener.setAuthenticationMethod(AuthenticationMethods.AUTHROLE.name());
+		assertEquals("Authentication method [AUTHROLE] should be set", AuthenticationMethods.AUTHROLE, listener.getAuthenticationMethod());
 	}
 }

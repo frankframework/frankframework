@@ -15,7 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
-public enum MediaType {
+public enum MediaTypes {
 
 	ANY("*/*"),
 	TEXT("text/plain"),
@@ -28,7 +28,7 @@ public enum MediaType {
 
 	private final String mediaType;
 
-	private MediaType(String mediaType) {
+	private MediaTypes(String mediaType) {
 		this.mediaType = mediaType;
 	}
 
@@ -51,8 +51,8 @@ public enum MediaType {
 		}
 	}
 
-	public static MediaType fromValue(String v) {
-		for (MediaType c : MediaType.values()) {
+	public static MediaTypes fromValue(String v) {
+		for (MediaTypes c : MediaTypes.values()) {
 			if (c.mediaType.equalsIgnoreCase(v)) {
 				return c;
 			}
