@@ -475,13 +475,6 @@
 	</security-constraint>
 
 	<security-role>
-		<description>Dummy role to fix maven IbisWarPluginMojo</description>
-		<role-name>Dummy</role-name>
-	</security-role -->
-
-  
-
-	<security-role>
 		<description>can call Ibis WebServices</description>
 		<role-name>IbisWebService</role-name>
 	</security-role>
@@ -500,5 +493,6 @@
 	<security-role>
 		<description>can execute jdbc query, send jms message and test a service, has all IbisAdmin and IbisWebService permissions too</description>
 		<role-name>IbisTester</role-name>
-	</security-role>
+	</security-role -->
+
 </web-app>
