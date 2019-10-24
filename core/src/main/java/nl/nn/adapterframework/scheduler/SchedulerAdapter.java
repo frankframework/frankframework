@@ -267,28 +267,13 @@ public class SchedulerAdapter {
         String cn = trigger.getCalendarName();
 
         xbRoot.addAttribute("calendarName", (cn == null ? "none" : cn));
-        Date date;
 
-        try {
-            date = trigger.getEndTime();
-            xbRoot.addAttribute("endTime", (null == date ? "" : DateUtils.format(date, DateUtils.FORMAT_GENERICDATETIME)));
-        } catch (Exception e) { log.debug(e); };
-        try {
-            date = trigger.getFinalFireTime();
-            xbRoot.addAttribute("finalFireTime", (null == date ? "" : DateUtils.format(date, DateUtils.FORMAT_GENERICDATETIME)));
-        } catch (Exception e) { log.debug(e); };
-        try {
-            date = trigger.getPreviousFireTime();
-            xbRoot.addAttribute("previousFireTime", (null == date ? "" : DateUtils.format(date, DateUtils.FORMAT_GENERICDATETIME)));
-        } catch (Exception e) { log.debug(e); };
-        try {
-            date = trigger.getNextFireTime();
-            xbRoot.addAttribute("nextFireTime", (null == date ? "" : DateUtils.format(date, DateUtils.FORMAT_GENERICDATETIME)));
-        } catch (Exception e) { log.debug(e); };
-        try {
-            date = trigger.getStartTime();
-            xbRoot.addAttribute("startTime", (null == date ? "" : DateUtils.format(date, DateUtils.FORMAT_GENERICDATETIME)));
-        } catch (Exception e) { log.debug(e); };
+        xbRoot.addAttribute("endTime", convertDate(trigger.getEndTime()));
+        xbRoot.addAttribute("finalFireTime", convertDate(trigger.getFinalFireTime()));
+        xbRoot.addAttribute("previousFireTime", convertDate(trigger.getPreviousFireTime()));
+        xbRoot.addAttribute("nextFireTime", convertDate(trigger.getNextFireTime()));
+        xbRoot.addAttribute("startTime", convertDate(trigger.getStartTime()));
+
         xbRoot.addAttribute("misfireInstruction", Integer.toString(trigger.getMisfireInstruction()));
         if (trigger instanceof CronTrigger) {
             xbRoot.addAttribute("triggerType", "cron");
@@ -302,4 +287,13 @@ public class SchedulerAdapter {
 
         return xbRoot;
     }
+
+	private String convertDate(Date date) {
+		try {
+			return (null == date ? "" : DateUtils.format(date, DateUtils.FORMAT_GENERICDATETIME));
+		} catch (Exception e) {
+			log.debug("cannot convert date ["+date+"] to format ["+DateUtils.FORMAT_GENERICDATETIME+"]", e);
+			return "";
+		}
+	}
 }

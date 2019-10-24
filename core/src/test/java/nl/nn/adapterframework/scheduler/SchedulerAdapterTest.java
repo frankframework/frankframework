@@ -27,7 +27,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
-import org.quartz.TriggerKey;
 import org.quartz.impl.calendar.HolidayCalendar;
 
 import nl.nn.adapterframework.configuration.Configuration;
