@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,13 +51,13 @@ import org.quartz.impl.matchers.GroupMatcher;
 public class SchedulerAdapter {
 	protected Logger log=LogUtil.getLogger(this);
 
-    private DecimalFormat tf=new DecimalFormat(ItemList.PRINT_FORMAT_TIME);
-    private DecimalFormat pf=new DecimalFormat(ItemList.PRINT_FORMAT_PERC);
+	private DecimalFormat tf=new DecimalFormat(ItemList.PRINT_FORMAT_TIME);
+	private DecimalFormat pf=new DecimalFormat(ItemList.PRINT_FORMAT_PERC);
 	
-    /**
-     * Get all jobgroups, jobs within this group, the jobdetail and the
-     * associated triggers in XML format.
-     */
+	/**
+	 * Get all jobgroups, jobs within this group, the jobdetail and the
+	 * associated triggers in XML format.
+	 */
 	public XmlBuilder getJobGroupNamesWithJobsToXml(Scheduler theScheduler, IbisManager ibisManager) {
 		XmlBuilder xbRoot = new XmlBuilder("jobGroups");
 
@@ -67,80 +67,68 @@ public class SchedulerAdapter {
 
 			for (int i = 0; i < jgnames.size(); i++) {
 				XmlBuilder el = new XmlBuilder("jobGroup");
-				el.addAttribute("name", jgnames.get(i));
+				String jobGroupName = jgnames.get(i);
+				el.addAttribute("name", jobGroupName);
 
 				// process jobs within group
 				XmlBuilder jb = new XmlBuilder("jobs");
-				Set<JobKey> jobKeys = theScheduler.getJobKeys(GroupMatcher.jobGroupEquals(jgnames.get(i)));
+				Set<JobKey> jobKeys = theScheduler.getJobKeys(GroupMatcher.jobGroupEquals(jobGroupName));
 
 				for (JobKey jobKey : jobKeys) {
 					XmlBuilder jn = new XmlBuilder("job");
-					jn.addAttribute("name", jobKey.getName());
+					String jobName = jobKey.getName();
+					jn.addAttribute("name", jobName);
 
 					// details for job
-					XmlBuilder jd = jobDetailToXmlBuilder(theScheduler, jobKey.getName(), jobKey.getGroup());
+					JobDetail jobDetail = theScheduler.getJobDetail(jobKey);
+					XmlBuilder jd = jobDetailToXmlBuilder(jobDetail);
 					jn.addSubElement(jd);
 
 					// get the triggers for this job
-					XmlBuilder tr= getJobTriggers(theScheduler, jobKey.getName(), jobKey.getGroup());
+					List<? extends Trigger> triggers = theScheduler.getTriggersOfJob(jobKey);
+					XmlBuilder tr = getJobTriggers(triggers);
 					jn.addSubElement(tr);
 
-					XmlBuilder datamap = jobDataMapToXmlBuilder(theScheduler, jobKey.getName(), jobKey.getGroup());
+
+					JobDataMap jobDataMap = jobDetail.getJobDataMap();
+					XmlBuilder datamap = jobDataMapToXmlBuilder(jobDataMap);
 					jn.addSubElement(datamap);
 					jb.addSubElement(jn);
 
 					JobDef jobDef = null;
 					if(ibisManager != null) {
 						for (Configuration configuration : ibisManager.getConfigurations()) {
-							jobDef = configuration.getScheduledJob(jobKey.getName());
+							jobDef = configuration.getScheduledJob(jobName);
 							if (jobDef != null) {
 								break;
 							}
 						}
 					}
-					XmlBuilder ms= getJobMessages(jobDef);
+					XmlBuilder ms = getJobMessages(jobDef);
 					jn.addSubElement(ms);
 					XmlBuilder jrs= getJobRunStatistics(jobDef);
 					jn.addSubElement(jrs);
-                }
-                el.addSubElement(jb);
-                xbRoot.addSubElement(el);
-            }
-        } catch (SchedulerException se) {
-           log.error(se);
-        }
-        return xbRoot;
-    }
-    
-    public XmlBuilder getJobTriggers(Scheduler theScheduler, String jobName, String groupName) {
+				}
+				el.addSubElement(jb);
+				xbRoot.addSubElement(el);
+			}
+		} catch (SchedulerException se) {
+			log.error(se);
+		}
 
-        XmlBuilder xbRoot = new XmlBuilder("triggersForJob");
+		return xbRoot;
+	}
 
-        xbRoot.addAttribute("jobName", jobName);
-        xbRoot.addAttribute("groupName", groupName);
-        try {
-            List<String> tgnames = theScheduler.getTriggerGroupNames();
+	public XmlBuilder getJobTriggers(List<? extends Trigger> triggers) {
+		XmlBuilder xbRoot = new XmlBuilder("triggers");
 
-            for (int i = 0; i < tgnames.size(); i++) {
-          	  	List<? extends Trigger> triggers = theScheduler.getTriggersOfJob(JobKey.jobKey(jobName, groupName));
+		for (Trigger trigger : triggers) {
+			XmlBuilder tr = triggerToXmlBuilder(trigger);
+			xbRoot.addSubElement(tr);
+		}
 
-                for (int j = 0; j < triggers.size(); j++) {
-                	// Trigger trigger = theScheduler.getTrigger(TriggerKey.triggerKey(triggerName, groupName));
-
-                    if ((triggers.get(j).getJobKey().getName().equals(jobName)) && (triggers.get(j).getJobKey().getGroup().equals(groupName))) {
-                    	XmlBuilder tr = triggerToXmlBuilder(theScheduler, triggers.get(j).getKey().getName(), triggers.get(j).getKey().getGroup());
-
-                        xbRoot.addSubElement(tr);
-                    }
-                }
-            }
-        } catch (SchedulerException se) {
-            log.error(se);
-
-        }
-
-        return xbRoot;
-    }
+		return xbRoot;
+	}
 
 	public XmlBuilder getJobMessages(JobDef jobdef) {
 		XmlBuilder jobMessages = new XmlBuilder("jobMessages");
@@ -199,11 +187,11 @@ public class SchedulerAdapter {
             xbRoot.addAttribute("schedulerName", smd.getSchedulerName());
             xbRoot.addAttribute("schedulerInstanceId", smd.getSchedulerInstanceId().toString());
             xbRoot.addAttribute("version", smd.getVersion());
-            xbRoot.addAttribute("isPaused", (smd.isInStandbyMode() ? "True" : "False"));
-            xbRoot.addAttribute("isSchedulerRemote", (smd.isSchedulerRemote() ? "True" : "False"));
-            xbRoot.addAttribute("isShutdown", (smd.isShutdown() ? "True" : "False"));
-            xbRoot.addAttribute("isStarted", (smd.isStarted() ? "True" : "False"));
-            xbRoot.addAttribute("jobStoreSupportsPersistence", (smd.isJobStoreSupportsPersistence() ? "True" : "False"));
+            xbRoot.addAttribute("isPaused", smd.isInStandbyMode());
+            xbRoot.addAttribute("isSchedulerRemote", smd.isSchedulerRemote());
+            xbRoot.addAttribute("isShutdown", smd.isShutdown());
+            xbRoot.addAttribute("isStarted", smd.isStarted());
+            xbRoot.addAttribute("jobStoreSupportsPersistence", smd.isJobStoreSupportsPersistence());
             xbRoot.addAttribute("numJobsExecuted", Integer.toString(smd.getNumberOfJobsExecuted()));
             try {
                 Date runningSince = smd.getRunningSince();
@@ -223,156 +211,95 @@ public class SchedulerAdapter {
         return xbRoot;
     }
 
-	public XmlBuilder getTriggerGroupNamesWithTriggersToXml(Scheduler theScheduler) {
-		XmlBuilder xbRoot = new XmlBuilder("triggerGroups");
-		
-		try {
-			// process groups
-			List<String> tgnames = theScheduler.getTriggerGroupNames();
-			
-			for (int i = 0; i < tgnames.size(); i++) {
-				XmlBuilder el = new XmlBuilder("triggerGroup");
-				
-				el.addAttribute("name", tgnames.get(i));
-				
-				// process jobs within group
-				XmlBuilder tgg = new XmlBuilder("triggers");
-				List<? extends Trigger> triggers = theScheduler.getTriggersOfJob(JobKey.jobKey(tgnames.get(i)));
-				
-				for (int j = 0; j < triggers.size(); j++) {
-					XmlBuilder tn = new XmlBuilder("trigger");
-					
-					tn.addAttribute("name", triggers.get(j).getKey().getName());
-					
-					//detail of trigger
-					XmlBuilder td = triggerToXmlBuilder(theScheduler, triggers.get(j).getKey().getName(), tgnames.get(i));
-					
-					tn.addSubElement(td);
-					
-					tgg.addSubElement(tn);
-				}
-				el.addSubElement(tgg);
-				
-				xbRoot.addSubElement(el);
+	public XmlBuilder jobDataMapToXmlBuilder(JobDataMap jd) {
+
+		XmlBuilder xbRoot = new XmlBuilder("jobDataMap");
+		String[] keys = jd.getKeys();
+
+		for (int i = 0; i < keys.length; i++) {
+			String name = keys[i];
+			String value="";
+			Object obj = jd.get(keys[i]);
+			if (obj!=null) {
+				value = obj.toString();
 			}
-		} catch (org.quartz.SchedulerException se) {
-			log.error(se);
+			XmlBuilder ds = new XmlBuilder("property");
+
+			ds.addAttribute("key", name);
+			if (obj!=null){
+				ds.addAttribute("className", obj.getClass().getName());
+			} else {
+				ds.addAttribute("className", "null");
+			}
+			ds.setValue(value);
+
+			xbRoot.addSubElement(ds);
 		}
+
 		return xbRoot;
 	}
 
-   public XmlBuilder jobDataMapToXmlBuilder(Scheduler theScheduler, String jobName, String groupName) {
-
-        XmlBuilder xbRoot = new XmlBuilder("jobDataMap");
-
-        try {
-            JobDataMap jd = theScheduler.getJobDetail(JobKey.jobKey(jobName, groupName)).getJobDataMap();
-
-            xbRoot.addAttribute("containsTransientData", (jd.containsTransientData() ? "True" : "False"));
-            xbRoot.addAttribute("allowsTransientData", (jd.getAllowsTransientData() ? "True" : "False"));
-            xbRoot.addAttribute("jobName", jobName);
-            xbRoot.addAttribute("groupName", groupName);
-
-            String[] keys = jd.getKeys();
-
-            for (int i = 0; i < keys.length; i++) {
-                String name = keys[i];
-                String value="";
-                if (jd.get(keys[i])!=null) {
-                   value = jd.get(keys[i]).toString();
-                }
-                Object obj=jd.get(keys[i]);
-                XmlBuilder ds = new XmlBuilder("property");
-
-
-                ds.addAttribute("key", name);
-                if (obj!=null){
-                    ds.addAttribute("className", obj.getClass().getName());
-                } else ds.addAttribute("className", "null");
-                ds.setValue(value);
-
-                xbRoot.addSubElement(ds);
-            }
-        } catch (SchedulerException se) {
-            log.error(se);
-        }
-        return xbRoot;
-    }
-    
-    public XmlBuilder jobDetailToXmlBuilder(Scheduler theScheduler, String jobName, String groupName) {
+    public XmlBuilder jobDetailToXmlBuilder(JobDetail jobDetail) {
         XmlBuilder xbRoot = new XmlBuilder("jobDetail");
 
-        try {
-            JobDetail jd = theScheduler.getJobDetail(JobKey.jobKey(jobName, groupName));
+        String name = jobDetail.getKey().getName();
+        xbRoot.addAttribute("name", name);
+        xbRoot.addAttribute("fullName", jobDetail.getKey().getGroup() + "." + name);
+        String description="-";
+        if (StringUtils.isNotEmpty(jobDetail.getDescription()))
+            description=jobDetail.getDescription();
 
-            xbRoot.addAttribute("fullName", jd.getKey().getGroup() + "." + jd.getKey().getName());
-            xbRoot.addAttribute("jobName", jd.getKey().getName());
-            xbRoot.addAttribute("groupName", jd.getKey().getGroup());
-            String description="-";
-            if (StringUtils.isNotEmpty(jd.getDescription()))
-                description=jd.getDescription();
+        xbRoot.addAttribute("description", description);
+        xbRoot.addAttribute("isStateful", (jobDetail.isConcurrentExectionDisallowed() && jobDetail.isPersistJobDataAfterExecution()));
+        xbRoot.addAttribute("isDurable", jobDetail.isDurable());
+        xbRoot.addAttribute("jobClass", jobDetail.getJobClass().getName());
 
-            xbRoot.addAttribute("description", description);
-            xbRoot.addAttribute("isStateful", (jd.isConcurrentExectionDisallowed() && jd.isPersistJobDataAfterExecution() ? "True" : "False"));
-            xbRoot.addAttribute("isDurable", (jd.isDurable() ? "True" : "False"));
-            xbRoot.addAttribute("jobClass", jd.getJobClass().getName());
-        } catch (SchedulerException se) {
-            log.error(se);
-        }
         return xbRoot;
     }
 
-    public XmlBuilder triggerToXmlBuilder(Scheduler theScheduler, String triggerName, String groupName) {
+    public XmlBuilder triggerToXmlBuilder(Trigger trigger) {
         XmlBuilder xbRoot = new XmlBuilder("triggerDetail");
 
+        TriggerKey triggerKey = trigger.getKey();
+        xbRoot.addAttribute("fullName", triggerKey.getGroup() + "." + triggerKey.getName());
+        xbRoot.addAttribute("triggerName", triggerKey.getName());
+        xbRoot.addAttribute("triggerGroup", triggerKey.getGroup());
+        String cn = trigger.getCalendarName();
+
+        xbRoot.addAttribute("calendarName", (cn == null ? "none" : cn));
+        Date date;
+
         try {
-            Trigger trigger = theScheduler.getTrigger(TriggerKey.triggerKey(triggerName, groupName));
-
-            xbRoot.addAttribute("fullName", trigger.getKey().getGroup() + "." + trigger.getKey().getName());
-            xbRoot.addAttribute("triggerName", trigger.getKey().getName());
-            xbRoot.addAttribute("triggerGroup", trigger.getKey().getGroup());
-            String cn = trigger.getCalendarName();
-
-            xbRoot.addAttribute("calendarName", (cn == null ? "none" : cn));
-            Date date;
-
-            try {
-                date = trigger.getEndTime();
-                xbRoot.addAttribute("endTime", (null == date ? "" : DateUtils.format(date, DateUtils.FORMAT_GENERICDATETIME)));
-            } catch (Exception e) { log.debug(e); };
-            try {
-                date = trigger.getFinalFireTime();
-                xbRoot.addAttribute("finalFireTime", (null == date ? "" : DateUtils.format(date, DateUtils.FORMAT_GENERICDATETIME)));
-            } catch (Exception e) { log.debug(e); };
-            try {
-                date = trigger.getPreviousFireTime();
-                xbRoot.addAttribute("previousFireTime", (null == date ? "" : DateUtils.format(date, DateUtils.FORMAT_GENERICDATETIME)));
-            } catch (Exception e) { log.debug(e); };
-            try {
-                date = trigger.getNextFireTime();
-                xbRoot.addAttribute("nextFireTime", (null == date ? "" : DateUtils.format(date, DateUtils.FORMAT_GENERICDATETIME)));
-            } catch (Exception e) { log.debug(e); };
-            try {
-                date = trigger.getStartTime();
-                xbRoot.addAttribute("startTime", (null == date ? "" : DateUtils.format(date, DateUtils.FORMAT_GENERICDATETIME)));
-            } catch (Exception e) { log.debug(e); };
-            xbRoot.addAttribute("misfireInstruction", Integer.toString(trigger.getMisfireInstruction()));
-            if (trigger instanceof CronTrigger) {
-                xbRoot.addAttribute("triggerType", "cron");
-                xbRoot.addAttribute("cronExpression", ((CronTrigger)trigger).getCronExpression());
-            } else if (trigger instanceof SimpleTrigger) {
-                xbRoot.addAttribute("triggerType", "simple");
-                xbRoot.addAttribute("repeatInterval", ((SimpleTrigger)trigger).getRepeatInterval());
-            } else {
-                xbRoot.addAttribute("triggerType", "unknown");
-            }
-
-            xbRoot.addAttribute("jobGroup", trigger.getJobKey().getGroup());
-            xbRoot.addAttribute("jobName", trigger.getJobKey().getName());
-
-        } catch (SchedulerException se) {
-            log.error(se);
+            date = trigger.getEndTime();
+            xbRoot.addAttribute("endTime", (null == date ? "" : DateUtils.format(date, DateUtils.FORMAT_GENERICDATETIME)));
+        } catch (Exception e) { log.debug(e); };
+        try {
+            date = trigger.getFinalFireTime();
+            xbRoot.addAttribute("finalFireTime", (null == date ? "" : DateUtils.format(date, DateUtils.FORMAT_GENERICDATETIME)));
+        } catch (Exception e) { log.debug(e); };
+        try {
+            date = trigger.getPreviousFireTime();
+            xbRoot.addAttribute("previousFireTime", (null == date ? "" : DateUtils.format(date, DateUtils.FORMAT_GENERICDATETIME)));
+        } catch (Exception e) { log.debug(e); };
+        try {
+            date = trigger.getNextFireTime();
+            xbRoot.addAttribute("nextFireTime", (null == date ? "" : DateUtils.format(date, DateUtils.FORMAT_GENERICDATETIME)));
+        } catch (Exception e) { log.debug(e); };
+        try {
+            date = trigger.getStartTime();
+            xbRoot.addAttribute("startTime", (null == date ? "" : DateUtils.format(date, DateUtils.FORMAT_GENERICDATETIME)));
+        } catch (Exception e) { log.debug(e); };
+        xbRoot.addAttribute("misfireInstruction", Integer.toString(trigger.getMisfireInstruction()));
+        if (trigger instanceof CronTrigger) {
+            xbRoot.addAttribute("triggerType", "cron");
+            xbRoot.addAttribute("cronExpression", ((CronTrigger)trigger).getCronExpression());
+        } else if (trigger instanceof SimpleTrigger) {
+            xbRoot.addAttribute("triggerType", "simple");
+            xbRoot.addAttribute("repeatInterval", ((SimpleTrigger)trigger).getRepeatInterval());
+        } else {
+            xbRoot.addAttribute("triggerType", "unknown");
         }
+
         return xbRoot;
     }
 }
