@@ -281,7 +281,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				String segment = patternSegments[i];
 				String name = null;
 
-				if(segment.equals("*")) {
+				if("*".equals(segment)) {
 					name = "uriIdentifier_"+uriIdentifier;
 				}
 				else if(segment.startsWith("{") && segment.endsWith("}")) {

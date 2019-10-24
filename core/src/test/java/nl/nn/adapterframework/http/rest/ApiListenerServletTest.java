@@ -49,7 +49,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletConfig;
 
 public class ApiListenerServletTest extends Mockito {
-	Logger log = LogUtil.getLogger(this.getClass());
+	private Logger log = LogUtil.getLogger(this);
 
 	enum Methods {
 		GET,POST,PUT,DELETE,OPTIONS
@@ -147,7 +147,7 @@ public class ApiListenerServletTest extends Mockito {
 		if(!method.equals(Methods.GET) && content != null)
 			request.setContent(content.getBytes());
 		else
-			request.setContent(new String("").getBytes());
+			request.setContent("".getBytes()); //Empty content
 
 		return request;
 	}
@@ -256,7 +256,7 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
-	public void ApiListenerThatProducesXML() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void apiListenerThatProducesXML() throws ServletException, IOException, ListenerException, ConfigurationException {
 		addListener("/ApiListenerThatProducesXML/", Methods.PUT, null, MediaTypes.XML);
 
 		Response result = service(createRequest("ApiListenerThatProducesXML", Methods.PUT, "<xml>data</xml>"));
@@ -268,7 +268,7 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
-	public void ApiListenerThatProducesJSON() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void apiListenerThatProducesJSON() throws ServletException, IOException, ListenerException, ConfigurationException {
 		addListener("/ApiListenerThatProducesJSON/", Methods.POST, null, MediaTypes.JSON);
 
 		Response result = service(createRequest("ApiListenerThatProducesJSON", Methods.POST, "{}"));
@@ -394,7 +394,7 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
-	public void ApiListenerShouldReturnEtag() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void apiListenerShouldReturnEtag() throws ServletException, IOException, ListenerException, ConfigurationException {
 		addListener("etag1", Methods.GET);
 
 		Map<String, String> headers = new HashMap<String, String>();
@@ -482,7 +482,7 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
-	public void CookieAuthentication401() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void cookieAuthentication401() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri = "cookie";
 		addListener(uri, Methods.POST, AuthMethods.COOKIE);
 
@@ -495,7 +495,7 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
-	public void CookieNotFoundInCache401() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void cookieNotFoundInCache401() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri = "cookie";
 		addListener(uri, Methods.POST, AuthMethods.COOKIE);
 
@@ -511,7 +511,7 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
-	public void CookieAuthentication200() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void cookieAuthentication200() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri = "cookie";
 		addListener(uri, Methods.POST, AuthMethods.COOKIE);
 		String authToken = "random-token_thing";
@@ -537,7 +537,7 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
-	public void HeaderAuthentication401() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void headerAuthentication401() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri = "cookie";
 		addListener(uri, Methods.POST, AuthMethods.HEADER);
 
@@ -551,7 +551,7 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
-	public void HeaderAuthentication200() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void headerAuthentication200() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri = "header";
 		addListener(uri, Methods.POST, AuthMethods.HEADER);
 		String authToken = "random-token_thing";
@@ -574,7 +574,7 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
-	public void AuthRoleAuthentication401() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void authRoleAuthentication401() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri = "authRole2";
 		addListener(uri, Methods.POST, AuthMethods.AUTHROLE);
 
@@ -593,7 +593,7 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
-	public void AuthRoleAuthentication200() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void authRoleAuthentication200() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri = "authRole2";
 		addListener(uri, Methods.POST, AuthMethods.AUTHROLE);
 
