@@ -169,14 +169,18 @@ public class TestGetAction extends SenderBase<CmisSender>{
 		configure();
 
 		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc);
-		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+		if(!getProperties && !resultToServlet) {
+			assertEquals("", actualResult);
+		} else {
+			assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+		}
 
 		InputStream stream = (InputStream) prc.getSession().get(sender.getFileInputStreamSessionKey());
-		if(getDocumentContent) {
+		if((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
 			assertEquals(GET_RESULT_FOR_INPUT, Misc.streamToString(stream));
-		}
-		else
+		} else {
 			assertNull(stream);
+		}
 	}
 
 	@Test
@@ -187,14 +191,18 @@ public class TestGetAction extends SenderBase<CmisSender>{
 		configure();
 
 		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc);
-		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+		if(!getProperties && !resultToServlet) {
+			assertEquals("", actualResult);
+		} else {
+			assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+		}
 
 		String base64Content = (String) prc.getSession().get(sender.getFileContentSessionKey());
-		if(getDocumentContent) {
+		if((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
 			assertEquals("ZHVtbXlfc3RyZWFt", base64Content);
-		}
-		else
+		} else {
 			assertNull(base64Content);
+		}
 	}
 
 	@Test
@@ -205,14 +213,18 @@ public class TestGetAction extends SenderBase<CmisSender>{
 		configureWithParameters();
 
 		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc);
-		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+		if(!getProperties && !resultToServlet) {
+			assertEquals("", actualResult);
+		} else {
+			assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+		}
 
 		InputStream stream = (InputStream) prc.getSession().get(sender.getFileInputStreamSessionKey());
-		if(getDocumentContent) {
+		if((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
 			assertEquals(GET_RESULT_FOR_INPUT, Misc.streamToString(stream));
-		}
-		else
+		} else {
 			assertNull(stream);
+		}
 	}
 
 	@Test
@@ -223,13 +235,17 @@ public class TestGetAction extends SenderBase<CmisSender>{
 		configureWithParameters();
 
 		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc);
-		assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+		if(!getProperties && !resultToServlet) {
+			assertEquals("", actualResult);
+		} else {
+			assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+		}
 
 		String base64Content = (String) prc.getSession().get(sender.getFileContentSessionKey());
-		if(getDocumentContent) {
+		if((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
 			assertEquals("ZHVtbXlfc3RyZWFt", base64Content);
-		}
-		else
+		} else {
 			assertNull(base64Content);
+		}
 	}
 }
