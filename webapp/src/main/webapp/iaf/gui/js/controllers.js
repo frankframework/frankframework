@@ -1678,7 +1678,7 @@ angular.module('iaf.beheerconsole')
 			$scope.archivedMessages = {};
 			console.log("Started testing with success.");
 			$scope.lastAction = "Run";
-			$scope.lowestLogLevel = $scope.formLogLevel; // TODO: Make sure this is not a pointer!
+			$scope.lowestLogLevel = $scope.formLogLevel;
 			$scope.startPolling();
 		};
 		var error = function(errorData, status, errorMsg) {
@@ -1842,16 +1842,22 @@ angular.module('iaf.beheerconsole')
 
 	/**
 	 * Accepts the wrong pipeline message that was prepared for diff.
+	 * Used as a onClick function for save buttons.
+	 * @param $event event of button being clicked.
 	 * @param testName Name of the test that had the message
 	 * @param index Index of the message
 	 */
-	$scope.savePipelineMessage = function(testName, index) {
+	$scope.savePipelineMessage = function($event, testName, index) {
+		var button = angular.element($event.currentTarget);
+		var body = button.parent().next();
 		Api.Post("larva/save", JSON.stringify({"content": $scope.messages[testName][index]["messages"]["Pipeline Message"], "filepath": $scope.messages[testName][index]["messages"]["Filepath"]}), function (data) {
-			alert("New pipeline output has been saved.");
+			var panel = '<div class="panel panel-info"><div class="panel-heading">New pipeline output has been saved.</div></div>';
+			body.prepend(panel);
+			button.remove();
 		}, function () {
-			alert("There has been an error!");
+			var panel = '<div class="panel panel-danger"><div class="panel-heading">There has been an error!</div></div>';
+			body.prepend(panel);
 		});
-		// Todo: Beautify
 	}
 
 	/**
@@ -1869,7 +1875,7 @@ angular.module('iaf.beheerconsole')
 		bodyText = bodyText.replace(/\&lt\;span class\=\"(\w+)-(\w+)\"&gt\;/g, '<span class=\"$1-$2\">');
 		bodyText = bodyText.replace(/&lt;\/span&gt;/g, "</span>");
 
-		var button = '<button type="button" class="label label-info pull-right" ng-click="savePipelineMessage(\'' + testName + '\',' + index + ')">Save</button>';
+		var button = '<button type="button" class="label label-info pull-right" ng-click="savePipelineMessage($event, \'' + testName + '\',' + index + ')">Save</button>';
 		button = $compile(button)($scope);
 		var header = '<div class="panel-heading" id="larva-test-details-' + index + '">' + headerText + '</div>';
 		var body = '<div class="panel-body"><pre lang="xml">' + bodyText + '</pre></div>';
