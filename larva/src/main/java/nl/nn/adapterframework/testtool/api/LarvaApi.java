@@ -198,6 +198,30 @@ public class LarvaApi {
         }
     }
 
+    /**
+     * If loglevel is given gets all the messages with the new log level, otherwise returns all the messages.
+     * @param json the log level to be used. If null, it will be set to "Debug", meaning all of the messages will be returned.
+     * @return All messages above given log level.
+     */
+    @POST
+    @RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+    @Path("/larva/messages")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response getMessagesWithLogLevel(@Context HttpServletRequest request, LinkedHashMap<String, Object> json){
+        getContext();
+        MessageListener messageListener = getOrCreateMessageListener(request);
+        try {
+            String logLevel = json.get("logLevel").toString();
+            if(logLevel == null)
+                logLevel = "Debug";
+            messageListener.setSelectedLogLevel(logLevel);
+            JSONArray messages = messageListener.getMessages();
+            return Response.status(Response.Status.OK).entity(messages.toString()).build();
+        }catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+    }
+
 //    /**
 //     * @return The logs for the previous test execution.
 //     */

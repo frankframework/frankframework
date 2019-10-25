@@ -1480,11 +1480,25 @@ angular.module('iaf.beheerconsole')
 	$scope.messages = {};
 	$scope.tests = [];
 	$scope.displayMessages = [];
+	$scope.lastAction = null;
+	$scope.lowestLogLevel = null;
+	$scope.archivedMessages = {};
+
+	/**
+	 * Adds a new message that acts as an alert.
+	 * @param level representing the class for panel. Possible options are "panel-danger, panel-info"
+	 * @param message Test containing the message
+	 */
 	$scope.addDisplayMessage = function(level, message) {
 		$scope.displayMessages.push({
 			"message": message,			"level": level
 		})
 	};
+
+	/**
+	 * Removes the message displayed under the form-above the table.
+	 * @param message to be removed.
+	 */
 	$scope.removeDisplayMessage = function(message) {
 		var i = 0;
 		while(i<$scope.displayMessages.length) {
@@ -1495,11 +1509,14 @@ angular.module('iaf.beheerconsole')
 			i++;
 		}
 	};
+
 	$scope.assignDisplayMessageClass = function(message) {
 		return message.level;
 	};
 
-
+	/**
+	 * Creates the options and defaults based on the data on the server.
+	 */
 	$scope.setForm = function() {
 		// Check for the various File API support.
 		if (window.File && window.FileReader && window.FileList && window.Blob) {
@@ -1537,6 +1554,10 @@ angular.module('iaf.beheerconsole')
 		});
 	};
 
+	/**
+	 * Groups the messages wrt their test names. Then sets the $scope.messages
+	 * @param data that contains the messages.
+	 */
 	$scope.setMessages = function(data) {
 		console.log("Inside poll callback.");
 		if(data.length === 0)
@@ -1560,10 +1581,8 @@ angular.module('iaf.beheerconsole')
 					$scope.tests[testIndex]["status"] = element["messages"]["status"] ? element["messages"]["status"] : $scope.tests[testIndex]["status"];
 					$scope.tests[testIndex]["directory"] = element["messages"]["directory"] ? element["messages"]["directory"] : $scope.tests[testIndex]["directory"];
 				}
-			}else if(element["logLevel"] === "Total" && !$scope.file) {
-				if (Poller.get("LarvaMessagePoller")) {
-					Poller.remove("LarvaMessagePoller");
-				}
+			}else if(element["logLevel"] === "Total" && !$scope.file && Poller.get("LarvaMessagePoller")) {
+				Poller.remove("LarvaMessagePoller");
 				console.log("Stop Poller.");
 				$scope.addDisplayMessage(
 					(element["messages"]["Message"].includes("failed")) ? "panel-danger" : "panel-info",
@@ -1580,10 +1599,12 @@ angular.module('iaf.beheerconsole')
 			$scope.messages[element["name"]].push(element);
 		});
 
-
 		console.log("Finishing poll callback");
 	};
 
+	/**
+	 * Starts polling for new messages using the Poller service.
+	 */
 	$scope.startPolling = function () {
 		console.log("Inside start poller");
 		var generator = {
@@ -1600,6 +1621,11 @@ angular.module('iaf.beheerconsole')
 		Poller.add(generator, $scope.setMessages, true, 500);
 	};
 
+	/**
+	 * Assigns a class to the test object in the table.
+	 * @param test Test object containing the status.
+	 * @returns {string} representing the class for bootstrap.
+	 */
 	$scope.assignClass = function(test) {
 		switch (test.status) {
 			case "RUNNING":
@@ -1614,6 +1640,9 @@ angular.module('iaf.beheerconsole')
 		return "danger";
 	};
 
+	/**
+	 * Submits the form data to the server to start running the selected tests.
+	 */
 	$scope.submit = function () {
 		$scope.file = undefined;
 		console.log("Inside submit");
@@ -1646,23 +1675,34 @@ angular.module('iaf.beheerconsole')
 			$scope.lastMessageArrived = 0;
 			$scope.messages = {};
 			$scope.tests = [];
+			$scope.archivedMessages = {};
 			console.log("Started testing with success.");
+			$scope.lastAction = "Run";
+			$scope.lowestLogLevel = $scope.formLogLevel; // TODO: Make sure this is not a pointer!
 			$scope.startPolling();
 		};
 		var error = function(errorData, status, errorMsg) {
 			console.log("Error Data:\n" + errorData);
+			$scope.lastAction = null;
 			$scope.addDisplayMessage("panel-danger",  status + ": Could not execute tests. " + errorMsg);
 		};
 		console.log("Calling POST");
 		Api.Post("larva/execute", fd,  { 'Content-Type': undefined }, success, error);
 	};
 
+	/**
+	 * Uploads the file when a user selects a json file containing messages.
+	 * @param event representing the user selecting a json file.
+	 */
 	$scope.fileChanged = function(event) {
 		console.log("Inside file changed");
 		$scope.file = event.target.files[0];
 		$scope.loadFile();
 	};
 
+	/**
+	 * Uploads the json file that is in the $scope.file variable.
+	 */
 	$scope.loadFile = function() {
 		console.log("Inside load file");
 		if(!$scope.file)
@@ -1670,6 +1710,7 @@ angular.module('iaf.beheerconsole')
 
 		var fileReader = new FileReader();
 		fileReader.onload = function(e) {
+			$scope.lastAction = "Upload";
 			console.log(fileReader.result);
 			var fileData= JSON.parse(fileReader.result);
 			console.log(fileData);
@@ -1679,10 +1720,39 @@ angular.module('iaf.beheerconsole')
 			}
 			console.log(data);
 			$scope.setMessages(data);
+			$scope.archivedMessages = $scope.messages;
+			$scope.setLowestLogLevel(data);
+			$scope.formLogLevel = $scope.lowestLogLevel;
+			console.log($scope.lowestLogLevel + " lowest log level");
 		}
 		fileReader.readAsText(this.file);
 	};
 
+	/**
+	 * Sets the $scope.lowestLogLevel the lowest log level contained in the data.
+	 * @param data array of messages.
+	 */
+	$scope.setLowestLogLevel = function(data) {
+		var length = $scope.logLevels.length;
+		$scope.lowestLogLevel = length;
+		data.forEach(function (element) {
+			if($scope.logLevels.indexOf(element["logLevel"]) < $scope.lowestLogLevel) {
+				$scope.lowestLogLevel = $scope.logLevels.indexOf(element["logLevel"]);
+			}
+		});
+		if($scope.lowestLogLevel === length) {
+			console.error("Could not get the lowest log level.");
+			$scope.lowestLogLevel = -1;
+		}
+		$scope.lowestLogLevel = $scope.logLevels[$scope.lowestLogLevel];
+	}
+
+	/**
+	 * Created a diff by line based on given text.
+	 * @param text1 First string to be compared to.
+	 * @param text2 Second string to be compared.
+	 * @returns {Diff object based on Google's Diff-Match-Patch} the diff object.
+	 */
 	$scope.diff_lineMode = function (text1, text2) {
 		var dmp = new diff_match_patch();
 		var a = dmp.diff_linesToChars_(text1, text2);
@@ -1694,6 +1764,11 @@ angular.module('iaf.beheerconsole')
 		return diffs;
 	}
 
+	/**
+	 * Translates the given diff to text containing spans for highlights.
+	 * @param diff The input diff object based on Google's Diff-Match-Patch package.
+	 * @returns {string} The output string containing the text and highlights.
+	 */
 	$scope.diff2text = function(diff) {
 		var current = 0;
 		var text = "";
@@ -1721,6 +1796,14 @@ angular.module('iaf.beheerconsole')
 		return text;
 	}
 
+	/**
+	 * Returns the properties required for displaying the message in the modal.
+	 * The returned header is the text to be displayed inside header.
+	 * The returned body is the text to be displayed inside panel body.
+	 * The returned class is to be used for bootstrap.
+	 * @param message Message to be displayed.
+	 * @returns {{header: string, body: string, class: string}}
+	 */
 	$scope.messageDisplayProperties = function(message) {
 		var panelClass = "panel-default";
 		var bodyText = "";
@@ -1750,19 +1833,34 @@ angular.module('iaf.beheerconsole')
 			default:
 				bodyText = JSON.stringify(message);
 		}
-		var properties = {"class": panelClass, "header": jQuery('<div />').text(headerText).html(), "body": jQuery('<div />').text(bodyText).html()};
-
-		return properties;
+		return {
+			"class": panelClass,
+			"header": jQuery('<div />').text(headerText).html(),
+			"body": jQuery('<div />').text(bodyText).html()
+		};
 	};
 
+	/**
+	 * Accepts the wrong pipeline message that was prepared for diff.
+	 * @param testName Name of the test that had the message
+	 * @param index Index of the message
+	 */
 	$scope.savePipelineMessage = function(testName, index) {
 		Api.Post("larva/save", JSON.stringify({"content": $scope.messages[testName][index]["messages"]["Pipeline Message"], "filepath": $scope.messages[testName][index]["messages"]["Filepath"]}), function (data) {
 			alert("New pipeline output has been saved.");
 		}, function () {
 			alert("There has been an error!");
 		});
+		// Todo: Beautify
 	}
 
+	/**
+	 * Creates a panel for displaying the wrong pipeline messages for the diff.
+	 * @param div The div to be populated.
+	 * @param message The wrong pipeline messages that is prepared for diff.
+	 * @param testName Name of the test that failed.
+	 * @param index index of the message. It is used for creating a unique button for accepting the diff.
+	 */
 	$scope.createErrorMessagesForDiff = function(div, message, testName, index) {
 		var diff = $scope.diff_lineMode(message["messages"]["Pipeline Message Expected"], message["messages"]["Pipeline Message"]);
 		var bodyText = jQuery('<div />').text($scope.diff2text(diff)).html();
@@ -1775,10 +1873,14 @@ angular.module('iaf.beheerconsole')
 		button = $compile(button)($scope);
 		var header = '<div class="panel-heading" id="larva-test-details-' + index + '">' + headerText + '</div>';
 		var body = '<div class="panel-body"><pre lang="xml">' + bodyText + '</pre></div>';
-		$('#test-details-body').append('<div class="panel panel-danger">' + header + body + '</div>');
+		div.append('<div class="panel panel-danger">' + header + body + '</div>');
 		$('#larva-test-details-' + index).append(button);
 	}
 
+	/**
+	 * Sets the body of the modal #test-details-body with the messages related to the given test.
+	 * @param test The test object to be used for populating the modal.
+	 */
 	$scope.testDetails = function (test) {
 		$('#modalTestTitle').text(test.name);
 		$('#test-details-body').empty();
@@ -1803,6 +1905,11 @@ angular.module('iaf.beheerconsole')
 		$('#test-details').modal();
 	};
 
+	/**
+	 * Downloads the current messages as a json file.
+	 * The name is formatted as:
+	 * "Larva Log yyyy-mm-dd hh:mm:ss.json"
+	 */
 	$scope.downloadMessages = function() {
 		var dataStr = JSON.stringify($scope.messages);
 		var dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
@@ -1820,6 +1927,10 @@ angular.module('iaf.beheerconsole')
 		linkElement.click();
 	};
 
+	/**
+	 * Sets the scenarios select based on the rootDirectory selected.
+	 * It is used as an onchange function for rootDirectory select.
+	 */
 	$scope.getScenarios = function() {
 		Api.Post(
 			"larva/scenarios",
@@ -1836,6 +1947,83 @@ angular.module('iaf.beheerconsole')
 				$scope.scenarios = scenarios;
 			}
 			)
+	}
+
+	/**
+	 * OnChange function for logLevels select. It checks if the last messages came
+	 * from running the messages or uploading them and filters the messages based
+	 * on that accordingly.
+	 */
+	$scope.updateLogLevel = function() {
+		console.log("Inside the message with last action " + $scope.lastAction);
+		if($scope.lastAction === "Run") {
+			if($scope.logLevels.indexOf($scope.lowestLogLevel) <= $scope.logLevels.indexOf($scope.formLogLevel)) {
+				console.log("FormLogLevel is bigger! nicee ");
+				if ($scope.archivedMessages === null || Object.keys($scope.archivedMessages).length === 0) {
+					$scope.archivedMessages = $scope.messages;
+				}else {
+					$scope.messages = $scope.archivedMessages;
+				}
+				$scope.flattenAndFilterMessages($scope.formLogLevel);
+			}else {
+				console.log("Starting new callback for messages ");
+				Api.Post("larva/messages",
+					JSON.stringify({"logLevel": $scope.formLogLevel}),
+					function (data) {
+						$scope.messages = {};
+						$scope.tests = [];
+						$scope.setMessages(data);
+						$scope.lowestLogLevel = $scope.formLogLevel;
+					},
+					function (error) {
+						$scope.addDisplayMessage("panel-danger", "Error retrieving logs: " + error);
+					});
+			}
+		}else if($scope.lastAction === "Upload") {
+			var logLevel = $scope.formLogLevel;
+			if($scope.logLevels.indexOf($scope.lowestLogLevel) > $scope.logLevels.indexOf($scope.formLogLevel)) {
+				logLevel = $scope.lowestLogLevel;
+				$scope.addDisplayMessage("panel-warning", "The selected log level is lower than the uploaded file contains. Using the lowest possible log level [" + logLevel + "] instead.");
+			}
+			$scope.messages = $scope.archivedMessages;
+			$scope.flattenAndFilterMessages(logLevel);
+		}else if($scope.lastAction !== null) {
+			$scope.addDisplayMessage("panel-danger", "Unexpected State: The frontend application is inconsistent! Please refresh the page!");
+		}
+	}
+
+	/**
+	 * Flattens and filters the current messages based on the given log level.
+	 * @param logLevel A string representing the log level to be used for filtering. It needs to be included inside $scope.logLevels
+	 * @returns {boolean} False if logLevel requirement is not met. True, when the filterin is finished.
+	 */
+	$scope.flattenAndFilterMessages = function(logLevel) {
+		var logLevelIndex = $scope.logLevels.indexOf(logLevel);
+		console.log("Got log level "+logLevel+"  " +logLevelIndex);
+		if(logLevelIndex < 0) {
+			console.error("Given log level is not in the possible log levels. Exiting filtering.");
+			return false;
+		}
+		// Flatten messages
+		var data = []
+		for(test in $scope.messages) {
+			var testMessages = $scope.messages[test];
+			data = data.concat(testMessages);
+		}
+		// Filter
+		// Not using data.foreach because it cant handle modifications.
+		for(var i = 0; i < data.length; i++) {
+			if($scope.logLevels.indexOf(data[i]["logLevel"]) < logLevelIndex) {
+				data.splice(i, 1);
+				i--;
+			}
+		}
+		console.log("HERES THE FILTERED DATA");
+		console.log(data);
+		$scope.messages = {};
+		$scope.tests = [];
+		$scope.setMessages(data);
+		return true;
 	}
 
 	// Generate form and set default values.

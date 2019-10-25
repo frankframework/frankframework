@@ -1,7 +1,9 @@
 <style>
     /*TODO: move this block.*/
-    .modal-dialog {
-        width: 65%;
+    @media (min-width: 768px) {
+        .modal-dialog {
+            width: 65%;
+        }
     }
     .table > thead > tr > th,
     .table > tbody > tr > td{
@@ -27,6 +29,7 @@
                             name="logLevel"
                             ng-model="formLogLevel"
                             ng-options="level as level for level in logLevels"
+                            ng-change="updateLogLevel()"
                     >
                     </select>
                 </div>
@@ -67,7 +70,7 @@
                         >
                         </select>
                     </div>
-                    <div class="form-group col-lg-2" alt="Set up a timeout (in seconds) for test execution. If value is -1, the value is infinite.">
+                    <div class="form-group col-lg-2" title="Set up a timeout (in seconds) for test execution. If value is -1, the value is infinite.">
                         <label for="testTimeout">Test Timeout:</label>
                         <input type="number" min="-1" class="form-control" id="testTimeout" value="-1" name="testTimeout" ng-model="formTimeout"/>
                     </div>
