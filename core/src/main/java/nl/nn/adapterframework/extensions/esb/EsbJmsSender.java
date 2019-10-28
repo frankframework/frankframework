@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.extensions.esb;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.parameters.Parameter;
 
@@ -23,22 +24,6 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * ESB (Enterprise Service Bus) extension of JmsSender.
- *
- * <p><b>Configuration </b><i>(where deviating from JmsSender)</i><b>:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of ESB service to be called. Possible values 
- * <ul>
- *   <li>"FF": Fire & Forget protocol</li>
- *   <li>"RR": Request-Reply protocol</li>
- * </ul></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>20000 (20s)</td></tr>
- * <tr><td>{@link #setMessageTimeToLive(long) messageTimeToLive}</td><td>if messageProtocol=<code>RR</code>: </td><td>{@link #setTimeOut(long) timeOut}</td></tr>
- * <tr><td>{@link #setDeliveryMode(String) deliveryMode}</td><td></td><td>if messageProtocol=<code>RR</code>: </td><td><code>"NON_PERSISTENT"</code></td></tr>
- * <tr><td>{@link #setReplyTimeout(int) replyTimeout}</td><td>if messageProtocol=<code>RR</code>: </td><td>{@link #setTimeOut(long) timeOut}</td></tr>
- * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>if messageProtocol=<code>RR</code>: </td><td><code>true</code></td></tr>
- * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>&nbsp;</td><td>if empty then derived from the element MessageHeader/To/Location in the SOAP header of the input message (if $messagingLayer='P2P' then '$applicationFunction' else '$operationName_$operationVersion)</td></tr>
- * </table></p>
  * 
  * @author  Peter Leeuwenburgh
  */
@@ -76,7 +61,11 @@ public class EsbJmsSender extends JmsSender {
 		}
 		super.configure();
 	}
-
+	@IbisDoc({"protocol of ESB service to be called. Possible values \n" +
+			" * <ul>\n" +
+			" *   <li>\"FF\": Fire & Forget protocol</li>\n" +
+			" *   <li>\"RR\": Request-Reply protocol</li>\n" +
+			" * </ul>",""})
 	public void setMessageProtocol(String string) {
 		messageProtocol = string;
 	}
@@ -89,6 +78,7 @@ public class EsbJmsSender extends JmsSender {
 		return timeOut;
 	}
 
+	@IbisDoc({"receiver timeout, in milliseconds", "20000 (20s)"})
 	public void setTimeOut(long l) {
 		timeOut = l;
 	}

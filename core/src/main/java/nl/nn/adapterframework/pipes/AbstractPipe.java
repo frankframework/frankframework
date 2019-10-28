@@ -75,12 +75,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </p>
  * <p>Since 4.1 this class also has parameters, so that descendants of this class automatically are parameter-enabled.
  * However, your documentation should say if and how parameters are used!<p>
- * <tr><td>{@link #setWriteToSecLog (boolean) writeToSecLog}</td><td>when set to <code>true</code> a record is written to the security log when the pipe has finished successfully</td><td>false</td></tr>
- * <tr><td>{@link #setSecLogSessionKeys(String) secLogSessionKeys}</td><td>(only used when <code>writeToSecLog=true</code>) comma separated list of keys of session variables that is appended to the security log record</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLogIntermediaryResults (String) logIntermediaryResults}</td><td>when set, the value in AppConstants is overwritten (for this pipe only)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setHideRegex(String) hideRegex}</td><td>Regular expression to mask strings in the log. For example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code> will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>Note:</b> this feature is used at adapter level, so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
  *
  * <p>
  * <table border="1">
@@ -663,6 +657,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return outSizeStatDummyObject;
 	}
 
+	@IbisDoc({"when set to <code>true</code> a record is written to the security log when the pipe has finished successfully", "false"})
 	@Override
 	public void setWriteToSecLog(boolean b) {
 		writeToSecLog = b;
@@ -686,6 +681,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		recoverAdapter = b;
 	}
 
+	@IbisDoc({"when set, the value in AppConstants is overwritten (for this pipe only)", ""})
 	public void setLogIntermediaryResults(String string) {
 		logIntermediaryResults = string;
 	}

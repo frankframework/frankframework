@@ -24,6 +24,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -60,16 +61,6 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * 	EINDEREKENVERZOEK :EINDE
  * </p>
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setDirection(String) direction}</td><td>transformation direction. Possible values 
- * <ul>
- *   <li>"Xml2Label": transform an XML file to ascii</li>
- *   <li>"Label2Xml": transform an ascii file to XML</li>
- * </ul></td><td>Xml2Label</td></tr>
- * </table>
- * </p>
  * @author Gerrit van Brakel
  */
 public class LabelFormat extends FixedForwardPipe {
@@ -116,6 +107,11 @@ public class LabelFormat extends FixedForwardPipe {
 	 * </ul>
 	 * default: None
 	 */
+	@IbisDoc({" sets transformation direction. Possible values \n" +
+			" <ul>\n" +
+			"   <li>\"Xml2Label\": transform an XML file to ascii</li>\n" +
+			"   <li>\"Label2Xml\": transform an ascii file to XML</li>\n" +
+			" </ul>", "None"})
 	public void setDirection(String newDirection) {
 		direction = newDirection;
 	}

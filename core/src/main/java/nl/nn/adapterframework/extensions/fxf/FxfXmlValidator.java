@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.extensions.fxf;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.WsdlXmlValidator;
 
 /**
@@ -25,14 +26,7 @@ import nl.nn.adapterframework.pipes.WsdlXmlValidator;
  * by Tibco) for all queues (every Ibis receiving FxF files has it's own
  * queue)). When sending files (direction=send) the message is validated against
  * the StartTransfer WSDL (ESB service provided by Tibco).
- * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.extensions.fxf.FxfListener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDirection(String) direction}</td><td>either <code>send</code> or <code>receive</code></td><td>send</td></tr>
- * <tr><td>{@link #setFxfVersion(String) fxfVersion}</td><td>either 3.1 or 3.2</td><td>3.1</td></tr>
- * </table>
+ *
  * 
  * @author Jaco de Groot
  */
@@ -66,10 +60,12 @@ public class FxfXmlValidator extends WsdlXmlValidator {
 		return direction;
 	}
 
+	@IbisDoc({"either <code>send</code> or <code>receive</code>", "send"})
 	public void setDirection(String direction) {
 		this.direction = direction;
 	}
 
+	@IbisDoc({"Either 3.1 or 3.2", "3.1"})
 	public void setFxfVersion(String fxfVersion) {
 		this.fxfVersion = fxfVersion;
 	}

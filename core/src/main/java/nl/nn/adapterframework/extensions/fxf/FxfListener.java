@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.FileUtils;
@@ -34,22 +35,7 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * FxF extension of EsbJmsListener.
- * 
- * <p><b>Configuration </b><i>(where deviating from EsbJmsListener)</i><b>:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>name of the JMS destination (queue or topic) to use</td><td>"jms/FileTransferAction"</td></tr>
- * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>"qcf_tibco_p2p_ff"</td></tr>
- * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of ESB service to be called. Possible values 
- * <ul>
- *   <li>"FF": Fire & Forget protocol</li>
- *   <li>"RR": Request-Reply protocol</li>
- * </ul></td><td>"FF"</td></tr>
- * <tr><td>{@link #setFxfFileSessionKey(String) fxfFileSessionKey}</td><td>name of the session key to store the name of the received file in</td><td>fxfFile</td></tr>
- * <tr><td>{@link #setMoveProcessedFile(boolean) moveProcessedFile}</td><td>when set to <code>true</code>, the received file if moved after being processed</td><td>true</td></tr>
- * <tr><td>{@link #setProcessedSiblingDirectory(String) processedSiblingDirectory}</td><td>(only used when <code>moveProcessedFile=true</code>) <b>sibling</b> directory (related to the parent directory of the file to process) where files are stored after being processed</td><td>"processed"</td></tr>
- * <tr><td>{@link #setCreateProcessedDirectory(boolean) createProcessedDirectory}</td><td>(only used when <code>moveProcessedFile=true</code>) when set to <code>true</code>, the directory to move processed files in is created if it does not exist</td><td>false</td></tr>
- * </table></p>
+ *
  * 
  * @author Peter Leeuwenburgh
  */
@@ -155,10 +141,12 @@ public class FxfListener extends EsbJmsListener {
 		return fxfFileSessionKey;
 	}
 
+	@IbisDoc({"name of the session key to store the name of the received file in","fxfFile"})
 	public void setFxfFileSessionKey(String fxfFileSessionKey) {
 		this.fxfFileSessionKey = fxfFileSessionKey;
 	}
 
+	@IbisDoc({"when set to <code>true</code>, the received file if moved after being processed","true"})
 	public void setMoveProcessedFile(boolean b) {
 		moveProcessedFile = b;
 	}
@@ -167,6 +155,7 @@ public class FxfListener extends EsbJmsListener {
 		return moveProcessedFile;
 	}
 
+	@IbisDoc({"(only used when <code>moveProcessedFile=true</code>) <b>sibling</b> directory (related to the parent directory of the file to process) where files are stored after being processed","'processed'"})
 	public void setProcessedSiblingDirectory(String processedSiblingDirectory) {
 		this.processedSiblingDirectory = processedSiblingDirectory;
 	}
@@ -175,6 +164,7 @@ public class FxfListener extends EsbJmsListener {
 		return processedSiblingDirectory;
 	}
 
+	@IbisDoc({"(only used when <code>moveProcessedFile=true</code>) when set to <code>true</code>, the directory to move processed files in is created if it does not exist","false"})
 	public void setCreateProcessedDirectory(boolean b) {
 		createProcessedDirectory = b;
 	}

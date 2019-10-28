@@ -31,6 +31,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.ITransactionRequirements;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -38,19 +39,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * ESB (Enterprise Service Bus) extension of JmsListener.
- *
- * <p><b>Configuration </b><i>(where deviating from JmsListener)</i><b>:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of ESB service to be called. Possible values 
- * <ul>
- *   <li>"FF": Fire & Forget protocol</li>
- *   <li>"RR": Request-Reply protocol</li>
- * </ul></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUseReplyTo(boolean) useReplyTo}</td><td>if messageProtocol=<code>FF</code>: </td><td><code>false</code></td></tr>
- * <tr><td>{@link #setForceMessageIdAsCorrelationId(boolean) forceMessageIdAsCorrelationId}</td><td>if messageProtocol=<code>RR</code>: </td><td><code>true</code></td></tr>
- * <tr><td>{@link #setCopyAEProperties(boolean) copyAEProperties}</td><td>if <code>true</code>, all JMS properties in the request starting with "ae_" are copied to the reply</td><td><code>false</code></td></tr>
- * </table></p>
  * 
  * @author  Peter Leeuwenburgh
  */
@@ -187,6 +175,11 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		return properties;
 	}
 
+	@IbisDoc({"protocol of ESB service to be called. Possible values \n" +
+			" * <ul>\n" +
+			" *   <li>\"FF\": Fire & Forget protocol</li>\n" +
+			" *   <li>\"RR\": Request-Reply protocol</li>\n" +
+			" * </ul>", ""})
 	public void setMessageProtocol(String string) {
 		messageProtocol = string;
 	}
@@ -215,6 +208,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		}
 	}
 
+	@IbisDoc({"if <code>true</code>, all JMS properties in the request starting with \"ae_\" are copied to the reply", "false"})
 	public void setCopyAEProperties(boolean b) {
 		copyAEProperties = b;
 	}

@@ -21,6 +21,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -31,20 +32,7 @@ import org.apache.log4j.Logger;
 
 /**
  * Sender for transferring files using the XFB protocol. Assumes sender input is local filename.
- * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.extensions.xfb.XfbSender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setScript(String) script}</td><td>full pathname to the XFB script to be executed to transfer the file</td><td></td></tr>
- * <tr><td>{@link #setFt(String) ft}</td><td>XFB ft parameter</td><td>SEND_FF</td></tr>
- * <tr><td>{@link #setFlow(String) flow}</td><td>XFB flow parameter</td><td></td></tr>
- * <tr><td>{@link #setAppli(String) appli}</td><td>XFB appli parameter</td><td></td></tr>
- * <tr><td>{@link #setNoname(String) noname}</td><td>XFB noname parameter</td><td></td></tr>
- * <tr><td>{@link #setCopy(boolean) copy}</td><td>when set <code>true</code>, the file is copied before calling the XFB script. Reasons to copy the file: - XFB will rename the file (prefix it with FXB_) and delete it. - On Linux the sticky bit (drwxrws--- wasadmin xfbgw) isn't honoured with a move (only with a copy) (on AIX the sticky bit works for both move and copy)</td><td>true</td></tr>
- * <tr><td>{@link #setCopyPrefix(String) copyPrefix}</td><td>prefix for the name of the copied or original filename. When the name of the original file starts with this prefix this prefix is removed otherwise this prefix is added to the filename of the copied file </td><td>IBIS_</td></tr>
- * </table>
- * </p>
+ *
  *
  * <br/>
  * Some comments from Richard Maddox (FTO) about UNIX File permissions:
@@ -133,6 +121,7 @@ public class XfbSender extends SenderWithParametersBase {
 		return output;
 	}
 
+	@IbisDoc({"full pathname to the XFB script to be executed to transfer the file", ""})
 	public void setScript(String script) {
 		this.script = script;
 	}
@@ -141,6 +130,7 @@ public class XfbSender extends SenderWithParametersBase {
 		return script;
 	}
 
+	@IbisDoc({"XFB ft parameter", "SEND_FF"})
 	public void setFt(String ft) {
 		this.ft = ft;
 	}
@@ -149,6 +139,7 @@ public class XfbSender extends SenderWithParametersBase {
 		return ft;
 	}
 
+	@IbisDoc({"XFB flow parameter", ""})
 	public void setFlow(String flow) {
 		this.flow = flow;
 	}
@@ -157,6 +148,7 @@ public class XfbSender extends SenderWithParametersBase {
 		return flow;
 	}
 
+	@IbisDoc({"XFB appli parameter", ""})
 	public void setAppli(String appli) {
 		this.appli = appli;
 	}
@@ -165,6 +157,7 @@ public class XfbSender extends SenderWithParametersBase {
 		return appli;
 	}
 
+	@IbisDoc({"XFB noname parameter", ""})
 	public void setNoname(String noname) {
 		this.noname = noname;
 	}
@@ -173,6 +166,7 @@ public class XfbSender extends SenderWithParametersBase {
 		return noname;
 	}
 
+	@IbisDoc({"when set <code>true</code>, the file is copied before calling the XFB script. Reasons to copy the file: - XFB will rename the file (prefix it with FXB_) and delete it. - On Linux the sticky bit (drwxrws--- wasadmin xfbgw) isn't honoured with a move (only with a copy) (on AIX the sticky bit works for both move and copy)", "true"})
 	public void setCopy(boolean copy) {
 		this.copy = copy;
 	}
@@ -181,6 +175,7 @@ public class XfbSender extends SenderWithParametersBase {
 		return copy;
 	}
 
+	@IbisDoc({"prefix for the name of the copied or original filename. When the name of the original file starts with this prefix this prefix is removed otherwise this prefix is added to the filename of the copied file ", "IBIS_"})
 	public void setCopyPrefix(String copyPrefix) {
 		this.copyPrefix = copyPrefix;
 	}

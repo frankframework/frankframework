@@ -22,18 +22,13 @@ import javax.xml.namespace.QName;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.soap.SoapValidator;
 
 /**
  * XmlValidator that will automatically add the SOAP envelope XSD and the ESB
  * XSD (e.g. CommonMessageHeader.xsd) to the set of XSD's used for validation.
- * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>*</td><td>all attributes available on {@link SoapValidator} can be used</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMode(String) mode}</td><td>TODO</td><td>TODO</td></tr>
- * </table>
+ *
  *
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
@@ -139,6 +134,7 @@ public class EsbSoapValidator extends SoapValidator {
         this.direction = Direction.valueOf(direction.toUpperCase());
     }
 
+    @IbisDoc({"TODO", "TODO"})
     public void setMode(String mode) { // Why does PropertyUtil not understand enums?
         this.mode = EsbSoapWrapperPipe.Mode.valueOf(mode.toUpperCase());
     }

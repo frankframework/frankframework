@@ -17,6 +17,7 @@ package nl.nn.adapterframework.extensions.fxf;
 
 import java.io.File;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -43,16 +44,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * only). Replace NNX00000 with the specific flowId and generate a unique
  * filename (files will automatically be cleaned after 30 days or any other
  * value specified by ${fxf.retention}).
- * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.extensions.fxf.FxfListener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDirection(String) direction}</td><td>either <code>wrap</code> or <code>unwrap</code></td><td>wrap</td></tr>
- * <tr><td>{@link #setFlowId(String) flowId}</td><td>The flowId of the file transfer when direction=wrap. When direction=unwrap the flowId will be extracted from the incoming message and added as a sessionKey to the pipeline.</td><td></td></tr>
- * <tr><td>{@link #setTransformFilename(boolean) transformFilename}</td><td>When true and direction=wrap the input which is expected to be a local filename will be transformed to the filename as known on the IUF State machine.</td><td>true</td></tr>
- * <tr><td>{@link #setFxfVersion(String) fxfVersion}</td><td>either 3.1 or 3.2</td><td>3.1</td></tr>
- * </table>
+ *
  * 
  * @author Jaco de Groot
  */
@@ -228,6 +220,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		return flowId;
 	}
 
+	@IbisDoc({"The flowId of the file transfer when direction=wrap. When direction=unwrap the flowId will be extracted from the incoming message and added as a sessionKey to the pipeline.", ""})
 	public void setFlowId(String flowId) {
 		this.flowId = flowId;
 	}
@@ -236,6 +229,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		return transformFilename;
 	}
 
+	@IbisDoc({"When true and direction=wrap the input which is expected to be a local filename will be transformed to the filename as known on the IUF State machine.", "true"})
 	public void setTransformFilename(boolean transformFilename) {
 		this.transformFilename = transformFilename;
 	}
@@ -288,6 +282,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		this.fxfFileSessionKey = fxfFileSessionKey;
 	}
 
+	@IbisDoc({"Either 3.1 or 3.2", "3.1"})
 	public void setFxfVersion(String fxfVersion) {
 		this.fxfVersion = fxfVersion;
 	}
