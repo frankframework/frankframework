@@ -46,29 +46,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * {@link nl.nn.adapterframework.core.ISender sender} that sends a mail specified by an XML message.
- * <p>
- * Sample email.xml:
- * <code><pre>
- *    &lt;email&gt;
- *       &lt;recipients&gt;
- *          &lt;recipient type="to"&gt;***@hotmail.com&lt;/recipient&gt;
- *          &lt;recipient type="cc"&gt;***@gmail.com&lt;/recipient&gt;
- *       &lt;/recipients&gt;
- *       &lt;from&gt;***@yahoo.com&lt;/from&gt;
- *       &lt;subject&gt;This is the subject&lt;/subject&gt;
- *       &lt;threadTopic&gt;subject&lt;/threadTopic&gt;
- *       &lt;message&gt;This is the message&lt;/message&gt;
- *       &lt;messageType&gt;text/plain&lt;/messageType&gt;&lt;!-- Optional --&gt;
- *       &lt;messageBase64&gt;false&lt;/messageBase64&gt;&lt;!-- Optional --&gt;
- *       &lt;charset&gt;UTF-8&lt;/charset&gt;&lt;!-- Optional --&gt;
- *       &lt;attachments&gt;
- *          &lt;attachment name="filename1.txt"&gt;This is the first attachment&lt;/attachment&gt;
- *          &lt;attachment name="filename2.pdf" base64="true"&gt;JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==&lt;/attachment&gt;
- *          &lt;attachment name="filename3.pdf" url="file:/c:/filename3.pdf"/&gt;
- *          &lt;attachment name="filename4.pdf" sessionKey="fileContent"/&gt;
- *       &lt;/attachments&gt;&lt;!-- Optional --&gt;
- *   &lt;/email&gt;
- * </pre></code>
+ *
  * <p>
  * Notice: the XML message must be valid XML. Therefore, especially the message element
  * must be plain text or be wrapped as CDATA. Example:

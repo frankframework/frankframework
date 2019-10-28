@@ -27,31 +27,6 @@ import org.apache.log4j.Logger;
 
 /**
  * Transforms a java.sql.Resultset to a XML stream.
- * Example of a result:
- * <code><pre>
- * &lt;result&gt;
-	&lt;fielddefinition&gt;
-		&lt;field name="FIELDNAME"
-		          type="columnType" 
-		          columnDisplaySize=""
-		          precision=""
-		          scale=""
-		          isCurrency=""
-		          columnTypeName=""
-		          columnClassName=""/&gt;
-		 &lt;field ...../&gt;
-	&lt;/fielddefinition&gt;
-	&lt;rowset&gt;
-		&lt;row number="1"&gt;
-			&lt;field name="FIELDNAME"&gt;value&lt;/field&gt;
-			&lt;field name="FIELDNAME" null="true" &gt;&lt;/field&gt;
-			&lt;field name="FIELDNAME"&gt;value&lt;/field&gt;
-			&lt;field name="FIELDNAME"&gt;value&lt;/field&gt;
-		&lt;/row&gt;
-	&lt;/rowset&gt;
-&lt;/result&gt;
-</pre></code>
- * Note: that the fieldname and columntype are always capital case!
  *
  * @author Johan Verrips
  **/

@@ -49,26 +49,6 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * messageLog by the {@link MessageStoreListener} or M to view the messages in
  * the messageStore which still need to be processed.
  * 
- * Example configuration:
- * <code><pre>
-		&lt;sender
-			className="nl.nn.adapterframework.jdbc.MessageStoreSender"
-			jmsRealm="jdbc"
-			slotId="${instance.name}/ServiceName"
-			sessionKeys="key1,key2"
-			>
-			&lt;param name="messageId" xpathExpression="/Envelope/Header/MessageID"/>
-		&lt;/sender>
-		&lt;!-- DummyTransactionalStorage to enable messagestore browser in the console (JdbcTransactionalStorage would store an extra record in the ibisstore) -->
-		&lt;messageLog
-			className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage"
-			jmsRealm="jdbc"
-			slotId="${instance.name}/ServiceName"
-			type="M"
-		/>
-</pre></code>
- * 
- * 
  * <table border="1">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>

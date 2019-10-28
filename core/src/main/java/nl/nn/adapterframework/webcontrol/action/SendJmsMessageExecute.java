@@ -47,12 +47,8 @@ import org.apache.struts.upload.FormFile;
 
 /**
  * Executes the sending of a message with JMS.
- * <p>
- * For setting the JMS correlationId a processing instruction with the name <code>ibiscontext</code> and key <code>tcid</code> has to be used<br/><br/>
- * example:<br/><code><pre>
- * &lt;?ibiscontext tcid=1234567890?&gt;
- * &lt;message&gt;This is a Message&lt;/message&gt;
- * </pre></code><br/>
+ *
+ * For setting the JMS correlationId a processing instruction with the name <code>ibiscontext</code> and key <code>tcid</code> has to be used<br/>
  * 
  * @author  Johan Verrips
  */
