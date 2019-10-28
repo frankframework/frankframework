@@ -16,7 +16,7 @@
 					<tr><td>Name</td><td><xtags:valueOf select="@schedulerName"/></td></tr>
 					<tr><td>schedulerInstanceId</td><td><xtags:valueOf select="@schedulerInstanceId"/></td></tr>
 					<tr><td>isStarted</td><td><booleanImage value="<xtags:valueOf select="@isStarted"/>"/></td><td>
-						<xtags:if test="@isStarted='False'">
+						<xtags:if test="@isStarted='false'">
 								<imagelink 
 									href="schedulerHandler.do"
 									type="start"
@@ -27,7 +27,7 @@
 						</td>
 					</tr>
 					<tr><td>isPaused</td><td><booleanImage value="<xtags:valueOf select="@isPaused"/>"/></td><td>
-						<xtags:if test="@isPaused='False'">
+						<xtags:if test="@isPaused='false'">
 								<imagelink 
 									href="schedulerHandler.do"
 									type="pause"
@@ -35,7 +35,7 @@
 									<parameter name="action">pauseScheduler</parameter>
 								 </imagelink>
 						</xtags:if>
-						<xtags:if test="@isPaused='True'">
+						<xtags:if test="@isPaused='true'">
 								<imagelink 
 									href="schedulerHandler.do"
 									type="start"
@@ -55,11 +55,7 @@
 					<tr><td>jobStoreSupportsPersistence</td><td><booleanImage value="<xtags:valueOf select="@jobStoreSupportsPersistence"/>"/></td></tr>
 				</tbody>
 			</contentTable>
-	</xtags:forEach>	
-
-	<br/>
-	<br/>
-
+	</xtags:forEach>
 
 	<xtags:parse>
 			<%=request.getAttribute("jobdata")%>
@@ -67,47 +63,48 @@
 
 
 	<xtags:forEach select="//jobGroups/jobGroup">
-		<xtags:variable id="jobGroup" select="@name"/>
+
+	<br/>
+	<br/>
+
+		<xtags:variable id="groupName" select="@name"/>
 
 
 		<xtags:forEach select="jobs">
 			<contentTable>
-				<caption>Jobs in jobgroup <xtags:valueOf select="../@name"/></caption>
+				<caption>Jobs in jobgroup [<xtags:valueOf select="$groupName"/>]</caption>
 				<tbody>
 
-				<xtags:forEach select="job/jobDetail" sort="@jobName">
+				<xtags:forEach select="job/jobDetail" sort="@name">
+					<xtags:variable id="name" select="@name"/>
 					<tr><th>Name</th>
 						<th>description</th>
 						<th>jobClass</th>
 						<th>Action</th>
 					</tr>
-					<tr><td><xtags:valueOf select="@jobName"/></td>
+					<tr><td><xtags:valueOf select="$name"/></td>
 						<td><xtags:valueOf select="@description"/></td>
 						<td><xtags:valueOf select="@jobClass"/></td>
-						<td>		
-							<xtags:variable id="jobName" select="@jobName"/>
-							<xtags:variable id="groupName" select="@groupName"/>
-							
+						<td>
 							<imagelink 
 								href="schedulerHandler.do"
 								type="delete"
 								alt="delete job">
 								<parameter name="action">deleteJob</parameter>
-								<parameter name="jobName"><%=java.net.URLEncoder.encode(jobName)%></parameter>
+								<parameter name="jobName"><%=java.net.URLEncoder.encode(name)%></parameter>
 								<parameter name="groupName"><%=java.net.URLEncoder.encode(groupName)%></parameter>
-							 </imagelink>
+							</imagelink>
 							<imagelink 
 								href="schedulerHandler.do"
 								type="start"
 								alt="start job">
 								<parameter name="action">triggerJob</parameter>
-								<parameter name="jobName"><%=java.net.URLEncoder.encode(jobName)%></parameter>
+								<parameter name="jobName"><%=java.net.URLEncoder.encode(name)%></parameter>
 								<parameter name="groupName"><%=java.net.URLEncoder.encode(groupName)%></parameter>
-							 </imagelink>
-							
+							</imagelink>
 						</td>
 					</tr>
-					<xtags:forEach select="../triggersForJob/triggerDetail">
+					<xtags:forEach select="../triggers/triggerDetail">
 						<tr>
 							<td></td>
 							<td colspan="3">

@@ -643,7 +643,6 @@ public class Adapter implements IAdapter, NamedBean {
 			if (log.isDebugEnabled()) { 
 				log.debug(logMsg);
 			} else {
-				msgLog.info(logMsg);
 				logMsg = "Adapter [" + name + "] received message with messageId [" + messageId + "]" + additionalLogging;
 				log.info(logMsg);
 			}

@@ -151,6 +151,10 @@ public class SchedulerHelper {
 		return scheduler.getJobDetail(JobKey.jobKey(jobName, jobGroup));
 	}
 
+	public void deleteTrigger(JobDef jobDef) throws SchedulerException {
+		deleteTrigger(jobDef.getName(), jobDef.getJobGroup());
+	}
+
 	public void deleteTrigger(String jobName) throws SchedulerException {
 		deleteTrigger(jobName, DEFAULT_GROUP);
 	}

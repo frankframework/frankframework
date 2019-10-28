@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.extensions.cmis;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -112,7 +114,7 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 		sender.setRepository("dummyRepository");
 		sender.setFileContentSessionKey("fileContent");
 		sender.setFileNameSessionKey("my-file");
-		sender.setUserName("test");
+		sender.setUsername("test");
 		sender.setPassword("test");
 		sender.setKeepSession(false);
 
@@ -163,11 +165,31 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 
 	@Test
 	public void sendMessage() throws ConfigurationException, SenderException, TimeOutException {
+
+		if(action.equals("get")) {
+			sender.setFileContentSessionKey("");
+			sender.setFileNameSessionKey("");
+		}
+
 		configure();
 
 		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
 
 		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc);
 		assertEqualsIgnoreRN(expectedResult, actualResult);
+	}
+
+	@Test
+	public void sendMessageWithContentStream() throws ConfigurationException, SenderException, TimeOutException {
+		if(!action.equals("get")) return;
+
+		configure();
+
+		ParameterResolutionContext prc = new ParameterResolutionContext("input", session);
+
+		String actualResult = sender.sendMessage(bindingType+"-"+action, input, prc);
+		assertEquals("", actualResult);
+		String base64 = (String) prc.getSession().get("fileContent");
+		assertEqualsIgnoreRN(Base64.encodeBase64String(expectedResult.getBytes()), base64);
 	}
 }

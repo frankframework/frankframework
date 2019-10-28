@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
    limitations under the License.
 */
 package nl.nn.adapterframework.xml;
+
 import java.io.IOException;
 import java.net.URL;
 
@@ -38,40 +39,43 @@ public class ClassLoaderEntityResolver implements EntityResolver {
 	public ClassLoaderEntityResolver(ClassLoader classLoader) {
 		this.classLoader = classLoader;
 	}
+
 	/**
 	 * @see org.xml.sax.EntityResolver#resolveEntity(String, String)
 	 */
 	@Override
 	public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-		InputSource inputSource = null;
+		String absolutePath = systemId;
+		String fileName=null; //relative path in a ClassLoader
 
-		String ref1 = systemId;
-		String ref2=null;
-
-		// strip any file info from systemId 
+		// strip any file info from systemId
 		int idx = systemId.lastIndexOf("/");
 		if (idx >= 0) {
-			ref2 = systemId.substring(idx + 1); // this appears to be necessary to load configurations
+			fileName = systemId.substring(idx + 1); // this appears to be necessary to load configurations
 		}
-		log.debug("Resolving [" + ref1 +"]");
+
+		log.debug("Resolving [" + absolutePath +"]");
 		try {
-			URL url = ClassUtils.getResourceURL(classLoader, ref1);
-			if (url==null && ref2!=null) {
-				log.warn("could not get entity via ["+ref1+"], now trying  via ["+ref2+"]");
-				url = ClassUtils.getResourceURL(classLoader, ref2);
+			URL url = ClassUtils.getResourceURL(classLoader, absolutePath);
+			if(url != null)
+				return new InputSource(url.openStream());
+		} catch (IOException e) {
+			//URL is not null but the resource cannot be found. Ignore this exception and try to resolve the relative location
+		}
+		if (fileName != null) {
+			try {
+				log.warn("could not get entity via ["+absolutePath+"], now trying via ["+fileName+"]");
+				URL url = ClassUtils.getResourceURL(classLoader, fileName);
+				if(url != null)
+					return new InputSource(url.openStream());
+			} catch (IOException e) {
+				//This should never be thrown, as relative paths are either found or not found (not NULL)
+				log.error("Exception resolving file ["+fileName+"] on classloader ["+classLoader+"]",e);
 			}
-			if (url==null) {
-				log.error("cannot find resource for entity [" + ref1 + "]"+(ref2==null?"":" or [" + ref2 + "]"));
-				return null;
-			}
-			inputSource = new InputSource(url.openStream());
-		} catch (Exception e) {
-			log.error("Exception resolving entity [" + ref1 + "]"+(ref2==null?"":" or [" + ref2 + "]"),e);
-			// No action; just let the null InputSource pass through
 		}
 
 		// If nothing found, null is returned, for normal processing
-		return inputSource;
+		return null;
 	}
 
 }
