@@ -106,14 +106,6 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		return destinationName;
 	}
 
-	@IbisDoc({"uri pattern to register this listener on", ""})
-	public void setUriPattern(String uriPattern) {
-		this.uriPattern = uriPattern;
-	}
-	public String getUriPattern() {
-		return uriPattern;
-	}
-
 	/**
 	 * returns the clear pattern, replaces everything between <code>{}</code> to <code>*</code>
 	 * @return null if no pattern is found
@@ -132,16 +124,69 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		return pattern.replaceAll("\\{.*?}", "*");
 	}
 
+	public boolean isConsumable(String contentType) {
+		return consumes.isConsumable(contentType);
+	}
+
+	public String getContentType() {
+		return produces.getContentType();
+	}
+
+	@IbisDoc({"1", "HTTP method eq. GET POST PUT DELETE", ""})
+	public void setMethod(String method) {
+		this.method = method.toUpperCase();
+	}
 	public String getMethod() {
 		return method;
 	}
-	@IbisDoc({"HTTP method eq. GET POST PUT DELETE", ""})
-	public void setMethod(String method) {
-		this.method = method.toUpperCase();
+
+	@IbisDoc({"2", "uri pattern to register this listener on, eq. `/my-listener/{something}/here`", ""})
+	public void setUriPattern(String uriPattern) {
+		this.uriPattern = uriPattern;
+	}
+	public String getUriPattern() {
+		return uriPattern;
+	}
+
+	@IbisDoc({"3", "the specified contentType on requests, if it doesn't match the request will fail", "ANY"})
+	public void setConsumes(String value) {
+		String consumes = null;
+		if(StringUtils.isEmpty(value))
+			consumes = "ANY";
+		else
+			consumes = value.toUpperCase();
+
+		this.consumes = MediaTypes.valueOf(consumes);
+	}
+	public String getConsumes() {
+		return consumes.name();
+	}
+
+	@IbisDoc({"4", "the specified contentType on response", "ANY"})
+	public void setProduces(String value) {
+		String produces = null;
+		if(StringUtils.isEmpty(value))
+			produces = "ANY";
+		else
+			produces = value.toUpperCase();
+
+		this.produces = MediaTypes.valueOf(produces);
+	}
+	public String getProduces() {
+		return produces.name();
+	}
+
+	@IbisDoc({"5", "automatically generate and validate etags", "true"})
+	public void setUpdateEtag(boolean updateEtag) {
+		this.updateEtag = updateEtag;
+	}
+	public boolean getUpdateEtag() {
+		return updateEtag;
 	}
 
 	//TODO add authenticationType
 
+	@IbisDoc({"6", "enables security for this listener, must be one of [NONE, COOKIE, HEADER, AUTHROLE]. If you wish to use the application servers authorisation roles [AUTHROLE], you need to enable them globally for all ApiListeners with the `servlet.ApiListenerServlet.securityroles=ibistester,ibiswebservice` property", "NONE"})
 	public void setAuthenticationMethod(String authenticationMethod) throws ConfigurationException {
 		try {
 			this.authenticationMethod = AuthenticationMethods.valueOf(authenticationMethod);
@@ -150,6 +195,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 			throw new ConfigurationException("Unknown authenticationMethod ["+authenticationMethod+"]. Must be one of "+ Arrays.asList(AuthenticationMethods.values()));
 		}
 	}
+
 	public AuthenticationMethods getAuthenticationMethod() {
 		if(authenticationMethod == null) {
 			authenticationMethod = AuthenticationMethods.NONE;
@@ -158,7 +204,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		return this.authenticationMethod;
 	}
 
-	@IbisDoc({"comma separated list of authorization roles which are granted for this service, eq. ibistester,ibiswebservice", ""})
+	@IbisDoc({"6", "only active when AuthenticationMethod=AUTHROLE. comma separated list of authorization roles which are granted for this service, eq. ibistester,ibisobserver", ""})
 	public void setAuthenticationRoles(String authRoles) {
 		List<String> roles = new ArrayList<String>();
 		if (StringUtils.isNotEmpty(authRoles)) {
@@ -176,56 +222,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		return authenticationRoles;
 	}
 
-	@IbisDoc({"the specified contentType on requests, if it doesn't match the request will fail", "ANY"})
-	public void setConsumes(String value) {
-		String consumes = null;
-		if(StringUtils.isEmpty(value))
-			consumes = "ANY";
-		else
-			consumes = value.toUpperCase();
-
-		this.consumes = MediaTypes.valueOf(consumes);
-	}
-	public String getConsumes() {
-		return consumes.name();
-	}
-
-	public boolean isConsumable(String contentType) {
-		return consumes.isConsumable(contentType);
-	}
-
-	@IbisDoc({"the specified contentType on response", "ANY"})
-	public void setProduces(String value) {
-		String produces = null;
-		if(StringUtils.isEmpty(value))
-			produces = "ANY";
-		else
-			produces = value.toUpperCase();
-
-		this.produces = MediaTypes.valueOf(produces);
-	}
-	public String getProduces() {
-		return produces.name();
-	}
-
-	public String getContentType() {
-		return produces.getContentType();
-	}
-
-	public void setUpdateEtag(boolean updateEtag) {
-		this.updateEtag = updateEtag;
-	}
-	public boolean getUpdateEtag() {
-		return updateEtag;
-	}
-
-	@Override
-	public String toString() {
-		return this.getClass().toString() + "uriPattern["+getUriPattern()+"] produces["+getProduces()+"] consumes["+getConsumes()+"] "
-				+ "contentType["+getContentType()+"] updateEtag["+getUpdateEtag()+"]";
-	}
-
-	@IbisDoc({"specify the form-part you wish to enter the pipeline", "first form-part"})
+	@IbisDoc({"7", "specify the form-part you wish to enter the pipeline", "name of the first form-part"})
 	public void setMultipartBodyName(String multipartBodyName) {
 		this.multipartBodyName = multipartBodyName;
 	}
@@ -234,5 +231,11 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 			return multipartBodyName;
 
 		return null;
+	}
+
+	@Override
+	public String toString() {
+		return this.getClass().toString() + "uriPattern["+getUriPattern()+"] produces["+getProduces()+"] consumes["+getConsumes()+"] "
+				+ "contentType["+getContentType()+"] updateEtag["+getUpdateEtag()+"]";
 	}
 }
