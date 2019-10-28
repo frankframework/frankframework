@@ -305,63 +305,68 @@ public class SendGridSender extends MailSenderBase {
 
 	//Properties inherited from HttpSenderBase
 
-	@IbisDoc({"0", "alias used to obtain credentials for proxy authentication", ""})
-	public void setProxyAuthAlias(String string) {
-		httpclient.setProxyAuthAlias(string);
-	}
-
-	@IbisDoc({"1", "username used to obtain credentials for proxy authentication", ""})
-	public void setProxyUserName(String string) {
-		httpclient.setProxyUserName(string);
-	}
-
-	@IbisDoc({"2", "password used to obtain credentials for proxy authentication", ""})
-	public void setProxyPassword(String string) {
-		httpclient.setProxyPassword(string);
-	}
-
-	@IbisDoc({"3", "realm used for proxy authentication", ""})
-	public void setProxyRealm(String string) {
-		httpclient.setProxyRealm(string);
-	}
-
-	@IbisDoc({"4", "hostname of the proxy", ""})
-	public void setProxyHost(String string) {
-		httpclient.setProxyHost(string);
-	}
-
-	@IbisDoc({"5", "port of the proxy", "80"})
-	public void setProxyPort(int i) {
-		httpclient.setProxyPort(i);
-	}
-
-	@Override
+	@IbisDoc({"10", "timeout in ms of obtaining a connection/result. 0 means no timeout", "10000"})
 	public void setTimeout(int i) {
 		super.setTimeout(i);
 		httpclient.setTimeout(i);
 	}
 
-	@IbisDoc({"the maximum number of concurrent connections", "10"})
+	@IbisDoc({"11", "the maximum number of concurrent connections", "10"})
 	public void setMaxConnections(int i) {
 		httpclient.setMaxConnections(i);
 	}
 
-	@IbisDoc({"the maximum number of times it the execution is retried", "1"})
+	@IbisDoc({"12", "the maximum number of times it the execution is retried", "1"})
 	public void setMaxExecuteRetries(int i) {
 		httpclient.setMaxExecuteRetries(i);
 	}
 
-	@IbisDoc({"resource url to certificate to be used for authentication", ""})
+
+	@IbisDoc({"20", "hostname of the proxy", ""})
+	public void setProxyHost(String string) {
+		httpclient.setProxyHost(string);
+	}
+
+	@IbisDoc({"21", "port of the proxy", "80"})
+	public void setProxyPort(int i) {
+		httpclient.setProxyPort(i);
+	}
+
+	@IbisDoc({"22", "alias used to obtain credentials for proxy authentication", ""})
+	public void setProxyAuthAlias(String string) {
+		httpclient.setProxyAuthAlias(string);
+	}
+
+	@IbisDoc({"23", "username used to obtain credentials for proxy authentication", ""})
+	public void setProxyUserName(String string) {
+		httpclient.setProxyUserName(string);
+	}
+
+	@IbisDoc({"24", "password used to obtain credentials for proxy authentication", ""})
+	public void setProxyPassword(String string) {
+		httpclient.setProxyPassword(string);
+	}
+
+	@IbisDoc({"35", "realm used for proxy authentication", ""})
+	public void setProxyRealm(String string) {
+		httpclient.setProxyRealm(string);
+	}
+
+
+
+
+
+	@IbisDoc({"40", "resource url to certificate to be used for authentication", ""})
 	public void setCertificate(String string) {
 		httpclient.setCertificate(string);
 	}
 
-	@IbisDoc({"alias used to obtain truststore password", ""})
+	@IbisDoc({"41", "alias used to obtain truststore password", ""})
 	public void setTruststoreAuthAlias(String string) {
 		httpclient.setTruststoreAuthAlias(string);
 	}
 
-	@IbisDoc({"", " "})
+	@IbisDoc({"42", "certificate password", " "})
 	public void setCertificatePassword(String string) {
 		httpclient.setCertificatePassword(string);
 	}
@@ -371,66 +376,69 @@ public class SendGridSender extends MailSenderBase {
 		httpclient.setKeystoreType(string);
 	}
 
-	@IbisDoc({"", " "})
+	@IbisDoc({"43", "", "pkcs12"})
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		httpclient.setKeyManagerAlgorithm(keyManagerAlgorithm);
 	}
 
-	@IbisDoc({"resource url to truststore to be used for authentication", ""})
+	@IbisDoc({"50", "resource url to truststore to be used for authentication", ""})
 	public void setTruststore(String string) {
 		httpclient.setTruststore(string);
 	}
 
-	@IbisDoc({"alias used to obtain certificate password", ""})
+	@IbisDoc({"51", "alias used to obtain truststore password", ""})
 	public void setCertificateAuthAlias(String string) {
 		httpclient.setCertificateAuthAlias(string);
 	}
 
-	@IbisDoc({"", " "})
+	@IbisDoc({"52", "truststore password", " "})
 	public void setTruststorePassword(String string) {
 		httpclient.setTruststorePassword(string);
 	}
 
-	@IbisDoc({"", "jks"})
+	@IbisDoc({"53", "type of truststore", "jks"})
 	public void setTruststoreType(String string) {
 		httpclient.setTruststoreType(string);
 	}
 
-	@IbisDoc({"", " "})
+	@IbisDoc({"54", "", " "})
 	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
 		httpclient.setTrustManagerAlgorithm(trustManagerAlgorithm);
 	}
 
-	@IbisDoc({"when true, the hostname in the certificate will be checked against the actual hostname", "true"})
+	@IbisDoc({"55", "when true, the hostname in the certificate will be checked against the actual hostname", "true"})
 	public void setVerifyHostname(boolean b) {
 		httpclient.setVerifyHostname(b);
 	}
 
-	@IbisDoc({"when true, self signed certificates are accepted", "false"})
+	@IbisDoc({"56", "when true, self signed certificates are accepted", "false"})
 	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
 		httpclient.setAllowSelfSignedCertificates(allowSelfSignedCertificates);
 	}
 
-	@IbisDoc({"controls whether connections checked to be stale, i.e. appear open, but are not.", "true"})
-	public void setStaleChecking(boolean b) {
-		httpclient.setStaleChecking(b);
-	}
-
-	public void setStaleTimeout(int timeout) {
-		httpclient.setStaleTimeout(timeout);
-	}
-
-	@IbisDoc({"when true, a redirect request will be honoured, e.g. to switch to https", "true"})
-	public void setFollowRedirects(boolean b) {
-		httpclient.setFollowRedirects(b);
-	}
-
-	@IbisDoc({"when true, the certificateexpiredexception is ignored", "false"})
+	@IbisDoc({"57", "when true, the certificateexpiredexception is ignored", "false"})
 	public void setIgnoreCertificateExpiredException(boolean b) {
 		httpclient.setIgnoreCertificateExpiredException(b);
 	}
 
-	@IbisDoc({"secure socket protocol (such as 'ssl' and 'tls') to use when a sslcontext object is generated. if empty the protocol 'ssl' is used", ""})
+	
+	@IbisDoc({"61", "when true, a redirect request will be honoured, e.g. to switch to https", "true"})
+	public void setFollowRedirects(boolean b) {
+		httpclient.setFollowRedirects(b);
+	}
+
+	@IbisDoc({"62", "controls whether connections checked to be stale, i.e. appear open, but are not.", "true"})
+	public void setStaleChecking(boolean b) {
+		httpclient.setStaleChecking(b);
+	}
+	
+	@IbisDoc({"63", "Used when StaleChecking=true. Timeout when stale connections should be closed.", "5000"})
+	public void setStaleTimeout(int timeout) {
+		httpclient.setStaleTimeout(timeout);
+	}
+
+
+	@IbisDoc({"67", "Secure socket protocol (such as 'SSL' and 'TLS') to use when a SSLContext object is generated. If empty the protocol 'SSL' is used", "SSL"})
 	public void setProtocol(String protocol) {
 		httpclient.setProtocol(protocol);
 	}
