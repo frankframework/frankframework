@@ -162,6 +162,10 @@
 									<td>Start Time</td>
 									<td><span to-date time="{{trigger.startTime}}"></span></td>
 								</tr>
+								<tr ng-if="trigger.previousFireTime">
+									<td>Previous Fire</td>
+									<td><span to-date time="{{trigger.previousFireTime}}"></span></td>
+								</tr>
 								<tr ng-if="trigger.nextFireTime">
 									<td>Next Fire</td>
 									<td><span to-date time="{{trigger.nextFireTime}}"></span></td>

@@ -390,7 +390,7 @@ public class JobDef {
 	private TransactionDefinition txDef=null;
 	private PlatformTransactionManager txManager;
 
-	private String jobGroup = SchedulerHelper.DEFAULT_GROUP;
+	private String jobGroup = null;
 
 	private List<DirectoryCleaner> directoryCleaners = new ArrayList<DirectoryCleaner>();
 
@@ -409,6 +409,7 @@ public class JobDef {
 			this.typeField = typeField;
 		}
 
+		@Override
 		public boolean equals(Object o) {
 			MessageLogObject mlo = (MessageLogObject) o;
 			if (mlo.getJmsRealmName().equals(jmsRealmName) &&
@@ -434,18 +435,22 @@ public class JobDef {
 
 		public String getKeyField() {
 			return keyField;
-	}
-    
+		}
+
 		public String getTypeField() {
 			return typeField;
 		}
 	}
-    
+
+	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
 	}
 
 	public void configure(Configuration config) throws ConfigurationException {
+		if(StringUtils.isEmpty(getJobGroup())) //If not explicitly set, configure this JobDef under the config it's specified in
+			setJobGroup(config.getName());
+
 		MessageKeeper messageKeeper = getMessageKeeper();
 		statsKeeper = new StatisticsKeeper(getName());
 
@@ -1184,7 +1189,7 @@ public class JobDef {
 	public String getConfigurationName() {
 		return configurationName;
 	}
- 
+
 	@IbisDoc({"adapter on which job operates", ""})
 	public void setAdapterName(String adapterName) {
 		this.adapterName = adapterName;
@@ -1192,7 +1197,7 @@ public class JobDef {
 	public String getAdapterName() {
 		return adapterName;
 	}
-  
+
 	@IbisDoc({"receiver on which job operates. if function is 'sendmessage' is used this name is also used as name of javalistener", ""})
 	public void setReceiverName(String receiverName) {
 		this.receiverName = receiverName;
