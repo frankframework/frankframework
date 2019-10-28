@@ -15,7 +15,9 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.management.InstanceAlreadyExistsException;
@@ -24,6 +26,7 @@ import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.MalformedObjectNameException;
+import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.modelmbean.ModelMBeanAttributeInfo;
 import javax.management.modelmbean.ModelMBeanInfo;
@@ -36,6 +39,8 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JmxUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
+import org.apache.commons.lang.StringUtils;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -47,80 +52,118 @@ import org.apache.log4j.Logger;
 public class JmxMbeanHelper {
     private static final Logger LOG = LogUtil.getLogger(JmxMbeanHelper.class);
 
+	private static MBeanServer mbServer = null;
+	private static Map<IAdapter, ObjectName> registeredAdapters = new HashMap<IAdapter, ObjectName>();
 
     /**
      * Hooks an {@link nl.nn.adapterframework.core.Adapter Adapter} to the MBean server
      */
     public static void hookupAdapter(IAdapter adapter) throws ConfigurationException {
-        try {
-            ObjectName objectName = getObjectName(adapter);
-
-            RequiredModelMBean modelMbean =
-                    new RequiredModelMBean(createMBeanInfo(adapter));
-            modelMbean.setManagedResource(adapter, "ObjectReference");
-            LOG.debug("modelMBean generated for object " + objectName);
-            registerMBean(objectName, modelMbean);
-        } catch (Exception e) {
-            throw new ConfigurationException(e);
+        MBeanServer server = getMBeanServer();
+        if (server != null) {
+        	synchronized(registeredAdapters) {
+		    	try {
+		            ObjectName objectName = getObjectName(adapter);
+		
+		            RequiredModelMBean modelMbean =
+		                    new RequiredModelMBean(createMBeanInfo(adapter));
+		            modelMbean.setManagedResource(adapter, "ObjectReference");
+		            LOG.debug("modelMBean generated for object " + objectName);
+		            ObjectInstance objectInstance = registerMBean(server, objectName, modelMbean);
+		            if (objectInstance!=null) {
+		            	registeredAdapters.put(adapter, objectInstance.getObjectName());
+		            }
+		        } catch (Exception e) {
+		            throw new ConfigurationException(e);
+		        }
+        	}
+        } else {
+            LOG.warn("No MBean server found");
         }
     }
 
     public static void unhookAdapter(IAdapter adapter) {
         MBeanServer server = getMBeanServer();
         if (server != null) {
-            try {
-                ObjectName objectName = getObjectName(adapter);
-                server.unregisterMBean(objectName);
-            } catch (InstanceNotFoundException e1) {
-                LOG.error(e1.getMessage(), e1);
-            } catch (MBeanRegistrationException e1) {
-                LOG.error(e1.getMessage(), e1);
-            } catch (MalformedObjectNameException e) {
-                LOG.error(e.getMessage(), e);
-            }
-        }
-    }
-
-    protected static ObjectName getObjectName(IAdapter adapter) throws MalformedObjectNameException {
-        String name = "IBIS-" + AppConstants.getInstance().getResolvedProperty("instance.name") + "-" + "Adapters:name=";
-        if (adapter == null) {
-            name = name + "*";
-        } else {
-            name = name + adapter.getName();
-        }
-        return new ObjectName(name);
-    }
-
-
-    /**
-     * Registers an mBean at an MBeanServer. If there is already an mbean registered
-     * under the specified name, it is first de-registered.
-     */
-    private static void registerMBean(ObjectName name, RequiredModelMBean mbean) throws ConfigurationException {
-        MBeanServer server = getMBeanServer();
-        if (server != null) {
-            LOG.debug("got an MBean server");
-            try {
-                if (server.isRegistered(name)) {
-                    LOG.debug("unregistering [" + name.getCanonicalName() + "] as it already exists");
-                    server.unregisterMBean(name);
-                }
-                server.registerMBean(mbean, name);
-            } catch (InstanceAlreadyExistsException iae) {
-                LOG.warn("Could not register mbean " + iae.getMessage());
-            } catch (Exception e) {
-                throw new ConfigurationException(e);
-            }
-            LOG.debug("MBean [" + name.getCanonicalName() + "] registered");
+        	synchronized(registeredAdapters) {
+	            ObjectName objectName = null;
+	            try {
+	                objectName = getObjectName(adapter);
+	            } catch (MalformedObjectNameException e) {
+	                LOG.error(e.getMessage(), e);
+	            }
+	            if (objectName!=null) {
+	            	try {
+	                    server.unregisterMBean(objectName);
+	                    registeredAdapters.remove(adapter);
+	                    LOG.debug("Unregistered mbean [" + objectName.getCanonicalName() + "]");
+	            	} catch (InstanceNotFoundException e1) {
+	            		LOG.error("Could not unregister mbean [" + objectName.getCanonicalName() + "]:" + e1.getMessage());
+	            	} catch (MBeanRegistrationException e1) {
+	                    LOG.error(e1.getMessage(), e1);
+	                }
+	            }
+        	}
         } else {
             LOG.warn("No MBean server found");
         }
     }
 
-    private static MBeanServer getMBeanServer() {
-        List servers = MBeanServerFactory.findMBeanServer(null);
-        return servers == null || servers.size() == 0 ? null : (MBeanServer) servers.get(0);
+    protected static ObjectName getObjectName(IAdapter adapter) throws MalformedObjectNameException {
+		// If the mbean is registered it gets another ObjectName than the one
+		// which is determined in this method. Therefore we use the HashMap
+		// 'registeredAdapters'
+		if (registeredAdapters.containsKey(adapter)) {
+			return registeredAdapters.get(adapter);
+		}
+    	Configuration config = adapter.getConfiguration();
+		String configString = null;
+		if (config != null) {
+			configString = config.getName();
+			if (StringUtils.isNotEmpty(config.getVersion())) {
+				configString = configString + "-" + config.getVersion();
+			}
+		}
+		String name = "IBIS-" + AppConstants.getInstance().getResolvedProperty("instance.name") + "-" + (StringUtils.isNotEmpty(configString) ? configString + "-" : "") + "Adapters:name=";
+        if (adapter == null) {
+            name = name + "*";
+        } else {
+        	// name should be unique because same configuration can be reloaded (and we first do a load new and then the unload old)
+            name = name + adapter.getName() + '#' + Integer.toHexString(adapter.hashCode());
+        }
+        return new ObjectName(name);
     }
+
+    /**
+     * Registers an mBean at an MBeanServer. If there is already an mbean registered
+     * under the specified name, it is first de-registered.
+     */
+    private static ObjectInstance registerMBean(MBeanServer server, ObjectName name, RequiredModelMBean mbean) throws ConfigurationException {
+        try {
+            if (server.isRegistered(name)) {
+                LOG.debug("unregistering [" + name.getCanonicalName() + "] as it already exists");
+                server.unregisterMBean(name);
+            }
+            ObjectInstance objectInstance = server.registerMBean(mbean, name);
+            LOG.debug("MBean [" + name.getCanonicalName() + "] registered as [" + objectInstance.getObjectName().getCanonicalName()+"]");
+    		return objectInstance;
+        } catch (InstanceAlreadyExistsException iae) {
+            LOG.warn("Could not register mbean [" + name.getCanonicalName() + "]:" + iae.getMessage());
+        } catch (Exception e) {
+            throw new ConfigurationException(e);
+        }
+        return null;
+    }
+
+	private static synchronized MBeanServer getMBeanServer() {
+		if (mbServer == null) {
+			List<MBeanServer> servers = MBeanServerFactory.findMBeanServer(null);
+			if (servers != null && !servers.isEmpty()) {
+				mbServer = servers.get(0);
+			}
+		}
+		return mbServer;
+	}
 
     public static Set getMBeans() {
         MBeanServer server = getMBeanServer();
