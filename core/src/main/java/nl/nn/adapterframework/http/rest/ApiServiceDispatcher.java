@@ -1,5 +1,5 @@
 /*
-Copyright 2017 - 2019 Integration Partners B.V.
+Copyright 2017-2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@ limitations under the License.
 package nl.nn.adapterframework.http.rest;
 
 import java.util.Iterator;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.LogUtil;
@@ -34,7 +33,7 @@ import org.apache.log4j.Logger;
 public class ApiServiceDispatcher {
 
 	private Logger log = LogUtil.getLogger(this);
-	private SortedMap<String, ApiDispatchConfig> patternClients = new TreeMap<String, ApiDispatchConfig>(new ApiUriComparator());
+	private ConcurrentSkipListMap<String, ApiDispatchConfig> patternClients = new ConcurrentSkipListMap<String, ApiDispatchConfig>(new ApiUriComparator());
 	private static ApiServiceDispatcher self = null;
 
 	public static synchronized ApiServiceDispatcher getInstance() {
@@ -102,13 +101,17 @@ public class ApiServiceDispatcher {
 		}
 		else {
 			ApiDispatchConfig dispatchConfig = patternClients.get(uriPattern);
-			dispatchConfig.destroy(method);
+			if(dispatchConfig == null) {
+				log.warn("unable to find DispatchConfig for uriPattern ["+uriPattern+"]");
+			} else {
+				dispatchConfig.destroy(method);
 
-			log.trace("ApiServiceDispatcher successfully unregistered uriPattern ["+uriPattern+"] method ["+method+"]");
+				log.trace("ApiServiceDispatcher successfully unregistered uriPattern ["+uriPattern+"] method ["+method+"]");
+			}
 		}
 	}
-	
-	public SortedMap<String, ApiDispatchConfig> getPatternClients() {
+
+	public ConcurrentSkipListMap<String, ApiDispatchConfig> getPatternClients() {
 		return patternClients;
 	}
 }
