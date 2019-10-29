@@ -206,7 +206,7 @@ public class Parameter implements INamedObject, IWithParameters {
 
 		if (getMinInclusive()!=null || getMaxInclusive()!=null) {
 			if (!TYPE_NUMBER.equals(getType())) {
-				throw new ConfigurationException("minInclusive and minInclusive only allowed in combination with type ["+TYPE_NUMBER+"]");
+				throw new ConfigurationException("minInclusive and maxInclusive only allowed in combination with type ["+TYPE_NUMBER+"]");
 			}
 			if (getMinInclusive()!=null) {
 				DecimalFormat df = new DecimalFormat();
@@ -223,7 +223,7 @@ public class Parameter implements INamedObject, IWithParameters {
 				try {
 					maxInclusive = df.parse(getMaxInclusive());
 				} catch (ParseException e) {
-					throw new ConfigurationException("Attribute [maxInclusive] could not parse result ["+getMinInclusive()+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
+					throw new ConfigurationException("Attribute [maxInclusive] could not parse result ["+getMaxInclusive()+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
 				}
 			}
 		}
