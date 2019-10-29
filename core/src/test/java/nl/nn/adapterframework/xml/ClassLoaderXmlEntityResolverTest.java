@@ -17,6 +17,7 @@ import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 public class ClassLoaderXmlEntityResolverTest {
 
 	private String publicId="fakePublicId";
+	protected final String JAR_FILE = "/Classloader/zip/classLoader-test.zip";
 	
 	@Test
 	public void localClassPathFileOnRootOfClasspath() throws SAXException, IOException {
@@ -62,7 +63,7 @@ public class ClassLoaderXmlEntityResolverTest {
 	public void bytesClassPath() throws SAXException, IOException, ConfigurationException {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
-		URL file = this.getClass().getResource("/classLoader-test.zip");
+		URL file = this.getClass().getResource(JAR_FILE);
 		assertNotNull("jar url not found", file);
 		JarFile jarFile = new JarFile(file.getFile());
 		assertNotNull("jar file not found",jarFile);
@@ -75,7 +76,7 @@ public class ClassLoaderXmlEntityResolverTest {
 		XMLResourceIdentifier resourceIdentifier = new ResourceIdentifier(); 
 		resourceIdentifier.setPublicId(publicId);
 
-		resourceIdentifier.setExpandedSystemId("Xslt/names.xsl");
+		resourceIdentifier.setExpandedSystemId("Classloader/Xslt/names.xsl");
 
 		XMLInputSource inputSource = resolver.resolveEntity(resourceIdentifier);
 		assertNotNull(inputSource);
@@ -85,7 +86,7 @@ public class ClassLoaderXmlEntityResolverTest {
 	public void bytesClassPathAbsolute() throws SAXException, IOException, ConfigurationException  {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
-		URL file = this.getClass().getResource("/classLoader-test.zip");
+		URL file = this.getClass().getResource(JAR_FILE);
 		assertNotNull("jar url not found", file);
 		JarFile jarFile = new JarFile(file.getFile());
 		assertNotNull("jar file not found",jarFile);
@@ -98,7 +99,7 @@ public class ClassLoaderXmlEntityResolverTest {
 		XMLResourceIdentifier resourceIdentifier = new ResourceIdentifier(); 
 		resourceIdentifier.setPublicId(publicId);
 
-		resourceIdentifier.setExpandedSystemId("/Xslt/names.xsl");
+		resourceIdentifier.setExpandedSystemId("/Classloader/Xslt/names.xsl");
 
 		XMLInputSource inputSource = resolver.resolveEntity(resourceIdentifier);
 		assertNotNull(inputSource);

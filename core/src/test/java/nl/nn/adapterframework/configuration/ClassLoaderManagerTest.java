@@ -40,7 +40,9 @@ public class ClassLoaderManagerTest extends Mockito {
 
 	private IbisContext ibisContext = spy(new IbisContext());
 
-	private final String JARFILE = "/classLoader-test.zip";
+	
+	private final String BASE_DIR = "/Classloader";
+	private final String JAR_FILE = BASE_DIR+ "/zip/classLoader-test.zip";
 	private final String ADAPTER_SERVICE_NAME = "getJarFileAdapter";
 
 	private final static String CONFIG_0_NAME = "config0";
@@ -94,7 +96,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		}
 
 		if("JarFileClassLoader".equals(type)) {
-			URL file = this.getClass().getResource(JARFILE);
+			URL file = this.getClass().getResource(JAR_FILE);
 			appConstants.put("configurations."+configurationName+".jar", file.getFile());
 		}
 
@@ -144,7 +146,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		ResultSet rs = mock(ResultSet.class);
 		doReturn(true).when(rs).next();
 		doReturn("dummy").when(rs).getString(anyInt());
-		URL file = this.getClass().getResource(JARFILE);
+		URL file = this.getClass().getResource(JAR_FILE);
 		doReturn(Misc.streamToBytes(file.openStream())).when(rs).getBytes(anyInt());
 		doReturn(rs).when(stmt).executeQuery();
 		doReturn(fq).when(ibisContext).createBeanAutowireByName(FixedQuerySender.class);
@@ -176,7 +178,7 @@ public class ClassLoaderManagerTest extends Mockito {
 			@Override
 			public PipeLineResult answer(InvocationOnMock invocation) throws Throwable {
 				IPipeLineSession session = (IPipeLineSession) invocation.getArguments()[2];
-				URL file = this.getClass().getResource(JARFILE);
+				URL file = this.getClass().getResource(JAR_FILE);
 				session.put("configurationJar", Misc.streamToBytes(file.openStream()));
 				return new PipeLineResult();
 			}
@@ -203,42 +205,41 @@ public class ClassLoaderManagerTest extends Mockito {
 	}
 
 	@Test
-	public void retreiveTestFileNotInClassLoader() throws ConfigurationException, IOException {
+	public void retrieveTestFileNotInClassLoader() throws ConfigurationException, IOException {
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
 		ClassLoader config = manager.get(configurationName);
 		URL resource = config.getResource("test1.xml");
 
-		MatchUtils.assertTestFileEquals("/test1.xml", resource.openStream());
+		MatchUtils.assertTestFileEquals("/test1.xml", resource);
 	}
 
 	@Test
-	public void retreiveTestFileInClassLoader() throws ConfigurationException, IOException {
+	public void retrieveTestFileInClassLoader() throws ConfigurationException, IOException {
 		if(skip) return; //This ClassLoader can't actually retrieve files...
 
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
 		ClassLoader config = manager.get(configurationName);
-		URL resource = config.getResource("file.xml");
+		URL resource = config.getResource(BASE_DIR.substring(1)+"/file.xml");
 
-		MatchUtils.assertTestFileEquals("/classLoader/file.xml", resource.openStream());
+		MatchUtils.assertTestFileEquals(BASE_DIR+"/file.xml", resource);
 	}
 
 	@Test
-	public void retreiveTestFileInSubFolder() throws ConfigurationException, IOException {
+	public void retrieveTestFileInSubFolder() throws ConfigurationException, IOException {
 		if(skip) return; //This ClassLoader can't actually retrieve files...
 
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
 		ClassLoader config = manager.get(configurationName);
-		URL resource = config.getResource("folder/file.xml");
+		URL resource = config.getResource(BASE_DIR.substring(1)+"/folder/file.xml");
 
-		assertNotNull("unable to find test file...", resource);
-		MatchUtils.assertTestFileEquals("/folder/file.xml", resource.openStream());
+		MatchUtils.assertTestFileEquals(BASE_DIR+"/folder/file.xml", resource);
 	}
 
 	@Test
-	public void retreiveNonExistingTestFile() throws ConfigurationException, IOException {
+	public void retrieveNonExistingTestFile() throws ConfigurationException, IOException {
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
 		ClassLoader config = manager.get(configurationName);

@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -62,6 +63,11 @@ public class MatchUtils {
 		//assertEquals(description,inputJson,jsonOut);
 	}
 
+	public static void assertTestFileEquals(String file1, URL url) throws IOException {
+		assertNotNull("url to compare to ["+file1+"] should not be null",url);
+		assertTestFileEquals(file1,url.openStream());
+	}
+	
 	public static void assertTestFileEquals(String file1, InputStream fileStream) throws IOException {
 		assertTestFileEquals(file1, Misc.streamToString(fileStream));
 	}

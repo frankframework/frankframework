@@ -35,6 +35,8 @@ import org.mockito.Mockito;
 
 public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito {
 
+	protected final String JAR_FILE = "/Classloader/zip/classLoader-test.zip";
+
 	private ClassLoader C = null;
 	protected IbisContext ibisContext = spy(new IbisContext());
 	protected String scheme = "file";
@@ -165,7 +167,7 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 	public void testClassLoaderManager() throws ConfigurationException {
 		ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
 		ClassLoader config = manager.get(getConfigurationName());
-		URL resource = config.getResource("file.xml");
+		URL resource = config.getResource("ClassLoader/file.xml");
 
 		assertNotNull("resource [file.xml] must be found", resource);
 		assertTrue("resource name must start with scheme ["+getScheme()+"]", resource.toString().startsWith(getScheme()));

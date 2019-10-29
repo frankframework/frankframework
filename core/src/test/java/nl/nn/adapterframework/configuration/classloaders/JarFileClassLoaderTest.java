@@ -25,8 +25,6 @@ import static org.junit.Assert.*;
 
 public class JarFileClassLoaderTest extends ClassLoaderTestBase<JarFileClassLoader> {
 
-	private final String JAR_FILE = "/classLoader-test.zip";
-
 	@Override
 	protected String getScheme() {
 		return "bytesclassloader";
@@ -35,7 +33,7 @@ public class JarFileClassLoaderTest extends ClassLoaderTestBase<JarFileClassLoad
 	@Override
 	public JarFileClassLoader createClassLoader(ClassLoader parent) throws Exception {
 		URL file = this.getClass().getResource(JAR_FILE);
-		assertNotNull("jar url not found", file);
+		assertNotNull("jar url ["+JAR_FILE+"] not found", file);
 		JarFile jarFile = new JarFile(file.getFile());
 		assertNotNull("jar file not found",jarFile);
 

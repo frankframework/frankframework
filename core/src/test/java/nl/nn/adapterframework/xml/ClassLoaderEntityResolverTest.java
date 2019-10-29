@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.jar.JarFile;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -19,6 +20,7 @@ import nl.nn.adapterframework.util.Misc;
 public class ClassLoaderEntityResolverTest {
 
 	private String publicId="fakePublicId";
+	protected final String JAR_FILE = "/Classloader/zip/classLoader-test.zip";
 	
 	@Test
 	public void localClassPathFileOnRootOfClasspath() throws SAXException, IOException {
@@ -58,7 +60,7 @@ public class ClassLoaderEntityResolverTest {
 	public void bytesClassPath() throws SAXException, IOException, ConfigurationException {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
-		URL file = this.getClass().getResource("/classLoader-test.zip");
+		URL file = this.getClass().getResource(JAR_FILE);
 		assertNotNull("jar url not found", file);
 		JarFile jarFile = new JarFile(file.getFile());
 		assertNotNull("jar file not found",jarFile);
@@ -69,7 +71,7 @@ public class ClassLoaderEntityResolverTest {
 
 		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(cl);
 
-		String systemId="/Xslt/names.xsl";
+		String systemId="/ClassLoader/Xslt/names.xsl";
 		InputSource inputSource = resolver.resolveEntity(publicId, systemId);
 		assertNotNull(inputSource);
 
@@ -79,7 +81,7 @@ public class ClassLoaderEntityResolverTest {
 	public void bytesClassPathAbsolute() throws SAXException, IOException, ConfigurationException {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
-		URL file = this.getClass().getResource("/classLoader-test.zip");
+		URL file = this.getClass().getResource(JAR_FILE);
 		assertNotNull("jar url not found", file);
 		JarFile jarFile = new JarFile(file.getFile());
 		assertNotNull("jar file not found",jarFile);
@@ -90,7 +92,7 @@ public class ClassLoaderEntityResolverTest {
 
 		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(cl);
 
-		String systemId="Xslt/names.xsl";
+		String systemId="ClassLoader/Xslt/names.xsl";
 		InputSource inputSource = resolver.resolveEntity(publicId, systemId);
 		assertNotNull(inputSource);
 	}
@@ -100,6 +102,7 @@ public class ClassLoaderEntityResolverTest {
 	 * This has to do with ClassUtils.getResourceURL() sometimes returning an absolute URL to a resource which does not exist..
 	 */
 	@Test
+	@Ignore("Fixed the original problem in XmlUtils.identityTransform(), that did not set a systemId for relative resolutions")
 	public void localClassPathFullPath() throws SAXException, IOException, ConfigurationException {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
@@ -112,11 +115,13 @@ public class ClassLoaderEntityResolverTest {
 
 		//Find a file which does not exist, but also does not return NULL
 		URL file = new URL(context, randomName);
-		assertNotNull(context);
+		assertNotNull(file);
+		
 
 		ClassLoader dummyClassLoader = new ClassLoader(localClassLoader) {
 			@Override
 			public URL getResource(String name) {
+				System.out.println("dummyClassLoader name ["+name+"]");
 				try {
 					//Only return a valid file when the ClassLoader tries to find relative files
 					if(randomName.equals(name)) {
@@ -140,6 +145,9 @@ public class ClassLoaderEntityResolverTest {
 		catch (IOException e) {}
 
 		String systemId = file.getFile(); //Get the full absolute path to the non-existing file
+
+		System.out.println("file to resolve ["+systemId+"]");
+
 		InputSource inputSource = resolver.resolveEntity(publicId, systemId);
 		assertNotNull(inputSource);
 	}
