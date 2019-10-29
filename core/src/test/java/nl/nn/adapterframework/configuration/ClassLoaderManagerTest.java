@@ -41,7 +41,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	private IbisContext ibisContext = spy(new IbisContext());
 
 	
-	private final String BASE_DIR = "/Classloader";
+	private final String BASE_DIR = "/ClassLoader";
 	private final String JAR_FILE = BASE_DIR+ "/zip/classLoader-test.zip";
 	private final String ADAPTER_SERVICE_NAME = "getJarFileAdapter";
 
