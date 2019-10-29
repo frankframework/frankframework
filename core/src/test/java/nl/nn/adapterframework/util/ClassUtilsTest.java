@@ -29,7 +29,7 @@ public class ClassUtilsTest {
 	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 	private String fileContent = "<test />";
 
-	protected final String JAR_FILE = "/Classloader/zip/classLoader-test.zip";
+	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 
 	@Test
 	public void getResourceURL() throws URISyntaxException, IOException {
