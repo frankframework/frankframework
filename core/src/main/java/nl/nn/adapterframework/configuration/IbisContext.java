@@ -31,7 +31,6 @@ import org.apache.log4j.Logger;
 import nl.nn.adapterframework.configuration.classloaders.BasePathClassLoader;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.extensions.graphviz.GraphvizEngine;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.jdbc.migration.Migrator;
 import nl.nn.adapterframework.lifecycle.IbisApplicationContext;
@@ -186,18 +185,18 @@ public class IbisContext extends IbisApplicationContext {
 
 			log("startup in " + (System.currentTimeMillis() - start) + " ms");
 		}
-		catch (Throwable t) {
+		catch (Exception e) {
 			//Catch all exceptions, the IBIS failed to startup...
 			if(reconnect) {
-				LOG.error("Failed to initialize IbisContext, retrying in 1 minute!", t);
+				LOG.error("Failed to initialize IbisContext, retrying in 1 minute!", e);
 
 				ibisContextReconnectThread = new Thread(new IbisContextRunnable(this));
 				ibisContextReconnectThread.setName("ibisContextReconnectThread");
 				ibisContextReconnectThread.start();
 			}
 			else {
-				LOG.error("Failed to initialize IbisContext", t);
-				throw t;
+				LOG.error("Failed to initialize IbisContext", e);
+				throw e;
 			}
 		}
 	}

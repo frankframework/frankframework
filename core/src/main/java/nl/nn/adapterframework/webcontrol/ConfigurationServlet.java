@@ -71,9 +71,9 @@ public class ConfigurationServlet extends HttpServlet {
 				response.setStatus(201);
 				out.println("success");
 			}
-			catch (Throwable t) {
+			catch (Exception e) {
 				response.setStatus(500);
-				out.println("failed: " + t.getMessage());
+				out.println("failed: " + e.getMessage());
 			}
 		}
 	}
