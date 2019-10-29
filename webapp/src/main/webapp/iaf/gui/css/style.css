@@ -598,6 +598,7 @@ body.canvas-menu.mini-navbar nav.navbar-static-side {
 }
 .btn {
   border-radius: 3px;
+  background-color: #ddd;
 }
 .btn-w-m {
   min-width: 120px;
@@ -1192,6 +1193,26 @@ button.dim:active:before {
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
   right: 0;
 }
+
+/* SCROLL TO TOP BUTTON */
+.scroll-to-top {
+  display: block;
+  position: fixed;
+  z-index: 10000;
+  bottom: 5px;
+  right: 5px;
+  height: 30px;
+  width: 30px;
+  background: rgba(26,179,148,0.4);
+  color: white;
+  border-radius: 4px;
+  text-align:center;
+  vertical-align: middle;
+  cursor:pointer;
+  line-height: 28px;
+  display:none;
+}
+
 /* CHOSEN PLUGIN */
 .chosen-container-single .chosen-single {
   background: #ffffff;
@@ -6894,4 +6915,7 @@ body.body-small .vote-icon {
     width: 400px;
     margin-left: -200px;
   }
+}
+.text-center {
+  text-align: center;
 }
