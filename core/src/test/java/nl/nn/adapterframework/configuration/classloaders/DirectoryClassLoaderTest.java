@@ -25,7 +25,7 @@ public class DirectoryClassLoaderTest extends ClassLoaderTestBase<DirectoryClass
 
 	@Override
 	public DirectoryClassLoader createClassLoader(ClassLoader parent) throws Exception {
-		URL file = this.getClass().getResource("/classLoader");
+		URL file = this.getClass().getResource("/ClassLoader");
 
 		DirectoryClassLoader cl = new DirectoryClassLoader(parent);
 		cl.setDirectory(file.getFile());
