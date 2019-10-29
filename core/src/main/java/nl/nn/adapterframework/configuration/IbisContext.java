@@ -107,12 +107,8 @@ public class IbisContext extends IbisApplicationContext {
 
 	public void setDefaultApplicationServerType(String defaultApplicationServerType) {
 		if (defaultApplicationServerType.equals(getApplicationServerType())) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings
-					.getInstance();
-			String msg = "property ["
-					+ APPLICATION_SERVER_TYPE_PROPERTY
-					+ "] already has a default value ["
-					+ defaultApplicationServerType + "]";
+			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+			String msg = "property [" + APPLICATION_SERVER_TYPE_PROPERTY + "] already has a default value [" + defaultApplicationServerType + "]";
 			configWarnings.add(LOG, msg);
 		} else if (StringUtils.isEmpty(getApplicationServerType())) {
 			// Resolve application.server.type in ServerSpecifics*.properties, SideSpecifics*.properties and StageSpecifics*.properties filenames
@@ -159,6 +155,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * @see AppConstants#getInstance(ClassLoader)
 	 *
 	 * @param reconnect retry startup when failures occur
+	 * @throws BeanCreationException when Spring can't start up
 	 */
 	public synchronized void init(boolean reconnect) {
 		try {
@@ -180,7 +177,7 @@ public class IbisContext extends IbisApplicationContext {
 
 			try {
 				flowDiagram = new FlowDiagram();
-			} catch (IllegalStateException e) {
+			} catch (Exception e) { //The IBIS should still start up when Graphviz fails to initialize
 				log(null, null, "failed to initalize GraphVizEngine", MessageKeeperMessage.ERROR_LEVEL, e, true);
 			}
 
@@ -189,14 +186,18 @@ public class IbisContext extends IbisApplicationContext {
 
 			log("startup in " + (System.currentTimeMillis() - start) + " ms");
 		}
-		catch (Exception e) {
+		catch (Throwable t) {
 			//Catch all exceptions, the IBIS failed to startup...
-			LOG.error("Failed to initialize IbisContext, retrying in 1 minute!", e);
-
 			if(reconnect) {
+				LOG.error("Failed to initialize IbisContext, retrying in 1 minute!", t);
+
 				ibisContextReconnectThread = new Thread(new IbisContextRunnable(this));
 				ibisContextReconnectThread.setName("ibisContextReconnectThread");
 				ibisContextReconnectThread.start();
+			}
+			else {
+				LOG.error("Failed to initialize IbisContext", t);
+				throw t;
 			}
 		}
 	}
@@ -315,6 +316,7 @@ public class IbisContext extends IbisApplicationContext {
 			String classLoaderType = currentConfigNameItem.getValue();
 
 			if (configurationName == null || configurationName.equals(currentConfigurationName)) {
+				LOG.info("loading configuration ["+currentConfigurationName+"]");
 				configFound = true;
 
 				ConfigurationException customClassLoaderConfigurationException = null;
@@ -348,8 +350,7 @@ public class IbisContext extends IbisApplicationContext {
 	}
 
 	public String getConfigurationFile(String currentConfigurationName) {
-		String configurationFile = APP_CONSTANTS.getResolvedProperty(
-				"configurations." + currentConfigurationName + ".configurationFile");
+		String configurationFile = APP_CONSTANTS.getResolvedProperty("configurations." + currentConfigurationName + ".configurationFile");
 		if (configurationFile == null) {
 			configurationFile = "Configuration.xml";
 			if (!currentConfigurationName.equals(INSTANCE_NAME)) {
@@ -436,8 +437,7 @@ public class IbisContext extends IbisApplicationContext {
 			}
 		} catch (ConfigurationException e) {
 			configuration.setConfigurationException(e);
-			log(currentConfigurationName, currentConfigurationVersion, " exception",
-					MessageKeeperMessage.ERROR_LEVEL, e);
+			log(currentConfigurationName, currentConfigurationVersion, " exception", MessageKeeperMessage.ERROR_LEVEL, e);
 		} finally {
 			Thread.currentThread().setContextClassLoader(originalClassLoader);
 			ConfigurationWarnings.getInstance().setActiveConfiguration(null);

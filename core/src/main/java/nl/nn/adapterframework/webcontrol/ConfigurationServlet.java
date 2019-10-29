@@ -66,14 +66,14 @@ public class ConfigurationServlet extends HttpServlet {
 		}
 		else {
 			out.print("Attempting to start the IBIS Application... ");
-			ibisContext.init(false);
-			if(ibisContext.getIbisManager() == null) {
-				response.setStatus(500);
-				out.println("failed");
-			}
-			else {
+			try {
+				ibisContext.init(false);
 				response.setStatus(201);
 				out.println("success");
+			}
+			catch (Throwable t) {
+				response.setStatus(500);
+				out.println("failed: " + t.getMessage());
 			}
 		}
 	}
