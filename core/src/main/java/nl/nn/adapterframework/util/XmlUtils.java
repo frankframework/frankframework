@@ -1670,7 +1670,7 @@ public class XmlUtils {
 	 * Performs an Identity-transform, with resolving entities with the content files in the classpath
 	 * @return String (the complete and xml)
 	 */
-	static public String identityTransform(ClassLoader classLoader, String input)
+	static public String identityTransform(ClassLoader classLoader, URL input)
 		throws DomBuilderException {
 		String result = "";
 		try {
@@ -1678,9 +1678,7 @@ public class XmlUtils {
 			Document document;
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			builder.setEntityResolver(new ClassLoaderEntityResolver(classLoader));
-			StringReader sr = new StringReader(input);
-			InputSource src = new InputSource(sr);
-			document = builder.parse(src);
+			document = builder.parse(input.openStream(),input.toExternalForm());
 			Transformer t = XmlUtils.createTransformer(IDENTITY_TRANSFORM);
 			Source s = new DOMSource(document);
 			result = XmlUtils.transformXml(t, s);

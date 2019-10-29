@@ -56,7 +56,8 @@ public class ClassLoaderURIResolver implements URIResolver {
 				protocol=href.substring(0,href.indexOf(":"));
 			}
 		} else {
-			// href is relative, construct href from base
+			// href does not start with scheme/protocol, and does not start with a slash.
+			// It must be relative to the base, or if that not exists, on the root of the classpath
 			if (base != null && base.contains("/")) {
 				ref1 = base.substring(0, base.lastIndexOf("/") + 1) + href;
 				ref2 = href; // if ref1 fails, try href on the global classpath

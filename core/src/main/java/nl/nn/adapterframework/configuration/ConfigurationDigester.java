@@ -212,8 +212,7 @@ public class ConfigurationDigester {
 			fillConfigWarnDefaultValueExceptions(configuration);
 			String lineSeparator = SystemUtils.LINE_SEPARATOR;
 			if (null == lineSeparator) lineSeparator = "\n";
-			String original = Misc.resourceToString(configurationFileURL, lineSeparator, false);
-			original = XmlUtils.identityTransform(classLoader, original);
+			String original = XmlUtils.identityTransform(classLoader, configurationFileURL);
 			configuration.setOriginalConfiguration(original);
 			List<String> propsToHide = new ArrayList<String>();
 			String propertiesHideString = AppConstants.getInstance(Thread.currentThread().getContextClassLoader()).getString("properties.hide", null);
@@ -267,8 +266,7 @@ public class ConfigurationDigester {
 		Transformer transformer = XmlUtils.createTransformer(xsltSource);
 		String lineSeparator=SystemUtils.LINE_SEPARATOR;
 		if (null==lineSeparator) lineSeparator="\n";
-		String configString=Misc.resourceToString(configuration.getConfigurationURL(), lineSeparator, false);
-		configString=XmlUtils.identityTransform(configuration.getClassLoader(), configString);
+		String configString=XmlUtils.identityTransform(configuration.getClassLoader(), configuration.getConfigurationURL());
 		String attributes = XmlUtils.transformXml(transformer, configString);
 		Element attributesElement = XmlUtils.buildElement(attributes);
 		Collection<Node> attributeElements =	XmlUtils.getChildTags(attributesElement, "attribute");

@@ -36,6 +36,7 @@ import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.BytesClassLoader;
 
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -123,16 +124,16 @@ public class ClassUtils {
 	 * @return URL of the resource or null if it can't be not found
 	 */
 	static public URL getResourceURL(ClassLoader classLoader, String resource, String allowedProtocols) {
-		if(classLoader == null)
+		if(classLoader == null) {
 			classLoader = ClassUtils.class.getClassLoader();
-
+		}
+		if (resource.startsWith(BytesClassLoader.PROTOCOL+":")) {
+			resource=resource.substring((BytesClassLoader.PROTOCOL+":").length());
+		}
 		// Remove slash like Class.getResource(String name) is doing before
 		// delegation to ClassLoader
 		if (resource.startsWith("/")) {
 			resource = resource.substring(1);
-		}
-		if (resource.startsWith(BytesClassLoader.PROTOCOL+":")) {
-			resource=resource.substring((BytesClassLoader.PROTOCOL+":").length());
 		}
 		URL url = classLoader.getResource(resource);
 
@@ -140,7 +141,7 @@ public class ClassUtils {
 		if (url == null) {
 			if (resource.contains(":")) {
 				String protocol = resource.substring(0, resource.indexOf(":"));
-				if (allowedProtocols != null && !allowedProtocols.isEmpty()) {
+				if (StringUtils.isNotEmpty(allowedProtocols)) {
 					//log.debug("Could not find resource ["+resource+"] in classloader ["+classLoader+"] now trying via protocol ["+protocol+"]");
 
 					List<String> protocols = new ArrayList<String>(Arrays.asList(allowedProtocols.split(",")));
@@ -150,14 +151,12 @@ public class ClassUtils {
 						} catch(MalformedURLException e) {
 							log.debug("Could not find resource ["+resource+"] in classloader ["+classLoader+"] and not as URL [" + resource + "]: "+e.getMessage());
 						}
-					} else if(log.isDebugEnabled()) {
-						log.debug("Cannot lookup resource ["+resource+"] in classloader ["+classLoader+"], not allowed with protocol ["+protocol+"] allowedProtocols "+protocols.toString());
-					}
+					} else if(log.isDebugEnabled()) log.debug("Cannot lookup resource ["+resource+"] in classloader ["+classLoader+"], not allowed with protocol ["+protocol+"] allowedProtocols "+protocols.toString());
 				} else {
-					log.debug("Could not find resource as URL [" + resource + "] in classloader ["+classLoader+"], with protocol ["+protocol+"], no allowedProtocols");
+					if(log.isDebugEnabled()) log.debug("Could not find resource as URL [" + resource + "] in classloader ["+classLoader+"], with protocol ["+protocol+"], no allowedProtocols");
 				}
 			} else {
-				log.debug("Cannot lookup resource ["+resource+"] in classloader ["+classLoader+"] and no protocol to try as URL");
+				if(log.isDebugEnabled()) log.debug("Cannot lookup resource ["+resource+"] in classloader ["+classLoader+"] and no protocol to try as URL");
 			}
 		}
 
