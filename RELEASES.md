@@ -19,6 +19,7 @@ Upcoming
 
 - Make ForEachChildElementPipe streaming when using elementXPathExpression too
   Make Xslt streaming default for xsltVersion=1
+- Bugfix (un)loading configs in JmxMbeanHelper
 
 ### Non backwards compatible changes
 
