@@ -23,7 +23,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ClassLoaderURIResolverTest {
 
-	protected final String JAR_FILE = "/Classloader/zip/classLoader-test.zip";
+	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 
 	
 	private void testUri(ClassLoader cl, String uri, String expected) throws TransformerException {

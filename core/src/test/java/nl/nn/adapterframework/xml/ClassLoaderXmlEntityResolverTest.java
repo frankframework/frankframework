@@ -17,7 +17,7 @@ import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 public class ClassLoaderXmlEntityResolverTest {
 
 	private String publicId="fakePublicId";
-	protected final String JAR_FILE = "/Classloader/zip/classLoader-test.zip";
+	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 	
 	@Test
 	public void localClassPathFileOnRootOfClasspath() throws SAXException, IOException {
@@ -76,7 +76,7 @@ public class ClassLoaderXmlEntityResolverTest {
 		XMLResourceIdentifier resourceIdentifier = new ResourceIdentifier(); 
 		resourceIdentifier.setPublicId(publicId);
 
-		resourceIdentifier.setExpandedSystemId("Classloader/Xslt/names.xsl");
+		resourceIdentifier.setExpandedSystemId("ClassLoader/Xslt/names.xsl");
 
 		XMLInputSource inputSource = resolver.resolveEntity(resourceIdentifier);
 		assertNotNull(inputSource);
@@ -99,7 +99,7 @@ public class ClassLoaderXmlEntityResolverTest {
 		XMLResourceIdentifier resourceIdentifier = new ResourceIdentifier(); 
 		resourceIdentifier.setPublicId(publicId);
 
-		resourceIdentifier.setExpandedSystemId("/Classloader/Xslt/names.xsl");
+		resourceIdentifier.setExpandedSystemId("/ClassLoader/Xslt/names.xsl");
 
 		XMLInputSource inputSource = resolver.resolveEntity(resourceIdentifier);
 		assertNotNull(inputSource);

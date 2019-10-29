@@ -20,7 +20,7 @@ import nl.nn.adapterframework.util.Misc;
 public class ClassLoaderEntityResolverTest {
 
 	private String publicId="fakePublicId";
-	protected final String JAR_FILE = "/Classloader/zip/classLoader-test.zip";
+	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 	
 	@Test
 	public void localClassPathFileOnRootOfClasspath() throws SAXException, IOException {

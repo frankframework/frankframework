@@ -35,7 +35,7 @@ import org.mockito.Mockito;
 
 public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito {
 
-	protected final String JAR_FILE = "/Classloader/zip/classLoader-test.zip";
+	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 
 	private ClassLoader C = null;
 	protected IbisContext ibisContext = spy(new IbisContext());
