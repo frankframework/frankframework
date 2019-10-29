@@ -343,7 +343,7 @@ public final class ShowConfiguration extends Base {
 			String user = null;
 			Principal principal = securityContext.getUserPrincipal();
 			if(principal != null)
-				user = ""+principal;
+				user = principal.getName();
 
 			if(multiple_configs) {
 				try {
