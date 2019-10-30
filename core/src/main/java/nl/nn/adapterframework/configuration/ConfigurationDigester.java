@@ -210,8 +210,6 @@ public class ConfigurationDigester {
 			configuration.setDigesterRulesURL(digesterRulesURL);
 			configuration.setConfigurationURL(configurationFileURL);
 			fillConfigWarnDefaultValueExceptions(configuration);
-			String lineSeparator = SystemUtils.LINE_SEPARATOR;
-			if (null == lineSeparator) lineSeparator = "\n";
 			String original = XmlUtils.identityTransform(classLoader, configurationFileURL);
 			configuration.setOriginalConfiguration(original);
 			List<String> propsToHide = new ArrayList<String>();

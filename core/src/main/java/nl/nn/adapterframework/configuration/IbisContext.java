@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.BeanCreationException;
 
 import nl.nn.adapterframework.configuration.classloaders.BasePathClassLoader;
 import nl.nn.adapterframework.core.Adapter;

@@ -43,7 +43,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.Variant;
-import nl.nn.adapterframework.util.XmlExternalEntityResolver;
+import nl.nn.adapterframework.xml.NonResolvingExternalEntityResolver;
 
 /**
  * baseclass for validating input message against a XML-Schema.
@@ -189,7 +189,7 @@ public abstract class AbstractXmlValidator {
 	public XMLReader getValidatingParser(IPipeLineSession session, ValidationContext context, boolean resolveExternalEntities) throws XmlValidatorException, ConfigurationException, PipeRunException {
 		XMLReader parser = createValidatingParser(session, context);
 		if (!resolveExternalEntities) {
-			parser.setEntityResolver(new XmlExternalEntityResolver());
+			parser.setEntityResolver(new NonResolvingExternalEntityResolver());
 		}
 		return parser;
 	}

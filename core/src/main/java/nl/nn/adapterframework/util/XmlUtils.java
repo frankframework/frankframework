@@ -61,6 +61,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPath;
@@ -101,6 +102,7 @@ import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
 import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
 import nl.nn.adapterframework.xml.ClassLoaderEntityResolver;
 import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
+import nl.nn.adapterframework.xml.NonResolvingExternalEntityResolver;
 import nl.nn.adapterframework.xml.SaxException;
 
 /**
@@ -444,6 +446,10 @@ public class XmlUtils {
 		return getUtilityTransformerPool(xslt,"CopyOfSelect["+xpath+"]",omitXmlDeclaration,indent);
 	}
 
+	public static TransformerPool getIdentityTransformerPool() throws ConfigurationException {
+		return getUtilityTransformerPool(IDENTITY_TRANSFORM,"Identity",true,true);
+	}
+
 	
 
 	public static synchronized boolean isNamespaceAwareByDefault() {
@@ -515,7 +521,7 @@ public class XmlUtils {
 		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		XMLReader xmlReader = factory.newSAXParser().getXMLReader();
 		if (!resolveExternalEntities) {
-			xmlReader.setEntityResolver(new XmlExternalEntityResolver());
+			xmlReader.setEntityResolver(new NonResolvingExternalEntityResolver());
 		}
 
 		if (!XPATH_NAMESPACE_REMOVAL_VIA_XSLT && !namespaceAware) {
@@ -580,7 +586,7 @@ public class XmlUtils {
 				factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 				DocumentBuilder builder = factory.newDocumentBuilder();
 					if (!resolveExternalEntities) {
-						builder.setEntityResolver(new XmlExternalEntityResolver());
+						builder.setEntityResolver(new NonResolvingExternalEntityResolver());
 					}
 					src = new InputSource(in);
 					document = builder.parse(src);
@@ -1670,23 +1676,25 @@ public class XmlUtils {
 	 * Performs an Identity-transform, with resolving entities with the content files in the classpath
 	 * @return String (the complete and xml)
 	 */
-	static public String identityTransform(ClassLoader classLoader, URL input)
-		throws DomBuilderException {
-		String result = "";
+	static public String identityTransform(ClassLoader classLoader, URL input) throws DomBuilderException {
+		StringWriter result = new StringWriter();;
 		try {
-			DocumentBuilderFactory factory = getDocumentBuilderFactory();
-			Document document;
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			builder.setEntityResolver(new ClassLoaderEntityResolver(classLoader));
-			document = builder.parse(input.openStream(),input.toExternalForm());
-			Transformer t = XmlUtils.createTransformer(IDENTITY_TRANSFORM);
-			Source s = new DOMSource(document);
-			result = XmlUtils.transformXml(t, s);
+			InputSource inputSource = new InputSource(input.openStream());
+			inputSource.setSystemId(input.toExternalForm());
+
+			TransformerPool tp = getIdentityTransformerPool();
+			TransformerHandler handler = tp.getTransformerHandler();
+			handler.setResult(new StreamResult(result));
+			
+			XMLReader reader = XmlUtils.getXMLReader(true, true, handler);
+			reader.setEntityResolver(new ClassLoaderEntityResolver(classLoader));
+
+			reader.parse(inputSource);
 		} catch (Exception tce) {
 			throw new DomBuilderException(tce);
 		}
 
-		return result;
+		return result.toString();
 	}
 
 	static public String identityTransform(String input)
