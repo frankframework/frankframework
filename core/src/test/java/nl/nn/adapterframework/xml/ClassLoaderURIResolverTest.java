@@ -13,7 +13,6 @@ import java.util.jar.JarFile;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -50,21 +49,6 @@ public class ClassLoaderURIResolverTest {
 	}
 
 	
-	private void testUri(ClassLoader cl, String uri, String expected) throws TransformerException {
-		URL xslt = ClassUtils.getResourceURL(cl, "/ClassLoader/Xslt/root.xsl");
-		assertNotNull("root.xsl not found", xslt);
-
-		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(cl);
-
-		Source source = resolver.resolve(uri, xslt.toString());
-		assertNotNull(source);
-		if (expected!=null) {
-			assertEquals(expected, XmlUtils.source2String(source, false));
-		} else {
-			assertNotNull(XmlUtils.source2String(source, false));
-		}
-	}
-
 	private void testUri(String baseType, String refType, ClassLoader cl, String base, String ref, String expected) throws TransformerException {
 		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(cl);
 
@@ -100,11 +84,12 @@ public class ClassLoaderURIResolverTest {
 			return result.toExternalForm();
 		case NULL:
 			return null;
+		default:
+			throw new ConfigurationException("getBase() appears to be missing case for baseType ["+baseType+"]");
 		}
-		return null;
 	}
 
-	private String getRef(BaseType baseType, RefType refType) {
+	private String getRef(BaseType baseType, RefType refType) throws ConfigurationException {
 		switch (refType) {
 		case ROOT:
 			return "/ClassLoaderTestFile.xml";
@@ -124,11 +109,12 @@ public class ClassLoaderURIResolverTest {
 			return "/ClassLoader/overridablefile.xml";
 		case FILE_SCHEME:
 			return ClassUtils.getResourceURL(this, "/ClassLoader/overridablefile.xml").toExternalForm();
+		default:
+			throw new ConfigurationException("getRef() appears to be missing case for refType ["+refType+"]");
 		}
-		return null;
 	}
 
-	private String getExpected(BaseType baseType, RefType refType) {
+	private String getExpected(BaseType baseType, RefType refType) throws ConfigurationException {
 		switch(refType) {
 		case ROOT: 
 			return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoaderTestFile.xml</file>";
@@ -146,7 +132,7 @@ public class ClassLoaderURIResolverTest {
 		case FILE_SCHEME:
 			return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>local:/overrideablefile.xml</file>";
 		default:
-			return "badly configured";
+			throw new ConfigurationException("getExpected() appears to be missing case for refType ["+refType+"]");
 		}
 	}
 
