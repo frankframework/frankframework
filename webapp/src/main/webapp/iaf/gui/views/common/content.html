@@ -13,6 +13,8 @@
 
         <!-- Main view  -->
         <div ui-view></div>
+        
+        <div class="scroll-to-top" title="Scroll to top" ng-click="scrollTop()"><i class="fa fa-caret-up"></i></div>
 
         <!-- Footer -->
         <div ng-show="!$state.current.data.iframe" ng-include="'views/common/footer.html'"></div>
