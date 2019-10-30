@@ -91,7 +91,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		this.configurationName = configurationName;
 
 		if("DirectoryClassLoader".equals(type)) {
-			String directory = getTestClassesLocation()+"classLoader/";
+			String directory = getTestClassesLocation()+"ClassLoader/";
 			appConstants.put("configurations."+configurationName+".directory", directory);
 		}
 
@@ -255,7 +255,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		String testConfiguration = "myNewClassLoader";
 		appConstants.put("configurations."+testConfiguration+".classLoaderType", "DirectoryClassLoader");
 		appConstants.put("configurations."+configurationName+".parentConfig", testConfiguration);
-		String directory = getTestClassesLocation()+"classLoader/";
+		String directory = getTestClassesLocation()+"ClassLoader/";
 		appConstants.put("configurations."+testConfiguration+".directory", directory);
 		appConstants.put("configurations.names", appConstants.get("configurations.names") + ","+testConfiguration);
 
