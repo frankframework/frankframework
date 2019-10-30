@@ -42,31 +42,31 @@ public class BasePathClassLoaderTest extends ClassLoaderTestBase<BasePathClassLo
 	/* test getResources() */
 	@Test
 	public void testFiles() throws IOException {
-		resourcesExists("file");
+		resourcesExists("ClassLoaderTestFile");
 	}
 
 	@Test
 	public void testFilesTxt() throws IOException {
-		resourcesExists("file.txt");
+		resourcesExists("ClassLoaderTestFile.txt");
 	}
 
 	@Test
 	public void textFilesXml() throws IOException {
-		resourcesExists("file.xml");
+		resourcesExists("ClassLoaderTestFile.xml");
 	}
 
 	@Test
 	public void textFolderFiles() throws IOException {
-		resourcesExists("folder/file");
+		resourcesExists("ClassLoader/ClassLoaderTestFile");
 	}
 
 	@Test
 	public void textFolderFilesTxt() throws IOException {
-		resourcesExists("folder/file.txt");
+		resourcesExists("ClassLoader/ClassLoaderTestFile.txt");
 	}
 
 	@Test
 	public void textFolderFilesXml() throws IOException {
-		resourcesExists("folder/file.xml");
+		resourcesExists("ClassLoader/ClassLoaderTestFile.xml");
 	}
 }

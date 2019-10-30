@@ -46,11 +46,11 @@ public class JarFileClassLoaderTest extends ClassLoaderTestBase<JarFileClassLoad
 	/* test files that are only present in the JAR_FILE zip */
 	@Test
 	public void classloaderOnlyFile() {
-		resourceExists("dummy.xml");
+		resourceExists("fileOnlyOnZipClassPath.xml");
 	}
 
 	@Test
 	public void classloaderOnlyFolder() {
-		resourceExists("folder/dummy.xml");
+		resourceExists("ClassLoader/fileOnlyOnZipClassPath.xml");
 	}
 }

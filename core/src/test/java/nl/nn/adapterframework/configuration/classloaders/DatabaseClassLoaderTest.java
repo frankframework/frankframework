@@ -90,12 +90,12 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 	/* test files that are only present in the JAR_FILE zip */
 	@Test
 	public void classloaderOnlyFile() {
-		resourceExists("ClassLoader/dummy.xml");
+		resourceExists("fileOnlyOnZipClassPath.xml");
 	}
 
 	@Test
 	public void classloaderOnlyFolder() {
-		resourceExists("ClassLoader/folder/dummy.xml");
+		resourceExists("ClassLoader/fileOnlyOnZipClassPath.xml");
 	}
 
 	/**

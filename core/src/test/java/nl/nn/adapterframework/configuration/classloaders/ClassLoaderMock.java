@@ -60,12 +60,12 @@ public class ClassLoaderMock extends ClassLoader implements ReloadAware {
 		populateUrls("");
 	}
 	private void populateUrls(String rootDirOrPrefix) {
-		addFile(URLs, rootDirOrPrefix+"file");
-		addFile(URLs, rootDirOrPrefix+"file.txt");
-		addFile(URLs, rootDirOrPrefix+"file.xml");
-		addFile(URLs, rootDirOrPrefix+"folder/file");
-		addFile(URLs, rootDirOrPrefix+"folder/file.txt");
-		addFile(URLs, rootDirOrPrefix+"folder/file.xml");
+		addFile(URLs, rootDirOrPrefix+"ClassLoaderTestFile");
+		addFile(URLs, rootDirOrPrefix+"ClassLoaderTestFile.txt");
+		addFile(URLs, rootDirOrPrefix+"ClassLoaderTestFile.xml");
+		addFile(URLs, rootDirOrPrefix+"ClassLoader/ClassLoaderTestFile");
+		addFile(URLs, rootDirOrPrefix+"ClassLoader/ClassLoaderTestFile.txt");
+		addFile(URLs, rootDirOrPrefix+"ClassLoader/ClassLoaderTestFile.xml");
 	}
 	private void addFile(Map<String, URL> map, String file) {
 		try {

@@ -37,6 +37,7 @@ public class BasePathClassLoader extends ClassLoader implements ReloadAware {
 	}
 
 	public URL getResource(String name, boolean useWithoutBasePath) {
+		//System.err.println("BasePathClassLoader basePath ["+ basePath +"] name [" + name+"]");
 		URL url = getParent().getResource(basePath + name);
 		if (url != null) {
 			return url;

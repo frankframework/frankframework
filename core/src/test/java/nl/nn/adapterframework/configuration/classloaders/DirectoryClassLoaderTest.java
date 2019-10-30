@@ -25,7 +25,7 @@ public class DirectoryClassLoaderTest extends ClassLoaderTestBase<DirectoryClass
 
 	@Override
 	public DirectoryClassLoader createClassLoader(ClassLoader parent) throws Exception {
-		URL file = this.getClass().getResource("/ClassLoader");
+		URL file = this.getClass().getResource("/ClassLoader/DirectoryClassLoaderRoot");
 
 		DirectoryClassLoader cl = new DirectoryClassLoader(parent);
 		cl.setDirectory(file.getFile());
@@ -36,11 +36,11 @@ public class DirectoryClassLoaderTest extends ClassLoaderTestBase<DirectoryClass
 	/* test files that are only present in the JAR_FILE zip */
 	@Test
 	public void classloaderOnlyFile() {
-		resourceExists("dummy.xml");
+		resourceExists("fileOnlyOnDirectoryClassPath.xml");
 	}
 
 	@Test
 	public void classloaderOnlyFolder() {
-		resourceExists("folder/dummy.xml");
+		resourceExists("ClassLoader/fileOnlyOnDirectoryClassPath.xml");
 	}
 }

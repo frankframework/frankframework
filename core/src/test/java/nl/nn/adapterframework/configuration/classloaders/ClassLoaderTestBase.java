@@ -124,32 +124,32 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 	/* getResource() */
 	@Test
 	public void testFile() {
-		resourceExists("file");
+		resourceExists("ClassLoaderTestFile");
 	}
 
 	@Test
 	public void testFileTxt() {
-		resourceExists("file.txt");
+		resourceExists("ClassLoaderTestFile.txt");
 	}
 
 	@Test
 	public void textFileXml() {
-		resourceExists("file.xml");
+		resourceExists("ClassLoaderTestFile.xml");
 	}
 
 	@Test
 	public void textFolderFile() {
-		resourceExists("folder/file");
+		resourceExists("ClassLoader/ClassLoaderTestFile");
 	}
 
 	@Test
 	public void textFolderFileTxt() {
-		resourceExists("folder/file.txt");
+		resourceExists("ClassLoader/ClassLoaderTestFile.txt");
 	}
 
 	@Test
 	public void textFolderFileXml() {
-		resourceExists("folder/file.xml");
+		resourceExists("ClassLoader/ClassLoaderTestFile.xml");
 	}
 
 	@Test
@@ -167,11 +167,11 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 	public void testClassLoaderManager() throws ConfigurationException {
 		ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
 		ClassLoader config = manager.get(getConfigurationName());
-		URL resource = config.getResource("ClassLoader/file.xml");
+		URL resource = config.getResource("ClassLoaderTestFile.xml");
 
-		assertNotNull("resource [file.xml] must be found", resource);
+		assertNotNull("resource [ClassLoaderTestFile.xml] must be found", resource);
 		assertTrue("resource name must start with scheme ["+getScheme()+"]", resource.toString().startsWith(getScheme()));
-		assertTrue("resource name must end with [file.xml]", resource.toString().endsWith("file.xml"));
+		assertTrue("resource name must end with [ClassLoaderTestFile.xml]", resource.toString().endsWith("ClassLoaderTestFile.xml"));
 	}
 
 	// make sure default level is always error

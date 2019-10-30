@@ -180,34 +180,52 @@ public class ClassUtilsTest {
 	
 
 	@Test
-	public void localClassLoader1() throws IOException {
+	public void localClassLoader1FromRoot() throws IOException {
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();
-		testUri(cl,"/ClassLoader/folder/file.xml","<file>file:/folder/file.xml</file>");
+		testUri(cl,"/ClassLoaderTestFile","-- /ClassLoaderTestFile --");
 	}
 
 	@Test
-	public void localClassLoader2NoSlash() throws IOException {
+	public void localClassLoader2FromRootNoSlash() throws IOException {
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();
-		testUri(cl,"ClassLoader/folder/file.xml","<file>file:/folder/file.xml</file>");
+		testUri(cl,"ClassLoaderTestFile","-- /ClassLoaderTestFile --");
 	}
 
 	@Test
-	public void localClassLoader2UrlWithFileScheme() throws IOException, ConfigurationException {
+	public void localClassLoader3FromFolder() throws IOException {
+		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		testUri(cl,"/ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
+	}
+
+	@Test
+	public void localClassLoader4FromFolderNoSlash() throws IOException {
+		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		testUri(cl,"ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
+	}
+
+	@Test
+	public void localClassLoader5UrlWithFileScheme() throws IOException, ConfigurationException {
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();
 
-		String resource="/ClassLoader/folder/file.xml";
+		String resource="/ClassLoader/ClassLoaderTestFile";
 		URL url = ClassUtils.getResourceURL(cl, resource);
 		String resourceAsFileUrl=url.toExternalForm();
 		assertThat(resourceAsFileUrl, startsWith("file:"));
 
-		testUri(cl,resourceAsFileUrl,"<file>file:/folder/file.xml</file>","file");
+		testUri(cl,resourceAsFileUrl,"-- /ClassLoader/ClassLoaderTestFile --","file");
 	}
 
 	@Test
-	public void localClassLoader3UrlWithFileSchemeButNotAllowed() throws IOException, ConfigurationException {
+	public void localClassLoader6Overrideable() throws IOException {
+		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		testUri(cl,"/ClassLoader/overridablefile","local:/overrideablefile");
+	}
+
+	@Test
+	public void localClassLoader6UrlWithFileSchemeButNotAllowed() throws IOException, ConfigurationException {
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();
 
-		String resource="/ClassLoader/folder/file.xml";
+		String resource="/ClassLoader/ClassLoaderTestFile";
 		URL url = ClassUtils.getResourceURL(cl, resource);
 		String resourceAsFileUrl=url.toExternalForm();
 		assertThat(resourceAsFileUrl, startsWith("file:"));
@@ -217,57 +235,75 @@ public class ClassUtilsTest {
 	}
 
 	@Test
-	public void bytesClassLoader1() throws IOException, ConfigurationException {
+	public void bytesClassLoader01Root() throws IOException, ConfigurationException {
 		ClassLoader cl = getBytesClassLoader();
-		testUri(cl,"/ClassLoader/folder/file.xml","<file>zip:/folder/file.xml</file>");
+		testUri(cl,"/ClassLoaderTestFile","-- /ClassLoaderTestFile --");
 	}
 	@Test
-	public void bytesClassLoader2NoSlash() throws IOException, ConfigurationException {
+	public void bytesClassLoader02RootNoSlash() throws IOException, ConfigurationException {
 		ClassLoader cl = getBytesClassLoader();
-		testUri(cl,"ClassLoader/folder/file.xml","<file>zip:/folder/file.xml</file>");
-	}
-
-	@Test
-	public void bytesClassLoader3ResourceFromLocalClasspath() throws IOException, ConfigurationException {
-		ClassLoader cl = getBytesClassLoader();
-		testUri(cl,"/ClassLoader/folder/fileOnlyOnLocalClassPath.xml","<file>file:/folder/fileOnlyOnLocalClassPath.xml</file>");
+		testUri(cl,"ClassLoaderTestFile","-- /ClassLoaderTestFile --");
 	}
 
 	@Test
-	public void bytesClassLoader4ResourceFromLocalClasspathNoSlash() throws IOException, ConfigurationException {
+	public void bytesClassLoader03Folder() throws IOException, ConfigurationException {
 		ClassLoader cl = getBytesClassLoader();
-		testUri(cl,"ClassLoader/folder/fileOnlyOnLocalClassPath.xml","<file>file:/folder/fileOnlyOnLocalClassPath.xml</file>");
+		testUri(cl,"/ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
+	}
+	@Test
+	public void bytesClassLoader04FolderNoSlash() throws IOException, ConfigurationException {
+		ClassLoader cl = getBytesClassLoader();
+		testUri(cl,"ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
 	}
 
 	@Test
-	public void bytesClassLoader5WithScheme() throws IOException, ConfigurationException {
+	public void bytesClassLoader05ResourceFromLocalClasspath() throws IOException, ConfigurationException {
 		ClassLoader cl = getBytesClassLoader();
-		testUri(cl,"bytesclassloader:/ClassLoader/folder/file.xml","<file>zip:/folder/file.xml</file>");
-	}
-	@Test
-	public void bytesClassLoader6WithSchemeNoSlash() throws IOException, ConfigurationException {
-		ClassLoader cl = getBytesClassLoader();
-		testUri(cl,"bytesclassloader:ClassLoader/folder/file.xml","<file>zip:/folder/file.xml</file>");
+		testUri(cl,"/ClassLoader/fileOnlyOnLocalClassPath.txt","-- /ClassLoader/fileOnlyOnLocalClassPath.txt --");
 	}
 
 	@Test
-	public void bytesClassLoader7UrlWithFileScheme() throws IOException, ConfigurationException {
+	public void bytesClassLoader06ResourceFromLocalClasspathNoSlash() throws IOException, ConfigurationException {
+		ClassLoader cl = getBytesClassLoader();
+		testUri(cl,"ClassLoader/fileOnlyOnLocalClassPath.txt","-- /ClassLoader/fileOnlyOnLocalClassPath.txt --");
+	}
+
+	@Test
+	public void bytesClassLoader07Overridable() throws IOException, ConfigurationException {
+		ClassLoader cl = getBytesClassLoader();
+		testUri(cl,"/ClassLoader/overridablefile","zip:/overrideablefile");
+	}
+
+
+	@Test
+	public void bytesClassLoader07WithScheme() throws IOException, ConfigurationException {
+		ClassLoader cl = getBytesClassLoader();
+		testUri(cl,"bytesclassloader:/ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
+	}
+	@Test
+	public void bytesClassLoader08WithSchemeNoSlash() throws IOException, ConfigurationException {
+		ClassLoader cl = getBytesClassLoader();
+		testUri(cl,"bytesclassloader:ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
+	}
+
+	@Test
+	public void bytesClassLoader09UrlWithFileScheme() throws IOException, ConfigurationException {
 		ClassLoader clres = Thread.currentThread().getContextClassLoader();
 
-		String resource="/ClassLoader/folder/fileOnlyOnLocalClassPath.xml";
+		String resource="/ClassLoader/fileOnlyOnLocalClassPath.txt";
 		URL url = ClassUtils.getResourceURL(clres, resource);
 		String resourceAsFileUrl=url.toExternalForm();
 		assertThat(resourceAsFileUrl, startsWith("file:"));
 
 		ClassLoader cl = getBytesClassLoader();
-		testUri(cl,resourceAsFileUrl,"<file>file:/folder/fileOnlyOnLocalClassPath.xml</file>","file");
+		testUri(cl,resourceAsFileUrl,"-- /ClassLoader/fileOnlyOnLocalClassPath.txt --","file");
 	}
 
 	@Test
-	public void bytesClassLoader8UrlWithFileSchemeButNotAllowed() throws IOException, ConfigurationException {
+	public void bytesClassLoader10UrlWithFileSchemeButNotAllowed() throws IOException, ConfigurationException {
 		ClassLoader clres = Thread.currentThread().getContextClassLoader();
 
-		String resource="/ClassLoader/folder/fileOnlyOnLocalClassPath.xml";
+		String resource="/ClassLoader/fileOnlyOnLocalClassPath.xml";
 		URL url = ClassUtils.getResourceURL(clres, resource);
 		String resourceAsFileUrl=url.toExternalForm();
 		assertThat(resourceAsFileUrl, startsWith("file:"));

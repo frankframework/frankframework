@@ -74,7 +74,7 @@ public class MatchUtils {
 
 	public static void assertTestFileEquals(String file1, String file2) throws IOException {
 		String testFile = TestFileUtils.getTestFile(file1);
-		assertNotNull(testFile);
+		assertNotNull("testFile ["+file1+"] is null",testFile);
 
 		assertEquals(testFile.trim(), file2.trim());
 	}

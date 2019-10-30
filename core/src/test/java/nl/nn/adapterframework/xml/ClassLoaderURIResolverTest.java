@@ -5,25 +5,49 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.jar.JarFile;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
-import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@RunWith(Parameterized.class)
 public class ClassLoaderURIResolverTest {
 
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
+
+	@Parameter(0)
+	public BaseType baseType;
+	@Parameter(1)
+	public RefType refType;
+
+	@Parameters(name = "{index}: BaseType {0} RefType {1}")
+	public static Collection<Object[]> data() {
+		List<Object[]> result = new ArrayList<Object[]>();
+		for(BaseType baseType:BaseType.values()) {
+			for (RefType refType: RefType.values()) {
+				Object[] item = new Object[2];
+				item[0]=baseType;
+				item[1]=refType;
+				result.add(item);
+			}
+		}
+		return result;
+	}
 
 	
 	private void testUri(ClassLoader cl, String uri, String expected) throws TransformerException {
@@ -54,7 +78,7 @@ public class ClassLoaderURIResolverTest {
 	}
 
 	private enum BaseType { LOCAL, BYTES, FILE_SCHEME, NULL }
-	private enum RefType  { SLASH, DOTDOT, SAME_FOLDER, FILE_SCHEME }
+	private enum RefType  { ROOT, ABS_PATH, DOTDOT, SAME_FOLDER, OVERRIDABLE, FILE_SCHEME }
 	
 	private ClassLoader getClassLoader(BaseType baseType) throws ConfigurationException, IOException {
 		if (baseType==BaseType.BYTES) {
@@ -82,126 +106,62 @@ public class ClassLoaderURIResolverTest {
 
 	private String getRef(BaseType baseType, RefType refType) {
 		switch (refType) {
+		case ROOT:
+			return "/ClassLoaderTestFile.xml";
+		case ABS_PATH:
+			return "/ClassLoader/ClassLoaderTestFile.xml";
 		case DOTDOT:
 			if (baseType==BaseType.NULL) {
 				return null;
 			}
-			return "../folder/file.xml";
+			return "../subfolder/ClassLoaderTestFile.xml";
 		case SAME_FOLDER:
 			if (baseType==BaseType.NULL) {
 				return null;
 			}
 			return "names.xsl";
-		case SLASH:
-			return "/ClassLoader/folder/file.xml";
+		case OVERRIDABLE:
+			return "/ClassLoader/overridablefile.xml";
 		case FILE_SCHEME:
-			return ClassUtils.getResourceURL(this, "/ClassLoader/folder/file.xml").toExternalForm();
+			return ClassUtils.getResourceURL(this, "/ClassLoader/overridablefile.xml").toExternalForm();
 		}
 		return null;
 	}
 
 	private String getExpected(BaseType baseType, RefType refType) {
-		if (refType==RefType.SAME_FOLDER) {
+		switch(refType) {
+		case ROOT: 
+			return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoaderTestFile.xml</file>";
+		case ABS_PATH:
+			return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>";
+		case DOTDOT: 
+			return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/subfolder/ClassLoaderTestFile.xml</file>";
+		case SAME_FOLDER: 
 			return null;
-		}
-		if (baseType==BaseType.BYTES && refType!=RefType.FILE_SCHEME) {
-			return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>zip:/folder/file.xml</file>";
-		}
-		return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>file:/folder/file.xml</file>";
-	}
-
-	@Test
-	public void testAll() throws ConfigurationException, IOException, TransformerException {
-		for(BaseType baseType:BaseType.values()) {
-			ClassLoader classLoader = getClassLoader(baseType);
-			String baseUrl = getBase(classLoader, baseType);
-			System.out.println("BaseType ["+baseType+"] classLoader ["+classLoader+"] BaseUrl ["+baseUrl+"]");
-			
-			for (RefType refType: RefType.values()) {
-				String ref = getRef(baseType,refType);
-				String expected = getExpected(baseType,refType);
-				System.out.println("BaseType ["+baseType+"] refType ["+refType+"] ref ["+ref+"] expected ["+expected+"]");
-				if (ref!=null) {
-					testUri(baseType.name(), refType.name(), classLoader, baseUrl, ref, expected);
-				}
+		case OVERRIDABLE: 
+			if (baseType==BaseType.BYTES) {
+				return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>zip:/overrideablefile.xml</file>";
 			}
+			return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>local:/overrideablefile.xml</file>";
+		case FILE_SCHEME:
+			return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>local:/overrideablefile.xml</file>";
+		default:
+			return "badly configured";
 		}
 	}
-	
-	@Test
-	public void localClass1PathRelative() throws TransformerException {
-		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
-
-		URL xslt = ClassUtils.getResourceURL(localClassLoader, "/Xslt/importDocument/importLookupAbsolute1.xsl");
-		assertNotNull(xslt);
-
-		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(localClassLoader);
-		Source source = resolver.resolve("lookup.xml", xslt.toString());
-		assertNotNull(source);
-	}
 
 	@Test
-	public void localClass2PathAbsolute() throws TransformerException {
-		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
-
-		URL xslt = ClassUtils.getResourceURL(localClassLoader, "/Xslt/importDocument/importLookupAbsolute1.xsl");
-		assertNotNull(xslt);
-
-		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(localClassLoader);
-		Source source = resolver.resolve("/Xslt/importDocument/lookup.xml", xslt.toString());
-		assertNotNull(source);
-	}
-
-	
-	
-	@Test
-	public void bytesClassPath1Absolute() throws TransformerException, IOException, ConfigurationException {
-		ClassLoader cl = getBytesClassLoader();
-		testUri(cl,"/ClassLoader/folder/file.xml","<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>zip:/folder/file.xml</file>");
-	}
-
-	@Test
-	public void bytesClassPath2RelativeSameFolder() throws TransformerException, IOException, ConfigurationException {
-		ClassLoader cl = getBytesClassLoader();
-		testUri(cl,"names.xsl",null);
-	}
-
-	@Test
-	public void bytesClassPath3RelativeWithPath() throws TransformerException, IOException, ConfigurationException {
-		ClassLoader cl = getBytesClassLoader();
-		testUri(cl,"../folder/file.xml","<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>zip:/folder/file.xml</file>");
-	}
-
-	@Test
-	public void bytesClassPath4ResourceFromLocalClasspathAbsolute() throws TransformerException, IOException, ConfigurationException {
-		ClassLoader cl = getBytesClassLoader();
-		testUri(cl,"/ClassLoader/folder/fileOnlyOnLocalClassPath.xml","<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>file:/folder/fileOnlyOnLocalClassPath.xml</file>");
-	}
-
-	@Test
-	public void bytesClassPath5ResourceFromLocalClasspathRelative() throws TransformerException, IOException, ConfigurationException {
-		ClassLoader cl = getBytesClassLoader();
-		testUri(cl,"../folder/fileOnlyOnLocalClassPath.xml","<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>file:/folder/fileOnlyOnLocalClassPath.xml</file>");
-	}
-
-	@Test
-	public void bytesClassPath6AbsoluteWithScheme() throws TransformerException, IOException, ConfigurationException {
-		ClassLoader cl = getBytesClassLoader();
-		testUri(cl,"bytesclassloader:/ClassLoader/folder/file.xml","<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>zip:/folder/file.xml</file>");
-	}
-
-	@Test
-	@Ignore("GvB 2019-10-28: I think a scheme and a relative path cannot go together")
-	public void bytesClassPath7RelativeSameFolderWithScheme() throws TransformerException, IOException, ConfigurationException {
-		ClassLoader cl = getBytesClassLoader();
-		testUri(cl,"bytesclassloader:names.xsl",null);
-	}
-
-	@Test
-	@Ignore("GvB 2019-10-28: I think a scheme and a relative path cannot go together")
-	public void bytesClassPath8RelativeWithPathWithScheme() throws TransformerException, IOException, ConfigurationException {
-		ClassLoader cl = getBytesClassLoader();
-		testUri(cl,"bytesclassloader:../folder/file.xml","<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>zip:/folder/file.xml</file>");
+	public void test() throws ConfigurationException, IOException, TransformerException {
+		ClassLoader classLoader = getClassLoader(baseType);
+		String baseUrl = getBase(classLoader, baseType);
+		System.out.println("BaseType ["+baseType+"] classLoader ["+classLoader+"] BaseUrl ["+baseUrl+"]");
+		
+		String ref = getRef(baseType,refType);
+		String expected = getExpected(baseType,refType);
+		System.out.println("BaseType ["+baseType+"] refType ["+refType+"] ref ["+ref+"] expected ["+expected+"]");
+		if (ref!=null) {
+			testUri(baseType.name(), refType.name(), classLoader, baseUrl, ref, expected);
+		}
 	}
 
 	
@@ -217,8 +177,5 @@ public class ClassLoaderURIResolverTest {
 		cl.setJar(file.getFile());
 		cl.configure(null, "");
 		return cl;
-//		String path = this.getClass().getResource("/ClassLoader/").toString();
-//		System.err.println(path);
-//		return new BasePathClassLoader(cl, path);
 	}
 }

@@ -91,7 +91,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		this.configurationName = configurationName;
 
 		if("DirectoryClassLoader".equals(type)) {
-			String directory = getTestClassesLocation()+"ClassLoader/";
+			String directory = getTestClassesLocation()+"ClassLoader/DirectoryClassLoaderRoot/";
 			appConstants.put("configurations."+configurationName+".directory", directory);
 		}
 
@@ -215,15 +215,15 @@ public class ClassLoaderManagerTest extends Mockito {
 	}
 
 	@Test
-	public void retrieveTestFileInClassLoader() throws ConfigurationException, IOException {
+	public void retrieveTestFileInClassLoaderRoot() throws ConfigurationException, IOException {
 		if(skip) return; //This ClassLoader can't actually retrieve files...
 
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
 		ClassLoader config = manager.get(configurationName);
-		URL resource = config.getResource(BASE_DIR.substring(1)+"/file.xml");
+		URL resource = config.getResource("ClassLoaderTestFile.xml");
 
-		MatchUtils.assertTestFileEquals(BASE_DIR+"/file.xml", resource);
+		MatchUtils.assertTestFileEquals("/ClassLoaderTestFile.xml", resource);
 	}
 
 	@Test
@@ -233,9 +233,9 @@ public class ClassLoaderManagerTest extends Mockito {
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
 		ClassLoader config = manager.get(configurationName);
-		URL resource = config.getResource(BASE_DIR.substring(1)+"/folder/file.xml");
+		URL resource = config.getResource(BASE_DIR.substring(1)+"/ClassLoaderTestFile.xml");
 
-		MatchUtils.assertTestFileEquals(BASE_DIR+"/folder/file.xml", resource);
+		MatchUtils.assertTestFileEquals(BASE_DIR+"/ClassLoaderTestFile.xml", resource);
 	}
 
 	@Test
@@ -259,7 +259,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		appConstants.put("configurations."+testConfiguration+".directory", directory);
 		appConstants.put("configurations.names", appConstants.get("configurations.names") + ","+testConfiguration);
 
-		String testFile = "fileOnlyInDirectoryClassloader.txt";
+		String testFile = "fileOnlyOnLocalClassPath.txt";
 		ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
 
 		ClassLoader parentClassloader = manager.get(testConfiguration);
