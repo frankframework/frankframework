@@ -96,7 +96,7 @@
 	at nl.nn.adapterframework.receivers.JavaListener.processRequest(JavaListener.java:165)
 	at nl.nn.adapterframework.dispatcher.DispatcherManagerImpl.processRequest(DispatcherManagerImpl.java:126)
 	at nl.nn.adapterframework.senders.IbisJavaSender.sendMessage(IbisJavaSender.java:97)
-	at nl.nn.adapterframework.testtool.SenderThread.run(SenderThread.java:52)
+	at nl.nn.adapterframework.larva.SenderThread.run(SenderThread.java:52)
 Caused by: nl.nn.adapterframework.core.TimeOutException: (SocketTimeoutException) Read timed out
 	at nl.nn.adapterframework.http.HttpSender.sendMessageWithTimeoutGuarded(HttpSender.java:878)
 	at nl.nn.adapterframework.core.TimeoutGuardSenderWithParametersBase$SendMessage.call(TimeoutGuardSenderWithParametersBase.java:73)

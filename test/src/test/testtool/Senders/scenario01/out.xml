@@ -94,7 +94,7 @@
 	at nl.nn.adapterframework.receivers.JavaListener.processRequest(JavaListener.java:162)&#xD;
 	at nl.nn.adapterframework.dispatcher.DispatcherManagerImpl.processRequest(DispatcherManagerImpl.java:126)&#xD;
 	at nl.nn.adapterframework.senders.IbisJavaSender.sendMessage(IbisJavaSender.java:122)&#xD;
-	at nl.nn.adapterframework.testtool.SenderThread.run(SenderThread.java:52)&#xD;
+	at nl.nn.adapterframework.larva.SenderThread.run(SenderThread.java:52)&#xD;
 Caused by: nl.nn.adapterframework.core.ListenerException: &lt;test/&gt;&#xD;
 	at nl.nn.adapterframework.core.Adapter.processMessageWithExceptions(Adapter.java:681)&#xD;
 	at nl.nn.adapterframework.receivers.ReceiverBase.processMessageInAdapter(ReceiverBase.java:1169)&#xD;

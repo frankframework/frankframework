@@ -75,7 +75,7 @@
 	at nl.nn.adapterframework.receivers.JavaListener.processRequest(JavaListener.java:162)&#13;
 	at nl.nn.adapterframework.dispatcher.DispatcherManagerImpl.processRequest(DispatcherManagerImpl.java:126)&#13;
 	at nl.nn.adapterframework.senders.IbisJavaSender.sendMessage(IbisJavaSender.java:134)&#13;
-	at nl.nn.adapterframework.testtool.SenderThread.run(SenderThread.java:52)</details>
+	at nl.nn.adapterframework.larva.SenderThread.run(SenderThread.java:52)</details>
   <originalMessage messageId="Test Tool correlation id">&lt;request action="send2ws_forward_timeout" /&gt;</originalMessage>
 </errorMessage>
 </TIMEOUT>
