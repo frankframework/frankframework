@@ -1,17 +1,17 @@
 package nl.nn.adapterframework.webcontrol.pipes;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.*;
-import nl.nn.adapterframework.larva.MessageListener;
-import nl.nn.adapterframework.larva.TestPreparer;
-import nl.nn.adapterframework.larva.TestTool;
-import nl.nn.adapterframework.larva.test.IbisTester;
-import nl.nn.adapterframework.util.*;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.net.URL;
+
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -19,14 +19,20 @@ import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.xml.sax.SAXException;
 
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.net.URL;
-
-import static org.junit.Assert.assertTrue;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.extensions.test.IbisTester;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlUtils;
 
 public class IbisConsoleTest {
 	private static String SHOW_CONFIGURATION_STATUS_XSLT = "webcontrol/pipes/xsl/ShowConfigurationStatus.xsl";
@@ -52,8 +58,9 @@ public class IbisConsoleTest {
 		System.setProperty("junit.active", "true");
 		System.setProperty("configurations.names", "${instance.name},NotExistingConfig");
 
-		boolean started = ibisTester.initTester();
-		assertTrue(started);
+		ibisTester.initTest();
+		String testResult=ibisTester.testStartAdapters();
+		assertNull(testResult,testResult);
 		ibisContext = ibisTester.getIbisContext();
 
 		URL showConfigurationStatusUrl = ClassUtils.getResourceURL(IbisConsoleTest.class, SHOW_CONFIGURATION_STATUS_XSLT);
@@ -67,34 +74,6 @@ public class IbisConsoleTest {
 			throw new ConfigurationException("cannot find resource [" + SHOW_ENVIRONMENT_VARIABLES_XSLT + "]");
 		}
 		showEnvironmentVariablesTransformer = XmlUtils.createTransformer(showEnvironmentVariablesUrl);
-	}
-
-	@Test
-	public void runLarva() {
-		MessageListener messageListener = new MessageListener();
-		AppConstants appConstants = AppConstants.getInstance();
-		String appConstantsRealPath = appConstants.getResolvedProperty("webapp.realpath");
-		String realPath = appConstantsRealPath + "larva/";
-
-		String rootDirectory = TestPreparer.initScenariosRootDirectories(realPath, null, appConstants);
-		rootDirectory = "C:\\Users\\murat\\Documents\\Integration Partners\\iaf\\example\\src\\test\\resources\\TestTool\\";
-		System.out.println(rootDirectory);
-		appConstants = TestPreparer.getAppConstantsFromDirectory(rootDirectory, appConstants);
-		JSONObject scenarioFiles = new JSONObject(TestPreparer.readScenarioFiles(rootDirectory, false, appConstants));
-		System.out.println(scenarioFiles);
-		TestTool testTool = new TestTool(messageListener);
-		String paramExecute = "C:\\Users\\murat\\Documents\\Integration Partners\\iaf\\example\\src\\test\\resources\\TestTool\\";
-		int tests = testTool.runScenarios(paramExecute, 100, rootDirectory, 1, Integer.MAX_VALUE);
-		System.out.println(rootDirectory);
-		System.out.println(tests);
-		JSONArray jsonArray = messageListener.getMessages();
-		try {
-			FileWriter fileWriter = new FileWriter("C:\\Users\\murat\\Desktop\\out.txt");
-		}catch (IOException e) {
-			e.printStackTrace();
-		}
-		System.out.println(jsonArray.toString());
-		assertTrue(true);
 	}
 
 	@Test
