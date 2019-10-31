@@ -258,4 +258,50 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 			}
 		}
 	}
+
+	@Test
+	public void parametersToSkip() throws Throwable {
+		HttpSender sender = getSender();
+		String input = "<xml>input</xml>";
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase(session);
+			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
+
+			sender.setMethodType("POST");
+			sender.setParamsInUrl(false);
+			sender.setInputMessageParam("request");
+
+			String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
+					+ "sessionKey=\"part_file\" size=\"72833\" "
+					+ "mimeType=\"application/pdf\"/></parts>";
+			pls.put("multipartXml", xmlMultipart);
+			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+
+			sender.setMtomEnabled(true);
+			sender.setMultipartXmlSessionKey("multipartXml");
+
+			Parameter urlParam = new Parameter();
+			urlParam.setName("url");
+			urlParam.setValue("http://ignore.me");
+			sender.addParameter(urlParam);
+
+			Parameter partParam = new Parameter();
+			partParam.setName("my-beautiful-part");
+			partParam.setValue("<partContent/>");
+			sender.addParameter(partParam);
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(null, input, prc);
+			assertEquals(getFile("parametersToSkip.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
 }

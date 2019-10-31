@@ -35,6 +35,12 @@ angular.module('iaf.beheerconsole')
 				angular.element(".iaf-info").html("IAF " + data.version + ": " + data.name );
 
 				$scope.configurations = data.configurations;
+				for(var config in $scope.configurations) {
+					if($scope.configurations[config].type == "DatabaseClassLoader") {
+						$scope.config_database = true;
+						break;
+					}
+				}
 
 				//Was it able to retrieve the serverinfo without logging in?
 				if(!$scope.loggedin) {

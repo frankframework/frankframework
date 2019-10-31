@@ -138,6 +138,7 @@ public class ConfigurationUtils {
 		if (StringUtils.isEmpty(workJmsRealm)) {
 			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 			if (StringUtils.isEmpty(workJmsRealm)) {
+				log.warn("no JMSRealm found");
 				return null;
 			}
 		}
@@ -168,18 +169,21 @@ public class ConfigurationUtils {
 				stmt.setString(2, version);
 				rs = stmt.executeQuery();
 			}
-			if (rs.next()) {
-				Map<String, Object> configuration = new HashMap<String, Object>(5);
-				byte[] jarBytes = rs.getBytes(1);
-				if(jarBytes == null) return null;
-
-				configuration.put("CONFIG", jarBytes);
-				configuration.put("VERSION", rs.getString(2));
-				configuration.put("FILENAME", rs.getString(3));
-				configuration.put("CREATED", rs.getString(4));
-				configuration.put("USER", rs.getString(5));
-				return configuration;
+			if (!rs.next()) {
+				log.warn("no configuration found in database with name ["+name+"] version ["+version+"]");
+				return null;
 			}
+
+			Map<String, Object> configuration = new HashMap<String, Object>(5);
+			byte[] jarBytes = rs.getBytes(1);
+			if(jarBytes == null) return null;
+
+			configuration.put("CONFIG", jarBytes);
+			configuration.put("VERSION", rs.getString(2));
+			configuration.put("FILENAME", rs.getString(3));
+			configuration.put("CREATED", rs.getString(4));
+			configuration.put("USER", rs.getString(5));
+			return configuration;
 		} catch (SenderException e) {
 			throw new ConfigurationException(e);
 		} catch (JdbcException e) {
@@ -203,7 +207,6 @@ public class ConfigurationUtils {
 				}
 			}
 		}
-		return null;
 	}
 
 	public static boolean addConfigToDatabase(IbisContext ibisContext, String jmsRealm, boolean activate_config, boolean automatic_reload, String name, String version, String fileName, InputStream file, String ruser) throws ConfigurationException {

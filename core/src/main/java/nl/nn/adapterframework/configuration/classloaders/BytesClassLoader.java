@@ -59,6 +59,11 @@ public abstract class BytesClassLoader extends ClassLoaderBase {
 	}
 
 	public void reload() throws ConfigurationException {
+		clearResources();
+	}
+
+	public void clearResources() {
+		log.debug("cleaned up classloader resources for configuration ["+getConfigurationName()+"]");
 		resources.clear();
 	}
 }

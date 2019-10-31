@@ -25,7 +25,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="switch" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="request" />
-			<pipe name="hello" className="nl.nn.adapterframework.pipes.FixedResult" returnString="&lt;reply&gt;goodbey&lt;/reply&gt;">
+			<pipe name="hello" className="nl.nn.adapterframework.pipes.FixedResult" returnString="&lt;reply&gt;goodbye&lt;/reply&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="hi" className="nl.nn.adapterframework.pipes.FixedResult" returnString="&lt;reply&gt;ha&lt;/reply&gt;">

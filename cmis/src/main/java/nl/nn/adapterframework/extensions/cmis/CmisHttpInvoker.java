@@ -124,6 +124,11 @@ public class CmisHttpInvoker implements HttpInvoker {
 				sender.setTimeout(timeout);
 			}
 
+			int maxConnections = session.get("maxConnections", 0);
+			if(maxConnections > 0) {
+				sender.setMaxConnections(maxConnections);
+			}
+
 			sender.setMethodType("custom");
 			sender.configure();
 			sender.open();

@@ -211,7 +211,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * @deprecated use {@link #doPipe(Object,IPipeLineSession)} instead
 	 */
 	@Deprecated
-	public PipeRunResult doPipe (Object input) throws PipeRunException {
+	public final PipeRunResult doPipe (Object input) throws PipeRunException {
 		throw new PipeRunException(this, "Pipe should implement method doPipe()");
 	}
 

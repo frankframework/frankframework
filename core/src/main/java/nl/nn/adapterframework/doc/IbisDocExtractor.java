@@ -26,6 +26,7 @@ public class IbisDocExtractor {
                 for (AClass aClass : folder.getClasses()) {
                     JSONObject classObject = new JSONObject();
                     classObject.put("name", aClass.name);
+                    classObject.put("packageName", aClass.packageName);
 
                     newMethods = new JSONArray();
                     for (AMethod method : aClass.getMethods()) {
@@ -69,7 +70,7 @@ public class IbisDocExtractor {
         folders.add(allFolder);
     }
 
-    public void addMethods(String currentFolder, String currentClass, String methodName, String description, String defaultValue, String originalClassName, ArrayList<String> superClasses, String javadocLink, int order) {
+    public void addMethods(String currentFolder, String currentClass, String packageName, String methodName, String description, String defaultValue, String originalClassName, ArrayList<String> superClasses, String javadocLink, int order) {
 
         // Check if the folder already exists (there is only one of each)
         boolean folderExists = false;
@@ -96,8 +97,8 @@ public class IbisDocExtractor {
         if (!classExists) {
             for (AFolder folder : folders) {
                 if (currentFolder.equals(folder.getName())) {
-                    folder.addClass(new AClass(currentClass));
-                    classes.add(new AClass(currentClass));
+                    folder.addClass(new AClass(currentClass, packageName));
+                    classes.add(new AClass(currentClass, packageName));
                 }
             }
         }
@@ -120,6 +121,7 @@ public class IbisDocExtractor {
         private String description;
         private String defaultValue;
         private String className;
+        private String packageName;
         private String folderName;
         private String originalClassName;
         private ArrayList<String> superClasses;
@@ -141,10 +143,12 @@ public class IbisDocExtractor {
 
     class AClass {
         private String name;
+        private String packageName;
         private ArrayList<AMethod> methods;
 
-        public AClass(String name) {
+        public AClass(String name, String packageName) {
             this.name = name;
+            this.packageName = packageName;
             this.methods = new ArrayList<AMethod>();
         }
 

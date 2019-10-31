@@ -150,7 +150,8 @@ public class IbisConsoleTest {
 
 	@AfterClass
 	public static void closeTest() {
-		ibisTester.closeTest();
+		if(ibisTester != null)
+			ibisTester.closeTest();
 	}
 
 	private PipeForward createPipeSuccessForward() {

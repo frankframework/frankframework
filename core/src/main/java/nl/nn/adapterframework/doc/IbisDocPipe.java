@@ -463,9 +463,9 @@ public class IbisDocPipe extends FixedForwardPipe {
 							}
 
 							if (ibisDocValues.length > def) {
-								extractor.addMethods(folder, ibisBean.getName(), property, ibisDocValues[desc], ibisDocValues[def], method.getDeclaringClass().getSimpleName(), superClasses, javadocLink, order);
+								extractor.addMethods(folder, ibisBean.getName(), ibisBean.getClazz().getName(), property, ibisDocValues[desc], ibisDocValues[def], method.getDeclaringClass().getSimpleName(), superClasses, javadocLink, order);
 							} else {
-								extractor.addMethods(folder, ibisBean.getName(), property, ibisDocValues[desc], "", method.getDeclaringClass().getSimpleName(), superClasses, javadocLink, order);
+								extractor.addMethods(folder, ibisBean.getName(), ibisBean.getClazz().getName(), property, ibisDocValues[desc], "", method.getDeclaringClass().getSimpleName(), superClasses, javadocLink, order);
 							}
 						}
 					}

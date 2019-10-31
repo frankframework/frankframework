@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017,2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,17 +29,17 @@ import org.apache.log4j.Logger;
  * @author Peter Leeuwenburgh
  */
 public class TransformerErrorListener implements ErrorListener {
-	static Logger log = LogUtil.getLogger(XmlUtils.class);
+	static Logger log = LogUtil.getLogger(TransformerErrorListener.class);
 
 	private boolean throwException;
 	private TransformerException fatalTransformerException;
 	private IOException fatalIOException;
 
-	TransformerErrorListener() {
+	public TransformerErrorListener() {
 		this(true);
 	}
 
-	TransformerErrorListener(boolean throwException) {
+	public TransformerErrorListener(boolean throwException) {
 		this.throwException = throwException;
 	}
 
@@ -48,36 +48,52 @@ public class TransformerErrorListener implements ErrorListener {
 		if (throwException) {
 			throw transformerException;
 		}
-		log.warn("Nonfatal transformation error: " + transformerException.getMessage());
+		log.warn("Nonfatal transformation error: " + transformerException.getMessageAndLocation());
 	}
 
 	@Override
 	public void fatalError(TransformerException transformerException) throws TransformerException {
+		log.warn("Fatal transformation error: " + transformerException.getMessageAndLocation());
+		this.setFatalTransformerException(transformerException);
 		if (throwException) {
 			throw transformerException;
 		}
-		this.setFatalTransformerException(transformerException);
 	}
 
 	@Override
 	public void warning(TransformerException transformerException) throws TransformerException {
-		log.warn("Nonfatal transformation warning: "+ transformerException.getMessage());
+		log.warn("Nonfatal transformation warning: " + transformerException.getMessageAndLocation());
 	}
 
-	public void setFatalTransformerException(
-			TransformerException fatalTransformerException) {
+	public void setFatalTransformerException(TransformerException fatalTransformerException) {
 		this.fatalTransformerException = fatalTransformerException;
 	}
-
 	public TransformerException getFatalTransformerException() {
 		return fatalTransformerException;
 	}
 
 	public void setFatalIOException(IOException fatalIOException) {
+		if (this.fatalIOException!=null && this.fatalIOException!=fatalIOException) {
+			log.warn("replacing fatalIOException",this.fatalIOException);
+		}
 		this.fatalIOException = fatalIOException;
 	}
-
 	public IOException getFatalIOException() {
 		return fatalIOException;
 	}
+
+//	@Override
+//	public void error(SAXParseException e) throws SAXException {
+//		log.error("SAX error",e);
+//	}
+//
+//	@Override
+//	public void fatalError(SAXParseException e) throws SAXException {
+//		log.error("SAX fatalError",e);
+//	}
+//
+//	@Override
+//	public void warning(SAXParseException e) throws SAXException {
+//		log.warn("SAX warning",e);
+//	}
 }

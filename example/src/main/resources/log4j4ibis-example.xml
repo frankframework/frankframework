@@ -7,7 +7,7 @@
 			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %c{3} %m%n"/>
 		</layout>
 	</appender>
-  <root>
+	<root>
 		<level value="INFO"/>
 		<appender-ref ref="stdout"/>
 	</root>

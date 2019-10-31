@@ -21,6 +21,11 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 	}
 
 	@Override
+	protected void setXpathExpression(String xpathExpression) {
+		pipe.setXpathExpression(xpathExpression);		
+	}
+
+	@Override
 	protected void setOmitXmlDeclaration(boolean omitXmlDeclaration) {
 		pipe.setOmitXmlDeclaration(omitXmlDeclaration);
 	}
@@ -44,6 +49,5 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 	protected void setXslt2(boolean xslt2) {
 		pipe.setXslt2(xslt2);
 	}
-
 
 }

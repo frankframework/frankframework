@@ -10,6 +10,7 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Writer;
 
 import org.hamcrest.core.IsInstanceOf;
 import org.junit.Before;
@@ -20,12 +21,14 @@ import org.junit.rules.ExpectedException;
 import org.junit.runners.MethodSorters;
 
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TestAssertions;
 
@@ -35,7 +38,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	protected FileSystemActor<F, FS> actor;
 
 	protected FS fileSystem;
-	private INamedObject owner;
+	protected INamedObject owner;
+	private IPipeLineSession session;
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
@@ -163,7 +167,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		prc.setSession(new PipeLineSessionBase());
 		String message="";
 		ParameterValueList pvl= createParameterValueList(null, message, null);
-		Object result = actor.doAction(message, pvl);
+		Object result = actor.doAction(message, pvl, session);
 		String stringResult=(String)result;
 
 		log.debug(result);
@@ -253,7 +257,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		
 		String message=filename;
 		ParameterValueList pvl= createParameterValueList(params, message, null);
-		Object result = actor.doAction(message, pvl);
+		Object result = actor.doAction(message, pvl, session);
 		System.err.println(result);
 		String stringResult=(String)result;
 		waitForActionToFinish();
@@ -293,7 +297,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		prc.setSession(new PipeLineSessionBase());
 		String message=filename;
 		ParameterValueList pvl= createParameterValueList(null, message, null);
-		Object result = actor.doAction(message, pvl);
+		Object result = actor.doAction(message, pvl, session);
 		assertThat(result, IsInstanceOf.instanceOf(InputStream.class));
 		String actualContents = Misc.streamToString((InputStream)result);
 		assertEquals(contents, actualContents);
@@ -334,7 +338,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		String message=filename;
 		ParameterValueList pvl= createParameterValueList(params, message, session);
-		Object result = actor.doAction(message, pvl);
+		Object result = actor.doAction(message, pvl, session);
 		waitForActionToFinish();
 		
 		String stringResult=(String)result;
@@ -374,7 +378,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		prc.setSession(session);
 		String message=filename;
 		ParameterValueList pvl= createParameterValueList(params, message, session);
-		Object result = actor.doAction(message, pvl);
+		Object result = actor.doAction(message, pvl, session);
 
 		String stringResult=(String)result;
 		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
@@ -416,7 +420,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		prc.setSession(session);
 		String message=filename;
 		ParameterValueList pvl= createParameterValueList(params, message, session);
-		Object result = actor.doAction(message, pvl);
+		Object result = actor.doAction(message, pvl, session);
 
 		String stringResult=(String)result;
 		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
@@ -430,7 +434,139 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		assertEquals(contents.trim(), actual.trim());
 	}
 
+	@Test
+	public void fileSystemActorWriteActionTestWithOutputStream() throws Exception {
+		String filename = "uploadedwithOutputStream" + FILE1;
+		String contents = "Some text content to test upload action\n";
+		
+		if (_fileExists(filename)) {
+			_deleteFile(null, filename);
+		}
 
+//		InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
+		PipeLineSessionBase session = new PipeLineSessionBase();
+
+		ParameterList paramlist = new ParameterList();
+		Parameter param = new Parameter();
+		param.setName("filename");
+		param.setValue(filename);
+		paramlist.add(param);
+		paramlist.configure();
+		
+		actor.setAction("write");
+		actor.configure(fileSystem,paramlist,owner);
+		actor.open();
+		
+		assertTrue(actor.canProvideOutputStream());
+		
+		ParameterResolutionContext prc = new ParameterResolutionContext();
+		prc.setSession(session);
+		MessageOutputStream target = actor.provideOutputStream(null, session, null);
+
+		// stream the contents
+		try (Writer writer = target.asWriter()) {
+			writer.write(contents);
+		}
+
+		// verify the filename is properly returned
+		String stringResult=target.getResponseAsString();
+		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
+		
+		// verify the file contents
+		waitForActionToFinish();
+		String actualContents = readFile(null, filename);
+		assertEquals(contents,actualContents);
+	}
+
+	@Test
+	public void fileSystemActorWriteActionWithBackup() throws Exception {
+		String filename = "uploadedwithString" + FILE1;
+		String contents = "text content:";
+		int numOfBackups=3;
+		int numOfWrites=5;
+		
+		if (_fileExists(filename)) {
+			_deleteFile(null, filename);
+		}
+
+		PipeLineSessionBase session = new PipeLineSessionBase();
+
+		ParameterList params = new ParameterList();
+		Parameter p = new Parameter();
+		p.setName("contents");
+		p.setSessionKey("uploadActionTargetwString");
+
+		params.add(p);
+		actor.setAction("write");
+		actor.setNumberOfBackups(numOfBackups);
+		params.configure();
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+
+		String message=filename;
+		for (int i=0;i<numOfWrites;i++) {
+			session.put("uploadActionTargetwString", contents+i);
+			ParameterValueList pvl= createParameterValueList(params, message, session);
+			Object result = actor.doAction(message, pvl, null);
+
+			String stringResult=(String)result;
+			TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
+		}
+		waitForActionToFinish();
+		
+		
+		String actualContents = readFile(null, filename);
+		assertEquals(contents.trim()+(numOfWrites-1), actualContents.trim());
+		
+		for (int i=1;i<=numOfBackups;i++) {
+			String actualContentsi = readFile(null, filename+"."+i);
+			assertEquals(contents.trim()+(numOfWrites-1-i), actualContentsi.trim());
+		}
+	}
+
+	@Test
+	public void fileSystemActorAppendActionWithRolloverBySize() throws Exception {
+		String filename = "rolloverBySize" + FILE1;
+		String contents = "thanos car ";
+		int numOfBackups = 3;
+		int numOfWrites = 5;
+		int rotateSize = 10;
+		
+		if(_fileExists(filename)) {
+			_deleteFile(null, filename);
+		}
+		createFile(null, filename, "thanos car ");
+		
+		PipeLineSessionBase session = new PipeLineSessionBase();
+		ParameterList params = new ParameterList();
+		
+		Parameter p = new Parameter();
+		p.setName("contents");
+		p.setSessionKey("appendActionwString");
+		params.add(p);
+		params.configure();
+		
+		actor.setAction("append");
+		actor.setRotateSize(rotateSize);
+		actor.setNumberOfBackups(numOfBackups);
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+		
+		String message = filename;
+		for(int i=0; i<numOfWrites; i++) {
+			session.put("appendActionwString", contents+i);
+			ParameterValueList pvl = createParameterValueList(params, message, session);
+			String result = (String)actor.doAction(message, pvl, null);
+
+			TestAssertions.assertXpathValueEquals(filename, result, "file/@name");
+		}
+
+		assertTrue(fileSystem.exists(fileSystem.toFile(filename+"."+(numOfWrites<numOfBackups?numOfWrites:numOfBackups))));
+		for (int i=1;i<=numOfBackups;i++) {
+			String actualContentsi = readFile(null, filename+"."+i);
+			assertEquals((contents+(numOfWrites-1-i)).trim(), actualContentsi.trim());
+		}
+	}
 	
 	
 	public void fileSystemActorMoveActionTest(String folder1, String folder2) throws Exception {
@@ -461,7 +597,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		prc.setSession(new PipeLineSessionBase());
 		String message=filename;
 		ParameterValueList pvl= createParameterValueList(params, message, null);
-		Object result = actor.doAction(message, pvl);
+		Object result = actor.doAction(message, pvl, session);
 		
 		// test
 		// result should be name of the moved file
@@ -504,7 +640,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		prc.setSession(new PipeLineSessionBase());
 		String message=filename;
 		ParameterValueList pvl= createParameterValueList(null, message, null);
-		Object result = actor.doAction(message, pvl);
+		Object result = actor.doAction(message, pvl, session);
 		waitForActionToFinish();
 
 		// test
@@ -531,7 +667,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		prc.setSession(new PipeLineSessionBase());
 		String message=filename;
 		ParameterValueList pvl= createParameterValueList(null, message, null);
-		Object result = actor.doAction(message, pvl);
+		Object result = actor.doAction(message, pvl, session);
 
 		// test
 		assertEquals("result of sender should be input message",result,message);
@@ -558,7 +694,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		prc.setSession(new PipeLineSessionBase());
 		String message=filename;
 		ParameterValueList pvl= createParameterValueList(null, message, null);
-		Object result = actor.doAction(message, pvl);
+		Object result = actor.doAction(message, pvl, session);
 
 		waitForActionToFinish();
 		
@@ -594,7 +730,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		prc.setSession(new PipeLineSessionBase());
 		String message=filename;
 		ParameterValueList pvl= createParameterValueList(params, message, null);
-		Object result = actor.doAction(message, pvl);
+		Object result = actor.doAction(message, pvl, session);
 
 		// test
 		assertEquals("result of sender should be input message",result,message);
@@ -609,7 +745,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	
-	private ParameterValueList createParameterValueList(ParameterList paramList, String input, PipeLineSessionBase session) throws ParameterException {
+	protected ParameterValueList createParameterValueList(ParameterList paramList, String input, PipeLineSessionBase session) throws ParameterException {
 		ParameterResolutionContext prc = new ParameterResolutionContext(input,session);
 		ParameterValueList pvl = prc.getValues(paramList);
 		return pvl;

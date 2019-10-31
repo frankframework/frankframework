@@ -87,17 +87,19 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.ContentHandler;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
+import org.xml.sax.ext.LexicalHandler;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
 import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
+import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
 
 /**
  * Some utilities for working with XML.
@@ -483,16 +485,43 @@ public class XmlUtils {
 	}
 
 	public static void parseXml(ContentHandler handler, InputSource source) throws IOException, SAXException {
+		boolean namespaceAware=true;
+		boolean resolveExternalEntities=false;
 		XMLReader parser;
-		parser = getParser();
-		parser.setContentHandler(handler);
+		try {
+			parser = getXMLReader(namespaceAware, resolveExternalEntities, handler);
+		} catch (ParserConfigurationException e) {
+			throw new SAXException("Cannot configure parser",e);
+		}
 		parser.parse(source);
 	}
 
-	private static XMLReader getParser() throws SAXException {
-		return XMLReaderFactory.createXMLReader();
+	public static XMLReader getXMLReader(boolean namespaceAware, boolean resolveExternalEntities, ContentHandler handler) throws ParserConfigurationException, SAXException {
+		XMLReader xmlReader = getXMLReader(namespaceAware, resolveExternalEntities);
+		xmlReader.setContentHandler(handler);
+		if (handler instanceof LexicalHandler) {
+			xmlReader.setProperty("http://xml.org/sax/properties/lexical-handler", handler);
+		}
+		if (handler instanceof ErrorHandler) {
+			xmlReader.setErrorHandler((ErrorHandler)handler);
+		}
+		return xmlReader;
 	}
+	
+	public static XMLReader getXMLReader(boolean namespaceAware, boolean resolveExternalEntities) throws ParserConfigurationException, SAXException {
+		SAXParserFactory factory = getSAXParserFactory(namespaceAware);
+		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+		XMLReader xmlReader = factory.newSAXParser().getXMLReader();
+		if (!resolveExternalEntities) {
+			xmlReader.setEntityResolver(new XmlExternalEntityResolver());
+		}
 
+		if (!XPATH_NAMESPACE_REMOVAL_VIA_XSLT && !namespaceAware) {
+			return new NamespaceRemovingFilter(xmlReader);
+		}
+		return xmlReader;
+	}
+	
 	public static Document buildDomDocument(File file)
 		throws DomBuilderException {
 		Reader in;
@@ -790,6 +819,22 @@ public class XmlUtils {
 		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, paramNames, stripSpace, false, null, 0);
 	}
 
+	
+	public static String getNamespaceClause(String namespaceDefs) throws TransformerConfigurationException {
+		String namespaceClause = "";
+		if (namespaceDefs != null) {
+			StringTokenizer st1 = new StringTokenizer(namespaceDefs,", \t\r\n\f");
+			while (st1.hasMoreTokens()) {
+				String namespaceDef = st1.nextToken();
+				int separatorPos = namespaceDef.indexOf('=');
+				String prefixClause=separatorPos < 1?"":":"+namespaceDef.substring(0, separatorPos);
+				namespaceClause += " xmlns" + prefixClause + "=\"" + namespaceDef.substring(separatorPos + 1) + "\"";
+			}
+		}
+		return namespaceClause;
+	}
+	
+	
 	/*
 	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of, and enables use of parameters.
 	 * TODO when xslt version equals 1, namespaces are ignored by default, setting 'ignoreNamespaces' to true will generate a non-xslt1-parsable xslt
@@ -798,19 +843,7 @@ public class XmlUtils {
 		if (StringUtils.isEmpty(XPathExpression))
 			throw new TransformerConfigurationException("XPathExpression must be filled");
 
-		String namespaceClause = "";
-		if (namespaceDefs != null) {
-			StringTokenizer st1 = new StringTokenizer(namespaceDefs,", \t\r\n\f");
-			while (st1.hasMoreTokens()) {
-				String namespaceDef = st1.nextToken();
-				int separatorPos = namespaceDef.indexOf('=');
-				if (separatorPos < 1) {
-					throw new TransformerConfigurationException("cannot parse namespace definition from string [" + namespaceDef + "]");
-				} else {
-					namespaceClause += " xmlns:" + namespaceDef.substring(0, separatorPos) + "=\"" + namespaceDef.substring(separatorPos + 1) + "\"";
-				}
-			}
-		}
+		String namespaceClause = getNamespaceClause(namespaceDefs);
 
 		//xslt version 1 ignores namespaces by default, setting this to true will generate a different non-xslt1-parsable xslt
 		if(xsltVersion == 1 && ignoreNamespaces)
@@ -933,21 +966,7 @@ public class XmlUtils {
 			throw new DomBuilderException(e);
 		}
 	}
-	
-	public static XMLReader getXMLReader(boolean namespaceAware, boolean resolveExternalEntities) throws ParserConfigurationException, SAXException {
-		SAXParserFactory factory = getSAXParserFactory(namespaceAware);
-		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-		XMLReader xmlReader = factory.newSAXParser().getXMLReader();
-		if (!resolveExternalEntities) {
-			xmlReader.setEntityResolver(new XmlExternalEntityResolver());
-		}
 
-		if (!XPATH_NAMESPACE_REMOVAL_VIA_XSLT && !namespaceAware) {
-			return new NamespaceRemovingFilter(xmlReader);
-		}
-		return xmlReader;
-	}
-	
 	
 	public static int interpretXsltVersion(String xsltVersion) throws TransformerException, IOException {
 		if (StringUtils.isEmpty(xsltVersion)) {
@@ -1040,13 +1059,13 @@ public class XmlUtils {
 			factory = new net.sf.saxon.TransformerFactoryImpl();
 			// Use ErrorListener to prevent warning "Stylesheet module ....xsl
 			// is included or imported more than once. This is permitted, but
-			// may lead to errors or unexpected behavior"
-			// written to System.err
+			// may lead to errors or unexpected behavior" written to System.err
 			// (https://stackoverflow.com/questions/10096086/how-to-handle-duplicate-imports-in-xslt)
 			factory.setErrorListener(new TransformerErrorListener());
 			return factory;
 		default:
 			factory=new org.apache.xalan.processor.TransformerFactoryImpl();
+			factory.setErrorListener(new TransformerErrorListener());
 			if (isXsltStreamingByDefault()) {
 				factory.setAttribute(org.apache.xalan.processor.TransformerFactoryImpl.FEATURE_INCREMENTAL, Boolean.TRUE);
 			}

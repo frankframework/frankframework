@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package nl.nn.adapterframework.pipes;
 
 import javax.xml.transform.TransformerException;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -26,10 +25,15 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.XsltSender;
+import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.StreamingPipe;
+import nl.nn.adapterframework.stream.StreamingException;
 
 
 /**
@@ -49,7 +53,7 @@ import nl.nn.adapterframework.senders.XsltSender;
  * @author Johan Verrips
  */
 
-public class XsltPipe extends FixedForwardPipe {
+public class XsltPipe extends StreamingPipe {
 
 	private String sessionKey=null;
 	
@@ -113,10 +117,10 @@ public class XsltPipe extends FixedForwardPipe {
 	/*
 	 * Allow to override transformation, so JsonXslt can prefix and suffix...
 	 */
-	protected String transform(Object input, IPipeLineSession session) throws SenderException, TransformerException {
+	protected String transform(Object input, IPipeLineSession session, MessageOutputStream target) throws SenderException, TransformerException, TimeOutException {
  	    String inputXml=getInputXml(input, session);
 		ParameterResolutionContext prc = new ParameterResolutionContext(inputXml, session, isNamespaceAware()); 
-		return sender.sendMessage(null, inputXml, prc);
+		return sender.sendMessage(null, inputXml, prc, target);
 	}
 	/**
 	 * Here the actual transforming is done. Under weblogic the transformer object becomes
@@ -124,7 +128,7 @@ public class XsltPipe extends FixedForwardPipe {
 	 * via the configure() and start() methods.
 	 */
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session, MessageOutputStream target) throws PipeRunException {
 		if (input==null) {
 			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
 		}
@@ -133,7 +137,7 @@ public class XsltPipe extends FixedForwardPipe {
 	    }
 
 	    try {
-	    	String stringResult = transform(input, session);
+	    	String stringResult = transform(input, session, target);
 		
 			if (StringUtils.isEmpty(getSessionKey())){
 				return new PipeRunResult(getForward(), stringResult);
@@ -146,113 +150,22 @@ public class XsltPipe extends FixedForwardPipe {
 	    } 
 	}
 
-	/**
-	 * Specify the stylesheet to use
-	 */
-	@IbisDoc({"stylesheet to apply to the input message", ""})
-	public void setStyleSheetName(String stylesheetName) {
-		sender.setStyleSheetName(stylesheetName);
-	}
-	public String getStyleSheetName() {
-		return sender.getStyleSheetName();
-	}
-
-	/**
-	 * set the "omit xml declaration" on the transfomer. Defaults to true.
-	 */
-	@IbisDoc({"force the transformer generated from the xpath-expression to omit the xml declaration", "true"})
-	public void setOmitXmlDeclaration(boolean b) {
-		sender.setOmitXmlDeclaration(b);
-	}
-	public boolean isOmitXmlDeclaration() {
-		return sender.isOmitXmlDeclaration();
-	}
-
-
-	@IbisDoc({"xpath-expression to apply to the input message. it's possible to refer to a parameter (which e.g. contains a value from a sessionkey) by using the parameter name prefixed with $", ""})
-	public void setXpathExpression(String string) {
-		sender.setXpathExpression(string);
-	}
-	public String getXpathExpression() {
-		return sender.getXpathExpression();
-	}
-
-	@IbisDoc({"namespace defintions for xpathexpression. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
-	public void setNamespaceDefs(String namespaceDefs) {
-		sender.setNamespaceDefs(namespaceDefs);
-	}
-	public String getNamespaceDefs() {
-		return sender.getNamespaceDefs();
-	}
-
-	/**
-	 * Sets the name of the key in the <code>PipeLineSession</code> to store the input in
-	 * @see IPipeLineSession
-	 */
-	public void setSessionKey(String newSessionKey) {
-		sessionKey = newSessionKey;
-	}
-	public String getSessionKey() {
-		return sessionKey;
-	}
-
-
-	@IbisDoc({"either 'text' or 'xml'. only valid for xpathexpression", "text"})
-	public void setOutputType(String string) {
-		sender.setOutputType(string);
-	}
-	public String getOutputType() {
-		return sender.getOutputType();
-	}
-
-
-	@IbisDoc({"when set <code>true</code> empty tags in the output are removed", "false"})
-	public void setSkipEmptyTags(boolean b) {
-		sender.setSkipEmptyTags(b);
-	}
-	public boolean isSkipEmptyTags() {
-		return sender.isSkipEmptyTags();
-	}
-
-	@IbisDoc({"when set <code>true</code>, result is pretty-printed. (only used when <code>skipemptytags=true</code>)", "true"})
-	public void setIndentXml(boolean b) {
-		sender.setIndentXml(b);
-	}
-	public boolean isIndentXml() {
-		return sender.isIndentXml();
-	}
-
-	@IbisDoc({"when set <code>true</code> namespaces (and prefixes) in the input message are removed", "false"})
-	public void setRemoveNamespaces(boolean b) {
-		sender.setRemoveNamespaces(b);
-	}
-	public boolean isRemoveNamespaces() {
-		return sender.isRemoveNamespaces();
-	}
-
-	@IbisDoc({"controls namespace-awareness of transformation", "application default"})
 	@Override
-	public void setNamespaceAware(boolean b) {
-		sender.setNamespaceAware(b);
-	}
-	@Override
-	public boolean isNamespaceAware() {
-		return sender.isNamespaceAware();
+	public boolean canProvideOutputStream() {
+		return super.canProvideOutputStream() && sender.canProvideOutputStream();
 	}
 
-	@IbisDoc({"when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
-	public void setXsltVersion(int xsltVersion) {
-		sender.setXsltVersion(xsltVersion);
+	@Override
+	public boolean canStreamToTarget() {
+		return super.canStreamToTarget() && sender.canStreamToTarget();
 	}
-	@IbisDoc({"Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
-	/**
-	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
-	 */
-	@Deprecated
-	public void setXslt2(boolean b) {
-		sender.setXslt2(b);
+
+
+	@Override
+	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+		return sender.provideOutputStream(correlationID, session, target);
 	}
-	
+
 	@Override
 	public ParameterList getParameterList() {
 		return sender.getParameterList();
@@ -263,9 +176,124 @@ public class XsltPipe extends FixedForwardPipe {
 		sender.addParameter(rhs);
 	}
 
+
+
+	@IbisDoc({"1", "Location of stylesheet to apply to the input message", ""})
+	public void setStyleSheetName(String stylesheetName) {
+		sender.setStyleSheetName(stylesheetName);
+	}
+	public String getStyleSheetName() {
+		return sender.getStyleSheetName();
+	}
+
+	@IbisDoc({"2", "Session key to retrieve stylesheet location. Overrides stylesheetName or xpathExpression attribute", ""})
+	public void setStyleSheetNameSessionKey(String newSessionKey) {
+		sender.setStyleSheetNameSessionKey(newSessionKey);
+	}
+	public String getStyleSheetNameSessionKey() {
+		return sender.getStyleSheetNameSessionKey();
+	}
+
+	@IbisDoc({"3", "Size of cache of stylesheets retrieved from styleSheetNameSessionKey", "100"})
+	public void setStyleSheetCacheSize(int size) {
+		sender.setStyleSheetCacheSize(size);
+	}
+	public int getStyleSheetCacheSize() {
+		return sender.getStyleSheetCacheSize();
+	}
+	
+	@IbisDoc({"4", "xpath-expression to apply to the input message. it's possible to refer to a parameter (which e.g. contains a value from a sessionkey) by using the parameter name prefixed with $", ""})
+	public void setXpathExpression(String string) {
+		sender.setXpathExpression(string);
+	}
+	public String getXpathExpression() {
+		return sender.getXpathExpression();
+	}
+
+	@IbisDoc({"5", "force the transformer generated from the xpath-expression to omit the xml declaration", "true"})
+	public void setOmitXmlDeclaration(boolean b) {
+		sender.setOmitXmlDeclaration(b);
+	}
+	public boolean isOmitXmlDeclaration() {
+		return sender.isOmitXmlDeclaration();
+	}
+	
+	@IbisDoc({"6", "namespace defintions for xpathexpression. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
+	public void setNamespaceDefs(String namespaceDefs) {
+		sender.setNamespaceDefs(namespaceDefs);
+	}
+	public String getNamespaceDefs() {
+		return sender.getNamespaceDefs();
+	}
+
+	@IbisDoc({"7", "either 'text' or 'xml'. only valid for xpathexpression", "text"})
+	public void setOutputType(String string) {
+		sender.setOutputType(string);
+	}
+	public String getOutputType() {
+		return sender.getOutputType();
+	}
+
+	@IbisDoc({"8", "when set <code>true</code>, result is pretty-printed. (only used when <code>skipemptytags=true</code>)", "true"})
+	public void setIndentXml(boolean b) {
+		sender.setIndentXml(b);
+	}
+	public boolean isIndentXml() {
+		return sender.isIndentXml();
+	}
+
+	@IbisDoc({"9", "when set <code>true</code> namespaces (and prefixes) in the input message are removed", "false"})
+	public void setRemoveNamespaces(boolean b) {
+		sender.setRemoveNamespaces(b);
+	}
+	public boolean isRemoveNamespaces() {
+		return sender.isRemoveNamespaces();
+	}
+
+	@IbisDoc({"10", "when set <code>true</code> empty tags in the output are removed", "false"})
+	public void setSkipEmptyTags(boolean b) {
+		sender.setSkipEmptyTags(b);
+	}
+	public boolean isSkipEmptyTags() {
+		return sender.isSkipEmptyTags();
+	}
+
+	@IbisDoc({"11", "when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
+	public void setXsltVersion(int xsltVersion) {
+		sender.setXsltVersion(xsltVersion);
+	}
+	@IbisDoc({"12", "Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
+	/**
+	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
+	 */
+	@Deprecated
+	public void setXslt2(boolean b) {
+		sender.setXslt2(b);
+	}
+	
+	@IbisDoc({"14", "controls namespace-awareness of transformation", "application default"})
+	@Override
+	public void setNamespaceAware(boolean b) {
+		sender.setNamespaceAware(b);
+	}
+	@Override
+	public boolean isNamespaceAware() {
+		return sender.isNamespaceAware();
+	}
+
+	@IbisDoc({"15", "Sets the name of the key in the <code>PipeLineSession</code> to store the input in", ""})
+	public void setSessionKey(String newSessionKey) {
+		sessionKey = newSessionKey;
+	}
+	public String getSessionKey() {
+		return sessionKey;
+	}
+
+
 	@Override
 	public void setName(String name) {
 		super.setName(name);
 		sender.setName("Sender of Pipe ["+name+"]");
 	}
+
 }

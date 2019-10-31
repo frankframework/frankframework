@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016, 2018 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016, 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -65,6 +65,11 @@ import nl.nn.adapterframework.senders.MailSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.stream.IOutputStreamingSupport;
+import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.StreamingException;
+import nl.nn.adapterframework.stream.StreamingPipe;
+import nl.nn.adapterframework.stream.StreamingSenderBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -133,7 +138,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Gerrit van Brakel
  */
 
-public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
+public class MessageSendingPipe extends StreamingPipe implements HasSender, HasStatistics, EventThrowing {
 	protected Logger msgLog = LogUtil.getLogger("MSG");
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
@@ -417,9 +422,57 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		registerEvent(PIPE_EXCEPTION_MONITOR_EVENT);
 	}
 
+	/**
+	 * When true, the streaming capability of the nested sender is taken into account to determine if the pipe can provide an OutputStream.
+	 * Descender classes may override this method when necessary.
+	 */
+	protected boolean senderAffectsStreamProvidingCapability() {
+		return true;
+	}
+	/**
+	 * When true, the ability of the nested sender to write to is taken into account to determine if the pipe can stream its output.
+	 * Descender classes may override this method when necessary.
+	 */
+	protected boolean senderAffectsStreamWritingCapability() {
+		return true;
+	}
 	
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)	throws PipeRunException {
+	public boolean canProvideOutputStream() {
+		return super.canProvideOutputStream() 
+				&& (!senderAffectsStreamProvidingCapability() || 
+					sender instanceof IOutputStreamingSupport && ((IOutputStreamingSupport)sender).canProvideOutputStream()
+				   )
+				&& getInputWrapper()==null
+				&& getInputValidator()==null;
+	}
+
+	@Override
+	public boolean canStreamToTarget() {
+		return super.canStreamToTarget() 
+				&& (!senderAffectsStreamWritingCapability() || 
+					sender instanceof IOutputStreamingSupport && ((IOutputStreamingSupport)sender).canStreamToTarget()
+				   )
+				&& getOutputWrapper()==null
+				&& getOutputValidator()==null
+				&& !isStreamResultToServlet();
+	}
+
+	@Override
+	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+
+		// TODO insert output validator
+		// TODO insert output wrapper
+		IOutputStreamingSupport streamingSender = (IOutputStreamingSupport)sender;
+		MessageOutputStream result = streamingSender.provideOutputStream(correlationID, session, target);
+		// TODO insert input wrapper
+		// TODO insert input validator
+		return result;
+	}
+
+	
+	@Override
+	public PipeRunResult doPipe(Object input, IPipeLineSession session, MessageOutputStream target) throws PipeRunException {
 		String originalMessage = input.toString();
 		String result = null;
 		String correlationID = session.getMessageId();
@@ -487,7 +540,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				}
 				while (retriesLeft-->=1 && !replyIsValid) {
 					try {
-						sendResult = sendMessage(input, session, correlationID, getSender(), threadContext);
+						sendResult = sendMessage(input, session, correlationID, getSender(), threadContext, target);
 						if (retryTp!=null) {
 							String retry=retryTp.transform(sendResult,null);
 							if (retry.equalsIgnoreCase("true")) {
@@ -724,7 +777,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return validResult;
 	}
 
-	protected String sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeOutException, InterruptedException {
+	protected String sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, MessageOutputStream target) throws SenderException, TimeOutException, InterruptedException {
 		long startTime = System.currentTimeMillis();
 		String sendResult = null;
 		String exitState = null;
@@ -746,7 +799,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				}
 			}
 			try {
-				sendResult = sendTextMessage(input, session, correlationID, getSender(), threadContext);
+				sendResult = sendTextMessage(input, session, correlationID, getSender(), threadContext, target);
 			} catch (SenderException se) {
 				exitState = EXCEPTION_FORWARD;
 				throw se;
@@ -789,7 +842,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return sendResult;
 	}
 	
-	protected String sendTextMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeOutException {
+	protected String sendTextMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, MessageOutputStream target) throws SenderException, TimeOutException {
 		if (input!=null && !(input instanceof String)) {
 			throw new SenderException("String expected, got a [" + input.getClass().getName() + "]");
 		}
@@ -797,6 +850,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		if (sender instanceof ISenderWithParameters) { // do not only check own parameters, sender may have them by itself
 			ISenderWithParameters psender = (ISenderWithParameters) sender;
 			ParameterResolutionContext prc = new ParameterResolutionContext((String)input, session, isNamespaceAware());
+			if (sender instanceof StreamingSenderBase) {
+				return ((StreamingSenderBase)sender).sendMessage(correlationID, (String) input, prc, target);
+			}
 			return psender.sendMessage(correlationID, (String) input, prc);
 		} 
 		return sender.sendMessage(correlationID, (String) input);

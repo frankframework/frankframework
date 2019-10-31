@@ -40,6 +40,7 @@ import microsoft.exchange.webservices.data.property.complex.MimeContent;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.ExchangeFileSystem;
 import nl.nn.adapterframework.filesystem.FileSystemListener;
 import nl.nn.adapterframework.filesystem.IFileSystemListener;
@@ -251,20 +252,6 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 	}
 
 
-	@Override
-	public String getPhysicalDestinationName() {
-		return getFileSystem().getPhysicalDestinationName()
-				+ " inputFolder ["
-				+ (getInputFolder() == null ? "" : getInputFolder())
-				+ "] inProcessFolder ["
-				+ (getInProcessFolder() == null ? "" : getInProcessFolder())
-				+ "] processedFolder ["
-				+ (getProcessedFolder() == null ? "" : getProcessedFolder() + "]");
-	}
-
-
-
-
 	public void setOutputFolder(String outputFolder) {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: attribute 'outputFolder' has been replaced by 'processedFolder'";
@@ -279,32 +266,79 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 		setInProcessFolder(tempFolder);
 	}
 
-	public void setAuthAlias(String authAlias) {
-		getFileSystem().setAuthAlias(authAlias);
-	}
-
-	public void setUserName(String username) {
-		getFileSystem().setUsername(username);
-	}
-
-	public void setPassword(String password) {
-		getFileSystem().setPassword(password);
-	}
-
+	@IbisDoc({"1", "The mail address of the mailbox connected to (also used for auto discovery)", ""})
 	public void setMailAddress(String mailAddress) {
 		getFileSystem().setMailAddress(mailAddress);
 	}
 
-	public void setFilter(String filter) {
-		getFileSystem().setFilter(filter);
-	}
-
+	@IbisDoc({"3", "url of the Exchange server. Set to e.g. https://outlook.office365.com/EWS/Exchange.asmx to speed up start up, leave empty to use autodiscovery", ""})
 	public void setUrl(String url) {
 		getFileSystem().setUrl(url);
 	}
 	
+
+	@IbisDoc({"4", "username for authentication to exchange mail server", ""})
+	public void setUserName(String username) {
+		getFileSystem().setUsername(username);
+	}
+
+	@IbisDoc({"5", "password for authentication to exchange mail server", ""})
+	public void setPassword(String password) {
+		getFileSystem().setPassword(password);
+	}
+
+	@IbisDoc({"6", "alias used to obtain credentials for authentication to exchange mail server", ""})
+	public void setAuthAlias(String authAlias) {
+		getFileSystem().setAuthAlias(authAlias);
+	}
+
+	@IbisDoc({"7", "folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used", ""})
 	public void setBaseFolder(String baseFolder) {
 		getFileSystem().setBaseFolder(baseFolder);
+	}
+
+	@IbisDoc({"8", "If empty, all mails are retrieved. If set to <code>NDR</code> only Non-Delivery Report mails ('bounces') are retrieved", ""})
+	public void setFilter(String filter) {
+		getFileSystem().setFilter(filter);
+	}
+
+	@IbisDoc({"9", "proxy host", ""})
+	public void setProxyHost(String proxyHost) {
+		getFileSystem().setProxyHost(proxyHost);
+	}
+
+	@IbisDoc({"10", "proxy port", ""})
+	public void setProxyPort(int proxyPort) {
+		getFileSystem().setProxyPort(proxyPort);
+	}
+
+	@IbisDoc({"11", "proxy username", ""})
+	public void setProxyUserName(String proxyUsername) {
+		getFileSystem().setProxyUsername(proxyUsername);
+	}
+
+	@IbisDoc({"12", "proxy password", ""})
+	public void setProxyPassword(String proxyPassword) {
+		getFileSystem().setProxyPassword(proxyPassword);
+	}
+
+	@IbisDoc({"12", "proxy authAlias", ""})
+	public void setProxyAuthAlias(String proxyAuthAlias) {
+		getFileSystem().setProxyAuthAlias(proxyAuthAlias);
+	}
+
+	@IbisDoc({"13", "proxy domain", ""})
+	public void setProxyDomain(String domain) {
+		getFileSystem().setProxyDomain(domain);
+	}
+
+	
+	@IbisDoc({"14", "when set to <code>true</code>, the xml string passed to the pipeline contains minimum information about the mail (to save memory)", ""})
+	public void setSimple(boolean b) {
+		simple = b;
+	}
+	public boolean isSimple() {
+		return simple;
 	}
 
 	public void setStoreEmailAsStreamInSessionKey(String string) {
@@ -314,31 +348,5 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 		return storeEmailAsStreamInSessionKey;
 	}
 
-	public void setSimple(boolean b) {
-		simple = b;
-	}
-	public boolean isSimple() {
-		return simple;
-	}
-
-	public void setProxyHost(String proxyHost) {
-		getFileSystem().setProxyHost(proxyHost);
-	}
-
-	public void setProxyPort(int proxyPort) {
-		getFileSystem().setProxyPort(proxyPort);
-	}
-
-	public void setProxyAuthAlias(String proxyAuthAlias) {
-		getFileSystem().setProxyAuthAlias(proxyAuthAlias);
-	}
-
-	public void setProxyUserName(String proxyUsername) {
-		getFileSystem().setProxyUsername(proxyUsername);
-	}
-
-	public void setProxyPassword(String proxyPassword) {
-		getFileSystem().setProxyPassword(proxyPassword);
-	}
 
 }

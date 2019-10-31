@@ -84,125 +84,9 @@
 		<description>Initializes the configuration</description>
 		<display-name>Ibis Application Servlet</display-name>
 		<servlet-name>IbisApplicationServlet</servlet-name>
-		<servlet-class>nl.nn.adapterframework.webcontrol.IbisApplicationServlet</servlet-class>
+		<servlet-class>nl.nn.adapterframework.lifecycle.IbisApplicationServlet</servlet-class>
 		<load-on-startup>0</load-on-startup>
 	</servlet>
-
-	<!-- START CMIS -->
-	<listener>
-		<listener-class>nl.nn.adapterframework.extensions.cmis.CmisRepositoryContextListener</listener-class>
-	</listener>
-
-	<servlet>
-		<servlet-name>cmisws10</servlet-name>
-		<servlet-class>nl.nn.adapterframework.extensions.cmis.CmisServletRouter</servlet-class>
-		<init-param>
-			<description>CMIS version of this endpoint</description>
-			<param-name>cmisVersion</param-name>
-			<param-value>1.0</param-value>
-		</init-param>
-		<init-param>
-			<param-name>servlet-class</param-name>
-			<param-value>nl.nn.adapterframework.extensions.cmis.server.WebServicesServlet</param-value>
-		</init-param>
-		<load-on-startup>3</load-on-startup>
-	</servlet>
-
-	<servlet>
-		<servlet-name>cmisws11</servlet-name>
-		<servlet-class>nl.nn.adapterframework.extensions.cmis.CmisServletRouter</servlet-class>
-		<init-param>
-			<description>CMIS version of this endpoint</description>
-			<param-name>cmisVersion</param-name>
-			<param-value>1.1</param-value>
-		</init-param>
-		<init-param>
-			<param-name>servlet-class</param-name>
-			<param-value>nl.nn.adapterframework.extensions.cmis.server.WebServicesServlet</param-value>
-		</init-param>
-		<load-on-startup>3</load-on-startup>
-	</servlet>
-
-	<servlet>
-		<servlet-name>cmisatom10</servlet-name>
-		<servlet-class>nl.nn.adapterframework.extensions.cmis.CmisServletRouter</servlet-class>
-		<init-param>
-			<param-name>servlet-class</param-name>
-			<param-value>org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet</param-value>
-		</init-param>
-		<init-param>
-			<description>Call Context Handler implementation</description>
-			<param-name>callContextHandler</param-name>
-			<param-value>org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler</param-value>
-		</init-param>
-		<init-param>
-			<description>CMIS version of this endpoint</description>
-			<param-name>cmisVersion</param-name>
-			<param-value>1.0</param-value>
-		</init-param>
-		<load-on-startup>3</load-on-startup>
-	</servlet>
-
-	<servlet>
-		<servlet-name>cmisatom11</servlet-name>
-		<servlet-class>nl.nn.adapterframework.extensions.cmis.CmisServletRouter</servlet-class>
-		<init-param>
-			<param-name>servlet-class</param-name>
-			<param-value>org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet</param-value>
-		</init-param>
-		<init-param>
-			<description>Call Context Handler implementation</description>
-			<param-name>callContextHandler</param-name>
-			<param-value>org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler</param-value>
-		</init-param>
-		<init-param>
-			<description>CMIS version of this endpoint</description>
-			<param-name>cmisVersion</param-name>
-			<param-value>1.1</param-value>
-		</init-param>
-		<load-on-startup>3</load-on-startup>
-	</servlet>
-
-	<servlet>
-		<servlet-name>cmisbrowser</servlet-name>
-		<servlet-class>nl.nn.adapterframework.extensions.cmis.CmisServletRouter</servlet-class>
-		<init-param>
-			<param-name>servlet-class</param-name>
-			<param-value>org.apache.chemistry.opencmis.server.impl.browser.CmisBrowserBindingServlet</param-value>
-		</init-param>
-		<init-param>
-			<description>Call Context Handler implementation</description>
-			<param-name>callContextHandler</param-name>
-			<param-value>org.apache.chemistry.opencmis.server.impl.browser.token.TokenCallContextHandler</param-value>
-		</init-param>
-		<load-on-startup>3</load-on-startup>
-	</servlet>
-
-	<servlet-mapping>
-		<servlet-name>cmisws10</servlet-name>
-		<url-pattern>/cmis/webservices10/*</url-pattern>
-	</servlet-mapping>
-
-	<servlet-mapping>
-		<servlet-name>cmisws11</servlet-name>
-		<url-pattern>/cmis/webservices/*</url-pattern>
-	</servlet-mapping>
-
-	<servlet-mapping>
-		<servlet-name>cmisatom10</servlet-name>
-		<url-pattern>/cmis/atompub10/*</url-pattern>
-	</servlet-mapping>
-
-	<servlet-mapping>
-		<servlet-name>cmisatom11</servlet-name>
-		<url-pattern>/cmis/atompub/*</url-pattern>
-	</servlet-mapping>
-
-	<servlet-mapping>
-		<servlet-name>cmisbrowser</servlet-name>
-		<url-pattern>/cmis/browser/*</url-pattern>
-	</servlet-mapping>
-	<!-- END CMIS -->
 
 	<servlet-mapping>
 		<servlet-name>IbisApplicationServlet</servlet-name>
@@ -328,11 +212,6 @@
             </param-value>
 		</init-param>
 	</servlet>
-	<servlet>
-		<display-name>APIListener</display-name>
-		<servlet-name>APIListener</servlet-name>
-		<servlet-class>nl.nn.adapterframework.http.rest.ApiListenerServlet</servlet-class>
-	</servlet>
 	<servlet-mapping>
 		<servlet-name>FileViewerServlet</servlet-name>
 		<url-pattern>/FileViewerServlet</url-pattern>
@@ -364,10 +243,6 @@
 	<servlet-mapping>
 		<servlet-name>IAFAPI</servlet-name>
 		<url-pattern>/iaf/api/*</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>APIListener</servlet-name>
-		<url-pattern>/api/*</url-pattern>
 	</servlet-mapping>
 
 	<servlet-mapping>
@@ -424,12 +299,18 @@
 		</taglib>
 	</jsp-config>
 
+	<login-config>
+		<auth-method>BASIC</auth-method>
+		<realm-name>Ibis</realm-name>
+	</login-config>
+
 	<!--
 	When a security-constraint element is present Tomcat will autenticate the
 	user for all url's whereas WebSphere does this only for the url's mentioned
 	in the security constraint(s). The PublicAccess security constraint will
 	make Tomcat behave the same as WebSphere.
 	-->
+
 	<!-- security-constraint>
 		<web-resource-collection>
 			<web-resource-name>IAFAPI</web-resource-name>
@@ -594,10 +475,12 @@
 		</user-data-constraint>
 	</security-constraint>
 
-	<login-config>
-		<auth-method>BASIC</auth-method>
-		<realm-name>Ibis</realm-name>
-	</login-config>
+	<security-role>
+		<description>Dummy role to fix maven IbisWarPluginMojo</description>
+		<role-name>Dummy</role-name>
+	</security-role -->
+
+  
 
 	<security-role>
 		<description>can call Ibis WebServices</description>
@@ -618,5 +501,5 @@
 	<security-role>
 		<description>can execute jdbc query, send jms message and test a service, has all IbisAdmin and IbisWebService permissions too</description>
 		<role-name>IbisTester</role-name>
-	</security-role -->
+	</security-role>
 </web-app>

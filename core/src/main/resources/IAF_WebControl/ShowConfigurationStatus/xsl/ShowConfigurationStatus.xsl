@@ -960,7 +960,7 @@
 		</xsl:if>
 		<xsl:if test="@threadCount!=0">
 			<br />
-			<xsl:value-of select="concat('(',@threadCount,'/',@maxThreadCount,'thread')" />
+			<xsl:value-of select="concat('(',@threadCount,'/',@maxThreadCount,' thread')" />
 			<xsl:if test="@maxThreadCount!=1">
 				<xsl:text>s</xsl:text>
 			</xsl:if>

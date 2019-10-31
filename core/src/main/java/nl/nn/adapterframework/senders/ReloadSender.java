@@ -58,7 +58,7 @@ public class ReloadSender extends SenderWithParametersBase implements Configurat
 				if(pvl.getParameterValue("name") != null)
 					configName = (String) pvl.getParameterValue("name").getValue();
 				if(pvl.getParameterValue("forceReload") != null)
-					setForceReload((Boolean) pvl.getParameterValue("forceReload").getValue());
+					setForceReload(Boolean.parseBoolean((String)pvl.getParameterValue("forceReload").getValue()));
 			}
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);

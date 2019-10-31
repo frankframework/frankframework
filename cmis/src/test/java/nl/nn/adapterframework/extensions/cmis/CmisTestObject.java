@@ -34,6 +34,7 @@ import org.apache.chemistry.opencmis.commons.enums.AclPropagation;
 import org.apache.chemistry.opencmis.commons.enums.Action;
 import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
 import org.apache.chemistry.opencmis.commons.enums.ExtensionLevel;
+import org.apache.chemistry.opencmis.commons.enums.PropertyType;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.mockito.Mockito;
 
@@ -51,20 +52,24 @@ public class CmisTestObject extends Mockito implements Document {
 		Property<String> pName = mock(Property.class);
 		when(pName.getId()).thenReturn("cmis:name");
 		when(pName.getFirstValue()).thenReturn("dummy");
+		when(pName.getType()).thenReturn(PropertyType.ID);
 		list.add(pName);
 		
 		Property<BigInteger> pProjectNumber = mock(Property.class);
+		when(pProjectNumber.getType()).thenReturn(PropertyType.INTEGER);
 		when(pProjectNumber.getId()).thenReturn("project:number");
 		when(pProjectNumber.getFirstValue()).thenReturn(new BigInteger("123456789"));
 		list.add(pProjectNumber);
 		
 		Property<GregorianCalendar> pLastModified = mock(Property.class);
+		when(pLastModified.getType()).thenReturn(PropertyType.DATETIME);
 		when(pLastModified.getId()).thenReturn("project:lastModified");
 		when(pLastModified.getFirstValue()).thenReturn(new GregorianCalendar(2019, 1, 26, 16, 31, 15));
 		list.add(pLastModified);
 		
 		Property<Boolean> pOnTime = mock(Property.class);
 		when(pOnTime.getId()).thenReturn("project:onTime");
+		when(pOnTime.getType()).thenReturn(PropertyType.BOOLEAN);
 		when(pOnTime.getFirstValue()).thenReturn(true);
 		list.add(pOnTime);
 		
