@@ -1,7 +1,7 @@
 /**
  * 
  */
-package nl.nn.adapterframework.testtool.controller;
+package nl.nn.adapterframework.larva.controller;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.ListenerException;
@@ -9,10 +9,10 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
-import nl.nn.adapterframework.testtool.MessageListener;
-import nl.nn.adapterframework.testtool.ResultComparer;
-import nl.nn.adapterframework.testtool.ScenarioTester;
-import nl.nn.adapterframework.testtool.TestTool;
+import nl.nn.adapterframework.larva.MessageListener;
+import nl.nn.adapterframework.larva.ResultComparer;
+import nl.nn.adapterframework.larva.ScenarioTester;
+import nl.nn.adapterframework.larva.TestTool;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.jms.Message;

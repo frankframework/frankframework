@@ -1,7 +1,7 @@
 /**
  * 
  */
-package nl.nn.adapterframework.testtool;
+package nl.nn.adapterframework.larva;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -13,7 +13,6 @@ import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Map;
 import java.util.Properties;
 import java.util.zip.ZipInputStream;
 

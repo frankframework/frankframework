@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.testtool.controller;
+package nl.nn.adapterframework.larva.controller;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
@@ -7,7 +7,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.http.WebServiceSender;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
-import nl.nn.adapterframework.testtool.*;
+import nl.nn.adapterframework.larva.*;
 
 import java.util.*;
 

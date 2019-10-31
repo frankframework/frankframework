@@ -1,7 +1,7 @@
-package nl.nn.adapterframework.testtool;
+package nl.nn.adapterframework.larva;
 
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.testtool.controller.*;
+import nl.nn.adapterframework.larva.controller.*;
 import nl.nn.adapterframework.util.AppConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 

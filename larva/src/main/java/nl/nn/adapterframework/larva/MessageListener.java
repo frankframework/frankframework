@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.testtool;
+package nl.nn.adapterframework.larva;
 
 import nl.nn.adapterframework.util.LogUtil;
 import org.apache.log4j.Logger;
@@ -123,7 +123,7 @@ public class MessageListener {
 		Message m = new Message(testName, map, LOG_LEVEL.indexOf("DEBUG"), System.currentTimeMillis());
 		messages.add(m);
 		System.out.println(message);
-		logger.error(message);
+		logger.debug(message);
 	}
 
 	private synchronized void singleMessage(String testName, String message, String debugLevel) {

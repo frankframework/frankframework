@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.testtool;
+package nl.nn.adapterframework.larva;
 
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;

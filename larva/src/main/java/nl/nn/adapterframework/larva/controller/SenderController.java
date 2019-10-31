@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.testtool.controller;
+package nl.nn.adapterframework.larva.controller;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -10,7 +10,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.DelaySender;
 import nl.nn.adapterframework.senders.IbisJavaSender;
-import nl.nn.adapterframework.testtool.*;
+import nl.nn.adapterframework.larva.*;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 

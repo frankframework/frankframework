@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.testtool;
+package nl.nn.adapterframework.larva;
 
 import com.sun.syndication.io.XmlReader;
 import nl.nn.adapterframework.configuration.ConfigurationException;

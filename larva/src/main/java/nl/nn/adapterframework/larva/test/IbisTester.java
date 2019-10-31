@@ -1,21 +1,30 @@
-package nl.nn.adapterframework.testtool.test;
+package nl.nn.adapterframework.larva.test;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.testtool.TestPreparer;
+import nl.nn.adapterframework.larva.MessageListener;
+import nl.nn.adapterframework.larva.TestTool;
 import nl.nn.adapterframework.util.*;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.AccessControlException;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+/*
+TODO: Include old Larva project, refactor this one
+TODO: Get rid of all the absolute paths, pretty much :P
+TODO: Create a profile to test ibis itself.
+ */
 public class IbisTester {
 	private AppConstants appConstants;
 	private String webAppPath;
@@ -23,11 +32,60 @@ public class IbisTester {
 	//MockServletContext application;
 	private final int maxTries = 30;
 	private final int timeout = 1000;
+	private static Logger logger = LogUtil.getLogger(IbisTester.class);
+	public static void main(String[] args) throws IllegalArgumentException, IOException, URISyntaxException {
+		System.out.println("Here are the given! " + args.length );
+		for (String arg : args) {
+			System.out.println(arg);
+		}
+		if(args.length != 7) {
+			throw new IllegalArgumentException("Given argument size does not match the expected size! " +
+					"The expected arguments are as follows:\n" +
+					"'[Current Path]' '[Execute Path]' '[Root Directories Path]' '[Number of threads]' '[Timeout]' '[Wait Before Cleanup]' '[Output File]'");
+		}
+		// Parse arguments
+		File current = new File(args[0].replace("'", ""));
+		if(current.isDirectory())
+			System.out.println("yep");
+		// Make sure rootDirectories and paramExecute are absolute paths.
+		Path executePath = Paths.get(args[1]);
+		String paramExecute =  executePath.toString();
+		if(! executePath.isAbsolute())
+			paramExecute = new File(current, paramExecute).getCanonicalPath();
 
-	public static void main(String[] args) {
-		System.out.println("Works");
-		IbisTester tester = new IbisTester();
-		tester.initTester();
+		Path rootDirectoriesPath = Paths.get(args[2]);
+		String rootDirectories = rootDirectoriesPath.toString();
+		if(! rootDirectoriesPath.isAbsolute())
+			rootDirectories = new File(current, rootDirectories).getCanonicalPath();
+
+		FileWriter writer = null;
+		String outputFile = Paths.get(args[6]).toString();
+		if(! outputFile.equalsIgnoreCase("")) {
+			Path outputPath = Paths.get(outputFile);
+			if (!outputPath.isAbsolute())
+				outputFile = new File(current, outputFile).getCanonicalPath();
+			writer = new FileWriter(outputFile);
+		}
+		int threads = Integer.parseInt(args[3]);
+		int timeout = Integer.parseInt(args[4]);
+		int waitBeforeCleanup = Integer.parseInt(args[5]);
+
+		IbisTester ibisTester = new IbisTester();
+		ibisTester.initTester();
+
+		MessageListener messageListener = new MessageListener();
+
+		TestTool testTool = new TestTool(messageListener);
+
+		int testsFailing = testTool.runScenarios(paramExecute, waitBeforeCleanup, rootDirectories, threads, timeout);
+
+		debug(testsFailing + " test(s) failed!");
+
+		if(writer != null) {
+			JSONArray messages = messageListener.getMessages();
+			writer.write(messages.toString());
+			writer.close();
+		}
 	}
 
 	/**
@@ -214,13 +272,13 @@ public class IbisTester {
 					e.printStackTrace();
 				}
 				runState = adapter.getRunState();
-//				if (!(RunStateEnum.STARTED).equals(runState)) {
-//					debug("Adapter [" + adapter.getName() + "] has state ["
-//							+ runState + "], retries left [" + count + "]");
-//				} else {
-//					debug("adapter [" + adapter.getName() + "] has state ["
-//							+ runState + "]");
-//				}
+				if (!(RunStateEnum.STARTED).equals(runState)) {
+					debug("Adapter [" + adapter.getName() + "] has state ["
+							+ runState + "], retries left [" + count + "]");
+				} else {
+					debug("adapter [" + adapter.getName() + "] has state ["
+							+ runState + "]");
+				}
 			}
 			if (!(RunStateEnum.STARTED).equals(runState)) {
 				error("Adapter [" + adapter.getName() + "] has failed to start with " + maxTries + " tries, current state ["
@@ -233,14 +291,14 @@ public class IbisTester {
 				+ runState + "]");
 		return true;
 	}
-
-	public Map<String, String> getRootDirectories(boolean forceReread) {
-		String realPath = AppConstants.getInstance().getResolvedProperty("webapp.realpath") + "larva/";
-		if(forceReread || TestPreparer.scenariosRootDirectories == null)
-			TestPreparer.initScenariosRootDirectories(realPath, null, appConstants);
-
-		return (Map<String, String>) ((HashMap)TestPreparer.scenariosRootDirectories).clone();
-	}
+//
+//	public Map<String, String> getRootDirectories(boolean forceReread) {
+//		String realPath = AppConstants.getInstance().getResolvedProperty("webapp.realpath") + "larva/";
+//		if(forceReread || TestPreparer.scenariosRootDirectories == null)
+//			TestPreparer.initScenariosRootDirectories(realPath, null, appConstants);
+//
+//		return (Map<String, String>) ((HashMap)TestPreparer.scenariosRootDirectories).clone();
+//	}
 
 //
 //	public String testLarva() {
@@ -489,7 +547,7 @@ public class IbisTester {
 		}
 	}
 
-//	public IbisContext getIbisContext() {
-//		return ibisContext;
-//	}
+	public IbisContext getIbisContext() {
+		return ibisContext;
+	}
 }
