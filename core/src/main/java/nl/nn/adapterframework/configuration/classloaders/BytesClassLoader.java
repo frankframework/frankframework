@@ -28,7 +28,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
 public abstract class BytesClassLoader extends ClassLoaderBase {
-	public static final String PROTOCOL = "bytesclassloader";
 	protected Logger log = LogUtil.getLogger(this);
 	protected Map<String, byte[]> resources = new HashMap<String, byte[]>();
 
@@ -47,7 +46,7 @@ public abstract class BytesClassLoader extends ClassLoaderBase {
 		if (bytes != null) {
 			URLStreamHandler urlStreamHandler = new BytesURLStreamHandler(bytes);
 			try {
-				return new URL(null, PROTOCOL + ":" + name, urlStreamHandler);
+				return new URL(null, CLASSPATH_RESOURCE_SCHEME + name, urlStreamHandler);
 			} catch (MalformedURLException e) {
 				log.error("Could not create url", e);
 			}

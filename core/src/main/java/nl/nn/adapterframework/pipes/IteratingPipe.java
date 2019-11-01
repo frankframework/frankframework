@@ -26,6 +26,7 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.core.task.TaskExecutor;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IDataIterator;
@@ -41,7 +42,6 @@ import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -297,7 +297,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					}
 				}
 				return true;
-			} catch (DomBuilderException e) {
+			} catch (SAXException e) {
 				throw new SenderException(getLogPrefix(session)+"cannot parse input",e);
 			} catch (TransformerException e) {
 				throw new SenderException(getLogPrefix(session)+"cannot serialize item",e);

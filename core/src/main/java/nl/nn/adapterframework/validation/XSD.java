@@ -222,8 +222,7 @@ public class XSD implements Schema, Comparable<XSD> {
 		}
 		try {
 			InputStream in = getInputStream();
-			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in,
-					XmlUtils.STREAM_FACTORY_ENCODING);
+			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in, XmlUtils.STREAM_FACTORY_ENCODING);
 			int elementDepth = 0;
 			while (er.hasNext()) {
 				XMLEvent e = er.nextEvent();
@@ -345,6 +344,7 @@ public class XSD implements Schema, Comparable<XSD> {
         return url.toString().compareTo(x.url.toString());
     }
 
+	@Override
 	public InputStream getInputStream() throws IOException, ConfigurationException {
 		if (wsdlSchema != null) {
 			try {
@@ -481,6 +481,7 @@ public class XSD implements Schema, Comparable<XSD> {
 		return rootTags;
 	}
 
+	@Override
 	public String getSystemId() {
 		if (noNamespaceSchemaLocation == null) {
 			return null;

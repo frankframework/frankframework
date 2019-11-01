@@ -79,7 +79,7 @@ public class ClassLoaderURIResolver implements URIResolver {
 		}
 		if (url==null) {
 			String message = "Cannot get resource for href [" + href + "] with base [" + base + "] as ref ["+ref+"]" +(ref2==null?"":" nor as ref ["+ref1+"]")+" protocol ["+protocol+"] classloader ["+classLoader+"]";
-			log.warn(message);
+			//log.warn(message);
 			throw new TransformerException(message);
 		}
 		log.debug("resolved href ["+href+"] base ["+base+"] to ["+url+"]");

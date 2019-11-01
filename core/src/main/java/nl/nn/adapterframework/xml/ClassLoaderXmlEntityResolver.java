@@ -25,7 +25,6 @@ import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
-import nl.nn.adapterframework.configuration.classloaders.BytesClassLoader;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -44,8 +43,7 @@ public class ClassLoaderXmlEntityResolver implements XMLEntityResolver {
 
 	@Override
 	public XMLInputSource resolveEntity(XMLResourceIdentifier resourceIdentifier) throws XNIException, IOException {
-		if (log.isDebugEnabled()) log.debug("resolveEntity publicId ["+resourceIdentifier.getPublicId()+"] expandedSystemId ["+resourceIdentifier.getExpandedSystemId()+"] literalSystemId ["+resourceIdentifier.getLiteralSystemId()+"] namespace ["+resourceIdentifier.getNamespace()+"]");
-		String systemId = resourceIdentifier.getExpandedSystemId();
+		if (log.isDebugEnabled()) log.debug("resolveEntity publicId ["+resourceIdentifier.getPublicId()+"] baseSystemId ["+resourceIdentifier.getBaseSystemId()+"] expandedSystemId ["+resourceIdentifier.getExpandedSystemId()+"] literalSystemId ["+resourceIdentifier.getLiteralSystemId()+"] namespace ["+resourceIdentifier.getNamespace()+"]");
 		if (resourceIdentifier.getBaseSystemId() == null
 				&& resourceIdentifier.getExpandedSystemId() == null
 				&& resourceIdentifier.getLiteralSystemId() == null
@@ -58,35 +56,77 @@ public class ClassLoaderXmlEntityResolver implements XMLEntityResolver {
 			// return null.
 			return null;
 		}
-		if (systemId == null) {
+		String base = resourceIdentifier.getBaseSystemId();
+		String href = resourceIdentifier.getLiteralSystemId();
+		if (href == null) {
 			// Ignore import with namespace but without schemaLocation
 			return null;
 		}
-		if (systemId.length() == 0 || systemId.equals(BytesClassLoader.PROTOCOL + ":")) {
-			String message = "Cannot resolve entity with empty systemId";
-			log.warn(message); // TODO remove this warning, when sure IOException is properly logged
-			throw new IOException(message);
-		}
-		// Apparently the resource was already resolved to a URL as the
-		// systemId is in URL syntax (but a string object instead of a URL).
-		// We need to convert it back to a URL which the JVM is able to do for
-		// standard url's but for our custom class loader we need to do it
-		// manually.
-		URL url = null;
-		try {
-			url = ClassUtils.getResourceURL(classLoader, systemId);
-			if (url==null) {
-				String message = "cannot find resource for entity [" + systemId + "]";
-				log.warn(message); // TODO remove this warning, when sure IOException is properly logged
-				throw new IOException(message);
+//		if (systemId.length() == 0 || systemId.equals(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME)) {
+//			String message = "Cannot resolve entity with empty systemId";
+//			log.warn(message); // TODO remove this warning, when sure IOException is properly logged
+//			throw new IOException(message);
+//		}
+//		// Apparently the resource was already resolved to a URL as the
+//		// systemId is in URL syntax (but a string object instead of a URL).
+//		// We need to convert it back to a URL which the JVM is able to do for
+//		// standard url's but for our custom class loader we need to do it
+//		// manually.
+//		URL url = null;
+//		try {
+//			url = ClassUtils.getResourceURL(classLoader, systemId);
+//			if (url==null) {
+//				String message = "cannot find resource for entity [" + systemId + "]";
+//				log.warn(message); // TODO remove this warning, when sure IOException is properly logged
+//				throw new IOException(message);
+//			}
+//		} catch (Exception e) {
+//			String message = "Exception resolving entity [" + systemId + "]";
+//			log.warn(message,e); // TODO remove this warning, when sure IOException is properly logged
+//			throw new IOException(message,e);
+//		}
+
+		String ref1;
+		String ref2=null;
+		String protocol=null;
+		if (href.startsWith("/") || href.contains(":")) {
+			// href is absolute, search on the full classpath
+			ref1=href;
+			if (href.contains(":")) {
+				protocol=href.substring(0,href.indexOf(":"));
 			}
-		} catch (Exception e) {
-			String message = "Exception resolving entity [" + systemId + "]";
-			log.warn(message,e); // TODO remove this warning, when sure IOException is properly logged
-			throw new IOException(message,e);
+		} else {
+			// href does not start with scheme/protocol, and does not start with a slash.
+			// It must be relative to the base, or if that not exists, on the root of the classpath
+			if (base != null && base.contains("/")) {
+				ref1 = base.substring(0, base.lastIndexOf("/") + 1) + href;
+				ref2 = href; // if ref1 fails, try href on the global classpath
+				if (base.contains(":")) {
+					protocol=base.substring(0,base.indexOf(":"));
+				}
+			} else {
+				// cannot use base to prefix href
+				ref1=href;
+			}
 		}
+
+		String ref=ref1;
+		URL url = ClassUtils.getResourceURL(classLoader, ref, protocol);
+		if (url==null && ref2!=null) {
+			log.debug("Could not resolve href ["+href+"] base ["+base+"] as ["+ref+"], now trying ref2 ["+ref2+"] protocol ["+protocol+"]");
+			ref=ref2;
+			url = ClassUtils.getResourceURL(classLoader, ref, protocol);
+		}
+		if (url==null) {
+			String message = "Cannot get resource for href [" + href + "] with base [" + base + "] as ref ["+ref+"]" +(ref2==null?"":" nor as ref ["+ref1+"]")+" protocol ["+protocol+"] classloader ["+classLoader+"]";
+			//log.warn(message);
+			throw new XNIException(message);
+		}
+		log.debug("resolved href ["+href+"] base ["+base+"] to ["+url+"]");
+	
+		
 		InputStream inputStream = url.openStream();
-		return new XMLInputSource(null, resourceIdentifier.getExpandedSystemId(), null, inputStream, null);
+		return new XMLInputSource(null, ref, null, inputStream, null);
 	}
 
 }

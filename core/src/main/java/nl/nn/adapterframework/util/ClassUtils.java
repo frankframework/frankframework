@@ -32,12 +32,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.configuration.classloaders.BytesClassLoader;
-
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 
 /**
  * A collection of class management utility methods.
@@ -46,7 +46,7 @@ import org.apache.log4j.Logger;
  */
 public class ClassUtils {
 	private static Logger log = LogUtil.getLogger(ClassUtils.class);
-
+	
 	private static final boolean trace=false;
 
     /**
@@ -125,10 +125,10 @@ public class ClassUtils {
 	 */
 	static public URL getResourceURL(ClassLoader classLoader, String resource, String allowedProtocols) {
 		if(classLoader == null) {
-			classLoader = ClassUtils.class.getClassLoader();
+			classLoader = Thread.currentThread().getContextClassLoader();
 		}
-		if (resource.startsWith(BytesClassLoader.PROTOCOL+":")) {
-			resource=resource.substring((BytesClassLoader.PROTOCOL+":").length());
+		if (resource.startsWith(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME)) {
+			resource=resource.substring(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME.length());
 		}
 		// Remove slash like Class.getResource(String name) is doing before
 		// delegation to ClassLoader

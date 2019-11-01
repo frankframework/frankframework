@@ -17,16 +17,25 @@ import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 public class ClassLoaderXmlEntityResolverTest {
 
 	private String publicId="fakePublicId";
+	private String base="/ClassLoader/zip/Xslt/names.xslt";
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
+	
+	private XMLResourceIdentifier getXMLResourceIdentifier(String href) {
+		XMLResourceIdentifier resourceIdentifier = new ResourceIdentifier(); 
+		resourceIdentifier.setPublicId(publicId);
+		
+//		resourceIdentifier.setExpandedSystemId(href); // this file is known to be in the root of the classpath
+		resourceIdentifier.setLiteralSystemId(href); // this file is known to be in the root of the classpath
+		return resourceIdentifier;
+	}
+	
 	
 	@Test
 	public void localClassPathFileOnRootOfClasspath() throws SAXException, IOException {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(localClassLoader);
-		XMLResourceIdentifier resourceIdentifier = new ResourceIdentifier(); 
-		resourceIdentifier.setPublicId(publicId);
 		
-		resourceIdentifier.setExpandedSystemId("AppConstants.properties"); // this file is known to be in the root of the classpath
+		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("AppConstants.properties");
 		
 		XMLInputSource inputSource = resolver.resolveEntity(resourceIdentifier);
 		assertNotNull(inputSource);
@@ -36,10 +45,8 @@ public class ClassLoaderXmlEntityResolverTest {
 	public void localClassPathFileOnRootOfClasspathAbsolute() throws SAXException, IOException {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(localClassLoader);
-		XMLResourceIdentifier resourceIdentifier = new ResourceIdentifier(); 
-		resourceIdentifier.setPublicId(publicId);
 
-		resourceIdentifier.setExpandedSystemId("/AppConstants.properties"); // this file is known to be in the root of the classpath
+		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("/AppConstants.properties");
 
 		XMLInputSource inputSource = resolver.resolveEntity(resourceIdentifier);
 		assertNotNull(inputSource);
@@ -49,10 +56,8 @@ public class ClassLoaderXmlEntityResolverTest {
 	public void localClassPathAbsolute() throws SAXException, IOException {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(localClassLoader);
-		XMLResourceIdentifier resourceIdentifier = new ResourceIdentifier(); 
-		resourceIdentifier.setPublicId(publicId);
 
-		resourceIdentifier.setExpandedSystemId("/Xslt/importDocument/lookup.xml");
+		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("/Xslt/importDocument/lookup.xml");
 		
 		XMLInputSource inputSource = resolver.resolveEntity(resourceIdentifier);
 		assertNotNull(inputSource);
@@ -73,10 +78,8 @@ public class ClassLoaderXmlEntityResolverTest {
 		cl.configure(null, "");
 
 		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(cl);
-		XMLResourceIdentifier resourceIdentifier = new ResourceIdentifier(); 
-		resourceIdentifier.setPublicId(publicId);
 
-		resourceIdentifier.setExpandedSystemId("ClassLoader/Xslt/names.xsl");
+		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("ClassLoader/Xslt/names.xsl");
 
 		XMLInputSource inputSource = resolver.resolveEntity(resourceIdentifier);
 		assertNotNull(inputSource);
@@ -96,10 +99,8 @@ public class ClassLoaderXmlEntityResolverTest {
 		cl.configure(null, "");
 
 		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(cl);
-		XMLResourceIdentifier resourceIdentifier = new ResourceIdentifier(); 
-		resourceIdentifier.setPublicId(publicId);
 
-		resourceIdentifier.setExpandedSystemId("/ClassLoader/Xslt/names.xsl");
+		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("/ClassLoader/Xslt/names.xsl");
 
 		XMLInputSource inputSource = resolver.resolveEntity(resourceIdentifier);
 		assertNotNull(inputSource);

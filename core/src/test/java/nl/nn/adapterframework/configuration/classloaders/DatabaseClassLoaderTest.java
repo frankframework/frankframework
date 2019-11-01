@@ -54,7 +54,7 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 
 	@Override
 	protected String getScheme() {
-		return "bytesclassloader";
+		return "classpath";
 	}
 
 	/* only call this once! */

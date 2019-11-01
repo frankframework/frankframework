@@ -33,6 +33,7 @@ import javax.xml.transform.TransformerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -270,7 +271,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 			throw new SenderException(e);
 		} catch (NamingException e) {
 			throw new SenderException(e);
-		} catch (DomBuilderException e) {
+		} catch (SAXException e) {
 			throw new SenderException(e);
 		} catch (TransformerException e) {
 			throw new SenderException(e);

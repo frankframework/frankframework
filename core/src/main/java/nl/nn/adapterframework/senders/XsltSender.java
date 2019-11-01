@@ -31,6 +31,7 @@ import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang.StringUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
@@ -173,7 +174,7 @@ public class XsltSender extends StreamingSenderBase  {
 		}
 	}
 
-	protected Source adaptInput(String input, ParameterResolutionContext prc) throws PipeRunException, DomBuilderException, TransformerException, IOException {
+	protected Source adaptInput(String input, ParameterResolutionContext prc) throws PipeRunException, DomBuilderException, SAXException, TransformerException, IOException {
 		if (transformerPoolRemoveNamespaces!=null) {
 			log.debug(getLogPrefix()+ " removing namespaces from input message");
 			input = transformerPoolRemoveNamespaces.transform(prc.getInputSource(true), null); 

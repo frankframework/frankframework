@@ -24,14 +24,6 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlUtils;
-
 import org.apache.axis.Message;
 import org.apache.axis.MessageContext;
 import org.apache.axis.client.AxisClient;
@@ -49,6 +41,14 @@ import org.apache.ws.security.message.WSSecUsernameToken;
 import org.apache.ws.security.util.DOM2Writer;
 import org.apache.xml.security.signature.XMLSignature;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Utility class that wraps and unwraps messages from (and into) a SOAP Envelope.
@@ -111,9 +111,7 @@ public class SoapWrapper {
 				faultString = getFaultString(responseBody);
 				log.debug("faultCode=" + faultCode + ", faultString=" + faultString);
 			}
-		} catch (DomBuilderException e) {
-			log.debug("IOException extracting fault message", e);
-		} catch (IOException e) {
+		} catch (SAXException|IOException e) {
 			log.debug("IOException extracting fault message", e);
 		} catch (TransformerException e) {
 			log.debug("TransformerException extracting fault message:" + e.getMessageAndLocation());
@@ -125,7 +123,7 @@ public class SoapWrapper {
 		}
 	}
 
-	public String getBody(String message) throws DomBuilderException, TransformerException, IOException  {
+	public String getBody(String message) throws SAXException, TransformerException, IOException  {
 		String result = extractBody.transform(message,null,true);
 		if (StringUtils.isNotEmpty(result))
 			return result;
@@ -139,7 +137,7 @@ public class SoapWrapper {
 		return extractBody2.transform(new StreamSource(request),null);
 	}
 
-	public String getHeader(String message) throws DomBuilderException, TransformerException, IOException {
+	public String getHeader(String message) throws SAXException, TransformerException, IOException {
 		return extractHeader.transform(message, null, true);
 	}
 
@@ -147,7 +145,7 @@ public class SoapWrapper {
 		return extractHeader.transform(new StreamSource(request), null);
 	}
 
-	public int getFaultCount(String message) throws DomBuilderException, TransformerException, IOException {
+	public int getFaultCount(String message) throws SAXException, TransformerException, IOException {
 		if (StringUtils.isEmpty(message)) {
 			log.warn("getFaultCount(): message is empty");
 			return 0;
@@ -163,11 +161,11 @@ public class SoapWrapper {
 		return Integer.parseInt(faultCount);
 	}
 
-	public String getFaultCode(String message) throws DomBuilderException, TransformerException, IOException {
+	public String getFaultCode(String message) throws SAXException, TransformerException, IOException {
 		return extractFaultCode.transform(message, null, true);
 	}
 
-	public String getFaultString(String message) throws DomBuilderException, TransformerException, IOException {
+	public String getFaultString(String message) throws SAXException, TransformerException, IOException {
 		return extractFaultString.transform(message, null, true);
 	}
 

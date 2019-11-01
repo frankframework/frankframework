@@ -102,8 +102,8 @@ public abstract class ConfigurationBase extends TimeoutGuardPipe {
 			session.put("classLoaderType", null);
 			httpServletRequest.getSession().setAttribute("classLoaderType", null);
 		} else {
-			session.put("configurationName", configuration.getConfigurationName());
-			httpServletRequest.getSession().setAttribute("configurationName", configuration.getConfigurationName());
+			session.put("configurationName", configuration.getName());
+			httpServletRequest.getSession().setAttribute("configurationName", configuration.getName());
 			session.put("classLoaderType", configuration.getClassLoaderType());
 			httpServletRequest.getSession().setAttribute("classLoaderType", configuration.getClassLoaderType());
 		}
@@ -123,8 +123,8 @@ public abstract class ConfigurationBase extends TimeoutGuardPipe {
 		}
 		for (Configuration configuration : configurations) {
 			XmlBuilder configurationXml = new XmlBuilder("configuration");
-			configurationXml.setValue(configuration.getConfigurationName());
-			configurationXml.addAttribute("nameUC", "1" + Misc.toSortName(configuration.getConfigurationName()));
+			configurationXml.setValue(configuration.getName());
+			configurationXml.addAttribute("nameUC", "1" + Misc.toSortName(configuration.getName()));
 			configurationsXml.addSubElement(configurationXml);
 		}
 		return configurationsXml;

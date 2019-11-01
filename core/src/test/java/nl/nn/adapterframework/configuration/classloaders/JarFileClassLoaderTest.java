@@ -27,7 +27,7 @@ public class JarFileClassLoaderTest extends ClassLoaderTestBase<JarFileClassLoad
 
 	@Override
 	protected String getScheme() {
-		return "bytesclassloader";
+		return "classpath";
 	}
 
 	@Override

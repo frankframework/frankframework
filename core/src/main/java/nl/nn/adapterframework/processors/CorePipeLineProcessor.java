@@ -21,6 +21,7 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
@@ -35,7 +36,6 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -146,8 +146,8 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 					throw new PipeRunException(pipeToRun,"got error creating transformer for removeNamespaces", ce);
 				} catch (TransformerException te) {
 					throw new PipeRunException(pipeToRun,"got error transforming removeNamespaces", te);
-				} catch (DomBuilderException te) {
-					throw new PipeRunException(pipeToRun,"caught DomBuilderException", te);
+				} catch (SAXException se) {
+					throw new PipeRunException(pipeToRun,"caught SAXException", se);
 				}
 			} else {
 				log.warn("original message is not well-formed");

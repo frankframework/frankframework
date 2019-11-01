@@ -278,12 +278,12 @@ public class ClassUtilsTest {
 	@Test
 	public void bytesClassLoader07WithScheme() throws IOException, ConfigurationException {
 		ClassLoader cl = getBytesClassLoader();
-		testUri(cl,"bytesclassloader:/ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
+		testUri(cl,"classpath:/ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
 	}
 	@Test
 	public void bytesClassLoader08WithSchemeNoSlash() throws IOException, ConfigurationException {
 		ClassLoader cl = getBytesClassLoader();
-		testUri(cl,"bytesclassloader:ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
+		testUri(cl,"classpath:ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
 	}
 
 	@Test
