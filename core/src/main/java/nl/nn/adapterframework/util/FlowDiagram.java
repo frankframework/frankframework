@@ -26,6 +26,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.extensions.graphviz.Format;
 import nl.nn.adapterframework.extensions.graphviz.GraphvizEngine;
 import nl.nn.adapterframework.extensions.graphviz.GraphvizException;
@@ -95,10 +96,11 @@ public class FlowDiagram {
 
 		options = options.format(this.format);
 
-		URL xsltSourceConfig = ClassUtils.getResourceURL(this, CONFIG2DOT_XSLT);
+		Resource xsltSourceConfig = Resource.getResource(CONFIG2DOT_XSLT);
+
 		transformerPoolConfig = TransformerPool.getInstance(xsltSourceConfig, 2);
 
-		URL xsltSourceIbis = ClassUtils.getResourceURL(this, IBIS2DOT_XSLT);
+		Resource xsltSourceIbis = Resource.getResource(IBIS2DOT_XSLT);
 		transformerPoolIbis = TransformerPool.getInstance(xsltSourceIbis, 2);
 	}
 

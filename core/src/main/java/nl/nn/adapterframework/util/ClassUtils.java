@@ -114,7 +114,7 @@ public class ClassUtils {
 	 * @see IbisContext#init()
 	 */
 	static public URL getResourceURL(ClassLoader classLoader, String resource) {
-		return getResourceURL(classLoader, resource, AppConstants.getInstance().getString("classloader.allowed.protocols", null));
+		return getResourceURL(classLoader, resource, null);
 	}
 
 	/**
@@ -126,6 +126,9 @@ public class ClassUtils {
 	static public URL getResourceURL(ClassLoader classLoader, String resource, String allowedProtocols) {
 		if(classLoader == null) {
 			classLoader = Thread.currentThread().getContextClassLoader();
+		}
+		if (allowedProtocols==null) {
+			allowedProtocols=AppConstants.getInstance().getString("classloader.allowed.protocols", null);
 		}
 		if (resource.startsWith(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME)) {
 			resource=resource.substring(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME.length());

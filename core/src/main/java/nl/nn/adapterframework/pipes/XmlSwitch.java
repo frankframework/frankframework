@@ -28,6 +28,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -99,11 +100,11 @@ public class XmlSwitch extends AbstractPipe {
 		else {
 			if (!StringUtils.isEmpty(getServiceSelectionStylesheetFilename())) {
 				try {
-					URL stylesheetURL = ClassUtils.getResourceURL(classLoader, getServiceSelectionStylesheetFilename());
-					if (stylesheetURL==null) {
+					Resource stylesheet = Resource.getResource(classLoader, getServiceSelectionStylesheetFilename());
+					if (stylesheet==null) {
 						throw new ConfigurationException(getLogPrefix(null) + "cannot find stylesheet ["+getServiceSelectionStylesheetFilename()+"]");
 					}
-					transformerPool = TransformerPool.getInstance(stylesheetURL, getXsltVersion());
+					transformerPool = TransformerPool.getInstance(stylesheet, getXsltVersion());
 				} catch (IOException e) {
 					throw new ConfigurationException(getLogPrefix(null) + "cannot retrieve ["+ serviceSelectionStylesheetFilename + "]", e);
 				} catch (TransformerConfigurationException te) {

@@ -96,7 +96,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
@@ -531,43 +531,6 @@ public class XmlUtils {
 		return xmlReader;
 	}
 	
-	public static InputSource getInputSource(ClassLoader classLoader, String resource) throws IOException {
-		URL url = ClassUtils.getResourceURL(classLoader, resource);
-		if (url==null) {
-			return null;
-		}
-		InputSource inputSource = new InputSource(url.openStream());
-		if (resource.indexOf(':')>=0) {
-			inputSource.setSystemId(url.toExternalForm());
-		} else {
-			inputSource.setSystemId(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME+resource);
-		}
-		return inputSource;
-	}
-	
-	public static Source getSource(ClassLoader classLoader, String resource) throws IOException, SAXException {
-		InputSource inputSource = getInputSource(classLoader, resource);
-		if (inputSource==null) {
-			return null;
-		}
-		return inputSourceToSAXSource(inputSource, true, true);
-	}
-
-	public static InputSource duplicateInputSource(ClassLoader classLoader, InputSource source) throws IOException {
-		InputSource result = getInputSource(classLoader, source.getSystemId());
-		if (result==null) {
-			throw new IOException("Cannot make duplicate of InputSource with systemId ["+source.getSystemId()+"]");
-		}
-		return getInputSource(classLoader, source.getSystemId());
-	}
-
-	public static Source duplicateSource(ClassLoader classLoader, Source source) throws SAXException, IOException {
-		Source result = getSource(classLoader, source.getSystemId());
-		if (result==null) {
-			throw new SAXException("Cannot make duplicate of Source with systemId ["+source.getSystemId()+"]");
-		}
-		return result;
-	}
 	
 	public static Document buildDomDocument(File file)
 		throws DomBuilderException {
@@ -1721,7 +1684,7 @@ public class XmlUtils {
 	 * Performs an Identity-transform, with resolving entities with the content files in the classpath
 	 * @return String (the complete and xml)
 	 */
-	static public String identityTransform(ClassLoader classLoader, InputSource inputSource) throws DomBuilderException {
+	static public String identityTransform(Resource source) throws DomBuilderException {
 		StringWriter result = new StringWriter();;
 		try {
 			TransformerPool tp = getIdentityTransformerPool();
@@ -1729,9 +1692,9 @@ public class XmlUtils {
 			handler.setResult(new StreamResult(result));
 			
 			XMLReader reader = XmlUtils.getXMLReader(true, true, handler);
-			reader.setEntityResolver(new ClassLoaderEntityResolver(classLoader));
+			reader.setEntityResolver(new ClassLoaderEntityResolver(source));
 
-			reader.parse(inputSource);
+			reader.parse(source.asInputSource());
 		} catch (Exception tce) {
 			throw new DomBuilderException(tce);
 		}

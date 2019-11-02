@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2018 Nationale-Nederlanden
+   Copyright 2017-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,28 +17,26 @@ package nl.nn.adapterframework.xml;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 
-import org.apache.log4j.Logger;
+import javax.xml.transform.TransformerException;
+
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.core.Resource;
 
 /**
  * Xerces native EntityResolver. Appears to be only used in XercesXmlValidator currently.
  * @author Jaco de Groot
+ * @author Gerrit van Brakel
  * @see ClassLoaderURIResolver
  */
-public class ClassLoaderXmlEntityResolver implements XMLEntityResolver {
-	private Logger log = LogUtil.getLogger(this);
-	private ClassLoader classLoader;
+public class ClassLoaderXmlEntityResolver extends ClassLoaderURIResolver implements XMLEntityResolver {
 
 	public ClassLoaderXmlEntityResolver(ClassLoader classLoader) {
-		this.classLoader = classLoader;
+		super(classLoader);
 	}
 
 	@Override
@@ -56,6 +54,7 @@ public class ClassLoaderXmlEntityResolver implements XMLEntityResolver {
 			// return null.
 			return null;
 		}
+		
 		String base = resourceIdentifier.getBaseSystemId();
 		String href = resourceIdentifier.getLiteralSystemId();
 		if (href == null) {
@@ -86,47 +85,16 @@ public class ClassLoaderXmlEntityResolver implements XMLEntityResolver {
 //			throw new IOException(message,e);
 //		}
 
-		String ref1;
-		String ref2=null;
-		String protocol=null;
-		if (href.startsWith("/") || href.contains(":")) {
-			// href is absolute, search on the full classpath
-			ref1=href;
-			if (href.contains(":")) {
-				protocol=href.substring(0,href.indexOf(":"));
-			}
-		} else {
-			// href does not start with scheme/protocol, and does not start with a slash.
-			// It must be relative to the base, or if that not exists, on the root of the classpath
-			if (base != null && base.contains("/")) {
-				ref1 = base.substring(0, base.lastIndexOf("/") + 1) + href;
-				ref2 = href; // if ref1 fails, try href on the global classpath
-				if (base.contains(":")) {
-					protocol=base.substring(0,base.indexOf(":"));
-				}
-			} else {
-				// cannot use base to prefix href
-				ref1=href;
-			}
+		Resource resource;
+		try {
+			resource = resolveToResource(href, base);
+		} catch (TransformerException e) {
+			throw new XNIException(e);
 		}
-
-		String ref=ref1;
-		URL url = ClassUtils.getResourceURL(classLoader, ref, protocol);
-		if (url==null && ref2!=null) {
-			log.debug("Could not resolve href ["+href+"] base ["+base+"] as ["+ref+"], now trying ref2 ["+ref2+"] protocol ["+protocol+"]");
-			ref=ref2;
-			url = ClassUtils.getResourceURL(classLoader, ref, protocol);
-		}
-		if (url==null) {
-			String message = "Cannot get resource for href [" + href + "] with base [" + base + "] as ref ["+ref+"]" +(ref2==null?"":" nor as ref ["+ref1+"]")+" protocol ["+protocol+"] classloader ["+classLoader+"]";
-			//log.warn(message);
-			throw new XNIException(message);
-		}
-		log.debug("resolved href ["+href+"] base ["+base+"] to ["+url+"]");
 	
 		
-		InputStream inputStream = url.openStream();
-		return new XMLInputSource(null, ref, null, inputStream, null);
+		InputStream inputStream = resource.getURL().openStream();
+		return new XMLInputSource(null, resource.getSystemId(), null, inputStream, null);
 	}
 
 }

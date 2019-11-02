@@ -31,6 +31,9 @@ import nl.nn.coolgen.proxy.XmlProxyException;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
+
+import org.xml.sax.SAXException;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
@@ -337,11 +340,13 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
             wrapperResult = proxyResult.toString();
 	} catch (DomBuilderException e) {
 		throw new PipeRunException(this, getLogPrefix(session)+"DomBuilderException excecuting proxy", e);
+	} catch (SAXException e) {
+		throw new PipeRunException(this, getLogPrefix(session)+"SAXException excecuting proxy", e);
     } catch (IOException e) {
         throw new PipeRunException(this, getLogPrefix(session)+"IOException excecuting proxy", e);
     } catch (TransformerException e) {
         throw new PipeRunException(this, getLogPrefix(session)+"TransformerException excecuting proxy", e);
-    }
+	}
 
     return new PipeRunResult(getForward(),wrapperResult) ;
 }

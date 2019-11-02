@@ -23,6 +23,7 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -38,6 +39,10 @@ public class ClassLoaderEntityResolver implements EntityResolver {
 
 	public ClassLoaderEntityResolver(ClassLoader classLoader) {
 		this.classLoader = classLoader;
+	}
+
+	public ClassLoaderEntityResolver(Resource resource) {
+		this(resource.getClassLoader());
 	}
 
 	/**

@@ -43,6 +43,7 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
 
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -203,15 +204,13 @@ public class ConfigurationDigester {
 			if (digesterRulesURL == null) {
 				throw new ConfigurationException("Digester rules file not found: " + getDigesterRules());
 			}
-			
-			InputSource configurationInputSource= XmlUtils.getInputSource(classLoader, configurationFile);
-			if (configurationInputSource == null) {
+			Resource configurationResource = Resource.getResource(classLoader, configurationFile);
+			if (configurationResource == null) {
 				throw new ConfigurationException("Configuration file not found: " + configurationFile);
 			}
-			Source configurationSource= XmlUtils.inputSourceToSAXSource(XmlUtils.duplicateInputSource(classLoader,configurationInputSource), true, true);
 
-			fillConfigWarnDefaultValueExceptions(configurationSource);
-			String original = XmlUtils.identityTransform(classLoader, configurationInputSource);
+			fillConfigWarnDefaultValueExceptions(configurationResource.asSource());
+			String original = XmlUtils.identityTransform(configurationResource);
 			configuration.setOriginalConfiguration(original);
 			List<String> propsToHide = new ArrayList<String>();
 			String propertiesHideString = AppConstants.getInstance(Thread.currentThread().getContextClassLoader()).getString("properties.hide", null);

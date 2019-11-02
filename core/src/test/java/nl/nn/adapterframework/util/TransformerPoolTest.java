@@ -9,6 +9,8 @@ import javax.xml.transform.Source;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
+import nl.nn.adapterframework.core.Resource;
+
 public class TransformerPoolTest {
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -43,8 +45,8 @@ public class TransformerPoolTest {
 	@Test
 	public void plainViaUrl() throws Exception {
 		TransformerPool.clearTransformerPools();
-		URL url = ClassUtils.getResourceURL(this, stylesheetURL);
-		TransformerPool transformerPool = TransformerPool.getInstance(url);
+		Resource resource = Resource.getResource(stylesheetURL);
+		TransformerPool transformerPool = TransformerPool.getInstance(resource);
 		String result = transformerPool.transform(xml, null);
 		result=result.replaceAll("[\n\r]", "");		
 		assertEquals(expectedStylesheetURL, result);
@@ -73,15 +75,15 @@ public class TransformerPoolTest {
 	@Test
 	public void useCachingUrl() throws Exception {
 		TransformerPool.clearTransformerPools();
-		URL url = ClassUtils.getResourceURL(this, "xml/xsl/active.xsl");
-		TransformerPool.getInstance(url, false, true);
+		Resource resource = Resource.getResource("xml/xsl/active.xsl");
+		TransformerPool.getInstance(resource, 1, true);
 		assertEquals(1, TransformerPool.getTransformerPoolsKeys().size());
-		TransformerPool.getInstance(url, true, true);
+		TransformerPool.getInstance(resource, 2, true);
 		assertEquals(2, TransformerPool.getTransformerPoolsKeys().size());
-		TransformerPool.getInstance(url, false, true);
+		TransformerPool.getInstance(resource, 1, true);
 		assertEquals(2, TransformerPool.getTransformerPoolsKeys().size());
-		URL url2 = ClassUtils.getResourceURL(this, "xml/xsl/AttributesGetter.xsl");
-		TransformerPool.getInstance(url2, false, true);
+		Resource resource2 = Resource.getResource("xml/xsl/AttributesGetter.xsl");
+		TransformerPool.getInstance(resource2, 2, true);
 		assertEquals(3, TransformerPool.getTransformerPoolsKeys().size());
 	}
 
