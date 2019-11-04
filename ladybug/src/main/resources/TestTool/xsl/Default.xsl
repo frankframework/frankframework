@@ -4,9 +4,8 @@
 	
 	<xsl:template match="/Report">
 		<xsl:copy>
-			<!-- Ignore the report's name to prevent renaming-related run failures -->
 			<!-- Select the report name attribute -->
-			<!-- <xsl:apply-templates select="@Name"/> -->
+			<xsl:apply-templates select="@Name"/>
 
 			<!-- Select all report attributes -->
 			<!-- <xsl:apply-templates select="@*"/> -->
