@@ -208,8 +208,8 @@ public class ConfigurationDigester {
 				throw new ConfigurationException("Configuration file not found: " + configurationFile);
 			}
 
-			fillConfigWarnDefaultValueExceptions(configurationResource.asSource());
 			String original = XmlUtils.identityTransform(configurationResource);
+			fillConfigWarnDefaultValueExceptions(XmlUtils.stringToSource(original)); // must use 'original', cannot use configurationResource, because EntityResolver will not be properly set
 			configuration.setOriginalConfiguration(original);
 			List<String> propsToHide = new ArrayList<String>();
 			String propertiesHideString = AppConstants.getInstance(Thread.currentThread().getContextClassLoader()).getString("properties.hide", null);

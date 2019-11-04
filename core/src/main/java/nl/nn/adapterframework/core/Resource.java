@@ -58,19 +58,16 @@ public class Resource {
 		if(classLoader == null) {
 			classLoader = Thread.currentThread().getContextClassLoader();
 		}
-		URL url = ClassUtils.getResourceURL(classLoader, resource, allowedProtocols);
+		String ref=resource.startsWith(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME)?resource.substring(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME.length()):resource;
+		URL url = ClassUtils.getResourceURL(classLoader, ref, allowedProtocols);
 		if (url==null) {
 			return null;
 		}
 		String systemId;
-		if (resource.startsWith(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME)) {
-			systemId=resource;
+		if (ref.indexOf(':')<0) {
+			systemId=ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME+ref;
 		} else {
-			if (resource.indexOf(':')<0) {
-				systemId=ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME+resource;
-			} else {
-				systemId=url.toExternalForm();
-			}
+			systemId=url.toExternalForm();
 		}
 		return new Resource(classLoader, url, systemId);
 	}

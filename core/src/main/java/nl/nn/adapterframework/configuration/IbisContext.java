@@ -407,16 +407,10 @@ public class IbisContext extends IbisApplicationContext {
 				if (currentConfigurationVersion == null) {
 					currentConfigurationVersion = configuration.getVersion();
 				} else if (!currentConfigurationVersion.equals(configuration.getVersion())) {
-					log(currentConfigurationName, currentConfigurationVersion,
-							"configuration version doesn't match Configuration version attribute: "
-							+ configuration.getVersion(),
-							MessageKeeperMessage.WARN_LEVEL);
+					log(currentConfigurationName, currentConfigurationVersion, "configuration version doesn't match Configuration version attribute: " + configuration.getVersion(), MessageKeeperMessage.WARN_LEVEL);
 				}
 				if (!currentConfigurationName.equals(configuration.getName())) {
-					log(currentConfigurationName, currentConfigurationVersion,
-							"configuration name doesn't match Configuration name attribute: "
-							+ configuration.getName(),
-							MessageKeeperMessage.WARN_LEVEL);
+					log(currentConfigurationName, currentConfigurationVersion, "configuration name doesn't match Configuration name attribute: " + configuration.getName(), MessageKeeperMessage.WARN_LEVEL);
 					messageKeepers.put(configuration.getName(),
 							messageKeepers.remove(currentConfigurationName));
 				}
