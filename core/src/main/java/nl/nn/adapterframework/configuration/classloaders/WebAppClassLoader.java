@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.configuration.classloaders;
 
+import java.net.URL;
+
 /**
  * Default IBIS Configuration ClassLoader.
  * Looks nice in the GUI... has no special purpose :)
@@ -26,5 +28,13 @@ public class WebAppClassLoader extends ClassLoaderBase {
 
 	public WebAppClassLoader(ClassLoader parent) {
 		super(parent);
+	}
+
+	/**
+	 * The local resource is the parent resource...
+	 */
+	@Override
+	public URL getLocalResource(String name) {
+		return getParent().getResource(name);
 	}
 }

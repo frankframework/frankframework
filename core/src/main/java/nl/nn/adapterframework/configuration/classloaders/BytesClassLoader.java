@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2017 Nationale-Nederlanden
+   Copyright 2016-2017, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 
 public abstract class BytesClassLoader extends ClassLoaderBase {
 	public static final String PROTOCOL = "bytesclassloader";
+
 	protected Logger log = LogUtil.getLogger(this);
 	protected Map<String, byte[]> resources = new HashMap<String, byte[]>();
 
@@ -37,11 +38,7 @@ public abstract class BytesClassLoader extends ClassLoaderBase {
 	}
 
 	@Override
-	public URL getResource(String name) {
-		return getResource(name, true);
-	}
-
-	public URL getResource(String name, boolean useParent) {
+	public URL getLocalResource(String name) {
 		name = FilenameUtils.normalize(name, true);
 		byte[] bytes = resources.get(name);
 		if (bytes != null) {
@@ -52,12 +49,11 @@ public abstract class BytesClassLoader extends ClassLoaderBase {
 				log.error("Could not create url", e);
 			}
 		}
-		if(useParent)
-			return super.getResource(name);
-		else
-			return null;
+
+		return null;
 	}
 
+	@Override
 	public void reload() throws ConfigurationException {
 		clearResources();
 	}

@@ -28,7 +28,6 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import nl.nn.adapterframework.configuration.classloaders.BasePathClassLoader;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
@@ -350,11 +349,8 @@ public class IbisContext extends IbisApplicationContext {
 
 	public String getConfigurationFile(String currentConfigurationName) {
 		String configurationFile = APP_CONSTANTS.getResolvedProperty("configurations." + currentConfigurationName + ".configurationFile");
-		if (configurationFile == null) {
+		if (StringUtils.isEmpty(configurationFile)) {
 			configurationFile = "Configuration.xml";
-			if (!currentConfigurationName.equals(INSTANCE_NAME)) {
-				configurationFile = currentConfigurationName + "/" + configurationFile;
-			}
 		}
 		return configurationFile;
 	}

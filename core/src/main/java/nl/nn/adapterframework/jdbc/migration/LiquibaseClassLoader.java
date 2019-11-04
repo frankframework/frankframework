@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Integration Partners B.V.
+Copyright 2017, 2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,25 +20,42 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import nl.nn.adapterframework.configuration.classloaders.BasePathClassLoader;
+import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 
+import org.apache.commons.lang3.StringUtils;
+
+/**
+ * Extra layer between ClassLoaders to retrieve the database migrator file.
+ * Don't ever go through it's parent in order to prevent duplicate files being found.
+ * 
+ * @author Niels Meijer
+ *
+ */
 public class LiquibaseClassLoader extends ClassLoader {
-	
+
 	public LiquibaseClassLoader(ClassLoader parent) {
 		super(parent);
 	}
 
+	/**
+	 * Make sure what the parent ClassLoader only traverses 1 layer deep!
+	 */
 	@Override
 	public URL getResource(String name) {
-		if(getParent() instanceof BasePathClassLoader)
-			return ((BasePathClassLoader) getParent()).getResource(name, false);
-		return super.getResource(name);
+		if(getParent() instanceof ClassLoaderBase)
+			return ((ClassLoaderBase) getParent()).getResource(name, false);
+
+		// Return null by default if not an instance of ClassLoaderBase
+		return null;
 	}
 
+	/**
+	 * Make sure what the parent ClassLoader only traverses 1 layer deep!
+	 */
 	@Override
 	public Enumeration<URL> getResources(String name) throws IOException {
 		Vector<URL> urls = new Vector<URL>();
-		if(getResource(name) != null)
+		if(StringUtils.isNotEmpty(name) && getResource(name) != null)
 			urls.add(getResource(name));
 		return urls.elements();
 	}

@@ -19,6 +19,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLStreamHandler;
 
+import org.apache.commons.lang3.StringUtils;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -35,13 +39,25 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class DummyClassLoader extends ClassLoaderBase {
 
+	private String configurationFile = null;
+
 	public DummyClassLoader(ClassLoader parent) {
 		super(parent);
 	}
 
 	@Override
-	public URL getResource(String name) {
-		if (name.equals(getConfigurationFile())) {
+	public void configure(IbisContext ibisContext, String configurationName) throws ConfigurationException {
+		super.configure(ibisContext, configurationName);
+
+		configurationFile = getIbisContext().getConfigurationFile(getConfigurationName());
+		if(StringUtils.isEmpty(configurationFile)) {
+			throw new ConfigurationException("unable to determine configurationFile");
+		}
+	}
+
+	@Override
+	public URL getLocalResource(String name) {
+		if (configurationFile.equals(name)) {
 			String config = "<configuration name=\"" + XmlUtils.encodeChars(getConfigurationName()) + "\" />";
 			byte[] bytes = config.getBytes();
 			if (bytes != null) {
@@ -54,6 +70,6 @@ public class DummyClassLoader extends ClassLoaderBase {
 			}
 		}
 
-		return super.getResource(name);
+		return null;
 	}
 }
