@@ -369,8 +369,7 @@ public class IbisContext extends IbisApplicationContext {
 		}
 
 		String configurationFile = getConfigurationFile(currentConfigurationName);
-		String currentConfigurationVersion =
-				getConfigurationVersion(AppConstants.getInstance(classLoader));
+		String currentConfigurationVersion = getConfigurationVersion(AppConstants.getInstance(classLoader));
 		Configuration configuration = null;
 		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 		if (classLoader != null) {
