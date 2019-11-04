@@ -44,6 +44,10 @@ public class ClassLoaderURIResolver implements URIResolver {
 		this.classLoader = classLoader;
 	}
 
+	public ClassLoaderURIResolver(Resource resource) {
+		this(resource.getClassLoader());
+	}
+
 	public Resource resolveToResource(String href, String base) throws TransformerException {
 		String ref1;
 		String ref2=null;

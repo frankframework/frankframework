@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.core;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 
 import javax.xml.transform.Source;
@@ -73,9 +74,17 @@ public class Resource {
 		}
 		return new Resource(classLoader, url, systemId);
 	}
+
+	public String getCacheKey() {
+		return url.toExternalForm();
+	}
+	
+	public InputStream openStream() throws IOException {
+		return url.openStream();
+	}
 	
 	public InputSource asInputSource() throws IOException {
-		InputSource inputSource = new InputSource(url.openStream());
+		InputSource inputSource = new InputSource(openStream());
 		inputSource.setSystemId(systemId);
 		return inputSource;
 	}

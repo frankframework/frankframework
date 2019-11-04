@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.wsdl.WSDLException;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -35,18 +36,17 @@ import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.XmlUtils;
-import javax.wsdl.WSDLException;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.xml.sax.InputSource;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * The representation of a XSD.
@@ -65,7 +65,6 @@ public class XSD implements Schema, Comparable<XSD> {
 	private URL url;
 	private String noNamespaceSchemaLocation;
 	private ByteArrayOutputStream byteArrayOutputStream;
-	private Set<XSD> sourceXsds;
 	private String resourceTarget;
 	private String toString;
 	private String namespace;
@@ -81,9 +80,6 @@ public class XSD implements Schema, Comparable<XSD> {
 	private String xsdTargetNamespace;
 	private String xsdDefaultNamespace;
 
-	public void setClassLoader(ClassLoader classLoader) {
-		this.classLoader = classLoader;
-	}
 
 	public void setWsdlSchema(
 			javax.wsdl.Definition wsdlDefinition,
@@ -92,28 +88,12 @@ public class XSD implements Schema, Comparable<XSD> {
 		this.wsdlSchema = wsdlSchema;
 	}
 
-	public void setResource(String resource) {
-		this.resource = resource;
-	}
-
 	public void setResourceInternalReference(String resourceInternalReference) {
 		this.resourceInternalReference = resourceInternalReference;
 	}
 
-	public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
-		this.noNamespaceSchemaLocation = noNamespaceSchemaLocation;
-	}
-
 	public void setByteArrayOutputStream(ByteArrayOutputStream byteArrayOutputStream) {
 		this.byteArrayOutputStream = byteArrayOutputStream;
-	}
-
-	public void setSourceXsds(Set<XSD> sourceXsds) {
-		this.sourceXsds = sourceXsds;
-	}
-
-	public void setNamespace(String namespace) {
-		this.namespace = namespace;
 	}
 
 	public String getNamespace() {
@@ -176,50 +156,109 @@ public class XSD implements Schema, Comparable<XSD> {
 		return targetNamespace;
 	}
 
-	public void init() throws ConfigurationException {
-		if (noNamespaceSchemaLocation != null) {
-			url = ClassUtils.getResourceURL(classLoader, noNamespaceSchemaLocation);
-			if (url == null) {
-				throw new ConfigurationException("Cannot find [" + noNamespaceSchemaLocation + "]");
-			}
-			resourceTarget = noNamespaceSchemaLocation;
-			toString = noNamespaceSchemaLocation;
-		} else {
-			if (resource != null) {
-				resource = Misc.replace(resource, "%20", " ");
-				url = ClassUtils.getResourceURL(classLoader, resource);
-				if (url == null) {
-					throw new ConfigurationException("Cannot find [" + resource + "]");
-				}
-				resourceTarget = resource;
-				toString = resource;
-				if (resourceInternalReference != null) {
-					resourceTarget = resourceTarget + "-" + resourceInternalReference + ".xsd";
-					toString =  toString + "!" + resourceInternalReference;
-				}
-			} else if (sourceXsds == null) {
-				throw new ConfigurationException("None of noNamespaceSchemaLocation, resource or mergedResources is specified");
-			} else {
-				resourceTarget = "[";
-				toString = "[";
-				boolean first = true;
-				for (XSD xsd : sourceXsds) {
-					if (first) {
-						first = false;
-					} else {
-						resourceTarget = resourceTarget + ", ";
-						toString = toString + ", ";
-					}
-					resourceTarget = resourceTarget + xsd.getResourceTarget().replaceAll("/", "_");
-					toString = toString + xsd.toString();
-				}
-				resourceTarget = resourceTarget + "].xsd";
-				toString = toString + "]";
-			}
-			if (parentLocation == null) {
-				this.parentLocation = "";
-			}
+	public void initNoNamespace(ClassLoader classLoader, String noNamespaceSchemaLocation) throws ConfigurationException {
+		this.noNamespaceSchemaLocation=noNamespaceSchemaLocation;
+		this.resource=noNamespaceSchemaLocation;
+		url = ClassUtils.getResourceURL(classLoader, noNamespaceSchemaLocation);
+		if (url == null) {
+			throw new ConfigurationException("Cannot find [" + noNamespaceSchemaLocation + "]");
 		}
+		resourceTarget = noNamespaceSchemaLocation;
+		toString = noNamespaceSchemaLocation;
+		init();
+	}
+
+	public void initNamespace(String namespace, ClassLoader classLoader, String resourceRef) throws ConfigurationException {
+		this.namespace=namespace;
+		this.classLoader=classLoader;
+		resource=resourceRef;
+		resource = Misc.replace(resource, "%20", " ");
+		url = ClassUtils.getResourceURL(classLoader, resource);
+		if (url == null) {
+			throw new ConfigurationException("Cannot find [" + resource + "]");
+		}
+		resourceTarget = resource;
+		toString = resource;
+		if (resourceInternalReference != null) {
+			resourceTarget = resourceTarget + "-" + resourceInternalReference + ".xsd";
+			toString =  toString + "!" + resourceInternalReference;
+		}
+		if (parentLocation == null) {
+			this.parentLocation = "";
+		}
+		init();
+	}
+
+	public void initFromXsds(String namespace, ClassLoader classLoader, Set<XSD> sourceXsds) throws ConfigurationException {
+		this.namespace=namespace;
+		this.classLoader=classLoader;
+		resourceTarget = "[";
+		toString = "[";
+		boolean first = true;
+		for (XSD xsd : sourceXsds) {
+			if (first) {
+				first = false;
+			} else {
+				resourceTarget = resourceTarget + ", ";
+				toString = toString + ", ";
+			}
+			resourceTarget = resourceTarget + xsd.getResourceTarget().replaceAll("/", "_");
+			toString = toString + xsd.toString();
+		}
+		resourceTarget = resourceTarget + "].xsd";
+		toString = toString + "]";
+		if (parentLocation == null) {
+			this.parentLocation = "";
+		}
+		init();
+	}
+	
+	private void init() throws ConfigurationException {
+//		if (noNamespaceSchemaLocation != null) {
+//			// configure noNamespaceSchemaLocation
+//			url = ClassUtils.getResourceURL(classLoader, noNamespaceSchemaLocation);
+//			if (url == null) {
+//				throw new ConfigurationException("Cannot find [" + noNamespaceSchemaLocation + "]");
+//			}
+//			resourceTarget = noNamespaceSchemaLocation;
+//			toString = noNamespaceSchemaLocation;
+//		} else {
+//			if (resource != null) {
+//				// configure 'url'
+//				resource = Misc.replace(resource, "%20", " ");
+//				url = ClassUtils.getResourceURL(classLoader, resource);
+//				if (url == null) {
+//					throw new ConfigurationException("Cannot find [" + resource + "]");
+//				}
+//				resourceTarget = resource;
+//				toString = resource;
+//				if (resourceInternalReference != null) {
+//					resourceTarget = resourceTarget + "-" + resourceInternalReference + ".xsd";
+//					toString =  toString + "!" + resourceInternalReference;
+//				}
+//			} else if (sourceXsds == null) {
+//				throw new ConfigurationException("None of noNamespaceSchemaLocation, resource or mergedResources is specified");
+//			} else {
+//				resourceTarget = "[";
+//				toString = "[";
+//				boolean first = true;
+//				for (XSD xsd : sourceXsds) {
+//					if (first) {
+//						first = false;
+//					} else {
+//						resourceTarget = resourceTarget + ", ";
+//						toString = toString + ", ";
+//					}
+//					resourceTarget = resourceTarget + xsd.getResourceTarget().replaceAll("/", "_");
+//					toString = toString + xsd.toString();
+//				}
+//				resourceTarget = resourceTarget + "].xsd";
+//				toString = toString + "]";
+//			}
+//			if (parentLocation == null) {
+//				this.parentLocation = "";
+//			}
+//		}
 		try {
 			InputStream in = getInputStream();
 			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in, XmlUtils.STREAM_FACTORY_ENCODING);
@@ -247,9 +286,9 @@ public class XSD implements Schema, Comparable<XSD> {
 								el.getAttributeByName(SchemaUtils.NAMESPACE);
 						if (a != null) {
 							boolean skip = false;
-                            ArrayList ans= null;
+                            ArrayList<String> ans= null;
                             if (StringUtils.isNotEmpty(getImportedNamespacesToIgnore())) {
-                                ans= new ArrayList(Arrays.asList(getImportedNamespacesToIgnore().split(",")));
+                                ans= new ArrayList<String>(Arrays.asList(getImportedNamespacesToIgnore().split(",")));
                             }
                             if (StringUtils.isNotEmpty(a.getValue()) && ans!=null) {
                                 if (ans.contains(a.getValue())) {
@@ -316,7 +355,8 @@ public class XSD implements Schema, Comparable<XSD> {
 		return getResourceTarget().hashCode();
 	}
 
-    public int compareTo(XSD x) {
+    @Override
+	public int compareTo(XSD x) {
         if (x == null) return 1;
         if (namespace != null && x.namespace != null) {
             int c = namespace.compareTo(x.namespace);
@@ -420,9 +460,9 @@ public class XSD implements Schema, Comparable<XSD> {
                             }
                             if (!skip) {
                                 String sl = schemaLocationAttribute.getValue();
-                                ArrayList aslti= null;
+                                ArrayList<String> aslti= null;
                                 if (StringUtils.isNotEmpty(getImportedSchemaLocationsToIgnore())) {
-                                    aslti= new ArrayList(Arrays.asList(getImportedSchemaLocationsToIgnore().split(",")));
+                                    aslti= new ArrayList<String>(Arrays.asList(getImportedSchemaLocationsToIgnore().split(",")));
                                 }
                                 if (StringUtils.isNotEmpty(sl) && aslti!=null) {
                                     if (isUseBaseImportedSchemaLocationsToIgnore()) {
@@ -434,9 +474,9 @@ public class XSD implements Schema, Comparable<XSD> {
                                 }
                             }
                             if (!skip) {
-                                ArrayList ans= null;
+                                ArrayList<String> ans= null;
                                 if (StringUtils.isNotEmpty(getImportedNamespacesToIgnore())) {
-                                    ans= new ArrayList(Arrays.asList(getImportedNamespacesToIgnore().split(",")));
+                                    ans= new ArrayList<String>(Arrays.asList(getImportedNamespacesToIgnore().split(",")));
                                 }
                             	if (StringUtils.isNotEmpty(namespace) && ans!=null) {
                                     if (ans.contains(namespace)) {
@@ -446,16 +486,13 @@ public class XSD implements Schema, Comparable<XSD> {
                             }
                             if (!skip) {
                                 XSD x = new XSD();
-                                x.setClassLoader(classLoader);
-                                x.setNamespace(namespace);
-                                x.setResource(getResourceBase() + schemaLocationAttribute.getValue());
                                 x.setAddNamespaceToSchema(addNamespaceToSchema);
                                 x.setImportedSchemaLocationsToIgnore(getImportedSchemaLocationsToIgnore());
                                 x.setUseBaseImportedSchemaLocationsToIgnore(isUseBaseImportedSchemaLocationsToIgnore());
                                 x.setImportedNamespacesToIgnore(getImportedNamespacesToIgnore());
                                 x.setParentLocation(getResourceBase());
                                 x.setRootXsd(false);
-                                x.init();
+                                x.initNamespace(namespace, classLoader, getResourceBase() + schemaLocationAttribute.getValue());
                                 if (xsds.add(x)) {
                                     x.getXsdsRecursive(xsds, ignoreRedefine);
                                 }

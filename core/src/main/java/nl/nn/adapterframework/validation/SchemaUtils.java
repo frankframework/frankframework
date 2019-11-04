@@ -140,10 +140,7 @@ public class SchemaUtils {
 	 * @return XSD's when xmlStreamWriter is null, otherwise write to
 	 *		 xmlStreamWriter
 	 */
-	public static Set<XSD> mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(
-			ClassLoader classLoader, Map<String,
-			Set<XSD>> xsdsGroupedByNamespace, XMLStreamWriter xmlStreamWriter)
-			throws XMLStreamException, IOException, ConfigurationException {
+	public static Set<XSD> mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(ClassLoader classLoader, Map<String, Set<XSD>> xsdsGroupedByNamespace, XMLStreamWriter xmlStreamWriter) throws XMLStreamException, IOException, ConfigurationException {
 		Set<XSD> resultXsds = new HashSet<XSD>();
 		for (String namespace: xsdsGroupedByNamespace.keySet()) {
 			Set<XSD> xsds = xsdsGroupedByNamespace.get(namespace);
@@ -154,8 +151,7 @@ public class SchemaUtils {
 			for (XSD xsd: xsds) {
 				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 				XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(byteArrayOutputStream, XmlUtils.STREAM_FACTORY_ENCODING);
-				xsdToXmlStreamWriter(xsd, w, false, true, false, false,
-						rootAttributes, rootNamespaceAttributes, imports, true);
+				xsdToXmlStreamWriter(xsd, w, false, true, false, false, rootAttributes, rootNamespaceAttributes, imports, true);
 			}
 			// Write XSD's with merged root element
 			XSD resultXsd = null;
@@ -163,10 +159,10 @@ public class SchemaUtils {
 			if (xmlStreamWriter == null) {
 				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 				resultXsd = new XSD();
-				resultXsd.setClassLoader(classLoader);
-				resultXsd.setNamespace(namespace);
+				//resultXsd.setClassLoader(classLoader);
+				//resultXsd.setNamespace(namespace);
 				resultXsd.setByteArrayOutputStream(byteArrayOutputStream);
-				resultXsd.setSourceXsds(xsds);
+				//resultXsd.setSourceXsds(xsds);
 				w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(byteArrayOutputStream, XmlUtils.STREAM_FACTORY_ENCODING);
 			} else {
 				w = xmlStreamWriter;
@@ -186,16 +182,14 @@ public class SchemaUtils {
 						skipLastElement = false;
 					}
 				}
-				xsdToXmlStreamWriter(xsd, w, false, true,
-						skipFirstElement, skipLastElement, rootAttributes,
-						rootNamespaceAttributes, imports, false);
+				xsdToXmlStreamWriter(xsd, w, false, true, skipFirstElement, skipLastElement, rootAttributes, rootNamespaceAttributes, imports, false);
 			}
 			if (resultXsd != null) {
 				XSD firstXsd = xsds.iterator().next();
 				resultXsd.setImportedSchemaLocationsToIgnore(firstXsd.getImportedSchemaLocationsToIgnore());
 				resultXsd.setUseBaseImportedSchemaLocationsToIgnore(firstXsd.isUseBaseImportedSchemaLocationsToIgnore());
 				resultXsd.setImportedNamespacesToIgnore(firstXsd.getImportedNamespacesToIgnore());
-				resultXsd.init();
+				resultXsd.initFromXsds(namespace,classLoader,xsds);
 				resultXsds.add(resultXsd);
 			}
 		}
