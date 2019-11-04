@@ -103,6 +103,21 @@
 					"
 					execution(
 						*
+						nl.nn.adapterframework.stream.StreamingSenderBase.sendMessage(
+							String, String, nl.nn.adapterframework.parameters.ParameterResolutionContext, nl.nn.adapterframework.stream.MessageOutputStream
+						)
+					)
+					and
+					args(correlationId, message, parameterResolutionContext, target)
+					"
+				method="debugSenderWithParametersInputOutputAbort"
+				arg-names="correlationId, message, parameterResolutionContext"
+			/>
+			<aop:around
+				pointcut=
+					"
+					execution(
+						*
 						nl.nn.adapterframework.processors.CacheSenderWrapperProcessor.sendMessage(
 							nl.nn.adapterframework.senders.SenderWrapperBase, String, String, nl.nn.adapterframework.parameters.ParameterResolutionContext
 						)
