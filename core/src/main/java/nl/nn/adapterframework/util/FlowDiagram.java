@@ -18,10 +18,12 @@ package nl.nn.adapterframework.util;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 
 import javax.xml.transform.TransformerConfigurationException;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -31,9 +33,6 @@ import nl.nn.adapterframework.extensions.graphviz.Format;
 import nl.nn.adapterframework.extensions.graphviz.GraphvizEngine;
 import nl.nn.adapterframework.extensions.graphviz.GraphvizException;
 import nl.nn.adapterframework.extensions.graphviz.Options;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 
 /**
  * Utility class to generate the flow diagram for an adapter or a configuration.

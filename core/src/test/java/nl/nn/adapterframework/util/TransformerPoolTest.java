@@ -2,8 +2,6 @@ package nl.nn.adapterframework.util;
 
 import static org.junit.Assert.assertEquals;
 
-import java.net.URL;
-
 import javax.xml.transform.Source;
 
 import org.apache.log4j.Logger;

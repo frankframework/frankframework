@@ -1685,7 +1685,7 @@ public class XmlUtils {
 	 * @return String (the complete and xml)
 	 */
 	static public String identityTransform(Resource source) throws DomBuilderException {
-		StringWriter result = new StringWriter();;
+		StringWriter result = new StringWriter();
 		try {
 			TransformerPool tp = getIdentityTransformerPool();
 			TransformerHandler handler = tp.getTransformerHandler();

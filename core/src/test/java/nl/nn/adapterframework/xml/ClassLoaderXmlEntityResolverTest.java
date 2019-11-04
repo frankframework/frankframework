@@ -17,7 +17,7 @@ import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 public class ClassLoaderXmlEntityResolverTest {
 
 	private String publicId="fakePublicId";
-	private String base="/ClassLoader/zip/Xslt/names.xslt";
+	//private String base="/ClassLoader/zip/Xslt/names.xslt";
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 	
 	private XMLResourceIdentifier getXMLResourceIdentifier(String href) {

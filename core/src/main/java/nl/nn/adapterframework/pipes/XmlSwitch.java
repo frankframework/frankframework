@@ -16,10 +16,11 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.Map;
 
 import javax.xml.transform.TransformerConfigurationException;
+
+import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -35,8 +36,6 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
 
 
 /**

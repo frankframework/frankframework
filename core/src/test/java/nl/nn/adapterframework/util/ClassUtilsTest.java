@@ -10,10 +10,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.jar.JarFile;
 
-import static org.hamcrest.core.StringStartsWith.*;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+
+import static org.hamcrest.core.StringStartsWith.startsWith;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;

@@ -36,7 +36,7 @@ public class NonResolvingExternalEntityResolver implements EntityResolver2 {
 	private Logger log = LogUtil.getLogger(this);
 
 	@Override
-	public InputSource resolveEntity(String publicId, String systemId) throws SAXException, java.io.IOException {
+	public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
 		return resolveEntity(null, publicId, null, systemId);
 	}
 
