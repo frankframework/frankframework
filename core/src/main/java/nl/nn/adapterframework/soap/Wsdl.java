@@ -451,11 +451,9 @@ public class Wsdl {
             // validated. In this case we use the serviceNamespaceURI from
             // the WebServiceListener as the namespace for the schema.
             XSD xsd = new XSD();
-            xsd.setClassLoader(pipeLine.getAdapter().getConfiguration().getClassLoader());
-            xsd.setNamespace(webServiceListenerNamespace);
-            xsd.setResource(inputSchema);
+            //xsd.setNamespace(webServiceListenerNamespace);
             xsd.setAddNamespaceToSchema(true);
-            xsd.init();
+            xsd.initNamespace(webServiceListenerNamespace, pipeLine.getAdapter().getConfiguration().getClassLoader(), inputSchema);
             xsds.add(xsd);
         } else {
             xsds = xmlValidator.getXsds();

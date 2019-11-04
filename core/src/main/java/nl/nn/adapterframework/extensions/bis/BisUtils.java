@@ -25,6 +25,7 @@ import javax.xml.transform.TransformerException;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.AppConstants;
@@ -94,11 +95,11 @@ public class BisUtils {
 		return self;
 	}
 
-	public String prepareMessageHeader(String originalMessageText, boolean messageHeaderInSoapBody) throws DomBuilderException, IOException, TransformerException {
+	public String prepareMessageHeader(String originalMessageText, boolean messageHeaderInSoapBody) throws SAXException, IOException, TransformerException {
 		return prepareMessageHeader(originalMessageText, messageHeaderInSoapBody, null, null);
 	}
 
-	public String prepareMessageHeader(String originalMessageText, boolean messageHeaderInSoapBody, String conversationId, String externalRefToMessageId) throws DomBuilderException, IOException, TransformerException {
+	public String prepareMessageHeader(String originalMessageText, boolean messageHeaderInSoapBody, String conversationId, String externalRefToMessageId) throws SAXException, IOException, TransformerException {
 		XmlBuilder messageHeaderElement = new XmlBuilder("MessageHeader");
 		messageHeaderElement.addAttribute("xmlns", "http://www.ing.com/CSP/XSD/General/Message_2");
 		XmlBuilder fromElement = new XmlBuilder("From");

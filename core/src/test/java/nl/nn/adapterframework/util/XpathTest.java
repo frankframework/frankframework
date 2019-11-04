@@ -6,6 +6,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -51,14 +52,14 @@ public class XpathTest extends FunctionalTransformerPoolTestBase {
 			"	</subDirectory>" + 
 			"</root>";
 	
-	public void xpathTest(String input, String xpath, String expected) throws ConfigurationException, DomBuilderException, TransformerException, IOException {
+	public void xpathTest(String input, String xpath, String expected) throws ConfigurationException, DomBuilderException, TransformerException, IOException, SAXException {
 		String namespaceDefs=null; 
 		xpathTest(input, namespaceDefs, xpath, "text", expected);
 	}
-	public void xpathTest(String input, String namespaceDefs, String xpath, String expected) throws ConfigurationException, DomBuilderException, TransformerException, IOException {
+	public void xpathTest(String input, String namespaceDefs, String xpath, String expected) throws ConfigurationException, DomBuilderException, TransformerException, IOException, SAXException {
 		xpathTest(input, namespaceDefs, xpath, "text", expected);
 	}
-	public void xpathTest(String input, String namespaceDefs, String xpath, String outputType, String expected)  throws ConfigurationException, DomBuilderException, TransformerException, IOException {
+	public void xpathTest(String input, String namespaceDefs, String xpath, String outputType, String expected)  throws ConfigurationException, DomBuilderException, TransformerException, IOException, SAXException {
 		boolean includeXmlDeclaration=false;
 		ParameterList formalParams=null;
 		TransformerPool tp= XmlUtils.getXPathTransformerPool(namespaceDefs, xpath, outputType, includeXmlDeclaration, formalParams);
@@ -69,47 +70,47 @@ public class XpathTest extends FunctionalTransformerPoolTestBase {
 	
 	
 	@Test
-	public void testXpathNoNamespaceInput() throws ConfigurationException, DomBuilderException, TransformerException, IOException {
+	public void testXpathNoNamespaceInput() throws ConfigurationException, DomBuilderException, TransformerException, IOException, SAXException {
 		xpathTest(inputMessageWithoutNs,"name(/*)","root");
 	}
 	@Test
-	public void testXpathNamespacedInput() throws ConfigurationException, DomBuilderException, TransformerException, IOException {
+	public void testXpathNamespacedInput() throws ConfigurationException, DomBuilderException, TransformerException, IOException, SAXException {
 		xpathTest(inputMessageWithNs,"name(/*)","root");
 	}
 	
 	@Test
-	public void testXpathNoNamespaceInputXpath1() throws ConfigurationException, DomBuilderException, TransformerException, IOException {
+	public void testXpathNoNamespaceInputXpath1() throws ConfigurationException, DomBuilderException, TransformerException, IOException, SAXException {
 		xpathTest(inputMessageWithoutNs,"sum(root/*/item)","3");
 	}
 	@Test
-	public void testXpathNamespacedInputXpath1() throws ConfigurationException, DomBuilderException, TransformerException, IOException {
+	public void testXpathNamespacedInputXpath1() throws ConfigurationException, DomBuilderException, TransformerException, IOException, SAXException {
 		xpathTest(inputMessageWithNs,"sum(root/*/item)","3");
 	}
 
 	@Test
-	public void testXpathNoNamespaceInputXpath2() throws ConfigurationException, DomBuilderException, TransformerException, IOException {
+	public void testXpathNoNamespaceInputXpath2() throws ConfigurationException, DomBuilderException, TransformerException, IOException, SAXException {
 		xpathTest(inputMessageWithoutNs,"avg(root/*/item)","1.5");
 	}
 	@Test
-	public void testXpathNamespacedInputXpath2() throws ConfigurationException, DomBuilderException, TransformerException, IOException {
+	public void testXpathNamespacedInputXpath2() throws ConfigurationException, DomBuilderException, TransformerException, IOException, SAXException {
 		xpathTest(inputMessageWithNs,"avg(root/*/item)","1.5");
 	}
 	
 	@Test
-	public void testNamespacedXpathNamespacedInput1() throws ConfigurationException, DomBuilderException, TransformerException, IOException {
+	public void testNamespacedXpathNamespacedInput1() throws ConfigurationException, DomBuilderException, TransformerException, IOException, SAXException {
 		xpathTest(inputMessageWithNs,"r=urn:rootnamespace/,b=urn:bodynamespace/","sum(r:root/b:body/b:item)","3");
 	}
 	@Test
-	public void testNamespacedXpathNamespacedInput2() throws ConfigurationException, DomBuilderException, TransformerException, IOException {
+	public void testNamespacedXpathNamespacedInput2() throws ConfigurationException, DomBuilderException, TransformerException, IOException, SAXException {
 		xpathTest(inputMessageWithNs,"r=urn:rootnamespace,b=urn:bodynamespace","sum(r:root/r:body/r:item)","0");
 	}
 	@Test
-	public void testNamespacedXpathNamespacedInput3() throws ConfigurationException, DomBuilderException, TransformerException, IOException {
+	public void testNamespacedXpathNamespacedInput3() throws ConfigurationException, DomBuilderException, TransformerException, IOException, SAXException {
 		xpathTest(inputMessageWithNs,"r=urn:rootnamespace,b=urn:bodynamespace","sum(root/body/item)","0");
 	}
 
 	@Test
-	public void testXpathXmlSwitchCase1() throws ConfigurationException, DomBuilderException, TransformerException, IOException {
+	public void testXpathXmlSwitchCase1() throws ConfigurationException, DomBuilderException, TransformerException, IOException, SAXException {
 		String input=TestFileUtils.getTestFile("/XmlSwitch/in.xml");
 		String expression="name(/Envelope/Body/*[name()!='MessageHeader'])";
 		String expected="SetRequest";
@@ -117,7 +118,7 @@ public class XpathTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	@Test
-	public void testXpathWithXmlSpecialChars() throws ConfigurationException, DomBuilderException, TransformerException, IOException {
+	public void testXpathWithXmlSpecialChars() throws ConfigurationException, DomBuilderException, TransformerException, IOException, SAXException {
 		xpathTest(inputMessageMultipleChildren, "root/subDirectory[position()>1 and position()<6]", "babb cacb dadb eaeb");
 	}
 //	@Test

@@ -17,7 +17,6 @@ package nl.nn.adapterframework.extensions.esb;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,10 +29,10 @@ import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jms.JmsTransactionalStorage;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
@@ -76,13 +75,11 @@ public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
 		String exceptionLogString = "/xml/xsl/esb/exceptionLog.xsl";
 		String auditLogString = "/xml/xsl/esb/auditLog.xsl";
 		try {
-			URL exceptionLogURL = ClassUtils.getResourceURL(classLoader,
-					exceptionLogString);
-			if (exceptionLogURL == null) {
-				throw new ConfigurationException(getLogPrefix()
-						+ "cannot find stylesheet [" + exceptionLogString + "]");
+			Resource exceptionLogResource = Resource.getResource(classLoader, exceptionLogString);
+			if (exceptionLogResource == null) {
+				throw new ConfigurationException(getLogPrefix() + "cannot find stylesheet [" + exceptionLogString + "]");
 			}
-			exceptionLogTp = TransformerPool.getInstance(exceptionLogURL, true);
+			exceptionLogTp = TransformerPool.getInstance(exceptionLogResource, 2);
 		} catch (IOException e) {
 			throw new ConfigurationException(getLogPrefix()
 					+ "cannot retrieve [" + exceptionLogString + "]", e);
@@ -92,13 +89,11 @@ public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
 					+ exceptionLogString + "]", te);
 		}
 		try {
-			URL auditLogURL = ClassUtils.getResourceURL(classLoader,
-					auditLogString);
-			if (auditLogURL == null) {
-				throw new ConfigurationException(getLogPrefix()
-						+ "cannot find stylesheet [" + auditLogString + "]");
+			Resource auditLogResource =Resource.getResource(classLoader, auditLogString);
+			if (auditLogResource == null) {
+				throw new ConfigurationException(getLogPrefix() + "cannot find stylesheet [" + auditLogString + "]");
 			}
-			auditLogTp = TransformerPool.getInstance(auditLogURL, true);
+			auditLogTp = TransformerPool.getInstance(auditLogResource, 2);
 		} catch (IOException e) {
 			throw new ConfigurationException(getLogPrefix()
 					+ "cannot retrieve [" + auditLogString + "]", e);

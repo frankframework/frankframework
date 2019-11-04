@@ -116,7 +116,7 @@ public class JmxMbeanHelper {
 		if (registeredAdapters.containsKey(adapter)) {
 			return registeredAdapters.get(adapter);
 		}
-    	Configuration config = adapter.getConfiguration();
+    	Configuration config = adapter == null?null:adapter.getConfiguration();
 		String configString = null;
 		if (config != null) {
 			configString = config.getName();
