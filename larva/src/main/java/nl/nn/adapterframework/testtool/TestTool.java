@@ -206,19 +206,8 @@ public class TestTool {
 			writers.put("uselogbuffer", "stop");
 			errorMessage("No scenarios root directories found", writers);
 			return ERROR_NO_SCENARIO_DIRECTORIES_FOUND;
-		} 
-		String appConstantsDirectory = appConstants.getResolvedProperty("larva.appconstants.directory");
-		if (appConstantsDirectory != null) {
-			appConstantsDirectory = getAbsolutePath(currentScenariosRootDirectory, appConstantsDirectory);
-			if (new File(currentScenariosRootDirectory).exists()) {
-				if (new File(appConstantsDirectory).exists()) {
-					debugMessage("Get AppConstants from directory: " + appConstantsDirectory, writers);
-					appConstants = AppConstants.getInstance(appConstantsDirectory);
-				} else {
-					errorMessage("Directory for AppConstans not found", writers);
-				}
-			}
 		}
+
 		debugMessage("Read scenarios from directory '" + currentScenariosRootDirectory + "'", writers);
 		List<File> allScenarioFiles = readScenarioFiles(appConstants, currentScenariosRootDirectory, writers);
 		debugMessage("Initialize 'wait before cleanup' variable", writers);
