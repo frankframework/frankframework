@@ -61,29 +61,6 @@ public class ClassLoaderXmlEntityResolver extends ClassLoaderURIResolver impleme
 			// Ignore import with namespace but without schemaLocation
 			return null;
 		}
-//		if (systemId.length() == 0 || systemId.equals(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME)) {
-//			String message = "Cannot resolve entity with empty systemId";
-//			log.warn(message); // TODO remove this warning, when sure IOException is properly logged
-//			throw new IOException(message);
-//		}
-//		// Apparently the resource was already resolved to a URL as the
-//		// systemId is in URL syntax (but a string object instead of a URL).
-//		// We need to convert it back to a URL which the JVM is able to do for
-//		// standard url's but for our custom class loader we need to do it
-//		// manually.
-//		URL url = null;
-//		try {
-//			url = ClassUtils.getResourceURL(classLoader, systemId);
-//			if (url==null) {
-//				String message = "cannot find resource for entity [" + systemId + "]";
-//				log.warn(message); // TODO remove this warning, when sure IOException is properly logged
-//				throw new IOException(message);
-//			}
-//		} catch (Exception e) {
-//			String message = "Exception resolving entity [" + systemId + "]";
-//			log.warn(message,e); // TODO remove this warning, when sure IOException is properly logged
-//			throw new IOException(message,e);
-//		}
 
 		Resource resource;
 		try {

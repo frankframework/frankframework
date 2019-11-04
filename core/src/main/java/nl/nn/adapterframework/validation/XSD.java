@@ -214,51 +214,6 @@ public class XSD implements Schema, Comparable<XSD> {
 	}
 	
 	private void init() throws ConfigurationException {
-//		if (noNamespaceSchemaLocation != null) {
-//			// configure noNamespaceSchemaLocation
-//			url = ClassUtils.getResourceURL(classLoader, noNamespaceSchemaLocation);
-//			if (url == null) {
-//				throw new ConfigurationException("Cannot find [" + noNamespaceSchemaLocation + "]");
-//			}
-//			resourceTarget = noNamespaceSchemaLocation;
-//			toString = noNamespaceSchemaLocation;
-//		} else {
-//			if (resource != null) {
-//				// configure 'url'
-//				resource = Misc.replace(resource, "%20", " ");
-//				url = ClassUtils.getResourceURL(classLoader, resource);
-//				if (url == null) {
-//					throw new ConfigurationException("Cannot find [" + resource + "]");
-//				}
-//				resourceTarget = resource;
-//				toString = resource;
-//				if (resourceInternalReference != null) {
-//					resourceTarget = resourceTarget + "-" + resourceInternalReference + ".xsd";
-//					toString =  toString + "!" + resourceInternalReference;
-//				}
-//			} else if (sourceXsds == null) {
-//				throw new ConfigurationException("None of noNamespaceSchemaLocation, resource or mergedResources is specified");
-//			} else {
-//				resourceTarget = "[";
-//				toString = "[";
-//				boolean first = true;
-//				for (XSD xsd : sourceXsds) {
-//					if (first) {
-//						first = false;
-//					} else {
-//						resourceTarget = resourceTarget + ", ";
-//						toString = toString + ", ";
-//					}
-//					resourceTarget = resourceTarget + xsd.getResourceTarget().replaceAll("/", "_");
-//					toString = toString + xsd.toString();
-//				}
-//				resourceTarget = resourceTarget + "].xsd";
-//				toString = toString + "]";
-//			}
-//			if (parentLocation == null) {
-//				this.parentLocation = "";
-//			}
-//		}
 		try {
 			InputStream in = getInputStream();
 			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in, XmlUtils.STREAM_FACTORY_ENCODING);

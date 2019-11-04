@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.xml;
 
 import java.io.IOException;
-import java.net.URL;
 
 import org.apache.log4j.Logger;
 import org.xml.sax.EntityResolver;
@@ -24,7 +23,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -52,9 +50,9 @@ public class ClassLoaderEntityResolver implements EntityResolver {
 	public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
 
 		if (log.isDebugEnabled()) log.debug("Resolving publicId [" + publicId +"] systemId [" + systemId +"]");
-		URL url = ClassUtils.getResourceURL(classLoader, systemId);
-		if(url != null) {
-			return new InputSource(url.openStream());
+		Resource resource = Resource.getResource(classLoader, systemId);
+		if(resource != null) {
+			return resource.asInputSource();
 		}
 		// If nothing found, null is returned, for normal processing
 		return null;
