@@ -65,7 +65,7 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
             } else {
                 for (Configuration configuration : configurations) {
                     log.info("Configuration retrieved from real IbisManager: configuration-name '"
-                            + configuration.getConfigurationName() + "', nr of adapters: "
+                            + configuration.getName() + "', nr of adapters: "
                             + configuration.getRegisteredAdapters().size());
                 }
             }

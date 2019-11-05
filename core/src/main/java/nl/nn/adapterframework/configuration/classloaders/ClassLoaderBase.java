@@ -40,6 +40,9 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  */
 public abstract class ClassLoaderBase extends ClassLoader implements IConfigurationClassLoader, ReloadAware {
+
+	public static final String CLASSPATH_RESOURCE_SCHEME="classpath:";
+
 	private IbisContext ibisContext = null;
 	private String configurationName = null;
 

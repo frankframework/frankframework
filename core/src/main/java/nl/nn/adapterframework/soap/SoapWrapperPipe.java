@@ -19,11 +19,10 @@ import java.io.IOException;
 import java.util.Map;
 
 import javax.xml.soap.SOAPException;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -32,6 +31,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -221,7 +221,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 					payload = outputNamespaceTp.transform(payload, null, true);
 				}
 				ParameterResolutionContext prc = null;
-				Map parameterValues = null;
+				Map<String,Object> parameterValues = null;
 				if (getParameterList()!=null && (soapHeaderTp != null || soapBodyTp != null)) {
 					prc = new ParameterResolutionContext(payload, session, true);
 					parameterValues = prc.getValueMap(getParameterList());
@@ -267,7 +267,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return new PipeRunResult(getForward(), result);
 	}
 
-	protected String unwrapMessage(String messageText) throws DomBuilderException, TransformerException, IOException, SOAPException {
+	protected String unwrapMessage(String messageText) throws SAXException, TransformerException, IOException, SOAPException {
 		return soapWrapper.getBody(messageText);
 	}
 

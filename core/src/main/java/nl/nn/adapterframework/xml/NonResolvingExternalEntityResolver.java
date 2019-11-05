@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.util;
+package nl.nn.adapterframework.xml;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -23,6 +23,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.EntityResolver2;
 
+import nl.nn.adapterframework.util.LogUtil;
+
 /*
  * Entity resolver which resolves external entities to an empty string. This
  * will prevent the XML parser from downloading resources as specified by URI's
@@ -30,11 +32,11 @@ import org.xml.sax.ext.EntityResolver2;
  * 
  * @author Jaco de Groot
  */
-public class XmlExternalEntityResolver implements EntityResolver2 {
+public class NonResolvingExternalEntityResolver implements EntityResolver2 {
 	private Logger log = LogUtil.getLogger(this);
 
 	@Override
-	public InputSource resolveEntity(String publicId, String systemId) throws SAXException, java.io.IOException {
+	public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
 		return resolveEntity(null, publicId, null, systemId);
 	}
 
@@ -44,11 +46,8 @@ public class XmlExternalEntityResolver implements EntityResolver2 {
 	}
 
 	@Override
-	public InputSource resolveEntity(String name, String publicId,
-			String baseURI, String systemId) throws SAXException, IOException {
-		log.warn("Resolving entity with name [" + name + "], public id ["
-				+ publicId + "], base uri [" + baseURI + "] and system id ["
-				+ systemId + "] to an empty string");
+	public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
+		log.warn("Resolving entity with name [" + name + "], public id [" + publicId + "], base uri [" + baseURI + "] and system id [" + systemId + "] to an empty string");
 		return new InputSource(new StringReader(""));
 	}
 

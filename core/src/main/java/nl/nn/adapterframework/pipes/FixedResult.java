@@ -24,6 +24,7 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -37,7 +38,6 @@ import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -92,7 +92,8 @@ public class FixedResult extends FixedForwardPipe {
      * may always be returned.
      * @throws ConfigurationException
      */
-    public void configure() throws ConfigurationException {
+    @Override
+	public void configure() throws ConfigurationException {
 		super.configure();
 		appConstants = AppConstants.getInstance(classLoader);
 		if (StringUtils.isNotEmpty(getFileName()) && !isLookupAtRuntime()) {
@@ -187,12 +188,10 @@ public class FixedResult extends FixedForwardPipe {
 					result = xsltResult;
 				} catch (IOException e) {
 					throw new PipeRunException(this,getLogPrefix(session)+"cannot retrieve ["+ styleSheetName + "], resource [" + xsltSource.toString() + "]", e);
-				} catch (TransformerConfigurationException e) {
+				} catch (SAXException|TransformerConfigurationException e) {
 					throw new PipeRunException(this,getLogPrefix(session)+"got error creating transformer from file [" + styleSheetName + "]", e);
 				} catch (TransformerException e) {
 					throw new PipeRunException(this,getLogPrefix(session)+"got error transforming resource [" + xsltSource.toString() + "] from [" + styleSheetName + "]", e);
-				} catch (DomBuilderException e) {
-					throw new PipeRunException(this,getLogPrefix(session)+"caught DomBuilderException", e);
 				}
 			}
 		}

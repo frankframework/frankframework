@@ -63,7 +63,7 @@ public class DummyClassLoader extends ClassLoaderBase {
 			if (bytes != null) {
 				URLStreamHandler urlStreamHandler = new BytesURLStreamHandler(bytes);
 				try {
-					return new URL(null, BytesClassLoader.PROTOCOL + ":" + name, urlStreamHandler);
+					return new URL(null, CLASSPATH_RESOURCE_SCHEME + name, urlStreamHandler);
 				} catch (MalformedURLException e) {
 					log.error("Could not create url", e);
 				}

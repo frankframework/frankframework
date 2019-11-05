@@ -14,18 +14,19 @@ Upcoming
 
 - Make attribute firstPipe in PipeLine optional. When empty, the first Pipe in the Pipeline configuration
   is considedred to be the first. Similarly the success forward defaults to the next Pipe in the PipeLine.
-- Enable to specify a namespace without a prefix in attribute namespaceDefs, to help simplify xpathExpressions
-  e.g. into '/root/sub' instead of '/\*[local-name()='root']/\*[local-name()='sub'.
-
+- Enable to specify a namespace without a prefix in attribute namespaceDefs, to help simplify xpathExpressions e.g. into '/root/sub' instead of '/\*[local-name()='root']/\*[local-name()='sub'.
 - Make ForEachChildElementPipe streaming when using elementXPathExpression too
   Make Xslt streaming default for xsltVersion=1
 - Bugfix (un)loading configs in JmxMbeanHelper
+- Add LadybugPipe
 
 ### Non backwards compatible changes
 
 - Make DirectoryListener extend FileSystemListener. It no longer supports attributes fileList, 
   fileListForcedAfter, outputFilenamePattern, passWithoutDirectory, numberOfBackups, overwrite and random.
 - Remove attribute 'count' from result of iterating pipes like ForEachChildElementPipe, to enable streaming output.
+
+
 
 7.4
 --------

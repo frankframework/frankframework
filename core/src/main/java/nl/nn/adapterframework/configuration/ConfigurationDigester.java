@@ -26,22 +26,13 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
-
-import nl.nn.adapterframework.monitoring.MonitorManager;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StringResolver;
-import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.xml.SaxException;
 
 import org.apache.commons.digester.Digester;
 import org.apache.commons.digester.Rule;
 import org.apache.commons.digester.xmlrules.FromXmlRuleSet;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -50,6 +41,15 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
+
+import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.monitoring.MonitorManager;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StringResolver;
+import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.SaxException;
 
 /**
  * The configurationDigester reads the configuration.xml and the digester rules
@@ -203,17 +203,13 @@ public class ConfigurationDigester {
 			if (digesterRulesURL == null) {
 				throw new ConfigurationException("Digester rules file not found: " + getDigesterRules());
 			}
-			URL configurationFileURL= ClassUtils.getResourceURL(classLoader, configurationFile);
-			if (configurationFileURL == null) {
+			Resource configurationResource = Resource.getResource(classLoader, configurationFile);
+			if (configurationResource == null) {
 				throw new ConfigurationException("Configuration file not found: " + configurationFile);
 			}
-			configuration.setDigesterRulesURL(digesterRulesURL);
-			configuration.setConfigurationURL(configurationFileURL);
-			fillConfigWarnDefaultValueExceptions(configuration);
-			String lineSeparator = SystemUtils.LINE_SEPARATOR;
-			if (null == lineSeparator) lineSeparator = "\n";
-			String original = Misc.resourceToString(configurationFileURL, lineSeparator, false);
-			original = XmlUtils.identityTransform(classLoader, original);
+
+			String original = XmlUtils.identityTransform(configurationResource);
+			fillConfigWarnDefaultValueExceptions(XmlUtils.stringToSource(original)); // must use 'original', cannot use configurationResource, because EntityResolver will not be properly set
 			configuration.setOriginalConfiguration(original);
 			List<String> propsToHide = new ArrayList<String>();
 			String propertiesHideString = AppConstants.getInstance(Thread.currentThread().getContextClassLoader()).getString("properties.hide", null);
@@ -259,19 +255,15 @@ public class ConfigurationDigester {
 		}
 	}
 	
-	private  void fillConfigWarnDefaultValueExceptions(Configuration configuration) throws Exception {
+	private  void fillConfigWarnDefaultValueExceptions(Source configurationSource) throws Exception {
 		URL xsltSource = ClassUtils.getResourceURL(this, attributesGetter_xslt);
 		if (xsltSource == null) {
 			throw new ConfigurationException("cannot find resource ["+attributesGetter_xslt+"]");
 		}
 		Transformer transformer = XmlUtils.createTransformer(xsltSource);
-		String lineSeparator=SystemUtils.LINE_SEPARATOR;
-		if (null==lineSeparator) lineSeparator="\n";
-		String configString=Misc.resourceToString(configuration.getConfigurationURL(), lineSeparator, false);
-		configString=XmlUtils.identityTransform(configuration.getClassLoader(), configString);
-		String attributes = XmlUtils.transformXml(transformer, configString);
+		String attributes = XmlUtils.transformXml(transformer, configurationSource);
 		Element attributesElement = XmlUtils.buildElement(attributes);
-		Collection<Node> attributeElements =	XmlUtils.getChildTags(attributesElement, "attribute");
+		Collection<Node> attributeElements = XmlUtils.getChildTags(attributesElement, "attribute");
 		Iterator<Node> iter = attributeElements.iterator();
 		while (iter.hasNext()) {
 			Element attributeElement = (Element)iter.next();

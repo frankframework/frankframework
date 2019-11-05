@@ -26,6 +26,7 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.xml.sax.SAXException;
 
 import com.ibm.websphere.management.AdminService;
 import com.ibm.websphere.management.AdminServiceFactory;
@@ -123,7 +124,7 @@ public class IbmMisc {
 
 	public static String getConnectionPoolProperties(String confResString,
 			String providerType, String jndiName) throws IOException,
-			DomBuilderException, TransformerException {
+			DomBuilderException, TransformerException, SAXException {
 		// providerType: 'JDBC' or 'JMS'
 		URL url = ClassUtils
 				.getResourceURL(IbmMisc.class, GETCONNPOOLPROP_XSLT);
@@ -145,7 +146,7 @@ public class IbmMisc {
 	}
 
 	public static String getJmsDestinations(String confResString)
-			throws IOException, DomBuilderException, TransformerException {
+			throws IOException, DomBuilderException, TransformerException, SAXException {
 		URL url = ClassUtils.getResourceURL(IbmMisc.class, GETJMSDEST_XSLT);
 		if (url == null) {
 			throw new IOException(

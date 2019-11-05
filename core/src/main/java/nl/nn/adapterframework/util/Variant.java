@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.util;
 
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import javax.xml.transform.Source;
 import java.io.Reader;
@@ -57,11 +58,11 @@ public class Variant {
 	/**
 	 * Renders a Source for XSLT-transformation
 	 */
-	public Source asXmlSource() throws DomBuilderException {
+	public Source asXmlSource() throws DomBuilderException, SAXException {
 		return asXmlSource(true);
 	}
 
-	public Source asXmlSource(boolean forMultipleUse) throws DomBuilderException {
+	public Source asXmlSource(boolean forMultipleUse) throws DomBuilderException, SAXException {
 		if (!forMultipleUse && dataAsXmlSource==null) {
 			return XmlUtils.stringToSourceForSingleUse(data);
 		}

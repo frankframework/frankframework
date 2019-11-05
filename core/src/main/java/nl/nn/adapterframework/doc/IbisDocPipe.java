@@ -243,7 +243,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 		while (!success && tryCount < maxTries) {
 			tryCount++;
 			try {
-				scanner.scan("nl.nn.adapterframework");
+				scanner.scan("nl.nn.adapterframework", "nl.nn.ibistesttool");
 				success = true;
 			} catch(BeanDefinitionStoreException e) {
 				String excludeFilter = e.getMessage();

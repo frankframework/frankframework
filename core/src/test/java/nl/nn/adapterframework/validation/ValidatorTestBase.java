@@ -188,14 +188,11 @@ public abstract class ValidatorTestBase extends TestCase {
 					if (split.length % 2 != 0) throw new ConfigurationException("The schema must exist from an even number of strings, but it is " + schemaLocation);
 					for (int i = 0; i < split.length; i += 2) {
 						XSD xsd = new XSD();
-						xsd.setClassLoader(this.getClass().getClassLoader());
-						xsd.setNamespace(split[i]);
-						xsd.setResource(split[i + 1]);
 						xsd.setAddNamespaceToSchema(addNamespaceToSchema);
 //						xsd.setImportedSchemaLocationsToIgnore(getImportedSchemaLocationsToIgnore());
 //						xsd.setUseBaseImportedSchemaLocationsToIgnore(isUseBaseImportedSchemaLocationsToIgnore());
 //						xsd.setImportedNamespacesToIgnore(getImportedNamespacesToIgnore());
-						xsd.init();
+						xsd.initNamespace(split[i],null, split[i + 1]);
 						xsds.add(xsd);
 					}
 //				}
