@@ -373,7 +373,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 		try {
 			return f.getId().toString();
 		} catch (ServiceLocalException e) {
-			throw new RuntimeException("Could not determine name",e);
+			throw new RuntimeException("Could not determine Name",e);
 		}
 	}
 	@Override
@@ -381,7 +381,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 		try {
 			return f.getId().getUniqueId();
 		} catch (ServiceLocalException e) {
-			throw new FileSystemException("Could not determine name",e);
+			throw new FileSystemException("Could not determine CanonicalName",e);
 		}
 	}
 	@Override
