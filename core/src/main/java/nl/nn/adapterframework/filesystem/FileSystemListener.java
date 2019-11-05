@@ -55,7 +55,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private boolean delete = false;
 	private boolean fileTimeSensitive=false;
 //	private boolean overwrite = false;
-	private String messageType="name";
+	private String messageType="path";
 
 	private long minStableTime = 1000;
 //	private Long fileListFirstFileFound;
@@ -242,6 +242,9 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			if (StringUtils.isEmpty(getMessageType()) || getMessageType().equalsIgnoreCase("name")) {
 				return getFileSystem().getName(rawMessage);
 			}
+			if (StringUtils.isEmpty(getMessageType()) || getMessageType().equalsIgnoreCase("path")) {
+				return getFileSystem().getCanonicalName(rawMessage);
+			}
 			if (getMessageType().equalsIgnoreCase("contents")) {
 				return StreamUtil.streamToString(getFileSystem().readFile(rawMessage), null, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			}
@@ -423,7 +426,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return fileTimeSensitive;
 	}
 
-	@IbisDoc({"9", "determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'contents' for the contents of the file. For any other value, the attributes of the file are searched and used", "name"})
+	@IbisDoc({"9", "determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'path', for the full file path, 'contents' for the contents of the file. For any other value, the attributes of the file are searched and used", "path"})
 	public void setMessageType(String messageType) {
 		this.messageType = messageType;
 	}
