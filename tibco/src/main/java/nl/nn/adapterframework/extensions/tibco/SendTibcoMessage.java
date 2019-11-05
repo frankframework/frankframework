@@ -31,6 +31,7 @@ import javax.jms.TextMessage;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
@@ -179,8 +180,8 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		if (StringUtils.isEmpty(soapAction_work)) {
 			log.debug(getLogPrefix(session) + "deriving default soapAction");
 			try {
-				URL resource = ClassUtils.getResourceURL(this, "/xml/xsl/esb/soapAction.xsl");
-				TransformerPool tp = TransformerPool.getInstance(resource, true);
+				Resource resource = Resource.getResource(classLoader, "/xml/xsl/esb/soapAction.xsl");
+				TransformerPool tp = TransformerPool.getInstance(resource, 2);
 				soapAction_work = tp.transform(input.toString(), null);
 			} catch (Exception e) {
 				log.error(getLogPrefix(session) + "failed to execute soapAction.xsl");

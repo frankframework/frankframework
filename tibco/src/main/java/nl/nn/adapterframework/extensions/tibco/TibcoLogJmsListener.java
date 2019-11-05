@@ -24,12 +24,12 @@ import javax.jms.Message;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.DomBuilderException;
 
 import com.tibco.tibjms.TibjmsMapMessage;
 
@@ -39,10 +39,7 @@ public class TibcoLogJmsListener extends JmsListener {
 	private final static String[] LOGLEVELS_TEXT = { "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL" };
 
 	@Override
-	public String getStringFromRawMessage(Object rawMessage, Map context,
-			boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper)
-			throws JMSException, DomBuilderException, TransformerException,
-			IOException {
+	public String getStringFromRawMessage(Object rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
 		TibjmsMapMessage tjmMessage;
 		try {
 			tjmMessage = (TibjmsMapMessage) rawMessage;
