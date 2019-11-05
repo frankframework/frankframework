@@ -182,5 +182,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 		if (getParent() instanceof ReloadAware) {
 			((ReloadAware)getParent()).reload();
 		}
+
+		AppConstants.removeInstance(this);
 	}
 }

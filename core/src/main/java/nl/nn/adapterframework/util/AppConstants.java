@@ -69,7 +69,7 @@ public final class AppConstants extends Properties implements Serializable {
 	 * Retrieve an instance of this singleton
 	 * @return AppConstants instance
 	 */
-	public static synchronized AppConstants getInstance() {
+	public static AppConstants getInstance() {
 		return getInstance(null);
 	}
 
@@ -83,7 +83,7 @@ public final class AppConstants extends Properties implements Serializable {
 	 * @see IbisContext#init()
 	 * @return AppConstants instance
 	 */
-	public static synchronized AppConstants getInstance(ClassLoader classLoader) {
+	public static AppConstants getInstance(ClassLoader classLoader) {
 		if(classLoader == null) {
 			classLoader = Thread.currentThread().getContextClassLoader();
 		}
@@ -96,11 +96,11 @@ public final class AppConstants extends Properties implements Serializable {
 		return instance;
 	}
 
-	public static synchronized void removeInstance() {
+	public static void removeInstance() {
 		removeInstance(Thread.currentThread().getContextClassLoader());
 	}
 
-	public static synchronized void removeInstance(ClassLoader classLoader) {
+	public static void removeInstance(ClassLoader classLoader) {
 		AppConstants instance = appConstantsMap.get(classLoader);
 		if (instance != null) {
 			appConstantsMap.remove(classLoader);

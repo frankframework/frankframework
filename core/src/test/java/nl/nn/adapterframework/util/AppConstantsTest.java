@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.io.IOException;
 import java.net.URL;
@@ -9,6 +10,7 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,11 +19,11 @@ public class AppConstantsTest {
 
 	private ClassLoaderMock classLoader;
 	private AppConstants constants;
+	private ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
 
 	@Before
 	public void setUp() {
-		ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-		classLoader = new ClassLoaderMock(contextClassLoader);
+		classLoader = new ClassLoaderMock(contextClassLoader, false);
 		constants = AppConstants.getInstance(classLoader);
 	}
 
@@ -65,11 +67,48 @@ public class AppConstantsTest {
 		assertEquals("4", constants.getResolvedProperty("overwrite.in.buildinfo"));
 	}
 
+	@Test
+	public void checkPersistance() {
+		AppConstants constants1 = AppConstants.getInstance(classLoader);
+		constants1.put("constants1", "1");
+		AppConstants constants2 = AppConstants.getInstance(classLoader);
+		constants2.put("constants2", "2");
+		AppConstants constants3 = AppConstants.getInstance(classLoader);
+		constants3.put("constants3", "3");
+
+		Assert.assertEquals(constants, constants1);
+		Assert.assertEquals(constants2, constants3);
+
+		assertEquals("1", constants.get("constants1"));
+		assertEquals("2", constants.get("constants2"));
+		assertEquals("3", constants.get("constants3"));
+	}
+
+	@Test
+	public void removeInstance() {
+		AppConstants old = AppConstants.getInstance();
+		old.put("dummy-key", "1");
+		AppConstants.removeInstance();
+
+		assertFalse("should not contain key [dummy-key]", AppConstants.getInstance().contains("dummy-key"));
+	}
+
+	@Test
+	public void removeInstanceWithClassLoader() {
+		assertEquals("3", constants.getResolvedProperty("only.in.deploymentspecifics.parent"));
+		AppConstants.removeInstance(classLoader);
+
+		constants = AppConstants.getInstance(new ClassLoaderMock(contextClassLoader, true));
+
+		assertEquals("changed", constants.getResolvedProperty("only.in.deploymentspecifics.parent"));
+	}
 
 	private class ClassLoaderMock extends ClassLoader {
+		private boolean simulateReload = false;
 
-		public ClassLoaderMock(ClassLoader parent) {
+		public ClassLoaderMock(ClassLoader parent, boolean simulateReload) {
 			super(parent);
+			this.simulateReload = simulateReload;
 		}
 
 		@Override
@@ -81,18 +120,23 @@ public class AppConstantsTest {
 		@Override
 		public Enumeration<URL> getResources(String name) throws IOException {
 			Vector<URL> urls = new Vector<URL>();
+			String nameToUse = name;
 
-			URL file = getParent().getResource("AppConstants/"+name);
+			URL file = getParent().getResource("AppConstants/"+nameToUse);
 			log.debug("trying to find file ["+name+"] URL["+file+"]");
 			if(file == null) {
-				throw new IllegalStateException("could not locate resource [AppConstants/"+name+"]");
+				throw new IllegalStateException("could not locate resource [AppConstants/"+nameToUse+"]");
 			}
 			urls.add(file);
 
 			if("DeploymentSpecifics.properties".equals(name)) {
-				URL parent = getParent().getResource("AppConstants/ParentClassLoader/"+name);
+				if(simulateReload) {
+					nameToUse = "OtherSpecifics.properties";
+				}
+
+				URL parent = getParent().getResource("AppConstants/ParentClassLoader/"+nameToUse);
 				if(parent == null) {
-					throw new IllegalStateException("could not locate resource [AppConstants/ParentClassLoader/"+name+"]");
+					throw new IllegalStateException("could not locate resource [AppConstants/ParentClassLoader/"+nameToUse+"]");
 				}
 				urls.add(parent);
 			}
