@@ -24,7 +24,6 @@ import java.util.Map;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
 public abstract class BytesClassLoader extends ClassLoaderBase {
@@ -38,7 +37,6 @@ public abstract class BytesClassLoader extends ClassLoaderBase {
 
 	@Override
 	public URL getLocalResource(String name) {
-		name = FilenameUtils.normalize(name, true);
 		byte[] bytes = resources.get(name);
 		if (bytes != null) {
 			URLStreamHandler urlStreamHandler = new BytesURLStreamHandler(bytes);

@@ -40,7 +40,7 @@ public class ClassLoaderURIResolver implements URIResolver {
 	private ClassLoader classLoader;
 
 	public ClassLoaderURIResolver(ClassLoader classLoader) {
-		if (log.isDebugEnabled()) log.debug("ClassLoaderURIResolver init with classloader ["+classLoader+"]");
+		if (log.isTraceEnabled()) log.trace("ClassLoaderURIResolver init with classloader ["+classLoader+"]");
 		this.classLoader = classLoader;
 	}
 

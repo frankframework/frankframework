@@ -49,7 +49,7 @@ public class ClassLoaderEntityResolver implements EntityResolver {
 	@Override
 	public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
 
-		if (log.isDebugEnabled()) log.debug("Resolving publicId [" + publicId +"] systemId [" + systemId +"]");
+		if (log.isDebugEnabled()) log.debug("Resolving publicId [" + publicId +"] systemId [" + systemId +"] classloader ["+classLoader+"]");
 		Resource resource = Resource.getResource(classLoader, systemId);
 		if(resource != null) {
 			return resource.asInputSource();

@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -51,6 +52,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 	private String instanceName = AppConstants.getInstance().getResolvedProperty("instance.name");
 	private String basePath = null;
+	private String logPrefix = null;
 
 	public ClassLoaderBase() {
 		this(Thread.currentThread().getContextClassLoader());
@@ -68,7 +70,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 		if(basePath == null && !getConfigurationName().equalsIgnoreCase(instanceName))
 			setBasePath(getConfigurationName());
 
-		log.info("["+getConfigurationName()+"] created classloader ["+this.getClass().getSimpleName()+"]");
+		log.info("["+getConfigurationName()+"] created classloader ["+this.toString()+"]");
 	}
 
 	/**
@@ -144,14 +146,15 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	public URL getResource(String name, boolean useParent) {
 		URL url = null;
 		if(getBasePath() != null) {
-			url = getLocalResource(getBasePath() + name);
-			if(log.isTraceEnabled() && url != null) log.trace("["+getConfigurationName()+"] retrieved file ["+getBasePath()+name+"]");
+			String normalizedFilename = getBasePath() + FilenameUtils.normalize(name, true);
+			url = getLocalResource(normalizedFilename);
+			if(log.isTraceEnabled()) log.trace("["+getConfigurationName()+"] "+(url==null?"failed to retrieve":"retrieved")+" local resource ["+normalizedFilename+"]");
 		}
 
 		//URL without basepath cannot be found, follow parent hierarchy
 		if(url == null && useParent) {
 			url = getParent().getResource(name);
-			if(log.isTraceEnabled() && url != null) log.trace("["+getConfigurationName()+"] retrieved file ["+name+"] from parent");
+			if(log.isTraceEnabled() && url != null) log.trace("["+getConfigurationName()+"] retrieved resource ["+name+"] from parent");
 		}
 
 		return url;
@@ -178,6 +181,19 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 		if(log.isTraceEnabled()) log.trace("["+getConfigurationName()+"] retrieved files ["+name+"] found urls " + urls);
 
 		return urls.elements();
+	}
+
+	@Override
+	public String toString() {
+		if(StringUtils.isEmpty(getConfigurationName())) {
+			return super.toString();
+		}
+
+		if(logPrefix==null) {
+			String superString = super.toString();
+			logPrefix = superString.substring(superString.lastIndexOf(".")+1)+"["+getConfigurationName()+"]";
+		}
+		return logPrefix;
 	}
 
 	@Override
