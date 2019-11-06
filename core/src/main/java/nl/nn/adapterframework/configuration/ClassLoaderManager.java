@@ -40,8 +40,8 @@ import nl.nn.adapterframework.util.LogUtil;
 public class ClassLoaderManager {
 
 	private static final Logger LOG = LogUtil.getLogger(ClassLoaderManager.class);
-	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private static final int MAX_CLASSLOADER_ITEMS = APP_CONSTANTS.getInt("classloader.items.max", 100);
+	private final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	private final int MAX_CLASSLOADER_ITEMS = APP_CONSTANTS.getInt("classloader.items.max", 100);
 	private Map<String, ClassLoader> classLoaders = new TreeMap<String, ClassLoader>();
 	private ClassLoader classPathClassLoader = Thread.currentThread().getContextClassLoader();
 
@@ -126,7 +126,7 @@ public class ClassLoaderManager {
 				//Break here, we cannot continue when there are ConfigurationExceptions!
 				return null;
 			}
-			LOG.info("configured classloader ["+loader.toString()+"] for configuration ["+configurationName+"]");
+			LOG.info("configured classloader ["+loader.toString()+"]");
 		}
 
 		return classLoader;

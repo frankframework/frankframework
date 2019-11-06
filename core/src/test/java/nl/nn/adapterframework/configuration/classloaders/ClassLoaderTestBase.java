@@ -22,7 +22,6 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.LinkedList;
 
-import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader.ReportLevel;
@@ -51,6 +50,9 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 		appConstants = AppConstants.getInstance();
 		C = createClassLoader(parent);
 
+		if(C instanceof ClassLoaderBase) {
+			((ClassLoaderBase) C).setBasePath(".");
+		}
 		if(C instanceof IConfigurationClassLoader) {
 			appConstants.put("configurations."+getConfigurationName()+".classLoaderType", C.getClass().getSimpleName());
 			((IConfigurationClassLoader) C).configure(ibisContext, getConfigurationName());
@@ -164,14 +166,12 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 
 	//Not only test through setters and getters but also properties
 	@Test
-	public void testClassLoaderManager() throws ConfigurationException {
-		ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
-		ClassLoader config = manager.get(getConfigurationName());
-		URL resource = config.getResource("ClassLoaderTestFile.xml");
+	public void testSchemeWithClassLoaderManager() throws ConfigurationException {
+		URL resource = C.getResource("ClassLoaderTestFile.xml");
 
-		assertNotNull("resource [ClassLoaderTestFile.xml] must be found", resource);
-		assertTrue("resource name must start with scheme ["+getScheme()+"]", resource.toString().startsWith(getScheme()));
-		assertTrue("resource name must end with [ClassLoaderTestFile.xml]", resource.toString().endsWith("ClassLoaderTestFile.xml"));
+		assertNotNull("resource ["+resource+"] must be found", resource);
+		assertTrue("resource ["+resource+"] must start with scheme ["+getScheme()+"]", resource.toString().startsWith(getScheme()));
+		assertTrue("resource ["+resource+"] must end with [ClassLoaderTestFile.xml]", resource.toString().endsWith("ClassLoaderTestFile.xml"));
 	}
 
 	// make sure default level is always error

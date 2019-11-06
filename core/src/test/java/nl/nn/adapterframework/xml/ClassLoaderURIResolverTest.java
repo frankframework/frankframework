@@ -161,6 +161,7 @@ public class ClassLoaderURIResolverTest {
 
 		JarFileClassLoader cl = new JarFileClassLoader(localClassLoader);
 		cl.setJar(file.getFile());
+		cl.setBasePath(".");
 		cl.configure(null, "");
 		return cl;
 	}
