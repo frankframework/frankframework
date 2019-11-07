@@ -52,6 +52,7 @@ public class LiquibaseClassLoader extends ClassLoader {
 	public URL getResource(String name) {
 		if(getParent() instanceof ClassLoaderBase) {
 			ClassLoaderBase classLoader = (ClassLoaderBase) getParent();
+			//When the basepath is null, search in the parent classloader
 			return classLoader.getResource(name, null == classLoader.getBasePath());
 		}
 
