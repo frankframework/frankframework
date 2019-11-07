@@ -21,8 +21,10 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 
 /**
  * Extra layer between ClassLoaders to retrieve the database migrator file.
@@ -33,30 +35,42 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class LiquibaseClassLoader extends ClassLoader {
 
+	private Logger log = LogUtil.getLogger(this);
+
 	public LiquibaseClassLoader(ClassLoader parent) {
 		super(parent);
 	}
 
 	/**
-	 * Make sure what the parent ClassLoader only traverses 1 layer deep!
+	 * Make sure what the parent ClassLoader only traverses 1 layer (loader) deep.
+	 * The DatabaseChangelog.xml file should only ever be found in the current classloader and never in it's parent.
+	 * This in order to prevent the file from being executed multiple times by different configurations.
+	 * The file might be present on the classpath or in the WAR/EAR. If it would traverse more then 1 loader, 
+	 * all configurations (!) would read this file and execute it.
 	 */
 	@Override
 	public URL getResource(String name) {
-		if(getParent() instanceof ClassLoaderBase)
-			return ((ClassLoaderBase) getParent()).getResource(name, false);
+		if(getParent() instanceof ClassLoaderBase) {
+			ClassLoaderBase classLoader = (ClassLoaderBase) getParent();
+			return classLoader.getResource(name, null == classLoader.getBasePath());
+		}
 
 		// Return null by default if not an instance of ClassLoaderBase
+		log.info("unable to find resource ["+name+"] in parent classloader ["+getParent()+"]");
 		return null;
 	}
 
 	/**
 	 * Make sure what the parent ClassLoader only traverses 1 layer deep!
+	 * Name may be EMPTY as liquibase searches for packages/folders to find files in..
 	 */
 	@Override
 	public Enumeration<URL> getResources(String name) throws IOException {
 		Vector<URL> urls = new Vector<URL>();
+
 		if(StringUtils.isNotEmpty(name) && getResource(name) != null)
 			urls.add(getResource(name));
+
 		return urls.elements();
 	}
 }

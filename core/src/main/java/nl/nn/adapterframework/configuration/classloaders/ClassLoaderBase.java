@@ -26,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
@@ -46,6 +47,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 	private IbisContext ibisContext = null;
 	private String configurationName = null;
+	private String configurationFile = null;
 
 	protected Logger log = LogUtil.getLogger(this);
 	private ReportLevel reportLevel = ReportLevel.ERROR;
@@ -69,6 +71,11 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 		if(basePath == null && !getConfigurationName().equalsIgnoreCase(instanceName))
 			setBasePath(getConfigurationName());
+
+		configurationFile = ConfigurationUtils.getConfigurationFile(this, getConfigurationName());
+		if(StringUtils.isEmpty(configurationFile)) {
+			throw new ConfigurationException("unable to determine configurationFile");
+		}
 
 		log.info("["+getConfigurationName()+"] created classloader ["+this.toString()+"]");
 	}
@@ -97,6 +104,16 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 		return configurationName;
 	}
 
+	/**
+	 * The configurationFile should only ever be found in the current classloader and never in it's parent
+	 */
+	public String getConfigurationFile() {
+		return configurationFile;
+	}
+
+	/**
+	 * Only for internal use within classloaders
+	 */
 	@Override
 	public IbisContext getIbisContext() {
 		return ibisContext;
@@ -123,7 +140,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	 */
 	@Override
 	public final URL getResource(String name) {
-		//It will and should never find files that are in the META-INF folder in this classloader, so always traverse to it's parent
+		//It will and should never find files that are in the META-INF folder in this classloader, so always traverse to it's parent classloader
 		if(name.startsWith("META-INF/")) {
 			return getParent().getResource(name);
 		}
@@ -149,6 +166,12 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 			String normalizedFilename = FilenameUtils.normalize(getBasePath() + name, true);
 			url = getLocalResource(normalizedFilename);
 			if(log.isTraceEnabled()) log.trace("["+getConfigurationName()+"] "+(url==null?"failed to retrieve":"retrieved")+" local resource ["+normalizedFilename+"]");
+
+			//This method should only search for the configurationFile (Configuration.xml) in the current and not it's parent classloader
+			if(url == null && name.equals(getConfigurationFile())) {
+				log.warn("ConfigurationFile ["+getConfigurationFile()+"] not found as local resource!");
+				return null;
+			}
 		}
 
 		//URL without basepath cannot be found, follow parent hierarchy

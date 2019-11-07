@@ -22,7 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -62,7 +61,7 @@ public class IbisContext extends IbisApplicationContext {
 
 	private final static Logger secLog = LogUtil.getLogger("SEC");
 
-	private static final String INSTANCE_NAME = APP_CONSTANTS.getResolvedProperty("instance.name");
+	private final String INSTANCE_NAME = APP_CONSTANTS.getResolvedProperty("instance.name");
 	private static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
 	private static final long UPTIME = System.currentTimeMillis();
 
@@ -118,7 +117,7 @@ public class IbisContext extends IbisApplicationContext {
 	}
 
 	public static String getApplicationServerType() {
-		return APP_CONSTANTS.getResolvedProperty(APPLICATION_SERVER_TYPE_PROPERTY);
+		return AppConstants.getInstance().getResolvedProperty(APPLICATION_SERVER_TYPE_PROPERTY);
 	}
 
 	/**
@@ -348,14 +347,6 @@ public class IbisContext extends IbisApplicationContext {
 		}
 	}
 
-	public String getConfigurationFile(String currentConfigurationName) {
-		String configurationFile = APP_CONSTANTS.getResolvedProperty("configurations." + currentConfigurationName + ".configurationFile");
-		if (StringUtils.isEmpty(configurationFile)) {
-			configurationFile = "Configuration.xml";
-		}
-		return configurationFile;
-	}
-
 	private void digestClassLoaderConfiguration(ClassLoader classLoader, 
 			ConfigurationDigester configurationDigester, 
 			String currentConfigurationName, 
@@ -369,8 +360,8 @@ public class IbisContext extends IbisApplicationContext {
 			customClassLoaderConfigurationException = e;
 		}
 
-		String configurationFile = getConfigurationFile(currentConfigurationName);
-		String currentConfigurationVersion = getConfigurationVersion(AppConstants.getInstance(classLoader));
+		String currentConfigurationVersion = ConfigurationUtils.getConfigurationVersion(classLoader);
+
 		Configuration configuration = null;
 		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 		if (classLoader != null) {
@@ -398,7 +389,7 @@ public class IbisContext extends IbisApplicationContext {
 					}
 				}
 
-				configurationDigester.digestConfiguration(classLoader, configuration, configurationFile);
+				configurationDigester.digestConfiguration(classLoader, configuration);
 				if (currentConfigurationVersion == null) {
 					currentConfigurationVersion = configuration.getVersion();
 				} else if (!currentConfigurationVersion.equals(configuration.getVersion())) {
@@ -563,28 +554,13 @@ public class IbisContext extends IbisApplicationContext {
 	}
 
 	public String getApplicationVersion() {
-		return getVersion(APP_CONSTANTS, "instance.version", "instance.build_id");
+		return ConfigurationUtils.getVersion(null, "instance.version", "instance.build_id");
 	}
 
 	public String getFrameworkVersion() {
 		return APP_CONSTANTS.getProperty("application.version", null);
 	}
 
-	public String getConfigurationVersion(Properties properties) {
-		return getVersion(properties, "configuration.version", "configuration.timestamp");
-	}
-
-	public String getVersion(Properties properties, String versionKey, String timestampKey) {
-		String version = null;
-		if (StringUtils.isNotEmpty(properties.getProperty(versionKey))) {
-			version = properties.getProperty(versionKey);
-			if (StringUtils.isNotEmpty(properties.getProperty(timestampKey))) {
-				version = version + "_" + properties.getProperty(timestampKey);
-			}
-		}
-		return version;
-	}
-	
 	public Date getUptimeDate() {
 		return new Date(UPTIME);
 	}

@@ -62,7 +62,7 @@ public class Migrator extends JdbcFacade {
 		if(cl.getResource(changeLogFile) == null) {
 			String msg = "unable to find database changelog file ["+changeLogFile+"]";
 			if(configurationName != null)
-				msg += " configuration ["+configurationName+"]";
+				msg += " classLoader ["+classLoader+"]";
 
 			log.debug(msg);
 		}

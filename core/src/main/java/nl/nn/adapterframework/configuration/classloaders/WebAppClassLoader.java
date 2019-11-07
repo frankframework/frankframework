@@ -31,7 +31,9 @@ public class WebAppClassLoader extends ClassLoaderBase {
 	}
 
 	/**
-	 * The local resource is the parent resource...
+	 * The name that's being requested contains the basepath of the configuration.
+	 * The {@link WebAppClassLoader} does not contain any further logic and must always 
+	 * search for the resource with basepath in it's parent (the classpath).
 	 */
 	@Override
 	public URL getLocalResource(String name) {
