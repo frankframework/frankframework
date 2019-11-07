@@ -49,7 +49,7 @@ public class DummyClassLoader extends ClassLoaderBase {
 
 	@Override
 	public URL getLocalResource(String name) {
-		if (getConfigurationFile().equals(name)) {
+		if (name.equals(getConfigurationFile())) {
 			String config = "<configuration name=\"" + XmlUtils.encodeChars(getConfigurationName()) + "\" />";
 			byte[] bytes = config.getBytes();
 			if (bytes != null) {
