@@ -77,6 +77,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 				int i = configurationFile.lastIndexOf('/');
 				if (i != -1) {
 					setBasePath(configurationFile.substring(0, i + 1));
+					log.info("derrived basepath ["+getBasePath()+"] from configurationFile ["+configurationFile+"]");
 				} else {
 					setBasePath(getConfigurationName());
 				}
@@ -152,6 +153,19 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 			return getParent().getResource(name);
 		}
 
+		//The configurationFile (Configuration.xml) should only be found in the current and not it's parent classloader
+		if(getBasePath() != null && name.equals(getConfigurationFile())) {
+			URL url = null;
+			if(name.startsWith(getBasePath())) { //An absolute path has explicitly set, use that instead!
+				url = getLocalResource(name); //Search for the resource in the local classloader without basepath
+			}
+			if(url == null) { //If no explicit path was provided or the resource couldn't be found, try with basepath!
+				url = getResource(name, false); //Search with basepath and don't search in the classloader's parent
+			}
+
+			return url;
+		}
+
 		return getResource(name, true);
 	}
 
@@ -173,15 +187,6 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 			String normalizedFilename = FilenameUtils.normalize(getBasePath() + name, true);
 			url = getLocalResource(normalizedFilename);
 			if(log.isTraceEnabled()) log.trace("["+getConfigurationName()+"] "+(url==null?"failed to retrieve":"retrieved")+" local resource ["+normalizedFilename+"]");
-
-			//This method should only search for the configurationFile (Configuration.xml) in the current and not it's parent classloader
-			if(url == null && name.equals(getConfigurationFile())) {
-				log.debug("ConfigurationFile ["+getBasePath()+getConfigurationFile()+"] not found as local resource");
-				url = getLocalResource(FilenameUtils.normalize(name, true));
-
-				if(url == null) log.warn("ConfigurationFile ["+getConfigurationFile()+"] not found!");
-				return url;
-			}
 		}
 
 		//URL without basepath cannot be found, follow parent hierarchy
