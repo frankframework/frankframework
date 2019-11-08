@@ -41,6 +41,7 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.InputMessageAdapter;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -48,8 +49,10 @@ import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerErrorListener;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.ContainerElementFilter;
 import nl.nn.adapterframework.xml.FullXmlFilter;
 import nl.nn.adapterframework.xml.SaxException;
+import nl.nn.adapterframework.xml.TargetElementFilter;
 
 /**
  * Sends a message to a Sender for each child element of the input XML.
@@ -58,11 +61,13 @@ import nl.nn.adapterframework.xml.SaxException;
  * @author Gerrit van Brakel
  * @since 4.6.1
  */
-public class ForEachChildElementPipe extends IteratingPipe<String> {
+public class ForEachChildElementPipe extends IteratingPipe<String> implements IThreadCreator {
 
 	public final int DEFAULT_XSLT_VERSION=1; // currently only Xalan supports XSLT Streaming
 	
 	private boolean processFile=false;
+	private String containerElement;
+	private String targetElement;
 	private String elementXPathExpression=null;
 	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private int xsltVersion=DEFAULT_XSLT_VERSION; 
@@ -89,6 +94,16 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix(null)+"elementXPathExpression ["+getElementXPathExpression()+"]",e);
+		}
+		if (StringUtils.isNotEmpty(getTargetElement())) {
+			if (getTargetElement().contains("/") || getTargetElement().contains(":")) {
+				throw new ConfigurationException(getLogPrefix(null)+"targetElement ["+getTargetElement()+"] should not contain '/' or ':'");
+			}
+		}
+		if (StringUtils.isNotEmpty(getContainerElement())) {
+			if (getContainerElement().contains("/") || getContainerElement().contains(":")) {
+				throw new ConfigurationException(getLogPrefix(null)+"containerElement ["+getTargetElement()+"] should not contain '/' or ':'");
+			}
 		}
 	}
 
@@ -145,6 +160,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 	private class ItemCallbackCallingHandler extends DefaultHandler implements LexicalHandler {
 		
 		private ItemCallback callback;
+		private Object threadInfo;
 		
 		private StringBuffer elementbuffer=new StringBuffer();
 		private int elementLevel=0;
@@ -159,7 +175,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		private StringBuffer namespaceDefinitions=new StringBuffer();
 
 		
-		public ItemCallbackCallingHandler(ItemCallback callback) {
+		public ItemCallbackCallingHandler(ItemCallback callback, Object threadInfo) {
 			this.callback=callback;
 			//elementbuffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 			if (getBlockSize()>0) {
@@ -326,6 +342,18 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 			return timeOutException;
 		}
 
+		@Override
+		public void startDocument() throws SAXException {
+			startThread(threadInfo);
+			super.startDocument();
+		}
+
+		@Override
+		public void endDocument() throws SAXException {
+			super.endDocument();
+			endThread(threadInfo);
+		}
+
 	}
 
 	private class StopSensor extends FullXmlFilter {
@@ -361,7 +389,9 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		String errorMessage="Could not parse input";
 		TransformerErrorListener errorListener=null;
 		try {
-			itemHandler = new ItemCallbackCallingHandler(callback);
+			Object threadRef=announceThread(correlationID);
+			//log.debug("Announced thread ["+ToStringBuilder.reflectionToString(threadRef)+"]");
+			itemHandler = new ItemCallbackCallingHandler(callback, threadRef);
 			inputHandler=itemHandler;
 			
 			if (getExtractElementsTp()!=null) {
@@ -375,6 +405,16 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 				inputHandler = xphandler;
 				errorMessage="Could not process list of elements using xpath ["+getElementXPathExpression()+"]";
 			} 
+			if (StringUtils.isNotEmpty(getTargetElement())) {
+				TargetElementFilter targetElementFilter = new TargetElementFilter(getTargetElement(),true);
+				targetElementFilter.setContentHandler(inputHandler);
+				inputHandler=targetElementFilter;
+			}
+			if (StringUtils.isNotEmpty(getContainerElement())) {
+				ContainerElementFilter containerElementFilter = new ContainerElementFilter(getContainerElement(),true);
+				containerElementFilter.setContentHandler(inputHandler);
+				inputHandler=containerElementFilter;
+			}
 		} catch (TransformerException e) {
 			throw new SenderException(errorMessage, e);
 		}
@@ -422,6 +462,20 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		return processFile;
 	}
 
+	public void setContainerElement(String containerElement) {
+		this.containerElement = containerElement;
+	}
+	public String getContainerElement() {
+		return containerElement;
+	}
+
+	public void setTargetElement(String targetElement) {
+		this.targetElement = targetElement;
+	}
+	public String getTargetElement() {
+		return targetElement;
+	}
+
 	@IbisDoc({"2", "Expression used to determine the set of elements to be iterated over, i.e. the set of child elements. When empty, the effective value is /*/*, i.e. the pipe will iterate over each direct child element of the root", ""})
 	public void setElementXPathExpression(String string) {
 		elementXPathExpression = string;
@@ -466,5 +520,33 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		return removeNamespaces;
 	}
 
+	@Override
+	public Object announceThread(String correlationID) {
+		//System.out.println("announceThread correlationID ["+correlationID+"]");
+		return correlationID;
+	}
 
+	public Object startThread(Object ref) {
+		//log.debug("startThread ["+ToStringBuilder.reflectionToString(ref)+"]");
+		return ref;
+	}
+
+	public Object endThread(Object ref) {
+		//log.debug("endThread ["+ToStringBuilder.reflectionToString(ref)+"]");
+		return ref;
+	}
+//
+//	@Override
+//	public Object abortThread(Object ref) {
+//		log.debug("abortThread ["+ToStringBuilder.reflectionToString(ref)+"]");
+//		return ref;
+//	}
+//
+//	@Override
+//	public void registerThreadCreatorCallback(IThreadCreatorCallback callback) {
+//		// TODO Auto-generated method stub
+//		
+//	}
+
+	
 }
