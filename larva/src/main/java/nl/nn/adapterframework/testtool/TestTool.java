@@ -1726,8 +1726,10 @@ public class TestTool {
 				try {
 					// Use directoryClassLoader to make it possible to specify
 					// styleSheetName relative to the scenarioDirectory.
+					//TODO create larva classloader without basepath
 					DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(originalClassLoader);
 					directoryClassLoader.setDirectory(scenarioDirectory);
+					directoryClassLoader.setBasePath(".");
 					directoryClassLoader.configure(ibisContext, "dummy");
 					Thread.currentThread().setContextClassLoader(directoryClassLoader);
 					httpSender = new HttpSender();

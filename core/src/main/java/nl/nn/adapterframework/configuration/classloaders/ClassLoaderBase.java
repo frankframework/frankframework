@@ -69,12 +69,18 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 		this.ibisContext = ibisContext;
 		this.configurationName = configurationName;
 
-		if(basePath == null && !getConfigurationName().equalsIgnoreCase(instanceName))
-			setBasePath(getConfigurationName());
-
 		configurationFile = ConfigurationUtils.getConfigurationFile(this, getConfigurationName());
 		if(StringUtils.isEmpty(configurationFile)) {
 			throw new ConfigurationException("unable to determine configurationFile");
+		} else {
+			if(basePath == null && !getConfigurationName().equalsIgnoreCase(instanceName)) {
+				int i = configurationFile.lastIndexOf('/');
+				if (i != -1) {
+					setBasePath(configurationFile.substring(0, i + 1));
+				} else {
+					setBasePath(getConfigurationName());
+				}
+			}
 		}
 
 		log.info("["+getConfigurationName()+"] created classloader ["+this.toString()+"]");
@@ -170,15 +176,18 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 			//This method should only search for the configurationFile (Configuration.xml) in the current and not it's parent classloader
 			if(url == null && name.equals(getConfigurationFile())) {
-				log.warn("ConfigurationFile ["+getConfigurationFile()+"] not found as local resource!");
-				return null;
+				log.debug("ConfigurationFile ["+getBasePath()+getConfigurationFile()+"] not found as local resource");
+				url = getLocalResource(FilenameUtils.normalize(name, true));
+
+				if(url == null) log.warn("ConfigurationFile ["+getConfigurationFile()+"] not found!");
+				return url;
 			}
 		}
 
 		//URL without basepath cannot be found, follow parent hierarchy
 		if(url == null && useParent) {
 			url = getParent().getResource(name);
-			if(log.isTraceEnabled() && url != null) log.trace("["+getConfigurationName()+"] retrieved resource ["+name+"] from parent");
+			if(log.isTraceEnabled()) log.trace("["+getConfigurationName()+"] "+(url==null?"failed to retrieve":"retrieved")+" resource ["+name+"] from parent");
 		}
 
 		return url;
