@@ -85,11 +85,12 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	 * @param basePath path to use, defaults to the configuration name
 	 */
 	public void setBasePath(String basePath) {
-		if(StringUtils.isNotEmpty(basePath) && !basePath.endsWith("/"))
-			basePath += "/";
+		if(StringUtils.isNotEmpty(basePath)) {
+			if(!basePath.endsWith("/"))
+				basePath += "/";
 
-		if(StringUtils.isNotEmpty(basePath))
 			this.basePath = basePath;
+		}
 	}
 
 	/**

@@ -22,6 +22,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
@@ -83,8 +84,9 @@ public final class AppConstants extends Properties implements Serializable {
 	 * @see IbisContext#init()
 	 * @return AppConstants instance
 	 */
-	public static AppConstants getInstance(ClassLoader classLoader) {
-		if(classLoader == null) {
+	public static AppConstants getInstance(ClassLoader cl) {
+		ClassLoader classLoader = cl;
+		if(cl == null) {
 			classLoader = Thread.currentThread().getContextClassLoader();
 		}
 
@@ -246,8 +248,14 @@ public final class AppConstants extends Properties implements Serializable {
 					throw new IllegalStateException("no classloader found!");
 				}
 				List<URL> resources = Collections.list(cl.getResources(theFilename));
-				if(resources.size() == 0)
+				if(resources.size() == 0) {
+					if(APP_CONSTANTS_PROPERTIES_FILE.equals(theFilename)) {
+						String msg = APP_CONSTANTS_PROPERTIES_FILE+ " file not found, unable to initalize AppConstants";
+						log.error(msg);
+						throw new MissingResourceException(msg, this.getClass().getSimpleName(), APP_CONSTANTS_PROPERTIES_FILE);
+					}
 					log.debug("cannot find resource ["+theFilename+"] to load additional properties from, ignoring");
+				}
 
 				//We need to reverse the loading order to make sure the parent files are loaded first
 				Collections.reverse(resources);
