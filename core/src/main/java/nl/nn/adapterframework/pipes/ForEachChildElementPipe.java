@@ -61,7 +61,7 @@ import nl.nn.adapterframework.xml.TargetElementFilter;
  * @author Gerrit van Brakel
  * @since 4.6.1
  */
-public class ForEachChildElementPipe extends IteratingPipe<String> implements IThreadCreator {
+public class ForEachChildElementPipe extends IteratingPipe<String> {
 
 	public final int DEFAULT_XSLT_VERSION=1; // currently only Xalan supports XSLT Streaming
 	
@@ -160,7 +160,6 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 	private class ItemCallbackCallingHandler extends DefaultHandler implements LexicalHandler {
 		
 		private ItemCallback callback;
-		private Object threadInfo;
 		
 		private StringBuffer elementbuffer=new StringBuffer();
 		private int elementLevel=0;
@@ -175,7 +174,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 		private StringBuffer namespaceDefinitions=new StringBuffer();
 
 		
-		public ItemCallbackCallingHandler(ItemCallback callback, Object threadInfo) {
+		public ItemCallbackCallingHandler(ItemCallback callback) {
 			this.callback=callback;
 			//elementbuffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 			if (getBlockSize()>0) {
@@ -342,18 +341,6 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 			return timeOutException;
 		}
 
-		@Override
-		public void startDocument() throws SAXException {
-			startThread(threadInfo);
-			super.startDocument();
-		}
-
-		@Override
-		public void endDocument() throws SAXException {
-			super.endDocument();
-			endThread(threadInfo);
-		}
-
 	}
 
 	private class StopSensor extends FullXmlFilter {
@@ -389,9 +376,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 		String errorMessage="Could not parse input";
 		TransformerErrorListener errorListener=null;
 		try {
-			Object threadRef=announceThread(correlationID);
-			//log.debug("Announced thread ["+ToStringBuilder.reflectionToString(threadRef)+"]");
-			itemHandler = new ItemCallbackCallingHandler(callback, threadRef);
+			itemHandler = new ItemCallbackCallingHandler(callback);
 			inputHandler=itemHandler;
 			
 			if (getExtractElementsTp()!=null) {
@@ -519,34 +504,6 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 	public boolean isRemoveNamespaces() {
 		return removeNamespaces;
 	}
-
-	@Override
-	public Object announceThread(String correlationID) {
-		//System.out.println("announceThread correlationID ["+correlationID+"]");
-		return correlationID;
-	}
-
-	public Object startThread(Object ref) {
-		//log.debug("startThread ["+ToStringBuilder.reflectionToString(ref)+"]");
-		return ref;
-	}
-
-	public Object endThread(Object ref) {
-		//log.debug("endThread ["+ToStringBuilder.reflectionToString(ref)+"]");
-		return ref;
-	}
-//
-//	@Override
-//	public Object abortThread(Object ref) {
-//		log.debug("abortThread ["+ToStringBuilder.reflectionToString(ref)+"]");
-//		return ref;
-//	}
-//
-//	@Override
-//	public void registerThreadCreatorCallback(IThreadCreatorCallback callback) {
-//		// TODO Auto-generated method stub
-//		
-//	}
 
 	
 }
