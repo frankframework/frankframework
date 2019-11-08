@@ -66,6 +66,8 @@ public class OracleToH2Translator {
 			newSplit = null;
 		} else if (split.length > 3 && "CREATE".equalsIgnoreCase(split[0]) && "SEQUENCE".equalsIgnoreCase(split[1])) {
 			newSplit = convertQueryCreateSequence(split);
+		} else if (split.length > 4 && "CREATE".equalsIgnoreCase(split[0]) && "TABLE".equalsIgnoreCase(split[1]) && "IBISSTORE".equalsIgnoreCase(split[2])) {
+			newSplit = convertQueryCreateTableIbisStore(split);
 		} else if (split.length > 3 && "CREATE".equalsIgnoreCase(split[0]) && "TABLE".equalsIgnoreCase(split[1])) {
 			newSplit = convertQueryCreateTable(split);
 		} else if (split.length >= 3 && "DROP".equalsIgnoreCase(split[0]) && ("SEQUENCE".equalsIgnoreCase(split[1]) || "TABLE".equalsIgnoreCase(split[1]))) {
@@ -130,6 +132,19 @@ public class OracleToH2Translator {
 					newSplit.add(SEQUENCE_MAX_VALUE_STRING);
 					i++;
 				}
+			}
+		}
+		return newSplit.toArray(new String[0]);
+	}
+
+	private static String[] convertQueryCreateTableIbisStore(String[] split) {
+		List<String> newSplit = new ArrayList<>();
+		for (int i = 0; i < split.length; i++) {
+			newSplit.add(split[i]);
+			if ("MESSAGEKEY".equalsIgnoreCase(split[i]) && (i + 4) < split.length && "NUMBER".equals(split[i + 1]) && "(".equals(split[i + 2]) && ")".equals(split[i + 4])) {
+				newSplit.add("INT");
+				newSplit.add("IDENTITY");
+				i = i + 4;
 			}
 		}
 		return newSplit.toArray(new String[0]);
