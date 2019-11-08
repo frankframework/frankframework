@@ -48,8 +48,10 @@ import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerErrorListener;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.ContainerElementFilter;
 import nl.nn.adapterframework.xml.FullXmlFilter;
 import nl.nn.adapterframework.xml.SaxException;
+import nl.nn.adapterframework.xml.TargetElementFilter;
 
 /**
  * Sends a message to a Sender for each child element of the input XML.
@@ -63,6 +65,8 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 	public final int DEFAULT_XSLT_VERSION=1; // currently only Xalan supports XSLT Streaming
 	
 	private boolean processFile=false;
+	private String containerElement;
+	private String targetElement;
 	private String elementXPathExpression=null;
 	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private int xsltVersion=DEFAULT_XSLT_VERSION; 
@@ -89,6 +93,12 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix(null)+"elementXPathExpression ["+getElementXPathExpression()+"]",e);
+		}
+		if (StringUtils.isNotEmpty(getTargetElement()) && (getTargetElement().contains("/") || getTargetElement().contains(":"))) {
+			throw new ConfigurationException(getLogPrefix(null)+"targetElement ["+getTargetElement()+"] should not contain '/' or ':', only a single element name");
+		}
+		if (StringUtils.isNotEmpty(getContainerElement()) && (getContainerElement().contains("/") || getContainerElement().contains(":"))) {
+			throw new ConfigurationException(getLogPrefix(null)+"containerElement ["+getTargetElement()+"] should not contain '/' or ':', only a single element name");
 		}
 	}
 
@@ -375,6 +385,16 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 				inputHandler = xphandler;
 				errorMessage="Could not process list of elements using xpath ["+getElementXPathExpression()+"]";
 			} 
+			if (StringUtils.isNotEmpty(getTargetElement())) {
+				TargetElementFilter targetElementFilter = new TargetElementFilter(getTargetElement(),true);
+				targetElementFilter.setContentHandler(inputHandler);
+				inputHandler=targetElementFilter;
+			}
+			if (StringUtils.isNotEmpty(getContainerElement())) {
+				ContainerElementFilter containerElementFilter = new ContainerElementFilter(getContainerElement());
+				containerElementFilter.setContentHandler(inputHandler);
+				inputHandler=containerElementFilter;
+			}
 		} catch (TransformerException e) {
 			throw new SenderException(errorMessage, e);
 		}
@@ -422,7 +442,23 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		return processFile;
 	}
 
-	@IbisDoc({"2", "Expression used to determine the set of elements to be iterated over, i.e. the set of child elements. When empty, the effective value is /*/*, i.e. the pipe will iterate over each direct child element of the root", ""})
+	@IbisDoc({"2", "Element name (not an XPath-expression) used to determine the 'root' of elements to be iterated over, i.e. the root of the set of child elements. When empty, the pipe will iterate over each direct child element of the root", ""})
+	public void setContainerElement(String containerElement) {
+		this.containerElement = containerElement;
+	}
+	public String getContainerElement() {
+		return containerElement;
+	}
+
+	@IbisDoc({"3", "Element name (not an XPath-expression) used to determine the type of elements to be iterated over, i.e. the element name of each of the child elements. When empty, the pipe will iterate over any direct child element of the root or specified containerElement", ""})
+	public void setTargetElement(String targetElement) {
+		this.targetElement = targetElement;
+	}
+	public String getTargetElement() {
+		return targetElement;
+	}
+
+	@IbisDoc({"4", "XPath-expression used to determine the set of elements to be iterated over, i.e. the set of child elements. When empty, the effective value is /*/*, i.e. the pipe will iterate over each direct child element of the root", ""})
 	public void setElementXPathExpression(String string) {
 		elementXPathExpression = string;
 	}
@@ -430,7 +466,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		return elementXPathExpression;
 	}
 
-	@IbisDoc({"3", "Characterset used for reading file or inputstream, only used when {@link #setProcessFile(boolean) processFile} is <code>true</code>, or the input is of type InputStream", "utf-8"})
+	@IbisDoc({"5", "Characterset used for reading file or inputstream, only used when {@link #setProcessFile(boolean) processFile} is <code>true</code>, or the input is of type InputStream", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}
@@ -438,7 +474,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		return charset;
 	}
 
-	@IbisDoc({"4", "When set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, supporting XPath 2.0, otherwise xslt processor 1.0 (org.apache.xalan), supporting XPath 1.0. N.B. Be aware that setting this other than 1 might cause the input file being read as a whole in to memory, as Xslt Streaming is currently only supported by the XsltProcessor that is used for xsltVersion=1", "1"})
+	@IbisDoc({"6", "When set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, supporting XPath 2.0, otherwise xslt processor 1.0 (org.apache.xalan), supporting XPath 1.0. N.B. Be aware that setting this other than 1 might cause the input file being read as a whole in to memory, as Xslt Streaming is currently only supported by the XsltProcessor that is used for xsltVersion=1", "1"})
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
 	}
@@ -446,7 +482,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		return xsltVersion;
 	}
 
-	@IbisDoc({"5", "Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
+	@IbisDoc({"7", "Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
 	/**
 	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
 	 */
@@ -458,13 +494,12 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		xsltVersion=b?2:1;
 	}
 	
-	@IbisDoc({"6", "When set <code>true</code> namespaces (and prefixes) in the input message are removed before transformation", "true"})
+	@IbisDoc({"8", "When set <code>true</code> namespaces (and prefixes) in the input message are removed before transformation", "true"})
 	public void setRemoveNamespaces(boolean b) {
 		removeNamespaces = b;
 	}
 	public boolean isRemoveNamespaces() {
 		return removeNamespaces;
 	}
-
 
 }
