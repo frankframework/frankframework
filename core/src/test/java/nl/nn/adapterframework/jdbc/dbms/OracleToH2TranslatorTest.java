@@ -14,7 +14,7 @@ public class OracleToH2TranslatorTest {
 	public void testConvertQuerySelect() throws JdbcException, SQLException {
 		String query = " SELECT FIELD1, FIELD2, DECODE(FIELD3,'Y','true','N','false',NULL,'true') AS FIELD3, LISTAGG(FIELD4, ' + ') WITHIN GROUP (ORDER BY FIELD4) AS FIELD4 FROM TABLE1 \n\t  \n  GROUP BY FIELD1, FIELD2, FIELD3, FIELD4 ORDER BY FIELD4, FIELD2  \n";
 		String convertedQuery = OracleToH2Translator.convertQuery(null, query);
-		assertEquals("SELECT FIELD1 , FIELD2 , DECODE( FIELD3 , 'Y' , 'true' , 'N' , 'false' , NULL , 'true' ) AS FIELD3 , group_concat( FIELD4 ORDER BY FIELD4 SEPARATOR ' + ' ) AS FIELD4 FROM TABLE1 GROUP BY FIELD1 , FIELD2 , FIELD3 , FIELD4 ORDER BY FIELD4 , FIELD2", convertedQuery);
+		assertEquals("SELECT FIELD1, FIELD2, DECODE(FIELD3, 'Y', 'true', 'N', 'false', NULL, 'true') AS FIELD3, group_concat(FIELD4 ORDER BY FIELD4 SEPARATOR ' + ') AS FIELD4 FROM TABLE1 GROUP BY FIELD1, FIELD2, FIELD3, FIELD4 ORDER BY FIELD4, FIELD2", convertedQuery);
 	}
 
 	@Test
@@ -28,7 +28,7 @@ public class OracleToH2TranslatorTest {
 	public void testConvertQueryCreateTable() throws JdbcException, SQLException {
 		String query = "CREATE TABLE TABLE1 (FIELD1 NUMBER(10, 0) NOT NULL, FIELD2 CHAR(2 CHAR), FIELD3 NUMBER(*, 0), FIELD4 VARCHAR2(35 CHAR), CONSTRAINT PK_TABLE1 PRIMARY KEY (FIELD1))";
 		String convertedQuery = OracleToH2Translator.convertQuery(null, query);
-		assertEquals("CREATE TABLE TABLE1( FIELD1 NUMBER( 10 , 0 ) NOT NULL , FIELD2 CHAR( 2 CHAR ) , FIELD3 NUMBER( 38 , 0 ) , FIELD4 VARCHAR2( 35 CHAR ) , CONSTRAINT PK_TABLE1 PRIMARY KEY( FIELD1 ) )", convertedQuery);
+		assertEquals("CREATE TABLE TABLE1(FIELD1 NUMBER(10, 0) NOT NULL, FIELD2 CHAR(2 CHAR), FIELD3 NUMBER(38, 0), FIELD4 VARCHAR2(35 CHAR), CONSTRAINT PK_TABLE1 PRIMARY KEY(FIELD1))", convertedQuery);
 	}
 
 	@Test
@@ -42,14 +42,14 @@ public class OracleToH2TranslatorTest {
 	public void testConvertQueryCreateIndex() throws JdbcException, SQLException {
 		String query = "CREATE INDEX FBIX_TABLE1 ON TABLE1 (LOWER(FIELD3));";
 		String convertedQuery = OracleToH2Translator.convertQuery(null, query);
-		assertEquals("CREATE INDEX FBIX_TABLE1 ON TABLE1( FIELD3 );", convertedQuery);
+		assertEquals("CREATE INDEX FBIX_TABLE1 ON TABLE1(FIELD3);", convertedQuery);
 	}
 
 	@Test
 	public void testConvertQueryAlterTable() throws JdbcException, SQLException {
 		String query = "ALTER TABLE TABLE1 ADD CONSTRAINT FK_FIELD1 FOREIGN KEY (FIELD1) REFERENCES TABLE2 (FIELD1) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE VALIDATE;";
 		String convertedQuery = OracleToH2Translator.convertQuery(null, query);
-		assertEquals("ALTER TABLE TABLE1 ADD CONSTRAINT FK_FIELD1 FOREIGN KEY( FIELD1 ) REFERENCES TABLE2( FIELD1 ) ON DELETE CASCADE;", convertedQuery);
+		assertEquals("ALTER TABLE TABLE1 ADD CONSTRAINT FK_FIELD1 FOREIGN KEY(FIELD1) REFERENCES TABLE2(FIELD1) ON DELETE CASCADE;", convertedQuery);
 	}
 
 	@Test

@@ -88,7 +88,7 @@ public class OracleToH2Translator {
 		} else {
 			StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < newSplit.length; i++) {
-				if (i > 0 && !"(".equals(newSplit[i])) {
+				if (i > 0 && !"(".equals(newSplit[i]) && !",".equals(newSplit[i]) && !")".equals(newSplit[i]) && !"(".equals(newSplit[i - 1])) {
 					sb.append(" ");
 				}
 				sb.append(newSplit[i]);
