@@ -95,10 +95,10 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 			throw new ConfigurationException(getLogPrefix(null)+"elementXPathExpression ["+getElementXPathExpression()+"]",e);
 		}
 		if (StringUtils.isNotEmpty(getTargetElement()) && (getTargetElement().contains("/") || getTargetElement().contains(":"))) {
-			throw new ConfigurationException(getLogPrefix(null)+"targetElement ["+getTargetElement()+"] should not contain '/' or ':'");
+			throw new ConfigurationException(getLogPrefix(null)+"targetElement ["+getTargetElement()+"] should not contain '/' or ':', only a single element name");
 		}
 		if (StringUtils.isNotEmpty(getContainerElement()) && (getContainerElement().contains("/") || getContainerElement().contains(":"))) {
-			throw new ConfigurationException(getLogPrefix(null)+"containerElement ["+getTargetElement()+"] should not contain '/' or ':'");
+			throw new ConfigurationException(getLogPrefix(null)+"containerElement ["+getTargetElement()+"] should not contain '/' or ':', only a single element name");
 		}
 	}
 
@@ -442,7 +442,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		return processFile;
 	}
 
-	@IbisDoc({"2", "Element name used to determine the 'root' of elements to be iterated over, i.e. the root of the set of child elements. When empty, the pipe will iterate over each direct child element of the root", ""})
+	@IbisDoc({"2", "Element name (not an XPath-expression) used to determine the 'root' of elements to be iterated over, i.e. the root of the set of child elements. When empty, the pipe will iterate over each direct child element of the root", ""})
 	public void setContainerElement(String containerElement) {
 		this.containerElement = containerElement;
 	}
@@ -450,7 +450,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		return containerElement;
 	}
 
-	@IbisDoc({"3", "Element name used to determine the type of elements to be iterated over, i.e. the element name of each of the child elements. When empty, the pipe will iterate over any direct child element of the root or specified containerElement", ""})
+	@IbisDoc({"3", "Element name (not an XPath-expression) used to determine the type of elements to be iterated over, i.e. the element name of each of the child elements. When empty, the pipe will iterate over any direct child element of the root or specified containerElement", ""})
 	public void setTargetElement(String targetElement) {
 		this.targetElement = targetElement;
 	}
