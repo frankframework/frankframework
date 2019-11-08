@@ -21,7 +21,6 @@ import org.xml.sax.XMLReader;
 
 /**
  * Filter that copies only a single element type, and its contents.
- * Optionally the root is copied too.
  * 
  * @author Gerrit van Brakel
  */
