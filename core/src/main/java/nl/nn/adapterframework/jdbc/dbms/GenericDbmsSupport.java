@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018 Nationale-Nederlanden
+   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -386,5 +386,15 @@ public class GenericDbmsSupport implements IDbmsSupport {
 
 	public String getBooleanValue(boolean value) {
 		return (""+value).toUpperCase();
+	}
+
+	@Override
+	public String convertQuery(Connection conn, String query, String dbmsFrom) throws SQLException, JdbcException {
+		warnConvertQuery(dbmsFrom);
+		return query;
+	}
+	
+	protected void warnConvertQuery(String dbmsFrom) {
+		log.warn("don't know how to convert queries from [" + dbmsFrom + "] to [" + getDbmsName() + "]");
 	}
 }

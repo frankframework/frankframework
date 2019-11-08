@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,6 +35,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.jms.JMSException;
 import javax.servlet.http.HttpServletResponse;
@@ -52,6 +54,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -119,6 +122,8 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	protected String[] columnsReturnedList=null;
 	private boolean streamResultToServlet=false;
 
+	private String convertQueriesFrom = AppConstants.getInstance().getString("jdbc.convertQueriesFrom", null);
+	
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -153,17 +158,72 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return con.prepareStatement(query,columnsReturned);
 	}
 
-	protected PreparedStatement prepareQuery(Connection con, String query, boolean updateable) throws SQLException {
+	protected PreparedStatement prepareQuery(Connection con, String query, boolean updateable) throws SQLException, JdbcException {
+		String convertedQuery = convertQuery(con, query.trim());
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix() +"preparing statement for query ["+query+"]");
+			log.debug(getLogPrefix() +"preparing statement for query ["+convertedQuery+"]");
 		}
 		String[] columnsReturned = getColumnsReturnedList();
 		if (columnsReturned!=null) {
-			return prepareQueryWithColunmsReturned(con,query,columnsReturned);
+			return prepareQueryWithColunmsReturned(con,convertedQuery,columnsReturned);
 		}
-		return con.prepareStatement(query,ResultSet.TYPE_FORWARD_ONLY,updateable?ResultSet.CONCUR_UPDATABLE:ResultSet.CONCUR_READ_ONLY);
+		return con.prepareStatement(convertedQuery,ResultSet.TYPE_FORWARD_ONLY,updateable?ResultSet.CONCUR_UPDATABLE:ResultSet.CONCUR_READ_ONLY);
 	}
 
+	protected String convertQuery(Connection connection, String query) throws JdbcException, SQLException {
+		if (StringUtils.isNotEmpty(convertQueriesFrom)) {
+			if (log.isDebugEnabled()) {
+				log.debug(getLogPrefix() + "converting query [" + query.trim() + "] from [" + convertQueriesFrom + "] to [" + getDbmsSupport().getDbmsName() + "]");
+			}
+			List<String> multipleQueries = splitQuery(query);
+			StringBuilder sb = new StringBuilder();
+			for (String singleQuery : multipleQueries) {
+				String convertedQuery = getDbmsSupport().convertQuery(connection, singleQuery, convertQueriesFrom);
+				if (convertedQuery != null) {
+					sb.append(convertedQuery);
+				}
+			}
+			return sb.toString();
+		}
+		return query;
+	}
+
+	private List<String> splitQuery(String query) {
+		// A query can contain multiple queries separated by a semicolon
+		List<String> splittedQueries = new ArrayList<>();
+		if (!query.contains(";")) {
+			splittedQueries.add(query);
+		} else {
+			int i = 0;
+			int j = 0;
+			while (j < query.length()) {
+				if (query.charAt(j) == ';') {
+					String line = query.substring(i, j + 1);
+					int countApos = StringUtils.countMatches(line, "'");
+					int countBegin = countRegex(line.toUpperCase().replaceAll("\\s+", "  "), "\\sBEGIN\\s");
+					int countEnd = countRegex(line.toUpperCase().replaceAll(";", "; "), "\\sEND;");
+					if ((countApos == 0 || (countApos & 1) == 0) && countBegin==countEnd) {
+						splittedQueries.add(line.trim());
+						i = j + 1;
+					}
+				}
+				j++;
+			}
+			if (j > i)
+				splittedQueries.add(query.substring(i, j).trim());
+		}
+		return splittedQueries;
+	}
+
+	public static int countRegex(String string, String regex) {
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(string);
+		int count = 0;
+		while (matcher.find())
+			count++;
+		return count;
+	}
+	
 	protected CallableStatement getCallWithRowIdReturned(Connection con, String correlationID, String message) throws SQLException {
 		String callMessage = "BEGIN " + message + " RETURNING ROWID INTO ?; END;";
 		if (log.isDebugEnabled()) {

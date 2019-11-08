@@ -45,6 +45,7 @@ Upcoming
 - SAP clear function template cache at configuration reload
 - Upgrade javassist dependency version to support java 8+
 - Make sure FlowDiagrams are rendered upon ibis startup
+- Add possibility for execute Oracle queries for H2 database
 
 
 

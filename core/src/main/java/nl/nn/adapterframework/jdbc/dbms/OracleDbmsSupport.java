@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018 Nationale-Nederlanden
+   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,13 +30,14 @@ import org.apache.commons.lang.StringUtils;
  * @since  
  */
 public class OracleDbmsSupport extends GenericDbmsSupport {
+	public final static String dbmsName = "Oracle";
 
 	public int getDatabaseType() {
 		return DbmsSupportFactory.DBMS_ORACLE;
 	}
 
 	public String getDbmsName() {
-		return "Oracle";
+		return dbmsName;
 	}
 
 	public String getSysDate() {

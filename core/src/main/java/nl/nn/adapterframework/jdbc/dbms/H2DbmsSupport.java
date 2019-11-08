@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Nationale-Nederlanden
+   Copyright 2015, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.jdbc.dbms;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -49,5 +50,14 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 
 	public String getIbisStoreSummaryQuery() {
 		return "select type, slotid, formatdatetime(MESSAGEDATE,'yyyy-MM-dd') msgdate, count(*) msgcount from ibisstore group by slotid, type, formatdatetime(MESSAGEDATE,'yyyy-MM-dd') order by type, slotid, formatdatetime(MESSAGEDATE,'yyyy-MM-dd')";
+	}
+
+	@Override
+	public String convertQuery(Connection conn, String query, String dbmsFrom) throws SQLException, JdbcException {
+		if (OracleDbmsSupport.dbmsName.equalsIgnoreCase(dbmsFrom)) {
+			return OracleToH2Translator.convertQuery(conn, query);
+		}
+		warnConvertQuery(dbmsFrom);
+		return query;
 	}
 }
