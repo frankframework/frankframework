@@ -94,15 +94,11 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix(null)+"elementXPathExpression ["+getElementXPathExpression()+"]",e);
 		}
-		if (StringUtils.isNotEmpty(getTargetElement())) {
-			if (getTargetElement().contains("/") || getTargetElement().contains(":")) {
-				throw new ConfigurationException(getLogPrefix(null)+"targetElement ["+getTargetElement()+"] should not contain '/' or ':'");
-			}
+		if (StringUtils.isNotEmpty(getTargetElement()) && (getTargetElement().contains("/") || getTargetElement().contains(":"))) {
+			throw new ConfigurationException(getLogPrefix(null)+"targetElement ["+getTargetElement()+"] should not contain '/' or ':'");
 		}
-		if (StringUtils.isNotEmpty(getContainerElement())) {
-			if (getContainerElement().contains("/") || getContainerElement().contains(":")) {
-				throw new ConfigurationException(getLogPrefix(null)+"containerElement ["+getTargetElement()+"] should not contain '/' or ':'");
-			}
+		if (StringUtils.isNotEmpty(getContainerElement()) && (getContainerElement().contains("/") || getContainerElement().contains(":"))) {
+			throw new ConfigurationException(getLogPrefix(null)+"containerElement ["+getTargetElement()+"] should not contain '/' or ':'");
 		}
 	}
 
