@@ -77,7 +77,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 				int i = configurationFile.lastIndexOf('/');
 				if (i != -1) {
 					setBasePath(configurationFile.substring(0, i + 1));
-					log.info("derrived basepath ["+getBasePath()+"] from configurationFile ["+configurationFile+"]");
+					log.info("derived basepath ["+getBasePath()+"] from configurationFile ["+configurationFile+"]");
 				} else {
 					setBasePath(getConfigurationName());
 				}
