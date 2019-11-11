@@ -48,15 +48,15 @@ public class OracleToH2Translator {
 			return null;
 		String originalQuery = query.trim();
 		// add spaces around following characters: ,;()
-		String trimmedQuery = originalQuery.replaceAll("([,;\\(\\)])", " $1 ").trim();
+		String orgQueryReadyForSplit = originalQuery.replaceAll("([,;\\(\\)])", " $1 ").trim();
 		boolean removedEOS = false;
 		// remove last character if it is a semi-colon
-		if (trimmedQuery != null && trimmedQuery.length() > 0 && trimmedQuery.charAt(trimmedQuery.length() - 1) == ';') {
-			trimmedQuery = trimmedQuery.substring(0, trimmedQuery.length() - 1);
+		String orgQueryReadyForSplitEOS = StringUtils.removeEnd(orgQueryReadyForSplit, ";");
+		if (!orgQueryReadyForSplit.equals(orgQueryReadyForSplitEOS)) {
 			removedEOS = true;
 		}
 		// split on whitespaces excepts whitespaces between single quotes
-		String[] split = trimmedQuery.split("\\s+(?=([^']*'[^']*')*[^']*$)");
+		String[] split = orgQueryReadyForSplitEOS.split("\\s+(?=([^']*'[^']*')*[^']*$)");
 		String[] newSplit = convertQuery(split);
 		if (newSplit == null) {
 			log.debug("ignore oracle query [" + originalQuery + "]");
@@ -66,17 +66,21 @@ public class OracleToH2Translator {
 			log.debug("oracle query [" + originalQuery + "] not converted");
 			return query;
 		} else {
-			StringBuilder sb = new StringBuilder();
-			for (int i = 0; i < newSplit.length; i++) {
-				if (i > 0 && !"(".equals(newSplit[i]) && !",".equals(newSplit[i]) && !")".equals(newSplit[i]) && !"(".equals(newSplit[i - 1])) {
-					sb.append(" ");
-				}
-				sb.append(newSplit[i]);
-			}
-			String convertedQuery = sb.toString() + (removedEOS ? ";" : "");
+			String convertedQuery = getConvertedQueryAsString(newSplit, removedEOS);
 			log.debug("converted oracle query [" + originalQuery + "] to [" + convertedQuery + "]");
 			return convertedQuery;
 		}
+	}
+
+	private static String getConvertedQueryAsString(String[] newSplit, boolean removedEOS) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < newSplit.length; i++) {
+			if (i > 0 && !"(".equals(newSplit[i]) && !",".equals(newSplit[i]) && !")".equals(newSplit[i]) && !"(".equals(newSplit[i - 1])) {
+				sb.append(" ");
+			}
+			sb.append(newSplit[i]);
+		}
+		return sb.toString() + (removedEOS ? ";" : "");
 	}
 
 	private static String[] convertQuery(String[] split) {
