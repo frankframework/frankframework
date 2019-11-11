@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.Collection;
 
+import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -39,8 +40,8 @@ import org.mockito.stubbing.Answer;
 public class ClassLoaderManagerTest extends Mockito {
 
 	private IbisContext ibisContext = spy(new IbisContext());
+	private ClassLoaderManager manager;
 
-	
 	private final String BASE_DIR = "/ClassLoader";
 	private final String JAR_FILE = BASE_DIR+ "/zip/classLoader-test.zip";
 	private final String ADAPTER_SERVICE_NAME = "getJarFileAdapter";
@@ -80,6 +81,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	}
 
 	public ClassLoaderManagerTest(String type, String configurationName) throws Exception {
+		AppConstants.removeInstance();
 		appConstants = AppConstants.getInstance();
 
 		if(type == null || type.equals("DummyClassLoader"))
@@ -90,17 +92,17 @@ public class ClassLoaderManagerTest extends Mockito {
 		this.type = type;
 		this.configurationName = configurationName;
 
-		if("DirectoryClassLoader".equals(type)) {
+		if(type.endsWith("DirectoryClassLoader")) {
 			String directory = getTestClassesLocation()+"ClassLoader/DirectoryClassLoaderRoot/";
 			appConstants.put("configurations."+configurationName+".directory", directory);
 		}
 
-		if("JarFileClassLoader".equals(type)) {
+		if(type.endsWith("JarFileClassLoader")) {
 			URL file = this.getClass().getResource(JAR_FILE);
 			appConstants.put("configurations."+configurationName+".jar", file.getFile());
 		}
 
-		if("ServiceClassLoader".equals(type)) {
+		if(type.endsWith("ServiceClassLoader")) {
 			appConstants.put("configurations."+configurationName+".adapterName", ADAPTER_SERVICE_NAME);
 		}
 	}
@@ -128,6 +130,8 @@ public class ClassLoaderManagerTest extends Mockito {
 
 		createAdapter4ServiceClassLoader(ADAPTER_SERVICE_NAME);
 		mockDatabase();
+
+		manager = new ClassLoaderManager(ibisContext);
 	}
 
 	private void mockDatabase() throws Exception {
@@ -174,7 +178,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		pl.registerPipeLineExit(ple);
 		adapter.registerPipeLine(pl);
 
-		when(adapter.processMessage(anyString(), anyString(), any(IPipeLineSession.class))).thenAnswer(new Answer<PipeLineResult>() {
+		doAnswer(new Answer<PipeLineResult>() {
 			@Override
 			public PipeLineResult answer(InvocationOnMock invocation) throws Throwable {
 				IPipeLineSession session = (IPipeLineSession) invocation.getArguments()[2];
@@ -182,7 +186,8 @@ public class ClassLoaderManagerTest extends Mockito {
 				session.put("configurationJar", Misc.streamToBytes(file.openStream()));
 				return new PipeLineResult();
 			}
-		});
+		}).when(adapter).processMessage(anyString(), anyString(), any(IPipeLineSession.class));
+
 		adapter.setConfiguration(configuration);
 		configuration.registerAdapter(adapter);
 
@@ -190,25 +195,34 @@ public class ClassLoaderManagerTest extends Mockito {
 		when(ibisContext.getIbisManager()).thenReturn(ibisManager);
 	}
 
+	private ClassLoader getClassLoader() throws ConfigurationException {
+		return getClassLoader(configurationName);
+	}
+
+	private ClassLoader getClassLoader(String testConfiguration) throws ConfigurationException {
+		ClassLoader config = manager.get(testConfiguration);
+		if(config instanceof ClassLoaderBase) {
+			((ClassLoaderBase)config).setBasePath(".");
+		}
+		return config;
+	}
+
 	@Test
 	public void properClassLoaderType() throws ConfigurationException {
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
-		ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
-		ClassLoader config = manager.get(configurationName);
+		ClassLoader config = getClassLoader();
 
-		assertEquals("BasePathClassLoader", config.getClass().getSimpleName()); //Everything is wrapped in a basepath..?
 		//in case the FQDN has been used, strip it
 		String name = type;
 		if(type.indexOf(".") > 0)
 			name = type.substring(type.lastIndexOf(".")+1);
-		assertEquals(name, config.getParent().getClass().getSimpleName());
+		assertEquals(name, config.getClass().getSimpleName());
 	}
 
 	@Test
 	public void retrieveTestFileNotInClassLoader() throws ConfigurationException, IOException {
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
-		ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
-		ClassLoader config = manager.get(configurationName);
+		ClassLoader config = getClassLoader();
 		URL resource = config.getResource("test1.xml");
 
 		MatchUtils.assertTestFileEquals("/test1.xml", resource);
@@ -219,8 +233,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		if(skip) return; //This ClassLoader can't actually retrieve files...
 
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
-		ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
-		ClassLoader config = manager.get(configurationName);
+		ClassLoader config = getClassLoader();
 		URL resource = config.getResource("ClassLoaderTestFile.xml");
 
 		MatchUtils.assertTestFileEquals("/ClassLoaderTestFile.xml", resource);
@@ -231,8 +244,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		if(skip) return; //This ClassLoader can't actually retrieve files...
 
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
-		ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
-		ClassLoader config = manager.get(configurationName);
+		ClassLoader config = getClassLoader();
 		URL resource = config.getResource(BASE_DIR.substring(1)+"/ClassLoaderTestFile.xml");
 
 		MatchUtils.assertTestFileEquals(BASE_DIR+"/ClassLoaderTestFile.xml", resource);
@@ -241,8 +253,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	@Test
 	public void retrieveNonExistingTestFile() throws ConfigurationException, IOException {
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
-		ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
-		ClassLoader config = manager.get(configurationName);
+		ClassLoader config = getClassLoader();
 		URL resource = config.getResource("dummy-test-file.xml");
 
 		assertNull(resource);
@@ -260,14 +271,13 @@ public class ClassLoaderManagerTest extends Mockito {
 		appConstants.put("configurations.names", appConstants.get("configurations.names") + ","+testConfiguration);
 
 		String testFile = "fileOnlyOnLocalClassPath.txt";
-		ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
+		ClassLoader parentClassloader = getClassLoader(testConfiguration);
 
-		ClassLoader parentClassloader = manager.get(testConfiguration);
-		assertEquals("DirectoryClassLoader", parentClassloader.getParent().getClass().getSimpleName());
+		assertEquals("DirectoryClassLoader", parentClassloader.getClass().getSimpleName());
 		URL parentResource = parentClassloader.getResource(testFile);
 		assertNotNull(parentResource);
 
-		ClassLoader config = manager.get(configurationName);
+		ClassLoader config = getClassLoader();
 		URL resource = config.getResource(testFile);
 
 		assertNotNull(resource);
@@ -277,7 +287,6 @@ public class ClassLoaderManagerTest extends Mockito {
 	@Test
 	public void reloadString() throws ConfigurationException, IOException {
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
-		ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
 		ClassLoader config1 = manager.get(configurationName);
 
 		manager.reload(configurationName);
@@ -290,7 +299,6 @@ public class ClassLoaderManagerTest extends Mockito {
 	@Test
 	public void reloadClassLoader() throws ConfigurationException, IOException {
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
-		ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
 		ClassLoader config1 = manager.get(configurationName);
 
 		manager.reload(config1);

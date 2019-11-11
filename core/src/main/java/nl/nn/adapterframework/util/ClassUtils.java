@@ -48,6 +48,7 @@ public class ClassUtils {
 	private static Logger log = LogUtil.getLogger(ClassUtils.class);
 	
 	private static final boolean trace=false;
+	private final static String defaultAllowedProtocols = AppConstants.getInstance().getString("classloader.allowed.protocols", null);
 
     /**
      * Return the context classloader.
@@ -127,9 +128,6 @@ public class ClassUtils {
 		if(classLoader == null) {
 			classLoader = Thread.currentThread().getContextClassLoader();
 		}
-		if (allowedProtocols==null) {
-			allowedProtocols=AppConstants.getInstance().getString("classloader.allowed.protocols", null);
-		}
 		if (resource.startsWith(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME)) {
 			resource=resource.substring(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME.length());
 		}
@@ -144,6 +142,9 @@ public class ClassUtils {
 		if (url == null) {
 			if (resource.contains(":")) {
 				String protocol = resource.substring(0, resource.indexOf(":"));
+				if (allowedProtocols==null) {
+					allowedProtocols=defaultAllowedProtocols;
+				}
 				if (StringUtils.isNotEmpty(allowedProtocols)) {
 					//log.debug("Could not find resource ["+resource+"] in classloader ["+classLoader+"] now trying via protocol ["+protocol+"]");
 

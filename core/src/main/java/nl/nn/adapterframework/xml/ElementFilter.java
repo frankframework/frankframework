@@ -15,48 +15,74 @@
 */
 package nl.nn.adapterframework.xml;
 
+import java.util.Map;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 /**
- * Filter that copies only a single element type, and its contents.
+ * Filter that copies only a single element type, and/or its contents.
+ * Optionally the root is copied too.
  * 
  * @author Gerrit van Brakel
  */
-public class ContainerElementFilter extends FullXmlFilter {
+public class ElementFilter extends FullXmlFilter {
 
-	private String containerElement;
+	private String targetNamespace;
+	private String targetElement;
+	private boolean includeTarget=false;
+	private boolean includeRoot=false;
 	
 	private int level;
+	private int globalLevel;
 	
-	public ContainerElementFilter(String containerElement) {
-		super();
-		this.containerElement=containerElement;
+	public ElementFilter(String targetElement) {
+		this(null, targetElement,true,false);
 	}
 
-	public ContainerElementFilter(String containerElement, XMLReader parent) {
-		super(parent);
-		this.containerElement=containerElement;
+	public ElementFilter(Map<String,String> namespaceMap, String targetElement, boolean includeTarget, boolean includeRoot) {
+		super();
+		this.includeTarget=includeTarget;
+		this.includeRoot=includeRoot;
+		if (namespaceMap==null) {
+			this.targetElement=targetElement;
+		} else {
+			if (targetElement==null) {
+				this.targetNamespace=namespaceMap.get(null); 
+			} else {
+				int colonPos=targetElement.indexOf(':');
+				if (colonPos<0) {
+					this.targetNamespace=namespaceMap.get(null); 
+					this.targetElement=targetElement;
+				} else {
+					this.targetNamespace=namespaceMap.get(targetElement.substring(0,colonPos)); 
+					this.targetElement=targetElement.substring(colonPos+1);				
+				}
+			}
+		}
+		log.debug("ElementFilter targetNamespace ["+targetNamespace+"] targetElement ["+targetElement+"]");
 	}
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-		if (level<=0 && localName.equals(containerElement)) {
-			super.startElement(uri, localName, qName, atts);
-			level=1;
-		} else {
-			if (level>0) {
-				super.startElement(uri, localName, qName, atts);
-				level++;
+		if (level<=0) {
+			if ((targetNamespace==null || targetNamespace.equals(uri)) && (targetElement==null || localName.equals(targetElement))) {
+				level=1;
 			}
+		} else {
+			level++;
 		}
+		if (level>1 || (includeTarget && level==1) || (includeRoot && globalLevel==0)) {
+			super.startElement(uri, localName, qName, atts);
+		}
+		globalLevel++;
 	}
 
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
-		if (level-->0) {
+		globalLevel--;
+		if (--level>0 || (includeTarget && level==0) || (includeRoot && globalLevel==0)) {
 			super.endElement(uri, localName, qName);
 		}
 	}

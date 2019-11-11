@@ -132,6 +132,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	private String itemNoSessionKey=null;
 
 	private String stopConditionXPathExpression=null;
+	private int maxItems;
 	private boolean ignoreExceptions=false;
 
 	private boolean collectResults=true;
@@ -287,13 +288,17 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				if (isCollectResults() && !isParallel()) {
 					addResult(count, message, itemResult);
 				}
+				if (getMaxItems()>0 && count>=getMaxItems()) {
+					log.debug(getLogPrefix(session)+"count ["+count+"] reached maxItems ["+getMaxItems()+"], stopping loop");
+					return false;
+				}
 				if (getStopConditionTp()!=null) {
 					String stopConditionResult = getStopConditionTp().transform(itemResult,null);
 					if (StringUtils.isNotEmpty(stopConditionResult) && !stopConditionResult.equalsIgnoreCase("false")) {
-						log.debug(getLogPrefix(session)+"stopcondition result ["+stopConditionResult+"], stopping loop");
+						log.debug(getLogPrefix(session)+"itemResult ["+itemResult+"] stopcondition result ["+stopConditionResult+"], stopping loop");
 						return false;
 					} else {
-						log.debug(getLogPrefix(session)+"stopcondition result ["+stopConditionResult+"], continueing loop");
+						log.debug(getLogPrefix(session)+"itemResult ["+itemResult+"] stopcondition result ["+stopConditionResult+"], continueing loop");
 					}
 				}
 				return true;
@@ -526,13 +531,18 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return itemNoSessionKey;
 	}
 
+	@IbisDoc({"7", "The maximum number of items returned. The (default) value of 0 means unlimited, all available items will be returned","0"})
+	public void setMaxItems(int maxItems) {
+		this.maxItems = maxItems;
+	}
+	public int getMaxItems() {
+		return maxItems;
+	}
+
 	@IbisDoc({"7", "expression evaluated on each result if set. "
-	+ "Iteration stops if condition returns anything other than <code>false</code> or an empty result."
-	+ "For example, to stop after the second child element has been processed, one of the following expressions could be used:"
-	+ "<table> "
-	+ "<tr><td><li><code>result[position()=2]</code></td><td>returns result element after second child element has been processed</td></tr>"
-	+ "<tr><td><li><code>position()=2</code></td><td>returns <code>false</code> after second child element has been processed, <code>true</code> for others</td></tr>"
-	+ "</table> ", ""})
+	+ "Iteration stops if condition returns anything other than an empty result. To test for the root element to have an attribute 'finished' with the value 'yes', the expression <code>*[@finished='yes']</code> can be used. "
+	+ "This can be used if the condition to stop can be derived from the item result. To stop after a maximum number of items has been processed, use <code>maxItems</code>."
+	+ "Previous versions documented that <code>position()=2</code> could be used. This is not working as expected.", ""})
 	public void setStopConditionXPathExpression(String string) {
 		stopConditionXPathExpression = string;
 	}
@@ -540,7 +550,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return stopConditionXPathExpression;
 	}
 
-	@IbisDoc({"8", "when <code>true</code> ignore any exception thrown by executing sender", "false"})
+	@IbisDoc({"8", "When <code>true</code> ignore any exception thrown by executing sender", "false"})
 	public void setIgnoreExceptions(boolean b) {
 		ignoreExceptions = b;
 	}
@@ -549,7 +559,8 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 	
-	@IbisDoc({"9", "controls whether all the results of each iteration will be collected in one result message. if set <code>false</code>, only a small summary is returned", "true"})
+	@IbisDoc({"9", "Controls whether all the results of each iteration will be collected in one result message. If set <code>false</code>, only a small summary is returned. "
+		+ "Setting this attributes to <code>false</code> is often required to enable processing of very large files", "true"})
 	public void setCollectResults(boolean b) {
 		collectResults = b;
 	}
@@ -653,4 +664,5 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	public int getEndPosition() {
 		return endPosition;
 	}
+
 }
