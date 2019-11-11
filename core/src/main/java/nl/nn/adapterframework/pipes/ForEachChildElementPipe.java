@@ -48,10 +48,9 @@ import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerErrorListener;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.xml.ContainerElementFilter;
+import nl.nn.adapterframework.xml.ElementFilter;
 import nl.nn.adapterframework.xml.FullXmlFilter;
 import nl.nn.adapterframework.xml.SaxException;
-import nl.nn.adapterframework.xml.TargetElementFilter;
 
 /**
  * Sends a message to a Sender for each child element of the input XML.
@@ -95,10 +94,10 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 			throw new ConfigurationException(getLogPrefix(null)+"elementXPathExpression ["+getElementXPathExpression()+"]",e);
 		}
 		if (StringUtils.isNotEmpty(getTargetElement()) && (getTargetElement().contains("/") || getTargetElement().contains(":"))) {
-			throw new ConfigurationException(getLogPrefix(null)+"targetElement ["+getTargetElement()+"] should not contain '/' or ':', only a single element name");
+			throw new ConfigurationException(getLogPrefix(null)+"targetElement ["+getTargetElement()+"] should not contain '/', only a single element name");
 		}
 		if (StringUtils.isNotEmpty(getContainerElement()) && (getContainerElement().contains("/") || getContainerElement().contains(":"))) {
-			throw new ConfigurationException(getLogPrefix(null)+"containerElement ["+getTargetElement()+"] should not contain '/' or ':', only a single element name");
+			throw new ConfigurationException(getLogPrefix(null)+"containerElement ["+getTargetElement()+"] should not contain '/', only a single element name");
 		}
 	}
 
@@ -129,8 +128,8 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		"<xsl:output method=\"xml\" omit-xml-declaration=\"yes\"/>" +
 		"<xsl:strip-space elements=\"*\"/>" +
 		"<xsl:template match=\"/\">" +
-		"<xsl:element name=\"" + rootElementname + "\">" +
-		"<xsl:copy-of "+namespaceClause+" select=\"" + XmlUtils.encodeChars(xpathExpression) + "\"/>" +
+		"<xsl:element "+namespaceClause+" name=\"" + rootElementname + "\">" +
+		"<xsl:copy-of select=\"" + XmlUtils.encodeChars(xpathExpression) + "\"/>" +
 		"</xsl:element>" +
 		"</xsl:template>" +
 		"</xsl:stylesheet>";
@@ -204,13 +203,16 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		public void startPrefixMapping(String prefix, String uri) throws SAXException {
 			log.debug("startPrefixMapping ["+prefix+"]=["+uri+"]");
 			if (!isRemoveNamespaces()) {
-				if (elementLevel==0) {
+				if (elementLevel==0 || elementLevel==1 && StringUtils.isNotEmpty(getContainerElement())) {
 					appendNamespaceMapping(firstLevelNamespaceDefinitions, prefix, uri);
 				} else {
 					appendNamespaceMapping(namespaceDefinitions, prefix, uri);
 				}
 			}
+			super.startPrefixMapping(prefix, uri);
 		}
+
+
 
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes)	throws SAXException {
@@ -386,12 +388,12 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 				errorMessage="Could not process list of elements using xpath ["+getElementXPathExpression()+"]";
 			} 
 			if (StringUtils.isNotEmpty(getTargetElement())) {
-				TargetElementFilter targetElementFilter = new TargetElementFilter(getTargetElement(),true);
+				ElementFilter targetElementFilter = new ElementFilter(XmlUtils.getNamespaceMap(getNamespaceDefs()), getTargetElement(),true,true);
 				targetElementFilter.setContentHandler(inputHandler);
 				inputHandler=targetElementFilter;
 			}
 			if (StringUtils.isNotEmpty(getContainerElement())) {
-				ContainerElementFilter containerElementFilter = new ContainerElementFilter(getContainerElement());
+				ElementFilter containerElementFilter = new ElementFilter(XmlUtils.getNamespaceMap(getNamespaceDefs()), getContainerElement(),false,true);
 				containerElementFilter.setContentHandler(inputHandler);
 				inputHandler=containerElementFilter;
 			}
@@ -442,7 +444,8 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		return processFile;
 	}
 
-	@IbisDoc({"2", "Element name (not an XPath-expression) used to determine the 'root' of elements to be iterated over, i.e. the root of the set of child elements. When empty, the pipe will iterate over each direct child element of the root", ""})
+	@IbisDoc({"2", "Element name (not an XPath-expression), qualified via attribute <code>namespaceDefs</code>, used to determine the 'root' of elements to be iterated over, i.e. the root of the set of child elements. "
+			+ "When empty, the pipe will iterate over each direct child element of the root", ""})
 	public void setContainerElement(String containerElement) {
 		this.containerElement = containerElement;
 	}
@@ -450,7 +453,8 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		return containerElement;
 	}
 
-	@IbisDoc({"3", "Element name (not an XPath-expression) used to determine the type of elements to be iterated over, i.e. the element name of each of the child elements. When empty, the pipe will iterate over any direct child element of the root or specified containerElement", ""})
+	@IbisDoc({"3", "Element name (not an XPath-expression), qualified via attribute <code>namespaceDefs</code>, used to determine the type of elements to be iterated over, i.e. the element name of each of the child elements. "
+			+ "When empty, the pipe will iterate over any direct child element of the root or specified containerElement", ""})
 	public void setTargetElement(String targetElement) {
 		this.targetElement = targetElement;
 	}

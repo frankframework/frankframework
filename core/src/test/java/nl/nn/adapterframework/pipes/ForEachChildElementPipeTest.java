@@ -36,38 +36,55 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	private String CDATA_START=TEST_CDATA?"<![CDATA[":"";
 	private String CDATA_END=TEST_CDATA?"]]>":"";
 
-	private String messageBasicNoNS="<root><sub name=\"p &amp; Q\">A &amp; B</sub><sub>"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub></root>";
-	private String messageBasicNoNSLong="<root><sub name=\"p &amp; Q\">A &amp; B</sub><sub>"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub><sub>data</sub><sub>data</sub><sub>data</sub><sub>data</sub></root>";
-	private String messageBasicNS1="<root xmlns=\"urn:test\"><sub name=\"p &amp; Q\">A &amp; B</sub><sub>"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub></root>";
-	private String messageBasicNS2="<ns:root xmlns:ns=\"urn:test\"><ns:sub name=\"p &amp; Q\">A &amp; B</ns:sub><ns:sub>"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</ns:sub></ns:root>";
+	private String messageBasicNoNS="<root><sub>A &amp; B</sub><sub name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub><sub name=\"r\">R</sub></root>";
+	private String messageBasicNoNSLong="<root><sub>A &amp; B</sub><sub name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub><sub>data</sub><sub>data</sub><sub>data</sub><sub>data</sub></root>";
+	private String messageBasicNS1="<root xmlns=\"urn:test\"><sub>A &amp; B</sub><sub name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub><sub name=\"r\">R</sub></root>";
+	private String messageBasicNS2="<ns:root xmlns:ns=\"urn:test\"><ns:sub>A &amp; B</ns:sub><ns:sub name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</ns:sub><ns:sub name=\"r\">R</ns:sub></ns:root>";
 	private String messageError="<root><sub name=\"a\">B</sub><sub>error</sub><sub>tail</sub></root>";
 
 	private String expectedBasicNoNS="<results>\n"+
 			"<result item=\"1\">\n"+
-			"<sub name=\"p &amp; Q\">A &amp; B</sub>\n"+
+			"<sub>A &amp; B</sub>\n"+
 			"</result>\n"+
 			"<result item=\"2\">\n"+
-			"<sub>"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub>\n"+
+			"<sub name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub>\n"+
+			"</result>\n"+
+			"<result item=\"3\">\n"+
+			"<sub name=\"r\">R</sub>\n"+
 			"</result>\n</results>";
 
 	private String expectedBasicNoNSFirstElement="<results>\n"+
 			"<result item=\"1\">\n"+
-			"<sub name=\"p &amp; Q\">A &amp; B</sub>\n"+
+			"<sub>A &amp; B</sub>\n"+
+			"</result>\n</results>";
+
+	private String expectedBasicNoNSFirstTwoElements="<results>\n"+
+			"<result item=\"1\">\n"+
+			"<sub>A &amp; B</sub>\n"+
+			"</result>\n"+
+			"<result item=\"2\">\n"+
+			"<sub name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub>\n"+
 			"</result>\n</results>";
 
 	private String expectedBasicNS1="<results>\n"+
 			"<result item=\"1\">\n"+
-			"<sub name=\"p &amp; Q\" xmlns=\"urn:test\">A &amp; B</sub>\n"+
+			"<sub xmlns=\"urn:test\">A &amp; B</sub>\n"+
 			"</result>\n"+
 			"<result item=\"2\">\n"+
-			"<sub xmlns=\"urn:test\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub>\n"+
+			"<sub name=\"p &amp; Q\" xmlns=\"urn:test\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub>\n"+
+			"</result>\n"+
+			"<result item=\"3\">\n"+
+			"<sub name=\"r\" xmlns=\"urn:test\">R</sub>\n"+
 			"</result>\n</results>";
 	private String expectedBasicNS2="<results>\n"+
 			"<result item=\"1\">\n"+
-			"<ns:sub name=\"p &amp; Q\" xmlns:ns=\"urn:test\">A &amp; B</ns:sub>\n"+
+			"<ns:sub xmlns:ns=\"urn:test\">A &amp; B</ns:sub>\n"+
 			"</result>\n"+
 			"<result item=\"2\">\n"+
-			"<ns:sub xmlns:ns=\"urn:test\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</ns:sub>\n"+
+			"<ns:sub name=\"p &amp; Q\" xmlns:ns=\"urn:test\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</ns:sub>\n"+
+			"</result>\n"+
+			"<result item=\"3\">\n"+
+			"<ns:sub name=\"r\" xmlns:ns=\"urn:test\">R</ns:sub>\n"+
 			"</result>\n</results>";
 
 	private IPipeLineSession session = new PipeLineSessionBase();
@@ -306,7 +323,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
         PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais,sc), session);
         String actual=prr.getResult().toString();
         
-        assertEquals(expectedBasicNoNS, actual);
+        assertEquals(expectedBasicNoNSFirstTwoElements, actual);
 		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
     }
  
@@ -355,6 +372,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
     public void testContaineElementNoRemoveNamespaces() throws PipeRunException, ConfigurationException, PipeStartException {
     	SwitchCounter sc = new SwitchCounter();
     	pipe.setContainerElement("root");
+    	pipe.setNamespaceDefs("urn:test");
     	pipe.setNamespaceAware(false);
     	pipe.setRemoveNamespaces(false);
     	pipe.setSender(getElementRenderer(sc));
@@ -433,7 +451,24 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
     public void testBasicWithStopExpression() throws PipeRunException, ConfigurationException, PipeStartException {
     	SwitchCounter sc = new SwitchCounter();
     	pipe.setSender(getElementRenderer(null));
-    	pipe.setStopConditionXPathExpression("position()=1");
+    	pipe.setStopConditionXPathExpression("*[@name='p & Q']");
+    	configurePipe();
+    	pipe.start();
+
+		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNS.getBytes());    	
+        PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais,sc), session);
+        String actual=prr.getResult().toString();
+        
+		//System.out.println("num reads="+sc.hitCount.get("in"));
+        assertThat(sc.hitCount.get("in"), Matchers.lessThan(17));
+        assertEquals(expectedBasicNoNSFirstTwoElements, actual);
+    }
+
+    @Test
+    public void testBasicMaxItems1() throws PipeRunException, ConfigurationException, PipeStartException {
+    	SwitchCounter sc = new SwitchCounter();
+    	pipe.setSender(getElementRenderer(null));
+    	pipe.setMaxItems(1);
     	configurePipe();
     	pipe.start();
 
@@ -444,6 +479,23 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		//System.out.println("num reads="+sc.hitCount.get("in"));
         assertThat(sc.hitCount.get("in"), Matchers.lessThan(10));
         assertEquals(expectedBasicNoNSFirstElement, actual);
+    }
+
+    @Test
+    public void testBasicMaxItems2() throws PipeRunException, ConfigurationException, PipeStartException {
+    	SwitchCounter sc = new SwitchCounter();
+    	pipe.setSender(getElementRenderer(null));
+    	pipe.setMaxItems(2);
+    	configurePipe();
+    	pipe.start();
+
+		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNS.getBytes());    	
+        PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais,sc), session);
+        String actual=prr.getResult().toString();
+        
+		//System.out.println("num reads="+sc.hitCount.get("in"));
+        assertThat(sc.hitCount.get("in"), Matchers.lessThan(15));
+        assertEquals(expectedBasicNoNSFirstTwoElements, actual);
     }
 
     @Test

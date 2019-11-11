@@ -124,12 +124,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * Creates the Spring context, and load the configuration. Optionally  with
 	 * a specific ClassLoader which might for example override the getResource
 	 * method to load configuration and related resources from a different
-	 * location from the standard classpath. In case basePath is not null the
-	 * ClassLoader is wrapped in {@link BasePathClassLoader} to make it possible
-	 * to reference resources in the configuration relative to the configuration
-	 * file and have an extra resource override (resource is first resolved
-	 * relative to the configuration, when not found it is resolved by the
-	 * original ClassLoader.
+	 * location from the standard classpath. 
 	 * 
 	 * @see ClassUtils#getResourceURL(ClassLoader, String)
 	 * @see AppConstants#getInstance(ClassLoader)
@@ -142,12 +137,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * Creates the Spring context, and load the configuration. Optionally  with
 	 * a specific ClassLoader which might for example override the getResource
 	 * method to load configuration and related resources from a different
-	 * location from the standard classpath. In case basePath is not null the
-	 * ClassLoader is wrapped in {@link BasePathClassLoader} to make it possible
-	 * to reference resources in the configuration relative to the configuration
-	 * file and have an extra resource override (resource is first resolved
-	 * relative to the configuration, when not found it is resolved by the
-	 * original ClassLoader.
+	 * location from the standard classpath. 
 	 * 
 	 * @see ClassUtils#getResourceURL(ClassLoader, String)
 	 * @see AppConstants#getInstance(ClassLoader)
