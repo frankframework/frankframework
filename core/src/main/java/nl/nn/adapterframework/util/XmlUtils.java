@@ -36,6 +36,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
@@ -830,20 +831,29 @@ public class XmlUtils {
 	}
 
 	
-	public static String getNamespaceClause(String namespaceDefs) throws TransformerConfigurationException {
+	public static String getNamespaceClause(String namespaceDefs) {
 		String namespaceClause = "";
+		for (Entry<String,String> namespaceDef:getNamespaceMap(namespaceDefs).entrySet()) {
+			String prefixClause=namespaceDef.getKey()==null?"":":"+namespaceDef.getKey();
+			namespaceClause += " xmlns" + prefixClause + "=\"" + namespaceDef.getValue() + "\"";
+		}
+		return namespaceClause;
+	}
+	
+	public static Map<String,String> getNamespaceMap(String namespaceDefs) {
+		Map<String,String> namespaceMap=new LinkedHashMap<String,String>();
 		if (namespaceDefs != null) {
 			StringTokenizer st1 = new StringTokenizer(namespaceDefs,", \t\r\n\f");
 			while (st1.hasMoreTokens()) {
 				String namespaceDef = st1.nextToken();
 				int separatorPos = namespaceDef.indexOf('=');
-				String prefixClause=separatorPos < 1?"":":"+namespaceDef.substring(0, separatorPos);
-				namespaceClause += " xmlns" + prefixClause + "=\"" + namespaceDef.substring(separatorPos + 1) + "\"";
+				String prefix=separatorPos < 1?null:namespaceDef.substring(0, separatorPos);
+				String namespace=namespaceDef.substring(separatorPos + 1);
+				namespaceMap.put(prefix, namespace);
 			}
 		}
-		return namespaceClause;
+		return namespaceMap;
 	}
-	
 	
 	/*
 	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of, and enables use of parameters.
