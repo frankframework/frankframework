@@ -23,6 +23,7 @@ import java.util.Enumeration;
 import java.util.LinkedList;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader.ReportLevel;
 import nl.nn.adapterframework.util.AppConstants;
@@ -45,7 +46,7 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 	abstract C createClassLoader(ClassLoader parent) throws Exception;
 
 	@Before
-	public void init() throws Exception {
+	public void setUp() throws Exception {
 		ClassLoader parent = new ClassLoaderMock();
 		appConstants = AppConstants.getInstance();
 		C = createClassLoader(parent);
@@ -58,6 +59,7 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 			((IConfigurationClassLoader) C).configure(ibisContext, getConfigurationName());
 		}
 	}
+	
 
 	/**
 	 * Returns the scheme, defaults to <code>file</code>
@@ -202,5 +204,53 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 			c.setReportLevel("DEBUG");
 			assertTrue(c.getReportLevel().equals(ReportLevel.DEBUG));
 		}
+	}
+
+	@Test
+	public void configurationFileDefaultLocation() {
+		String configFile = ConfigurationUtils.getConfigurationFile(C, getConfigurationName());
+		assertEquals("Configuration.xml", configFile);
+		URL configURL = C.getResource(configFile);
+		assertNotNull("config file ["+configFile+"] cannot be found", configURL);
+		assertTrue(configURL.toString().endsWith(configFile));
+	}
+
+	@Test
+	public void configurationFileCustomLocation() {
+		String name = "Config/RikMetTaErvoor.xml";
+		AppConstants.getInstance(C).put("configurations."+getConfigurationName()+".configurationFile", name);
+		String configFile = ConfigurationUtils.getConfigurationFile(C, getConfigurationName());
+		assertEquals(name, configFile);
+		URL configURL = C.getResource(configFile);
+		assertNotNull("config file ["+configFile+"] cannot be found", configURL);
+		assertTrue(configURL.toString().endsWith(configFile));
+	}
+
+	@Test
+	public void configurationFileCustomLocationAndBasePath() throws Exception {
+		String name = "Config/RikMetTaErvoor.xml";
+
+		//Order is everything!
+		ClassLoader parent = new ClassLoaderMock();
+		appConstants = AppConstants.getInstance();
+		C = createClassLoader(parent);
+
+		String configKey = "configurations."+getConfigurationName()+".configurationFile";
+		AppConstants.getInstance(C).put(configKey, name);
+
+		if(C instanceof ClassLoaderBase) {
+			((ClassLoaderBase) C).setBasePath("Config");
+		}
+		if(C instanceof IConfigurationClassLoader) {
+			appConstants.put("configurations."+getConfigurationName()+".classLoaderType", C.getClass().getSimpleName());
+			((IConfigurationClassLoader) C).configure(ibisContext, getConfigurationName());
+		}
+		//
+
+		String configFile = ConfigurationUtils.getConfigurationFile(C, getConfigurationName());
+		assertEquals(name, configFile);
+		URL configURL = C.getResource(configFile);
+		assertNotNull("config file ["+name+"] cannot be found", configURL);
+		assertTrue(configURL.toString().endsWith(configFile));
 	}
 }

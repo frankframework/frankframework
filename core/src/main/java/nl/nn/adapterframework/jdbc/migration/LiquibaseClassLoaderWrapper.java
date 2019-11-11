@@ -33,11 +33,11 @@ import org.apache.log4j.Logger;
  * @author Niels Meijer
  *
  */
-public class LiquibaseClassLoader extends ClassLoader {
+public class LiquibaseClassLoaderWrapper extends ClassLoader {
 
 	private Logger log = LogUtil.getLogger(this);
 
-	public LiquibaseClassLoader(ClassLoader parent) {
+	public LiquibaseClassLoaderWrapper(ClassLoader parent) {
 		super(parent);
 	}
 
