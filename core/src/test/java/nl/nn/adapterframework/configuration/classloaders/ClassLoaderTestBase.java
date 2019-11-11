@@ -217,7 +217,7 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 
 	@Test
 	public void configurationFileCustomLocation() {
-		String name = "Config/RikMetTaErvoor.xml";
+		String name = "Config/NonDefaultConfiguration.xml";
 		AppConstants.getInstance(C).put("configurations."+getConfigurationName()+".configurationFile", name);
 		String configFile = ConfigurationUtils.getConfigurationFile(C, getConfigurationName());
 		assertEquals(name, configFile);
@@ -228,7 +228,7 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 
 	@Test
 	public void configurationFileCustomLocationAndBasePath() throws Exception {
-		String name = "Config/RikMetTaErvoor.xml";
+		String name = "Config/NonDefaultConfiguration.xml";
 
 		//Order is everything!
 		ClassLoader parent = new ClassLoaderMock();
