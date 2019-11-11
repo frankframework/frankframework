@@ -2,7 +2,7 @@ package nl.nn.adapterframework.configuration.classloaders;
 
 /**
  * Depending on the JKD this grabs the default ClassLoader
- * Does not implement the IClassLoader interface
+ * Does not implement the IConfigurationClassLoader interface
  * 
  * @author Niels Meijer
  *

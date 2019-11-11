@@ -125,6 +125,31 @@ public class ConfigurationUtils {
 		}
 	}
 
+	public static String getConfigurationFile(ClassLoader classLoader, String currentConfigurationName) {
+		String configFileKey = "configurations." + currentConfigurationName + ".configurationFile";
+		String configurationFile = AppConstants.getInstance(classLoader).getResolvedProperty(configFileKey);
+		if (StringUtils.isEmpty(configurationFile)) {
+			configurationFile = "Configuration.xml";
+		}
+		return configurationFile;
+	}
+
+	public static String getConfigurationVersion(ClassLoader classLoader) {
+		return getVersion(classLoader, "configuration.version", "configuration.timestamp");
+	}
+
+	public static String getVersion(ClassLoader classLoader, String versionKey, String timestampKey) {
+		AppConstants constants = AppConstants.getInstance(classLoader);
+		String version = null;
+		if (StringUtils.isNotEmpty(constants.getProperty(versionKey))) {
+			version = constants.getProperty(versionKey);
+			if (StringUtils.isNotEmpty(constants.getProperty(timestampKey))) {
+				version = version + "_" + constants.getProperty(timestampKey);
+			}
+		}
+		return version;
+	}
+
 	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name) throws ConfigurationException {
 		return getConfigFromDatabase(ibisContext, name, null);
 	}

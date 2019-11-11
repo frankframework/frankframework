@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018 Nationale-Nederlanden
+   Copyright 2013, 2016, 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.util;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -24,8 +22,10 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.digester.substitution.VariableExpander;
 import org.apache.commons.io.FilenameUtils;
@@ -43,58 +43,35 @@ import nl.nn.adapterframework.configuration.IbisContext;
  * @author Johan Verrips
  *
  */
-public final class AppConstants extends Properties implements Serializable{
+public final class AppConstants extends Properties implements Serializable {
 	private Logger log = LogUtil.getLogger(this);
 
 	private final static String APP_CONSTANTS_PROPERTIES_FILE = "AppConstants.properties";
 	private final static String ADDITIONAL_PROPERTIES_FILE_KEY = "ADDITIONAL.PROPERTIES.FILE";
-	private static AppConstants self = null;
 	private VariableExpander variableExpander;
 	private static Properties additionalPropertiesFilesSubstVarsProperties = new Properties();
 	private static Properties propertyPlaceholderConfigurerProperties = new Properties();
-	
-	private AppConstants() {
-		super();
-		load(null, null, APP_CONSTANTS_PROPERTIES_FILE, true);
-		if (JdbcUtil.retrieveJdbcPropertiesFromDatabase()!=null) {
-			putAll(JdbcUtil.retrieveJdbcPropertiesFromDatabase());
-		}
-	}
+
+	private static ConcurrentHashMap<ClassLoader, AppConstants> appConstantsMap = new ConcurrentHashMap<ClassLoader, AppConstants>();
 
 	private AppConstants(ClassLoader classLoader) {
 		super();
-		load(classLoader, null, APP_CONSTANTS_PROPERTIES_FILE, true);
-		putAll(propertyPlaceholderConfigurerProperties);
-		if (JdbcUtil.retrieveJdbcPropertiesFromDatabase()!=null) {
-			putAll(JdbcUtil.retrieveJdbcPropertiesFromDatabase());
-		}
-	}
 
-	private AppConstants(String directory) {
-		super();
-		load(null, directory, APP_CONSTANTS_PROPERTIES_FILE, true);
+		load(classLoader, APP_CONSTANTS_PROPERTIES_FILE, true);
 		putAll(propertyPlaceholderConfigurerProperties);
 		if (JdbcUtil.retrieveJdbcPropertiesFromDatabase()!=null) {
 			putAll(JdbcUtil.retrieveJdbcPropertiesFromDatabase());
 		}
+
+		log.info("created new AppConstants instance for classloader ["+classLoader+"]");
 	}
 
 	/**
 	 * Retrieve an instance of this singleton
 	 * @return AppConstants instance
 	 */
-	public static synchronized AppConstants getInstance() {
-		if (self==null) {
-			self=new AppConstants();
-		}
-		return self;
-	}
-
-	public static synchronized void removeInstance() {
-		if (self!=null) {
-			self.clear();
-			self=null;
-		}
+	public static AppConstants getInstance() {
+		return getInstance(null);
 	}
 
 	/**
@@ -107,27 +84,38 @@ public final class AppConstants extends Properties implements Serializable{
 	 * @see IbisContext#init()
 	 * @return AppConstants instance
 	 */
-	public static synchronized AppConstants getInstance(ClassLoader classLoader) {
-		return new AppConstants(classLoader);
+	public static AppConstants getInstance(ClassLoader cl) {
+		ClassLoader classLoader = cl;
+		if(cl == null) {
+			classLoader = Thread.currentThread().getContextClassLoader();
+		}
+
+		AppConstants instance = appConstantsMap.get(classLoader);
+		if(instance == null) {
+			instance = new AppConstants(classLoader);
+			appConstantsMap.put(classLoader, instance);
+		}
+		return instance;
+	}
+
+	public static void removeInstance() {
+		removeInstance(Thread.currentThread().getContextClassLoader());
+	}
+
+	public static void removeInstance(ClassLoader classLoader) {
+		AppConstants instance = appConstantsMap.get(classLoader);
+		if (instance != null) {
+			appConstantsMap.remove(classLoader);
+		}
 	}
 
 	/**
-	 * Retrieve an instance based on a directory (not a singleton)
-	 * @return AppConstants instance
+	 * Very similar to <code>System.getProperty</code> except
+	 * that the {@link SecurityException} is hidden.
+	 * 
+	 * @param key The key to search for.
+	 * @return the string value of the system property, or NULL if there is no property with that key.
 	 */
-	public static synchronized AppConstants getInstance(String directory) {
-		return new AppConstants(directory);
-	}
-
-	/**
-	   Very similar to <code>System.getProperty</code> except
-	   that the {@link SecurityException} is hidden.
-
-	   @param key The key to search for.
-	   @return the string value of the system property, or the default
-	   value if there is no property with that key.
-
-	   @since 1.1 */
 	private String getSystemProperty(String key) {
 		try {
 			return System.getProperty(key);
@@ -158,10 +146,10 @@ public final class AppConstants extends Properties implements Serializable{
 	 */
 	public String getResolvedProperty(String key) {
 		String value = null;
-        value=getSystemProperty(key); // first try custom properties
-        if (value==null) {
+		value=getSystemProperty(key); // first try custom properties
+		if (value==null) {
 			value = super.getProperty(key); // then try DeploymentSpecifics and appConstants
-        }
+		}
 		if (value != null) {
 			try {
 				String result=StringResolver.substVars(value, this);
@@ -177,9 +165,9 @@ public final class AppConstants extends Properties implements Serializable{
 				return value;
 			}
 		} else {
-            if (log.isTraceEnabled()) log.trace("getResolvedProperty: key ["+key+"] resolved to value ["+value+"]");
-            return null;
-        }
+			if (log.isTraceEnabled()) log.trace("getResolvedProperty: key ["+key+"] resolved to value ["+value+"]");
+			return null;
+		}
 	}
 
 	/**
@@ -217,8 +205,7 @@ public final class AppConstants extends Properties implements Serializable{
 		if(!keyBase.endsWith("."))
 			keyBase +=".";
 
-		AppConstants constants = new AppConstants();
-		constants.putAll(getInstance());
+		AppConstants constants = getInstance();
 		if(useSystemProperties)
 			constants.putAll(System.getProperties());
 		if(useEnvironmentVariables) {
@@ -233,7 +220,7 @@ public final class AppConstants extends Properties implements Serializable{
 		for(Object objKey: constants.keySet()) {
 			String key = (String) objKey;
 			if(key.startsWith(keyBase)) {
-				filteredProperties.put(key, getInstance().getResolvedProperty(key));
+				filteredProperties.put(key, constants.getResolvedProperty(key));
 			}
 		}
 
@@ -241,65 +228,57 @@ public final class AppConstants extends Properties implements Serializable{
 	}
 
 	/**
-	 * Load the contents of a propertiesfile.
-	 * <p>Optionally, this may be a comma-seperated list of files to load, e.g.
+	 * Load the contents of a properties file.
+	 * <p>Optionally, this may be a comma-separated list of files to load, e.g.
 	 * <code><pre>log4j.properties,deploymentspecifics.properties</pre></code>
-	 * which will cause both files to be loaded. Trimming of the filename will take place,
-	 * so you may also specify <code><pre>log4j.properties, deploymentspecifics.properties</pre></code>
+	 * which will cause both files to be loaded in the listed order.
 	 * </p>
 	 */
-	private synchronized void load(ClassLoader classLoader, String directory,
-			String filename, boolean loadAdditionalPropertiesFiles) {
-		load(classLoader, directory, filename, null, loadAdditionalPropertiesFiles);
+	private synchronized void load(ClassLoader classLoader, String filename, boolean loadAdditionalPropertiesFiles) {
+		load(classLoader, filename, null, loadAdditionalPropertiesFiles);
 	}
-	private synchronized void load(ClassLoader classLoader, String directory,
-			String filename, String suffix,
-			boolean loadAdditionalPropertiesFiles) {
+
+	private synchronized void load(ClassLoader classLoader, String filename, String suffix, boolean loadAdditionalPropertiesFiles) {
 		StringTokenizer tokenizer = new StringTokenizer(filename, ",");
 		while (tokenizer.hasMoreTokens()) {
 			String theFilename= tokenizer.nextToken().trim();
 			try {
-				if (directory != null) {
-					File file = new File(directory + "/" + theFilename);
-					if (file.exists()) {
-						InputStream is = new FileInputStream(file);
-						load(is);
-						log.info("Application constants loaded from file [" + theFilename + "]");
+				ClassLoader cl = classLoader;
+				if(classLoader == null) {
+					throw new IllegalStateException("no classloader found!");
+				}
+				List<URL> resources = Collections.list(cl.getResources(theFilename));
+				if(resources.size() == 0) {
+					if(APP_CONSTANTS_PROPERTIES_FILE.equals(theFilename)) {
+						String msg = APP_CONSTANTS_PROPERTIES_FILE+ " file not found, unable to initalize AppConstants";
+						log.error(msg);
+						throw new MissingResourceException(msg, this.getClass().getSimpleName(), APP_CONSTANTS_PROPERTIES_FILE);
+					}
+					log.debug("cannot find resource ["+theFilename+"] to load additional properties from, ignoring");
+				}
+
+				//We need to reverse the loading order to make sure the parent files are loaded first
+				Collections.reverse(resources);
+
+				for (URL url : resources) {
+					InputStream is = url.openStream();
+					load(is);
+					log.info("Application constants loaded from url [" + url.toString() + "]");
+				}
+
+				if (loadAdditionalPropertiesFiles) {
+					// Add properties after load(is) to prevent load(is)
+					// from overriding them
+					putAll(additionalPropertiesFilesSubstVarsProperties);
+					String loadFile = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY);
+					String loadFileSuffix = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY + ".SUFFIX");
+					if (StringUtils.isNotEmpty(loadFileSuffix)){
+						load(classLoader, loadFile, loadFileSuffix, false);
 					} else {
-						log.debug("cannot find file ["+theFilename+"] to load additional properties from, ignoring");
+						load(classLoader, loadFile, false);
 					}
 				}
-				else {
-					ClassLoader cl = classLoader;
-					if(classLoader == null) {
-						cl = AppConstants.class.getClassLoader();
-					}
-					List<URL> resources = Collections.list(cl.getResources(theFilename));
-					if(resources.size() == 0)
-						log.debug("cannot find resource ["+theFilename+"] to load additional properties from, ignoring");
 
-					//We need to reverse the loading order to make sure the parent files are loaded first
-					Collections.reverse(resources);
-
-					for (URL url : resources) {
-						InputStream is = url.openStream();
-						load(is);
-						log.info("Application constants loaded from url [" + url.toString() + "]");
-					}
-
-					if (loadAdditionalPropertiesFiles) {
-						// Add properties after load(is) to prevent load(is)
-						// from overriding them
-						putAll(additionalPropertiesFilesSubstVarsProperties);
-						String loadFile = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY);
-						String loadFileSuffix = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY + ".SUFFIX");
-						if (StringUtils.isNotEmpty(loadFileSuffix)){
-							load(classLoader, directory, loadFile, loadFileSuffix, false);
-						} else {
-							load(classLoader, directory, loadFile, false);
-						}
-					}
-				}
 				if (suffix != null) {
 					String baseName = FilenameUtils.getBaseName(theFilename);
 					String extension = FilenameUtils.getExtension(theFilename);
@@ -308,7 +287,7 @@ public final class AppConstants extends Properties implements Serializable{
 							+ suffix
 							+ (StringUtils.isEmpty(extension) ? "" : "."
 									+ extension);
-					load(classLoader, directory, suffixedFilename, false);
+					load(classLoader, suffixedFilename, false);
 				}
 			} catch (IOException e) {
 				log.error("error reading [" + APP_CONSTANTS_PROPERTIES_FILE + "]", e);
@@ -333,7 +312,7 @@ public final class AppConstants extends Properties implements Serializable{
 	 * of IbisContext.
 	 */
 	public void putPropertyPlaceholderConfigurerProperty(String name, String value) {
-		self.put(name, value);
+		getInstance().put(name, value);
 		propertyPlaceholderConfigurerProperties.put(name, value);
 	}
 
@@ -342,7 +321,7 @@ public final class AppConstants extends Properties implements Serializable{
 	}
 
 	public String toXml(boolean resolve) {
-		Enumeration enumeration=this.keys();
+		Enumeration<Object> enumeration = this.keys();
 		XmlBuilder xmlh=new XmlBuilder("applicationConstants");
 		XmlBuilder xml=new XmlBuilder("properties");
 		xmlh.addSubElement(xml);
@@ -374,8 +353,8 @@ public final class AppConstants extends Properties implements Serializable{
 
 		if (ob == null)return dfault;
 		return ob;
-
 	}
+
 	 /**
 	 * Gets a <code>boolean</code> value
 	 * Returns "true" if the retrieved value is "true", otherwise "false"
@@ -385,11 +364,11 @@ public final class AppConstants extends Properties implements Serializable{
 	 * @return double
 	 */
 	 public boolean getBoolean(String key, boolean dfault) {
-		 String ob = this.getResolvedProperty(key);
-		 if (ob == null)return dfault;
+		String ob = this.getResolvedProperty(key);
+		if (ob == null)return dfault;
 
-		 return ob.equalsIgnoreCase("true");
-	 }
+		return ob.equalsIgnoreCase("true");
+	}
 
 	/**
 	 * Gets an <code>int</code> value
@@ -399,11 +378,11 @@ public final class AppConstants extends Properties implements Serializable{
 	 * @return int
 	 */
 	public int getInt(String key, int dfault) {
-		 String ob = this.getResolvedProperty(key);
+		String ob = this.getResolvedProperty(key);
 
-		 if (ob == null) return dfault;
-		 return Integer.parseInt(ob);
-	 }
+		if (ob == null) return dfault;
+		return Integer.parseInt(ob);
+	}
 
 	/**
 	 * Gets a <code>long</code> value
@@ -413,11 +392,11 @@ public final class AppConstants extends Properties implements Serializable{
 	 * @return long
 	 */
 	 public long getLong(String key, long dfault) {
-		 String ob = this.getResolvedProperty(key);
+		String ob = this.getResolvedProperty(key);
 
-		 if (ob == null)return dfault;
-		 return Long.parseLong(ob);
-	 }
+		if (ob == null)return dfault;
+		return Long.parseLong(ob);
+	}
 
 	/**
 	 * Gets a <code>double</code> value
@@ -427,20 +406,19 @@ public final class AppConstants extends Properties implements Serializable{
 	 * @return double
 	 */
 	 public double getDouble(String key, double dfault) {
-		 String ob = this.getResolvedProperty(key);
-		 if (ob == null)return dfault;
-		 return Double.parseDouble(ob);
-	 }
+		String ob = this.getResolvedProperty(key);
+		if (ob == null)return dfault;
+		return Double.parseDouble(ob);
+	}
 
 
 	/*
 	 *	The variableExpander is set from the SpringContext.
 	 */
-    public void setVariableExpander(VariableExpander expander) {
-        variableExpander = expander;
-    }
+	public void setVariableExpander(VariableExpander expander) {
+		variableExpander = expander;
+	}
 	public VariableExpander getVariableExpander() {
 		return variableExpander;
 	}
-
 }

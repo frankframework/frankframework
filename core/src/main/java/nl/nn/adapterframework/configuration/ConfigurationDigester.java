@@ -93,7 +93,6 @@ public class ConfigurationDigester {
 
 	private static final String attributesGetter_xslt = "/xml/xsl/AttributesGetter.xsl";
 
-	private String configurationFile = null;
 	private String digesterRulesFile = DIGESTER_RULES_DEFAULT;
 	private boolean configLogAppend = false;
 
@@ -190,12 +189,13 @@ public class ConfigurationDigester {
 		return digester;
 	}
 
-	public void digestConfiguration(ClassLoader classLoader, Configuration configuration, String configurationFile) throws ConfigurationException {
-		digestConfiguration(classLoader, configuration, configurationFile, configLogAppend);
+	public void digestConfiguration(ClassLoader classLoader, Configuration configuration) throws ConfigurationException {
+		digestConfiguration(classLoader, configuration, configLogAppend);
 		configLogAppend = true;
 	}
 
-	public void digestConfiguration(ClassLoader classLoader, Configuration configuration, String configurationFile, boolean configLogAppend) throws ConfigurationException {
+	public void digestConfiguration(ClassLoader classLoader, Configuration configuration, boolean configLogAppend) throws ConfigurationException {
+		String configurationFile = ConfigurationUtils.getConfigurationFile(classLoader, configuration.getName());
 		Digester digester = null;
 		try {
 			digester = getDigester(configuration);
@@ -203,6 +203,7 @@ public class ConfigurationDigester {
 			if (digesterRulesURL == null) {
 				throw new ConfigurationException("Digester rules file not found: " + getDigesterRules());
 			}
+
 			Resource configurationResource = Resource.getResource(classLoader, configurationFile);
 			if (configurationResource == null) {
 				throw new ConfigurationException("Configuration file not found: " + configurationFile);
@@ -281,14 +282,6 @@ public class ConfigurationDigester {
 			}
 		}
 	}
-
-	public void setConfigurationFile(String string) {
-		configurationFile = string;
-	}
-	public String getConfigurationFile() {
-		return configurationFile;
-	}
-
 
 	public void setDigesterRules(String string) {
 		digesterRulesFile = string;
