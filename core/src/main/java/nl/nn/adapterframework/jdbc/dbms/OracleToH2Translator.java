@@ -44,6 +44,8 @@ public class OracleToH2Translator {
 	private static final BigInteger SEQUENCE_MAX_VALUE = new BigInteger(SEQUENCE_MAX_VALUE_STRING);
 
 	public static String convertQuery(Connection connection, String query) throws JdbcException, SQLException {
+		if (query == null)
+			return null;
 		String originalQuery = query.trim();
 		// add spaces around following characters: ,;()
 		String trimmedQuery = originalQuery.replaceAll("([,;\\(\\)])", " $1 ").trim();
@@ -55,31 +57,7 @@ public class OracleToH2Translator {
 		}
 		// split on whitespaces excepts whitespaces between single quotes
 		String[] split = trimmedQuery.split("\\s+(?=([^']*'[^']*')*[^']*$)");
-		String[] newSplit;
-		if (split.length > 14 && "SELECT".equalsIgnoreCase(split[0])) {
-			newSplit = convertQuerySelect(split);
-		} else if (split.length == 3 && "SET".equalsIgnoreCase(split[0]) && "DEFINE".equalsIgnoreCase(split[1]) && "OFF".equalsIgnoreCase(split[2])) {
-			newSplit = null;
-		} else if (split.length > 4 && "CREATE".equalsIgnoreCase(split[0]) && "OR".equalsIgnoreCase(split[1]) && "REPLACE".equalsIgnoreCase(split[2]) && "TRIGGER".equalsIgnoreCase(split[3])) {
-			newSplit = null;
-		} else if (split.length > 2 && "ALTER".equalsIgnoreCase(split[0]) && "TRIGGER".equalsIgnoreCase(split[1])) {
-			newSplit = null;
-		} else if (split.length > 3 && "CREATE".equalsIgnoreCase(split[0]) && "SEQUENCE".equalsIgnoreCase(split[1])) {
-			newSplit = convertQueryCreateSequence(split);
-		} else if (split.length > 4 && "CREATE".equalsIgnoreCase(split[0]) && "TABLE".equalsIgnoreCase(split[1]) && "IBISSTORE".equalsIgnoreCase(split[2])) {
-			newSplit = convertQueryCreateTableIbisStore(split);
-		} else if (split.length > 3 && "CREATE".equalsIgnoreCase(split[0]) && "TABLE".equalsIgnoreCase(split[1])) {
-			newSplit = convertQueryCreateTable(split);
-		} else if (split.length >= 3 && "DROP".equalsIgnoreCase(split[0]) && ("SEQUENCE".equalsIgnoreCase(split[1]) || "TABLE".equalsIgnoreCase(split[1]))) {
-			newSplit = convertQueryDropSequence(split);
-		} else if (split.length > 3 && "CREATE".equalsIgnoreCase(split[0]) && "INDEX".equalsIgnoreCase(split[1])) {
-			newSplit = convertQueryCreateIndex(split);
-		} else if (split.length > 3 && "ALTER".equalsIgnoreCase(split[0]) && "TABLE".equalsIgnoreCase(split[1])) {
-			newSplit = convertQueryAlterTable(split);
-		} else {
-			log.debug("oracle query [" + originalQuery + "] not converted");
-			return query;
-		}
+		String[] newSplit = convertQuery(split);
 		if (newSplit == null) {
 			log.debug("ignore oracle query [" + originalQuery + "]");
 			return null;
@@ -99,6 +77,74 @@ public class OracleToH2Translator {
 			log.debug("converted oracle query [" + originalQuery + "] to [" + convertedQuery + "]");
 			return convertedQuery;
 		}
+	}
+
+	private static String[] convertQuery(String[] split) {
+		String[] newSplit;
+		if (isSelectQuery(split)) {
+			newSplit = convertQuerySelect(split);
+		} else if (isSetDefineOffQuery(split)) {
+			newSplit = null;
+		} else if (isCreateOrReplaceTriggerQuery(split)) {
+			newSplit = null;
+		} else if (isAlterTriggerQuery(split)) {
+			newSplit = null;
+		} else if (isCreateSequenceQuery(split)) {
+			newSplit = convertQueryCreateSequence(split);
+		} else if (isCreateTableIbisStoreQuery(split)) {
+			newSplit = convertQueryCreateTableIbisStore(split);
+		} else if (isCreateTableQuery(split)) {
+			newSplit = convertQueryCreateTable(split);
+		} else if (isDropSequenceOrTableQuery(split)) {
+			newSplit = convertQueryDropSequence(split);
+		} else if (isCreateIndexQuery(split)) {
+			newSplit = convertQueryCreateIndex(split);
+		} else if (isAlterTableQuery(split)) {
+			newSplit = convertQueryAlterTable(split);
+		} else {
+			return split;
+		}
+		return newSplit;
+	}
+
+	private static boolean isSelectQuery(String[] split) {
+		return split.length > 14 && "SELECT".equalsIgnoreCase(split[0]);
+	}
+
+	private static boolean isSetDefineOffQuery(String[] split) {
+		return split.length == 3 && "SET".equalsIgnoreCase(split[0]) && "DEFINE".equalsIgnoreCase(split[1]) && "OFF".equalsIgnoreCase(split[2]);
+	}
+
+	private static boolean isCreateOrReplaceTriggerQuery(String[] split) {
+		return split.length > 4 && "CREATE".equalsIgnoreCase(split[0]) && "OR".equalsIgnoreCase(split[1]) && "REPLACE".equalsIgnoreCase(split[2]) && "TRIGGER".equalsIgnoreCase(split[3]);
+	}
+
+	private static boolean isAlterTriggerQuery(String[] split) {
+		return split.length > 2 && "ALTER".equalsIgnoreCase(split[0]) && "TRIGGER".equalsIgnoreCase(split[1]);
+	}
+
+	private static boolean isCreateSequenceQuery(String[] split) {
+		return split.length > 3 && "CREATE".equalsIgnoreCase(split[0]) && "SEQUENCE".equalsIgnoreCase(split[1]);
+	}
+
+	private static boolean isCreateTableIbisStoreQuery(String[] split) {
+		return split.length > 4 && "CREATE".equalsIgnoreCase(split[0]) && "TABLE".equalsIgnoreCase(split[1]) && "IBISSTORE".equalsIgnoreCase(split[2]);
+	}
+
+	private static boolean isCreateTableQuery(String[] split) {
+		return split.length > 3 && "CREATE".equalsIgnoreCase(split[0]) && "TABLE".equalsIgnoreCase(split[1]);
+	}
+
+	private static boolean isDropSequenceOrTableQuery(String[] split) {
+		return split.length >= 3 && "DROP".equalsIgnoreCase(split[0]) && ("SEQUENCE".equalsIgnoreCase(split[1]) || "TABLE".equalsIgnoreCase(split[1]));
+	}
+
+	private static boolean isCreateIndexQuery(String[] split) {
+		return split.length > 3 && "CREATE".equalsIgnoreCase(split[0]) && "INDEX".equalsIgnoreCase(split[1]);
+	}
+
+	private static boolean isAlterTableQuery(String[] split) {
+		return split.length > 3 && "ALTER".equalsIgnoreCase(split[0]) && "TABLE".equalsIgnoreCase(split[1]);
 	}
 
 	private static String[] convertQuerySelect(String[] split) {
