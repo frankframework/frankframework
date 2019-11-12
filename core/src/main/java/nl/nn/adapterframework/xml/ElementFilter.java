@@ -60,7 +60,7 @@ public class ElementFilter extends FullXmlFilter {
 				}
 			}
 		}
-		log.debug("ElementFilter targetNamespace ["+targetNamespace+"] targetElement ["+targetElement+"]");
+		log.debug("ElementFilter targetNamespace ["+targetNamespace+"] targetElement ["+this.targetElement+"]");
 	}
 
 	@Override
