@@ -93,10 +93,10 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix(null)+"elementXPathExpression ["+getElementXPathExpression()+"]",e);
 		}
-		if (StringUtils.isNotEmpty(getTargetElement()) && (getTargetElement().contains("/") || getTargetElement().contains(":"))) {
+		if (StringUtils.isNotEmpty(getTargetElement()) && (getTargetElement().contains("/"))) {
 			throw new ConfigurationException(getLogPrefix(null)+"targetElement ["+getTargetElement()+"] should not contain '/', only a single element name");
 		}
-		if (StringUtils.isNotEmpty(getContainerElement()) && (getContainerElement().contains("/") || getContainerElement().contains(":"))) {
+		if (StringUtils.isNotEmpty(getContainerElement()) && (getContainerElement().contains("/"))) {
 			throw new ConfigurationException(getLogPrefix(null)+"containerElement ["+getTargetElement()+"] should not contain '/', only a single element name");
 		}
 	}
@@ -462,7 +462,8 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		return targetElement;
 	}
 
-	@IbisDoc({"4", "XPath-expression used to determine the set of elements to be iterated over, i.e. the set of child elements. When empty, the effective value is /*/*, i.e. the pipe will iterate over each direct child element of the root", ""})
+	@IbisDoc({"4", "XPath-expression used to determine the set of elements to be iterated over, i.e. the set of child elements. When empty, the effective value is /*/*, i.e. the pipe will iterate over each direct child element of the root. "
+		+"Be aware that memory consumption appears to increase with file size when this attribute is used. When possible, use containerElement and/or targetElement instead.", ""})
 	public void setElementXPathExpression(String string) {
 		elementXPathExpression = string;
 	}

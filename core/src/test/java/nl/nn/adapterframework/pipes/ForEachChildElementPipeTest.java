@@ -489,7 +489,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
     	configurePipe();
     	pipe.start();
 
-		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNS.getBytes());    	
+		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNSLong.getBytes());    	
         PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais,sc), session);
         String actual=prr.getResult().toString();
         
@@ -498,32 +498,14 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
         assertEquals(expectedBasicNoNSFirstTwoElements, actual);
     }
 
-    @Test
-    public void testXPathStopExpression() throws PipeRunException, ConfigurationException, PipeStartException {
-    	SwitchCounter sc = new SwitchCounter();
-    	pipe.setElementXPathExpression("/root/sub");
-    	//pipe.setNamespaceAware(true);
-    	pipe.setSender(getElementRenderer(sc));
-       	pipe.setStopConditionXPathExpression("position()=1");
-        configurePipe();
-    	pipe.start();
-
-		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNSLong.getBytes());    	
-        PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais,sc), session);
-        String actual=prr.getResult().toString();
-        
-		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
-        assertThat(sc.hitCount.get("in"), Matchers.lessThan(11));
-        assertEquals(expectedBasicNoNSFirstElement, actual);
-    }
 
     @Test
-    public void testTargetElementStopExpression() throws PipeRunException, ConfigurationException, PipeStartException {
+    public void testTargetElementMaxItems1() throws PipeRunException, ConfigurationException, PipeStartException {
     	SwitchCounter sc = new SwitchCounter();
     	pipe.setTargetElement("sub");
     	//pipe.setNamespaceAware(true);
     	pipe.setSender(getElementRenderer(sc));
-       	pipe.setStopConditionXPathExpression("position()=1");
+    	pipe.setMaxItems(1);
         configurePipe();
     	pipe.start();
 
@@ -534,6 +516,101 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 //		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
         assertThat(sc.hitCount.get("in"), Matchers.lessThan(11));
         assertEquals(expectedBasicNoNSFirstElement, actual);
+    }
+
+    @Test
+    public void testTargetElementMaxItems2() throws PipeRunException, ConfigurationException, PipeStartException {
+    	SwitchCounter sc = new SwitchCounter();
+    	pipe.setTargetElement("sub");
+    	//pipe.setNamespaceAware(true);
+    	pipe.setSender(getElementRenderer(sc));
+    	pipe.setMaxItems(2);
+        configurePipe();
+    	pipe.start();
+
+		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNSLong.getBytes());    	
+        PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais,sc), session);
+        String actual=prr.getResult().toString();
+        
+//		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
+        assertThat(sc.hitCount.get("in"), Matchers.lessThan(20));
+        assertEquals(expectedBasicNoNSFirstTwoElements, actual);
+    }
+
+    @Test
+    public void testNamespacedTargetElement1() throws PipeRunException, ConfigurationException, PipeStartException {
+    	SwitchCounter sc = new SwitchCounter();
+    	pipe.setTargetElement("sub");
+    	//pipe.setNamespaceAware(true);
+    	pipe.setSender(getElementRenderer(sc));
+    	pipe.setNamespaceDefs("urn:test");
+        configurePipe();
+    	pipe.start();
+
+		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS1.getBytes());    	
+        PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais,sc), session);
+        String actual=prr.getResult().toString();
+        
+//		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
+//        assertThat(sc.hitCount.get("in"), Matchers.lessThan(11));
+        assertEquals(expectedBasicNoNS, actual);
+    }
+
+    @Test
+    public void testNamespacedTargetElement2() throws PipeRunException, ConfigurationException, PipeStartException {
+    	SwitchCounter sc = new SwitchCounter();
+    	pipe.setTargetElement("sub");
+    	//pipe.setNamespaceAware(true);
+    	pipe.setSender(getElementRenderer(sc));
+    	pipe.setNamespaceDefs("urn:test");
+        configurePipe();
+    	pipe.start();
+
+		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS2.getBytes());    	
+        PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais,sc), session);
+        String actual=prr.getResult().toString();
+        
+//		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
+//        assertThat(sc.hitCount.get("in"), Matchers.lessThan(11));
+        assertEquals(expectedBasicNoNS, actual);
+    }
+
+    @Test
+    public void testPrefixedNamespacedTargetElement1() throws PipeRunException, ConfigurationException, PipeStartException {
+    	SwitchCounter sc = new SwitchCounter();
+    	pipe.setTargetElement("x:sub");
+    	//pipe.setNamespaceAware(true);
+    	pipe.setSender(getElementRenderer(sc));
+    	pipe.setNamespaceDefs("x=urn:test");
+        configurePipe();
+    	pipe.start();
+
+		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS1.getBytes());    	
+        PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais,sc), session);
+        String actual=prr.getResult().toString();
+        
+//		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
+//        assertThat(sc.hitCount.get("in"), Matchers.lessThan(11));
+        assertEquals(expectedBasicNoNS, actual);
+    }
+
+    @Test
+    public void testPrefixedNamespacedTargetElement2() throws PipeRunException, ConfigurationException, PipeStartException {
+    	SwitchCounter sc = new SwitchCounter();
+    	pipe.setTargetElement("x:sub");
+    	//pipe.setNamespaceAware(true);
+    	pipe.setSender(getElementRenderer(sc));
+    	pipe.setNamespaceDefs("x=urn:test");
+        configurePipe();
+    	pipe.start();
+
+		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNS2.getBytes());    	
+        PipeRunResult prr = pipe.doPipe(new LoggingInputStream(bais,sc), session);
+        String actual=prr.getResult().toString();
+        
+//		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
+//        assertThat(sc.hitCount.get("in"), Matchers.lessThan(11));
+        assertEquals(expectedBasicNoNS, actual);
     }
 
     private class SwitchCounter {
