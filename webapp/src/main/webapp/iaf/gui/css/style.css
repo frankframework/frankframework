@@ -1196,21 +1196,22 @@ button.dim:active:before {
 
 /* SCROLL TO TOP BUTTON */
 .scroll-to-top {
-  display: block;
+  opacity: 0;
   position: fixed;
   z-index: 10000;
-  bottom: 5px;
-  right: 5px;
-  height: 30px;
-  width: 30px;
-  background: rgba(26,179,148,0.4);
-  color: white;
-  border-radius: 4px;
-  text-align:center;
-  vertical-align: middle;
-  cursor:pointer;
-  line-height: 28px;
-  display:none;
+  bottom: 24px;
+  cursor: pointer;
+  line-height: 26px;
+  font-size: 22px;
+}
+.scroll-to-top a {
+  color: #a7b1c2;
+  font-weight: 600;
+  padding: 14px 23px;
+}
+.scroll-to-top a i {
+  text-align: center;
+  width: 24px;
 }
 
 /* CHOSEN PLUGIN */
