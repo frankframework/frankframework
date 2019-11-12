@@ -24,11 +24,13 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -396,5 +398,35 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	
 	protected void warnConvertQuery(String dbmsFrom) {
 		log.warn("don't know how to convert queries from [" + dbmsFrom + "] to [" + getDbmsName() + "]");
+	}
+
+	@Override
+	public List<String> splitQuery(String query) {
+		// A query can contain multiple queries separated by a semicolon
+		List<String> splittedQueries = new ArrayList<>();
+		if (!query.contains(";")) {
+			splittedQueries.add(query);
+		} else {
+			int i = 0;
+			int j = 0;
+			while (j < query.length()) {
+				if (query.charAt(j) == ';') {
+					String line = query.substring(i, j + 1);
+					// A semicolon between single quotes is ignored (number of single quotes in the query must be zero or an even number)
+					int countApos = StringUtils.countMatches(line, "'");
+					// A semicolon directly after 'END' is ignored when there is also a 'BEGIN' in the query
+					int countBegin = Misc.countRegex(line.toUpperCase().replaceAll("\\s+", "  "), "\\sBEGIN\\s");
+					int countEnd = Misc.countRegex(line.toUpperCase().replaceAll(";", "; "), "\\sEND;");
+					if ((countApos == 0 || (countApos & 1) == 0) && countBegin==countEnd) {
+						splittedQueries.add(line.trim());
+						i = j + 1;
+					}
+				}
+				j++;
+			}
+			if (j > i)
+				splittedQueries.add(query.substring(i, j).trim());
+		}
+		return splittedQueries;
 	}
 }

@@ -92,6 +92,7 @@ public interface IDbmsSupport {
 
 	String getSchema(Connection conn) throws JdbcException;
 	
+	List<String> splitQuery(String query);
 	String convertQuery(Connection conn, String query, String dbmsFrom) throws SQLException, JdbcException;
 
 	boolean isTablePresent(Connection conn, String tableName) throws JdbcException;

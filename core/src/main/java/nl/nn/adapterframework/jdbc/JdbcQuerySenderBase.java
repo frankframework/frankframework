@@ -35,8 +35,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.jms.JMSException;
 import javax.servlet.http.HttpServletResponse;
@@ -175,7 +173,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			if (log.isDebugEnabled()) {
 				log.debug(getLogPrefix() + "converting query [" + query.trim() + "] from [" + convertQueriesFrom + "] to [" + getDbmsSupport().getDbmsName() + "]");
 			}
-			List<String> multipleQueries = splitQuery(query);
+			List<String> multipleQueries = getDbmsSupport().splitQuery(query);
 			StringBuilder sb = new StringBuilder();
 			for (String singleQuery : multipleQueries) {
 				String convertedQuery = getDbmsSupport().convertQuery(connection, singleQuery, convertQueriesFrom);
@@ -188,41 +186,6 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return query;
 	}
 
-	private List<String> splitQuery(String query) {
-		// A query can contain multiple queries separated by a semicolon
-		List<String> splittedQueries = new ArrayList<>();
-		if (!query.contains(";")) {
-			splittedQueries.add(query);
-		} else {
-			int i = 0;
-			int j = 0;
-			while (j < query.length()) {
-				if (query.charAt(j) == ';') {
-					String line = query.substring(i, j + 1);
-					int countApos = StringUtils.countMatches(line, "'");
-					int countBegin = countRegex(line.toUpperCase().replaceAll("\\s+", "  "), "\\sBEGIN\\s");
-					int countEnd = countRegex(line.toUpperCase().replaceAll(";", "; "), "\\sEND;");
-					if ((countApos == 0 || (countApos & 1) == 0) && countBegin==countEnd) {
-						splittedQueries.add(line.trim());
-						i = j + 1;
-					}
-				}
-				j++;
-			}
-			if (j > i)
-				splittedQueries.add(query.substring(i, j).trim());
-		}
-		return splittedQueries;
-	}
-
-	public static int countRegex(String string, String regex) {
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(string);
-		int count = 0;
-		while (matcher.find())
-			count++;
-		return count;
-	}
 	
 	protected CallableStatement getCallWithRowIdReturned(Connection con, String correlationID, String message) throws SQLException {
 		String callMessage = "BEGIN " + message + " RETURNING ROWID INTO ?; END;";
