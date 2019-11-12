@@ -64,5 +64,12 @@ public class ElementFilterTest {
 		testElementFilter(targetElementFilter, "a", false, document,"<ns:a>y</ns:a>");
 	}
 	
+	@Test
+	public void testTargetElementFilterWithNamespace3() throws Exception {
+		String document="<root xmlns:ns=\"urn:tja\"><sub1><a>x</a></sub1><x><sub2><ns:a>y</ns:a><b>y</b></sub2></x><sub2><a>y</a><b>y</b></sub2><xx/></root>";
+		ElementFilter targetElementFilter = new ElementFilter(XmlUtils.getNamespaceMap("x=urn:tja"), "x:a",true,false);
+		testElementFilter(targetElementFilter, "a", false, document,"<ns:a>y</ns:a>");
+	}
+	
 
 }
