@@ -26,6 +26,7 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -44,6 +45,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.InputMessageAdapter;
 import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.ThreadCreationEventListener;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerErrorListener;
@@ -73,6 +75,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 	private boolean removeNamespaces=true;
 
 	private TransformerPool extractElementsTp=null;
+	private ThreadCreationEventListener threadCreationEventListener;
 
 	{ 
 		setNamespaceAware(true);
@@ -94,10 +97,10 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix(null)+"elementXPathExpression ["+getElementXPathExpression()+"]",e);
 		}
-		if (StringUtils.isNotEmpty(getTargetElement()) && (getTargetElement().contains("/") || getTargetElement().contains(":"))) {
+		if (StringUtils.isNotEmpty(getTargetElement()) && (getTargetElement().contains("/"))) {
 			throw new ConfigurationException(getLogPrefix(null)+"targetElement ["+getTargetElement()+"] should not contain '/', only a single element name");
 		}
-		if (StringUtils.isNotEmpty(getContainerElement()) && (getContainerElement().contains("/") || getContainerElement().contains(":"))) {
+		if (StringUtils.isNotEmpty(getContainerElement()) && (getContainerElement().contains("/"))) {
 			throw new ConfigurationException(getLogPrefix(null)+"containerElement ["+getTargetElement()+"] should not contain '/', only a single element name");
 		}
 	}
@@ -170,7 +173,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 		private StringBuffer namespaceDefinitions=new StringBuffer();
 
 		
-		public ItemCallbackCallingHandler(ItemCallback callback, Object threadInfo) {
+		public ItemCallbackCallingHandler(ItemCallback callback) {
 			this.callback=callback;
 			//elementbuffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 			if (getBlockSize()>0) {
@@ -342,14 +345,22 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 
 		@Override
 		public void startDocument() throws SAXException {
-			startThread(threadInfo);
+			if (threadCreationEventListener!=null) {
+				threadCreationEventListener.threadCreated(threadInfo);
+			}
 			super.startDocument();
 		}
 
 		@Override
 		public void endDocument() throws SAXException {
 			super.endDocument();
-			endThread(threadInfo);
+			if (threadCreationEventListener!=null) {
+				threadCreationEventListener.threadEnded(threadInfo,null);
+			}
+		}
+
+		public void setThreadInfo(Object threadInfo) {
+			this.threadInfo = threadInfo;
 		}
 
 	}
@@ -387,9 +398,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 		String errorMessage="Could not parse input";
 		TransformerErrorListener errorListener=null;
 		try {
-			Object threadRef=announceThread(correlationID);
-			//log.debug("Announced thread ["+ToStringBuilder.reflectionToString(threadRef)+"]");
-			itemHandler = new ItemCallbackCallingHandler(callback, threadRef);
+			itemHandler = new ItemCallbackCallingHandler(callback);
 			inputHandler=itemHandler;
 			
 			if (getExtractElementsTp()!=null) {
@@ -402,6 +411,8 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 				xphandler.setResult(transformedStream);
 				inputHandler = xphandler;
 				errorMessage="Could not process list of elements using xpath ["+getElementXPathExpression()+"]";
+				Object threadInfo=threadCreationEventListener!=null?threadCreationEventListener.announceChildThread(this, correlationID):null;
+				itemHandler.setThreadInfo(threadInfo);
 			} 
 			if (StringUtils.isNotEmpty(getTargetElement())) {
 				ElementFilter targetElementFilter = new ElementFilter(XmlUtils.getNamespaceMap(getNamespaceDefs()), getTargetElement(),true,true);
@@ -522,33 +533,12 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 		return removeNamespaces;
 	}
 
-	@Override
-	public Object announceThread(String correlationID) {
-		//System.out.println("announceThread correlationID ["+correlationID+"]");
-		return correlationID;
-	}
-
-	public Object startThread(Object ref) {
-		//log.debug("startThread ["+ToStringBuilder.reflectionToString(ref)+"]");
-		return ref;
-	}
-
-	public Object endThread(Object ref) {
-		//log.debug("endThread ["+ToStringBuilder.reflectionToString(ref)+"]");
-		return ref;
-	}
-//
-//	@Override
-//	public Object abortThread(Object ref) {
-//		log.debug("abortThread ["+ToStringBuilder.reflectionToString(ref)+"]");
-//		return ref;
-//	}
-//
-//	@Override
-//	public void registerThreadCreatorCallback(IThreadCreatorCallback callback) {
-//		// TODO Auto-generated method stub
-//		
-//	}
 
 	
+	@Override
+	public void setThreadCreationEventListener(ThreadCreationEventListener threadCreationEventListener) {
+		this.threadCreationEventListener=threadCreationEventListener;
+	}
+	
+
 }
