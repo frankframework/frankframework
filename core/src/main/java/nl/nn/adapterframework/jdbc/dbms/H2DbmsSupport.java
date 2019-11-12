@@ -54,10 +54,12 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String convertQuery(Connection conn, String query, String dbmsFrom) throws SQLException, JdbcException {
-		if (OracleDbmsSupport.dbmsName.equalsIgnoreCase(dbmsFrom)) {
-			return OracleToH2Translator.convertQuery(conn, query);
+		if (isQueryConvertable(dbmsFrom)) {
+			if (OracleDbmsSupport.dbmsName.equalsIgnoreCase(dbmsFrom)) {
+				return OracleToH2Translator.convertQuery(conn, query);
+			}
+			warnConvertQuery(dbmsFrom);
 		}
-		warnConvertQuery(dbmsFrom);
 		return query;
 	}
 }

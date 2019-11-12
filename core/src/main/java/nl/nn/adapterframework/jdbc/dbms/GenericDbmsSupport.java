@@ -392,12 +392,30 @@ public class GenericDbmsSupport implements IDbmsSupport {
 
 	@Override
 	public String convertQuery(Connection conn, String query, String dbmsFrom) throws SQLException, JdbcException {
-		warnConvertQuery(dbmsFrom);
+		if (isQueryConvertable(dbmsFrom)) {
+			warnConvertQuery(dbmsFrom);
+		}
 		return query;
 	}
 	
 	protected void warnConvertQuery(String dbmsFrom) {
 		log.warn("don't know how to convert queries from [" + dbmsFrom + "] to [" + getDbmsName() + "]");
+	}
+
+	protected boolean isQueryConvertable(String dbmsFrom) {
+		if (StringUtils.isEmpty(dbmsFrom)) {
+			log.warn("don't know where to convert queries from");
+			return false;
+		}
+		if (StringUtils.isEmpty(getDbmsName())) {
+			log.warn("don't know where to convert queries to");
+			return false;
+		}
+		if (dbmsFrom.equalsIgnoreCase(getDbmsName())) {
+			log.warn("will not convert queries because source and destination dbms are the same: " + dbmsFrom);
+			return false;
+		}
+		return true;
 	}
 
 	@Override
