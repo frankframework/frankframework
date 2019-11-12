@@ -22,6 +22,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ext.LexicalHandler;
 
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.stream.ThreadCreationEventListener;
 import nl.nn.adapterframework.util.TransformerErrorListener;
 
@@ -30,9 +31,9 @@ public class TransformerFilter extends FullXmlFilter {
 	private FullXmlFilter lastFilter;
 	private TransformerHandler transformerHandler;
 	
-	public TransformerFilter(TransformerHandler transformerHandler, ThreadCreationEventListener threadCreationEventListener, String correlationID) {
+	public TransformerFilter(INamedObject owner, TransformerHandler transformerHandler, ThreadCreationEventListener threadCreationEventListener, String correlationID) {
 		super();
-		ThreadConnectingFilter threadConnectingFilter = new ThreadConnectingFilter(threadCreationEventListener, correlationID);
+		ThreadConnectingFilter threadConnectingFilter = new ThreadConnectingFilter(owner, threadCreationEventListener, correlationID);
 		lastFilter=threadConnectingFilter;
 		SAXResult transformedStream = new SAXResult();
 		transformedStream.setHandler(threadConnectingFilter);

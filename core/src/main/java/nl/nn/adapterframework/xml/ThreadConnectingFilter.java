@@ -24,10 +24,10 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 	private ThreadCreationEventListener threadCreationEventListener;
 	private Object threadInfo;
 	
-	public ThreadConnectingFilter(ThreadCreationEventListener threadCreationEventListener, String correlationID) {
+	public ThreadConnectingFilter(Object owner, ThreadCreationEventListener threadCreationEventListener, String correlationID) {
 		super();
 		this.threadCreationEventListener=threadCreationEventListener;
-		threadInfo=threadCreationEventListener!=null?threadCreationEventListener.announceChildThread(this, correlationID):null;
+		threadInfo=threadCreationEventListener!=null?threadCreationEventListener.announceChildThread(owner, correlationID):null;
 	}
 
 	@Override

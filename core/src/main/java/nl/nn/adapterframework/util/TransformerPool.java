@@ -46,6 +46,7 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.ThreadCreationEventListener;
@@ -455,8 +456,8 @@ public class TransformerPool {
 	}
 
 	
-	public TransformerFilter getTransformerFilter(ThreadCreationEventListener threadCreationEventListener, String correlationID) throws TransformerConfigurationException {
-		return new TransformerFilter(getTransformerHandler(),threadCreationEventListener,correlationID);
+	public TransformerFilter getTransformerFilter(INamedObject owner, ThreadCreationEventListener threadCreationEventListener, String correlationID) throws TransformerConfigurationException {
+		return new TransformerFilter(owner, getTransformerHandler(),threadCreationEventListener,correlationID);
 	}
 	
 	public static List<String> getTransformerPoolsKeys() {

@@ -300,7 +300,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 
 			handler = target.asContentHandler();
 			if (isSkipEmptyTags()) {
-				TransformerFilter skipEmptyTagsFilter = transformerPoolSkipEmptyTags.getTransformerFilter(threadCreationEventListener, correlationID);
+				TransformerFilter skipEmptyTagsFilter = transformerPoolSkipEmptyTags.getTransformerFilter(this, threadCreationEventListener, correlationID);
 				skipEmptyTagsFilter.setContentHandler(handler);
 				handler=skipEmptyTagsFilter;
 			}
@@ -321,7 +321,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 //			XmlUtils.setTransformerParameters(mainHandler.getTransformer(),parametervalues);
 //			mainHandler.setResult(result);
 //			handler=mainHandler;
-			TransformerFilter mainFilter = poolToUse.getTransformerFilter(threadCreationEventListener, correlationID);
+			TransformerFilter mainFilter = poolToUse.getTransformerFilter(this, threadCreationEventListener, correlationID);
 			XmlUtils.setTransformerParameters(mainFilter.getTransformer(),parametervalues);
 			mainFilter.setContentHandler(handler);
 			handler=mainFilter;
