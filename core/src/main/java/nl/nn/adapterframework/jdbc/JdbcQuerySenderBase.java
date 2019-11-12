@@ -120,7 +120,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	protected String[] columnsReturnedList=null;
 	private boolean streamResultToServlet=false;
 
-	private String convertQueriesFrom = AppConstants.getInstance().getString("jdbc.convertQueriesFrom", null);
+	private String sqlDialect = AppConstants.getInstance().getString("jdbc.sqlDialect", null);
 	
 	@Override
 	public void configure() throws ConfigurationException {
@@ -169,14 +169,14 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	}
 
 	protected String convertQuery(Connection connection, String query) throws JdbcException, SQLException {
-		if (StringUtils.isNotEmpty(convertQueriesFrom)) {
+		if (StringUtils.isNotEmpty(sqlDialect)) {
 			if (log.isDebugEnabled()) {
-				log.debug(getLogPrefix() + "converting query [" + query.trim() + "] from [" + convertQueriesFrom + "] to [" + getDbmsSupport().getDbmsName() + "]");
+				log.debug(getLogPrefix() + "converting query [" + query.trim() + "] from [" + sqlDialect + "] to [" + getDbmsSupport().getDbmsName() + "]");
 			}
 			List<String> multipleQueries = getDbmsSupport().splitQuery(query);
 			StringBuilder sb = new StringBuilder();
 			for (String singleQuery : multipleQueries) {
-				String convertedQuery = getDbmsSupport().convertQuery(connection, singleQuery, convertQueriesFrom);
+				String convertedQuery = getDbmsSupport().convertQuery(connection, singleQuery, sqlDialect);
 				if (convertedQuery != null) {
 					sb.append(convertedQuery);
 				}

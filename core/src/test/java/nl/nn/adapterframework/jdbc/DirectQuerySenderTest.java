@@ -20,7 +20,7 @@ public class DirectQuerySenderTest extends SenderTestBase<DirectQuerySender> {
 
 	@Before
 	public void setUp() throws Exception {
-		AppConstants.getInstance().setProperty("jdbc.convertQueriesFrom", "Oracle");
+		AppConstants.getInstance().setProperty("jdbc.sqlDialect", "Oracle");
 		startDatabase();
 		super.setUp();
 	}
