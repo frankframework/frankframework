@@ -93,10 +93,10 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix(null)+"elementXPathExpression ["+getElementXPathExpression()+"]",e);
 		}
-		if (StringUtils.isNotEmpty(getTargetElement()) && (getTargetElement().contains("/") || getTargetElement().contains(":"))) {
+		if (StringUtils.isNotEmpty(getTargetElement()) && (getTargetElement().contains("/"))) {
 			throw new ConfigurationException(getLogPrefix(null)+"targetElement ["+getTargetElement()+"] should not contain '/', only a single element name");
 		}
-		if (StringUtils.isNotEmpty(getContainerElement()) && (getContainerElement().contains("/") || getContainerElement().contains(":"))) {
+		if (StringUtils.isNotEmpty(getContainerElement()) && (getContainerElement().contains("/"))) {
 			throw new ConfigurationException(getLogPrefix(null)+"containerElement ["+getTargetElement()+"] should not contain '/', only a single element name");
 		}
 	}
