@@ -31,8 +31,10 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.XsltSender;
+import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingPipe;
+import nl.nn.adapterframework.stream.ThreadCreationEventListener;
 import nl.nn.adapterframework.stream.StreamingException;
 
 
@@ -53,7 +55,7 @@ import nl.nn.adapterframework.stream.StreamingException;
  * @author Johan Verrips
  */
 
-public class XsltPipe extends StreamingPipe {
+public class XsltPipe extends StreamingPipe implements IThreadCreator {
 
 	private String sessionKey=null;
 	
@@ -294,6 +296,11 @@ public class XsltPipe extends StreamingPipe {
 	public void setName(String name) {
 		super.setName(name);
 		sender.setName("Sender of Pipe ["+name+"]");
+	}
+
+	@Override
+	public void setThreadCreationEventListener(ThreadCreationEventListener threadCreationEventListener) {
+		sender.setThreadCreationEventListener(threadCreationEventListener);
 	}
 
 }

@@ -48,7 +48,9 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.stream.ThreadCreationEventListener;
 import nl.nn.adapterframework.xml.ClassLoaderURIResolver;
+import nl.nn.adapterframework.xml.TransformerFilter;
 
 /**
  * Pool of transformers. As of IBIS 4.2.e the Templates object is used to
@@ -452,17 +454,10 @@ public class TransformerPool {
 	      return handler;
 	}
 
-//	public XMLFilter getXmlFilter() throws TransformerConfigurationException {
-//		XMLFilter filter = ((SAXTransformerFactory)tFactory).newXMLFilter(templates);
-//		filter.setErrorHandler(new XmlErr);
-//	      Transformer transformer = handler.getTransformer();
-//	      transformer.setErrorListener(new TransformerErrorListener());
-//			// Set URIResolver on transformer for Xalan. Setting it on the factory
-//			// doesn't work for Xalan. See
-//			// https://www.oxygenxml.com/archives/xsl-list/200306/msg00021.html
-//	      transformer.setURIResolver(classLoaderURIResolver);
-//	      return handler;
-//	}
+	
+	public TransformerFilter getTransformerFilter(ThreadCreationEventListener threadCreationEventListener, String correlationID) throws TransformerConfigurationException {
+		return new TransformerFilter(getTransformerHandler(),threadCreationEventListener,correlationID);
+	}
 	
 	public static List<String> getTransformerPoolsKeys() {
 		List<String> transformerPoolsKeys = new LinkedList<String>();

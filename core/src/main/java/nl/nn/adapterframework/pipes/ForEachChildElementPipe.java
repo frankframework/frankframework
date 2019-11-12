@@ -22,11 +22,8 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.sax.TransformerHandler;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -54,6 +51,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.ElementFilter;
 import nl.nn.adapterframework.xml.FullXmlFilter;
 import nl.nn.adapterframework.xml.SaxException;
+import nl.nn.adapterframework.xml.TransformerFilter;
 
 /**
  * Sends a message to a Sender for each child element of the input XML.
@@ -158,7 +156,6 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 	private class ItemCallbackCallingHandler extends DefaultHandler implements LexicalHandler {
 		
 		private ItemCallback callback;
-		private Object threadInfo;
 		
 		private StringBuffer elementbuffer=new StringBuffer();
 		private int elementLevel=0;
@@ -343,26 +340,6 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 			return timeOutException;
 		}
 
-		@Override
-		public void startDocument() throws SAXException {
-			if (threadCreationEventListener!=null) {
-				threadCreationEventListener.threadCreated(threadInfo);
-			}
-			super.startDocument();
-		}
-
-		@Override
-		public void endDocument() throws SAXException {
-			super.endDocument();
-			if (threadCreationEventListener!=null) {
-				threadCreationEventListener.threadEnded(threadInfo,null);
-			}
-		}
-
-		public void setThreadInfo(Object threadInfo) {
-			this.threadInfo = threadInfo;
-		}
-
 	}
 
 	private class StopSensor extends FullXmlFilter {
@@ -403,16 +380,11 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 			
 			if (getExtractElementsTp()!=null) {
 				log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
-				SAXResult transformedStream = new SAXResult();
-				transformedStream.setHandler(itemHandler);
-				transformedStream.setLexicalHandler(itemHandler);
-				TransformerHandler xphandler = getExtractElementsTp().getTransformerHandler();
-				errorListener=(TransformerErrorListener)xphandler.getTransformer().getErrorListener();
-				xphandler.setResult(transformedStream);
-				inputHandler = xphandler;
+				TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(threadCreationEventListener, correlationID);
+				transformerFilter.setContentHandler(inputHandler);
+				inputHandler=transformerFilter;
+				errorListener=transformerFilter.getErrorListener();
 				errorMessage="Could not process list of elements using xpath ["+getElementXPathExpression()+"]";
-				Object threadInfo=threadCreationEventListener!=null?threadCreationEventListener.announceChildThread(this, correlationID):null;
-				itemHandler.setThreadInfo(threadInfo);
 			} 
 			if (StringUtils.isNotEmpty(getTargetElement())) {
 				ElementFilter targetElementFilter = new ElementFilter(XmlUtils.getNamespaceMap(getNamespaceDefs()), getTargetElement(),true,true);
@@ -534,12 +506,9 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 		return removeNamespaces;
 	}
 
-
-	
 	@Override
 	public void setThreadCreationEventListener(ThreadCreationEventListener threadCreationEventListener) {
 		this.threadCreationEventListener=threadCreationEventListener;
 	}
-	
 
 }

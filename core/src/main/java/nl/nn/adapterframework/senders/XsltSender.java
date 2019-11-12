@@ -44,15 +44,18 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.MessageOutputStreamCap;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingSenderBase;
+import nl.nn.adapterframework.stream.ThreadCreationEventListener;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
+import nl.nn.adapterframework.xml.TransformerFilter;
 
 /**
  * Perform an XSLT transformation with a specified stylesheet or XPath-expression.
@@ -65,7 +68,7 @@ import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class XsltSender extends StreamingSenderBase  {
+public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 
 	private String styleSheetName;
 	private String styleSheetNameSessionKey=null;
@@ -85,7 +88,9 @@ public class XsltSender extends StreamingSenderBase  {
 	
 	private Map<String, TransformerPool> dynamicTransformerPoolMap;
 	private int transformerPoolMapSize = 100;
-	
+
+	private ThreadCreationEventListener threadCreationEventListener;
+
 
 	/**
 	 * The <code>configure()</code> method instantiates a transformer for the specified
@@ -208,8 +213,12 @@ public class XsltSender extends StreamingSenderBase  {
 		ContentHandler handler = createHandler(correlationID, null, session, target);
 		return new MessageOutputStream(handler,target);
 	}
-
+	
 	private ContentHandler createHandler(String correlationID, String input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+		return createHandlerOud(correlationID, input, session, target);
+	}
+	
+	private ContentHandler createHandlerOud(String correlationID, String input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
 		ContentHandler handler = null;
 
 		try {
@@ -252,6 +261,70 @@ public class XsltSender extends StreamingSenderBase  {
 			XmlUtils.setTransformerParameters(mainHandler.getTransformer(),parametervalues);
 			mainHandler.setResult(result);
 			handler=mainHandler;
+			
+			handler=filterInput(handler, prc);
+			
+			return handler;
+		} catch (Exception e) {
+			//log.warn(getLogPrefix()+"intermediate exception logging",e);
+			throw new StreamingException(getLogPrefix()+"Exception on creating transformerHandler chain", e);
+		} 
+	}
+
+	private ContentHandler createHandlerUsingFilter(String correlationID, String input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+		ContentHandler handler = null;
+
+		try {
+			Map<String,Object> parametervalues = null;
+			ParameterResolutionContext prc = new ParameterResolutionContext(input,session);
+			if (paramList!=null) {
+				parametervalues = prc.getValueMap(paramList);
+			}
+
+//			Result result;
+//			if ("xml".equals(getOutputType())) {
+//				SAXResult targetFeedingResult = new SAXResult();
+//				targetFeedingResult.setHandler(target.asContentHandler());
+//				result = targetFeedingResult;
+//			} else {
+//				result = new StreamResult(target.asWriter());
+//			}
+			
+//			if (isSkipEmptyTags()) {
+//				TransformerHandler skipEmptyTagsHandler = transformerPoolSkipEmptyTags.getTransformerHandler();
+//				skipEmptyTagsHandler.setResult(result);
+//				SAXResult skipEmptyTagsFeedingResult = new SAXResult();
+//				skipEmptyTagsFeedingResult.setHandler(skipEmptyTagsHandler);
+//				result=skipEmptyTagsFeedingResult;
+//			}
+
+			handler = target.asContentHandler();
+			if (isSkipEmptyTags()) {
+				TransformerFilter skipEmptyTagsFilter = transformerPoolSkipEmptyTags.getTransformerFilter(threadCreationEventListener, correlationID);
+				skipEmptyTagsFilter.setContentHandler(handler);
+				handler=skipEmptyTagsFilter;
+			}
+			
+			TransformerPool poolToUse = transformerPool;
+			if(StringUtils.isNotEmpty(styleSheetNameSessionKey) && prc.getSession().get(styleSheetNameSessionKey) != null) {
+				String styleSheetNameToUse = prc.getSession().get(styleSheetNameSessionKey).toString();
+			
+				if(!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
+					dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), getClassLoader(), null, null, styleSheetNameToUse, null, !isOmitXmlDeclaration(), getParameterList()));
+					poolToUse.open();
+				} else {
+					poolToUse = dynamicTransformerPoolMap.get(styleSheetNameToUse);
+				}
+			}
+
+//			TransformerHandler mainHandler = poolToUse.getTransformerHandler();
+//			XmlUtils.setTransformerParameters(mainHandler.getTransformer(),parametervalues);
+//			mainHandler.setResult(result);
+//			handler=mainHandler;
+			TransformerFilter mainFilter = poolToUse.getTransformerFilter(threadCreationEventListener, correlationID);
+			XmlUtils.setTransformerParameters(mainFilter.getTransformer(),parametervalues);
+			mainFilter.setContentHandler(handler);
+			handler=mainFilter;
 			
 			handler=filterInput(handler, prc);
 			
@@ -469,6 +542,11 @@ public class XsltSender extends StreamingSenderBase  {
 		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'xslt2' has been deprecated. Its value is now auto detected. If necessary, replace with a setting of xsltVersion";
 		configWarnings.add(log, msg);
 		xsltVersion=b?2:1;
+	}
+
+	@Override
+	public void setThreadCreationEventListener(ThreadCreationEventListener threadCreationEventListener) {
+		this.threadCreationEventListener=threadCreationEventListener;
 	}
 
 }
