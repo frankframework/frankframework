@@ -372,27 +372,15 @@ angular.module('iaf.beheerconsole')
 			resolve: {rating: function() { return rating; }},
 		});
 	};
-	
+
 	$scope.hoverFeedback = function(rating) {
 		$(".rating i").removeClass("fa-star").addClass("fa-star-o");
 		$(".rating i:nth-child(-n+"+ (rating + 1) +")").addClass("fa-star").removeClass("fa-star-o");
-	}
-	
+	};
+
 	$scope.openOldGui = function() {
 		location.href = Misc.getServerPath();
 	};
-	
-	$scope.scrollTop = function() {
-		$(window).scrollTop(0);
-	};
-	
-	$(window).on('scroll', function() {
-		if($(this).scrollTop() > 100) {
-			$('.scroll-to-top').show();
-		} else {
-			$('.scroll-to-top').hide();
-		}
-	});
 }])
 
 .controller('InformationCtrl', ['$scope', '$uibModalInstance', 'Api', function($scope, $uibModalInstance, Api) {
