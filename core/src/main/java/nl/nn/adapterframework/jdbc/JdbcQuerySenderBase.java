@@ -168,7 +168,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	}
 
 	protected String convertQuery(Connection connection, String query) throws JdbcException, SQLException {
-		if (StringUtils.isNotEmpty(getSqlDialect())) {
+		if (StringUtils.isNotEmpty(getSqlDialect()) && !getSqlDialect().equalsIgnoreCase(getDbmsSupport().getDbmsName())) {
 			if (log.isDebugEnabled()) {
 				log.debug(getLogPrefix() + "converting query [" + query.trim() + "] from [" + getSqlDialect() + "] to [" + getDbmsSupport().getDbmsName() + "]");
 			}
