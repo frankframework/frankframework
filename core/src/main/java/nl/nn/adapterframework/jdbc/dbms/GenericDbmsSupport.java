@@ -391,28 +391,19 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public String convertQuery(Connection conn, String query, String dbmsFrom) throws SQLException, JdbcException {
-		if (isQueryConvertable(dbmsFrom)) {
-			warnConvertQuery(dbmsFrom);
+	public String convertQuery(Connection conn, String query, String sqlDialectFrom) throws SQLException, JdbcException {
+		if (isQueryConvertable(sqlDialectFrom)) {
+			warnConvertQuery(sqlDialectFrom);
 		}
 		return query;
 	}
 	
-	protected void warnConvertQuery(String dbmsFrom) {
-		log.warn("don't know how to convert queries from [" + dbmsFrom + "] to [" + getDbmsName() + "]");
+	protected void warnConvertQuery(String sqlDialectFrom) {
+		log.warn("don't know how to convert queries from [" + sqlDialectFrom + "] to [" + getDbmsName() + "]");
 	}
 
-	protected boolean isQueryConvertable(String dbmsFrom) {
-		if (StringUtils.isEmpty(dbmsFrom)) {
-			log.warn("don't know where to convert queries from");
-			return false;
-		}
-		if (StringUtils.isEmpty(getDbmsName())) {
-			log.warn("don't know where to convert queries to");
-			return false;
-		}
-		if (dbmsFrom.equalsIgnoreCase(getDbmsName())) {
-			log.warn("will not convert queries because source and destination dbms are the same: " + dbmsFrom);
+	protected boolean isQueryConvertable(String sqlDialectFrom) {
+		if (StringUtils.isEmpty(sqlDialectFrom) || StringUtils.isEmpty(getDbmsName()) || sqlDialectFrom.equalsIgnoreCase(getDbmsName())) {
 			return false;
 		}
 		return true;
