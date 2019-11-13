@@ -21,7 +21,7 @@ public class H2DbmsSupportTest {
 	@Test
 	public void testConvertQueryH2ToH2() throws JdbcException, SQLException {
 		String query = "SELECT COUNT(*) FROM IBISSTORE";
-		String expected = "SELECT COUNT(*) FROM IBISSTORE";
+		String expected = query;
 		String result = (new H2DbmsSupport()).convertQuery(null, query, "H2");
 		assertEquals(expected, result);
 	}
