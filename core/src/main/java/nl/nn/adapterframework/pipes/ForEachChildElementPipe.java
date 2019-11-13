@@ -158,13 +158,14 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 		private ItemCallback callback;
 		
 		private StringBuffer elementbuffer=new StringBuffer();
-		private int elementLevel=0;
 		private int itemCounter=0;
 		private Exception rootException=null;
 		private int startLength;		
-		private boolean charactersSeen;
 		private boolean stopRequested;
 		private TimeOutException timeOutException;
+
+		private int elementLevel=0;
+		private boolean elementJustStarted;
 		private boolean inCdata;
 		private StringBuffer firstLevelNamespaceDefinitions=new StringBuffer();
 		private StringBuffer namespaceDefinitions=new StringBuffer();
@@ -219,7 +220,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes)	throws SAXException {
 			checkInterrupt();
-			if (elementLevel>1 && !charactersSeen) {
+			if (elementLevel>1 && elementJustStarted) {
 				elementbuffer.append(">");
 			}
 			if (elementLevel++>0) {
@@ -232,7 +233,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 					elementbuffer.append(namespaceDefinitions);
 					namespaceDefinitions.setLength(0);
 				}
-				charactersSeen=false;
+				elementJustStarted=true;
 			}
 		}
 
@@ -240,8 +241,8 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 		public void endElement(String uri, String localName, String qName) throws SAXException {
 			checkInterrupt();
 			if (elementLevel>1) {
-				if (!charactersSeen) {
-					charactersSeen=true;
+				if (elementJustStarted) {
+					elementJustStarted=false;
 					elementbuffer.append("/>");
 				} else {
 					elementbuffer.append("</"+(isRemoveNamespaces()?localName:qName)+">");
@@ -273,8 +274,8 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 		public void characters(char[] ch, int start, int length) throws SAXException {
 			checkInterrupt();
 			if (elementLevel>1) {
-				if (!charactersSeen) {
-					charactersSeen=true;
+				if (elementJustStarted) {
+					elementJustStarted=false;
 					elementbuffer.append(">");
 				}
 				if (inCdata) {
@@ -308,8 +309,8 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 
 		@Override
 		public void startCDATA() throws SAXException {
-			if (!charactersSeen) {
-				charactersSeen=true;
+			if (elementJustStarted) {
+				elementJustStarted=false;
 				elementbuffer.append(">");
 			}
 			elementbuffer.append("<![CDATA[");

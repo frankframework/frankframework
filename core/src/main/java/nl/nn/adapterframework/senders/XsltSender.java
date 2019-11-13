@@ -50,10 +50,13 @@ import nl.nn.adapterframework.stream.MessageOutputStreamCap;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingSenderBase;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
+import nl.nn.adapterframework.stream.XmlWriter;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.PrettyPrintFilter;
+import nl.nn.adapterframework.xml.SkipEmptyTagsFilter;
 import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
 import nl.nn.adapterframework.xml.TransformerFilter;
 
@@ -190,16 +193,11 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	}
 
 	protected ContentHandler filterInput(ContentHandler input, ParameterResolutionContext prc) throws PipeRunException, DomBuilderException, TransformerException, IOException {
-		if (transformerPoolRemoveNamespaces!=null) {
+		if (isRemoveNamespaces()) {
 			log.debug(getLogPrefix()+ " providing filter to remove namespaces from input message");
 			XMLFilterImpl filter = new NamespaceRemovingFilter();
 			filter.setContentHandler(input);
 			return filter;
-//			TransformerHandler removeNamespaces = transformerPoolRemoveNamespaces.getTransformerHandler();
-//			SAXResult result = new SAXResult();
-//			result.setHandler(input);
-//			removeNamespaces.setResult(result);
-//			return removeNamespaces;
 		}
 		return input; // TODO might be necessary to do something about namespaceaware
 	}
@@ -214,10 +212,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		return new MessageOutputStream(handler,target);
 	}
 	
-	private ContentHandler createHandler(String correlationID, String input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
-		return createHandlerOud(correlationID, input, session, target);
-	}
-	
+
 	private ContentHandler createHandlerOud(String correlationID, String input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
 		ContentHandler handler = null;
 
@@ -271,7 +266,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		} 
 	}
 
-	private ContentHandler createHandlerUsingFilter(String correlationID, String input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+	private ContentHandler createHandler(String correlationID, String input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
 		ContentHandler handler = null;
 
 		try {
@@ -281,26 +276,27 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 				parametervalues = prc.getValueMap(paramList);
 			}
 
-//			Result result;
-//			if ("xml".equals(getOutputType())) {
-//				SAXResult targetFeedingResult = new SAXResult();
-//				targetFeedingResult.setHandler(target.asContentHandler());
-//				result = targetFeedingResult;
-//			} else {
-//				result = new StreamResult(target.asWriter());
-//			}
-			
-//			if (isSkipEmptyTags()) {
-//				TransformerHandler skipEmptyTagsHandler = transformerPoolSkipEmptyTags.getTransformerHandler();
-//				skipEmptyTagsHandler.setResult(result);
-//				SAXResult skipEmptyTagsFeedingResult = new SAXResult();
-//				skipEmptyTagsFeedingResult.setHandler(skipEmptyTagsHandler);
-//				result=skipEmptyTagsFeedingResult;
-//			}
+			if ("xml".equals(getOutputType())) {
+				handler = target.asContentHandler();
+			} else {
+				XmlWriter xmlWriter = new XmlWriter(target.asWriter());
+				if (!isOmitXmlDeclaration()) {
+					xmlWriter.setIncludeXmlDeclaration(true);
+				} else {
+					xmlWriter.setTextMode(true);
+				}
+				xmlWriter.setIncludeXmlDeclaration(!isOmitXmlDeclaration());
+				handler = xmlWriter;
+				if (isIndentXml()) {
+					xmlWriter.setNewlineAfterXmlDeclaration(true);
+					PrettyPrintFilter indentingFilter = new PrettyPrintFilter();
+					indentingFilter.setContentHandler(xmlWriter);
+					handler=indentingFilter;
+				}
+			}
 
-			handler = target.asContentHandler();
 			if (isSkipEmptyTags()) {
-				TransformerFilter skipEmptyTagsFilter = transformerPoolSkipEmptyTags.getTransformerFilter(this, threadLifeCycleEventListener, correlationID);
+				SkipEmptyTagsFilter skipEmptyTagsFilter = new SkipEmptyTagsFilter();
 				skipEmptyTagsFilter.setContentHandler(handler);
 				handler=skipEmptyTagsFilter;
 			}

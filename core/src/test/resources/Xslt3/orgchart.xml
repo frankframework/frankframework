@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <j:map xmlns:j="http://www.w3.org/2013/XSL/json">
    <j:string key="header">headerDefault</j:string>
    <j:string key="sessionKey">sessionKeyDefault</j:string>

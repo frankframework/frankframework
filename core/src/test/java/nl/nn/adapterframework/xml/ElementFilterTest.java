@@ -33,42 +33,42 @@ public class ElementFilterTest {
 
 	@Test
 	public void testTargetElementFilter() throws Exception {
-		testTargetElementFilter("a",false, document,"<a>x</a><a>y</a><a>y</a>");
+		testTargetElementFilter("a",false, document,"<a xmlns=\"urn:tja\">x</a><a xmlns=\"urn:tja\">y</a><a xmlns=\"urn:tja\">y</a>");
 	}
 	
 	@Test
 	public void testTargetElementFilterWithRoot() throws Exception {
-		testTargetElementFilter("a",true, document,"<root><a>x</a><a>y</a><a>y</a></root>");
+		testTargetElementFilter("a",true, document,"<root xmlns=\"urn:tja\"><a>x</a><a>y</a><a>y</a></root>");
 	}
 	
 	@Test
 	public void testContainerElementFilter() throws Exception {
-		testContainerElementFilter("sub2",false, document,"<a>y</a><b>y</b><a>y</a><b>y</b>");
+		testContainerElementFilter("sub2",false, document,"<a xmlns=\"urn:tja\">y</a><b xmlns=\"urn:tja\">y</b><a xmlns=\"urn:tja\">y</a><b xmlns=\"urn:tja\">y</b>");
 	}
 
 	@Test
 	public void testContainerElementFilterWithRoot() throws Exception {
-		testContainerElementFilter("sub2",true, document,"<root><a>y</a><b>y</b><a>y</a><b>y</b></root>");
+		testContainerElementFilter("sub2",true, document,"<root xmlns=\"urn:tja\"><a>y</a><b>y</b><a>y</a><b>y</b></root>");
 	}
 
 	@Test
 	public void testTargetElementFilterWithNamespace() throws Exception {
 		ElementFilter targetElementFilter = new ElementFilter(XmlUtils.getNamespaceMap("urn:tja"), "a",true,false);
-		testElementFilter(targetElementFilter, "a", false, document,"<a>x</a><a>y</a><a>y</a>");
+		testElementFilter(targetElementFilter, "a", false, document,"<a xmlns=\"urn:tja\">x</a><a xmlns=\"urn:tja\">y</a><a xmlns=\"urn:tja\">y</a>");
 	}
 	
 	@Test
 	public void testTargetElementFilterWithNamespace2() throws Exception {
 		String document="<root xmlns:ns=\"urn:tja\"><sub1><a>x</a></sub1><x><sub2><ns:a>y</ns:a><b>y</b></sub2></x><sub2><a>y</a><b>y</b></sub2><xx/></root>";
 		ElementFilter targetElementFilter = new ElementFilter(XmlUtils.getNamespaceMap("urn:tja"), "a",true,false);
-		testElementFilter(targetElementFilter, "a", false, document,"<ns:a>y</ns:a>");
+		testElementFilter(targetElementFilter, "a", false, document,"<ns:a xmlns:ns=\"urn:tja\">y</ns:a>");
 	}
 	
 	@Test
 	public void testTargetElementFilterWithNamespace3() throws Exception {
 		String document="<root xmlns:ns=\"urn:tja\"><sub1><a>x</a></sub1><x><sub2><ns:a>y</ns:a><b>y</b></sub2></x><sub2><a>y</a><b>y</b></sub2><xx/></root>";
 		ElementFilter targetElementFilter = new ElementFilter(XmlUtils.getNamespaceMap("x=urn:tja"), "x:a",true,false);
-		testElementFilter(targetElementFilter, "a", false, document,"<ns:a>y</ns:a>");
+		testElementFilter(targetElementFilter, "a", false, document,"<ns:a xmlns:ns=\"urn:tja\">y</ns:a>");
 	}
 	
 
