@@ -119,7 +119,6 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	private String packageContent = "db2";
 	protected String[] columnsReturnedList=null;
 	private boolean streamResultToServlet=false;
-
 	private String sqlDialect = AppConstants.getInstance().getString("jdbc.sqlDialect", null);
 	
 	@Override
@@ -169,14 +168,14 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	}
 
 	protected String convertQuery(Connection connection, String query) throws JdbcException, SQLException {
-		if (StringUtils.isNotEmpty(sqlDialect)) {
+		if (StringUtils.isNotEmpty(getSqlDialect())) {
 			if (log.isDebugEnabled()) {
-				log.debug(getLogPrefix() + "converting query [" + query.trim() + "] from [" + sqlDialect + "] to [" + getDbmsSupport().getDbmsName() + "]");
+				log.debug(getLogPrefix() + "converting query [" + query.trim() + "] from [" + getSqlDialect() + "] to [" + getDbmsSupport().getDbmsName() + "]");
 			}
 			List<String> multipleQueries = getDbmsSupport().splitQuery(query);
 			StringBuilder sb = new StringBuilder();
 			for (String singleQuery : multipleQueries) {
-				String convertedQuery = getDbmsSupport().convertQuery(connection, singleQuery, sqlDialect);
+				String convertedQuery = getDbmsSupport().convertQuery(connection, singleQuery, getSqlDialect());
 				if (convertedQuery != null) {
 					sb.append(convertedQuery);
 				}
@@ -1086,5 +1085,14 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	@IbisDoc({"if set, the result is streamed to the httpservletresponse object of the restservicedispatcher (instead of passed as a string)", "false"})
 	public void setStreamResultToServlet(boolean b) {
 		streamResultToServlet = b;
+	}
+
+	@IbisDoc({"if set, the sql dialect in which the queries are written and should be translated from to the actual sql dialect", ""})
+	public void setSqlDialect(String string) {
+		sqlDialect = string;
+	}
+	
+	public String getSqlDialect() {
+		return sqlDialect;
 	}
 }
