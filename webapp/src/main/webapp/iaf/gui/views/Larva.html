@@ -87,10 +87,11 @@
         </form>
     </div>
     <div class="row">
-        <div class="panel-group">
-            <div class="panel" ng-repeat="message in displayMessages" ng-click="removeDisplayMessage(message.message)" ng-class="assignDisplayMessageClass(message)">
-                <div class="panel-heading">{{message.message}}</div>
-            </div>
+        <div>
+            <button class="btn btn-default" ng-show="displayMessages.length > 10" ng-click="displayMessages = []">Clear Messages</button>
+        </div>
+        <div class="alert" ng-repeat="message in displayMessages" ng-click="removeDisplayMessage(message.message)" ng-class="assignDisplayMessageClass(message)">
+            <div class="panel-heading">{{message.message}}</div>
         </div>
     </div>
 <!--    Table for displaying status of running tests-->
@@ -98,6 +99,9 @@
         <table class="table table-hover">
             <thead>
             <tr>
+                <td>
+                    <strong>Scenario Name</strong>
+                </td>
                 <td>
                     <strong>Scenario Description</strong>
                 </td>
@@ -109,12 +113,13 @@
             <tbody>
             <tr ng-repeat="test in tests" ng-click="testDetails(test)" ng-class="assignClass(test)" >
                 <td title="{{test.directory}}">{{test.name}}</td>
+                <td>{{test.description}}</td>
                 <td>{{test.status}}</td>
                 <td><i class="fa fa-chevron-down"></i> </td>
             </tr>
             <tr>
                 <td>
-                    <button type="button" class="btn btn-info" ng-show="tests.length > 0" ng-click="downloadMessages()">Download Logs</button>
+                    <button type="button" id="downloadLogsButton" class="btn btn-info" ng-show="tests.length > 0" ng-click="downloadMessages()">Download Logs</button>
                 </td>
             </tr>
             </tbody>

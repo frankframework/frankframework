@@ -1517,7 +1517,18 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.assignDisplayMessageClass = function(message) {
-		return message.level;
+		switch (message.level) {
+			case "error":
+			case "danger":
+				return "alert-danger";
+			case "warning":
+				return "alert-warning";
+			case "info":
+				return "alert-info";
+			case "success":
+				return "alert-success";
+		}
+		return "alert-warning";
 	};
 
 	/**
@@ -1581,7 +1592,11 @@ angular.module('iaf.beheerconsole')
 
 				var testIndex = $scope.tests.map(function (value) { return value["name"] }).indexOf(element["name"]);
 				if (testIndex === -1){
-					var test = {"name": element["name"], "status": element["messages"]["status"]? element["messages"]["status"] : "RUNNING", "directory":element["messages"]["directory"]? element["messages"]["directory"] : "directory"};
+					var test = {
+						"name": element["name"],
+						"status": element["messages"]["status"]? element["messages"]["status"] : "RUNNING",
+						"directory":element["messages"]["directory"]? element["messages"]["directory"] : "directory",
+						"description":element["messages"]["description"]? element["messages"]["description"] : "No test description was provided."};
 					$scope.tests.push(test);
 				}else {
 					$scope.tests[testIndex]["status"] = element["messages"]["status"] ? element["messages"]["status"] : $scope.tests[testIndex]["status"];
@@ -1591,12 +1606,12 @@ angular.module('iaf.beheerconsole')
 				Poller.remove("LarvaMessagePoller");
 				console.log("Stop Poller.");
 				$scope.addDisplayMessage(
-					(element["messages"]["Message"].includes("failed")) ? "panel-danger" : "panel-info",
+					(element["messages"]["Message"].includes("failed")) ? "error" : "info",
 					element["messages"]["Message"]);
 			}
 
-			if(element["logLevel"] === "Errors") {
-				$scope.addDisplayMessage("panel-danger", element["messages"]["Message"]);
+			if(element["logLevel"] === "Errors" && element["name"] === "General") {
+				$scope.addDisplayMessage("error", element["messages"]["Message"]);
 			}
 
 			if(!$scope.messages[element["name"]]){
@@ -1625,6 +1640,7 @@ angular.module('iaf.beheerconsole')
 		}};
 
 		Poller.add(generator, $scope.setMessages, true, 500);
+		Poller.changeInterval("LarvaMessagePoller", 500);
 	};
 
 	/**
@@ -1667,12 +1683,12 @@ angular.module('iaf.beheerconsole')
 			fd.append("numberOfThreads", $scope.formThreads);
 
 		if($scope.formScenarios === ""){
-			$scope.addDisplayMessage("panel-warning", "Make sure scenarios are selected.");
+			$scope.addDisplayMessage("warning", "Make sure scenarios are selected.");
 			return;
 		}
 		fd.append("scenario", $scope.formScenarios);
 		if($scope.formRootDirectories === ""){
-			$scope.addDisplayMessage("panel-warning", "Make sure root directory is selected.");
+			$scope.addDisplayMessage("warning", "Make sure root directory is selected.");
 			return;
 		}
 		fd.append("rootDirectory", $scope.formRootDirectories);
@@ -1690,7 +1706,7 @@ angular.module('iaf.beheerconsole')
 		var error = function(errorData, status, errorMsg) {
 			console.log("Error Data:\n" + errorData);
 			$scope.lastAction = null;
-			$scope.addDisplayMessage("panel-danger",  status + ": Could not execute tests. " + errorMsg);
+			$scope.addDisplayMessage("danger",  status + ": Could not execute tests. " + errorMsg);
 		};
 		console.log("Calling POST");
 		Api.Post("larva/execute", fd,  { 'Content-Type': undefined }, success, error);
@@ -1723,14 +1739,14 @@ angular.module('iaf.beheerconsole')
 			var data = [];
 			for(test in fileData) {
 				data = data.concat(fileData[test]);
-			}
+			};
 			console.log(data);
 			$scope.setMessages(data);
 			$scope.archivedMessages = $scope.messages;
 			$scope.setLowestLogLevel(data);
 			$scope.formLogLevel = $scope.lowestLogLevel;
 			console.log($scope.lowestLogLevel + " lowest log level");
-		}
+		};
 		fileReader.readAsText(this.file);
 	};
 
@@ -1829,12 +1845,18 @@ angular.module('iaf.beheerconsole')
 				bodyText = message["messages"]["Pipeline Message"];
 				break;
 			case "Wrong Pipeline Messages":
+				panelClass = "panel-danger";
 				headerText = (message["messages"]["Step Display Name"]) ? message["messages"]["Step Display Name"] : message["messages"]["Message"];
 				bodyText = message["messages"]["Message"] + '\n' + message["messages"]["Pipeline Message"];
 				break;
 			case "Scenario Failed":
 				panelClass = "panel-danger";
-				headerText = message["messages"]["Message"]
+				headerText = message["messages"]["Message"];
+				break;
+			case "Errors":
+				panelClass = "panel-danger";
+				headerText = message["messages"]["Message"];
+				bodyText = message["messages"]["Stack Trace"] ? message["messages"]["Stack Trace"] : "";
 				break;
 			default:
 				bodyText = JSON.stringify(message);
@@ -1924,19 +1946,32 @@ angular.module('iaf.beheerconsole')
 	 */
 	$scope.downloadMessages = function() {
 		var dataStr = JSON.stringify($scope.messages);
-		var dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+		//var dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
 
 		var today = new Date();
 		var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
-		var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+		var time = today.getHours() + "-" + today.getMinutes() + "-" + today.getSeconds();
 		var dateTime = date+' '+time;
 
-		var exportFileDefaultName = 'Larva Log ' + dateTime + '.json';
+		var filename = 'Larva Log ' + dateTime + '.json';
+		var blob = new Blob([ dataStr ], {
+			type : "application/json;charset=utf-8;"
+		});
 
-		var linkElement = document.createElement('a');
-		linkElement.setAttribute('href', dataUri);
-		linkElement.setAttribute('download', exportFileDefaultName);
-		linkElement.click();
+		if (window.navigator.msSaveBlob) {
+			// For IE and Edge
+			navigator.msSaveBlob(blob, filename);
+		} else {
+			// For other browsers
+			var link = document.createElement("a");
+			var dataUrl = URL.createObjectURL(blob);
+			link.href = dataUrl;
+			link.style = "display:none";
+			link.download = filename;
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+		}
 	};
 
 	/**
@@ -1988,19 +2023,19 @@ angular.module('iaf.beheerconsole')
 						$scope.lowestLogLevel = $scope.formLogLevel;
 					},
 					function (error) {
-						$scope.addDisplayMessage("panel-danger", "Error retrieving logs: " + error);
+						$scope.addDisplayMessage("error", "Error retrieving logs: " + error);
 					});
 			}
 		}else if($scope.lastAction === "Upload") {
 			var logLevel = $scope.formLogLevel;
 			if($scope.logLevels.indexOf($scope.lowestLogLevel) > $scope.logLevels.indexOf($scope.formLogLevel)) {
 				logLevel = $scope.lowestLogLevel;
-				$scope.addDisplayMessage("panel-warning", "The selected log level is lower than the uploaded file contains. Using the lowest possible log level [" + logLevel + "] instead.");
+				$scope.addDisplayMessage("warning", "The selected log level is lower than the uploaded file contains. Using the lowest possible log level [" + logLevel + "] instead.");
 			}
 			$scope.messages = $scope.archivedMessages;
 			$scope.flattenAndFilterMessages(logLevel);
 		}else if($scope.lastAction !== null) {
-			$scope.addDisplayMessage("panel-danger", "Unexpected State: The frontend application is inconsistent! Please refresh the page!");
+			$scope.addDisplayMessage("error", "Unexpected State: The frontend application is inconsistent! Please refresh the page!");
 		}
 	}
 
