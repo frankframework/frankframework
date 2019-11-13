@@ -49,7 +49,7 @@ import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.MessageOutputStreamCap;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingSenderBase;
-import nl.nn.adapterframework.stream.ThreadCreationEventListener;
+import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -89,7 +89,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	private Map<String, TransformerPool> dynamicTransformerPoolMap;
 	private int transformerPoolMapSize = 100;
 
-	private ThreadCreationEventListener threadCreationEventListener;
+	private ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
 
 
 	/**
@@ -300,7 +300,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 
 			handler = target.asContentHandler();
 			if (isSkipEmptyTags()) {
-				TransformerFilter skipEmptyTagsFilter = transformerPoolSkipEmptyTags.getTransformerFilter(this, threadCreationEventListener, correlationID);
+				TransformerFilter skipEmptyTagsFilter = transformerPoolSkipEmptyTags.getTransformerFilter(this, threadLifeCycleEventListener, correlationID);
 				skipEmptyTagsFilter.setContentHandler(handler);
 				handler=skipEmptyTagsFilter;
 			}
@@ -321,7 +321,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 //			XmlUtils.setTransformerParameters(mainHandler.getTransformer(),parametervalues);
 //			mainHandler.setResult(result);
 //			handler=mainHandler;
-			TransformerFilter mainFilter = poolToUse.getTransformerFilter(this, threadCreationEventListener, correlationID);
+			TransformerFilter mainFilter = poolToUse.getTransformerFilter(this, threadLifeCycleEventListener, correlationID);
 			XmlUtils.setTransformerParameters(mainFilter.getTransformer(),parametervalues);
 			mainFilter.setContentHandler(handler);
 			handler=mainFilter;
@@ -545,8 +545,8 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	}
 
 	@Override
-	public void setThreadCreationEventListener(ThreadCreationEventListener threadCreationEventListener) {
-		this.threadCreationEventListener=threadCreationEventListener;
+	public void setThreadLifeCycleEventListener(ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener) {
+		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
 	}
 
 }

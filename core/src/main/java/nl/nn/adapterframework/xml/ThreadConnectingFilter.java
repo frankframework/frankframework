@@ -17,23 +17,23 @@ package nl.nn.adapterframework.xml;
 
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.stream.ThreadCreationEventListener;
+import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 
 public class ThreadConnectingFilter extends FullXmlFilter {
 
-	private ThreadCreationEventListener threadCreationEventListener;
+	private ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
 	private Object threadInfo;
 	
-	public ThreadConnectingFilter(Object owner, ThreadCreationEventListener threadCreationEventListener, String correlationID) {
+	public ThreadConnectingFilter(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) {
 		super();
-		this.threadCreationEventListener=threadCreationEventListener;
-		threadInfo=threadCreationEventListener!=null?threadCreationEventListener.announceChildThread(owner, correlationID):null;
+		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
+		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationID):null;
 	}
 
 	@Override
 	public void startDocument() throws SAXException {
-		if (threadCreationEventListener!=null) {
-			threadCreationEventListener.threadCreated(threadInfo);
+		if (threadLifeCycleEventListener!=null) {
+			threadLifeCycleEventListener.threadCreated(threadInfo);
 		}
 		super.startDocument();
 	}
@@ -41,8 +41,8 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 	@Override
 	public void endDocument() throws SAXException {
 		super.endDocument();
-		if (threadCreationEventListener!=null) {
-			threadCreationEventListener.threadEnded(threadInfo,null);
+		if (threadLifeCycleEventListener!=null) {
+			threadLifeCycleEventListener.threadEnded(threadInfo,null);
 		}
 	}
 	

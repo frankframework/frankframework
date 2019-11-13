@@ -13,10 +13,10 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.stream;
+package nl.nn.ibistesttool;
 
-public interface IThreadCreator {
-
-	public void setThreadLifeCycleEventListener(ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener);
-	
+class ThreadDebugInfo {
+	Object owner;
+	String threadId; 
+	String correlationId;
 }

@@ -15,8 +15,11 @@
 */
 package nl.nn.adapterframework.stream;
 
-public interface IThreadCreator {
+public interface ThreadLifeCycleEventListener<T> {
 
-	public void setThreadLifeCycleEventListener(ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener);
+	public T announceChildThread(Object owner, String correlationId);
+	public void threadCreated(T ref);
+	public void threadEnded(T ref, String result);
+	public void threadAborted(T ref, Throwable t);
 	
 }

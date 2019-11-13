@@ -34,7 +34,7 @@ import nl.nn.adapterframework.senders.XsltSender;
 import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingPipe;
-import nl.nn.adapterframework.stream.ThreadCreationEventListener;
+import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.stream.StreamingException;
 
 
@@ -299,8 +299,8 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	}
 
 	@Override
-	public void setThreadCreationEventListener(ThreadCreationEventListener threadCreationEventListener) {
-		sender.setThreadCreationEventListener(threadCreationEventListener);
+	public void setThreadLifeCycleEventListener(ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener) {
+		sender.setThreadLifeCycleEventListener(threadLifeCycleEventListener);
 	}
 
 }

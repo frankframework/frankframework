@@ -39,14 +39,14 @@ import nl.nn.adapterframework.pipes.IsolatedServiceExecutor;
 import nl.nn.adapterframework.senders.ParallelSenderExecutor;
 import nl.nn.adapterframework.senders.SenderWrapperBase;
 import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.stream.ThreadCreationEventListener;
+import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.testtool.util.LogUtil;
 
 /**
  * @author  Jaco de Groot (jaco@dynasol.nl)
  */
-public class IbisDebuggerAdvice implements ThreadCreationEventListener {
+public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDebugInfo> {
 	private IbisDebugger ibisDebugger;
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -192,16 +192,9 @@ public class IbisDebuggerAdvice implements ThreadCreationEventListener {
 		}
 	}
 
-	private class ThreadInfo {
-		Object owner;
-		String threadId; 
-		String correlationId;
-	}
-
-
 	@Override
-	public Object announceChildThread(Object owner, String correlationId) {
-		ThreadInfo threadInfo = new ThreadInfo();
+	public ThreadDebugInfo announceChildThread(Object owner, String correlationId) {
+		ThreadDebugInfo threadInfo = new ThreadDebugInfo();
 		threadInfo.owner = owner;
 		threadInfo.correlationId = correlationId;
 		threadInfo.threadId = Misc.createSimpleUUID();
@@ -210,22 +203,18 @@ public class IbisDebuggerAdvice implements ThreadCreationEventListener {
 	}
 
 	@Override
-	public void threadCreated(Object ref) {
-		ThreadInfo threadInfo = (ThreadInfo) ref;
-		ibisDebugger.startThread(threadInfo.owner, threadInfo.threadId, threadInfo.correlationId, null);
+	public void threadCreated(ThreadDebugInfo ref) {
+		ibisDebugger.startThread(ref.owner, ref.threadId, ref.correlationId, null);
 	}
 
 	@Override
-	public void threadEnded(Object ref, String result) {
-		ThreadInfo threadInfo = (ThreadInfo) ref;
-		ibisDebugger.endThread(threadInfo.owner, threadInfo.correlationId, result);
+	public void threadEnded(ThreadDebugInfo ref, String result) {
+		ibisDebugger.endThread(ref.owner, ref.correlationId, result);
 	}
 
 	@Override
-	public void threadAborted(Object ref, Throwable t) {
-		ThreadInfo threadInfo = (ThreadInfo) ref;
-		System.out.println("IbisDebuggerAdvice.threadEnded threadId ["+threadInfo.threadId+"] correlationId ["+threadInfo.correlationId+"]");
-		ibisDebugger.abortThread(threadInfo, threadInfo.correlationId, t);
+	public void threadAborted(ThreadDebugInfo ref, Throwable t) {
+		ibisDebugger.abortThread(ref.owner, ref.correlationId, t);
 	}
 	
 	public Object debugParameterResolvedTo(ProceedingJoinPoint proceedingJoinPoint, ParameterValueList alreadyResolvedParameters, ParameterResolutionContext parameterResolutionContext) throws Throwable {

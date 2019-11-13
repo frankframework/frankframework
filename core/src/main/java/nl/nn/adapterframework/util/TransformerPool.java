@@ -49,7 +49,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.stream.ThreadCreationEventListener;
+import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.xml.ClassLoaderURIResolver;
 import nl.nn.adapterframework.xml.TransformerFilter;
 
@@ -456,8 +456,8 @@ public class TransformerPool {
 	}
 
 	
-	public TransformerFilter getTransformerFilter(INamedObject owner, ThreadCreationEventListener threadCreationEventListener, String correlationID) throws TransformerConfigurationException {
-		return new TransformerFilter(owner, getTransformerHandler(),threadCreationEventListener,correlationID);
+	public TransformerFilter getTransformerFilter(INamedObject owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) throws TransformerConfigurationException {
+		return new TransformerFilter(owner, getTransformerHandler(), threadLifeCycleEventListener, correlationID);
 	}
 	
 	public static List<String> getTransformerPoolsKeys() {

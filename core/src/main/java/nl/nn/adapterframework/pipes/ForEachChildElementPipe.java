@@ -42,7 +42,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.InputMessageAdapter;
 import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.stream.ThreadCreationEventListener;
+import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerErrorListener;
@@ -73,7 +73,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 	private boolean removeNamespaces=true;
 
 	private TransformerPool extractElementsTp=null;
-	private ThreadCreationEventListener threadCreationEventListener;
+	private ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
 
 	{ 
 		setNamespaceAware(true);
@@ -380,7 +380,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 			
 			if (getExtractElementsTp()!=null) {
 				log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
-				TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(this, threadCreationEventListener, correlationID);
+				TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(this, threadLifeCycleEventListener, correlationID);
 				transformerFilter.setContentHandler(inputHandler);
 				inputHandler=transformerFilter;
 				errorListener=transformerFilter.getErrorListener();
@@ -507,8 +507,8 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 	}
 
 	@Override
-	public void setThreadCreationEventListener(ThreadCreationEventListener threadCreationEventListener) {
-		this.threadCreationEventListener=threadCreationEventListener;
+	public void setThreadLifeCycleEventListener(ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener) {
+		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
 	}
 
 }
