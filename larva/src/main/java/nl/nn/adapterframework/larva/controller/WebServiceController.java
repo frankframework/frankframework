@@ -34,8 +34,7 @@ public class WebServiceController {
 	 * @param webServiceSenders List of web service senders to be initialized.
 	 * @param properties properties defined by scenario file and global app constants.
 	 */
-	public void initSenders(Map<String, Map<String, Object>> queues, List<String> webServiceSenders, Properties properties) {
-		String testName = properties.getProperty("scenario.description");
+	public void initSenders(Map<String, Map<String, Object>> queues, List<String> webServiceSenders, Properties properties, String testName) {
 		messageListener.debugMessage(testName, "Initialize web service senders");
 		Iterator<String> iterator = webServiceSenders.iterator();
 		while (queues != null && iterator.hasNext()) {
@@ -47,7 +46,7 @@ public class WebServiceController {
 			String soap = (String)properties.get(name + ".soap");
 			String allowSelfSignedCertificates = (String)properties.get(name + ".allowSelfSignedCertificates");
 			if (url == null) {
-				scenarioTester.closeQueues(queues, properties);
+				scenarioTester.closeQueues(queues, properties, testName);
 				queues = null;
 				messageListener.errorMessage(testName, "Could not find url property for " + name);
 			} else {
@@ -74,14 +73,14 @@ public class WebServiceController {
 					webServiceSender.configure();
 				} catch(ConfigurationException e) {
 					messageListener.errorMessage(testName, "Could not configure '" + name + "': " + e.getMessage(), e);
-					scenarioTester.closeQueues(queues, properties);
+					scenarioTester.closeQueues(queues, properties, testName);
 					queues = null;
 				}
 				if (queues != null) {
 					try {
 						webServiceSender.open();
 					} catch (SenderException e) {
-						scenarioTester.closeQueues(queues, properties);
+						scenarioTester.closeQueues(queues, properties, testName);
 						queues = null;
 						messageListener.errorMessage(testName, "Could not open '" + name + "': " + e.getMessage(), e);
 					}
@@ -105,8 +104,7 @@ public class WebServiceController {
 	 * @param properties properties defined by scenario file and global app constants.
 	 * @param globalTimeout timeout value for listening to messages.
 	 */
-	public void initListeners(Map<String, Map<String, Object>> queues, List<String> webServiceListeners, Properties properties, long globalTimeout) {
-		String testName = properties.getProperty("scenario.description");
+	public void initListeners(Map<String, Map<String, Object>> queues, List<String> webServiceListeners, Properties properties, long globalTimeout, String testName) {
 		messageListener.debugMessage(testName, "Initialize web service listeners");
 		Iterator<String> iterator = webServiceListeners.iterator();
 		while (queues != null && iterator.hasNext()) {
@@ -114,7 +112,7 @@ public class WebServiceController {
 			String serviceNamespaceURI = (String)properties.get(name + ".serviceNamespaceURI");
 
 			if (serviceNamespaceURI == null) {
-				scenarioTester.closeQueues(queues, properties);
+				scenarioTester.closeQueues(queues, properties, testName);
 				queues = null;
 				messageListener.errorMessage(testName, "Could not find property '" + name + ".serviceNamespaceURI'");
 			} else {
@@ -140,7 +138,7 @@ public class WebServiceController {
 				try {
 					webServiceListener.open();
 				} catch (ListenerException e) {
-					scenarioTester.closeQueues(queues, properties);
+					scenarioTester.closeQueues(queues, properties, testName);
 					queues = null;
 					messageListener.errorMessage(testName, "Could not open web service listener '" + name + "': " + e.getMessage(), e);
 				}
@@ -153,7 +151,7 @@ public class WebServiceController {
 					serviceDispatcher.registerServiceClient(serviceNamespaceURI, webServiceListener);
 					messageListener.debugMessage(testName, "Opened web service listener '" + name + "'");
 				} catch(ListenerException e) {
-					scenarioTester.closeQueues(queues, properties);
+					scenarioTester.closeQueues(queues, properties, testName);
 					queues = null;
 					messageListener.errorMessage(testName, "Could not open web service listener '" + name + "': " + e.getMessage(), e);
 				}
@@ -205,9 +203,8 @@ public class WebServiceController {
 	 * @param fileContent Content of the file that contains expected result.
 	 * @return 0 if no problems, 1 if error has occurred, 2 if it has been autosaved.
 	 */
-	public int read(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, String queueName, String fileName, String fileContent, String  originalFilePath) {
+	public int read(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, String queueName, String fileName, String fileContent, String  originalFilePath, String testName) {
 		int result = TestTool.RESULT_ERROR;
-		String testName = properties.getProperty("scenario.description");
 		Map listenerInfo = (Map)queues.get(queueName);
 		ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)listenerInfo.get("listenerMessageHandler");
 		if (listenerMessageHandler == null) {
@@ -229,7 +226,7 @@ public class WebServiceController {
 				if ("".equals(fileName)) {
 					messageListener.debugPipelineMessage(testName, stepDisplayName, "Unexpected message read from '" + queueName + "':", message);
 				} else {
-					result = resultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName, originalFilePath);
+					result = resultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName, originalFilePath, testName);
 					if (result!=TestTool.RESULT_OK) {
 						// Send a clean up reply because there is probably a
 						// thread waiting for a reply
@@ -250,8 +247,7 @@ public class WebServiceController {
 	 * @param queues Queue of steps to execute as well as the variables required to execute.
 	 * @param properties properties defined by scenario file and global app constants.
 	 */
-	public void closeSender(Map<String, Map<String, Object>> queues, Properties properties) {
-		String testName = properties.getProperty("scenario.description");
+	public void closeSender(Map<String, Map<String, Object>> queues, Properties properties, String testName) {
 		messageListener.debugMessage(testName, "Close web service senders");
 		Iterator iterator = queues.keySet().iterator();
 		while (iterator.hasNext()) {
@@ -291,8 +287,7 @@ public class WebServiceController {
 	 * @param properties properties defined by scenario file and global app constants.
 	 * @return true if there are still messages remaining.
 	 */
-	public boolean closeListener(Map<String, Map<String, Object>> queues, Properties properties) {
-		String testName = properties.getProperty("scenario.description");
+	public boolean closeListener(Map<String, Map<String, Object>> queues, Properties properties, String testName) {
 		boolean remainingMessagesFound = false;
 		messageListener.debugMessage(testName, "Close web service listeners");
 		Iterator iterator = queues.keySet().iterator();

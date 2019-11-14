@@ -25,13 +25,14 @@ public class JdbcFixedQueryController {
 	private ScenarioTester scenarioTester;
 	private ResultComparer resultComparer;
 
-	@Autowired
+	//@Autowired
 	IbisContext ibisContext;
 
 	public JdbcFixedQueryController(ScenarioTester scenarioTester) {
 		this.scenarioTester = scenarioTester;
 		this.messageListener = scenarioTester.getMessageListener();
 		this.resultComparer = new ResultComparer(messageListener);
+		ibisContext = TestTool.getIbisContext();
 	}
 
 	/**
@@ -41,8 +42,7 @@ public class JdbcFixedQueryController {
 	 * @param properties properties defined by scenario file and global app constants.
 	 * @param appConstants constants required for database access.
 	 */
-	public void initSender(Map<String, Map<String, Object>> queues, List<String> jdbcFixedQuerySenders, Properties properties, AppConstants appConstants) {
-		String testName = properties.getProperty("scenario.description");
+	public void initSender(Map<String, Map<String, Object>> queues, List<String> jdbcFixedQuerySenders, Properties properties, AppConstants appConstants, String testName) {
 		messageListener.debugMessage(testName, "Initialize jdbc fixed query senders");
 		Iterator<String> iterator = jdbcFixedQuerySenders.iterator();
 		while (queues != null && iterator.hasNext()) {
@@ -60,7 +60,7 @@ public class JdbcFixedQueryController {
 				getBlobSmart = Boolean.valueOf(getBlobSmartString).booleanValue();
 			}
 			if (datasourceName == null) {
-				scenarioTester.closeQueues(queues, properties);
+				scenarioTester.closeQueues(queues, properties, testName);
 				queues = null;
 				messageListener.errorMessage(testName, "Could not find datasourceName property for " + name);
 			} else {
@@ -79,15 +79,15 @@ public class JdbcFixedQueryController {
 							deleteQuerySender.sendMessage(TestTool.TESTTOOL_CORRELATIONID, TestTool.TESTTOOL_DUMMY_MESSAGE);
 							deleteQuerySender.close();
 						} catch(ConfigurationException e) {
-							scenarioTester.closeQueues(queues, properties);
+							scenarioTester.closeQueues(queues, properties, testName);
 							queues = null;
 							messageListener.errorMessage(testName, "Could not configure '" + name + "': " + e.getMessage(), e);
 						} catch(TimeOutException e) {
-							scenarioTester.closeQueues(queues, properties);
+							scenarioTester.closeQueues(queues, properties, testName);
 							queues = null;
 							messageListener.errorMessage(testName, "Time out on execute pre delete query for '" + name + "': " + e.getMessage(), e);
 						} catch(SenderException e) {
-							scenarioTester.closeQueues(queues, properties);
+							scenarioTester.closeQueues(queues, properties, testName);
 							queues = null;
 							messageListener.errorMessage(testName, "Could not execute pre delete query for '" + name + "': " + e.getMessage(), e);
 						}
@@ -109,7 +109,7 @@ public class JdbcFixedQueryController {
 						try {
 							prePostFixedQuerySender.configure();
 						} catch(ConfigurationException e) {
-							scenarioTester.closeQueues(queues, properties);
+							scenarioTester.closeQueues(queues, properties, testName);
 							queues = null;
 							messageListener.errorMessage(testName, "Could not configure '" + name + "': " + e.getMessage(), e);
 						}
@@ -117,7 +117,7 @@ public class JdbcFixedQueryController {
 							try {
 								prePostFixedQuerySender.open();
 							} catch(SenderException e) {
-								scenarioTester.closeQueues(queues, properties);
+								scenarioTester.closeQueues(queues, properties, testName);
 								queues = null;
 								messageListener.errorMessage(testName, "Could not open (pre/post) '" + name + "': " + e.getMessage(), e);
 							}
@@ -128,11 +128,11 @@ public class JdbcFixedQueryController {
 								querySendersInfo.put("prePostQueryFixedQuerySender", prePostFixedQuerySender);
 								querySendersInfo.put("prePostQueryResult", result);
 							} catch(TimeOutException e) {
-								scenarioTester.closeQueues(queues, properties);
+								scenarioTester.closeQueues(queues, properties, testName);
 								queues = null;
 								messageListener.errorMessage(testName, "Time out on execute query for '" + name + "': " + e.getMessage(), e);
 							} catch(SenderException e) {
-								scenarioTester.closeQueues(queues, properties);
+								scenarioTester.closeQueues(queues, properties, testName);
 								queues = null;
 								messageListener.errorMessage(testName, "Could not execute query for '" + name + "': " + e.getMessage(), e);
 							}
@@ -159,7 +159,7 @@ public class JdbcFixedQueryController {
 						try {
 							readQueryFixedQuerySender.configure();
 						} catch(ConfigurationException e) {
-							scenarioTester.closeQueues(queues, properties);
+							scenarioTester.closeQueues(queues, properties, testName);
 							queues = null;
 							messageListener.errorMessage(testName, "Could not configure '" + name + "': " + e.getMessage(), e);
 						}
@@ -168,7 +168,7 @@ public class JdbcFixedQueryController {
 								readQueryFixedQuerySender.open();
 								querySendersInfo.put("readQueryQueryFixedQuerySender", readQueryFixedQuerySender);
 							} catch(SenderException e) {
-								scenarioTester.closeQueues(queues, properties);
+								scenarioTester.closeQueues(queues, properties, testName);
 								queues = null;
 								messageListener.errorMessage(testName, "Could not open '" + name + "': " + e.getMessage(), e);
 							}
@@ -198,8 +198,7 @@ public class JdbcFixedQueryController {
 	 * @param properties properties defined by scenario file and global app constants.
 	 * @return true if there are still messages remaining for this pipe.
 	 */
-	public boolean closeConnection(Map<String, Map<String, Object>> queues, Properties properties) {
-		String testName = properties.getProperty("scenario.description");
+	public boolean closeConnection(Map<String, Map<String, Object>> queues, Properties properties, String testName) {
 		boolean remainingMessagesFound = false;
 		messageListener.debugMessage(testName, "Close jdbc connections");
 		Iterator iterator = queues.keySet().iterator();
@@ -260,9 +259,8 @@ public class JdbcFixedQueryController {
 	 * @param fileContent Content of the file that contains expected result.
 	 * @return 0 if no problems, 1 if error has occurred, 2 if it has been autosaved.
 	 */
-	public int read(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, String queueName, String fileName, String fileContent, String originalFilePath) {
+	public int read(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, String queueName, String fileName, String fileContent, String originalFilePath, String testName) {
 		int result = TestTool.RESULT_ERROR;
-		String testName = properties.getProperty("scenario.description");
 		Map querySendersInfo = (Map)queues.get(queueName);
 		Integer waitBeforeRead = (Integer)querySendersInfo.get("readQueryWaitBeforeRead");
 
@@ -314,7 +312,7 @@ public class JdbcFixedQueryController {
 			if ("".equals(fileName)) {
 				messageListener.debugPipelineMessage(testName, stepDisplayName, "Unexpected message read from '" + queueName + "':", message);
 			} else {
-				result = resultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName, originalFilePath);
+				result = resultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName, originalFilePath, testName);
 			}
 		}
 

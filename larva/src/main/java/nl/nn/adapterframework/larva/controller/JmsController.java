@@ -13,7 +13,11 @@ import nl.nn.adapterframework.larva.MessageListener;
 import nl.nn.adapterframework.larva.ResultComparer;
 import nl.nn.adapterframework.larva.ScenarioTester;
 import nl.nn.adapterframework.larva.TestTool;
+import nl.nn.adapterframework.lifecycle.IbisInitializer;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import javax.jms.Message;
 import java.util.*;
@@ -24,7 +28,6 @@ import java.util.*;
  *
  */
 public class JmsController {
-	@Autowired
 	static IbisContext ibisContext;
 
 	private MessageListener messageListener;
@@ -35,6 +38,7 @@ public class JmsController {
 		this.scenarioTester = scenarioTester;
 		this.messageListener = scenarioTester.getMessageListener();
 		this.resultComparer = new ResultComparer(messageListener);
+		ibisContext = TestTool.getIbisContext();
 	}
 
 	/**
@@ -43,15 +47,14 @@ public class JmsController {
 	 * @param jmsSenders List of JMS senders to be initialized.
 	 * @param properties properties defined by scenario file and global app constants.
 	 */
-	public void initSenders(Map<String, Map<String, Object>> queues, List<String> jmsSenders, Properties properties) {
-		String testName = properties.getProperty("scenario.description");
+	public void initSenders(Map<String, Map<String, Object>> queues, List<String> jmsSenders, Properties properties, String testName) {
 		messageListener.debugMessage(testName, "Initialize jms senders");
 		Iterator<String> iterator = jmsSenders.iterator();
 		while (queues != null && iterator.hasNext()) {
 			String queueName = (String)iterator.next();
 			String queue = (String)properties.get(queueName + ".queue");
 			if (queue == null) {
-				scenarioTester.closeQueues(queues, properties);
+				scenarioTester.closeQueues(queues, properties, testName);
 				queues = null;
 				messageListener.errorMessage(testName, "Could not find property '" + queueName + ".queue'");
 			} else {
@@ -110,8 +113,7 @@ public class JmsController {
 	 * @param properties properties defined by scenario file and global app constants.
 	 * @param globalTimeout timeout to set for JMS listeners.
 	 */
-	public void initListeners(Map<String, Map<String, Object>> queues, List<String> jmsListeners, Properties properties, long globalTimeout) {
-		String testName = properties.getProperty("scenario.description");
+	public void initListeners(Map<String, Map<String, Object>> queues, List<String> jmsListeners, Properties properties, long globalTimeout, String testName) {
 		messageListener.debugMessage(testName, "Initialize jms listeners");
 		Iterator<String> iterator = jmsListeners.iterator();
 		while (queues != null && iterator.hasNext()) {
@@ -126,7 +128,7 @@ public class JmsController {
 			}
 
 			if (queue == null) {
-				scenarioTester.closeQueues(queues, properties);
+				scenarioTester.closeQueues(queues, properties, testName);
 				queues = null;
 				messageListener.errorMessage(testName, "Could not find property '" + queueName + ".queue'");
 			} else {
@@ -177,8 +179,7 @@ public class JmsController {
 	 * @param queues Queue of steps to execute as well as the variables required to execute.
 	 * @param properties properties defined by scenario file and global app constants.
 	 */
-	public void closeSenders(Map<String, Map<String, Object>> queues, Properties properties) {
-		String testName = properties.getProperty("scenario.description");
+	public void closeSenders(Map<String, Map<String, Object>> queues, Properties properties, String testName) {
 		messageListener.debugMessage(testName, "Close jms senders");
 		Iterator iterator = queues.keySet().iterator();
 		while (iterator.hasNext()) {
@@ -196,8 +197,7 @@ public class JmsController {
 	 * @param queues Queue of steps to execute as well as the variables required to execute.
 	 * @param properties properties defined by scenario file and global app constants.
 	 */
-	public boolean closeListeners(Map<String, Map<String, Object>> queues, Properties properties) {
-		String testName = properties.getProperty("scenario.description");
+	public boolean closeListeners(Map<String, Map<String, Object>> queues, Properties properties, String testName) {
 		boolean remainingMessagesFound = false;
 		messageListener.debugMessage(testName, "Close jms listeners");
 		Iterator iterator = queues.keySet().iterator();
@@ -318,9 +318,8 @@ public class JmsController {
 	 * @param fileContent expected output.
 	 * @return 1 if everything is ok, 0 if there has been an error, 2 if autosaved.
 	 */
-	public int read(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, String queueName, String fileName, String fileContent, String originalFilePath) {
+	public int read(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, String queueName, String fileName, String fileContent, String originalFilePath, String testName) {
 		int result = TestTool.RESULT_ERROR;
-		String testName = properties.getProperty("scenario.description");
 
 		Map jmsListenerInfo = (Map)queues.get(queueName);
 		PullingJmsListener pullingJmsListener = (PullingJmsListener)jmsListenerInfo.get("jmsListener");
@@ -355,10 +354,9 @@ public class JmsController {
 				messageListener.errorMessage(testName, "Could not read jms message (null returned)");
 			}
 		} else {
-			result = resultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName, originalFilePath);
+			result = resultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName, originalFilePath, testName);
 		}
 
 		return result;	
 	}
-
 }

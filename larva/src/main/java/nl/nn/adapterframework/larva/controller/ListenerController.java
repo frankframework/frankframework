@@ -28,15 +28,14 @@ public class ListenerController {
 	 * @param javaListeners listeners to be initialized.
 	 * @param properties properties defined by scenario file and global app constants.
 	 */
-	public void initJavaListener(Map<String, Map<String, Object>> queues, List<String> javaListeners, Properties properties) {
-		String testName = properties.getProperty("scenario.description");
+	public void initJavaListener(Map<String, Map<String, Object>> queues, List<String> javaListeners, Properties properties, String testName) {
 		messageListener.debugMessage(testName, "Initialize java listeners");
 		Iterator<String> iterator = javaListeners.iterator();
 		while (queues != null && iterator.hasNext()) {
 			String name = (String)iterator.next();
 			String serviceName = (String)properties.get(name + ".serviceName");
 			if (serviceName == null) {
-				scenarioTester.closeQueues(queues, properties);
+				scenarioTester.closeQueues(queues, properties, testName);
 				queues = null;
 				messageListener.errorMessage(testName, "Could not find property '" + name + ".serviceName'");
 			} else {
@@ -65,7 +64,7 @@ public class ListenerController {
 					queues.put(name, javaListenerInfo);
 					messageListener.debugMessage(testName, "Opened java listener '" + name + "'");
 				} catch(ListenerException e) {
-					scenarioTester.closeQueues(queues, properties);
+					scenarioTester.closeQueues(queues, properties, testName);
 					queues = null;
 					messageListener.errorMessage(testName, "Could not open java listener '" + name + "': " + e.getMessage(), e);
 				}
@@ -79,15 +78,14 @@ public class ListenerController {
 	 * @param xsltProviderListeners listeners to be initialized.
 	 * @param properties properties defined by scenario file and global app constants.
 	 */
-	public void initXsltProviderListener(Map<String, Map<String, Object>> queues, List<String> xsltProviderListeners, Properties properties) {
-		String testName = properties.getProperty("scenario.description");
+	public void initXsltProviderListener(Map<String, Map<String, Object>> queues, List<String> xsltProviderListeners, Properties properties, String testName) {
 		messageListener.debugMessage(testName, "Initialize xslt provider listeners");
 		Iterator<String> iterator = xsltProviderListeners.iterator();
 		while (queues != null && iterator.hasNext()) {
 			String queueName = (String)iterator.next();
 			String filename  = (String)properties.get(queueName + ".filename");
 			if (filename == null) {
-				scenarioTester.closeQueues(queues, properties);
+				scenarioTester.closeQueues(queues, properties, testName);
 				queues = null;
 				messageListener.errorMessage(testName, "Could not find filename property for " + queueName);
 			} else {
@@ -132,7 +130,7 @@ public class ListenerController {
 					queues.put(queueName, xsltProviderListenerInfo);
 					messageListener.debugMessage(testName, "Opened xslt provider listener '" + queueName + "'");
 				} catch(ListenerException e) {
-					scenarioTester.closeQueues(queues, properties);
+					scenarioTester.closeQueues(queues, properties, testName);
 					queues = null;
 					messageListener.errorMessage(testName, "Could not create xslt provider listener for '" + queueName + "': " + e.getMessage(), e);
 				}
@@ -147,8 +145,7 @@ public class ListenerController {
 	 * @param properties properties defined by scenario file and global app constants.
 	 * @return true if there were any remaining messages before closing.
 	 */
-	public boolean closeJavaListener(Map<String, Map<String, Object>> queues, Properties properties) {
-		String testName = properties.getProperty("scenario.description");
+	public boolean closeJavaListener(Map<String, Map<String, Object>> queues, Properties properties, String testName) {
 		boolean remainingMessagesFound = false;
 		messageListener.debugMessage(testName, "Close java listeners");
 		Iterator iterator = queues.keySet().iterator();
@@ -191,14 +188,13 @@ public class ListenerController {
 	 * @param properties properties defined by scenario file and global app constants.
 	 * @return true if there were any remaining messages before closing.
 	 */
-	public boolean closeXsltProviderListener(Map<String, Map<String, Object>> queues, Properties properties) {
-		String testName = properties.getProperty("scenario.description");
+	public boolean closeXsltProviderListener(Map<String, Map<String, Object>> queues, Properties properties, String testName) {
 		boolean remainingMessagesFound = false;
 		messageListener.debugMessage(testName, "Close xslt provider listeners");
 		Iterator iterator = queues.keySet().iterator();
 		while (iterator.hasNext()) {
 			String queueName = (String)iterator.next();
-			if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
+			if ("nl.nn.adapterframework.larva.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
 				XsltProviderListener xsltProviderListener = (XsltProviderListener)((Map<?, ?>)queues.get(queueName)).get("xsltProviderListener");
 				remainingMessagesFound = xsltProviderListenerCleanUp(testName, queues, queueName);
 				messageListener.debugMessage(testName, "Closed xslt provider listener '" + queueName + "'");
@@ -236,8 +232,7 @@ public class ListenerController {
 	 * @param properties properties defined by scenario file and global app constants.
 	 * @return 0 if no problems, 1 if error has occurred, 2 if it has been autosaved.
 	 */
-	public int executeXsltProviderListenerWrite(String step, String stepDisplayName, Map<String, Map<String, Object>> queues, String queueName, String fileName, String fileContent, Properties properties, String  originalFilePath) {
-		String testName = properties.getProperty("scenario.description");
+	public int executeXsltProviderListenerWrite(String step, String stepDisplayName, Map<String, Map<String, Object>> queues, String queueName, String fileName, String fileContent, Properties properties, String  originalFilePath, String testName) {
 		int result = TestTool.RESULT_ERROR;
 		Map<?, ?> xsltProviderListenerInfo = (Map<?, ?>)queues.get(queueName);
 		XsltProviderListener xsltProviderListener = (XsltProviderListener)xsltProviderListenerInfo.get("xsltProviderListener");
@@ -249,7 +244,7 @@ public class ListenerController {
 				messageListener.errorMessage(testName, "Could not read result (null returned)");
 			}
 		} else {
-			result = resultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName, originalFilePath);
+			result = resultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName, originalFilePath, testName);
 		}
 		return result;
 	}
@@ -264,8 +259,7 @@ public class ListenerController {
 	 * @param xsltParameters parameters to pass onto the Xslt Provider Listener
 	 * @return 1 if everything is ok, 0 if there has been an error.
 	 */
-	public int executeXsltProviderListenerRead(String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, String queueName, String fileContent, Map<String, Object> xsltParameters) {
-		String testName = properties.getProperty("scenario.description");
+	public int executeXsltProviderListenerRead(String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, String queueName, String fileContent, Map<String, Object> xsltParameters, String testName) {
 		int result = TestTool.RESULT_ERROR;
 		Map<?, ?> xsltProviderListenerInfo = (Map<?, ?>)queues.get(queueName);
 		if (xsltProviderListenerInfo == null) {
