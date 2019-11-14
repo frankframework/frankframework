@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.larva;
 
+import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import com.sun.syndication.io.XmlReader;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -11,6 +12,7 @@ import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockMultipartHttpServletRequest;
@@ -397,7 +399,13 @@ public class TestPreparer {
 		return steps;
 	}
 
-	public static String readFile(String fileName) {
+	public static String advancedReadFile(Properties properties, String filename, MessageListener messageListener, String testName) {
+		String file = readFile(filename);
+		file = replaceVariables(properties, file, messageListener, testName);
+		return file;
+	}
+
+	private static String readFile(String fileName) {
 		String result = null;
 		String encoding = null;
 		if (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")) {
@@ -446,7 +454,7 @@ public class TestPreparer {
 				}
 			}
 		}
-		return result;
+		return  result;
 	}
 
 	/**
@@ -639,4 +647,68 @@ public class TestPreparer {
 		}
 		return result;
 	}
+
+	/**
+	 * Replaces variables that are between ${ and } with the values from properties.
+	 * @param properties Properties to be used for mapping values with the variables.
+	 * @param message The message containing the variables.
+	 * @param messageListener Message Listener responsible for the execution.
+	 * @param testName Name of the test that is being executed.
+	 * @return The message, after replacing the values.
+	 */
+	public static String replaceVariables(Properties properties, String message, MessageListener messageListener, String testName) {
+		long start = System.currentTimeMillis();
+		String result = replaceVariables(properties, message, "${", "}", "\\", messageListener, testName);
+		System.out.println("Took " + (System.currentTimeMillis() - start) + " to finish replacing.");
+		return result;
+	}
+
+	/**
+	 * Replaces variables within initCharacters and finishCharacters with the values from properties, if they are not
+	 * escaped using a escapeCharacter.
+	 * @param properties Properties to be used for mapping values with the variables.
+	 * @param message The message containing the variables.
+	 * @param initCharacters Set of characters to be used before variable name.
+	 * @param finishCharacters Set of characters to be used after variable name.
+	 * @param escapeCharacter Escape Character for finish and init characters.
+	 * @param messageListener Message Listener responsible for the execution.
+	 * @param testName Name of the test that is being executed.
+	 * @return The message, after replacing the values.
+	 */
+	private static String replaceVariables(Properties properties, String message, String initCharacters, String finishCharacters, String escapeCharacter, MessageListener messageListener, String testName) {
+		int searchIndex = 0;
+		int lastIndex = 0;
+		int initLength = initCharacters.length();
+		int messageLength = message.length();
+		String variable, value;
+		while(searchIndex >= 0) {
+			do {
+				searchIndex = StringUtils.indexOf(message, initCharacters, searchIndex);
+				if(searchIndex < 0) return message;
+			} while (isEscaped(message, escapeCharacter, searchIndex));
+			do {
+				lastIndex = StringUtils.indexOf(message, finishCharacters, searchIndex);
+				if(lastIndex < 0) return message;
+			} while (isEscaped(message, escapeCharacter, lastIndex));
+			variable = StringUtils.substring(message, searchIndex + initLength, lastIndex);
+			if(StringUtils.isNotEmpty(variable)){
+				value = properties.getProperty(variable);
+				if(value == null) {
+					messageListener.errorMessage(testName, "Variable [" + variable + "] was not found! Please either declare it in properties or use escape character \\\\");
+				}else {
+					message = StringUtils.replace(message, initCharacters+variable+finishCharacters, value);
+				}
+			}
+		}
+		return message;
+	}
+
+	private static boolean isEscaped(String message, String escapeCharacters, int index) {
+		int escapeLength = escapeCharacters.length();
+		if(index-escapeLength < 0) return false;
+		boolean escaped = message.substring(index-escapeLength, index).equals(escapeCharacters);
+		if(!escaped) return false;
+		return !isEscaped(message, escapeCharacters, index-escapeLength);
+	}
+
 }

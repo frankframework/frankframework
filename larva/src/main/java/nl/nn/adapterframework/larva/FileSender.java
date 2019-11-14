@@ -1,11 +1,14 @@
 package nl.nn.adapterframework.larva;
 
+import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.util.Dir2Xml;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.Iterator;
+import java.util.Properties;
 
 import org.apache.tools.ant.DefaultLogger;
 import org.apache.tools.ant.Project;
@@ -27,6 +30,7 @@ public class FileSender {
 	private boolean deletePath = false;
 	private boolean createPath = false;
 	private boolean runAnt = false;
+	Properties properties;
 	
 	/**
 	 * Send the message to the specified file. After writing the message to
@@ -97,6 +101,7 @@ public class FileSender {
 		consoleLogger.setOutputPrintStream(System.out);
 		consoleLogger.setMessageOutputLevel(Project.MSG_INFO);
 		ant.addBuildListener(consoleLogger);
+		applyProperties(ant, properties);
 		ant.init();
 		ProjectHelper helper = new ProjectHelperImpl();
 		helper.parse(ant, new File(filename));
@@ -116,6 +121,16 @@ public class FileSender {
 			}
 		}
 		return file.delete();
+	}
+
+	private void applyProperties(Project ant, Properties properties) {
+		if (properties==null || ant==null) return;
+		Iterator<String> iter = properties.stringPropertyNames().iterator();
+		String name;
+		while (iter.hasNext()) {
+			name = iter.next();
+			ant.setProperty(name, properties.getProperty(name));
+		}
 	}
 
 	/**
@@ -170,5 +185,9 @@ public class FileSender {
 
 	public void setRunAnt(boolean runAnt) {
 		this.runAnt = runAnt;
+	}
+
+	public void setProperties(Properties properties) {
+		this.properties = properties;
 	}
 }

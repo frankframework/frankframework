@@ -35,9 +35,8 @@ public class ResultComparer {
 		this.messageListener = messageListener;
 	}
 
-	public int compareResult(String step, String stepDisplayName, String fileName, String expectedResult, String actualResult, Properties properties, String queueName, String originalFilePath) {
+	public int compareResult(String step, String stepDisplayName, String fileName, String expectedResult, String actualResult, Properties properties, String queueName, String originalFilePath, String testName) {
 		int ok = TestTool.RESULT_ERROR;
-		String testName = properties.getProperty("scenario.description");
 		String printableExpectedResult = XmlUtils.replaceNonValidXmlCharacters(expectedResult);
 		String printableActualResult = XmlUtils.replaceNonValidXmlCharacters(actualResult);
 		String preparedExpectedResult = printableExpectedResult;

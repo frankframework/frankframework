@@ -32,15 +32,14 @@ public class FileController {
 	 * @param fileSenders List of file senders to be initialized.
 	 * @param properties properties defined by scenario file and global app constants.
 	 */
-	public void initSender(Map<String, Map<String, Object>> queues, List<String> fileSenders, Properties properties) {
-		String testName = properties.getProperty("scenario.description");
+	public void initSender(Map<String, Map<String, Object>> queues, List<String> fileSenders, Properties properties, String testName) {
 		messageListener.debugMessage(testName, "Initialize file senders");
 		Iterator<String> iterator = fileSenders.iterator();
 		while (queues != null && iterator.hasNext()) {
 			String queueName = (String)iterator.next();
 			String filename  = (String)properties.get(queueName + ".filename");
 			if (filename == null) {
-				scenarioTester.closeQueues(queues, properties);
+				scenarioTester.closeQueues(queues, properties, testName);
 				queues = null;
 				messageListener.errorMessage(testName, "Could not find filename property for " + queueName);
 			} else {
@@ -77,6 +76,7 @@ public class FileController {
 					String runAntString = (String)properties.get(queueName + ".runAnt");
 					if (runAntString != null) {
 						boolean runAnt = Boolean.valueOf(runAntString).booleanValue();
+						fileSender.setProperties(properties);
 						fileSender.setRunAnt(runAnt);
 						messageListener.debugMessage(testName, "Run ant set to '" + runAnt + "'");
 					}
@@ -119,8 +119,7 @@ public class FileController {
 	 * @param fileListeners List of file listeners to be initialized.
 	 * @param properties properties defined by scenario file and global app constants.
 	 */
-	public void initListener(Map<String, Map<String, Object>> queues, List<String> fileListeners, Properties properties) {
-		String testName = properties.getProperty("scenario.description");
+	public void initListener(Map<String, Map<String, Object>> queues, List<String> fileListeners, Properties properties, String testName) {
 		messageListener.debugMessage(testName, "Initialize file listeners");
 		Iterator<String> iterator = fileListeners.iterator();
 		while (queues != null && iterator.hasNext()) {
@@ -134,11 +133,11 @@ public class FileController {
 				wildcard = (String)properties.get(queueName + ".wildcard");
 			}
 			if (filename == null && directory == null) {
-				scenarioTester.closeQueues(queues, properties);
+				scenarioTester.closeQueues(queues, properties, testName);
 				queues = null;
 				messageListener.errorMessage(testName, "Could not find filename or directory property for " + queueName);
 			} else if (directory != null && wildcard == null) {
-				scenarioTester.closeQueues(queues, properties);
+				scenarioTester.closeQueues(queues, properties, testName);
 				queues = null;
 				messageListener.errorMessage(testName, "Could not find wildcard property for " + queueName);
 			} else {
@@ -188,13 +187,12 @@ public class FileController {
 	 * @param queues Queue of steps to execute as well as the variables required to execute.
 	 * @param properties properties defined by scenario file and global app constants.
 	 */
-	public void closeListener(Map<String, Map<String, Object>> queues, Properties properties) {
-		String testName = properties.getProperty("scenario.description");
+	public void closeListener(Map<String, Map<String, Object>> queues, Properties properties, String testName) {
 		messageListener.debugMessage(testName, "Close file listeners");
 		Iterator iterator = queues.keySet().iterator();
 		while (iterator.hasNext()) {
 			String queueName = (String)iterator.next();
-			if ("nl.nn.adapterframework.testtool.FileListener".equals(properties.get(queueName + ".className"))) {
+			if ("nl.nn.adapterframework.larva.FileListener".equals(properties.get(queueName + ".className"))) {
 				FileListener fileListener = (FileListener)((Map<?, ?>)queues.get(queueName)).get("fileListener");
 				fileListenerCleanUp(queueName, fileListener, testName);
 				messageListener.debugMessage(testName, "Closed file listener '" + queueName + "'");
@@ -284,7 +282,7 @@ public class FileController {
 				messageListener.errorMessage(testName, "Could not read file (null returned)");
 			}
 		} else {
-			result = resultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName, originalFilePath);
+			result = resultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName, originalFilePath, testName);
 		}
 		return result;	
 	}
@@ -319,7 +317,7 @@ public class FileController {
 				messageListener.errorMessage(testName, "Could not read file (null returned)");
 			}
 		} else {
-			result = resultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName, originalFilePath);
+			result = resultComparer.compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName, originalFilePath, testName);
 		}
 		return result;	
 	}
