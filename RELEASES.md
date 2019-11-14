@@ -21,6 +21,7 @@ Upcoming
   Make Xslt streaming default for xsltVersion=1
 - Bugfix (un)loading configs in JmxMbeanHelper
 - Add LadybugPipe
+- Introduction of 'duration' log
 
 ### Non backwards compatible changes
 

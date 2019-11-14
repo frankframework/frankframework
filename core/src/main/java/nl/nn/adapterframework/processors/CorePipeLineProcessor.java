@@ -45,8 +45,13 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class CorePipeLineProcessor implements PipeLineProcessor {
 	private Logger log = LogUtil.getLogger(this);
+	protected Logger durationLog = LogUtil.getLogger("DURATION");
 	private PipeProcessor pipeProcessor;
 
+	static {
+		System.out.println("***CorePipeLineProcessor***");
+	}
+	
 	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, String message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		// Object is the object that is passed to and returned from Pipes
@@ -54,6 +59,8 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		PipeRunResult pipeRunResult;
 		// the PipeLineResult
 		PipeLineResult pipeLineResult=new PipeLineResult();
+		StringBuilder pipeLineStats = new StringBuilder();
+		long pipeLineStartTime = System.currentTimeMillis();
 
 		if (object == null || (object instanceof String && StringUtils.isEmpty(object.toString()))) {
 			if (StringUtils.isNotEmpty(pipeLine.getAdapterToRunBeforeOnEmptyInput())) {
@@ -87,14 +94,14 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		IPipe inputValidator = pipeLine.getInputValidator();
 		if (inputValidator!=null) {
 			log.debug("validating input");
-			PipeRunResult validationResult = pipeProcessor.processPipe(pipeLine, inputValidator, messageId, message, pipeLineSession);
+			PipeRunResult validationResult = processPipe(pipeLineStats, pipeLine, inputValidator, messageId, message, pipeLineSession);
 			if (validationResult!=null) {
 				if (!validationResult.getPipeForward().getName().equals("success")) {
 					PipeForward validationForward=validationResult.getPipeForward();
 					if (validationForward.getPath()==null) {
 						throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"] of inputValidator has emtpy forward path");
 					}
-					log.warn("setting first pipe to ["+validationForward.getPath()+"] due to validation fault");
+					log.info("setting first pipe to ["+validationForward.getPath()+"] due to validation fault");
 					inputValidateError = true;
 					pipeToRun = pipeLine.getPipe(validationForward.getPath());
 					if (pipeToRun==null) {
@@ -113,7 +120,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			IPipe inputWrapper = pipeLine.getInputWrapper();
 			if (inputWrapper!=null) {
 				log.debug("wrapping input");
-				PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, inputWrapper, messageId, message, pipeLineSession);
+				PipeRunResult wrapResult = processPipe(pipeLineStats, pipeLine, inputWrapper, messageId, message, pipeLineSession);
 				if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
 					PipeForward wrapForward=wrapResult.getPipeForward();
 					if (wrapForward.getPath()==null) {
@@ -159,7 +166,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		try {
 			while (!ready){
 
-				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, messageId, object, pipeLineSession);
+				pipeRunResult = processPipe(pipeLineStats, pipeLine, pipeToRun, messageId, object, pipeLineSession);
 				object=pipeRunResult.getResult();
 
 				// TODO: this should be moved to a StatisticsPipeProcessor
@@ -190,7 +197,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 					IPipe outputWrapper = pipeLine.getOutputWrapper();
 					if (outputWrapper !=null) {
 						log.debug("wrapping PipeLineResult");
-						PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, outputWrapper, messageId, object, pipeLineSession);
+						PipeRunResult wrapResult = processPipe(pipeLineStats, pipeLine, outputWrapper, messageId, object, pipeLineSession);
 						if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
 							PipeForward wrapForward=wrapResult.getPipeForward();
 							if (wrapForward.getPath()==null) {
@@ -215,13 +222,13 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 							outputValidated=true;
 							log.debug("validating PipeLineResult");
 							PipeRunResult validationResult;
-							validationResult = pipeProcessor.processPipe(pipeLine, outputValidator, messageId, object, pipeLineSession);
+							validationResult = processPipe(pipeLineStats, pipeLine, outputValidator, messageId, object, pipeLineSession);
 							if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
 								PipeForward validationForward=validationResult.getPipeForward();
 								if (validationForward.getPath()==null) {
 									throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"] of outputValidator has emtpy forward path");
 								}
-								log.warn("setting next pipe to ["+validationForward.getPath()+"] due to validation fault");
+								log.info("setting next pipe to ["+validationForward.getPath()+"] due to validation fault");
 								pipeToRun = pipeLine.getPipe(validationForward.getPath());
 								if (pipeToRun==null) {
 									throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"], path ["+validationForward.getPath()+"] does not correspond to a pipe");
@@ -281,6 +288,11 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 					log.warn("Caught Exception processing ExitHandler ["+exitHandler.getName()+"]",t);
 				}
 			}
+			long pipeLineEndTime = System.currentTimeMillis();
+			long pipeLineDuration = pipeLineEndTime - pipeLineStartTime;
+			String print = (normalizeName(pipeLine.getAdapter().getName()) + "=" + pipeLineDuration + ";" + normalizeName(messageId) + pipeLineStats.toString());
+			durationLog.info(print);
+			System.out.println(print);
 		}
 		return pipeLineResult;
 	}
@@ -290,4 +302,20 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		this.pipeProcessor = pipeProcessor;
 	}
 
+	private PipeRunResult processPipe(StringBuilder pipeLineStats, PipeLine pipeLine, IPipe pipe, String messageId, Object message, IPipeLineSession pipeLineSession) throws PipeRunException {
+		PipeRunResult pipeRunResult = null;
+		long pipeStartTime = System.currentTimeMillis();
+		try {
+			pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, messageId, message, pipeLineSession);
+		} finally {
+			long pipeEndTime = System.currentTimeMillis();
+			long pipeDuration = pipeEndTime - pipeStartTime;
+			pipeLineStats.append(";" + normalizeName(pipe.getName()) + "=" + pipeDuration);
+		}
+		return pipeRunResult;
+	}
+
+	private String normalizeName(String name) {
+		return name.replaceAll("[\\s;=]", " ");
+	}
 }
