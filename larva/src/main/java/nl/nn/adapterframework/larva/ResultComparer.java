@@ -306,7 +306,8 @@ public class ResultComparer {
 					message = "Exception during XML diff: " + diffException.getMessage();
 					messageListener.errorMessage(testName, "Exception during XML diff: ", diffException);
 				}
-				messageListener.wrongPipelineMessagePreparedForDiff(testName, message, stepDisplayName, preparedActualResult, preparedExpectedResult, originalFilePath);
+				messageListener.wrongPipelineMessage(testName, stepDisplayName, message, printableActualResult, printableExpectedResult, originalFilePath);
+				messageListener.wrongPipelineMessagePreparedForDiff(testName, stepDisplayName, preparedActualResult, preparedExpectedResult, originalFilePath);
 				if (TestTool.autoSaveDiffs) {
 					String filenameAbsolutePath = (String)properties.get(step + ".absolutepath");
 					messageListener.debugMessage(testName, "Copy actual result to ["+filenameAbsolutePath+"]");
@@ -358,7 +359,8 @@ public class ResultComparer {
 					diffExcpected.append(" ...");
 				}
 				message = message + " actual result is '" + diffActual + "' and expected result is '" + diffExcpected + "'";
-				messageListener.wrongPipelineMessagePreparedForDiff(testName, message, stepDisplayName, preparedActualResult, preparedExpectedResult, originalFilePath);
+				messageListener.wrongPipelineMessage(testName, stepDisplayName, message, printableActualResult, printableExpectedResult, originalFilePath);
+				messageListener.wrongPipelineMessagePreparedForDiff(testName, stepDisplayName, preparedActualResult, preparedExpectedResult, originalFilePath);
 				if (TestTool.autoSaveDiffs) {
 					String filenameAbsolutePath = (String)properties.get(step + ".absolutepath");
 					messageListener.debugMessage(testName, "Copy actual result to ["+filenameAbsolutePath+"]");

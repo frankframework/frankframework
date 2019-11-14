@@ -1906,10 +1906,10 @@ angular.module('iaf.beheerconsole')
 		var button = '<button type="button" class="label label-info pull-right" ng-click="savePipelineMessage($event, \'' + testName + '\',' + index + ')">Save</button>';
 		button = $compile(button)($scope);
 		var header = '<div class="panel-heading" id="larva-test-details-' + index + '">' + headerText + '</div>';
-		var body = '<div class="panel-body"><pre lang="xml">' + message["messages"]["Message"] + "\n" + bodyText + '</pre></div>';
+		var body = '<div class="panel-body"><pre lang="xml">' + bodyText + '</pre></div>';
 		div.append('<div class="panel panel-danger">' + header + body + '</div>');
 		$('#larva-test-details-' + index).append(button);
-	};
+	}
 
 	/**
 	 * Sets the body of the modal #test-details-body with the messages related to the given test.
@@ -1924,7 +1924,7 @@ angular.module('iaf.beheerconsole')
 		$scope.messages[test.name].forEach(function(element, index) {
 			if(["Total", "Test Properties", ""].indexOf(element["logLevel"]) > -1)	return;
 
-			if(element['logLevel'] === 'Wrong Pipeline Messages With Diff') {
+			if(element['logLevel'] === 'Wrong Pipeline Messages with Diff') {
 				$scope.createErrorMessagesForDiff($('#test-details-body'), element, test.name, index);
 				return;
 			}

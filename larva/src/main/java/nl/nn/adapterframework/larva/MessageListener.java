@@ -1,7 +1,6 @@
 package nl.nn.adapterframework.larva;
 
 import nl.nn.adapterframework.util.LogUtil;
-import org.apache.commons.lang.WordUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,7 +28,7 @@ public class MessageListener {
 		add("Debug");
 		add("Pipeline Messages Prepared For Diff");
 		add("Pipeline Messages");
-		add("Wrong Pipeline Messages With Diff");
+		add("Wrong Pipeline Messages with Diff");
 		add("Wrong Pipeline Messages");
 		add("Step Passed/Failed");
 		add("Test Properties");
@@ -134,11 +133,9 @@ public class MessageListener {
 		messages.add(m);
 	}
 
-	void testInitiationMessage(String testName, String directory, String description) {
+	void testInitiationMessage(String testName, String directory) {
 		Map<String, String> map = new HashMap<>();
 		map.put("directory", directory);
-		if(description != null)
-			map.put("description", description);
 		messages.add(new Message(testName, map, LOG_LEVEL.indexOf("Test Properties"), System.currentTimeMillis()));
 	}
 
@@ -184,14 +181,13 @@ public class MessageListener {
 		messages.add(m);
 	}
 
-	void wrongPipelineMessagePreparedForDiff(String testName, String message, String stepDisplayName, String pipelineMessagePreparedForDiff, String pipelineMessageExpectedPreparedForDiff, String originalFilePath) {
+	void wrongPipelineMessagePreparedForDiff(String testName, String stepDisplayName, String pipelineMessagePreparedForDiff, String pipelineMessageExpectedPreparedForDiff, String originalFilePath) {
 		Map<String, String> map = new HashMap<>(3);
-		map.put("Message", message);
 		map.put("Step Display Name", stepDisplayName);
 		map.put("Pipeline Message", pipelineMessagePreparedForDiff);
 		map.put("Pipeline Message Expected", pipelineMessageExpectedPreparedForDiff);
 		map.put("Filepath", originalFilePath);
-		Message m = new Message(testName, map, LOG_LEVEL.indexOf("Wrong Pipeline Messages With Diff"), System.currentTimeMillis());
+		Message m = new Message(testName, map, LOG_LEVEL.indexOf("Wrong Pipeline Messages with Diff"), System.currentTimeMillis());
 		messages.add(m);
 	}
 
@@ -252,7 +248,6 @@ public class MessageListener {
 	}
 
 	public synchronized void setSelectedLogLevel(String selectedLogLevel) throws Exception {
-		selectedLogLevel = WordUtils.capitalizeFully(selectedLogLevel);
 		if (!LOG_LEVEL.contains(selectedLogLevel))
 			throw new Exception("Given log level does not exist!");
 		this.selectedLogLevel = LOG_LEVEL.indexOf(selectedLogLevel);
