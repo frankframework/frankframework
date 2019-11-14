@@ -60,6 +60,10 @@ public class TestTool {
 		return ibisContext;
 	}
 
+	public static IbisContext getIbisContext() {
+		return ibisContext;
+	}
+
 	public static AppConstants getAppConstants(IbisContext ibisContext) {
 		// Load AppConstants using a class loader to get an instance that has
 		// resolved application.server.type in ServerSpecifics*.properties,
@@ -78,7 +82,8 @@ public class TestTool {
 	 *         scenarios that failed
 	 */
 	public int runScenarios(String paramExecute, int waitBeforeCleanUp, String currentScenariosRootDirectory, int numberOfThreads, int testTimeout) {
-		AppConstants appConstants = AppConstants.getInstance();
+		AppConstants appConstants = getAppConstants(ibisContext);
+		appConstants = TestPreparer.getAppConstantsFromDirectory(currentScenariosRootDirectory, appConstants);
 		String asd = appConstants.getResolvedProperty("larva.diffs.autosave");
 		if (asd != null) {
 			autoSaveDiffs = Boolean.parseBoolean(asd);
