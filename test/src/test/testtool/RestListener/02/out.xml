@@ -1,1 +1,1 @@
-<filename3>c:/temp/testdata/rest/result3.pdf</filename3>
+<filename3>${testdata.dir}/rest/result3.pdf</filename3>

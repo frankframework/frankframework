@@ -1,1 +1,1 @@
-c:/temp/testdata/generateWsdl/input.zip
+${testdata.dir}/generateWsdl/input.zip
