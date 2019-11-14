@@ -57,7 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LarvaPipe extends FixedForwardPipe {
 	
-	@Autowired
+	//@Autowired
 	IbisContext ibisContext;
 	
 	private final String DEFAULT_LOG_LEVEL = "Wrong Pipeline Messages";
@@ -98,7 +98,7 @@ public class LarvaPipe extends FixedForwardPipe {
 	
 	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		//IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
+		ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
 		AppConstants appConstants = AppConstants.getInstance();
 		// Property webapp.realpath is not available in appConstants which was
 		// created with AppConstants.getInstance(ClassLoader classLoader), this
