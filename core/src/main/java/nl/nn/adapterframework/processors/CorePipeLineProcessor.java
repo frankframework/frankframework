@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2014, 2016-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -48,10 +48,6 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 	protected Logger durationLog = LogUtil.getLogger("DURATION");
 	private PipeProcessor pipeProcessor;
 
-	static {
-		System.out.println("***CorePipeLineProcessor***");
-	}
-	
 	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, String message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		// Object is the object that is passed to and returned from Pipes
@@ -290,9 +286,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			}
 			long pipeLineEndTime = System.currentTimeMillis();
 			long pipeLineDuration = pipeLineEndTime - pipeLineStartTime;
-			String print = (normalizeName(pipeLine.getAdapter().getName()) + "=" + pipeLineDuration + ";" + normalizeName(messageId) + pipeLineStats.toString());
-			durationLog.info(print);
-			System.out.println(print);
+			durationLog.info((normalizeName(pipeLine.getAdapter().getName()) + "=" + pipeLineDuration + ";" + normalizeName(messageId) + pipeLineStats.toString()));
 		}
 		return pipeLineResult;
 	}
