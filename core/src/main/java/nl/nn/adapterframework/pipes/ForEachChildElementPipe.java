@@ -165,7 +165,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 		private TimeOutException timeOutException;
 
 		private int elementLevel=0;
-		private boolean elementJustStarted;
+		private boolean charactersSeen;
 		private boolean inCdata;
 		private StringBuffer firstLevelNamespaceDefinitions=new StringBuffer();
 		private StringBuffer namespaceDefinitions=new StringBuffer();
@@ -220,7 +220,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes)	throws SAXException {
 			checkInterrupt();
-			if (elementLevel>1 && elementJustStarted) {
+			if (elementLevel>1 && !charactersSeen) {
 				elementbuffer.append(">");
 			}
 			if (elementLevel++>0) {
@@ -233,7 +233,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 					elementbuffer.append(namespaceDefinitions);
 					namespaceDefinitions.setLength(0);
 				}
-				elementJustStarted=true;
+				charactersSeen=false;
 			}
 		}
 
@@ -241,8 +241,8 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 		public void endElement(String uri, String localName, String qName) throws SAXException {
 			checkInterrupt();
 			if (elementLevel>1) {
-				if (elementJustStarted) {
-					elementJustStarted=false;
+				if (!charactersSeen) {
+					charactersSeen=true;
 					elementbuffer.append("/>");
 				} else {
 					elementbuffer.append("</"+(isRemoveNamespaces()?localName:qName)+">");
@@ -274,8 +274,8 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 		public void characters(char[] ch, int start, int length) throws SAXException {
 			checkInterrupt();
 			if (elementLevel>1) {
-				if (elementJustStarted) {
-					elementJustStarted=false;
+				if (!charactersSeen) {
+					charactersSeen=true;
 					elementbuffer.append(">");
 				}
 				if (inCdata) {
@@ -309,8 +309,8 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 
 		@Override
 		public void startCDATA() throws SAXException {
-			if (elementJustStarted) {
-				elementJustStarted=false;
+			if (!charactersSeen) {
+				charactersSeen=true;
 				elementbuffer.append(">");
 			}
 			elementbuffer.append("<![CDATA[");

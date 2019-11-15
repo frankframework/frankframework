@@ -95,10 +95,10 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 	}
 	
 	private class Element {
-		String uri;
-		String localName; 
-		String qName;
-		Attributes atts;
+		public String uri;
+		public String localName; 
+		public String qName;
+		public Attributes atts;
 	}
 
 

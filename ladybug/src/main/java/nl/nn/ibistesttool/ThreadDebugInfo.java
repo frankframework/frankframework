@@ -16,7 +16,7 @@
 package nl.nn.ibistesttool;
 
 class ThreadDebugInfo {
-	Object owner;
-	String threadId; 
-	String correlationId;
+	public Object owner;
+	public String threadId; 
+	public String correlationId;
 }
