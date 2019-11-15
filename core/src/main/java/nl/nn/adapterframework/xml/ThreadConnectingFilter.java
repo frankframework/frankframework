@@ -15,7 +15,12 @@
 */
 package nl.nn.adapterframework.xml;
 
+import java.io.IOException;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 
@@ -35,14 +40,238 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		if (threadLifeCycleEventListener!=null) {
 			threadLifeCycleEventListener.threadCreated(threadInfo);
 		}
-		super.startDocument();
+		try {
+			super.startDocument();
+		} catch (SAXException e) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+			throw e;
+		}
 	}
 
 	@Override
 	public void endDocument() throws SAXException {
-		super.endDocument();
+		try {
+			super.endDocument();
+		} catch (SAXException e) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+			throw e;
+		}
 		if (threadLifeCycleEventListener!=null) {
 			threadLifeCycleEventListener.threadEnded(threadInfo,null);
+		}
+	}
+
+	
+	
+	@Override
+	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+		try {
+			super.startElement(uri, localName, qName, atts);
+		} catch (SAXException e) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+			throw e;
+		}
+	}
+
+	@Override
+	public void characters(char[] ch, int start, int length) throws SAXException {
+		try {
+			super.characters(ch, start, length);
+		} catch (SAXException e) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+			throw e;
+		}
+	}
+
+	@Override
+	public void endElement(String uri, String localName, String qName) throws SAXException {
+		try {
+			super.endElement(uri, localName, qName);
+		} catch (SAXException e) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+			throw e;
+		}
+	}
+	
+	
+	@Override
+	public void comment(char[] ch, int start, int length) throws SAXException {
+		try {
+			super.comment(ch, start, length);
+		} catch (SAXException e) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+			throw e;
+		}
+	}
+
+	@Override
+	public void startCDATA() throws SAXException {
+		try {
+			super.startCDATA();
+		} catch (SAXException e) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+			throw e;
+		}
+	}
+
+	@Override
+	public void endCDATA() throws SAXException {
+		try {
+			super.endCDATA();
+		} catch (SAXException e) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+			throw e;
+		}
+	}
+
+	@Override
+	public void startDTD(String name, String publicId, String systemId) throws SAXException {
+		try {
+			super.startDTD(name, publicId, systemId);
+		} catch (SAXException e) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+			throw e;
+		}
+	}
+
+	@Override
+	public void endDTD() throws SAXException {
+		try {
+			super.endDTD();
+		} catch (SAXException e) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+			throw e;
+		}
+	}
+
+	@Override
+	public void startEntity(String name) throws SAXException {
+		try {
+			super.startEntity(name);
+		} catch (SAXException e) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+			throw e;
+		}
+	}
+
+	@Override
+	public void endEntity(String name) throws SAXException {
+		try {
+			super.endEntity(name);
+		} catch (SAXException e) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+			throw e;
+		}
+	}
+
+
+	@Override
+	public void endPrefixMapping(String prefix) throws SAXException {
+		try {
+			super.endPrefixMapping(prefix);
+		} catch (SAXException e) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+			throw e;
+		}
+	}
+
+	@Override
+	public void error(SAXParseException e) throws SAXException {
+		try {
+			super.error(e);
+		} catch (SAXException se) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, se);
+			throw e;
+		}
+	}
+
+	@Override
+	public void fatalError(SAXParseException e) throws SAXException {
+		try {
+			super.fatalError(e);
+		} catch (SAXException se) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, se);
+			throw e;
+		}
+	}
+
+	@Override
+	public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+		try {
+			super.ignorableWhitespace(ch, start, length);
+		} catch (SAXException e) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+			throw e;
+		}
+	}
+
+	@Override
+	public void notationDecl(String name, String publicId, String systemId) throws SAXException {
+		try {
+			super.notationDecl(name, publicId, systemId);
+		} catch (SAXException e) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+			throw e;
+		}
+	}
+
+	@Override
+	public void processingInstruction(String target, String data) throws SAXException {
+		try {
+			super.processingInstruction(target, data);
+		} catch (SAXException e) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+			throw e;
+		}
+	}
+
+	@Override
+	public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+		try {
+			return super.resolveEntity(publicId, systemId);
+		} catch (SAXException e) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+			throw e;
+		}
+	}
+
+	@Override
+	public void skippedEntity(String name) throws SAXException {
+		try {
+			super.skippedEntity(name);
+		} catch (SAXException e) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+			throw e;
+		}
+	}
+
+	@Override
+	public void startPrefixMapping(String prefix, String uri) throws SAXException {
+		try {
+			super.startPrefixMapping(prefix, uri);
+		} catch (SAXException e) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+			throw e;
+		}
+	}
+
+	@Override
+	public void unparsedEntityDecl(String name, String publicId, String systemId, String notationName) throws SAXException {
+		try {
+			super.unparsedEntityDecl(name, publicId, systemId, notationName);
+		} catch (SAXException e) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+			throw e;
+		}
+	}
+
+	@Override
+	public void warning(SAXParseException e) throws SAXException {
+		try {
+			super.warning(e);
+		} catch (SAXException se) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, se);
+			throw e;
 		}
 	}
 	
