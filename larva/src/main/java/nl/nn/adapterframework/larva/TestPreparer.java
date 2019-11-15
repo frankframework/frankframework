@@ -696,11 +696,6 @@ public class TestPreparer {
 				if(value == null) {
 					messageListener.errorMessage(testName, "Variable [" + variable + "] was not found! Please either declare it in properties or use escape character \\\\");
 				}else {
-					// If value is file, then make sure to use operating system's seperator.
-					File file = new File(value);
-					if (file.exists())
-						value = StringUtils.replace(file.getPath(), "/", File.separator);
-
 					message = StringUtils.replace(message, initCharacters+variable+finishCharacters, value);
 				}
 			}
