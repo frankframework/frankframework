@@ -12,7 +12,7 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
-public class SkipEmptyElementsFilterTest {
+public class SkipEmptyTagsFilterTest {
 
 	
 	public void testXmlWriter(XMLFilterImpl filter, String input, String expected) throws IOException, SAXException {

@@ -236,16 +236,49 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	}
 
 //	@Test
+//	public void anyXmlBasic() throws Exception {
+//		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+//		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+//
+//		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
+//		//setIndent(true);
+//		pipe.configure();
+//		pipe.start();
+//
+//		PipeRunResult prr = doPipe(pipe, input, session);
+//		String result = prr.getResult().toString();
+//		
+//		TestAssertions.assertEqualsIgnoreWhitespaces(expected, result);
+//	}
+//
+//	@Test
+//	public void anyXmlIndent() throws Exception {
+//		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+//		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/PrettyPrinted.xml");
+//
+//		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
+//		//setIndent(true);
+//		pipe.configure();
+//		pipe.start();
+//
+//		PipeRunResult prr = doPipe(pipe, input, session);
+//		String result = prr.getResult().toString();
+//		
+//		TestAssertions.assertEqualsIgnoreWhitespaces(expected, result);
+//	}
+
+//	@Test
 //	public void skipEmptyTagsXslt1() throws Exception {
-//		setStyleSheetName("/Xslt/SkipEmptyTags/Copy.xsl");
+//		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+//		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/out.xml");
+//
+//		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
 //		setXslt2(false);
 //		setSkipEmptyTags(true);
 //		setOutputType("xml");
 //		//setIndent(true);
 //		pipe.configure();
 //		pipe.start();
-//		String input = TestFileUtils.getTestFile("/Xslt/SkipEmptyTags/in.xml");
-//		String expected = TestFileUtils.getTestFile("/Xslt/SkipEmptyTags/out.xml");
 //
 //		PipeRunResult prr = doPipe(pipe, input, session);
 //		String result = prr.getResult().toString();
@@ -255,14 +288,14 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 //
 //	@Test
 //	public void skipEmptyTagsXslt2() throws Exception {
-//		setStyleSheetName("/Xslt/SkipEmptyTags/Copy.xsl");
+//		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
 //		setXslt2(true);
 //		setSkipEmptyTags(true);
 //		//setIndent(true);
 //		pipe.configure();
 //		pipe.start();
-//		String input = TestFileUtils.getTestFile("/Xslt/SkipEmptyTags/in.xml");
-//		String expected = TestFileUtils.getTestFile("/Xslt/SkipEmptyTags/out.xml");
+//		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+//		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/out.xml");
 //
 //		PipeRunResult prr = doPipe(pipe, input, session);
 //		String result = prr.getResult().toString();

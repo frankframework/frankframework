@@ -35,6 +35,13 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationID):null;
 	}
 
+	private void handleException(SAXException e) throws SAXException {
+		if (threadLifeCycleEventListener!=null) {
+			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+		}
+		throw e;
+	}
+	
 	@Override
 	public void startDocument() throws SAXException {
 		if (threadLifeCycleEventListener!=null) {
@@ -43,8 +50,7 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		try {
 			super.startDocument();
 		} catch (SAXException e) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, e);
-			throw e;
+			handleException(e);
 		}
 	}
 
@@ -53,8 +59,7 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		try {
 			super.endDocument();
 		} catch (SAXException e) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, e);
-			throw e;
+			handleException(e);
 		}
 		if (threadLifeCycleEventListener!=null) {
 			threadLifeCycleEventListener.threadEnded(threadInfo,null);
@@ -68,8 +73,7 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		try {
 			super.startElement(uri, localName, qName, atts);
 		} catch (SAXException e) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, e);
-			throw e;
+			handleException(e);
 		}
 	}
 
@@ -78,8 +82,7 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		try {
 			super.characters(ch, start, length);
 		} catch (SAXException e) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, e);
-			throw e;
+			handleException(e);
 		}
 	}
 
@@ -88,8 +91,7 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		try {
 			super.endElement(uri, localName, qName);
 		} catch (SAXException e) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, e);
-			throw e;
+			handleException(e);
 		}
 	}
 	
@@ -99,8 +101,7 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		try {
 			super.comment(ch, start, length);
 		} catch (SAXException e) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, e);
-			throw e;
+			handleException(e);
 		}
 	}
 
@@ -109,8 +110,7 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		try {
 			super.startCDATA();
 		} catch (SAXException e) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, e);
-			throw e;
+			handleException(e);
 		}
 	}
 
@@ -119,8 +119,7 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		try {
 			super.endCDATA();
 		} catch (SAXException e) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, e);
-			throw e;
+			handleException(e);
 		}
 	}
 
@@ -129,8 +128,7 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		try {
 			super.startDTD(name, publicId, systemId);
 		} catch (SAXException e) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, e);
-			throw e;
+			handleException(e);
 		}
 	}
 
@@ -139,8 +137,7 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		try {
 			super.endDTD();
 		} catch (SAXException e) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, e);
-			throw e;
+			handleException(e);
 		}
 	}
 
@@ -149,8 +146,7 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		try {
 			super.startEntity(name);
 		} catch (SAXException e) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, e);
-			throw e;
+			handleException(e);
 		}
 	}
 
@@ -159,8 +155,7 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		try {
 			super.endEntity(name);
 		} catch (SAXException e) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, e);
-			throw e;
+			handleException(e);
 		}
 	}
 
@@ -170,8 +165,16 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		try {
 			super.endPrefixMapping(prefix);
 		} catch (SAXException e) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, e);
-			throw e;
+			handleException(e);
+		}
+	}
+
+	@Override
+	public void warning(SAXParseException e) throws SAXException {
+		try {
+			super.warning(e);
+		} catch (SAXException se) {
+			handleException(se);
 		}
 	}
 
@@ -180,8 +183,7 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		try {
 			super.error(e);
 		} catch (SAXException se) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, se);
-			throw e;
+			handleException(se);
 		}
 	}
 
@@ -190,8 +192,7 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		try {
 			super.fatalError(e);
 		} catch (SAXException se) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, se);
-			throw e;
+			handleException(se);
 		}
 	}
 
@@ -200,8 +201,7 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		try {
 			super.ignorableWhitespace(ch, start, length);
 		} catch (SAXException e) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, e);
-			throw e;
+			handleException(e);
 		}
 	}
 
@@ -210,8 +210,7 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		try {
 			super.notationDecl(name, publicId, systemId);
 		} catch (SAXException e) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, e);
-			throw e;
+			handleException(e);
 		}
 	}
 
@@ -220,8 +219,7 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		try {
 			super.processingInstruction(target, data);
 		} catch (SAXException e) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, e);
-			throw e;
+			handleException(e);
 		}
 	}
 
@@ -230,7 +228,7 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		try {
 			return super.resolveEntity(publicId, systemId);
 		} catch (SAXException e) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+			handleException(e);
 			throw e;
 		}
 	}
@@ -240,8 +238,7 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		try {
 			super.skippedEntity(name);
 		} catch (SAXException e) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, e);
-			throw e;
+			handleException(e);
 		}
 	}
 
@@ -250,8 +247,7 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		try {
 			super.startPrefixMapping(prefix, uri);
 		} catch (SAXException e) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, e);
-			throw e;
+			handleException(e);
 		}
 	}
 
@@ -260,19 +256,9 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		try {
 			super.unparsedEntityDecl(name, publicId, systemId, notationName);
 		} catch (SAXException e) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, e);
-			throw e;
+			handleException(e);
 		}
 	}
 
-	@Override
-	public void warning(SAXParseException e) throws SAXException {
-		try {
-			super.warning(e);
-		} catch (SAXException se) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, se);
-			throw e;
-		}
-	}
 	
 }
