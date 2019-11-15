@@ -24,6 +24,8 @@ public class MessageListener {
 	private static Logger logger = LogUtil.getLogger(TestTool.class);
 	private LinkedList<Message> messages;
 	private int selectedLogLevel;
+	// Used to log or print out on system, depending on log level index
+	private boolean[] saveLog, sysOut;
 	private static final List<String> LOG_LEVEL = new ArrayList<String>() {{
 		// CAUTION! Order matters!!
 		add("Debug");
@@ -43,11 +45,32 @@ public class MessageListener {
 	public MessageListener(LinkedList<Message> messages, String selectedLogLevel) {
 		this.messages = messages;
 		this.selectedLogLevel = LOG_LEVEL.indexOf(selectedLogLevel);
+		this.saveLog = new boolean[LOG_LEVEL.size()];
+		this.sysOut = new boolean[LOG_LEVEL.size()];
 	}
 
 	public MessageListener(){
 		this.messages = new LinkedList<>();
 		this.selectedLogLevel = MessageListener.DEFAULT_LOG_LEVEL;
+		this.saveLog = new boolean[LOG_LEVEL.size()];
+		this.sysOut = new boolean[LOG_LEVEL.size()];
+	}
+
+	private void addMessage(String testName, Map<String, String> message, int logLevel, long timestamp) {
+		Message m = new Message(testName, message, logLevel, timestamp);
+		messages.add(m);
+		if (saveLog[logLevel] || sysOut[logLevel]) {
+			String str = "[" + LOG_LEVEL.get(logLevel) + "]" + mapToStr(message);
+			if (sysOut[logLevel])
+				System.out.println(str);
+
+			if (saveLog[logLevel]) {
+				if(logLevel == LOG_LEVEL.indexOf("Errors"))
+					logger.error(str);
+				else
+					logger.debug(str);
+			}
+		}
 	}
 
 	/**
@@ -121,17 +144,14 @@ public class MessageListener {
 	public synchronized void debugMessage(String testName, String message) {
 		Map<String, String> map = new HashMap<>(1);
 		map.put("Message", message);
-		Message m = new Message(testName, map, LOG_LEVEL.indexOf("DEBUG"), System.currentTimeMillis());
-		messages.add(m);
-		System.out.println(message);
-		logger.debug(message);
+		addMessage(testName, map, LOG_LEVEL.indexOf("DEBUG"), System.currentTimeMillis());
+
 	}
 
 	private synchronized void singleMessage(String testName, String message, String debugLevel) {
 		Map<String, String> map = new HashMap<>(1);
 		map.put("Message", message);
-		Message m = new Message(testName, map, LOG_LEVEL.indexOf(debugLevel), System.currentTimeMillis());
-		messages.add(m);
+		addMessage(testName, map, LOG_LEVEL.indexOf(debugLevel), System.currentTimeMillis());
 	}
 
 	void testInitiationMessage(String testName, String directory, String description) {
@@ -139,13 +159,13 @@ public class MessageListener {
 		map.put("directory", directory);
 		if(description != null)
 			map.put("description", description);
-		messages.add(new Message(testName, map, LOG_LEVEL.indexOf("Test Properties"), System.currentTimeMillis()));
+		addMessage(testName, map, LOG_LEVEL.indexOf("Test Properties"), System.currentTimeMillis());
 	}
 
 	void testStatusMessage(String testName, String status) {
 		Map<String, String> map = new HashMap<>();
 		map.put("status", status);
-		messages.add(new Message(testName, map, LOG_LEVEL.indexOf("Test Properties"), System.currentTimeMillis()));
+		addMessage(testName, map, LOG_LEVEL.indexOf("Test Properties"), System.currentTimeMillis());
 	}
 
 	public synchronized void debugPipelineMessage(String testName, String stepDisplayName, String message, String pipelineMessage) {
@@ -153,8 +173,7 @@ public class MessageListener {
 		map.put("Step Display Name", stepDisplayName);
 		map.put("Message", message);
 		map.put("Pipeline Message", pipelineMessage);
-		Message m = new Message(testName, map, LOG_LEVEL.indexOf("Pipeline Messages"), System.currentTimeMillis());
-		messages.add(m);
+		addMessage(testName, map, LOG_LEVEL.indexOf("Pipeline Messages"), System.currentTimeMillis());
 	}
 
 	void debugPipelineMessagePreparedForDiff(String testName, String stepDisplayName, String message, String pipelineMessage) {
@@ -162,16 +181,14 @@ public class MessageListener {
 		map.put("Step Display Name", stepDisplayName);
 		map.put("Message", message);
 		map.put("Pipeline Message", pipelineMessage);
-		Message m = new Message(testName, map, LOG_LEVEL.indexOf("Pipeline Messages Prepared For Diff"), System.currentTimeMillis());
-		messages.add(m);
+		addMessage(testName, map, LOG_LEVEL.indexOf("Pipeline Messages Prepared For Diff"), System.currentTimeMillis());
 	}
 
 	public synchronized void wrongPipelineMessage(String testName, String message, String pipelineMessage) {
 		Map<String, String> map = new HashMap<>(2);
 		map.put("Message", message);
 		map.put("Pipeline Message", pipelineMessage);
-		Message m = new Message(testName, map, LOG_LEVEL.indexOf("Pipeline Messages Prepared For Diff"), System.currentTimeMillis());
-		messages.add(m);
+		addMessage(testName, map, LOG_LEVEL.indexOf("Pipeline Messages Prepared For Diff"), System.currentTimeMillis());
 	}
 
 	void wrongPipelineMessage(String testName, String stepDisplayName, String message, String pipelineMessage, String pipelineMessageExpected, String originalFilePath) {
@@ -180,8 +197,7 @@ public class MessageListener {
 		map.put("Message", message);
 		map.put("Pipeline Message", pipelineMessage);
 		map.put("pipelineMessageExpected", pipelineMessage);
-		Message m = new Message(testName, map, LOG_LEVEL.indexOf("Wrong Pipeline Messages"), System.currentTimeMillis());
-		messages.add(m);
+		addMessage(testName, map, LOG_LEVEL.indexOf("Wrong Pipeline Messages"), System.currentTimeMillis());
 	}
 
 	void wrongPipelineMessagePreparedForDiff(String testName, String message, String stepDisplayName, String pipelineMessagePreparedForDiff, String pipelineMessageExpectedPreparedForDiff, String originalFilePath) {
@@ -191,8 +207,7 @@ public class MessageListener {
 		map.put("Pipeline Message", pipelineMessagePreparedForDiff);
 		map.put("Pipeline Message Expected", pipelineMessageExpectedPreparedForDiff);
 		map.put("Filepath", originalFilePath);
-		Message m = new Message(testName, map, LOG_LEVEL.indexOf("Wrong Pipeline Messages With Diff"), System.currentTimeMillis());
-		messages.add(m);
+		addMessage(testName, map, LOG_LEVEL.indexOf("Wrong Pipeline Messages With Diff"), System.currentTimeMillis());
 	}
 
 	void stepMessage(String testName, String message) {
@@ -243,8 +258,7 @@ public class MessageListener {
 		}
 
 		map.put("Stack Trace", stacktrace.toString());
-		Message m = new Message(testName, map, LOG_LEVEL.indexOf("Errors"), System.currentTimeMillis());
-		messages.add(m);
+		addMessage(testName, map, LOG_LEVEL.indexOf("Errors"), System.currentTimeMillis());
 	}
 
 	public synchronized String getSelectedLogLevel() {
@@ -268,5 +282,45 @@ public class MessageListener {
 
 	public synchronized void clean() {
 		messages = new LinkedList<Message>();
+	}
+
+	/**
+	 * Translates given map to a string for printout or logging.
+	 * @param map Map of \<String, String\>
+	 * @return String containing the values in map.
+	 */
+	private static String mapToStr(Map<String, String> map) {
+		Iterator<Map.Entry<String, String>> iter = map.entrySet().iterator();
+		String result = "";
+		Map.Entry<String, String> entry;
+		while(iter.hasNext()) {
+			entry = iter.next();
+			result += entry.getKey() + "[" + entry.getValue() + "]  ";
+		}
+		return result;
+	}
+
+	public void setSaveLog(String logLevel, boolean value, boolean applyLower) throws Exception {
+		logLevel = WordUtils.capitalizeFully(logLevel);
+		if (!LOG_LEVEL.contains(logLevel))
+			throw new Exception("Given log level does not exist!");
+		int level = LOG_LEVEL.indexOf(logLevel);
+		sysOut[level] = value;
+		if (applyLower) {
+			for (int i = 0; i < level; i++)
+				sysOut[i] = value;
+		}
+	}
+
+	public void setSysOut(String logLevel, boolean value, boolean applyLower) throws Exception {
+		logLevel = WordUtils.capitalizeFully(logLevel);
+		if (!LOG_LEVEL.contains(logLevel))
+			throw new Exception("Given log level does not exist!");
+		int level = LOG_LEVEL.indexOf(logLevel);
+		sysOut[level] = value;
+		if (applyLower) {
+			for (int i = 0; i < level; i++)
+				sysOut[i] = value;
+		}
 	}
 }
