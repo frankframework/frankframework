@@ -19,6 +19,7 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.xpath.operations.Bool;
 import org.custommonkey.xmlunit.Diff;
 
 import nl.nn.adapterframework.util.XmlUtils;
@@ -41,6 +42,16 @@ public class ResultComparer {
 		String printableActualResult = XmlUtils.replaceNonValidXmlCharacters(actualResult);
 		String preparedExpectedResult = printableExpectedResult;
 		String preparedActualResult = printableActualResult;
+
+		messageListener.debugMessage(testName, "Check treatSlashesAsSame property.");
+		boolean treatSlashesAsSame = Boolean.parseBoolean(properties.getProperty("treatSlashesAsSame", "False"));
+		System.out.println("treatSlashesAsSame: " + treatSlashesAsSame);
+		if (treatSlashesAsSame) {
+			System.out.println(preparedExpectedResult + "\n" + preparedActualResult);
+			preparedExpectedResult = StringUtils.replace(preparedExpectedResult, "\\", "/");
+			preparedActualResult = StringUtils.replace(preparedActualResult, "\\", "/");
+			System.out.println(preparedExpectedResult + "\n" + preparedActualResult);
+		}
 		messageListener.debugMessage(testName, "Check decodeUnzipContentBetweenKeys properties");
 		boolean decodeUnzipContentBetweenKeysProcessed = false;
 		int i = 1;
