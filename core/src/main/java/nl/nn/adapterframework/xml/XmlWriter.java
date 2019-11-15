@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.stream;
+package nl.nn.adapterframework.xml;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -32,7 +32,6 @@ import org.xml.sax.helpers.DefaultHandler;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.xml.SaxException;
 
 public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	protected Logger log = LogUtil.getLogger(this);
@@ -156,9 +155,9 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 				writer.write(ch, start, length);
 			} else {
 				if (inCdata) {
-					writer.append("<![CDATA[").append(new String(ch, start, length)).append("]]>");
+					writer.append(new String(ch, start, length));
 				} else {
-					writer.append(XmlUtils.encodeChars(new String(ch, start, length)));
+					writer.append(XmlUtils.encodeChars(new String(ch, start, length)).replace("&quot;", "\""));
 				}
 			}
 		} catch (IOException e) {
@@ -178,6 +177,15 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	}
 
 	@Override
+	public void processingInstruction(String target, String data) throws SAXException {
+		try {
+			writer.append("<?").append(target).append(" ").append(data).append("?>\n");
+		} catch (IOException e) {
+			throw new SaxException(e);
+		}
+	}
+
+	@Override
 	public void startDTD(String arg0, String arg1, String arg2) throws SAXException {
 //		System.out.println("startDTD");
 	}
@@ -189,12 +197,26 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 
 	@Override
 	public void startCDATA() throws SAXException {
-		inCdata=true;
+		try {
+			if (elementJustStarted) {
+				elementJustStarted=false;
+				writer.append(">");
+			}
+			writer.append("<![CDATA[");
+			inCdata=true;
+		} catch (IOException e) {
+			throw new SaxException(e);
+		}
 	}
 
 	@Override
 	public void endCDATA() throws SAXException {
-		inCdata=false;
+		try {
+			writer.append("]]>");
+			inCdata=false;
+		} catch (IOException e) {
+			throw new SaxException(e);
+		}
 	}
 
 	@Override
@@ -227,5 +249,6 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	public void setTextMode(boolean textMode) {
 		this.textMode = textMode;
 	}
+
 
 }

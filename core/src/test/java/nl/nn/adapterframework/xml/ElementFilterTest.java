@@ -7,7 +7,6 @@ import java.io.IOException;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.stream.XmlWriter;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class ElementFilterTest {

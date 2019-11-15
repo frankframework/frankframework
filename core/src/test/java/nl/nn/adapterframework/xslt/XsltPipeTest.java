@@ -41,6 +41,11 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 	}
 
 	@Override
+	protected void setOutputType(String outputType) {
+		pipe.setOutputType(outputType);
+	}
+
+	@Override
 	protected void setRemoveNamespaces(boolean removeNamespaces) {
 		pipe.setRemoveNamespaces(removeNamespaces);
 	}

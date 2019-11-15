@@ -35,6 +35,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	protected abstract void setSkipEmptyTags(boolean skipEmptyTags);
 	protected abstract void setRemoveNamespaces(boolean removeNamespaces);
 	protected abstract void setXslt2(boolean xslt2);
+	protected abstract void setOutputType(String outputType);
  
 	
 	@Override
@@ -234,4 +235,38 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		TestAssertions.assertEqualsIgnoreWhitespaces(expected, result);
 	}
 
+//	@Test
+//	public void skipEmptyTagsXslt1() throws Exception {
+//		setStyleSheetName("/Xslt/SkipEmptyTags/Copy.xsl");
+//		setXslt2(false);
+//		setSkipEmptyTags(true);
+//		setOutputType("xml");
+//		//setIndent(true);
+//		pipe.configure();
+//		pipe.start();
+//		String input = TestFileUtils.getTestFile("/Xslt/SkipEmptyTags/in.xml");
+//		String expected = TestFileUtils.getTestFile("/Xslt/SkipEmptyTags/out.xml");
+//
+//		PipeRunResult prr = doPipe(pipe, input, session);
+//		String result = prr.getResult().toString();
+//		
+//		TestAssertions.assertEqualsIgnoreWhitespaces(expected, result);
+//	}
+//
+//	@Test
+//	public void skipEmptyTagsXslt2() throws Exception {
+//		setStyleSheetName("/Xslt/SkipEmptyTags/Copy.xsl");
+//		setXslt2(true);
+//		setSkipEmptyTags(true);
+//		//setIndent(true);
+//		pipe.configure();
+//		pipe.start();
+//		String input = TestFileUtils.getTestFile("/Xslt/SkipEmptyTags/in.xml");
+//		String expected = TestFileUtils.getTestFile("/Xslt/SkipEmptyTags/out.xml");
+//
+//		PipeRunResult prr = doPipe(pipe, input, session);
+//		String result = prr.getResult().toString();
+//		
+//		TestAssertions.assertEqualsIgnoreWhitespaces(expected, result);
+//	}
 }

@@ -50,15 +50,15 @@ import nl.nn.adapterframework.stream.MessageOutputStreamCap;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingSenderBase;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
-import nl.nn.adapterframework.stream.XmlWriter;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.SkipEmptyTagsFilter;
-import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
 import nl.nn.adapterframework.xml.TransformerFilter;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
  * Perform an XSLT transformation with a specified stylesheet or XPath-expression.
@@ -105,12 +105,32 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		
 		dynamicTransformerPoolMap = Collections.synchronizedMap(new LRUMap(transformerPoolMapSize));
 		
+//		if (StringUtils.isEmpty(getOutputType())) {
+//			if (StringUtils.isNotEmpty(getStyleSheetName())) {
+//				try {
+//					TransformerPool detectOutputTypeTp=XmlUtils.getDetectXsltOutputTypeTransformerPool();
+//					Resource styleSheet = Resource.getResource(getClassLoader(), getStyleSheetName());
+//					if (styleSheet==null) {
+//						throw new ConfigurationException(getLogPrefix()+" cannot find stylesheet ["+getStyleSheetName()+"]");
+//					}
+//					String outputType=detectOutputTypeTp.transform(styleSheet.asSource(), null);
+//					setOutputType(outputType);
+//				} catch (TransformerException | IOException | SAXException e) {
+//					throw new ConfigurationException(getLogPrefix()+" could not determine output-type of stylesheet ["+getStyleSheetName()+"]");
+//				}
+//			} 
+//			if (StringUtils.isNotEmpty(getXpathExpression())) {
+//				setOutputType("text");
+//			}
+//		}
+
 		if(StringUtils.isNotEmpty(getStyleSheetName()) || StringUtils.isNotEmpty(getXpathExpression())) {
 			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), getXsltVersion());
 		}
 		else if(StringUtils.isEmpty(getStyleSheetNameSessionKey())) {
 			throw new ConfigurationException(getLogPrefix()+" one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified");
 		}
+		
 		
 		if (isSkipEmptyTags()) {
 			transformerPoolSkipEmptyTags = XmlUtils.getSkipEmptyTagsTransformerPool(isOmitXmlDeclaration(),isIndentXml());
@@ -212,61 +232,10 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		return new MessageOutputStream(handler,target);
 	}
 	
-
-	private ContentHandler createHandlerOud(String correlationID, String input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
-		ContentHandler handler = null;
-
-		try {
-			Map<String,Object> parametervalues = null;
-			ParameterResolutionContext prc = new ParameterResolutionContext(input,session);
-			if (paramList!=null) {
-				parametervalues = prc.getValueMap(paramList);
-			}
-
-			Result result;
-			if ("xml".equals(getOutputType())) {
-				SAXResult targetFeedingResult = new SAXResult();
-				targetFeedingResult.setHandler(target.asContentHandler());
-				result = targetFeedingResult;
-			} else {
-				result = new StreamResult(target.asWriter());
-			}
-			
-			if (isSkipEmptyTags()) {
-				TransformerHandler skipEmptyTagsHandler = transformerPoolSkipEmptyTags.getTransformerHandler();
-				skipEmptyTagsHandler.setResult(result);
-				SAXResult skipEmptyTagsFeedingResult = new SAXResult();
-				skipEmptyTagsFeedingResult.setHandler(skipEmptyTagsHandler);
-				result=skipEmptyTagsFeedingResult;
-			}
-
-			TransformerPool poolToUse = transformerPool;
-			if(StringUtils.isNotEmpty(styleSheetNameSessionKey) && prc.getSession().get(styleSheetNameSessionKey) != null) {
-				String styleSheetNameToUse = prc.getSession().get(styleSheetNameSessionKey).toString();
-			
-				if(!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
-					dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), getClassLoader(), null, null, styleSheetNameToUse, null, !isOmitXmlDeclaration(), getParameterList()));
-					poolToUse.open();
-				} else {
-					poolToUse = dynamicTransformerPoolMap.get(styleSheetNameToUse);
-				}
-			}
-
-			TransformerHandler mainHandler = poolToUse.getTransformerHandler();
-			XmlUtils.setTransformerParameters(mainHandler.getTransformer(),parametervalues);
-			mainHandler.setResult(result);
-			handler=mainHandler;
-			
-			handler=filterInput(handler, prc);
-			
-			return handler;
-		} catch (Exception e) {
-			//log.warn(getLogPrefix()+"intermediate exception logging",e);
-			throw new StreamingException(getLogPrefix()+"Exception on creating transformerHandler chain", e);
-		} 
-	}
-
 	private ContentHandler createHandler(String correlationID, String input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+		return createHandlerOud(correlationID, input, session, target);
+	}
+	private ContentHandler createHandlerNieuw(String correlationID, String input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
 		ContentHandler handler = null;
 
 		try {
@@ -313,14 +282,63 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 				}
 			}
 
-//			TransformerHandler mainHandler = poolToUse.getTransformerHandler();
-//			XmlUtils.setTransformerParameters(mainHandler.getTransformer(),parametervalues);
-//			mainHandler.setResult(result);
-//			handler=mainHandler;
 			TransformerFilter mainFilter = poolToUse.getTransformerFilter(this, threadLifeCycleEventListener, correlationID);
 			XmlUtils.setTransformerParameters(mainFilter.getTransformer(),parametervalues);
 			mainFilter.setContentHandler(handler);
 			handler=mainFilter;
+			
+			handler=filterInput(handler, prc);
+			
+			return handler;
+		} catch (Exception e) {
+			//log.warn(getLogPrefix()+"intermediate exception logging",e);
+			throw new StreamingException(getLogPrefix()+"Exception on creating transformerHandler chain", e);
+		} 
+	}
+	
+	private ContentHandler createHandlerOud(String correlationID, String input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+		ContentHandler handler = null;
+
+		try {
+			Map<String,Object> parametervalues = null;
+			ParameterResolutionContext prc = new ParameterResolutionContext(input,session);
+			if (paramList!=null) {
+				parametervalues = prc.getValueMap(paramList);
+			}
+
+			Result result;
+			if ("xml".equals(getOutputType())) {
+				SAXResult targetFeedingResult = new SAXResult();
+				targetFeedingResult.setHandler(target.asContentHandler());
+				result = targetFeedingResult;
+			} else {
+				result = new StreamResult(target.asWriter());
+			}
+			
+			if (isSkipEmptyTags()) {
+				TransformerHandler skipEmptyTagsHandler = transformerPoolSkipEmptyTags.getTransformerHandler();
+				skipEmptyTagsHandler.setResult(result);
+				SAXResult skipEmptyTagsFeedingResult = new SAXResult();
+				skipEmptyTagsFeedingResult.setHandler(skipEmptyTagsHandler);
+				result=skipEmptyTagsFeedingResult;
+			}
+
+			TransformerPool poolToUse = transformerPool;
+			if(StringUtils.isNotEmpty(styleSheetNameSessionKey) && prc.getSession().get(styleSheetNameSessionKey) != null) {
+				String styleSheetNameToUse = prc.getSession().get(styleSheetNameSessionKey).toString();
+			
+				if(!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
+					dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), getClassLoader(), null, null, styleSheetNameToUse, null, !isOmitXmlDeclaration(), getParameterList()));
+					poolToUse.open();
+				} else {
+					poolToUse = dynamicTransformerPoolMap.get(styleSheetNameToUse);
+				}
+			}
+
+			TransformerHandler mainHandler = poolToUse.getTransformerHandler();
+			XmlUtils.setTransformerParameters(mainHandler.getTransformer(),parametervalues);
+			mainHandler.setResult(result);
+			handler=mainHandler;
 			
 			handler=filterInput(handler, prc);
 			

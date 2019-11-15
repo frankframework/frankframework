@@ -20,19 +20,20 @@ import org.xml.sax.SAXException;
 
 public class PrettyPrintFilter extends FullXmlFilter {
 
-	private String INDENT="   ";
+	private String indent="   ";
 	private int indentLevel;
 	private boolean charactersSeen;
 	private boolean elementsSeen;
+	private boolean elementContentSeen;
 	
 	private void write(String string) throws SAXException {
-		characters(string.toCharArray(), 0, string.length());
+		super.characters(string.toCharArray(), 0, string.length());
 	}
 	
 	private void indent() throws SAXException  {
 		write("\n");
 		for(int i=0; i<indentLevel; i++) {
-			write(INDENT);
+			write(indent);
 		}
 	}
 	
@@ -46,22 +47,36 @@ public class PrettyPrintFilter extends FullXmlFilter {
 		super.startElement(uri, localName, qName, atts);
 		indentLevel++;
 		charactersSeen=false;
+		elementContentSeen=false;
 	}
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		indentLevel--;
-		if (!charactersSeen) {
+		if (elementContentSeen && !charactersSeen) {
 			indent();
 		}
 		super.endElement(uri, localName, qName);
 		charactersSeen=false;
+		elementContentSeen=true;
 	}
 
 	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
-		super.characters(ch, start, length);
-		charactersSeen=true;
+		for (int i=0; !charactersSeen && i<length; i++) {
+			if (!Character.isWhitespace(ch[start+i])) {
+				charactersSeen=true;
+				break;
+			}
+		}
+		if (charactersSeen) {
+			super.characters(ch, start, length);
+			elementContentSeen=true;
+		}
+	}
+
+	public void setIndent(String indent) {
+		this.indent = indent;
 	}
 
 	

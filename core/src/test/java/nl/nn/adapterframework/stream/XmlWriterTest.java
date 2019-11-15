@@ -27,6 +27,7 @@ import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
 
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 public class XmlWriterTest {
 
