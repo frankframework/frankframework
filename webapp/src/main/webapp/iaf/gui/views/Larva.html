@@ -9,9 +9,15 @@
     .table > tbody > tr > td{
         padding: 10px;
     }
+    .sk-spinner-wave.sk-spinner{
+        font-size: 20px;
+        height: 50px;
+        margin-top: 10px;
+        margin-bottom: 20px;
+    }
 </style>
 <div class="wrapper wrapper-content animated fadeInRight" ng-controller="LarvaCtrl">
-    <div class="row">
+    <div class="row" ng-show="!running">
 <!--        Form to execute tests..-->
         <form role="form" ng-submit="submit(form)">
             <div class="form-row">
@@ -85,6 +91,15 @@
                 </div>
             </div>
         </form>
+    </div>
+    <div class="row" ng-show="running">
+        <div class="sk-spinner sk-spinner-wave col-md-2 col-md-offset-5">
+            <div class="sk-rect1"></div>
+            <div class="sk-rect2"></div>
+            <div class="sk-rect3"></div>
+            <div class="sk-rect4"></div>
+            <div class="sk-rect5"></div>
+        </div>
     </div>
     <div class="row">
         <div>

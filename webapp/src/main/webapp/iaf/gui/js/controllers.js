@@ -1489,6 +1489,7 @@ angular.module('iaf.beheerconsole')
 	$scope.lastAction = null;
 	$scope.lowestLogLevel = null;
 	$scope.archivedMessages = {};
+	$scope.running = false;
 
 	/**
 	 * Adds a new message that acts as an alert.
@@ -1599,11 +1600,14 @@ angular.module('iaf.beheerconsole')
 						"description":element["messages"]["description"]? element["messages"]["description"] : "No test description was provided."};
 					$scope.tests.push(test);
 				}else {
-					$scope.tests[testIndex]["status"] = element["messages"]["status"] ? element["messages"]["status"] : $scope.tests[testIndex]["status"];
+					if($scope.tests[testIndex]["status"] !== "ERROR") {
+						$scope.tests[testIndex]["status"] = element["messages"]["status"] ? element["messages"]["status"] : $scope.tests[testIndex]["status"];
+					}
 					$scope.tests[testIndex]["directory"] = element["messages"]["directory"] ? element["messages"]["directory"] : $scope.tests[testIndex]["directory"];
 				}
 			}else if(element["logLevel"] === "Total" && !$scope.file && Poller.get("LarvaMessagePoller")) {
 				Poller.remove("LarvaMessagePoller");
+				$scope.running = false;
 				console.log("Stop Poller.");
 				$scope.addDisplayMessage(
 					(element["messages"]["Message"].includes("failed")) ? "error" : "info",
@@ -1641,6 +1645,7 @@ angular.module('iaf.beheerconsole')
 
 		Poller.add(generator, $scope.setMessages, true, 500);
 		Poller.changeInterval("LarvaMessagePoller", 500);
+		$scope.running = true;
 	};
 
 	/**
