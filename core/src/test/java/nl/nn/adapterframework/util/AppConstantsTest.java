@@ -2,7 +2,6 @@ package nl.nn.adapterframework.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 
 import java.io.IOException;
 import java.net.URL;
@@ -105,7 +104,7 @@ public class AppConstantsTest {
 	}
 	
 	@Test
-	public void SetRuntimeKey() {
+	public void setRuntimeKey() {
 		AppConstants.removeInstance();
 		AppConstants.getInstance().put("dummyConstant", "2.7");
 		assertEquals("2.7", constants.get("dummyConstant"));
