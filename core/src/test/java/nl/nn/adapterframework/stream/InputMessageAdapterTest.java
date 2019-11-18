@@ -29,6 +29,7 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 public class InputMessageAdapterTest {
 

@@ -42,11 +42,16 @@ import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.SoftReferenceObjectPool;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.xml.ClassLoaderURIResolver;
+import nl.nn.adapterframework.xml.TransformerFilter;
 
 /**
  * Pool of transformers. As of IBIS 4.2.e the Templates object is used to
@@ -65,7 +70,7 @@ public class TransformerPool {
 	private TransformerFactory tFactory;
 
 	private Templates templates;
-	private URL reloadURL=null;
+	private Resource reloadResource=null;
 	private int xsltVersion;
 
 	private ClassLoaderURIResolver classLoaderURIResolver = new ClassLoaderURIResolver(Thread.currentThread().getContextClassLoader());
@@ -163,18 +168,9 @@ public class TransformerPool {
 		releaseTransformer(t);
 	}	
 
-	@Deprecated
-	private TransformerPool(URL url, boolean xslt2) throws TransformerConfigurationException, IOException {
-		this(new StreamSource(url.openStream()),url.toString(),xslt2);
-	}
-	
-	@Deprecated
-	private TransformerPool(String xsltString, String sysId, boolean xslt2) throws TransformerConfigurationException {
-		this(new StreamSource(new StringReader(xsltString)), sysId, xslt2);
-	}
 
-	private TransformerPool(URL url, int xsltVersion) throws TransformerConfigurationException, IOException {
-		this(new StreamSource(url.openStream()),url.toString(),xsltVersion!=0?xsltVersion:XmlUtils.detectXsltVersion(url));
+	private TransformerPool(Resource resource, int xsltVersion) throws TransformerConfigurationException, IOException, SAXException {
+		this(resource.asSource(),resource.getSystemId(),xsltVersion!=0?xsltVersion:XmlUtils.detectXsltVersion(resource.asSource()));
 	}
 	
 	private TransformerPool(String xsltString, String sysId, int xsltVersion) throws TransformerConfigurationException {
@@ -213,89 +209,42 @@ public class TransformerPool {
 		}
 	}
 
-	@Deprecated
-	private static TransformerPool getInstance(String xsltString, boolean xslt2) throws TransformerConfigurationException {
-		return getInstance(xsltString, null, xslt2);
+
+	public static TransformerPool getInstance(Resource resource) throws TransformerConfigurationException, IOException {
+		return getInstance(resource, 0);
 	}
 
-	@Deprecated
-	private static TransformerPool getInstance(String xsltString, String sysId, boolean xslt2) throws TransformerConfigurationException {
-		return getInstance(xsltString, sysId, xslt2, USE_CACHING);
+	public static TransformerPool getInstance(Resource resource, int xsltVersion) throws TransformerConfigurationException, IOException {
+		return getInstance(resource, xsltVersion, USE_CACHING);
 	}
 
-	@Deprecated
-	private static TransformerPool getInstance(String xsltString, String sysId, boolean xslt2, boolean caching) throws TransformerConfigurationException {
+	public static TransformerPool getInstance(Resource resource, int xsltVersion, boolean caching) throws TransformerConfigurationException, IOException {
 		if (caching) {
-			return retrieveInstance(xsltString, sysId, xslt2);
+			return retrieveInstance(resource, xsltVersion);
 		} else {
-			return new TransformerPool(xsltString, sysId, xslt2);
+			try {
+				return new TransformerPool(resource, xsltVersion);
+			} catch (SAXException e) {
+				throw new TransformerConfigurationException(e);
+			}
 		}
 	}
 
-	@Deprecated
-	private static synchronized TransformerPool retrieveInstance(String xsltString, String sysId, boolean xslt2) throws TransformerConfigurationException {
-		TransformerPoolKey tpKey = new TransformerPoolKey(xsltString, null, sysId, xslt2?2:1);
+	private static synchronized TransformerPool retrieveInstance(Resource resource, int xsltVersion) throws TransformerConfigurationException, IOException {
+		TransformerPoolKey tpKey = new TransformerPoolKey(null, resource.getURL(), null, xsltVersion);
 		if (transformerPools.containsKey(tpKey)) {
 			return transformerPools.get(tpKey);
 		} else {
-			TransformerPool transformerPool = new TransformerPool(xsltString, sysId, xslt2);
-			transformerPools.put(tpKey, transformerPool);
-			return transformerPool;
+			try {
+				TransformerPool transformerPool = new TransformerPool(resource, xsltVersion);
+				transformerPools.put(tpKey, transformerPool);
+				return transformerPool;
+			} catch (SAXException e) {
+				throw new TransformerConfigurationException(e);
+			}
 		}
 	}
 
-	public static TransformerPool getInstance(URL url) throws TransformerConfigurationException, IOException {
-		return getInstance(url, 0);
-	}
-
-	public static TransformerPool getInstance(URL url, int xsltVersion) throws TransformerConfigurationException, IOException {
-		return getInstance(url, xsltVersion, USE_CACHING);
-	}
-
-	public static TransformerPool getInstance(URL url, int xsltVersion, boolean caching) throws TransformerConfigurationException, IOException {
-		if (caching) {
-			return retrieveInstance(url, xsltVersion);
-		} else {
-			return new TransformerPool(url, xsltVersion);
-		}
-	}
-
-	private static synchronized TransformerPool retrieveInstance(URL url, int xsltVersion) throws TransformerConfigurationException, IOException {
-		TransformerPoolKey tpKey = new TransformerPoolKey(null, url, null, xsltVersion);
-		if (transformerPools.containsKey(tpKey)) {
-			return transformerPools.get(tpKey);
-		} else {
-			TransformerPool transformerPool = new TransformerPool(url, xsltVersion);
-			transformerPools.put(tpKey, transformerPool);
-			return transformerPool;
-		}
-	}
-
-	@Deprecated
-	public static TransformerPool getInstance(URL url, boolean xslt2) throws TransformerConfigurationException, IOException {
-		return getInstance(url, xslt2, USE_CACHING);
-	}
-
-	@Deprecated
-	public static TransformerPool getInstance(URL url, boolean xslt2, boolean caching) throws TransformerConfigurationException, IOException {
-		if (caching) {
-			return retrieveInstance(url, xslt2);
-		} else {
-			return new TransformerPool(url, xslt2);
-		}
-	}
-
-	@Deprecated
-	private static synchronized TransformerPool retrieveInstance(URL url, boolean xslt2) throws TransformerConfigurationException, IOException {
-		TransformerPoolKey tpKey = new TransformerPoolKey(null, url, null, xslt2?2:1);
-		if (transformerPools.containsKey(tpKey)) {
-			return transformerPools.get(tpKey);
-		} else {
-			TransformerPool transformerPool = new TransformerPool(url, xslt2);
-			transformerPools.put(tpKey, transformerPool);
-			return transformerPool;
-		}
-	}
 
 	private void initTransformerPool(Source source, String sysId) throws TransformerConfigurationException {
 		if (StringUtils.isNotEmpty(sysId)) {
@@ -316,9 +265,9 @@ public class TransformerPool {
 	}
 
 	private void reloadTransformerPool() throws TransformerConfigurationException, IOException {
-		if (reloadURL!=null) {
-			initTransformerPool(new StreamSource(reloadURL.openStream()),reloadURL.toString());
+		if (reloadResource!=null) {
 			try {
+				initTransformerPool(reloadResource.asSource(), reloadResource.getSystemId());
 				pool.clear();
 			} catch (Exception e) {
 				throw new TransformerConfigurationException("Could not clear pool",e);
@@ -362,26 +311,27 @@ public class TransformerPool {
 			logPrefix="";
 		}
 		if (!StringUtils.isEmpty(styleSheetName)) {
-			URL resource = ClassUtils.getResourceURL(classLoader, styleSheetName);
-			if (resource==null) {
-				throw new ConfigurationException(logPrefix+" cannot find ["+ styleSheetName + "]"); 
-			}
+			Resource styleSheet=null;
 			try {
-				result = TransformerPool.getInstance(resource, xsltVersion);
+				styleSheet = Resource.getResource(classLoader, styleSheetName);
+				if (styleSheet==null) {
+					throw new ConfigurationException(logPrefix+" cannot find ["+ styleSheetName + "]"); 
+				}
+				result = TransformerPool.getInstance(styleSheet, xsltVersion);
 				if (xsltVersion!=0) {
-					int styleSheetVersion=XmlUtils.detectXsltVersion(resource);
+					int styleSheetVersion=XmlUtils.detectXsltVersion(styleSheet.asSource());
 					if (xsltVersion!=styleSheetVersion) {
 						ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-						configWarnings.add(log, logPrefix+"configured xsltVersion ["+xsltVersion+"] does not match xslt version ["+styleSheetVersion+"] declared in stylesheet ["+resource.toExternalForm()+"]");
+						configWarnings.add(log, logPrefix+"configured xsltVersion ["+xsltVersion+"] does not match xslt version ["+styleSheetVersion+"] declared in stylesheet ["+styleSheet.getSystemId()+"]");
 					}
 				}
 			} catch (IOException e) {
-				throw new ConfigurationException(logPrefix+"cannot retrieve ["+ styleSheetName + "], resource ["+resource.toString()+"]", e);
-			} catch (TransformerConfigurationException te) {
-				throw new ConfigurationException(logPrefix+" got error creating transformer from file [" + styleSheetName + "]", te);
+				throw new ConfigurationException(logPrefix+"cannot retrieve ["+ styleSheetName + "] resource ["+styleSheet.getSystemId()+"] url ["+styleSheet.getURL()+"]", e);
+			} catch (SAXException|TransformerConfigurationException e) {
+				throw new ConfigurationException(logPrefix+" got error creating transformer from file [" + styleSheetName + "]", e);
 			}
 			if (XmlUtils.isAutoReload()) {
-				result.reloadURL=resource;
+				result.reloadResource=styleSheet;
 			}
 		} else {
 			throw new ConfigurationException(logPrefix+" either xpathExpression or styleSheetName must be specified");
@@ -448,11 +398,11 @@ public class TransformerPool {
 		return transform(new DOMSource(d),parameters);
 	}
 
-	public String transform(String s, Map<String,Object> parameters) throws TransformerException, IOException, DomBuilderException {
+	public String transform(String s, Map<String,Object> parameters) throws TransformerException, IOException, SAXException {
 		return transform(XmlUtils.stringToSourceForSingleUse(s),parameters);
 	}
 
-	public String transform(String s, Map<String,Object> parameters, boolean namespaceAware) throws TransformerException, IOException, DomBuilderException {
+	public String transform(String s, Map<String,Object> parameters, boolean namespaceAware) throws TransformerException, IOException, SAXException {
 		return transform(XmlUtils.stringToSourceForSingleUse(s, namespaceAware),parameters);
 	}
 
@@ -503,6 +453,11 @@ public class TransformerPool {
 			// https://www.oxygenxml.com/archives/xsl-list/200306/msg00021.html
 	      transformer.setURIResolver(classLoaderURIResolver);
 	      return handler;
+	}
+
+	
+	public TransformerFilter getTransformerFilter(INamedObject owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) throws TransformerConfigurationException {
+		return new TransformerFilter(owner, getTransformerHandler(), threadLifeCycleEventListener, correlationID);
 	}
 	
 	public static List<String> getTransformerPoolsKeys() {

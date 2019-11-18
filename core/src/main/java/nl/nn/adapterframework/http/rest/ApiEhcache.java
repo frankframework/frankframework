@@ -99,6 +99,7 @@ public class ApiEhcache implements IApiCache {
 		cache = cacheManager.addCache(configCache);
 	}
 
+	@Override
 	public void destroy() {
 		if (isDiskPersistent()) {
 			log.debug("cache ["+KEY_CACHE_NAME+"] flushing to disk");
@@ -128,6 +129,7 @@ public class ApiEhcache implements IApiCache {
 	 * Workaround to avoid NPE after a full reload (/adapterHandlerAsAdmin.do?action=fullreload)
 	 * get() and isKeyInCache() are not synchronized methods and do not contain any state checking.
 	 */
+	@Override
 	public Object get(String key) {
 		if(!isCacheAlive())
 			return null;
@@ -139,6 +141,7 @@ public class ApiEhcache implements IApiCache {
 		return element.getObjectValue();
 	}
 
+	@Override
 	public void put(String key, Object value) {
 		if(!isCacheAlive())
 			return;
@@ -147,6 +150,7 @@ public class ApiEhcache implements IApiCache {
 		cache.put(element);
 	}
 
+	@Override
 	public void put(String key, Object value, int ttl) {
 		if(!isCacheAlive())
 			return;
@@ -156,6 +160,7 @@ public class ApiEhcache implements IApiCache {
 		cache.put(element);
 	}
 
+	@Override
 	public boolean remove(String key) {
 		if(!isCacheAlive())
 			return false;
@@ -163,6 +168,7 @@ public class ApiEhcache implements IApiCache {
 		return cache.remove(key);
 	}
 
+	@Override
 	public boolean containsKey(String key) {
 		return (this.get(key) != null);
 	}
@@ -174,6 +180,7 @@ public class ApiEhcache implements IApiCache {
 		cache.flush();
 	}
 
+	@Override
 	public void clear() {
 		if(!isCacheAlive())
 			return;

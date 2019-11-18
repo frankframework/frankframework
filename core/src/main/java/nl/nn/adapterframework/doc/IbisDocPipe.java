@@ -243,7 +243,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 		while (!success && tryCount < maxTries) {
 			tryCount++;
 			try {
-				scanner.scan("nl.nn.adapterframework");
+				scanner.scan("nl.nn.adapterframework", "nl.nn.ibistesttool");
 				success = true;
 			} catch(BeanDefinitionStoreException e) {
 				String excludeFilter = e.getMessage();
@@ -322,7 +322,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 					+ "  <a href=\"ibisdoc/ibisdoc.xsd\">ibisdoc.xsd</a><br/>\n"
 					+ "  <a href=\"ibisdoc/uglify_lookup.xml\">uglify_lookup.xml</a><br/>\n"
 					+ "  <a href=\"ibisdoc/ibisdoc.json\">ibisdoc.json</a><br/>\n"
-					+ "  <a href=\"../../iaf/ibisdoc\">The new ibisdoc application</a><br/>\n"
+					+ "  <a href=\"../iaf/ibisdoc\">The new ibisdoc application</a><br/>\n"
 					+ "</html>";
 		} else if ("/ibisdoc/ibisdoc.html".equals(uri)) {
 			result = "<html>\n"

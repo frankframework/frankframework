@@ -39,6 +39,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 /**
  * Pipe to wrap or unwrap a message conformable to the BIS (Business Integration Services) standard.
@@ -355,7 +356,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 		return new PipeRunResult(getForward(), result);
 	}
 
-	private String prepareMessageHeader(String originalMessageHeader, String conversationId, String externalRefToMessageId) throws DomBuilderException, IOException, TransformerException {
+	private String prepareMessageHeader(String originalMessageHeader, String conversationId, String externalRefToMessageId) throws SAXException, IOException, TransformerException {
 		XmlBuilder messageHeaderElement = new XmlBuilder("MessageHeader");
 		messageHeaderElement.addAttribute("xmlns", "http://www.ing.com/CSP/XSD/General/Message_2");
 		XmlBuilder fromElement = new XmlBuilder("From");

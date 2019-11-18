@@ -31,6 +31,7 @@ import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang.StringUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
@@ -43,15 +44,21 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.MessageOutputStreamCap;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingSenderBase;
+import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
+import nl.nn.adapterframework.xml.PrettyPrintFilter;
+import nl.nn.adapterframework.xml.SkipEmptyTagsFilter;
+import nl.nn.adapterframework.xml.TransformerFilter;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
  * Perform an XSLT transformation with a specified stylesheet or XPath-expression.
@@ -64,7 +71,7 @@ import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class XsltSender extends StreamingSenderBase  {
+public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 
 	private String styleSheetName;
 	private String styleSheetNameSessionKey=null;
@@ -84,7 +91,9 @@ public class XsltSender extends StreamingSenderBase  {
 	
 	private Map<String, TransformerPool> dynamicTransformerPoolMap;
 	private int transformerPoolMapSize = 100;
-	
+
+	private ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
+
 
 	/**
 	 * The <code>configure()</code> method instantiates a transformer for the specified
@@ -96,12 +105,32 @@ public class XsltSender extends StreamingSenderBase  {
 		
 		dynamicTransformerPoolMap = Collections.synchronizedMap(new LRUMap(transformerPoolMapSize));
 		
+//		if (StringUtils.isEmpty(getOutputType())) {
+//			if (StringUtils.isNotEmpty(getStyleSheetName())) {
+//				try {
+//					TransformerPool detectOutputTypeTp=XmlUtils.getDetectXsltOutputTypeTransformerPool();
+//					Resource styleSheet = Resource.getResource(getClassLoader(), getStyleSheetName());
+//					if (styleSheet==null) {
+//						throw new ConfigurationException(getLogPrefix()+" cannot find stylesheet ["+getStyleSheetName()+"]");
+//					}
+//					String outputType=detectOutputTypeTp.transform(styleSheet.asSource(), null);
+//					setOutputType(outputType);
+//				} catch (TransformerException | IOException | SAXException e) {
+//					throw new ConfigurationException(getLogPrefix()+" could not determine output-type of stylesheet ["+getStyleSheetName()+"]");
+//				}
+//			} 
+//			if (StringUtils.isNotEmpty(getXpathExpression())) {
+//				setOutputType("text");
+//			}
+//		}
+
 		if(StringUtils.isNotEmpty(getStyleSheetName()) || StringUtils.isNotEmpty(getXpathExpression())) {
 			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), getXsltVersion());
 		}
 		else if(StringUtils.isEmpty(getStyleSheetNameSessionKey())) {
 			throw new ConfigurationException(getLogPrefix()+" one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified");
 		}
+		
 		
 		if (isSkipEmptyTags()) {
 			transformerPoolSkipEmptyTags = XmlUtils.getSkipEmptyTagsTransformerPool(isOmitXmlDeclaration(),isIndentXml());
@@ -173,7 +202,7 @@ public class XsltSender extends StreamingSenderBase  {
 		}
 	}
 
-	protected Source adaptInput(String input, ParameterResolutionContext prc) throws PipeRunException, DomBuilderException, TransformerException, IOException {
+	protected Source adaptInput(String input, ParameterResolutionContext prc) throws PipeRunException, DomBuilderException, SAXException, TransformerException, IOException {
 		if (transformerPoolRemoveNamespaces!=null) {
 			log.debug(getLogPrefix()+ " removing namespaces from input message");
 			input = transformerPoolRemoveNamespaces.transform(prc.getInputSource(true), null); 
@@ -184,16 +213,11 @@ public class XsltSender extends StreamingSenderBase  {
 	}
 
 	protected ContentHandler filterInput(ContentHandler input, ParameterResolutionContext prc) throws PipeRunException, DomBuilderException, TransformerException, IOException {
-		if (transformerPoolRemoveNamespaces!=null) {
+		if (isRemoveNamespaces()) {
 			log.debug(getLogPrefix()+ " providing filter to remove namespaces from input message");
 			XMLFilterImpl filter = new NamespaceRemovingFilter();
 			filter.setContentHandler(input);
 			return filter;
-//			TransformerHandler removeNamespaces = transformerPoolRemoveNamespaces.getTransformerHandler();
-//			SAXResult result = new SAXResult();
-//			result.setHandler(input);
-//			removeNamespaces.setResult(result);
-//			return removeNamespaces;
 		}
 		return input; // TODO might be necessary to do something about namespaceaware
 	}
@@ -207,8 +231,72 @@ public class XsltSender extends StreamingSenderBase  {
 		ContentHandler handler = createHandler(correlationID, null, session, target);
 		return new MessageOutputStream(handler,target);
 	}
-
+	
 	private ContentHandler createHandler(String correlationID, String input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+		return createHandlerOud(correlationID, input, session, target);
+	}
+	private ContentHandler createHandlerNieuw(String correlationID, String input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+		ContentHandler handler = null;
+
+		try {
+			Map<String,Object> parametervalues = null;
+			ParameterResolutionContext prc = new ParameterResolutionContext(input,session);
+			if (paramList!=null) {
+				parametervalues = prc.getValueMap(paramList);
+			}
+
+			if ("xml".equals(getOutputType())) {
+				handler = target.asContentHandler();
+			} else {
+				XmlWriter xmlWriter = new XmlWriter(target.asWriter());
+				if (!isOmitXmlDeclaration()) {
+					xmlWriter.setIncludeXmlDeclaration(true);
+				} else {
+					xmlWriter.setTextMode(true);
+				}
+				xmlWriter.setIncludeXmlDeclaration(!isOmitXmlDeclaration());
+				handler = xmlWriter;
+				if (isIndentXml()) {
+					xmlWriter.setNewlineAfterXmlDeclaration(true);
+					PrettyPrintFilter indentingFilter = new PrettyPrintFilter();
+					indentingFilter.setContentHandler(xmlWriter);
+					handler=indentingFilter;
+				}
+			}
+
+			if (isSkipEmptyTags()) {
+				SkipEmptyTagsFilter skipEmptyTagsFilter = new SkipEmptyTagsFilter();
+				skipEmptyTagsFilter.setContentHandler(handler);
+				handler=skipEmptyTagsFilter;
+			}
+			
+			TransformerPool poolToUse = transformerPool;
+			if(StringUtils.isNotEmpty(styleSheetNameSessionKey) && prc.getSession().get(styleSheetNameSessionKey) != null) {
+				String styleSheetNameToUse = prc.getSession().get(styleSheetNameSessionKey).toString();
+			
+				if(!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
+					dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), getClassLoader(), null, null, styleSheetNameToUse, null, !isOmitXmlDeclaration(), getParameterList()));
+					poolToUse.open();
+				} else {
+					poolToUse = dynamicTransformerPoolMap.get(styleSheetNameToUse);
+				}
+			}
+
+			TransformerFilter mainFilter = poolToUse.getTransformerFilter(this, threadLifeCycleEventListener, correlationID);
+			XmlUtils.setTransformerParameters(mainFilter.getTransformer(),parametervalues);
+			mainFilter.setContentHandler(handler);
+			handler=mainFilter;
+			
+			handler=filterInput(handler, prc);
+			
+			return handler;
+		} catch (Exception e) {
+			//log.warn(getLogPrefix()+"intermediate exception logging",e);
+			throw new StreamingException(getLogPrefix()+"Exception on creating transformerHandler chain", e);
+		} 
+	}
+	
+	private ContentHandler createHandlerOud(String correlationID, String input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
 		ContentHandler handler = null;
 
 		try {
@@ -468,6 +556,11 @@ public class XsltSender extends StreamingSenderBase  {
 		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'xslt2' has been deprecated. Its value is now auto detected. If necessary, replace with a setting of xsltVersion";
 		configWarnings.add(log, msg);
 		xsltVersion=b?2:1;
+	}
+
+	@Override
+	public void setThreadLifeCycleEventListener(ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener) {
+		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
 	}
 
 }

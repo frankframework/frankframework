@@ -54,7 +54,7 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 
 	@Override
 	protected String getScheme() {
-		return "bytesclassloader";
+		return "classpath";
 	}
 
 	/* only call this once! */
@@ -81,7 +81,7 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 		ResultSet rs = mock(ResultSet.class);
 		doReturn(!throwException).when(rs).next();
 		doReturn("dummy").when(rs).getString(anyInt());
-		URL file = this.getClass().getResource("/classLoader-test.zip");
+		URL file = this.getClass().getResource(JAR_FILE);
 		doReturn(Misc.streamToBytes(file.openStream())).when(rs).getBytes(anyInt());
 		doReturn(rs).when(stmt).executeQuery();
 		doReturn(fq).when(ibisContext).createBeanAutowireByName(FixedQuerySender.class);
@@ -90,12 +90,12 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 	/* test files that are only present in the JAR_FILE zip */
 	@Test
 	public void classloaderOnlyFile() {
-		resourceExists("dummy.xml");
+		resourceExists("fileOnlyOnZipClassPath.xml");
 	}
 
 	@Test
 	public void classloaderOnlyFolder() {
-		resourceExists("folder/dummy.xml");
+		resourceExists("ClassLoader/fileOnlyOnZipClassPath.xml");
 	}
 
 	/**

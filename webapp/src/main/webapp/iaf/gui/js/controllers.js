@@ -372,7 +372,12 @@ angular.module('iaf.beheerconsole')
 			resolve: {rating: function() { return rating; }},
 		});
 	};
-	
+
+	$scope.hoverFeedback = function(rating) {
+		$(".rating i").removeClass("fa-star").addClass("fa-star-o");
+		$(".rating i:nth-child(-n+"+ (rating + 1) +")").addClass("fa-star").removeClass("fa-star-o");
+	};
+
 	$scope.openOldGui = function() {
 		location.href = Misc.getServerPath();
 	};

@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.http.RestListenerUtils;
@@ -102,8 +103,8 @@ public abstract class ConfigurationBase extends TimeoutGuardPipe {
 			session.put("classLoaderType", null);
 			httpServletRequest.getSession().setAttribute("classLoaderType", null);
 		} else {
-			session.put("configurationName", configuration.getConfigurationName());
-			httpServletRequest.getSession().setAttribute("configurationName", configuration.getConfigurationName());
+			session.put("configurationName", configuration.getName());
+			httpServletRequest.getSession().setAttribute("configurationName", configuration.getName());
 			session.put("classLoaderType", configuration.getClassLoaderType());
 			httpServletRequest.getSession().setAttribute("classLoaderType", configuration.getClassLoaderType());
 		}
@@ -123,14 +124,22 @@ public abstract class ConfigurationBase extends TimeoutGuardPipe {
 		}
 		for (Configuration configuration : configurations) {
 			XmlBuilder configurationXml = new XmlBuilder("configuration");
-			configurationXml.setValue(configuration.getConfigurationName());
-			configurationXml.addAttribute("nameUC", "1" + Misc.toSortName(configuration.getConfigurationName()));
+			configurationXml.setValue(configuration.getName());
+			configurationXml.addAttribute("nameUC", "1" + Misc.toSortName(configuration.getName()));
 			configurationsXml.addSubElement(configurationXml);
 		}
 		return configurationsXml;
 	}
 
 	protected IbisManager retrieveIbisManager() {
-		return getAdapter().getConfiguration().getIbisManager();
+		IAdapter adapter = getAdapter();
+		if (adapter==null) {
+			throw new IllegalStateException("Adapter is null");
+		}
+		Configuration configuration = adapter.getConfiguration();
+		if (configuration==null) {
+			throw new IllegalStateException("Configuration of Adapter ["+adapter.getName()+"] is null");
+		}
+		return configuration.getIbisManager();
 	}
 }
