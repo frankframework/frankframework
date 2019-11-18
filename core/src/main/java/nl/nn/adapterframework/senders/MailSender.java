@@ -138,6 +138,7 @@ public class MailSender extends MailSenderBase {
 
 	private Session session;
 	private Properties properties;
+	private String bounceAddress;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -151,6 +152,13 @@ public class MailSender extends MailSenderBase {
 		} catch (Throwable t) {
 			throw new ConfigurationException(
 					"MailSender [" + getName() + "] cannot set smtpHost [" + getSmtpHost() + "] in properties");
+		}
+		//Even though this sets mail.smtp.from, this add the Return-Path header and does not overwrite the MAIL FROM header
+		if(StringUtils.isNotEmpty(getBounceAddress())) {
+			if(properties.contains("mail.smtp.from")){
+				properties.remove("mail.smtp.from");
+			}
+			properties.put("mail.smtp.from", getBounceAddress());
 		}
 		properties.put("mail.smtp.connectiontimeout", getTimeout() + "");
 		properties.put("mail.smtp.timeout", getTimeout() + "");
@@ -471,6 +479,14 @@ public class MailSender extends MailSenderBase {
 
 	public void setProperties(Properties properties) {
 		this.properties = properties;
+	}
+
+	@IbisDoc({ "Return address when mail cannot be delivered. This adds a Return-Path header", "MAIL FROM attribute" })
+	public void setBounceAddress(String string) {
+		bounceAddress = string;
+	}
+	public String getBounceAddress() {
+		return bounceAddress;
 	}
 
 }
