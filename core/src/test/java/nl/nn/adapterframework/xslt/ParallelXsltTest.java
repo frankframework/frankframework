@@ -210,6 +210,14 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 	}
 
 	@Override
+	protected void setOutputType(String outputType) {
+		for (XsltSender sender:xsltSenders) {
+			sender.setOutputType(outputType);
+		}
+	}
+
+
+	@Override
 	protected void setRemoveNamespaces(boolean removeNamespaces) {
 		for (XsltSender sender:xsltSenders) {
 			sender.setRemoveNamespaces(removeNamespaces);

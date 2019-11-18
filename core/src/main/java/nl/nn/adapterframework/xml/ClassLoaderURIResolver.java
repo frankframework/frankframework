@@ -16,16 +16,15 @@
 package nl.nn.adapterframework.xml;
 
 import java.io.IOException;
-import java.net.URL;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
-import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
+import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -36,16 +35,20 @@ import nl.nn.adapterframework.util.LogUtil;
  * @see ClassLoaderXmlEntityResolver
  */
 public class ClassLoaderURIResolver implements URIResolver {
-	private Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
+	
 	private ClassLoader classLoader;
 
 	public ClassLoaderURIResolver(ClassLoader classLoader) {
-		if (log.isDebugEnabled()) log.debug("ClassLoaderURIResolver init with classloader ["+classLoader+"]");
+		if (log.isTraceEnabled()) log.trace("ClassLoaderURIResolver init with classloader ["+classLoader+"]");
 		this.classLoader = classLoader;
 	}
 
-	@Override
-	public Source resolve(String href, String base) throws TransformerException {
+	public ClassLoaderURIResolver(Resource resource) {
+		this(resource.getClassLoader());
+	}
+
+	public Resource resolveToResource(String href, String base) throws TransformerException {
 		String ref1;
 		String ref2=null;
 		String protocol=null;
@@ -56,7 +59,8 @@ public class ClassLoaderURIResolver implements URIResolver {
 				protocol=href.substring(0,href.indexOf(":"));
 			}
 		} else {
-			// href is relative, construct href from base
+			// href does not start with scheme/protocol, and does not start with a slash.
+			// It must be relative to the base, or if that not exists, on the root of the classpath
 			if (base != null && base.contains("/")) {
 				ref1 = base.substring(0, base.lastIndexOf("/") + 1) + href;
 				ref2 = href; // if ref1 fails, try href on the global classpath
@@ -70,23 +74,28 @@ public class ClassLoaderURIResolver implements URIResolver {
 		}
 
 		String ref=ref1;
-		URL url = ClassUtils.getResourceURL(classLoader, ref, protocol);
-		if (url==null && ref2!=null) {
+		Resource resource = Resource.getResource(classLoader, ref, protocol);
+		if (resource==null && ref2!=null) {
 			log.debug("Could not resolve href ["+href+"] base ["+base+"] as ["+ref+"], now trying ref2 ["+ref2+"] protocol ["+protocol+"]");
 			ref=ref2;
-			url = ClassUtils.getResourceURL(classLoader, ref, protocol);
+			resource = Resource.getResource(classLoader, ref, protocol);
 		}
-		if (url==null) {
+		if (resource==null) {
 			String message = "Cannot get resource for href [" + href + "] with base [" + base + "] as ref ["+ref+"]" +(ref2==null?"":" nor as ref ["+ref1+"]")+" protocol ["+protocol+"] classloader ["+classLoader+"]";
-			log.warn(message);
+			//log.warn(message);
 			throw new TransformerException(message);
 		}
-		log.debug("resolved href ["+href+"] base ["+base+"] to ["+url+"]");
+		log.debug("resolved href ["+href+"] base ["+base+"] to systemId ["+resource.getSystemId()+"] to url ["+resource.getURL()+"]");
+		return resource;
+	}
+	
+	@Override
+	public Source resolve(String href, String base) throws TransformerException {
+		Resource resource = resolveToResource(href, base);
 		
 		try {
-			StreamSource streamSource = new StreamSource(url.openStream(), ref);
-			return streamSource;
-		} catch (IOException e) {
+			return resource.asSource();
+		} catch (SAXException|IOException e) {
 			throw new TransformerException(e);
 		}
 	}

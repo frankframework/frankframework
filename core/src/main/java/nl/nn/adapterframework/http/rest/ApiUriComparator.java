@@ -19,6 +19,7 @@ import java.util.Comparator;
 
 public class ApiUriComparator implements Comparator<String> {
 
+	@Override
 	public int compare(String uri1, String uri2) {
 		int uri1c = uri1.length() - uri1.replace("*", "").length();
 		int uri2c = uri2.length() - uri2.replace("*", "").length();

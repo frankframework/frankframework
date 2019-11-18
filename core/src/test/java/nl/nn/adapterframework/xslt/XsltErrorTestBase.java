@@ -37,7 +37,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	public static int EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING=1;
 	public static int EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS=1; // this should be one, but for the time being we're happy that there is logging
 	
-	private final String FILE_NOT_EXCEPTION="FileNotFoundException";
+	private final String FILE_NOT_FOUND_EXCEPTION="Cannot get resource for href [";
 	
 	private final boolean testForEmptyOutputStream=false;
 	
@@ -130,7 +130,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	
 	protected void checkTestAppender(int expectedSize, String expectedString) {
 		System.out.println("Log Appender:"+testAppender.toString());
-		assertThat(testAppender.getNumberOfAlerts(),is(expectedSize));
+		assertThat("number of alerts in logging", testAppender.getNumberOfAlerts(),is(expectedSize));
 		if (expectedString!=null) assertThat(testAppender.toString(),containsString(expectedString));
 	}
 	
@@ -196,9 +196,9 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		} catch (PipeRunException e) {
 			errorMessage = e.getMessage();
 			//System.out.println("ErrorMessage: "+errorMessage);
-			assertThat(errorMessage,containsString(FILE_NOT_EXCEPTION));
+			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
-		assertThat(testAppender.toString(),containsString(FILE_NOT_EXCEPTION));
+		assertThat(testAppender.toString(),containsString(FILE_NOT_FOUND_EXCEPTION));
 		System.out.println("ErrorMessage: "+errorMessage);
 		if (testForEmptyOutputStream) {
 			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
@@ -221,7 +221,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			fail("Expected to run into an exception");
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
-			assertThat(errorMessage,containsString(FILE_NOT_EXCEPTION));
+			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
 		checkTestAppender(EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING,null);
 		System.out.println("ErrorMessage: "+errorMessage);
@@ -242,9 +242,9 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			fail("Expected to run into an exception");
 		} catch (ConfigurationException e) {
 			errorMessage = e.getMessage();
-			assertThat(errorMessage,containsString("FileNotFoundException"));
+			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
-		checkTestAppender((EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING)*getMultiplicity()+1,FILE_NOT_EXCEPTION);
+		checkTestAppender((EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING)*getMultiplicity()+1,FILE_NOT_FOUND_EXCEPTION);
 	}
 
 	@Test
@@ -257,9 +257,9 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			fail("expected configuration to fail because an import could not be found");
 		} catch (ConfigurationException e) {
 			errorMessage = e.getMessage();
-			assertThat(errorMessage,containsString("FileNotFoundException"));
+			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
-		checkTestAppender((EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING)*getMultiplicity()+1,FILE_NOT_EXCEPTION);
+		checkTestAppender((EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING)*getMultiplicity()+1,FILE_NOT_FOUND_EXCEPTION);
 	}
 
 	@Test

@@ -37,10 +37,12 @@ public class HttpSecurityHandler implements ISecurityHandler {
 		this.request=request;
 	}
 
+	@Override
 	public boolean isUserInRole(String role, IPipeLineSession session) {
 		return request.isUserInRole(role);
 	}
 
+	@Override
 	public Principal getPrincipal(IPipeLineSession session){
 		return request.getUserPrincipal();
 	}

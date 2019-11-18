@@ -43,6 +43,11 @@ public class XsltSenderTest extends XsltErrorTestBase<GenericMessageSendingPipe>
 	}
 
 	@Override
+	protected void setOutputType(String outputType) {
+		sender.setOutputType(outputType);
+	}
+
+	@Override
 	protected void setRemoveNamespaces(boolean removeNamespaces) {
 		sender.setRemoveNamespaces(removeNamespaces);
 	}

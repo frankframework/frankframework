@@ -16,14 +16,13 @@
 package nl.nn.adapterframework.xml;
 
 import java.io.IOException;
-import java.net.URL;
 
 import org.apache.log4j.Logger;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -40,40 +39,21 @@ public class ClassLoaderEntityResolver implements EntityResolver {
 		this.classLoader = classLoader;
 	}
 
+	public ClassLoaderEntityResolver(Resource resource) {
+		this(resource.getClassLoader());
+	}
+
 	/**
 	 * @see org.xml.sax.EntityResolver#resolveEntity(String, String)
 	 */
 	@Override
 	public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-		String absolutePath = systemId;
-		String fileName=null; //relative path in a ClassLoader
 
-		// strip any file info from systemId
-		int idx = systemId.lastIndexOf("/");
-		if (idx >= 0) {
-			fileName = systemId.substring(idx + 1); // this appears to be necessary to load configurations
+		if (log.isDebugEnabled()) log.debug("Resolving publicId [" + publicId +"] systemId [" + systemId +"] classloader ["+classLoader+"]");
+		Resource resource = Resource.getResource(classLoader, systemId);
+		if(resource != null) {
+			return resource.asInputSource();
 		}
-
-		log.debug("Resolving [" + absolutePath +"]");
-		try {
-			URL url = ClassUtils.getResourceURL(classLoader, absolutePath);
-			if(url != null)
-				return new InputSource(url.openStream());
-		} catch (IOException e) {
-			//URL is not null but the resource cannot be found. Ignore this exception and try to resolve the relative location
-		}
-		if (fileName != null) {
-			try {
-				log.warn("could not get entity via ["+absolutePath+"], now trying via ["+fileName+"]");
-				URL url = ClassUtils.getResourceURL(classLoader, fileName);
-				if(url != null)
-					return new InputSource(url.openStream());
-			} catch (IOException e) {
-				//This should never be thrown, as relative paths are either found or not found (not NULL)
-				log.error("Exception resolving file ["+fileName+"] on classloader ["+classLoader+"]",e);
-			}
-		}
-
 		// If nothing found, null is returned, for normal processing
 		return null;
 	}

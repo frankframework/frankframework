@@ -34,18 +34,14 @@ public class XSDTest {
 	@Test
 	public void xsdName() throws URISyntaxException, XMLStreamException, IOException, ConfigurationException {
 		XSD xsd = new XSD();
-		xsd.setResource("XSDTest/v1 test.xsd");
-		xsd.setNamespace("http://test");
-		xsd.init();
+		xsd.initNamespace("http://test", null, "XSDTest/v1 test.xsd");
 		assertEquals("XSDTest/v1 test.xsd", xsd.getResourceTarget());
 	}
 
 	@Test
 	public void xsdNamespace() throws URISyntaxException, XMLStreamException, IOException, ConfigurationException {
         XSD xsd = new XSD();
-        xsd.setResource("XSDTest/v1 test.xsd");
-        xsd.setNamespace("http://test");
-        xsd.init();
+        xsd.initNamespace("http://test", null, "XSDTest/v1 test.xsd");
         assertEquals("http://test",
                 xsd.getNamespace());
         assertEquals("http://www.ing.com/pim",
@@ -56,8 +52,7 @@ public class XSDTest {
     @Ignore("Fails!!")
 	public void writeXSD() throws XMLStreamException, IOException, ParserConfigurationException, SAXException, URISyntaxException, ConfigurationException {
 		XSD xsd = new XSD();
-		xsd.setResource("XSDTest/test.xsd");
-		xsd.setNamespace("http://test");
+		xsd.initNamespace("http://test", null, "XSDTest/test.xsd");
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		XMLStreamWriter writer = WsdlUtils.getWriter(out, false);

@@ -40,6 +40,9 @@ import javax.jms.TopicSubscriber;
 import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.lang.StringUtils;
+import org.xml.sax.SAXException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IMessageWrapper;
@@ -51,9 +54,6 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.DomBuilderException;
-
-import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -684,8 +684,8 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * other parameters from the message and put those in the threadContext.
 	 * @return String  input message for adapter.
 	 */
-	public String getStringFromRawMessage(Object rawMessage, Map context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, DomBuilderException, TransformerException, IOException {
-		TextMessage message = null;
+	public String getStringFromRawMessage(Object rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
+//		TextMessage message = null;
 		String rawMessageText;
 /*
 		try {
@@ -714,11 +714,11 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return messageText;
 	}
 
-	protected String extractMessageBody(String rawMessageText, Map context, SoapWrapper soapWrapper) throws DomBuilderException, TransformerException, IOException {
+	protected String extractMessageBody(String rawMessageText, Map<String,Object> context, SoapWrapper soapWrapper) throws SAXException, TransformerException, IOException {
 		return soapWrapper.getBody(rawMessageText);
 	}
 
-
+	@Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append(super.toString());
@@ -737,13 +737,12 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
     }
 
 
-	/**
-	 * The name of the object.
-	 */
+	@Override
 	@IbisDoc({"name of the listener", ""})
 	public void setName(String newName) {
 		name = newName;
 	}
+	@Override
 	public String getName() {
 		return name;
 	}

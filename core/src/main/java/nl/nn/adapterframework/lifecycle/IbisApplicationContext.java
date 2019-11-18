@@ -67,7 +67,7 @@ public class IbisApplicationContext {
 
 	private AbstractApplicationContext applicationContext;
 	private IbisApplicationServlet servlet = null;
-	public static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	public final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private Logger log = LogUtil.getLogger(this);
 	private final String SPRINGCONTEXT = "/springContext.xml";
 	private ServletManager servletManager = null;

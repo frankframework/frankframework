@@ -16,10 +16,11 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.Map;
 
 import javax.xml.transform.TransformerConfigurationException;
+
+import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -28,14 +29,13 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -99,11 +99,11 @@ public class XmlSwitch extends AbstractPipe {
 		else {
 			if (!StringUtils.isEmpty(getServiceSelectionStylesheetFilename())) {
 				try {
-					URL stylesheetURL = ClassUtils.getResourceURL(classLoader, getServiceSelectionStylesheetFilename());
-					if (stylesheetURL==null) {
+					Resource stylesheet = Resource.getResource(classLoader, getServiceSelectionStylesheetFilename());
+					if (stylesheet==null) {
 						throw new ConfigurationException(getLogPrefix(null) + "cannot find stylesheet ["+getServiceSelectionStylesheetFilename()+"]");
 					}
-					transformerPool = TransformerPool.getInstance(stylesheetURL, getXsltVersion());
+					transformerPool = TransformerPool.getInstance(stylesheet, getXsltVersion());
 				} catch (IOException e) {
 					throw new ConfigurationException(getLogPrefix(null) + "cannot retrieve ["+ serviceSelectionStylesheetFilename + "]", e);
 				} catch (TransformerConfigurationException te) {

@@ -72,6 +72,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.core.TimeoutGuardSenderWithParametersBase;
@@ -412,11 +413,11 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 		if (StringUtils.isNotEmpty(getStyleSheetName())) {
 			try {
-				URL stylesheetURL = ClassUtils.getResourceURL(getClassLoader(), getStyleSheetName());
-				if (stylesheetURL == null) {
+				Resource stylesheet = Resource.getResource(getClassLoader(), getStyleSheetName());
+				if (stylesheet == null) {
 					throw new ConfigurationException(getLogPrefix() + "cannot find stylesheet ["+getStyleSheetName()+"]");
 				}
-				transformerPool = TransformerPool.getInstance(stylesheetURL);
+				transformerPool = TransformerPool.getInstance(stylesheet);
 			} catch (IOException e) {
 				throw new ConfigurationException(getLogPrefix() + "cannot retrieve ["+ getStyleSheetName() + "]", e);
 			} catch (TransformerConfigurationException te) {
