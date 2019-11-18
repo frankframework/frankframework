@@ -53,6 +53,7 @@ public final class AppConstants extends Properties implements Serializable {
 	private static Properties propertyPlaceholderConfigurerProperties = new Properties();
 
 	private static ConcurrentHashMap<ClassLoader, AppConstants> appConstantsMap = new ConcurrentHashMap<ClassLoader, AppConstants>();
+	private static AppConstants self = null;
 
 	private AppConstants(ClassLoader classLoader) {
 		super();
@@ -71,7 +72,10 @@ public final class AppConstants extends Properties implements Serializable {
 	 * @return AppConstants instance
 	 */
 	public static AppConstants getInstance() {
-		return getInstance(null);
+		if(self == null) {
+			self = new AppConstants(Thread.currentThread().getContextClassLoader());
+		}
+		return self;
 	}
 
 	/**
@@ -87,7 +91,8 @@ public final class AppConstants extends Properties implements Serializable {
 	public static AppConstants getInstance(ClassLoader cl) {
 		ClassLoader classLoader = cl;
 		if(cl == null) {
-			classLoader = Thread.currentThread().getContextClassLoader();
+			return getInstance();
+//			classLoader = Thread.currentThread().getContextClassLoader();
 		}
 
 		AppConstants instance = appConstantsMap.get(classLoader);
@@ -166,7 +171,13 @@ public final class AppConstants extends Properties implements Serializable {
 			}
 		} else {
 			if (log.isTraceEnabled()) log.trace("getResolvedProperty: key ["+key+"] resolved to value ["+value+"]");
-			return null;
+			if (this == getInstance()) {
+				return null;
+			} else {
+				value = getInstance().getResolvedProperty(key);
+//				System.out.println("getResolvedProperty: key ["+key+"] resolved to value ["+value+"]");
+				return value;
+			}
 		}
 	}
 

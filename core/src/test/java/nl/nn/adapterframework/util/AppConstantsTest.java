@@ -2,6 +2,7 @@ package nl.nn.adapterframework.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 
 import java.io.IOException;
 import java.net.URL;
@@ -101,6 +102,13 @@ public class AppConstantsTest {
 		constants = AppConstants.getInstance(new ClassLoaderMock(contextClassLoader, true));
 
 		assertEquals("changed", constants.getResolvedProperty("only.in.deploymentspecifics.parent"));
+	}
+	
+	@Test
+	public void SetRuntimeKey() {
+		AppConstants.removeInstance();
+		AppConstants.getInstance().put("dummyConstant", "2.7");
+		assertEquals("2.7", constants.get("dummyConstant"));
 	}
 
 	private class ClassLoaderMock extends ClassLoader {
