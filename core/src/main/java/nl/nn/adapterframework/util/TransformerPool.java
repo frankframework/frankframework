@@ -494,7 +494,6 @@ public class TransformerPool {
 	public Boolean getOmitXmlDeclaration() throws TransformerException, IOException, SAXException {
 		Map<String,String> configMap=getConfigMap();
 		String setting=configMap.get("output-omit-xml-declaration");
-		System.out.println("----> output-omit-xml-declaration ["+setting+"]");
 		if (setting==null) {
 			return null;
 		}
