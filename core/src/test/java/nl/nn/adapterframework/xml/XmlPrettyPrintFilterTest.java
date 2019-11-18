@@ -43,6 +43,9 @@ public class XmlPrettyPrintFilterTest {
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/PrettyPrintedEscaped.xml");
 		XmlWriter xmlWriter = new XmlWriter();
 		
+		xmlWriter.setIncludeXmlDeclaration(true);
+		xmlWriter.setNewlineAfterXmlDeclaration(true);
+		
 		PrettyPrintFilter filter =  new PrettyPrintFilter();
 		filter.setContentHandler(xmlWriter);
 

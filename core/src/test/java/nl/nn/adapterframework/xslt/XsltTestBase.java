@@ -99,10 +99,10 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		setStyleSheetName(styleSheetName);
 		setXslt2(false);
 		pipe.configure();
-		assertTrue("Expected some config warnings",warnings.size()>1);
 		for (int i=0;i<warnings.size();i++) {
 			System.out.println(i+" "+warnings.get(i));
 		}
+		assertTrue("Expected at least two config warnings",warnings.size()>1);
 		assertThat(warnings.get(0), StringContains.containsString("the attribute 'xslt2' has been deprecated. Its value is now auto detected. If necessary, replace with a setting of xsltVersion"));
 		int nextPos=warnings.size()>4?warnings.size()-2:1;
 		assertThat(warnings.get(nextPos), StringContains.containsString("configured xsltVersion [1] does not match xslt version [2] declared in stylesheet"));
@@ -126,7 +126,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	public void testSkipEmptyTagsNoOmitIndent() throws Exception {
 //		String lineSeparator=System.getProperty("line.separator");
 		String lineSeparator="\n";
-		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+lineSeparator+"<root>"+lineSeparator+"   <a>a</a>"+lineSeparator+"</root>",false,true);
+		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+lineSeparator+"<root>"+lineSeparator+"\t<a>a</a>"+lineSeparator+"</root>",false,true);
 	}
 	@Test
 	public void testSkipEmptyTagsOmitNoIndent() throws Exception {
@@ -136,7 +136,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	public void testSkipEmptyTagsOmitIndent() throws Exception {
 //		String lineSeparator=System.getProperty("line.separator");
 		String lineSeparator="\n";
-		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<root>"+lineSeparator+"   <a>a</a>"+lineSeparator+"</root>",true,true);
+		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<root>"+lineSeparator+"\t<a>a</a>"+lineSeparator+"</root>",true,true);
 	}
 	
 	@Test
@@ -148,7 +148,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	@Ignore("Indent appears not to work in combination with Streaming and RemoveNamespaces. Ignore the test for now...")	
 	public void testRemoveNamespacesNoOmitIndent() throws Exception {
 		String lineSeparator=System.getProperty("line.separator");
-		testRemoveNamespaces("<ns:root xmlns:ns=\"urn:fakenamespace\"><ns:a>a</ns:a><ns:b></ns:b><c/></ns:root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root>"+lineSeparator+"   <a>a</a>"+lineSeparator+"   <b/>"+lineSeparator+"   <c/>"+lineSeparator+"</root>",false,true);
+		testRemoveNamespaces("<ns:root xmlns:ns=\"urn:fakenamespace\"><ns:a>a</ns:a><ns:b></ns:b><c/></ns:root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root>"+lineSeparator+"\t<a>a</a>"+lineSeparator+"\t<b/>"+lineSeparator+"\t<c/>"+lineSeparator+"</root>",false,true);
 	}
 
 	//	@Test
@@ -235,71 +235,67 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		TestAssertions.assertEqualsIgnoreWhitespaces(expected, result);
 	}
 
-//	@Test
-//	public void anyXmlBasic() throws Exception {
-//		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
-//		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
-//
-//		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
-//		//setIndent(true);
-//		pipe.configure();
-//		pipe.start();
-//
-//		PipeRunResult prr = doPipe(pipe, input, session);
-//		String result = prr.getResult().toString();
-//		
-//		TestAssertions.assertEqualsIgnoreWhitespaces(expected, result);
-//	}
-//
-//	@Test
-//	public void anyXmlIndent() throws Exception {
-//		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
-//		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/PrettyPrinted.xml");
-//
-//		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
-//		//setIndent(true);
-//		pipe.configure();
-//		pipe.start();
-//
-//		PipeRunResult prr = doPipe(pipe, input, session);
-//		String result = prr.getResult().toString();
-//		
-//		TestAssertions.assertEqualsIgnoreWhitespaces(expected, result);
-//	}
+	@Test
+	public void anyXmlBasic() throws Exception {
+		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/Escaped.xml");
 
-//	@Test
-//	public void skipEmptyTagsXslt1() throws Exception {
-//		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
-//		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/out.xml");
-//
-//		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
-//		setXslt2(false);
-//		setSkipEmptyTags(true);
-//		setOutputType("xml");
-//		//setIndent(true);
-//		pipe.configure();
-//		pipe.start();
-//
-//		PipeRunResult prr = doPipe(pipe, input, session);
-//		String result = prr.getResult().toString();
-//		
-//		TestAssertions.assertEqualsIgnoreWhitespaces(expected, result);
-//	}
-//
-//	@Test
-//	public void skipEmptyTagsXslt2() throws Exception {
-//		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
-//		setXslt2(true);
-//		setSkipEmptyTags(true);
-//		//setIndent(true);
-//		pipe.configure();
-//		pipe.start();
-//		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
-//		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/out.xml");
-//
-//		PipeRunResult prr = doPipe(pipe, input, session);
-//		String result = prr.getResult().toString();
-//		
-//		TestAssertions.assertEqualsIgnoreWhitespaces(expected, result);
-//	}
+		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String result = prr.getResult().toString();
+		
+		assertEquals(expected, result);
+	}
+
+	@Test
+	public void anyXmlIndent() throws Exception {
+		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/PrettyPrintedEscaped.xml");
+
+		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
+		setIndent(true);
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String result = prr.getResult().toString();
+		
+		assertEquals(expected, result);
+	}
+
+	@Test
+	public void skipEmptyTagsXslt1() throws Exception {
+		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/SkipEmptyTagsIndent.xml");
+
+		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
+		setXslt2(false);
+		setSkipEmptyTags(true);
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String result = prr.getResult().toString();
+		
+		assertEquals(expected, result);
+	}
+
+	@Test
+	public void skipEmptyTagsXslt2() throws Exception {
+		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
+		setXslt2(true);
+		setSkipEmptyTags(true);
+		pipe.configure();
+		pipe.start();
+		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/SkipEmptyTagsIndent.xml");
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String result = prr.getResult().toString();
+		
+		assertEquals(expected, result);
+	}
 }

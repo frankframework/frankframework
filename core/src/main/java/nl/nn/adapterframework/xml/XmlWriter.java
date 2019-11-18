@@ -67,7 +67,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	@Override
 	public void startDocument() throws SAXException {
 		try {
-			if (!textMode && includeXmlDeclaration) {
+			if (includeXmlDeclaration) {
 				writer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 				if (newlineAfterXmlDeclaration) {
 					writer.append("\n");
@@ -115,7 +115,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 			}
 			writer.append("<"+qName);
 			for (int i=0; i<attributes.getLength(); i++) {
-				writer.append(" "+attributes.getQName(i)+"=\""+XmlUtils.encodeChars(attributes.getValue(i))+"\"");
+				writer.append(" "+attributes.getQName(i)+"=\""+XmlUtils.encodeChars(attributes.getValue(i)).replace("&#39;", "'")+"\"");
 			}
 			if (elementLevel==0) {
 				writer.append(firstLevelNamespaceDefinitions);
@@ -157,7 +157,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 				if (inCdata) {
 					writer.append(new String(ch, start, length));
 				} else {
-					writer.append(XmlUtils.encodeChars(new String(ch, start, length)).replace("&quot;", "\""));
+					writer.append(XmlUtils.encodeChars(new String(ch, start, length)).replace("&quot;", "\"").replace("&#39;", "'"));
 				}
 			}
 		} catch (IOException e) {
