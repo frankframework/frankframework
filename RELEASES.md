@@ -21,6 +21,7 @@ Upcoming
   Make Xslt streaming default for xsltVersion=1
 - Bugfix (un)loading configs in JmxMbeanHelper
 - Add LadybugPipe
+- Show Security Items: Improve error handling for 'Used JmsRealms' and 'Used Authentication Entries'
 
 ### Non backwards compatible changes
 

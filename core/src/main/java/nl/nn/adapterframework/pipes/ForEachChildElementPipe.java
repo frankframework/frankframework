@@ -22,8 +22,6 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.sax.TransformerHandler;
 
 import org.apache.commons.lang.StringUtils;
 import org.xml.sax.Attributes;
@@ -41,8 +39,10 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.InputMessageAdapter;
 import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerErrorListener;
@@ -51,6 +51,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.ElementFilter;
 import nl.nn.adapterframework.xml.FullXmlFilter;
 import nl.nn.adapterframework.xml.SaxException;
+import nl.nn.adapterframework.xml.TransformerFilter;
 
 /**
  * Sends a message to a Sender for each child element of the input XML.
@@ -59,7 +60,7 @@ import nl.nn.adapterframework.xml.SaxException;
  * @author Gerrit van Brakel
  * @since 4.6.1
  */
-public class ForEachChildElementPipe extends IteratingPipe<String> {
+public class ForEachChildElementPipe extends IteratingPipe<String> implements IThreadCreator {
 
 	public final int DEFAULT_XSLT_VERSION=1; // currently only Xalan supports XSLT Streaming
 	
@@ -72,6 +73,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 	private boolean removeNamespaces=true;
 
 	private TransformerPool extractElementsTp=null;
+	private ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
 
 	{ 
 		setNamespaceAware(true);
@@ -156,13 +158,14 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 		private ItemCallback callback;
 		
 		private StringBuffer elementbuffer=new StringBuffer();
-		private int elementLevel=0;
 		private int itemCounter=0;
 		private Exception rootException=null;
 		private int startLength;		
-		private boolean charactersSeen;
 		private boolean stopRequested;
 		private TimeOutException timeOutException;
+
+		private int elementLevel=0;
+		private boolean charactersSeen;
 		private boolean inCdata;
 		private StringBuffer firstLevelNamespaceDefinitions=new StringBuffer();
 		private StringBuffer namespaceDefinitions=new StringBuffer();
@@ -378,13 +381,10 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 			
 			if (getExtractElementsTp()!=null) {
 				log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
-				SAXResult transformedStream = new SAXResult();
-				transformedStream.setHandler(itemHandler);
-				transformedStream.setLexicalHandler(itemHandler);
-				TransformerHandler xphandler = getExtractElementsTp().getTransformerHandler();
-				errorListener=(TransformerErrorListener)xphandler.getTransformer().getErrorListener();
-				xphandler.setResult(transformedStream);
-				inputHandler = xphandler;
+				TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(this, threadLifeCycleEventListener, correlationID);
+				transformerFilter.setContentHandler(inputHandler);
+				inputHandler=transformerFilter;
+				errorListener=transformerFilter.getErrorListener();
 				errorMessage="Could not process list of elements using xpath ["+getElementXPathExpression()+"]";
 			} 
 			if (StringUtils.isNotEmpty(getTargetElement())) {
@@ -505,6 +505,11 @@ public class ForEachChildElementPipe extends IteratingPipe<String> {
 	}
 	public boolean isRemoveNamespaces() {
 		return removeNamespaces;
+	}
+
+	@Override
+	public void setThreadLifeCycleEventListener(ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener) {
+		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
 	}
 
 }

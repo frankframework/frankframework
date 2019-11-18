@@ -352,7 +352,24 @@ public class Misc {
 	}
 
 	public static String hide(String string) {
-		return StringUtils.repeat("*", string.length());
+		return hide(string, 0);
+	}
+
+	public static String hide(String string, int mode) {
+		if (StringUtils.isEmpty(string)) {
+			return string;
+		}
+		int len = string.length();
+		if (mode == 1) {
+			if (len <= 2) {
+				return string;
+			}
+			char firstChar = string.charAt(0);
+			char lastChar = string.charAt(len - 1);
+			return firstChar + StringUtils.repeat("*", len - 2) + lastChar;
+		} else {
+			return StringUtils.repeat("*", len);
+		}
 	}
 
 	public static String byteArrayToString(byte[] input, String endOfLineString, boolean xmlEncode) throws IOException{

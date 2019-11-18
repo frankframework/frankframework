@@ -85,7 +85,16 @@
 								<td rowspan="<%=count%>"><xtags:valueOf select="@datasourceName"/></td>
 								<td rowspan="<%=count%>"><xtags:valueOf select="@queueConnectionFactoryName"/></td>
 								<td rowspan="<%=count%>"><xtags:valueOf select="@topicConnectionFactoryName"/></td>
-								<td><xtags:valueOf select="info[1]"/></td>
+								<td>
+									<xtags:choose>
+										<xtags:when test="info[1]/@error='true'">
+											<font color="red"><xtags:valueOf select="concat('ERROR: ', info[1])"/></font>
+										</xtags:when>
+										<xtags:otherwise>
+											<xtags:valueOf select="info[1]"/>
+										</xtags:otherwise>
+									</xtags:choose>
+								</td>
 							</tr>
 								<xtags:forEach select="info[position()>1]">
 									<tr>
@@ -183,6 +192,11 @@
 					<subHeader>Password</subHeader>
 				</tr>
 				<xtags:choose>
+					<xtags:when test="authEntries/@error='true'">
+						<tr>
+							<td colspan="3"><font color="red"><xtags:valueOf select="concat('ERROR: ', authEntries)"/></font></td>
+						</tr>				
+					</xtags:when>
 					<xtags:when test="authEntries/@info='true'">
 						<tr>
 							<td colspan="3"><xtags:valueOf select="concat('INFO: ', authEntries)"/></td>
@@ -254,7 +268,6 @@
 					<subHeader>Property</subHeader>
 					<subHeader>Value</subHeader>
 				</tr>
-
 				<xtags:choose>
 					<xtags:when test="serverProps/@error='true'">
 						<tr>
@@ -279,8 +292,6 @@
 						</xtags:forEach>
 					</xtags:otherwise>
 				</xtags:choose>
-
-
 			</tbody>
 		</contentTable>
 	</xtags:forEach>
