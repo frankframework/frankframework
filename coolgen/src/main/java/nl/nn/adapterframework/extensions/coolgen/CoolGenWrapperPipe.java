@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.extensions.coolgen;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -46,16 +47,12 @@ import java.net.URL;
 /**
  * Perform the call to a CoolGen proxy with pre- and post transformations.
  *
- * <p><b>Configuration:</b>
+ *
+ * <p><b>Exits:</b>
  * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setProxyClassName(String) proxyClassName}</td><td>classname of proxy-class to be used</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setClientId(String) clientId}</td><td>CICS userId of account perform operation</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setClientPassword(String) clientPassword}</td><td>password corresponding with userId</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPreProcStylesheetName(String) preProcStylesheetName}</td><td>optional URL of XSLT-stylesheet to apply to message before calling proxy</td><td>no transformation</td></tr>
- * <tr><td>{@link #setPostProcStylesheetName(String) postProcStylesheetName}</td><td>optional URL of XSLT-stylesheet to apply to result of proxy </td><td>no transformation</td></tr>
- * <tr><td>{@link #setProxyInputSchema(String) proxyInputSchema}</td><td>optional URL of XML-Schema of proxy input message. If specified it is used to validate the input message</td><td>no validation</td></tr>
+ * <tr><th>state</th><th>condition</th></tr>
+ * <tr><td>"success"</td><td>default</td></tr>
+ * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * </p>
  * @author Johan Verrips
@@ -345,45 +342,51 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 }
 
 
-	public void setClientId(java.lang.String newClientId) {
-		clientId = newClientId;
-	}
-	public String getClientId() {
-	    return clientId;
-	}
+    @IbisDoc({"cics userid of account perform operation", " "})
+    public void setClientId(java.lang.String newClientId) {
+        clientId = newClientId;
+    }
+    public String getClientId() {
+        return clientId;
+    }
 
-	public void setClientPassword(java.lang.String newClientPassword) {
-		clientPassword = newClientPassword;
-	}
-	public String getClientPassword() {
-	    return clientPassword;
-	}
+    @IbisDoc({"password corresponding with userid", " "})
+    public void setClientPassword(java.lang.String newClientPassword) {
+        clientPassword = newClientPassword;
+    }
+    public String getClientPassword() {
+        return clientPassword;
+    }
 
-	public void setPreProcStylesheetName(String newPreProcStylesheetName) {
-		preProcStylesheetName = newPreProcStylesheetName;
-	}
-	public String getPreProcStylesheetName() {
-		return preProcStylesheetName;
-	}
+    @IbisDoc({"optional url of xslt-stylesheet to apply to message before calling proxy", "no transformation"})
+    public void setPreProcStylesheetName(String newPreProcStylesheetName) {
+        preProcStylesheetName = newPreProcStylesheetName;
+    }
+    public String getPreProcStylesheetName() {
+        return preProcStylesheetName;
+    }
 
-	public void setPostProcStylesheetName(String newPostProcStylesheetName) {
-		postProcStylesheetName = newPostProcStylesheetName;
-	}
-	public String getPostProcStylesheetName() {
-	    return postProcStylesheetName;
-	}
+    @IbisDoc({"optional url of xslt-stylesheet to apply to result of proxy ", "no transformation"})
+    public void setPostProcStylesheetName(String newPostProcStylesheetName) {
+        postProcStylesheetName = newPostProcStylesheetName;
+    }
+    public String getPostProcStylesheetName() {
+        return postProcStylesheetName;
+    }
 
-	public String getProxyClassName() {
-	    return proxyClassName;
-	}
-	public String getProxyInputSchema() {
-	    return proxyInputSchema;
-	}
+    public String getProxyClassName() {
+        return proxyClassName;
+    }
+    public String getProxyInputSchema() {
+        return proxyInputSchema;
+    }
 
-	public void setProxyInputSchema(String newProxyInputSchema) {
-		proxyInputSchema = newProxyInputSchema;
-	}
-	public void setProxyClassName(java.lang.String newProxyClassName) {
-	    proxyClassName = newProxyClassName;
-	}
+    @IbisDoc({"optional url of xml-schema of proxy input message. if specified it is used to validate the input message", "no validation"})
+    public void setProxyInputSchema(String newProxyInputSchema) {
+        proxyInputSchema = newProxyInputSchema;
+    }
+    @IbisDoc({"classname of proxy-class to be used", " "})
+    public void setProxyClassName(java.lang.String newProxyClassName) {
+        proxyClassName = newProxyClassName;
+    }
 }

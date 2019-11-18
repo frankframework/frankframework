@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
@@ -35,18 +36,7 @@ import nl.nn.adapterframework.util.AppConstants;
 /**
  * Call Larva Test Tool
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.FixedForwardPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setWaitBeforeCleanup(String) waitBeforeCleanup}</td><td>ms</td><td>100</td></tr>
- * <tr><td>{@link #setLogLevel(String) logLevel}</td><td>the larva log level: one of [debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]</td><td>wrong pipeline messages</td></tr>
- * <tr><td>{@link #setWriteToLog(boolean) writeToLog}</td><td></td><td>false</td></tr>
- * <tr><td>{@link #setWriteToSystemOut(boolean) writeToSystemOut}</td><td></td><td>false</td></tr>
- * <tr><td>{@link #setTimeout(int) timeout}</td><td>the larva timeout</td>30000</tr>
- * </table>
- * </p>
+ *
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
@@ -54,22 +44,22 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>"fail"</td><td>errors or failed scenarios</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
- * 
+ *
  * @author Jaco de Groot
  *
  */
 public class LarvaPipe extends FixedForwardPipe {
-	
+
 	public final String DEFAULT_LOG_LEVEL = "wrong pipeline messages";
 	public final String FORWARD_FAIL="fail";
-	
+
 	private boolean writeToLog = false;
 	private boolean writeToSystemOut = false;
 	private String execute;
 	private String logLevel=DEFAULT_LOG_LEVEL;
 	private String waitBeforeCleanup="100";
 	private int timeout=30000;
-	
+
 	private PipeForward failForward;
 
 	@Override
@@ -90,9 +80,9 @@ public class LarvaPipe extends FixedForwardPipe {
 		}
 	}
 
-	
-	
-	
+
+
+
 	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
@@ -122,18 +112,20 @@ public class LarvaPipe extends FixedForwardPipe {
 		boolean silent = true;
 		TestTool.setTimeout(getTimeout());
 		int numScenariosFailed=TestTool.runScenarios(ibisContext, appConstants, paramLogLevel,
-								paramAutoScroll, paramExecute,
-								paramWaitBeforeCleanUp, realPath,
-								paramScenariosRootDirectory,
-								out, silent);
+				paramAutoScroll, paramExecute,
+				paramWaitBeforeCleanUp, realPath,
+				paramScenariosRootDirectory,
+				out, silent);
 		PipeForward forward=numScenariosFailed==0? getForward(): failForward;
 		return new PipeRunResult(forward, out.toString());
 	}
 
+	@IbisDoc({"", "</td><td>false"})
 	public void setWriteToLog(boolean writeToLog) {
 		this.writeToLog = writeToLog;
 	}
 
+	@IbisDoc({"", "</td><td>false"})
 	public void setWriteToSystemOut(boolean writeToSystemOut) {
 		this.writeToSystemOut = writeToSystemOut;
 	}
@@ -145,6 +137,7 @@ public class LarvaPipe extends FixedForwardPipe {
 	public String getLogLevel() {
 		return logLevel;
 	}
+	@IbisDoc({"the larva log level: one of [debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]", "wrong pipeline messages"})
 	public void setLogLevel(String logLevel) {
 		this.logLevel = logLevel;
 	}
@@ -153,6 +146,7 @@ public class LarvaPipe extends FixedForwardPipe {
 	public String getWaitBeforeCleanup() {
 		return waitBeforeCleanup;
 	}
+	@IbisDoc({"ms", "100"})
 	public void setWaitBeforeCleanup(String waitBeforeCleanup) {
 		this.waitBeforeCleanup = waitBeforeCleanup;
 	}
@@ -161,6 +155,7 @@ public class LarvaPipe extends FixedForwardPipe {
 	public int getTimeout() {
 		return timeout;
 	}
+	@IbisDoc({"the larva timeout", ""})
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
 	}

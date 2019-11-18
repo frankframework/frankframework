@@ -37,6 +37,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc; 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -73,18 +74,7 @@ import com.tibco.tibjms.admin.UserInfo;
  * else
  * <ul><li>one message on a specific Tibco queue including information about this message is returned (without removing it)</li></ul>
  * </p>
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUrl(String) url}</td><td>URL or base of URL to be used. When multiple URLs are defined (comma separated list), the first URL is used of which the server has an active state</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to host</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSkipTemporaryQueues(boolean) skipTemporaryQueues}</td><td>when set to <code>true</code>, temporary queues are skipped</td><td>false</td></tr>
- * <tr><td>{@link #setHideMessage(boolean) hideMessage}</td><td>when set to <code>true</code>, the length of the queue message is returned instead of the queue message self (when parameter <code>queueName</code> is not empty)</td><td>false</td></tr>
- * </table>
- * </p>
+ * 
  * <p>
  * <table border="1">
  * <b>Parameters:</b>
@@ -666,6 +656,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return url;
 	}
 
+	@IbisDoc({"url or base of url to be used. when multiple urls are defined (comma separated list), the first url is used of which the server has an active state", " "})
 	public void setUrl(String string) {
 		url = string;
 	}
@@ -674,6 +665,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return authAlias;
 	}
 
+	@IbisDoc({"alias used to obtain credentials for authentication to host", " "})
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
@@ -682,6 +674,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return userName;
 	}
 
+	@IbisDoc({"username used in authentication to host", " "})
 	public void setUserName(String string) {
 		userName = string;
 	}
@@ -690,6 +683,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return password;
 	}
 
+	@IbisDoc({" ", " "})
 	public void setPassword(String string) {
 		password = string;
 	}
@@ -698,6 +692,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return skipTemporaryQueues;
 	}
 
+	@IbisDoc({"when set to <code>true</code>, temporary queues are skipped", "false"})
 	public void setSkipTemporaryQueues(boolean b) {
 		skipTemporaryQueues = b;
 	}
@@ -706,6 +701,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return hideMessage;
 	}
 
+	@IbisDoc({"when set to <code>true</code>, the length of the queue message is returned instead of the queue message self (when parameter <code>queuename</code> is not empty)", "false"})
 	public void setHideMessage(boolean b) {
 		hideMessage = b;
 	}

@@ -20,6 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import com.sap.conn.jco.JCoException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc; 
 import nl.nn.adapterframework.core.IPipeLineExitHandler;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
@@ -40,15 +41,7 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
  * luwHandleSessionKey a new handle is created implicitly.<br>
  * To explicityly commit or rollback a set of actions, a SapLUWManager-pipe can be used, with 
  * the action-attribute set apropriately.
- * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>Name of the Ibis-object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSapSystemName(String) sapSystemName}</td><td>name of the SapSystem used by this object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLuwHandleSessionKey(String) luwHandleSessionKey}</td><td>session key under which information is stored</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAction(String) action}</td><td>one of: begin, commit, rollback, release</td><td>&nbsp;</td></tr>
- * </table>
+ *
  * 
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
@@ -168,6 +161,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 
 
 
+	@IbisDoc({"name of the sapsystem used by this object", " "})
 	public void setSapSystemName(String string) {
 		sapSystemName = string;
 	}
@@ -176,6 +170,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 	}
 
 
+	@IbisDoc({"one of: begin, commit, rollback, release", " "})
 	public void setAction(String string) {
 		action = string;
 	}
@@ -183,6 +178,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 		return action;
 	}
 
+	@IbisDoc({"session key under which information is stored", " "})
 	public void setLuwHandleSessionKey(String string) {
 		luwHandleSessionKey = string;
 	}

@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.extensions.sap.jco2;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.core.IPipeLineExitHandler;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
@@ -29,25 +30,17 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Manager for SAP Logical Units of Work (LUWs). 
+ * Manager for SAP Logical Units of Work (LUWs).
  * Used to begin, commit or rollback LUWs. A SapLUWManager can be placed before a number
  * of SapSenders. The SapLUWManager and the SapSenders must each use the same value for
  * luwHandleSessionKey. By doing so, they use the same connection to SAP. This allows to
  * perform a commit on a number of actions.<br>
- * The placement of the the first SapLUWManager is optionan: By specifying a new 
+ * The placement of the the first SapLUWManager is optionan: By specifying a new
  * luwHandleSessionKey a new handle is created implicitly.<br>
- * To explicityly commit or rollback a set of actions, a SapLUWManager-pipe can be used, with 
+ * To explicityly commit or rollback a set of actions, a SapLUWManager-pipe can be used, with
  * the action-attribute set apropriately.
- * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>Name of the Ibis-object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSapSystemName(String) sapSystemName}</td><td>name of the SapSystem used by this object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLuwHandleSessionKey(String) luwHandleSessionKey}</td><td>session key under which information is stored</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAction(String) action}</td><td>one of: begin, commit, rollback, release</td><td>&nbsp;</td></tr>
- * </table>
- * 
+ *
+ *
  * @author  Gerrit van Brakel
  * @since   4.6.0
  */
@@ -61,7 +54,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 	private String luwHandleSessionKey;
 	private String action;
 	private String sapSystemName;
-	
+
 	private SapSystem sapSystem;
 
 
@@ -70,21 +63,21 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 		super.configure(pipeline);
 		if (StringUtils.isEmpty(getAction())) {
 			throw new ConfigurationException("action should be specified, it must be one of: "+
-				ACTION_BEGIN+", "+ACTION_COMMIT+", "+ACTION_ROLLBACK+", "+ACTION_RELEASE+".");
+					ACTION_BEGIN+", "+ACTION_COMMIT+", "+ACTION_ROLLBACK+", "+ACTION_RELEASE+".");
 		}
 		if (!getAction().equalsIgnoreCase(ACTION_BEGIN) &&
-			!getAction().equalsIgnoreCase(ACTION_COMMIT) &&
-			!getAction().equalsIgnoreCase(ACTION_ROLLBACK) &&
-			!getAction().equalsIgnoreCase(ACTION_RELEASE)) {
+				!getAction().equalsIgnoreCase(ACTION_COMMIT) &&
+				!getAction().equalsIgnoreCase(ACTION_ROLLBACK) &&
+				!getAction().equalsIgnoreCase(ACTION_RELEASE)) {
 			throw new ConfigurationException("illegal action ["+getAction()+"] specified, it must be one of: "+
-				ACTION_BEGIN+", "+ACTION_COMMIT+", "+ACTION_ROLLBACK+", "+ACTION_RELEASE+".");
+					ACTION_BEGIN+", "+ACTION_COMMIT+", "+ACTION_ROLLBACK+", "+ACTION_RELEASE+".");
 		}
 		if (getAction().equalsIgnoreCase(ACTION_BEGIN)) {
 			pipeline.registerExitHandler(this);
 		}
 		if (StringUtils.isEmpty(getLuwHandleSessionKey())) {
 			throw new ConfigurationException("action should be specified, it must be one of: "+
-				ACTION_BEGIN+", "+ACTION_COMMIT+", "+ACTION_ROLLBACK+", "+ACTION_RELEASE+".");
+					ACTION_BEGIN+", "+ACTION_COMMIT+", "+ACTION_ROLLBACK+", "+ACTION_RELEASE+".");
 		}
 		sapSystem=SapSystem.getSystem(getSapSystemName());
 		if (sapSystem==null) {
@@ -105,7 +98,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 			throw new SenderException(getLogPrefix(null)+"exception starting SapSender", e);
 		}
 	}
-	
+
 	public void close() {
 		sapSystem.closeSystem();
 	}
@@ -134,7 +127,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 		} else
 		if (getAction().equalsIgnoreCase(ACTION_RELEASE)) {
 			SapLUWHandle.releaseHandle(session,getLuwHandleSessionKey());
-		} 
+		}
 		return new PipeRunResult(getForward(),input);
 	}
 
@@ -147,6 +140,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 
 
 
+	@IbisDoc({"name of the sapsystem used by this object", " "})
 	public void setSapSystemName(String string) {
 		sapSystemName = string;
 	}
@@ -155,6 +149,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 	}
 
 
+	@IbisDoc({"one of: begin, commit, rollback, release", " "})
 	public void setAction(String string) {
 		action = string;
 	}
@@ -162,6 +157,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 		return action;
 	}
 
+	@IbisDoc({"session key under which information is stored", " "})
 	public void setLuwHandleSessionKey(String string) {
 		luwHandleSessionKey = string;
 	}
