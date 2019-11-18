@@ -33,13 +33,13 @@ public class SkipEmptyTagsFilterTest {
 		testXmlWriter(filter,input,expected);
 	}
 	
-	@Test
-	public void testSkipEmptyTagsTP() throws Exception {
-		String input =    TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
-		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/SkipEmptyTagsEscaped.xml");
-		TransformerPool tp = XmlUtils.getSkipEmptyTagsTransformerPool(true, true);
-		XMLFilterImpl filter = tp.getTransformerFilter(null, null, null);
-		testXmlWriter(filter,input,expected);
-	}
+//	@Test
+//	public void testSkipEmptyTagsTP() throws Exception {
+//		String input =    TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+//		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/SkipEmptyTagsEscaped.xml");
+//		TransformerPool tp = XmlUtils.getSkipEmptyTagsTransformerPool(true, true);
+//		XMLFilterImpl filter = tp.getTransformerFilter(null, null, null);
+//		testXmlWriter(filter,input,expected);
+//	}
 
 }
