@@ -28,6 +28,7 @@ Upcoming
 - Make DirectoryListener extend FileSystemListener. It no longer supports attributes fileList, 
   fileListForcedAfter, outputFilenamePattern, passWithoutDirectory, numberOfBackups, overwrite and random.
 - Remove attribute 'count' from result of iterating pipes like ForEachChildElementPipe, to enable streaming output.
+- The MailSender displayName element no longer exist, please use attribute `name` on the from/to elements instead.
 
 
 
