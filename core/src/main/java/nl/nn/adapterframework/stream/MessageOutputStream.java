@@ -26,6 +26,7 @@ import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 public class MessageOutputStream {
 	protected Logger log = LogUtil.getLogger(this);
