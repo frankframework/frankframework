@@ -1,18 +1,18 @@
 <module>
-	<adapter name="IbisdocDirCheck" active="${IbisdocDirCheck.active}">
+	<adapter name="IbisConfigXsd" active="${ibisConfigXsd.active}">
 		<receiver
-			name="IbisdocDirCheck"
+			name="IbisConfigXsd"
 			className="nl.nn.adapterframework.receivers.GenericReceiver"
 			>
 			<listener
-				name="IbisdocDirCheck"
+				name="IbisConfigXsd"
 				className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="IbisdocDirCheck"
+				serviceName="IbisConfigXsd"
 			/>
 		</receiver>
-		<pipeline firstPipe="IbisdocDirCheck">		
+		<pipeline firstPipe="IbisConfigXsd">		
 			<pipe
-				name="IbisdocDirCheck" className="nl.nn.adapterframework.pipes.XmlSwitch"
+				name="IbisConfigXsd" className="nl.nn.adapterframework.pipes.XmlSwitch"
 				getInputFromFixedValue="&lt;dummy/&gt;"
 				xpathExpression="lookupConfigDir != '' and lookupConfigDir != '&lt;dummy/&gt;'">
 				
@@ -31,7 +31,7 @@
 			<pipe 
 				name="ReadDirForIbisdoc" className="nl.nn.adapterframework.pipes.FilePipe" 
 				actions="list"
-				fileName="ibisdoc-${ibis-adapterframework-core.version}.xsd"
+				fileName="ibisconfig-${ibis-adapterframework-core.version}.xsd"
 				directory="${configurations.directory}"
 				storeResultInSessionKey="dirContentIbisdoc">
 								
@@ -56,7 +56,7 @@
 				name="CreateIbisdoc" className="nl.nn.adapterframework.pipes.FilePipe"
 				getInputFromSessionKey="ibisdocContent"
 				actions="write"
-				fileName="ibisdoc-${ibis-adapterframework-core.version}.xsd"
+				fileName="ibisconfig-${ibis-adapterframework-core.version}.xsd"
 				directory="${configurations.directory}">
 					
 				<forward name="success" path="ReadDirForIgnore"/>
@@ -99,12 +99,12 @@
 	</adapter>
 	<scheduler>
 		<job
-			name="IbisdocIbisdocDirCheck"
-			adapterName="IbisdocDirCheck"
-			receiverName="IbisdocDirCheck"
+			name="IbisConfigXsd"
+			adapterName="IbisConfigXsd"
+			receiverName="IbisConfigXsd"
 			interval="0"
 			function="sendMessage"
-			active="${IbisdocDirCheck.job.active}"
+			active="${ibisConfigXsd.job.active}"
 		/>
 	</scheduler>
 </module>
