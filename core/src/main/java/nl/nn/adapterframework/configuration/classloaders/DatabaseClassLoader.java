@@ -53,7 +53,7 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 		if (configuration == null) {
 			throw new ConfigurationException(getErrorMessage(reload));
 		} else {
-			clearResources(); //First check if a database is present before clearing all resources
+			super.reload(); //First check if a database is present before clearing all resources
 
 			byte[] jarBytes = (byte[]) configuration.get("CONFIG");
 			configuration.remove("CONFIG");

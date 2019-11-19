@@ -53,6 +53,7 @@ public abstract class BytesClassLoader extends ClassLoaderBase {
 	@Override
 	public void reload() throws ConfigurationException {
 		clearResources();
+		super.reload();
 	}
 
 	public void clearResources() {
