@@ -485,7 +485,9 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	public void close() throws SenderException {
 		try {
 			//Close the HttpClient and ConnectionManager to release resources and potential open connections
-			getHttpClient().close();
+			if(httpClient != null) {
+				httpClient.close();
+			}
 		} catch (IOException e) {
 			throw new SenderException(e);
 		}
