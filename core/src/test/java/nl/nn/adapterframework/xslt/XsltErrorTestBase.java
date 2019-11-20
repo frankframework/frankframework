@@ -167,8 +167,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 
 		PipeRunResult prr=doPipe(pipe, input, session);
 
-		//assertResultsAreCorrect(expected, prr.getResult().toString(),session);
-		assertResultsAreCorrect(expected.replaceAll("\\s",""), prr.getResult().toString().replaceAll("\\s",""),session);
+		assertResultsAreCorrect(expected, prr.getResult().toString(),session);
 	}
 
 	

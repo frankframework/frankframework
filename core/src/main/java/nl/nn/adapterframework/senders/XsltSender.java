@@ -218,16 +218,19 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 				handler = (ContentHandler)targetStream;
 			} else {
 				XmlWriter xmlWriter = new XmlWriter(target.asWriter());
-				xmlWriter.setTextMode(!"xml".equals(outputType));
-				if (omitXmlDeclaration==null) {
-					omitXmlDeclaration = poolToUse.getOmitXmlDeclaration();
+				if ("xml".equals(outputType)) {
 					if (omitXmlDeclaration==null) {
-						omitXmlDeclaration=false;
+						omitXmlDeclaration = poolToUse.getOmitXmlDeclaration();
+						if (omitXmlDeclaration==null) {
+							omitXmlDeclaration=false;
+						}
 					}
-				}
-				xmlWriter.setIncludeXmlDeclaration(!omitXmlDeclaration);
-				if (isIndentXml()) {
-					xmlWriter.setNewlineAfterXmlDeclaration(true);
+					xmlWriter.setIncludeXmlDeclaration(!omitXmlDeclaration);
+					if (isIndentXml()) {
+						xmlWriter.setNewlineAfterXmlDeclaration(true);
+					}
+				} else {
+					xmlWriter.setTextMode(true);
 				}
 				handler = xmlWriter;
 			}

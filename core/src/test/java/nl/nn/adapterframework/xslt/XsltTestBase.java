@@ -323,6 +323,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/Escaped.xml");
 
 		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
+		setOmitXmlDeclaration(true);
 		pipe.configure();
 		pipe.start();
 
@@ -338,7 +339,23 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/PrettyPrintedEscaped.xml");
 
 		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
+		setOmitXmlDeclaration(true);
 		setIndent(true);
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String result = prr.getResult().toString();
+		
+		assertResultsAreCorrect(expected, result, session);
+	}
+
+	@Test
+	public void anyXmlAsText() throws Exception {
+		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/AsText.txt");
+
+		setStyleSheetName("/Xslt/AnyXml/CopyAsText.xsl");
 		pipe.configure();
 		pipe.start();
 
@@ -356,6 +373,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
 		setXslt2(false);
 		setSkipEmptyTags(true);
+		setOmitXmlDeclaration(true);
 		pipe.configure();
 		pipe.start();
 
@@ -370,6 +388,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
 		setXslt2(true);
 		setSkipEmptyTags(true);
+		setOmitXmlDeclaration(true);
 		pipe.configure();
 		pipe.start();
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");

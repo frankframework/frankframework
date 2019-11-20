@@ -110,17 +110,19 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 		try {
-			if (elementJustStarted) {
+			if (elementJustStarted && !textMode) {
 				writer.append(">");
 			}
-			writer.append("<"+qName);
-			for (int i=0; i<attributes.getLength(); i++) {
-				writer.append(" "+attributes.getQName(i)+"=\""+XmlUtils.encodeChars(attributes.getValue(i)).replace("&#39;", "'")+"\"");
+			if (!textMode) {
+				writer.append("<"+qName);
+				for (int i=0; i<attributes.getLength(); i++) {
+					writer.append(" "+attributes.getQName(i)+"=\""+XmlUtils.encodeChars(attributes.getValue(i)).replace("&#39;", "'")+"\"");
+				}
+				if (elementLevel==0) {
+					writer.append(firstLevelNamespaceDefinitions);
+				}
+				writer.append(namespaceDefinitions);
 			}
-			if (elementLevel==0) {
-				writer.append(firstLevelNamespaceDefinitions);
-			}
-			writer.append(namespaceDefinitions);
 			namespaceDefinitions.setLength(0);
 			elementJustStarted=true;
 			elementLevel++;
@@ -133,11 +135,13 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		try {
 			elementLevel--;
-			if (elementJustStarted) {
-				elementJustStarted=false;
-				writer.append("/>");
-			} else {
-				writer.append("</"+qName+">");
+			if (!textMode) {
+				if (elementJustStarted) {
+					elementJustStarted=false;
+					writer.append("/>");
+				} else {
+					writer.append("</"+qName+">");
+				}
 			}
 		} catch (IOException e) {
 			throw new SaxException(e);
@@ -149,7 +153,9 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 		try {
 			if (elementJustStarted) {
 				elementJustStarted=false;
-				writer.append(">");
+				if (!textMode) {
+					writer.append(">");
+				}
 			}
 			if (textMode) {
 				writer.write(ch, start, length);
@@ -179,7 +185,9 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	@Override
 	public void processingInstruction(String target, String data) throws SAXException {
 		try {
-			writer.append("<?").append(target).append(" ").append(data).append("?>\n");
+			if (!textMode) {
+				writer.append("<?").append(target).append(" ").append(data).append("?>\n");
+			}
 		} catch (IOException e) {
 			throw new SaxException(e);
 		}
@@ -200,9 +208,13 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 		try {
 			if (elementJustStarted) {
 				elementJustStarted=false;
-				writer.append(">");
+				if (!textMode) {
+					writer.append(">");
+				}
 			}
-			writer.append("<![CDATA[");
+			if (!textMode) {
+				writer.append("<![CDATA[");
+			}
 			inCdata=true;
 		} catch (IOException e) {
 			throw new SaxException(e);
@@ -212,7 +224,9 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	@Override
 	public void endCDATA() throws SAXException {
 		try {
-			writer.append("]]>");
+			if (!textMode) {
+				writer.append("]]>");
+			}
 			inCdata=false;
 		} catch (IOException e) {
 			throw new SaxException(e);
