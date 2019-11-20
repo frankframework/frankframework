@@ -178,7 +178,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			target=new MessageOutputStreamCap();
 		}
 		ContentHandler handler = createHandler(correlationID, null, session, target);
-		return new MessageOutputStream(handler,target);
+		return new MessageOutputStream(handler,target,this,threadLifeCycleEventListener,correlationID);
 	}
 	
 	private ContentHandler createHandler(String correlationID, String input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
@@ -211,9 +211,11 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 				outputType = poolToUse.getOutputMethod();
 			}
 
+			Object targetStream = target.asNative();
+			
 			Boolean omitXmlDeclaration = getOmitXmlDeclaration();
-			if ("xml".equals(outputType) && !isIndentXml() && (omitXmlDeclaration==null || omitXmlDeclaration)) {
-				handler = target.asContentHandler();
+			if (targetStream instanceof ContentHandler) {
+				handler = (ContentHandler)targetStream;
 			} else {
 				XmlWriter xmlWriter = new XmlWriter(target.asWriter());
 				xmlWriter.setTextMode(!"xml".equals(outputType));
