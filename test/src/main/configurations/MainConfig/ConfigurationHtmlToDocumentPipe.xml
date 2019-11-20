@@ -1,0 +1,26 @@
+<module>
+	<adapter name="HtmlToDocumentPipe">
+		<receiver
+			name="HtmlToDocumentPipe"
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			>
+			<listener
+				serviceName="ibis4test-HtmlToDocumentPipe"
+				className="nl.nn.adapterframework.receivers.JavaListener"
+			/>
+		</receiver>
+		<pipeline firstPipe="HtmlToDocument">
+			<exits>
+				<exit path="EXIT" state="HtmlToDocument"/>
+			</exits>
+			<pipe name="HtmlToDocument"
+				className="nl.nn.adapterframework.pipes.HtmlToDocumentPipe">
+				<forward name="success" path="FixedResult" />
+			</pipe>
+			<pipe name="FixedResult"
+				className="nl.nn.adapterframework.pipes.FixedResult" returnString="OK" getInputFromFixedValue="OK">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>

@@ -46,6 +46,8 @@
 	<!ENTITY CreateLargeFile SYSTEM "./ConfigurationCreateLargeFile.xml">
 	<!ENTITY MemoryLeak SYSTEM "./ConfigurationMemoryLeak.xml">
 	<!ENTITY Javascript SYSTEM "./ConfigurationJavascript.xml">
+	<!ENTITY HtmlToDocumentPipe SYSTEM "./ConfigurationHtmlToDocumentPipe.xml">
+	
 ]>
 <configuration name="MainConfig">
 	&Authentication;
@@ -96,4 +98,5 @@
 	&CreateLargeFile;
 	&MemoryLeak; 
 	&Javascript;
+	&HtmlToDocumentPipe;
 </configuration>
