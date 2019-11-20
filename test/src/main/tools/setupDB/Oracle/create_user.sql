@@ -1,4 +1,9 @@
+-- In Oracle 12c the hidden parameter _ORACLE_SCRIPT has been introduced to allow scripts to be executed.
+-- When this setting is set to true, queries are performed in the root context, opposed to a pluggable database. 
+-- This avoids using C## which is discouraged by Oracle.
+-- Note that this can only be used if you don't use pluggable databases!
 alter session set "_ORACLE_SCRIPT"=true;
+
 
 Drop user testiaf_user cascade;
 
