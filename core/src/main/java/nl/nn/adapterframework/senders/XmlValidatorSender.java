@@ -21,6 +21,7 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
 import nl.nn.adapterframework.validation.XercesXmlValidator;
@@ -55,9 +56,15 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISenderWit
 		return sendMessage(correlationID,message,null);
 	}
 	@Override
-	public void addParameter(Parameter p) {
+	public void addParameter(Parameter p) { 
+		// class doesn't really have parameters, but implements ISenderWithParameters to get ParameterResolutionContext in sendMessage(), to obtain session
 	}
 
+	@Override
+	public ParameterList getParameterList() {
+		// class doesn't really have parameters, but implements ISenderWithParameters to get ParameterResolutionContext in sendMessage(), to obtain session
+		return null;
+	}
 
 	@Override
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {

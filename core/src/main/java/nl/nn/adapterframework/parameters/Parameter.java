@@ -154,6 +154,10 @@ public class Parameter implements INamedObject, IWithParameters {
 		paramList.add(p);
 	}
 
+	@Override
+	public ParameterList getParameterList() {
+		return paramList;
+	}
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isNotEmpty(getSessionKey()) && 
 			    StringUtils.isNotEmpty(getSessionKeyXPath())) {
