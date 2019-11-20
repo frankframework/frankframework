@@ -68,6 +68,9 @@
 		<appender-ref ref="file"/>
 		<appender-ref ref="XML"/>
 	</appender>
+	<logger name="nl.nn.adapterframework.testtool">
+		<level value="WARN"/>
+	</logger>
 	<logger name="nl.nn.adapterframework.larva">
 		<level value="WARN"/>
 	</logger>
