@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
@@ -29,10 +30,16 @@ import org.apache.log4j.Logger;
 public abstract class BytesClassLoader extends ClassLoaderBase {
 
 	protected Logger log = LogUtil.getLogger(this);
-	protected Map<String, byte[]> resources = new HashMap<String, byte[]>();
+	private Map<String, byte[]> resources = new HashMap<String, byte[]>();
 
 	public BytesClassLoader(ClassLoader classLoader) {
 		super(classLoader);
+	}
+
+	@Override
+	public final void configure(IbisContext ibisContext, String configurationName) throws ConfigurationException {
+		super.configure(ibisContext, configurationName);
+		resources = loadResources();
 	}
 
 	@Override
@@ -50,13 +57,28 @@ public abstract class BytesClassLoader extends ClassLoaderBase {
 		return null;
 	}
 
+	/**
+	 * Tries to load new resources, upon success, clears all resources, calls it's super.reload() and sets the new resources
+	 */
 	@Override
-	public void reload() throws ConfigurationException {
-		clearResources();
-		super.reload();
+	public final void reload() throws ConfigurationException {
+		Map<String, byte[]> newResources = loadResources();
+		if (newResources != null) {
+			clearResources();
+			super.reload();
+			resources = newResources;
+		}
 	}
 
-	public void clearResources() {
+	/**
+	 * Called during a reload for a green/blue deployment, and after the classloader has been configured to load new resources
+	 */
+	protected abstract Map<String, byte[]> loadResources() throws ConfigurationException;
+
+	/**
+	 * Clears all resources
+	 */
+	public final void clearResources() throws ConfigurationException {
 		log.debug("cleaned up classloader resources for configuration ["+getConfigurationName()+"]");
 		resources.clear();
 	}

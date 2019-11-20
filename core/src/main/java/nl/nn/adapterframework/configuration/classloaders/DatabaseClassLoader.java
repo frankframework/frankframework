@@ -19,7 +19,6 @@ import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
-import nl.nn.adapterframework.configuration.IbisContext;
 
 public class DatabaseClassLoader extends JarBytesClassLoader {
 
@@ -29,42 +28,29 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 		super(parent);
 	}
 
-	@Override
-	public void configure(IbisContext ibisContext, String configurationName) throws ConfigurationException {
-		super.configure(ibisContext, configurationName);
-
-		loadNewConfigFromDatabase(false);
-	};
-
-	private String getErrorMessage(boolean reload) {
-		return "Could not get config '" + getConfigurationName() + "' from database" + (reload ? ", ignoring reload" : "");
+	private String getErrorMessage() {
+		return "Could not get config '" + getConfigurationName() + "' from database" + (configuration != null ? ", ignoring reload" : "");
 	}
 
-	private void loadNewConfigFromDatabase(boolean reload) throws ConfigurationException {
+	@Override
+	protected Map<String, byte[]> loadResources() throws ConfigurationException {
 		Map<String, Object> configuration = null;
 		try { //Make sure there's a database present
 			configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), getConfigurationName(), null);
 		}
 		catch (Throwable t) {
 			//Make the error a little bit more IBIS-developer intuitive
-			throw new ConfigurationException(getErrorMessage(reload), t);
+			throw new ConfigurationException(getErrorMessage(), t);
 		}
 
 		if (configuration == null) {
-			throw new ConfigurationException(getErrorMessage(reload));
+			throw new ConfigurationException(getErrorMessage());
 		} else {
-			super.reload(); //First check if a database is present before clearing all resources
-
 			byte[] jarBytes = (byte[]) configuration.get("CONFIG");
 			configuration.remove("CONFIG");
 			this.configuration = configuration;
-			readResources(jarBytes, getConfigurationName());
+			return readResources(jarBytes);
 		}
-	}
-
-	@Override
-	public void reload() throws ConfigurationException {
-		loadNewConfigFromDatabase(true);
 	}
 
 	public String getFileName() {
