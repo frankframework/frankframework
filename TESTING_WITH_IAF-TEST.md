@@ -4,7 +4,7 @@ To ensure that your contribution doesn't break any logic, we would like you to r
 
 This guide was written with the assertion that you are A) using Eclipse, and B) have successfully run the iaf-example module before. If this is not the case, please follow the steps as described on our [CONTRIBUTING](https://github.com/ibissource/iaf/blob/master/CONTRIBUTING.md#developing-with-eclipse) page.
 
-####Database
+#### Database
 To prevent problems with data transactionality, we will be using an Oracle database rather than an H2 database. If you don't have Oracle Database Express Edition installed on your system, download it [here](https://www.oracle.com/technetwork/database/enterprise-edition/downloads/index.html). The 'Express Edition' downloads can be found a bit further down on the oracle website. 
 > _Make sure to use the default password **system** when installing oracle, don't use a custom password!_
 
