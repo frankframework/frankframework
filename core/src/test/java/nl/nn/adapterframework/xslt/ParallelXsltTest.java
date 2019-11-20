@@ -100,9 +100,13 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 	@Override
 	protected void assertResultsAreCorrect(String expected, String actual, IPipeLineSession session) {
 		String xmlPrefix="<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+		boolean stripAllWhitespace=true; // to cope with differences between unix and windows line endings
+		
 		expected=stripPrefix(expected, xmlPrefix);
-		expected=stripPrefix(expected, xmlPrefix.replaceAll("\\s",""));
-
+		if (stripAllWhitespace) {
+			expected=stripPrefix(expected, xmlPrefix.replaceAll("\\s",""));
+		}
+		
 		String combinedExpected="<results>";
 	
 		for (int i=0;i<NUM_SENDERS;i++) {
@@ -110,7 +114,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 					+expected.replaceFirst(">headerDefault<", ">header"+i+"<")
 							 .replaceFirst(">sessionKeyDefault<", ">sessionKeyValue"+i+"<")
 							 //.replaceFirst(">sessionKeyGlobalDefault<", ">sessionKeyGlobalValue<")
-							 +"\n</result>";
+							 +"</result>";
 		}
 		combinedExpected+="\n</results>";
 //		super.assertResultsAreCorrect(
@@ -119,9 +123,11 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 
 //		super.assertResultsAreCorrect(combinedExpected, actual, session);
 
-		super.assertResultsAreCorrect(
-		combinedExpected.replaceAll("\\s",""), 
-				  actual.replaceAll("\\s",""), session);
+		if (stripAllWhitespace) {
+			super.assertResultsAreCorrect(combinedExpected.replaceAll("\\s",""), actual.replaceAll("\\s",""), session);
+		} else {
+			super.assertResultsAreCorrect(combinedExpected, actual, session);
+		}
 	}
 
 	@Override
@@ -136,26 +142,6 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 		// test is ignored
 	}
 	
-	@Override
-	@Ignore("test fails in parallel")
-	public void documentIncludedInSourceRelativeXslt1() throws Exception {
-		// test is ignored
-	}
-	@Override
-	@Ignore("test fails in parallel")
-	public void documentIncludedInSourceRelativeXslt2() throws Exception {
-		// test is ignored
-	}
-	@Override
-	@Ignore("test fails in parallel")
-	public void documentIncludedInSourceAbsoluteXslt1() throws Exception {
-		// test is ignored
-	}
-	@Override
-	@Ignore("test fails in parallel")
-	public void documentIncludedInSourceAbsoluteXslt2() throws Exception {
-		// test is ignored
-	}
 	@Override
 	@Ignore("test fails in parallel")
 	public void anyXmlBasic() throws Exception {
@@ -200,7 +186,14 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 			sender.setStyleSheetName(styleSheetName);	
 		}
 	}
-	
+
+	@Override
+	protected void setStyleSheetNameSessionKey(String styleSheetNameSessionKey) {
+		for (XsltSender sender:xsltSenders) {
+			sender.setStyleSheetNameSessionKey(styleSheetNameSessionKey);		
+		}
+	}
+
 	@Override
 	protected void setXpathExpression(String xpathExpression) {
 		for (XsltSender sender:xsltSenders) {

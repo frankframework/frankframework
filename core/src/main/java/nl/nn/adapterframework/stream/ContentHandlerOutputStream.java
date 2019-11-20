@@ -38,12 +38,19 @@ public class ContentHandlerOutputStream extends PipedOutputStream implements Thr
 
 	private ContentHandler handler;
 	
+	private ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
+	private Thread parentThread;
+	private Object threadInfo;
+
 	private PipedInputStream pipedInputStream=new PipedInputStream();
 	private final EventConsumer pipeReader=new EventConsumer();
 	private Throwable exception;
 	
-	public ContentHandlerOutputStream(ContentHandler handler) throws StreamingException {
+	public ContentHandlerOutputStream(ContentHandler handler, Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) throws StreamingException {
 		this.handler=handler;
+		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
+		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationID):null;
+		parentThread=Thread.currentThread();
 		try {
 			pipedInputStream=new PipedInputStream();
 			connect(pipedInputStream);
@@ -56,17 +63,33 @@ public class ContentHandlerOutputStream extends PipedOutputStream implements Thr
 
 	private class EventConsumer extends Thread {
 
-		boolean inCdata=false;
-		
 		@Override
 		public void run() {
 			try {
+				Thread currentThread = Thread.currentThread();
+				if (currentThread!=parentThread) {
+					currentThread.setName(parentThread.getName()+"/"+currentThread.getName());
+					if (currentThread.getContextClassLoader()!=parentThread.getContextClassLoader()) {
+						currentThread.setContextClassLoader(parentThread.getContextClassLoader());
+					}
+				} else {
+					threadLifeCycleEventListener=null;
+				}
+				if (threadLifeCycleEventListener!=null) {
+					threadLifeCycleEventListener.threadCreated(threadInfo,null);
+				}
 				boolean namespaceAware=true;
 				boolean resolveExternalEntities=false;
 				InputSource inputSource = new InputSource(pipedInputStream);
 				XMLReader xmlReader = XmlUtils.getXMLReader(namespaceAware, resolveExternalEntities, handler);
 				xmlReader.parse(inputSource);
+				if (threadLifeCycleEventListener!=null) {
+					threadLifeCycleEventListener.threadEnded(threadInfo,null);
+				}
 			} catch (Exception e) {
+				if (threadLifeCycleEventListener!=null) {
+					threadLifeCycleEventListener.threadAborted(threadInfo, e);
+				}
 				StreamingException se = new StreamingException(e);
 				setException(se);
 			}

@@ -177,13 +177,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 
 	public Object debugThreadCreateStartEndAbort(ProceedingJoinPoint proceedingJoinPoint, Runnable runnable) throws Throwable {
 		if (runnable instanceof ParallelSenderExecutor || runnable instanceof IsolatedServiceExecutor) {
-			RequestReplyExecutor requestReplyExecutor = (RequestReplyExecutor)runnable;
-			String createThreadId = Misc.createSimpleUUID();
-			Executor executor = new Executor();
-			executor.setIbisDebugger(ibisDebugger);
-			executor.setRequestReplyExecutor(requestReplyExecutor);
-			executor.setCreateThreadId(createThreadId);
-			ibisDebugger.createThread(requestReplyExecutor, createThreadId, requestReplyExecutor.getCorrelationID());
+			Executor executor = new Executor((RequestReplyExecutor)runnable);
 			Object[] args = proceedingJoinPoint.getArgs();
 			args[0] = executor;
 			return proceedingJoinPoint.proceed(args);
@@ -203,18 +197,18 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 	}
 
 	@Override
-	public void threadCreated(ThreadDebugInfo ref) {
-		ibisDebugger.startThread(ref.owner, ref.threadId, ref.correlationId, null);
+	public Object threadCreated(ThreadDebugInfo ref, Object request) {
+		return ibisDebugger.startThread(ref.owner, ref.threadId, ref.correlationId, request);
 	}
 
 	@Override
-	public void threadEnded(ThreadDebugInfo ref, String result) {
-		ibisDebugger.endThread(ref.owner, ref.correlationId, result);
+	public Object threadEnded(ThreadDebugInfo ref, Object result) {
+		return ibisDebugger.endThread(ref.owner, ref.correlationId, result);
 	}
 
 	@Override
-	public void threadAborted(ThreadDebugInfo ref, Throwable t) {
-		ibisDebugger.abortThread(ref.owner, ref.correlationId, t);
+	public Throwable threadAborted(ThreadDebugInfo ref, Throwable t) {
+		return ibisDebugger.abortThread(ref.owner, ref.correlationId, t);
 	}
 	
 	public Object debugParameterResolvedTo(ProceedingJoinPoint proceedingJoinPoint, ParameterValueList alreadyResolvedParameters, ParameterResolutionContext parameterResolutionContext) throws Throwable {
@@ -260,39 +254,35 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 	}
 
 	public class Executor implements Runnable {
-		IbisDebugger ibisDebugger;
-		RequestReplyExecutor requestReplyExecutor;
-		String createThreadId;
+		private RequestReplyExecutor requestReplyExecutor;
+		private ThreadDebugInfo threadInfo;
+		private Thread parentThread;
 
-		public void setIbisDebugger(IbisDebugger ibisDebugger) {
-			this.ibisDebugger = ibisDebugger;
-		}
-
-		public void setRequestReplyExecutor(RequestReplyExecutor requestReplyExecutor) {
-			this.requestReplyExecutor = requestReplyExecutor;
+		public Executor(RequestReplyExecutor requestReplyExecutor) {
+			this.requestReplyExecutor=requestReplyExecutor;
+			threadInfo = announceChildThread(requestReplyExecutor, requestReplyExecutor.getCorrelationID());
+			parentThread = Thread.currentThread();
 		}
 		
-		public void setCreateThreadId(String createThreadId) {
-			this.createThreadId = createThreadId;
-		}
-
 		@Override
 		public void run() {
-			ibisDebugger.startThread(requestReplyExecutor, createThreadId, requestReplyExecutor.getCorrelationID(), requestReplyExecutor.getRequest());
+			threadCreated(threadInfo, requestReplyExecutor.getRequest());
+			Thread.currentThread().setName(parentThread.getName()+"/"+Thread.currentThread().getName());
 			try {
 				requestReplyExecutor.run();
 			} finally {
 				Throwable throwable = requestReplyExecutor.getThrowable();
 				if (throwable == null) {
 					Object reply = requestReplyExecutor.getReply();
-					reply = ibisDebugger.endThread(requestReplyExecutor, requestReplyExecutor.getCorrelationID(), reply);
+					reply = threadEnded(threadInfo, reply);
 					requestReplyExecutor.setReply(reply);
 				} else {
-					throwable = ibisDebugger.abortThread(requestReplyExecutor, requestReplyExecutor.getCorrelationID(), throwable);
+					throwable = threadAborted(threadInfo, throwable);
 					requestReplyExecutor.setThrowable(throwable);
 				}
 			}
 		}
+
 	}
 
 }

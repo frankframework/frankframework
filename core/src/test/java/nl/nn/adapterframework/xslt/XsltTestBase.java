@@ -30,6 +30,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 
 	protected abstract void setXpathExpression(String xpathExpression);
 	protected abstract void setStyleSheetName(String styleSheetName);
+	protected abstract void setStyleSheetNameSessionKey(String styleSheetNameSessionKey);
 	protected abstract void setOmitXmlDeclaration(boolean omitXmlDeclaration);
 	protected abstract void setIndent(boolean indent);
 	protected abstract void setSkipEmptyTags(boolean skipEmptyTags);
@@ -182,7 +183,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = prr.getResult().toString();
 		
-		TestAssertions.assertEqualsIgnoreWhitespaces(expected, result);
+		assertResultsAreCorrect(expected, result, session);
 	}
 
 	@Test
@@ -199,7 +200,43 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = prr.getResult().toString();
 		
-		TestAssertions.assertEqualsIgnoreWhitespaces(expected, result);
+		assertResultsAreCorrect(expected, result, session);
+	}
+
+	@Test
+	public void documentIncludedInSourceRelativeWithDynamicStylesheetXslt1() throws Exception {
+		String stylesheetname="/Xslt/importDocument/importLookupRelative1.xsl";
+		session.put("Stylesheet", stylesheetname);
+		setStyleSheetNameSessionKey("Stylesheet");
+		setXslt2(false);
+		setRemoveNamespaces(true);
+		setIndent(true);
+		pipe.configure();
+		pipe.start();
+		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String result = prr.getResult().toString();
+		
+		assertResultsAreCorrect(expected, result, session);
+	}
+
+	@Test
+	public void documentIncludedInSourceRelativeWithDynamicStylesheetXslt2() throws Exception {
+		String stylesheetname="/Xslt/importDocument/importLookupRelative1.xsl";
+		session.put("Stylesheet", stylesheetname);
+		setStyleSheetNameSessionKey("Stylesheet");
+		setXslt2(true);
+		setRemoveNamespaces(true);
+		setIndent(true);
+		pipe.configure();
+		pipe.start();
+		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String result = prr.getResult().toString();
+		
+		assertResultsAreCorrect(expected, result, session);
 	}
 
 	@Test
@@ -215,7 +252,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = prr.getResult().toString();
 		
-		TestAssertions.assertEqualsIgnoreWhitespaces(expected, result);
+		assertResultsAreCorrect(expected, result, session);
 	}
 
 	@Test
@@ -232,9 +269,54 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = prr.getResult().toString();
 		
-		TestAssertions.assertEqualsIgnoreWhitespaces(expected, result);
+		assertResultsAreCorrect(expected, result, session);
 	}
 
+	@Test
+	public void xpathNodeText() throws Exception {
+		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String expected = "Euro € single quote ' double quote \"";
+
+		setXpathExpression("request/g");
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String result = prr.getResult().toString();
+		
+		assertResultsAreCorrect(expected, result, session);
+	}
+
+	@Test
+	public void xpathAttrText() throws Exception {
+		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String expected = "Euro € single quote ' double quote escaped \" ";
+
+		setXpathExpression("request/g/@attr");
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String result = prr.getResult().toString();
+		
+		assertResultsAreCorrect(expected, result, session);
+	}
+	
+	@Test
+	public void xpathNodeXml() throws Exception {
+		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String expected = "<g attr=\"Euro € single quote ' double quote escaped &quot; \">Euro € single quote ' double quote \"</g>";
+
+		setXpathExpression("request/g");
+		setOutputType("xml");
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String result = prr.getResult().toString();
+		
+		assertResultsAreCorrect(expected, result, session);
+	}
 	@Test
 	public void anyXmlBasic() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
@@ -247,7 +329,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = prr.getResult().toString();
 		
-		assertEquals(expected, result);
+		assertResultsAreCorrect(expected, result, session);
 	}
 
 	@Test
@@ -263,7 +345,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = prr.getResult().toString();
 		
-		assertEquals(expected, result);
+		assertResultsAreCorrect(expected, result, session);
 	}
 
 	@Test
@@ -280,7 +362,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = prr.getResult().toString();
 		
-		assertEquals(expected, result);
+		assertResultsAreCorrect(expected, result, session);
 	}
 
 	@Test
@@ -296,6 +378,6 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = prr.getResult().toString();
 		
-		assertEquals(expected, result);
+		assertResultsAreCorrect(expected, result, session);
 	}
 }

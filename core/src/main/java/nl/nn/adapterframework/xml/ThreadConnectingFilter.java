@@ -27,25 +27,47 @@ import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 public class ThreadConnectingFilter extends FullXmlFilter {
 
 	private ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
+	private Thread parentThread;
 	private Object threadInfo;
 	
 	public ThreadConnectingFilter(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) {
 		super();
 		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
 		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationID):null;
+		parentThread=Thread.currentThread();
 	}
 
 	private void handleException(SAXException e) throws SAXException {
 		if (threadLifeCycleEventListener!=null) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+			Throwable t = threadLifeCycleEventListener.threadAborted(threadInfo, e);
+			if (t==null) {
+				log.warn("Exception ignored by threadLifeCycleEventListener ("+e.getClass().getName()+"): "+e.getMessage());
+			} else {
+				if (t instanceof SAXException) {
+					throw (SAXException) t;
+				}
+				if (t instanceof Exception) {
+					throw new SaxException((Exception)t);
+				}
+				throw new RuntimeException(t);
+			}
 		}
 		throw e;
 	}
 	
 	@Override
 	public void startDocument() throws SAXException {
+		Thread currentThread = Thread.currentThread();
+		if (currentThread!=parentThread) {
+			currentThread.setName(parentThread.getName()+"/"+currentThread.getName());
+			if (currentThread.getContextClassLoader()!=parentThread.getContextClassLoader()) {
+				currentThread.setContextClassLoader(parentThread.getContextClassLoader());
+			}
+		} else {
+			threadLifeCycleEventListener=null;
+		}
 		if (threadLifeCycleEventListener!=null) {
-			threadLifeCycleEventListener.threadCreated(threadInfo);
+			threadLifeCycleEventListener.threadCreated(threadInfo,null);
 		}
 		try {
 			super.startDocument();

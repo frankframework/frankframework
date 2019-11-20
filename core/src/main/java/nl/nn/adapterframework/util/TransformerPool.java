@@ -76,7 +76,7 @@ public class TransformerPool {
 	private Source configSource;
 	private Map<String,String> configMap;
 
-	private ClassLoaderURIResolver classLoaderURIResolver = new ClassLoaderURIResolver(Thread.currentThread().getContextClassLoader());
+	private ClassLoaderURIResolver classLoaderURIResolver;
 
 	private static class TransformerPoolKey {
 		private String xsltString;
@@ -146,7 +146,7 @@ public class TransformerPool {
 	}); 
 
 
-	private TransformerPool(Source source, String sysId, int xsltVersion, Source configSource) throws TransformerConfigurationException {
+	private TransformerPool(Source source, String sysId, int xsltVersion, Source configSource, ClassLoader classLoader) throws TransformerConfigurationException {
 		super();
 		this.configSource=configSource;
 		try {
@@ -163,6 +163,8 @@ public class TransformerPool {
 		}
 		this.xsltVersion=xsltVersion;
 		tFactory = XmlUtils.getTransformerFactory(xsltVersion);
+		classLoaderURIResolver = new ClassLoaderURIResolver(classLoader);
+		if (log.isDebugEnabled()) log.debug("created Transformerpool for sysId ["+sysId+"] classLoader ["+classLoader+"]");
 		tFactory.setURIResolver(classLoaderURIResolver);
 		initTransformerPool(source, sysId);
 
@@ -174,11 +176,11 @@ public class TransformerPool {
 
 
 	private TransformerPool(Resource resource, int xsltVersion) throws TransformerConfigurationException, IOException, SAXException {
-		this(resource.asSource(),resource.getSystemId(),xsltVersion,resource.asSource());
+		this(resource.asSource(),resource.getSystemId(),xsltVersion,resource.asSource(), resource.getClassLoader());
 	}
 	
 	private TransformerPool(String xsltString, String sysId, int xsltVersion) throws TransformerConfigurationException {
-		this(new StreamSource(new StringReader(xsltString)), sysId, xsltVersion,new StreamSource(new StringReader(xsltString)));
+		this(new StreamSource(new StringReader(xsltString)), sysId, xsltVersion,new StreamSource(new StringReader(xsltString)),Thread.currentThread().getContextClassLoader());
 	}
 	
 	
@@ -319,8 +321,9 @@ public class TransformerPool {
 			try {
 				styleSheet = Resource.getResource(classLoader, styleSheetName);
 				if (styleSheet==null) {
-					throw new ConfigurationException(logPrefix+" cannot find ["+ styleSheetName + "]"); 
+					throw new ConfigurationException(logPrefix+" cannot find ["+ styleSheetName + "] via classLoader ["+classLoader+"]"); 
 				}
+				if (log.isDebugEnabled()) log.debug(logPrefix+"configuring stylesheet ["+styleSheetName+"] classLoader ["+classLoader+"] url ["+styleSheet.getURL()+"]");
 				result = TransformerPool.getInstance(styleSheet, xsltVersion);
 				
 				if (xsltVersion!=0) {

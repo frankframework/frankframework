@@ -49,9 +49,6 @@ public class XmlWriterTest {
 		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/Escaped.xml");
 		XmlWriter xmlWriter = new XmlWriter();
-
-		xmlWriter.setIncludeXmlDeclaration(true);
-		xmlWriter.setNewlineAfterXmlDeclaration(true);
 		
 		InputSource inputSource = new InputSource(new StringReader(input));
 		XMLReader xmlReader = XmlUtils.getXMLReader(true, true);
