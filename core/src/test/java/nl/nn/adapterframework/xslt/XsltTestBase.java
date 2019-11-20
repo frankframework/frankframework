@@ -17,6 +17,7 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -233,6 +234,26 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String result = prr.getResult().toString();
 		
 		TestAssertions.assertEqualsIgnoreWhitespaces(expected, result);
+	}
+
+	@Test
+	public void xPathFromParameter() throws Exception {
+		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+
+		Parameter inputParameter = new Parameter();
+		inputParameter.setName("source");
+		inputParameter.setValue(input);
+		inputParameter.setType("domdoc");
+		pipe.addParameter(inputParameter);
+		setXpathExpression("$source/request/b");
+
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, "<dummy name=\"input\"/>", session);
+		String result = prr.getResult().toString();
+
+		assertResultsAreCorrect("b", result, session);
 	}
 
 //	@Test
