@@ -17,6 +17,7 @@ package nl.nn.ibistesttool;
 
 import java.util.Iterator;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -47,8 +48,11 @@ import nl.nn.testtool.util.LogUtil;
  * @author  Jaco de Groot (jaco@dynasol.nl)
  */
 public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDebugInfo> {
-	private IbisDebugger ibisDebugger;
 	protected Logger log = LogUtil.getLogger(this);
+
+	private IbisDebugger ibisDebugger;
+	
+	private AtomicInteger threadCounter = new AtomicInteger();
 
 	public void setIbisDebugger(IbisDebugger ibisDebugger) {
 		this.ibisDebugger = ibisDebugger;
@@ -191,7 +195,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 		ThreadDebugInfo threadInfo = new ThreadDebugInfo();
 		threadInfo.owner = owner;
 		threadInfo.correlationId = correlationId;
-		threadInfo.threadId = Misc.createSimpleUUID();
+		threadInfo.threadId = Integer.toString(threadCounter.incrementAndGet());
 		ibisDebugger.createThread(threadInfo.owner, threadInfo.threadId, threadInfo.correlationId);
 		return threadInfo;
 	}
