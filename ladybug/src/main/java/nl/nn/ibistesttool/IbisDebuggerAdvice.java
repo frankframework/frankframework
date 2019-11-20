@@ -41,7 +41,6 @@ import nl.nn.adapterframework.senders.ParallelSenderExecutor;
 import nl.nn.adapterframework.senders.SenderWrapperBase;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.testtool.util.LogUtil;
 
 /**
@@ -52,8 +51,8 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 
 	private IbisDebugger ibisDebugger;
 	
-	private AtomicInteger threadCounter = new AtomicInteger();
-
+	private AtomicInteger threadCounter = new AtomicInteger(0);
+	
 	public void setIbisDebugger(IbisDebugger ibisDebugger) {
 		this.ibisDebugger = ibisDebugger;
 	}
@@ -144,8 +143,6 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 	}
 
 	public Object debugStreamingSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, String correlationId, String message, ParameterResolutionContext parameterResolutionContext, MessageOutputStream target) throws Throwable {
-		System.out.println("debugStreamingSenderInputOutputAbort enter");
-		log.debug("debugStreamingSenderInputOutputAbort enter");
 		Object result = debugSenderWithParametersInputOutputAbort(proceedingJoinPoint, correlationId, message, parameterResolutionContext);
 		log.debug("debugStreamingSenderInputOutputAbort ready");
 		return result;
@@ -270,8 +267,8 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 		
 		@Override
 		public void run() {
-			threadCreated(threadInfo, requestReplyExecutor.getRequest());
 			Thread.currentThread().setName(parentThread.getName()+"/"+Thread.currentThread().getName());
+			threadCreated(threadInfo, requestReplyExecutor.getRequest());
 			try {
 				requestReplyExecutor.run();
 			} finally {
