@@ -63,11 +63,6 @@
       <artifactId>ibis-adapterframework-ladybug</artifactId>
       <scope>test</scope>
     </dependency>
-      <dependency>
-          <groupId>org.ibissource</groupId>
-          <artifactId>ibis-adapterframework-larva</artifactId>
-          <scope>test</scope>
-      </dependency>
   </dependencies>
   <build>
     <plugins>

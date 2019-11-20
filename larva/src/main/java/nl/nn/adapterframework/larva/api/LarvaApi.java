@@ -222,24 +222,6 @@ public class LarvaApi {
         }
     }
 
-//    /**
-//     * @return The logs for the previous test execution.
-//     */
-//    @GET
-//    @RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-//    @Path("/larva/archive")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response getMessages(@Context HttpServletRequest request) {
-//        getContext();
-//        MessageListener messageListener = getOrCreateMessageListener(request);
-//
-//        JSONArray archive = messageListener.getArchive();
-//        if (archive.length() == 0) {
-//            return Response.status(Response.Status.NO_CONTENT).build();
-//        }
-//        return Response.status(Response.Status.OK).entity(archive.toString()).build();
-//    }
-
     /**
      * Returns the scenarios in a given directory.
      * @param input JSON object containing the directory to start the search from.
