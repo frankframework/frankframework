@@ -3,26 +3,19 @@
  */
 package nl.nn.adapterframework.larva;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
+import nl.nn.adapterframework.util.XmlUtils;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
+import org.custommonkey.xmlunit.Diff;
+
+import java.io.*;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 import java.util.zip.ZipInputStream;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.xpath.operations.Bool;
-import org.custommonkey.xmlunit.Diff;
-
-import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * This class is used to compare step outputs.
@@ -45,12 +38,9 @@ public class ResultComparer {
 
 		messageListener.debugMessage(testName, "Check treatSlashesAsSame property.");
 		boolean treatSlashesAsSame = Boolean.parseBoolean(properties.getProperty("treatSlashesAsSame", "False"));
-		System.out.println("treatSlashesAsSame: " + treatSlashesAsSame);
 		if (treatSlashesAsSame) {
-			System.out.println(preparedExpectedResult + "\n" + preparedActualResult);
 			preparedExpectedResult = StringUtils.replace(preparedExpectedResult, "\\", "/");
 			preparedActualResult = StringUtils.replace(preparedActualResult, "\\", "/");
-			System.out.println(preparedExpectedResult + "\n" + preparedActualResult);
 		}
 		messageListener.debugMessage(testName, "Check decodeUnzipContentBetweenKeys properties");
 		boolean decodeUnzipContentBetweenKeysProcessed = false;

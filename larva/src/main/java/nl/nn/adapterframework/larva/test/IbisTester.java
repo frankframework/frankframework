@@ -20,24 +20,14 @@ import java.security.AccessControlException;
 import java.util.Date;
 import java.util.List;
 
-/*
-TODO: Include old Larva project, refactor this one
-TODO: Get rid of all the absolute paths, pretty much :P
-TODO: Create a profile to test ibis itself.
- */
 public class IbisTester {
 	private AppConstants appConstants;
 	private String webAppPath;
 	private IbisContext ibisContext;
-	//MockServletContext application;
 	private final int maxTries = 30;
 	private final int timeout = 1000;
 	private static Logger logger = LogUtil.getLogger(IbisTester.class);
 	public static void main(String[] args) throws IllegalArgumentException, IOException, URISyntaxException {
-		System.out.println("Here are the given! " + args.length );
-		for (String arg : args) {
-			System.out.println(arg);
-		}
 		if(args.length != 7) {
 			throw new IllegalArgumentException("Given argument size does not match the expected size! " +
 					"The expected arguments are as follows:\n" +
@@ -45,8 +35,7 @@ public class IbisTester {
 		}
 		// Parse arguments
 		File current = new File(args[0].replace("'", ""));
-		if(current.isDirectory())
-			System.out.println("yep");
+
 		// Make sure rootDirectories and paramExecute are absolute paths.
 		Path executePath = Paths.get(args[1]);
 		String paramExecute =  executePath.toString();
@@ -140,90 +129,6 @@ public class IbisTester {
 
 		return adaptersStarted;
 	}
-//
-//	private class Result {
-//		private String resultString;
-//		private long duration;
-//
-//		public Result(String resultString, long duration) {
-//			this.resultString = resultString;
-//			this.duration = duration;
-//		}
-//	}
-//
-//	private class ScenarioRunner implements Callable<String> {
-//		private String scenariosRootDir;
-//		private String scenario;
-//
-//		public ScenarioRunner(String scenariosRootDir, String scenario) {
-//			this.scenariosRootDir = scenariosRootDir;
-//			this.scenario = scenario;
-//		}
-//
-//		public String call() throws Exception {
-//			MockHttpServletRequest request = new MockHttpServletRequest();
-//			request.setServletPath("/larva/index.jsp");
-//			boolean silent;
-//			if (scenario == null) {
-//				String ibisContextKey = appConstants
-//						.getResolvedProperty(ConfigurationServlet.KEY_CONTEXT);
-//				application = new MockServletContext("file:" + webAppPath, null);
-//				application.setAttribute(ibisContextKey, ibisContext);
-//				silent = false;
-//			} else {
-//				request.setParameter("loglevel", "scenario passed/failed");
-//				request.setParameter("execute", scenario);
-//				silent = true;
-//			}
-//			if (scenariosRootDir != null) {
-//				request.setParameter("scenariosrootdirectory", scenariosRootDir);
-//			}
-//			Writer writer = new StringWriter();
-//			runScenarios(application, request, writer, silent);
-//			if (scenario == null) {
-//				String htmlString = "<html><head/><body>" + writer.toString()
-//						+ "</body></html>";
-//				return XmlUtils.toXhtml(htmlString);
-//			} else {
-//				return writer.toString();
-//			}
-//		}
-//
-//		public void runScenarios(ServletContext application,
-//								 HttpServletRequest request, Writer out, boolean silent)
-//				throws IllegalArgumentException, SecurityException,
-//				IllegalAccessException, InvocationTargetException,
-//				NoSuchMethodException, ClassNotFoundException {
-//
-//			Class<?>[] args_types = new Class<?>[4];
-//			args_types[0] = ServletContext.class;
-//			args_types[1] = HttpServletRequest.class;
-//			args_types[2] = Writer.class;
-//			args_types[3] = boolean.class;
-//			Object[] args = new Object[4];
-//			args[0] = application;
-//			args[1] = request;
-//			args[2] = out;
-//			args[3] = silent;
-//			Class.forName("nl.nn.adapterframework.testtool.TestTool")
-//					.getMethod("runScenarios", args_types).invoke(null, args);
-//		}
-//	}
-
-//	public String doTest() {
-//		try {
-//			String result;
-//			if (result==null) {
-//				result = testLarva();
-//			}
-//			return result;
-//		} finally {
-//			closeTest();
-//		}
-//	}
-
-	// all called methods in doTest must be public so they can also be called
-	// from outside
 
 	public void closeTest() {
 		if (ibisContext != null) {
@@ -291,177 +196,7 @@ public class IbisTester {
 				+ runState + "]");
 		return true;
 	}
-//
-//	public Map<String, String> getRootDirectories(boolean forceReread) {
-//		String realPath = AppConstants.getInstance().getResolvedProperty("webapp.realpath") + "larva/";
-//		if(forceReread || TestPreparer.scenariosRootDirectories == null)
-//			TestPreparer.initScenariosRootDirectories(realPath, null, appConstants);
-//
-//		return (Map<String, String>) ((HashMap)TestPreparer.scenariosRootDirectories).clone();
-//	}
 
-//
-//	public String testLarva() {
-//		// Start testing larva
-//		debug("***start larva***");
-//		Result result;
-//		// Get scenarios root directories
-//		try {
-//			result = runScenario(null, null, null);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			result = null;
-//		}
-//
-//		if (result == null) {
-//			return error("First call to get scenarios failed");
-//		} else {
-//
-//			Double countScenariosRootDirs = evaluateXPathNumber(
-//					result.resultString,
-//					"count(html/body//select[@name='scenariosrootdirectory']/option)");
-//			if (countScenariosRootDirs == 0) {
-//				return error("No scenarios root directories found");
-//			}
-//
-//			Collection<String> scenariosRootDirsUnselected = evaluateXPath(
-//					result.resultString,
-//					"(html/body//select[@name='scenariosrootdirectory'])[1]/option[not(@selected)]/@value");
-//
-//			String runScenariosResult = runScenarios(result.resultString);
-//			if (runScenariosResult!=null) {
-//				return runScenariosResult;
-//			}
-//			if (scenariosRootDirsUnselected != null
-//					&& scenariosRootDirsUnselected.size() > 0) {
-//				for (String scenariosRootDirUnselected : scenariosRootDirsUnselected) {
-//					try {
-//						result = runScenario(scenariosRootDirUnselected, null,
-//								null);
-//					} catch (Exception e) {
-//						e.printStackTrace();
-//						result = null;
-//					}
-//
-//					if (result == null) {
-//						return error("Call to get scenarios from ["
-//								+ scenariosRootDirUnselected + "] failed");
-//					}
-//
-//					runScenariosResult = runScenarios(result.resultString);
-//					if (runScenariosResult!=null) {
-//						return runScenariosResult;
-//					}
-//				}
-//			}
-//		}
-//		return null;
-//	}
-//
-//	private String runScenarios(String xhtml) {
-//		Collection<String> scenarios = evaluateXPath(
-//				xhtml,
-//				"(html/body//select[@name='execute'])[1]/option/@value[ends-with(.,'.properties')]");
-//		if (scenarios == null || scenarios.size() == 0) {
-//			return error("No scenarios found");
-//		} else {
-//			String scenariosRootDir = evaluateXPathFirst(
-//					xhtml,
-//					"(html/body//select[@name='scenariosrootdirectory'])[1]/option[@selected]/@value");
-//			String scenariosRoot = evaluateXPathFirst(xhtml,
-//					"(html/body//select[@name='scenariosrootdirectory'])[1]/option[@selected]");
-//			debug("Found " + scenarios.size() + " scenario(s) in root ["
-//					+ scenariosRoot + "]");
-//			int scenariosTotal = scenarios.size();
-//			int scenariosPassed = 0;
-//			int scenariosCount = 0;
-//			Result result;
-//			for (String scenario : scenarios) {
-//				scenariosCount++;
-//
-//				String scenarioShortName;
-//				if (StringUtils.isNotEmpty(scenario)
-//						&& StringUtils.isNotEmpty(scenariosRootDir)) {
-//					if (scenario.startsWith(scenariosRootDir)) {
-//						scenarioShortName = scenario.substring(scenariosRootDir
-//								.length());
-//					} else {
-//						scenarioShortName = scenario;
-//					}
-//				} else {
-//					scenarioShortName = scenario;
-//				}
-//				String scenarioInfo = "scenario [" + scenariosCount + "/"
-//						+ scenariosTotal + "] [" + scenarioShortName + "]";
-//
-//				try {
-//					result = runScenario(scenariosRootDir, scenario,
-//							scenarioInfo);
-//				} catch (Exception e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//					result = null;
-//				}
-//
-//				if (result == null) {
-//					error(scenarioInfo + " failed");
-//				} else {
-//					if (result.resultString != null
-//							&& result.resultString.contains("passed")
-//					) {
-//						debug(scenarioInfo + " passed in [" + result.duration
-//								+ "] msec");
-//						scenariosPassed++;
-//					} else {
-//						error(scenarioInfo + " failed in [" + result.duration
-//								+ "] msec");
-//						error(result.resultString);
-//					}
-//				}
-//			}
-//			String msg = "scenarios passed [" + scenariosPassed + "] from ["
-//					+ scenariosCount + "]";
-//
-//			if (scenariosCount == scenariosPassed) {
-//				debug(msg);
-//			} else {
-//				return error(msg);
-//			}
-//		}
-//		return null;
-//	}
-//
-//	private Result runScenario(String scenariosRootDir, String scenario, String scenarioInfo) {
-//		int count = 2;
-//		String resultString = null;
-//		long startTime = 0;
-//		while (count-- > 0 && resultString == null) {
-//			startTime = System.currentTimeMillis();
-//			ScenarioRunner scenarioRunner = new ScenarioRunner(
-//					scenariosRootDir, scenario);
-//			ExecutorService service = Executors.newSingleThreadExecutor();
-//			Future future = service.submit(scenarioRunner);
-//			long timeout = 60;
-//			try {
-//				try {
-//					resultString = (String) future.get(timeout,
-//							TimeUnit.SECONDS);
-//				} catch (TimeoutException e) {
-//					debug(scenarioInfo + " timed out, retries left [" + count
-//							+ "]");
-//				} catch (Exception e) {
-//					debug(scenarioInfo + " got error, retries left [" + count
-//							+ "]");
-//				}
-//			} finally {
-//				service.shutdown();
-//			}
-//		}
-//
-//		long endTime = System.currentTimeMillis();
-//		return new Result(resultString, endTime - startTime);
-//	}
-//
 	private static void debug(String string) {
 		System.out.println(getIsoTimeStamp() + " " + getMemoryInfo() + " "
 				+ string);
@@ -483,37 +218,6 @@ public class IbisTester {
 		return "[" + ProcessMetrics.normalizedNotation(totalMem - freeMem)
 				+ "/" + ProcessMetrics.normalizedNotation(totalMem) + "]";
 	}
-
-//	private static String evaluateXPathFirst(String xhtml, String xpath) {
-//		try {
-//			return XmlUtils
-//					.evaluateXPathNodeSetFirstElement(xhtml, xpath);
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//			return null;
-//		}
-//	}
-//
-//	private static Collection<String> evaluateXPath(String xhtml, String xpath) {
-//		try {
-//			return XmlUtils.evaluateXPathNodeSet(xhtml, xpath);
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//			return null;
-//		}
-//	}
-//
-//	private static Double evaluateXPathNumber(String xhtml, String xpath) {
-//		try {
-//			return XmlUtils.evaluateXPathNumber(xhtml, xpath);
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//			return null;
-//		}
-//	}
 
 	private static String getWebContentDirectory() {
 		String buildOutputDirectory = Misc.getBuildOutputDirectory();

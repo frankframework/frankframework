@@ -252,7 +252,6 @@ public class LarvaApi {
     public Response getScenarios(Map<String, Object> input){
         getContext();
         String rootDirectory = input.get("rootDirectory").toString();
-        System.out.println(rootDirectory);
         Map<String, Object> list = getScenarioList(rootDirectory, TestTool.getAppConstants(ibisContext), realPath);
         if(list.size() == 0) {
            return Response.status(Response.Status.NO_CONTENT).build();
@@ -270,8 +269,6 @@ public class LarvaApi {
         try {
             filePath = input.get("filepath").toString();
             content = input.get("content").toString();
-            System.out.println("Got filepath " + filePath);
-            System.out.println("Got content " + content);
             if(filePath == null || content == null)
                 return Response.status(Response.Status.BAD_REQUEST).build();
         }catch (ClassCastException e) {

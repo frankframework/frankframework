@@ -1,6 +1,5 @@
 package nl.nn.adapterframework.larva;
 
-import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import com.sun.syndication.io.XmlReader;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -657,10 +656,7 @@ public class TestPreparer {
 	 * @return The message, after replacing the values.
 	 */
 	public static String replaceVariables(Properties properties, String message, MessageListener messageListener, String testName) {
-		long start = System.currentTimeMillis();
-		String result = replaceVariables(properties, message, "${", "}", "\\", messageListener, testName);
-		System.out.println("Took " + (System.currentTimeMillis() - start) + " to finish replacing.");
-		return result;
+		return replaceVariables(properties, message, "${", "}", "\\", messageListener, testName);
 	}
 
 	/**

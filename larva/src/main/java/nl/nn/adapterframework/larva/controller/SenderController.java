@@ -6,13 +6,12 @@ import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
 import nl.nn.adapterframework.core.*;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.http.IbisWebServiceSender;
+import nl.nn.adapterframework.larva.*;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.DelaySender;
 import nl.nn.adapterframework.senders.IbisJavaSender;
-import nl.nn.adapterframework.larva.*;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 
@@ -451,7 +450,7 @@ public class SenderController {
 		int result = TestTool.RESULT_ERROR;
 		Map senderInfo = (Map)queues.get(queueName);
 		if(senderInfo == null) {
-			System.out.println("null");
+			messageListener.debugMessage(testName, "Sender information is null.");
 		}
 		ISender sender = (ISender)senderInfo.get(senderType + "Sender");
 		Boolean convertExceptionToMessage = (Boolean)senderInfo.get("convertExceptionToMessage");
