@@ -20,6 +20,10 @@ import java.security.AccessControlException;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * This is a class for automatically starting Ibis for command line based testing tools
+ * that does not rely on Servlet implementations.
+ */
 public class IbisTester {
 	private AppConstants appConstants;
 	private String webAppPath;
