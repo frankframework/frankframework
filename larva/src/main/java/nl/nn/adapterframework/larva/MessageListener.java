@@ -59,18 +59,22 @@ public class MessageListener {
 	private void addMessage(String testName, Map<String, String> message, int logLevel, long timestamp) {
 		Message m = new Message(testName, message, logLevel, timestamp);
 		messages.add(m);
-		if (saveLog[logLevel] || sysOut[logLevel]) {
-			String str = "[" + LOG_LEVEL.get(logLevel) + "]" + mapToStr(message);
-			if (sysOut[logLevel])
-				System.out.println(str);
+		try {
+            if (saveLog[logLevel] || sysOut[logLevel]) {
+                String str = "[" + LOG_LEVEL.get(logLevel) + "]" + mapToStr(message);
+                if (sysOut[logLevel])
+                    System.out.println(str);
 
-			if (saveLog[logLevel]) {
-				if(logLevel == LOG_LEVEL.indexOf("Errors"))
-					logger.error(str);
-				else
-					logger.debug(str);
-			}
-		}
+                if (saveLog[logLevel]) {
+                    if (logLevel == LOG_LEVEL.indexOf("Errors"))
+                        logger.error(str);
+                    else
+                        logger.debug(str);
+                }
+            }
+        }catch (Exception e) {
+		    e.printStackTrace();
+        }
 	}
 
 	/**
@@ -144,7 +148,7 @@ public class MessageListener {
 	public synchronized void debugMessage(String testName, String message) {
 		Map<String, String> map = new HashMap<>(1);
 		map.put("Message", message);
-		addMessage(testName, map, LOG_LEVEL.indexOf("DEBUG"), System.currentTimeMillis());
+		addMessage(testName, map, LOG_LEVEL.indexOf("Debug"), System.currentTimeMillis());
 
 	}
 
