@@ -220,7 +220,6 @@ public class IbisContext extends IbisApplicationContext {
 			load(configurationName);
 		} catch (ConfigurationException e) {
 			log(configurationName, null, "failed to reload", MessageKeeperMessage.ERROR_LEVEL, e);
-			e.printStackTrace();
 		}
 	}
 
@@ -235,9 +234,7 @@ public class IbisContext extends IbisApplicationContext {
 			long start = System.currentTimeMillis();
 			ibisManager.unload(configurationName);
 			if (configuration.getAdapterService().getAdapters().size() > 0) {
-				log("Not all adapters are unregistered: "
-						+ configuration.getAdapterService().getAdapters(),
-						MessageKeeperMessage.ERROR_LEVEL);
+				log("Not all adapters are unregistered: " + configuration.getAdapterService().getAdapters(), MessageKeeperMessage.ERROR_LEVEL);
 			}
 			// Improve configuration reload performance. Probably because
 			// garbage collection will be easier.
@@ -247,8 +244,7 @@ public class IbisContext extends IbisApplicationContext {
 			log(configurationName, configurationVersion, msg);
 			secLog.info("Configuration [" + configurationName + "] [" + configurationVersion+"] " + msg);
 		} else {
-			log("Configuration [" + configurationName + "] to unload not found",
-					MessageKeeperMessage.WARN_LEVEL);
+			log("Configuration [" + configurationName + "] to unload not found", MessageKeeperMessage.WARN_LEVEL);
 		}
 		JdbcUtil.resetJdbcProperties();
 	}
