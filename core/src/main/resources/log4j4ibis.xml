@@ -18,17 +18,6 @@
 			<param name="Regex" value="${log.thread.rejectRegex}"/>
 		</filter>
 	</appender>
-	<appender name="XML" class="org.apache.log4j.RollingFileAppender">
-		<param name="File" value="${log.dir}/${instance.name.lc}_xml.log"/>
-		<param name="MaxBackupIndex" value="${log.xml.maxBackupIndex}"/>
-		<param name="MaxFileSize" value="${log.xml.maxFileSize}"/>
-		<param name="Append" value="true"/>
-		<layout class="org.apache.log4j.xml.XMLLayout"/>
-		<filter class="nl.nn.adapterframework.extensions.log4j.IbisThreadFilter">
-			<param name="AcceptOnMatch" value="false"/>
-			<param name="Regex" value="${log.thread.rejectRegex}"/>
-		</filter>
-	</appender>
 	<appender name="galm" class="org.apache.log4j.RollingFileAppender">
 		<param name="File" value="${log.dir}/${instance.name.lc}-galm.log"/>
 		<param name="MaxBackupIndex" value="5"/>
@@ -66,7 +55,6 @@
 		<param name="maxMessageLength" value="${log.lengthLogRecords}"/>
 		<param name="hideRegex" value="${log.hideRegex}"/>
 		<appender-ref ref="file"/>
-		<appender-ref ref="XML"/>
 	</appender>
 	<logger name="nl.nn.adapterframework.testtool">
 		<level value="WARN"/>
