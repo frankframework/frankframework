@@ -147,6 +147,11 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 	}
 	@Override
 	@Ignore("test fails in parallel, processing instructions are ignored by XmlBuilder in ParallelSenders")
+	public void anyXmlNoMethodConfigured() throws Exception {
+		// test is ignored
+	}
+	@Override
+	@Ignore("test fails in parallel, processing instructions are ignored by XmlBuilder in ParallelSenders")
 	public void anyXmlIndent() throws Exception {
 		// test is ignored
 	}

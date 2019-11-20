@@ -334,6 +334,22 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	}
 
 	@Test
+	public void anyXmlNoMethodConfigured() throws Exception {
+		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/Escaped.xml");
+
+		setStyleSheetName("/Xslt/AnyXml/CopyNoMethodConfigured.xsl");
+		setOmitXmlDeclaration(true);
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String result = prr.getResult().toString();
+		
+		assertResultsAreCorrect(expected, result, session);
+	}
+
+	@Test
 	public void anyXmlIndent() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/PrettyPrintedEscaped.xml");
@@ -363,6 +379,21 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String result = prr.getResult().toString();
 		
 		assertResultsAreCorrect(expected, result, session);
+	}
+
+	@Test
+	public void anyXmlDisableOutputEscaping() throws Exception {
+		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/OutputEscapingDisabled.xml");
+
+		setStyleSheetName("/Xslt/AnyXml/DisableOutputEscaping.xsl");
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String result = prr.getResult().toString();
+		
+		assertResultsAreCorrect(expected.replaceAll("\\s", ""), result.replaceAll("\\s", ""), session);
 	}
 
 	@Test

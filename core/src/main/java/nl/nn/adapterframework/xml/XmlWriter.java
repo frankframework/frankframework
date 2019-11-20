@@ -36,12 +36,16 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	protected Logger log = LogUtil.getLogger(this);
 	
+	private final String DISABLE_OUTPUT_ESCAPING="javax.xml.transform.disable-output-escaping";
+	private final String ENABLE_OUTPUT_ESCAPING="javax.xml.transform.enable-output-escaping";
+	
 	private Writer writer;
 	private boolean includeXmlDeclaration=false;
 	private boolean newlineAfterXmlDeclaration=false;
 	private boolean includeComments=true;
 	private boolean textMode=false;
 	
+	private boolean outputEscaping=true;
 	private int elementLevel=0;
 	private boolean elementJustStarted;
 	private boolean inCdata;
@@ -160,7 +164,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 			if (textMode) {
 				writer.write(ch, start, length);
 			} else {
-				if (inCdata) {
+				if (inCdata || !outputEscaping) {
 					writer.append(new String(ch, start, length));
 				} else {
 					writer.append(XmlUtils.encodeChars(new String(ch, start, length)).replace("&quot;", "\"").replace("&#39;", "'"));
@@ -185,6 +189,14 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	@Override
 	public void processingInstruction(String target, String data) throws SAXException {
 		try {
+			if (target.equals(DISABLE_OUTPUT_ESCAPING)) {
+				outputEscaping=false;
+				return;
+			}
+			if (target.equals(ENABLE_OUTPUT_ESCAPING)) {
+				outputEscaping=true;
+				return;
+			}
 			if (!textMode) {
 				writer.append("<?").append(target).append(" ").append(data).append("?>\n");
 			}

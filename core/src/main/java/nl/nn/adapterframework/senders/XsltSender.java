@@ -20,18 +20,12 @@ import java.io.StringReader;
 import java.util.Collections;
 import java.util.Map;
 
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang.StringUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
@@ -207,8 +201,14 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			}
 			
 			String outputType = getOutputType();
+			if (log.isTraceEnabled()) log.trace("Configured outputmethod ["+outputType+"]");
 			if (StringUtils.isEmpty(outputType)) {
 				outputType = poolToUse.getOutputMethod();
+				if (log.isTraceEnabled()) log.trace("Detected outputmethod ["+outputType+"]");
+			}
+			if (StringUtils.isEmpty(outputType)) {
+				outputType = "xml";
+				if (log.isTraceEnabled()) log.trace("Default outputmethod ["+outputType+"]");
 			}
 
 			Object targetStream = target.asNative();
@@ -218,11 +218,14 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 				handler = (ContentHandler)targetStream;
 			} else {
 				XmlWriter xmlWriter = new XmlWriter(target.asWriter());
+				if (log.isTraceEnabled()) log.trace("Configured omitXmlDeclaration ["+omitXmlDeclaration+"]");
 				if ("xml".equals(outputType)) {
 					if (omitXmlDeclaration==null) {
 						omitXmlDeclaration = poolToUse.getOmitXmlDeclaration();
+						if (log.isTraceEnabled()) log.trace("Detected omitXmlDeclaration ["+omitXmlDeclaration+"]");
 						if (omitXmlDeclaration==null) {
 							omitXmlDeclaration=false;
+							if (log.isTraceEnabled()) log.trace("Default omitXmlDeclaration ["+omitXmlDeclaration+"]");
 						}
 					}
 					xmlWriter.setIncludeXmlDeclaration(!omitXmlDeclaration);
