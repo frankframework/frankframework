@@ -97,7 +97,6 @@ public class LadybugPipe extends FixedForwardPipe {
 		ReportRunner reportRunner = new ReportRunner();
 		reportRunner.setTestTool(testTool);
 		reportRunner.setSecurityContext(new IbisSecurityContext(session, checkRoles));
-
 		if(exclusiveReportGenEnabled) {
 			boolean reportGenWasEnabled = testTool.getReportGeneratorEnabled();
 			testTool.setReportGeneratorEnabled(true);
