@@ -10,6 +10,7 @@
 	<!ENTITY ShowFlowDiagram SYSTEM "ConfigurationShowFlowDiagram.xml">
 	<!ENTITY ExecuteJdbcProperties SYSTEM "ConfigurationExecuteJdbcProperties.xml">
 	<!ENTITY ShowEnvironmentVariables SYSTEM "ConfigurationShowEnvironmentVariables.xml">
+	<!ENTITY GetConfigurations SYSTEM "ConfigurationGetConfigurations.xml">
 ]>
 <configuration name="IAF_WebControl">
 	&ShowConfigurationStatus;
@@ -23,4 +24,5 @@
 	&ShowFlowDiagram;
 	&ExecuteJdbcProperties;
 	&ShowEnvironmentVariables;
+	&GetConfigurations;
 </configuration>

@@ -1,0 +1,23 @@
+<module>
+	<adapter name="GetConfigurationsPipe">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="GetConfigurationsPipe">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4test-GetConfigurationsPipe"/>
+		</receiver>
+		<pipeline firstPipe="GetConfigurations">
+			<exits>
+				<exit state="success" path="EXIT" />
+			</exits>
+
+			<pipe name="GetConfigurations" className="nl.nn.adapterframework.pipes.GetConfigurationsPipe">
+				<forward name="success" path="FixedResult" />
+			</pipe>
+			
+			<pipe name="FixedResult" className="nl.nn.adapterframework.pipes.FixedResult" returnString="OK">
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+		</pipeline>
+	</adapter>
+</module>
