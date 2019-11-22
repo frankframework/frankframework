@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.extensions.javascript;
 
 import java.io.File;
-import java.net.URL;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -49,14 +48,14 @@ public class J2V8 implements JavascriptEngine<V8> {
 	public void startRuntime(String alias, String path) {
 		String directory = path;
 		if(StringUtils.isEmpty(directory)) {
-			directory = AppConstants.getInstance().getResolvedProperty("log.dir");
+			directory = AppConstants.getInstance().getResolvedProperty("ibis.tmpdir");
 		}
 		if(directory != null) {
 			File file = new File(directory);
 			if (!file.isAbsolute()) {
-				URL url = this.getClass().getResource("/");
-				if(url != null) {
-					file = new File(url.getPath(), directory);
+				String absPath = new File("").getAbsolutePath();
+				if(absPath != null) {
+					file = new File(absPath, directory);
 				}
 			}
 			String fileDir = file.toString();
@@ -67,7 +66,7 @@ public class J2V8 implements JavascriptEngine<V8> {
 			log.info("resolved J2V8 tempDirectory from path ["+path+"] to directory ["+directory+"]");
 		}
 
-		//Directory may be NULL but not empty. The directory has to valid, available and the ibis must have read+write access to it.
+		//Directory may be NULL but not empty. The directory has to valid, available and the IBIS must have read+write access to it.
 		v8 = V8.createV8Runtime(alias, directory);
 	}
 
