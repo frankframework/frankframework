@@ -5,7 +5,6 @@ import nl.nn.adapterframework.larva.controller.*;
 import nl.nn.adapterframework.util.AppConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.validation.constraints.Null;
 import java.io.File;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -197,11 +196,14 @@ public class ScenarioTester extends Thread {
 						stepPassed = senderController.executeSenderRead(step, stepDisplayName, properties, queues, queueName, "ibisJava", fileName, fileContent, fileNameAbsolutePath, testName);
 					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = webServiceController.read(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, fileNameAbsolutePath, testName);
-					} else if ("nl.nn.adapterframework.larva.FileListener".equals(properties.get(queueName + ".className"))) {
+					} else if ("nl.nn.adapterframework.larva.FileListener".equals(properties.get(queueName + ".className"))
+								|| "nl.nn.adapterframework.testtool.FileListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = fileController.executeListenerRead(testName, step, stepDisplayName, properties, queues, queueName, fileName, fileContent, fileNameAbsolutePath);
-					} else if ("nl.nn.adapterframework.larva.FileSender".equals(properties.get(queueName + ".className"))) {
+					} else if ("nl.nn.adapterframework.larva.FileSender".equals(properties.get(queueName + ".className"))
+								|| "nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = fileController.executeSenderRead(testName, step, stepDisplayName, properties, queues, queueName, fileName, fileContent, fileNameAbsolutePath);
-					} else if ("nl.nn.adapterframework.larva.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
+					} else if ("nl.nn.adapterframework.larva.XsltProviderListener".equals(properties.get(queueName + ".className"))
+								|| "nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = listenerController.executeXsltProviderListenerRead(stepDisplayName, properties, queues, queueName, fileContent, TestPreparer.createParametersMapFromParamProperties(properties, step, false, null), testName);
 					} else {
 						messageListener.errorMessage(testName, testName + ": Property '" + queueName + ".className' not found or not valid");
@@ -222,9 +224,11 @@ public class ScenarioTester extends Thread {
 						stepPassed = senderController.executeSenderWrite(testName, stepDisplayName, queues, queueName, "ibisJava", fileContent);
 					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = webServiceController.write(testName, stepDisplayName, queues, queueName, fileContent);
-					} else if ("nl.nn.adapterframework.larva.FileSender".equals(properties.get(queueName + ".className"))) {
+					} else if ("nl.nn.adapterframework.larva.FileSender".equals(properties.get(queueName + ".className"))
+								|| "nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = fileController.executeSenderWrite(testName, stepDisplayName, queues, queueName, fileContent);
-					} else if ("nl.nn.adapterframework.larva.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
+					} else if ("nl.nn.adapterframework.larva.XsltProviderListener".equals(properties.get(queueName + ".className"))
+								|| "nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = listenerController.executeXsltProviderListenerWrite(step, stepDisplayName, queues, queueName, fileName, fileContent, properties, fileNameAbsolutePath, testName);
 					} else if ("nl.nn.adapterframework.senders.DelaySender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = senderController.executeDelaySenderWrite(testName, stepDisplayName, queues, queueName, fileContent);
@@ -307,16 +311,19 @@ public class ScenarioTester extends Thread {
 							.equals(properties.get(queueName + ".className")) && !javaListeners.contains(queueName)) {
 						messageListener.debugMessage(testName, "Adding javaListener queue: " + queueName);
 						javaListeners.add(queueName);
-					} else if ("nl.nn.adapterframework.larva.FileSender"
-							.equals(properties.get(queueName + ".className")) && !fileSenders.contains(queueName)) {
+					} else if (("nl.nn.adapterframework.larva.FileSender".equals(properties.get(queueName + ".className"))
+							||  "nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className")))
+							&& !fileSenders.contains(queueName)) {
 						messageListener.debugMessage(testName, "Adding fileSender queue: " + queueName);
 						fileSenders.add(queueName);
-					} else if ("nl.nn.adapterframework.larva.FileListener"
-							.equals(properties.get(queueName + ".className")) && !fileListeners.contains(queueName)) {
+					} else if (("nl.nn.adapterframework.larva.FileListener".equals(properties.get(queueName + ".className"))
+							|| "nl.nn.adapterframework.testtool.FileListener".equals(properties.get(queueName + ".className")))
+							&& !fileListeners.contains(queueName)) {
 						messageListener.debugMessage(testName, "Adding fileListener queue: " + queueName);
 						fileListeners.add(queueName);
-					} else if ("nl.nn.adapterframework.larva.XsltProviderListener".equals(
-							properties.get(queueName + ".className")) && !xsltProviderListeners.contains(queueName)) {
+					} else if (("nl.nn.adapterframework.larva.XsltProviderListener".equals(properties.get(queueName + ".className"))
+							|| "nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className")))
+							&& !xsltProviderListeners.contains(queueName)) {
 						messageListener.debugMessage(testName, "Adding xsltProviderListeners queue: " + queueName);
 						xsltProviderListeners.add(queueName);
 					}
