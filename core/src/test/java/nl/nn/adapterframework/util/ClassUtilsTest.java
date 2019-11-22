@@ -31,6 +31,7 @@ public class ClassUtilsTest {
 	private String fileContent = "<test />";
 
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
+	private ClassLoader nullClassLoader = this.getClass().getClassLoader();
 
 	@Test
 	public void getResourceURL() throws URISyntaxException, IOException {
@@ -140,20 +141,20 @@ public class ClassUtilsTest {
 
 	@Test
 	public void getResourceURLnullClassLoader1() throws URISyntaxException, IOException {
-		URL url = ClassUtils.getResourceURL(null, fileName);
+		URL url = ClassUtils.getResourceURL(nullClassLoader, fileName);
 		assertEquals(fileContent, Misc.streamToString(url.openStream()).trim());
 	}
 
 	@Test
 	public void getResourceURLnullClassLoaderNonExistingFile() throws URISyntaxException, IOException {
-		URL url = ClassUtils.getResourceURL(null, "apple.pie.with.raisins");
+		URL url = ClassUtils.getResourceURL(nullClassLoader, "apple.pie.with.raisins");
 
 		assertNull(url);
 	}
 
 	@Test
 	public void getResourceURLnullClassLoaderWithExternalFile() throws URISyntaxException, IOException {
-		URL url = ClassUtils.getResourceURL(null, "file://potato.ext", "file");
+		URL url = ClassUtils.getResourceURL(nullClassLoader, "file://potato.ext", "file");
 
 		assertEquals("", url.getFile()); //returns an empty string if one does not exist
 	}

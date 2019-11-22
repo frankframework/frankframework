@@ -65,6 +65,8 @@ public abstract class ValidatorTestBase extends TestCase {
 	public String SCHEMA_LOCATION_ARRAYS                            	="urn:arrays /Arrays/arrays.xsd";
 	public String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_COMPACT_JSON		="/Arrays/arrays-compact";
 	public String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_FULL_JSON			="/Arrays/arrays-full";
+	
+	private ClassLoader testClassLoader = this.getClass().getClassLoader();
 
     public void validate(String rootNamespace, String schemaLocation, String inputFile) throws Exception {
     	validate(rootNamespace,schemaLocation, false, inputFile, null);
@@ -192,7 +194,7 @@ public abstract class ValidatorTestBase extends TestCase {
 //						xsd.setImportedSchemaLocationsToIgnore(getImportedSchemaLocationsToIgnore());
 //						xsd.setUseBaseImportedSchemaLocationsToIgnore(isUseBaseImportedSchemaLocationsToIgnore());
 //						xsd.setImportedNamespacesToIgnore(getImportedNamespacesToIgnore());
-						xsd.initNamespace(split[i],null, split[i + 1]);
+						xsd.initNamespace(split[i], testClassLoader, split[i + 1]);
 						xsds.add(xsd);
 					}
 //				}

@@ -22,53 +22,32 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 
 public class ThreadConnectingFilter extends FullXmlFilter {
 
-	private ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
-	private Thread parentThread;
-	private Object threadInfo;
+	private ThreadConnector threadConnector;
 	
 	public ThreadConnectingFilter(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) {
 		super();
-		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
-		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationID):null;
-		parentThread=Thread.currentThread();
+		threadConnector=new ThreadConnector(owner, threadLifeCycleEventListener, correlationID);
 	}
 
 	private void handleException(SAXException e) throws SAXException {
-		if (threadLifeCycleEventListener!=null) {
-			Throwable t = threadLifeCycleEventListener.threadAborted(threadInfo, e);
-			if (t==null) {
-				log.warn("Exception ignored by threadLifeCycleEventListener ("+e.getClass().getName()+"): "+e.getMessage());
-			} else {
-				if (t instanceof SAXException) {
-					throw (SAXException) t;
-				}
-				if (t instanceof Exception) {
-					throw new SaxException((Exception)t);
-				}
-				throw new RuntimeException(t);
-			}
+		Throwable t = threadConnector.abortThread(e);
+		if (t instanceof SAXException) {
+			throw (SAXException) t;
 		}
-		throw e;
+		if (t instanceof Exception) {
+			throw new SaxException((Exception)t);
+		}
+		throw new RuntimeException(t);
 	}
 	
 	@Override
 	public void startDocument() throws SAXException {
-		Thread currentThread = Thread.currentThread();
-		if (currentThread!=parentThread) {
-			currentThread.setName(parentThread.getName()+"/"+currentThread.getName());
-			if (currentThread.getContextClassLoader()!=parentThread.getContextClassLoader()) {
-				currentThread.setContextClassLoader(parentThread.getContextClassLoader());
-			}
-		} else {
-			threadLifeCycleEventListener=null;
-		}
-		if (threadLifeCycleEventListener!=null) {
-			threadLifeCycleEventListener.threadCreated(threadInfo,null);
-		}
+		threadConnector.startThread(null);
 		try {
 			super.startDocument();
 		} catch (SAXException e) {
@@ -83,9 +62,7 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		} catch (SAXException e) {
 			handleException(e);
 		}
-		if (threadLifeCycleEventListener!=null) {
-			threadLifeCycleEventListener.threadEnded(threadInfo,null);
-		}
+		threadConnector.endThread(null);
 	}
 
 	

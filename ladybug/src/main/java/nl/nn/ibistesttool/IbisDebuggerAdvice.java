@@ -40,13 +40,14 @@ import nl.nn.adapterframework.pipes.IsolatedServiceExecutor;
 import nl.nn.adapterframework.senders.ParallelSenderExecutor;
 import nl.nn.adapterframework.senders.SenderWrapperBase;
 import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.testtool.util.LogUtil;
 
 /**
  * @author  Jaco de Groot (jaco@dynasol.nl)
  */
-public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDebugInfo> {
+public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private IbisDebugger ibisDebugger;
@@ -178,7 +179,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 
 	public Object debugThreadCreateStartEndAbort(ProceedingJoinPoint proceedingJoinPoint, Runnable runnable) throws Throwable {
 		if (runnable instanceof ParallelSenderExecutor || runnable instanceof IsolatedServiceExecutor) {
-			Executor executor = new Executor((RequestReplyExecutor)runnable);
+			Executor executor = new Executor((RequestReplyExecutor)runnable,(ThreadLifeCycleEventListener<Object>)this);
 			Object[] args = proceedingJoinPoint.getArgs();
 			args[0] = executor;
 			return proceedingJoinPoint.proceed(args);
@@ -198,17 +199,20 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 	}
 
 	@Override
-	public Object threadCreated(ThreadDebugInfo ref, Object request) {
+	public Object threadCreated(Object handle, Object request) {
+		ThreadDebugInfo ref = (ThreadDebugInfo)handle;
 		return ibisDebugger.startThread(ref.owner, ref.threadId, ref.correlationId, request);
 	}
 
 	@Override
-	public Object threadEnded(ThreadDebugInfo ref, Object result) {
+	public Object threadEnded(Object handle, Object result) {
+		ThreadDebugInfo ref = (ThreadDebugInfo)handle;
 		return ibisDebugger.endThread(ref.owner, ref.correlationId, result);
 	}
 
 	@Override
-	public Throwable threadAborted(ThreadDebugInfo ref, Throwable t) {
+	public Throwable threadAborted(Object handle, Throwable t) {
+		ThreadDebugInfo ref = (ThreadDebugInfo)handle;
 		return ibisDebugger.abortThread(ref.owner, ref.correlationId, t);
 	}
 	
@@ -256,29 +260,26 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 
 	public class Executor implements Runnable {
 		private RequestReplyExecutor requestReplyExecutor;
-		private ThreadDebugInfo threadInfo;
-		private Thread parentThread;
+		private ThreadConnector threadConnector;
 
-		public Executor(RequestReplyExecutor requestReplyExecutor) {
+		public Executor(RequestReplyExecutor requestReplyExecutor, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener) {
 			this.requestReplyExecutor=requestReplyExecutor;
-			threadInfo = announceChildThread(requestReplyExecutor, requestReplyExecutor.getCorrelationID());
-			parentThread = Thread.currentThread();
+			this.threadConnector = new ThreadConnector(requestReplyExecutor, threadLifeCycleEventListener, requestReplyExecutor.getCorrelationID());
 		}
 		
 		@Override
 		public void run() {
-			Thread.currentThread().setName(parentThread.getName()+"/"+Thread.currentThread().getName());
-			threadCreated(threadInfo, requestReplyExecutor.getRequest());
+			threadConnector.startThread(requestReplyExecutor.getRequest());
 			try {
 				requestReplyExecutor.run();
 			} finally {
 				Throwable throwable = requestReplyExecutor.getThrowable();
 				if (throwable == null) {
 					Object reply = requestReplyExecutor.getReply();
-					reply = threadEnded(threadInfo, reply);
+					reply = threadConnector.endThread(reply);
 					requestReplyExecutor.setReply(reply);
 				} else {
-					throwable = threadAborted(threadInfo, throwable);
+					throwable = threadConnector.abortThread(throwable);
 					requestReplyExecutor.setThrowable(throwable);
 				}
 			}
