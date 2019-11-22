@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 
 public class SkipEmptyTagsFilter extends FullXmlFilter {
 
@@ -88,7 +89,7 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 			e.uri=uri;
 			e.localName=localName;
 			e.qName=qName;
-			e.atts=atts;
+			e.atts=new AttributesImpl(atts);
 			pendingElements.add(e);
 		}
 		nonWhitespaceCharactersSeen=false;

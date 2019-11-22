@@ -49,10 +49,6 @@ public class TransformerFilter extends FullXmlFilter {
 		lastFilter.setContentHandler(handler);
 	}
 	
-	public TransformerErrorListener getErrorListener() {
-		return (TransformerErrorListener)transformerHandler.getTransformer().getErrorListener();
-	}
-	
 	public Transformer getTransformer() {
 		return transformerHandler.getTransformer();
 	}

@@ -37,7 +37,7 @@ public class XmlWriterTest {
 	@Test
 	public void testTextMode() throws Exception {
 		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
-		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/TextMode.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/AsText.txt");
 		XmlWriter xmlWriter = new XmlWriter();
 		xmlWriter.setTextMode(true);
 		XmlUtils.parseXml(xmlWriter, input);

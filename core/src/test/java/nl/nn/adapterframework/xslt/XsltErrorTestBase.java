@@ -167,8 +167,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 
 		PipeRunResult prr=doPipe(pipe, input, session);
 
-		//assertResultsAreCorrect(expected, prr.getResult().toString(),session);
-		assertResultsAreCorrect(expected.replaceAll("\\s",""), prr.getResult().toString().replaceAll("\\s",""),session);
+		assertResultsAreCorrect(expected, prr.getResult().toString(),session);
 	}
 
 	
@@ -301,4 +300,49 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		}
 	}
 
+	@Test
+	public void illegalXPathExpression2Xslt1() throws Exception {
+		// error not during configure(), but during doPipe()
+		setXpathExpression("<result><status>invalid</status><message>$failureReason</message></result>");
+		setXslt2(false);
+		String errorMessage = null;
+		try {
+			pipe.configure();
+			fail("Expected to run into an exception");
+		} catch (Exception e) {
+			errorMessage = e.getMessage();
+			assertThat(errorMessage,containsString("<result><status>invalid</status><message>$failureReason</message></result>"));
+			assertThat(errorMessage,containsString("A location path was expected, but the following token was encountered:  <"));
+		}
+		checkTestAppender(EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING+getMultiplicity()+1,null);
+		System.out.println("ErrorMessage: "+errorMessage);
+		if (testForEmptyOutputStream) {
+			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
+			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
+			errorOutputStream=new ErrorOutputStream();
+		}
+	}
+
+	@Test
+	public void illegalXPathExpression2Xslt2() throws Exception {
+		// error not during configure(), but during doPipe()
+		setXpathExpression("<result><status>invalid</status><message>$failureReason</message></result>");
+		setXslt2(true);
+		String errorMessage = null;
+		try {
+			pipe.configure();
+			fail("Expected to run into an exception");
+		} catch (Exception e) {
+			errorMessage = e.getMessage();
+			assertThat(errorMessage,containsString("<result><status>invalid</status><message>$failureReason</message></result>"));
+			assertThat(errorMessage,containsString("Unexpected token \"<\" in path expression"));
+		}
+		checkTestAppender(EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING+getMultiplicity(),null);
+		System.out.println("ErrorMessage: "+errorMessage);
+		if (testForEmptyOutputStream) {
+			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
+			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
+			errorOutputStream=new ErrorOutputStream();
+		}
+	}
 }

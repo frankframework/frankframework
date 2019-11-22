@@ -95,11 +95,11 @@ public class FixedResult extends FixedForwardPipe {
     @Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		appConstants = AppConstants.getInstance(classLoader);
+		appConstants = AppConstants.getInstance(getConfigurationClassLoader());
 		if (StringUtils.isNotEmpty(getFileName()) && !isLookupAtRuntime()) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(classLoader, getFileName());
+				resource = ClassUtils.getResourceURL(getConfigurationClassLoader(), getFileName());
 			} catch (Throwable e) {
 				throw new ConfigurationException(getLogPrefix(null)+"got exception searching for ["+getFileName()+"]", e);
 			}
@@ -136,7 +136,7 @@ public class FixedResult extends FixedForwardPipe {
 			}
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(classLoader, fileName);
+				resource = ClassUtils.getResourceURL(getConfigurationClassLoader(), fileName);
 			} catch (Throwable e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"got exception searching for ["+fileName+"]", e);
 			}
@@ -179,7 +179,7 @@ public class FixedResult extends FixedForwardPipe {
 		}
 
 		if (StringUtils.isNotEmpty(styleSheetName)) {
-			URL xsltSource = ClassUtils.getResourceURL(classLoader, styleSheetName);
+			URL xsltSource = ClassUtils.getResourceURL(getConfigurationClassLoader(), styleSheetName);
 			if (xsltSource!=null) {
 				try{
 					String xsltResult = null;

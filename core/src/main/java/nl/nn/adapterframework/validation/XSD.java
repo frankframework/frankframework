@@ -158,6 +158,7 @@ public class XSD implements Schema, Comparable<XSD> {
 
 	public void initNoNamespace(ClassLoader classLoader, String noNamespaceSchemaLocation) throws ConfigurationException {
 		this.noNamespaceSchemaLocation=noNamespaceSchemaLocation;
+		this.classLoader=classLoader;
 		this.resource=noNamespaceSchemaLocation;
 		url = ClassUtils.getResourceURL(classLoader, noNamespaceSchemaLocation);
 		if (url == null) {
@@ -358,28 +359,23 @@ public class XSD implements Schema, Comparable<XSD> {
 		return importedNamespaces;
 	}
 
-    public Set<XSD> getXsdsRecursive()
-            throws ConfigurationException {
-    	return getXsdsRecursive(true);
-    }
-
-    public Set<XSD> getXsdsRecursive(boolean ignoreRedefine)
-            throws ConfigurationException {
-        return getXsdsRecursive(new HashSet<XSD>(), ignoreRedefine);
-    }
-
-    public Set<XSD> getXsdsRecursive(Set<XSD> xsds)
-            throws ConfigurationException {
-    	return getXsdsRecursive(xsds, true);
+	public Set<XSD> getXsdsRecursive() throws ConfigurationException {
+		return getXsdsRecursive(true);
 	}
 
-    public Set<XSD> getXsdsRecursive(Set<XSD> xsds, boolean ignoreRedefine)
-            throws ConfigurationException {
+	public Set<XSD> getXsdsRecursive(boolean ignoreRedefine) throws ConfigurationException {
+		return getXsdsRecursive(new HashSet<XSD>(), ignoreRedefine);
+	}
+
+	public Set<XSD> getXsdsRecursive(Set<XSD> xsds) throws ConfigurationException {
+		return getXsdsRecursive(xsds, true);
+	}
+
+    public Set<XSD> getXsdsRecursive(Set<XSD> xsds, boolean ignoreRedefine) throws ConfigurationException {
     	try {
             InputStream in = getInputStream();
             if (in == null) return null;
-            XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in,
-                    XmlUtils.STREAM_FACTORY_ENCODING);
+            XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in, XmlUtils.STREAM_FACTORY_ENCODING);
             while (er.hasNext()) {
                 XMLEvent e = er.nextEvent();
                 switch (e.getEventType()) {

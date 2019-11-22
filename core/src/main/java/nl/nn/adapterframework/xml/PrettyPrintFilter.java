@@ -20,7 +20,7 @@ import org.xml.sax.SAXException;
 
 public class PrettyPrintFilter extends FullXmlFilter {
 
-	private String indent="   ";
+	private String indent="\t";
 	private int indentLevel;
 	private boolean charactersSeen;
 	private boolean elementsSeen;

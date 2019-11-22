@@ -28,7 +28,7 @@ public class XmlPrettyPrintFilterTest {
 	@Test
 	public void testTextMode() throws Exception {
 		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
-		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/PrettyPrintedTextMode.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/AsText.txt");
 		XmlWriter xmlWriter = new XmlWriter();
 		xmlWriter.setTextMode(true);
 		PrettyPrintFilter filter =  new PrettyPrintFilter();
