@@ -3,15 +3,10 @@ package nl.nn.adapterframework.pipes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.IOException;
-
 import org.junit.Test;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
@@ -22,10 +17,10 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		return new XmlSwitch();
 	}
 
-	public void testSwitch(String input, String expectedForwardName) throws PipeRunException, ConfigurationException, PipeStartException {
+	public void testSwitch(String input, String expectedForwardName) throws Exception {
 		log.debug("inputfile ["+input+"]");
 		configureAdapter();
-		PipeRunResult prr = pipe.doPipe(input,session);
+		PipeRunResult prr = doPipe(pipe,input,session);
 		String xmlOut=(String)prr.getResult();
 		assertEquals(input,xmlOut.trim());
 		
@@ -37,14 +32,14 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	@Test
-	public void basic() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void basic() throws Exception {
 		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
 		String input=TestFileUtils.getTestFile("/XmlSwitch/in.xml");
 		testSwitch(input,"Envelope");
 	}
 
 	@Test
-	public void basicXpath1() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void basicXpath1() throws Exception {
 		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
 		pipe.setXpathExpression("name(/node()[position()=last()])");
 //		pipe.setXslt2(true);
@@ -53,7 +48,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	@Test
-	public void basicXpath3() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void basicXpath3() throws Exception {
 		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
 		pipe.registerForward(new PipeForward("SetRequest","SetRequest-Path"));
 		pipe.setXpathExpression("name(/Envelope/Body/*[name()!='MessageHeader'])");
@@ -74,7 +69,24 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		inputParameter.setType("domdoc");
 		pipe.addParameter(inputParameter);
 		pipe.setXpathExpression("$source/Envelope/Body/SetRequest/CaseData/CASE_ID");
+		pipe.setNamespaceAware(false);
+		testSwitch("<dummy name=\"input\"/>","2");
+	}
 
-		testSwitch("<dummy name=\"input\"/>","Path2");
+	@Test
+	public void xPathFromParameterNamespaced() throws Exception {
+		pipe.registerForward(new PipeForward("1","Path1"));
+		pipe.registerForward(new PipeForward("2","Path2"));
+
+		String input=TestFileUtils.getTestFile("/XmlSwitch/in.xml");
+		Parameter inputParameter = new Parameter();
+		inputParameter.setName("source");
+		inputParameter.setValue(input);
+		inputParameter.setType("domdoc");
+		pipe.addParameter(inputParameter);
+		pipe.setXpathExpression("$source/soap:Envelope/soap:Body/case:SetRequest/case:CaseData/case:CASE_ID");
+		pipe.setNamespaceDefs("soap=http://schemas.xmlsoap.org/soap/envelope/,case=http://www.ing.com/nl/pcretail/ts/migrationcasedata_01");
+
+		testSwitch("<dummy name=\"input\"/>","2");
 	}
 }
