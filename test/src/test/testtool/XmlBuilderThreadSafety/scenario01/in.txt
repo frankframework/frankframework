@@ -1,1 +1,1 @@
-select * from DUAL
+select 'X' as DUMMY from ibisstore

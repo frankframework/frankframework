@@ -40,6 +40,8 @@ import javax.jms.JMSException;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.jdbc.dbms.OracleDbmsSupport;
+
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang.StringUtils;
 
@@ -143,20 +145,19 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			}
 		}
 	}
-
 	
 	/**
 	 * Obtain a prepared statement to be executed.
 	 * Method-stub to be overridden in descender-classes.
 	 */
 	protected abstract PreparedStatement getStatement(Connection con, String correlationID, String message, boolean updateable) throws JdbcException, SQLException;
-	
+
 	private PreparedStatement prepareQueryWithColunmsReturned(Connection con, String query, String[] columnsReturned) throws SQLException {
 		return con.prepareStatement(query,columnsReturned);
 	}
 
 	protected PreparedStatement prepareQuery(Connection con, String query, boolean updateable) throws SQLException, JdbcException {
-		String convertedQuery = convertQuery(con, query.trim());
+		String convertedQuery = convertQuery(con, query.trim(), updateable);
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix() +"preparing statement for query ["+convertedQuery+"]");
 		}
@@ -167,7 +168,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return con.prepareStatement(convertedQuery,ResultSet.TYPE_FORWARD_ONLY,updateable?ResultSet.CONCUR_UPDATABLE:ResultSet.CONCUR_READ_ONLY);
 	}
 
-	protected String convertQuery(Connection connection, String query) throws JdbcException, SQLException {
+	protected String convertQuery(Connection connection, String query, boolean updateable) throws JdbcException, SQLException {
 		if (StringUtils.isNotEmpty(getSqlDialect()) && !getSqlDialect().equalsIgnoreCase(getDbmsSupport().getDbmsName())) {
 			if (log.isDebugEnabled()) {
 				log.debug(getLogPrefix() + "converting query [" + query.trim() + "] from [" + getSqlDialect() + "] to [" + getDbmsSupport().getDbmsName() + "]");
@@ -175,7 +176,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			List<String> multipleQueries = getDbmsSupport().splitQuery(query);
 			StringBuilder sb = new StringBuilder();
 			for (String singleQuery : multipleQueries) {
-				String convertedQuery = getDbmsSupport().convertQuery(connection, singleQuery, getSqlDialect());
+				String convertedQuery = getDbmsSupport().convertQuery(connection, singleQuery, getSqlDialect(), updateable);
 				if (convertedQuery != null) {
 					sb.append(convertedQuery);
 				}
@@ -201,22 +202,40 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	@Override
 	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		PreparedStatement statement=null;
-		ParameterList newParamList = new ParameterList();
+		ParameterList newParameterList = new ParameterList();
 		if (paramList != null) {
-			newParamList = (ParameterList) paramList.clone();
+			newParameterList = (ParameterList) paramList.clone();
 		}
+		String newMessage;
 		if (isUseNamedParams()) {
-			message = adjustParamList(newParamList, message);
+			newMessage = adjustParameterList(newParameterList, message);
+		} else {
+			newMessage = message;
 		}
 		try {
 			boolean updateBlob="updateBlob".equalsIgnoreCase(getQueryType());
 			boolean updateClob="updateClob".equalsIgnoreCase(getQueryType());
 			log.debug(getLogPrefix() + "obtaining prepared statement to execute");
-			statement = getStatement(connection, correlationID, message, updateBlob||updateClob);
+			statement = getStatement(connection, correlationID, newMessage, updateBlob||updateClob);
 			log.debug(getLogPrefix() + "obtained prepared statement to execute");
 			statement.setQueryTimeout(getTimeout());
-			if (prc != null && paramList != null) {
-				applyParameters(statement, prc.getValues(newParamList));
+			
+			//TODO: move if-block below to DbmsSupport?
+			if ((updateBlob || updateClob) && OracleDbmsSupport.dbmsName.equalsIgnoreCase(getSqlDialect()) && !OracleDbmsSupport.dbmsName.equalsIgnoreCase(getDbmsSupport().getDbmsName())) {
+				// add inputMessage as first parameter (shifting other parameters)
+				Parameter param = new Parameter();
+				param.setName("inputMessage");
+				if (updateBlob)
+					param.setType("string2bytes");
+				param.configure();
+				newParameterList.add(0, param);
+				// set variables to false so executeOtherQuery() will be executed
+				updateBlob= false;
+				updateClob= false;
+			}
+			
+			if (prc != null && newParameterList != null) {
+				applyParameters(statement, prc.getValues(newParameterList));
 			}
 			if ("select".equalsIgnoreCase(getQueryType())) {
 				Object blobSessionVar=null;
@@ -251,7 +270,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			if ("package".equalsIgnoreCase(getQueryType())) {
 				return executePackageQuery(connection, statement, message);
 			}
-			return executeOtherQuery(connection, correlationID, statement, message, prc, newParamList);
+			return executeOtherQuery(connection, correlationID, statement, message, prc, newParameterList);
 		} catch (SenderException e) {
 			if (e.getCause() instanceof SQLException) {
 				SQLException sqle = (SQLException) e.getCause();
@@ -271,12 +290,12 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				log.warn(new SenderException(getLogPrefix() + "got exception closing SQL statement",e ));
 			}
 			if (isCloseInputstreamOnExit()) {
-				if (paramList!=null) {
-					for (int i = 0; i < paramList.size(); i++) {
-						if (Parameter.TYPE_INPUTSTREAM.equals(paramList.getParameter(i).getType())) {
-							log.debug(getLogPrefix() + "Closing inputstream for parameter [" + paramList.getParameter(i).getName() + "]");
+				if (newParameterList!=null) {
+					for (int i = 0; i < newParameterList.size(); i++) {
+						if (Parameter.TYPE_INPUTSTREAM.equals(newParameterList.getParameter(i).getType())) {
+							log.debug(getLogPrefix() + "Closing inputstream for parameter [" + newParameterList.getParameter(i).getName() + "]");
 							try {
-								InputStream inputStream = (InputStream) paramList.getParameter(i).getValue(null, prc);
+								InputStream inputStream = (InputStream) newParameterList.getParameter(i).getValue(null, prc);
 								inputStream.close();
 							} catch (Exception e) {
 								log.warn(new SenderException(getLogPrefix() + "got exception closing inputstream", e));
@@ -288,9 +307,9 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		}
 	}
 
-	private String adjustParamList(ParameterList paramList, String message) throws SenderException {
+	private String adjustParameterList(ParameterList parameterList, String message) throws SenderException {
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix() + "Adjusting list of parameters ["	+ paramListToString(paramList) + "]");
+			log.debug(getLogPrefix() + "Adjusting list of parameters ["	+ parameterListToString(parameterList) + "]");
 		}
 
 		StringBuffer buffer = new StringBuffer();
@@ -299,9 +318,9 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			return message;
 		char[] messageChars = message.toCharArray();
 		int copyFrom = 0;
-		ParameterList oldParamList = new ParameterList();
-		oldParamList = (ParameterList) paramList.clone();
-		paramList.clear();
+		ParameterList oldParameterList = new ParameterList();
+		oldParameterList = (ParameterList) parameterList.clone();
+		parameterList.clear();
 		while (startPos != -1) {
 			buffer.append(messageChars, copyFrom, startPos - copyFrom);
 			int nextStartPos =
@@ -320,9 +339,9 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				copyFrom = nextStartPos;
 			} else {
 				String namedParam = message.substring(startPos + UNP_START.length(),endPos);
-				Parameter param = oldParamList.findParameter(namedParam);
+				Parameter param = oldParameterList.findParameter(namedParam);
 				if (param!=null) {
-					paramList.add(param);
+					parameterList.add(param);
 					buffer.append("?");
 					copyFrom = endPos + UNP_END.length();
 				} else {
@@ -336,23 +355,23 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		buffer.append(messageChars, copyFrom, messageChars.length - copyFrom);
 
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix() + "Adjusted list of parameters ["	+ paramListToString(paramList) + "]");
+			log.debug(getLogPrefix() + "Adjusted list of parameters ["	+ parameterListToString(parameterList) + "]");
 		}
 
 		return buffer.toString();
 	}
 
-	private String paramListToString(ParameterList paramList) {
-		String paramListString = "";
-		for (int i = 0; i < paramList.size(); i++) {
-			String key = paramList.getParameter(i).getName();
+	private String parameterListToString(ParameterList parameterList) {
+		String parameterListString = "";
+		for (int i = 0; i < parameterList.size(); i++) {
+			String key = parameterList.getParameter(i).getName();
 			if (i ==0) {
-				paramListString = key;
+				parameterListString = key;
 			} else {
-				paramListString = paramListString + ", " + key;
+				parameterListString = parameterListString + ", " + key;
 			}
 		}
-		return paramListString;
+		return parameterListString;
 	}
 
 	protected String getResult(ResultSet resultset) throws JdbcException, SQLException, IOException, JMSException {
@@ -664,15 +683,15 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		}
 	}
 
-	protected String executeOtherQuery(Connection connection, String correlationID, PreparedStatement statement, String message, ParameterResolutionContext prc, ParameterList newParamList) throws SenderException{
+	protected String executeOtherQuery(Connection connection, String correlationID, PreparedStatement statement, String message, ParameterResolutionContext prc, ParameterList parameterList) throws SenderException{
 		ResultSet resultset=null;
 		try {
 			int numRowsAffected = 0;
 			if (StringUtils.isNotEmpty(getRowIdSessionKey())) {
 				CallableStatement cstmt = getCallWithRowIdReturned(connection, correlationID, message);
 				int ri = 1;
-				if (prc != null && paramList != null) {
-					ParameterValueList parameters = prc.getValues(newParamList);
+				if (prc != null && parameterList != null) {
+					ParameterValueList parameters = prc.getValues(parameterList);
 					applyParameters(cstmt, parameters);
 					ri = parameters.size() + 1;
 				}
@@ -754,21 +773,6 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 					ix++;
 				}
 				int eindInputs = beginOutput - ix;
-/*
-   Copyright 2013 Nationale-Nederlanden
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
 				packageInput = message.substring(startHaakje + 1, eindInputs);
 				StringTokenizer st2 = new StringTokenizer(packageInput, ",");		
 				if (idx != 1) {
@@ -859,7 +863,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	 * <li><i>anything else</i>:</li> no output is expected, the number of rows affected is returned
 	 * </ul>
 	 */
-	@IbisDoc({"one of: <ul><li>'select' for queries that return data</li><li>'updateBlob' for queries that update a BLOB</li><li>'dateClob' for queries that update a CLOB</li><li>'package' to execute Oracle PL/SQL package</li><li>anything else for queries that return no data.</li></ul>", "other"})
+	@IbisDoc({"one of: <ul><li>'select' for queries that return data</li><li>'updateBlob' for queries that update a BLOB</li><li>'updateClob' for queries that update a CLOB</li><li>'package' to execute Oracle PL/SQL package</li><li>anything else for queries that return no data.</li></ul>", "other"})
 	public void setQueryType(String queryType) {
 		this.queryType = queryType;
 	}

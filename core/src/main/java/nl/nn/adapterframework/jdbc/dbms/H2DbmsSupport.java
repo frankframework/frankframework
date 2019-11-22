@@ -27,13 +27,14 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @author Jaco de Groot
  */
 public class H2DbmsSupport extends GenericDbmsSupport {
+	public final static String dbmsName = "H2";
 
 	public int getDatabaseType() {
 		return DbmsSupportFactory.DBMS_H2;
 	}
 
 	public String getDbmsName() {
-		return "H2";
+		return dbmsName;
 	}
 
 	public String getSchema(Connection conn) throws JdbcException {
@@ -53,10 +54,10 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String convertQuery(Connection conn, String query, String sqlDialectFrom) throws SQLException, JdbcException {
+	public String convertQuery(Connection conn, String query, String sqlDialectFrom, boolean updateable) throws SQLException, JdbcException {
 		if (isQueryConvertable(sqlDialectFrom)) {
 			if (OracleDbmsSupport.dbmsName.equalsIgnoreCase(sqlDialectFrom)) {
-				return OracleToH2Translator.convertQuery(conn, query);
+				return OracleToH2Translator.convertQuery(conn, query, updateable);
 			}
 			warnConvertQuery(sqlDialectFrom);
 		}

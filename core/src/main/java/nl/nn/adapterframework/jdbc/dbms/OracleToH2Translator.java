@@ -34,6 +34,15 @@ import nl.nn.adapterframework.util.LogUtil;
  * (<code>url=jdbc:h2:~/test;MODE=Oracle</code>). Missing compatibility is
  * covered in this class.
  * </p>
+ * <p>
+ * Note 1: Date functions in H2 use the value of property 'user.language'. So be
+ * sure it has the correct value
+ * </p>
+ * <p>
+ * Note 2: The Oracle functions <code>INSERT EMPTY_CLOB()</code> and
+ * <code>INSERT EMPTY_BLOB()</code> are replaced with INSERT '', however in H2
+ * this will result in a <code>INSERT NULL</code>
+ * </p>
  * 
  * @author Peter Leeuwenburgh
  */
@@ -43,12 +52,31 @@ public class OracleToH2Translator {
 	private static final String SEQUENCE_MAX_VALUE_STRING = "999999999999999999";
 	private static final BigInteger SEQUENCE_MAX_VALUE = new BigInteger(SEQUENCE_MAX_VALUE_STRING);
 
-	public static String convertQuery(Connection connection, String query) throws JdbcException, SQLException {
+	public static String convertQuery(Connection connection, String query, boolean updateable) throws JdbcException, SQLException {
 		if (query == null)
 			return null;
-		String originalQuery = query.trim();
-		// add spaces around following characters: ,;()
-		String orgQueryReadyForSplit = originalQuery.replaceAll("([,;\\(\\)])", " $1 ").trim();
+
+		// query can start with comment (multiple lines) which should not be
+		// converted
+		StringBuilder queryComment = new StringBuilder();
+		StringBuilder queryStatement = new StringBuilder();
+		boolean comment = true;
+		String[] lines = query.split("\\r?\\n");
+		for (String line : lines) {
+			// ignore empty lines
+			if (line.trim().length() > 0) {
+				if (comment && line.trim().startsWith("--")) {
+					queryComment.append(line.trim() + System.lineSeparator());
+				} else {
+					comment = false;
+					queryStatement.append(line.trim() + System.lineSeparator());
+				}
+			}
+		}
+
+		String originalQuery = queryStatement.toString().trim();
+		// add spaces around following characters: ,;()=
+		String orgQueryReadyForSplit = originalQuery.replaceAll("([,;\\(\\)=])", " $1 ").trim();
 		boolean removedEOS = false;
 		// remove last character if it is a semi-colon
 		String orgQueryReadyForSplitEOS = StringUtils.removeEnd(orgQueryReadyForSplit, ";");
@@ -59,23 +87,23 @@ public class OracleToH2Translator {
 		String[] split = orgQueryReadyForSplitEOS.split("\\s+(?=([^']*'[^']*')*[^']*$)");
 		String[] newSplit = convertQuery(split);
 		if (newSplit == null) {
-			log.debug("ignore oracle query [" + originalQuery + "]");
+			log.debug("ignore oracle query [" + queryComment.toString() + originalQuery + "]");
 			return null;
 		}
 		if (compareStringArrays(split, newSplit)) {
-			log.debug("oracle query [" + originalQuery + "] not converted");
+			log.debug("oracle query [" + queryComment.toString() + originalQuery + "] not converted");
 			return query;
 		} else {
 			String convertedQuery = getConvertedQueryAsString(newSplit, removedEOS);
-			log.debug("converted oracle query [" + originalQuery + "] to [" + convertedQuery + "]");
-			return convertedQuery;
+			log.debug("converted oracle query [" + queryComment.toString() + originalQuery + "] to [" + queryComment.toString() + convertedQuery + "]");
+			return queryComment.toString() + convertedQuery;
 		}
 	}
 
 	private static String getConvertedQueryAsString(String[] newSplit, boolean removedEOS) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < newSplit.length; i++) {
-			if (i > 0 && !"(".equals(newSplit[i]) && !",".equals(newSplit[i]) && !")".equals(newSplit[i]) && !"(".equals(newSplit[i - 1])) {
+			if (i > 0 && !"(".equals(newSplit[i]) && !",".equals(newSplit[i]) && !")".equals(newSplit[i]) && !"=".equals(newSplit[i]) && !"(".equals(newSplit[i - 1]) && !"=".equals(newSplit[i - 1])) {
 				sb.append(" ");
 			}
 			sb.append(newSplit[i]);
@@ -85,7 +113,9 @@ public class OracleToH2Translator {
 
 	private static String[] convertQuery(String[] split) {
 		String[] newSplit;
-		if (isSelectQuery(split)) {
+		if (isSelectForUpdateQuery(split)) {
+			newSplit = convertQuerySelectForUpdate(split);
+		} else if (isSelectQuery(split)) {
 			newSplit = convertQuerySelect(split);
 		} else if (isSetDefineOffQuery(split)) {
 			newSplit = null;
@@ -103,8 +133,17 @@ public class OracleToH2Translator {
 			newSplit = convertQueryDropSequence(split);
 		} else if (isCreateIndexQuery(split)) {
 			newSplit = convertQueryCreateIndex(split);
+		} else if (isAlterTableIbisStoreQuery(split)) {
+			// for H2 primary key is set via identity in create table
+			newSplit = null;
 		} else if (isAlterTableQuery(split)) {
 			newSplit = convertQueryAlterTable(split);
+		} else if (isInsertIntoQuery(split)) {
+			newSplit = convertQueryInsertInto(split);
+		} else if (isUpdateSetQuery(split)) {
+			newSplit = convertQueryUpdateSet(split);
+		} else if (isExitQuery(split)) {
+			newSplit = null;
 		} else {
 			return split;
 		}
@@ -144,11 +183,45 @@ public class OracleToH2Translator {
 	}
 
 	private static boolean isCreateIndexQuery(String[] split) {
-		return split.length > 3 && "CREATE".equalsIgnoreCase(split[0]) && "INDEX".equalsIgnoreCase(split[1]);
+		return (split.length > 3 && "CREATE".equalsIgnoreCase(split[0]) && "INDEX".equalsIgnoreCase(split[1])) || (split.length > 4 && "CREATE".equalsIgnoreCase(split[0]) && "UNIQUE".equalsIgnoreCase(split[1]) && "INDEX".equalsIgnoreCase(split[2]));
 	}
 
 	private static boolean isAlterTableQuery(String[] split) {
 		return split.length > 3 && "ALTER".equalsIgnoreCase(split[0]) && "TABLE".equalsIgnoreCase(split[1]);
+	}
+
+	private static boolean isAlterTableIbisStoreQuery(String[] split) {
+		return split.length > 4 && "ALTER".equalsIgnoreCase(split[0]) && "TABLE".equalsIgnoreCase(split[1]) && "IBISSTORE".equalsIgnoreCase(split[2]);
+	}
+
+	private static boolean isExitQuery(String[] split) {
+		return split.length == 1 && "EXIT".equalsIgnoreCase(split[0]);
+	}
+
+	private static boolean isInsertIntoQuery(String[] split) {
+		return split.length > 3 && "INSERT".equalsIgnoreCase(split[0]) && "INTO".equalsIgnoreCase(split[1]);
+	}
+
+	private static boolean isSelectForUpdateQuery(String[] split) {
+		return split.length > 5 && "SELECT".equalsIgnoreCase(split[0]) && "FROM".equalsIgnoreCase(split[2]) && "FOR".equalsIgnoreCase(split[split.length - 2]) && "UPDATE".equalsIgnoreCase(split[split.length - 1]);
+	}
+
+	private static boolean isUpdateSetQuery(String[] split) {
+		return split.length > 3 && "UPDATE".equalsIgnoreCase(split[0]) && "SET".equalsIgnoreCase(split[2]);
+	}
+
+	private static String[] convertQuerySelectForUpdate(String[] split) {
+		List<String> newSplit = new ArrayList<>();
+		newSplit.add("UPDATE");
+		newSplit.add(split[3]);
+		newSplit.add("SET");
+		newSplit.add(split[1]);
+		newSplit.add("=");
+		newSplit.add("?");
+		for (int i = 4; i < split.length - 2; i++) {
+			newSplit.add(split[i]);
+		}
+		return newSplit.toArray(new String[0]);
 	}
 
 	private static String[] convertQuerySelect(String[] split) {
@@ -175,12 +248,17 @@ public class OracleToH2Translator {
 	private static String[] convertQueryCreateSequence(String[] split) {
 		List<String> newSplit = new ArrayList<>();
 		for (int i = 0; i < split.length; i++) {
-			newSplit.add(split[i]);
-			if ("MAXVALUE".equalsIgnoreCase(split[i]) && (i + 1) < split.length && StringUtils.isNumeric(split[i + 1])) {
-				BigInteger maxValue = new BigInteger(split[i + 1]);
-				if (maxValue.compareTo(SEQUENCE_MAX_VALUE) > 0) {
-					newSplit.add(SEQUENCE_MAX_VALUE_STRING);
-					i++;
+			if (("ORDER".equalsIgnoreCase(split[i]) || "NOORDER".equalsIgnoreCase(split[i])) && !containsBracket(split, i + 1)) {
+				// ignore
+				i = i + 1;
+			} else {
+				newSplit.add(split[i]);
+				if ("MAXVALUE".equalsIgnoreCase(split[i]) && (i + 1) < split.length && StringUtils.isNumeric(split[i + 1])) {
+					BigInteger maxValue = new BigInteger(split[i + 1]);
+					if (maxValue.compareTo(SEQUENCE_MAX_VALUE) > 0) {
+						newSplit.add(SEQUENCE_MAX_VALUE_STRING);
+						i++;
+					}
 				}
 			}
 		}
@@ -190,11 +268,16 @@ public class OracleToH2Translator {
 	private static String[] convertQueryCreateTableIbisStore(String[] split) {
 		List<String> newSplit = new ArrayList<>();
 		for (int i = 0; i < split.length; i++) {
-			newSplit.add(split[i]);
-			if ("MESSAGEKEY".equalsIgnoreCase(split[i]) && (i + 4) < split.length && "NUMBER".equals(split[i + 1]) && "(".equals(split[i + 2]) && ")".equals(split[i + 4])) {
-				newSplit.add("INT");
-				newSplit.add("IDENTITY");
-				i = i + 4;
+			if (isCreateTableOrIndexClause(split[i]) && !containsBracket(split, i + 1)) {
+				// ignore
+				i = i + 1;
+			} else {
+				newSplit.add(split[i]);
+				if ("MESSAGEKEY".equalsIgnoreCase(split[i]) && (i + 4) < split.length && "NUMBER".equals(split[i + 1]) && "(".equals(split[i + 2]) && ")".equals(split[i + 4])) {
+					newSplit.add("INT");
+					newSplit.add("IDENTITY");
+					i = i + 4;
+				}
 			}
 		}
 		return newSplit.toArray(new String[0]);
@@ -203,17 +286,34 @@ public class OracleToH2Translator {
 	private static String[] convertQueryCreateTable(String[] split) {
 		List<String> newSplit = new ArrayList<>();
 		for (int i = 0; i < split.length; i++) {
-			newSplit.add(split[i]);
-			if ("NUMBER".equalsIgnoreCase(split[i]) && (i + 5) < split.length && "(".equals(split[i + 1]) && "*".equals(split[i + 2]) && ",".equals(split[i + 3]) && ")".equals(split[i + 5])) {
-				newSplit.add(split[i + 1]);
-				newSplit.add("38");
-				newSplit.add(split[i + 3]);
-				newSplit.add(split[i + 4]);
-				newSplit.add(split[i + 5]);
-				i = i + 5;
+			if (isCreateTableOrIndexClause(split[i]) && !containsBracket(split, i + 1)) {
+				// ignore
+				i = i + 1;
+			} else {
+				newSplit.add(split[i]);
+				if ("NUMBER".equalsIgnoreCase(split[i]) && (i + 5) < split.length && "(".equals(split[i + 1]) && "*".equals(split[i + 2]) && ",".equals(split[i + 3]) && ")".equals(split[i + 5])) {
+					newSplit.add(split[i + 1]);
+					newSplit.add("38");
+					newSplit.add(split[i + 3]);
+					newSplit.add(split[i + 4]);
+					newSplit.add(split[i + 5]);
+					i = i + 5;
+				}
 			}
 		}
 		return newSplit.toArray(new String[0]);
+	}
+
+	private static boolean isCreateTableOrIndexClause(String string) {
+		return "LOGGING".equalsIgnoreCase(string) || "NOLOGGING".equalsIgnoreCase(string) || "COMPRESS".equalsIgnoreCase(string) || "NOCOMPRESS".equalsIgnoreCase(string) || "CACHE".equalsIgnoreCase(string) || "NOCACHE".equalsIgnoreCase(string) || "PARALLEL".equalsIgnoreCase(string) || "NOPARALLEL".equalsIgnoreCase(string) || "MONITORING".equalsIgnoreCase(string) || "NOMONITORING".equalsIgnoreCase(string);
+	}
+
+	private static boolean containsBracket(String[] split, int startPos) {
+		for (int i = startPos; i < split.length; i++) {
+			if ("(".equals(split[i]) || ")".equals(split[i]))
+				return true;
+		}
+		return false;
 	}
 
 	private static String[] convertQueryDropSequence(String[] split) {
@@ -232,9 +332,38 @@ public class OracleToH2Translator {
 	private static String[] convertQueryCreateIndex(String[] split) {
 		List<String> newSplit = new ArrayList<>();
 		for (int i = 0; i < split.length; i++) {
-			if ("LOWER".equalsIgnoreCase(split[i]) && (i + 3) < split.length && "(".equals(split[i + 1]) && ")".equals(split[i + 3])) {
+			if (isCreateTableOrIndexClause(split[i]) && !containsBracket(split, i + 1)) {
+				// ignore
+				i = i + 1;
+			} else if ("LOWER".equalsIgnoreCase(split[i]) && (i + 3) < split.length && "(".equals(split[i + 1]) && ")".equals(split[i + 3])) {
 				newSplit.add(split[i + 2]);
 				i = i + 3;
+			} else {
+				newSplit.add(split[i]);
+			}
+		}
+		return newSplit.toArray(new String[0]);
+	}
+
+	private static String[] convertQueryInsertInto(String[] split) {
+		List<String> newSplit = new ArrayList<>();
+		for (int i = 0; i < split.length; i++) {
+			if (("EMPTY_BLOB".equalsIgnoreCase(split[i]) || "EMPTY_CLOB".equalsIgnoreCase(split[i])) && (i + 2) < split.length && "(".equals(split[i + 1]) && ")".equals(split[i + 2])) {
+				newSplit.add("''");
+				i = i + 2;
+			} else {
+				newSplit.add(split[i]);
+			}
+		}
+		return newSplit.toArray(new String[0]);
+	}
+
+	private static String[] convertQueryUpdateSet(String[] split) {
+		List<String> newSplit = new ArrayList<>();
+		for (int i = 0; i < split.length; i++) {
+			if (("EMPTY_BLOB".equalsIgnoreCase(split[i]) || "EMPTY_CLOB".equalsIgnoreCase(split[i])) && (i + 2) < split.length && "(".equals(split[i + 1]) && ")".equals(split[i + 2])) {
+				newSplit.add("''");
+				i = i + 2;
 			} else {
 				newSplit.add(split[i]);
 			}

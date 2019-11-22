@@ -93,8 +93,9 @@ public interface IDbmsSupport {
 	String getSchema(Connection conn) throws JdbcException;
 	
 	List<String> splitQuery(String query);
-	String convertQuery(Connection conn, String query, String sqlDialectFrom) throws SQLException, JdbcException;
-
+	String convertQuery(Connection conn, String query, String sqlDialectFrom, boolean updateable) throws SQLException, JdbcException;
+	// naming 'updateable' is not very clear, but it's already used. It indicates that 'updateBlob' or 'updateClob' is true.
+	
 	boolean isTablePresent(Connection conn, String tableName) throws JdbcException;
 	boolean isTableColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException;
 	boolean isIndexPresent(Connection conn, String schemaOwner, String tableName, String indexName);

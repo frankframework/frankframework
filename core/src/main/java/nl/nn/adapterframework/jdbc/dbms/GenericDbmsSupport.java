@@ -391,7 +391,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public String convertQuery(Connection conn, String query, String sqlDialectFrom) throws SQLException, JdbcException {
+	public String convertQuery(Connection conn, String query, String sqlDialectFrom, boolean updateable) throws SQLException, JdbcException {
 		if (isQueryConvertable(sqlDialectFrom)) {
 			warnConvertQuery(sqlDialectFrom);
 		}
@@ -403,10 +403,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	protected boolean isQueryConvertable(String sqlDialectFrom) {
-		if (StringUtils.isEmpty(sqlDialectFrom) || StringUtils.isEmpty(getDbmsName()) || sqlDialectFrom.equalsIgnoreCase(getDbmsName())) {
-			return false;
-		}
-		return true;
+		return StringUtils.isNotEmpty(sqlDialectFrom) && StringUtils.isNotEmpty(getDbmsName()) && !sqlDialectFrom.equalsIgnoreCase(getDbmsName());
 	}
 
 	@Override

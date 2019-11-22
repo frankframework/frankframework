@@ -32,6 +32,8 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.jdbc.dbms.OracleDbmsSupport;
+
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
 
@@ -125,6 +127,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		}
 
 		private void fillParameter() throws SenderException {
+			boolean dbmsOracle = OracleDbmsSupport.dbmsName.equalsIgnoreCase(getDbmsSupport().getDbmsName());
 			if (type.equalsIgnoreCase(TYPE_INTEGER)) {
 				DecimalFormat df = new DecimalFormat();
 				Number n;
@@ -179,8 +182,10 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 						}
 						parameter = new Timestamp(nDate.getTime());
 					} else {
-						if (type.equalsIgnoreCase(TYPE_BLOB) || type.equalsIgnoreCase(TYPE_CLOB) || type.equalsIgnoreCase(TYPE_FUNCTION)) {
+						if (dbmsOracle && (type.equalsIgnoreCase(TYPE_BLOB) || type.equalsIgnoreCase(TYPE_CLOB)) || type.equalsIgnoreCase(TYPE_FUNCTION)) {
 							//skip
+						} else if (!dbmsOracle && type.equalsIgnoreCase(TYPE_BLOB)) {
+							parameter = value.getBytes();
 						} else {
 							// type.equalsIgnoreCase("string")
 							parameter = new String(value);
@@ -191,11 +196,12 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		}
 
 		private void fillQueryValue() {
+			boolean dbmsOracle = OracleDbmsSupport.dbmsName.equalsIgnoreCase(getDbmsSupport().getDbmsName());
 			queryValue = "?";
-			if (type.equalsIgnoreCase(TYPE_BLOB)) {
+			if (dbmsOracle && type.equalsIgnoreCase(TYPE_BLOB)) {
 				queryValue = "EMPTY_BLOB()";
 			} else {
-				if (type.equalsIgnoreCase(TYPE_CLOB)) {
+				if (dbmsOracle && type.equalsIgnoreCase(TYPE_CLOB)) {
 					queryValue = "EMPTY_CLOB()";
 				} else {
 					if (type.equalsIgnoreCase(TYPE_FUNCTION)) {
@@ -433,7 +439,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 
 	private String executeUpdate(Connection connection, String correlationID, String tableName, String query, Vector columns) throws SenderException {
 		try {
-			if (existLob(columns)) {
+			if (existLob(columns) &&  OracleDbmsSupport.dbmsName.equalsIgnoreCase(getDbmsSupport().getDbmsName())) {
 				CallableStatement callableStatement = getCallWithRowIdReturned(connection, correlationID, query);
 				applyParameters(callableStatement, columns);
 				int ri = 1 + countParameters(columns);
@@ -555,29 +561,30 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		while (iter.hasNext()) {
 			Column column = (Column) iter.next();
 			if (column.getParameter() != null) {
-				if (column.getParameter() instanceof String) {
-					log.debug("parm [" + var + "] is a String with value [" + column.getParameter().toString() + "]");
-					statement.setString(var, (String) column.getParameter());
-					var++;
-				}
 				if (column.getParameter() instanceof Integer) {
 					log.debug("parm [" + var + "] is an Integer with value [" + column.getParameter().toString() + "]");
 					statement.setInt(var, Integer.parseInt(column.getParameter().toString()));
 					var++;
-				}
-				if (column.getParameter() instanceof Boolean) {
+				} else if (column.getParameter() instanceof Boolean) {
 					log.debug("parm [" + var + "] is an Boolean with value [" + column.getParameter().toString() + "]");
 					statement.setBoolean(var, new Boolean(column.getParameter().toString()));
 					var++;
-				}
-				if (column.getParameter() instanceof Float) {
+				} else if (column.getParameter() instanceof Float) {
 					log.debug("parm [" + var + "] is a Float with value [" + column.getParameter().toString() + "]");
 					statement.setFloat(var, Float.parseFloat(column.getParameter().toString()));
 					var++;
-				}
-				if (column.getParameter() instanceof Timestamp) {
+				} else if (column.getParameter() instanceof Timestamp) {
 					log.debug("parm [" + var + "] is a Timestamp with value [" + column.getParameter().toString() + "]");
 					statement.setTimestamp(var, (Timestamp) column.getParameter());
+					var++;
+				} else if (column.getParameter() instanceof byte[]) {
+					log.debug("parm [" + var + "] is a byte array with value [" + column.getParameter().toString() + "]");
+					statement.setBytes(var, (byte[]) column.getParameter());
+					var++;
+				} else {
+					//if (column.getParameter() instanceof String) 
+					log.debug("parm [" + var + "] is a String with value [" + column.getParameter().toString() + "]");
+					statement.setString(var, (String) column.getParameter());
 					var++;
 				}
 			}
