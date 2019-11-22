@@ -16,7 +16,10 @@
 package nl.nn.adapterframework.xml;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -26,6 +29,7 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 
 	private boolean attributesConsideredContent=false;
 	private List<Element> pendingElements = new ArrayList<Element>();
+	private Map<String,String> pendingNamespaceMappings = new LinkedHashMap<String,String>();
 	
 	private boolean nonWhitespaceCharactersSeen=false;
 	
@@ -33,11 +37,44 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 
 	public void handlePendingStartElements() throws SAXException {
 		for(Element e:pendingElements) {
+			for (Entry<String,String> entry: e.namespaceMappings.entrySet()) {
+				super.startPrefixMapping(entry.getKey(), entry.getValue());
+			}
 			super.startElement(e.uri, e.localName, e.qName, e.atts);
 		}
 		pendingElements.clear();
 	}
 	
+	@Override
+	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+		pendingWhitespace.setLength(0);
+		if (attributesConsideredContent && atts.getLength()>0) {
+			handlePendingStartElements();
+			super.startElement(uri, localName, qName, atts);
+		} else {
+			Element e = new Element();
+			e.uri=uri;
+			e.localName=localName;
+			e.qName=qName;
+			e.atts=new AttributesImpl(atts);
+			e.namespaceMappings=pendingNamespaceMappings;
+			pendingNamespaceMappings=new LinkedHashMap<String,String>();
+			pendingElements.add(e);
+		}
+		nonWhitespaceCharactersSeen=false;
+	}
+	
+	@Override
+	public void endElement(String uri, String localName, String qName) throws SAXException {
+		if (pendingElements.isEmpty()) {
+			super.endElement(uri, localName, qName);
+		} else {
+			pendingElements.remove(pendingElements.size()-1);
+			pendingWhitespace.setLength(0);
+		}
+		nonWhitespaceCharactersSeen=false;
+	}
+
 	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
 		if (!nonWhitespaceCharactersSeen) {
@@ -61,45 +98,23 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 	}
 
 	@Override
-	public void endElement(String uri, String localName, String qName) throws SAXException {
-		if (pendingElements.isEmpty()) {
-			super.endElement(uri, localName, qName);
-		} else {
-			pendingElements.remove(pendingElements.size()-1);
-			pendingWhitespace.setLength(0);
-		}
-		nonWhitespaceCharactersSeen=false;
-	}
-
-	@Override
 	public void startCDATA() throws SAXException {
 		handlePendingStartElements();
 		super.startCDATA();
 		nonWhitespaceCharactersSeen=true;
 	}
 
-	@Override
-	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-		pendingWhitespace.setLength(0);
-		if (attributesConsideredContent && atts.getLength()>0) {
-			handlePendingStartElements();
-			super.startElement(uri, localName, qName, atts);
-		} else {
-			Element e = new Element();
-			e.uri=uri;
-			e.localName=localName;
-			e.qName=qName;
-			e.atts=new AttributesImpl(atts);
-			pendingElements.add(e);
-		}
-		nonWhitespaceCharactersSeen=false;
-	}
-	
 	private class Element {
 		public String uri;
 		public String localName; 
 		public String qName;
 		public Attributes atts;
+		public Map<String,String> namespaceMappings;
+	}
+
+	@Override
+	public void startPrefixMapping(String prefix, String uri) throws SAXException {
+		pendingNamespaceMappings.put(prefix, uri);
 	}
 
 

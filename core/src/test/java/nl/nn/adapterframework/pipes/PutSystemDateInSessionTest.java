@@ -15,6 +15,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.util.DateUtils;
 
 public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSession>{
@@ -30,21 +31,21 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	}
 
 	@Test
-	public void testConfigureNullDateFormat() throws PipeRunException, ConfigurationException {
+	public void testConfigureNullDateFormat() throws Exception {
 		expectedEx.expectMessage("has a null value for dateFormat");
 		pipe.setDateFormat(null);
 		configurePipe();
 	}
 
 	@Test
-	public void testConfigureNullSessionKey() throws PipeRunException, ConfigurationException {
+	public void testConfigureNullSessionKey() throws Exception {
 		expectedEx.expectMessage("has a null value for sessionKey");
 		pipe.setSessionKey(null);
 		configurePipe();
 	}
 
 	@Test
-	public void testFixedDateTimeFormatInvalid() throws PipeRunException, ConfigurationException, ParseException {
+	public void testFixedDateTimeFormatInvalid() throws Exception {
 		expectedEx.expectMessage("cannot parse fixed date");
 		configurePipe();
 		pipe.setReturnFixedDate(true);
@@ -55,7 +56,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	}
 
 	@Test
-	public void testReturnFixedDateFromSessionKey() throws PipeRunException, ConfigurationException, ParseException {
+	public void testReturnFixedDateFromSessionKey() throws Exception {
 		configurePipe();
 		// TODO : this field must be set before configure
 		// but setting stub mod from AppConstants does not work
@@ -87,7 +88,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	}
 
 	@Test
-	public void testReturnFixedDate() throws PipeRunException, ConfigurationException, ParseException {
+	public void testReturnFixedDate() throws Exception {
 		pipe.setSessionKey("first");
 		pipe.setDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
 		configurePipe();
@@ -113,7 +114,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	}
 
 	@Test
-	public void testConfigureIsReturnFixedDatewithoutStub() throws PipeRunException, ConfigurationException {
+	public void testConfigureIsReturnFixedDatewithoutStub() throws Exception {
 		expectedEx.expectMessage("returnFixedDate only allowed in stub mode");
 		pipe.setSessionKey("dummy");
 		pipe.setReturnFixedDate(true);
@@ -121,7 +122,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	}
 
 	@Test
-	public void testGetTimeStampInMillis() throws PipeRunException, ConfigurationException {
+	public void testGetTimeStampInMillis() throws Exception {
 		pipe.setSessionKey("dummy");
 		pipe.setGetCurrentTimeStampInMillis(true);
 		configurePipe();
@@ -133,7 +134,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	}
 
 	@Test
-	public void testConfigureInvalidDateFormat() throws PipeRunException, ConfigurationException {
+	public void testConfigureInvalidDateFormat() throws Exception {
 		expectedEx.expectMessage("has an illegal value for dateFormat");
 		pipe.setDateFormat("test");
 		pipe.setSessionKey("dummy");
@@ -141,7 +142,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	}
 
 	@Test
-	public void testSleepWhenEqualsToPrevious() throws PipeRunException, ConfigurationException, ParseException {
+	public void testSleepWhenEqualsToPrevious() throws Exception {
 		long sleep = 1000;
 		pipe.setSleepWhenEqualToPrevious(sleep);
 		configurePipe();

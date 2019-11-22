@@ -13,7 +13,7 @@
 	<d hallo="true">d</d>
 	<f>
 		<f1>
-			<f2>
+			<f2 xmlns="urn:test2">
 				<f3>
 					<f4>
 						<f5>f</f5>
