@@ -22,6 +22,36 @@ Upcoming
 - Bugfix (un)loading configs in JmxMbeanHelper
 - Add LadybugPipe
 - Show Security Items: Improve error handling for 'Used JmsRealms' and 'Used Authentication Entries'
+- Add Javascript Sender
+- Refactor SchedulerHelper
+- Refactor mediatypes in ApiListener
+- Add MultipartHttpSender
+- Add config warning when xsltVersion does not match detected version in xslt
+- Automatically wire Spring beans into the IbisApplicationContext
+- Fix header parameters being added to formand multipart-bodyparts
+- Xslt pipe dynamic stylesheet
+- Add logging and don't unload config when no database connection present
+- ForEachChildElementPipe option to keep namespaces
+- Add proxy attributes to ExchangeFolderSender
+- Introduce LdapFindGroupMembershipsPipe
+- Fix and improve (auto)reload in GUI 3.0
+- Introduce SaxException, with clear message, and proper stacktrace under IBM JDK
+- Fix stopCondition in ForEachChildElementPipe + remove count from result + introduce maxItems attribute
+- Correct log instantiating using LogUtil instead of Logger
+- Upgrade apache commons codec to the latest version
+- Add proxy functionality to the SendGridSender
+- Refactor SchedulerAdapter and remove jobs when config is unloaded
+- Fix concurrency issues when a RestListener registers on a dispatcher
+- Fix error when uploading configuration in GUI3.0
+- Fix Classloader resource retrieval
+- Create full path option for FileSystemListeners
+- Remove BasePathClassLoader and refactor IConfigurationClassLoaders
+- Add scroll to top in GUI 3.0
+- Resolve relative directories for J2V8
+- Add bounceAddress attribute on MailSender
+- Fix and Cleanup MailSender and MailSenderBase
+- Upgrade ladybug to version 2.0.9
+- Namespace support for skip empty tags
 
 ### Non backwards compatible changes
 
