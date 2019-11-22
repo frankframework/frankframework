@@ -31,7 +31,7 @@ public class ClassUtilsTest {
 	private String fileContent = "<test />";
 
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
-	private ClassLoader nullClassLoader = this.getClass().getClassLoader();
+	private ClassLoader nullClassLoader = null;
 
 	@Test
 	public void getResourceURL() throws URISyntaxException, IOException {
