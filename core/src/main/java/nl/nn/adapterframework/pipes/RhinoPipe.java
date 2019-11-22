@@ -94,7 +94,7 @@ public class RhinoPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getFileName()) && !isLookupAtRuntime()) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(classLoader, getFileName());
+				resource = ClassUtils.getResourceURL(getConfigurationClassLoader(), getFileName());
 			} catch (Throwable e) {
 				throw new ConfigurationException(
 					getLogPrefix(null) + "got exception searching for [" + getFileName() + "]", e);
@@ -144,7 +144,7 @@ public class RhinoPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime()) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(classLoader, getFileName());
+				resource = ClassUtils.getResourceURL(getConfigurationClassLoader(), getFileName());
 			} catch (Throwable e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"got exception searching for ["+getFileName()+"]", e);
 			}

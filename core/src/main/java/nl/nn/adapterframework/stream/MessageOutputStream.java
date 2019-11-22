@@ -37,9 +37,7 @@ public class MessageOutputStream {
 //	private MessageOutputStream next;
 	private MessageOutputStream tail;
 
-	private Object owner;
-	private ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
-	private String correlationID;
+	private ThreadConnector threadConnector;
 
 	public MessageOutputStream(OutputStream stream, MessageOutputStream next) {
 		this.requestStream=stream;
@@ -53,9 +51,7 @@ public class MessageOutputStream {
 	
 	public MessageOutputStream(ContentHandler handler, MessageOutputStream next, Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) {
 		this.requestStream=handler;
-		this.owner=owner;
-		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
-		this.correlationID=correlationID;
+		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, correlationID);
 		connect(next);
 	}
 	
@@ -98,7 +94,7 @@ public class MessageOutputStream {
     	}
     	if (requestStream instanceof ContentHandler) {
     		log.debug("returning ContentHandler as OutputStream");
-    		return new ContentHandlerOutputStream((ContentHandler)requestStream, owner, threadLifeCycleEventListener, correlationID);
+    		return new ContentHandlerOutputStream((ContentHandler)requestStream, threadConnector);
     	}
     	return null;
 	}
@@ -119,7 +115,7 @@ public class MessageOutputStream {
     	if (requestStream instanceof ContentHandler) {
     		try {
         		log.debug("returning ContentHandler as Writer");
-    	   		return new OutputStreamWriter(new ContentHandlerOutputStream((ContentHandler)requestStream, owner, threadLifeCycleEventListener, correlationID),StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+    	   		return new OutputStreamWriter(new ContentHandlerOutputStream((ContentHandler)requestStream, threadConnector),StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			} catch (UnsupportedEncodingException e) {
 				throw new StreamingException(e);
 			}

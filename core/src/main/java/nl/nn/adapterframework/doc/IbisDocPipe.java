@@ -550,7 +550,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 	private static List<IbisMethod> getIbisMethods(IPipe pipe) throws PipeRunException {
 		DigesterXmlHandler digesterXmlHandler = new DigesterXmlHandler();
 		try {
-			XmlUtils.parseXml(digesterXmlHandler, Misc.resourceToString(ClassUtils.getResourceURL(pipe, "digester-rules.xml")));
+			XmlUtils.parseXml(digesterXmlHandler, Misc.resourceToString(ClassUtils.getResourceURL(IbisDocPipe.class, "digester-rules.xml")));
 		} catch (IOException e) {
 			throw new PipeRunException(pipe, "Could nog parse digester-rules.xml", e);
 		} catch (SAXException e) {
