@@ -60,8 +60,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 	private boolean synchronous=false;
 
 	protected ParameterList paramList = null;
-	
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -165,6 +164,10 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		paramList.add(p);
 	}
 
+	@Override
+	public ParameterList getParameterList() {
+		return paramList;
+	}
 
 
 	public void setLuwHandleSessionKey(String string) {
