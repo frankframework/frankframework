@@ -310,14 +310,14 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 			URL truststoreUrl = null;
 	
 			if (!StringUtils.isEmpty(getCertificate())) {
-				certificateUrl = ClassUtils.getResourceURL(getClassLoader(), getCertificate());
+				certificateUrl = ClassUtils.getResourceURL(getConfigurationClassLoader(), getCertificate());
 				if (certificateUrl == null) {
 					throw new ConfigurationException(getLogPrefix()+"cannot find URL for certificate resource ["+getCertificate()+"]");
 				}
 				log.info(getLogPrefix()+"resolved certificate-URL to ["+certificateUrl.toString()+"]");
 			}
 			if (!StringUtils.isEmpty(getTruststore())) {
-				truststoreUrl = ClassUtils.getResourceURL(getClassLoader(), getTruststore());
+				truststoreUrl = ClassUtils.getResourceURL(getConfigurationClassLoader(), getTruststore());
 				if (truststoreUrl == null) {
 					throw new ConfigurationException(getLogPrefix()+"cannot find URL for truststore resource ["+getTruststore()+"]");
 				}
@@ -413,7 +413,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 		if (StringUtils.isNotEmpty(getStyleSheetName())) {
 			try {
-				Resource stylesheet = Resource.getResource(getClassLoader(), getStyleSheetName());
+				Resource stylesheet = Resource.getResource(getConfigurationClassLoader(), getStyleSheetName());
 				if (stylesheet == null) {
 					throw new ConfigurationException(getLogPrefix() + "cannot find stylesheet ["+getStyleSheetName()+"]");
 				}

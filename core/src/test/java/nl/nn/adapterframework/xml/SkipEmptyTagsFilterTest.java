@@ -9,7 +9,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class SkipEmptyTagsFilterTest {
@@ -33,13 +32,4 @@ public class SkipEmptyTagsFilterTest {
 		testXmlWriter(filter,input,expected);
 	}
 	
-	@Test
-	public void testSkipEmptyTagsTP() throws Exception {
-		String input =    TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
-		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/SkipEmptyTagsEscaped.xml");
-		TransformerPool tp = XmlUtils.getSkipEmptyTagsTransformerPool(true, true);
-		XMLFilterImpl filter = tp.getTransformerFilter(null, null, null);
-		testXmlWriter(filter,input,expected);
-	}
-
 }
