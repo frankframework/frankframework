@@ -294,37 +294,6 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		assertResultsAreCorrect("b", result, session);
 	}
 
-//	@Test
-//	public void anyXmlBasic() throws Exception {
-//		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
-//		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
-//
-//		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
-//		//setIndent(true);
-//		pipe.configure();
-//		pipe.start();
-//
-//		PipeRunResult prr = doPipe(pipe, input, session);
-//		String result = prr.getResult().toString();
-//		
-//		TestAssertions.assertEqualsIgnoreWhitespaces(expected, result);
-//	}
-//
-//	@Test
-//	public void anyXmlIndent() throws Exception {
-//		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
-//		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/PrettyPrinted.xml");
-//
-//		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
-//		//setIndent(true);
-//		pipe.configure();
-//		pipe.start();
-//
-//		PipeRunResult prr = doPipe(pipe, input, session);
-//		String result = prr.getResult().toString();
-//		
-//		TestAssertions.assertEqualsIgnoreWhitespaces(expected, result);
-//	}
 	public void xpathNodeText() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = "Euro € single quote ' double quote \"";
