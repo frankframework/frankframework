@@ -394,6 +394,11 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 		paramList.add(p);
 	}
 
+	@Override
+	public ParameterList getParameterList() {
+		return paramList;
+	}
+
 	public void setThrowExceptions(boolean b) {
 		throwExceptions = b;
 	}
