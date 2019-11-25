@@ -65,6 +65,8 @@ public abstract class ValidatorTestBase extends TestCase {
 	public String SCHEMA_LOCATION_ARRAYS                            	="urn:arrays /Arrays/arrays.xsd";
 	public String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_COMPACT_JSON		="/Arrays/arrays-compact";
 	public String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_FULL_JSON			="/Arrays/arrays-full";
+	
+	private ClassLoader testClassLoader = this.getClass().getClassLoader();
 
     public void validate(String rootNamespace, String schemaLocation, String inputFile) throws Exception {
     	validate(rootNamespace,schemaLocation, false, inputFile, null);
@@ -188,14 +190,11 @@ public abstract class ValidatorTestBase extends TestCase {
 					if (split.length % 2 != 0) throw new ConfigurationException("The schema must exist from an even number of strings, but it is " + schemaLocation);
 					for (int i = 0; i < split.length; i += 2) {
 						XSD xsd = new XSD();
-						xsd.setClassLoader(this.getClass().getClassLoader());
-						xsd.setNamespace(split[i]);
-						xsd.setResource(split[i + 1]);
 						xsd.setAddNamespaceToSchema(addNamespaceToSchema);
 //						xsd.setImportedSchemaLocationsToIgnore(getImportedSchemaLocationsToIgnore());
 //						xsd.setUseBaseImportedSchemaLocationsToIgnore(isUseBaseImportedSchemaLocationsToIgnore());
 //						xsd.setImportedNamespacesToIgnore(getImportedNamespacesToIgnore());
-						xsd.init();
+						xsd.initNamespace(split[i], testClassLoader, split[i + 1]);
 						xsds.add(xsd);
 					}
 //				}

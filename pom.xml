@@ -187,7 +187,7 @@
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <version>1.9</version>
+        <version>1.13</version>
       </dependency>
       <dependency>
         <groupId>commons-net</groupId>
@@ -409,6 +409,7 @@
         <module>webapp</module>
         <module>test</module>
         <module>ladybug</module>
+<!--        <module>iaf-aspose</module> -->
       </modules>
     </profile>
     <profile>

@@ -28,7 +28,6 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.soap.SoapWrapper;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -104,10 +103,12 @@ public class BisJmsSender extends JmsSender {
 		}
 	}
 
-	public String extractMessageBody(String rawMessageText, Map context, SoapWrapper soapWrapper) throws DomBuilderException, TransformerException, IOException {
+	@Override
+	public String extractMessageBody(String rawMessageText, Map<String,Object> context, SoapWrapper soapWrapper) throws TransformerException, IOException {
 		return rawMessageText;
 	}
 
+	@Override
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		String messageHeader;
 		try {

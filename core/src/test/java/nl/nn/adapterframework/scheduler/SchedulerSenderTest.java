@@ -31,10 +31,11 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 public class SchedulerSenderTest extends SchedulerTestBase {
-	
+
 	private SchedulerSender schedulerSender;
 	private final String JOB_NAME = "senderName";
 
+	@Override
 	@Before
 	public void setUp() throws SchedulerException, ParseException {
 		super.setUp();

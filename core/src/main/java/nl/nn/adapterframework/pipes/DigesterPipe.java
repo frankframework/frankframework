@@ -52,7 +52,7 @@ public class DigesterPipe extends FixedForwardPipe {
 		super.configure();
 
 		try {
-     		 rulesURL = ClassUtils.getResourceURL(classLoader, digesterRulesFile);
+     		 rulesURL = ClassUtils.getResourceURL(getConfigurationClassLoader(), digesterRulesFile);
  			 DigesterLoader.createDigester(rulesURL); // load rules to check if they can be loaded when needed
 		} catch (Exception e) {
 			throw new ConfigurationException(getLogPrefix(null)+"Digester rules file ["+digesterRulesFile+"] not found", e);

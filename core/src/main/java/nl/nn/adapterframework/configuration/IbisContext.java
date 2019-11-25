@@ -22,16 +22,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.BeanCreationException;
 
-import nl.nn.adapterframework.configuration.classloaders.BasePathClassLoader;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.extensions.graphviz.GraphvizEngine;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.jdbc.migration.Migrator;
 import nl.nn.adapterframework.lifecycle.IbisApplicationContext;
@@ -63,7 +61,7 @@ public class IbisContext extends IbisApplicationContext {
 
 	private final static Logger secLog = LogUtil.getLogger("SEC");
 
-	private static final String INSTANCE_NAME = APP_CONSTANTS.getResolvedProperty("instance.name");
+	private final String INSTANCE_NAME = APP_CONSTANTS.getResolvedProperty("instance.name");
 	private static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
 	private static final long UPTIME = System.currentTimeMillis();
 
@@ -107,12 +105,8 @@ public class IbisContext extends IbisApplicationContext {
 
 	public void setDefaultApplicationServerType(String defaultApplicationServerType) {
 		if (defaultApplicationServerType.equals(getApplicationServerType())) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings
-					.getInstance();
-			String msg = "property ["
-					+ APPLICATION_SERVER_TYPE_PROPERTY
-					+ "] already has a default value ["
-					+ defaultApplicationServerType + "]";
+			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+			String msg = "property [" + APPLICATION_SERVER_TYPE_PROPERTY + "] already has a default value [" + defaultApplicationServerType + "]";
 			configWarnings.add(LOG, msg);
 		} else if (StringUtils.isEmpty(getApplicationServerType())) {
 			// Resolve application.server.type in ServerSpecifics*.properties, SideSpecifics*.properties and StageSpecifics*.properties filenames
@@ -123,19 +117,14 @@ public class IbisContext extends IbisApplicationContext {
 	}
 
 	public static String getApplicationServerType() {
-		return APP_CONSTANTS.getResolvedProperty(APPLICATION_SERVER_TYPE_PROPERTY);
+		return AppConstants.getInstance().getResolvedProperty(APPLICATION_SERVER_TYPE_PROPERTY);
 	}
 
 	/**
 	 * Creates the Spring context, and load the configuration. Optionally  with
 	 * a specific ClassLoader which might for example override the getResource
 	 * method to load configuration and related resources from a different
-	 * location from the standard classpath. In case basePath is not null the
-	 * ClassLoader is wrapped in {@link BasePathClassLoader} to make it possible
-	 * to reference resources in the configuration relative to the configuration
-	 * file and have an extra resource override (resource is first resolved
-	 * relative to the configuration, when not found it is resolved by the
-	 * original ClassLoader.
+	 * location from the standard classpath. 
 	 * 
 	 * @see ClassUtils#getResourceURL(ClassLoader, String)
 	 * @see AppConstants#getInstance(ClassLoader)
@@ -148,17 +137,13 @@ public class IbisContext extends IbisApplicationContext {
 	 * Creates the Spring context, and load the configuration. Optionally  with
 	 * a specific ClassLoader which might for example override the getResource
 	 * method to load configuration and related resources from a different
-	 * location from the standard classpath. In case basePath is not null the
-	 * ClassLoader is wrapped in {@link BasePathClassLoader} to make it possible
-	 * to reference resources in the configuration relative to the configuration
-	 * file and have an extra resource override (resource is first resolved
-	 * relative to the configuration, when not found it is resolved by the
-	 * original ClassLoader.
+	 * location from the standard classpath. 
 	 * 
 	 * @see ClassUtils#getResourceURL(ClassLoader, String)
 	 * @see AppConstants#getInstance(ClassLoader)
 	 *
 	 * @param reconnect retry startup when failures occur
+	 * @throws BeanCreationException when Spring can't start up
 	 */
 	public synchronized void init(boolean reconnect) {
 		try {
@@ -180,7 +165,7 @@ public class IbisContext extends IbisApplicationContext {
 
 			try {
 				flowDiagram = new FlowDiagram();
-			} catch (IllegalStateException e) {
+			} catch (Exception e) { //The IBIS should still start up when Graphviz fails to initialize
 				log(null, null, "failed to initalize GraphVizEngine", MessageKeeperMessage.ERROR_LEVEL, e, true);
 			}
 
@@ -191,12 +176,16 @@ public class IbisContext extends IbisApplicationContext {
 		}
 		catch (Exception e) {
 			//Catch all exceptions, the IBIS failed to startup...
-			LOG.error("Failed to initialize IbisContext, retrying in 1 minute!", e);
-
 			if(reconnect) {
+				LOG.error("Failed to initialize IbisContext, retrying in 1 minute!", e);
+
 				ibisContextReconnectThread = new Thread(new IbisContextRunnable(this));
 				ibisContextReconnectThread.setName("ibisContextReconnectThread");
 				ibisContextReconnectThread.start();
+			}
+			else {
+				LOG.error("Failed to initialize IbisContext", e);
+				throw e;
 			}
 		}
 	}
@@ -218,20 +207,34 @@ public class IbisContext extends IbisApplicationContext {
 		log("shutdown in " + (System.currentTimeMillis() - start) + " ms");
 	}
 
+	/**
+	 * Reloads the given configuration. First it checks if the resources can be found. 
+	 * It then replaces the old resources with the new resources. If all is successful 
+	 * it will unload the old configuration from the IbisManager, and load the new 
+	 * configuration.
+	 */
 	public synchronized void reload(String configurationName) {
-		unload(configurationName);
-		load(configurationName);
+		try {
+			classLoaderManager.reload(configurationName);
+			unload(configurationName);
+			load(configurationName);
+		} catch (ConfigurationException e) {
+			log(configurationName, null, "failed to reload", MessageKeeperMessage.ERROR_LEVEL, e);
+		}
 	}
 
+	/**
+	 * Be aware that the configuration may be unloaded but it's resources wont!
+	 * There is currently no way to cleanup old classloaders, these are kept in memory. 
+	 * Removing the classloader will cause a classloader-leak, leaving a small footprint behind in memory!
+	 */
 	public void unload(String configurationName) {
 		Configuration configuration = ibisManager.getConfiguration(configurationName);
 		if (configuration != null) {
 			long start = System.currentTimeMillis();
 			ibisManager.unload(configurationName);
 			if (configuration.getAdapterService().getAdapters().size() > 0) {
-				log("Not all adapters are unregistered: "
-						+ configuration.getAdapterService().getAdapters(),
-						MessageKeeperMessage.ERROR_LEVEL);
+				log("Not all adapters are unregistered: " + configuration.getAdapterService().getAdapters(), MessageKeeperMessage.ERROR_LEVEL);
 			}
 			// Improve configuration reload performance. Probably because
 			// garbage collection will be easier.
@@ -241,8 +244,7 @@ public class IbisContext extends IbisApplicationContext {
 			log(configurationName, configurationVersion, msg);
 			secLog.info("Configuration [" + configurationName + "] [" + configurationVersion+"] " + msg);
 		} else {
-			log("Configuration [" + configurationName + "] to unload not found",
-					MessageKeeperMessage.WARN_LEVEL);
+			log("Configuration [" + configurationName + "] to unload not found", MessageKeeperMessage.WARN_LEVEL);
 		}
 		JdbcUtil.resetJdbcProperties();
 	}
@@ -315,6 +317,7 @@ public class IbisContext extends IbisApplicationContext {
 			String classLoaderType = currentConfigNameItem.getValue();
 
 			if (configurationName == null || configurationName.equals(currentConfigurationName)) {
+				LOG.info("loading configuration ["+currentConfigurationName+"]");
 				configFound = true;
 
 				ConfigurationException customClassLoaderConfigurationException = null;
@@ -347,34 +350,14 @@ public class IbisContext extends IbisApplicationContext {
 		}
 	}
 
-	public String getConfigurationFile(String currentConfigurationName) {
-		String configurationFile = APP_CONSTANTS.getResolvedProperty(
-				"configurations." + currentConfigurationName + ".configurationFile");
-		if (configurationFile == null) {
-			configurationFile = "Configuration.xml";
-			if (!currentConfigurationName.equals(INSTANCE_NAME)) {
-				configurationFile = currentConfigurationName + "/" + configurationFile;
-			}
-		}
-		return configurationFile;
-	}
-
 	private void digestClassLoaderConfiguration(ClassLoader classLoader, 
 			ConfigurationDigester configurationDigester, 
 			String currentConfigurationName, 
 			ConfigurationException customClassLoaderConfigurationException) {
 
 		long start = System.currentTimeMillis();
-		try {
-			if(classLoader != null)
-				classLoaderManager.reload(classLoader);
-		} catch (ConfigurationException e) {
-			customClassLoaderConfigurationException = e;
-		}
+		String currentConfigurationVersion = ConfigurationUtils.getConfigurationVersion(classLoader);
 
-		String configurationFile = getConfigurationFile(currentConfigurationName);
-		String currentConfigurationVersion =
-				getConfigurationVersion(AppConstants.getInstance(classLoader));
 		Configuration configuration = null;
 		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 		if (classLoader != null) {
@@ -402,22 +385,15 @@ public class IbisContext extends IbisApplicationContext {
 					}
 				}
 
-				configurationDigester.digestConfiguration(classLoader, configuration, configurationFile);
+				configurationDigester.digestConfiguration(classLoader, configuration);
 				if (currentConfigurationVersion == null) {
 					currentConfigurationVersion = configuration.getVersion();
 				} else if (!currentConfigurationVersion.equals(configuration.getVersion())) {
-					log(currentConfigurationName, currentConfigurationVersion,
-							"configuration version doesn't match Configuration version attribute: "
-							+ configuration.getVersion(),
-							MessageKeeperMessage.WARN_LEVEL);
+					log(currentConfigurationName, currentConfigurationVersion, "configuration version doesn't match Configuration version attribute: " + configuration.getVersion(), MessageKeeperMessage.WARN_LEVEL);
 				}
 				if (!currentConfigurationName.equals(configuration.getName())) {
-					log(currentConfigurationName, currentConfigurationVersion,
-							"configuration name doesn't match Configuration name attribute: "
-							+ configuration.getName(),
-							MessageKeeperMessage.WARN_LEVEL);
-					messageKeepers.put(configuration.getName(),
-							messageKeepers.remove(currentConfigurationName));
+					log(currentConfigurationName, currentConfigurationVersion, "configuration name doesn't match Configuration name attribute: " + configuration.getName(), MessageKeeperMessage.WARN_LEVEL);
+					messageKeepers.put(configuration.getName(), messageKeepers.remove(currentConfigurationName));
 				}
 
 				String msg;
@@ -436,8 +412,7 @@ public class IbisContext extends IbisApplicationContext {
 			}
 		} catch (ConfigurationException e) {
 			configuration.setConfigurationException(e);
-			log(currentConfigurationName, currentConfigurationVersion, " exception",
-					MessageKeeperMessage.ERROR_LEVEL, e);
+			log(currentConfigurationName, currentConfigurationVersion, " exception", MessageKeeperMessage.ERROR_LEVEL, e);
 		} finally {
 			Thread.currentThread().setContextClassLoader(originalClassLoader);
 			ConfigurationWarnings.getInstance().setActiveConfiguration(null);
@@ -574,28 +549,13 @@ public class IbisContext extends IbisApplicationContext {
 	}
 
 	public String getApplicationVersion() {
-		return getVersion(APP_CONSTANTS, "instance.version", "instance.build_id");
+		return ConfigurationUtils.getVersion(null, "instance.version", "instance.build_id");
 	}
 
 	public String getFrameworkVersion() {
 		return APP_CONSTANTS.getProperty("application.version", null);
 	}
 
-	public String getConfigurationVersion(Properties properties) {
-		return getVersion(properties, "configuration.version", "configuration.timestamp");
-	}
-
-	public String getVersion(Properties properties, String versionKey, String timestampKey) {
-		String version = null;
-		if (StringUtils.isNotEmpty(properties.getProperty(versionKey))) {
-			version = properties.getProperty(versionKey);
-			if (StringUtils.isNotEmpty(properties.getProperty(timestampKey))) {
-				version = version + "_" + properties.getProperty(timestampKey);
-			}
-		}
-		return version;
-	}
-	
 	public Date getUptimeDate() {
 		return new Date(UPTIME);
 	}

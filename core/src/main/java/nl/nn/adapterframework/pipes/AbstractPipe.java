@@ -26,6 +26,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 import org.springframework.transaction.TransactionDefinition;
 
+import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
@@ -54,7 +55,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Base class for {@link IPipe Pipe}.
- * A Pipe represents an action to take in a {@link PipeLine Pipeline}. This class is ment to be extended
+ * A Pipe represents an action to take in a {@link PipeLine Pipeline}. This class is meant to be extended
  * for defining steps or actions to take to complete a request. <br/>
  * The contract is that a pipe is created (by the digester), {@link #setName(String)} is called and
  * other setters are called, and then {@link IPipe#configure()} is called, optionally
@@ -95,7 +96,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, EventThrowing {
 	protected Logger log = LogUtil.getLogger(this);
-	protected ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private String name;
 	private String getInputFromSessionKey=null;
@@ -408,6 +409,14 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	}
 
 	/**
+	 * This ClassLoader is set upon creation of the pipe, used to retrieve resources configured by the Ibis application.
+	 * @return returns the ClassLoader created by the {@link ClassLoaderManager ClassLoaderManager}.
+	 */
+	public ClassLoader getConfigurationClassLoader() {
+		return configurationClassLoader;
+	}
+
+	/**
 	 * Indicates the maximum number of treads ;that may call {@link #doPipe(Object, IPipeLineSession)} simultaneously in case
 	 *  A value of 0 indicates an unlimited number of threads.
 	 */
@@ -561,7 +570,25 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return namespaceAware;
 	}
 
-	@IbisDoc({"Defines transaction and isolation behaviour. Equal to <A href='http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494'>EJB transaction attribute</a>. Possible values are:<table border='1'><tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipe excecuted in Transaction</th></tr><tr><td colspan='1' rowspan='2'>Required</td>    <td>none</td><td>T2</td></tr><tr><td>T1</td>  <td>T1</td></tr><tr><td colspan='1' rowspan='2'>RequiresNew</td> <td>none</td><td>T2</td></tr> <tr><td>T1</td>  <td>T2</td></tr><tr><td colspan='1' rowspan='2'>Mandatory</td>   <td>none</td><td>error</td></tr><tr><td>T1</td>  <td>T1</td></tr><tr><td colspan='1' rowspan='2'>NotSupported</td><td>none</td><td>none</td></tr><tr><td>T1</td>  <td>none</td></tr><tr><td colspan='1' rowspan='2'>Supports</td><td>none</td><td>none</td></tr><tr><td>T1</td>  <td>T1</td></tr><tr><td colspan='1' rowspan='2'>Never</td><td>none</td><td>none</td></tr><tr><td>T1</td>  <td>error</td></tr></table>", "Supports"})
+	@IbisDoc({"Defines transaction and isolation behaviour."
+			+ "For developers: it is equal"
+	        + "to <A href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>." 
+	        + "Possible values are:"
+	        + "  <table border=\"1\">"
+	        + "    <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>"
+	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Required</td>    <td>none</td><td>T2</td></tr>"
+	        + "											      <tr><td>T1</td>  <td>T1</td></tr>"
+	        + "    <tr><td colspan=\"1\" rowspan=\"2\">RequiresNew</td> <td>none</td><td>T2</td></tr>"
+	        + "											      <tr><td>T1</td>  <td>T2</td></tr>"
+	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Mandatory</td>   <td>none</td><td>error</td></tr>"
+	        + "											      <tr><td>T1</td>  <td>T1</td></tr>"
+	        + "    <tr><td colspan=\"1\" rowspan=\"2\">NotSupported</td><td>none</td><td>none</td></tr>"
+	        + "											      <tr><td>T1</td>  <td>none</td></tr>"
+	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Supports</td>    <td>none</td><td>none</td></tr>"
+	        + " 										      <tr><td>T1</td>  <td>T1</td></tr>"
+	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Never</td>       <td>none</td><td>none</td></tr>"
+	        + "											      <tr><td>T1</td>  <td>error</td></tr>"
+	        + "  </table>", "Supports"})
 	public void setTransactionAttribute(String attribute) throws ConfigurationException {
 		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
 		if (transactionAttribute<0) {
@@ -573,6 +600,16 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return JtaUtil.getTransactionAttributeString(transactionAttribute);
 	}
 
+    @IbisDoc({"Like <code>transactionAttribute</code>, but the chosen "
+    	    + "option is represented with a number. The numbers mean:"
+    	    + "<table>"
+    	    + "<tr><td>0</td><td>Required</td></tr>"
+    	    + "<tr><td>1</td><td>Supports</td></tr>"
+    	    + "<tr><td>2</td><td>Mandatory</td></tr>"
+    	    + "<tr><td>3</td><td>RequiresNew</td></tr>"
+    	    + "<tr><td>4</td><td>NotSupported</td></tr>"
+    	    + "<tr><td>5</td><td>Never</td><tr>"
+    	    + "</table>", "1"})
 	public void setTransactionAttributeNum(int i) {
 		transactionAttribute = i;
 	}

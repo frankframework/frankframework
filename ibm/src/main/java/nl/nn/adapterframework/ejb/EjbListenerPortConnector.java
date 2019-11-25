@@ -195,7 +195,7 @@ public class EjbListenerPortConnector implements IListenerConnector {
         
         if (name == null) {
             IReceiver receiver = listener.getReceiver();
-            name = configuration.getConfigurationName()
+            name = configuration.getName()
                     + '-' + receiver.getName() + LISTENER_PORTNAME_SUFFIX;
             name = name.replace(' ', '-').replaceAll("(:|\\(|\\)|\\\\|/|\\||<|>|&|\\^|%)", "");
         }

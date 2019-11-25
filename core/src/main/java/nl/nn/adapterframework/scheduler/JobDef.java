@@ -390,7 +390,7 @@ public class JobDef {
 	private TransactionDefinition txDef=null;
 	private PlatformTransactionManager txManager;
 
-	private String jobGroup = SchedulerHelper.DEFAULT_GROUP;
+	private String jobGroup = null;
 
 	private List<DirectoryCleaner> directoryCleaners = new ArrayList<DirectoryCleaner>();
 
@@ -409,6 +409,7 @@ public class JobDef {
 			this.typeField = typeField;
 		}
 
+		@Override
 		public boolean equals(Object o) {
 			MessageLogObject mlo = (MessageLogObject) o;
 			if (mlo.getJmsRealmName().equals(jmsRealmName) &&
@@ -434,18 +435,22 @@ public class JobDef {
 
 		public String getKeyField() {
 			return keyField;
-	}
-    
+		}
+
 		public String getTypeField() {
 			return typeField;
 		}
 	}
-    
+
+	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
 	}
 
 	public void configure(Configuration config) throws ConfigurationException {
+		if(StringUtils.isEmpty(getJobGroup())) //If not explicitly set, configure this JobDef under the config it's specified in
+			setJobGroup(config.getName());
+
 		MessageKeeper messageKeeper = getMessageKeeper();
 		statsKeeper = new StatisticsKeeper(getName());
 
@@ -1184,7 +1189,7 @@ public class JobDef {
 	public String getConfigurationName() {
 		return configurationName;
 	}
- 
+
 	@IbisDoc({"adapter on which job operates", ""})
 	public void setAdapterName(String adapterName) {
 		this.adapterName = adapterName;
@@ -1192,7 +1197,7 @@ public class JobDef {
 	public String getAdapterName() {
 		return adapterName;
 	}
-  
+
 	@IbisDoc({"receiver on which job operates. if function is 'sendmessage' is used this name is also used as name of javalistener", ""})
 	public void setReceiverName(String receiverName) {
 		this.receiverName = receiverName;
@@ -1234,6 +1239,28 @@ public class JobDef {
 		return locker;
 	}
 
+	@IbisDoc({"The transactionAttribute declares transactional behavior of job execution. It "
+			+ "applies both to database transactions and XA transactions. "
+	        + "In general, a transactionAttribute is used to start a new transaction or suspend the current one when required. "
+			+ "For developers: it is equal "
+	        + "to <A href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>. " 
+	        + "Possible values for transactionAttribute: "
+	        + "  <table border=\"1\">"
+	        + "    <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>"
+	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Required</td>    <td>none</td><td>T2</td></tr>"
+	        + "											      <tr><td>T1</td>  <td>T1</td></tr>"
+	        + "    <tr><td colspan=\"1\" rowspan=\"2\">RequiresNew</td> <td>none</td><td>T2</td></tr>"
+	        + "											      <tr><td>T1</td>  <td>T2</td></tr>"
+	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Mandatory</td>   <td>none</td><td>error</td></tr>"
+	        + "											      <tr><td>T1</td>  <td>T1</td></tr>"
+	        + "    <tr><td colspan=\"1\" rowspan=\"2\">NotSupported</td><td>none</td><td>none</td></tr>"
+	        + "											      <tr><td>T1</td>  <td>none</td></tr>"
+	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Supports</td>    <td>none</td><td>none</td></tr>"
+	        + " 										      <tr><td>T1</td>  <td>T1</td></tr>"
+	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Never</td>       <td>none</td><td>none</td></tr>"
+	        + "											      <tr><td>T1</td>  <td>error</td></tr>"
+	        + "  </table>", "Supports"})
+
 	public void setTransactionAttribute(String attribute) throws ConfigurationException {
 		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
 		if (transactionAttribute<0) {
@@ -1246,7 +1273,16 @@ public class JobDef {
 		return JtaUtil.getTransactionAttributeString(transactionAttribute);
 	}
 
-	@IbisDoc({"Defines transaction and isolation behaviour. Equal to <A href='http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494'>EJB transaction attribute</a>. Possible values are:<table border='1'><tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipe excecuted in Transaction</th></tr><tr><td colspan='1' rowspan='2'>Required</td>    <td>none</td><td>T2</td></tr><tr><td>T1</td>  <td>T1</td></tr><tr><td colspan='1' rowspan='2'>RequiresNew</td> <td>none</td><td>T2</td></tr> <tr><td>T1</td>  <td>T2</td></tr><tr><td colspan='1' rowspan='2'>Mandatory</td>   <td>none</td><td>error</td></tr><tr><td>T1</td>  <td>T1</td></tr><tr><td colspan='1' rowspan='2'>NotSupported</td><td>none</td><td>none</td></tr><tr><td>T1</td>  <td>none</td></tr><tr><td colspan='1' rowspan='2'>Supports</td><td>none</td><td>none</td></tr><tr><td>T1</td>  <td>T1</td></tr><tr><td colspan='1' rowspan='2'>Never</td><td>none</td><td>none</td></tr><tr><td>T1</td>  <td>error</td></tr></table>", "Supports"})
+    @IbisDoc({"Like <code>transactionAttribute</code>, but the chosen "
+    	    + "option is represented with a number. The numbers mean:"
+    	    + "<table>"
+    	    + "<tr><td>0</td><td>Required</td></tr>"
+    	    + "<tr><td>1</td><td>Supports</td></tr>"
+    	    + "<tr><td>2</td><td>Mandatory</td></tr>"
+    	    + "<tr><td>3</td><td>RequiresNew</td></tr>"
+    	    + "<tr><td>4</td><td>NotSupported</td></tr>"
+    	    + "<tr><td>5</td><td>Never</td><tr>"
+    	    + "</table>", "1"})
 	public void setTransactionAttributeNum(int i) {
 		transactionAttribute = i;
 	}

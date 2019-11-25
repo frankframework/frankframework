@@ -172,7 +172,7 @@
 											</a>
 										</td>
 									</tr>
-									<xsl:for-each select="../triggersForJob/triggerDetail">
+									<xsl:for-each select="../triggers/triggerDetail">
 									<tr>
 										<td></td>
 										<td colspan="3">

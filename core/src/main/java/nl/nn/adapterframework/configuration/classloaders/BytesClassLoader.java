@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2017 Nationale-Nederlanden
+   Copyright 2016-2017, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,47 +22,63 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
 public abstract class BytesClassLoader extends ClassLoaderBase {
-	public static String PROTOCOL = "bytesclassloader";
+
 	protected Logger log = LogUtil.getLogger(this);
-	protected Map<String, byte[]> resources = new HashMap<String, byte[]>();
+	private Map<String, byte[]> resources = new HashMap<String, byte[]>();
 
 	public BytesClassLoader(ClassLoader classLoader) {
 		super(classLoader);
 	}
 
 	@Override
-	public URL getResource(String name) {
-		return getResource(name, true);
+	public final void configure(IbisContext ibisContext, String configurationName) throws ConfigurationException {
+		super.configure(ibisContext, configurationName);
+		resources = loadResources();
 	}
 
-	public URL getResource(String name, boolean useParent) {
-		name = FilenameUtils.normalize(name, true);
+	@Override
+	public URL getLocalResource(String name) {
 		byte[] bytes = resources.get(name);
 		if (bytes != null) {
 			URLStreamHandler urlStreamHandler = new BytesURLStreamHandler(bytes);
 			try {
-				return new URL(null, PROTOCOL + ":" + name, urlStreamHandler);
+				return new URL(null, CLASSPATH_RESOURCE_SCHEME + name, urlStreamHandler);
 			} catch (MalformedURLException e) {
 				log.error("Could not create url", e);
 			}
 		}
-		if(useParent)
-			return super.getResource(name);
-		else
-			return null;
+
+		return null;
 	}
 
-	public void reload() throws ConfigurationException {
-		clearResources();
+	/**
+	 * Tries to load new resources, upon success, clears all resources, calls it's super.reload() and sets the new resources
+	 */
+	@Override
+	public final void reload() throws ConfigurationException {
+		Map<String, byte[]> newResources = loadResources();
+		if (newResources != null) {
+			clearResources();
+			super.reload();
+			resources = newResources;
+		}
 	}
 
-	public void clearResources() {
+	/**
+	 * Called during a reload for a green/blue deployment, and after the classloader has been configured to load new resources
+	 */
+	protected abstract Map<String, byte[]> loadResources() throws ConfigurationException;
+
+	/**
+	 * Clears all resources
+	 */
+	public final void clearResources() throws ConfigurationException {
 		log.debug("cleaned up classloader resources for configuration ["+getConfigurationName()+"]");
 		resources.clear();
 	}

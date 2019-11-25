@@ -26,14 +26,6 @@
 			<artifactId>ibis-adapterframework-webapp</artifactId>
 			<type>war</type>
 		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-larva</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-ladybug</artifactId>
-		</dependency>
 
 <!-- 	Only runs on Java7 or higher!
 		<dependency>

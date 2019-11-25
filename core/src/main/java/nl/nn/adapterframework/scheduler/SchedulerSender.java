@@ -43,6 +43,7 @@ public class SchedulerSender extends SenderWithParametersBase {
 	private String jobNamePattern;
 	private SchedulerHelper schedulerHelper;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(javaListener)) {
 			throw new ConfigurationException("Property [serviceName] is empty");
@@ -65,6 +66,7 @@ public class SchedulerSender extends SenderWithParametersBase {
 		super.configure();
 	}
 
+	@Override
 	public void open() throws SenderException {
 		super.open();
 		try {
@@ -74,10 +76,12 @@ public class SchedulerSender extends SenderWithParametersBase {
 		}
 	}
 
+	@Override
 	public boolean isSynchronous() {
 		return true;
 	}
 
+	@Override
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
 		try {
 			ParameterValueList values = prc.getValues(paramList);

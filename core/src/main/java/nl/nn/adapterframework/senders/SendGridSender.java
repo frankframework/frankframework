@@ -1,19 +1,34 @@
+/*
+   Copyright 2019 Integration Partners
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.activation.DataHandler;
-
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
-import org.apache.xerces.impl.dv.util.Base64;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import com.sendgrid.Attachments;
+import com.sendgrid.Attachments.Builder;
+import com.sendgrid.Client;
 import com.sendgrid.Content;
 import com.sendgrid.Email;
 import com.sendgrid.Mail;
@@ -25,6 +40,9 @@ import com.sendgrid.SendGrid;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.http.HttpSender;
+import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -37,19 +55,35 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class SendGridSender extends MailSenderBase {
 
 	private SendGrid sendGrid;
+	private HttpSenderBase httpclient;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getCredentialFactory().getPassword())) {
-			throw new ConfigurationException("Please provide apikey");
+			throw new ConfigurationException("Please provide an API key");
 		}
+		httpclient = new HttpSender();
+		httpclient.configure();
 	}
 
 	@Override
 	public void open() throws SenderException {
 		super.open();
-		sendGrid = new SendGrid(getCredentialFactory().getPassword());
+		httpclient.open();
+
+		CloseableHttpClient httpClient = httpclient.getHttpClient();
+		if(httpClient == null)
+			throw new SenderException("no HttpClient found, did it initialize properly?");
+
+		Client client = new Client(httpClient);
+		sendGrid = new SendGrid(getCredentialFactory().getPassword(), client);
+	}
+
+	@Override
+	public void close() throws SenderException {
+		super.close();
+		httpclient.close();
 	}
 
 	@Override
@@ -99,12 +133,9 @@ public class SendGridSender extends MailSenderBase {
 		String subject = mailSession.getSubject();
 		setSubject(mail, personalization, subject);
 
-		String message = mailSession.getMessage();
-		String messageType = mailSession.getMessageType();
-		String messageBase64 = mailSession.getMessageBase64();
-		setMessage(mail, message, messageType, messageBase64);
+		setMessage(mail, mailSession);
 
-		List<Attachment> attachmentList = mailSession.getAttachmentList();
+		List<MailAttachmentStream> attachmentList = mailSession.getAttachmentList();
 		setAttachments(mail, attachmentList);
 
 		Collection<Node> headers = mailSession.getHeaders();
@@ -139,33 +170,14 @@ public class SendGridSender extends MailSenderBase {
 	 * @throws SenderException 
 	 * @throws IOException 
 	 */
-	private void setAttachments(Mail mail, List<Attachment> attachmentList) throws SenderException, IOException {
+	private void setAttachments(Mail mail, List<MailAttachmentStream> attachmentList) throws SenderException, IOException {
 		if (attachmentList != null) {
-			Iterator<Attachment> iter = attachmentList.iterator();
+			Iterator<MailAttachmentStream> iter = attachmentList.iterator();
 			while (iter.hasNext()) {
-				Attachment attachmentElement = iter.next();
-				Attachments attachment = new Attachments();
-				if (attachmentElement.getAttachmentText() instanceof DataHandler) {
-					try {
-
-						attachmentElement.setAttachmentText(encodeFileToBase64Binary(
-								((DataHandler) attachmentElement.getAttachmentText()).getInputStream()));
-					} catch (MalformedURLException e) {
-						throw new SenderException("Exception occured while getting attachment. ", e);
-					}
-				} else {
-					byte[] aTextBytes;
-					String text = (String) attachmentElement.getAttachmentText();
-					if ("true".equalsIgnoreCase(text)) {
-						aTextBytes = decodeBase64ToBytes(text);
-					} else {
-						aTextBytes = text.getBytes();
-					}
-					attachmentElement.setAttachmentText(Base64.encode(aTextBytes));
-				}
-				attachment.setContent((String) attachmentElement.getAttachmentText());
-				attachment.setFilename(attachmentElement.getAttachmentName());
-				mail.addAttachments(attachment);
+				MailAttachmentStream mailAttachment = iter.next();
+				Builder sendGridAttachment = new Attachments.Builder(mailAttachment.getName(), mailAttachment.getContent());
+				sendGridAttachment.withType(mailAttachment.getMimeType());
+				mail.addAttachments(sendGridAttachment.build());
 			}
 		}
 	}
@@ -177,12 +189,15 @@ public class SendGridSender extends MailSenderBase {
 	 * @param messageBase64 
 	 * @param messageType 
 	 */
-	private void setMessage(Mail mail, String message, String messageType, String messageBase64) {
+	private void setMessage(Mail mail, MailSession mailSession) {
+		String message = mailSession.getMessage();
+		String messageType = mailSession.getMessageType();
+
 		String messageContent = null;
 		if (StringUtils.isNotEmpty(message)) {
 			Content content = new Content();
-			if ("true".equalsIgnoreCase(messageBase64)) {
-				messageContent = decodeBase64ToString(message);
+			if (mailSession.isMessageBase64()) {
+				messageContent = new String(Base64.decodeBase64(message));
 			} else {
 				messageContent = message;
 			}
@@ -265,5 +280,146 @@ public class SendGridSender extends MailSenderBase {
 			replyToEmail.setName(replyTo.getName());
 			mail.setReplyTo(replyToEmail);
 		}
+	}
+
+	//Properties inherited from HttpSenderBase
+
+	@Override
+	@IbisDoc({"10", "timeout in ms of obtaining a connection/result. 0 means no timeout", "10000"})
+	public void setTimeout(int i) {
+		super.setTimeout(i);
+		httpclient.setTimeout(i);
+	}
+
+	@IbisDoc({"11", "the maximum number of concurrent connections", "10"})
+	public void setMaxConnections(int i) {
+		httpclient.setMaxConnections(i);
+	}
+
+	@IbisDoc({"12", "the maximum number of times it the execution is retried", "1"})
+	public void setMaxExecuteRetries(int i) {
+		httpclient.setMaxExecuteRetries(i);
+	}
+
+
+	@IbisDoc({"20", "hostname of the proxy", ""})
+	public void setProxyHost(String string) {
+		httpclient.setProxyHost(string);
+	}
+
+	@IbisDoc({"21", "port of the proxy", "80"})
+	public void setProxyPort(int i) {
+		httpclient.setProxyPort(i);
+	}
+
+	@IbisDoc({"22", "alias used to obtain credentials for proxy authentication", ""})
+	public void setProxyAuthAlias(String string) {
+		httpclient.setProxyAuthAlias(string);
+	}
+
+	@IbisDoc({"23", "username used to obtain credentials for proxy authentication", ""})
+	public void setProxyUserName(String string) {
+		httpclient.setProxyUserName(string);
+	}
+
+	@IbisDoc({"24", "password used to obtain credentials for proxy authentication", ""})
+	public void setProxyPassword(String string) {
+		httpclient.setProxyPassword(string);
+	}
+
+	@IbisDoc({"35", "realm used for proxy authentication", ""})
+	public void setProxyRealm(String string) {
+		httpclient.setProxyRealm(string);
+	}
+
+
+
+
+
+	@IbisDoc({"40", "resource url to certificate to be used for authentication", ""})
+	public void setCertificate(String string) {
+		httpclient.setCertificate(string);
+	}
+
+	@IbisDoc({"41", "alias used to obtain truststore password", ""})
+	public void setTruststoreAuthAlias(String string) {
+		httpclient.setTruststoreAuthAlias(string);
+	}
+
+	@IbisDoc({"42", "certificate password", " "})
+	public void setCertificatePassword(String string) {
+		httpclient.setCertificatePassword(string);
+	}
+
+	@IbisDoc({"", "pkcs12"})
+	public void setKeystoreType(String string) {
+		httpclient.setKeystoreType(string);
+	}
+
+	@IbisDoc({"43", "", "pkcs12"})
+	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
+		httpclient.setKeyManagerAlgorithm(keyManagerAlgorithm);
+	}
+
+	@IbisDoc({"50", "resource url to truststore to be used for authentication", ""})
+	public void setTruststore(String string) {
+		httpclient.setTruststore(string);
+	}
+
+	@IbisDoc({"51", "alias used to obtain truststore password", ""})
+	public void setCertificateAuthAlias(String string) {
+		httpclient.setCertificateAuthAlias(string);
+	}
+
+	@IbisDoc({"52", "truststore password", " "})
+	public void setTruststorePassword(String string) {
+		httpclient.setTruststorePassword(string);
+	}
+
+	@IbisDoc({"53", "type of truststore", "jks"})
+	public void setTruststoreType(String string) {
+		httpclient.setTruststoreType(string);
+	}
+
+	@IbisDoc({"54", "", " "})
+	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
+		httpclient.setTrustManagerAlgorithm(trustManagerAlgorithm);
+	}
+
+	@IbisDoc({"55", "when true, the hostname in the certificate will be checked against the actual hostname", "true"})
+	public void setVerifyHostname(boolean b) {
+		httpclient.setVerifyHostname(b);
+	}
+
+	@IbisDoc({"56", "when true, self signed certificates are accepted", "false"})
+	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
+		httpclient.setAllowSelfSignedCertificates(allowSelfSignedCertificates);
+	}
+
+	@IbisDoc({"57", "when true, the certificateexpiredexception is ignored", "false"})
+	public void setIgnoreCertificateExpiredException(boolean b) {
+		httpclient.setIgnoreCertificateExpiredException(b);
+	}
+
+	
+	@IbisDoc({"61", "when true, a redirect request will be honoured, e.g. to switch to https", "true"})
+	public void setFollowRedirects(boolean b) {
+		httpclient.setFollowRedirects(b);
+	}
+
+	@IbisDoc({"62", "controls whether connections checked to be stale, i.e. appear open, but are not.", "true"})
+	public void setStaleChecking(boolean b) {
+		httpclient.setStaleChecking(b);
+	}
+	
+	@IbisDoc({"63", "Used when StaleChecking=true. Timeout when stale connections should be closed.", "5000"})
+	public void setStaleTimeout(int timeout) {
+		httpclient.setStaleTimeout(timeout);
+	}
+
+
+	@IbisDoc({"67", "Secure socket protocol (such as 'SSL' and 'TLS') to use when a SSLContext object is generated. If empty the protocol 'SSL' is used", "SSL"})
+	public void setProtocol(String protocol) {
+		httpclient.setProtocol(protocol);
 	}
 }

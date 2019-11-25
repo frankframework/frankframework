@@ -44,6 +44,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 	private int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
 	private String authenticationMethod = "header";
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
@@ -58,6 +59,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 		cache = ApiCacheManager.getInstance();
 	}
 
+	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		if (input==null) {
 			throw new PipeRunException(this, getLogPrefix(session)+"got null input");

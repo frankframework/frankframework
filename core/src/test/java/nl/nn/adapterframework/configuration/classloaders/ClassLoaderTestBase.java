@@ -22,8 +22,8 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.LinkedList;
 
-import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader.ReportLevel;
 import nl.nn.adapterframework.util.AppConstants;
@@ -35,6 +35,8 @@ import org.mockito.Mockito;
 
 public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito {
 
+	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
+
 	private ClassLoader C = null;
 	protected IbisContext ibisContext = spy(new IbisContext());
 	protected String scheme = "file";
@@ -44,16 +46,20 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 	abstract C createClassLoader(ClassLoader parent) throws Exception;
 
 	@Before
-	public void init() throws Exception {
+	public void setUp() throws Exception {
 		ClassLoader parent = new ClassLoaderMock();
 		appConstants = AppConstants.getInstance();
 		C = createClassLoader(parent);
 
+		if(C instanceof ClassLoaderBase) {
+			((ClassLoaderBase) C).setBasePath(".");
+		}
 		if(C instanceof IConfigurationClassLoader) {
 			appConstants.put("configurations."+getConfigurationName()+".classLoaderType", C.getClass().getSimpleName());
 			((IConfigurationClassLoader) C).configure(ibisContext, getConfigurationName());
 		}
 	}
+	
 
 	/**
 	 * Returns the scheme, defaults to <code>file</code>
@@ -122,32 +128,32 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 	/* getResource() */
 	@Test
 	public void testFile() {
-		resourceExists("file");
+		resourceExists("ClassLoaderTestFile");
 	}
 
 	@Test
 	public void testFileTxt() {
-		resourceExists("file.txt");
+		resourceExists("ClassLoaderTestFile.txt");
 	}
 
 	@Test
 	public void textFileXml() {
-		resourceExists("file.xml");
+		resourceExists("ClassLoaderTestFile.xml");
 	}
 
 	@Test
 	public void textFolderFile() {
-		resourceExists("folder/file");
+		resourceExists("ClassLoader/ClassLoaderTestFile");
 	}
 
 	@Test
 	public void textFolderFileTxt() {
-		resourceExists("folder/file.txt");
+		resourceExists("ClassLoader/ClassLoaderTestFile.txt");
 	}
 
 	@Test
 	public void textFolderFileXml() {
-		resourceExists("folder/file.xml");
+		resourceExists("ClassLoader/ClassLoaderTestFile.xml");
 	}
 
 	@Test
@@ -162,14 +168,12 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 
 	//Not only test through setters and getters but also properties
 	@Test
-	public void testClassLoaderManager() throws ConfigurationException {
-		ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
-		ClassLoader config = manager.get(getConfigurationName());
-		URL resource = config.getResource("file.xml");
+	public void testSchemeWithClassLoaderManager() throws ConfigurationException {
+		URL resource = C.getResource("ClassLoaderTestFile.xml");
 
-		assertNotNull("resource [file.xml] must be found", resource);
-		assertTrue("resource name must start with scheme ["+getScheme()+"]", resource.toString().startsWith(getScheme()));
-		assertTrue("resource name must end with [file.xml]", resource.toString().endsWith("file.xml"));
+		assertNotNull("resource ["+resource+"] must be found", resource);
+		assertTrue("resource ["+resource+"] must start with scheme ["+getScheme()+"]", resource.toString().startsWith(getScheme()));
+		assertTrue("resource ["+resource+"] must end with [ClassLoaderTestFile.xml]", resource.toString().endsWith("ClassLoaderTestFile.xml"));
 	}
 
 	// make sure default level is always error
@@ -200,5 +204,55 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 			c.setReportLevel("DEBUG");
 			assertTrue(c.getReportLevel().equals(ReportLevel.DEBUG));
 		}
+	}
+
+	@Test
+	public void configurationFileDefaultLocation() {
+		String configFile = ConfigurationUtils.getConfigurationFile(C, getConfigurationName());
+		assertEquals("Configuration.xml", configFile);
+		URL configURL = C.getResource(configFile);
+		assertNotNull("config file ["+configFile+"] cannot be found", configURL);
+		assertTrue(configURL.toString().endsWith(configFile));
+	}
+
+	@Test
+	public void configurationFileCustomLocation() {
+		String name = "Config/NonDefaultConfiguration.xml";
+		AppConstants.getInstance(C).put("configurations."+getConfigurationName()+".configurationFile", name);
+		String configFile = ConfigurationUtils.getConfigurationFile(C, getConfigurationName());
+		assertEquals(name, configFile);
+		URL configURL = C.getResource(configFile);
+		assertNotNull("config file ["+configFile+"] cannot be found", configURL);
+		assertTrue(configURL.toString().endsWith(configFile));
+	}
+
+	@Test
+	public void configurationFileCustomLocationAndBasePath() throws Exception {
+		String name = "Config/NonDefaultConfiguration.xml";
+
+		//Order is everything!
+		ClassLoader parent = new ClassLoaderMock();
+		appConstants = AppConstants.getInstance();
+		C = createClassLoader(parent);
+
+		if(C instanceof ClassLoaderBase) {
+			((ClassLoaderBase) C).setBasePath("Config");
+			
+			// We have to set both the name as well as the appconstants variable. 
+			String configKey = "configurations."+getConfigurationName()+".configurationFile";
+			AppConstants.getInstance(C).put(configKey, name);
+			((ClassLoaderBase) C).setConfigurationFile(name);
+		}
+		if(C instanceof IConfigurationClassLoader) {
+			appConstants.put("configurations."+getConfigurationName()+".classLoaderType", C.getClass().getSimpleName());
+			((IConfigurationClassLoader) C).configure(ibisContext, getConfigurationName());
+		}
+		//
+
+		String configFile = ConfigurationUtils.getConfigurationFile(C, getConfigurationName());
+		assertEquals(name, configFile);
+		URL configURL = C.getResource(configFile);
+		assertNotNull("config file ["+name+"] cannot be found", configURL);
+		assertTrue(configURL.toString().endsWith(configFile));
 	}
 }

@@ -1,5 +1,5 @@
 /*
-Copyright 2017 - 2019 Integration Partners B.V.
+Copyright 2017-2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,8 +15,10 @@ limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -40,16 +42,21 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 	private String method;
 	private List<String> methods = Arrays.asList("GET", "PUT", "POST", "DELETE");
 
-	private String authenticationMethod = null;
-	private List<String> authenticationMethods = Arrays.asList("COOKIE", "HEADER");
+	private AuthenticationMethods authenticationMethod = AuthenticationMethods.NONE;
+	private List<String> authenticationRoles = null;
 
-	private MediaType consumes = MediaType.ANY;
-	private MediaType produces = MediaType.ANY;
+	private MediaTypes consumes = MediaTypes.ANY;
+	private MediaTypes produces = MediaTypes.ANY;
 	private String multipartBodyName = null;
+
+	public enum AuthenticationMethods {
+		NONE, COOKIE, HEADER, AUTHROLE;
+	}
 
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
+	@Override
 	public void configure() throws ConfigurationException {
 		if(StringUtils.isEmpty(getUriPattern()))
 			throw new ConfigurationException("uriPattern cannot be empty");
@@ -63,8 +70,6 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		if(!methods.contains(getMethod()))
 			throw new ConfigurationException("Method ["+method+"] not yet implemented, supported methods are "+methods.toString()+"");
 
-		if(getAuthenticationMethod() != null && !authenticationMethods.contains(getAuthenticationMethod()))
-			throw new ConfigurationException("Unknown authenticationMethod ["+authenticationMethod+"]");
 	}
 
 	@Override
@@ -90,22 +95,15 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 			return result;
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		String destinationName = "uriPattern: "+getCleanPattern()+"; method: "+getMethod();
-		if(!MediaType.ANY.equals(consumes))
+		if(!MediaTypes.ANY.equals(consumes))
 			destinationName += "; consumes: "+getConsumes();
-		if(!MediaType.ANY.equals(produces))
+		if(!MediaTypes.ANY.equals(produces))
 			destinationName += "; produces: "+getProduces();
 
 		return destinationName;
-	}
-
-	@IbisDoc({"uri pattern to register this listener on", ""})
-	public void setUriPattern(String uriPattern) {
-		this.uriPattern = uriPattern;
-	}
-	public String getUriPattern() {
-		return uriPattern;
 	}
 
 	/**
@@ -126,24 +124,31 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		return pattern.replaceAll("\\{.*?}", "*");
 	}
 
-	public String getMethod() {
-		return method;
+	public boolean isConsumable(String contentType) {
+		return consumes.isConsumable(contentType);
 	}
-	@IbisDoc({"HTTP method eq. GET POST PUT DELETE", ""})
+
+	public String getContentType() {
+		return produces.getContentType();
+	}
+
+	@IbisDoc({"1", "HTTP method eq. GET POST PUT DELETE", ""})
 	public void setMethod(String method) {
 		this.method = method.toUpperCase();
 	}
-
-	//TODO add authenticationType
-
-	public void setAuthenticationMethod(String authenticationMethod) {
-		this.authenticationMethod = authenticationMethod.toUpperCase();
-	}
-	public String getAuthenticationMethod() {
-		return this.authenticationMethod;
+	public String getMethod() {
+		return method;
 	}
 
-	@IbisDoc({"the specified contentType on requests, if it doesn't match the request will fail", "ANY"})
+	@IbisDoc({"2", "uri pattern to register this listener on, eq. `/my-listener/{something}/here`", ""})
+	public void setUriPattern(String uriPattern) {
+		this.uriPattern = uriPattern;
+	}
+	public String getUriPattern() {
+		return uriPattern;
+	}
+
+	@IbisDoc({"3", "the specified contentType on requests, if it doesn't match the request will fail", "ANY"})
 	public void setConsumes(String value) {
 		String consumes = null;
 		if(StringUtils.isEmpty(value))
@@ -151,17 +156,13 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		else
 			consumes = value.toUpperCase();
 
-		this.consumes = MediaType.valueOf(consumes);
+		this.consumes = MediaTypes.valueOf(consumes);
 	}
 	public String getConsumes() {
 		return consumes.name();
 	}
 
-	public boolean isConsumable(String contentType) {
-		return consumes.isConsumable(contentType);
-	}
-
-	@IbisDoc({"the specified contentType on response", "ANY"})
+	@IbisDoc({"4", "the specified contentType on response", "ANY"})
 	public void setProduces(String value) {
 		String produces = null;
 		if(StringUtils.isEmpty(value))
@@ -169,16 +170,13 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		else
 			produces = value.toUpperCase();
 
-		this.produces = MediaType.valueOf(produces);
+		this.produces = MediaTypes.valueOf(produces);
 	}
 	public String getProduces() {
 		return produces.name();
 	}
 
-	public String getContentType() {
-		return produces.getContentType();
-	}
-
+	@IbisDoc({"5", "automatically generate and validate etags", "true"})
 	public void setUpdateEtag(boolean updateEtag) {
 		this.updateEtag = updateEtag;
 	}
@@ -186,13 +184,45 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		return updateEtag;
 	}
 
-	@Override
-	public String toString() {
-		return this.getClass().toString() + "uriPattern["+getUriPattern()+"] produces["+getProduces()+"] consumes["+getConsumes()+"] "
-				+ "contentType["+getContentType()+"] updateEtag["+getUpdateEtag()+"]";
+	//TODO add authenticationType
+
+	@IbisDoc({"6", "enables security for this listener, must be one of [NONE, COOKIE, HEADER, AUTHROLE]. If you wish to use the application servers authorisation roles [AUTHROLE], you need to enable them globally for all ApiListeners with the `servlet.ApiListenerServlet.securityroles=ibistester,ibiswebservice` property", "NONE"})
+	public void setAuthenticationMethod(String authenticationMethod) throws ConfigurationException {
+		try {
+			this.authenticationMethod = AuthenticationMethods.valueOf(authenticationMethod);
+		}
+		catch (IllegalArgumentException iae) {
+			throw new ConfigurationException("Unknown authenticationMethod ["+authenticationMethod+"]. Must be one of "+ Arrays.asList(AuthenticationMethods.values()));
+		}
 	}
 
-	@IbisDoc({"specify the form-part you wish to enter the pipeline", "first form-part"})
+	public AuthenticationMethods getAuthenticationMethod() {
+		if(authenticationMethod == null) {
+			authenticationMethod = AuthenticationMethods.NONE;
+		}
+
+		return this.authenticationMethod;
+	}
+
+	@IbisDoc({"6", "only active when AuthenticationMethod=AUTHROLE. comma separated list of authorization roles which are granted for this service, eq. ibistester,ibisobserver", ""})
+	public void setAuthenticationRoles(String authRoles) {
+		List<String> roles = new ArrayList<String>();
+		if (StringUtils.isNotEmpty(authRoles)) {
+			StringTokenizer st = new StringTokenizer(authRoles, ",;");
+			while (st.hasMoreTokens()) {
+				String authRole = st.nextToken();
+				if(!roles.contains(authRole))
+					roles.add(authRole);
+			}
+		}
+
+		this.authenticationRoles = roles;
+	}
+	public List<String> getAuthenticationRoles() {
+		return authenticationRoles;
+	}
+
+	@IbisDoc({"7", "specify the form-part you wish to enter the pipeline", "name of the first form-part"})
 	public void setMultipartBodyName(String multipartBodyName) {
 		this.multipartBodyName = multipartBodyName;
 	}
@@ -201,5 +231,11 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 			return multipartBodyName;
 
 		return null;
+	}
+
+	@Override
+	public String toString() {
+		return this.getClass().toString() + "uriPattern["+getUriPattern()+"] produces["+getProduces()+"] consumes["+getConsumes()+"] "
+				+ "contentType["+getContentType()+"] updateEtag["+getUpdateEtag()+"]";
 	}
 }

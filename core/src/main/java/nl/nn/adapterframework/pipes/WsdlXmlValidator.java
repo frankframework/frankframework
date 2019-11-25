@@ -89,7 +89,7 @@ public class WsdlXmlValidator extends SoapValidator {
 		WSDLReader reader  = FACTORY.newWSDLReader();
 		reader.setFeature("javax.wsdl.verbose", false);
 		reader.setFeature("javax.wsdl.importDocuments", true);
-		ClassLoaderWSDLLocator wsdlLocator = new ClassLoaderWSDLLocator(classLoader, wsdl);
+		ClassLoaderWSDLLocator wsdlLocator = new ClassLoaderWSDLLocator(getConfigurationClassLoader(), wsdl);
 		URL url = wsdlLocator.getUrl();
 		if (wsdlLocator.getUrl() == null) {
 			throw new ConfigurationException("Could not find WSDL: " + wsdl);
@@ -257,30 +257,19 @@ public class WsdlXmlValidator extends SoapValidator {
 		Set<XSD> xsds = new HashSet<XSD>();
 		if (getSoapVersion() == null || "1.1".equals(getSoapVersion()) || "any".equals(getSoapVersion())) {
 			XSD xsd = new XSD();
-			xsd.setClassLoader(classLoader);
-			xsd.setNamespace(SoapVersion.VERSION_1_1.namespace);
-			xsd.setResource(SoapVersion.VERSION_1_1.location);
-			xsd.init();
+			xsd.initNamespace(SoapVersion.VERSION_1_1.namespace, getConfigurationClassLoader(), SoapVersion.VERSION_1_1.location);
 			xsds.add(xsd);
 		}
 		if ("1.2".equals(getSoapVersion()) || "any".equals(getSoapVersion())) {
 			XSD xsd = new XSD();
-			xsd.setClassLoader(classLoader);
-			xsd.setNamespace(SoapVersion.VERSION_1_2.namespace);
-			xsd.setResource(SoapVersion.VERSION_1_2.location);
-			xsd.init();
+			xsd.initNamespace(SoapVersion.VERSION_1_2.namespace,getConfigurationClassLoader(), SoapVersion.VERSION_1_2.location);
 			xsds.add(xsd);
 		}
 		if (StringUtils.isNotEmpty(getSchemaLocationToAdd())) {
 			StringTokenizer st = new StringTokenizer(getSchemaLocationToAdd(), ", \t\r\n\f");
 			while (st.hasMoreTokens()) {
 				XSD xsd = new XSD();
-				xsd.setClassLoader(classLoader);
-				xsd.setNamespace(st.nextToken());
-				if (st.hasMoreTokens()) {
-					xsd.setResource(st.nextToken());
-				}
-				xsd.init();
+				xsd.initNamespace(st.nextToken(), getConfigurationClassLoader(), st.hasMoreTokens() ? st.nextToken():null);
 				xsds.add(xsd);
 			}
 		}
@@ -322,12 +311,10 @@ public class WsdlXmlValidator extends SoapValidator {
 		}
 		for (Schema schema : filteredSchemas) {
 			XSD xsd = new XSD();
-			xsd.setClassLoader(classLoader);
 			xsd.setWsdlSchema(definition, schema);
-			xsd.setResource(getWsdl());
 			if (StringUtils.isNotEmpty(schemaLocation)) {
 				xsd.setResourceInternalReference(filteredReferences.get(schema));
-				xsd.setNamespace(filteredNamespaces.get(schema));
+//				xsd.setNamespace(filteredNamespaces.get(schema));
 			} else {
 				xsd.setResourceInternalReference(RESOURCE_INTERNAL_REFERENCE_PREFIX + (filteredSchemas.indexOf(schema) + 1));
 			}
@@ -335,14 +322,14 @@ public class WsdlXmlValidator extends SoapValidator {
 			xsd.setImportedSchemaLocationsToIgnore(getImportedSchemaLocationsToIgnore());
 			xsd.setUseBaseImportedSchemaLocationsToIgnore(isUseBaseImportedSchemaLocationsToIgnore());
 			xsd.setImportedNamespacesToIgnore(getImportedNamespacesToIgnore());
-			xsd.init();
+			xsd.initNamespace(StringUtils.isNotEmpty(schemaLocation)?filteredNamespaces.get(schema):null,getConfigurationClassLoader(), getWsdl());
 			xsds.add(xsd);
 		}
 		return xsds;
 	}
 
 	public String toExtendedString() {
-		return "[" + classLoader + "][" + FilenameUtils.normalize(getWsdl()) + "][" + getSoapBody() + "][" + getOutputSoapBody() + "][" + getSoapBodyNamespace() + "]";
+		return "[" + getConfigurationClassLoader() + "][" + FilenameUtils.normalize(getWsdl()) + "][" + getSoapBody() + "][" + getOutputSoapBody() + "][" + getSoapBodyNamespace() + "]";
 	}
 	
 	@IbisDoc({"pairs of uri references which will be added to the wsdl", " "})

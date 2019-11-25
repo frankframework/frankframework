@@ -32,20 +32,20 @@ public class CounterSwitchPipeTest extends PipeTestBase<CounterSwitchPipe>{
     }
 
     @Test(expected = ConfigurationException.class)
-    public void testDivisorLessThanTwo() throws ConfigurationException {
+    public void testDivisorLessThanTwo() throws Exception {
         pipe.setDivisor(1);
         configurePipe();
         
     }
 
     @Test(expected = PipeRunException.class)
-    public void testLegitimateDivisor() throws ConfigurationException, PipeRunException {
+    public void testLegitimateDivisor() throws Exception {
         configurePipe();
         pipe.doPipe("dummy", session);
     }
 
     @Test(expected = ConfigurationException.class)
-    public void testNonExistingForward() throws ConfigurationException {
+    public void testNonExistingForward() throws Exception {
         pipe.setDivisor(3);
         configurePipe();
     }

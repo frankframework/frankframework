@@ -154,7 +154,7 @@ public class CreateRestViewPipe extends XsltPipe {
 			p.setSessionKey(SRCPREFIX);
 			addParameter(p);
 		}
-		appConstants = AppConstants.getInstance(classLoader);
+		appConstants = AppConstants.getInstance(getConfigurationClassLoader());
 		super.configure();
 	}
 

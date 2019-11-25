@@ -48,7 +48,7 @@ public class ApiException extends WebApplicationException implements Serializabl
 	}
 
 	public ApiException(String msg, Throwable t) {
-		this(msg, t, Status.INTERNAL_SERVER_ERROR);
+		this(msg +": "+ t.getMessage(), t, Status.INTERNAL_SERVER_ERROR);
 	}
 
 	public ApiException(Throwable t, int status) {

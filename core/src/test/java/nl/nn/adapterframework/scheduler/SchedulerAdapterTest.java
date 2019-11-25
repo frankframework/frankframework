@@ -23,7 +23,6 @@ import static org.mockito.Mockito.when;
 import java.text.ParseException;
 import java.util.LinkedList;
 
-
 import org.junit.Before;
 import org.junit.Test;
 import org.quartz.JobDataMap;
@@ -41,6 +40,7 @@ public class SchedulerAdapterTest extends SchedulerTestBase {
 
 	private SchedulerAdapter schedulerAdapter;
 
+	@Override
 	@Before
 	public void setUp() throws SchedulerException, ParseException {
 		super.setUp();
@@ -102,20 +102,10 @@ public class SchedulerAdapterTest extends SchedulerTestBase {
 	}
 
 	@Test
-	public void testGetTriggerGroupNamesWithTriggersToXml() throws SchedulerException, ParseException {
-		scheduleDummyTrigger("DummyJob", "DummyGroup A");
-		scheduleDummyTrigger("DummyJob", "DummyGroup B");
-
-		// TODO: Triggers aren't added to the XML's list of triggers (for reference, see SchedulerAdapter coverage)
-		String result = schedulerAdapter.getTriggerGroupNamesWithTriggersToXml(schedulerHelper.getScheduler()).toXML();
-		assertTrue(result.contains("DummyGroup A") && result.contains("DummyGroup B"));
-	}
-
-	@Test
 	public void testTriggerToXmlBuilderWithCronSchedule() throws SchedulerException, ParseException {
 		schedulerHelper.scheduleJob(createServiceJob("DummyJob", "DummyGroup"), "0 0 5 * * ?)");
 
-		assertTrue(schedulerAdapter.triggerToXmlBuilder(schedulerHelper.getScheduler(), "DummyJob", "DummyGroup")
-				.toXML().contains("cronExpression="));
+		String scheduleXml = schedulerAdapter.triggerToXmlBuilder(schedulerHelper.getTrigger("DummyJob", "DummyGroup")).toXML();
+		assertTrue(scheduleXml.contains("cronExpression="));
 	}
 }

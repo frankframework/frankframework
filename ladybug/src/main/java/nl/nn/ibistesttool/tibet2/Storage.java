@@ -57,7 +57,7 @@ import org.springframework.jdbc.core.RowMapper;
  * @author Jaco de Groot
  */
 public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudStorage {
-	private static final Logger log = LogUtil.getLogger(Storage.class); // Overwrites log of JdbcFacade
+	private static final Logger log = LogUtil.getLogger(Storage.class); // Overwrites log of JdbcFacade (using nl.nn.testtool.util.LogUtil instead of nl.nn.adapterframework.util.LogUtil)
 	private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 	private static final String DELETE_ADAPTER = "DeleteFromExceptionLog";
 	private String name;

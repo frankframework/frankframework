@@ -154,7 +154,7 @@ public final class ShowScheduler extends Base {
 				Map<String, Object> jobsInGroup = new HashMap<String, Object>();
 
 				String jobGroupName = jobGroupNames.get(i);
-				
+
 				Set<JobKey> jobKeys = scheduler.getJobKeys(GroupMatcher.jobGroupEquals(jobGroupName));
 
 				for (JobKey jobKey : jobKeys) {
@@ -169,7 +169,7 @@ public final class ShowScheduler extends Base {
 						}
 					}
 
-					JobDetail job = scheduler.getJobDetail(JobKey.jobKey(jobName, jobGroupName));
+					JobDetail job = scheduler.getJobDetail(jobKey);
 
 					jobData.put("fullName", job.getKey().getName() + "." + job.getKey().getGroup());
 					jobData.put("name", job.getKey().getName());
@@ -181,12 +181,10 @@ public final class ShowScheduler extends Base {
 					jobData.put("durable",job.isDurable());
 					jobData.put("jobClass", job.getJobClass().getName());
 
-					jobData.put("triggers", getJobTriggers(scheduler, jobName, jobGroupName));
+					jobData.put("triggers", getJobTriggers(scheduler.getTriggersOfJob(jobKey)));
 					jobData.put("messages", getJobMessages(jobDef));
 
 					JobDataMap jobMap = job.getJobDataMap();
-					jobData.put("containsTransientData", jobMap.containsTransientData());
-					jobData.put("allowsTransientData", jobMap.getAllowsTransientData());
 					jobData.put("properties", getJobData(jobMap));
 
 					jobsInGroup.put(jobName, jobData);
@@ -200,62 +198,53 @@ public final class ShowScheduler extends Base {
 		return jobGroups;
 	}
 
-	private List<Map<String, Object>> getJobTriggers(Scheduler scheduler, String jobName, String groupName) throws ApiException {
+	private List<Map<String, Object>> getJobTriggers(List<? extends Trigger> triggers) throws ApiException {
 		List<Map<String, Object>> jobTriggers = new ArrayList<Map<String, Object>>();
 
-		try {
-			List<String> triggerGroupNames = scheduler.getTriggerGroupNames();
-			
-			for (int i = 0; i < triggerGroupNames.size(); i++) {
-				String triggerGroupName = triggerGroupNames.get(i);
-				
-                Set<TriggerKey> triggerKeys = scheduler.getTriggerKeys(GroupMatcher.triggerGroupEquals(triggerGroupNames.get(i)));
-                
-				for (TriggerKey triggerKey : triggerKeys) {
-					Trigger trigger = scheduler.getTrigger(TriggerKey.triggerKey(triggerKey.getName(), triggerGroupName));
-					if ((trigger.getJobKey().getName().equals(jobName)) && (trigger.getJobKey().getGroup().equals(groupName))) {
-						Map<String, Object> triggerDetails = new HashMap<String, Object>();
+		for (Trigger trigger : triggers) {
+			Map<String, Object> triggerDetails = new HashMap<String, Object>();
 
-						triggerDetails.put("fullName", trigger.getKey().getGroup() + "." + trigger.getKey().getName());
-						triggerDetails.put("name", trigger.getKey().getName());
-						triggerDetails.put("calendarName", trigger.getCalendarName());
-						Date date;
-						try {
-							date = trigger.getEndTime();
-							triggerDetails.put("endTime", date.getTime());
-						} catch (Exception e) { log.debug(e); };
-						try {
-							date = trigger.getFinalFireTime();
-							triggerDetails.put("finalFireTime", date.getTime());
-						} catch (Exception e) { log.debug(e); };
-						try {
-							date = trigger.getNextFireTime();
-							triggerDetails.put("nextFireTime", date.getTime());
-						} catch (Exception e) { log.debug(e); };
-						try {
-							date = trigger.getStartTime();
-							triggerDetails.put("startTime", date.getTime());
-						} catch (Exception e) { log.debug(e); };
-						triggerDetails.put("misfireInstruction", trigger.getMisfireInstruction());
+			TriggerKey triggerKey = trigger.getKey();
+			triggerDetails.put("fullName", triggerKey.getGroup() + "." + triggerKey.getName());
+			triggerDetails.put("name", triggerKey.getName());
+			triggerDetails.put("calendarName", trigger.getCalendarName());
+			Date date;
 
-						if (trigger instanceof CronTrigger) {
-							triggerDetails.put("triggerType", "cron");
-							triggerDetails.put("cronExpression", ((CronTrigger) trigger).getCronExpression());
-						} else if (trigger instanceof SimpleTrigger) {
-							triggerDetails.put("triggerType", "simple");
-							triggerDetails.put("repeatInterval", ((SimpleTrigger) trigger).getRepeatInterval());
-						} else {
-							triggerDetails.put("triggerType", "unknown");
-						}
+			try {
+				date = trigger.getEndTime();
+				triggerDetails.put("endTime", date.getTime());
+			} catch (Exception e) { log.debug(e); };
+			try {
+				date = trigger.getFinalFireTime();
+				triggerDetails.put("finalFireTime", date.getTime());
+			} catch (Exception e) { log.debug(e); };
+			try {
+				date = trigger.getNextFireTime();
+				triggerDetails.put("nextFireTime", date.getTime());
+			} catch (Exception e) { log.debug(e); };
+			try {
+				date = trigger.getPreviousFireTime();
+				triggerDetails.put("previousFireTime", date.getTime());
+			} catch (Exception e) { log.debug(e); };
+			try {
+				date = trigger.getStartTime();
+				triggerDetails.put("startTime", date.getTime());
+			} catch (Exception e) { log.debug(e); };
+			triggerDetails.put("misfireInstruction", trigger.getMisfireInstruction());
 
-						jobTriggers.add(triggerDetails);
-					}
-				}
+			if (trigger instanceof CronTrigger) {
+				triggerDetails.put("triggerType", "cron");
+				triggerDetails.put("cronExpression", ((CronTrigger) trigger).getCronExpression());
+			} else if (trigger instanceof SimpleTrigger) {
+				triggerDetails.put("triggerType", "simple");
+				triggerDetails.put("repeatInterval", ((SimpleTrigger) trigger).getRepeatInterval());
+			} else {
+				triggerDetails.put("triggerType", "unknown");
 			}
+
+			jobTriggers.add(triggerDetails);
 		}
-		catch(Exception e) {
-			throw new ApiException("Failed to get JobTriggers", e);
-		}
+
 		return jobTriggers;
 	}
 
