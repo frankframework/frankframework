@@ -190,7 +190,9 @@ public class LadybugPipe extends FixedForwardPipe {
 		this.checkRoles = checkRoles;
 	}
 	
-	public void setExclusiveReportGenEnabled(boolean enabled) {
+	@IbisDoc({"Set to <code>true</code> to enable Ladybug's report generator for the duration of the scheduled report runs, "
+			+ "then revert it to its original setting", "false"})
+	public void setReportGeneratorEnabled(boolean enabled) {
 		exclusiveReportGenEnabled = enabled;
 	}
 
