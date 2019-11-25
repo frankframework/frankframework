@@ -17,6 +17,8 @@ package nl.nn.adapterframework.util;
 
 import java.util.Date;
 
+import org.apache.log4j.Logger;
+
 /**
  * Keeps a list of <code>MessageKeeperMessage</code>s.
  * <br/>
@@ -24,6 +26,7 @@ import java.util.Date;
  * @see MessageKeeperMessage
  */
 public class MessageKeeper extends SizeLimitedVector {
+	protected Logger log = LogUtil.getLogger(this);
 
 	public MessageKeeper() {
 		super();
@@ -51,5 +54,14 @@ public class MessageKeeper extends SizeLimitedVector {
 	 */
 	public MessageKeeperMessage getMessage(int i) {
 		return (MessageKeeperMessage)super.get(i);
+	}
+
+	public void add(String message, Throwable t) {
+		String msgToLog = message;
+		if(t.getMessage() != null) {
+			msgToLog += ": "+t.getMessage();
+		}
+		add(msgToLog);
+		log.error(msgToLog, t);
 	}
 }

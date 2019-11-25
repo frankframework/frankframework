@@ -1055,32 +1055,87 @@ angular.module('iaf.beheerconsole')
 	});
 }])
 
-.controller('SchedulerCtrl', ['$scope', 'Api', function($scope, Api) {
+.controller('SchedulerCtrl', ['$scope', 'Api', 'Poller',  function($scope, Api, Poller) {
 	$scope.jobs = {};
 	$scope.scheduler = {};
-	update();
 
-	function update() {
-		Api.Get("schedules", function(data) {
-			$.extend($scope, data);
-		});
-	};
+	Poller.add("schedules", function(data) {
+		$.extend($scope, data);
+	}, true, 5000);
 
 	$scope.start = function() {
-		Api.Put("schedules", {action: "start"}, update);
+		Api.Put("schedules", {action: "start"});
 	};
 
 	$scope.pause = function() {
-		Api.Put("schedules", {action: "pause"}, update);
+		Api.Put("schedules", {action: "pause"});
+	};
+
+	$scope.pause = function(jobGroup, jobName) {
+		Api.Put("schedules/"+jobGroup+"/job/"+jobName, {action: "pause"});
+	};
+
+	$scope.resume = function(jobGroup, jobName) {
+		Api.Put("schedules/"+jobGroup+"/job/"+jobName, {action: "resume"});
 	};
 
 	$scope.remove = function(jobGroup, jobName) {
-		Api.Delete("schedules/"+jobGroup+"/"+jobName, update);
+		Api.Delete("schedules/"+jobGroup+"/job/"+jobName);
 	};
 
 	$scope.trigger = function(jobGroup, jobName) {
-		Api.Put("schedules/"+jobGroup+"/"+jobName, null, update);
+		Api.Put("schedules/"+jobGroup+"/job/"+jobName, {action: "trigger"});
 	};
+}])
+
+.controller('AddScheduleCtrl', ['$scope', 'Api', 'Misc', function($scope, Api, Misc) {
+	$scope.state = [];
+	$scope.addAlert = function(type, message) {
+		$scope.state.push({type:type, message: message});
+	};
+
+	$scope.form = {
+			name:"",
+			adapter:"",
+			receiver:"",
+			cron:"",
+			message:"",
+			locker:false,
+			lockkey:"",
+			persistent:true,
+	};
+
+	$scope.submit = function() {
+		var fd = new FormData();
+		$scope.state = [];
+
+		fd.append("name", $scope.form.name);
+		fd.append("adapter", $scope.form.adapter);
+		fd.append("receiver", $scope.form.receiver);
+		fd.append("cron", $scope.form.cron);
+		fd.append("persistent", $scope.form.persistent);
+		fd.append("message", $scope.form.message);
+		fd.append("locker", $scope.form.locker);
+		fd.append("lockkey", $scope.form.lockkey);
+
+		Api.Post("schedules", fd, { 'Content-Type': undefined }, function(data) {
+			$scope.addAlert("success", "Successfully added schedule!");
+			$scope.form = {
+					name:"",
+					adapter:"",
+					receiver:"",
+					cron:"",
+					message:"",
+					locker:false,
+					lockkey:"",
+					persistent:true,
+			};
+		}, function(errorData, status, errorMsg) {
+			var error = (errorData) ? errorData.error : errorMsg;
+			$scope.addAlert("warning", error);
+		});
+	};
+
 }])
 
 .controller('LoggingCtrl', ['$scope', 'Api', 'Misc', '$timeout', '$state','$stateParams', function($scope, Api, Misc, $timeout, $state, $stateParams) {

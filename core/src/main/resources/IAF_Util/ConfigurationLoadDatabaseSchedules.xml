@@ -1,0 +1,10 @@
+<module>
+	<scheduler>
+		<job
+			name="LoadDatabaseSchedules" 
+			interval="${loadDatabaseSchedules.interval}"
+			description="(Re)load cron jobs from database"
+			function="loadDatabaseSchedules"
+			active="${loadDatabaseSchedules.active}" />
+	</scheduler>
+</module>

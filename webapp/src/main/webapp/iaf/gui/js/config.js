@@ -236,6 +236,14 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 			breadcrumbs: 'Scheduler'
 		}
 	})
+	.state('pages.add_schedule', {
+		url: "/scheduler/new",
+		templateUrl: "views/AddSchedule.html",
+		data: {
+			pageTitle: 'Add Schedule',
+			breadcrumbs: 'Scheduler > Add Schedule'
+		}
+	})
 	.state('pages.environment_variables', {
 		url: "/environment-variables",
 		templateUrl: "views/ShowEnvironmentVariables.html",
