@@ -332,14 +332,18 @@ public class IbisContext extends IbisApplicationContext {
 
 				} catch (ConfigurationException e) {
 					customClassLoaderConfigurationException = e;
+					if(LOG.isDebugEnabled()) LOG.debug("configuration ["+currentConfigurationName+"] got exception creating/retrieving classloader type ["+classLoaderType+"] errorMessage ["+e.getMessage()+"]");
 				}
 
+				if(LOG.isDebugEnabled()) LOG.debug("configuration ["+currentConfigurationName+"] found classloader ["+classLoader+"]");
 				try {
 					loadingConfigs.add(currentConfigurationName);
 					digestClassLoaderConfiguration(classLoader, configurationDigester, currentConfigurationName, customClassLoaderConfigurationException);
 				} finally {
 					loadingConfigs.remove(currentConfigurationName);
 				}
+
+				LOG.info("configuration ["+currentConfigurationName+"] loaded successfully");
 			}
 		}
 
@@ -356,7 +360,10 @@ public class IbisContext extends IbisApplicationContext {
 			ConfigurationException customClassLoaderConfigurationException) {
 
 		long start = System.currentTimeMillis();
+		if(LOG.isDebugEnabled()) LOG.debug("creating new configuration ["+currentConfigurationName+"]");
+
 		String currentConfigurationVersion = ConfigurationUtils.getConfigurationVersion(classLoader);
+		if(LOG.isDebugEnabled()) LOG.debug("configuration ["+currentConfigurationName+"] found currentConfigurationVersion["+currentConfigurationVersion+"]");
 
 		Configuration configuration = null;
 		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
@@ -410,6 +417,8 @@ public class IbisContext extends IbisApplicationContext {
 			} else {
 				throw customClassLoaderConfigurationException;
 			}
+
+			LOG.info("configured configuration ["+currentConfigurationName+"] successfully");
 		} catch (ConfigurationException e) {
 			configuration.setConfigurationException(e);
 			log(currentConfigurationName, currentConfigurationVersion, " exception", MessageKeeperMessage.ERROR_LEVEL, e);
