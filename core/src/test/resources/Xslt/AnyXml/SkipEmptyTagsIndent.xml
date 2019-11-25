@@ -14,7 +14,7 @@
 	<f>
 		<f1>
 			<f2 xmlns="urn:test2">
-				<f3>
+				<f3><!-- comment in f3 in non empty branch -->
 					<f4>
 						<f5>f</f5>
 					</f4>
