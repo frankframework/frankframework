@@ -547,7 +547,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	 * 
 	 * This property is only used in EJB Deployment mode and has no effect otherwise. 
 	 * If it is not set in EJB Deployment Mode, then the listener port name is
-	 * constructed by the {@link nl.nn.adapterframework.ejb.EjbListenerPortConnector} from
+	 * constructed by the EjbListenerPortConnector from
 	 * the Listener name, Adapter name and the Receiver name.
 	 * 
 	 * @param listenerPort Name of the listener port, as configured in the application
@@ -561,7 +561,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	 * 
 	 * This property is only used in EJB Deployment mode and has no effect otherwise. 
 	 * If it is not set in EJB Deployment Mode, then the listener port name is
-	 * constructed by the {@link nl.nn.adapterframework.ejb.EjbListenerPortConnector} from
+	 * constructed by the EjbListenerPortConnector from
 	 * the Listener name, Adapter name and the Receiver name.
 	 * 
 	 * @return The name of the WebSphere Listener Port, as configured in the

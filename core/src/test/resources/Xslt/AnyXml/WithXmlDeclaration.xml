@@ -16,7 +16,7 @@
 	<d hallo="true">d</d>
 	<e>
 		<e1>
-			<e2>
+			<e2 xmlns="urn:test1">
 				<e3>
 					<e4>
 						<e5/>
@@ -27,7 +27,7 @@
 	</e>
 	<f>
 		<f1>
-			<f2>
+			<f2 xmlns="urn:test2">
 				<f3>
 					<f4>
 						<f5>f</f5>
