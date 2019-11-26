@@ -17,8 +17,8 @@
 	</adapter>
 
 	<scheduler>
-		<job name="Ladybug-CRON" adapterName="Ladybug" receiverName="Ladybug"
-			cronExpression="${ladybug.adapter.scheduler.CRON}" function="sendMessage"
+		<job name="Ladybug" adapterName="Ladybug" receiverName="Ladybug"
+			cronExpression="${ladybug.adapter.scheduler.cron}" function="sendMessage"
 			active="${ladybug.adapter.scheduler.active}" />
 	</scheduler>
 </module> 
