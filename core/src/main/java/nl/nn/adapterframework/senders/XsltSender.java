@@ -44,6 +44,7 @@ import nl.nn.adapterframework.stream.MessageOutputStreamCap;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingSenderBase;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -85,6 +86,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	private int transformerPoolMapSize = 100;
 
 	private ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
+	private boolean streamingXslt;
 
 
 	/**
@@ -95,6 +97,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		
+		streamingXslt = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("xslt.streaming.default", false);
 		dynamicTransformerPoolMap = Collections.synchronizedMap(new LRUMap(transformerPoolMapSize));
 		
 		if(StringUtils.isNotEmpty(getXpathExpression()) && getOutputType()==null) {
@@ -245,7 +248,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			}
 			
 
-			TransformerFilter mainFilter = poolToUse.getTransformerFilter(this, threadLifeCycleEventListener, correlationID);
+			TransformerFilter mainFilter = poolToUse.getTransformerFilter(this, threadLifeCycleEventListener, correlationID, streamingXslt);
 			XmlUtils.setTransformerParameters(mainFilter.getTransformer(),parametervalues);
 			mainFilter.setContentHandler(handler);
 			handler=mainFilter;

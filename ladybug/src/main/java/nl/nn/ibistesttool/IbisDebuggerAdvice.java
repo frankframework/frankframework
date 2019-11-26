@@ -24,6 +24,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IExtendedPipe;
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
@@ -51,6 +52,8 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object> 
 	private IbisDebugger ibisDebugger;
 	
 	private AtomicInteger threadCounter = new AtomicInteger(0);
+	
+	private boolean debug=false; // set to true to debug handling of child threads
 	
 	public void setIbisDebugger(IbisDebugger ibisDebugger) {
 		this.ibisDebugger = ibisDebugger;
@@ -116,6 +119,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object> 
 
 	public Object debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, String correlationId, String message) throws Throwable {
 		ISender sender = (ISender)proceedingJoinPoint.getTarget();
+		if (debug) System.out.println("debugSenderInputOutputAbort thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] correlationId ["+correlationId+"]");
 		if (!sender.isSynchronous() && sender instanceof JmsSender) {
 			// Ignore JmsSenders within JmsListeners (calling JmsSender without
 			// ParameterResolutionContext) within Receivers.
@@ -128,6 +132,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object> 
 
 	 public Object debugSenderWithParametersInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, String correlationId, String message, ParameterResolutionContext prc) throws Throwable {
 		ISenderWithParameters sender = (ISenderWithParameters)proceedingJoinPoint.getTarget();
+		if (debug) System.out.println("debugSenderWithParametersInputOutputAbort thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] correlationId ["+correlationId+"]");
 		Object preservedObject = message;
 		Object result = debugSenderInputAbort(proceedingJoinPoint, sender, correlationId, message);
 		if (ibisDebugger.stubSender(sender, correlationId)) {
@@ -145,6 +150,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object> 
 	}
 
 	public Object debugStreamingSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, String correlationId, String message, ParameterResolutionContext parameterResolutionContext, MessageOutputStream target) throws Throwable {
+		if (debug) System.out.println("debugStreamingSenderInputOutputAbort thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] correlationId ["+correlationId+"]");
 		return debugSenderWithParametersInputOutputAbort(proceedingJoinPoint, correlationId, message, parameterResolutionContext);
 	}
 	 
@@ -193,6 +199,10 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object> 
 		threadInfo.owner = owner;
 		threadInfo.correlationId = correlationId;
 		threadInfo.threadId = Integer.toString(threadCounter.incrementAndGet());
+		if (debug) {
+			String nameClause=threadInfo.owner instanceof INamedObject?" name ["+((INamedObject)threadInfo.owner).getName()+"]":"";
+			System.out.println("announceChildThread thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] owner ["+threadInfo.owner.getClass().getSimpleName()+"]"+nameClause+" threadId ["+threadInfo.threadId+"] correlationId ["+threadInfo.correlationId+"]");
+		}
 		ibisDebugger.createThread(threadInfo.owner, threadInfo.threadId, threadInfo.correlationId);
 		return threadInfo;
 	}
@@ -200,18 +210,30 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object> 
 	@Override
 	public Object threadCreated(Object handle, Object request) {
 		ThreadDebugInfo ref = (ThreadDebugInfo)handle;
+		if (debug) {
+			String nameClause=ref.owner instanceof INamedObject?" name ["+((INamedObject)ref.owner).getName()+"]":"";
+			System.out.println("threadCreated thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] owner ["+ref.owner.getClass().getSimpleName()+"]"+nameClause+" threadId ["+ref.threadId+"] correlationId ["+ref.correlationId+"]");
+		}
 		return ibisDebugger.startThread(ref.owner, ref.threadId, ref.correlationId, request);
 	}
 
 	@Override
 	public Object threadEnded(Object handle, Object result) {
 		ThreadDebugInfo ref = (ThreadDebugInfo)handle;
+		if (debug) {
+			String nameClause=ref.owner instanceof INamedObject?" name ["+((INamedObject)ref.owner).getName()+"]":"";
+			System.out.println("threadEnded thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] owner ["+ref.owner.getClass().getSimpleName()+"]"+nameClause+" threadId ["+ref.threadId+"] correlationId ["+ref.correlationId+"]");
+		}
 		return ibisDebugger.endThread(ref.owner, ref.correlationId, result);
 	}
 
 	@Override
 	public Throwable threadAborted(Object handle, Throwable t) {
 		ThreadDebugInfo ref = (ThreadDebugInfo)handle;
+		if (debug) {
+			String nameClause=ref.owner instanceof INamedObject?" name ["+((INamedObject)ref.owner).getName()+"]":"";
+			System.out.println("threadAborted thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] owner ["+ref.owner.getClass().getSimpleName()+"]"+nameClause+" threadId ["+ref.threadId+"] correlationId ["+ref.correlationId+"]");
+		}
 		return ibisDebugger.abortThread(ref.owner, ref.correlationId, t);
 	}
 	
