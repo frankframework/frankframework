@@ -31,6 +31,7 @@ public class IbisJobBuilder {
 	
 			default:
 				job = new JobDetailImpl();
+				break;
 		}
 
 		job.setJobClass(jobClass);

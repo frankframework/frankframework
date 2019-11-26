@@ -84,8 +84,8 @@ import org.quartz.impl.matchers.GroupMatcher;
 
 @Path("/")
 public final class ShowScheduler extends Base {
-	@Context ServletConfig servletConfig;
-	@Context SecurityContext securityContext;
+	private @Context ServletConfig servletConfig;
+	private @Context SecurityContext securityContext;
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -391,13 +391,13 @@ public final class ShowScheduler extends Base {
 		}
 
 		try {
-			if(action.equals("pause")) {
+			if("pause".equals(action)) {
 				scheduler.pauseJob(jobKey);
 			}
-			else if(action.equals("resume")) {
+			else if("resume".equals(action)) {
 				scheduler.resumeJob(jobKey);
 			}
-			else if(action.equals("trigger")) {
+			else if("trigger".equals(action)) {
 				scheduler.triggerJob(jobKey);
 			}
 			else {
