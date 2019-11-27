@@ -97,6 +97,8 @@ public class LadybugPipe extends FixedForwardPipe {
 		ReportRunner reportRunner = new ReportRunner();
 		reportRunner.setTestTool(testTool);
 		reportRunner.setSecurityContext(new IbisSecurityContext(session, checkRoles));
+		
+		long startTime = System.currentTimeMillis();
 		boolean reportGeneratorEnabledOldValue = testTool.getReportGeneratorEnabled();
 		if(enableReportGenerator) {
 			testTool.setReportGeneratorEnabled(true);
@@ -105,6 +107,7 @@ public class LadybugPipe extends FixedForwardPipe {
 		if(enableReportGenerator) {
 			testTool.setReportGeneratorEnabled(reportGeneratorEnabledOldValue);
 		}
+		long endTime = System.currentTimeMillis();
 		
 		for (Report report : reports) {
 			RunResult runResult = reportRunner.getResults().get(report.getStorageId());
@@ -163,7 +166,18 @@ public class LadybugPipe extends FixedForwardPipe {
 				}
 			}
 		}
-		PipeForward forward = (errorCount == 0 && notEqualCount == 0) ? getForward() : failureForward;
+		
+		int failureCount = errorCount + notEqualCount;
+		if (writeToLog || writeToSystemOut) {
+			String message;
+			message = "Total=\"" + reports.size() + "\", "
+					+ "Passed=\"" + (reports.size() - failureCount) + "\", "
+					+ "Failed=\"" + failureCount + "\", "
+					+ "Duration=\"" + (endTime - startTime) + "\", "
+					+ "Equal=\"" + (failureCount == 0) + "\"";
+			writeToLogOrSysOut(message);
+		}	
+		PipeForward forward = (failureCount == 0) ? getForward() : failureForward;
 		return new PipeRunResult(forward, results.toXML());
 	}
 
