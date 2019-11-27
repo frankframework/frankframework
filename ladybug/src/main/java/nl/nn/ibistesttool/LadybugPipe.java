@@ -151,18 +151,22 @@ public class LadybugPipe extends FixedForwardPipe {
 								+ "OriginalDuration=\"" + originalDuration + "\", "
 								+ "Duration=\"" + duration + "\", "
 								+ "Equal=\"" + equal + "\"";
-						if (writeToLog) {
-							log.info(message);
-						}
-						if (writeToSystemOut) {
-							System.out.println(message);
-						}
+						writeToLogOrSysOut(message);
 					}
 				}
 			}
 		}
 		PipeForward forward = (errorCount == 0 && notEqualCount == 0) ? getForward() : failureForward;
 		return new PipeRunResult(forward, results.toXML());
+	}
+
+	private void writeToLogOrSysOut(String message) {
+		if (writeToLog) {
+			log.info(message);
+		}
+		if (writeToSystemOut) {
+			System.out.println(message);
+		}
 	}
 
 	private void addExceptionElement(XmlBuilder results, Exception e) {
