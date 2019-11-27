@@ -139,6 +139,7 @@ public class LadybugPipe extends FixedForwardPipe {
 					results.addSubElement(result);
 					result.addSubElement("Path", report.getPath());
 					result.addSubElement("Name", report.getName());
+					result.addSubElement("Description", report.getDescription());
 					result.addSubElement("OriginalDuration", "" + originalDuration);
 					result.addSubElement("Duration", "" + duration);
 					result.addSubElement("Equal", "" + equal);
@@ -146,6 +147,7 @@ public class LadybugPipe extends FixedForwardPipe {
 						String message;
 						message = "Path=\"" + report.getPath() + "\", "
 								+ "Name=\"" + report.getName() + "\", "
+								+ "Description=\"" + report.getDescription() + "\", "
 								+ "OriginalDuration=\"" + originalDuration + "\", "
 								+ "Duration=\"" + duration + "\", "
 								+ "Equal=\"" + equal + "\"";
