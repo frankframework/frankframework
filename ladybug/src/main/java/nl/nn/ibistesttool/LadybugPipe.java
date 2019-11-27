@@ -122,6 +122,13 @@ public class LadybugPipe extends FixedForwardPipe {
 				if (runResultReport == null) {
 					errorCount++;
 					results.addSubElement("Error", "Result report not found. Report generator not enabled?");
+
+					if (writeToLog || writeToSystemOut) {
+						String message;
+						message = "Error=\"Result report not found. Report generator not enabled?\", "
+								+ "Equal=\"" + false + "\"";
+						writeToLogOrSysOut(message);
+					}
 				} else {
 					long originalDuration = report.getEndTime() - report.getStartTime();
 					long duration = runResultReport.getEndTime() - runResultReport.getStartTime();
