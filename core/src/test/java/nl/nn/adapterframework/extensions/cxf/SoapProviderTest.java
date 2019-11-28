@@ -15,11 +15,17 @@
 */
 package nl.nn.adapterframework.extensions.cxf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeThat;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Iterator;
+import java.util.Properties;
 
 import javax.activation.DataHandler;
 import javax.xml.soap.AttachmentPart;
@@ -30,13 +36,8 @@ import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.ws.WebServiceContext;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.XmlUtils;
-
 import org.apache.soap.util.mime.ByteArrayDataSource;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -44,11 +45,26 @@ import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.w3c.dom.Element;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlUtils;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SoapProviderTest {
 
+	@BeforeClass
+	public static void setUp() {
+        Properties prop = System.getProperties();
+        String vendor =prop.getProperty("java.vendor");
+        System.out.println ("JVM Vendor : " + vendor);
+        assumeThat(vendor, not(equalTo("IBM Corporation")));
+	}
+	
 	@Spy
 	WebServiceContext webServiceContext = new WebServiceContextStub();
 

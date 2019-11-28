@@ -399,7 +399,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = prr.getResult().toString();
 		
-		assertResultsAreCorrect(expected, result, session);
+		assertResultsAreCorrect(expected.trim(), result.trim(), session); // trim is necessary on IBM JDK
 	}
 
 	@Test
