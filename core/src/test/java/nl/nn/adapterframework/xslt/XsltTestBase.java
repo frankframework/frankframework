@@ -294,7 +294,6 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		assertResultsAreCorrect("b", result, session);
 	}
 
-<<<<<<< HEAD
 //	@Test
 //	public void anyXmlBasic() throws Exception {
 //		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
@@ -326,8 +325,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 //		
 //		TestAssertions.assertEqualsIgnoreWhitespaces(expected, result);
 //	}
-=======
->>>>>>> refs/heads/master
+
 	public void xpathNodeText() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = "Euro € single quote ' double quote \"";

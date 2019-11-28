@@ -3,10 +3,6 @@ package nl.nn.adapterframework.pipes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-<<<<<<< HEAD
-=======
-import org.junit.Ignore;
->>>>>>> refs/heads/master
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeForward;
@@ -62,10 +58,6 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	@Test
-<<<<<<< HEAD
-=======
-	@Ignore("Must fix namespace removal, also on parameters")
->>>>>>> refs/heads/master
 	public void xPathFromParameter() throws Exception {
 		pipe.registerForward(new PipeForward("1","Path1"));
 		pipe.registerForward(new PipeForward("2","Path2"));
@@ -75,12 +67,28 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		inputParameter.setName("source");
 		inputParameter.setValue(input);
 		inputParameter.setType("domdoc");
-<<<<<<< HEAD
-=======
 		inputParameter.setRemoveNamespaces(true);
->>>>>>> refs/heads/master
 		pipe.addParameter(inputParameter);
+		pipe.setXsltVersion(1);
 		pipe.setXpathExpression("$source/Envelope/Body/SetRequest/CaseData/CASE_ID");
+		pipe.setNamespaceAware(false);
+		testSwitch("<dummy name=\"input\"/>","2");
+	}
+
+	@Test
+	public void xPathFromParameterWildCardNamespaced() throws Exception {
+		pipe.registerForward(new PipeForward("1","Path1"));
+		pipe.registerForward(new PipeForward("2","Path2"));
+
+		String input=TestFileUtils.getTestFile("/XmlSwitch/in.xml");
+		Parameter inputParameter = new Parameter();
+		inputParameter.setName("source");
+		inputParameter.setValue(input);
+		inputParameter.setType("domdoc");
+		inputParameter.setRemoveNamespaces(true);
+		pipe.addParameter(inputParameter);
+		pipe.setXsltVersion(1);
+		pipe.setXpathExpression("$source/*:Envelope/*:Body/*:SetRequest/*:CaseData/*:CASE_ID");
 		pipe.setNamespaceAware(false);
 		testSwitch("<dummy name=\"input\"/>","2");
 	}
