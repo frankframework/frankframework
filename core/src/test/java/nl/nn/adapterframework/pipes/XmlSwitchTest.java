@@ -68,6 +68,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		inputParameter.setValue(input);
 		inputParameter.setType("domdoc");
 		inputParameter.setRemoveNamespaces(true);
+		
 		pipe.addParameter(inputParameter);
 		pipe.setXsltVersion(1);
 		pipe.setXpathExpression("$source/Envelope/Body/SetRequest/CaseData/CASE_ID");
@@ -85,7 +86,6 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		inputParameter.setName("source");
 		inputParameter.setValue(input);
 		inputParameter.setType("domdoc");
-		inputParameter.setRemoveNamespaces(true);
 		pipe.addParameter(inputParameter);
 		pipe.setXsltVersion(1);
 		pipe.setXpathExpression("$source/*:Envelope/*:Body/*:SetRequest/*:CaseData/*:CASE_ID");

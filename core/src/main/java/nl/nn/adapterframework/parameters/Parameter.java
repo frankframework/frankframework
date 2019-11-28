@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
@@ -159,32 +160,28 @@ public class Parameter implements INamedObject, IWithParameters {
 		return paramList;
 	}
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isNotEmpty(getSessionKey()) && 
-			    StringUtils.isNotEmpty(getSessionKeyXPath())) {
+		if (StringUtils.isNotEmpty(getSessionKey()) && StringUtils.isNotEmpty(getSessionKeyXPath())) {
 			throw new ConfigurationException("Parameter ["+getName()+"] cannot have both sessionKey and sessionKeyXPath specified");
 		}
-		if (StringUtils.isNotEmpty(getXpathExpression()) || 
-		    StringUtils.isNotEmpty(styleSheetName)) {
+		if (StringUtils.isNotEmpty(getXpathExpression()) || StringUtils.isNotEmpty(styleSheetName)) {
 			if (paramList!=null) {
 				paramList.configure();
 			}
-			String outputType=TYPE_XML.equalsIgnoreCase(getType()) ||
-							  TYPE_NODE.equalsIgnoreCase(getType()) || 
-							  TYPE_DOMDOC.equalsIgnoreCase(getType())?"xml":"text";
+			String outputType=TYPE_XML.equalsIgnoreCase(getType()) || TYPE_NODE.equalsIgnoreCase(getType()) || TYPE_DOMDOC.equalsIgnoreCase(getType())?"xml":"text";
 			boolean includeXmlDeclaration=false;
 			
 			transformerPool=TransformerPool.configureTransformer0("Parameter ["+getName()+"] ",classLoader,getNamespaceDefs(),getXpathExpression(), styleSheetName,outputType,includeXmlDeclaration,paramList,getXsltVersion());
-	    } else {
+		} else {
 			if (paramList!=null && StringUtils.isEmpty(getXpathExpression())) {
 				throw new ConfigurationException("Parameter ["+getName()+"] can only have parameters itself if a styleSheetName or xpathExpression is specified");
 			}
-	    }
+		}
 		if (isRemoveNamespaces()) {
 			transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(true,false);
 		}
 		if (StringUtils.isNotEmpty(getSessionKeyXPath())) {
 			transformerPoolSessionKey = TransformerPool.configureTransformer("SessionKey for parameter ["+getName()+"] ", classLoader, getNamespaceDefs(), getSessionKeyXPath(), null,"text",false,null);
-	    }
+		}
 		if (TYPE_DATE.equals(getType()) && StringUtils.isEmpty(getFormatString())) {
 			setFormatString(TYPE_DATE_PATTERN);
 		}
@@ -233,6 +230,39 @@ public class Parameter implements INamedObject, IWithParameters {
 		}
 	}
 
+//	private Object transform(InputSource xmlSource, ParameterResolutionContext prc) throws ParameterException, TransformerException, IOException, SAXException {
+//		TransformerPool pool = getTransformerPool();
+//		Result transformResult;
+//		StringWriter writer=null;
+//		if (TYPE_NODE.equals(getType()) || TYPE_DOMDOC.equals(getType())) {
+//			transformResult = new DOMResult();
+//		} else {
+//			writer = new StringWriter();
+//			transformResult = new StreamResult(writer);
+//		}
+//		TransformerHandler transformerHandler = pool.getTransformerHandler();
+//		transformerHandler.setResult(transformResult);
+//		if (paramList!=null) {
+//			XmlUtils.setTransformerParameters(transformerHandler.getTransformer(),prc.getValueMap(paramList));
+//		}
+//		ContentHandler handler = transformerHandler;
+//		if (isRemoveNamespaces()) {
+//			NamespaceRemovingFilter filter = new NamespaceRemovingFilter();
+//			filter.setContentHandler(handler);
+//			handler = filter;
+//		}
+//		XmlUtils.parseXml(handler,xmlSource);
+//		if (TYPE_NODE.equals(getType()) || TYPE_DOMDOC.equals(getType())) {
+//			Node result=((DOMResult)transformResult).getNode();
+//			if (result!=null && TYPE_NODE.equals(getType())) {
+//				result=result.getFirstChild();
+//			}			
+//			if (log.isDebugEnabled()) { if (result!=null) log.debug("Returning Node result ["+result.getClass().getName()+"]["+result+"]: "+ ToStringBuilder.reflectionToString(result)); } 
+//			return result;
+//		}
+//		return writer.toString();
+//	}
+
 	private Object transform(Source xmlSource, ParameterResolutionContext prc) throws ParameterException, TransformerException, IOException {
 		TransformerPool pool = getTransformerPool();
 		if (TYPE_NODE.equals(getType()) || TYPE_DOMDOC.equals(getType())) {
@@ -277,12 +307,11 @@ public class Parameter implements INamedObject, IWithParameters {
 				Object transformResult=null;
 				Source source=null;
 				if (StringUtils.isNotEmpty(getValue())) {
-					source = XmlUtils.stringToSourceForSingleUse(getValue(), prc.isNamespaceAware());
+					source = XmlUtils.stringToSourceForSingleUse(getValue(), prc.isNamespaceAware()); 
 				} else if (StringUtils.isNotEmpty(retrievedSessionKey)) {
 					String sourceString;
 					Object sourceObject = prc.getSession().get(retrievedSessionKey);
-					if (TYPE_LIST.equals(getType())
-							&& sourceObject instanceof List) {
+					if (TYPE_LIST.equals(getType()) && sourceObject instanceof List) {
 						List<String> items = (List<String>) sourceObject;
 						XmlBuilder itemsXml = new XmlBuilder("items");
 						for (Iterator<String> it = items.iterator(); it.hasNext();) {
@@ -292,8 +321,7 @@ public class Parameter implements INamedObject, IWithParameters {
 							itemsXml.addSubElement(itemXml);
 						}
 						sourceString = itemsXml.toXML();
-					} else if (TYPE_MAP.equals(getType())
-								&& sourceObject instanceof Map) {
+					} else if (TYPE_MAP.equals(getType()) && sourceObject instanceof Map) {
 						Map<String, String> items = (Map<String, String>) sourceObject;
 						XmlBuilder itemsXml = new XmlBuilder("items");
 						for (Iterator<String> it = items.keySet().iterator(); it.hasNext();) {
@@ -386,17 +414,23 @@ public class Parameter implements INamedObject, IWithParameters {
 			}
 			if (TYPE_NODE.equals(getType())) {
 				try {
+					if (transformerPoolRemoveNamespaces != null) {
+						result = transformerPoolRemoveNamespaces.transform((String)result, null);
+					}
 					result=XmlUtils.buildNode((String)result,prc. isNamespaceAware());
 					if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
-				} catch (DomBuilderException e) {
+				} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
 					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to XML nodeset",e);
 				}
 			}
 			if (TYPE_DOMDOC.equals(getType())) {
 				try {
+					if (transformerPoolRemoveNamespaces != null) {
+						result = transformerPoolRemoveNamespaces.transform((String)result, null);
+					}
 					result=XmlUtils.buildDomDocument((String)result,prc.isNamespaceAware());
 					if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
-				} catch (DomBuilderException e) {
+				} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
 					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to XML document",e);
 				}
 			}
