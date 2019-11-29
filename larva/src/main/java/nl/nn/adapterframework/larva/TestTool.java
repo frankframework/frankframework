@@ -5,7 +5,6 @@ import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
-import org.custommonkey.xmlunit.XMLUnit;
 
 import javax.servlet.ServletContext;
 import java.io.*;
@@ -112,12 +111,6 @@ public class TestTool {
 				messageListener.errorMessage("General", "Could not get canonical path: " + e.getMessage(), e);
 			}
 			if (paramExecuteCanonicalPath.startsWith(scenariosRootDirectoryCanonicalPath)) {
-
-				messageListener.debugMessage("General", "Initialize XMLUnit");
-				XMLUnit.setIgnoreWhitespace(true);
-				messageListener.debugMessage("General", "Initialize 'scenario files' variable");
-				messageListener.debugMessage("General", "Param execute: " + paramExecute);
-
 				//Map<String, List<File>> scenarioFiles = TestPreparer.readScenarioFiles(appConstants, paramExecute,
 				//		(numberOfThreads > 1));
 
@@ -136,7 +129,7 @@ public class TestTool {
 					Map.Entry<String, List<File>> scenarioEntry = scenarioFilesIterator.next();
 					List<File> scenarioFileList = scenarioEntry.getValue();
 
-					ScenarioTester scenarioThread = new ScenarioTester(messageListener, scenarioFileList, currentScenariosRootDirectory,
+					ScenarioTester scenarioThread = new ScenarioTester(ibisContext, messageListener, scenarioFileList, currentScenariosRootDirectory,
 							appConstants, scenarioResults, waitBeforeCleanUp, scenariosTotal);
 					messageListener.debugMessage("General", "Added a new.");
 

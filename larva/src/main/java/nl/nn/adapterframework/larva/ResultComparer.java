@@ -8,6 +8,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.custommonkey.xmlunit.Diff;
+import org.custommonkey.xmlunit.XMLUnit;
 
 import java.io.*;
 import java.text.ParseException;
@@ -27,6 +28,8 @@ public class ResultComparer {
 
 	public ResultComparer(MessageListener messageListener) {
 		this.messageListener = messageListener;
+		if(!XMLUnit.getIgnoreWhitespace())
+			XMLUnit.setIgnoreWhitespace(true);
 	}
 
 	public int compareResult(String step, String stepDisplayName, String fileName, String expectedResult, String actualResult, Properties properties, String queueName, String originalFilePath, String testName) {
