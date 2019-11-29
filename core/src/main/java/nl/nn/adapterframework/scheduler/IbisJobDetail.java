@@ -27,7 +27,7 @@ public class IbisJobDetail extends JobDetailImpl {
 		CONFIGURATION, DATABASE
 	}
 
-	public boolean compareWith(DatabaseJobDef otherJobDef) {
+	public boolean compareWith(JobDef otherJobDef) {
 		JobDef thisJobDef = getJobDef();
 
 		//If the CRON expression is different in both jobs, it's not equal!

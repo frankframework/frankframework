@@ -56,12 +56,15 @@ public class MessageKeeper extends SizeLimitedVector {
 		return (MessageKeeperMessage)super.get(i);
 	}
 
+	/**
+	 * Add an error message to the {@link #MessageKeeper} and log it as a warning
+	 */
 	public void add(String message, Throwable t) {
 		String msgToLog = message;
 		if(t.getMessage() != null) {
 			msgToLog += ": "+t.getMessage();
 		}
 		add(msgToLog);
-		log.error(msgToLog, t);
+		log.warn(msgToLog, t);
 	}
 }

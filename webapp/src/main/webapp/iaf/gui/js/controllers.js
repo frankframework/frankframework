@@ -74,6 +74,7 @@ angular.module('iaf.beheerconsole')
 					if(appConstants["otap.stage"] == "LOC") {
 						Debug.setLevel(3);
 					}
+					$scope.databaseSchedulesEnabled = (appConstants["loadDatabaseSchedules.active"] === 'true');
 				}
 			});
 		}
@@ -1055,7 +1056,7 @@ angular.module('iaf.beheerconsole')
 	});
 }])
 
-.controller('SchedulerCtrl', ['$scope', 'Api', 'Poller',  function($scope, Api, Poller) {
+.controller('SchedulerCtrl', ['$scope', 'Api', 'Poller', function($scope, Api, Poller) {
 	$scope.jobs = {};
 	$scope.scheduler = {};
 

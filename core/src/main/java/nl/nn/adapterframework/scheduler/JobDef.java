@@ -791,9 +791,7 @@ public class JobDef {
 					}
 				}
 			} catch (Exception e) {
-				String msg = "error while executing query [" + selectQuery	+ "] (as part of scheduled job execution): " + e.getMessage();
-				getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
-				log.error(getLogPrefix() + msg);
+				getMessageKeeper().add("error while executing query [" + selectQuery	+ "] (as part of scheduled job execution)", e);
 			} finally {
 				qs.close();
 				JdbcUtil.fullClose(conn, rs);
@@ -809,15 +807,9 @@ public class JobDef {
 				// load new (activated) configs
 				List<String> dbConfigNames = null;
 				try {
-					dbConfigNames = ConfigurationUtils
-							.retrieveConfigNamesFromDatabase(
-									ibisManager.getIbisContext(), configJmsRealm);
+					dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), configJmsRealm);
 				} catch (ConfigurationException e) {
-					String msg = "error while retrieving configuration names from database: "
-							+ e.getMessage();
-					getMessageKeeper().add(msg,
-							MessageKeeperMessage.ERROR_LEVEL);
-					log.error(getLogPrefix() + msg);
+					getMessageKeeper().add("error while retrieving configuration names from database", e);
 				}
 				if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
 					for (String currentDbConfigurationName : dbConfigNames) {
