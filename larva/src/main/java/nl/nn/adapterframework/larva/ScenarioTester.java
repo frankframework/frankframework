@@ -1,9 +1,9 @@
 package nl.nn.adapterframework.larva;
 
 import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.larva.controller.*;
 import nl.nn.adapterframework.util.AppConstants;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.util.*;
@@ -23,6 +23,7 @@ public class ScenarioTester extends Thread {
 	private int scenariosTotal;
 	private int[] scenarioResults;
 	private MessageListener messageListener;
+	private boolean onCommandLine;
 
 	private FileController fileController;
 	private JdbcFixedQueryController jdbcFixedQueryController;
@@ -30,11 +31,15 @@ public class ScenarioTester extends Thread {
 	private ListenerController listenerController;
 	private SenderController senderController;
 	private WebServiceController webServiceController;
-	
-	@Autowired
-	static IbisContext ibisContext;
-	
-	public ScenarioTester(MessageListener messageListener, List<File> scenarioFile, String currentScenariosRootDirectory, AppConstants appConstants, int[] scenarioResults, int waitBeforeCleanUp, int scenariosTotal) {
+
+	IbisContext ibisContext;
+
+	public ScenarioTester(IbisContext ibisContext, MessageListener messageListener, List<File> scenarioFile, String currentScenariosRootDirectory, AppConstants appConstants, int[] scenarioResults, int waitBeforeCleanUp, int scenariosTotal) {
+		this(ibisContext, messageListener, scenarioFile, currentScenariosRootDirectory, appConstants, scenarioResults, waitBeforeCleanUp, scenariosTotal, false);
+	}
+
+	public ScenarioTester(IbisContext ibisContext, MessageListener messageListener, List<File> scenarioFile, String currentScenariosRootDirectory, AppConstants appConstants, int[] scenarioResults, int waitBeforeCleanUp, int scenariosTotal, boolean onCommandLine) {
+		this.ibisContext = ibisContext;
 		this.messageListener = messageListener;
 		this.scenarioFile = scenarioFile;
 		this.currentScenariosRootDirectory = currentScenariosRootDirectory;
@@ -42,6 +47,7 @@ public class ScenarioTester extends Thread {
 		this.waitBeforeCleanUp = waitBeforeCleanUp;
 		this.scenariosTotal = scenariosTotal;
 		this.scenarioResults = scenarioResults;
+		this.onCommandLine = onCommandLine;
 
 		fileController = new FileController(this);
 		jdbcFixedQueryController = new JdbcFixedQueryController(this);
@@ -49,6 +55,9 @@ public class ScenarioTester extends Thread {
 		listenerController = new ListenerController(this);
 		senderController = new SenderController(this);
 		webServiceController = new WebServiceController(this);
+		for(IAdapter adapter : ibisContext.getIbisManager().getRegisteredAdapters()) {
+			System.out.println(adapter.getName() + " : " + adapter.getRunState().toString());
+		}
 	}
 	
 	@Override
@@ -77,6 +86,15 @@ public class ScenarioTester extends Thread {
 		List<String> steps;
 
 		if (properties != null) {
+			try {
+				String passCommandLine = properties.getProperty("larva.cmd.pass", "false");
+				if(onCommandLine && Boolean.parseBoolean(passCommandLine)) {
+					messageListener.scenarioMessage(testName, "Passing the scenario [" + shortName + "]");
+					scenarioResults[TestTool.RESULT_OK]++;
+					return;
+				}
+			}catch (Exception e){
+			}
 			messageListener.testInitiationMessage(testName, longName, properties.getProperty("scenario.description"));
 
 			messageListener.debugMessage(testName, "Read steps from property file");
