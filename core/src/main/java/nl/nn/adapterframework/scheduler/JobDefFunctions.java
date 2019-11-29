@@ -55,11 +55,11 @@ public enum JobDefFunctions {
 		throw new IllegalArgumentException(v);
 	}
 
-	public boolean notEquals(JobDefFunctions... functions) {
-		return !equals(functions);
+	public boolean isNotEqualToAtLeastOneOf(JobDefFunctions... functions) {
+		return !isEqualToAtLeastOneOf(functions);
 	}
 
-	public boolean equals(JobDefFunctions... functions) {
+	public boolean isEqualToAtLeastOneOf(JobDefFunctions... functions) {
 		boolean equals = false;
 		for (JobDefFunctions func : functions) {
 			if(super.equals(func))
@@ -68,6 +68,9 @@ public enum JobDefFunctions {
 		return equals;
 	}
 
+	/**
+	 * Comma separated list of all ENUMs
+	 */
 	public static String getNames() {
 		String returnString = "[";
 		for(JobDefFunctions func : values()) {

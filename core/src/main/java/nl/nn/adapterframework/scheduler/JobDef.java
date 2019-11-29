@@ -371,6 +371,7 @@ public class JobDef {
 	private Locker locker=null;
 	private int numThreads = 1;
 	private int countThreads = 0;
+	private String message = null;
 
 	private MessageKeeper messageKeeper; //instantiated in configure()
 	private int messageKeeperSize = 10; //default length
@@ -463,7 +464,7 @@ public class JobDef {
 				String msg="Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] not registered.";
 				throw new ConfigurationException(msg);
 			}
-			if (function.equals(JobDefFunctions.STOP_RECEIVER) || function.equals(JobDefFunctions.START_RECEIVER)) {
+			if (function.isEqualToAtLeastOneOf(JobDefFunctions.STOP_RECEIVER, JobDefFunctions.START_RECEIVER)) {
 				if (StringUtils.isEmpty(getReceiverName())) {
 					throw new ConfigurationException("jobdef ["+getName()+"] for function ["+getFunction()+"] a receiverName must be specified");
 				}
@@ -975,7 +976,7 @@ System.out.println("delete DatabaseSchedule ["+key+"]");
 		}
 	}
 
-	protected void executeSendMessageJob(IbisManager ibisManager) {
+	private void executeSendMessageJob(IbisManager ibisManager) {
 		try {
 			// send job
 			IbisLocalSender localSender = new IbisLocalSender();
@@ -993,7 +994,9 @@ System.out.println("delete DatabaseSchedule ["+key+"]");
 			localSender.configure();
 			localSender.open();
 			try {
-				localSender.sendMessage(null, "");
+				//sendMessage message cannot be NULL
+				String message = (getMessage()==null) ? "" : getMessage();
+				localSender.sendMessage(null, message);
 			}
 			finally {
 				localSender.close();
@@ -1384,5 +1387,15 @@ System.out.println("delete DatabaseSchedule ["+key+"]");
 	
 	public void addDirectoryCleaner(DirectoryCleaner directoryCleaner) {
 		directoryCleaners.add(directoryCleaner);
+	}
+
+	@IbisDoc({"message to be send into the pipeline", ""})
+	public void setMessage(String message) {
+		if(StringUtils.isNotEmpty(message)) {
+			this.message = message;
+		}
+	}
+	public String getMessage() {
+		return message;
 	}
 }

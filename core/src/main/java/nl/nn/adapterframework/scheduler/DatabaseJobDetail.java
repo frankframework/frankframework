@@ -13,6 +13,10 @@ public class DatabaseJobDetail extends JobDetailImpl {
 		if(!thisJobDef.getCronExpression().equals(otherJobDef.getCronExpression())) {
 			return false;
 		}
+		//If the CRON expression is different in both jobs, it's not equal!
+		if(thisJobDef.getInterval() != otherJobDef.getInterval()) {
+			return false;
+		}
 
 		Locker thisLocker = thisJobDef.getLocker();
 		Locker otherLocker = otherJobDef.getLocker();
