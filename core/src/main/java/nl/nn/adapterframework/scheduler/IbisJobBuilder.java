@@ -23,7 +23,6 @@ import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
-import org.quartz.impl.JobDetailImpl;
 
 public class IbisJobBuilder {
 

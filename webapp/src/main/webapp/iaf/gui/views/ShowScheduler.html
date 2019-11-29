@@ -99,6 +99,7 @@
 				<div class="ibox-content" ng-repeat="job in jobs" ng-if="showContent">
 					<div class="col-md-12">
 						<div class="pull-right">
+							<button ng-if="job.type=='DATABASE'" title="Edit Job" class="btn btn-info btn-xs" type="button" ng-click="edit(jobGroupName, job.name)"><i class="fa fa-pencil"></i> Edit</button>
 							<button title="Delete Job" class="btn btn-danger btn-xs" type="button" ng-click="remove(jobGroupName, job.name)"><i class="fa fa-times"></i> Delete</button>
 							<button ng-if="job.state=='PAUSED'" title="Resume Job" class="btn btn-warning btn-xs" type="button" ng-click="resume(jobGroupName, job.name)"><i class="fa fa-play"></i> Resume</button>
 							<button ng-if="job.state!='PAUSED'" title="Pause Job" class="btn btn-warning btn-xs" type="button" ng-click="pause(jobGroupName, job.name)"><i class="fa fa-pause"></i> Pause</button>

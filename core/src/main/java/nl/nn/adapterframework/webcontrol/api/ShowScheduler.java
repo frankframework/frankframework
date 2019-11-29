@@ -522,7 +522,7 @@ public final class ShowScheduler extends Base {
 				qs.open();
 				conn = qs.getConnection();
 
-				String query = "INSERT INTO IBISSCHEDULES (JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,MESSAGE,LOCKER,LOCK_KEY,CREATED_ON,BY_USER) "
+				String query = "INSERT INTO IBISSCHEDULES (JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY,CREATED_ON,BY_USER) "
 						+ "VALUES (?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?)";
 				PreparedStatement stmt = conn.prepareStatement(query);
 				stmt.setString(1, name);
@@ -530,10 +530,11 @@ public final class ShowScheduler extends Base {
 				stmt.setString(3, adapterName);
 				stmt.setString(4, receiverName);
 				stmt.setString(5, cronExpression);
-				stmt.setClob(6, new StringReader(message));
-				stmt.setBoolean(7, hasLocker);
-				stmt.setString(8, lockKey);
-				stmt.setString(9, user);
+				stmt.setInt(6, interval);
+				stmt.setClob(7, new StringReader(message));
+				stmt.setBoolean(8, hasLocker);
+				stmt.setString(9, lockKey);
+				stmt.setString(10, user);
 
 				success = stmt.executeUpdate() > 0;
 			} catch (SenderException | SQLException | JdbcException e) {

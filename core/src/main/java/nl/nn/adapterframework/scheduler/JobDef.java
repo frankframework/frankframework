@@ -872,7 +872,7 @@ public class JobDef {
 			qs.configure();
 			qs.open();
 			conn = qs.getConnection();
-			PreparedStatement stmt = conn.prepareStatement("SELECT JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,MESSAGE,LOCKER,LOCK_KEY FROM IBISSCHEDULES");
+			PreparedStatement stmt = conn.prepareStatement("SELECT JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY FROM IBISSCHEDULES");
 			rs = stmt.executeQuery();
 
 			while(rs.next()) {
@@ -881,6 +881,7 @@ public class JobDef {
 				String adapterName = rs.getString("ADAPTER");
 				String receiverName = rs.getString("RECEIVER");
 				String cronExpression = rs.getString("CRON");
+				int interval = rs.getInt("EXECUTIONINTERVAL");
 				String message = rs.getString("MESSAGE");
 				boolean hasLocker = rs.getBoolean("LOCKER");
 				String lockKey = rs.getString("LOCK_KEY");
@@ -890,6 +891,7 @@ public class JobDef {
 				DatabaseJobDef jobdef = new DatabaseJobDef();
 				jobdef.setCronExpression(cronExpression);
 				jobdef.setName(jobName);
+				jobdef.setInterval(interval);
 				jobdef.setJobGroup(jobGroup);
 				jobdef.setAdapterName(adapterName);
 				jobdef.setReceiverName(receiverName);
@@ -912,7 +914,6 @@ public class JobDef {
 					IbisJobDetail oldJobDetails = databaseJobDetails.get(key);
 					if(!oldJobDetails.compareWith(jobdef)) {
 						log.debug("updating DatabaseSchedule ["+key+"]");
-System.out.println("updating DatabaseSchedule ["+key+"]");
 						try {
 							sh.scheduleJob(ibisManager, jobdef);
 						} catch (SchedulerException e) {
@@ -922,7 +923,6 @@ System.out.println("updating DatabaseSchedule ["+key+"]");
 					databaseJobDetails.remove(key);
 				} else {
 					log.debug("add DatabaseSchedule ["+key+"]");
-System.out.println("add DatabaseSchedule ["+key+"]");
 					try {
 						sh.scheduleJob(ibisManager, jobdef);
 					} catch (SchedulerException e) {
@@ -939,7 +939,6 @@ System.out.println("add DatabaseSchedule ["+key+"]");
 		}
 		for(JobKey key : databaseJobDetails.keySet()) {
 			log.debug("delete DatabaseSchedule ["+key+"]");
-System.out.println("delete DatabaseSchedule ["+key+"]");
 			try {
 				scheduler.deleteJob(key);
 			} catch (SchedulerException e) {

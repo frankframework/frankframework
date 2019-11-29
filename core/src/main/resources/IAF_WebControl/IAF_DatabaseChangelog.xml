@@ -115,7 +115,7 @@ TagDatabase
 				<constraints nullable="false"/>
 			</column>
 			<column name="CRON" type="java.sql.Types.VARCHAR(100)"/>
-			<column name="INTERVAL" type="INTEGER"/>
+			<column name="EXECUTIONINTERVAL" type="INTEGER"/>
 			<column name="MESSAGE" type="CLOB"/>
 			<column name="LOCKER" type="BOOLEAN" defaultValueBoolean="false">
 				<constraints nullable="false"/>
@@ -126,11 +126,6 @@ TagDatabase
 		</createTable>
 		<!-- in Quartz the JobKey is defined by name and group, hence this being the primairy key constraint in the database as well -->
 		<addPrimaryKey tableName="IBISSCHEDULES" columnNames="JOBNAME, JOBGROUP" constraintName="PK_IBISSCHEDULES"/>
-	</changeSet>
-
-	<changeSet id="IAF_Util:7" author="Niels Meijer" onValidationFail="MARK_RAN">
-		<comment>Set sequence for IBISSCHEDULES Table</comment>
-		<createSequence sequenceName="SEQ_IBISSCHEDULES" startValue="161332" maxValue="999999999999999999" minValue="1"/>
 	</changeSet>
 
 </databaseChangeLog>
