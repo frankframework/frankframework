@@ -16,16 +16,11 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.Map;
 
-import javax.xml.transform.Result;
 import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.lang.StringUtils;
-import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -41,7 +36,6 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
 
 
 /**
