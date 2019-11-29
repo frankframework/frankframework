@@ -15,19 +15,9 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.servlet.ServletException;
 import nl.nn.adapterframework.extensions.cxf.NamespaceUriProviderManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.bus.spring.SpringBus;
@@ -43,6 +33,15 @@ import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.XmlWebApplicationContext;
+
+import javax.servlet.ServletException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Creates and maintains the (Spring) Application Context. If the context is loaded through a {@link IbisApplicationServlet servlet} 
@@ -334,5 +333,13 @@ public class IbisApplicationContext {
 
 		// unable to find module, assume it's not on the classpath
 		return null;
+	}
+
+	/**
+	 * Returns true if context's state is STARTED.
+	 * @return true if state is STARTED.
+	 */
+	public boolean isStarted() {
+		return STATE.equals(BootState.STARTED);
 	}
 }
