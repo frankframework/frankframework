@@ -294,7 +294,6 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		assertResultsAreCorrect("b", result, session);
 	}
 
-
 	public void xpathNodeText() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = "Euro € single quote ' double quote \"";
