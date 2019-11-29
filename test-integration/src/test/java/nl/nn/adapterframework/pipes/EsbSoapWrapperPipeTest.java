@@ -1,6 +1,5 @@
 package nl.nn.adapterframework.pipes;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSessionBase;
@@ -19,6 +18,7 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 	}
 
 	
+	@Override
 	public void addParam(String name, String value) {
 		Parameter param = new Parameter();
 		param.setName(name);

@@ -16,29 +16,29 @@ import nl.nn.adapterframework.util.ClassUtils;
 
 public class CmisSenderTest {
 
-	String url;
-	String repo;
-	String titanUser;
-	String titanPassword;
+	private String url;
+	private String repo;
+	private String titanUser;
+	private String titanPassword;
 	
-	String id1;
-	String id2;
+	private String id1;
+	private String id2;
 	
-	int length1=0;
-	int length2=0;
+	private int length1=0;
+	private int length2=0;
 	
-	String testProperties="CmisSender.properties";
-	Properties properties;
+	private String testProperties="CmisSender.properties";
+	private Properties properties;
 
-	int numParallel=5; // not used for ramp up test
+	private int numParallel=5; // not used for ramp up test
 	
-	int numCycles=10;
-	int maxConnections=20;
-	int numSenders=2;
+	private int numCycles=10;
+	private int maxConnections=20;
+	private int numSenders=2;
 	
-	boolean testViaHttpSender=false;
+	private boolean testViaHttpSender=false;
 	
-	int threadCount[] = {  1,  5, 10, 15, 20, 25, 30 };
+	private int threadCount[] = {  1,  5, 10, 15, 20, 25, 30 };
 	
 	private StringBuffer results=new StringBuffer();
 	private String separator="\t";
@@ -118,7 +118,7 @@ public class CmisSenderTest {
 	
 	public void testGet(int i) throws Exception {
 		String id=id1;
-		int expectedLength=length1;
+//		int expectedLength=length1;
 		String result;
 		PipeLineSessionBase session = new PipeLineSessionBase();
 	
@@ -215,8 +215,8 @@ public class CmisSenderTest {
 
     private class CmisSenderTester extends Thread {
 
-		long total;
-		int cycles=0;
+		private long total;
+		private int cycles=0;
     	
     	@Override
 		public void run() {
