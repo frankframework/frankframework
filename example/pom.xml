@@ -51,7 +51,12 @@
       <artifactId>geronimo-jms_1.1_spec</artifactId>
       <scope>runtime</scope><!-- Overwrite <scope>provided</scope> in parent pom. -->
     </dependency>
-	<!-- Test scoped dependencies -->
+    <dependency>
+      <groupId>org.ibissource</groupId>
+      <artifactId>ibis-adapterframework-unittester</artifactId>
+    </dependency>
+
+    <!-- Test scoped dependencies -->
 	<dependency>
 		<groupId>junit</groupId>
 		<artifactId>junit</artifactId>
@@ -92,6 +97,24 @@
           <webAppConfig>
             <allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
           </webAppConfig>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <dependenciesToScan>
+            <dependency>org.ibissource:ibis-adapterframework-unittester</dependency>
+          </dependenciesToScan>
+          <additionalClasspathElements>
+            <additionalClasspathElement>src/main</additionalClasspathElement>
+          </additionalClasspathElements>
+          <systemPropertyVariables>
+            <larva.rootDir>C:\Users\username\Documents\Integration Partners\iaf\example\src\test\resources\TestTool</larva.rootDir>
+            <larva.execute>C:\Users\username\Documents\Integration Partners\iaf\example\src\test\resources\TestTool</larva.execute>
+            <larva.reportFolder>C:\Users\username\Documents\Integration Partners\reports</larva.reportFolder>
+          </systemPropertyVariables>
+          <useFile>false</useFile>
         </configuration>
       </plugin>
     </plugins>
