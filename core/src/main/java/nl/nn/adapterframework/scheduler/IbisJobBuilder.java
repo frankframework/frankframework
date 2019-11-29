@@ -1,6 +1,22 @@
+/*
+   Copyright 2019 Nationale-Nederlanden
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.scheduler;
 
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
 
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.Job;
@@ -23,22 +39,14 @@ public class IbisJobBuilder {
 	}
 
 	public JobDetail build() {
-		JobDetailImpl job = null;
-		switch(jobType) {
-			case DATABASE:
-				job = new DatabaseJobDetail();
-				break;
-	
-			default:
-				job = new JobDetailImpl();
-				break;
-		}
+		IbisJobDetail job = new IbisJobDetail();
 
 		job.setJobClass(jobClass);
 		job.setDescription(description);
 		job.setKey(key); 
 		job.setDurability(false);
 		job.setRequestsRecovery(false);
+		job.setJobType(jobType);
 
 		if(!jobDataMap.isEmpty())
 			job.setJobDataMap(jobDataMap);
@@ -72,9 +80,6 @@ public class IbisJobBuilder {
 		if(jobDef instanceof DatabaseJobDef) {
 			builder.setJobType(JobType.DATABASE);
 		}
-		else if(jobDef.getJobDefFunction().isServiceJob()) {
-			builder.setJobType(JobType.SERVICE);
-		}
 
 		builder.withIdentity(jobDef.getName(), jobDef.getJobGroup());
 
@@ -89,9 +94,5 @@ public class IbisJobBuilder {
 	public IbisJobBuilder setIbisManager(IbisManager ibisManager) {
 		jobDataMap.put(ConfiguredJob.MANAGER_KEY, ibisManager);
 		return this;
-	}
-
-	public enum JobType {
-		CONFIGURATION, SERVICE, DATABASE
 	}
 }

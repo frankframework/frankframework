@@ -51,9 +51,10 @@ import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.scheduler.ConfiguredJob;
 import nl.nn.adapterframework.scheduler.DatabaseJobDef;
-import nl.nn.adapterframework.scheduler.DatabaseJobDetail;
+import nl.nn.adapterframework.scheduler.IbisJobDetail;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
+import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
 import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -181,11 +182,11 @@ public final class ShowScheduler extends Base {
 					jobData.put("stateful", job.isPersistJobDataAfterExecution() && job.isConcurrentExectionDisallowed());
 					jobData.put("durable",job.isDurable());
 					jobData.put("jobClass", job.getJobClass().getSimpleName());
-					String jobType = job.getClass().getSimpleName();
-					if(jobType.indexOf("Detail") > -1)
-						jobType = jobType.substring(0, jobType.indexOf("Detail"));
 
-					jobData.put("type", jobType);
+					if(job instanceof IbisJobDetail) {
+						jobData.put("type", ((IbisJobDetail) job).getJobType());
+					}
+
 					TriggerState state = scheduler.getTriggerState(TriggerKey.triggerKey(jobName, jobGroupName));
 					jobData.put("state", state.name());
 
@@ -565,8 +566,8 @@ public final class ShowScheduler extends Base {
 				throw new ApiException("JobKey not found, unable to remove schedule");
 			}
 
-			JobDetail jobDetail = scheduler.getJobDetail(jobKey);
-			if(jobDetail instanceof DatabaseJobDetail) {
+			IbisJobDetail jobDetail = (IbisJobDetail) scheduler.getJobDetail(jobKey);
+			if(jobDetail.getJobType() == JobType.DATABASE) {
 				boolean success = false;
 				String jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 				if (StringUtils.isEmpty(jmsRealm)) {

@@ -51,6 +51,7 @@ import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -850,7 +851,7 @@ public class JobDef {
 			return;
 		}
 
-		Map<JobKey, DatabaseJobDetail> databaseJobDetails = new HashMap<JobKey, DatabaseJobDetail>();
+		Map<JobKey, IbisJobDetail> databaseJobDetails = new HashMap<JobKey, IbisJobDetail>();
 		Scheduler scheduler = null;
 		SchedulerHelper sh = null;
 		try {
@@ -859,9 +860,9 @@ public class JobDef {
 
 			Set<JobKey> jobKeys = scheduler.getJobKeys(GroupMatcher.anyJobGroup());
 			for(JobKey jobKey : jobKeys) {
-				JobDetail detail = scheduler.getJobDetail(jobKey);
-				if(detail instanceof DatabaseJobDetail) {
-					databaseJobDetails.put(detail.getKey(), (DatabaseJobDetail) detail);
+				IbisJobDetail detail = (IbisJobDetail) scheduler.getJobDetail(jobKey);
+				if(detail.getJobType() == JobType.DATABASE) {
+					databaseJobDetails.put(detail.getKey(), detail);
 				}
 			}
 		} catch (SchedulerException e) {
@@ -916,7 +917,7 @@ public class JobDef {
 				}
 
 				if(databaseJobDetails.containsKey(key)) {
-					DatabaseJobDetail oldJobDetails = databaseJobDetails.get(key);
+					IbisJobDetail oldJobDetails = databaseJobDetails.get(key);
 					if(!oldJobDetails.compareWith(jobdef)) {
 						log.debug("updating DatabaseSchedule ["+key+"]");
 System.out.println("updating DatabaseSchedule ["+key+"]");
