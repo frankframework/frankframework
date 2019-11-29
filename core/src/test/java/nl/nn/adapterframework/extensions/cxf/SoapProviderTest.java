@@ -59,10 +59,34 @@ public class SoapProviderTest {
 
 	@BeforeClass
 	public static void setUp() {
-        Properties prop = System.getProperties();
-        String vendor =prop.getProperty("java.vendor");
-        System.out.println ("JVM Vendor : " + vendor);
-        assumeThat(vendor, not(equalTo("IBM Corporation")));
+		Properties prop = System.getProperties();
+		String vendor = prop.getProperty("java.vendor");
+		System.out.println("JVM Vendor : " + vendor);
+		assumeThat(vendor, not(equalTo("IBM Corporation")));
+		
+	/*
+	 * The above exclusion of IBM JDK to work around the below error, seen when executing these tests with an IBM JDK:
+	 * 
+		java.lang.VerifyError: JVMVRFY012 stack shape inconsistent; class=com/sun/xml/messaging/saaj/soap/SOAPDocumentImpl, method=createDocumentFragment()Lorg/w3c/dom/DocumentFragment;, pc=5; Type Mismatch, argument 0 in signature com/sun/xml/messaging/saaj/soap/SOAPDocumentFragment.<init>:(Lcom/sun/org/apache/xerces/internal/dom/CoreDocumentImpl;)V does not match
+		Exception Details:
+		  Location:
+		    com/sun/xml/messaging/saaj/soap/SOAPDocumentImpl.createDocumentFragment()Lorg/w3c/dom/DocumentFragment; @5: JBinvokespecial
+		  Reason:
+		    Type 'com/sun/xml/messaging/saaj/soap/SOAPDocumentImpl' (current frame, stack[2]) is not assignable to 'com/sun/org/apache/xerces/internal/dom/CoreDocumentImpl'
+		  Current Frame:
+		    bci: @5
+		    flags: { }
+		    locals: { 'com/sun/xml/messaging/saaj/soap/SOAPDocumentImpl' }
+		    stack: { 'uninitialized', 'uninitialized', 'com/sun/xml/messaging/saaj/soap/SOAPDocumentImpl' }
+			at com.sun.xml.messaging.saaj.soap.SOAPPartImpl.<init>(SOAPPartImpl.java:106)
+			at com.sun.xml.messaging.saaj.soap.ver1_1.SOAPPart1_1Impl.<init>(SOAPPart1_1Impl.java:70)
+			at com.sun.xml.messaging.saaj.soap.ver1_1.Message1_1Impl.getSOAPPart(Message1_1Impl.java:90)
+			at nl.nn.adapterframework.extensions.cxf.SoapProviderTest.createMessage(SoapProviderTest.java:109)
+			at nl.nn.adapterframework.extensions.cxf.SoapProviderTest.createMessage(SoapProviderTest.java:98)
+			at nl.nn.adapterframework.extensions.cxf.SoapProviderTest.createMessage(SoapProviderTest.java:94)
+			at nl.nn.adapterframework.extensions.cxf.SoapProviderTest.sendMessageWithInputStreamAttachmentsTest(SoapProviderTest.java:228)
+	*/	
+
 	}
 	
 	@Spy
