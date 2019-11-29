@@ -12,6 +12,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.junit.Assume;
 import org.junit.Test;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -187,7 +188,7 @@ public class XsltStreamingTest {
 		 * receive SAX destination events
 		 * received events and source events should be mixed
 		 */
-		
+		Assume.assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean("xslt.streaming.default", true));
 		SwitchCounter sc = new SwitchCounter();
 		
 		String xpath="/root/a";

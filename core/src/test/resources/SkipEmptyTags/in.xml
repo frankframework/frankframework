@@ -13,10 +13,15 @@
 	<b>b</b>
 	<c hallo="true"/>
 	<d hallo="true">d</d>
+	<!-- comment after content found -->
 	<e>
 		<e1>
-			<e2 xmlns="urn:test1">
+			<e2 xmlns:x1="urn:test1">
 				<e3>
+					<e4>
+						<!-- comment in e4 in empty branch -->
+						<e5/>
+					</e4>
 					<e4>
 						<e5/>
 					</e4>
@@ -26,8 +31,14 @@
 	</e>
 	<f>
 		<f1>
-			<f2 xmlns="urn:test2">
-				<f3><!-- comment in f3 in non empty branch -->
+			<f2 xmlns:x2="urn:test2">
+				<f3>
+					<!-- comment in f3 in non empty branch -->
+					<f4>
+						<f5>
+							<f6/>
+						</f5>
+					</f4>
 					<f4>
 						<f5>f</f5>
 					</f4>

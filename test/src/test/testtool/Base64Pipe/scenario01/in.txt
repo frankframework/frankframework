@@ -1,1 +1,1 @@
-c:/temp/testdata/b64/file.txt
+Dit is één test!!!

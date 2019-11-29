@@ -6,7 +6,7 @@
 		<version>7.5-SNAPSHOT</version>
 	</parent>
 	
-	<artifactId>ibis-adapterframework-ear</artifactId>
+	<artifactId>iaf-example-ear</artifactId>
 	<name>Ibis AdapterFramework example-ear</name>
 	<packaging>ear</packaging>
 	<build>

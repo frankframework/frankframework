@@ -37,7 +37,7 @@ public class XmlWriterTest {
 	@Test
 	public void testTextMode() throws Exception {
 		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
-		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/AsText.txt");
+		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/AsTextPlain.txt");
 		XmlWriter xmlWriter = new XmlWriter();
 		xmlWriter.setTextMode(true);
 		XmlUtils.parseXml(xmlWriter, input);
@@ -45,9 +45,20 @@ public class XmlWriterTest {
 	}
 
 	@Test
+	public void testIncludeComments() throws Exception {
+		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String expected = input;
+		XmlWriter xmlWriter = new XmlWriter();
+		xmlWriter.setIncludeComments(true);
+		XmlUtils.parseXml(xmlWriter, input);
+		assertEquals(expected,xmlWriter.toString());
+	}
+	
+
+	@Test
 	public void testNoLexicalHandling() throws Exception {
 		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
-		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/Escaped.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/NoComments.xml");
 		XmlWriter xmlWriter = new XmlWriter();
 		
 		InputSource inputSource = new InputSource(new StringReader(input));

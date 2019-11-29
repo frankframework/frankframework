@@ -15,12 +15,14 @@
 */
 package nl.nn.adapterframework.xml;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -41,6 +43,10 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 				super.startPrefixMapping(entry.getKey(), entry.getValue());
 			}
 			super.startElement(e.uri, e.localName, e.qName, e.atts);
+			String comments = e.comments.toString();
+			if (StringUtils.isNotEmpty(comments)) {
+				super.comment(comments.toCharArray(), 0, comments.length());
+			}
 		}
 		pendingElements.clear();
 	}
@@ -60,6 +66,7 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 			e.namespaceMappings=pendingNamespaceMappings;
 			pendingNamespaceMappings=new LinkedHashMap<String,String>();
 			pendingElements.add(e);
+			e.comments=new StringWriter();
 		}
 		nonWhitespaceCharactersSeen=false;
 	}
@@ -110,6 +117,7 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 		public String qName;
 		public Attributes atts;
 		public Map<String,String> namespaceMappings;
+		public StringWriter comments;
 	}
 
 	@Override
@@ -117,5 +125,20 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 		pendingNamespaceMappings.put(prefix, uri);
 	}
 
+	@Override
+	public void endPrefixMapping(String prefix) throws SAXException {
+		if (pendingElements.isEmpty()) {
+			super.endPrefixMapping(prefix);
+		}
+	}
+
+	@Override
+	public void comment(char[] ch, int start, int length) throws SAXException {
+		if (pendingElements.isEmpty()) {
+			super.comment(ch, start, length);
+		} else {
+			pendingElements.get(pendingElements.size()-1).comments.write(ch,start,length);
+		}
+	}
 
 }

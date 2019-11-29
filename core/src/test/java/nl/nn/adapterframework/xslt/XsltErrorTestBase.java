@@ -192,7 +192,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		String errorMessage = null;
 		try {
 			doPipe(pipe, input, session);
-		} catch (PipeRunException e) {
+		} catch (Exception e) {
 			errorMessage = e.getMessage();
 			//System.out.println("ErrorMessage: "+errorMessage);
 			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));

@@ -63,6 +63,7 @@ public class LadybugPipe extends FixedForwardPipe {
 	private boolean writeToLog = false;
 	private boolean writeToSystemOut = false;
 	private boolean checkRoles = false;
+	private boolean enableReportGenerator = false;
 	private TestTool testTool;
 	private TestStorage testStorage;
 	private Storage debugStorage; 
@@ -96,7 +97,15 @@ public class LadybugPipe extends FixedForwardPipe {
 		ReportRunner reportRunner = new ReportRunner();
 		reportRunner.setTestTool(testTool);
 		reportRunner.setSecurityContext(new IbisSecurityContext(session, checkRoles));
+		boolean reportGeneratorEnabledOldValue = testTool.getReportGeneratorEnabled();
+		if(enableReportGenerator) {
+			testTool.setReportGeneratorEnabled(true);
+		}
 		reportRunner.run(reports, false, true);
+		if(enableReportGenerator) {
+			testTool.setReportGeneratorEnabled(reportGeneratorEnabledOldValue);
+		}
+		
 		for (Report report : reports) {
 			RunResult runResult = reportRunner.getResults().get(report.getStorageId());
 			if (runResult.errorMessage != null) {
@@ -179,6 +188,12 @@ public class LadybugPipe extends FixedForwardPipe {
 			+ "is autorised and/or you want the enforce the roles as configured for the Ladybug", "false"})
 	public void setCheckRoles(boolean checkRoles) {
 		this.checkRoles = checkRoles;
+	}
+	
+	@IbisDoc({"Set to <code>true</code> to enable Ladybug's report generator for the duration of the scheduled report runs, "
+			+ "then revert it to its original setting", "false"})
+	public void setEnableReportGenerator(boolean enabled) {
+		enableReportGenerator = enabled;
 	}
 
 	public void setTestTool(TestTool testTool) {
