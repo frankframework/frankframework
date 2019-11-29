@@ -51,6 +51,7 @@ import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.scheduler.ConfiguredJob;
 import nl.nn.adapterframework.scheduler.DatabaseJobDef;
+import nl.nn.adapterframework.scheduler.DatabaseJobDetail;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
@@ -438,6 +439,7 @@ public final class ShowScheduler extends Base {
 
 		String name = resolveStringFromMap(inputDataMap, "name");
 		String cronExpression = resolveStringFromMap(inputDataMap, "cron");
+		int interval = resolveTypeFromMap(inputDataMap, "interval", Integer.class, -1);
 
 		String adapterName = resolveStringFromMap(inputDataMap, "adapter");
 		//Make sure the adapter exists!
@@ -474,6 +476,7 @@ public final class ShowScheduler extends Base {
 		jobdef.setReceiverName(receiverName);
 		jobdef.setJobGroup(jobGroup);
 		jobdef.setMessage(message);
+		jobdef.setInterval(interval);
 
 		if(hasLocker) {
 			Locker locker = new Locker();
@@ -555,11 +558,56 @@ public final class ShowScheduler extends Base {
 		initBase(servletConfig);
 		Scheduler scheduler = getScheduler();
 
-		try	{
-
+		try {
 			log.info("delete job jobName [" + jobName + "] groupName [" + groupName + "] " + commandIssuedBy());
-			scheduler.deleteJob(JobKey.jobKey(jobName, groupName));
-		} catch (Exception e) {
+			JobKey jobKey = JobKey.jobKey(jobName, groupName);
+			if(jobKey == null) {
+				throw new ApiException("JobKey not found, unable to remove schedule");
+			}
+
+			JobDetail jobDetail = scheduler.getJobDetail(jobKey);
+			if(jobDetail instanceof DatabaseJobDetail) {
+				boolean success = false;
+				String jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
+				if (StringUtils.isEmpty(jmsRealm)) {
+					throw new ApiException("no JmsRealm found!");
+				}
+
+				// remove from database
+				FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+				qs.setJmsRealm(jmsRealm);
+				qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
+				try {
+					qs.configure();
+				} catch (ConfigurationException e) {
+					throw new ApiException("Error creating FixedQuerySender bean to remove job from database", e);
+				}
+
+				Connection conn = null;
+				try {
+					qs.open();
+					conn = qs.getConnection();
+
+					String query = "DELETE FROM IBISSCHEDULES WHERE JOBNAME=? AND JOBGROUP=?";
+					PreparedStatement stmt = conn.prepareStatement(query);
+					stmt.setString(1, jobKey.getName());
+					stmt.setString(2, jobKey.getGroup());
+
+					success = stmt.executeUpdate() > 0;
+				} catch (SenderException | SQLException | JdbcException e) {
+					throw new ApiException("error removing job from database", e);
+				} finally {
+					qs.close();
+					JdbcUtil.close(conn);
+				}
+				if(!success) {
+					throw new ApiException("failed to remove job from database");
+				}
+			}
+
+			// remove from memory
+			scheduler.deleteJob(jobKey);
+		} catch (SchedulerException e) {
 			throw new ApiException("Failed to delete job", e); 
 		}
 		return Response.status(Response.Status.OK).build();

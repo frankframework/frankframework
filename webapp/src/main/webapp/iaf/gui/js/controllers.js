@@ -1099,6 +1099,7 @@ angular.module('iaf.beheerconsole')
 			adapter:"",
 			receiver:"",
 			cron:"",
+			interval:-1,
 			message:"",
 			locker:false,
 			lockkey:"",
@@ -1113,6 +1114,7 @@ angular.module('iaf.beheerconsole')
 		fd.append("adapter", $scope.form.adapter);
 		fd.append("receiver", $scope.form.receiver);
 		fd.append("cron", $scope.form.cron);
+		fd.append("interval", $scope.form.interval);
 		fd.append("persistent", $scope.form.persistent);
 		fd.append("message", $scope.form.message);
 		fd.append("locker", $scope.form.locker);
@@ -1125,6 +1127,7 @@ angular.module('iaf.beheerconsole')
 					adapter:"",
 					receiver:"",
 					cron:"",
+					interval:-1,
 					message:"",
 					locker:false,
 					lockkey:"",

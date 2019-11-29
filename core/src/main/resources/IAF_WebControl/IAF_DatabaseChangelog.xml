@@ -114,9 +114,8 @@ TagDatabase
 			<column name="RECEIVER" type="java.sql.Types.VARCHAR(256)">
 				<constraints nullable="false"/>
 			</column>
-			<column name="CRON" type="java.sql.Types.VARCHAR(100)">
-				<constraints nullable="false"/>
-			</column>
+			<column name="CRON" type="java.sql.Types.VARCHAR(100)"/>
+			<column name="INTERVAL" type="INTEGER"/>
 			<column name="MESSAGE" type="CLOB"/>
 			<column name="LOCKER" type="BOOLEAN" defaultValueBoolean="false">
 				<constraints nullable="false"/>
