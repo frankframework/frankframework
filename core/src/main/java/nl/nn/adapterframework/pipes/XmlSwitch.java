@@ -165,27 +165,7 @@ public class XmlSwitch extends AbstractPipe {
 					parameterList =  getParameterList();
 					parametervalues = prc.getValueMap(parameterList);
 				}
-//				if (operationNew) {
-//					ContentHandler handler;
-//					StringWriter transResult=new StringWriter();
-//					Result result = new StreamResult(transResult);
-//					TransformerHandler transformerHandler = transformerPool.getTransformerHandler();
-//					if (parametervalues!=null) {
-//						XmlUtils.setTransformerParameters(transformerHandler.getTransformer(), parametervalues);
-//					}
-//					transformerHandler.setResult(result);
-//					handler = transformerHandler;
-//					
-//					if (!isNamespaceAware()) {
-//						NamespaceRemovingFilter filter = new NamespaceRemovingFilter();
-//						filter.setContentHandler(handler);
-//						handler=filter;
-//					}
-//					XmlUtils.parseXml(handler, sInput);
-//					forward = transResult.toString();
-//				} else {
-					forward = transformerPool.transform(prc.getInputSource(isNamespaceAware()), parametervalues);
-//				}
+				forward = transformerPool.transform(prc.getInputSource(isNamespaceAware()), parametervalues);
 			} catch (Throwable e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "got exception on transformation", e);
 			}

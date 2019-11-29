@@ -230,39 +230,6 @@ public class Parameter implements INamedObject, IWithParameters {
 		}
 	}
 
-//	private Object transform(InputSource xmlSource, ParameterResolutionContext prc) throws ParameterException, TransformerException, IOException, SAXException {
-//		TransformerPool pool = getTransformerPool();
-//		Result transformResult;
-//		StringWriter writer=null;
-//		if (TYPE_NODE.equals(getType()) || TYPE_DOMDOC.equals(getType())) {
-//			transformResult = new DOMResult();
-//		} else {
-//			writer = new StringWriter();
-//			transformResult = new StreamResult(writer);
-//		}
-//		TransformerHandler transformerHandler = pool.getTransformerHandler();
-//		transformerHandler.setResult(transformResult);
-//		if (paramList!=null) {
-//			XmlUtils.setTransformerParameters(transformerHandler.getTransformer(),prc.getValueMap(paramList));
-//		}
-//		ContentHandler handler = transformerHandler;
-//		if (isRemoveNamespaces()) {
-//			NamespaceRemovingFilter filter = new NamespaceRemovingFilter();
-//			filter.setContentHandler(handler);
-//			handler = filter;
-//		}
-//		XmlUtils.parseXml(handler,xmlSource);
-//		if (TYPE_NODE.equals(getType()) || TYPE_DOMDOC.equals(getType())) {
-//			Node result=((DOMResult)transformResult).getNode();
-//			if (result!=null && TYPE_NODE.equals(getType())) {
-//				result=result.getFirstChild();
-//			}			
-//			if (log.isDebugEnabled()) { if (result!=null) log.debug("Returning Node result ["+result.getClass().getName()+"]["+result+"]: "+ ToStringBuilder.reflectionToString(result)); } 
-//			return result;
-//		}
-//		return writer.toString();
-//	}
-
 	private Object transform(Source xmlSource, ParameterResolutionContext prc) throws ParameterException, TransformerException, IOException {
 		TransformerPool pool = getTransformerPool();
 		if (TYPE_NODE.equals(getType()) || TYPE_DOMDOC.equals(getType())) {
@@ -397,7 +364,9 @@ public class Parameter implements INamedObject, IWithParameters {
 					result = prc.getInput();
 				}
 			}
-			log.debug("Parameter ["+getName()+"] resolved to defaultvalue ["+(isHidden()?hide(result.toString()):result)+"]");
+			if (result!=null) {
+				log.debug("Parameter ["+getName()+"] resolved to defaultvalue ["+(isHidden()?hide(result.toString()):result)+"]");
+			}
 		}
 		if (result !=null && result instanceof String) {
 			if (getMinLength()>=0 && !TYPE_NUMBER.equals(getType())) {
