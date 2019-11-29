@@ -178,6 +178,10 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	@Override
 	public void comment(char[] ch, int start, int length) throws SAXException {
 		try {
+			if (elementJustStarted && !textMode) {
+				writer.append(">");
+				elementJustStarted=false;
+			}
 			if (includeComments) {
 				writer.append("<!--").append(new String(ch, start, length)).append("-->");
 			}
