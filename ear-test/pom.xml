@@ -6,8 +6,8 @@
 		<version>7.5-SNAPSHOT</version>
 	</parent>
 	
-	<artifactId>iaf-example-ear</artifactId>
-	<name>Ibis AdapterFramework example-ear</name>
+	<artifactId>iaf-test-ear</artifactId>
+	<name>Ibis AdapterFramework iaf-test-ear</name>
 	<packaging>ear</packaging>
 	<build>
 		<pluginManagement>
@@ -30,9 +30,9 @@
 							<modules>
 								<webModule>
 									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-example</artifactId>
+									<artifactId>ibis-adapterframework-test</artifactId>
 									<bundleFileName>adapterframework.war</bundleFileName>
-									<contextRoot>/iaf-example</contextRoot>
+									<contextRoot>/iaf-test</contextRoot>
 								</webModule>
 							</modules>
 						</configuration>
@@ -43,7 +43,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-example</artifactId>
+			<artifactId>ibis-adapterframework-test</artifactId>
 			<version>7.5-SNAPSHOT</version>
 			<type>war</type>
 		</dependency>
