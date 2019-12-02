@@ -10,7 +10,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="Read" className="nl.nn.adapterframework.pipes.FilePipe"
-				directory="${testdata.dir}/b64" createDirectory="true" actions="read" outputType="bytes">
+				actions="read" outputType="bytes">
 				<forward name="success" path="Encode" />
 			</pipe>
 			<pipe name="Encode" className="nl.nn.adapterframework.pipes.Base64Pipe"
@@ -33,10 +33,14 @@
 				direction="decode" convert2String="false" getInputFromSessionKey="base64">
 				<forward name="success" path="Write" />
 			</pipe>
-            <pipe name="Write" className="nl.nn.adapterframework.pipes.FilePipe"
-                directory="${testdata.dir}/b64" createDirectory="true" actions="write" fileNameSessionKey="fileOut">
-                <forward name="success" path="EXIT" />
-            </pipe>
+			<pipe name="Write" className="nl.nn.adapterframework.pipes.FilePipe"
+				actions="write" fileNameSessionKey="fileOut">
+				<forward name="success" path="Info" />
+			</pipe>
+			<pipe name="Info" className="nl.nn.adapterframework.pipes.FilePipe"
+				actions="info">
+				<forward name="success" path="EXIT" />
+			</pipe>
 		</pipeline>
 	</adapter>
 </ibis>
