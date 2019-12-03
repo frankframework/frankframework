@@ -20,13 +20,31 @@ import org.apache.commons.lang.StringUtils;
 import java.util.*;
 
 /**
- * Creates an object with tags and fields from a String.
- * Its ideal for name-value pairs and name-value pairs with multivalues.
- * It also provides support for quoted values, and recognizes values that are 'function' calls with
- * their own parameter list (allowing to ignore any tokens within these lists when parsing).
- * <br/><br/>
- *
- */
+* Creates an object with tags and fields from a String.
+* Its ideal for name-value pairs and name-value pairs with multivalues.
+* It also provides support for quoted values, and recognizes values that are 'function' calls with
+* their own parameter list (allowing to ignore any tokens within these lists when parsing).
+* <br/><br/>
+* Example:<br/>
+* <pre> <code>
+*       StringTagger tag=new StringTagger("cmd=lookup names='Daniel Ockeloen, Rico Jansen'",' ','=',',','\'','(',')');
+*       System.out.println("toString:"+tag.toString());
+*       System.out.println("cmd:"+tag.Value("cmd"));
+*       System.out.println("names: "+tag.Values("names"));
+* Result:
+* toString:[<cmd=[lookup]><names=[Daniel Ockeloen,  Rico Jansen]>]
+* cmd:lookup
+* names: [Daniel Ockeloen,  Rico Jansen]
+*
+*       tag=new StringTagger("cmd=(a,b),c");
+*       System.out.println("toString:"+tag.toString());
+*       System.out.println("cmd:"+tag.Values("cmd"));
+* Result:
+* toString:[<cmd=[(a,b), c]>]
+* cmd:[(a,b), c]
+*
+* </code> </pre>
+*/
 public class StringTagger implements Map {
 
     /**

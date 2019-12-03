@@ -32,6 +32,29 @@ import org.apache.commons.lang.text.StrTokenizer;
  * Read messages from the ibisstore previously stored by a
  * {@link MessageStoreSender}.
  * 
+ * Example configuration:
+ * <code><pre>
+		&lt;listener
+			name="MyListener"
+			className="nl.nn.adapterframework.jdbc.MessageStoreListener"
+			jmsRealm="jdbc"
+			slotId="${instance.name}/MyService"
+			sessionKeys="key1,key2"
+		/>
+		&lt;!-- DummyTransactionalStorage to enable messagelog browser in the console (messages are moved to messagelog by MessageStoreListener hence JdbcTransactionalStorage isn't needed) -->
+		&lt;messageLog
+			className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage"
+			jmsRealm="jdbc"
+			slotId="${instance.name}/ServiceName"
+		/>
+		&lt;!-- On error the message is moved to the errorStorage. And when moveToMessageLog="true" also to the messageLog (after manual resend the messageLog doesn't change). -->
+		&lt;errorStorage
+			className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+			jmsRealm="jdbc"
+			slotId="${instance.name}/ServiceName"
+		/>
+ * </pre></code>
+ * 
  * 
  * @author Jaco de Groot
  */
