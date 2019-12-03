@@ -898,9 +898,10 @@ public class JobDef {
 				jobdef.setMessage(message);
 
 				if(hasLocker) {
-					Locker locker = new Locker();
+					Locker locker = (Locker) ibisManager.getIbisContext().createBeanAutowireByName(Locker.class);
 					locker.setName(lockKey);
 					locker.setObjectId(lockKey);
+					locker.setJmsRealm(configJmsRealm);
 					jobdef.setLocker(locker);
 				}
 

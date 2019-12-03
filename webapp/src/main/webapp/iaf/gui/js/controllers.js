@@ -1056,7 +1056,7 @@ angular.module('iaf.beheerconsole')
 	});
 }])
 
-.controller('SchedulerCtrl', ['$scope', 'Api', 'Poller', function($scope, Api, Poller) {
+.controller('SchedulerCtrl', ['$scope', 'Api', 'Poller', '$state', function($scope, Api, Poller, $state) {
 	$scope.jobs = {};
 	$scope.scheduler = {};
 
@@ -1086,6 +1086,10 @@ angular.module('iaf.beheerconsole')
 
 	$scope.trigger = function(jobGroup, jobName) {
 		Api.Put("schedules/"+jobGroup+"/job/"+jobName, {action: "trigger"});
+	};
+
+	$scope.edit = function(jobGroup, jobName) {
+		$state.go('pages.edit_schedule', {name:jobName,group:jobGroup});
 	};
 }])
 
@@ -1134,6 +1138,64 @@ angular.module('iaf.beheerconsole')
 					lockkey:"",
 					persistent:true,
 			};
+		}, function(errorData, status, errorMsg) {
+			var error = (errorData) ? errorData.error : errorMsg;
+			$scope.addAlert("warning", error);
+		});
+	};
+
+}])
+
+.controller('EditScheduleCtrl', ['$scope', 'Api', 'Misc', '$stateParams', '$state', function($scope, Api, Misc, $stateParams, $state) {
+	$scope.state = [];
+	$scope.addAlert = function(type, message) {
+		$scope.state.push({type:type, message: message});
+	};
+	var url ="schedules/"+$stateParams.group+"/job/"+$stateParams.name;
+	$scope.editMode = true;
+
+	$scope.form = {
+			name:"",
+			adapter:"",
+			receiver:"",
+			cron:"",
+			interval:-1,
+			message:"",
+			locker:false,
+			lockkey:"",
+			persistent:true,
+	};
+
+	Api.Get(url, function(data) {
+		$scope.form = {
+				name: data.name,
+				adapter: data.adapter,
+				receiver: data.receiver,
+				cron: data.triggers[0].cronExpression,
+				interval: -1,
+				message: data.message,
+				locker: data.locker,
+				lockkey: data.lockkey,
+				persistent: true,
+		};
+	});
+
+	$scope.submit = function(form) {
+		var fd = new FormData();
+		$scope.state = [];
+
+		fd.append("name", $scope.form.name);
+		fd.append("adapter", $scope.form.adapter);
+		fd.append("receiver", $scope.form.receiver);
+		fd.append("cron", $scope.form.cron);
+		fd.append("interval", $scope.form.interval);
+		fd.append("persistent", $scope.form.persistent);
+		fd.append("message", $scope.form.message);
+		fd.append("locker", $scope.form.locker);
+		fd.append("lockkey", $scope.form.lockkey);
+
+		Api.Put(url, fd, function(data) {
+			$scope.addAlert("success", "Successfully edited schedule!");
 		}, function(errorData, status, errorMsg) {
 			var error = (errorData) ? errorData.error : errorMsg;
 			$scope.addAlert("warning", error);

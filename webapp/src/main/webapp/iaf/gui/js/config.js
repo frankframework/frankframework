@@ -238,10 +238,24 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 	})
 	.state('pages.add_schedule', {
 		url: "/scheduler/new",
-		templateUrl: "views/AddSchedule.html",
+		templateUrl: "views/AddEditSchedule.html",
 		data: {
 			pageTitle: 'Add Schedule',
 			breadcrumbs: 'Scheduler > Add Schedule'
+		},
+		controller: 'AddScheduleCtrl'
+	})
+	.state('pages.edit_schedule', {
+		url: "/scheduler/edit/:group/:name",
+		templateUrl: "views/AddEditSchedule.html",
+		data: {
+			pageTitle: 'Edit Schedule',
+			breadcrumbs: 'Scheduler > Edit Schedule'
+		},
+		controller: 'EditScheduleCtrl',
+		params: {
+			name:"",
+			group:""
 		}
 	})
 	.state('pages.environment_variables', {

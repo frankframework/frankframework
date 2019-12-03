@@ -31,6 +31,7 @@ import java.util.Set;
 
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.ServletConfig;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -111,6 +112,24 @@ public final class ShowScheduler extends Base {
 		return Response.status(Response.Status.OK).entity(returnMap).build();
 	}
 
+	@GET
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/schedules/{groupName}/job/{jobName}")
+	@Relation("schedules")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getSchedule(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName) throws ApiException {
+		initBase(servletConfig);
+		Map<String, Object> returnMap = new HashMap<String, Object>();
+
+		JobKey jobKey = JobKey.jobKey(jobName, groupName);
+		try {
+			returnMap = getJobData(jobKey, true);
+		} catch (SchedulerException e) {
+			throw new ApiException(e);
+		}
+		return Response.status(Response.Status.OK).entity(returnMap).build();
+	}
+
 	private Map<String, Object> getSchedulerMetaData(Scheduler scheduler) throws ApiException {
 		Map<String, Object> schedulesMap = new HashMap<String, Object>();
 
@@ -168,35 +187,7 @@ public final class ShowScheduler extends Base {
 				Set<JobKey> jobKeys = scheduler.getJobKeys(GroupMatcher.jobGroupEquals(jobGroupName));
 
 				for (JobKey jobKey : jobKeys) {
-					String jobName = jobKey.getName();
-					Map<String, Object> jobData = new HashMap<String, Object>();
-
-					JobDetail job = scheduler.getJobDetail(jobKey);
-
-					jobData.put("fullName", job.getKey().getName() + "." + job.getKey().getGroup());
-					jobData.put("name", job.getKey().getName());
-					String description = "-";
-					if (StringUtils.isNotEmpty(job.getDescription()))
-						description = job.getDescription();
-					jobData.put("description", description);
-					jobData.put("stateful", job.isPersistJobDataAfterExecution() && job.isConcurrentExectionDisallowed());
-					jobData.put("durable",job.isDurable());
-					jobData.put("jobClass", job.getJobClass().getSimpleName());
-
-					if(job instanceof IbisJobDetail) {
-						jobData.put("type", ((IbisJobDetail) job).getJobType());
-					}
-
-					TriggerState state = scheduler.getTriggerState(TriggerKey.triggerKey(jobName, jobGroupName));
-					jobData.put("state", state.name());
-
-					jobData.put("triggers", getJobTriggers(scheduler.getTriggersOfJob(jobKey)));
-					jobData.put("messages", getJobMessages(job));
-
-					JobDataMap jobMap = job.getJobDataMap();
-					jobData.put("properties", getJobData(jobMap));
-
-					jobsInGroup.put(jobName, jobData);
+					jobsInGroup.put(jobKey.getName(), getJobData(jobKey, false));
 				}
 				jobGroups.put(jobGroupName, jobsInGroup);
 			}
@@ -205,6 +196,54 @@ public final class ShowScheduler extends Base {
 		}
 
 		return jobGroups;
+	}
+
+	private Map<String, Object> getJobData(JobKey jobKey, boolean expanded) throws SchedulerException {
+		Map<String, Object> jobData = new HashMap<String, Object>();
+		Scheduler scheduler = getScheduler();
+		String jobName = jobKey.getName();
+		JobDetail job = scheduler.getJobDetail(jobKey);
+
+		jobData.put("fullName", job.getKey().getGroup() + "." + job.getKey().getName());
+		jobData.put("name", job.getKey().getName());
+		jobData.put("group", job.getKey().getGroup());
+		String description = "-";
+		if (StringUtils.isNotEmpty(job.getDescription()))
+			description = job.getDescription();
+		jobData.put("description", description);
+		jobData.put("stateful", job.isPersistJobDataAfterExecution() && job.isConcurrentExectionDisallowed());
+		jobData.put("durable",job.isDurable());
+		jobData.put("jobClass", job.getJobClass().getSimpleName());
+
+		if(job instanceof IbisJobDetail) {
+			jobData.put("type", ((IbisJobDetail) job).getJobType());
+		}
+
+		TriggerState state = scheduler.getTriggerState(TriggerKey.triggerKey(jobName, jobKey.getGroup()));
+		jobData.put("state", state.name());
+
+		jobData.put("triggers", getJobTriggers(scheduler.getTriggersOfJob(jobKey)));
+		jobData.put("messages", getJobMessages(job));
+
+		JobDataMap jobMap = job.getJobDataMap();
+		jobData.put("properties", getJobData(jobMap));
+
+		if(expanded) {
+			JobDef jobDef = (JobDef) jobMap.get(ConfiguredJob.JOBDEF_KEY);
+			jobData.put("adapter", jobDef.getAdapterName());
+			jobData.put("receiver", jobDef.getReceiverName());
+			jobData.put("message", jobDef.getMessage());
+			
+			Locker locker = jobDef.getLocker();
+			if(locker != null) {
+				jobData.put("locker", true);
+				jobData.put("lockkey", locker.getObjectId());
+			} else {
+				jobData.put("locker", false);
+			}
+		}
+
+		return jobData;
 	}
 
 	private List<Map<String, Object>> getJobTriggers(List<? extends Trigger> triggers) throws ApiException {
@@ -371,6 +410,7 @@ public final class ShowScheduler extends Base {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/schedules/{groupName}/job/{jobName}")
 	@Relation("schedules")
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response trigger(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName, LinkedHashMap<String, Object> json) throws ApiException {
 		initBase(servletConfig);
@@ -421,6 +461,15 @@ public final class ShowScheduler extends Base {
 		return createSchedule(null, input);
 	}
 
+	@PUT
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/schedules/{groupName}/job/{jobName}")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response updateSchedule(@PathParam("groupName") String groupName, @PathParam("jobName") String jobName, MultipartFormDataInput input) throws ApiException {
+		return createSchedule(groupName, jobName, input, true);
+	}
+
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/schedules/{groupName}/job")
@@ -430,7 +479,12 @@ public final class ShowScheduler extends Base {
 		return createSchedule(groupName, input);
 	}
 
-	public Response createSchedule(String groupName, MultipartFormDataInput input) {
+
+	private Response createSchedule(String groupName, MultipartFormDataInput input) {
+		return createSchedule(groupName, null, input, false);
+	}
+
+	private Response createSchedule(String groupName, String jobName, MultipartFormDataInput input, boolean overwrite) {
 		initBase(servletConfig);
 
 		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
@@ -438,7 +492,10 @@ public final class ShowScheduler extends Base {
 			throw new ApiException("Missing post parameters");
 		}
 
-		String name = resolveStringFromMap(inputDataMap, "name");
+		String name = jobName;
+		if(name == null) //If name is not explicitly set, try to deduct it from inputmap
+			name = resolveStringFromMap(inputDataMap, "name");
+
 		String cronExpression = resolveStringFromMap(inputDataMap, "cron");
 		int interval = resolveTypeFromMap(inputDataMap, "interval", Integer.class, -1);
 
@@ -479,10 +536,12 @@ public final class ShowScheduler extends Base {
 		jobdef.setMessage(message);
 		jobdef.setInterval(interval);
 
+		String jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 		if(hasLocker) {
-			Locker locker = new Locker();
+			Locker locker = (Locker) ibisManager.getIbisContext().createBeanAutowireByName(Locker.class);
 			locker.setName(lockKey);
 			locker.setObjectId(lockKey);
+			locker.setJmsRealm(jmsRealm);
 			jobdef.setLocker(locker);
 		}
 
@@ -495,7 +554,6 @@ public final class ShowScheduler extends Base {
 
 		//Save the job in the database
 		if(persistent && AppConstants.getInstance().getBoolean("loadDatabaseSchedules.active", false)) {
-			String jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 			if (StringUtils.isEmpty(jmsRealm)) {
 				throw new ApiException("no JmsRealm found!");
 			}
@@ -517,14 +575,20 @@ public final class ShowScheduler extends Base {
 
 			Connection conn = null;
 			try {
-				//TODO: Remove old schedule if exists...
-
 				qs.open();
 				conn = qs.getConnection();
 
-				String query = "INSERT INTO IBISSCHEDULES (JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY,CREATED_ON,BY_USER) "
-						+ "VALUES (?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?)";
-				PreparedStatement stmt = conn.prepareStatement(query);
+				if(overwrite) {
+					String deleteQuery = "DELETE FROM IBISSCHEDULES WHERE JOBNAME=? AND JOBGROUP=?";
+					PreparedStatement deleteStatement = conn.prepareStatement(deleteQuery);
+					deleteStatement.setString(1, name);
+					deleteStatement.setString(2, jobGroup);
+					deleteStatement.executeUpdate();
+				}
+
+				String insertQuery = "INSERT INTO IBISSCHEDULES (JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY,CREATED_ON,BY_USER) "
+						+ "VALUES (?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?)";
+				PreparedStatement stmt = conn.prepareStatement(insertQuery);
 				stmt.setString(1, name);
 				stmt.setString(2, jobGroup);
 				stmt.setString(3, adapterName);
