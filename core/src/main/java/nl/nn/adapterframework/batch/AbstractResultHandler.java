@@ -84,6 +84,10 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 		paramList.add(p);
 	}
 
+	@Override
+	public ParameterList getParameterList() {
+		return paramList;
+	}
 
 	@IbisDoc({"name of the resulthandler", ""})
 	@Override

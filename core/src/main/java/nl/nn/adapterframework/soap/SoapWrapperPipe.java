@@ -108,10 +108,10 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 			}
 		}
 		if (StringUtils.isNotEmpty(getSoapHeaderStyleSheet())) {
-			soapHeaderTp = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), classLoader, getSoapHeaderStyleSheet(), 0);
+			soapHeaderTp = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), getConfigurationClassLoader(), getSoapHeaderStyleSheet(), 0);
 		}
 		if (StringUtils.isNotEmpty(getSoapBodyStyleSheet())) {
-			soapBodyTp = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), classLoader, getSoapBodyStyleSheet(), 0);
+			soapBodyTp = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), getConfigurationClassLoader(), getSoapBodyStyleSheet(), 0);
 		}
 		if (isRemoveOutputNamespaces()) {
 			removeOutputNamespacesTp = XmlUtils.getRemoveNamespacesTransformerPool(true, false);

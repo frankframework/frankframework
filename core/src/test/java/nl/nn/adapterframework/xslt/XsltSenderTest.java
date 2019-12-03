@@ -21,6 +21,11 @@ public class XsltSenderTest extends XsltErrorTestBase<GenericMessageSendingPipe>
 		sender.setStyleSheetName(styleSheetName);		
 	}
 	
+	@Override
+	protected void setStyleSheetNameSessionKey(String styleSheetNameSessionKey) {
+		sender.setStyleSheetNameSessionKey(styleSheetNameSessionKey);		
+	}
+	
 
 	@Override
 	protected void setXpathExpression(String xpathExpression) {

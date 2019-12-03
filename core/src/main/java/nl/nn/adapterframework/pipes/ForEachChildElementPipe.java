@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
 
+import javax.xml.transform.ErrorListener;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
@@ -43,6 +44,7 @@ import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.InputMessageAdapter;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerErrorListener;
@@ -71,6 +73,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private int xsltVersion=DEFAULT_XSLT_VERSION; 
 	private boolean removeNamespaces=true;
+	private boolean streamingXslt;
 
 	private TransformerPool extractElementsTp=null;
 	private ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
@@ -84,6 +87,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 		super.configure();
 		try {
 			if (StringUtils.isNotEmpty(getElementXPathExpression())) {
+				streamingXslt = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("xslt.streaming.default", false);
 				if (getXsltVersion()==0) {
 					setXsltVersion(DEFAULT_XSLT_VERSION);
 				}
@@ -374,17 +378,21 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 		ItemCallbackCallingHandler itemHandler;
 		ContentHandler inputHandler;
 		String errorMessage="Could not parse input";
-		TransformerErrorListener errorListener=null;
+		TransformerErrorListener transformerErrorListener=null;
 		try {
 			itemHandler = new ItemCallbackCallingHandler(callback);
 			inputHandler=itemHandler;
 			
 			if (getExtractElementsTp()!=null) {
 				log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
-				TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(this, threadLifeCycleEventListener, correlationID);
+				TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(this, threadLifeCycleEventListener, correlationID, streamingXslt);
 				transformerFilter.setContentHandler(inputHandler);
 				inputHandler=transformerFilter;
-				errorListener=transformerFilter.getErrorListener();
+				ErrorListener errorListener = transformerFilter.getTransformer().getErrorListener();
+				if (errorListener!=null && errorListener instanceof TransformerErrorListener) {
+					transformerErrorListener = (TransformerErrorListener)errorListener;
+				}
+				transformerErrorListener=(TransformerErrorListener)transformerFilter.getTransformer().getErrorListener();
 				errorMessage="Could not process list of elements using xpath ["+getElementXPathExpression()+"]";
 			} 
 			if (StringUtils.isNotEmpty(getTargetElement())) {
@@ -416,12 +424,12 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 			}
 		}
 		
-		if (errorListener!=null) {
-			TransformerException tex = errorListener.getFatalTransformerException();
+		if (transformerErrorListener!=null) {
+			TransformerException tex = transformerErrorListener.getFatalTransformerException();
 			if (tex!=null) {
 				throw new SenderException(errorMessage,tex);
 			}
-			IOException iox = errorListener.getFatalIOException();
+			IOException iox = transformerErrorListener.getFatalIOException();
 			if (iox!=null) {
 				throw new SenderException(errorMessage,iox);
 			}

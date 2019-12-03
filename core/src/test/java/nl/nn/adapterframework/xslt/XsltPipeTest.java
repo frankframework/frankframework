@@ -21,6 +21,11 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 	}
 
 	@Override
+	protected void setStyleSheetNameSessionKey(String styleSheetNameSessionKey) {
+		pipe.setStyleSheetNameSessionKey(styleSheetNameSessionKey);		
+	}
+	
+	@Override
 	protected void setXpathExpression(String xpathExpression) {
 		pipe.setXpathExpression(xpathExpression);		
 	}

@@ -224,26 +224,48 @@ public class XmlUtils {
 		}
 	}
 
-	protected static String makeSkipEmptyTagsXslt(boolean omitXmlDeclaration, boolean indent) {
+
+	protected static String makeGetXsltConfigXslt() {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
-			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
-			+ "<xsl:strip-space elements=\"*\"/>"
-			+ "<xsl:template match=\"node()|@*\">"
-			+ "<xsl:copy>"
-			+ "<xsl:apply-templates select=\"@*\"/>"
-			+ "<xsl:apply-templates/>"
-			+ "</xsl:copy>"
+			+ "<xsl:output method=\"text\"/>"
+			+ "<xsl:template match=\"/\">"
+			+ "<xsl:for-each select=\"/xsl:stylesheet/@*\">"
+			+ "<xsl:value-of select=\"concat('stylesheet-',name(),'=',.,';')\"/>"
+			+ "</xsl:for-each>"
+			+ "<xsl:for-each select=\"/xsl:stylesheet/xsl:output/@*\">"
+			+ "<xsl:value-of select=\"concat('output-',name(),'=',.,';')\"/>"
+			+ "</xsl:for-each>"
 			+ "</xsl:template>"
-			+ "<xsl:template match=\"*[not(normalize-space(.))]\"/>"
 			+ "</xsl:stylesheet>";
 	}
 
-	public static TransformerPool getSkipEmptyTagsTransformerPool(boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
-		String xslt = makeSkipEmptyTagsXslt(omitXmlDeclaration,indent);
-		return getUtilityTransformerPool(xslt,"skipEmptyTags",omitXmlDeclaration,indent);
+	public static TransformerPool getGetXsltConfigTransformerPool() throws TransformerException {
+		String xslt = makeGetXsltConfigXslt();
+		try {
+			return getUtilityTransformerPool(xslt,"detectXsltOutputType",true,false,2);
+		} catch (ConfigurationException e) {
+			throw new TransformerException(e);
+		}
 	}
 
+	public static Map<String,String> getXsltConfig(Resource source) throws TransformerException, IOException, SAXException {
+			return getXsltConfig(source.asSource());
+	}
+	public static Map<String,String> getXsltConfig(Source source) throws TransformerException, IOException, SAXException {
+		TransformerPool tp = getGetXsltConfigTransformerPool();
+		String metadataString = tp.transform(source, null);
+		StringTokenizer st1 = new StringTokenizer(metadataString,";");
+		Map<String,String> result = new LinkedHashMap<String,String>();
+		while (st1.hasMoreTokens()) {
+			StringTokenizer st2 = new StringTokenizer(st1.nextToken(),"=");
+			String key=st2.nextToken();
+			String value=st2.nextToken();
+			result.put(key, value);
+		}
+		return result;
+	}
+	
 	protected static String makeRemoveNamespacesXsltTemplates() {
 		return
 		"<xsl:template match=\"*\">"
@@ -1020,14 +1042,6 @@ public class XmlUtils {
 		}
 	}
 
-	public static int detectXsltVersion(Source stylesource) throws TransformerConfigurationException {
-		try {
-			TransformerPool tpVersion = XmlUtils.getDetectXsltVersionTransformerPool();
-			return interpretXsltVersion(tpVersion.transform(stylesource, null));
-		} catch (Exception e) {
-			throw new TransformerConfigurationException(e);
-		}
-	}
 
 
 	public static synchronized Transformer createTransformer(String xsltString) throws TransformerConfigurationException {

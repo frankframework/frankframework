@@ -58,7 +58,7 @@ public class ClassUtils {
      *
      * @return The context classloader.
      */
-    public static ClassLoader getClassLoader() {
+    private static ClassLoader getClassLoader() {
         return Thread.currentThread().getContextClassLoader();
     }
 	/**
@@ -76,33 +76,27 @@ public class ClassUtils {
 		}
 		return theConstructor;
 	}
-    /**
-     * Return a resource URL.
-     * BL: if this is command line operation, the classloading issues
-     *     are more sane.  During servlet execution, we explicitly set
-     *     the ClassLoader.
-     *
-     * @return The context classloader.
-     * @deprecated Use getResourceURL().openStream instead.
-     */
-    public static InputStream getResourceAsStream(Class klass, String resource) throws  IOException {
-	    InputStream stream=null;
-	    URL url=getResourceURL(klass, resource);
-
-
-	     stream=url.openStream();
-        return stream;
-
-    }
 
 	/**
-	 * Get a resource-URL with the ClassLoader derived from an object or class
-	 * @param obj object to derive the ClassLoader from
+	 * Get a resource-URL with the ClassLoader derived from an object or class.
+	 * @param obj Object to derive the ClassLoader from
 	 * @param resource name of the resource you are trying to fetch the URL from
 	 * @return URL of the resource or null if it can't be not found
 	 */
+	@Deprecated
 	static public URL getResourceURL(Object obj, String resource) {
-		return getResourceURL(obj.getClass().getClassLoader(), resource);
+		return getResourceURL(obj.getClass(), resource);
+	}
+
+	/**
+	 * Get a resource-URL with the ClassLoader derived from an object or class.
+	 * @param clazz Class to derive the ClassLoader from
+	 * @param resource name of the resource you are trying to fetch the URL from
+	 * @return URL of the resource or null if it can't be not found
+	 */
+	@Deprecated
+	static public URL getResourceURL(Class clazz, String resource) {
+		return getResourceURL(clazz.getClassLoader(), resource);
 	}
 
 	/**
@@ -127,6 +121,8 @@ public class ClassUtils {
 	static public URL getResourceURL(ClassLoader classLoader, String resource, String allowedProtocols) {
 		if(classLoader == null) {
 			classLoader = Thread.currentThread().getContextClassLoader();
+			RuntimeException e = new IllegalStateException("getResourceURL called with null classLoader. Avoid this, it is only valid from configure(). Please change the code");
+			log.warn(e);
 		}
 		if (resource.startsWith(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME)) {
 			resource=resource.substring(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME.length());

@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	exclude-result-prefixes="xsi">
 	<xsl:output method="xml" indent="yes" />
 
 	<xsl:variable name="lookup" select="document('uglify_lookup.xml')"/>
@@ -37,5 +39,8 @@
 			<xsl:apply-templates select="*|@*|comment()|processing-instruction()|text()" />
 		</xsl:copy>
 	</xsl:template>
+	
+	<!-- Filter out the XMLSchema Instance namespace information used for validation of Beautiful syntax -->
+	<xsl:template match="@xsi:*|xsi:*"/>
 
 </xsl:stylesheet>

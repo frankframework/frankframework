@@ -33,7 +33,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public abstract class SenderBase implements ISender {
 	protected Logger log = LogUtil.getLogger(this);
 	private String name;
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 
 	@Override
@@ -69,10 +69,10 @@ public abstract class SenderBase implements ISender {
 	}
 
 	/**
-	 * This ClassLoader is set upon creation of the sender, used to retrieve files from Ibis specific ClassLoaders.
+	 * This ClassLoader is set upon creation of the sender, used to retrieve resources configured by the Ibis application.
 	 * @return returns the ClassLoader created by the {@link ClassLoaderManager ClassLoaderManager}.
 	 */
-	public ClassLoader getClassLoader() {
-		return classLoader;
+	public ClassLoader getConfigurationClassLoader() {
+		return configurationClassLoader;
 	}
 }
