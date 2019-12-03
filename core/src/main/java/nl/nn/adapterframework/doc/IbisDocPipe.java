@@ -32,6 +32,7 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import nl.nn.adapterframework.doc.objects.*;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
@@ -919,128 +920,6 @@ public class IbisDocPipe extends FixedForwardPipe {
 			}
 		}
 		return null;
-	}
-
-}
-
-class SpringBean implements Comparable<Object> {
-	private String name;
-	private Class<?> clazz;
-
-	SpringBean(String name, Class<?> clazz) {
-		this.name = name;
-		this.clazz = clazz;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public Class<?> getClazz() {
-		return clazz;
-	}
-
-	public int compareTo(Object o) {
-		return name.compareTo(((SpringBean)o).name);
-	}
-
-	@Override
-	public String toString() {
-		return name +  "[" + clazz.getName() + "]";
-	}
-}
-
-class IbisBean implements Comparable<IbisBean> {
-	private String name;
-	private Class<?> clazz;
-
-	IbisBean(String name, Class<?> clazz) {
-		this.name = name;
-		this.clazz = clazz;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public Class<?> getClazz() {
-		return clazz;
-	}
-
-	public int compareTo(IbisBean ibisBean) {
-		return name.compareTo((ibisBean).name);
-	}
-
-	@Override
-	public String toString() {
-		return name +  "[" + clazz.getName() + "]";
-	}
-}
-
-class IbisMethod {
-	private String methodName; // E.g. registerAdapter
-	private String parameterName; // E.g. adapter
-	int maxOccurs = -1;
-
-	IbisMethod(String methodName, String parameterName) {
-		this.methodName = methodName;
-		this.parameterName = parameterName;
-		if (methodName.startsWith("set")) {
-			maxOccurs = 1;
-		} else if (!(methodName.startsWith("add") || methodName.startsWith("register"))) {
-			throw new RuntimeException("Unknow verb in method name: " + methodName);
-		}
-	}
-
-	public String getMethodName() {
-		return methodName;
-	}
-
-	public String getParameterName() {
-		return parameterName;
-	}
-
-	public int getMaxOccurs() {
-		return maxOccurs;
-	}
-
-	@Override
-	public String toString() {
-		return methodName +  "(" + parameterName + ")";
-	}
-}
-
-class DigesterXmlHandler extends DefaultHandler {
-	private String currentIbisBeanName;
-	private List<IbisMethod> ibisMethods = new ArrayList<IbisMethod>();
-
-	@Override
-	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-		if ("pattern".equals(qName)) {
-			String pattern = attributes.getValue("value");
-			StringTokenizer tokenizer = new StringTokenizer(pattern, "/");
-			while (tokenizer.hasMoreElements()) {
-				String token = tokenizer.nextToken();
-				if (!"*".equals(token)) {
-					currentIbisBeanName = token;
-				}
-			}
-		} else if ("set-next-rule".equals(qName)) {
-			String methodName = attributes.getValue("methodname");
-			ibisMethods.add(new IbisMethod(methodName, currentIbisBeanName));
-		}
-	}
-
-	@Override
-	public void endElement(String uri, String localName, String qName)
-			throws SAXException {
-		if ("pattern".equals(qName)) {
-			currentIbisBeanName = null;
-		}
-	}
-
-	public List<IbisMethod> getIbisMethods() {
-		return ibisMethods;
 	}
 
 }

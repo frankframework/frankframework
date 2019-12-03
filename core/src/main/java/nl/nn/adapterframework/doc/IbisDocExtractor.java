@@ -1,5 +1,8 @@
 package nl.nn.adapterframework.doc;
 
+import nl.nn.adapterframework.doc.objects.AClass;
+import nl.nn.adapterframework.doc.objects.AFolder;
+import nl.nn.adapterframework.doc.objects.AMethod;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -64,19 +67,6 @@ public class IbisDocExtractor {
         return this.json;
     }
 
-//    /**
-//     * Add an All folder to the folders containing all classes
-//     */
-//    public void addAllFolder() {
-//        AFolder allFolder = new AFolder("All");
-//        for (AFolder folder : folders) {
-//            for (AClass clazz : folder.getClasses()) {
-//                allFolder.addClass(clazz);
-//            }
-//        }
-//        folders.add(allFolder);
-//    }
-
     /**
      * Adds a folder to the folder array
      *
@@ -84,120 +74,5 @@ public class IbisDocExtractor {
      */
     public void addFolder(AFolder folder) {
         folders.add(folder);
-    }
-}
-
-class AMethod {
-
-    private String name;
-    private String className;
-    private String originalClassName;
-    private String folderName;
-    private String description;
-    private String defaultValue;
-    private String javadocLink;
-    private int order;
-    private ArrayList<String> superClasses;
-
-
-    public AMethod(String name, String className, String originalClassName, String folderName, String description, String defaultValue, String javadocLink, int order, ArrayList<String> superClasses) {
-        this.name = name;
-        this.className = className;
-        this.originalClassName = originalClassName;
-        this.folderName = folderName;
-        this.description = description;
-        this.defaultValue = defaultValue;
-        this.javadocLink = javadocLink;
-        this.order = order;
-        this.superClasses = superClasses;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public String getOriginalClassName() {
-        return originalClassName;
-    }
-
-    public String getFolderName() {
-        return folderName;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getDefaultValue() {
-        return defaultValue;
-    }
-
-    public String getJavadocLink() {
-        return javadocLink;
-    }
-
-    public int getOrder() {
-        return order;
-    }
-
-    public ArrayList<String> getSuperClasses() {
-        return superClasses;
-    }
-
-}
-
-class AClass {
-
-    private String name;
-    private String packageName;
-    private ArrayList<AMethod> methods;
-
-    public AClass(String name, String packageName) {
-        this.name = name;
-        this.packageName = packageName;
-        this.methods = new ArrayList<AMethod>();
-    }
-
-    public void addMethod(AMethod method) {
-        this.methods.add(method);
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public String getPackageName() {
-        return packageName;
-    }
-
-    public ArrayList<AMethod> getMethods() {
-        return this.methods;
-    }
-}
-
-class AFolder {
-
-    private String name;
-    private ArrayList<AClass> classes;
-
-    public AFolder(String name) {
-        this.name = name;
-        this.classes = new ArrayList<AClass>();
-    }
-
-    public void addClass(AClass clazz) {
-        this.classes.add(clazz);
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public ArrayList<AClass> getClasses() {
-        return this.classes;
     }
 }
