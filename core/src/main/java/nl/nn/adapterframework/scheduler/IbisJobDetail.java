@@ -21,7 +21,7 @@ import org.quartz.impl.JobDetailImpl;
 
 public class IbisJobDetail extends JobDetailImpl {
 
-	JobType type = JobType.CONFIGURATION;
+	private JobType type = JobType.CONFIGURATION;
 
 	public enum JobType {
 		CONFIGURATION, DATABASE
