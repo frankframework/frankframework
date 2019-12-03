@@ -837,6 +837,15 @@ public class JobDef {
 		}
 	}
 
+	/**
+	 * 1. This method first stores all database jobs that can are found in the Quartz Scheduler in a Map.
+	 * 2. It then loops through all records found in the database.
+	 * 3. If the job is found, remove it from the Map and compares it with the already existing scheduled job. 
+	 *    Only if they differ, it overwrites the current job.
+	 *    If it is not present it add the job to the scheduler.
+	 * 4. Once it's looped through all the database jobs, loop through the remaining jobs in the Map.
+	 *    Since they have been removed from the database, remove them from the Quartz Scheduler
+	 */
 	private void loadDatabaseSchedules(IbisManager ibisManager) {
 		if(!(ibisManager instanceof DefaultIbisManager)) {
 			getMessageKeeper().add("manager is not an instance of DefaultIbisManager", MessageKeeperMessage.ERROR_LEVEL);
@@ -850,6 +859,7 @@ public class JobDef {
 			sh = ((DefaultIbisManager) ibisManager).getSchedulerHelper();
 			scheduler = sh.getScheduler();
 
+			// Fill the databaseJobDetails Map with all IbisJobDetails that have been stored in the database
 			Set<JobKey> jobKeys = scheduler.getJobKeys(GroupMatcher.anyJobGroup());
 			for(JobKey jobKey : jobKeys) {
 				IbisJobDetail detail = (IbisJobDetail) scheduler.getJobDetail(jobKey);
@@ -861,6 +871,7 @@ public class JobDef {
 			getMessageKeeper().add("unable to retrieve jobkeys from scheduler", e);
 		}
 
+		// Get all IbisSchedules that have been stored in the database
 		String configJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 		FixedQuerySender qs = (FixedQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
 		qs.setJmsRealm(configJmsRealm);
@@ -888,6 +899,7 @@ public class JobDef {
 
 				JobKey key = JobKey.jobKey(jobName, jobGroup);
 
+				//Create a new JobDefinition so we can compare it with existing jobs
 				DatabaseJobDef jobdef = new DatabaseJobDef();
 				jobdef.setCronExpression(cronExpression);
 				jobdef.setName(jobName);
@@ -911,6 +923,7 @@ public class JobDef {
 					getMessageKeeper().add("unable to configure DatabaseJobDef ["+jobdef+"] with key ["+key+"]", e);
 				}
 
+				// If the job is found, find out if it is different from the existing one and update if necessarily
 				if(databaseJobDetails.containsKey(key)) {
 					IbisJobDetail oldJobDetails = databaseJobDetails.get(key);
 					if(!oldJobDetails.compareWith(jobdef)) {
@@ -921,8 +934,10 @@ public class JobDef {
 							getMessageKeeper().add("unable to update schedule ["+key+"]", e);
 						}
 					}
+					// Remove the key that has been found from the databaseJobDetails Map
 					databaseJobDetails.remove(key);
 				} else {
+					// The job was not found in the databaseJobDetails Map, which indicates it's new and has to be added
 					log.debug("add DatabaseSchedule ["+key+"]");
 					try {
 						sh.scheduleJob(ibisManager, jobdef);
@@ -931,13 +946,14 @@ public class JobDef {
 					}
 				}
 			}
-		// Only catch database related exceptions!
-		} catch (Exception e) {
+		} catch (Exception e) { // Only catch database related exceptions!
 			getMessageKeeper().add("unable to retrieve schedules from database", e);
 		} finally {
 			qs.close();
 			JdbcUtil.fullClose(conn, rs);
 		}
+
+		// Loop through all remaining databaseJobDetails, which were not present in the database. Since they have been removed, unschedule them!
 		for(JobKey key : databaseJobDetails.keySet()) {
 			log.debug("delete DatabaseSchedule ["+key+"]");
 			try {
