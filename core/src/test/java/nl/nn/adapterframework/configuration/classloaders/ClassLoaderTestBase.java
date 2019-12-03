@@ -235,11 +235,13 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 		appConstants = AppConstants.getInstance();
 		C = createClassLoader(parent);
 
-		String configKey = "configurations."+getConfigurationName()+".configurationFile";
-		AppConstants.getInstance(C).put(configKey, name);
-
 		if(C instanceof ClassLoaderBase) {
 			((ClassLoaderBase) C).setBasePath("Config");
+			
+			// We have to set both the name as well as the appconstants variable. 
+			String configKey = "configurations."+getConfigurationName()+".configurationFile";
+			AppConstants.getInstance(C).put(configKey, name);
+			((ClassLoaderBase) C).setConfigurationFile(name);
 		}
 		if(C instanceof IConfigurationClassLoader) {
 			appConstants.put("configurations."+getConfigurationName()+".classLoaderType", C.getClass().getSimpleName());

@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -30,6 +29,7 @@ import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -47,7 +47,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 	private IbisContext ibisContext = null;
 	private String configurationName = null;
-	private String configurationFile = null;
+	private String configurationFile = ConfigurationUtils.DEFAULT_CONFIGURATION_FILE;
 
 	protected Logger log = LogUtil.getLogger(this);
 	private ReportLevel reportLevel = ReportLevel.ERROR;
@@ -69,7 +69,6 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 		this.ibisContext = ibisContext;
 		this.configurationName = configurationName;
 
-		configurationFile = ConfigurationUtils.getConfigurationFile(this, getConfigurationName());
 		if(StringUtils.isEmpty(configurationFile)) {
 			throw new ConfigurationException("unable to determine configurationFile");
 		} else {
@@ -117,6 +116,9 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	 */
 	public String getConfigurationFile() {
 		return configurationFile;
+	}
+	public void setConfigurationFile(String configurationFile) {
+		this.configurationFile = configurationFile;
 	}
 
 	/**
@@ -236,6 +238,8 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 	@Override
 	public void reload() throws ConfigurationException {
+		log.debug("reloading configuration ["+getConfigurationName()+"]");
+
 		if (getParent() instanceof ReloadAware) {
 			((ReloadAware)getParent()).reload();
 		}

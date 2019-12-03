@@ -23,12 +23,10 @@
     <dependency>
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-adapterframework-larva</artifactId>
-      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-adapterframework-ladybug</artifactId>
-      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.ibissource</groupId>

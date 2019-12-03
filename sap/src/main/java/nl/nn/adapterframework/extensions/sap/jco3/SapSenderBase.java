@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.extensions.sap.jco3;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.doc.IbisDoc; 
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
@@ -35,7 +35,7 @@ import com.sap.conn.jco.JCoException;
 
 /**
  * Base class for functions that call SAP.
- * 
+ *
  * <table border="1">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
@@ -151,6 +151,11 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 			paramList=new ParameterList();
 		}
 		paramList.add(p);
+	}
+
+	@Override
+	public ParameterList getParameterList() {
+		return paramList;
 	}
 
 	@IbisDoc({"session key in which luw information is stored. when set, actions that share a luw-handle will be executed using the same destination. can only be used for synchronous functions", " "})

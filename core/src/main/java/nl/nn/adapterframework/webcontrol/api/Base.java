@@ -38,7 +38,9 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -145,5 +147,34 @@ public abstract class Base {
 			}
 		}
 		return resultList;
+	}
+
+	protected String resolveStringFromMap(Map<String, List<InputPart>> inputDataMap, String key) throws ApiException {
+		return resolveStringFromMap(inputDataMap, key, null);
+	}
+
+	protected String resolveStringFromMap(Map<String, List<InputPart>> inputDataMap, String key, String defaultValue) throws ApiException {
+		String result = resolveTypeFromMap(inputDataMap, key, String.class, null);
+		if(StringUtils.isEmpty(result)) {
+			if(defaultValue != null) {
+				return defaultValue;
+			}
+			throw new ApiException("Key ["+key+"] may not be empty");
+		}
+		return result;
+	}
+
+	protected <T> T resolveTypeFromMap(Map<String, List<InputPart>> inputDataMap, String key, Class<T> clazz, T defaultValue) throws ApiException {
+		try {
+			if(inputDataMap.get(key) != null) {
+				return inputDataMap.get(key).get(0).getBody(clazz, null);
+			}
+		} catch (Exception e) {
+			throw new ApiException("Failed to parse parameter", e);
+		}
+		if(defaultValue != null) {
+			return defaultValue;
+		}
+		throw new ApiException("Key ["+key+"] not defined", 400);
 	}
 }

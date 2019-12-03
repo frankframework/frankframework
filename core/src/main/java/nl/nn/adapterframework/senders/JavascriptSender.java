@@ -69,7 +69,7 @@ public class JavascriptSender extends SenderSeries {
 		if (StringUtils.isNotEmpty(getJsFileName())) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(getClassLoader(), getJsFileName());
+				resource = ClassUtils.getResourceURL(getConfigurationClassLoader(), getJsFileName());
 			} catch (Throwable e) {
 				throw new SenderException(
 					getLogPrefix() + "got exception searching for [" + getJsFileName() + "]", e);

@@ -125,17 +125,6 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 		}
 	}
 
-	private ParameterList getParameterList() {
-		return parameterList;
-	}
-
-	@Override
-	public void addParameter(Parameter param) {
-		log.debug("added parameter ["+param.toString()+"]");
-		parameterList.add(param);
-	}
-
-
 
 	@IbisDoc({"roottag for the generated xml document that will be send to the Sender", "record"})
 	public void setRootTag(String string) {

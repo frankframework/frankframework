@@ -22,7 +22,6 @@
 		<mkdir dir="${root.dir}/rs2fs"/>
 		<mkdir dir="${root.dir}/webservices"/>
 		<mkdir dir="${root.dir}/xfeip"/>
-		<mkdir dir="${root.dir}/zip"/>
 
 		<property name="zip.name" value="folders.zip" />
 

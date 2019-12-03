@@ -12,9 +12,7 @@ import org.junit.Test;
 import microsoft.exchange.webservices.data.core.service.item.Item;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.filesystem.FileSystemException;
-import nl.nn.adapterframework.filesystem.HelperedFileSystemTestBase;
-import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
+import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.util.TestAssertions;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -32,13 +30,13 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	private String senderSmtpHost="smtp.fastmail.com";
 	private int senderSmtpPort=465;
 	private boolean senderSsl=true;
-	private String senderUserId="gerrit@25bis.nl";
+	private String senderUserId="xxx@xxxx.nl";
 //	private String senderPassword="";
 	private String sendGridApiKey="";
 	
 //	private String nonExistingFileName = "AAMkAGNmZTczMWUwLWQ1MDEtNDA3Ny1hNjU4LTlmYTQzNjE0NjJmYgBGAAAAAAALFKqetECyQKQyuRBrRSzgBwDx14SZku4LS5ibCBco+nmXAAAAAAEMAADx14SZku4LS5ibCBco+nmXAABMFuwsAAA=";
 
-	protected IExchangeMailListener mailListener;
+	protected ExchangeMailListener mailListener;
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
@@ -76,7 +74,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	 * @return fileSystem
 	 * @throws ConfigurationException
 	 */
-	protected abstract IExchangeMailListener createExchangeMailListener();
+	protected abstract ExchangeMailListener createExchangeMailListener();
 	
 	protected void equalsCheck(String content, String actual) {
 		assertEquals(content, actual);
@@ -258,7 +256,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 		assertTrue(XmlUtils.isWellFormed(message,"email"));
 		TestAssertions.assertXpathValueEquals("gerrit@integrationpartners.nl", message, "/email/recipients/recipient[@type='to']");
-		TestAssertions.assertXpathValueEquals("gerrit@25bis.nl", message, "/email/from");
+		TestAssertions.assertXpathValueEquals(senderUserId, message, "/email/from");
 		TestAssertions.assertXpathValueEquals("testmail 1", message, "/email/subject");
 	}
 

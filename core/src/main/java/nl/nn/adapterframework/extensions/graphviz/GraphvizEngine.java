@@ -127,10 +127,7 @@ public class GraphvizEngine {
 		if(null == ENVS.get()) {
 			log.debug("creating new VizJs engine");
 			String visJsSource = getVizJsSource(graphvizVersion);
-			String tempDir = AppConstants.getInstance().getString("log.dir", null);
-			if(tempDir != null && tempDir.isEmpty()) //Make sure to not pass an empty directory
-				tempDir = null;
-			ENVS.set(new Env(getVisJsWrapper(), visJsSource, "GraphvizJS", tempDir));
+			ENVS.set(new Env(getVisJsWrapper(), visJsSource, "GraphvizJS"));
 		}
 		return ENVS.get();
 	}
@@ -167,9 +164,9 @@ public class GraphvizEngine {
 		 * It's important to register the JS scripts under the same alias so it can be cached
 		 * Use the log.dir to extract the SO/DLL files into, make sure this is using an absolute path and not a relative one!!
 		 */
-		Env(String initScript, String graphvisJsLibrary, String alias, String tempDirectory) {
+		Env(String initScript, String graphvisJsLibrary, String alias) {
 			log.info("starting V8 runtime...");
-			V8Instance.startRuntime(alias, tempDirectory);
+			V8Instance.startRuntime(alias, null);
 			log.info("started V8 runtime. Initializing graphviz...");
 			V8Instance.executeScript(graphvisJsLibrary);
 			V8Instance.executeScript(initScript);

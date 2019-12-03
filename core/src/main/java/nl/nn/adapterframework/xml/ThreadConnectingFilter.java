@@ -22,31 +22,32 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 
 public class ThreadConnectingFilter extends FullXmlFilter {
 
-	private ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
-	private Object threadInfo;
+	private ThreadConnector threadConnector;
 	
 	public ThreadConnectingFilter(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) {
 		super();
-		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
-		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationID):null;
+		threadConnector=new ThreadConnector(owner, threadLifeCycleEventListener, correlationID);
 	}
 
 	private void handleException(SAXException e) throws SAXException {
-		if (threadLifeCycleEventListener!=null) {
-			threadLifeCycleEventListener.threadAborted(threadInfo, e);
+		Throwable t = threadConnector.abortThread(e);
+		if (t instanceof SAXException) {
+			throw (SAXException) t;
 		}
-		throw e;
+		if (t instanceof Exception) {
+			throw new SaxException((Exception)t);
+		}
+		throw new RuntimeException(t);
 	}
 	
 	@Override
 	public void startDocument() throws SAXException {
-		if (threadLifeCycleEventListener!=null) {
-			threadLifeCycleEventListener.threadCreated(threadInfo);
-		}
+		threadConnector.startThread(null);
 		try {
 			super.startDocument();
 		} catch (SAXException e) {
@@ -61,9 +62,7 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		} catch (SAXException e) {
 			handleException(e);
 		}
-		if (threadLifeCycleEventListener!=null) {
-			threadLifeCycleEventListener.threadEnded(threadInfo,null);
-		}
+		threadConnector.endThread(null);
 	}
 
 	

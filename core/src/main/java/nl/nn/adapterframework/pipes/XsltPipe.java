@@ -177,80 +177,50 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	public void setStyleSheetName(String stylesheetName) {
 		sender.setStyleSheetName(stylesheetName);
 	}
-	public String getStyleSheetName() {
-		return sender.getStyleSheetName();
-	}
 
 	@IbisDoc({"2", "Session key to retrieve stylesheet location. Overrides stylesheetName or xpathExpression attribute", ""})
 	public void setStyleSheetNameSessionKey(String newSessionKey) {
 		sender.setStyleSheetNameSessionKey(newSessionKey);
-	}
-	public String getStyleSheetNameSessionKey() {
-		return sender.getStyleSheetNameSessionKey();
 	}
 
 	@IbisDoc({"3", "Size of cache of stylesheets retrieved from styleSheetNameSessionKey", "100"})
 	public void setStyleSheetCacheSize(int size) {
 		sender.setStyleSheetCacheSize(size);
 	}
-	public int getStyleSheetCacheSize() {
-		return sender.getStyleSheetCacheSize();
-	}
 	
 	@IbisDoc({"4", "xpath-expression to apply to the input message. it's possible to refer to a parameter (which e.g. contains a value from a sessionkey) by using the parameter name prefixed with $", ""})
 	public void setXpathExpression(String string) {
 		sender.setXpathExpression(string);
-	}
-	public String getXpathExpression() {
-		return sender.getXpathExpression();
 	}
 
 	@IbisDoc({"5", "force the transformer generated from the xpath-expression to omit the xml declaration", "true"})
 	public void setOmitXmlDeclaration(boolean b) {
 		sender.setOmitXmlDeclaration(b);
 	}
-	public boolean isOmitXmlDeclaration() {
-		return sender.isOmitXmlDeclaration();
-	}
 	
 	@IbisDoc({"6", "namespace defintions for xpathexpression. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		sender.setNamespaceDefs(namespaceDefs);
-	}
-	public String getNamespaceDefs() {
-		return sender.getNamespaceDefs();
 	}
 
 	@IbisDoc({"7", "either 'text' or 'xml'. only valid for xpathexpression", "text"})
 	public void setOutputType(String string) {
 		sender.setOutputType(string);
 	}
-	public String getOutputType() {
-		return sender.getOutputType();
-	}
 
 	@IbisDoc({"8", "when set <code>true</code>, result is pretty-printed. (only used when <code>skipemptytags=true</code>)", "true"})
 	public void setIndentXml(boolean b) {
 		sender.setIndentXml(b);
-	}
-	public boolean isIndentXml() {
-		return sender.isIndentXml();
 	}
 
 	@IbisDoc({"9", "when set <code>true</code> namespaces (and prefixes) in the input message are removed", "false"})
 	public void setRemoveNamespaces(boolean b) {
 		sender.setRemoveNamespaces(b);
 	}
-	public boolean isRemoveNamespaces() {
-		return sender.isRemoveNamespaces();
-	}
 
 	@IbisDoc({"10", "when set <code>true</code> empty tags in the output are removed", "false"})
 	public void setSkipEmptyTags(boolean b) {
 		sender.setSkipEmptyTags(b);
-	}
-	public boolean isSkipEmptyTags() {
-		return sender.isSkipEmptyTags();
 	}
 
 	@IbisDoc({"11", "when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})

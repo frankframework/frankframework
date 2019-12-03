@@ -48,63 +48,70 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 public class IfsaRequesterSender extends IfsaEjbBase implements ISenderWithParameters, INamedObject, HasPhysicalDestination {
     
     protected ParameterList paramList = null;
-    public void configure() throws ConfigurationException {
-        super.configure();
-        if (paramList!=null) {
-            paramList.configure();
-        }
-        
-        log.info(getLogPrefix()+" configured sender on "+getPhysicalDestinationName());
-        
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
+    
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		if (paramList != null) {
+			paramList.configure();
+		}
 
-    public void open() throws SenderException {
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
+		log.info(getLogPrefix() + " configured sender on " + getPhysicalDestinationName());
 
-    public void close() throws SenderException {
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
+//		throw new UnsupportedOperationException("Not supported yet.");
+	}
 
-    protected Map convertParametersToMap(ParameterResolutionContext prc) throws SenderException {
-        ParameterValueList paramValueList;
-        try {
-            paramValueList = prc.getValues(paramList);
-        } catch (ParameterException e) {
-            throw new SenderException(getLogPrefix() + "caught ParameterException in sendMessage() determining serviceId", e);
-        }
-        Map params = new HashMap();
-        if (paramValueList != null && paramList != null) {
-            for (int i = 0; i < paramList.size(); i++) {
-                String key = paramList.getParameter(i).getName();
-                String value = paramValueList.getParameterValue(i).asStringValue(null);
-                params.put(key, value);
-            }
-        }
-        return params;
-    }
+	@Override
+	public void open() throws SenderException {
+		// nothing special
+	}
 
-    public boolean isSynchronous() {
-        return getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.REQUEST_REPLY);
-    }
+	@Override
+	public void close() throws SenderException {
+		// nothing special
+	}
 
-    public String sendMessage(String dummyCorrelationId, String message) throws SenderException, TimeOutException {
-        return sendMessage(dummyCorrelationId, message, (Map)null);
-    }
+	protected Map<String, String> convertParametersToMap(ParameterResolutionContext prc) throws SenderException {
+		ParameterValueList paramValueList;
+		try {
+			paramValueList = prc.getValues(paramList);
+		} catch (ParameterException e) {
+			throw new SenderException(getLogPrefix() + "caught ParameterException in sendMessage() determining serviceId", e);
+		}
+		Map<String, String> params = new HashMap<String, String>();
+		if (paramValueList != null && paramList != null) {
+			for (int i = 0; i < paramList.size(); i++) {
+				String key = paramList.getParameter(i).getName();
+				String value = paramValueList.getParameterValue(i).asStringValue(null);
+				params.put(key, value);
+			}
+		}
+		return params;
+	}
 
-    public String sendMessage(String dummyCorrelationId, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-        Map params = convertParametersToMap(prc);
-        return sendMessage(dummyCorrelationId, message, params);
-    }
+	@Override
+	public boolean isSynchronous() {
+		return getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.REQUEST_REPLY);
+	}
+
+	@Override
+	public String sendMessage(String dummyCorrelationId, String message) throws SenderException, TimeOutException {
+		return sendMessage(dummyCorrelationId, message, (Map<String, String>) null);
+	}
+
+	@Override
+	public String sendMessage(String dummyCorrelationId, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+		Map<String, String> params = convertParametersToMap(prc);
+		return sendMessage(dummyCorrelationId, message, params);
+	}
 
     /**
      * Execute a request to the IFSA service.
      * @return in Request/Reply, the retrieved message or TIMEOUT, otherwise null
      */
-    public String sendMessage(String dummyCorrelationId, String message, Map params) throws SenderException, TimeOutException {
+    public String sendMessage(String dummyCorrelationId, String message, Map<String, String> params) throws SenderException, TimeOutException {
         Connection conn = null;
-        Map udzMap = null;
+        Map<String, String> udzMap = null;
         
         try {
             String realServiceId;
@@ -123,7 +130,7 @@ public class IfsaRequesterSender extends IfsaEjbBase implements ISenderWithParam
                 }
 
                 // Use remaining params as outgoing UDZs
-                udzMap = new HashMap(params);
+                udzMap = new HashMap<String, String>(params);
                 udzMap.remove("serviceId");
                 udzMap.remove("occurrence");
             } else {
@@ -161,12 +168,18 @@ public class IfsaRequesterSender extends IfsaEjbBase implements ISenderWithParam
             }
         }
     }
-        
-    public void addParameter(Parameter p) {
-        if (paramList==null) {
-            paramList=new ParameterList();
-        }
-        paramList.add(p);
-    }
+
+	@Override
+	public void addParameter(Parameter p) {
+		if (paramList == null) {
+			paramList = new ParameterList();
+		}
+		paramList.add(p);
+	}
+
+	@Override
+	public ParameterList getParameterList() {
+		return paramList;
+	}
 
 }

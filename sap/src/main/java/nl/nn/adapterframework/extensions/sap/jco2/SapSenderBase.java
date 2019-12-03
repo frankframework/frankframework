@@ -52,8 +52,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 	private boolean synchronous=false;
 
 	protected ParameterList paramList = null;
-	
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -157,6 +156,10 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		paramList.add(p);
 	}
 
+	@Override
+	public ParameterList getParameterList() {
+		return paramList;
+	}
 
 
 	@IbisDoc({"session key in which luw information is stored. when set, actions that share a luw-handle will be executed using the same client. can only be used for synchronous functions", " "})
