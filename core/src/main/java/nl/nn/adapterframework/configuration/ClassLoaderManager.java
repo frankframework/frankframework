@@ -20,21 +20,30 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import nl.nn.adapterframework.configuration.classloaders.BasePathClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.ReloadAware;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
+/**
+ * Loads a ClassLoader on a per Configuration basis. It is possible to specify the ClassLoader type and to make 
+ * ClassLoaders inherit each other. If no ClassLoader is specified the WebAppClassLoader is used, which will 
+ * first try to search for resources on the basepath and then the webapp and classpath.
+ * 
+ * @author Niels Meijer
+ *
+ */
 public class ClassLoaderManager {
 
 	private static final Logger LOG = LogUtil.getLogger(ClassLoaderManager.class);
-	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private static final int MAX_CLASSLOADER_ITEMS = APP_CONSTANTS.getInt("classloader.items.max", 100);
+	private final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	private final int MAX_CLASSLOADER_ITEMS = APP_CONSTANTS.getInt("classloader.items.max", 100);
 	private Map<String, ClassLoader> classLoaders = new TreeMap<String, ClassLoader>();
+	private ClassLoader classPathClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private IbisContext ibisContext;
 
@@ -43,10 +52,11 @@ public class ClassLoaderManager {
 	}
 
 	private ClassLoader createClassloader(String configurationName, String classLoaderType) throws ConfigurationException {
-		return createClassloader(configurationName, classLoaderType, Thread.currentThread().getContextClassLoader());
+		return createClassloader(configurationName, classLoaderType, classPathClassLoader);
 	}
 
 	private ClassLoader createClassloader(String configurationName, String classLoaderType, ClassLoader parentClassLoader) throws ConfigurationException {
+		//It is possible that no ClassLoader has been defined, use default ClassLoader
 		if(classLoaderType == null || classLoaderType.isEmpty())
 			throw new ConfigurationException("classLoaderType cannot be empty");
 
@@ -116,7 +126,7 @@ public class ClassLoaderManager {
 				//Break here, we cannot continue when there are ConfigurationExceptions!
 				return null;
 			}
-			LOG.info("configured classloader ["+classLoader.toString()+"] for configuration ["+configurationName+"]");
+			LOG.info("configured classloader ["+loader.toString()+"]");
 		}
 
 		return classLoader;
@@ -136,15 +146,6 @@ public class ClassLoaderManager {
 		return input.substring(0, 1).toLowerCase() + input.substring(1);
 	}
 
-	private ClassLoader init(String configurationName) throws ConfigurationException {
-		//You can define the property but leave it empty
-		String classLoaderType = APP_CONSTANTS.getString("configurations." + configurationName + ".classLoaderType", "");
-		if(classLoaderType.isEmpty())
-			classLoaderType = "WebAppClassLoader";
-
-		return init(configurationName, classLoaderType);
-	}
-
 	private ClassLoader init(String configurationName, String classLoaderType) throws ConfigurationException {
 		return init(configurationName, classLoaderType, APP_CONSTANTS.getString("configurations." + configurationName + ".parentConfig", null));
 	}
@@ -153,16 +154,22 @@ public class ClassLoaderManager {
 		if(contains(configurationName))
 			throw new ConfigurationException("unable to add configuration with duplicate name ["+configurationName+"]");
 
-		String configurationFile = ibisContext.getConfigurationFile(configurationName);
-		LOG.info("attempting to create new ClassLoader for configuration ["+configurationName+"] with configurationFile ["+configurationFile+"]");
+		if(StringUtils.isEmpty(classLoaderType)) {
+			classLoaderType = APP_CONSTANTS.getString("configurations." + configurationName + ".classLoaderType", "");
+			if(StringUtils.isEmpty(classLoaderType)) {
+				classLoaderType = "WebAppClassLoader";
+			}
+		}
+
+		LOG.info("attempting to create new ClassLoader of type ["+classLoaderType+"] for configuration ["+configurationName+"]");
 
 		ClassLoader classLoader;
-		if(parentConfig != null) {
+		if(StringUtils.isNotEmpty(parentConfig)) {
 			if(!contains(parentConfig))
 				throw new ConfigurationException("failed to locate parent configuration ["+parentConfig+"]");
 
 			classLoader = createClassloader(configurationName, classLoaderType, get(parentConfig));
-			LOG.debug("wrapped classLoader ["+classLoader.toString()+"] in parentConfig ["+parentConfig+"]");
+			LOG.debug("created a new classLoader ["+classLoader.toString()+"] with parentConfig ["+parentConfig+"]");
 		}
 		else
 			classLoader = createClassloader(configurationName, classLoaderType);
@@ -172,14 +179,6 @@ public class ClassLoaderManager {
 			//If this is thrown, the ibis developer specifically did not want to throw an exception.
 			return null;
 		}
-
-		String basePath = "";
-		int i = configurationFile.lastIndexOf('/');
-		if (i != -1) {
-			basePath = configurationFile.substring(0, i + 1);
-		}
-
-		classLoader = new BasePathClassLoader(classLoader, basePath);
 
 		classLoaders.put(configurationName, classLoader);
 		if (classLoaders.size() > MAX_CLASSLOADER_ITEMS) {
@@ -210,11 +209,7 @@ public class ClassLoaderManager {
 		LOG.debug("get configuration ClassLoader ["+configurationName+"]");
 		ClassLoader classLoader = classLoaders.get(configurationName);
 		if (classLoader == null) {
-			if (classLoaderType == null) {
-				classLoader = init(configurationName);
-			} else {
-				classLoader = init(configurationName, classLoaderType);
-			}
+			classLoader = init(configurationName, classLoaderType);
 		}
 		return classLoader;
 	}
@@ -223,7 +218,7 @@ public class ClassLoaderManager {
 		reload(get(currentConfigurationName));
 	}
 
-	/*
+	/**
 	 * Reuse class loader as it is difficult to have all
 	 * references to the class loader removed (see also
 	 * http://zeroturnaround.com/rebellabs/rjc201/).

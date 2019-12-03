@@ -74,6 +74,7 @@ public class ConfigurationUtils {
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.autoDatabaseClassLoader", false);
 	private static final String CONFIGURATIONS = APP_CONSTANTS.getResolvedProperty("configurations.names.application");
 	public static String ADDITIONAL_PROPERTIES_FILE_SUFFIX = APP_CONSTANTS.getString("ADDITIONAL.PROPERTIES.FILE.SUFFIX", null);
+	public static final String DEFAULT_CONFIGURATION_FILE = "Configuration.xml";
 
 	public static boolean stubConfiguration() {
 		return stubConfiguration(null);
@@ -123,6 +124,34 @@ public class ConfigurationUtils {
 		} catch (TransformerException te) {
 			throw new ConfigurationException("got error transforming resource [" + tweak_xsltSource.toString() + "] from [" + tweakXslt + "]", te);
 		}
+	}
+
+	public static String getConfigurationFile(ClassLoader classLoader, String currentConfigurationName) {
+		String configFileKey = "configurations." + currentConfigurationName + ".configurationFile";
+		String configurationFile = AppConstants.getInstance(classLoader).getResolvedProperty(configFileKey);
+		if (StringUtils.isEmpty(configurationFile) && classLoader != null) {
+			configurationFile = AppConstants.getInstance(classLoader.getParent()).getResolvedProperty(configFileKey);
+		}
+		if (StringUtils.isEmpty(configurationFile)) {
+			configurationFile = DEFAULT_CONFIGURATION_FILE;
+		}
+		return configurationFile;
+	}
+
+	public static String getConfigurationVersion(ClassLoader classLoader) {
+		return getVersion(classLoader, "configuration.version", "configuration.timestamp");
+	}
+
+	public static String getVersion(ClassLoader classLoader, String versionKey, String timestampKey) {
+		AppConstants constants = AppConstants.getInstance(classLoader);
+		String version = null;
+		if (StringUtils.isNotEmpty(constants.getProperty(versionKey))) {
+			version = constants.getProperty(versionKey);
+			if (StringUtils.isNotEmpty(constants.getProperty(timestampKey))) {
+				version = version + "_" + constants.getProperty(timestampKey);
+			}
+		}
+		return version;
 	}
 
 	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name) throws ConfigurationException {

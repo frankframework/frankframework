@@ -55,9 +55,20 @@ function setLogLevel(level) {
 $(function() {
 	$(window).on("load resize", function() {
 		if ($(document).width() < 769) {
-			$('body').addClass('body-small');
+			$("body").addClass("body-small");
 		} else {
-			$('body').removeClass('body-small');
+			$("body").removeClass("body-small");
+		}
+	});
+
+	$(window).on("scroll", function() {
+		var scroll2top = $(".scroll-to-top").stop(true);
+		if($(this).scrollTop() > 100) {
+			if(parseInt(scroll2top.css("opacity")) === 0) {
+				scroll2top.animate({"opacity": 1, "bottom": 24}, 50, "linear");
+			}
+		} else {
+			scroll2top.animate({"opacity": 0, "bottom": 0}, 50, "linear");
 		}
 	});
 });

@@ -204,7 +204,7 @@ public final class ShowConfiguration extends Base {
 			throw new ApiException("Configuration not found!");
 		}
 
-		if(configuration.getClassLoader().getParent() instanceof DatabaseClassLoader) {
+		if(configuration.getClassLoader() instanceof DatabaseClassLoader) {
 			List<Map<String, Object>> configs = getConfigsFromDatabase(configurationName, jmsRealm);
 			if(configs == null)
 				return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();

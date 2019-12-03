@@ -32,9 +32,7 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 	private Guard guard;
 	private StatisticsKeeper sk;
 
-	public ParallelSenderExecutor(ISender sender, String correlationID,
-			String message, ParameterResolutionContext prc, Guard guard,
-			StatisticsKeeper sk) {
+	public ParallelSenderExecutor(ISender sender, String correlationID, String message, ParameterResolutionContext prc, Guard guard, StatisticsKeeper sk) {
 		super();
 		this.sender=sender;
 		this.correlationID=correlationID;
@@ -44,6 +42,7 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 		this.sk=sk;
 	}
 
+	@Override
 	public void run() {
 		try {
 			long t1 = System.currentTimeMillis();

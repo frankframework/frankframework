@@ -42,8 +42,6 @@ import javax.servlet.http.HttpServletRequestWrapper;
 
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
 
 /**
@@ -54,30 +52,29 @@ import org.apache.log4j.Logger;
  */
 public class ParamWrapperFilter implements Filter {
 
-	private static final Log LOG = LogFactory.getLog(ParamWrapperFilter.class);
-	protected Logger iaflog = LogUtil.getLogger(this);
+	private Logger log = LogUtil.getLogger(this);
 
 	private static final String DEFAULT_BLACKLIST_PATTERN = "(.*\\.|^|.*|\\[('|\"))(c|C)lass(\\.|('|\")]|\\[).*";
 	private static final String INIT_PARAM_NAME = "excludeParams";
 
 	private Pattern pattern;
 
+	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
 		final String toCompile;
-		final String initParameter = filterConfig
-				.getInitParameter(INIT_PARAM_NAME);
+		final String initParameter = filterConfig.getInitParameter(INIT_PARAM_NAME);
 		if (initParameter != null && initParameter.trim().length() > 0) {
 			toCompile = initParameter;
 		} else {
 			toCompile = DEFAULT_BLACKLIST_PATTERN;
 		}
 
-		iaflog.info("INFO Message: Struts1 'do'-Filter active");
+		log.info("INFO Message: Struts1 'do'-Filter active");
 		this.pattern = Pattern.compile(toCompile, Pattern.DOTALL);
 	}
 
-	public void doFilter(ServletRequest request, ServletResponse response,
-			FilterChain chain) throws IOException, ServletException {
+	@Override
+	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 
 		// to prevent NPE (????)
 		request.getParameterMap();
@@ -92,10 +89,11 @@ public class ParamWrapperFilter implements Filter {
 			chain.doFilter(request, response);
 	}
 
+	@Override
 	public void destroy() {
 	}
 
-	static class ParamFilteredRequest extends HttpServletRequestWrapper {
+	class ParamFilteredRequest extends HttpServletRequestWrapper {
 
 		private static final int BUFFER_SIZE = 128;
 		private static final String CONTENT_LENGTH_PATTERN = "(?i)content-length";
@@ -153,8 +151,7 @@ public class ParamWrapperFilter implements Filter {
 		@Override
 		public Enumeration getParameterNames() {
 			List finalParameterNames = new ArrayList();
-			List parameterNames = Collections.list((Enumeration) super
-					.getParameterNames());
+			List parameterNames = Collections.list((Enumeration) super.getParameterNames());
 			final Iterator iterator = parameterNames.iterator();
 			while (iterator.hasNext()) {
 				String parameterName = (String) iterator.next();
@@ -167,26 +164,26 @@ public class ParamWrapperFilter implements Filter {
 
 		@Override
 		public ServletInputStream getInputStream() throws IOException {
-			if (LOG.isTraceEnabled()) {
-				LOG.trace(body);
+			if (log.isTraceEnabled()) {
+				log.trace(body);
 			}
 			final ByteArrayInputStream byteArrayInputStream;
 			if (pattern.matcher(body).matches()) {
-				if (LOG.isWarnEnabled()) {
-					LOG.warn("[getInputStream]: found body to match blacklisted parameter pattern");
-				}
+				log.warn("[getInputStream]: found body to match blacklisted parameter pattern");
+
 				byteArrayInputStream = new ByteArrayInputStream("".getBytes());
 			} else if (read_stream) {
 				byteArrayInputStream = new ByteArrayInputStream("".getBytes());
 			} else {
-				if (LOG.isDebugEnabled()) {
-					LOG.debug("[getInputStream]: OK - body does not match blacklisted parameter pattern");
+				if (log.isDebugEnabled()) {
+					log.debug("[getInputStream]: OK - body does not match blacklisted parameter pattern");
 				}
 				byteArrayInputStream = new ByteArrayInputStream(body.getBytes());
 				read_stream = true;
 			}
 
 			return new ServletInputStream() {
+				@Override
 				public int read() throws IOException {
 					return byteArrayInputStream.read();
 				}
@@ -211,7 +208,7 @@ public class ParamWrapperFilter implements Filter {
 		}
 
 		private void logCatchedException(IOException ex) {
-			LOG.error("[ParamFilteredRequest]: Exception catched: ", ex);
+			log.error("[ParamFilteredRequest]: Exception catched: ", ex);
 		}
 
 	}

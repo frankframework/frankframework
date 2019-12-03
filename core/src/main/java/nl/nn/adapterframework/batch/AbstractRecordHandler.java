@@ -246,6 +246,10 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		paramList.add(p);
 	}
 
+	@Override
+	public ParameterList getParameterList() {
+		return paramList;
+	}
 
 	@IbisDoc({"name of the recordhandler", ""})
 	@Override

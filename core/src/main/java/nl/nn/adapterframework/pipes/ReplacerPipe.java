@@ -27,14 +27,7 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * Replaces all occurrences of one string with another.
- * 
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
- * </table>
- * </p>
+ *
  * @author Gerrit van Brakel
  * @since 4.2
  */

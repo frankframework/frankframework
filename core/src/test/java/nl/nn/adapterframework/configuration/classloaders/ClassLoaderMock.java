@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -49,6 +49,8 @@ public class ClassLoaderMock extends ClassLoader implements ReloadAware {
 		populateUrls();
 		populateUrls(BASEPATH);
 
+		addFile(URLs, "AppConstants.properties", true);
+
 		addFile(parentURLs, "parent_only.xml");
 		addFile(parentURLs, "folder/parent_only.xml");
 
@@ -68,11 +70,22 @@ public class ClassLoaderMock extends ClassLoader implements ReloadAware {
 		addFile(URLs, rootDirOrPrefix+"ClassLoader/ClassLoaderTestFile.xml");
 	}
 	private void addFile(Map<String, URL> map, String file) {
-		try {
-			map.put(file, new URL("file:"+ROOTDIR+file));
-		}
-		catch (MalformedURLException e) {
-			e.printStackTrace();
+		addFile(map, file, false);
+	}
+	private void addFile(Map<String, URL> map, String file, boolean retrieveFromParent) {
+		if(!retrieveFromParent) {
+			try {
+				map.put(file, new URL("file:"+ROOTDIR+file));
+			}
+			catch (MalformedURLException e) {
+				e.printStackTrace();
+			}
+		} else {
+			String resource = file;
+			if(!resource.startsWith("/"))
+				resource = "/"+file;
+
+			map.put(file, this.getClass().getResource(resource));
 		}
 	}
 
@@ -100,6 +113,7 @@ public class ClassLoaderMock extends ClassLoader implements ReloadAware {
 		return urls.elements();
 	}
 
+	@Override
 	public void reload() throws ConfigurationException {
 		//don't do anything
 	}

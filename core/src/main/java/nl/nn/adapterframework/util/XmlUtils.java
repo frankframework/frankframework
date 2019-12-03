@@ -36,6 +36,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
@@ -223,26 +224,48 @@ public class XmlUtils {
 		}
 	}
 
-	protected static String makeSkipEmptyTagsXslt(boolean omitXmlDeclaration, boolean indent) {
+
+	protected static String makeGetXsltConfigXslt() {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
-			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
-			+ "<xsl:strip-space elements=\"*\"/>"
-			+ "<xsl:template match=\"node()|@*\">"
-			+ "<xsl:copy>"
-			+ "<xsl:apply-templates select=\"@*\"/>"
-			+ "<xsl:apply-templates/>"
-			+ "</xsl:copy>"
+			+ "<xsl:output method=\"text\"/>"
+			+ "<xsl:template match=\"/\">"
+			+ "<xsl:for-each select=\"/xsl:stylesheet/@*\">"
+			+ "<xsl:value-of select=\"concat('stylesheet-',name(),'=',.,';')\"/>"
+			+ "</xsl:for-each>"
+			+ "<xsl:for-each select=\"/xsl:stylesheet/xsl:output/@*\">"
+			+ "<xsl:value-of select=\"concat('output-',name(),'=',.,';')\"/>"
+			+ "</xsl:for-each>"
 			+ "</xsl:template>"
-			+ "<xsl:template match=\"*[not(normalize-space(.))]\"/>"
 			+ "</xsl:stylesheet>";
 	}
 
-	public static TransformerPool getSkipEmptyTagsTransformerPool(boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
-		String xslt = makeSkipEmptyTagsXslt(omitXmlDeclaration,indent);
-		return getUtilityTransformerPool(xslt,"skipEmptyTags",omitXmlDeclaration,indent);
+	public static TransformerPool getGetXsltConfigTransformerPool() throws TransformerException {
+		String xslt = makeGetXsltConfigXslt();
+		try {
+			return getUtilityTransformerPool(xslt,"detectXsltOutputType",true,false,2);
+		} catch (ConfigurationException e) {
+			throw new TransformerException(e);
+		}
 	}
 
+	public static Map<String,String> getXsltConfig(Resource source) throws TransformerException, IOException, SAXException {
+			return getXsltConfig(source.asSource());
+	}
+	public static Map<String,String> getXsltConfig(Source source) throws TransformerException, IOException, SAXException {
+		TransformerPool tp = getGetXsltConfigTransformerPool();
+		String metadataString = tp.transform(source, null);
+		StringTokenizer st1 = new StringTokenizer(metadataString,";");
+		Map<String,String> result = new LinkedHashMap<String,String>();
+		while (st1.hasMoreTokens()) {
+			StringTokenizer st2 = new StringTokenizer(st1.nextToken(),"=");
+			String key=st2.nextToken();
+			String value=st2.nextToken();
+			result.put(key, value);
+		}
+		return result;
+	}
+	
 	protected static String makeRemoveNamespacesXsltTemplates() {
 		return
 		"<xsl:template match=\"*\">"
@@ -830,20 +853,29 @@ public class XmlUtils {
 	}
 
 	
-	public static String getNamespaceClause(String namespaceDefs) throws TransformerConfigurationException {
+	public static String getNamespaceClause(String namespaceDefs) {
 		String namespaceClause = "";
+		for (Entry<String,String> namespaceDef:getNamespaceMap(namespaceDefs).entrySet()) {
+			String prefixClause=namespaceDef.getKey()==null?"":":"+namespaceDef.getKey();
+			namespaceClause += " xmlns" + prefixClause + "=\"" + namespaceDef.getValue() + "\"";
+		}
+		return namespaceClause;
+	}
+	
+	public static Map<String,String> getNamespaceMap(String namespaceDefs) {
+		Map<String,String> namespaceMap=new LinkedHashMap<String,String>();
 		if (namespaceDefs != null) {
 			StringTokenizer st1 = new StringTokenizer(namespaceDefs,", \t\r\n\f");
 			while (st1.hasMoreTokens()) {
 				String namespaceDef = st1.nextToken();
 				int separatorPos = namespaceDef.indexOf('=');
-				String prefixClause=separatorPos < 1?"":":"+namespaceDef.substring(0, separatorPos);
-				namespaceClause += " xmlns" + prefixClause + "=\"" + namespaceDef.substring(separatorPos + 1) + "\"";
+				String prefix=separatorPos < 1?null:namespaceDef.substring(0, separatorPos);
+				String namespace=namespaceDef.substring(separatorPos + 1);
+				namespaceMap.put(prefix, namespace);
 			}
 		}
-		return namespaceClause;
+		return namespaceMap;
 	}
-	
 	
 	/*
 	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of, and enables use of parameters.
@@ -1010,14 +1042,6 @@ public class XmlUtils {
 		}
 	}
 
-	public static int detectXsltVersion(Source stylesource) throws TransformerConfigurationException {
-		try {
-			TransformerPool tpVersion = XmlUtils.getDetectXsltVersionTransformerPool();
-			return interpretXsltVersion(tpVersion.transform(stylesource, null));
-		} catch (Exception e) {
-			throw new TransformerConfigurationException(e);
-		}
-	}
 
 
 	public static synchronized Transformer createTransformer(String xsltString) throws TransformerConfigurationException {

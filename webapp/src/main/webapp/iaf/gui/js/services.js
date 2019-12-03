@@ -51,8 +51,22 @@ angular.module('iaf.beheerconsole')
 		};
 
 		this.Put = function (uri, object, callback, error) {
-			if(object == null) object = {};
-			return $http.put(buildURI(uri), JSON.stringify(object)).then(function(response){
+			var headers = {};
+			var data = {};
+			if(object != null) {
+				if(object instanceof FormData) {
+					data = object;
+					headers["Content-Type"] = undefined;
+				} else {
+					data = JSON.stringify(object);
+					headers["Content-Type"] = "application/json";
+				}
+			}
+
+			return $http.put(buildURI(uri), data, {
+				headers: headers,
+				transformRequest: angular.identity,
+			}).then(function(response){
 				if(callback && typeof callback === 'function') {
 					etags[uri] = response.headers("etag");
 					callback(response.data);

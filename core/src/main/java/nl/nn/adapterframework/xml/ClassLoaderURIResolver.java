@@ -40,7 +40,7 @@ public class ClassLoaderURIResolver implements URIResolver {
 	private ClassLoader classLoader;
 
 	public ClassLoaderURIResolver(ClassLoader classLoader) {
-		if (log.isDebugEnabled()) log.debug("ClassLoaderURIResolver init with classloader ["+classLoader+"]");
+		if (log.isTraceEnabled()) log.trace("ClassLoaderURIResolver init with classloader ["+classLoader+"]");
 		this.classLoader = classLoader;
 	}
 
@@ -76,7 +76,7 @@ public class ClassLoaderURIResolver implements URIResolver {
 		String ref=ref1;
 		Resource resource = Resource.getResource(classLoader, ref, protocol);
 		if (resource==null && ref2!=null) {
-			log.debug("Could not resolve href ["+href+"] base ["+base+"] as ["+ref+"], now trying ref2 ["+ref2+"] protocol ["+protocol+"]");
+			if (log.isDebugEnabled()) log.debug("Could not resolve href ["+href+"] base ["+base+"] as ["+ref+"], now trying ref2 ["+ref2+"] protocol ["+protocol+"]");
 			ref=ref2;
 			resource = Resource.getResource(classLoader, ref, protocol);
 		}
@@ -85,7 +85,7 @@ public class ClassLoaderURIResolver implements URIResolver {
 			//log.warn(message);
 			throw new TransformerException(message);
 		}
-		log.debug("resolved href ["+href+"] base ["+base+"] to systemId ["+resource.getSystemId()+"] to url ["+resource.getURL()+"]");
+		if (log.isDebugEnabled()) log.debug("resolved href ["+href+"] base ["+base+"] to systemId ["+resource.getSystemId()+"] to url ["+resource.getURL()+"]");
 		return resource;
 	}
 	

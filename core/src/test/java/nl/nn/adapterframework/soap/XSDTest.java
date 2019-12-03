@@ -31,28 +31,28 @@ import static org.junit.Assert.assertEquals;
  */
 public class XSDTest {
 
+	private ClassLoader testClassLoader = this.getClass().getClassLoader();
+
 	@Test
 	public void xsdName() throws URISyntaxException, XMLStreamException, IOException, ConfigurationException {
 		XSD xsd = new XSD();
-		xsd.initNamespace("http://test", null, "XSDTest/v1 test.xsd");
+		xsd.initNamespace("http://test", testClassLoader, "XSDTest/v1 test.xsd");
 		assertEquals("XSDTest/v1 test.xsd", xsd.getResourceTarget());
 	}
 
 	@Test
 	public void xsdNamespace() throws URISyntaxException, XMLStreamException, IOException, ConfigurationException {
         XSD xsd = new XSD();
-        xsd.initNamespace("http://test", null, "XSDTest/v1 test.xsd");
-        assertEquals("http://test",
-                xsd.getNamespace());
-        assertEquals("http://www.ing.com/pim",
-                xsd.getTargetNamespace());
+        xsd.initNamespace("http://test", testClassLoader, "XSDTest/v1 test.xsd");
+        assertEquals("http://test", xsd.getNamespace());
+        assertEquals("http://www.ing.com/pim", xsd.getTargetNamespace());
 	}
 
 	@Test
     @Ignore("Fails!!")
 	public void writeXSD() throws XMLStreamException, IOException, ParserConfigurationException, SAXException, URISyntaxException, ConfigurationException {
 		XSD xsd = new XSD();
-		xsd.initNamespace("http://test", null, "XSDTest/test.xsd");
+		xsd.initNamespace("http://test", testClassLoader, "XSDTest/test.xsd");
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		XMLStreamWriter writer = WsdlUtils.getWriter(out, false);

@@ -15,16 +15,50 @@ Upcoming
 - Make attribute firstPipe in PipeLine optional. When empty, the first Pipe in the Pipeline configuration
   is considedred to be the first. Similarly the success forward defaults to the next Pipe in the PipeLine.
 - Enable to specify a namespace without a prefix in attribute namespaceDefs, to help simplify xpathExpressions e.g. into '/root/sub' instead of '/\*[local-name()='root']/\*[local-name()='sub'.
-- Make ForEachChildElementPipe streaming when using elementXPathExpression too
+- Make ForEachChildElementPipe optionally streaming when using elementXPathExpression too. N.B. This requires an XsltProcessor that properly supports streaming. The versions of Saxon and Xalan that we currently employ do not; 
+  Add options 'targetElement' and 'containerElement' to ForEachChildElementPipe to enable processing of very large files, avoiding memory problems that still exist with 
+  xpath expressions for very large files;
   Make Xslt streaming default for xsltVersion=1
 - Bugfix (un)loading configs in JmxMbeanHelper
 - Add LadybugPipe
+- Show Security Items: Improve error handling for 'Used JmsRealms' and 'Used Authentication Entries'
+- Add Javascript Sender
+- Refactor SchedulerHelper
+- Refactor mediatypes in ApiListener
+- Add MultipartHttpSender
+- Add config warning when xsltVersion does not match detected version in xslt
+- Automatically wire Spring beans into the IbisApplicationContext
+- Fix header parameters being added to formand multipart-bodyparts
+- Xslt pipe dynamic stylesheet
+- Add logging and don't unload config when no database connection present
+- ForEachChildElementPipe option to keep namespaces
+- Add proxy attributes to ExchangeFolderSender
+- Introduce LdapFindGroupMembershipsPipe
+- Fix and improve (auto)reload in GUI 3.0
+- Introduce SaxException, with clear message, and proper stacktrace under IBM JDK
+- Fix stopCondition in ForEachChildElementPipe + remove count from result + introduce maxItems attribute
+- Correct log instantiating using LogUtil instead of Logger
+- Upgrade apache commons codec to the latest version
+- Add proxy functionality to the SendGridSender
+- Refactor SchedulerAdapter and remove jobs when config is unloaded
+- Fix concurrency issues when a RestListener registers on a dispatcher
+- Fix error when uploading configuration in GUI3.0
+- Fix Classloader resource retrieval
+- Create full path option for FileSystemListeners
+- Remove BasePathClassLoader and refactor IConfigurationClassLoaders
+- Add scroll to top in GUI 3.0
+- Resolve relative directories for J2V8
+- Add bounceAddress attribute on MailSender
+- Fix and Cleanup MailSender and MailSenderBase
+- Upgrade ladybug to version 2.0.9
+- Namespace support for skip empty tags
 
 ### Non backwards compatible changes
 
 - Make DirectoryListener extend FileSystemListener. It no longer supports attributes fileList, 
   fileListForcedAfter, outputFilenamePattern, passWithoutDirectory, numberOfBackups, overwrite and random.
 - Remove attribute 'count' from result of iterating pipes like ForEachChildElementPipe, to enable streaming output.
+- The MailSender displayName element no longer exist, please use attribute `name` on the from/to elements instead.
 
 
 

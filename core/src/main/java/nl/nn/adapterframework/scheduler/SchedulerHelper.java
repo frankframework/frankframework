@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.scheduler;
 
-import java.text.ParseException;
-
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -49,7 +47,7 @@ public class SchedulerHelper {
 
 	private Scheduler scheduler;
 
-	public void scheduleJob(IbisManager ibisManager, JobDef jobdef) throws Exception {
+	public void scheduleJob(IbisManager ibisManager, JobDef jobdef) throws SchedulerException {
 		JobDetail jobDetail = jobdef.getJobDetail(ibisManager);
 		scheduleJob(jobDetail, jobdef.getCronExpression(), jobdef.getInterval(), true);
 	}
@@ -59,7 +57,7 @@ public class SchedulerHelper {
 	 * @param jobDetail
 	 * @param cronExpression null or cron expression in quartz format
 	 */
-	public void scheduleJob(JobDetail jobDetail, String cronExpression) throws SchedulerException, ParseException {
+	public void scheduleJob(JobDetail jobDetail, String cronExpression) throws SchedulerException {
 		scheduleJob(jobDetail, cronExpression, -1, false);
 	}
 
@@ -68,7 +66,7 @@ public class SchedulerHelper {
 	 * @param jobDetail
 	 * @param interval 0 or interval when to trigger
 	 */
-	public void scheduleJob(JobDetail jobDetail, long interval) throws SchedulerException, ParseException {
+	public void scheduleJob(JobDetail jobDetail, long interval) throws SchedulerException {
 		scheduleJob(jobDetail, null, interval, false);
 	}
 
@@ -79,7 +77,7 @@ public class SchedulerHelper {
 	 * @param interval 0 (trigger once) or interval (in ms) when to trigger
 	 * @param overwrite overwrite existing {@link ServiceJob job}
 	 */
-	public void scheduleJob(JobDetail jobDetail, String cronExpression, long interval, boolean overwrite) throws SchedulerException, ParseException {
+	public void scheduleJob(JobDetail jobDetail, String cronExpression, long interval, boolean overwrite) throws SchedulerException {
 
 		// if the job already exists, remove it.
 		if (scheduler.checkExists(jobDetail.getKey())) {
@@ -89,9 +87,10 @@ public class SchedulerHelper {
 				throw new SchedulerException("Job with name [" + jobDetail.getKey().getName() + "] already exists");
 		}
 
+		TriggerKey triggerKey = TriggerKey.triggerKey(jobDetail.getKey().getName(), jobDetail.getKey().getGroup());
 		if (StringUtils.isNotEmpty(cronExpression)) {
 			CronTrigger cronTrigger = newTrigger()
-					.withIdentity(jobDetail.getKey().getName(), jobDetail.getKey().getGroup())
+					.withIdentity(triggerKey)
 					.withSchedule(cronSchedule(cronExpression))
 					.build();
 			scheduler.scheduleJob(jobDetail, cronTrigger);
@@ -106,7 +105,7 @@ public class SchedulerHelper {
 			}
 
 			SimpleTrigger simpleTrigger = newTrigger()
-					.withIdentity(jobDetail.getKey().getName(), jobDetail.getKey().getGroup())
+					.withIdentity(triggerKey)
 					.forJob(jobDetail).withSchedule(schedule).build();
 			scheduler.scheduleJob(jobDetail, simpleTrigger);
 		} else {
