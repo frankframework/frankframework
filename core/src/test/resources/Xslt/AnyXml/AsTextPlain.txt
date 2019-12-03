@@ -1,6 +1,5 @@
-<?ibiscontext test=PL26081973 ?>
-<request>
-	<data1><RDB>
+
+	<RDB>
  <P volgnummer="1">
    <OORSPRONG>LIFE_CLUSTER4B</OORSPRONG>
    <SOMKOOPSOM>€ 7648.00</SOMKOOPSOM>
@@ -8,35 +7,36 @@
    <ASRESTITUTIEBEDRAG>0.00</ASRESTITUTIEBEDRAG>
  </P>
 </RDB>
-</data1>
-	<a/>
-	<b>b</b>
-	<c hallo="true"/>
-	<d hallo="true">d</d>
-	<e>
-		<e1>
-			<e2>
-				<e3>
-					<e4>
-						<e5/>
-					</e4>
-				</e3>
-			</e2>
-		</e1>
-	</e>
-	<f>
-		<f1>
-			<f2>
-				<f3>
-					<f4>
-						<f5>f</f5>
-					</f4>
-				</f3>
-			</f2>
-		</f1>
-	</f>
-	<g attr="€">€ 1,50</g>
-	<data2><![CDATA[<RDB>
+
+	
+	b
+	
+	d
+	
+		
+			
+				
+					
+						
+					
+				
+			
+		
+	
+	
+		
+			
+				
+					<!-- comment in f3 in non empty branch -->
+					
+						f
+					
+				
+			
+		
+	
+	Euro € single quote ' double quote "
+	<RDB>
  <P volgnummer="1">
    <OORSPRONG>LIFE_CLUSTER4B</OORSPRONG>
    <SOMKOOPSOM>€ 7648.00</SOMKOOPSOM>
@@ -44,5 +44,5 @@
    <ASRESTITUTIEBEDRAG>0.00</ASRESTITUTIEBEDRAG>
  </P>
 </RDB>
-]]></data2>
-</request>
+
+

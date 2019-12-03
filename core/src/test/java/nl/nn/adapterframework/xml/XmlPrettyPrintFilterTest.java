@@ -28,7 +28,7 @@ public class XmlPrettyPrintFilterTest {
 	@Test
 	public void testTextMode() throws Exception {
 		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
-		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/PrettyPrintedTextMode.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/PrettyPrintedAsText.txt");
 		XmlWriter xmlWriter = new XmlWriter();
 		xmlWriter.setTextMode(true);
 		PrettyPrintFilter filter =  new PrettyPrintFilter();
@@ -40,7 +40,7 @@ public class XmlPrettyPrintFilterTest {
 	@Test
 	public void testNoLexicalHandling() throws Exception {
 		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
-		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/PrettyPrintedEscaped.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/PrettyPrintedNoLexicalHandler.xml");
 		XmlWriter xmlWriter = new XmlWriter();
 		
 		PrettyPrintFilter filter =  new PrettyPrintFilter();

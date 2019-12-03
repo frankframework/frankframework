@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.Date;
@@ -33,7 +34,9 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.util.ByteArrayDataSource;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -107,7 +110,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <b>Compilation and Deployment Note:</b> mail.jar (v1.2) and activation.jar must appear BEFORE j2ee.jar.
  * Otherwise errors like the following might occur: <code>NoClassDefFoundException: com/sun/mail/util/MailDateFormat</code> 
  * 
- * @author Johan Verrips/Gerrit van Brakel
+ * @author Johan Verrips
+ * @author Gerrit van Brakel
  */
 
 public class MailSender extends MailSenderBase {
@@ -116,6 +120,7 @@ public class MailSender extends MailSenderBase {
 
 	private Session session;
 	private Properties properties;
+	private String bounceAddress;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -127,15 +132,27 @@ public class MailSender extends MailSenderBase {
 		try {
 			properties.put("mail.smtp.host", getSmtpHost());
 		} catch (Throwable t) {
-			throw new ConfigurationException(
-					"MailSender [" + getName() + "] cannot set smtpHost [" + getSmtpHost() + "] in properties");
+			throw new ConfigurationException("MailSender [" + getName() + "] cannot set smtpHost [" + getSmtpHost() + "] in properties");
+		}
+		//Even though this sets mail.smtp.from, this add the Return-Path header and does not overwrite the MAIL FROM header
+		if(StringUtils.isNotEmpty(getBounceAddress())) {
+			if(properties.contains("mail.smtp.from")){
+				properties.remove("mail.smtp.from");
+			}
+			properties.put("mail.smtp.from", getBounceAddress());
 		}
 		properties.put("mail.smtp.connectiontimeout", getTimeout() + "");
 		properties.put("mail.smtp.timeout", getTimeout() + "");
+		String userId = getCredentialFactory().getUsername();
+		if(StringUtils.isNotEmpty(userId)) {
+			properties.put("mail.smtp.auth", "true");
+			properties.put("mail.smtp.user", userId);
+			properties.put("mail.smtp.password", getCredentialFactory().getPassword());
+		}
+
 		if (paramList != null) {
 			paramList.configure();
 		}
-
 	}
 
 	/**
@@ -151,22 +168,6 @@ public class MailSender extends MailSenderBase {
 		}
 	}
 
-	/**
-	 * Close the <code>transport</code> layer.
-	 */
-	@Override
-	public void close() throws SenderException {
-		/*
-		try {
-			if (transport!=null) {
-				transport.close();
-			}
-		} catch (Exception e) {
-			throw new SenderException("error closing transport", e);
-		}
-		*/
-	}
-
 	@Override
 	public boolean isSynchronous() {
 		return false;
@@ -176,7 +177,6 @@ public class MailSender extends MailSenderBase {
 		if (session == null) {
 			session = Session.getInstance(properties, null);
 			session.setDebug(log.isDebugEnabled());
-			//			log.debug("MailSender [" + getName() + "] got session to [" + properties + "]");
 		}
 		return session;
 	}
@@ -188,8 +188,7 @@ public class MailSender extends MailSenderBase {
 		sendEmail(mailSession, msg, logBuffer);
 	}
 
-	private void setRecipient(MailSession mailSession, MimeMessage msg, StringBuffer sb)
-			throws UnsupportedEncodingException, MessagingException, SenderException {
+	private void setRecipient(MailSession mailSession, MimeMessage msg, StringBuffer sb) throws UnsupportedEncodingException, MessagingException, SenderException {
 		boolean recipientsFound = false;
 		List<EMail> emailList = mailSession.getRecipientList();
 		for (EMail recipient : emailList) {
@@ -214,23 +213,23 @@ public class MailSender extends MailSenderBase {
 		}
 	}
 
-	private void setAttachments(MailSession mailSession, MimeMessage msg, String messageTypeWithCharset)
-			throws MessagingException {
-		List<Attachment> attachmentList = mailSession.getAttachmentList();
+	private void setAttachments(MailSession mailSession, MimeMessage msg, String messageTypeWithCharset) throws MessagingException {
+		List<MailAttachmentStream> attachmentList = mailSession.getAttachmentList();
 		String message = mailSession.getMessage();
 		if (attachmentList == null || attachmentList.size() == 0) {
+			log.debug("no attachments found to attach to mailSession");
 			msg.setContent(message, messageTypeWithCharset);
 		} else {
+			if(log.isDebugEnabled()) log.debug("found ["+attachmentList.size()+"] attachments to attach to mailSession");
 			Multipart multipart = new MimeMultipart();
 			BodyPart messageBodyPart = new MimeBodyPart();
 			messageBodyPart.setContent(message, messageTypeWithCharset);
 			multipart.addBodyPart(messageBodyPart);
 
 			int counter = 0;
-			for (Attachment attachment : attachmentList) {
+			for (MailAttachmentStream attachment : attachmentList) {
 				counter++;
-				Object value = attachment.getAttachmentText();
-				String name = attachment.getAttachmentName();
+				String name = attachment.getName();
 				if (StringUtils.isEmpty(name)) {
 					name = getDefaultAttachmentName() + counter;
 				}
@@ -239,11 +238,14 @@ public class MailSender extends MailSenderBase {
 				messageBodyPart = new MimeBodyPart();
 				messageBodyPart.setFileName(name);
 
-				if (value instanceof DataHandler) {
-					messageBodyPart.setDataHandler((DataHandler) value);
-				} else {
-					messageBodyPart.setText((String) value);
+				try {
+					ByteArrayDataSource bads = new ByteArrayDataSource(attachment.getContent(), attachment.getMimeType());
+					bads.setName(attachment.getName());
+					messageBodyPart.setDataHandler(new DataHandler(bads));
+				} catch (IOException e) {
+					log.error("error attaching attachment to MailSession", e);
 				}
+
 				multipart.addBodyPart(messageBodyPart);
 			}
 			msg.setContent(multipart);
@@ -261,12 +263,13 @@ public class MailSender extends MailSenderBase {
 			logBuffer.append("[threadTopic=" + mailSession.getThreadTopic() + "]");
 			logBuffer.append("[text=" + mailSession.getMessage() + "]");
 			logBuffer.append("[type=" + mailSession.getMessageType() + "]");
-			logBuffer.append("[base64=" + mailSession.getMessageBase64() + "]");
+			logBuffer.append("[base64=" + mailSession.isMessageBase64() + "]");
+			logBuffer.append("[attachments=" + mailSession.getAttachmentList().size() + "]");
 			log.debug(logBuffer);
 		}
-		if ("true".equalsIgnoreCase(mailSession.getMessageBase64())
-				&& StringUtils.isNotEmpty(mailSession.getMessage())) {
-			mailSession.setMessage(decodeBase64ToString(mailSession.getMessage()));
+		if (mailSession.isMessageBase64() && StringUtils.isNotEmpty(mailSession.getMessage())) {
+			byte[] message = Base64.decodeBase64(mailSession.getMessage());
+			mailSession.setMessage(new String(message));
 		}
 
 		// send the message
@@ -299,8 +302,8 @@ public class MailSender extends MailSenderBase {
 		if (StringUtils.isEmpty(mailSession.getMessageType())) {
 			mailSession.setMessageType(getDefaultMessageType());
 		}
-		if (StringUtils.isEmpty(mailSession.getMessageBase64())) {
-			mailSession.setMessageBase64(getDefaultMessageBase64());
+		if (mailSession.isMessageBase64()) {
+			mailSession.setMessageBase64(isDefaultMessageBase64());
 		}
 
 	}
@@ -356,12 +359,6 @@ public class MailSender extends MailSenderBase {
 		} catch (MessagingException e) {
 			throw new SenderException("Error occurred while setting the date", e);
 		}
-		String message = mailSession.getMessage();
-		try {
-			setContent(msg, message, messageTypeWithCharset);
-		} catch (MessagingException e) {
-			throw new SenderException("Error occured while setting message content", e);
-		}
 
 		try {
 			msg.saveChanges();
@@ -370,14 +367,6 @@ public class MailSender extends MailSenderBase {
 		}
 
 		return msg;
-	}
-
-	private void setContent(MimeMessage msg, String message, String messageTypeWithCharset) throws MessagingException {
-		if (message != null && !message.isEmpty()) {
-			msg.setContent(message, messageTypeWithCharset);
-		} else {
-			throw new MessagingException("Message content cannot be empty");
-		}
 	}
 
 	private void setHeader(Collection<Node> headers, MimeMessage msg) throws MessagingException {
@@ -449,6 +438,14 @@ public class MailSender extends MailSenderBase {
 
 	public void setProperties(Properties properties) {
 		this.properties = properties;
+	}
+
+	@IbisDoc({ "NDR return address when mail cannot be delivered. This adds a Return-Path header", "MAIL FROM attribute" })
+	public void setBounceAddress(String string) {
+		bounceAddress = string;
+	}
+	public String getBounceAddress() {
+		return bounceAddress;
 	}
 
 }

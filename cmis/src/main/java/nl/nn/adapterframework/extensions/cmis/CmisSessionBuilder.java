@@ -114,7 +114,6 @@ public class CmisSessionBuilder {
 	 * @param userName to connect or empty when no username
 	 * @param password 
 	 * @return a {@link Session} connected to the CMIS repository
-	 * @throws IOException when overrideEntryPointWSDL cannot be found
 	 * @throws CmisSessionException when the CmisSessionBuilder fails to connect to cmis repository
 	 */
 	public Session build(String userName, String password) throws CmisSessionException {

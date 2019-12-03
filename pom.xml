@@ -408,6 +408,7 @@
         <module>akamai</module>
         <module>webapp</module>
         <module>test</module>
+        <module>ear-test</module>
         <module>ladybug</module>
 <!--        <module>iaf-aspose</module> -->
       </modules>

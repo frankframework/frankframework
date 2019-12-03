@@ -134,6 +134,10 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		paramList.add(p);
 	}
 
+	@Override
+	public ParameterList getParameterList() {
+		return paramList;
+	}
 
 	@Override
 	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {

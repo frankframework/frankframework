@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<envelope>begin
+<disabled-elements attr="value"/>
+<other>&lt;enabled-elements attr="value"/&gt;
+</other><disabled-elements attr="value"/>
+<other>&lt;enabled-elements attr="value"/&gt;
+</other>end
+</envelope>

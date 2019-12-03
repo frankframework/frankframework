@@ -13,7 +13,7 @@
 <d hallo="true">d</d>
 <f>
 <f1>
-<f2>
+<f2 xmlns="urn:test2">
 <f3>
 <f4>
 <f5>f</f5>
@@ -22,7 +22,7 @@
 </f2>
 </f1>
 </f>
-<g attr="€">€ 1,50</g>
+<g attr="Euro € single quote ' double quote escaped &quot; ">Euro € single quote ' double quote "</g>
 <data2>&lt;RDB&gt;
  &lt;P volgnummer="1"&gt;
    &lt;OORSPRONG&gt;LIFE_CLUSTER4B&lt;/OORSPRONG&gt;

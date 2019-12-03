@@ -24,20 +24,22 @@ import org.xml.sax.ext.LexicalHandler;
 
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
-import nl.nn.adapterframework.util.TransformerErrorListener;
 
 public class TransformerFilter extends FullXmlFilter {
 
 	private FullXmlFilter lastFilter;
 	private TransformerHandler transformerHandler;
 	
-	public TransformerFilter(INamedObject owner, TransformerHandler transformerHandler, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) {
+	public TransformerFilter(INamedObject owner, TransformerHandler transformerHandler, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID, boolean expectChildThreads) {
 		super();
-		ThreadConnectingFilter threadConnectingFilter = new ThreadConnectingFilter(owner, threadLifeCycleEventListener, correlationID);
-		lastFilter=threadConnectingFilter;
+		if (expectChildThreads) {
+			lastFilter = new ThreadConnectingFilter(owner, threadLifeCycleEventListener, correlationID);
+		} else {
+			lastFilter = new FullXmlFilter();
+		}
 		SAXResult transformedStream = new SAXResult();
-		transformedStream.setHandler(threadConnectingFilter);
-		transformedStream.setLexicalHandler((LexicalHandler)threadConnectingFilter);
+		transformedStream.setHandler(lastFilter);
+		transformedStream.setLexicalHandler((LexicalHandler)lastFilter);
 		this.transformerHandler=transformerHandler;
 		transformerHandler.setResult(transformedStream);
 		super.setContentHandler(transformerHandler);
@@ -47,10 +49,6 @@ public class TransformerFilter extends FullXmlFilter {
 	@Override
 	public void setContentHandler(ContentHandler handler) {
 		lastFilter.setContentHandler(handler);
-	}
-	
-	public TransformerErrorListener getErrorListener() {
-		return (TransformerErrorListener)transformerHandler.getTransformer().getErrorListener();
 	}
 	
 	public Transformer getTransformer() {

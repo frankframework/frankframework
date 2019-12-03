@@ -21,6 +21,8 @@ public class ResourceTest {
 
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 
+	private ClassLoader testClassLoader = this.getClass().getClassLoader();
+
 	
 	private void testUri(ClassLoader cl, String ref, String expectedContents, String expectedSystemId) throws TransformerException, SAXException, IOException {
 		testUri(cl, ref, null, expectedContents, expectedSystemId);
@@ -50,7 +52,7 @@ public class ResourceTest {
 
 	@Test
 	public void localClassLoaderFileRef() throws TransformerException, SAXException, IOException {
-		URL url = ClassUtils.getResourceURL(null, "/ClassLoader/ClassLoaderTestFile.xml");
+		URL url = ClassUtils.getResourceURL(testClassLoader, "/ClassLoader/ClassLoaderTestFile.xml");
 		assertNotNull(url);
 		String ref=url.toExternalForm();
 		testUri(null, ref, "file", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>", ref);
@@ -70,7 +72,7 @@ public class ResourceTest {
 
 	@Test
 	public void bytesClassLoaderFileRef() throws TransformerException, SAXException, IOException, ConfigurationException {
-		URL url = ClassUtils.getResourceURL(null, "/ClassLoader/ClassLoaderTestFile.xml");
+		URL url = ClassUtils.getResourceURL(testClassLoader, "/ClassLoader/ClassLoaderTestFile.xml");
 		assertNotNull(url);
 		String ref=url.toExternalForm();
 		ClassLoader classLoader = getBytesClassLoader();

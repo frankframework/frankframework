@@ -342,6 +342,10 @@ public class JdbcUtil {
 				return null;
 			}
 			int bl = (int)blob.length();
+			if (bl==0) {
+				log.debug("empty blob found in column ["+column+"]");
+				return "";
+			}
 
 			InputStream is = blob.getBinaryStream();
 			byte[] buf = new byte[bl];

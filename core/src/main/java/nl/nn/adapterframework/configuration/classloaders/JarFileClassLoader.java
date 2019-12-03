@@ -17,11 +17,12 @@ package nl.nn.adapterframework.configuration.classloaders;
 
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.Misc;
 
 public class JarFileClassLoader extends BytesClassLoader {
@@ -32,30 +33,20 @@ public class JarFileClassLoader extends BytesClassLoader {
 	}
 
 	@Override
-	public void configure(IbisContext ibisContext, String configurationName) throws ConfigurationException {
-		super.configure(ibisContext, configurationName);
-
+	public Map<String, byte[]> loadResources() throws ConfigurationException {
 		if(jarFileName == null)
 			throw new ConfigurationException("jar file not set");
 
-		reload();
-	}
-
-	public void setJar(String jar) {
-		this.jarFileName = jar;
-	}
-
-	@Override
-	public void reload() throws ConfigurationException {
-		super.reload();
 		JarFile jarFile = null;
 		try {
+			Map<String, byte[]> resources = new HashMap<String, byte[]>();
 			jarFile = new JarFile(jarFileName);
 			Enumeration<JarEntry> enumeration = jarFile.entries();
 			while (enumeration.hasMoreElements()) {
 				JarEntry jarEntry = enumeration.nextElement();
 				resources.put(jarEntry.getName(), Misc.streamToBytes(jarFile.getInputStream(jarEntry)));
 			}
+			return resources;
 		} catch (IOException e) {
 			throw new ConfigurationException(
 					"Could not read resources from jar '" + jarFileName
@@ -72,4 +63,7 @@ public class JarFileClassLoader extends BytesClassLoader {
 		}
 	}
 
+	public void setJar(String jar) {
+		this.jarFileName = jar;
+	}
 }

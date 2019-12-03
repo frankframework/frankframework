@@ -28,6 +28,10 @@
 		<constructor-arg value="${ibistesttool.maxCheckpoints}"/>
 	</bean>
 
+	<bean name="maxMessageLength" class="java.lang.Integer">
+		<constructor-arg value="${ibistesttool.maxMessageLength}"/>
+	</bean>
+
 	<bean name="regexFilter" class="java.lang.String">
 		<constructor-arg value="${ibistesttool.regexFilter}"/>
 	</bean>
@@ -36,6 +40,7 @@
 		<property name="configName"><ref bean="configName"/></property>
 		<property name="configVersion"><ref bean="configVersion"/></property>
 		<property name="maxCheckpoints"><ref bean="maxCheckpoints"/></property>
+		<property name="maxMessageLength"><ref bean="maxMessageLength"/></property>
 		<property name="regexFilter"><ref bean="regexFilter"/></property>
 <!--property name="loggingStorage"><ref bean="runStorage"/></property-->
 	</bean>

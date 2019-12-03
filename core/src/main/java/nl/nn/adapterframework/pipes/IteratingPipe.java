@@ -161,7 +161,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		msgTransformerPool = TransformerPool.configureTransformer(getLogPrefix(null), classLoader, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), false);
+		msgTransformerPool = TransformerPool.configureTransformer(getLogPrefix(null), getConfigurationClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), false);
 		try {
 			if (StringUtils.isNotEmpty(getStopConditionXPathExpression())) {
 				stopConditionTp=TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(null,getStopConditionXPathExpression(),"xml",false));

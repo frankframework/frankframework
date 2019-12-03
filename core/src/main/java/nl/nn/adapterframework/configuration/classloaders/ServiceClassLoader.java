@@ -16,10 +16,9 @@
 package nl.nn.adapterframework.configuration.classloaders;
 
 import java.rmi.server.UID;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
@@ -33,43 +32,26 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
  *
  */
 public class ServiceClassLoader extends JarBytesClassLoader {
-	private IbisManager ibisManager;
 	private String adapterName;
-	private String configurationName;
 
 	public ServiceClassLoader(ClassLoader parent) {
 		super(parent);
 	}
 
 	@Override
-	public void configure(IbisContext ibisContext, String configurationName) throws ConfigurationException {
-		super.configure(ibisContext, configurationName);
-
-		this.configurationName = this.getConfigurationName();
-		this.ibisManager = getIbisContext().getIbisManager();
-
-		reload();
-	}
-
-	public void setAdapterName(String adapterName) {
-		this.adapterName = adapterName;
-	}
-
-	@Override
-	public void reload() throws ConfigurationException {
-		super.reload();
+	protected Map<String, byte[]> loadResources() throws ConfigurationException {
 		if (adapterName == null) {
 			throw new ConfigurationException("Name of adapter to provide configuration jar not specified");
 		}
-		IAdapter adapter = ibisManager.getRegisteredAdapter(adapterName);
+		IAdapter adapter = getIbisContext().getIbisManager().getRegisteredAdapter(adapterName);
 		if (adapter != null) {
 			IPipeLineSession pipeLineSession = new PipeLineSessionBase();
-			PipeLineResult processResult = adapter.processMessage(getCorrelationId(), configurationName, pipeLineSession);
+			PipeLineResult processResult = adapter.processMessage(getCorrelationId(), getConfigurationName(), pipeLineSession);
 			//TODO check result of pipeline
 			Object object = pipeLineSession.get("configurationJar");
 			if (object != null) {
 				if (object instanceof byte[]) {
-					readResources((byte[])object, configurationName);
+					return readResources((byte[])object);
 				} else {
 					throw new ConfigurationException("SessionKey configurationJar not a byte array");
 				}
@@ -80,6 +62,10 @@ public class ServiceClassLoader extends JarBytesClassLoader {
 		} else {
 			throw new ConfigurationException("Could not find adapter: " + adapterName);
 		}
+	}
+
+	public void setAdapterName(String adapterName) {
+		this.adapterName = adapterName;
 	}
 
 	private String getCorrelationId() {

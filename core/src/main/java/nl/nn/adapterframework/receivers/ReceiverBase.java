@@ -611,13 +611,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			
 			ISender errorSender = getErrorSender();
 			if (errorSender!=null) {
-				errorSender.configure();
 				if (errorSender instanceof HasPhysicalDestination) {
 					info(getLogPrefix()+"has errorSender to "+((HasPhysicalDestination)errorSender).getPhysicalDestinationName());
 				}
 				if (errorSender instanceof ConfigurationAware) {
 					((ConfigurationAware)errorSender).setConfiguration(getAdapter().getConfiguration());
 				}
+				errorSender.configure();
 			}
 			ITransactionalStorage errorStorage = getErrorStorage();
 			if (errorStorage!=null) {
