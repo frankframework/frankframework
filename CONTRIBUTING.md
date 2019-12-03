@@ -68,6 +68,10 @@ Start reading our code and you'll get the hang of it. We optimize for readabilit
   * We ALWAYS put spaces after list items and method parameters (`[1, 2, 3]`, not `[1,2,3]`) and around operators (`x += 1`, not `x+=1`).
   * This is open source software. Consider the people who will read your code, and make it look nice for them. It's sort of like driving a car: Perhaps you love doing donuts when you're alone, but with passengers the goal is to make the ride as smooth as possible.
   * Use Unix style newlines.
+  * Each class that can be used in a configuration must contain the following documentation:
+    - Class level IbisDoc, not larger then 5 to 10 lines
+    - For each configurable attribute, IbisDoc must not be larger then 2 lines
+    - Any examples and more detailed information, that has to be incorperated in to the IbisManual, should be provided as a separate file(s) attached to the pull request
 
 
 ## Testing
