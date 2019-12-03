@@ -19,13 +19,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 
 /**
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
- * </table>
- * </p>
  * 
  * @author J. Dekker
  * @deprecated Please use XsltPipe, that has the same functionality

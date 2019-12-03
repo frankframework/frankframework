@@ -168,13 +168,6 @@ import org.xml.sax.SAXException;
  * <tr><td>{@link #setOmitResult(boolean) omitResult}</td><td>(only used when direction=wrap) when <code>true</code>, the Result is omitted and instead of Result/Status 'ERROR' a PipeRunException is thrown</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setAddOutputNamespace(boolean) addOutputNamespace}</td><td>(only used when direction=unwrap) when set <code>true</code> the <code>outputNamespace</code> is added to the output root element in the SOAP body</td><td>false</td></tr>
  * </table></p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
- * </table>
- * </p>
  * @author Peter Leeuwenburgh
  * @deprecated Please replace with nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe (not 1:1)
  */

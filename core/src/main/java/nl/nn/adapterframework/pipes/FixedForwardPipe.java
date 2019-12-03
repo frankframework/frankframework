@@ -39,13 +39,6 @@ import nl.nn.adapterframework.processors.InputOutputPipeProcessor;
  * <tr><td>{@link #setIfValue(String) ifValue}</td><td>see <code>ifParam</code></td><td>&nbsp;</td></tr>
  * </table>
  * </p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
- * </table>
- * </p>
  * @author Gerrit van Brakel
  */
 public class FixedForwardPipe extends AbstractPipe {
