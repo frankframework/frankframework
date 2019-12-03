@@ -9,9 +9,11 @@ import java.util.*;
 public class IbisDocExtractor {
 
     private ArrayList<AFolder> folders = new ArrayList<AFolder>();
-    private ArrayList<AClass> classes = new ArrayList<AClass>();
     private String json = "";
 
+    /**
+     * Writes the folders object containing all information to a Json.
+     */
     public void writeToJsonUrl() {
         JSONArray newFolders = new JSONArray();
         JSONArray newClasses;
@@ -20,28 +22,25 @@ public class IbisDocExtractor {
         try {
             for (AFolder folder : folders) {
                 JSONObject folderObject = new JSONObject();
-                folderObject.put("name", folder.name);
+                folderObject.put("name", folder.getName());
 
                 newClasses = new JSONArray();
                 for (AClass aClass : folder.getClasses()) {
                     JSONObject classObject = new JSONObject();
-                    classObject.put("name", aClass.name);
-                    classObject.put("packageName", aClass.packageName);
+                    classObject.put("name", aClass.getName());
+                    classObject.put("packageName", aClass.getPackageName());
 
                     newMethods = new JSONArray();
                     for (AMethod method : aClass.getMethods()) {
                         JSONObject methodObject = new JSONObject();
-                        methodObject.put("name", method.name);
-                        methodObject.put("description", method.description);
-                        methodObject.put("defaultValue", method.defaultValue);
-                        methodObject.put("className", method.className);
-                        methodObject.put("folderName", method.folderName);
-                        methodObject.put("originalClassName", method.originalClassName);
-                        methodObject.put("superClasses", method.superClasses);
-                        methodObject.put("javadocLink", method.javadocLink);
-                        methodObject.put("order",  method.order);
+                        methodObject.put("name", method.getName());
+                        methodObject.put("originalClassName", method.getOriginalClassName());
+                        methodObject.put("description", method.getDescription());
+                        methodObject.put("defaultValue", method.getDefaultValue());
+                        methodObject.put("javadocLink", method.getJavadocLink());
+                        methodObject.put("order", method.getOrder());
+                        methodObject.put("superClasses", method.getSuperClasses());
                         newMethods.put(methodObject);
-
                     }
                     classObject.put("methods", newMethods);
                     newClasses.put(classObject);
@@ -56,134 +55,149 @@ public class IbisDocExtractor {
         json = newFolders.toString();
     }
 
+    /**
+     * Get the Json in String format.
+     *
+     * @return The Json String
+     */
     public String getJsonString() {
         return this.json;
     }
 
-    public void addAllFolder() {
-        AFolder allFolder = new AFolder("All");
-        for (AFolder folder : folders) {
-            for (AClass clazz : folder.getClasses()) {
-                allFolder.addClass(clazz);
-            }
-        }
-        folders.add(allFolder);
+//    /**
+//     * Add an All folder to the folders containing all classes
+//     */
+//    public void addAllFolder() {
+//        AFolder allFolder = new AFolder("All");
+//        for (AFolder folder : folders) {
+//            for (AClass clazz : folder.getClasses()) {
+//                allFolder.addClass(clazz);
+//            }
+//        }
+//        folders.add(allFolder);
+//    }
+
+    /**
+     * Adds a folder to the folder array
+     *
+     * @param folder - The folder to be added
+     */
+    public void addFolder(AFolder folder) {
+        folders.add(folder);
+    }
+}
+
+class AMethod {
+
+    private String name;
+    private String className;
+    private String originalClassName;
+    private String folderName;
+    private String description;
+    private String defaultValue;
+    private String javadocLink;
+    private int order;
+    private ArrayList<String> superClasses;
+
+
+    public AMethod(String name, String className, String originalClassName, String folderName, String description, String defaultValue, String javadocLink, int order, ArrayList<String> superClasses) {
+        this.name = name;
+        this.className = className;
+        this.originalClassName = originalClassName;
+        this.folderName = folderName;
+        this.description = description;
+        this.defaultValue = defaultValue;
+        this.javadocLink = javadocLink;
+        this.order = order;
+        this.superClasses = superClasses;
     }
 
-    public void addMethods(String currentFolder, String currentClass, String packageName, String methodName, String description, String defaultValue, String originalClassName, ArrayList<String> superClasses, String javadocLink, int order) {
-
-        // Check if the folder already exists (there is only one of each)
-        boolean folderExists = false;
-        for (AFolder folder : folders) {
-            if (currentFolder.equals(folder.getName())) {
-                folderExists = true;
-                break;
-            }
-        }
-
-        if (!folderExists) {
-            folders.add(new AFolder(currentFolder));
-        }
-
-        // Check if the class already exists (We assume there is only one of each)
-        boolean classExists = false;
-        for (AClass aClass : classes) {
-            if (currentClass.equals(aClass.getName())) {
-                classExists = true;
-                break;
-            }
-        }
-
-        if (!classExists) {
-            for (AFolder folder : folders) {
-                if (currentFolder.equals(folder.getName())) {
-                    folder.addClass(new AClass(currentClass, packageName));
-                    classes.add(new AClass(currentClass, packageName));
-                }
-            }
-        }
-
-        for (AFolder folder : folders) {
-            if (currentFolder.equals(folder.getName())) {
-                for (AClass aClass : folder.getClasses()) {
-                    if (currentClass.equals(aClass.getName())) {
-                        aClass.addMethod(new AMethod(currentFolder, currentClass, methodName, description, defaultValue, originalClassName, superClasses, javadocLink, order));
-                    }
-                }
-            }
-        }
-
+    public String getName() {
+        return name;
     }
 
-    class AMethod {
-
-        private String name;
-        private String description;
-        private String defaultValue;
-        private String className;
-        private String packageName;
-        private String folderName;
-        private String originalClassName;
-        private ArrayList<String> superClasses;
-        private String javadocLink;
-        private int order;
-
-        public AMethod(String folderName, String className, String name, String description, String defaultValue, String originalClassName, ArrayList<String> superClasses, String javadocLink, int order) {
-            this.folderName = folderName;
-            this.className = className;
-            this.name = name;
-            this.description = description;
-            this.defaultValue = defaultValue;
-            this.originalClassName = originalClassName;
-            this.superClasses = superClasses;
-            this.javadocLink = javadocLink;
-            this.order = order;
-        }
+    public String getClassName() {
+        return className;
     }
 
-    class AClass {
-        private String name;
-        private String packageName;
-        private ArrayList<AMethod> methods;
-
-        public AClass(String name, String packageName) {
-            this.name = name;
-            this.packageName = packageName;
-            this.methods = new ArrayList<AMethod>();
-        }
-
-        public String getName() {
-            return this.name;
-        }
-
-        public void addMethod(AMethod method) {
-            this.methods.add(method);
-        }
-
-        public ArrayList<AMethod> getMethods() {
-            return this.methods;
-        }
+    public String getOriginalClassName() {
+        return originalClassName;
     }
 
-    class AFolder {
-        private String name;
-        private ArrayList<AClass> classes;
+    public String getFolderName() {
+        return folderName;
+    }
 
-        public AFolder(String name) {
-            this.name = name;
-            this.classes = new ArrayList<AClass>();
-        }
+    public String getDescription() {
+        return description;
+    }
 
-        public String getName() {
-            return name;
-        }
+    public String getDefaultValue() {
+        return defaultValue;
+    }
 
-        public void addClass(AClass clazz) {
-            this.classes.add(clazz);
-        }
+    public String getJavadocLink() {
+        return javadocLink;
+    }
 
-        public ArrayList<AClass> getClasses() {
-            return this.classes;
-        }
+    public int getOrder() {
+        return order;
+    }
+
+    public ArrayList<String> getSuperClasses() {
+        return superClasses;
+    }
+
+}
+
+class AClass {
+
+    private String name;
+    private String packageName;
+    private ArrayList<AMethod> methods;
+
+    public AClass(String name, String packageName) {
+        this.name = name;
+        this.packageName = packageName;
+        this.methods = new ArrayList<AMethod>();
+    }
+
+    public void addMethod(AMethod method) {
+        this.methods.add(method);
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public String getPackageName() {
+        return packageName;
+    }
+
+    public ArrayList<AMethod> getMethods() {
+        return this.methods;
+    }
+}
+
+class AFolder {
+
+    private String name;
+    private ArrayList<AClass> classes;
+
+    public AFolder(String name) {
+        this.name = name;
+        this.classes = new ArrayList<AClass>();
+    }
+
+    public void addClass(AClass clazz) {
+        this.classes.add(clazz);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public ArrayList<AClass> getClasses() {
+        return this.classes;
     }
 }

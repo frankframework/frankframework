@@ -103,7 +103,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 		overwriteMaxOccursToUnbounded.add("parallelSendersSender");
 	}
 	// Influence the order of elements in the XSD, this will override the alphabetic order.
-	// Instead of using the Maps below it might be a good idea to use annotations on the specified methods. 
+	// Instead of using the Maps below it might be a good idea to use annotations on the specified methods.
 	private static Map<String, Integer> sortWeightAdapter = new HashMap<String, Integer>();
 	static {
 		sortWeightAdapter.put("registerReceiver", 100);
@@ -215,7 +215,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 				ibisBeans.add(new IbisBean(replaceNameLastPartWithGroupName(group, beanName, nameLastPartToReplaceWithGroupName), clazz));
 			}
 		} else {
-			// Normalize listeners to end with Listener, pipes to end with Pipe and senders to end with Sender 
+			// Normalize listeners to end with Listener, pipes to end with Pipe and senders to end with Sender
 			String suffix = group.substring(0, 1).toUpperCase() + group.substring(1, group.length() - 1);
 			if (!beanName.endsWith(suffix)) {
 				beanName = beanName + suffix;
@@ -384,96 +384,151 @@ public class IbisDocPipe extends FixedForwardPipe {
 		return new PipeRunResult(getForward(), result);
 	}
 
-	private String getJson() {
-		Map<String, TreeSet<IbisBean>> groups = getGroups();
-		IbisDocExtractor extractor = new IbisDocExtractor();
+	/**
+	 * Get the superclasses of a certain class.
+	 *
+	 * @param clazz - The class we have to derive the superclasses from
+	 * @return An ArrayList containing all the superclasses with priority given to them
+	 */
+	private ArrayList<String> getSuperClasses(Class clazz) {
+		ArrayList<String> superClasses = new ArrayList<String>();
+		int index = 0;
+		while (clazz.getSuperclass() != null) {
 
-		// For all folders
-		for (String folder : groups.keySet()) {
+			// Assign a string with a priority number attached to it and add it to the array of superclasses
+			String str = Integer.toString(index);
+			superClasses.add(clazz.getSimpleName() + str);
+			clazz = clazz.getSuperclass();
+			index++;
+		}
+		return superClasses;
+	}
 
-			// For all classes
-			for (IbisBean ibisBean : groups.get(folder)) {
+	/**
+	 * Gets the IbisDoc values.
+	 *
+	 * @param ibisDocValues - The String[] containing all the ibisDocValues
+	 * @return The needed ibisDocValues
+	 */
+	private String[] getValues(String[] ibisDocValues) {
+		int order;
+		int desc;
+		int def;
 
-				// Copy the properties of FileSender into FilePipe so that the properties of FileHandler are also in FilePipe
-				Map<String, Method> beanProperties = getBeanProperties(ibisBean.getClazz());
-				if (beanProperties != null) {
+		if (ibisDocValues[0].matches("\\d+")) {
+			order = Integer.parseInt(ibisDocValues[0]);
+			desc = 1;
+			def = 2;
+		} else {
+			order = 999;
+			desc = 0;
+			def = 1;
+		}
+		if (ibisDocValues.length > def)
+			return new String[]{ibisDocValues[desc], ibisDocValues[def], "" + order };
+		else
+			return new String[]{ibisDocValues[desc], "", "" + order };
+	}
 
-					if (ibisBean.getName().equals("FilePipe")) {
-						for (IbisBean bean : groups.get("Senders")) {
-							if (bean.getName().equals("FileSender")) {
-								Map<String, Method> senderProperties = getBeanProperties(bean.getClazz());
-								if (senderProperties != null) {
-									beanProperties.putAll(senderProperties);
-								}
-								break;
-							}
-						}
-					}
-
-					// For each method in the class
-					Iterator<String> iterator = new TreeSet<>(beanProperties.keySet()).iterator();
-
-					while (iterator.hasNext()) {
-
-						// Get the method
-						String property = iterator.next();
-						Method method = beanProperties.get(property);
-
-						// Get the ibisdoc of the method
-						IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
-
-						// Create an array for the superclasses of this method's class
-						ArrayList<String> superClasses = new ArrayList<String>();
-
-						// Get the class
-                        Class clazz = ibisBean.getClazz();
-						int index = 0;
-
-						// For each superclass
-                        while (clazz.getSuperclass() != null) {
-
-                        	// Assign a string with a priority number attached to it and add it to the array of superclasses
-                        	String str = Integer.toString(index);
-                        	superClasses.add(clazz.getSimpleName() + str);
-                            clazz = clazz.getSuperclass();
-                            index++;
-                        }
-
-                        String javadocLink = ibisBean.getClazz().getName().replaceAll("\\.", "/");
-
-						// If there is an IbisDoc of the method
-						if (ibisDoc != null) {
-
-							// Get the values (description and default value)
-							String[] ibisDocValues = ibisDoc.value();
-
-							int order;
-							int desc;
-							int def;
-
-							// If it doesnt have anything
-							if (ibisDocValues[0].matches("\\d+")) {
-								order = Integer.parseInt(ibisDocValues[0]);
-								desc = 1;
-								def = 2;
-							} else {
-								order = 999;
-								desc = 0;
-								def = 1;
-							}
-
-							if (ibisDocValues.length > def) {
-								extractor.addMethods(folder, ibisBean.getName(), ibisBean.getClazz().getName(), property, ibisDocValues[desc], ibisDocValues[def], method.getDeclaringClass().getSimpleName(), superClasses, javadocLink, order);
-							} else {
-								extractor.addMethods(folder, ibisBean.getName(), ibisBean.getClazz().getName(), property, ibisDocValues[desc], "", method.getDeclaringClass().getSimpleName(), superClasses, javadocLink, order);
-							}
-						}
-					}
+	/**
+	 * Add properties of the FilePipe to the FileSender.
+	 *
+	 * @param ibisBean       - The IbisBean that should be the FilePipe
+	 * @param groups         - Contains all information
+	 * @param beanProperties - The properties of a class (in this case the FilePipe)
+	 */
+	private void addPropertiesFileSender(IbisBean ibisBean, Map<String, TreeSet<IbisBean>> groups, Map<String, Method> beanProperties) {
+		if (ibisBean.getName().equals("FilePipe")) {
+			for (IbisBean bean : groups.get("Senders")) {
+				if (bean.getName().equals("FileSender")) {
+					Map<String, Method> senderProperties = getBeanProperties(bean.getClazz());
+					beanProperties.putAll(senderProperties);
+					break;
 				}
 			}
 		}
+	}
 
-		extractor.addAllFolder();
+	/**
+	 * Add the methods to the class object.
+	 *
+	 * @param beanProperties - The properties of a class
+	 * @param ibisBean       - The class in bean form
+	 * @param folder         - The folder name
+	 * @param newClass       - The class object we have to add the methods to
+	 * @return
+	 */
+	private AClass addMethods(Map<String, Method> beanProperties, IbisBean ibisBean, String folder, AClass newClass) {
+		Iterator<String> iterator = new TreeSet<>(beanProperties.keySet()).iterator();
+		while (iterator.hasNext()) {
+
+			String property = iterator.next();
+			Method method = beanProperties.get(property);
+
+			IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
+
+			// Get the superclasses
+			ArrayList<String> superClasses = getSuperClasses(ibisBean.getClazz());
+			String javadocLink = ibisBean.getClazz().getName().replaceAll("\\.", "/");
+
+			if (ibisDoc != null) {
+				String[] ibisdocValues = ibisDoc.value();
+				String[] values = getValues(ibisdocValues);
+				newClass.addMethod(new AMethod(property, ibisBean.getName(), method.getDeclaringClass().getSimpleName(), folder, values[0], values[1], javadocLink, Integer.parseInt(values[2]), superClasses));
+			}
+		}
+		return newClass;
+	}
+
+	/**
+	 * Add classes to the folder object.
+	 *
+	 * @param groups - Contains all information
+	 * @param folder - The folder object we have to add the classes to
+	 */
+	private void addClasses(Map<String, TreeSet<IbisBean>> groups, AFolder folder) {
+		for (IbisBean ibisBean : groups.get(folder.getName())) {
+			Map<String, Method> beanProperties = getBeanProperties(ibisBean.getClazz());
+			if (!beanProperties.isEmpty()) {
+
+				// Copy the properties of FileSender into FilePipe so that the properties of FileHandler are also in FilePipe
+				addPropertiesFileSender(ibisBean, groups, beanProperties);
+
+				AClass newClass = new AClass(ibisBean.getName(), ibisBean.getClazz().getName());
+				AClass updatedClass = addMethods(beanProperties, ibisBean, folder.getName(), newClass);
+				folder.addClass(updatedClass);
+			}
+		}
+	}
+
+	/**
+	 * Add folders to the Json.
+	 *
+	 * @param groups    - Contains all information
+	 * @param extractor - Class that converts the folders into objects
+	 */
+	private void addFolders(Map<String, TreeSet<IbisBean>> groups, IbisDocExtractor extractor) {
+		AFolder allFolder = new AFolder("All");
+
+		for (String folder : groups.keySet()) {
+			AFolder newFolder = new AFolder(folder);
+			addClasses(groups, newFolder);
+			extractor.addFolder(newFolder);
+		}
+		extractor.addFolder(allFolder);
+	}
+
+	/**
+	 * Get the Json containing all information concerning the IbisDoc.
+	 *
+	 * @return A string containing all information of the IbisDoc
+	 */
+	private String getJson() {
+		Map<String, TreeSet<IbisBean>> groups = getGroups();
+		IbisDocExtractor extractor = new IbisDocExtractor();
+		addFolders(groups, extractor);
+
+//		extractor.addAllFolder();
 		extractor.writeToJsonUrl();
 
 		return extractor.getJsonString();
@@ -604,7 +659,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 								maxOccursX = -1;
 							}
 							addMaxOccurs(choice, maxOccursX);
-							
+
 							for (IbisBean childIbisBean : childIbisBeans) {
 								choice.addSubElement(getChildIbisBeanSchemaElement(childIbisBean.getName(), 1));
 							}
@@ -871,7 +926,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 class SpringBean implements Comparable<Object> {
 	private String name;
 	private Class<?> clazz;
-	
+
 	SpringBean(String name, Class<?> clazz) {
 		this.name = name;
 		this.clazz = clazz;
@@ -900,7 +955,7 @@ class IbisBean implements Comparable<IbisBean> {
 	private Class<?> clazz;
 
 	IbisBean(String name, Class<?> clazz) {
-		this.name = name; 
+		this.name = name;
 		this.clazz = clazz;
 	}
 
@@ -983,7 +1038,7 @@ class DigesterXmlHandler extends DefaultHandler {
 			currentIbisBeanName = null;
 		}
 	}
-	
+
 	public List<IbisMethod> getIbisMethods() {
 		return ibisMethods;
 	}

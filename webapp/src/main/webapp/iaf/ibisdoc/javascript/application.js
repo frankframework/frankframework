@@ -53,20 +53,40 @@ app.controller("foldersCtrl", function($scope, dataService, classesService, meth
     dataService.getData().then(function(response) {
         $scope.folders = response;
         $scope.methods = [];
+        $scope.allFolder = {};
+        var index = 0;
 
         // Put all the methods in a methods array (is put here so it will only be done once)
         angular.forEach($scope.folders, function(folder) {
+            console.log(folder.name);
+            if (folder.name === "All") {
+                index = $scope.folders.indexOf(folder);
+                $scope.allFolder = folder;
+            }
+
             angular.forEach(folder.classes, function(clas) {
                 angular.forEach(clas.methods, function(method) {
+                    method.className = clas.name;
+                    method.folderName = folder.name;
                     $scope.methods.push(method);
-                })
+                });
             })
         });
+
+        $scope.folders.splice(index, 1);
+
+        angular.forEach($scope.folders,  function (folder) {
+            angular.forEach(folder.classes, function (clas) {
+                $scope.allFolder.classes.push(clas);
+            });
+        });
+
+        $scope.folders.push($scope.allFolder);
 
         // The searchbar for all methods (attributes)
         $scope.onKey = function($event) {
             $rootScope.$broadcast('givingAllMethhods', $scope.methods.filter(function (method) {
-                return (method.name.toLowerCase() == $event.target.value.toLowerCase());
+                return (method.name.toLowerCase() === $event.target.value.toLowerCase());
             }));
 
             // Notify the methodsCrtl that we are searching accross all methods (attributes)
@@ -184,7 +204,7 @@ app.controller("methodsCtrl", function($scope, methodsService) {
     // The current class' package name in which the methods (attributes) reside
     $scope.$on('packageName', function(event, packageName) {
         $scope.packageName = packageName;
-    })
+    });
 
     // When searching within the class, keep note
     $scope.onKey = function($event) {
