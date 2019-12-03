@@ -55,6 +55,25 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * information about the mail is passed to the pipeline.
  * 
  * <p>
+ * <b>example:</b> <code><pre>
+ *   &lt;email&gt;
+ *      &lt;recipients&gt;
+ *         &lt;recipient type="to"&gt;***@nn.nl&lt;/recipient&gt;
+ *         &lt;recipient type="cc"&gt;***@nn.nl&lt;/recipient&gt;
+ *      &lt;/recipients&gt;
+ *      &lt;from&gt;***@nn.nl&lt;/from&gt;
+ *      &lt;subject&gt;this is the subject&lt;/subject&gt;
+ *      &lt;headers&gt;
+ *         &lt;header name="prop1"&gt;<i>value of first header property</i>&lt;/header&gt;
+ *         &lt;header name="prop2"&gt;<i>value of second header property</i>&lt;/header&gt;
+ *      &lt;/headers&gt;
+ *      &lt;dateTimeSent&gt;2015-11-18T11:40:19.000+0100&lt;/dateTimeSent&gt;
+ *      &lt;dateTimeReceived&gt;2015-11-18T11:41:04.000+0100&lt;/dateTimeReceived&gt;
+ *   &lt;/email&gt;
+ * </pre></code>
+ * </p>
+ * 
+ * <p>
  * <b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>

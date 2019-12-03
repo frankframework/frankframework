@@ -20,6 +20,22 @@ import nl.nn.adapterframework.senders.MailSender;
 /**
  * Pipe that sends a mail-message using a {@link MailSender} as its sender.
  * <br/>
+ * Sample email.xml:<br/><code><pre>
+ *	&lt;email&gt;
+ *	    &lt;recipients&gt;
+ *	        &lt;recipient&gt;***@natned&lt;/recipient&gt;
+ *	        &lt;recipient&gt;***@nn.nl&lt;/recipient&gt;
+ *	    &lt;/recipients&gt;
+ *	    &lt;from&gt;***@nn.nl&lt;/from&gt;
+ *	    &lt;subject&gt;this is the subject&lt;/subject&gt;
+ *	    &lt;message&gt;dit is de message&lt;/message&gt;
+ *	&lt;/email&gt;
+ * </pre></code> <br/>
+ * Notice: it must be valid XML. Therefore, especially the message element
+ * must be plain text or be wrapped as CDATA.<br/><br/>
+ * example:<br/><code><pre>
+ * &lt;message&gt;&lt;![CDATA[&lt;h1&gt;This is a HtmlMessage&lt;/h1&gt;]]&gt;&lt;/message&gt;
+ * </pre></code><br/>
  *
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
