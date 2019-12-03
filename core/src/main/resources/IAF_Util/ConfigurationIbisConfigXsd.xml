@@ -1,5 +1,5 @@
 <module>
-	<adapter name="IbisConfigXsd" active="${ibisConfigXsd.active}">
+	<adapter name="IbisConfigXsd" active="${generateIbisConfigXsd.active}">
 		<receiver
 			name="IbisConfigXsd"
 			className="nl.nn.adapterframework.receivers.GenericReceiver"
@@ -13,8 +13,7 @@
 		<pipeline firstPipe="IbisConfigXsd">		
 			<pipe
 				name="IbisConfigXsd" className="nl.nn.adapterframework.pipes.XmlSwitch"
-				getInputFromFixedValue="&lt;dummy/&gt;"
-				xpathExpression="lookupConfigDir != '' and lookupConfigDir != '&lt;dummy/&gt;'">
+				xpathExpression="lookupConfigDir != ''">
 				
 				<param name="lookupConfigDir" value="${configurations.directory}"/>
 			
@@ -75,7 +74,7 @@
 				getInpurFromFixedValue=".gitignore"
 				xpathExpression="directory/@count > 0">
 			
-				<forward name="true" path="echoSucces" />
+				<forward name="true" path="EXIT" />
 				<forward name="false" path="CreateIgnore" />
 			</pipe>
 			<pipe
@@ -84,11 +83,6 @@
 				actions="write"
 				fileName=".gitignore"
 				directory="${configurations.directory}">
-				
-				<forward name="success" path="EXIT"/>
-			</pipe>
-			<pipe
-				name="echoSucces" className="nl.nn.adapterframework.pipes.EchoPipe">
 				
 				<forward name="success" path="EXIT"/>
 			</pipe>
@@ -104,7 +98,7 @@
 			receiverName="IbisConfigXsd"
 			interval="0"
 			function="sendMessage"
-			active="${ibisConfigXsd.job.active}"
+			active="${generateIbisConfigXsd.active}"
 		/>
 	</scheduler>
 </module>
