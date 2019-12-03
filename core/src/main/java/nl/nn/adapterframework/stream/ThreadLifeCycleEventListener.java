@@ -18,8 +18,8 @@ package nl.nn.adapterframework.stream;
 public interface ThreadLifeCycleEventListener<T> {
 
 	public T announceChildThread(Object owner, String correlationId);
-	public void threadCreated(T ref);
-	public void threadEnded(T ref, String result);
-	public void threadAborted(T ref, Throwable t);
+	public Object threadCreated(T ref, Object request);
+	public Object threadEnded(T ref, Object result);
+	public Throwable threadAborted(T ref, Throwable t);
 	
 }

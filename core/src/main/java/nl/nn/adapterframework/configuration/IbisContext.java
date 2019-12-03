@@ -207,20 +207,34 @@ public class IbisContext extends IbisApplicationContext {
 		log("shutdown in " + (System.currentTimeMillis() - start) + " ms");
 	}
 
+	/**
+	 * Reloads the given configuration. First it checks if the resources can be found. 
+	 * It then replaces the old resources with the new resources. If all is successful 
+	 * it will unload the old configuration from the IbisManager, and load the new 
+	 * configuration.
+	 */
 	public synchronized void reload(String configurationName) {
-		unload(configurationName);
-		load(configurationName);
+		try {
+			classLoaderManager.reload(configurationName);
+			unload(configurationName);
+			load(configurationName);
+		} catch (ConfigurationException e) {
+			log(configurationName, null, "failed to reload", MessageKeeperMessage.ERROR_LEVEL, e);
+		}
 	}
 
+	/**
+	 * Be aware that the configuration may be unloaded but it's resources wont!
+	 * There is currently no way to cleanup old classloaders, these are kept in memory. 
+	 * Removing the classloader will cause a classloader-leak, leaving a small footprint behind in memory!
+	 */
 	public void unload(String configurationName) {
 		Configuration configuration = ibisManager.getConfiguration(configurationName);
 		if (configuration != null) {
 			long start = System.currentTimeMillis();
 			ibisManager.unload(configurationName);
 			if (configuration.getAdapterService().getAdapters().size() > 0) {
-				log("Not all adapters are unregistered: "
-						+ configuration.getAdapterService().getAdapters(),
-						MessageKeeperMessage.ERROR_LEVEL);
+				log("Not all adapters are unregistered: " + configuration.getAdapterService().getAdapters(), MessageKeeperMessage.ERROR_LEVEL);
 			}
 			// Improve configuration reload performance. Probably because
 			// garbage collection will be easier.
@@ -230,8 +244,7 @@ public class IbisContext extends IbisApplicationContext {
 			log(configurationName, configurationVersion, msg);
 			secLog.info("Configuration [" + configurationName + "] [" + configurationVersion+"] " + msg);
 		} else {
-			log("Configuration [" + configurationName + "] to unload not found",
-					MessageKeeperMessage.WARN_LEVEL);
+			log("Configuration [" + configurationName + "] to unload not found", MessageKeeperMessage.WARN_LEVEL);
 		}
 		JdbcUtil.resetJdbcProperties();
 	}
@@ -343,13 +356,6 @@ public class IbisContext extends IbisApplicationContext {
 			ConfigurationException customClassLoaderConfigurationException) {
 
 		long start = System.currentTimeMillis();
-		try {
-			if(classLoader != null)
-				classLoaderManager.reload(classLoader);
-		} catch (ConfigurationException e) {
-			customClassLoaderConfigurationException = e;
-		}
-
 		String currentConfigurationVersion = ConfigurationUtils.getConfigurationVersion(classLoader);
 
 		Configuration configuration = null;
@@ -387,8 +393,7 @@ public class IbisContext extends IbisApplicationContext {
 				}
 				if (!currentConfigurationName.equals(configuration.getName())) {
 					log(currentConfigurationName, currentConfigurationVersion, "configuration name doesn't match Configuration name attribute: " + configuration.getName(), MessageKeeperMessage.WARN_LEVEL);
-					messageKeepers.put(configuration.getName(),
-							messageKeepers.remove(currentConfigurationName));
+					messageKeepers.put(configuration.getName(), messageKeepers.remove(currentConfigurationName));
 				}
 
 				String msg;

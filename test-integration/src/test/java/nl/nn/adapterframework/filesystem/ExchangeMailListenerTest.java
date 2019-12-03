@@ -9,22 +9,23 @@ import java.util.Map;
 import org.junit.Test;
 
 import microsoft.exchange.webservices.data.core.service.item.Item;
+import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.util.TestAssertions;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 
 	@Override
-	protected IExchangeMailListener createExchangeMailListener() {
-		return new ExchangeMailListenerWrapper();
+	protected ExchangeMailListener createExchangeMailListener() {
+		return new ExchangeMailListener();
 	}
 
 	@Test
 	public void readFileBasicFromSubfolderOfRoot() throws Exception {
 		String baseFolder=basefolder2;
 		String targetFolder="FileWithAttachments";
-		String recipient="gerrit@integrationpartners.nl";
-		String from="gerrit@25bis.nl";
+		String recipient="xxx@integrationpartners.nl";
+		String from="xxx@xxx.nl";
 		String subject="With Attachements";
 //		String subfolder="Basic";
 //		String filename = "readFile";

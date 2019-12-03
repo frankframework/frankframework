@@ -16,12 +16,9 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.activation.DataHandler;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
@@ -30,6 +27,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import com.sendgrid.Attachments;
+import com.sendgrid.Attachments.Builder;
 import com.sendgrid.Client;
 import com.sendgrid.Content;
 import com.sendgrid.Email;
@@ -135,12 +133,9 @@ public class SendGridSender extends MailSenderBase {
 		String subject = mailSession.getSubject();
 		setSubject(mail, personalization, subject);
 
-		String message = mailSession.getMessage();
-		String messageType = mailSession.getMessageType();
-		String messageBase64 = mailSession.getMessageBase64();
-		setMessage(mail, message, messageType, messageBase64);
+		setMessage(mail, mailSession);
 
-		List<Attachment> attachmentList = mailSession.getAttachmentList();
+		List<MailAttachmentStream> attachmentList = mailSession.getAttachmentList();
 		setAttachments(mail, attachmentList);
 
 		Collection<Node> headers = mailSession.getHeaders();
@@ -175,33 +170,14 @@ public class SendGridSender extends MailSenderBase {
 	 * @throws SenderException 
 	 * @throws IOException 
 	 */
-	private void setAttachments(Mail mail, List<Attachment> attachmentList) throws SenderException, IOException {
+	private void setAttachments(Mail mail, List<MailAttachmentStream> attachmentList) throws SenderException, IOException {
 		if (attachmentList != null) {
-			Iterator<Attachment> iter = attachmentList.iterator();
+			Iterator<MailAttachmentStream> iter = attachmentList.iterator();
 			while (iter.hasNext()) {
-				Attachment attachmentElement = iter.next();
-				Attachments attachment = new Attachments();
-				if (attachmentElement.getAttachmentText() instanceof DataHandler) {
-					try {
-
-						attachmentElement.setAttachmentText(encodeFileToBase64Binary(
-								((DataHandler) attachmentElement.getAttachmentText()).getInputStream()));
-					} catch (MalformedURLException e) {
-						throw new SenderException("Exception occured while getting attachment. ", e);
-					}
-				} else {
-					byte[] aTextBytes;
-					String text = (String) attachmentElement.getAttachmentText();
-					if ("true".equalsIgnoreCase(text)) {
-						aTextBytes = decodeBase64ToBytes(text);
-					} else {
-						aTextBytes = text.getBytes();
-					}
-					attachmentElement.setAttachmentText(Base64.encodeBase64(aTextBytes));
-				}
-				attachment.setContent((String) attachmentElement.getAttachmentText());
-				attachment.setFilename(attachmentElement.getAttachmentName());
-				mail.addAttachments(attachment);
+				MailAttachmentStream mailAttachment = iter.next();
+				Builder sendGridAttachment = new Attachments.Builder(mailAttachment.getName(), mailAttachment.getContent());
+				sendGridAttachment.withType(mailAttachment.getMimeType());
+				mail.addAttachments(sendGridAttachment.build());
 			}
 		}
 	}
@@ -213,12 +189,15 @@ public class SendGridSender extends MailSenderBase {
 	 * @param messageBase64 
 	 * @param messageType 
 	 */
-	private void setMessage(Mail mail, String message, String messageType, String messageBase64) {
+	private void setMessage(Mail mail, MailSession mailSession) {
+		String message = mailSession.getMessage();
+		String messageType = mailSession.getMessageType();
+
 		String messageContent = null;
 		if (StringUtils.isNotEmpty(message)) {
 			Content content = new Content();
-			if ("true".equalsIgnoreCase(messageBase64)) {
-				messageContent = decodeBase64ToString(message);
+			if (mailSession.isMessageBase64()) {
+				messageContent = new String(Base64.decodeBase64(message));
 			} else {
 				messageContent = message;
 			}
@@ -305,6 +284,7 @@ public class SendGridSender extends MailSenderBase {
 
 	//Properties inherited from HttpSenderBase
 
+	@Override
 	@IbisDoc({"10", "timeout in ms of obtaining a connection/result. 0 means no timeout", "10000"})
 	public void setTimeout(int i) {
 		super.setTimeout(i);

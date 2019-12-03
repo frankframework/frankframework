@@ -1,12 +1,15 @@
 <!DOCTYPE configuration [
 	<!ENTITY Larva SYSTEM "./ConfigurationLarva.xml">
 	<!ENTITY UploadFiles SYSTEM "./ConfigurationUploadFiles.xml">
+	<!ENTITY Ladybug SYSTEM "./ConfigurationLadybug.xml">
 ]>
 <configuration name="UTIL">
-
-	<!-- running larva scenario's (on startup and once a day scheduled) -->
+	<!-- Run Larva scenario's (on startup and once a day scheduled) -->
 	&Larva;
 
-	<!-- include configuration for console functions -->
+	<!-- Include configuration for console functions -->
 	&UploadFiles;
+	
+	<!-- Run saved Ladybug test reports at a configurable CRON interval -->
+	&Ladybug;
 </configuration>

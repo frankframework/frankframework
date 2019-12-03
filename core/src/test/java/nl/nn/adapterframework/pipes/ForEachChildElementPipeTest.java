@@ -3,6 +3,7 @@ package nl.nn.adapterframework.pipes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.FilterInputStream;
@@ -28,6 +29,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.EchoSender;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.xml.FullXmlFilter;
 
 public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElementPipe> {
@@ -215,6 +217,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
         String actual=prr.getResult().toString();
         
         assertEquals(expectedBasicNoNS, actual);
+		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean("xslt.streaming.default", true));
 		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
     }
 
@@ -234,6 +237,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
         String actual=prr.getResult().toString();
         
         assertEquals(expectedBasicNoNS, actual);
+		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean("xslt.streaming.default", true));
 		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
     }
 
@@ -253,6 +257,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
         String actual=prr.getResult().toString();
         
         assertEquals(expectedBasicNoNS, actual);
+		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean("xslt.streaming.default", true));
 		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
     }
 
@@ -271,6 +276,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
         String actual=prr.getResult().toString();
         
         assertEquals(expectedBasicNS1, actual);
+		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean("xslt.streaming.default", true));
 		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
     }
     
@@ -289,6 +295,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
         String actual=prr.getResult().toString();
         
         assertEquals(expectedBasicNS2, actual);
+		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean("xslt.streaming.default", true));
 		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
     }
     
@@ -307,6 +314,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
         String actual=prr.getResult().toString();
         
         assertEquals(expectedBasicNS1, actual);
+		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean("xslt.streaming.default", true));
 		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
     }
     
@@ -324,6 +332,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
         String actual=prr.getResult().toString();
         
         assertEquals(expectedBasicNoNSFirstTwoElements, actual);
+		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean("xslt.streaming.default", true));
 		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
     }
  

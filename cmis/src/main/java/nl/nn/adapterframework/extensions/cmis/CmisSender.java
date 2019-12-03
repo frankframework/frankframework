@@ -232,7 +232,7 @@ public class CmisSender extends SenderWithParametersBase {
 
 	private List<String> actions = Arrays.asList("create", "delete", "get", "find", "update", "fetch", "dynamic");
 
-	private CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(getClassLoader());
+	private CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(getConfigurationClassLoader());
 
 	private boolean convert2Base64 = AppConstants.getInstance().getBoolean("CmisSender.Base64FileContent", true);
 
@@ -391,7 +391,7 @@ public class CmisSender extends SenderWithParametersBase {
 		try {
 			boolean getProperties = isGetProperties();
 			boolean getDocumentContent = isGetDocumentContent();
-			if (prc != null && getParameterList() != null) {
+			if (getParameterList() != null) {
 				ParameterValueList pvl = prc.getValues(getParameterList());
 				if (pvl != null) {
 					if(pvl.parameterExists("getProperties"))

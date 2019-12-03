@@ -288,21 +288,8 @@ public class Configuration {
 		return version;
 	}
 
-	/**
-	 * @deprecated replaced by setName(String)
-	 */
-	@Deprecated
-	public void setConfigurationName(String name) {
-		this.name = name;
-	}
-
-
 	public String getClassLoaderType() {
-		return AppConstants.getInstance().getString("configurations." + getName() + ".classLoaderType", classLoader.getParent().getClass().getSimpleName());
-
-		//TODO Make this work again by removing the reload() method from all classloader constructors. The constructor it selves must not throw an expection/
-		//TODO Refactor ClassLoaderManager.createClassloader()
-//		return classLoader.getParent().getClass().getSimpleName();
+		return classLoader.getClass().getSimpleName();
 	}
 
 	public void setIbisManager(IbisManager ibisManager) {

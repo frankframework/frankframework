@@ -17,6 +17,8 @@ package nl.nn.adapterframework.configuration.classloaders;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
@@ -29,26 +31,27 @@ public abstract class JarBytesClassLoader extends BytesClassLoader {
 		super(classLoader);
 	}
 
-	protected void readResources(byte[] jar, String configurationName)
-			throws ConfigurationException {
+	protected Map<String, byte[]> readResources(byte[] jar) throws ConfigurationException {
 		JarInputStream jarInputStream = null;
 		try {
+			Map<String, byte[]> resources = new HashMap<String, byte[]>();
 			jarInputStream = new JarInputStream(new ByteArrayInputStream(jar));
 			JarEntry jarEntry;
 			while ((jarEntry = jarInputStream.getNextJarEntry()) != null) {
 				resources.put(jarEntry.getName(), Misc.streamToBytes(jarInputStream));
 			}
+			return resources;
 		} catch (IOException e) {
 			throw new ConfigurationException(
 					"Could not read resources from jar input stream for configuration '"
-					+ configurationName + "'", e);
+					+ getConfigurationName() + "'", e);
 		} finally {
 			if (jarInputStream != null) {
 				try {
 					jarInputStream.close();
 				} catch (IOException e) {
 					log.warn("Could not close jar input stream for configuration '"
-							+ configurationName + "'", e);
+							+ getConfigurationName() + "'", e);
 				}
 			}
 		}
