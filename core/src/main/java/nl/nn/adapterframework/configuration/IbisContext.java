@@ -66,28 +66,6 @@ public class IbisContext extends IbisApplicationContext {
 	private static final long UPTIME = System.currentTimeMillis();
 
 	static {
-		String applicationServerType = System.getProperty(
-				APPLICATION_SERVER_TYPE_PROPERTY);
-		if (StringUtils.isNotEmpty(applicationServerType)) {
-			if (applicationServerType.equalsIgnoreCase("WAS5")
-					|| applicationServerType.equalsIgnoreCase("WAS6")) {
-				ConfigurationWarnings configWarnings = ConfigurationWarnings
-						.getInstance();
-				String msg = "implementing value [" + applicationServerType
-						+ "] of property [" + APPLICATION_SERVER_TYPE_PROPERTY
-						+ "] as [WAS]";
-				configWarnings.add(LOG, msg);
-				System.setProperty(APPLICATION_SERVER_TYPE_PROPERTY, "WAS");
-			} else if (applicationServerType.equalsIgnoreCase("TOMCAT6")) {
-				ConfigurationWarnings configWarnings = ConfigurationWarnings
-						.getInstance();
-				String msg = "implementing value [" + applicationServerType
-						+ "] of property [" + APPLICATION_SERVER_TYPE_PROPERTY
-						+ "] as [TOMCAT]";
-				configWarnings.add(LOG, msg);
-				System.setProperty(APPLICATION_SERVER_TYPE_PROPERTY, "TOMCAT");
-			}
-		}
 		if(!Boolean.parseBoolean(AppConstants.getInstance().getProperty("jdbc.convertFieldnamesToUppercase")))
 			ConfigurationWarnings.getInstance().add(LOG, "DEPRECATED: jdbc.convertFieldnamesToUppercase is set to false, please set to true. XML field definitions of SQL senders will be uppercased!");
 
@@ -102,19 +80,6 @@ public class IbisContext extends IbisApplicationContext {
 	private FlowDiagram flowDiagram;
 	private ClassLoaderManager classLoaderManager = null;
 	private static List<String> loadingConfigs = new ArrayList<String>();
-
-	public void setDefaultApplicationServerType(String defaultApplicationServerType) {
-		if (defaultApplicationServerType.equals(getApplicationServerType())) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			String msg = "property [" + APPLICATION_SERVER_TYPE_PROPERTY + "] already has a default value [" + defaultApplicationServerType + "]";
-			configWarnings.add(LOG, msg);
-		} else if (StringUtils.isEmpty(getApplicationServerType())) {
-			// Resolve application.server.type in ServerSpecifics*.properties, SideSpecifics*.properties and StageSpecifics*.properties filenames
-			APP_CONSTANTS.putAdditionalPropertiesFilesSubstVarsProperty(APPLICATION_SERVER_TYPE_PROPERTY, defaultApplicationServerType);
-			// Resolve application.server.type in spring.xml filenames
-			APP_CONSTANTS.putPropertyPlaceholderConfigurerProperty(APPLICATION_SERVER_TYPE_PROPERTY, defaultApplicationServerType);
-		}
-	}
 
 	public static String getApplicationServerType() {
 		return AppConstants.getInstance().getResolvedProperty(APPLICATION_SERVER_TYPE_PROPERTY);
