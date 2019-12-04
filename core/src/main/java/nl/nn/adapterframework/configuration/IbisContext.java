@@ -523,7 +523,7 @@ public class IbisContext extends IbisApplicationContext {
 	}
 
 	public String getApplicationVersion() {
-		return ConfigurationUtils.getVersion(null, "instance.version", "instance.build_id");
+		return ConfigurationUtils.getVersion(this.getClass().getClassLoader(), "instance.version", "instance.build_id");
 	}
 
 	public String getFrameworkVersion() {

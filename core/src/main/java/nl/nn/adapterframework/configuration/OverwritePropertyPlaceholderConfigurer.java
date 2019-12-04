@@ -39,7 +39,7 @@ public class OverwritePropertyPlaceholderConfigurer
 	@Override
 	protected void convertProperties(Properties props) {
 		AppConstants appConstants = AppConstants.getInstance();
-		appConstants.putPropertyPlaceholderConfigurerProperty(propertyName, propertyValue);
+		appConstants.setProperty(propertyName, propertyValue);
 		props.put(propertyName, propertyValue);
 	}
 
