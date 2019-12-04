@@ -63,6 +63,10 @@ public class TestTool {
 		return ibisContext;
 	}
 
+	public static void setIbisContext(IbisContext ibisContext) {
+		TestTool.ibisContext = ibisContext;
+	}
+
 	public static AppConstants getAppConstants(IbisContext ibisContext) {
 		// Load AppConstants using a class loader to get an instance that has
 		// resolved application.server.type in ServerSpecifics*.properties,
