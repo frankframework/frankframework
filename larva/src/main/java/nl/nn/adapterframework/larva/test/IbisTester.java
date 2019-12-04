@@ -107,7 +107,7 @@ public class IbisTester {
 		System.setProperty("log.level", "INFO");
 		System.setProperty("otap.stage", "LOC");
 		System.setProperty("application.server.type", "IBISTEST");
-		System.setProperty("flow.create.url", "");
+//		System.setProperty("flow.create.url", "");
 
 		debug("Initializing environment...");
 		BasicConfigurator.configure();
@@ -147,7 +147,7 @@ public class IbisTester {
 		}
 		if(!ibisContext.isStarted()) {
 			error("Ibis Context did not start in given timeout [" + CONTEXT_TIMEOUT + "]");
-			System.exit(1);
+			System.exit(42);
 		}
 
 		debug("Got Ibis context!");
@@ -157,6 +157,9 @@ public class IbisTester {
 
 		boolean adaptersStarted = startAllAdapters(MAX_TRIES, TIMEOUT);
 		debug("Successfully initialized the environment.");
+
+		TestTool.setIbisContext(ibisContext);
+		debug("Setting up ibis context for larva.");
 
 		return adaptersStarted;
 	}
