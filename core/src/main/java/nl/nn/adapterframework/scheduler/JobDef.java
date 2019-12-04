@@ -1242,7 +1242,7 @@ public class JobDef {
 		}
 	}
 	public String getFunction() {
-		return function.getName();
+		return function==null?null:function.getName();
 	}
 	public JobDefFunctions getJobDefFunction() {
 		return function;
