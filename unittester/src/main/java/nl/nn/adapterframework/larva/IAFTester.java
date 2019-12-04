@@ -62,7 +62,7 @@ public class IAFTester {
         int numberOfScenarios = scenarios.size();
         // Run tester and wait for it to end
         messageListener.debugMessage("General", "Added a new message");
-        ScenarioTester scenarioTester = new ScenarioTester(tester.getIbisContext(), messageListener, scenarios, rootDirectory, appConstants, results, waitBeforeCleanup, numberOfScenarios, true);
+        ScenarioTester scenarioTester = new ScenarioTester(tester.getIbisContext(), messageListener, scenarios, rootDirectory, appConstants, results, waitBeforeCleanup, numberOfScenarios);
         scenarioTester.start();
         scenarioTester.join();
 
@@ -95,7 +95,7 @@ public class IAFTester {
             throw new IllegalArgumentException("Scenario is not in the root directory.");
 
         System.out.println("Getting the tests ready!!");
-        Map<String, List<File>> scenarioFiles = TestPreparer.readScenarioFiles(paramExecute, true, appConstants);
+        Map<String, List<File>> scenarioFiles = TestPreparer.readScenarioFiles(paramExecute, true, true, appConstants);
         Iterator<Map.Entry<String, List<File>>> scenarioFilesIterator = scenarioFiles.entrySet().iterator();
         List<Object[]> tests = new ArrayList<Object[]>(scenarioFiles.size());
         while (scenarioFilesIterator.hasNext()) {
