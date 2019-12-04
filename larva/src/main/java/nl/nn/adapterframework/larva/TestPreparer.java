@@ -43,10 +43,12 @@ public class TestPreparer {
 		}
 		return appConstants;
 	}
-
 	public static Map<String, String> getScenariosList(Map<String, List<File>> scenarioFiles, String scenariosRootDirectory, AppConstants appConstants) {
+		return getScenariosList(scenarioFiles, scenariosRootDirectory, false, appConstants);
+	}
+	public static Map<String, String> getScenariosList(Map<String, List<File>> scenarioFiles, String scenariosRootDirectory, boolean onConsole, AppConstants appConstants) {
 		if(scenarioFiles == null) {
-			readScenarioFiles(scenariosRootDirectory, true, appConstants);
+			readScenarioFiles(scenariosRootDirectory, true, onConsole, appConstants);
 		}
 		logger.debug("Listing possible executable scenarios.");
 		Map<String, String> scenarios = new HashMap<>();
@@ -173,19 +175,23 @@ public class TestPreparer {
 		return currentScenariosRootDirectory;
 	}
 
-	/**
-	 * Reads all scenario files in a given directory, and groups them by their
-	 * parent path for multithreading.
-	 *
-	 * @param scenariosDirectory
-	 *            Root directory to start the search from.
-	 * @param forMultiThreading
-	 *            to decide if we want multithreading or not, otherwise map will
-	 *            only have one entry with a list that contains all the scenarios.
-	 * @return map that contains path names and list of scenarios that are in the
-	 *         path.
-	 */
 	public static Map<String, List<File>> readScenarioFiles(String scenariosDirectory, boolean forMultiThreading, AppConstants appConstants) {
+		return readScenarioFiles(scenariosDirectory, forMultiThreading, false, appConstants);
+	}
+
+		/**
+         * Reads all scenario files in a given directory, and groups them by their
+         * parent path for multithreading.
+         *
+         * @param scenariosDirectory
+         *            Root directory to start the search from.
+         * @param forMultiThreading
+         *            to decide if we want multithreading or not, otherwise map will
+         *            only have one entry with a list that contains all the scenarios.
+         * @return map that contains path names and list of scenarios that are in the
+         *         path.
+         */
+	public static Map<String, List<File>> readScenarioFiles(String scenariosDirectory, boolean forMultiThreading, boolean onConsole, AppConstants appConstants) {
 		Map<String, List<File>> scenarioFiles;
 		logger.debug("Read scenarios from directory '" + scenariosDirectory + "'");
 		scenarioFiles = new HashMap<>();
@@ -218,7 +224,10 @@ public class TestPreparer {
 					if (properties != null && properties.get("scenario.description") != null) {
 						String active = properties.getProperty("scenario.active", "true");
 						String unstable = properties.getProperty("adapter.unstable", "false");
-						if (active.equalsIgnoreCase("true") && unstable.equalsIgnoreCase("false")) {
+						String activeConsole = properties.getProperty("scenario.cmd.pass", "false");
+						if (active.equalsIgnoreCase("true")
+								&& unstable.equalsIgnoreCase("false")
+								&& (activeConsole.equalsIgnoreCase("false") || !onConsole)) {
 
 							String parent = file.getParent();
 							if (forMultiThreading && !scenarioFiles.containsKey(parent)) {
@@ -229,7 +238,7 @@ public class TestPreparer {
 					}
 				} else if (file.isDirectory() && (!file.getName().equals("CVS"))) {
 					Map<String, List<File>> recursiveOutput = readScenarioFiles(file.getAbsolutePath(),
-							forMultiThreading, appConstants);
+							forMultiThreading, onConsole, appConstants);
 					Iterator<Entry<String, List<File>>> mapIterator = recursiveOutput.entrySet().iterator();
 					while (mapIterator.hasNext()) {
 						Map.Entry<String, List<File>> entry = mapIterator.next();

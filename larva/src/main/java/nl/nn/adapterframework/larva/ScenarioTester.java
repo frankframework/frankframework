@@ -23,7 +23,6 @@ public class ScenarioTester extends Thread {
 	private int scenariosTotal;
 	private int[] scenarioResults;
 	private MessageListener messageListener;
-	private boolean onCommandLine;
 
 	private FileController fileController;
 	private JdbcFixedQueryController jdbcFixedQueryController;
@@ -35,10 +34,6 @@ public class ScenarioTester extends Thread {
 	IbisContext ibisContext;
 
 	public ScenarioTester(IbisContext ibisContext, MessageListener messageListener, List<File> scenarioFile, String currentScenariosRootDirectory, AppConstants appConstants, int[] scenarioResults, int waitBeforeCleanUp, int scenariosTotal) {
-		this(ibisContext, messageListener, scenarioFile, currentScenariosRootDirectory, appConstants, scenarioResults, waitBeforeCleanUp, scenariosTotal, false);
-	}
-
-	public ScenarioTester(IbisContext ibisContext, MessageListener messageListener, List<File> scenarioFile, String currentScenariosRootDirectory, AppConstants appConstants, int[] scenarioResults, int waitBeforeCleanUp, int scenariosTotal, boolean onCommandLine) {
 		this.ibisContext = ibisContext;
 		this.messageListener = messageListener;
 		this.scenarioFile = scenarioFile;
@@ -47,7 +42,6 @@ public class ScenarioTester extends Thread {
 		this.waitBeforeCleanUp = waitBeforeCleanUp;
 		this.scenariosTotal = scenariosTotal;
 		this.scenarioResults = scenarioResults;
-		this.onCommandLine = onCommandLine;
 
 		fileController = new FileController(this);
 		jdbcFixedQueryController = new JdbcFixedQueryController(this);
@@ -68,7 +62,7 @@ public class ScenarioTester extends Thread {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			messageListener.errorMessage("General", e.getMessage());
+			messageListener.errorMessage("General", e.getStackTrace().toString());
 		}
 	}
 
@@ -86,15 +80,6 @@ public class ScenarioTester extends Thread {
 		List<String> steps;
 
 		if (properties != null) {
-			try {
-				String passCommandLine = properties.getProperty("larva.cmd.pass", "false");
-				if(onCommandLine && Boolean.parseBoolean(passCommandLine)) {
-					messageListener.scenarioMessage(testName, "Passing the scenario [" + shortName + "]");
-					scenarioResults[TestTool.RESULT_OK]++;
-					return;
-				}
-			}catch (Exception e){
-			}
 			messageListener.testInitiationMessage(testName, longName, properties.getProperty("scenario.description"));
 
 			messageListener.debugMessage(testName, "Read steps from property file");
@@ -182,7 +167,7 @@ public class ScenarioTester extends Thread {
 	private int executeStep(String step, Properties properties, String testName, String stepDisplayName, Map<String, Map<String, Object>> queues) {
 		int stepPassed = TestTool.RESULT_ERROR;
 		String fileName = properties.getProperty(step);
-		// PROBLEM IS HERE!
+
 		String fileNameAbsolutePath = properties.getProperty(step + ".absolutepath");
 		int i = step.indexOf('.');
 		String queueName;
