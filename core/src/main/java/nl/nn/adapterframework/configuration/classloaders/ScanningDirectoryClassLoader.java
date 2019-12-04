@@ -47,8 +47,9 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 				log.info("starting auto-refresh schedule on directory ["+scanDirectory +"]");
 				schedule();
 			}
-			else
-				log.warn("unable to determine scanDirectory, unable to auto-refresh configurations");
+			else {
+				log.warn("unable to determine scanDirectory ["+scanDirectory +"], unable to auto-refresh configurations");
+			}
 		}
 	}
 
