@@ -29,13 +29,13 @@
 							</div>
 						</div>
 						<div class="form-group">
-							<label class="col-sm-3 control-label">Select an receiver</label>
+							<label class="col-sm-3 control-label">Select a listener</label>
 							<div class="col-sm-9" ng-if="!form.adapter">
 								<input class="form-control m-b" disabled="disabled" value="Select an adapter first.."/>
 							</div>
 							<div class="col-sm-9" ng-if="form.adapter">
 								<select class="form-control m-b" name="receiver" ng-model="form.receiver">
-									<option ng-repeat="receiver in adapters[form.adapter].receivers">{{receiver.name}}</option>
+									<option ng-repeat="receiver in adapters[form.adapter].receivers" ng-value="receiver.name">{{receiver.listener.name}}</option>
 								</select>
 							</div>
 						</div>

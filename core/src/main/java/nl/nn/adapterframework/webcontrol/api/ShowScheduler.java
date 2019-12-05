@@ -46,10 +46,13 @@ import javax.ws.rs.core.SecurityContext;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.scheduler.ConfiguredJob;
 import nl.nn.adapterframework.scheduler.DatabaseJobDef;
 import nl.nn.adapterframework.scheduler.IbisJobDetail;
@@ -502,8 +505,20 @@ public final class ShowScheduler extends Base {
 
 		//Make sure the receiver exists!
 		String receiverName = resolveStringFromMap(inputDataMap, "receiver");
-		if(adapter.getReceiverByName(receiverName) == null) {
+		IReceiver receiver = adapter.getReceiverByName(receiverName);
+		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found");
+		}
+		String listenerName = null;
+		if (receiver instanceof ReceiverBase) {
+			ReceiverBase rb = (ReceiverBase) receiver;
+			IListener<?> listener = rb.getListener();
+			if(listener != null) {
+				listenerName = listener.getName();
+			}
+		}
+		if(StringUtils.isEmpty(listenerName)) {
+			throw new ApiException("unable to determine listener for receiver ["+receiverName+"]");
 		}
 
 		String jobGroup = groupName;
@@ -524,7 +539,7 @@ public final class ShowScheduler extends Base {
 		jobdef.setCronExpression(cronExpression);
 		jobdef.setName(name);
 		jobdef.setAdapterName(adapterName);
-		jobdef.setReceiverName(receiverName);
+		jobdef.setReceiverName(listenerName);
 		jobdef.setJobGroup(jobGroup);
 		jobdef.setMessage(message);
 		jobdef.setInterval(interval);
@@ -585,7 +600,7 @@ public final class ShowScheduler extends Base {
 				stmt.setString(1, name);
 				stmt.setString(2, jobGroup);
 				stmt.setString(3, adapterName);
-				stmt.setString(4, receiverName);
+				stmt.setString(4, listenerName);
 				stmt.setString(5, cronExpression);
 				stmt.setInt(6, interval);
 				stmt.setClob(7, new StringReader(message));
