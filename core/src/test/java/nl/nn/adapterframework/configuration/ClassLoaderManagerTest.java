@@ -94,16 +94,16 @@ public class ClassLoaderManagerTest extends Mockito {
 
 		if(type.endsWith("DirectoryClassLoader")) {
 			String directory = getTestClassesLocation()+"ClassLoader/DirectoryClassLoaderRoot/";
-			appConstants.put("configurations."+configurationName+".directory", directory);
+			appConstants.put("configurations."+configurationName+".directory", (Object) directory);
 		}
 
 		if(type.endsWith("JarFileClassLoader")) {
 			URL file = this.getClass().getResource(JAR_FILE);
-			appConstants.put("configurations."+configurationName+".jar", file.getFile());
+			appConstants.put("configurations."+configurationName+".jar", (Object) file.getFile());
 		}
 
 		if(type.endsWith("ServiceClassLoader")) {
-			appConstants.put("configurations."+configurationName+".adapterName", ADAPTER_SERVICE_NAME);
+			appConstants.put("configurations."+configurationName+".adapterName", (Object) ADAPTER_SERVICE_NAME);
 		}
 	}
 
@@ -126,7 +126,7 @@ public class ClassLoaderManagerTest extends Mockito {
 			if(o[0] != null)
 				appConstants.put("configurations."+o[1]+".classLoaderType", o[0]);
 		}
-		appConstants.put("configurations.names", configurationsNames);
+		appConstants.put("configurations.names", (Object) configurationsNames);
 
 		createAdapter4ServiceClassLoader(ADAPTER_SERVICE_NAME);
 		mockDatabase();
@@ -264,11 +264,11 @@ public class ClassLoaderManagerTest extends Mockito {
 		if(skip) return; //This ClassLoader can't actually retrieve files...
 
 		String testConfiguration = "myNewClassLoader";
-		appConstants.put("configurations."+testConfiguration+".classLoaderType", "DirectoryClassLoader");
-		appConstants.put("configurations."+configurationName+".parentConfig", testConfiguration);
+		appConstants.put("configurations."+testConfiguration+".classLoaderType", (Object) "DirectoryClassLoader");
+		appConstants.put("configurations."+configurationName+".parentConfig", (Object) testConfiguration);
 		String directory = getTestClassesLocation()+"ClassLoader/";
-		appConstants.put("configurations."+testConfiguration+".directory", directory);
-		appConstants.put("configurations.names", appConstants.get("configurations.names") + ","+testConfiguration);
+		appConstants.put("configurations."+testConfiguration+".directory", (Object) directory);
+		appConstants.put((Object) "configurations.names", (Object) appConstants.get("configurations.names") + ","+testConfiguration);
 
 		String testFile = "fileOnlyOnLocalClassPath.txt";
 		ClassLoader parentClassloader = getClassLoader(testConfiguration);

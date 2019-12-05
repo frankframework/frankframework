@@ -182,7 +182,7 @@ public final class AppConstants extends Properties implements Serializable {
 	}
 
 	/**
-	 * Creates a tokenizer from the values of this key.  As a sepearator the "," is used.
+	 * Creates a tokenizer from the values of this key. As a separator the "," is used.
 	 * Uses the {@link #getResolvedProperty(String)} method.
 	 * Can be used to process lists of values.
 	 */
@@ -190,7 +190,7 @@ public final class AppConstants extends Properties implements Serializable {
 		return new StringTokenizer(getResolvedProperty(key), ",");
 	}
 	/**
-	 * Creates a tokenizer from the values of this key.
+	 * Creates a tokenizer from the values of this key. As a separator the "," is used.
 	 * Uses the {@link #getResolvedProperty(String)} method.
 	 * Can be used to process lists of values.
 	 */
@@ -340,15 +340,8 @@ public final class AppConstants extends Properties implements Serializable {
 	/**
 	 * Add property to global (all) AppConstants
 	 */
-	public void put(String key, String value) {
+	public synchronized void put(String key, String value) {
 		setProperty(key, value, false);
-	}
-
-	/**
-	 * Add property to a specific AppConstants instance
-	 */
-	public static void put(ClassLoader classLoader, String key, String value) {
-		getInstance(classLoader).setProperty(key, value, true);
 	}
 
 	/**
