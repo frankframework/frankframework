@@ -102,13 +102,6 @@ public class AppConstantsTest {
 
 		assertEquals("changed", constants.getResolvedProperty("only.in.deploymentspecifics.parent"));
 	}
-	
-	@Test
-	public void setRuntimeKey() {
-		AppConstants.removeInstance();
-		AppConstants.getInstance().put("dummyConstant", "2.7");
-		assertEquals("2.7", constants.get("dummyConstant"));
-	}
 
 	private class ClassLoaderMock extends ClassLoader {
 		private boolean simulateReload = false;
