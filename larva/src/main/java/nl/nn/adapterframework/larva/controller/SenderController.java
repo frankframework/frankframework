@@ -132,6 +132,7 @@ public class SenderController {
 					// styleSheetName relative to the scenarioDirectory.
 					DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(originalClassLoader);
 					directoryClassLoader.setDirectory(scenarioDirectory);
+					directoryClassLoader.setBasePath(".");
 					directoryClassLoader.configure(ibisContext, "dummy");
 					Thread.currentThread().setContextClassLoader(directoryClassLoader);
 					httpSender = new HttpSender();

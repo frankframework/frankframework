@@ -86,7 +86,6 @@ public class TestTool {
 	 */
 	public int runScenarios(String paramExecute, int waitBeforeCleanUp, String currentScenariosRootDirectory, int numberOfThreads, int testTimeout) {
 		AppConstants appConstants = getAppConstants(ibisContext);
-		appConstants = TestPreparer.getAppConstantsFromDirectory(currentScenariosRootDirectory, appConstants);
 		String asd = appConstants.getResolvedProperty("larva.diffs.autosave");
 		if (asd != null) {
 			autoSaveDiffs = Boolean.parseBoolean(asd);

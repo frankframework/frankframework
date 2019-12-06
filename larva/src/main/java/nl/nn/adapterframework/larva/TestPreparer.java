@@ -25,24 +25,10 @@ import java.util.Map.Entry;
  *
  */
 public class TestPreparer {
+
 	public static Map<String, String> scenariosRootDirectories;
 	private static Logger logger = LogUtil.getLogger(TestPreparer.class);
-	public static AppConstants getAppConstantsFromDirectory(String currentScenariosRootDirectory,
-															AppConstants appConstants) {
-		String appConstantsDirectory = appConstants.getResolvedProperty("larva.appconstants.directory");
-		if (appConstantsDirectory != null) {
-			appConstantsDirectory = TestPreparer.getAbsolutePath(currentScenariosRootDirectory, appConstantsDirectory);
-			if (new File(currentScenariosRootDirectory).exists()) {
-				if (new File(appConstantsDirectory).exists()) {
-					logger.debug("Get AppConstants from directory: " + appConstantsDirectory);
-					appConstants = AppConstants.getInstance(appConstantsDirectory);
-				} else {
-					logger.error("Directory for AppConstans not found");
-				}
-			}
-		}
-		return appConstants;
-	}
+
 	public static Map<String, String> getScenariosList(Map<String, List<File>> scenarioFiles, String scenariosRootDirectory, AppConstants appConstants) {
 		return getScenariosList(scenarioFiles, scenariosRootDirectory, false, appConstants);
 	}
@@ -681,6 +667,8 @@ public class TestPreparer {
 	 * @return The message, after replacing the values.
 	 */
 	private static String replaceVariables(Properties properties, String message, String initCharacters, String finishCharacters, String escapeCharacter, MessageListener messageListener, String testName) {
+		if (message == null)
+			return message;
 		int searchIndex = 0;
 		int lastIndex = 0;
 		int initLength = initCharacters.length();

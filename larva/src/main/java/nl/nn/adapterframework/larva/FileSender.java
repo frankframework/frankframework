@@ -1,19 +1,17 @@
 package nl.nn.adapterframework.larva;
 
-import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.util.Dir2Xml;
+import org.apache.tools.ant.DefaultLogger;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.ProjectHelper;
+import org.apache.tools.ant.helper.ProjectHelperImpl;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Iterator;
 import java.util.Properties;
-
-import org.apache.tools.ant.DefaultLogger;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.ProjectHelper;
-import org.apache.tools.ant.helper.ProjectHelperImpl;
 
 /**
  * File sender for the Test Tool.
@@ -104,7 +102,14 @@ public class FileSender {
 		applyProperties(ant, properties);
 		ant.init();
 		ProjectHelper helper = new ProjectHelperImpl();
-		helper.parse(ant, new File(filename));
+		File file = new File(filename);
+		helper.parse(ant, file);
+		ant.setBaseDir(file.getParentFile());
+		String basedir =ant.getBaseDir().toString();
+		String b = System.getProperties().getProperty("basedir");
+		System.out.println("Filename " + filename);
+		System.out.println("ANT BASEDIR: " + basedir);
+		System.out.println("SYSTEM BASEDIR: " + b);
 		ant.executeTarget(ant.getDefaultTarget());
 	}
 

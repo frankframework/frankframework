@@ -13,11 +13,6 @@ import nl.nn.adapterframework.larva.MessageListener;
 import nl.nn.adapterframework.larva.ResultComparer;
 import nl.nn.adapterframework.larva.ScenarioTester;
 import nl.nn.adapterframework.larva.TestTool;
-import nl.nn.adapterframework.lifecycle.IbisInitializer;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 import javax.jms.Message;
 import java.util.*;

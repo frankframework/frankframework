@@ -1,15 +1,14 @@
 package nl.nn.adapterframework.larva;
 
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.util.TransformerPool;
+import org.xml.sax.SAXException;
+
+import javax.xml.transform.TransformerException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
-
-import javax.xml.transform.TransformerException;
-
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.TransformerPool;
 
 /**
  * XSLT provider listener for the Test Tool.
@@ -26,12 +25,15 @@ public class XsltProviderListener {
 
 	public void init() throws ListenerException {
 		try {
+			Resource stylesheet;
+
 			if (fromClasspath) {
-				transformerPool = TransformerPool.getInstance(ClassUtils.getResourceURL(this, filename), getXsltVersion());
+				stylesheet = Resource.getResource(filename);
 			} else {
 				File file = new File(filename);
-				transformerPool = TransformerPool.getInstance(file.toURI().toURL(), getXsltVersion());
+				stylesheet = Resource.getResource(null, file.toURI().toURL().toExternalForm(), "file");
 			}
+			transformerPool = TransformerPool.getInstance(stylesheet, getXsltVersion());
 		} catch (Exception e) {
 			throw new ListenerException("Exception creating transformer pool for file '" + filename + "': " + e.getMessage(), e);
 		}
@@ -44,7 +46,7 @@ public class XsltProviderListener {
 			throw new ListenerException("IOException transforming xml: " + e.getMessage(), e);
 		} catch (TransformerException e) {
 			throw new ListenerException("TransformerException transforming xml: " + e.getMessage(), e);
-		} catch (DomBuilderException e) {
+		} catch (SAXException e) {
 			throw new ListenerException("DomBuilderException transforming xml: " + e.getMessage(), e);
 		}
 	}

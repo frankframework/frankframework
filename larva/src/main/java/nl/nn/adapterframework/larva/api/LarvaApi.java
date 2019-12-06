@@ -279,7 +279,7 @@ public class LarvaApi {
             realPath = appConstantsRealPath + "larva/";
         }
         rootDirectory = TestPreparer.initScenariosRootDirectories(realPath, rootDirectory, appConstants);
-        appConstants = TestPreparer.getAppConstantsFromDirectory(rootDirectory, appConstants);
+        appConstants = TestTool.getAppConstants(ibisContext);
         Map<String, List<File>> scenarioFiles = TestPreparer.readScenarioFiles(rootDirectory, false, appConstants);
         Collections.sort(scenarioFiles.get(""));
         Map<String, String> scenarioList = TestPreparer.getScenariosList(scenarioFiles, rootDirectory, appConstants);

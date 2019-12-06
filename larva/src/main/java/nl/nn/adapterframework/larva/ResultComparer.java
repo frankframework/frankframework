@@ -28,8 +28,7 @@ public class ResultComparer {
 
 	public ResultComparer(MessageListener messageListener) {
 		this.messageListener = messageListener;
-		if(!XMLUnit.getIgnoreWhitespace())
-			XMLUnit.setIgnoreWhitespace(true);
+		XMLUnit.setIgnoreWhitespace(true);
 	}
 
 	public int compareResult(String step, String stepDisplayName, String fileName, String expectedResult, String actualResult, Properties properties, String queueName, String originalFilePath, String testName) {
