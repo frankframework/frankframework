@@ -61,6 +61,20 @@ public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 		assertJsonEqual(null,expectedJson,jsonOut);
 	}
 
+	@Test
+	public void xmlOut() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		pipe.setStyleSheetName("/Xslt3/orgchart.xslt");
+		pipe.setJsonResult(false);
+		pipe.configure();
+		pipe.start();
+		String input=TestFileUtils.getTestFile("/Xslt3/employees.json");
+		log.debug("inputfile ["+input+"]");
+		String expectedXml=TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
+		PipeRunResult prr = pipe.doPipe(input,session);
+		String xmlOut=(String)prr.getResult();
+		assertEquals(expectedXml,xmlOut);
+	}
+
 	public static JsonStructure string2Json(String json) {
 		JsonStructure jsonStructure = Json.createReader(new StringReader(json)).read();
 		return jsonStructure;
