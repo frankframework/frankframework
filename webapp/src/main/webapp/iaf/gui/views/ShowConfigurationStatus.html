@@ -318,7 +318,7 @@
                                     <tbody>
                                         <tr ng-repeat="receiver in adapter.receivers">
                                             <td>{{receiver.name}}</td>
-                                            <td>{{receiver.listenerClass}} ({{receiver.listenerDestination}})</td>
+                                            <td>{{receiver.listener.class}} ({{receiver.listener.destination}})</td>
                                             <td>{{receiver.messages.retried}}</td>
                                             <td>{{receiver.messages.received}}</td>
                                             <td>{{receiver.messages.rejected}}</td>
