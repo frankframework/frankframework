@@ -81,9 +81,9 @@
 						<additionalClasspathElement>src\main</additionalClasspathElement>
 					</additionalClasspathElements>
 					<systemPropertyVariables>
-						<larva.rootDir>C:\Users\username\Documents\Integration Partners\iaf\test\src\test\testtool</larva.rootDir>
-						<larva.execute>C:\Users\username\Documents\Integration Partners\iaf\test\src\test\testtool</larva.execute>
-						<larva.reportFolder>C:\Users\username\Documents\Integration Partners\reports</larva.reportFolder>
+						<larva.rootDir>C:\XXX\iaf\test\src\test\testtool</larva.rootDir>
+						<larva.execute>C:\XXX\iaf\test\src\test\testtool</larva.execute>
+						<larva.reportFolder>C:\XXX\reports</larva.reportFolder>
 					</systemPropertyVariables>
 				</configuration>
 			</plugin>
