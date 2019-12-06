@@ -2,9 +2,7 @@ package nl.nn.adapterframework.xslt;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.isEmptyString;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -38,6 +36,10 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	private PrintStream prevStdErr;
 	public static int EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING=1;
 	public static int EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS=1; // this should be one, but for the time being we're happy that there is logging
+	
+	private final String FILE_NOT_FOUND_EXCEPTION="Cannot get resource for href [";
+	
+	private final boolean testForEmptyOutputStream=false;
 	
 	protected int getMultiplicity() {
 		return 1;
@@ -108,23 +110,27 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	public void init() {
 		testAppender = new TestAppender();
 		LogUtil.getRootLogger().addAppender(testAppender);
-		errorOutputStream = new ErrorOutputStream();
-		prevStdErr=System.err;
-		System.setErr(new PrintStream(errorOutputStream));
+		if (testForEmptyOutputStream) {
+			errorOutputStream = new ErrorOutputStream();
+			prevStdErr=System.err;
+			System.setErr(new PrintStream(errorOutputStream));
+		}
 	}
 
 	@After
 	public void finalChecks() {
-		// Xslt processing should not log to stderr
-		System.setErr(prevStdErr);
-		System.err.println("ErrorStream:"+errorOutputStream);
-		assertThat(errorOutputStream.toString(), isEmptyString());
+		if (testForEmptyOutputStream) {
+			// Xslt processing should not log to stderr
+			System.setErr(prevStdErr);
+			System.err.println("ErrorStream:"+errorOutputStream);
+			assertThat(errorOutputStream.toString(), isEmptyString());
+		}
 	}
 	
 	
 	protected void checkTestAppender(int expectedSize, String expectedString) {
 		System.out.println("Log Appender:"+testAppender.toString());
-		assertThat(testAppender.getNumberOfAlerts(),is(expectedSize));
+		assertThat("number of alerts in logging", testAppender.getNumberOfAlerts(),is(expectedSize));
 		if (expectedString!=null) assertThat(testAppender.toString(),containsString(expectedString));
 	}
 	
@@ -161,8 +167,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 
 		PipeRunResult prr=doPipe(pipe, input, session);
 
-		//assertResultsAreCorrect(expected, prr.getResult().toString(),session);
-		assertResultsAreCorrect(expected.replaceAll("\\s",""), prr.getResult().toString().replaceAll("\\s",""),session);
+		assertResultsAreCorrect(expected, prr.getResult().toString(),session);
 	}
 
 	
@@ -178,48 +183,52 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 
 	@Test
 	public void documentIncludedInSourceNotFoundXslt1() throws Exception {
-		setStyleSheetName("/Xslt/documentNotFound/root.xsl");
+		setStyleSheetName("/Xslt/importDocument/importNotFound1.xsl");
 		setXslt2(false);
 		setIndent(true);
 		pipe.configure();
 		pipe.start();
-		String input = TestFileUtils.getTestFile("/Xslt/documentNotFound/in.xml");
+		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
 		String errorMessage = null;
 		try {
 			doPipe(pipe, input, session);
-		} catch (PipeRunException e) {
+		} catch (Exception e) {
 			errorMessage = e.getMessage();
 			//System.out.println("ErrorMessage: "+errorMessage);
-			assertThat(errorMessage,containsString("java.io.FileNotFoundException"));
+			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
-		assertThat(testAppender.toString(),containsString("java.io.FileNotFoundException"));
+		assertThat(testAppender.toString(),containsString(FILE_NOT_FOUND_EXCEPTION));
 		System.out.println("ErrorMessage: "+errorMessage);
-		System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
-		System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
-		errorOutputStream=new ErrorOutputStream();
+		if (testForEmptyOutputStream) {
+			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
+			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
+			errorOutputStream=new ErrorOutputStream();
+		}
 	}
 
 	@Test
 	public void documentIncludedInSourceNotFoundXslt2() throws Exception {
 		// error not during configure(), but during doPipe()
-		setStyleSheetName("/Xslt/documentNotFound/root2.xsl");
+		setStyleSheetName("/Xslt/importDocument/importNotFound2.xsl");
 		setXslt2(true);
 		pipe.configure();
 		pipe.start();
-		String input = TestFileUtils.getTestFile("/Xslt/documentNotFound/in.xml");
+		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
 		String errorMessage = null;
 		try {
 			doPipe(pipe, input, session);
 			fail("Expected to run into an exception");
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
-			assertThat(errorMessage,containsString("java.io.FileNotFoundException"));
+			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
 		checkTestAppender(EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING,null);
 		System.out.println("ErrorMessage: "+errorMessage);
-		System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
-		System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
-		errorOutputStream=new ErrorOutputStream();
+		if (testForEmptyOutputStream) {
+			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
+			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
+			errorOutputStream=new ErrorOutputStream();
+		}
 	}
 
 	@Test
@@ -232,9 +241,9 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			fail("Expected to run into an exception");
 		} catch (ConfigurationException e) {
 			errorMessage = e.getMessage();
-			assertThat(errorMessage,containsString("FileNotFoundException"));
+			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
-		checkTestAppender((EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING)*getMultiplicity()+1,"java.io.FileNotFoundException");
+		checkTestAppender((EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING)*getMultiplicity()+1,FILE_NOT_FOUND_EXCEPTION);
 	}
 
 	@Test
@@ -247,9 +256,9 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			fail("expected configuration to fail because an import could not be found");
 		} catch (ConfigurationException e) {
 			errorMessage = e.getMessage();
-			assertThat(errorMessage,containsString("FileNotFoundException"));
+			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
-		checkTestAppender((EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING)*getMultiplicity()+1,"java.io.FileNotFoundException");
+		checkTestAppender((EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING)*getMultiplicity()+1,FILE_NOT_FOUND_EXCEPTION);
 	}
 
 	@Test
@@ -284,9 +293,56 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		}
 		checkTestAppender(EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING+getMultiplicity(),null);
 		System.out.println("ErrorMessage: "+errorMessage);
-		System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
-		System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
-		errorOutputStream=new ErrorOutputStream();
+		if (testForEmptyOutputStream) {
+			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
+			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
+			errorOutputStream=new ErrorOutputStream();
+		}
 	}
 
+	@Test
+	public void illegalXPathExpression2Xslt1() throws Exception {
+		// error not during configure(), but during doPipe()
+		setXpathExpression("<result><status>invalid</status><message>$failureReason</message></result>");
+		setXslt2(false);
+		String errorMessage = null;
+		try {
+			pipe.configure();
+			fail("Expected to run into an exception");
+		} catch (Exception e) {
+			errorMessage = e.getMessage();
+			assertThat(errorMessage,containsString("<result><status>invalid</status><message>$failureReason</message></result>"));
+			assertThat(errorMessage,containsString("A location path was expected, but the following token was encountered:  <"));
+		}
+		checkTestAppender(EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING+getMultiplicity()+1,null);
+		System.out.println("ErrorMessage: "+errorMessage);
+		if (testForEmptyOutputStream) {
+			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
+			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
+			errorOutputStream=new ErrorOutputStream();
+		}
+	}
+
+	@Test
+	public void illegalXPathExpression2Xslt2() throws Exception {
+		// error not during configure(), but during doPipe()
+		setXpathExpression("<result><status>invalid</status><message>$failureReason</message></result>");
+		setXslt2(true);
+		String errorMessage = null;
+		try {
+			pipe.configure();
+			fail("Expected to run into an exception");
+		} catch (Exception e) {
+			errorMessage = e.getMessage();
+			assertThat(errorMessage,containsString("<result><status>invalid</status><message>$failureReason</message></result>"));
+			assertThat(errorMessage,containsString("Unexpected token \"<\" in path expression"));
+		}
+		checkTestAppender(EXPECTED_CONFIG_WARNINGS_FOR_XSLT2_SETTING+getMultiplicity(),null);
+		System.out.println("ErrorMessage: "+errorMessage);
+		if (testForEmptyOutputStream) {
+			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
+			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
+			errorOutputStream=new ErrorOutputStream();
+		}
+	}
 }

@@ -43,7 +43,6 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.ExchangeFileSystem;
 import nl.nn.adapterframework.filesystem.FileSystemListener;
-import nl.nn.adapterframework.filesystem.IFileSystemListener;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -99,7 +98,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * 
  * @author Peter Leeuwenburgh, Gerrit van Brakel
  */
-public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSystem> implements HasPhysicalDestination, IFileSystemListener<Item> {
+public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSystem> implements HasPhysicalDestination {
 
 	public final String EMAIL_MESSAGE_TYPE="email";
 	private String storeEmailAsStreamInSessionKey;

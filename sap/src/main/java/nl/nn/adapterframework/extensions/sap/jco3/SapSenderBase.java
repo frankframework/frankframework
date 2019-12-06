@@ -161,6 +161,11 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		paramList.add(p);
 	}
 
+	@Override
+	public ParameterList getParameterList() {
+		return paramList;
+	}
+
 	public void setLuwHandleSessionKey(String string) {
 		luwHandleSessionKey = string;
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2018 - 2019 Nationale-Nederlanden
+   Copyright 2016, 2018-2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public class DirectoryClassLoader extends ClassLoaderBase {
 				throw new ConfigurationException("Could not find property configurations.directory");
 			}
 
-			this.directory = new File(configurationsDirectory);
+			setDirectory(configurationsDirectory);
 		}
 
 		if (!this.directory.isDirectory()) {
@@ -61,8 +61,12 @@ public class DirectoryClassLoader extends ClassLoaderBase {
 		this.directory = dir;
 	}
 
+	protected File getDirectory() {
+		return this.directory;
+	}
+
 	@Override
-	public URL getResource(String name) {
+	public URL getLocalResource(String name) {
 		File file = new File(directory, name);
 		if (file.exists()) {
 			try {
@@ -72,6 +76,6 @@ public class DirectoryClassLoader extends ClassLoaderBase {
 			}
 		}
 
-		return super.getResource(name);
+		return null;
 	}
 }

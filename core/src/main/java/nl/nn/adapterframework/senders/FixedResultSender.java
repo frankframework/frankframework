@@ -22,6 +22,10 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
+import org.xml.sax.SAXException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
@@ -31,13 +35,9 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
 
 /**
  * FixedResultSender, same behaviour as {@link nl.nn.adapterframework.pipes.FixedResult FixedResult}, but now as a ISender.
@@ -74,12 +74,13 @@ public class FixedResultSender extends SenderWithParametersBase {
 	 * may be returned.
 	 * @throws ConfigurationException
 	 */
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 	    
 		if (StringUtils.isNotEmpty(fileName)) {
 			try {
-				returnString = Misc.resourceToString(ClassUtils.getResourceURL(getClassLoader(), fileName), SystemUtils.LINE_SEPARATOR);
+				returnString = Misc.resourceToString(ClassUtils.getResourceURL(getConfigurationClassLoader(), fileName), SystemUtils.LINE_SEPARATOR);
 			} catch (Throwable e) {
 				throw new ConfigurationException("Pipe [" + getName() + "] got exception loading ["+fileName+"]", e);
 			}
@@ -92,6 +93,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 		}
 	}
  
+	@Override
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
 		String result=returnString;
 		if (prc!=null) {
@@ -114,7 +116,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 		}
 
 		if (StringUtils.isNotEmpty(styleSheetName)) {
-			URL xsltSource = ClassUtils.getResourceURL(getClassLoader(), styleSheetName);
+			URL xsltSource = ClassUtils.getResourceURL(getConfigurationClassLoader(), styleSheetName);
 			if (xsltSource!=null) {
 				try{
 					String xsltResult = null;
@@ -127,8 +129,8 @@ public class FixedResultSender extends SenderWithParametersBase {
 					throw new SenderException("got error creating transformer from file [" + styleSheetName + "]", te);
 				} catch (TransformerException te) {
 					throw new SenderException("got error transforming resource [" + xsltSource.toString() + "] from [" + styleSheetName + "]", te);
-				} catch (DomBuilderException te) {
-					throw new SenderException("caught DomBuilderException", te);
+				} catch (SAXException se) {
+					throw new SenderException("caught SAXException", se);
 				}
 			}
 		}
@@ -158,6 +160,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 	}
 
 
+	@Override
 	public boolean isSynchronous() {
 		return true;
 	}

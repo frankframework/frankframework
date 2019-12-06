@@ -15,11 +15,17 @@
 */
 package nl.nn.adapterframework.extensions.cxf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeThat;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Iterator;
+import java.util.Properties;
 
 import javax.activation.DataHandler;
 import javax.xml.soap.AttachmentPart;
@@ -30,13 +36,8 @@ import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.ws.WebServiceContext;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.XmlUtils;
-
 import org.apache.soap.util.mime.ByteArrayDataSource;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -44,11 +45,50 @@ import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.w3c.dom.Element;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlUtils;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SoapProviderTest {
 
+	@BeforeClass
+	public static void setUp() {
+		Properties prop = System.getProperties();
+		String vendor = prop.getProperty("java.vendor");
+		System.out.println("JVM Vendor : " + vendor);
+		assumeThat(vendor, not(equalTo("IBM Corporation")));
+		
+	/*
+	 * The above exclusion of IBM JDK to work around the below error, seen when executing these tests with an IBM JDK:
+	 * 
+		java.lang.VerifyError: JVMVRFY012 stack shape inconsistent; class=com/sun/xml/messaging/saaj/soap/SOAPDocumentImpl, method=createDocumentFragment()Lorg/w3c/dom/DocumentFragment;, pc=5; Type Mismatch, argument 0 in signature com/sun/xml/messaging/saaj/soap/SOAPDocumentFragment.<init>:(Lcom/sun/org/apache/xerces/internal/dom/CoreDocumentImpl;)V does not match
+		Exception Details:
+		  Location:
+		    com/sun/xml/messaging/saaj/soap/SOAPDocumentImpl.createDocumentFragment()Lorg/w3c/dom/DocumentFragment; @5: JBinvokespecial
+		  Reason:
+		    Type 'com/sun/xml/messaging/saaj/soap/SOAPDocumentImpl' (current frame, stack[2]) is not assignable to 'com/sun/org/apache/xerces/internal/dom/CoreDocumentImpl'
+		  Current Frame:
+		    bci: @5
+		    flags: { }
+		    locals: { 'com/sun/xml/messaging/saaj/soap/SOAPDocumentImpl' }
+		    stack: { 'uninitialized', 'uninitialized', 'com/sun/xml/messaging/saaj/soap/SOAPDocumentImpl' }
+			at com.sun.xml.messaging.saaj.soap.SOAPPartImpl.<init>(SOAPPartImpl.java:106)
+			at com.sun.xml.messaging.saaj.soap.ver1_1.SOAPPart1_1Impl.<init>(SOAPPart1_1Impl.java:70)
+			at com.sun.xml.messaging.saaj.soap.ver1_1.Message1_1Impl.getSOAPPart(Message1_1Impl.java:90)
+			at nl.nn.adapterframework.extensions.cxf.SoapProviderTest.createMessage(SoapProviderTest.java:109)
+			at nl.nn.adapterframework.extensions.cxf.SoapProviderTest.createMessage(SoapProviderTest.java:98)
+			at nl.nn.adapterframework.extensions.cxf.SoapProviderTest.createMessage(SoapProviderTest.java:94)
+			at nl.nn.adapterframework.extensions.cxf.SoapProviderTest.sendMessageWithInputStreamAttachmentsTest(SoapProviderTest.java:228)
+	*/	
+
+	}
+	
 	@Spy
 	WebServiceContext webServiceContext = new WebServiceContextStub();
 

@@ -21,6 +21,11 @@ public class XsltSenderTest extends XsltErrorTestBase<GenericMessageSendingPipe>
 		sender.setStyleSheetName(styleSheetName);		
 	}
 	
+	@Override
+	protected void setStyleSheetNameSessionKey(String styleSheetNameSessionKey) {
+		sender.setStyleSheetNameSessionKey(styleSheetNameSessionKey);		
+	}
+	
 
 	@Override
 	protected void setXpathExpression(String xpathExpression) {
@@ -40,6 +45,11 @@ public class XsltSenderTest extends XsltErrorTestBase<GenericMessageSendingPipe>
 	@Override
 	protected void setSkipEmptyTags(boolean skipEmptyTags) {
 		sender.setSkipEmptyTags(skipEmptyTags);
+	}
+
+	@Override
+	protected void setOutputType(String outputType) {
+		sender.setOutputType(outputType);
 	}
 
 	@Override

@@ -18,9 +18,8 @@ package nl.nn.adapterframework.xml;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLFilterImpl;
 
-public class NamespaceRemovingFilter extends XMLFilterImpl {
+public class NamespaceRemovingFilter extends FullXmlFilter {
 //	Logger log = LogUtil.getLogger(this.getClass());
 	
 	public NamespaceRemovingFilter() {

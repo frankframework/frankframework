@@ -129,6 +129,11 @@
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
+        <artifactId>ibis-adapterframework-aspose</artifactId>
+        <version>7.5-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-unittester</artifactId>
         <version>7.5-SNAPSHOT</version>
       </dependency>
@@ -187,7 +192,7 @@
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <version>1.9</version>
+        <version>1.13</version>
       </dependency>
       <dependency>
         <groupId>commons-net</groupId>
@@ -408,8 +413,10 @@
         <module>akamai</module>
         <module>webapp</module>
         <module>test</module>
+        <module>ear-test</module>
         <module>ladybug</module>
         <module>unittester</module>
+<!--        <module>iaf-aspose</module> -->
       </modules>
     </profile>
     <profile>

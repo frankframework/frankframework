@@ -25,6 +25,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
 /**
  * This class is a 'comparison helper' for file assertions
@@ -65,7 +66,7 @@ public class TestAssertions extends org.junit.Assert {
 		assertEquals(message, expected.trim().replace("\r",""), actual.trim().replace("\r",""));
 	}
 
-	static public void assertXpathValueEquals(String expected, String source, String xpathExpr) throws DomBuilderException, XPathExpressionException, TransformerException, IOException {
+	static public void assertXpathValueEquals(String expected, String source, String xpathExpr) throws SAXException, XPathExpressionException, TransformerException, IOException {
 		String xslt=XmlUtils.createXPathEvaluatorSource(xpathExpr);
 		Transformer transformer = XmlUtils.createTransformer(xslt);
 		
@@ -74,7 +75,7 @@ public class TestAssertions extends org.junit.Assert {
 		assertEquals(xpathExpr,expected,result);
 	}
 
-	static public void assertXpathValueEquals(int expected, String source, String xpathExpr) throws DomBuilderException, XPathExpressionException, TransformerException, IOException {
+	static public void assertXpathValueEquals(int expected, String source, String xpathExpr) throws SAXException, XPathExpressionException, TransformerException, IOException {
 		String xslt=XmlUtils.createXPathEvaluatorSource(xpathExpr);
 		Transformer transformer = XmlUtils.createTransformer(xslt);
 		

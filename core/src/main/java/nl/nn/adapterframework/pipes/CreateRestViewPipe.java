@@ -154,7 +154,7 @@ public class CreateRestViewPipe extends XsltPipe {
 			p.setSessionKey(SRCPREFIX);
 			addParameter(p);
 		}
-		appConstants = AppConstants.getInstance(classLoader);
+		appConstants = AppConstants.getInstance(getConfigurationClassLoader());
 		super.configure();
 	}
 
@@ -205,7 +205,7 @@ public class CreateRestViewPipe extends XsltPipe {
 				+ httpServletRequest.getServerName() + "</serverName>"
 				+ "</servletRequest>" + "</requestInfo>";
 		parameters.put("requestInfo", XmlUtils.buildNode(requestInfoXml));
-		parameters.put("upTime", XmlUtils.buildNode("<upTime>" + ibisContext.getUptime() + "</upTime>"));
+		parameters.put("upTime", XmlUtils.buildNode("<upTime>" + (ibisContext==null?"null":ibisContext.getUptime()) + "</upTime>"));
 		String machineNameXml = "<machineName>" + Misc.getHostname()
 				+ "</machineName>";
 		parameters.put("machineName", XmlUtils.buildNode(machineNameXml));

@@ -31,6 +31,7 @@ import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
+import org.xml.sax.SAXException;
 
 /**
  * Bis (Business Integration Services) extension of JmsListener.
@@ -186,7 +187,8 @@ public class BisJmsListener extends JmsListener {
 		}
 	}
 
-	public String extractMessageBody(String rawMessageText, Map context, SoapWrapper soapWrapper) throws DomBuilderException, TransformerException, IOException {
+	@Override
+	public String extractMessageBody(String rawMessageText, Map<String,Object> context, SoapWrapper soapWrapper) throws SAXException, TransformerException, IOException {
 		context.put(MESSAGETEXT_KEY, rawMessageText);
 		log.debug("extract messageBody from message [" + rawMessageText + "]");
 		String messageBody = requestTp.transform(rawMessageText, null, true);
@@ -202,7 +204,8 @@ public class BisJmsListener extends JmsListener {
 		return messageBody;
 	}
 
-	public String prepareReply(String rawReply, Map threadContext) throws ListenerException {
+	@Override
+	public String prepareReply(String rawReply, Map<String,Object> threadContext) throws ListenerException {
 		String originalMessageText = (String) threadContext.get(MESSAGETEXT_KEY);
 		String messageBodyNamespace = (String) threadContext.get(MESSAGEBODYNAMESPACE_KEY);
 		if (isLayByNamespace() && messageBodyNamespace != null) {

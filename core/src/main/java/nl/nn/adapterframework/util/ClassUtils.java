@@ -18,20 +18,26 @@ package nl.nn.adapterframework.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import nl.nn.adapterframework.configuration.IbisContext;
-
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 
 /**
  * A collection of class management utility methods.
@@ -40,8 +46,9 @@ import org.apache.log4j.Logger;
  */
 public class ClassUtils {
 	private static Logger log = LogUtil.getLogger(ClassUtils.class);
-
+	
 	private static final boolean trace=false;
+	private final static String defaultAllowedProtocols = AppConstants.getInstance().getString("classloader.allowed.protocols", null);
 
     /**
      * Return the context classloader.
@@ -51,7 +58,7 @@ public class ClassUtils {
      *
      * @return The context classloader.
      */
-    public static ClassLoader getClassLoader() {
+    private static ClassLoader getClassLoader() {
         return Thread.currentThread().getContextClassLoader();
     }
 	/**
@@ -69,33 +76,27 @@ public class ClassUtils {
 		}
 		return theConstructor;
 	}
-    /**
-     * Return a resource URL.
-     * BL: if this is command line operation, the classloading issues
-     *     are more sane.  During servlet execution, we explicitly set
-     *     the ClassLoader.
-     *
-     * @return The context classloader.
-     * @deprecated Use getResourceURL().openStream instead.
-     */
-    public static InputStream getResourceAsStream(Class klass, String resource) throws  IOException {
-	    InputStream stream=null;
-	    URL url=getResourceURL(klass, resource);
-
-
-	     stream=url.openStream();
-        return stream;
-
-    }
 
 	/**
-	 * Get a resource-URL with the ClassLoader derived from an object or class
-	 * @param obj object to derive the ClassLoader from
+	 * Get a resource-URL with the ClassLoader derived from an object or class.
+	 * @param obj Object to derive the ClassLoader from
 	 * @param resource name of the resource you are trying to fetch the URL from
 	 * @return URL of the resource or null if it can't be not found
 	 */
+	@Deprecated
 	static public URL getResourceURL(Object obj, String resource) {
-		return getResourceURL(obj.getClass().getClassLoader(), resource);
+		return getResourceURL(obj.getClass(), resource);
+	}
+
+	/**
+	 * Get a resource-URL with the ClassLoader derived from an object or class.
+	 * @param clazz Class to derive the ClassLoader from
+	 * @param resource name of the resource you are trying to fetch the URL from
+	 * @return URL of the resource or null if it can't be not found
+	 */
+	@Deprecated
+	static public URL getResourceURL(Class clazz, String resource) {
+		return getResourceURL(clazz.getClassLoader(), resource);
 	}
 
 	/**
@@ -108,7 +109,7 @@ public class ClassUtils {
 	 * @see IbisContext#init()
 	 */
 	static public URL getResourceURL(ClassLoader classLoader, String resource) {
-		return getResourceURL(classLoader, resource, AppConstants.getInstance().getString("classloader.allowed.protocols", null));
+		return getResourceURL(classLoader, resource, null);
 	}
 
 	/**
@@ -118,9 +119,14 @@ public class ClassUtils {
 	 * @return URL of the resource or null if it can't be not found
 	 */
 	static public URL getResourceURL(ClassLoader classLoader, String resource, String allowedProtocols) {
-		if(classLoader == null)
-			classLoader = ClassUtils.class.getClassLoader();
-
+		if(classLoader == null) {
+			classLoader = Thread.currentThread().getContextClassLoader();
+			RuntimeException e = new IllegalStateException("getResourceURL called with null classLoader. Avoid this, it is only valid from configure(). Please change the code");
+			log.warn(e);
+		}
+		if (resource.startsWith(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME)) {
+			resource=resource.substring(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME.length());
+		}
 		// Remove slash like Class.getResource(String name) is doing before
 		// delegation to ClassLoader
 		if (resource.startsWith("/")) {
@@ -129,21 +135,50 @@ public class ClassUtils {
 		URL url = classLoader.getResource(resource);
 
 		// then try to get it as a URL
-		if (url == null && allowedProtocols != null && !allowedProtocols.isEmpty() && resource.contains(":/")) {
-			String protocol = resource.substring(0, resource.indexOf(":"));
-			List<String> protocols = new ArrayList<String>(Arrays.asList(allowedProtocols.split(",")));
-			if(protocols.contains(protocol)) {
-				try {
-					url = new URL(Misc.replace(resource, " ", "%20"));
-				} catch(MalformedURLException e) {
-					log.debug("Could not find resource as URL [" + resource + "]: "+e.getMessage());
+		if (url == null) {
+			if (resource.contains(":")) {
+				String protocol = resource.substring(0, resource.indexOf(":"));
+				if (allowedProtocols==null) {
+					allowedProtocols=defaultAllowedProtocols;
 				}
+				if (StringUtils.isNotEmpty(allowedProtocols)) {
+					//log.debug("Could not find resource ["+resource+"] in classloader ["+classLoader+"] now trying via protocol ["+protocol+"]");
+
+					List<String> protocols = new ArrayList<String>(Arrays.asList(allowedProtocols.split(",")));
+					if(protocols.contains(protocol)) {
+						try {
+							url = new URL(Misc.replace(resource, " ", "%20"));
+						} catch(MalformedURLException e) {
+							log.debug("Could not find resource ["+resource+"] in classloader ["+classLoader+"] and not as URL [" + resource + "]: "+e.getMessage());
+						}
+					} else if(log.isDebugEnabled()) log.debug("Cannot lookup resource ["+resource+"] in classloader ["+classLoader+"], not allowed with protocol ["+protocol+"] allowedProtocols "+protocols.toString());
+				} else {
+					if(log.isDebugEnabled()) log.debug("Could not find resource as URL [" + resource + "] in classloader ["+classLoader+"], with protocol ["+protocol+"], no allowedProtocols");
+				}
+			} else {
+				if(log.isDebugEnabled()) log.debug("Cannot lookup resource ["+resource+"] in classloader ["+classLoader+"] and no protocol to try as URL");
 			}
 		}
 
 		return url;
 	}
 
+ 	public static InputStream urlToStream(URL url, int timeoutMs) throws IOException {
+		URLConnection conn = url.openConnection();
+		conn.setConnectTimeout(timeoutMs);
+		conn.setReadTimeout(timeoutMs);
+		return conn.getInputStream(); //SCRV_269S#072 //SCRV_286S#077
+	}
+
+	public static Reader urlToReader(URL url, int timeoutMs) throws IOException {
+		try {
+			return new InputStreamReader(urlToStream(url,timeoutMs),StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		} catch (UnsupportedEncodingException e) {
+			throw new IOException(e);
+		}
+	}
+
+	
     /**
      * Tests if a class implements a given interface
      *

@@ -21,6 +21,11 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 	}
 
 	@Override
+	protected void setStyleSheetNameSessionKey(String styleSheetNameSessionKey) {
+		pipe.setStyleSheetNameSessionKey(styleSheetNameSessionKey);		
+	}
+	
+	@Override
 	protected void setXpathExpression(String xpathExpression) {
 		pipe.setXpathExpression(xpathExpression);		
 	}
@@ -38,6 +43,11 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 	@Override
 	protected void setSkipEmptyTags(boolean skipEmptyTags) {
 		pipe.setSkipEmptyTags(skipEmptyTags);
+	}
+
+	@Override
+	protected void setOutputType(String outputType) {
+		pipe.setOutputType(outputType);
 	}
 
 	@Override

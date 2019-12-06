@@ -25,13 +25,13 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXSource;
 
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.JsonXmlReader;
 import nl.nn.adapterframework.util.XmlJsonWriter;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -41,13 +41,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be applied to the created transformer</td></tr>
- * </table>
- * </p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * </p>
  * @author Gerrit van Brakel
@@ -73,7 +66,7 @@ public class JsonXsltPipe extends XsltPipe {
 		return XmlUtils.source2String(source, false);
 	}
 
-	private String xml2Json(String xml) throws TransformerException, DomBuilderException {
+	private String xml2Json(String xml) throws TransformerException, SAXException {
 
 		Source source=XmlUtils.stringToSourceForSingleUse(xml,true);
         SAXResult result = new SAXResult();
@@ -117,7 +110,7 @@ public class JsonXsltPipe extends XsltPipe {
 		String xmlResult=super.transform(input, session, target);
 		try {
 			return xml2Json(xmlResult);
-		} catch (DomBuilderException e) {
+		} catch (SAXException e) {
 			throw new TransformerException(e);
 		}
 	}

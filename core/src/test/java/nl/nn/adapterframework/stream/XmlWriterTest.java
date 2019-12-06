@@ -26,6 +26,9 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
 
+import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.xml.XmlWriter;
+
 public class XmlWriterTest {
 
 	private boolean TEST_CDATA=true;
@@ -43,7 +46,7 @@ public class XmlWriterTest {
 
 		sendEvents(xmlWriter);
 
-		String actual = new String (target.toString());
+		String actual = new String (target.toString(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
 		assertEquals(testString, actual);
 	}
 	

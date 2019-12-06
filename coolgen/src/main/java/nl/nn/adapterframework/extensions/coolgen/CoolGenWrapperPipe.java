@@ -31,6 +31,9 @@ import nl.nn.coolgen.proxy.XmlProxyException;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
+
+import org.xml.sax.SAXException;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
@@ -55,13 +58,6 @@ import java.net.URL;
  * <tr><td>{@link #setProxyInputSchema(String) proxyInputSchema}</td><td>optional URL of XML-Schema of proxy input message. If specified it is used to validate the input message</td><td>no validation</td></tr>
  * </table>
  * </p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
- * </table>
- * </p>
  * @author Johan Verrips
  */
 public class CoolGenWrapperPipe extends FixedForwardPipe {
@@ -81,10 +77,12 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 	  * configure the pipe by creating the required XSLT-transformers using
 	  * {@link #createTransformers() }
 	  */
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 	    createTransformers();
 	}
+	@Override
 	public void start() throws PipeStartException{
 		log.debug(getLogPrefix(null)+"creates proxy with class [" + proxyClassName + "]");
 		try {
@@ -99,7 +97,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
         throws ConfigurationException {
         CoolGenXMLProxy proxy;
         try {
-            Class klass = Class.forName(proxyName);
+            Class<?> klass = Class.forName(proxyName);
             proxy = (CoolGenXMLProxy) klass.newInstance();
             proxy.setClientId(getClientId());
             proxy.setClientPassword(getClientPassword());
@@ -133,7 +131,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
         if (preProcStylesheetName != null) {
             try {
 
-                URL preprocUrl = ClassUtils.getResourceURL(classLoader, preProcStylesheetName);
+                URL preprocUrl = ClassUtils.getResourceURL(getConfigurationClassLoader(), preProcStylesheetName);
 
                 if (preprocUrl == null)
                     throw new ConfigurationException(
@@ -160,7 +158,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
         if (postProcStylesheetName != null) {
             try {
 
-                URL postprocUrl = ClassUtils.getResourceURL(classLoader, postProcStylesheetName);
+                URL postprocUrl = ClassUtils.getResourceURL(getConfigurationClassLoader(), postProcStylesheetName);
                 if (postprocUrl == null)
                     throw new ConfigurationException(
                             getLogPrefix(null)+"cannot find resource for postProcTransformer, URL-String ["
@@ -187,7 +185,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 
         if (proxyInputSchema != null) {
             String stylesheet;
-            URL schemaUrl = ClassUtils.getResourceURL(classLoader, proxyInputSchema);
+            URL schemaUrl = ClassUtils.getResourceURL(getConfigurationClassLoader(), proxyInputSchema);
 
             if (schemaUrl == null)
                 throw new ConfigurationException(
@@ -233,7 +231,8 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
      * Transform the input (optionally), check the conformance to the schema (optionally),
      * call the required proxy, transform the output (optionally)
      */
-    public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+    @Override
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 
     Writer proxyResult;
     String proxypreProc = null;
@@ -247,12 +246,14 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
          * @see java.awt.event.ActionListener#actionPerformed(ActionEvent)
          */
         public String errorMessage;
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
             errorMessage = e.toString();
 
         }
 
-        public String toString() {
+        @Override
+		public String toString() {
             return errorMessage;
         }
     };
@@ -337,11 +338,13 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
             wrapperResult = proxyResult.toString();
 	} catch (DomBuilderException e) {
 		throw new PipeRunException(this, getLogPrefix(session)+"DomBuilderException excecuting proxy", e);
+	} catch (SAXException e) {
+		throw new PipeRunException(this, getLogPrefix(session)+"SAXException excecuting proxy", e);
     } catch (IOException e) {
         throw new PipeRunException(this, getLogPrefix(session)+"IOException excecuting proxy", e);
     } catch (TransformerException e) {
         throw new PipeRunException(this, getLogPrefix(session)+"TransformerException excecuting proxy", e);
-    }
+	}
 
     return new PipeRunResult(getForward(),wrapperResult) ;
 }

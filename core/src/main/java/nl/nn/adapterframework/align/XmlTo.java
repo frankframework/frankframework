@@ -31,7 +31,6 @@ import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSAttributeUse;
-import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
@@ -42,6 +41,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import nl.nn.adapterframework.align.content.DocumentContainer;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * XML Schema guided XML converter;
@@ -49,7 +49,7 @@ import nl.nn.adapterframework.align.content.DocumentContainer;
  * @author Gerrit van Brakel
  */
 public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
-	protected Logger log = Logger.getLogger(this.getClass());
+	protected Logger log = LogUtil.getLogger(this.getClass());
 
 	private boolean writeAttributes=true;
 	private boolean DEBUG=false; 

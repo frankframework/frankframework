@@ -39,6 +39,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 /**
  * Pipe to wrap or unwrap a message conformable to the BIS (Business Integration Services) standard.
@@ -167,13 +168,6 @@ import org.w3c.dom.Node;
  * <tr><td>{@link #setOmitResult(boolean) omitResult}</td><td>(only used when direction=wrap) when <code>true</code>, the Result is omitted and instead of Result/Status 'ERROR' a PipeRunException is thrown</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setAddOutputNamespace(boolean) addOutputNamespace}</td><td>(only used when direction=unwrap) when set <code>true</code> the <code>outputNamespace</code> is added to the output root element in the SOAP body</td><td>false</td></tr>
  * </table></p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
- * </table>
- * </p>
  * @author Peter Leeuwenburgh
  * @deprecated Please replace with nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe (not 1:1)
  */
@@ -362,7 +356,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 		return new PipeRunResult(getForward(), result);
 	}
 
-	private String prepareMessageHeader(String originalMessageHeader, String conversationId, String externalRefToMessageId) throws DomBuilderException, IOException, TransformerException {
+	private String prepareMessageHeader(String originalMessageHeader, String conversationId, String externalRefToMessageId) throws SAXException, IOException, TransformerException {
 		XmlBuilder messageHeaderElement = new XmlBuilder("MessageHeader");
 		messageHeaderElement.addAttribute("xmlns", "http://www.ing.com/CSP/XSD/General/Message_2");
 		XmlBuilder fromElement = new XmlBuilder("From");

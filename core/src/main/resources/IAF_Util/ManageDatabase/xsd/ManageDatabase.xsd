@@ -23,7 +23,7 @@
 				<xsd:complexType>
 					<xsd:complexContent>
 						<xsd:extension base="resultsType">
-							<xsd:attribute name="count" use="required"/>
+							<xsd:attribute name="count" use="optional"/>
 						</xsd:extension>
 					</xsd:complexContent>
 				</xsd:complexType>

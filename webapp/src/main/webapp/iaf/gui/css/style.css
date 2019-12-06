@@ -598,6 +598,7 @@ body.canvas-menu.mini-navbar nav.navbar-static-side {
 }
 .btn {
   border-radius: 3px;
+  background-color: #ddd;
 }
 .btn-w-m {
   min-width: 120px;
@@ -1192,6 +1193,27 @@ button.dim:active:before {
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
   right: 0;
 }
+
+/* SCROLL TO TOP BUTTON */
+.scroll-to-top {
+  opacity: 0;
+  position: fixed;
+  z-index: 10000;
+  bottom: 24px;
+  cursor: pointer;
+  line-height: 26px;
+  font-size: 22px;
+}
+.scroll-to-top a {
+  color: #a7b1c2;
+  font-weight: 600;
+  padding: 14px 23px;
+}
+.scroll-to-top a i {
+  text-align: center;
+  width: 24px;
+}
+
 /* CHOSEN PLUGIN */
 .chosen-container-single .chosen-single {
   background: #ffffff;
@@ -6694,6 +6716,9 @@ body.body-small .vote-icon {
   cursor: pointer;
   font-size: 16px;
 }
+.hideBtn1170.minw180px {
+  min-width: 180px;
+}
 
 @media (max-width: 1170px) {
   .hideBtn1170 span {
@@ -6891,4 +6916,7 @@ body.body-small .vote-icon {
     width: 400px;
     margin-left: -200px;
   }
+}
+.text-center {
+  text-align: center;
 }
