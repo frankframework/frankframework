@@ -34,10 +34,6 @@
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-ladybug</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-unittester</artifactId>
-		</dependency>
 
 
 <!-- 	Only runs on Java7 or higher!
@@ -70,23 +66,6 @@
 	<build>
 		<defaultGoal>package</defaultGoal>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<dependenciesToScan>
-						<dependency>org.ibissource:ibis-adapterframework-unittester</dependency>
-					</dependenciesToScan>
-					<additionalClasspathElements>
-						<additionalClasspathElement>src\main</additionalClasspathElement>
-					</additionalClasspathElements>
-					<systemPropertyVariables>
-						<larva.rootDir>C:\XXX\iaf\test\src\test\testtool</larva.rootDir>
-						<larva.execute>C:\XXX\iaf\test\src\test\testtool</larva.execute>
-						<larva.reportFolder>C:\XXX\reports</larva.reportFolder>
-					</systemPropertyVariables>
-				</configuration>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -163,9 +142,41 @@
 	</build>
 	<profiles>
 		<profile>
-			<id>db-oracle</id>
-
+			<id>cmd-test</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<configuration>
+							<dependenciesToScan>
+								<!--This package contains the actual unit tests for surefire to run. -->
+								<dependency>org.ibissource:ibis-adapterframework-unittester</dependency>
+							</dependenciesToScan>
+							<additionalClasspathElements>
+								<!--Adding src\main is important for configurations to be loaded for testing. -->
+								<additionalClasspathElement>src\main</additionalClasspathElement>
+							</additionalClasspathElements>
+							<systemPropertyVariables>
+								<!--larva.rootDir is the path that needs to be set to the root directory of all the tests.
+									Normally it's used for listing the scenarios, but in our case it's used for naming only, but still required-->
+								<larva.rootDir>C:\path\to\iaf\test\src\test\testtool</larva.rootDir>
+								<!--larva.execute is the path that is optional (if not set, it'll be equal to larva.rootDir, meaning it will execute all the tests.)
+									It is the path that contains the scenarios to be executed. It can also be set as the .properties file.-->
+								<larva.execute>C:\path\to\iaf\test\src\test\testtool\WebServiceListenerSender</larva.execute>
+								<!--larva.reportFolder is a path that is optional and will be used to export the test outputs in a Larva compatible format.
+									If it's not set, no reporting will be done on larva side, but surefire-report can still be used.-->
+								<larva.reportFolder>C:\path\to\larva\reports</larva.reportFolder>
+							</systemPropertyVariables>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
 			<dependencies>
+				<dependency>
+					<groupId>org.ibissource</groupId>
+					<artifactId>ibis-adapterframework-unittester</artifactId>
+				</dependency>
 				<dependency>
 					<groupId>commons-dbcp</groupId>
 					<artifactId>commons-dbcp</artifactId>
