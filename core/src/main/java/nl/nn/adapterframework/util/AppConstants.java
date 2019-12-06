@@ -42,6 +42,7 @@ import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoad
  * that file is loaded also</p>
 
  * @author Niels Meijer
+ * @version 2.0
  *
  */
 public final class AppConstants extends Properties implements Serializable {
@@ -61,6 +62,7 @@ public final class AppConstants extends Properties implements Serializable {
 
 		load(classLoader, APP_CONSTANTS_PROPERTIES_FILE, true);
 
+		//TODO Make sure this to happens only once, and store all the properties in 'additionalProperties' to be loaded for each AppConstants instance
 		Properties databaseProperties = JdbcUtil.retrieveJdbcPropertiesFromDatabase();
 		if (databaseProperties!=null) {
 			putAll(databaseProperties);
@@ -112,7 +114,7 @@ public final class AppConstants extends Properties implements Serializable {
 	public static void removeInstance(final ClassLoader cl) {
 		ClassLoader classLoader = cl;
 		if(classLoader == null) {
-			throw new IllegalStateException("calling AppConstants.getInstance without ClassLoader");
+			throw new IllegalStateException("calling AppConstants.removeInstance without ClassLoader");
 		}
 		AppConstants instance = appConstantsMap.get(classLoader);
 		if (instance != null) {
@@ -250,8 +252,9 @@ public final class AppConstants extends Properties implements Serializable {
 	}
 
 	private synchronized void load(ClassLoader classLoader, String filename, String suffix, boolean loadAdditionalPropertiesFiles) {
-		if(StringUtils.isEmpty(filename))
+		if(StringUtils.isEmpty(filename)) {
 			throw new IllegalStateException("file to load properties from cannot be null");
+		}
 
 		StringTokenizer tokenizer = new StringTokenizer(filename, ",");
 		while (tokenizer.hasMoreTokens()) {
