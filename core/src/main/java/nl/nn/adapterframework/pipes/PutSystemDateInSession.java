@@ -68,7 +68,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 		}
 
 		if (isReturnFixedDate()) {
-			if (!ConfigurationUtils.stubConfiguration()) {
+			if (!ConfigurationUtils.stubConfiguration(getConfigurationClassLoader())) {
 				throw new ConfigurationException(getLogPrefix(null)+"returnFixedDate only allowed in stub mode");
 			}
 		}

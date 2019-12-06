@@ -224,7 +224,7 @@ public class ConfigurationDigester {
 			loadedHide = ConfigurationUtils.getUglifiedConfiguration(configuration, loadedHide);
 			loaded = ConfigurationUtils.getActivatedConfiguration(configuration, loaded);
 			loadedHide = ConfigurationUtils.getActivatedConfiguration(configuration, loadedHide);
-			if (ConfigurationUtils.stubConfiguration()) {
+			if (ConfigurationUtils.stubConfiguration(classLoader)) {
 				loaded = ConfigurationUtils.getStubbedConfiguration(configuration, loaded);
 				loadedHide = ConfigurationUtils.getStubbedConfiguration(configuration, loadedHide);
 			}
