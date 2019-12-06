@@ -38,7 +38,7 @@ public class PercentileEstimatorBase implements PercentileEstimator {
 
 	public PercentileEstimatorBase(String configKey, String defaultPList, int valueArraySize) {
 		List pListBuffer = new ArrayList();
-		StringTokenizer tok = AppConstants.getInstance().getTokenizer(configKey,defaultPList);
+		StringTokenizer tok = AppConstants.getInstance().getTokenizedProperty(configKey,defaultPList);
 		
 		while (tok.hasMoreTokens()) {
 			pListBuffer.add(new Integer(Integer.parseInt(tok.nextToken())));

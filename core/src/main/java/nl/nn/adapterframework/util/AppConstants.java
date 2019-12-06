@@ -184,19 +184,19 @@ public final class AppConstants extends Properties implements Serializable {
 	}
 
 	/**
-	 * Creates a tokenizer from the values of this key. As a separator the "," is used.
+	 * Creates a tokenizer from the resolved value of this key. As a separator the "," is used.
 	 * Uses the {@link #getResolvedProperty(String)} method.
 	 * Can be used to process lists of values.
 	 */
-	public StringTokenizer getTokenizer(String key) {
+	public StringTokenizer getTokenizedProperty(String key) {
 		return new StringTokenizer(getResolvedProperty(key), ",");
 	}
 	/**
-	 * Creates a tokenizer from the values of this key. As a separator the "," is used.
+	 * Creates a tokenizer from the resolved value of this key. As a separator the "," is used.
 	 * Uses the {@link #getResolvedProperty(String)} method.
 	 * Can be used to process lists of values.
 	 */
-	public StringTokenizer getTokenizer(String key, String defaults) {
+	public StringTokenizer getTokenizedProperty(String key, String defaults) {
 		String list = getResolvedProperty(key);
 		if (list==null)
 			list = defaults;
