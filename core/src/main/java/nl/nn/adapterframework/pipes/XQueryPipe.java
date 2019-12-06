@@ -59,11 +59,12 @@ public class XQueryPipe extends FixedForwardPipe {
 	private String xqueryFile;
 	private XQPreparedExpression preparedExpression;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		URL url;
 		if (StringUtils.isNotEmpty(getXqueryName())) {
-			url = ClassUtils.getResourceURL(classLoader, getXqueryName());
+			url = ClassUtils.getResourceURL(getConfigurationClassLoader(), getXqueryName());
 			if (url == null) {
 				throw new ConfigurationException(getLogPrefix(null) + "could not find XQuery '" + getXqueryName() + "'");
 			}
@@ -93,31 +94,29 @@ public class XQueryPipe extends FixedForwardPipe {
 		}
 	}
 
+	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		if (input==null) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "got null input");
+			throw new PipeRunException(this, getLogPrefix(session) + "got null input");
 		}
 		if (!(input instanceof String)) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "got an invalid type as input, expected String, got "
-					+ input.getClass().getName());
+			throw new PipeRunException(this, getLogPrefix(session) + "got an invalid type as input, expected String, got " + input.getClass().getName());
 		}
 		try {
 			String stringResult = (String)input;
 			// We already specifically use Saxon in this pipe, hence set xslt2
 			// to true to make XmlUtils use the Saxon
 			// DocumentBuilderFactoryImpl.
-			ParameterResolutionContext prc = new ParameterResolutionContext(stringResult, session, isNamespaceAware());
-			Map parametervalues = null;
-			if (getParameterList() != null) {
-				parametervalues = prc.getValueMap(getParameterList());
-			}
 			preparedExpression.bindDocument(XQConstants.CONTEXT_ITEM, stringResult, null, null);
-			Iterator iterator = getParameterList().iterator();
-			while (iterator.hasNext()) {
-				Parameter parameter = (Parameter)iterator.next();
-				preparedExpression.bindObject(new QName(parameter.getName()), parametervalues.get(parameter.getName()), null);
+			if (getParameterList() != null) {
+				ParameterResolutionContext prc = new ParameterResolutionContext(stringResult, session, isNamespaceAware());
+				Map<String,Object> parametervalues = null;
+				parametervalues = prc.getValueMap(getParameterList());
+				Iterator<Parameter> iterator = getParameterList().iterator();
+				while (iterator.hasNext()) {
+					Parameter parameter = iterator.next();
+					preparedExpression.bindObject(new QName(parameter.getName()), parametervalues.get(parameter.getName()), null);
+				}
 			}
 			XQResultSequence resultSequence = preparedExpression.executeQuery();
 			stringResult = resultSequence.getSequenceAsString(null);

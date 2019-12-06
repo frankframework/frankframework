@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2018 Integration Partners B.V.
+Copyright 2016-2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package nl.nn.adapterframework.webcontrol.api;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -53,7 +55,6 @@ import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
@@ -193,7 +194,7 @@ public final class ShowConfiguration extends Base {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/configurations/manage/{configuration}")
+	@Path("/configurations/{configuration}/manage")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getConfigurationDetailsByName(@PathParam("configuration") String configurationName, @QueryParam("realm") String jmsRealm) throws ApiException {
 		initBase(servletConfig);
@@ -203,7 +204,7 @@ public final class ShowConfiguration extends Base {
 			throw new ApiException("Configuration not found!");
 		}
 
-		if(configuration.getClassLoader().getParent() instanceof DatabaseClassLoader) {
+		if(configuration.getClassLoader() instanceof DatabaseClassLoader) {
 			List<Map<String, Object>> configs = getConfigsFromDatabase(configurationName, jmsRealm);
 			if(configs == null)
 				return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
@@ -220,35 +221,55 @@ public final class ShowConfiguration extends Base {
 		return Response.status(Response.Status.NO_CONTENT).build();
 	}
 
-	@GET
-	@RolesAllowed({"IbisTester"})
-	@Path("/configurations/manage/{configuration}/activate/{version}")
+	@PUT
+	@RolesAllowed({"IbisAdmin", "IbisTester"})
+	@Path("/configurations/{configuration}/manage/{version}")
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response makeConfigurationActive(@PathParam("configuration") String configurationName, @PathParam("version") String version, @QueryParam("realm") String jmsRealm) throws ApiException {
+	public Response manageConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String encodedVersion, @QueryParam("realm") String jmsRealm, LinkedHashMap<String, Object> json) throws ApiException {
 		initBase(servletConfig);
 
 		Configuration configuration = ibisManager.getConfiguration(configurationName);
-		if(configuration == null) {
+
+		if(configuration == null){
 			throw new ApiException("Configuration not found!");
 		}
 
-		if(version == null || version.isEmpty()) {
-			throw new ApiException("No version supplied!");
+		String version = null;
+		try {
+			version = URLDecoder.decode(encodedVersion, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new ApiException("unable to decode encodedVersion ["+encodedVersion+"] with charset [UTF-8]", e);
 		}
-
-		if (StringUtils.isEmpty(version))
-			version = null;
-		if (StringUtils.isEmpty(jmsRealm))
-			jmsRealm = null;
 
 		try {
-			if(ConfigurationUtils.makeConfigActive(ibisContext, configurationName, version, jmsRealm))
-				return Response.status(Response.Status.ACCEPTED).entity("{\"status\":\"ok\"}").build();
-			else
-				return Response.status(Response.Status.BAD_REQUEST).build();
-		} catch (ConfigurationException e) {
-			return Response.status(Response.Status.BAD_REQUEST).build();
+			for (Entry<String, Object> entry : json.entrySet()) {
+				String key = entry.getKey();
+				Object valueObject = entry.getValue();
+				boolean value = false;
+				if(valueObject instanceof Boolean) {
+					value = (boolean) valueObject;
+				}
+				else
+					value = Boolean.parseBoolean(valueObject.toString());
+
+				if(key.equalsIgnoreCase("activate")) {
+					if(ConfigurationUtils.activateConfig(ibisContext, configurationName, version, value, jmsRealm)) {
+						return Response.status(Response.Status.ACCEPTED).build();
+					}
+				}
+				else if(key.equalsIgnoreCase("autoreload")) {
+					if(ConfigurationUtils.autoReloadConfig(ibisContext, configurationName, version, value, jmsRealm)) {
+						return Response.status(Response.Status.ACCEPTED).build();
+					}
+				}
+			}
 		}
+		catch (Exception e) {
+			throw new ApiException(e);
+		}
+
+		return Response.status(Response.Status.BAD_REQUEST).build();
 	}
 
 	@POST
@@ -322,7 +343,7 @@ public final class ShowConfiguration extends Base {
 			String user = null;
 			Principal principal = securityContext.getUserPrincipal();
 			if(principal != null)
-				user = ""+principal;
+				user = principal.getName();
 
 			if(multiple_configs) {
 				try {
@@ -346,7 +367,7 @@ public final class ShowConfiguration extends Base {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/configurations/download/{configuration}")
+	@Path("/configurations/{configuration}/download")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public Response downloadConfiguration(@PathParam("configuration") String configurationName, @QueryParam("version") String version, @QueryParam("realm") String jmsRealm) throws ApiException {
 		initBase(servletConfig);
@@ -387,7 +408,7 @@ public final class ShowConfiguration extends Base {
 			qs.configure();
 			qs.open();
 			conn = qs.getConnection();
-			String query = "SELECT NAME, VERSION, FILENAME, RUSER, ACTIVECONFIG, CRE_TYDST FROM IBISCONFIG WHERE NAME=? ORDER BY CRE_TYDST";
+			String query = "SELECT NAME, VERSION, FILENAME, RUSER, ACTIVECONFIG, AUTORELOAD, CRE_TYDST FROM IBISCONFIG WHERE NAME=? ORDER BY CRE_TYDST";
 			PreparedStatement stmt = conn.prepareStatement(query);
 			stmt.setString(1, configurationName);
 			rs = stmt.executeQuery();
@@ -398,7 +419,8 @@ public final class ShowConfiguration extends Base {
 				config.put("filename", rs.getString(3));
 				config.put("user", rs.getString(4));
 				config.put("active", rs.getBoolean(5));
-				config.put("created", rs.getString(6));
+				config.put("autoreload", rs.getBoolean(6));
+				config.put("created", rs.getString(7));
 				returnMap.add(config);
 			}
 		} catch (Exception e) {

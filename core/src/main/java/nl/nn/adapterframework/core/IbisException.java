@@ -55,10 +55,7 @@ public class IbisException extends NestableException {
 	}
 	
 	public String getExceptionType(Throwable t) {
-		String name = t.getClass().getName();
-		int dotpos=name.lastIndexOf(".");
-		name=name.substring(dotpos+1);
-		return name;
+		return t.getClass().getSimpleName();
 	}
 	
 	public String addPart(String part1, String separator, String part2) {
@@ -141,6 +138,7 @@ public class IbisException extends NestableException {
 	    Throwable throwables[]=getThrowables();
 		String result=null;
 		String prev_message=null;
+		Throwable prevThrowable=null;
 
 
 		for(int i=getThrowableCount()-1; i>=0; i--) {
@@ -150,7 +148,9 @@ public class IbisException extends NestableException {
 //			if (log.isDebugEnabled()) {
 //				log.debug("t["+i+"], ["+ClassUtils.nameOf(throwables[i])+"], cur ["+cur_message+"], prev ["+prev_message+"]");
 //			} 			
-			
+			if (prevThrowable!=null && cur_message!=null && (cur_message.equals(prevThrowable.getMessage()) || cur_message.equals(prevThrowable.toString()))) {
+				cur_message=null;
+			}
 			String newPart=null;
 			
 			// prefix the result with the message of this exception.
@@ -175,6 +175,7 @@ public class IbisException extends NestableException {
 				newPart = addPart(exceptionType, " ", newPart);
 			}
 			result = addPart(newPart, ": ", result);
+			prevThrowable=throwables[i];
 		}
 		
 	    if (result==null) {

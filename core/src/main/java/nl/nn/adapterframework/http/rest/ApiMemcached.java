@@ -42,6 +42,7 @@ public class ApiMemcached implements IApiCache {
 	private MemcachedClient client = null;
 
 	final ConnectionObserver obs = new ConnectionObserver() {
+		@Override
 		public void connectionEstablished(SocketAddress sa, int reconnectCount) {
 			String msg = "successfully established a memcache connection to ["+sa+"]";
 			if(reconnectCount > 1)
@@ -49,6 +50,7 @@ public class ApiMemcached implements IApiCache {
 			log.info(msg);
 		}
 
+		@Override
 		public void connectionLost(SocketAddress sa) {
 			String msg = "lost memcached connection [" + sa + "] reconnecting...";
 			log.error(msg);
@@ -89,6 +91,7 @@ public class ApiMemcached implements IApiCache {
 		}
 	}
 
+	@Override
 	public Object get(String key) {
 		try {
 			return client.get(key);
@@ -98,27 +101,33 @@ public class ApiMemcached implements IApiCache {
 		}
 	}
 
+	@Override
 	public void put(String key, Object value) {
 		client.set(key, 0, value);
 	}
 
+	@Override
 	public void put(String key, Object value, int ttl) {
 		client.set(key, ttl, value);
 	}
 
+	@Override
 	public boolean remove(String key) {
 		client.delete(key);
 		return true;
 	}
 
+	@Override
 	public boolean containsKey(String key) {
 		return (this.get(key) != null);
 	}
 
+	@Override
 	public void clear() {
 		client.flush();
 	}
 
+	@Override
 	public void destroy() {
 		client.shutdown();
 	}

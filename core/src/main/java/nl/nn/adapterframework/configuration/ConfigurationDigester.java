@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018 Nationale-Nederlanden
+   Copyright 2013, 2016, 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,27 +26,30 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
-
-import nl.nn.adapterframework.monitoring.MonitorManager;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StringResolver;
-import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.digester.Digester;
 import org.apache.commons.digester.Rule;
 import org.apache.commons.digester.xmlrules.FromXmlRuleSet;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
+
+import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.monitoring.MonitorManager;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StringResolver;
+import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.SaxException;
 
 /**
  * The configurationDigester reads the configuration.xml and the digester rules
@@ -90,21 +93,23 @@ public class ConfigurationDigester {
 
 	private static final String attributesGetter_xslt = "/xml/xsl/AttributesGetter.xsl";
 
-	private String configurationFile = null;
 	private String digesterRulesFile = DIGESTER_RULES_DEFAULT;
 	private boolean configLogAppend = false;
 
 	String lastResolvedEntity = null;
 
 	private class XmlErrorHandler implements ErrorHandler  {
+		@Override
 		public void warning(SAXParseException exception) throws SAXParseException {
 			LOG.error(exception);
 			throw(exception);
 		}
+		@Override
 		public void error(SAXParseException exception) throws SAXParseException {
 			LOG.error(exception);
 			throw(exception);
 		}
+		@Override
 		public void fatalError(SAXParseException exception) throws SAXParseException {
 			LOG.error(exception);
 			throw(exception);
@@ -112,7 +117,18 @@ public class ConfigurationDigester {
 	}
 
 	public Digester getDigester(Configuration configuration) throws SAXNotSupportedException, SAXNotRecognizedException {
-		Digester digester = new Digester();
+		Digester digester = new Digester() {
+			// override Digester.createSAXException() implementations to obtain a clear unduplicated message and a properly nested stacktrace on IBM JDK 
+			@Override
+			public SAXException createSAXException(String message, Exception e) {
+				return SaxException.createSaxException(message, locator, e);
+			}
+			@Override
+			public SAXException createSAXException(Exception e) {
+				return SaxException.createSaxException(null, locator, e);
+			}
+		};
+
 		digester.setUseContextClassLoader(true);
 		digester.push(configuration);
 
@@ -173,12 +189,13 @@ public class ConfigurationDigester {
 		return digester;
 	}
 
-	public void digestConfiguration(ClassLoader classLoader, Configuration configuration, String configurationFile) throws ConfigurationException {
-		digestConfiguration(classLoader, configuration, configurationFile, configLogAppend);
+	public void digestConfiguration(ClassLoader classLoader, Configuration configuration) throws ConfigurationException {
+		digestConfiguration(classLoader, configuration, configLogAppend);
 		configLogAppend = true;
 	}
 
-	public void digestConfiguration(ClassLoader classLoader, Configuration configuration, String configurationFile, boolean configLogAppend) throws ConfigurationException {
+	public void digestConfiguration(ClassLoader classLoader, Configuration configuration, boolean configLogAppend) throws ConfigurationException {
+		String configurationFile = ConfigurationUtils.getConfigurationFile(classLoader, configuration.getName());
 		Digester digester = null;
 		try {
 			digester = getDigester(configuration);
@@ -186,17 +203,15 @@ public class ConfigurationDigester {
 			if (digesterRulesURL == null) {
 				throw new ConfigurationException("Digester rules file not found: " + getDigesterRules());
 			}
-			URL configurationFileURL= ClassUtils.getResourceURL(classLoader, configurationFile);
-			if (configurationFileURL == null) {
+
+			Resource configurationResource = Resource.getResource(classLoader, configurationFile);
+			if (configurationResource == null) {
 				throw new ConfigurationException("Configuration file not found: " + configurationFile);
 			}
-			configuration.setDigesterRulesURL(digesterRulesURL);
-			configuration.setConfigurationURL(configurationFileURL);
-			fillConfigWarnDefaultValueExceptions(configuration);
-			String lineSeparator = SystemUtils.LINE_SEPARATOR;
-			if (null == lineSeparator) lineSeparator = "\n";
-			String original = Misc.resourceToString(configurationFileURL, lineSeparator, false);
-			original = XmlUtils.identityTransform(classLoader, original);
+			if(LOG.isDebugEnabled()) LOG.debug("digesting configuration ["+configuration.getName()+"] configurationFile ["+configurationFile+"] configLogAppend ["+configLogAppend+"]");
+
+			String original = XmlUtils.identityTransform(configurationResource);
+			fillConfigWarnDefaultValueExceptions(XmlUtils.stringToSource(original)); // must use 'original', cannot use configurationResource, because EntityResolver will not be properly set
 			configuration.setOriginalConfiguration(original);
 			List<String> propsToHide = new ArrayList<String>();
 			String propertiesHideString = AppConstants.getInstance(Thread.currentThread().getContextClassLoader()).getString("properties.hide", null);
@@ -235,39 +250,25 @@ public class ConfigurationDigester {
 		String directoryName = AppConstants.getInstance().getResolvedProperty("log.dir");
 		String fileName = AppConstants.getInstance().getResolvedProperty("instance.name.lc")+"-config.xml";
 		File file = new File(directoryName, fileName);
-		FileWriter fileWriter = null;
-		try {
-			fileWriter = new FileWriter(file, append);
+		try (FileWriter fileWriter = new FileWriter(file, append)) {
 			fileWriter.write(config);
 		} catch (IOException e) {
 			LOG.warn("Could not write configuration to file ["+file.getPath()+"]",e);
-		} finally {
-			if (fileWriter!=null) {
-				try {
-					fileWriter.close();
-				} catch (Exception e) {
-					LOG.warn("Could not close configuration file ["+file.getPath()+"]",e);
-				}
-			}
 		}
 	}
 	
-	private  void fillConfigWarnDefaultValueExceptions(Configuration configuration) throws Exception {
+	private  void fillConfigWarnDefaultValueExceptions(Source configurationSource) throws Exception {
 		URL xsltSource = ClassUtils.getResourceURL(this, attributesGetter_xslt);
 		if (xsltSource == null) {
 			throw new ConfigurationException("cannot find resource ["+attributesGetter_xslt+"]");
 		}
 		Transformer transformer = XmlUtils.createTransformer(xsltSource);
-		String lineSeparator=SystemUtils.LINE_SEPARATOR;
-		if (null==lineSeparator) lineSeparator="\n";
-		String configString=Misc.resourceToString(configuration.getConfigurationURL(), lineSeparator, false);
-		configString=XmlUtils.identityTransform(configuration.getClassLoader(), configString);
-		String attributes = XmlUtils.transformXml(transformer, configString);
+		String attributes = XmlUtils.transformXml(transformer, configurationSource);
 		Element attributesElement = XmlUtils.buildElement(attributes);
-		Collection attributeElements =	XmlUtils.getChildTags(attributesElement, "attribute");
-		Iterator iter = attributeElements.iterator();
+		Collection<Node> attributeElements = XmlUtils.getChildTags(attributesElement, "attribute");
+		Iterator<Node> iter = attributeElements.iterator();
 		while (iter.hasNext()) {
-			Element attributeElement = (Element) iter.next();
+			Element attributeElement = (Element)iter.next();
 			Element valueElement = XmlUtils.getFirstChildTag(attributeElement, "value");
 			String value = XmlUtils.getStringValue(valueElement);
 			if (value.startsWith("${") && value.endsWith("}")) {
@@ -282,14 +283,6 @@ public class ConfigurationDigester {
 			}
 		}
 	}
-
-	public void setConfigurationFile(String string) {
-		configurationFile = string;
-	}
-	public String getConfigurationFile() {
-		return configurationFile;
-	}
-
 
 	public void setDigesterRules(String string) {
 		digesterRulesFile = string;

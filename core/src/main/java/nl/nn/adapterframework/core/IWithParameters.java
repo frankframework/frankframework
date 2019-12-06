@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
 
 
 /**
@@ -26,4 +27,6 @@ import nl.nn.adapterframework.parameters.Parameter;
 public interface IWithParameters {
 
 	public void addParameter(Parameter p); 
+	public ParameterList getParameterList(); // used by debugger, to show resolved values of parameters
+
 }

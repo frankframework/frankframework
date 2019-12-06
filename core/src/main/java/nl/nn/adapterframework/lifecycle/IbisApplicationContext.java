@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.servlet.ServletException;
+
 import nl.nn.adapterframework.extensions.cxf.NamespaceUriProviderManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -67,7 +68,7 @@ public class IbisApplicationContext {
 
 	private AbstractApplicationContext applicationContext;
 	private IbisApplicationServlet servlet = null;
-	public static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	public final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private Logger log = LogUtil.getLogger(this);
 	private final String SPRINGCONTEXT = "/springContext.xml";
 	private ServletManager servletManager = null;
@@ -236,9 +237,9 @@ public class IbisApplicationContext {
 		return applicationContext.getBean(beanName, beanClass);
 	}
 
-	public Object createBeanAutowireByName(Class<?> beanClass) {
-		return applicationContext.getAutowireCapableBeanFactory().createBean(
-				beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+	@SuppressWarnings("unchecked")
+	public <T> T createBeanAutowireByName(Class<T> beanClass) {
+		return (T) applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 	}
 
 	public void autowireBeanProperties(Object existingBean, int autowireMode, boolean dependencyCheck) {

@@ -84,7 +84,6 @@ public class IbisApplicationServlet extends CXFServlet {
 		}
 		setUploadPathInServletContext();
 		ibisContext = new IbisContext();
-		setDefaultApplicationServerType(ibisContext);
 		String attributeKey = appConstants.getResolvedProperty(KEY_CONTEXT);
 		servletContext.setAttribute(attributeKey, ibisContext);
 		log.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ attributeKey + "]");
@@ -164,37 +163,5 @@ public class IbisApplicationServlet extends CXFServlet {
 		} catch (Exception e) {
 			log.error("Could not set servlet context attribute 'javax.servlet.context.tempdir' to value of ${upload.dir}",e);
 		}
-	}
-
-	private void setDefaultApplicationServerType(IbisContext ibisContext) {
-		ServletContext context = getServletContext();
-		String serverInfo = context.getServerInfo();
-		String defaultApplicationServerType = null;
-		if (StringUtils.containsIgnoreCase(serverInfo, "WebSphere Liberty")) {
-			defaultApplicationServerType = "WLP";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "WebSphere")) {
-			defaultApplicationServerType = "WAS";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "Tomcat")) {
-			defaultApplicationServerType = "TOMCAT";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "JBoss")) {
-			defaultApplicationServerType = "JBOSS";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "WildFly")) {
-			defaultApplicationServerType = "JBOSS";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "jetty")) {
-			String javaHome = AppConstants.getInstance().getString("java.home",
-					"");
-			if (StringUtils.containsIgnoreCase(javaHome, "tibco")) {
-				defaultApplicationServerType = "TIBCOAMX";
-			} else {
-				defaultApplicationServerType = "JETTYMVN";
-			}
-		} else {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings
-					.getInstance();
-			configWarnings.add(log, "Unknown server info [" + serverInfo
-					+ "] default application server type could not be determined, TOMCAT will be used as default value");
-			defaultApplicationServerType = "TOMCAT";
-		}
-		ibisContext.setDefaultApplicationServerType(defaultApplicationServerType);
 	}
 }

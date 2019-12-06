@@ -1,0 +1,48 @@
+
+	<RDB>
+ <P volgnummer="1">
+   <OORSPRONG>LIFE_CLUSTER4B</OORSPRONG>
+   <SOMKOOPSOM>€ 7648.00</SOMKOOPSOM>
+   <PREMIERESTITUTIEBEDRAG>0.00</PREMIERESTITUTIEBEDRAG>
+   <ASRESTITUTIEBEDRAG>0.00</ASRESTITUTIEBEDRAG>
+ </P>
+</RDB>
+
+	
+	b
+	
+	d
+	
+		
+			
+				
+					
+						
+					
+				
+			
+		
+	
+	
+		
+			
+				
+					<!-- comment in f3 in non empty branch -->
+					
+						f
+					
+				
+			
+		
+	
+	Euro € single quote ' double quote "
+	<RDB>
+ <P volgnummer="1">
+   <OORSPRONG>LIFE_CLUSTER4B</OORSPRONG>
+   <SOMKOOPSOM>€ 7648.00</SOMKOOPSOM>
+   <PREMIERESTITUTIEBEDRAG>0.00</PREMIERESTITUTIEBEDRAG>
+   <ASRESTITUTIEBEDRAG>0.00</ASRESTITUTIEBEDRAG>
+ </P>
+</RDB>
+
+

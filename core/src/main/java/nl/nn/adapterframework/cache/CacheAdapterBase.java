@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
  * @author  Gerrit van Brakel
  * @since   4.11
  */
-public abstract class CacheAdapterBase implements ICacheAdapter {
+public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V> {
 	protected Logger log = LogUtil.getLogger(this);
 	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
@@ -75,12 +75,13 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 		}
 	}
 	
-	protected abstract Serializable getElement(String key);
-	protected abstract void putElement(String key, Serializable value);
+	protected abstract V getElement(String key);
+	protected abstract void putElement(String key, V value);
 	protected abstract Object getElementObject(Object key);
 	protected abstract void putElementObject(Object key, Object value);
 	protected abstract boolean removeElement(Object key);
 
+	@Override
 	public String transformKey(String input, Map sessionContext) {
 		if (StringUtils.isNotEmpty(getKeyInputSessionKey()) && sessionContext!=null) {
 			input=(String)sessionContext.get(getKeyInputSessionKey());
@@ -102,7 +103,8 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 		return input;
 	}
 
-	public String transformValue(String value, Map sessionContext) {
+	@Override
+	public V transformValue(String value, Map sessionContext) {
 		if (StringUtils.isNotEmpty(getValueInputSessionKey()) && sessionContext!=null) {
 			value=(String)sessionContext.get(getValueInputSessionKey());
 		}
@@ -117,24 +119,24 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 		if (StringUtils.isEmpty(value)) {
 			log.debug("determined empty cache value");
 			if (isCacheEmptyValues()) {
-				return "";
+				return (V)"";
 			}
 			return null;
 		}
-		return value;
+		return (V)value;
 	}
 
 	public String getString(String key) {
 		return (String)getElement(key);
 	}
 	public void putString(String key, String value) {
-		putElement(key, value);
+		putElement(key, (V)value);
 	}
 
-	public Serializable get(String key){
+	public V get(String key){
 		return getElement(key);
 	}
-	public void put(String key, Serializable value) {
+	public void put(String key, V value) {
 		putElement(key, value);
 	}
 

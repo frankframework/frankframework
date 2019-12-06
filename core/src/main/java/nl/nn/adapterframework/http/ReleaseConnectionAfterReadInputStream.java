@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,51 +15,26 @@
 */
 package nl.nn.adapterframework.http;
 
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class ReleaseConnectionAfterReadInputStream extends InputStream {
-	InputStream inputStream;
+public class ReleaseConnectionAfterReadInputStream extends FilterInputStream {
 	HttpResponseHandler responseHandler;
 
 	public ReleaseConnectionAfterReadInputStream(HttpResponseHandler responseHandler, InputStream inputStream) throws IOException {
+		super(inputStream);
 		this.responseHandler = responseHandler;
-		this.inputStream = inputStream;
 	}
 
-	public ReleaseConnectionAfterReadInputStream(HttpResponseHandler responseHandler) throws IOException {
-		this.responseHandler = responseHandler;
-		this.inputStream = responseHandler.getResponse();
-	}
-
-	public int read() throws IOException {
-		int i = inputStream.read();
-		if (i == -1 && responseHandler != null) {
-			responseHandler.close();
-		}
-		return i;
-	}
-
-	public int read(byte[] b) throws IOException {
-		int i = inputStream.read(b);
-		if (i == -1 && responseHandler != null) {
-			responseHandler.close();
-		}
-		return i;
-	}
-
-	public int read(byte[] b, int off, int len) throws IOException {
-		int i = inputStream.read(b, off, len);
-		if (i == -1 && responseHandler != null) {
-			responseHandler.close();
-		}
-		return i;
-	}
-
+	@Override
 	public void close() throws IOException {
-		inputStream.close();
-		if (responseHandler != null) {
-			responseHandler.close();
+		try {
+			super.close();
+		} finally {
+			if (responseHandler != null) {
+				responseHandler.close();
+			}
 		}
 	}
 }

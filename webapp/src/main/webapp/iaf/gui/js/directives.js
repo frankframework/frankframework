@@ -223,6 +223,19 @@ angular.module('iaf.beheerconsole')
 	};
 })
 
+.directive('scrollToTop', function() {
+	return {
+		restrict: 'A',
+		replace: true,
+		template: '<div class="scroll-to-top"><a title="Scroll to top" ng-click="scrollTop()"><i class="fa fa-arrow-up"></i> <span class="nav-label">Scroll To Top</span></a></div>',
+		controller: function ($scope) {
+			$scope.scrollTop = function() {
+				$(window).scrollTop(0);
+			};
+		}
+	};
+})
+
 .directive('generalDataProtectionRegulation', ['$uibModal', 'GDPR', function($uibModal, GDPR) {
 	return {
 		restrict: 'A',
@@ -269,16 +282,15 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.directive('icheck', ['$timeout', function($timeout) {
+.directive('icheck', ['$timeout', '$parse', function($timeout, $parse) {
 	return {
 		restrict: 'A',
 		require: 'ngModel',
 		link: function($scope, element, $attrs, ngModel) {
 			return $timeout(function() {
-				var value;
-				value = $attrs['value'];
+				var value = $attrs['value'];
 
-				$scope.$watch($attrs['ngModel'], function(newValue){
+				$scope.$watch($attrs['ngModel'], function(newValue) {
 					$(element).iCheck('update');
 				});
 
@@ -310,4 +322,28 @@ angular.module('iaf.beheerconsole')
 			element.bind('change', onChangeHandler);
 		}
 	};
-});
+})
+.directive('icheckRadius', ['$timeout', '$parse', function($timeout, $parse) {
+	return {
+		restrict: 'A',
+		require: 'ngModel',
+		link: function($scope, element, $attrs, ngModel) {
+			return $timeout(function() {
+
+				$scope.$watch($attrs['ngModel'], function(newValue) {
+					$(element).iCheck('update');
+				});
+
+				return $(element).iCheck({
+					checkboxClass: 'iradio_square-green',
+				}).on('ifChanged', function(event) {
+						if ($(element).attr('type') === 'checkbox' && $attrs['ngModel']) {
+							$scope.$apply(function() {
+								return ngModel.$setViewValue(event.target.checked);
+							});
+						}
+					});
+			});
+		}
+	};
+}]);

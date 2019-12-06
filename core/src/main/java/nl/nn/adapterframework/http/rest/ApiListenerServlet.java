@@ -30,6 +30,7 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.HttpServletBase;
 import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
+import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.util.AppConstants;
@@ -43,6 +44,11 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
+/**
+ * 
+ * @author Niels Meijer
+ *
+ */
 @IbisInitializer
 public class ApiListenerServlet extends HttpServletBase {
 
@@ -58,6 +64,7 @@ public class ApiListenerServlet extends HttpServletBase {
 	private String CorsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); //Defaults to everything
 	private String CorsExposeHeaders = AppConstants.getInstance().getString("api.auth.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
 
+	@Override
 	public void init() throws ServletException {
 		if (dispatcher == null) {
 			dispatcher = ApiServiceDispatcher.getInstance();
@@ -68,6 +75,7 @@ public class ApiListenerServlet extends HttpServletBase {
 		super.init();
 	}
 
+	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
 		/**
@@ -146,23 +154,39 @@ public class ApiListenerServlet extends HttpServletBase {
 			 */
 			ApiPrincipal userPrincipal = null;
 
-			if(listener.getAuthenticationMethod() != null) {
-
+			if(!AuthenticationMethods.NONE.equals(listener.getAuthenticationMethod())) {
 				String authorizationToken = null;
 				Cookie authorizationCookie = null;
-				if(listener.getAuthenticationMethod().equals("COOKIE")) {
 
+				switch (listener.getAuthenticationMethod()) {
+				case COOKIE:
 					Cookie[] cookies = request.getCookies();
-					for (Cookie cookie : cookies) {
-						if(cookie.getName().equals("authenticationToken")) {
-							authorizationToken = cookie.getValue();
-							authorizationCookie = cookie;
-							authorizationCookie.setPath("/");
+					if(cookies != null) {
+						for (Cookie cookie : cookies) {
+							if("authenticationToken".equals(cookie.getName())) {
+								authorizationToken = cookie.getValue();
+								authorizationCookie = cookie;
+								authorizationCookie.setPath("/");
+							}
 						}
 					}
-				}
-				else if(listener.getAuthenticationMethod().equals("HEADER")) {
+					break;
+				case HEADER:
 					authorizationToken = request.getHeader("Authorization");
+					break;
+				case AUTHROLE:
+					List<String> roles = listener.getAuthenticationRoles();
+					if(roles != null) {
+						for (String role : roles) {
+							if(request.isUserInRole(role)) {
+								userPrincipal = new ApiPrincipal(); //Create a dummy user
+								break;
+							}
+						}
+					}
+					break;
+				default:
+					break;
 				}
 
 				if(authorizationToken != null && cache.containsKey(authorizationToken))
@@ -184,10 +208,13 @@ public class ApiListenerServlet extends HttpServletBase {
 					authorizationCookie.setMaxAge(authTTL);
 					response.addCookie(authorizationCookie);
 				}
-				userPrincipal.updateExpiry();
-				userPrincipal.setToken(authorizationToken);
-				cache.put(authorizationToken, userPrincipal, authTTL);
-				messageContext.put("authorizationToken", authorizationToken);
+
+				if(userPrincipal != null && authorizationToken != null) {
+					userPrincipal.updateExpiry();
+					userPrincipal.setToken(authorizationToken);
+					cache.put(authorizationToken, userPrincipal, authTTL);
+					messageContext.put("authorizationToken", authorizationToken);
+				}
 			}
 			//Remove this? it's now available as header value
 			messageContext.put("remoteAddr", request.getRemoteAddr());
@@ -252,13 +279,16 @@ public class ApiListenerServlet extends HttpServletBase {
 			int uriIdentifier = 0;
 			for (int i = 0; i < patternSegments.length; i++) {
 				String segment = patternSegments[i];
-				if(segment.startsWith("{") && segment.endsWith("}")) {
-					String name;
-					if(segment.equals("*"))
-						name = "uriIdentifier_"+uriIdentifier;
-					else
-						name = segment.substring(1, segment.length()-1);
+				String name = null;
 
+				if("*".equals(segment)) {
+					name = "uriIdentifier_"+uriIdentifier;
+				}
+				else if(segment.startsWith("{") && segment.endsWith("}")) {
+					name = segment.substring(1, segment.length()-1);
+				}
+
+				if(name != null) {
 					uriIdentifier++;
 					log.trace("setting uriSegment ["+name+"] to ["+uriSegments[i]+"]");
 					messageContext.put(name, uriSegments[i]);
@@ -268,9 +298,9 @@ public class ApiListenerServlet extends HttpServletBase {
 			/**
 			 * Map queryParameters into messageContext
 			 */
-			Enumeration<?> paramnames = request.getParameterNames();
+			Enumeration<String> paramnames = request.getParameterNames();
 			while (paramnames.hasMoreElements()) {
-				String paramname = (String) paramnames.nextElement();
+				String paramname = paramnames.nextElement();
 				String paramvalue = request.getParameter(paramname);
 
 				log.trace("setting queryParameter ["+paramname+"] to ["+paramvalue+"]");
@@ -392,7 +422,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			if(messageContext.get("updateEtag", true)) {
 				log.debug("calculating etags over processed result");
 				String cleanPattern = listener.getCleanPattern();
-				if(result != null && method.equals("GET")) {
+				if(result != null && method.equals("GET") && cleanPattern != null) {
 					String eTag = ApiCacheManager.buildEtag(cleanPattern, result.hashCode());
 					log.debug("adding/overwriting etag with key["+etagCacheKey+"] value["+eTag+"]");
 					cache.put(etagCacheKey, eTag);

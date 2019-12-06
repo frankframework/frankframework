@@ -26,6 +26,7 @@ import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 public class MessageOutputStream {
 	protected Logger log = LogUtil.getLogger(this);
@@ -35,6 +36,8 @@ public class MessageOutputStream {
 	
 //	private MessageOutputStream next;
 	private MessageOutputStream tail;
+
+	private ThreadConnector threadConnector;
 
 	public MessageOutputStream(OutputStream stream, MessageOutputStream next) {
 		this.requestStream=stream;
@@ -46,8 +49,9 @@ public class MessageOutputStream {
 		connect(next);
 	}
 	
-	public MessageOutputStream(ContentHandler handler, MessageOutputStream next) {
+	public MessageOutputStream(ContentHandler handler, MessageOutputStream next, Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) {
 		this.requestStream=handler;
+		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, correlationID);
 		connect(next);
 	}
 	
@@ -61,8 +65,8 @@ public class MessageOutputStream {
 		this.response=response;
 	}
 	
-	public MessageOutputStream(ContentHandler handler, MessageOutputStream next, Object response) {
-		this(handler,next);
+	public MessageOutputStream(ContentHandler handler, MessageOutputStream next, Object response, Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) {
+		this(handler,next,owner,threadLifeCycleEventListener,correlationID);
 		this.response=response;
 	}
 
@@ -73,6 +77,10 @@ public class MessageOutputStream {
 		} else {
 			tail=next.tail;
 		}
+	}
+
+	public Object asNative() {
+		return requestStream;
 	}
 
 	public OutputStream asStream() throws StreamingException {
@@ -86,7 +94,7 @@ public class MessageOutputStream {
     	}
     	if (requestStream instanceof ContentHandler) {
     		log.debug("returning ContentHandler as OutputStream");
-    		return new ContentHandlerOutputStream((ContentHandler)requestStream);
+    		return new ContentHandlerOutputStream((ContentHandler)requestStream, threadConnector);
     	}
     	return null;
 	}
@@ -107,7 +115,7 @@ public class MessageOutputStream {
     	if (requestStream instanceof ContentHandler) {
     		try {
         		log.debug("returning ContentHandler as Writer");
-    	   		return new OutputStreamWriter(new ContentHandlerOutputStream((ContentHandler)requestStream),StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+    	   		return new OutputStreamWriter(new ContentHandlerOutputStream((ContentHandler)requestStream, threadConnector),StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			} catch (UnsupportedEncodingException e) {
 				throw new StreamingException(e);
 			}

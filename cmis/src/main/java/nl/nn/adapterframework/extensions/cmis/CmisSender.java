@@ -232,8 +232,11 @@ public class CmisSender extends SenderWithParametersBase {
 
 	private List<String> actions = Arrays.asList("create", "delete", "get", "find", "update", "fetch", "dynamic");
 
-	private CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(getClassLoader());
+	private CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(getConfigurationClassLoader());
 
+	private boolean convert2Base64 = AppConstants.getInstance().getBoolean("CmisSender.Base64FileContent", true);
+
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
@@ -314,6 +317,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return sessionBuilder;
 	}
 
+	@Override
 	public void open() throws SenderException {
 		// If we don't need to create the session at JVM runtime, create to test the connection
 		if (!runtimeSession) {
@@ -326,6 +330,7 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
+	@Override
 	public void close() throws SenderException {
 		if (session != null) {
 			session.clear();
@@ -333,6 +338,7 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
+	@Override
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		try {
 			if(runtimeSession || !isKeepSession())
@@ -385,7 +391,7 @@ public class CmisSender extends SenderWithParametersBase {
 		try {
 			boolean getProperties = isGetProperties();
 			boolean getDocumentContent = isGetDocumentContent();
-			if (prc != null && getParameterList() != null) {
+			if (getParameterList() != null) {
 				ParameterValueList pvl = prc.getValues(getParameterList());
 				if (pvl != null) {
 					if(pvl.parameterExists("getProperties"))
@@ -423,7 +429,11 @@ public class CmisSender extends SenderWithParametersBase {
 						prc.getSession().put(getFileInputStreamSessionKey(), inputStream);
 					} else {
 						byte[] bytes = Misc.streamToBytes(inputStream);
-						prc.getSession().put(getFileContentSessionKey(), Base64.encodeBase64String(bytes));
+
+						if(convert2Base64)
+							prc.getSession().put(getFileContentSessionKey(), Base64.encodeBase64String(bytes));
+						else
+							prc.getSession().put(getFileContentSessionKey(), bytes);
 					}
 				}
 
@@ -440,7 +450,20 @@ public class CmisSender extends SenderWithParametersBase {
 			else {
 				ContentStream contentStream = document.getContentStream();
 				InputStream inputStream = contentStream.getStream();
-				return Misc.streamToString(inputStream, null, false);
+
+				if (StringUtils.isNotEmpty(fileInputStreamSessionKey)) {
+					prc.getSession().put(getFileInputStreamSessionKey(), inputStream);
+					return "";
+				} else if (StringUtils.isNotEmpty(getFileContentSessionKey())) {
+					byte[] bytes = Misc.streamToBytes(inputStream);
+					if(convert2Base64)
+						prc.getSession().put(getFileContentSessionKey(), Base64.encodeBase64String(bytes));
+					else
+						prc.getSession().put(getFileContentSessionKey(), bytes);
+					return "";
+				}
+				else
+					return Misc.streamToString(inputStream, null, false);
 			}
 		} catch (IOException e) {
 			throw new SenderException(e);
@@ -837,10 +860,17 @@ public class CmisSender extends SenderWithParametersBase {
 				String includeRelationshipsEnum = XmlUtils.getChildTagAsString(requestElement, "includeRelationships");
 				IncludeRelationships includeRelationships = IncludeRelationships.valueOf(includeRelationshipsEnum);
 				String renditionFilter = XmlUtils.getChildTagAsString(requestElement, "renditionFilter");
-				Long maxItemsLong = XmlUtils.getChildTagAsLong(requestElement, "maxItems");
-				BigInteger maxItems = BigInteger.valueOf(maxItemsLong);
-				Long skipCountLong = XmlUtils.getChildTagAsLong(requestElement, "skipCount");
-				BigInteger skipCount = BigInteger.valueOf(skipCountLong);
+
+				BigInteger maxItems = null;
+				String maxItemsString = XmlUtils.getChildTagAsString(requestElement, "maxItems");
+				if (StringUtils.isNotEmpty(maxItemsString)) {
+					maxItems = BigInteger.valueOf(Long.parseLong(maxItemsString));
+				}
+				BigInteger skipCount = null;
+				String skipCountString = XmlUtils.getChildTagAsString(requestElement, "skipCount");
+				if (StringUtils.isNotEmpty(skipCountString)) {
+					skipCount = BigInteger.valueOf(Long.parseLong(skipCountString));
+				}
 
 				//Create a operationContext and do session.query?
 //				OperationContext context = session.createOperationContext();
@@ -1046,6 +1076,11 @@ public class CmisSender extends SenderWithParametersBase {
 	@IbisDoc({"the maximum number of concurrent connections", "10"})
 	public void setMaxConnections(int i) throws ConfigurationException {
 		sessionBuilder.setMaxConnections(i);
+	}
+
+	@IbisDoc({"the connection timeout in seconds", "10"})
+	public void setTimeout(int i) throws ConfigurationException {
+		sessionBuilder.setTimeout(i);
 	}
 
 	@IbisDoc({"url to connect to", ""})

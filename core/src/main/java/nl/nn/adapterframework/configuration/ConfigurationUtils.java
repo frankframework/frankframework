@@ -43,6 +43,7 @@ import javax.xml.transform.TransformerException;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
@@ -50,7 +51,7 @@ import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -72,6 +73,8 @@ public class ConfigurationUtils {
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.autoDatabaseClassLoader", false);
 	private static final String CONFIGURATIONS = APP_CONSTANTS.getResolvedProperty("configurations.names.application");
+	public static String ADDITIONAL_PROPERTIES_FILE_SUFFIX = APP_CONSTANTS.getString("ADDITIONAL.PROPERTIES.FILE.SUFFIX", null);
+	public static final String DEFAULT_CONFIGURATION_FILE = "Configuration.xml";
 
 	public static boolean stubConfiguration() {
 		return stubConfiguration(null);
@@ -116,13 +119,39 @@ public class ConfigurationUtils {
 			return XmlUtils.transformXml(tweak_transformer, originalConfig, true);
 		} catch (IOException e) {
 			throw new ConfigurationException("cannot retrieve [" + tweakXslt + "]", e);
-		} catch (TransformerConfigurationException tce) {
-			throw new ConfigurationException("got error creating transformer from file [" + tweakXslt + "]", tce);
+		} catch (SAXException|TransformerConfigurationException e) {
+			throw new ConfigurationException("got error creating transformer from file [" + tweakXslt + "]", e);
 		} catch (TransformerException te) {
 			throw new ConfigurationException("got error transforming resource [" + tweak_xsltSource.toString() + "] from [" + tweakXslt + "]", te);
-		} catch (DomBuilderException de) {
-			throw new ConfigurationException("caught DomBuilderException", de);
 		}
+	}
+
+	public static String getConfigurationFile(ClassLoader classLoader, String currentConfigurationName) {
+		String configFileKey = "configurations." + currentConfigurationName + ".configurationFile";
+		String configurationFile = AppConstants.getInstance(classLoader).getResolvedProperty(configFileKey);
+		if (StringUtils.isEmpty(configurationFile) && classLoader != null) {
+			configurationFile = AppConstants.getInstance(classLoader.getParent()).getResolvedProperty(configFileKey);
+		}
+		if (StringUtils.isEmpty(configurationFile)) {
+			configurationFile = DEFAULT_CONFIGURATION_FILE;
+		}
+		return configurationFile;
+	}
+
+	public static String getConfigurationVersion(ClassLoader classLoader) {
+		return getVersion(classLoader, "configuration.version", "configuration.timestamp");
+	}
+
+	public static String getVersion(ClassLoader classLoader, String versionKey, String timestampKey) {
+		AppConstants constants = AppConstants.getInstance(classLoader);
+		String version = null;
+		if (StringUtils.isNotEmpty(constants.getProperty(versionKey))) {
+			version = constants.getProperty(versionKey);
+			if (StringUtils.isNotEmpty(constants.getProperty(timestampKey))) {
+				version = version + "_" + constants.getProperty(timestampKey);
+			}
+		}
+		return version;
 	}
 
 	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name) throws ConfigurationException {
@@ -192,20 +221,7 @@ public class ConfigurationUtils {
 			throw new ConfigurationException(e);
 		} finally {
 			qs.close();
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException e) {
-					log.warn("Could not close resultset", e);
-				}
-			}
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					log.warn("Could not close connection", e);
-				}
-			}
+			JdbcUtil.fullClose(conn, rs);
 		}
 	}
 
@@ -266,24 +282,68 @@ public class ConfigurationUtils {
 			throw new ConfigurationException(e);
 		} finally {
 			qs.close();
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException e) {
-					log.warn("Could not close resultset", e);
-				}
-			}
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					log.warn("Could not close connection", e);
-				}
-			}
+			JdbcUtil.fullClose(conn, rs);
 		}
 	}
 
-	public static boolean makeConfigActive(IbisContext ibisContext, String name, String version, String jmsRealm) throws ConfigurationException {
+	/**
+	 * Set the all ACTIVECONFIG to false and specified version to true
+	 * @param value 
+	 */
+	public static boolean activateConfig(IbisContext ibisContext, String name, String version, boolean value, String jmsRealm) throws SenderException, ConfigurationException, JdbcException, SQLException {
+		String workJmsRealm = jmsRealm;
+		if (StringUtils.isEmpty(workJmsRealm)) {
+			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
+			if (StringUtils.isEmpty(workJmsRealm)) {
+				return false;
+			}
+		}
+
+		Connection conn = null;
+		ResultSet rs = null;
+		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		qs.setJmsRealm(workJmsRealm);
+		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
+		qs.configure();
+		String booleanValueFalse = qs.getDbmsSupport().getBooleanValue(false);
+		String booleanValueTrue = qs.getDbmsSupport().getBooleanValue(true);
+
+		try {
+			qs.open();
+			conn = qs.getConnection();
+			int updated = 0;
+
+			String selectQuery = "SELECT NAME FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
+			PreparedStatement selectStmt = conn.prepareStatement(selectQuery);
+			selectStmt.setString(1, name);
+			selectStmt.setString(2, version);
+			rs = selectStmt.executeQuery();
+			if(rs.next()) {
+				String query = "UPDATE IBISCONFIG SET ACTIVECONFIG='"+booleanValueFalse+"' WHERE NAME=?";
+
+				PreparedStatement stmt = conn.prepareStatement(query);
+				stmt.setString(1, name);
+				updated = stmt.executeUpdate();
+
+				if(updated > 0) {
+					String query2 = "UPDATE IBISCONFIG SET ACTIVECONFIG='"+booleanValueTrue+"' WHERE NAME=? AND VERSION=?";
+					PreparedStatement stmt2 = conn.prepareStatement(query2);
+					stmt2.setString(1, name);
+					stmt2.setString(2, version);
+					return (stmt2.executeUpdate() > 0) ? true : false;
+				}
+			}
+		} finally {
+			qs.close();
+			JdbcUtil.fullClose(conn, rs);
+		}
+		return false;
+	}
+
+	/**
+	 * Toggle AUTORELOAD
+	 */
+	public static boolean autoReloadConfig(IbisContext ibisContext, String name, String version, boolean booleanValue, String jmsRealm) throws SenderException, ConfigurationException, JdbcException, SQLException {
 		String workJmsRealm = jmsRealm;
 		if (StringUtils.isEmpty(workJmsRealm)) {
 			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
@@ -302,7 +362,6 @@ public class ConfigurationUtils {
 		try {
 			qs.open();
 			conn = qs.getConnection();
-			int updated = 0;
 
 			String selectQuery = "SELECT NAME FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
 			PreparedStatement selectStmt = conn.prepareStatement(selectQuery);
@@ -310,41 +369,16 @@ public class ConfigurationUtils {
 			selectStmt.setString(2, version);
 			rs = selectStmt.executeQuery();
 			if(rs.next()) {
-				String query = ("UPDATE IBISCONFIG SET ACTIVECONFIG = '"+(qs.getDbmsSupport().getBooleanValue(false))+"' WHERE NAME=?");
+				String query = "UPDATE IBISCONFIG SET AUTORELOAD='"+qs.getDbmsSupport().getBooleanValue(booleanValue)+"' WHERE NAME=? AND VERSION=?";
+
 				PreparedStatement stmt = conn.prepareStatement(query);
 				stmt.setString(1, name);
-				updated = stmt.executeUpdate();
-	
-				if(updated > 0) {
-					String query2 = ("UPDATE IBISCONFIG SET ACTIVECONFIG = '"+(qs.getDbmsSupport().getBooleanValue(true))+"' WHERE NAME=? AND VERSION=?");
-					PreparedStatement stmt2 = conn.prepareStatement(query2);
-					stmt2.setString(1, name);
-					stmt2.setString(2, version);
-					return (stmt2.executeUpdate() > 0) ? true : false;
-				}
+				stmt.setString(2, version);
+				return stmt.executeUpdate() > 0;
 			}
-		} catch (SenderException e) {
-			throw new ConfigurationException(e);
-		} catch (JdbcException e) {
-			throw new ConfigurationException(e);
-		} catch (SQLException e) {
-			throw new ConfigurationException(e);
 		} finally {
 			qs.close();
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException e) {
-					log.warn("Could not close resultset", e);
-				}
-			}
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					log.warn("Could not close connection", e);
-				}
-			}
+			JdbcUtil.fullClose(conn, rs);
 		}
 		return false;
 	}
@@ -426,20 +460,7 @@ public class ConfigurationUtils {
 			throw new ConfigurationException(e);
 		} finally {
 			qs.close();
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException e) {
-					log.warn("Could not close resultset", e);
-				}
-			}
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					log.warn("Could not close connection", e);
-				}
-			}
+			JdbcUtil.fullClose(conn, rs);
 		}
 	}
 
@@ -456,7 +477,12 @@ public class ConfigurationUtils {
 			if (!zipEntry.isDirectory()) {
 				String entryName = zipEntry.getName();
 				String entryNameMinusPath = FilenameUtils.getName(entryName);
-				if ("BuildInfo_SC.properties".equals(entryNameMinusPath)) {
+
+				String buildInfoFilename = "BuildInfo";
+				if(StringUtils.isNotEmpty(ADDITIONAL_PROPERTIES_FILE_SUFFIX))
+					buildInfoFilename += ADDITIONAL_PROPERTIES_FILE_SUFFIX;
+
+				if((buildInfoFilename+".properties").equals(entryNameMinusPath)) {
 					name = FilenameUtils.getPathNoEndSeparator(entryName);
 					byte[] b = new byte[4096];
 					int rb = 0;

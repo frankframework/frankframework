@@ -149,15 +149,11 @@ public class IbisConsoleTest {
 		assertTrue(diff.toString(), diff.identical());
 	}
 
-	private String transformShowConfigurationStatusXml(String showConfigurationStatusXml)
-			throws DomBuilderException, TransformerException, IOException {
+	private String transformShowConfigurationStatusXml(String showConfigurationStatusXml) throws SAXException, TransformerException, IOException {
 		return XmlUtils.transformXml(showConfigurationStatusTransformer, showConfigurationStatusXml);
-
 	}
 
-	private String transformShowEnvironmentVariablesXml(String showEnvironmentVariablesXml)
-			throws DomBuilderException, TransformerException, IOException {
+	private String transformShowEnvironmentVariablesXml(String showEnvironmentVariablesXml) throws SAXException, TransformerException, IOException {
 		return XmlUtils.transformXml(showEnvironmentVariablesTransformer, showEnvironmentVariablesXml);
-
 	}
 }

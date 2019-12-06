@@ -166,6 +166,7 @@ public class HttpSender extends HttpSenderBase {
 	private boolean mtomEnabled = false;
 	private String mtomContentTransferEncoding = null; //Defaults to 8-bit for normal String messages, 7-bit for e-mails and binary for streams
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
@@ -182,6 +183,7 @@ public class HttpSender extends HttpSenderBase {
 			setContentType("text/html; charset="+getCharSet());
 	}
 
+	@Override
 	protected HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
 		if(isParamsInUrl())
 			return getMethod(uri, message, parameters);
@@ -434,6 +436,7 @@ public class HttpSender extends HttpSenderBase {
 		}
 	}
 
+	@Override
 	protected String extractResult(HttpResponseHandler responseHandler, ParameterResolutionContext prc) throws SenderException, IOException {
 		int statusCode = responseHandler.getStatusLine().getStatusCode();
 

@@ -19,11 +19,10 @@ import java.io.IOException;
 import java.util.Map;
 
 import javax.xml.soap.SOAPException;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -32,6 +31,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -64,13 +64,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be applied to the created transformer</td></tr>
  * </table>
  * </p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
- * </table>
- * </p>
+
  * @author Peter Leeuwenburgh
  */
 public class SoapWrapperPipe extends FixedForwardPipe {
@@ -114,10 +108,10 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 			}
 		}
 		if (StringUtils.isNotEmpty(getSoapHeaderStyleSheet())) {
-			soapHeaderTp = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), classLoader, getSoapHeaderStyleSheet(), 0);
+			soapHeaderTp = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), getConfigurationClassLoader(), getSoapHeaderStyleSheet(), 0);
 		}
 		if (StringUtils.isNotEmpty(getSoapBodyStyleSheet())) {
-			soapBodyTp = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), classLoader, getSoapBodyStyleSheet(), 0);
+			soapBodyTp = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), getConfigurationClassLoader(), getSoapBodyStyleSheet(), 0);
 		}
 		if (isRemoveOutputNamespaces()) {
 			removeOutputNamespacesTp = XmlUtils.getRemoveNamespacesTransformerPool(true, false);
@@ -221,7 +215,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 					payload = outputNamespaceTp.transform(payload, null, true);
 				}
 				ParameterResolutionContext prc = null;
-				Map parameterValues = null;
+				Map<String,Object> parameterValues = null;
 				if (getParameterList()!=null && (soapHeaderTp != null || soapBodyTp != null)) {
 					prc = new ParameterResolutionContext(payload, session, true);
 					parameterValues = prc.getValueMap(getParameterList());
@@ -267,7 +261,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return new PipeRunResult(getForward(), result);
 	}
 
-	protected String unwrapMessage(String messageText) throws DomBuilderException, TransformerException, IOException, SOAPException {
+	protected String unwrapMessage(String messageText) throws SAXException, TransformerException, IOException, SOAPException {
 		return soapWrapper.getBody(messageText);
 	}
 

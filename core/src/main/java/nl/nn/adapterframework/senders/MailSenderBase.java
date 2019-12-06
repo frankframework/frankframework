@@ -15,23 +15,16 @@
 */
 package nl.nn.adapterframework.senders;
 
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.activation.URLDataSource;
-
+import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang.StringUtils;
-import org.apache.soap.util.mime.ByteArrayDataSource;
-import org.apache.xerces.impl.dv.util.Base64;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -46,7 +39,6 @@ import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public abstract class MailSenderBase extends SenderWithParametersBase {
@@ -58,7 +50,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 	private String defaultAttachmentName = "attachment";
 	private String defaultMessageType = "text/plain";
-	private String defaultMessageBase64 = "false";
+	private boolean defaultMessageBase64 = false;
 	private String defaultSubject;
 	private String defaultFrom;
 	private int timeout = 20000;
@@ -92,8 +84,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	 * @throws SenderException
 	 * @throws DomBuilderException
 	 */
-	public MailSession extract(String input, ParameterResolutionContext prc)
-			throws SenderException, DomBuilderException {
+	public MailSession extract(String input, ParameterResolutionContext prc) throws SenderException, DomBuilderException {
 		MailSession mailSession;
 		if (paramList == null) {
 			mailSession = parseXML(input, prc);
@@ -103,9 +94,8 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return mailSession;
 	}
 
-	private Collection<Attachment> retrieveAttachmentsFromParamList(ParameterValue pv, ParameterResolutionContext prc)
-			throws SenderException, ParameterException {
-		Collection<Attachment> attachments = null;
+	private Collection<MailAttachmentStream> retrieveAttachmentsFromParamList(ParameterValue pv, ParameterResolutionContext prc) throws SenderException, ParameterException {
+		Collection<MailAttachmentStream> attachments = null;
 		if (pv != null) {
 			attachments = retrieveAttachments(pv.asCollection(), prc);
 			log.debug("MailSender [" + getName() + "] retrieved attachments-parameter [" + attachments + "]");
@@ -128,10 +118,10 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		String subject = null;
 		String threadTopic = null;
 		String messageType = null;
-		String messageBase64 = null;
+		boolean messageBase64 = false;
 		String charset = null;
 		List<EMail> recipients;
-		ArrayList<Attachment> attachments = null;
+		List<MailAttachmentStream> attachments = null;
 		ParameterValueList pvl;
 		ParameterValue pv;
 
@@ -171,7 +161,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			}
 			pv = pvl.getParameterValue("messageBase64");
 			if (pv != null) {
-				messageBase64 = pv.asStringValue(null);
+				messageBase64 = pv.asBooleanValue(false);
 				log.debug("MailSender [" + getName() + "] retrieved messageBase64-parameter [" + messageBase64 + "]");
 				mail.setMessageBase64(messageBase64);
 			}
@@ -191,9 +181,9 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			}
 
 			pv = pvl.getParameterValue("attachments");
-			Collection<Attachment> attachmentsCollection = retrieveAttachmentsFromParamList(pv, prc);
+			Collection<MailAttachmentStream> attachmentsCollection = retrieveAttachmentsFromParamList(pv, prc);
 			if (attachmentsCollection != null && !attachmentsCollection.isEmpty()) {
-				attachments = new ArrayList<Attachment>(attachmentsCollection);
+				attachments = new ArrayList<MailAttachmentStream>(attachmentsCollection);
 				mail.setAttachmentList(attachments);
 			}
 
@@ -213,11 +203,13 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 					Element recipientElement = (Element) iter.next();
 					String value = XmlUtils.getStringValue(recipientElement);
 					if (StringUtils.isNotEmpty(value)) {
+						String name = recipientElement.getAttribute("name");
 						String type = recipientElement.getAttribute("type");
-						EMail email = new EMail();
-						email.setAddress(value);
-						email.setType(type);
-						recipients.add(email);
+						EMail recipient = new EMail();
+						recipient.setAddress(value);
+						recipient.setType(type);
+						recipient.setName(name);
+						recipients.add(recipient);
 					} else {
 						log.debug("empty recipient found, ignoring");
 					}
@@ -230,78 +222,70 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return recipients;
 	}
 
-	private Collection<Attachment> retrieveAttachments(Collection<Node> attachmentsNode, ParameterResolutionContext prc)
-			throws SenderException {
-		Collection<Attachment> attachments = null;
+	private Collection<MailAttachmentStream> retrieveAttachments(Collection<Node> attachmentsNode, ParameterResolutionContext prc) throws SenderException {
+		Collection<MailAttachmentStream> attachments = null;
 		Iterator<Node> iter = attachmentsNode.iterator();
 		if (iter != null && iter.hasNext()) {
-			attachments = new LinkedList<Attachment>();
+			attachments = new LinkedList<MailAttachmentStream>();
 			while (iter.hasNext()) {
 				Element attachmentElement = (Element) iter.next();
 				String name = attachmentElement.getAttribute("name");
+				String mimeType = attachmentElement.getAttribute("type");
 				String sessionKey = attachmentElement.getAttribute("sessionKey");
-				String url = attachmentElement.getAttribute("url");
 				boolean base64 = Boolean.parseBoolean(attachmentElement.getAttribute("base64"));
-				Object value = null;
+
+				MailAttachmentStream attachment = null;
 				if (StringUtils.isNotEmpty(sessionKey)) {
 					Object object = prc.getSession().get(sessionKey);
 					if (object instanceof InputStream) {
-						DataSource attachmentDataSource;
-						try {
-							attachmentDataSource = new ByteArrayDataSource((InputStream) object,
-									"application/octet-stream");
-						} catch (IOException e) {
-							throw new SenderException("error retrieving attachment from sessionkey", e);
-						}
-						value = new DataHandler(attachmentDataSource);
+						attachment = streamToMailAttachment((InputStream) object, base64, mimeType);
 					} else if (object instanceof String) {
-						String skValue = (String) object;
-						if (base64) {
-							value = decodeBase64(skValue);
-						} else {
-							value = skValue;
-						}
+						attachment = stringToMailAttachment((String) object, base64, mimeType);
 					} else {
-						throw new SenderException("MailSender [" + getName() + "] received unknown attachment type ["
-								+ object.getClass().getName() + "] in sessionkey");
+						throw new SenderException("MailSender ["+getName()+"] received unknown attachment type ["+object.getClass().getName()+"] in sessionkey");
 					}
 				} else {
-					if (StringUtils.isNotEmpty(url)) {
-						DataSource attachmentDataSource;
-						try {
-							attachmentDataSource = new URLDataSource(new URL(url));
-						} catch (MalformedURLException e) {
-							throw new SenderException("error retrieving attachment from url", e);
-						}
-						value = new DataHandler(attachmentDataSource);
-					} else {
-						String nodeValue = XmlUtils.getStringValue(attachmentElement);
-						if (base64) {
-							value = decodeBase64(nodeValue);
-						} else {
-							value = nodeValue;
-						}
-					}
+					String nodeValue = XmlUtils.getStringValue(attachmentElement);
+					attachment = stringToMailAttachment(nodeValue, base64, mimeType);
 				}
-				Attachment attachment = new Attachment();
-				attachment.setAttachmentText(value);
-				attachment.setAttachmentName(name);
-				attachment.setSessionKey(sessionKey);
-				attachment.setAttachmentURL(url);
+				attachment.setName(name);
+				log.debug("created attachment ["+attachment+"]");
 				attachments.add(attachment);
 			}
 		}
 		return attachments;
 	}
 
-	private MailSession parseXML(String input, ParameterResolutionContext prc)
-			throws SenderException, DomBuilderException {
+	private MailAttachmentStream stringToMailAttachment(String value, boolean isBase64, String mimeType) {
+		ByteArrayInputStream stream = new ByteArrayInputStream(value.getBytes());
+		return streamToMailAttachment(stream, isBase64, mimeType);
+	}
+
+	private MailAttachmentStream streamToMailAttachment(InputStream stream, boolean isBase64, String mimeType) {
+		MailAttachmentStream attachment = new MailAttachmentStream();
+		if (isBase64) {
+			if(StringUtils.isEmpty(mimeType)) {
+				mimeType = "application/octet-stream";
+			}
+			attachment.setContent(new Base64InputStream(stream));
+		} else {
+			if(StringUtils.isEmpty(mimeType)) {
+				mimeType = "text/plain";
+			}
+			attachment.setContent(stream);
+		}
+		attachment.setMimeType(mimeType);
+
+		return attachment;
+	}
+
+	private MailSession parseXML(String input, ParameterResolutionContext prc) throws SenderException, DomBuilderException {
 		Element from;
 		String subject;
 		String threadTopic;
 		String message;
 		String messageType;
-		String messageBase64;
+		boolean messageBase64;
 		String charset;
 		Collection<Node> recipientList;
 		Collection<Node> attachments;
@@ -321,7 +305,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		if (StringUtils.isEmpty(messageType)) {
 			messageType=getDefaultMessageType();
 		}
-		messageBase64 = XmlUtils.getChildTagAsString(emailElement, "messageBase64");
+		messageBase64 = XmlUtils.getChildTagAsBoolean(emailElement, "messageBase64");
 		charset = XmlUtils.getChildTagAsString(emailElement, "charset");
 
 		Element recipientsElement = XmlUtils.getFirstChildTag(emailElement, "recipients");
@@ -348,7 +332,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		List<EMail> recipients = retrieveRecipients(recipientList);
 		mailSession.setRecipientList(recipients);
 		if (attachments != null) {
-			List<Attachment> attachmentList = (List<Attachment>) retrieveAttachments(attachments, prc);
+			List<MailAttachmentStream> attachmentList = (List<MailAttachmentStream>) retrieveAttachments(attachments, prc);
 			mailSession.setAttachmentList(attachmentList);
 		}
 
@@ -381,31 +365,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return null;
 	}
 
-	protected DataHandler decodeBase64(String str) {
-		byte[] bytesDecoded = Base64.decode(str);
-		String encodingType = "application/octet-stream";
-		DataSource ads = new ByteArrayDataSource(bytesDecoded, encodingType);
-		return new DataHandler(ads);
-	}
-
-	protected String decodeBase64ToString(String str) {
-		byte[] bytesDecoded = Base64.decode(str);
-		return new String(bytesDecoded);
-	}
-
-	protected byte[] decodeBase64ToBytes(String str) {
-		byte[] bytesDecoded = Base64.decode(str);
-		return bytesDecoded;
-	}
-
-	protected String encodeFileToBase64Binary(InputStream inputStream) throws IOException {
-		String encodedfile = null;
-		byte[] bytes = StreamUtil.streamToByteArray(inputStream, false);
-		encodedfile = new String(Base64.encode(bytes));
-
-		return encodedfile;
-	}
-
+	@Override
 	public boolean isSynchronous() {
 		return false;
 	}
@@ -515,13 +475,12 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		this.defaultMessageType = defaultMessageType;
 	}
 
-	public String getDefaultMessageBase64() {
-		return defaultMessageBase64;
-	}
-
 	@IbisDoc({ "when messageBase64 is not specified defaultMessageBase64 will be used", "false" })
-	public void setDefaultMessageBase64(String defaultMessageBase64) {
+	public void setDefaultMessageBase64(boolean defaultMessageBase64) {
 		this.defaultMessageBase64 = defaultMessageBase64;
+	}
+	public boolean isDefaultMessageBase64() {
+		return defaultMessageBase64;
 	}
 
 	/**
@@ -533,11 +492,11 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		private EMail from = null;
 		private EMail replyto = null;
 		private List<EMail> recipients = new ArrayList<EMail>();
-		private List<Attachment> attachmentList = new ArrayList<Attachment>();
+		private List<MailAttachmentStream> attachmentList = new ArrayList<MailAttachmentStream>();
 		private String subject = null;
 		private String message = null;
 		private String messageType = null;
-		private String messageBase64 = null;
+		private boolean messageIsBase64 = false;
 		private String charSet = null;
 		private String threadTopic = null;
 		private Collection<Node> headers;
@@ -566,11 +525,11 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			this.recipients = recipients;
 		}
 
-		public List<Attachment> getAttachmentList() {
+		public List<MailAttachmentStream> getAttachmentList() {
 			return attachmentList;
 		}
 
-		public void setAttachmentList(List<Attachment> attachmentList) {
+		public void setAttachmentList(List<MailAttachmentStream> attachmentList) {
 			this.attachmentList = attachmentList;
 		}
 
@@ -598,12 +557,12 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			this.messageType = messageType;
 		}
 
-		public String getMessageBase64() {
-			return messageBase64;
+		public boolean isMessageBase64() {
+			return messageIsBase64;
 		}
 
-		public void setMessageBase64(String messageBase64) {
-			this.messageBase64 = messageBase64;
+		public void setMessageBase64(boolean messageIsBase64) {
+			this.messageIsBase64 = messageIsBase64;
 		}
 
 		public String getCharSet() {
@@ -632,66 +591,45 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	}
 
 	/**
-	 * Generic attachment class
-	 * @author alisihab
+	 * Generic mail attachment class
+	 * @author Niels Meijer
 	 *
 	 */
-	protected class Attachment {
-		private String attachmentName;
-		private String attachmentType;
-		private String attachmentURL;
-		private Object attachmentText;
-		private String attachmentBase64;
-		private String sessionKey;
+	protected abstract class MailAttachmentBase<T> {
+		private String name;
+		private String mimeType;
+		private T value;
 
-		public String getAttachmentName() {
-			return attachmentName;
+		public String getName() {
+			return name;
 		}
 
-		public void setAttachmentName(String attachmentName) {
-			this.attachmentName = attachmentName;
+		public void setName(String name) {
+			this.name = name;
 		}
 
-		public String getAttachmentType() {
-			return attachmentType;
+		public String getMimeType() {
+			return mimeType;
 		}
 
-		public void setAttachmentType(String attachmentType) {
-			this.attachmentType = attachmentType;
+		public void setMimeType(String mimeType) {
+			this.mimeType = mimeType;
 		}
 
-		public String getAttachmentURL() {
-			return attachmentURL;
+		public T getContent() {
+			return value;
 		}
 
-		public void setAttachmentURL(String attachmentURL) {
-			this.attachmentURL = attachmentURL;
+		public void setContent(T value) {
+			this.value = value;
 		}
 
-		public Object getAttachmentText() {
-			return attachmentText;
-		}
-
-		public void setAttachmentText(Object attachmentText) {
-			this.attachmentText = attachmentText;
-		}
-
-		public String getAttachmentBase64() {
-			return attachmentBase64;
-		}
-
-		public void setAttachmentBase64(String attachmentBase64) {
-			this.attachmentBase64 = attachmentBase64;
-		}
-
-		public String getSessionKey() {
-			return sessionKey;
-		}
-
-		public void setSessionKey(String sessionKey) {
-			this.sessionKey = sessionKey;
+		@Override
+		public String toString() {
+			return "Attachment name ["+name+"] type ["+value.getClass().getSimpleName()+"]";
 		}
 	}
+	protected class MailAttachmentStream extends MailAttachmentBase<InputStream>{};
 
 	/**
 	 * Generic mail class 
@@ -725,6 +663,11 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 		public void setType(String type) {
 			this.type = type;
+		}
+
+		@Override
+		public String toString() {
+			return "address ["+address+"] name ["+name+"] type ["+type+"]";
 		}
 	}
 

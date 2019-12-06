@@ -38,6 +38,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 public class MessageOutputStreamTest {
 
@@ -113,7 +114,7 @@ public class MessageOutputStreamTest {
 		
 		XmlWriter target = new XmlWriter();
 
-		MessageOutputStream stream = new MessageOutputStream(target,null);
+		MessageOutputStream stream = new MessageOutputStream(target,null,this,null,"fakecorrelationid");
 		
 		try (Writer writer = stream.asWriter()) {
 			writer.write(testString);
@@ -206,7 +207,7 @@ public class MessageOutputStreamTest {
         Result result = new StreamResult(sw);
         transformerHandler.setResult(result);
 
-		MessageOutputStream stream = new MessageOutputStream(transformerHandler,null);
+		MessageOutputStream stream = new MessageOutputStream(transformerHandler,null,this,null,"fakecorrelationid");
 		
 		try {
 			try (Writer writer = stream.asWriter()) {

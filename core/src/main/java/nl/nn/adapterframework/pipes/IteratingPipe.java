@@ -26,6 +26,7 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.core.task.TaskExecutor;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IDataIterator;
@@ -41,7 +42,6 @@ import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -132,6 +132,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	private String itemNoSessionKey=null;
 
 	private String stopConditionXPathExpression=null;
+	private int maxItems;
 	private boolean ignoreExceptions=false;
 
 	private boolean collectResults=true;
@@ -160,7 +161,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		msgTransformerPool = TransformerPool.configureTransformer(getLogPrefix(null), classLoader, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), false);
+		msgTransformerPool = TransformerPool.configureTransformer(getLogPrefix(null), getConfigurationClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), false);
 		try {
 			if (StringUtils.isNotEmpty(getStopConditionXPathExpression())) {
 				stopConditionTp=TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(null,getStopConditionXPathExpression(),"xml",false));
@@ -287,17 +288,21 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				if (isCollectResults() && !isParallel()) {
 					addResult(count, message, itemResult);
 				}
+				if (getMaxItems()>0 && count>=getMaxItems()) {
+					log.debug(getLogPrefix(session)+"count ["+count+"] reached maxItems ["+getMaxItems()+"], stopping loop");
+					return false;
+				}
 				if (getStopConditionTp()!=null) {
 					String stopConditionResult = getStopConditionTp().transform(itemResult,null);
 					if (StringUtils.isNotEmpty(stopConditionResult) && !stopConditionResult.equalsIgnoreCase("false")) {
-						log.debug(getLogPrefix(session)+"stopcondition result ["+stopConditionResult+"], stopping loop");
+						log.debug(getLogPrefix(session)+"itemResult ["+itemResult+"] stopcondition result ["+stopConditionResult+"], stopping loop");
 						return false;
 					} else {
-						log.debug(getLogPrefix(session)+"stopcondition result ["+stopConditionResult+"], continueing loop");
+						log.debug(getLogPrefix(session)+"itemResult ["+itemResult+"] stopcondition result ["+stopConditionResult+"], continueing loop");
 					}
 				}
 				return true;
-			} catch (DomBuilderException e) {
+			} catch (SAXException e) {
 				throw new SenderException(getLogPrefix(session)+"cannot parse input",e);
 			} catch (TransformerException e) {
 				throw new SenderException(getLogPrefix(session)+"cannot serialize item",e);
@@ -421,7 +426,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			String results = "";
 			if (isCollectResults()) {
 				StringBuffer callbackResults = callback.getResults();
-				callbackResults.insert(0, "<results count=\""+callback.getCount()+"\">\n");
+				callbackResults.insert(0, "<results>\n");
 				callbackResults.append("</results>");
 				results = callbackResults.toString();
 			} else {
@@ -477,7 +482,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return stopConditionTp;
 	}
 
-	@IbisDoc({"1", "stylesheet to apply to each message, before sending it", ""})
+	@IbisDoc({"1", "Stylesheet to apply to each message, before sending it", ""})
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
@@ -485,7 +490,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return styleSheetName;
 	}
 
-	@IbisDoc({"2", "alternatively: xpath-expression to create stylesheet from", ""})
+	@IbisDoc({"2", "Alternatively: xpath-expression to create stylesheet from", ""})
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
 	}
@@ -493,7 +498,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return xpathExpression;
 	}
 
-	@IbisDoc({"3", "namespace defintions for xpathexpression. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. One entry can be without a prefix, that will define the default namespace.", ""})
+	@IbisDoc({"3", "Namespace defintions for xpathexpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. One entry can be without a prefix, that will define the default namespace.", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
@@ -501,7 +506,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return namespaceDefs;
 	}
 
-	@IbisDoc({"4", "either 'text' or 'xml'. only valid for xpathexpression", "text"})
+	@IbisDoc({"4", "Either 'text' or 'xml'. only valid for xpathexpression", "text"})
 	public void setOutputType(String string) {
 		outputType = string;
 	}
@@ -509,7 +514,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return outputType;
 	}
 
-	@IbisDoc({"5", "force the transformer generated from the xpath-expression to omit the xml declaration", "true"})
+	@IbisDoc({"5", "Force the transformer generated from the xpath-expression to omit the xml declaration", "true"})
 	public void setOmitXmlDeclaration(boolean b) {
 		omitXmlDeclaration = b;
 	}
@@ -518,7 +523,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 
-	@IbisDoc({"6", "key of session variable to store number of items processed, i.e. the position or index in the set of items to be processed.", ""})
+	@IbisDoc({"6", "Key of session variable to store number of items processed, i.e. the position or index in the set of items to be processed.", ""})
 	public void setItemNoSessionKey(String string) {
 		itemNoSessionKey = string;
 	}
@@ -526,13 +531,18 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return itemNoSessionKey;
 	}
 
-	@IbisDoc({"7", "expression evaluated on each result if set. "
-	+ "Iteration stops if condition returns anything other than <code>false</code> or an empty result."
-	+ "For example, to stop after the second child element has been processed, one of the following expressions could be used:"
-	+ "<table> "
-	+ "<tr><td><li><code>result[position()='2']</code></td><td>returns result element after second child element has been processed</td></tr>"
-	+ "<tr><td><li><code>position()='2'</code></td><td>returns <code>false</code> after second child element has been processed, <code>true</code> for others</td></tr>"
-	+ "</table> ", ""})
+	@IbisDoc({"7", "The maximum number of items returned. The (default) value of 0 means unlimited, all available items will be returned","0"})
+	public void setMaxItems(int maxItems) {
+		this.maxItems = maxItems;
+	}
+	public int getMaxItems() {
+		return maxItems;
+	}
+
+	@IbisDoc({"7", "Expression evaluated on each result if set. "
+	+ "Iteration stops if condition returns anything other than an empty result. To test for the root element to have an attribute 'finished' with the value 'yes', the expression <code>*[@finished='yes']</code> can be used. "
+	+ "This can be used if the condition to stop can be derived from the item result. To stop after a maximum number of items has been processed, use <code>maxItems</code>."
+	+ "Previous versions documented that <code>position()=2</code> could be used. This is not working as expected.", ""})
 	public void setStopConditionXPathExpression(String string) {
 		stopConditionXPathExpression = string;
 	}
@@ -540,7 +550,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return stopConditionXPathExpression;
 	}
 
-	@IbisDoc({"8", "when <code>true</code> ignore any exception thrown by executing sender", "false"})
+	@IbisDoc({"8", "When <code>true</code> ignore any exception thrown by executing sender", "false"})
 	public void setIgnoreExceptions(boolean b) {
 		ignoreExceptions = b;
 	}
@@ -549,7 +559,8 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 	
-	@IbisDoc({"9", "controls whether all the results of each iteration will be collected in one result message. if set <code>false</code>, only a small summary is returned", "true"})
+	@IbisDoc({"9", "Controls whether all the results of each iteration will be collected in one result message. If set <code>false</code>, only a small summary is returned. "
+		+ "Setting this attributes to <code>false</code> is often required to enable processing of very large files. N.B. Remember in such a case that setting transactionAttribute to NotSupported might be necessary too", "true"})
 	public void setCollectResults(boolean b) {
 		collectResults = b;
 	}
@@ -557,7 +568,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return collectResults;
 	}
 
-	@IbisDoc({"10", "postprocess each partial result, to remove the xml-declaration, as this is not allowed inside an xml-document", "false"})
+	@IbisDoc({"10", "Postprocess each partial result, to remove the xml-declaration, as this is not allowed inside an xml-document", "false"})
 	public void setRemoveXmlDeclarationInResults(boolean b) {
 		removeXmlDeclarationInResults = b;
 	}
@@ -565,7 +576,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return removeXmlDeclarationInResults;
 	}
 
-	@IbisDoc({"11", "when <code>true</code> the input is added to the result in an input element", "false"})
+	@IbisDoc({"11", "When <code>true</code> the input is added to the result in an input element", "false"})
 	public void setAddInputToResult(boolean b) {
 		addInputToResult = b;
 	}
@@ -573,7 +584,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return addInputToResult;
 	}
 
-	@IbisDoc({"12", "when <code>true</code> duplicate input elements are removed, i.e. they are handled only once", "false"})
+	@IbisDoc({"12", "When <code>true</code> duplicate input elements are removed, i.e. they are handled only once", "false"})
 	public void setRemoveDuplicates(boolean b) {
 		removeDuplicates = b;
 	}
@@ -588,7 +599,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return closeIteratorOnExit;
 	}
 
-	@IbisDoc({"13", "when set <code>true</code>, the calls for all items are done in parallel (a new thread is started for each call). when collectresults set <code>true</code>, this pipe will wait for all calls to finish before results are collected and pipe result is returned", "false"})
+	@IbisDoc({"13", "When set <code>true</code>, the calls for all items are done in parallel (a new thread is started for each call). when collectresults set <code>true</code>, this pipe will wait for all calls to finish before results are collected and pipe result is returned", "false"})
 	public void setParallel(boolean parallel) {
 		this.parallel = parallel;
 	}
@@ -598,7 +609,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 
 	
-	@IbisDoc({"14", "controls multiline behaviour. when set to a value greater than 0, it specifies the number of rows send in a block to the sender.", "0 (one line at a time, no prefix of suffix)"})
+	@IbisDoc({"14", "Controls multiline behaviour. when set to a value greater than 0, it specifies the number of rows send in a block to the sender.", "0 (one line at a time, no prefix of suffix)"})
 	public void setBlockSize(int i) {
 		blockSize = i;
 	}
@@ -606,7 +617,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return blockSize;
 	}
 
-	@IbisDoc({"15", "when <code>blocksize &gt; 0</code>, this string is inserted at the start of the set of lines.", "&lt;block&gt;"})
+	@IbisDoc({"15", "When <code>blocksize &gt; 0</code>, this string is inserted at the start of the set of lines.", "&lt;block&gt;"})
 	public void setBlockPrefix(String string) {
 		blockPrefix = string;
 	}
@@ -614,7 +625,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return blockPrefix;
 	}
 
-	@IbisDoc({"16", "when <code>blocksize &gt; 0</code>, this string is inserted at the end of the set of lines.", "&lt;/block&gt;"})
+	@IbisDoc({"16", "When <code>blocksize &gt; 0</code>, this string is inserted at the end of the set of lines.", "&lt;/block&gt;"})
 	public void setBlockSuffix(String string) {
 		blockSuffix = string;
 	}
@@ -622,7 +633,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return blockSuffix;
 	}
 
-	@IbisDoc({"17", "this string is inserted at the start of each line", ""})
+	@IbisDoc({"17", "This string is inserted at the start of each line", ""})
 	public void setLinePrefix(String string) {
 		linePrefix = string;
 	}
@@ -630,7 +641,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return linePrefix;
 	}
 
-	@IbisDoc({"18", "this string is inserted at the end of each line", ""})
+	@IbisDoc({"18", "This string is inserted at the end of each line", ""})
 	public void setLineSuffix(String string) {
 		lineSuffix = string;
 	}
@@ -638,7 +649,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return lineSuffix;
 	}
 
-	@IbisDoc({"19", "when <code>startposition &gt;= 0</code>, this field contains the start position of the key in the current record (first character is 0); all sequenced lines with the same key are put in one block and send to the sender", "-1"})
+	@IbisDoc({"19", "When <code>startposition &gt;= 0</code>, this field contains the start position of the key in the current record (first character is 0); all sequenced lines with the same key are put in one block and send to the sender", "-1"})
 	public void setStartPosition(int i) {
 		startPosition = i;
 	}
@@ -646,11 +657,12 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return startPosition;
 	}
 
-	@IbisDoc({"20", "when <code>endposition &gt;= startposition</code>, this field contains the end position of the key in the current record", "-1"})
+	@IbisDoc({"20", "When <code>endposition &gt;= startposition</code>, this field contains the end position of the key in the current record", "-1"})
 	public void setEndPosition(int i) {
 		endPosition = i;
 	}
 	public int getEndPosition() {
 		return endPosition;
 	}
+
 }

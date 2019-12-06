@@ -90,6 +90,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 
 			DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(originalClassLoader);
 			directoryClassLoader.setDirectory(tempDir.getPath());
+			directoryClassLoader.setBasePath(".");
 			directoryClassLoader.configure(getAdapter().getConfiguration().getIbisManager().getIbisContext(), "dummy");
 			Thread.currentThread().setContextClassLoader(directoryClassLoader);
 
