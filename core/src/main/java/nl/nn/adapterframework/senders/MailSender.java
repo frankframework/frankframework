@@ -57,7 +57,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *          &lt;recipient type="to"&gt;***@hotmail.com&lt;/recipient&gt;
  *          &lt;recipient type="cc"&gt;***@gmail.com&lt;/recipient&gt;
  *       &lt;/recipients&gt;
- *       &lt;from&gt;***@yahoo.com&lt;/from&gt;
+ *       &lt;from name="*** ***"&gt;***@yahoo.com&lt;/from&gt;
  *       &lt;subject&gt;This is the subject&lt;/subject&gt;
  *       &lt;threadTopic&gt;subject&lt;/threadTopic&gt;
  *       &lt;message&gt;This is the message&lt;/message&gt;
