@@ -166,7 +166,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 
 
 
-	@IbisDoc({"1", "possible values: list, read, delete, move, mkdir, rmdir, write, append, rename", "" })
+	@IbisDoc({"1", "possible values: list, info, read, delete, move, mkdir, rmdir, write, append, rename", "" })
 	public void setAction(String action) {
 		actor.setAction(action);
 	}
@@ -177,6 +177,14 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	@IbisDoc({"2", "folder that is scanned for files when action=list. When not set, the root is scanned", ""})
 	public void setInputFolder(String inputFolder) {
 		actor.setInputFolder(inputFolder);
+	}
+
+	@IbisDoc({"3", "filename to operate on. When not set, the parameter filename is used. When that is not set either, the input is used", ""})
+	public void setFilename(String filename) {
+		actor.setFilename(filename);;
+	}
+	public String getFilename() {
+		return actor.getFilename();
 	}
 
 
