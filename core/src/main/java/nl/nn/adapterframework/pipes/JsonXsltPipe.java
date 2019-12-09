@@ -41,12 +41,11 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Perform an XSLT transformation with a specified stylesheet on a JSON input, yielding JSON, XML or text.
- * JSON input is transformed into map, array, string, integer and boolean elements, in the namespace http://www.w3.org/2013/XSL/json.
+ * JSON input is transformed into XML map, array, string, integer and boolean elements, in the namespace http://www.w3.org/2013/XSL/json.
+ * The XSLT stylesheet or XPathExpression operates on these element.
+ * 
+ * @see  <a href="https://www.xml.com/articles/2017/02/14/why-you-should-be-using-xslt-30/">https://www.xml.com/articles/2017/02/14/why-you-should-be-using-xslt-30/</a>
  *
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be applied to the created transformer</td></tr>
- * </table>
- * </p>
  * @author Gerrit van Brakel
  */
 
