@@ -192,6 +192,9 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	public void setXpathExpression(String string) {
 		sender.setXpathExpression(string);
 	}
+	public String getXpathExpression() {
+		return sender.getXpathExpression();
+	}
 
 	@IbisDoc({"5", "force the transformer generated from the xpath-expression to omit the xml declaration", "true"})
 	public void setOmitXmlDeclaration(boolean b) {
@@ -201,6 +204,9 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	@IbisDoc({"6", "namespace defintions for xpathexpression. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		sender.setNamespaceDefs(namespaceDefs);
+	}
+	public String getNamespaceDefs() {
+		return sender.getNamespaceDefs();
 	}
 
 	@IbisDoc({"7", "either 'text' or 'xml'. only valid for xpathexpression", "text"})
