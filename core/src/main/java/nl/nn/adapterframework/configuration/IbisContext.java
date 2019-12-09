@@ -522,12 +522,8 @@ public class IbisContext extends IbisApplicationContext {
 		return APP_CONSTANTS.getProperty("instance.name", null);
 	}
 
-	public String getApplicationVersion() {
-		return ConfigurationUtils.getVersion(this.getClass().getClassLoader(), "instance.version", "instance.build_id");
-	}
-
-	public String getFrameworkVersion() {
-		return APP_CONSTANTS.getProperty("application.version", null);
+	private String getApplicationVersion() {
+		return ConfigurationUtils.getApplicationVersion();
 	}
 
 	public Date getUptimeDate() {
@@ -544,10 +540,5 @@ public class IbisContext extends IbisApplicationContext {
 
 	public boolean isLoadingConfigs() {
 		return !loadingConfigs.isEmpty();
-	}
-	
-	public static void main(String[] args) {
-		IbisContext ibisContext = new IbisContext();
-		ibisContext.init();
 	}
 }

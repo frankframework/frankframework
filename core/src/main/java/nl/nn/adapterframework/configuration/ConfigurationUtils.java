@@ -136,7 +136,11 @@ public class ConfigurationUtils {
 		return getVersion(classLoader, "configuration.version", "configuration.timestamp");
 	}
 
-	public static String getVersion(ClassLoader classLoader, String versionKey, String timestampKey) {
+	public static String getApplicationVersion() {
+		return getVersion(ConfigurationUtils.class.getClassLoader(), "instance.version", "instance.timestamp");
+	}
+
+	private static String getVersion(ClassLoader classLoader, String versionKey, String timestampKey) {
 		AppConstants constants = AppConstants.getInstance(classLoader);
 		String version = null;
 		if (StringUtils.isNotEmpty(constants.getProperty(versionKey))) {

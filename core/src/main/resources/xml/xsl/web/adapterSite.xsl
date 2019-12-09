@@ -176,14 +176,12 @@
 						<xsl:value-of select="$applicationConstants/properties/property[@name='application.name']"/><xsl:value-of select="' '"/>
 						<xsl:value-of select="$applicationConstants/properties/property[@name='application.version']"/>:<xsl:value-of select="' '"/>
 						<xsl:value-of select="$applicationConstants/properties/property[@name='instance.name']"/><xsl:value-of select="' '"/>
-						<xsl:variable name="release" select="$applicationConstants/properties/property[@name='instance.release']"/>
-						<xsl:if test="string-length($release)&gt;0">
-							<xsl:value-of select="$release"/><xsl:value-of select="' '"/>
+						<xsl:value-of select="$applicationConstants/properties/property[@name='instance.version']"/>
+						<!-- In case the property has not been set, don't put a '_' -->
+						<xsl:variable name="timestamp" select="$applicationConstants/properties/property[@name='instance.timestamp']"/>
+						<xsl:if test="string-length($timestamp)&gt;0">
+							<xsl:value-of select="'_'"/><xsl:value-of select="$timestamp"/>
 						</xsl:if>
-						<xsl:value-of select="$applicationConstants/properties/property[@name='instance.version']"/><xsl:value-of select="' '"/>
-						<xsl:value-of select="$applicationConstants/properties/property[@name='instance.build_id']"/><xsl:value-of select="', '"/>
-						buildscript <xsl:value-of select="$applicationConstants/properties/property[@name='build.xml.version']"/><xsl:value-of select="', '"/>
-						size: <xsl:value-of select="$applicationConstants/properties/property[@name='instance.size']"/>
 					</div>
 					<div>
 						running on <xsl:value-of select="$machineName"/> using <xsl:value-of select="$requestInfo/servletRequest/serverInfo"/>

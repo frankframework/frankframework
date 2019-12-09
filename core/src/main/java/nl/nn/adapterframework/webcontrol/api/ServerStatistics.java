@@ -117,7 +117,7 @@ public class ServerStatistics extends Base {
 
 		returnMap.put("configurations", configurations);
 
-		returnMap.put("version", ibisContext.getFrameworkVersion());
+		returnMap.put("version", AppConstants.getInstance().getProperty("application.version"));
 		returnMap.put("name", ibisContext.getApplicationName());
 		returnMap.put("applicationServer", servletConfig.getServletContext().getServerInfo());
 		returnMap.put("javaVersion", System.getProperty("java.runtime.name") + " (" + System.getProperty("java.runtime.version") + ")");
