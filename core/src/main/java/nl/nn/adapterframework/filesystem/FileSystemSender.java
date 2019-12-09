@@ -181,7 +181,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 
 	@IbisDoc({"3", "filename to operate on. When not set, the parameter filename is used. When that is not set either, the input is used", ""})
 	public void setFilename(String filename) {
-		actor.setFilename(filename);;
+		actor.setFilename(filename);
 	}
 	public String getFilename() {
 		return actor.getFilename();
