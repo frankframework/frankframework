@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
@@ -47,6 +48,8 @@ public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, 
     private final static Logger log = LogUtil.getLogger(IbisManagerEjbBean.class);
     
     SessionContext sessionContext;
+	private ApplicationEventPublisher applicationEventPublisher;
+
     
     public IbisManagerEjbBean() {
         super();
@@ -136,6 +139,16 @@ public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, 
 
 	public List<String> getSortedStartedAdapterNames() {
 		return ibisManager.getSortedStartedAdapterNames();
+	}
+	
+	@Override
+	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+		this.applicationEventPublisher=applicationEventPublisher;
+	}
+
+	@Override
+	public ApplicationEventPublisher getApplicationEventPublisher() {
+		return applicationEventPublisher;
 	}
 
 }

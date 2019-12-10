@@ -33,16 +33,24 @@
 								<div class="col-md-8">
 									<strong class="lh32">Log Intermediary Results</strong>
 								</div>
-								<div class="col-md-4">
-									<input class="form-control m-b" name="maxMessageLength" type="text" ng-model="form.maxMessageLength"/>
+								<div class="col-md-3 col-xs-2">
+									<span class="form-control m-b" style="border: none;"><input icheck type="checkbox" ng-model="form.logIntermediaryResults" /></span>
 								</div>
 							</div>
 							<div class="row">
 								<div class="col-md-9 col-xs-10">
 									<strong class="lh32">Maximum Log-message Length</strong>
 								</div>
+								<div class="col-md-4">
+									<input class="form-control m-b" name="maxMessageLength" type="text" ng-model="form.maxMessageLength"/>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-9 col-xs-10">
+									<strong class="lh32">Enable Ladybug Debugger</strong>
+								</div>
 								<div class="col-md-3 col-xs-2">
-									<span class="form-control m-b" style="border: none;"><input icheck type="checkbox" ng-model="form.logIntermediaryResults" /></span>
+									<span class="form-control m-b" style="border: none;"><input icheck type="checkbox" ng-model="form.enableDebugger" /></span>
 								</div>
 							</div>
 							<div class="row">

@@ -42,6 +42,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.log4j.Appender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.springframework.context.ApplicationEventPublisher;
 
 import edu.emory.mathcs.backport.java.util.Collections;
 import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
@@ -72,6 +73,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
 public class ServerStatistics extends Base {
 	@Context ServletConfig servletConfig;
 	private static final int MAX_MESSAGE_SIZE = AppConstants.getInstance().getInt("adapter.message.max.size", 0);
+
 
 	@GET
 	@PermitAll
@@ -267,6 +269,8 @@ public class ServerStatistics extends Base {
 
 		logSettings.put("logIntermediaryResults", AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true));
 
+		logSettings.put("enableDebugger", AppConstants.getInstance().getBoolean("testtool.enabled", true));
+
 		return Response.status(Response.Status.CREATED).entity(logSettings).build();
 	}
 
@@ -281,6 +285,7 @@ public class ServerStatistics extends Base {
 		Level loglevel = null;
 		Boolean logIntermediaryResults = true;
 		int maxMessageLength = -1;
+		Boolean enableDebugger = null;
 		StringBuilder msg = new StringBuilder();
 
 		Logger rootLogger = LogUtil.getRootLogger();
@@ -302,6 +307,9 @@ public class ServerStatistics extends Base {
 			}
 			else if(key.equalsIgnoreCase("maxMessageLength")) {
 				maxMessageLength = Integer.parseInt(""+value);
+			}
+			else if(key.equalsIgnoreCase("enableDebugger")) {
+				enableDebugger = Boolean.parseBoolean(""+value);
 			}
 		}
 
@@ -330,6 +338,22 @@ public class ServerStatistics extends Base {
 			}
 		}
 
+		if (enableDebugger!=null) {
+			boolean testtoolEnabled="true".equalsIgnoreCase(AppConstants.getInstance().get("testtool.enabled"));
+			if (testtoolEnabled!=enableDebugger) {
+				AppConstants.getInstance().put("testtool.enabled", "" + enableDebugger);
+				DebugStatusChangedEvent event = new DebugStatusChangedEvent(this, enableDebugger);
+				ApplicationEventPublisher applicationEventPublisher = ibisManager.getApplicationEventPublisher();
+				if (applicationEventPublisher!=null) {
+					log.info("setting debugger enabled ["+enableDebugger+"]");
+					applicationEventPublisher.publishEvent(event);
+				} else {
+					log.warn("no applicationEventPublisher, cannot set debugger enabled ["+enableDebugger+"]");
+				}
+			}
+ 		}
+		
+		
 		if(msg.length() > 0) {
 			log.warn(msg.toString());
 			LogUtil.getLogger("SEC").info(msg.toString());
@@ -389,4 +413,5 @@ public class ServerStatistics extends Base {
 
 		return Response.status(status).entity(response).build();
 	}
+
 }

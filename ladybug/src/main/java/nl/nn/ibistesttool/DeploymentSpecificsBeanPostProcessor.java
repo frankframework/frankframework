@@ -30,20 +30,23 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
  */
 public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
 
-	public Object postProcessBeforeInitialization(Object bean, String beanName)
-			throws BeansException {
+	@Override
+	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		if (bean instanceof TestTool) {
 			TestTool testTool = (TestTool)bean;
+			boolean testToolEnabled=true;
 			// TODO appConstants.getResolvedProperty doen?
 			String stage = System.getProperty("otap.stage");
 			if ("ACC".equals(stage) || "PRD".equals(stage)) {
-				testTool.setReportGeneratorEnabled(false);
+				testToolEnabled=false;
 			}
 			AppConstants appConstants = AppConstants.getInstance();
-			String testToolEnabled = appConstants.getProperty("testtool.enabled");
-			if ("TRUE".equalsIgnoreCase(testToolEnabled)) {
-				testTool.setReportGeneratorEnabled(true);
+			if ("TRUE".equalsIgnoreCase(appConstants.getProperty("testtool.enabled"))) {
+				testToolEnabled=true;
 			}
+			appConstants.setProperty("testtool.enabled", testToolEnabled);
+			testTool.setReportGeneratorEnabled(testToolEnabled);
+			IbisDebuggerAdvice.setEnabled(testToolEnabled);
 		}
 		if (bean instanceof nl.nn.testtool.storage.file.Storage) {
 			// TODO appConstants via set methode door spring i.p.v. AppConstants.getInstance()?
@@ -86,8 +89,8 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
 		return bean;
 	}
 
-	public Object postProcessAfterInitialization(Object bean, String beanName)
-			throws BeansException {
+	@Override
+	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 		return bean;
 	}
 

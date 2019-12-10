@@ -898,6 +898,7 @@ angular.module('iaf.beheerconsole')
 		logIntermediaryResults: true,
 		maxMessageLength: -1,
 		errorLevels: ["DEBUG", "INFO", "WARN", "ERROR"],
+		enableDebugger: true,
 	};
 
 	$scope.changeLoglevel = function(name) {
