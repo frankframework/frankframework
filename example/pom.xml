@@ -123,11 +123,7 @@
           <groupId>org.ibissource</groupId>
           <artifactId>ibis-adapterframework-akamai</artifactId>
         </dependency>
-        <dependency>
-          <groupId>org.ibissource</groupId>
-          <artifactId>ibis-adapterframework-ladybug</artifactId>
-        </dependency>
-      </dependencies>
+     </dependencies>
     </profile>
     <profile>
       <id>proprietary</id>
