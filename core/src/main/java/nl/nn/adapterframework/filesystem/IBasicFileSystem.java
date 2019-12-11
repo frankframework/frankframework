@@ -55,6 +55,7 @@ public interface IBasicFileSystem<F> {
 	 * Must pair up with the implementation of {@link #getName(Object)}.
 	 */
 	public F toFile(String filename) throws FileSystemException;
+	public F toFile(String folder, String filename) throws FileSystemException;
 	public boolean exists(F f) throws FileSystemException;
 
 	public boolean folderExists(String folder) throws FileSystemException;

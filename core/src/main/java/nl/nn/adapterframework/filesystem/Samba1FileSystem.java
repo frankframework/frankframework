@@ -98,6 +98,11 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 	}
 
 	@Override
+	public SmbFile toFile(String folder, String filename) throws FileSystemException {
+		return toFile(folder+"/"+filename);
+	}
+
+	@Override
 	public Iterator<SmbFile> listFiles(String folder) throws FileSystemException {
 		try {
 			if (!isListHiddenFiles()) {

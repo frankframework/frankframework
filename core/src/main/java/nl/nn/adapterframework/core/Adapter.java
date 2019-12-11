@@ -908,11 +908,11 @@ public class Adapter implements IAdapter, NamedBean {
 					while (it.hasNext()) {
 						IReceiver receiver = (IReceiver) it.next();
 						while (receiver.getRunState() != RunStateEnum.STOPPED) {
-							log.debug("Adapter [" + getName() + "] waiting for receiver [" + receiver.getName() + "] to stop");
+							log.debug("Adapter [" + getName() + "] waiting for receiver [" + receiver.getName() + "] in state ["+receiver.getRunState()+"] to stop");
 							try {
 								Thread.sleep(1000);
 							} catch (InterruptedException e) {
-								log.warn("Interrupted waiting for start threads to end", e);
+								log.warn("Interrupted waiting for threads of receiver [" + receiver.getName() + "] to end", e);
 							}
 						}
 						log.info("Adapter [" + getName() + "] successfully stopped receiver [" + receiver.getName() + "]");

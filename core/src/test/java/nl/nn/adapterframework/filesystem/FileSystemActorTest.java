@@ -109,7 +109,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorTestConfigureInputDirectoryForListActionDoesNotExist() throws Exception {
-		thrown.expectMessage("inputFolder [xxx] does not exist");
+		thrown.expectMessage("inputFolder [xxx], canonical name [");
+		thrown.expectMessage("does not exist");
 		actor.setAction("list");
 		actor.setInputFolder("xxx");
 		actor.configure(fileSystem,null,owner);
@@ -141,7 +142,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		p.setName("inputFolder");
 		p.setValue("folder2");
 		params.add(p);
-		thrown.expectMessage("inputFolder [folder1] does not exist");
+		thrown.expectMessage("inputFolder [folder1], canonical name [");
+		thrown.expectMessage("does not exist");
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 	}

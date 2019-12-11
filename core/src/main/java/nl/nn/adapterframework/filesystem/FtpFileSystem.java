@@ -73,6 +73,11 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
+	public FTPFile toFile(String folder, String filename) throws FileSystemException {
+		return toFile(folder+"/"+filename);
+	}
+
+	@Override
 	public Iterator<FTPFile> listFiles(String folder) throws FileSystemException {
 		try {
 			return new FTPFilePathIterator(folder, ftpClient.listFiles(folder));
