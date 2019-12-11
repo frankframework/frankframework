@@ -76,7 +76,10 @@ public class ConfigurationUtils {
 	public static String ADDITIONAL_PROPERTIES_FILE_SUFFIX = APP_CONSTANTS.getString("ADDITIONAL.PROPERTIES.FILE.SUFFIX", null);
 	public static final String DEFAULT_CONFIGURATION_FILE = "Configuration.xml";
 
-	public static boolean stubConfiguration(ClassLoader classLoader) {
+	/**
+	 * Checks if a configuration is stubbed or not
+	 */
+	public static boolean isConfigurationStubbed(ClassLoader classLoader) {
 		return AppConstants.getInstance(classLoader).getBoolean(STUB4TESTTOOL_CONFIGURATION_KEY, false);
 	}
 
