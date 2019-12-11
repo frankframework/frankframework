@@ -79,7 +79,7 @@ public class ConfigurationUtils {
 	/**
 	 * Checks if a configuration is stubbed or not
 	 */
-	public static boolean stubConfiguration(ClassLoader classLoader) {
+	public static boolean isConfigurationStubbed(ClassLoader classLoader) {
 		return AppConstants.getInstance(classLoader).getBoolean(STUB4TESTTOOL_CONFIGURATION_KEY, false);
 	}
 

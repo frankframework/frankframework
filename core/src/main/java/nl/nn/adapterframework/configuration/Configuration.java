@@ -149,7 +149,7 @@ public class Configuration {
 	}
 
 	public boolean isStubbed() {
-		return ConfigurationUtils.stubConfiguration(getClassLoader());
+		return ConfigurationUtils.isConfigurationStubbed(getClassLoader());
 	}
 
 	/**

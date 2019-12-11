@@ -537,7 +537,7 @@ public class Parameter implements INamedObject, IWithParameters {
 			} else if ("hostname".equals(name.toLowerCase())) {
 				substitutionValue = Misc.getHostname();
 			} else if ("fixeddate".equals(name.toLowerCase())) {
-				if (!ConfigurationUtils.stubConfiguration(configurationClassLoader)) {
+				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
 				}
 				Date d;
@@ -553,12 +553,12 @@ public class Parameter implements INamedObject, IWithParameters {
 				}
 				substitutionValue = d;
 			} else if ("fixeduid".equals(name.toLowerCase())) {
-				if (!ConfigurationUtils.stubConfiguration(configurationClassLoader)) {
+				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
 				}
 				substitutionValue = FIXEDUID;
 			} else if ("fixedhostname".equals(name.toLowerCase())) {
-				if (!ConfigurationUtils.stubConfiguration(configurationClassLoader)) {
+				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
 				}
 				substitutionValue = FIXEDHOSTNAME;
