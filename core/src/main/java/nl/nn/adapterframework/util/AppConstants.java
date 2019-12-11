@@ -71,7 +71,12 @@ public final class AppConstants extends Properties implements Serializable {
 		//Add all ibis properties
 		putAll(additionalProperties);
 
-		log.info("created new AppConstants instance for classloader ["+classLoader+"]");
+		if(log.isInfoEnabled() && classLoader instanceof IConfigurationClassLoader) {
+			log.info("created new AppConstants instance for classloader ["+classLoader+"]");
+		}
+		else {
+			log.info("created new AppConstants instance for root classloader");
+		}
 	}
 
 	/**
