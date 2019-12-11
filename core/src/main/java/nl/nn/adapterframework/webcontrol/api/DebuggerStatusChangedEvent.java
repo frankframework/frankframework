@@ -17,11 +17,11 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import org.springframework.context.ApplicationEvent;
 
-public class DebugStatusChangedEvent extends ApplicationEvent {
+public class DebuggerStatusChangedEvent extends ApplicationEvent {
 
 	private boolean enabled;
 	
-	public DebugStatusChangedEvent(Object source, boolean enabled) {
+	public DebuggerStatusChangedEvent(Object source, boolean enabled) {
 		super(source);
 		this.enabled=enabled;
 	}
