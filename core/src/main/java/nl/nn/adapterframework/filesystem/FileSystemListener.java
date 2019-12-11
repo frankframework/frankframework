@@ -85,7 +85,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					if (isCreateFolders()) {
 						fileSystem.createFolder(getInputFolder());
 					} else { 
-						throw new ListenerException("The value for inputFolder [" + getInputFolder() + "] is invalid. It is not a folder.");
+						throw new ListenerException("The value for inputFolder [" + getInputFolder() + "], canonical name ["+fileSystem.getCanonicalName(fileSystem.toFile(getInputFolder()))+"], is invalid. It is not a folder.");
 					}
 				}
 			}
@@ -94,7 +94,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					if (isCreateFolders()) {
 						fileSystem.createFolder(getInProcessFolder());
 					} else { 
-						throw new ListenerException("The value for inProcessFolder [" + getInProcessFolder() + "] is invalid. It is not a folder.");
+						throw new ListenerException("The value for inProcessFolder [" + getInProcessFolder() + "], canonical name ["+fileSystem.getCanonicalName(fileSystem.toFile(getInProcessFolder()))+"], is invalid. It is not a folder.");
 					}
 				}
 			} else {
@@ -105,7 +105,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					if (isCreateFolders()) {
 						fileSystem.createFolder(getProcessedFolder());
 					} else { 
-						throw new ListenerException("The value for processedFolder [" + getProcessedFolder() + "] is invalid. It is not a folder.");
+						throw new ListenerException("The value for processedFolder [" + getProcessedFolder() + "], canonical name ["+fileSystem.getCanonicalName(fileSystem.toFile(getProcessedFolder()))+"], is invalid. It is not a folder.");
 					}
 				}
 			}
@@ -114,7 +114,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					if (isCreateFolders()) {
 						fileSystem.createFolder(getErrorFolder());
 					} else { 
-						throw new ListenerException("The value for errorFolder [" + getErrorFolder() + "] is invalid. It is not a folder.");
+						throw new ListenerException("The value for errorFolder [" + getErrorFolder() + "], canonical name ["+fileSystem.getCanonicalName(fileSystem.toFile(getErrorFolder()))+"], is invalid. It is not a folder.");
 					}
 				}
 			}

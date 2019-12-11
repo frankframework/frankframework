@@ -179,7 +179,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public void open() throws FileSystemException {
 		if (StringUtils.isNotEmpty(getInputFolder())) {
 			if (!fileSystem.folderExists(getInputFolder())) {
-				throw new FileSystemException("inputFolder ["+getInputFolder()+"] does not exist");
+				throw new FileNotFoundException("inputFolder ["+getInputFolder()+"], canonical name ["+fileSystem.getCanonicalName(fileSystem.toFile(getInputFolder()))+"], does not exist");
 			}
 		}
 	}
@@ -229,7 +229,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else if (action.equalsIgnoreCase(ACTION_INFO)) {
 				F file=getFile(input, pvl);
 				if (!fileSystem.exists(file)) {
-					throw new FileNotFoundException("file ["+fileSystem.getName(file)+"] does not exist");
+					throw new FileNotFoundException("file ["+fileSystem.getName(file)+"], canonical name ["+fileSystem.getCanonicalName(file)+"], does not exist");
 				}
 				return getFileAsXmlBuilder(file, "file").toXML();
 			} else if (action.equalsIgnoreCase(ACTION_READ1)) {

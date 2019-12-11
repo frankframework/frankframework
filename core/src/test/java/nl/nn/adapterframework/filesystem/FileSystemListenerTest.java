@@ -72,7 +72,8 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		String folder=fileAndFolderPrefix+"xxx";
 		fileSystemListener.setInputFolder(folder);
 		if (testFullErrorMessages) {
-			thrown.expectMessage("The value for inputFolder ["+folder+"] is invalid. It is not a folder.");
+			thrown.expectMessage("The value for inputFolder ["+folder+"], canonical name [");
+			thrown.expectMessage("It is not a folder.");
 		} else {
 			thrown.expectMessage("["+folder+"] is invalid.");
 		}
@@ -85,7 +86,8 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		String folder=fileAndFolderPrefix+"xxx";
 		fileSystemListener.setInProcessFolder(folder);
 		if (testFullErrorMessages) {
-			thrown.expectMessage("The value for inProcessFolder ["+folder+"] is invalid. It is not a folder.");
+			thrown.expectMessage("The value for inProcessFolder ["+folder+"], canonical name [");
+			thrown.expectMessage("It is not a folder.");
 		} else {
 			thrown.expectMessage("["+folder+"] is invalid.");
 		}
@@ -98,7 +100,8 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		String folder=fileAndFolderPrefix+"xxx";
 		fileSystemListener.setProcessedFolder(folder);
 		if (testFullErrorMessages) {
-			thrown.expectMessage("The value for processedFolder ["+folder+"] is invalid. It is not a folder.");
+			thrown.expectMessage("The value for processedFolder ["+folder+"], canonical name [");
+			thrown.expectMessage("It is not a folder.");
 		} else {
 			thrown.expectMessage("["+folder+"] is invalid.");
 		}

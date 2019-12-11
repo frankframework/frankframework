@@ -173,7 +173,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 
 	@Override
 	public String getCanonicalName(M f) throws FileSystemException {
-		checkOpenAndExists(null,f);
+		//checkOpenAndExists(null,f); // cannot check this anymore, canonical name is now used in error messages
 		return f.getName();
 	}
 
