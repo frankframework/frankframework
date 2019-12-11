@@ -84,7 +84,7 @@ public class ConfigurationUtils {
 		Map<String, Object> parameters = new Hashtable<String, Object>();
 		// Parameter disableValidators has been used to test the impact of
 		// validators on memory usage.
-		parameters.put("disableValidators", AppConstants.getInstance().getBoolean(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, false));
+		parameters.put("disableValidators", AppConstants.getInstance(configuration.getClassLoader()).getBoolean(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, false));
 		return getTweakedConfiguration(configuration, originalConfig, STUB4TESTTOOL_XSLT, parameters);
 	}
 

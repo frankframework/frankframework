@@ -27,6 +27,7 @@ import java.util.Set;
 import javax.xml.validation.ValidatorHandler;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.xml.sax.InputSource;
@@ -34,6 +35,7 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
+import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -59,6 +61,7 @@ public abstract class AbstractXmlValidator {
 	public static final String XML_VALIDATOR_NOT_VALID_MONITOR_EVENT = "Invalid XML: does not comply to XSD";
 	public static final String XML_VALIDATOR_VALID_MONITOR_EVENT = "valid XML";
 
+	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	protected SchemasProvider schemasProvider;
     private boolean throwException = false;
@@ -68,9 +71,9 @@ public abstract class AbstractXmlValidator {
 
 	private boolean validateFile=false;
 	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-	protected boolean warn = AppConstants.getInstance().getBoolean("xmlValidator.warn", true);
+	protected boolean warn = AppConstants.getInstance(configurationClassLoader).getBoolean("xmlValidator.warn", true);
     protected boolean needsInit = true;
-    protected boolean lazyInit = AppConstants.getInstance().getBoolean("xmlValidator.lazyInit", false);
+    protected boolean lazyInit = AppConstants.getInstance(configurationClassLoader).getBoolean("xmlValidator.lazyInit", false);
 
     protected String logPrefix = "";
     protected boolean addNamespaceToSchema = false;
@@ -380,4 +383,11 @@ public abstract class AbstractXmlValidator {
         this.lazyInit = lazyInit;
     }
 
+	/**
+	 * This ClassLoader is set upon creation of the pipe, used to retrieve resources configured by the Ibis application.
+	 * @return returns the ClassLoader created by the {@link ClassLoaderManager ClassLoaderManager}.
+	 */
+	public ClassLoader getConfigurationClassLoader() {
+		return configurationClassLoader;
+	}
 }

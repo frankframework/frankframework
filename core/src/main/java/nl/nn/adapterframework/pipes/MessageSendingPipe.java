@@ -218,7 +218,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	
 	private boolean timeoutPending=false;
 
-	boolean checkMessageLog = AppConstants.getInstance().getBoolean("messageLog.check", false);
+	boolean checkMessageLog = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("messageLog.check", false);
 
 	private PipeProcessor pipeProcessor;
 	private ListenerProcessor listenerProcessor;

@@ -355,8 +355,7 @@ public class JobDef {
 	protected Logger log=LogUtil.getLogger(this);
 	protected Logger heartbeatLog = LogUtil.getLogger("HEARTBEAT");
 
-	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.autoDatabaseClassLoader", false);
+	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = AppConstants.getInstance().getBoolean("configurations.autoDatabaseClassLoader", false);
 
     private String name;
     private String cronExpression;

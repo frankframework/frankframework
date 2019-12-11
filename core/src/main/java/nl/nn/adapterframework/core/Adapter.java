@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.cache.ICacheAdapter;
+import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -85,9 +86,11 @@ import org.springframework.core.task.TaskExecutor;
 public class Adapter implements IAdapter, NamedBean {
 	private Logger log = LogUtil.getLogger(this);
 	protected Logger msgLog = LogUtil.getLogger("MSG");
-	
+
 	public static final String PROCESS_STATE_OK = "OK";
 	public static final String PROCESS_STATE_ERROR = "ERROR";
+
+	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private String name;
 	private Configuration configuration;
@@ -128,7 +131,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private String description;
 	private MessageKeeper messageKeeper; //instantiated in configure()
 	private int messageKeeperSize = 10; //default length
-	private boolean autoStart = AppConstants.getInstance().getBoolean("adapters.autoStart", true);
+	private boolean autoStart = AppConstants.getInstance(configurationClassLoader).getBoolean("adapters.autoStart", true);
 	private int msgLogLevel = MsgLogUtil.getMsgLogLevelByDefault();
 	private boolean msgLogHidden = MsgLogUtil.getMsgLogHiddenByDefault();
 	private boolean recover = false;
@@ -1091,5 +1094,13 @@ public class Adapter implements IAdapter, NamedBean {
 
 	public boolean isReplaceNullMessage() {
 		return replaceNullMessage;
+	}
+
+	/**
+	 * This ClassLoader is set upon creation of the pipe, used to retrieve resources configured by the Ibis application.
+	 * @return returns the ClassLoader created by the {@link ClassLoaderManager ClassLoaderManager}.
+	 */
+	public ClassLoader getConfigurationClassLoader() {
+		return configurationClassLoader;
 	}
 }
