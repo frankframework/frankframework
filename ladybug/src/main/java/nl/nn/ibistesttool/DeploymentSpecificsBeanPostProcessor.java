@@ -20,6 +20,7 @@ import nl.nn.testtool.TestTool;
 import nl.nn.testtool.filter.View;
 import nl.nn.testtool.filter.Views;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.helpers.OptionConverter;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
@@ -35,16 +36,17 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
 		if (bean instanceof TestTool) {
 			TestTool testTool = (TestTool)bean;
 			boolean testToolEnabled=true;
-			// TODO appConstants.getResolvedProperty doen?
-			String stage = System.getProperty("otap.stage");
-			if ("ACC".equals(stage) || "PRD".equals(stage)) {
-				testToolEnabled=false;
-			}
 			AppConstants appConstants = AppConstants.getInstance();
-			if ("TRUE".equalsIgnoreCase(appConstants.getProperty("testtool.enabled"))) {
-				testToolEnabled=true;
+			String testToolEnabledProperty=appConstants.getProperty("testtool.enabled");
+			if (StringUtils.isNotEmpty(testToolEnabledProperty)) {
+				testToolEnabled="true".equalsIgnoreCase(testToolEnabledProperty);
+			} else {
+				String stage = System.getProperty("otap.stage");
+				if ("ACC".equals(stage) || "PRD".equals(stage)) {
+					testToolEnabled=false;
+				}
+				appConstants.setProperty("testtool.enabled", testToolEnabled);
 			}
-			appConstants.setProperty("testtool.enabled", testToolEnabled);
 			testTool.setReportGeneratorEnabled(testToolEnabled);
 			IbisDebuggerAdvice.setEnabled(testToolEnabled);
 		}

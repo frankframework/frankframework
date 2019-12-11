@@ -46,12 +46,12 @@ import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.webcontrol.api.DebugStatusChangedEvent;
+import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 
 /**
  * @author  Jaco de Groot (jaco@dynasol.nl)
  */
-public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>, ApplicationListener<DebugStatusChangedEvent> {
+public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>, ApplicationListener<DebuggerStatusChangedEvent> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private IbisDebugger ibisDebugger;
@@ -362,7 +362,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 	}
 
 	@Override
-	public void onApplicationEvent(DebugStatusChangedEvent event) {
+	public void onApplicationEvent(DebuggerStatusChangedEvent event) {
 		setEnabled(event.isEnabled());
 	}
 

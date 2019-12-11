@@ -342,7 +342,7 @@ public class ServerStatistics extends Base {
 			boolean testtoolEnabled="true".equalsIgnoreCase(AppConstants.getInstance().get("testtool.enabled"));
 			if (testtoolEnabled!=enableDebugger) {
 				AppConstants.getInstance().put("testtool.enabled", "" + enableDebugger);
-				DebugStatusChangedEvent event = new DebugStatusChangedEvent(this, enableDebugger);
+				DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enableDebugger);
 				ApplicationEventPublisher applicationEventPublisher = ibisManager.getApplicationEventPublisher();
 				if (applicationEventPublisher!=null) {
 					log.info("setting debugger enabled ["+enableDebugger+"]");
