@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Parners
+   Copyright 2019 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -56,7 +55,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private boolean delete = false;
 	private boolean overwrite = false;
 	private boolean fileTimeSensitive=false;
-//	private boolean overwrite = false;
 	private String messageType="path";
 
 	private long minStableTime = 1000;
