@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.springframework.context.ApplicationListener;
 
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IExtendedPipe;
@@ -45,14 +46,16 @@ import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 
 /**
  * @author  Jaco de Groot (jaco@dynasol.nl)
  */
-public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object> {
+public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>, ApplicationListener<DebuggerStatusChangedEvent> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private IbisDebugger ibisDebugger;
+	private static boolean enabled=true;
 	
 	private AtomicInteger threadCounter = new AtomicInteger(0);
 	
@@ -61,6 +64,9 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object> 
 	}
 
 	public Object debugPipeLineInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, String correlationId, String message, IPipeLineSession pipeLineSession) throws Throwable {
+		if (!isEnabled()) {
+			return proceedingJoinPoint.proceed();
+		}
 		message = (String)ibisDebugger.pipeLineInput(pipeLine, correlationId, message);
 		TreeSet<String> keys = new TreeSet<String>(pipeLineSession.keySet());
 		Iterator<String> iterator = keys.iterator();
@@ -85,6 +91,9 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object> 
 	}
 
 	public Object debugPipeInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, IPipe pipe, String messageId, Object message, IPipeLineSession pipeLineSession) throws Throwable {
+		if (!isEnabled()) {
+			return proceedingJoinPoint.proceed();
+		}
 		Object preservedObject = message;
 		message = ibisDebugger.pipeInput(pipeLine, pipe, messageId, message);
 		PipeRunResult pipeRunResult = null;
@@ -106,6 +115,9 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object> 
 	}
 
 	public Object debugPipeGetInputFrom(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, IPipe pipe, String messageId, Object message, IPipeLineSession pipeLineSession) throws Throwable {
+		if (!isEnabled()) {
+			return proceedingJoinPoint.proceed();
+		}
 		if (pipe instanceof IExtendedPipe) {
 			IExtendedPipe pe = (IExtendedPipe)pipe;
 			message = debugGetInputFrom(pipeLineSession, messageId, message,
@@ -119,6 +131,9 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object> 
 	}
 
 	public Object debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, String correlationId, String message) throws Throwable {
+		if (!isEnabled()) {
+			return proceedingJoinPoint.proceed();
+		}
 		ISender sender = (ISender)proceedingJoinPoint.getTarget();
 		if (log.isDebugEnabled()) log.debug("debugSenderInputOutputAbort thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] correlationId ["+correlationId+"]");
 		if (!sender.isSynchronous() && sender instanceof JmsSender) {
@@ -132,6 +147,9 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object> 
 	}
 
 	 public Object debugSenderWithParametersInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, String correlationId, String message, ParameterResolutionContext prc) throws Throwable {
+			if (!isEnabled()) {
+				return proceedingJoinPoint.proceed();
+			}
 		ISenderWithParameters sender = (ISenderWithParameters)proceedingJoinPoint.getTarget();
 		if (log.isDebugEnabled()) log.debug("debugSenderWithParametersInputOutputAbort thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] correlationId ["+correlationId+"]");
 		Object preservedObject = message;
@@ -151,11 +169,17 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object> 
 	}
 
 	public Object debugStreamingSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, String correlationId, String message, ParameterResolutionContext parameterResolutionContext, MessageOutputStream target) throws Throwable {
+		if (!isEnabled()) {
+			return proceedingJoinPoint.proceed();
+		}
 		if (log.isDebugEnabled()) log.debug("debugStreamingSenderInputOutputAbort thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] correlationId ["+correlationId+"]");
 		return debugSenderWithParametersInputOutputAbort(proceedingJoinPoint, correlationId, message, parameterResolutionContext);
 	}
 	 
 	public Object debugSenderGetInputFrom(ProceedingJoinPoint proceedingJoinPoint, SenderWrapperBase senderWrapperBase, String correlationId, String message, ParameterResolutionContext parameterResolutionContext) throws Throwable {
+		if (!isEnabled()) {
+			return proceedingJoinPoint.proceed();
+		}
 		message = (String)debugGetInputFrom(parameterResolutionContext.getSession(), correlationId, message, senderWrapperBase.getGetInputFromSessionKey(), senderWrapperBase.getGetInputFromFixedValue(), null);
 		if (ibisDebugger.stubSender(senderWrapperBase, correlationId)) {
 			return null;
@@ -167,6 +191,9 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object> 
 	}
 
 	public Object debugReplyListenerInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, ICorrelatedPullingListener<?> listener, String correlationId, IPipeLineSession pipeLineSession) throws Throwable {
+		if (!isEnabled()) {
+			return proceedingJoinPoint.proceed();
+		}
 		correlationId = ibisDebugger.replyListenerInput(listener, pipeLineSession.getMessageId(), correlationId);
 		String result = null;
 		if (ibisDebugger.stubReplyListener(listener, correlationId)) {
@@ -184,6 +211,9 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object> 
 	}
 
 	public Object debugThreadCreateStartEndAbort(ProceedingJoinPoint proceedingJoinPoint, Runnable runnable) throws Throwable {
+		if (!isEnabled()) {
+			return proceedingJoinPoint.proceed();
+		}
 		if (runnable instanceof ParallelSenderExecutor || runnable instanceof IsolatedServiceExecutor) {
 			Executor executor = new Executor((RequestReplyExecutor)runnable,(ThreadLifeCycleEventListener<Object>)this);
 			Object[] args = proceedingJoinPoint.getArgs();
@@ -196,6 +226,9 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object> 
 
 	@Override
 	public ThreadDebugInfo announceChildThread(Object owner, String correlationId) {
+		if (!isEnabled()) {
+			return null;
+		}
 		ThreadDebugInfo threadInfo = new ThreadDebugInfo();
 		threadInfo.owner = owner;
 		threadInfo.correlationId = correlationId;
@@ -210,6 +243,9 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object> 
 
 	@Override
 	public Object threadCreated(Object handle, Object request) {
+		if (!isEnabled()) {
+			return null;
+		}
 		ThreadDebugInfo ref = (ThreadDebugInfo)handle;
 		if (log.isDebugEnabled()) {
 			String nameClause=ref.owner instanceof INamedObject?" name ["+((INamedObject)ref.owner).getName()+"]":"";
@@ -220,6 +256,9 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object> 
 
 	@Override
 	public Object threadEnded(Object handle, Object result) {
+		if (!isEnabled()) {
+			return null;
+		}
 		ThreadDebugInfo ref = (ThreadDebugInfo)handle;
 		if (log.isDebugEnabled()) {
 			String nameClause=ref.owner instanceof INamedObject?" name ["+((INamedObject)ref.owner).getName()+"]":"";
@@ -230,6 +269,9 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object> 
 
 	@Override
 	public Throwable threadAborted(Object handle, Throwable t) {
+		if (!isEnabled()) {
+			return null;
+		}
 		ThreadDebugInfo ref = (ThreadDebugInfo)handle;
 		if (log.isDebugEnabled()) {
 			String nameClause=ref.owner instanceof INamedObject?" name ["+((INamedObject)ref.owner).getName()+"]":"";
@@ -239,6 +281,9 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object> 
 	}
 	
 	public Object debugParameterResolvedTo(ProceedingJoinPoint proceedingJoinPoint, ParameterValueList alreadyResolvedParameters, ParameterResolutionContext parameterResolutionContext) throws Throwable {
+		if (!isEnabled()) {
+			return proceedingJoinPoint.proceed();
+		}
 		Object result = proceedingJoinPoint.proceed();
 		Parameter parameter = (Parameter)proceedingJoinPoint.getTarget();
 		return ibisDebugger.parameterResolvedTo(parameter, parameterResolutionContext.getSession().getMessageId(), result);
@@ -307,6 +352,18 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object> 
 			}
 		}
 
+	}
+
+	public static void setEnabled(boolean enable) {
+		enabled = enable;
+	}
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	@Override
+	public void onApplicationEvent(DebuggerStatusChangedEvent event) {
+		setEnabled(event.isEnabled());
 	}
 
 }

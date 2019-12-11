@@ -473,7 +473,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	
 	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session, MessageOutputStream target) throws PipeRunException {
-		String originalMessage = input.toString();
+		String originalMessage = input==null?null:input.toString();
 		String result = null;
 		String correlationID = session.getMessageId();
 

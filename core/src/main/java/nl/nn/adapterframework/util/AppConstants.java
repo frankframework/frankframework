@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Properties;
@@ -341,14 +342,17 @@ public final class AppConstants extends Properties implements Serializable {
 	 * Add property to global AppConstants
 	 */
 	@Override
-	public synchronized Object setProperty(String key, String value) {
+	public Object setProperty(String key, String value) {
 		return setProperty(key, value, false);
 	}
 
+	public Object setProperty(String key, boolean value) {
+		return setProperty(key, ""+value, false);
+	}
 	/**
 	 * Add property to global (all) AppConstants
 	 */
-	public synchronized void put(String key, String value) {
+	public void put(String key, String value) {
 		setProperty(key, value, false);
 	}
 
