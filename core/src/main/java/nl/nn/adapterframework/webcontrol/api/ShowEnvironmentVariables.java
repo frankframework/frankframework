@@ -32,6 +32,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
 
@@ -61,7 +62,11 @@ public final class ShowEnvironmentVariables extends Base {
 
 		Map<String, Object> envVars = new HashMap<String, Object>();
 
-		envVars.put("Application Constants", convertPropertiesToMap(AppConstants.getInstance(), propsToHide));
+		Map<String, Object> configVars = new HashMap<String, Object>();
+		for(Configuration config : ibisManager.getConfigurations()) {
+			configVars.put(config.getName(), convertPropertiesToMap(AppConstants.getInstance(config.getClassLoader()), propsToHide));
+		}
+		envVars.put("Application Constants", configVars);
 		envVars.put("System Properties", convertPropertiesToMap(System.getProperties(), propsToHide));
 
 		try {

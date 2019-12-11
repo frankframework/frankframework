@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2016-2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -83,11 +83,14 @@ public class ServerStatistics extends Base {
 
 		initBase(servletConfig);
 
+		AppConstants appConstants = AppConstants.getInstance();
+
 		for (Configuration configuration : ibisManager.getConfigurations()) {
-			Map<String, String> cfg = new HashMap<String, String>();
+			Map<String, Object> cfg = new HashMap<String, Object>();
 			cfg.put("name", configuration.getName());
 			cfg.put("version", configuration.getVersion());
 			cfg.put("type", configuration.getClassLoaderType());
+			cfg.put("stubbed", configuration.isStubbed());
 
 			if(configuration.getConfigurationException() != null)
 				cfg.put("exception", configuration.getConfigurationException().getMessage());
@@ -117,8 +120,18 @@ public class ServerStatistics extends Base {
 
 		returnMap.put("configurations", configurations);
 
-		returnMap.put("version", AppConstants.getInstance().getProperty("application.version"));
+		returnMap.put("version", appConstants.getProperty("application.version"));
 		returnMap.put("name", ibisContext.getApplicationName());
+
+		String otapStage = appConstants.getProperty("otap.stage");
+		if(!otapStage.equalsIgnoreCase("xxx")) {
+			returnMap.put("otap.stage", otapStage);
+		}
+		String otapSide = appConstants.getProperty("otap.side");
+		if(!otapSide.equalsIgnoreCase("xxx")) {
+			returnMap.put("otap.side", otapSide);
+		}
+
 		returnMap.put("applicationServer", servletConfig.getServletContext().getServerInfo());
 		returnMap.put("javaVersion", System.getProperty("java.runtime.name") + " (" + System.getProperty("java.runtime.version") + ")");
 		Map<String, Object> fileSystem = new HashMap<String, Object>(2);
@@ -258,12 +271,7 @@ public class ServerStatistics extends Base {
 
 		List<String> errorLevels = new ArrayList<String>(Arrays.asList("DEBUG", "INFO", "WARN", "ERROR"));
 		logSettings.put("errorLevels", errorLevels);
-
-		for (Iterator<String> iterator = errorLevels.iterator(); iterator.hasNext();) {
-			String level = iterator.next();
-			if(rootLogger.getLevel() == Level.toLevel(level))
-				logSettings.put("loglevel", level);
-		}
+		logSettings.put("loglevel", rootLogger.getLevel().toString());
 
 		logSettings.put("logIntermediaryResults", AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true));
 

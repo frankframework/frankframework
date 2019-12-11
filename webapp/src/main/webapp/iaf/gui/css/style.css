@@ -3656,6 +3656,9 @@ body.body-small .footer.fixed {
   background: none;
   border: none;
 }
+.nav.nav-tabs li:hover {
+  cursor: pointer;
+}
 .nav-tabs > li > a,
 .nav-tabs > li > div {
   color: #A7B1C2;
@@ -3948,7 +3951,6 @@ table.table-mail tr td {
   float: left;
 }
 .ibox-title .label {
-  float: left;
   margin-left: 4px;
 }
 .ibox-tools {

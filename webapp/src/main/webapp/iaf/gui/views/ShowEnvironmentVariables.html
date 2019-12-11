@@ -59,9 +59,16 @@
 	</div>
 
 	<div class="row">
+		<div class="col-lg-12 tabs-container">
+			<ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
+				<li ng-class="{active : selectedConfiguration == configuration.name}" ng-repeat="configuration in configurations">
+					<a ng-click="changeConfiguration(configuration.name)">{{configuration.name}}</a>
+				</li>
+			</ul> 
+		</div>
 		<div class="col-lg-12">
 			<div class="ibox float-e-margins">
-				<div class="ibox-title">
+				<div class="ibox-title summary">
 					<h4>Environment Variables</h4>
 				</div>
 				<div class="ibox-content">
@@ -74,8 +81,8 @@
 							</span>
 						</div>
 					</div>
-					<div ng-repeat="(name, propertyList) in variables track by $index">
-						<h2>{{name}} <small class="m-l-sm">&nbsp;({{filteredVariables.length}})</small></h2>
+					<div>
+						<h2>Application Constants <small class="m-l-sm">&nbsp;({{filteredConfigVariables.length}})</small></h2>
 						<table class="table">
 							<thead>
 								<tr>
@@ -84,11 +91,51 @@
 								</tr>
 							</thead>
 							<tbody>
-								<tr ng-repeat="vari in filteredVariables = (propertyList | variablesFilter : searchFilter) | orderBy:'key'">
+								<tr ng-repeat="vari in filteredConfigVariables = (configProperties | variablesFilter : searchFilter) | orderBy:'key'">
 									<td class="col-lg-3">{{vari.key}}</td>
 									<td class="col-lg-9">{{vari.val}}</td>
 								</tr>
-								<tr ng-if="filteredVariables.length == 0">
+								<tr ng-if="filteredConfigVariables.length == 0">
+									<td colspan="2">No variables found matching '{{searchFilter}}'</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div>
+						<h2>Environment Variables <small class="m-l-sm">&nbsp;({{filteredEnvVariables.length}})</small></h2>
+						<table class="table">
+							<thead>
+								<tr>
+									<td><strong>Property</strong></td>
+									<td><strong>Value</strong></td>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="vari in filteredEnvVariables = (environmentProperties | variablesFilter : searchFilter) | orderBy:'key'">
+									<td class="col-lg-3">{{vari.key}}</td>
+									<td class="col-lg-9">{{vari.val}}</td>
+								</tr>
+								<tr ng-if="filteredEnvVariables.length == 0">
+									<td colspan="2">No variables found matching '{{searchFilter}}'</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div>
+						<h2>System Properties <small class="m-l-sm">&nbsp;({{filteredSysVariables.length}})</small></h2>
+						<table class="table">
+							<thead>
+								<tr>
+									<td><strong>Property</strong></td>
+									<td><strong>Value</strong></td>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="vari in filteredSysVariables = (systemProperties | variablesFilter : searchFilter) | orderBy:'key'">
+									<td class="col-lg-3">{{vari.key}}</td>
+									<td class="col-lg-9">{{vari.val}}</td>
+								</tr>
+								<tr ng-if="filteredSysVariables.length == 0">
 									<td colspan="2">No variables found matching '{{searchFilter}}'</td>
 								</tr>
 							</tbody>

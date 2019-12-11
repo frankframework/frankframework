@@ -34,11 +34,24 @@ angular.module('iaf.beheerconsole')
 
 				angular.element(".iaf-info").html("IAF " + data.version + ": " + data.name );
 
-				$scope.configurations = data.configurations;
-				for(var config in $scope.configurations) {
-					if($scope.configurations[config].type == "DatabaseClassLoader") {
+				$rootScope.otapStage = data["otap.stage"];
+				$rootScope.otapSide = data["otap.side"];
+
+				if($rootScope.otapStage == "LOC") {
+					Debug.setLevel(3);
+				}
+
+				$scope.configurations = new Array();
+				for(var i in data.configurations) {
+					var config = data.configurations[i];
+					if(!config.name.startsWith("IAF_"))
+						$scope.configurations.unshift(config);
+					else
+						$scope.configurations.push(config);
+
+					//Check if any of the configs is a DatabaseClassLoader, if so, enable extra menu items
+					if(config.type == "DatabaseClassLoader") {
 						$scope.config_database = true;
-						break;
 					}
 				}
 
@@ -59,22 +72,22 @@ angular.module('iaf.beheerconsole')
 			appConstants.init = 1;
 			Api.Get("environmentvariables", function(data) {
 				if(data["Application Constants"]) {
+					for (var configName in data["Application Constants"]) {
+						var configConstants = data["Application Constants"][configName];
+
+						var idleTime = (parseInt(configConstants["console.idle.time"]) > 0) ? parseInt(configConstants["console.idle.time"]) : false;
+						if(idleTime > 0) {
+							var idleTimeout = (parseInt(configConstants["console.idle.timeout"]) > 0) ? parseInt(configConstants["console.idle.timeout"]) : false;
+							Idle.setIdle(idleTime);
+							Idle.setTimeout(idleTimeout);
+						}
+						else {
+							Idle.unwatch();
+						}
+						$scope.databaseSchedulesEnabled = (configConstants["loadDatabaseSchedules.active"] === 'true');
+						break; //Just get the first constants and populate AppConstants from there, this shouldn't give any issues!
+					}
 					appConstants = $.extend(appConstants, data["Application Constants"]);
-					$rootScope.otapStage = appConstants["otap.stage"];
-					Hooks.call("appConstants", appConstants);
-					var idleTime = (parseInt(appConstants["console.idle.time"]) > 0) ? parseInt(appConstants["console.idle.time"]) : false;
-					if(idleTime > 0) {
-						var idleTimeout = (parseInt(appConstants["console.idle.timeout"]) > 0) ? parseInt(appConstants["console.idle.timeout"]) : false;
-						Idle.setIdle(idleTime);
-						Idle.setTimeout(idleTimeout);
-					}
-					else {
-						Idle.unwatch();
-					}
-					if(appConstants["otap.stage"] == "LOC") {
-						Debug.setLevel(3);
-					}
-					$scope.databaseSchedulesEnabled = (appConstants["loadDatabaseSchedules.active"] === 'true');
 				}
 			});
 		}
@@ -590,6 +603,15 @@ angular.module('iaf.beheerconsole')
 		window.open(url);
 	};
 
+	$scope.isConfigStubbed = {};
+	$scope.check4StubbedConfigs = function() {
+		for(var i in $scope.configurations) {
+			var config = $scope.configurations[i];
+			$scope.isConfigStubbed[config.name] = config.stubbed;
+		}
+	};
+	$scope.$watch('configurations', $scope.check4StubbedConfigs);
+
 	$scope.changeConfiguration = function(name) {
 		$scope.selectedConfiguration = name;
 		$scope.updateAdapterSummary(name);
@@ -874,21 +896,40 @@ angular.module('iaf.beheerconsole')
 	$scope.variables = {};
 	$scope.searchFilter = "";
 
+	$scope.selectedConfiguration = null;
+	$scope.changeConfiguration = function(name) {
+		$scope.selectedConfiguration = name;
+		$scope.configProperties = $scope.appConstants[name];
+	};
+
+	$scope.configProperties = [];
+	$scope.environmentProperties = [];
+	$scope.systemProperties = [];
+	$scope.appConstants = [];
 	Api.Get("environmentvariables", function(data) {
-		for(propertyListType in data) {
-			var propertyList = data[propertyListType];
-			var tmp = new Array();
-
-			for(variableName in propertyList) {
-				tmp.push({
-					key: variableName,
-					val: propertyList[variableName]
-				});
+		var instanceName = null;
+		for(var configName in data["Application Constants"]) {
+			$scope.appConstants[configName] = convertPropertiesToArray(data["Application Constants"][configName]);
+			if(instanceName == null) {
+				instanceName = data["Application Constants"][configName]["instance.name"];
 			}
-
-			$scope.variables[propertyListType] = tmp;
 		}
+		$scope.changeConfiguration(instanceName);
+		$scope.environmentProperties = convertPropertiesToArray(data["Environment Variables"]);
+		$scope.systemProperties = convertPropertiesToArray(data["System Properties"]);
 	});
+
+	function convertPropertiesToArray(propertyList) {
+		var tmp = new Array();
+		for(var variableName in propertyList) {
+			tmp.push({
+				key: variableName,
+				val: propertyList[variableName]
+			});
+		}
+		return tmp;
+	}
+
 	Api.Get("server/log", function(data) {
 		$scope.form = data;
 	});

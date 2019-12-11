@@ -148,6 +148,10 @@ public class Configuration {
 		return autoStart;
 	}
 
+	public boolean isStubbed() {
+		return ConfigurationUtils.stubConfiguration(getClassLoader());
+	}
+
 	/**
 	 * Get a registered adapter by its name through {@link AdapterService#getAdapter(String)}
 	 * @param name the adapter to retrieve
