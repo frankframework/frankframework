@@ -83,6 +83,20 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
+	public M toFile(String folderName, String filename) throws FileSystemException {
+		checkOpen();
+		MockFolder destFolder= folderName==null?this:getFolders().get(folderName);
+		if (destFolder==null) {
+			throw new FileSystemException("folder ["+folderName+"] does not exist");
+		}
+		M result = (M)destFolder.getFiles().get(filename);
+		if (result!=null) {
+			return result;
+		}
+		return (M)new MockFile(filename,destFolder);
+	}
+
+	@Override
 	public Iterator<M> listFiles(String folderName) throws FileSystemException {
 		checkOpen();
 		MockFolder folder=folderName==null?this:getFolders().get(folderName);

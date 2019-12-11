@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -53,6 +54,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	private boolean createFolders=false;
 	private boolean delete = false;
+	private boolean overwrite = false;
 	private boolean fileTimeSensitive=false;
 //	private boolean overwrite = false;
 	private String messageType="path";
@@ -76,51 +78,40 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	@Override
 	public void open() throws ListenerException {
-		FS fileSystem = getFileSystem();
 		try {
 			getFileSystem().open();
 			// folders can only be checked at 'open()', because the checks need an opened file system.
-			if (StringUtils.isNotEmpty(getInputFolder())) {
-				if (!fileSystem.folderExists(getInputFolder())) {
-					if (isCreateFolders()) {
-						fileSystem.createFolder(getInputFolder());
-					} else { 
-						throw new ListenerException("The value for inputFolder [" + getInputFolder() + "], canonical name ["+fileSystem.getCanonicalName(fileSystem.toFile(getInputFolder()))+"], is invalid. It is not a folder.");
-					}
-				}
-			}
-			if (StringUtils.isNotEmpty(getInProcessFolder())) {
-				if (!fileSystem.folderExists(getInProcessFolder())) {
-					if (isCreateFolders()) {
-						fileSystem.createFolder(getInProcessFolder());
-					} else { 
-						throw new ListenerException("The value for inProcessFolder [" + getInProcessFolder() + "], canonical name ["+fileSystem.getCanonicalName(fileSystem.toFile(getInProcessFolder()))+"], is invalid. It is not a folder.");
-					}
-				}
-			} else {
+			checkForExistenceOfFolder("inputFolder", getInputFolder());
+			if (!checkForExistenceOfFolder("inProcessFolder", getInProcessFolder())) {
 				ConfigurationWarnings.add(this, log, "attribute 'inProcessFolder' has not been set. This listener can only run in a single thread");			
 			}
-			if (StringUtils.isNotEmpty(getProcessedFolder())) {
-				if (!fileSystem.folderExists(getProcessedFolder())) {
-					if (isCreateFolders()) {
-						fileSystem.createFolder(getProcessedFolder());
-					} else { 
-						throw new ListenerException("The value for processedFolder [" + getProcessedFolder() + "], canonical name ["+fileSystem.getCanonicalName(fileSystem.toFile(getProcessedFolder()))+"], is invalid. It is not a folder.");
-					}
-				}
-			}
-			if (StringUtils.isNotEmpty(getErrorFolder())) {
-				if (!fileSystem.folderExists(getErrorFolder())) {
-					if (isCreateFolders()) {
-						fileSystem.createFolder(getErrorFolder());
-					} else { 
-						throw new ListenerException("The value for errorFolder [" + getErrorFolder() + "], canonical name ["+fileSystem.getCanonicalName(fileSystem.toFile(getErrorFolder()))+"], is invalid. It is not a folder.");
-					}
-				}
-			}
+			checkForExistenceOfFolder("processedFolder", getProcessedFolder());
+			checkForExistenceOfFolder("errorFolder",getErrorFolder());
 		} catch (FileSystemException e) {
 			throw new ListenerException("Cannot open fileSystem",e);
 		}
+	}
+	
+	protected boolean checkForExistenceOfFolder(String attributeName, String folderName) throws ListenerException, FileSystemException {
+		FS fileSystem = getFileSystem();
+		if (StringUtils.isNotEmpty(folderName)) {
+			if (fileSystem.folderExists(folderName)) {
+				return true;
+			}
+			if (isCreateFolders()) {
+				fileSystem.createFolder(folderName);
+				return true;
+			} else { 
+				String canonicalNameClause;
+				try {
+					canonicalNameClause=", canonical name ["+fileSystem.getCanonicalName(fileSystem.toFile(folderName))+"],";
+				} catch (FileSystemException e) {
+					canonicalNameClause=", (no canonical name: "+e.getMessage()+"),";
+				}
+				throw new ListenerException("The value for " +attributeName + " [" + folderName + "]"+canonicalNameClause+" is invalid. It is not a folder.");
+			}
+		}
+		return false;
 	}
 	
 	@Override
@@ -176,7 +167,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					}
 				}
 				if (StringUtils.isNotEmpty(getInProcessFolder())) {
-					F inprocessFile = moveFileToInProcess(file, getInProcessFolder());
+					F inprocessFile = moveFile(file, getInProcessFolder());
 					return inprocessFile;
 				} 
 				return file;
@@ -194,11 +185,18 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	 * @return String with the name of the (renamed and moved) file
 	 * 
 	 */
-	protected F moveFileToInProcess(F file, String destinationFolder) throws ListenerException {
+	protected F moveFile(F file, String destinationFolder) throws ListenerException {
 		FS fileSystem=getFileSystem();
 
 		String filename=null;
 		try {
+			if (isOverwrite()) {
+				F destinationFile = fileSystem.toFile(destinationFolder, fileSystem.getName(file));
+				if (fileSystem.exists(destinationFile)) {
+					log.debug("removing current destination file ["+fileSystem.getCanonicalName(destinationFile)+"]");
+					fileSystem.deleteFile(destinationFile);
+				}
+			}
 			filename=fileSystem.getName(file);
 			F newFile = fileSystem.moveFile(file, destinationFolder, isCreateFolders());
 			if (newFile == null) {
@@ -217,7 +215,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		try {
 			if (!PipeLineExit.EXIT_STATE_SUCCESS.equals(processResult.getState())) {
 				if (StringUtils.isNotEmpty(getErrorFolder())) {
-					fileSystem.moveFile(rawMessage, getErrorFolder(), isCreateFolders());
+					moveFile(rawMessage, getErrorFolder());
 					return;
 				}
 			}
@@ -226,7 +224,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				return;
 			}
 			if (StringUtils.isNotEmpty(getProcessedFolder())) {
-				fileSystem.moveFile(rawMessage, getProcessedFolder(), isCreateFolders());
+				moveFile(rawMessage, getProcessedFolder());
 			}
 		} catch (FileSystemException e) {
 			throw new ListenerException("Could not move or delete file ["+fileSystem.getName(rawMessage)+"]",e);
@@ -262,16 +260,9 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		}
 	}
 
-	/**
-	 * Returns the name of the file in process (the {@link #moveFileToInProcess(Object file, String destination) archived} file) concatenated with the
-	 * record number. As the {@link #moveFileToInProcess(Object file, String destination) archivedFile} method always renames to a 
-	 * unique file, the combination of this filename and the recordnumber is unique, enabling tracing in case of errors
-	 * in the processing of the file.
-	 * Override this method for your specific needs! 
-	 */
 	@Override
 	public String getIdFromRawMessage(F rawMessage, Map<String, Object> threadContext) throws ListenerException {
-	    String filename=null;
+		String filename=null;
 		try {
 			FS fileSystem = getFileSystem();
 			F file = rawMessage;
@@ -409,16 +400,16 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 //		return numberOfBackups;
 //	}
 
-//	@IbisDoc({"when set <code>true</code>, the destination file will be deleted if it already exists", "false"})
-//	public void setOverwrite(boolean overwrite) {
-//		this.overwrite = overwrite;
-//	}
-//	public boolean isOverwrite() {
-//		return overwrite;
-//	}
+	@IbisDoc({"8", "when set <code>true</code>, the destination file will be deleted if it already exists", "false"})
+	public void setOverwrite(boolean overwrite) {
+		this.overwrite = overwrite;
+	}
+	public boolean isOverwrite() {
+		return overwrite;
+	}
 
 
-	@IbisDoc({"8", "when <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before", "false"})
+	@IbisDoc({"9", "when <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before", "false"})
 	public void setFileTimeSensitive(boolean b) {
 		fileTimeSensitive = b;
 	}
@@ -426,7 +417,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return fileTimeSensitive;
 	}
 
-	@IbisDoc({"9", "determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'path', for the full file path, 'contents' for the contents of the file. For any other value, the attributes of the file are searched and used", "path"})
+	@IbisDoc({"10", "determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'path', for the full file path, 'contents' for the contents of the file. For any other value, the attributes of the file are searched and used", "path"})
 	public void setMessageType(String messageType) {
 		this.messageType = messageType;
 	}
@@ -435,7 +426,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 
-	@IbisDoc({"10", "minimal age of file in milliseconds, to avoid receiving a file while it is still being written", "1000 [ms]"})
+	@IbisDoc({"11", "minimal age of file in milliseconds, to avoid receiving a file while it is still being written", "1000 [ms]"})
 	public void setMinStableTime(long minStableTime) {
 		this.minStableTime = minStableTime;
 	}

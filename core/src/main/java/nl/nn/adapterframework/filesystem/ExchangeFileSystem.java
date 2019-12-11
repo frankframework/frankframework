@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.log4j.Logger;
 
 import microsoft.exchange.webservices.data.autodiscover.IAutodiscoverRedirectionUrl;
@@ -247,6 +248,12 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 			throw new FileSystemException("Cannot convert filename ["+filename+"] into an ItemId");
 		}
 	}
+
+	@Override
+	public Item toFile(String folder, String filename) throws FileSystemException {
+		throw new NotImplementedException("Cannot make item for ["+filename+"] file in Exchange folder ["+folder+"]");
+	}
+
 
 	@Override
 	public boolean exists(Item f) throws FileSystemException {
