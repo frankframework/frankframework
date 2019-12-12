@@ -66,6 +66,7 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 			configuration: { value: 'All', squash: true},
 			filter: { value: 'started+stopped+warning', squash: true},
 			search: { value: '', squash: true},
+			adapter: { value: '', squash: true},
 		},
 		//parent: "pages"
 	})

@@ -505,8 +505,27 @@ angular.module('iaf.beheerconsole')
 	};
 })
 
-.controller('StatusCtrl', ['$scope', 'Hooks', 'Api', 'SweetAlert', 'Poller', '$filter', '$state', 'Misc',
-		function($scope, Hooks, Api, SweetAlert, Poller, $filter, $state, Misc) {
+.controller('StatusCtrl', ['$scope', 'Hooks', 'Api', 'SweetAlert', 'Poller', '$filter', '$state', 'Misc', '$anchorScroll', '$location',
+		function($scope, Hooks, Api, SweetAlert, Poller, $filter, $state, Misc, $anchorScroll, $location) {
+
+	var hash = $location.hash();
+	var adapterName = $state.params.adapter;
+	if(adapterName == "" && hash != "") { //If the adapter param hasn't explicitly been set
+		adapterName = hash;
+	} else {
+		$location.hash(adapterName);
+	}
+
+	$scope.showContent = function(adapter) {
+		if(adapter.status == "stopped") {
+			return true;
+		} else if(adapterName != "" && adapter.name == adapterName) {
+			$anchorScroll();
+			return true;
+		} else {
+			return false;
+		}
+	};
 
 	this.filter = {
 		"started": true,
