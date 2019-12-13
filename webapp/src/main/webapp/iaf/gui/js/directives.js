@@ -1,16 +1,19 @@
 angular.module('iaf.beheerconsole')
 
-.directive('pageTitle', ['$rootScope', '$timeout', function($rootScope, $timeout) {
+.directive('pageTitle', ['$rootScope', '$timeout', '$state', function($rootScope, $timeout, $state) {
 	return {
 		link: function(scope, element) {
-			var listener = function(event, toState, toParams, fromState, fromParams) {
-				var title = 'IAF, Ibis AdapterFramework'; // Default title
-				if (toState.data && toState.data.pageTitle) title = 'IAF | ' + toState.data.pageTitle;
+			var listener = function(_, toState) {
+				var title = 'Loading...'; // Default title
+				if (toState.data && toState.data.pageTitle && $rootScope.instanceName) title = $rootScope.otapStage +'-'+$rootScope.instanceName+' | '+toState.data.pageTitle;
 				$timeout(function() {
 					element.text(title);
 				});
 			};
 			$rootScope.$on('$stateChangeStart', listener);
+			$rootScope.$watch('instanceName', function() {
+				listener(null, $state.current);
+			});
 		}
 	};
 }])

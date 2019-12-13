@@ -44,13 +44,10 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 
 	.state('pages', {
 		abstract: true,
-		controller: function($scope, authService, Hooks) {
+		controller: function($scope, authService) {
 			authService.loggedin(); //Check if the user is logged in.
 			$scope.monitoring = false;
 			$scope.config_database = false;
-			Hooks.register("appConstants:once", function(data) {
-				$scope.monitoring = (data["monitoring.enabled"] === 'true');
-			});
 		},
 		templateUrl: "views/common/content.html",
 	})
