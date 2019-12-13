@@ -20,6 +20,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 
 import javax.naming.NamingException;
@@ -295,6 +296,11 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		}
 	}	
 
+	protected void applySimpleParameters(PreparedStatement statement, List<SimpleParameter> simpleParameterList) throws SQLException, JdbcException {
+		for (int i = 0; i < simpleParameterList.size(); i++) {
+			JdbcUtil.applyParameter(statement, simpleParameterList.get(i), i + 1);
+		}
+	}
 
 	/**
 	 * Sets the name of the object.

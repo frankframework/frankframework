@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jdbc.QueryContext;
 
 /**
  * Interface to define DBMS specific SQL implementations.
@@ -92,9 +93,7 @@ public interface IDbmsSupport {
 
 	String getSchema(Connection conn) throws JdbcException;
 	
-	List<String> splitQuery(String query);
-	String convertQuery(Connection conn, String query, String sqlDialectFrom, boolean updateable) throws SQLException, JdbcException;
-	// naming 'updateable' is not very clear, but it's already used. It indicates that 'updateBlob' or 'updateClob' is true.
+	void convertQuery(Connection conn, QueryContext queryContext, String sqlDialectFrom) throws SQLException, JdbcException;
 	
 	boolean isTablePresent(Connection conn, String tableName) throws JdbcException;
 	boolean isTableColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException;

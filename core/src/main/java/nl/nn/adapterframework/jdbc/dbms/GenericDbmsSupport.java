@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jdbc.QueryContext;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -390,24 +391,21 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return (""+value).toUpperCase();
 	}
 
-	@Override
-	public String convertQuery(Connection conn, String query, String sqlDialectFrom, boolean updateable) throws SQLException, JdbcException {
-		if (isQueryConvertable(sqlDialectFrom)) {
+	public void convertQuery(Connection conn, QueryContext queryContext, String sqlDialectFrom) throws SQLException, JdbcException {
+		if (isQueryConversionRequired(sqlDialectFrom)) {
 			warnConvertQuery(sqlDialectFrom);
 		}
-		return query;
 	}
 	
 	protected void warnConvertQuery(String sqlDialectFrom) {
 		log.warn("don't know how to convert queries from [" + sqlDialectFrom + "] to [" + getDbmsName() + "]");
 	}
 
-	protected boolean isQueryConvertable(String sqlDialectFrom) {
+	protected boolean isQueryConversionRequired(String sqlDialectFrom) {
 		return StringUtils.isNotEmpty(sqlDialectFrom) && StringUtils.isNotEmpty(getDbmsName()) && !sqlDialectFrom.equalsIgnoreCase(getDbmsName());
 	}
 
-	@Override
-	public List<String> splitQuery(String query) {
+	protected List<String> splitQuery(String query) {
 		// A query can contain multiple queries separated by a semicolon
 		List<String> splittedQueries = new ArrayList<>();
 		if (!query.contains(";")) {

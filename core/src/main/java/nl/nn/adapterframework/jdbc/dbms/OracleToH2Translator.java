@@ -25,6 +25,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jdbc.QueryContext;
+import nl.nn.adapterframework.parameters.SimpleParameter;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -52,8 +54,8 @@ public class OracleToH2Translator {
 	private static final String SEQUENCE_MAX_VALUE_STRING = "999999999999999999";
 	private static final BigInteger SEQUENCE_MAX_VALUE = new BigInteger(SEQUENCE_MAX_VALUE_STRING);
 
-	public static String convertQuery(Connection connection, String query, boolean updateable) throws JdbcException, SQLException {
-		if (query == null)
+	public static String convertQuery(Connection connection, QueryContext queryContext, boolean canModifyQueryContext) throws JdbcException, SQLException {
+		if (StringUtils.isEmpty(queryContext.getQuery()))
 			return null;
 
 		// query can start with comment (multiple lines) which should not be
@@ -61,7 +63,7 @@ public class OracleToH2Translator {
 		StringBuilder queryComment = new StringBuilder();
 		StringBuilder queryStatement = new StringBuilder();
 		boolean comment = true;
-		String[] lines = query.split("\\r?\\n");
+		String[] lines = queryContext.getQuery().split("\\r?\\n");
 		for (String line : lines) {
 			// ignore empty lines
 			if (line.trim().length() > 0) {
@@ -85,14 +87,14 @@ public class OracleToH2Translator {
 		}
 		// split on whitespaces excepts whitespaces between single quotes
 		String[] split = orgQueryReadyForSplitEOS.split("\\s+(?=([^']*'[^']*')*[^']*$)");
-		String[] newSplit = convertQuery(split);
+		String[] newSplit = convertQuery(split, queryContext, canModifyQueryContext);
 		if (newSplit == null) {
 			log.debug("ignore oracle query [" + queryComment.toString() + originalQuery + "]");
 			return null;
 		}
 		if (compareStringArrays(split, newSplit)) {
 			log.debug("oracle query [" + queryComment.toString() + originalQuery + "] not converted");
-			return query;
+			return queryContext.getQuery();
 		} else {
 			String convertedQuery = getConvertedQueryAsString(newSplit, removedEOS);
 			log.debug("converted oracle query [" + queryComment.toString() + originalQuery + "] to [" + queryComment.toString() + convertedQuery + "]");
@@ -111,10 +113,15 @@ public class OracleToH2Translator {
 		return sb.toString() + (removedEOS ? ";" : "");
 	}
 
-	private static String[] convertQuery(String[] split) {
+	private static String[] convertQuery(String[] split, QueryContext queryContext, boolean canModifyQueryContext) {
 		String[] newSplit;
 		if (isSelectForUpdateQuery(split)) {
-			newSplit = convertQuerySelectForUpdate(split);
+			if (canModifyQueryContext) {
+				newSplit = convertQuerySelectForUpdate(split, queryContext);
+			} else {
+				log.warn("cannot convert oracle 'select for update' query");
+				return split;
+			}
 		} else if (isSelectQuery(split)) {
 			newSplit = convertQuerySelect(split);
 		} else if (isSetDefineOffQuery(split)) {
@@ -210,7 +217,7 @@ public class OracleToH2Translator {
 		return split.length > 3 && "UPDATE".equalsIgnoreCase(split[0]) && "SET".equalsIgnoreCase(split[2]);
 	}
 
-	private static String[] convertQuerySelectForUpdate(String[] split) {
+	private static String[] convertQuerySelectForUpdate(String[] split, QueryContext queryContext) {
 		List<String> newSplit = new ArrayList<>();
 		newSplit.add("UPDATE");
 		newSplit.add(split[3]);
@@ -221,6 +228,11 @@ public class OracleToH2Translator {
 		for (int i = 4; i < split.length - 2; i++) {
 			newSplit.add(split[i]);
 		}
+
+		SimpleParameter simpleParameter = new SimpleParameter("message", "updateBlob".equalsIgnoreCase(queryContext.getQueryType()) ? "string2bytes" : "", queryContext.getMessage());
+		queryContext.addSimpleParameter(0, simpleParameter);
+		queryContext.setQueryType("update");
+
 		return newSplit.toArray(new String[0]);
 	}
 

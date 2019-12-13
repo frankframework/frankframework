@@ -22,7 +22,6 @@ import java.sql.SQLException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * QuerySender that interprets the input message as a query, possibly with attributes.
@@ -56,12 +55,13 @@ public class DirectQuerySender extends JdbcQuerySenderBase {
 		}
 	}
 
-	protected PreparedStatement getStatement(Connection con, String correlationID, String message, boolean updateable) throws SQLException, JdbcException {
-		String qry = message;
+	protected PreparedStatement getStatement(Connection con, String correlationID, QueryContext queryContext) throws SQLException, JdbcException {
+		String qry = queryContext.getMessage();
 		if (lockRows) {
 			qry = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, qry, lockWait);
 		}
-		return prepareQuery(con, qry, updateable);
+		queryContext.setQuery(qry);
+		return prepareQuery(con, queryContext);
 	}
 
 	@IbisDoc({"when set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the select statement (by appending ' for update nowait skip locked' to the end of the query)", "false"})

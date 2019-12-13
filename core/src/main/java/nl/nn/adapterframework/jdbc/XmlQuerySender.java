@@ -245,12 +245,13 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 	}
 
 	@Override
-	protected PreparedStatement getStatement(Connection con, String correlationID, String message, boolean updateable) throws SQLException, JdbcException {
-		String qry = message;
+	protected PreparedStatement getStatement(Connection con, String correlationID, QueryContext queryContext) throws SQLException, JdbcException {
+		String qry = queryContext.getMessage();
 		if (lockRows) {
 			qry = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, qry, lockWait);
 		}
-		return prepareQuery(con, qry, updateable);
+		queryContext.setQuery(qry);
+		return prepareQuery(con, queryContext);
 	}
 
 	@Override
@@ -335,7 +336,8 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			if (order != null) {
 				query = query + " ORDER BY " + order;
 			}
-			PreparedStatement statement = getStatement(connection, correlationID, query, false);
+			QueryContext queryContext = new QueryContext(null, "select", null, query);
+			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
 			return executeSelectQuery(statement,null,null);
@@ -376,7 +378,8 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			if (where != null) {
 				query = query + " WHERE " + where;
 			}
-			PreparedStatement statement = getStatement(connection, correlationID, query, false);
+			QueryContext queryContext = new QueryContext(null, "delete", null, query);
+			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 			statement.setQueryTimeout(getTimeout());
 			return executeOtherQuery(connection, correlationID, statement, query, null, null);
 		} catch (SQLException e) {
@@ -410,7 +413,8 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 
 	private String sql(Connection connection, String correlationID, String query, String type) throws SenderException, JdbcException {
 		try {
-			PreparedStatement statement = getStatement(connection, correlationID, query, false);
+			QueryContext queryContext = new QueryContext(null, "other", null, query);
+			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
 			if (StringUtils.isNotEmpty(type) && type.equalsIgnoreCase("select")) {
@@ -421,7 +425,8 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				StringTokenizer stringTokenizer = new StringTokenizer(query, ";");
 				while (stringTokenizer.hasMoreTokens()) {
 					String q = stringTokenizer.nextToken();
-					statement = getStatement(connection, correlationID, q, false);
+					queryContext = new QueryContext(null, "other", null, q);
+					statement = getStatement(connection, correlationID, queryContext);
 					if (q.trim().toLowerCase().startsWith("select")) {
 						result.append(executeSelectQuery(statement,null,null));
 					} else {
@@ -454,7 +459,8 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 					Column column = (Column) iter.next();
 					if (column.getType().equalsIgnoreCase(TYPE_BLOB) || column.getType().equalsIgnoreCase(TYPE_CLOB)) {
 						query = "SELECT " + column.getName() + " FROM " + tableName + " WHERE ROWID=?" + " FOR UPDATE";
-						PreparedStatement statement = getStatement(connection, correlationID, query, true);
+						QueryContext queryContext = new QueryContext(null, column.getType(), null, query);
+						PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 						statement.setString(1, rowId);
 						statement.setQueryTimeout(getTimeout());
 						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
@@ -466,7 +472,8 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				}
 				return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
 			}
-			PreparedStatement statement = getStatement(connection, correlationID, query, false);
+			QueryContext queryContext = new QueryContext(null, "other", null, query);
+			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 			applyParameters(statement, columns);
 			statement.setQueryTimeout(getTimeout());
 			return executeOtherQuery(connection, correlationID, statement, query, null, null);

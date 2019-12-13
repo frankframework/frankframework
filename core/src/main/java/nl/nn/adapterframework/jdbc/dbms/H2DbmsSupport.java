@@ -17,8 +17,10 @@ package nl.nn.adapterframework.jdbc.dbms;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jdbc.QueryContext;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
@@ -54,13 +56,25 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String convertQuery(Connection conn, String query, String sqlDialectFrom, boolean updateable) throws SQLException, JdbcException {
-		if (isQueryConvertable(sqlDialectFrom)) {
+	public void convertQuery(Connection conn, QueryContext queryContext, String sqlDialectFrom) throws SQLException, JdbcException {
+		if (isQueryConversionRequired(sqlDialectFrom)) {
 			if (OracleDbmsSupport.dbmsName.equalsIgnoreCase(sqlDialectFrom)) {
-				return OracleToH2Translator.convertQuery(conn, query, updateable);
+				List<String> multipleQueries = splitQuery(queryContext.getQuery());
+				StringBuilder sb = new StringBuilder();
+				for (String singleQuery : multipleQueries) {
+					QueryContext singleQueryContext = new QueryContext(singleQuery, queryContext.getQueryType(), queryContext.getSimpleParameterList(), queryContext.getMessage());
+					String convertedQuery = OracleToH2Translator.convertQuery(conn, singleQueryContext, multipleQueries.size() == 1);
+					if (convertedQuery != null) {
+						sb.append(convertedQuery);
+						if (!singleQueryContext.getQueryType().equals(queryContext.getQueryType())) {
+							queryContext.setQueryType(singleQueryContext.getQueryType());
+						}
+					}
+				}
+				queryContext.setQuery(sb.toString());
+			} else {
+				warnConvertQuery(sqlDialectFrom);
 			}
-			warnConvertQuery(sqlDialectFrom);
 		}
-		return query;
 	}
 }

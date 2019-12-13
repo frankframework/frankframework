@@ -40,7 +40,6 @@ import javax.jms.JMSException;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.jdbc.dbms.OracleDbmsSupport;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang.StringUtils;
@@ -53,7 +52,9 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.parameters.SimpleParameter;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -150,43 +151,34 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	 * Obtain a prepared statement to be executed.
 	 * Method-stub to be overridden in descender-classes.
 	 */
-	protected abstract PreparedStatement getStatement(Connection con, String correlationID, String message, boolean updateable) throws JdbcException, SQLException;
+	protected abstract PreparedStatement getStatement(Connection con, String correlationID, QueryContext queryContext) throws JdbcException, SQLException;
 
 	private PreparedStatement prepareQueryWithColunmsReturned(Connection con, String query, String[] columnsReturned) throws SQLException {
 		return con.prepareStatement(query,columnsReturned);
 	}
 
-	protected PreparedStatement prepareQuery(Connection con, String query, boolean updateable) throws SQLException, JdbcException {
-		String convertedQuery = convertQuery(con, query.trim(), updateable);
+	protected PreparedStatement prepareQuery(Connection con, QueryContext queryContext) throws SQLException, JdbcException {
+		convertQuery(con, queryContext);
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix() +"preparing statement for query ["+convertedQuery+"]");
+			log.debug(getLogPrefix() +"preparing statement for query ["+queryContext.getQuery()+"]");
 		}
 		String[] columnsReturned = getColumnsReturnedList();
 		if (columnsReturned!=null) {
-			return prepareQueryWithColunmsReturned(con,convertedQuery,columnsReturned);
+			return prepareQueryWithColunmsReturned(con,queryContext.getQuery(),columnsReturned);
 		}
-		return con.prepareStatement(convertedQuery,ResultSet.TYPE_FORWARD_ONLY,updateable?ResultSet.CONCUR_UPDATABLE:ResultSet.CONCUR_READ_ONLY);
+		boolean updateLob = "updateBlob".equalsIgnoreCase(queryContext.getQueryType()) || "updateClob".equalsIgnoreCase(queryContext.getQueryType());
+		return con.prepareStatement(queryContext.getQuery(),ResultSet.TYPE_FORWARD_ONLY,updateLob?ResultSet.CONCUR_UPDATABLE:ResultSet.CONCUR_READ_ONLY);
 	}
 
-	protected String convertQuery(Connection connection, String query, boolean updateable) throws JdbcException, SQLException {
+	protected void convertQuery(Connection connection, QueryContext queryContext) throws JdbcException, SQLException {
 		if (StringUtils.isNotEmpty(getSqlDialect()) && !getSqlDialect().equalsIgnoreCase(getDbmsSupport().getDbmsName())) {
 			if (log.isDebugEnabled()) {
-				log.debug(getLogPrefix() + "converting query [" + query.trim() + "] from [" + getSqlDialect() + "] to [" + getDbmsSupport().getDbmsName() + "]");
+				log.debug(getLogPrefix() + "converting query [" + queryContext.getQuery().trim() + "] from [" + getSqlDialect() + "] to [" + getDbmsSupport().getDbmsName() + "]");
 			}
-			List<String> multipleQueries = getDbmsSupport().splitQuery(query);
-			StringBuilder sb = new StringBuilder();
-			for (String singleQuery : multipleQueries) {
-				String convertedQuery = getDbmsSupport().convertQuery(connection, singleQuery, getSqlDialect(), updateable);
-				if (convertedQuery != null) {
-					sb.append(convertedQuery);
-				}
-			}
-			return sb.toString();
+			getDbmsSupport().convertQuery(connection, queryContext, getSqlDialect());
 		}
-		return query;
 	}
 
-	
 	protected CallableStatement getCallWithRowIdReturned(Connection con, String correlationID, String message) throws SQLException {
 		String callMessage = "BEGIN " + message + " RETURNING ROWID INTO ?; END;";
 		if (log.isDebugEnabled()) {
@@ -213,31 +205,20 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			newMessage = message;
 		}
 		try {
-			boolean updateBlob="updateBlob".equalsIgnoreCase(getQueryType());
-			boolean updateClob="updateClob".equalsIgnoreCase(getQueryType());
+			List<SimpleParameter> simpleParameterList = null;
+			if (prc != null && newParameterList != null) {
+				simpleParameterList = toSimpleParameterList(prc.getValues(newParameterList));
+			}
+			QueryContext queryContext = new QueryContext(null, getQueryType(), simpleParameterList, newMessage);
 			log.debug(getLogPrefix() + "obtaining prepared statement to execute");
-			statement = getStatement(connection, correlationID, newMessage, updateBlob||updateClob);
+			statement = getStatement(connection, correlationID, queryContext);
 			log.debug(getLogPrefix() + "obtained prepared statement to execute");
 			statement.setQueryTimeout(getTimeout());
-			
-			//TODO: move if-block below to DbmsSupport?
-			if ((updateBlob || updateClob) && OracleDbmsSupport.dbmsName.equalsIgnoreCase(getSqlDialect()) && !OracleDbmsSupport.dbmsName.equalsIgnoreCase(getDbmsSupport().getDbmsName())) {
-				// add inputMessage as first parameter (shifting other parameters)
-				Parameter param = new Parameter();
-				param.setName("inputMessage");
-				if (updateBlob)
-					param.setType("string2bytes");
-				param.configure();
-				newParameterList.add(0, param);
-				// set variables to false so executeOtherQuery() will be executed
-				updateBlob= false;
-				updateClob= false;
+
+			if (simpleParameterList != null) {
+				applySimpleParameters(statement, simpleParameterList);
 			}
-			
-			if (prc != null && newParameterList != null) {
-				applyParameters(statement, prc.getValues(newParameterList));
-			}
-			if ("select".equalsIgnoreCase(getQueryType())) {
+			if ("select".equalsIgnoreCase(queryContext.getQueryType())) {
 				Object blobSessionVar=null;
 				Object clobSessionVar=null;
 				if (prc!=null && StringUtils.isNotEmpty(getBlobSessionKey())) {
@@ -255,22 +236,22 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 					return executeSelectQuery(statement,blobSessionVar,clobSessionVar);
 				}
 			} 
-			if (updateBlob) {
+			if ("updateBlob".equalsIgnoreCase(queryContext.getQueryType())) {
 				if (StringUtils.isEmpty(getBlobSessionKey())) {
-					return executeUpdateBlobQuery(statement,message);
+					return executeUpdateBlobQuery(statement,newMessage);
 				} 
 				return executeUpdateBlobQuery(statement,prc==null?null:prc.getSession().get(getBlobSessionKey()));
 			} 
-			if (updateClob) {
+			if ("updateClob".equalsIgnoreCase(queryContext.getQueryType())) {
 				if (StringUtils.isEmpty(getClobSessionKey())) {
-					return executeUpdateClobQuery(statement,message);
+					return executeUpdateClobQuery(statement,newMessage);
 				} 
 				return executeUpdateClobQuery(statement,prc==null?null:prc.getSession().get(getClobSessionKey()));
 			} 
-			if ("package".equalsIgnoreCase(getQueryType())) {
-				return executePackageQuery(connection, statement, message);
+			if ("package".equalsIgnoreCase(queryContext.getQueryType())) {
+				return executePackageQuery(connection, statement, newMessage);
 			}
-			return executeOtherQuery(connection, correlationID, statement, message, prc, newParameterList);
+			return executeOtherQuery(connection, correlationID, statement, newMessage, prc, newParameterList);
 		} catch (SenderException e) {
 			if (e.getCause() instanceof SQLException) {
 				SQLException sqle = (SQLException) e.getCause();
@@ -307,6 +288,15 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		}
 	}
 
+	protected List<SimpleParameter> toSimpleParameterList(ParameterValueList parameters) {
+		List<SimpleParameter> simpleParameterList = new ArrayList<>();
+		for (int i = 0; i < parameters.size(); i++) {
+			ParameterValue pv = parameters.getParameterValue(i);
+			simpleParameterList.add(new SimpleParameter(pv.getDefinition().getName(), pv.getDefinition().getType(), pv.getValue()));
+		}
+		return simpleParameterList;
+	}
+	
 	private String adjustParameterList(ParameterList parameterList, String message) throws SenderException {
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix() + "Adjusting list of parameters ["	+ parameterListToString(parameterList) + "]");
