@@ -222,6 +222,12 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	}
 
 	@Override
+	public String toFile(String folder, String filename) throws FileSystemException {
+		return toFile(folder+"/"+filename);
+	}
+
+
+	@Override
 	public Iterator<String> listFiles(String folder) throws FileSystemException {
 		return new FilesIterator(folder, diskShare.list(folder));
 	}

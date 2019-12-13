@@ -158,7 +158,7 @@ public class Wsdl {
         }
 		//isMixedValidator = inputValidator.isMixedValidator(outputValidator);
         String fileName = getName();
-        AppConstants appConstants = AppConstants.getInstance();
+        AppConstants appConstants = AppConstants.getInstance(pipeLine.getAdapter().getConfigurationClassLoader());
         String tns = appConstants.getResolvedProperty("wsdl." + getName() + ".targetNamespace");
         if (tns == null) {
             tns = appConstants.getResolvedProperty("wsdl.targetNamespace");

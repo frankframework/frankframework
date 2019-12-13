@@ -19,7 +19,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 
 /**
- * The <code>IParameterizedSender</code> allows Senders to declare that they accept and may use {@link nl.nn.adapterframework.parameters.Parameter parameters} 
+ * The <code>ISenderWithParameters</code> allows Senders to declare that they accept and may use {@link nl.nn.adapterframework.parameters.Parameter parameters} 
  * 
  * @author  Gerrit van Brakel
  */

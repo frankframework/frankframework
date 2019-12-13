@@ -55,19 +55,6 @@ import org.apache.commons.lang.SystemUtils;
  * </tr>
  * </table>
  * </p>
- * <p>
- * <b>Exits:</b>
- * <table border="1">
- * <tr>
- * <th>state</th>
- * <th>condition</th>
- * </tr>
- * <tr>
- * <td>"success"</td>
- * <td>default</td>
- * </tr>
- * </table>
- * </p>
  * 
  * @author Barry Jacobs
  */

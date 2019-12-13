@@ -82,7 +82,18 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 
 	@Override
 	public File toFile(String filename) {
-		return new File(getRoot(), filename);
+		return toFile(null, filename);
+	}
+
+	@Override
+	public File toFile(String folder, String filename) {
+		if (StringUtils.isEmpty(folder)) {
+			return new File(getRoot(), filename);
+		}
+		if (StringUtils.isEmpty(getRoot())) {
+			return new File(folder, filename);
+		}
+		return new File(getRoot()+"/"+folder, filename);
 	}
 
 	@Override

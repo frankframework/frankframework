@@ -46,10 +46,13 @@ import javax.ws.rs.core.SecurityContext;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.scheduler.ConfiguredJob;
 import nl.nn.adapterframework.scheduler.DatabaseJobDef;
 import nl.nn.adapterframework.scheduler.IbisJobDetail;
@@ -161,7 +164,7 @@ public final class ShowScheduler extends Base {
 				Date runningSince = schedulerMetaData.getRunningSince();
 				runningSinceInLong = runningSince.getTime();
 			} catch (Exception e) {
-				log.debug(e);
+				log.debug("unable to determine running since", e);
 			}
 			schedulesMap.put("runningSince", runningSinceInLong);
 			schedulesMap.put("jobStoreClass", schedulerMetaData.getJobStoreClass().getName());
@@ -170,7 +173,7 @@ public final class ShowScheduler extends Base {
 			schedulesMap.put("threadPoolSize", schedulerMetaData.getThreadPoolSize());
 		}
 		catch (SchedulerException se) {
-			log.error(se);
+			log.error("unable to retrieve SchedulerMetaData", se);
 		}
 
 		return schedulesMap;
@@ -256,28 +259,13 @@ public final class ShowScheduler extends Base {
 			triggerDetails.put("fullName", triggerKey.getGroup() + "." + triggerKey.getName());
 			triggerDetails.put("name", triggerKey.getName());
 			triggerDetails.put("calendarName", trigger.getCalendarName());
-			Date date;
 
-			try {
-				date = trigger.getEndTime();
-				triggerDetails.put("endTime", date.getTime());
-			} catch (Exception e) { log.debug(e); };
-			try {
-				date = trigger.getFinalFireTime();
-				triggerDetails.put("finalFireTime", date.getTime());
-			} catch (Exception e) { log.debug(e); };
-			try {
-				date = trigger.getNextFireTime();
-				triggerDetails.put("nextFireTime", date.getTime());
-			} catch (Exception e) { log.debug(e); };
-			try {
-				date = trigger.getPreviousFireTime();
-				triggerDetails.put("previousFireTime", date.getTime());
-			} catch (Exception e) { log.debug(e); };
-			try {
-				date = trigger.getStartTime();
-				triggerDetails.put("startTime", date.getTime());
-			} catch (Exception e) { log.debug(e); };
+			putDateProperty(triggerDetails, "endTime", trigger.getEndTime());
+			putDateProperty(triggerDetails, "finalFireTime", trigger.getFinalFireTime());
+			putDateProperty(triggerDetails, "nextFireTime", trigger.getNextFireTime());
+			putDateProperty(triggerDetails, "previousFireTime", trigger.getPreviousFireTime());
+			putDateProperty(triggerDetails, "startTime", trigger.getStartTime());
+
 			triggerDetails.put("misfireInstruction", trigger.getMisfireInstruction());
 
 			if (trigger instanceof CronTrigger) {
@@ -294,6 +282,14 @@ public final class ShowScheduler extends Base {
 		}
 
 		return jobTriggers;
+	}
+
+	private void putDateProperty(Map<String, Object> map, String propertyName, Date date) {
+		try {
+			map.put(propertyName, date.getTime());
+		} catch (Exception e) {
+			log.debug("error parsing date for property ["+propertyName+"]", e);
+		}
 	}
 
 	private List<Map<String, Object>> getJobData(JobDataMap jobData) throws ApiException {
@@ -389,7 +385,7 @@ public final class ShowScheduler extends Base {
 			}
 	
 		} catch (Exception e) {
-			log.error("",e);
+			log.error("unable to run action ["+action+"]",e);
 		}
 		return Response.status(Response.Status.OK).build();
 	}
@@ -420,7 +416,7 @@ public final class ShowScheduler extends Base {
 		commandIssuedBy += servletConfig.getInitParameter("remoteAddress");
 		commandIssuedBy += servletConfig.getInitParameter("remoteUser");
 
-		log.info("trigger job jobName [" + jobName + "] groupName [" + groupName + "] " + commandIssuedBy);
+		if(log.isInfoEnabled()) log.info("trigger job jobName [" + jobName + "] groupName [" + groupName + "] " + commandIssuedBy);
 		JobKey jobKey = JobKey.jobKey(jobName, groupName);
 
 		String action = ""; //PAUSE,RESUME,TRIGGER
@@ -509,8 +505,20 @@ public final class ShowScheduler extends Base {
 
 		//Make sure the receiver exists!
 		String receiverName = resolveStringFromMap(inputDataMap, "receiver");
-		if(adapter.getReceiverByName(receiverName) == null) {
+		IReceiver receiver = adapter.getReceiverByName(receiverName);
+		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found");
+		}
+		String listenerName = null;
+		if (receiver instanceof ReceiverBase) {
+			ReceiverBase rb = (ReceiverBase) receiver;
+			IListener<?> listener = rb.getListener();
+			if(listener != null) {
+				listenerName = listener.getName();
+			}
+		}
+		if(StringUtils.isEmpty(listenerName)) {
+			throw new ApiException("unable to determine listener for receiver ["+receiverName+"]");
 		}
 
 		String jobGroup = groupName;
@@ -531,7 +539,7 @@ public final class ShowScheduler extends Base {
 		jobdef.setCronExpression(cronExpression);
 		jobdef.setName(name);
 		jobdef.setAdapterName(adapterName);
-		jobdef.setReceiverName(receiverName);
+		jobdef.setReceiverName(listenerName);
 		jobdef.setJobGroup(jobGroup);
 		jobdef.setMessage(message);
 		jobdef.setInterval(interval);
@@ -592,7 +600,7 @@ public final class ShowScheduler extends Base {
 				stmt.setString(1, name);
 				stmt.setString(2, jobGroup);
 				stmt.setString(3, adapterName);
-				stmt.setString(4, receiverName);
+				stmt.setString(4, listenerName);
 				stmt.setString(5, cronExpression);
 				stmt.setInt(6, interval);
 				stmt.setClob(7, new StringReader(message));
@@ -625,7 +633,7 @@ public final class ShowScheduler extends Base {
 		Scheduler scheduler = getScheduler();
 
 		try {
-			log.info("delete job jobName [" + jobName + "] groupName [" + groupName + "] " + commandIssuedBy());
+			if(log.isInfoEnabled()) log.info("delete job jobName [" + jobName + "] groupName [" + groupName + "] " + commandIssuedBy());
 			JobKey jobKey = JobKey.jobKey(jobName, groupName);
 			if(jobKey == null) {
 				throw new ApiException("JobKey not found, unable to remove schedule");

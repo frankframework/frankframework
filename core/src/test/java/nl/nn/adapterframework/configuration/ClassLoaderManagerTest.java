@@ -94,16 +94,16 @@ public class ClassLoaderManagerTest extends Mockito {
 
 		if(type.endsWith("DirectoryClassLoader")) {
 			String directory = getTestClassesLocation()+"ClassLoader/DirectoryClassLoaderRoot/";
-			appConstants.put("configurations."+configurationName+".directory", directory);
+			setLocalProperty("configurations."+configurationName+".directory", directory);
 		}
 
 		if(type.endsWith("JarFileClassLoader")) {
 			URL file = this.getClass().getResource(JAR_FILE);
-			appConstants.put("configurations."+configurationName+".jar", file.getFile());
+			setLocalProperty("configurations."+configurationName+".jar", file.getFile());
 		}
 
 		if(type.endsWith("ServiceClassLoader")) {
-			appConstants.put("configurations."+configurationName+".adapterName", ADAPTER_SERVICE_NAME);
+			setLocalProperty("configurations."+configurationName+".adapterName", ADAPTER_SERVICE_NAME);
 		}
 	}
 
@@ -123,10 +123,12 @@ public class ClassLoaderManagerTest extends Mockito {
 		String configurationsNames = "";
 		for(Object[] o: data()) {
 			configurationsNames += o[1]+",";
-			if(o[0] != null)
-				appConstants.put("configurations."+o[1]+".classLoaderType", o[0]);
+			if(o[0] != null) {
+				String value = (String) o[0];
+				setLocalProperty("configurations."+o[1]+".classLoaderType", value);
+			}
 		}
-		appConstants.put("configurations.names", configurationsNames);
+		setLocalProperty("configurations.names", configurationsNames);
 
 		createAdapter4ServiceClassLoader(ADAPTER_SERVICE_NAME);
 		mockDatabase();
@@ -264,11 +266,11 @@ public class ClassLoaderManagerTest extends Mockito {
 		if(skip) return; //This ClassLoader can't actually retrieve files...
 
 		String testConfiguration = "myNewClassLoader";
-		appConstants.put("configurations."+testConfiguration+".classLoaderType", "DirectoryClassLoader");
-		appConstants.put("configurations."+configurationName+".parentConfig", testConfiguration);
+		setLocalProperty("configurations."+testConfiguration+".classLoaderType", "DirectoryClassLoader");
+		setLocalProperty("configurations."+configurationName+".parentConfig", testConfiguration);
 		String directory = getTestClassesLocation()+"ClassLoader/";
-		appConstants.put("configurations."+testConfiguration+".directory", directory);
-		appConstants.put("configurations.names", appConstants.get("configurations.names") + ","+testConfiguration);
+		setLocalProperty("configurations."+testConfiguration+".directory", directory);
+		setLocalProperty("configurations.names", appConstants.get("configurations.names") + ","+testConfiguration);
 
 		String testFile = "fileOnlyOnLocalClassPath.txt";
 		ClassLoader parentClassloader = getClassLoader(testConfiguration);
@@ -306,5 +308,14 @@ public class ClassLoaderManagerTest extends Mockito {
 		//Make sure the manager returns the same classloader after reloading it
 		ClassLoader config2 = manager.get(configurationName);
 		assertEquals(config1.toString(), config2.toString());
+	}
+
+	/**This method makes sure the property is only set in the local AppConstants instance.
+	 * When you use the default put/setProperty it stores the property in the additionalProperties and
+	 * upon creation of a new AppConstants instance it will set all the previously set properties
+	 */
+	@SuppressWarnings("deprecation")
+	private void setLocalProperty(String key, String value) {
+		appConstants.put((Object) key, (Object) value);
 	}
 }

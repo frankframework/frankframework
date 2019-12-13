@@ -59,6 +59,7 @@ Upcoming
   fileListForcedAfter, outputFilenamePattern, passWithoutDirectory, numberOfBackups, overwrite and random.
 - Remove attribute 'count' from result of iterating pipes like ForEachChildElementPipe, to enable streaming output.
 - The MailSender displayName element no longer exist, please use attribute `name` on the from/to elements instead.
+- jdbc.convertFieldnamesToUppercase has been set to true by default
 
 
 

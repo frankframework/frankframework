@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Properties;
@@ -33,6 +34,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 /**
  * Singleton class that has the constant values for this application. <br/>
  * <p>When an instance is created, it tries to load the properties file specified
@@ -40,7 +42,8 @@ import nl.nn.adapterframework.configuration.IbisContext;
  * <p>If a property exits with the name <code>ADDITIONAL.PROPERTIES.FILE</code>
  * that file is loaded also</p>
 
- * @author Johan Verrips
+ * @author Niels Meijer
+ * @version 2.0
  *
  */
 public final class AppConstants extends Properties implements Serializable {
@@ -48,9 +51,10 @@ public final class AppConstants extends Properties implements Serializable {
 
 	private final static String APP_CONSTANTS_PROPERTIES_FILE = "AppConstants.properties";
 	private final static String ADDITIONAL_PROPERTIES_FILE_KEY = "ADDITIONAL.PROPERTIES.FILE";
+	public static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
+
 	private VariableExpander variableExpander;
-	private static Properties additionalPropertiesFilesSubstVarsProperties = new Properties();
-	private static Properties propertyPlaceholderConfigurerProperties = new Properties();
+	private static Properties additionalProperties = new Properties();
 
 	private static ConcurrentHashMap<ClassLoader, AppConstants> appConstantsMap = new ConcurrentHashMap<ClassLoader, AppConstants>();
 
@@ -58,20 +62,30 @@ public final class AppConstants extends Properties implements Serializable {
 		super();
 
 		load(classLoader, APP_CONSTANTS_PROPERTIES_FILE, true);
-		putAll(propertyPlaceholderConfigurerProperties);
-		if (JdbcUtil.retrieveJdbcPropertiesFromDatabase()!=null) {
-			putAll(JdbcUtil.retrieveJdbcPropertiesFromDatabase());
+
+		//TODO Make sure this to happens only once, and store all the properties in 'additionalProperties' to be loaded for each AppConstants instance
+		Properties databaseProperties = JdbcUtil.retrieveJdbcPropertiesFromDatabase();
+		if (databaseProperties!=null) {
+			putAll(databaseProperties);
 		}
 
-		log.info("created new AppConstants instance for classloader ["+classLoader+"]");
+		//Add all ibis properties
+		putAll(additionalProperties);
+
+		if(log.isInfoEnabled() && classLoader instanceof IConfigurationClassLoader) {
+			log.info("created new AppConstants instance for classloader ["+classLoader+"]");
+		}
+		else {
+			log.info("created new AppConstants instance for root classloader");
+		}
 	}
 
 	/**
-	 * Retrieve an instance of this singleton
+	 * Return the AppConstants root instance
 	 * @return AppConstants instance
 	 */
 	public static AppConstants getInstance() {
-		return getInstance(null);
+		return getInstance(AppConstants.class.getClassLoader());
 	}
 
 	/**
@@ -82,12 +96,13 @@ public final class AppConstants extends Properties implements Serializable {
 	 * the time the class was instantiated should be used.
 	 * 
 	 * @see IbisContext#init()
+	 * @param cl ClassLoader to retrieve AppConstants from
 	 * @return AppConstants instance
 	 */
-	public static AppConstants getInstance(ClassLoader cl) {
+	public static synchronized AppConstants getInstance(final ClassLoader cl) {
 		ClassLoader classLoader = cl;
 		if(cl == null) {
-			classLoader = Thread.currentThread().getContextClassLoader();
+			throw new IllegalStateException("calling AppConstants.getInstance without ClassLoader");
 		}
 
 		AppConstants instance = appConstantsMap.get(classLoader);
@@ -99,10 +114,14 @@ public final class AppConstants extends Properties implements Serializable {
 	}
 
 	public static void removeInstance() {
-		removeInstance(Thread.currentThread().getContextClassLoader());
+		removeInstance(AppConstants.class.getClassLoader());
 	}
 
-	public static void removeInstance(ClassLoader classLoader) {
+	public static void removeInstance(final ClassLoader cl) {
+		ClassLoader classLoader = cl;
+		if(classLoader == null) {
+			throw new IllegalStateException("calling AppConstants.removeInstance without ClassLoader");
+		}
 		AppConstants instance = appConstantsMap.get(classLoader);
 		if (instance != null) {
 			appConstantsMap.remove(classLoader);
@@ -171,23 +190,23 @@ public final class AppConstants extends Properties implements Serializable {
 	}
 
 	/**
-	 * Creates a tokenizer from the values of this key.  As a sepearator the "," is used.
+	 * Creates a tokenizer from the resolved value of this key. As a separator the "," is used.
 	 * Uses the {@link #getResolvedProperty(String)} method.
 	 * Can be used to process lists of values.
 	 */
-	public StringTokenizer getTokenizer(String key) {
-	    return new StringTokenizer(getResolvedProperty(key), ",");
+	public StringTokenizer getTokenizedProperty(String key) {
+		return new StringTokenizer(getResolvedProperty(key), ",");
 	}
 	/**
-	 * Creates a tokenizer from the values of this key.
+	 * Creates a tokenizer from the resolved value of this key. As a separator the "," is used.
 	 * Uses the {@link #getResolvedProperty(String)} method.
 	 * Can be used to process lists of values.
 	 */
-	public StringTokenizer getTokenizer(String key, String defaults) {
+	public StringTokenizer getTokenizedProperty(String key, String defaults) {
 		String list = getResolvedProperty(key);
 		if (list==null)
-		  list = defaults;
-	    return new StringTokenizer(list, ",");
+			list = defaults;
+		return new StringTokenizer(list, ",");
 	}
 
 	/**
@@ -239,6 +258,10 @@ public final class AppConstants extends Properties implements Serializable {
 	}
 
 	private synchronized void load(ClassLoader classLoader, String filename, String suffix, boolean loadAdditionalPropertiesFiles) {
+		if(StringUtils.isEmpty(filename)) {
+			throw new IllegalStateException("file to load properties from cannot be null");
+		}
+
 		StringTokenizer tokenizer = new StringTokenizer(filename, ",");
 		while (tokenizer.hasMoreTokens()) {
 			String theFilename= tokenizer.nextToken().trim();
@@ -249,12 +272,19 @@ public final class AppConstants extends Properties implements Serializable {
 				}
 				List<URL> resources = Collections.list(cl.getResources(theFilename));
 				if(resources.size() == 0) {
-					if(APP_CONSTANTS_PROPERTIES_FILE.equals(theFilename)) {
+					if(APP_CONSTANTS_PROPERTIES_FILE.equals(theFilename)) { //The AppConstants.properties file cannot be found, abort!
 						String msg = APP_CONSTANTS_PROPERTIES_FILE+ " file not found, unable to initalize AppConstants";
 						log.error(msg);
 						throw new MissingResourceException(msg, this.getClass().getSimpleName(), APP_CONSTANTS_PROPERTIES_FILE);
 					}
-					log.debug("cannot find resource ["+theFilename+"] to load additional properties from, ignoring");
+					//An additional file to load properties from cannot be found
+					if(log.isDebugEnabled()) {
+						if(cl instanceof IConfigurationClassLoader) {
+							log.debug("cannot find resource ["+theFilename+"] in classloader ["+cl+"] to load additional properties from, ignoring");
+						} else {
+							log.debug("cannot find resource ["+theFilename+"] in classloader ["+cl.getClass().getSimpleName()+"] to load additional properties from, ignoring");
+						}
+					}
 				}
 
 				//We need to reverse the loading order to make sure the parent files are loaded first
@@ -269,7 +299,6 @@ public final class AppConstants extends Properties implements Serializable {
 				if (loadAdditionalPropertiesFiles) {
 					// Add properties after load(is) to prevent load(is)
 					// from overriding them
-					putAll(additionalPropertiesFilesSubstVarsProperties);
 					String loadFile = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY);
 					String loadFileSuffix = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY + ".SUFFIX");
 					if (StringUtils.isNotEmpty(loadFileSuffix)){
@@ -296,30 +325,58 @@ public final class AppConstants extends Properties implements Serializable {
 	}
 
 	/**
-	 * Add property which can be used to substitute variables in the value of
-	 * the property ADDITIONAL.PROPERTIES.FILE.
+	 * Add property only in the local AppConstants!
+	 * Try to avoid using this method and use {@link #setProperty(String, String)} if you want to set the property globally!
+	 * 
+	 * This method is used by {@link Properties#load(InputStream)} to add all properties found (in a file/stream) 
+	 * to the {@link Hashtable}.
+	 * @Deprecated Use {@link #setProperty(String, String)} instead!
 	 */
-	public void putAdditionalPropertiesFilesSubstVarsProperty(String name, String value) {
-		additionalPropertiesFilesSubstVarsProperties.put(name, value);
+	@Deprecated
+	@Override
+	public synchronized Object put(Object key, Object value) {
+		return super.put(key, value);
 	}
 
 	/**
-	 * Add additional property to AppConstants which is added to Spring by a
-	 * PropertyPlaceholderConfigurer and also needs to to be added to
-	 * AppConstants to keep properties available to Spring and properties in
-	 * AppConstants in sync. AppConstants properties are initially added to
-	 * Spring as PropertiesPropertySource in the createApplicationContext method
-	 * of IbisContext.
+	 * Add property to global AppConstants
 	 */
-	public void putPropertyPlaceholderConfigurerProperty(String name, String value) {
-		getInstance().put(name, value);
-		propertyPlaceholderConfigurerProperties.put(name, value);
+	@Override
+	public Object setProperty(String key, String value) {
+		return setProperty(key, value, false);
 	}
 
+	public Object setProperty(String key, boolean value) {
+		return setProperty(key, ""+value, false);
+	}
+	/**
+	 * Add property to global (all) AppConstants
+	 */
+	public void put(String key, String value) {
+		setProperty(key, value, false);
+	}
+
+	/**
+	 * Add property to local (local=true) or global (local=false) AppConstants
+	 */
+	private synchronized Object setProperty(String key, String value, boolean local) {
+		if(local) {
+			return super.put(key, value);
+		} else {
+			for (java.util.Map.Entry<ClassLoader, AppConstants> mapElement : appConstantsMap.entrySet()) {
+				mapElement.getValue().setProperty(key, value, true);
+			}
+			//Store in a map in case a new AppConstants instance is created after the property has already been set
+			return additionalProperties.put(key, value);
+		}
+	}
+
+	@Deprecated
 	public String toXml() {
 		return toXml(false);
 	}
 
+	@Deprecated
 	public String toXml(boolean resolve) {
 		Enumeration<Object> enumeration = this.keys();
 		XmlBuilder xmlh=new XmlBuilder("applicationConstants");
@@ -410,7 +467,6 @@ public final class AppConstants extends Properties implements Serializable {
 		if (ob == null)return dfault;
 		return Double.parseDouble(ob);
 	}
-
 
 	/*
 	 *	The variableExpander is set from the SpringContext.

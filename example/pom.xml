@@ -78,7 +78,7 @@
             </systemProperty>
             <systemProperty>
               <name>log.dir</name>
-              <value>target</value>
+              <value>./target</value>
             </systemProperty>
             <systemProperty>
               <name>log.level</name>
@@ -123,11 +123,7 @@
           <groupId>org.ibissource</groupId>
           <artifactId>ibis-adapterframework-akamai</artifactId>
         </dependency>
-        <dependency>
-          <groupId>org.ibissource</groupId>
-          <artifactId>ibis-adapterframework-ladybug</artifactId>
-        </dependency>
-      </dependencies>
+     </dependencies>
     </profile>
     <profile>
       <id>proprietary</id>

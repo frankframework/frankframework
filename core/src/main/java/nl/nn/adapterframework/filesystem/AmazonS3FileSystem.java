@@ -128,6 +128,12 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 	}
 
 	@Override
+	public S3Object toFile(String folder, String filename) throws FileSystemException {
+		return toFile(folder+"/"+filename);
+	}
+
+
+	@Override
 	public Iterator<S3Object> listFiles(String folder) throws FileSystemException {
 		List<S3ObjectSummary> summaries = null;
 		String prefix = folder != null ? folder + "/" : "";
