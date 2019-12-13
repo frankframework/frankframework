@@ -30,10 +30,11 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.WildCardFilter;
 
-public class LocalFileSystem implements IWritableFileSystem<File> {
+public class LocalFileSystem implements IWritableFileSystem<File>, HasPhysicalDestination{
 
 	private String root;
 	private String wildcard;
@@ -239,6 +240,11 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(File f) {
 		return null;
+	}
+
+	@Override
+	public String getPhysicalDestinationName() {
+		return "root ["+(getRoot()==null?"":getRoot())+"]";
 	}
 
 

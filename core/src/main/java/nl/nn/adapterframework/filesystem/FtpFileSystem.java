@@ -31,6 +31,7 @@ import org.apache.commons.net.ftp.FTPReply;
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
 import nl.nn.adapterframework.util.LogUtil;
@@ -40,7 +41,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author Daniël Meyer
  *
  */
-public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTPFile> {
+public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTPFile>, HasPhysicalDestination {
 
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -245,6 +246,12 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		attributes.put("link", f.getLink());
 		attributes.put("hardLinkCount", f.getHardLinkCount());
 		return attributes;
+	}
+
+
+	@Override
+	public String getPhysicalDestinationName() {
+		return "remote directory ["+remoteDirectory+"]";
 	}
 
 	public void setRemoteDirectory(String remoteDirectory) {

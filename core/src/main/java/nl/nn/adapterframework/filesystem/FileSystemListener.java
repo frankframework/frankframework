@@ -42,7 +42,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  *
  * @author Gerrit van Brakel
  */
-public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F> {
+public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F>, HasPhysicalDestination {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -131,6 +131,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		// nothing special here
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		String result=getFileSystem() instanceof HasPhysicalDestination?((HasPhysicalDestination)getFileSystem()).getPhysicalDestinationName()+" ":"";
 		result+= "inputFolder [" + (getInputFolder() == null ? "" : getInputFolder()) + "] inProcessFolder [" + (getInProcessFolder() == null ? "" : getInProcessFolder()) +

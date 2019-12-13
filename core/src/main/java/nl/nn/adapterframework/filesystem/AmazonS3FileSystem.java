@@ -55,11 +55,12 @@ import com.amazonaws.services.s3.model.StorageClass;
 import com.amazonaws.services.s3.model.Tier;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
+public class AmazonS3FileSystem implements IWritableFileSystem<S3Object>, HasPhysicalDestination {
 
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -448,6 +449,11 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 	public void fileDoesNotExist(String bucketName, String fileName) throws SenderException {
 		if (!s3Client.doesObjectExist(bucketName, fileName))
 			throw new SenderException(" file with fileName [" + fileName + "] does not exist, please specify the name of an existing file");
+	}
+
+	@Override
+	public String getPhysicalDestinationName() {
+		return "bucket ["+getBucketName()+"]"; 
 	}
 
 	public static List<String> getAvailableRegions() {

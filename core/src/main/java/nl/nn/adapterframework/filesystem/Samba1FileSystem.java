@@ -32,6 +32,7 @@ import jcifs.smb.SmbFileFilter;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
@@ -41,7 +42,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author alisihab
  *
  */
-public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
+public class Samba1FileSystem implements IWritableFileSystem<SmbFile>, HasPhysicalDestination {
 
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -248,6 +249,12 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 			throw new FileSystemException(e);
 		}
 	}
+
+	@Override
+	public String getPhysicalDestinationName() {
+		return "domain ["+getDomain()+"] share ["+getShare()+"]";
+	}
+
 
 	private class SmbFileIterator implements Iterator<SmbFile> {
 

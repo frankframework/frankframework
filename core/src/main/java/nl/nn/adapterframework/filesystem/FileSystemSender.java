@@ -65,7 +65,7 @@ import nl.nn.adapterframework.util.Misc;
  * 
  * @author Gerrit van Brakel
  */
-public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends StreamingSenderBase {
+public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends StreamingSenderBase implements HasPhysicalDestination {
 	
 	private FS fileSystem;
 	private FileSystemActor<F,FS> actor=new FileSystemActor<F,FS>();
@@ -145,6 +145,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	}
 
 
+	@Override
 	public String getPhysicalDestinationName() {
 		if (getFileSystem() instanceof HasPhysicalDestination) {
 			return ((HasPhysicalDestination)getFileSystem()).getPhysicalDestinationName();

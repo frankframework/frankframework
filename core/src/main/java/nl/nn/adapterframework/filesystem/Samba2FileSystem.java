@@ -64,6 +64,7 @@ import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
@@ -73,7 +74,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author alisihab
  *
  */
-public class Samba2FileSystem implements IWritableFileSystem<String> {
+public class Samba2FileSystem implements IWritableFileSystem<String>, HasPhysicalDestination {
 
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -447,6 +448,13 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 		}
 	}
 
+	@Override
+	public String getPhysicalDestinationName() {
+		return "domain ["+getDomain()+"] share ["+getShare()+"]";
+	}
+
+
+	
 	public String getShare() {
 		return shareName;
 	}
