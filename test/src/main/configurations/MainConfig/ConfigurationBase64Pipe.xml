@@ -1,16 +1,16 @@
 <ibis>
-	<adapter name="Base64Pipe" description="Test the functioning of the Base64Pipe">
+	<adapter name="Base64PipeEncode" description="Test the functioning of the Base64Pipe encode">
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="Base64Pipe">
+				  name="Base64PipeEncode">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4test-Base64Pipe" />
+					  serviceName="Base64Pipe-EncodeListener" />
 		</receiver>
 		<pipeline firstPipe="Read">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="Read" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="read" outputType="bytes">
+				actions="read" outputType="bytes" directory="${testdata.dir}/b64">
 				<forward name="success" path="Encode" />
 			</pipe>
 			<pipe name="Encode" className="nl.nn.adapterframework.pipes.Base64Pipe"
@@ -20,13 +20,31 @@
 			<pipe name="Transform" className="nl.nn.adapterframework.pipes.XsltPipe"
 				styleSheetName="Base64Pipe/Transform.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="base64" sessionKey="base64" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	
+	<adapter name="Base64PipeDecode" description="Test the functioning of the Base64Pipe decode">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+				  name="Base64PipeDecode">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+					  serviceName="Base64Pipe-DecodeListener" />
+		</receiver>
+		<pipeline firstPipe="SaveB64">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="SaveB64" 
+				className="nl.nn.adapterframework.pipes.EchoPipe"
+				storeResultInSessionKey="base64">
 				<forward name="success" path="Send" />
 			</pipe>
 			<pipe name="Send"
 				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
-				storeResultInSessionKey="fileOut">
+				storeResultInSessionKey="filename">
 				<sender className="nl.nn.adapterframework.senders.IbisJavaSender"
-					serviceName="testtool-base64pipe" />
+					serviceName="B64-Util" />
 				<forward name="success" path="Decode" />
 			</pipe>
 			<pipe name="Decode" className="nl.nn.adapterframework.pipes.Base64Pipe"
@@ -34,13 +52,15 @@
 				<forward name="success" path="Write" />
 			</pipe>
 			<pipe name="Write" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="write" fileNameSessionKey="fileOut">
-				<forward name="success" path="Info" />
+				actions="write" fileNameSessionKey="filename" directory="${testdata.dir}/b64">
+				<forward name="success" path="Finalize" />
 			</pipe>
-			<pipe name="Info" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="info">
-				<forward name="success" path="EXIT" />
+			<pipe name="Finalize"
+				className="nl.nn.adapterframework.pipes.FixedResult"
+				returnString="">
+				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>
 	</adapter>
+	
 </ibis>
