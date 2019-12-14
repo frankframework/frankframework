@@ -20,7 +20,6 @@ import java.io.StringWriter;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
@@ -96,8 +95,9 @@ public class LadybugPipe extends FixedForwardPipe {
 			List<Integer> storageIds = testStorage.getStorageIds();
 			for (Integer storageId : storageIds) {
 				Report report = testStorage.getReport(storageId);
+				String fullReportPath = (report.getPath() != null ? report.getPath() : "") + report.getName();
 				
-				if(excludeRegexPattern == null || !excludeRegexPattern.matcher((report.getPath() != null ? report.getPath() : "") + report.getName()).matches()) {
+				if(excludeRegexPattern == null || !excludeRegexPattern.matcher(fullReportPath).matches()) {
 					reports.add(report);
 				}
 			}
