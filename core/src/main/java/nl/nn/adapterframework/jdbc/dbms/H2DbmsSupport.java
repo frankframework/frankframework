@@ -66,7 +66,7 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 					String convertedQuery = OracleToH2Translator.convertQuery(conn, singleQueryContext, multipleQueries.size() == 1);
 					if (convertedQuery != null) {
 						sb.append(convertedQuery);
-						if (!singleQueryContext.getQueryType().equals(queryContext.getQueryType())) {
+						if (singleQueryContext.getQueryType()!=null && !singleQueryContext.getQueryType().equals(queryContext.getQueryType())) {
 							queryContext.setQueryType(singleQueryContext.getQueryType());
 						}
 					}
