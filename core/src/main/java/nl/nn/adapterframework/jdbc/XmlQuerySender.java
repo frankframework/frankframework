@@ -459,7 +459,12 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 					Column column = (Column) iter.next();
 					if (column.getType().equalsIgnoreCase(TYPE_BLOB) || column.getType().equalsIgnoreCase(TYPE_CLOB)) {
 						query = "SELECT " + column.getName() + " FROM " + tableName + " WHERE ROWID=?" + " FOR UPDATE";
-						QueryContext queryContext = new QueryContext(null, column.getType(), null, query);
+						QueryContext queryContext;
+						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
+							queryContext = new QueryContext(null, "updateBlob", null, query);
+						} else {
+							queryContext = new QueryContext(null, "updateClob", null, query);
+						}
 						PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 						statement.setString(1, rowId);
 						statement.setQueryTimeout(getTimeout());
