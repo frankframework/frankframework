@@ -45,6 +45,10 @@ public class GenericDbmsSupport implements IDbmsSupport {
 
 	protected final static String KEYWORD_SELECT="select";
 
+	protected static final String TYPE_BLOB = "blob";
+	protected static final String TYPE_CLOB = "clob";
+	protected static final String TYPE_FUNCTION = "function";
+
 	public String getDbmsName() {
 		return "generic";
 	}
@@ -432,5 +436,30 @@ public class GenericDbmsSupport implements IDbmsSupport {
 				splittedQueries.add(query.substring(i, j).trim());
 		}
 		return splittedQueries;
+	}
+
+	@Override
+	public Object parseBlobParameter(String value) {
+		return value.getBytes();
+	}
+
+	@Override
+	public Object parseClobParameter(String value) {
+		return value;
+	}
+
+	@Override
+	public String getBlobQueryValue() {
+		return "?";
+	}
+
+	@Override
+	public String getClobQueryValue() {
+		return "?";
+	}
+
+	@Override
+	public boolean useSelectForUpdateForLobUpdate() {
+		return false;
 	}
 }

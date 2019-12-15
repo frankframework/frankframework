@@ -275,4 +275,29 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 		String query="SELECT SYS_CONTEXT('USERENV','CURRENT_SCHEMA') FROM DUAL";
 		return JdbcUtil.executeStringQuery(conn, query);
 	}
+
+	@Override
+	public Object parseBlobParameter(String value) {
+		return null;
+	}
+
+	@Override
+	public Object parseClobParameter(String value) {
+		return null;
+	}
+
+	@Override
+	public String getBlobQueryValue() {
+		return "EMPTY_BLOB()";
+	}
+
+	@Override
+	public String getClobQueryValue() {
+		return "EMPTY_CLOB()";
+	}
+
+	@Override
+	public boolean useSelectForUpdateForLobUpdate() {
+		return true;
+	}
 }

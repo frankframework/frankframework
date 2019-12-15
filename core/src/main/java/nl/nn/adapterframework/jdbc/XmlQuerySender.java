@@ -32,7 +32,6 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.jdbc.dbms.OracleDbmsSupport;
 
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
@@ -127,7 +126,6 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		}
 
 		private void fillParameter() throws SenderException {
-			boolean dbmsOracle = OracleDbmsSupport.dbmsName.equalsIgnoreCase(getDbmsSupport().getDbmsName());
 			if (type.equalsIgnoreCase(TYPE_INTEGER)) {
 				DecimalFormat df = new DecimalFormat();
 				Number n;
@@ -136,12 +134,10 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				} catch (ParseException e) {
 					throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] to Integer", e);
 				}
-				parameter = new Integer(n.intValue());
-			} else 
-			if (type.equalsIgnoreCase(TYPE_BOOLEAN)) {
+				parameter = n.intValue();
+			} else if (type.equalsIgnoreCase(TYPE_BOOLEAN)) {
 				parameter = new Boolean(value);
-			} else 
-			if (type.equalsIgnoreCase(TYPE_NUMBER)) {
+			} else if (type.equalsIgnoreCase(TYPE_NUMBER)) {
 				DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
 				if (StringUtils.isNotEmpty(decimalSeparator)) {
 					decimalFormatSymbols.setDecimalSeparator(decimalSeparator.charAt(0));
@@ -162,52 +158,43 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				} else {
 					parameter = new Integer(n.intValue());
 				}
-			} else {
-				if (type.equalsIgnoreCase(TYPE_DATETIME)) {
-					DateFormat df = new SimpleDateFormat(formatString);
-					java.util.Date nDate;
-					try {
-						nDate = df.parse(value);
-					} catch (ParseException e) {
-						throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] to Date using formatString [" + formatString + "]", e);
-					}
-					parameter = new Timestamp(nDate.getTime());
-				} else {
-					if (type.equalsIgnoreCase(TYPE_XMLDATETIME)) {
-						java.util.Date nDate;
-						try {
-							nDate = DateUtils.parseXmlDateTime(value);
-						} catch (Exception e) {
-							throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] from xml dateTime to Date", e);
-						}
-						parameter = new Timestamp(nDate.getTime());
-					} else {
-						if (dbmsOracle && (type.equalsIgnoreCase(TYPE_BLOB) || type.equalsIgnoreCase(TYPE_CLOB)) || type.equalsIgnoreCase(TYPE_FUNCTION)) {
-							//skip
-						} else if (!dbmsOracle && type.equalsIgnoreCase(TYPE_BLOB)) {
-							parameter = value.getBytes();
-						} else {
-							// type.equalsIgnoreCase("string")
-							parameter = new String(value);
-						}
-					}
+			} else if (type.equalsIgnoreCase(TYPE_DATETIME)) {
+				DateFormat df = new SimpleDateFormat(formatString);
+				java.util.Date nDate;
+				try {
+					nDate = df.parse(value);
+				} catch (ParseException e) {
+					throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] to Date using formatString [" + formatString + "]", e);
 				}
+				parameter = new Timestamp(nDate.getTime());
+			} else if (type.equalsIgnoreCase(TYPE_XMLDATETIME)) {
+				java.util.Date nDate;
+				try {
+					nDate = DateUtils.parseXmlDateTime(value);
+				} catch (Exception e) {
+					throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] from xml dateTime to Date", e);
+				}
+				parameter = new Timestamp(nDate.getTime());
+			} else if (type.equalsIgnoreCase(TYPE_BLOB)) {
+				parameter = getDbmsSupport().parseBlobParameter(value);
+			} else if (type.equalsIgnoreCase(TYPE_CLOB)) {
+				parameter = getDbmsSupport().parseClobParameter(value);
+			} else if (type.equalsIgnoreCase(TYPE_FUNCTION)) {
+				//skip
+			} else {
+				// type.equalsIgnoreCase("string")
+				parameter = value;
 			}
 		}
 
 		private void fillQueryValue() {
-			boolean dbmsOracle = OracleDbmsSupport.dbmsName.equalsIgnoreCase(getDbmsSupport().getDbmsName());
 			queryValue = "?";
-			if (dbmsOracle && type.equalsIgnoreCase(TYPE_BLOB)) {
-				queryValue = "EMPTY_BLOB()";
-			} else {
-				if (dbmsOracle && type.equalsIgnoreCase(TYPE_CLOB)) {
-					queryValue = "EMPTY_CLOB()";
-				} else {
-					if (type.equalsIgnoreCase(TYPE_FUNCTION)) {
-						queryValue = value;
-					}
-				}
+			if (type.equalsIgnoreCase(TYPE_BLOB)) {
+				queryValue = getDbmsSupport().getBlobQueryValue();
+			} else if (type.equalsIgnoreCase(TYPE_CLOB)) {
+				queryValue = getDbmsSupport().getClobQueryValue();
+			} else if (type.equalsIgnoreCase(TYPE_FUNCTION)) {
+				queryValue = value;
 			}
 		}
 
@@ -444,7 +431,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 
 	private String executeUpdate(Connection connection, String correlationID, String tableName, String query, Vector columns) throws SenderException {
 		try {
-			if (existLob(columns) &&  OracleDbmsSupport.dbmsName.equalsIgnoreCase(getDbmsSupport().getDbmsName())) {
+			if (existLob(columns) &&  getDbmsSupport().useSelectForUpdateForLobUpdate()) {
 				CallableStatement callableStatement = getCallWithRowIdReturned(connection, correlationID, query);
 				applyParameters(callableStatement, columns);
 				int ri = 1 + countParameters(columns);
