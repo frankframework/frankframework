@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.extensions.fxf;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc; 
 import nl.nn.adapterframework.pipes.WsdlXmlValidator;
 
 /**
@@ -66,10 +67,12 @@ public class FxfXmlValidator extends WsdlXmlValidator {
 		return direction;
 	}
 
+	@IbisDoc({"either <code>send</code> or <code>receive</code>", "send"})
 	public void setDirection(String direction) {
 		this.direction = direction;
 	}
 
+	@IbisDoc({"either 3.1 or 3.2", "3.1"})
 	public void setFxfVersion(String fxfVersion) {
 		this.fxfVersion = fxfVersion;
 	}

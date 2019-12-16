@@ -20,6 +20,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc; 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -35,27 +36,7 @@ import org.apache.commons.lang.StringUtils;
  * rekenbox is returned as output message. The name of the rekenbox, as determined from the inputfile, is optionally written to
  * the pipeLineSession.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setRekenBoxName(String) rekenBoxName}</td><td>fixed name of the rekenbox (or wrapper) to be called. If empty, the name is determined from the request</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRunPath(String) runPath}</td><td>directory on server where rekenbox-executable can be found</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTemplateDir(String) templateDir}</td><td>rekenbox template directory on server</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInputOutputDirectory(String) inputOutputDirectory}</td><td>directory on server where input and output files are (temporarily) stored</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCommandLineType(String) commandLineType}</td><td>Format of commandline of rekenbox. Possible values 
- * <ul>
- *   <li>"straight": rekenbox is called like: rekenbox.exe inputFileName outputFileName templateDir</li>
- *   <li>"switches": rekenbox is called like: rekenbox.exe /IinputFileName /UoutputFileName /PtemplateDir</li>
- *   <li>"redirected": rekenbox is called like: rekenbox.exe inputFileName templateDir > outputFileName; (This method has not been fully tested)</li>
- * </ul></td><td>"straigth"</td></tr>
- * <tr><td>{@link #setExecutableExtension(String) executableExtension}</td><td>extension of rekenbox-executable</td><td>exe</td></tr>
- * <tr><td>{@link #setCleanup(boolean) cleanup}</td><td>if true, input and output files are removed after the call to the rekenbox is finished</td><td>true</td></tr>
- * <tr><td>{@link #setRekenboxSessionKey(String) rekenboxSessionKey}</td><td>key in {@link nl.nn.adapterframework.core.IPipeLineSession pipeLineSession} to store rekenbox name in</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDataFilenamePrefix(String) dataFilenamePrefix}</td><td>first part of filenames that communicate requests and replies to rekenbox</td><td>rb</td></tr>
- * <tr><td>{@link #setMaxRequestNumber(long) maxRequestNumber}</td><td>maximal number that will be concatenated to dataFilenamePrefix</td><td>1000</td></tr>
- * </table>
- * </p>
+ * 
  *
  * <p><b>Note:</b><br>
  * The rekenbox-name is currently determined from the first 8 characters of the file, or up
@@ -232,6 +213,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	    
 	}
 
+	@IbisDoc({"fixed name of the rekenbox (or wrapper) to be called. If empty, the name is determined from the request", " "})
 	public void setRekenBoxName(String string) {
 		rekenBoxName = string;
 	}
@@ -239,6 +221,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		return rekenBoxName;
 	}
 
+	@IbisDoc({"directory on server where rekenbox-executable can be found", " "})
 	public void setRunPath(String newRunPath) {
 		runPath = newRunPath;
 	}
@@ -246,6 +229,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		return runPath;
 	}
 
+	@IbisDoc({"rekenbox template directory on server", " "})
 	public void setTemplateDir(String newTemplateDir) {
 		templateDir = newTemplateDir;
 	}
@@ -253,6 +237,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		return templateDir;
 	}
 
+	@IbisDoc({"directory on server where input and output files are (temporarily) stored", " "})
 	public void setInputOutputDirectory(String newInputOutputDirectory) {
 		inputOutputDirectory = newInputOutputDirectory;
 	}
@@ -267,6 +252,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		return commandLineType;
 	}
 	
+	@IbisDoc({"extension of rekenbox-executable", "exe"})
 	public void setExecutableExtension(String newExecutableExtension) {
 		executableExtension = newExecutableExtension;
 	}
@@ -274,6 +260,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		return executableExtension;
 	}
 
+	@IbisDoc({"if true, input and output files are removed after the call to the rekenbox is finished", "true"})
 	public void setCleanup(boolean newCleanup) {
 		cleanup = newCleanup;
 	}
@@ -281,6 +268,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		return cleanup;
 	}
 	
+	@IbisDoc({"key in {@link nl.nn.adapterframework.core.IPipeLineSession pipeLineSession} to store rekenbox name in", " "})
 	public void setRekenboxSessionKey(String newRekenboxSessionKey) {
 		rekenboxSessionKey = newRekenboxSessionKey;
 	}
@@ -288,6 +276,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		return rekenboxSessionKey;
 	}
 
+	@IbisDoc({"first part of filenames that communicate requests and replies to rekenbox", "rb"})
 	public void setDataFilenamePrefix(String string) {
 		dataFilenamePrefix = string;
 	}
@@ -295,6 +284,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		return dataFilenamePrefix;
 	}
 
+	@IbisDoc({"maximal number that will be concatenated to dataFilenamePrefix", "1000"})
 	public void setMaxRequestNumber(long l) {
 		maxRequestNumber = l;
 	}

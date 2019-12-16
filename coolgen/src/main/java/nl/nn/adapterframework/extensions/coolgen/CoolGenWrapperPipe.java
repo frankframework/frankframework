@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.extensions.coolgen;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -46,18 +47,7 @@ import java.net.URL;
 /**
  * Perform the call to a CoolGen proxy with pre- and post transformations.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setProxyClassName(String) proxyClassName}</td><td>classname of proxy-class to be used</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setClientId(String) clientId}</td><td>CICS userId of account perform operation</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setClientPassword(String) clientPassword}</td><td>password corresponding with userId</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPreProcStylesheetName(String) preProcStylesheetName}</td><td>optional URL of XSLT-stylesheet to apply to message before calling proxy</td><td>no transformation</td></tr>
- * <tr><td>{@link #setPostProcStylesheetName(String) postProcStylesheetName}</td><td>optional URL of XSLT-stylesheet to apply to result of proxy </td><td>no transformation</td></tr>
- * <tr><td>{@link #setProxyInputSchema(String) proxyInputSchema}</td><td>optional URL of XML-Schema of proxy input message. If specified it is used to validate the input message</td><td>no validation</td></tr>
- * </table>
- * </p>
+ *
  * @author Johan Verrips
  */
 public class CoolGenWrapperPipe extends FixedForwardPipe {
@@ -73,28 +63,28 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
     private Transformer proxyInputFixTransformer = null;
 
 
-	/**
-	  * configure the pipe by creating the required XSLT-transformers using
-	  * {@link #createTransformers() }
-	  */
-	@Override
-	public void configure() throws ConfigurationException {
-		super.configure();
-	    createTransformers();
-	}
-	@Override
-	public void start() throws PipeStartException{
-		log.debug(getLogPrefix(null)+"creates proxy with class [" + proxyClassName + "]");
-		try {
-			createProxy(proxyClassName); // just to try if is possible...
-		} catch (ConfigurationException e) {
-			throw new PipeStartException(e);
-		}
+    /**
+     * configure the pipe by creating the required XSLT-transformers using
+     * {@link #createTransformers() }
+     */
+    @Override
+    public void configure() throws ConfigurationException {
+        super.configure();
+        createTransformers();
+    }
+    @Override
+    public void start() throws PipeStartException{
+        log.debug(getLogPrefix(null)+"creates proxy with class [" + proxyClassName + "]");
+        try {
+            createProxy(proxyClassName); // just to try if is possible...
+        } catch (ConfigurationException e) {
+            throw new PipeStartException(e);
+        }
 
-	}
+    }
 
     public CoolGenXMLProxy createProxy(String proxyName)
-        throws ConfigurationException {
+            throws ConfigurationException {
         CoolGenXMLProxy proxy;
         try {
             Class<?> klass = Class.forName(proxyName);
@@ -222,7 +212,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
                 throw new ConfigurationException(
                         getLogPrefix(null)+"got error creating transformer from string ["
                                 + stylesheet
-                    + "]",
+                                + "]",
                         te);
             }
         }
@@ -232,163 +222,169 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
      * call the required proxy, transform the output (optionally)
      */
     @Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+    public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 
-    Writer proxyResult;
-    String proxypreProc = null;
-    Variant inputVar;
-    String wrapperResult = "";
-    CoolGenXMLProxy proxy;
+        Writer proxyResult;
+        String proxypreProc = null;
+        Variant inputVar;
+        String wrapperResult = "";
+        CoolGenXMLProxy proxy;
 
 
-    ActionListener actionListener = new ActionListener() {
-        /**
-         * @see java.awt.event.ActionListener#actionPerformed(ActionEvent)
-         */
-        public String errorMessage;
-        @Override
-		public void actionPerformed(ActionEvent e) {
-            errorMessage = e.toString();
+        ActionListener actionListener = new ActionListener() {
+            /**
+             * @see java.awt.event.ActionListener#actionPerformed(ActionEvent)
+             */
+            public String errorMessage;
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                errorMessage = e.toString();
 
+            }
+
+            @Override
+            public String toString() {
+                return errorMessage;
+            }
+        };
+
+        Source in;
+
+        // TEMPORARY FIX:
+        // create proxy before every request, to work around broken connections caused by restarting the comm-bridge
+        // should be solved in another way in a more definitive implementation
+
+        try {
+            log.info(getLogPrefix(session)+"instantiating proxy ["+proxyClassName+"] as a temporary fix for broken comm-bridge connections");
+            proxy = createProxy(proxyClassName);
+        } catch (ConfigurationException ce) {
+            String msg =getLogPrefix(session)+"cannot recreate proxy after exception";
+            log.error(msg, ce);
+            throw new PipeRunException(this, msg, ce);
         }
 
-        @Override
-		public String toString() {
-            return errorMessage;
+
+        proxy.addExceptionListener(actionListener);
+
+        try {
+            inputVar = new Variant(input);
+            in = inputVar.asXmlSource();
+
+            if (preProcTransformer != null) {
+                proxypreProc = XmlUtils.transformXml(preProcTransformer, in);
+                log.debug(
+                        getLogPrefix(session)
+                                + "] preprocessing transformed message into ["
+                                + proxypreProc
+                                + "]");
+            } else
+                proxypreProc = inputVar.asString();
+
+            if (proxyInputFixTransformer != null)
+                proxypreProc = XmlUtils.transformXml(proxyInputFixTransformer, proxypreProc);
+
+            proxyResult = new StringWriter(10 * 1024);
+
+
+            // Try to execute the service-preProc as per proxy
+
+            try {
+                proxy.clear();
+            } catch (PropertyVetoException e) {
+                throw new PipeRunException(this, getLogPrefix(session)+"cannot clear CoolGen proxy", e);
+            }
+            try {
+                proxy.executeXML(new StringReader(proxypreProc), proxyResult);
+                proxy.removeExceptionListener(actionListener);
+
+                String err = actionListener.toString();
+                if (err != null) {
+                    // if an error occurs, recreate the proxy and throw an exception
+                    log.debug(
+                            getLogPrefix(session)
+                                    + "got error, recreating proxy with class ["
+                                    + proxyClassName
+                                    + "]");
+                    try {
+                        proxy = createProxy(proxyClassName);
+                    } catch (ConfigurationException e) {
+                        throw new PipeRunException(this,  getLogPrefix(session)+"cannot recreate proxy ["+proxyClassName+"]", e);
+                    }
+                    throw new PipeRunException(this,  getLogPrefix(session)+"error excuting proxy ["+proxyClassName+"]:"+ err);
+                }
+            } catch (XmlProxyException xpe) {
+                try {
+                    proxy = createProxy(proxyClassName);
+                } catch (ConfigurationException ce) {
+                    log.error(getLogPrefix(session)+"cannot recreate proxy", xpe);
+                }
+                throw new PipeRunException(this,  getLogPrefix(session)+"error excecuting proxy", xpe);
+            }
+
+            if (postProcTransformer != null) {
+                log.debug(getLogPrefix(session)+" CoolGen proxy returned: [" + proxyResult.toString() + "]");
+                wrapperResult = XmlUtils.transformXml(postProcTransformer, proxyResult.toString());
+            } else
+                wrapperResult = proxyResult.toString();
+        } catch (DomBuilderException e) {
+            throw new PipeRunException(this, getLogPrefix(session)+"DomBuilderException excecuting proxy", e);
+        } catch (SAXException e) {
+            throw new PipeRunException(this, getLogPrefix(session)+"SAXException excecuting proxy", e);
+        } catch (IOException e) {
+            throw new PipeRunException(this, getLogPrefix(session)+"IOException excecuting proxy", e);
+        } catch (TransformerException e) {
+            throw new PipeRunException(this, getLogPrefix(session)+"TransformerException excecuting proxy", e);
         }
-    };
 
-    Source in;
-
-    // TEMPORARY FIX:
-    // create proxy before every request, to work around broken connections caused by restarting the comm-bridge
-    // should be solved in another way in a more definitive implementation
-
-    try {
-        log.info(getLogPrefix(session)+"instantiating proxy ["+proxyClassName+"] as a temporary fix for broken comm-bridge connections");
-        proxy = createProxy(proxyClassName);
-    } catch (ConfigurationException ce) {
-	    String msg =getLogPrefix(session)+"cannot recreate proxy after exception";
-	    log.error(msg, ce);
-	    throw new PipeRunException(this, msg, ce);
+        return new PipeRunResult(getForward(),wrapperResult) ;
     }
 
 
-    proxy.addExceptionListener(actionListener);
+    @IbisDoc({"CICS userId of account perform operation", " "})
+    public void setClientId(java.lang.String newClientId) {
+        clientId = newClientId;
+    }
+    public String getClientId() {
+        return clientId;
+    }
 
-    try {
-        inputVar = new Variant(input);
-        in = inputVar.asXmlSource();
+    @IbisDoc({"password corresponding with userId", " "})
+    public void setClientPassword(java.lang.String newClientPassword) {
+        clientPassword = newClientPassword;
+    }
+    public String getClientPassword() {
+        return clientPassword;
+    }
 
-        if (preProcTransformer != null) {
-            proxypreProc = XmlUtils.transformXml(preProcTransformer, in);
-            log.debug(
-                getLogPrefix(session)
-                    + "] preprocessing transformed message into ["
-                    + proxypreProc
-                    + "]");
-        } else
-            proxypreProc = inputVar.asString();
+    @IbisDoc({"optional URL of XSLT-stylesheet to apply to message before calling proxy", "no transformation"})
+    public void setPreProcStylesheetName(String newPreProcStylesheetName) {
+        preProcStylesheetName = newPreProcStylesheetName;
+    }
+    public String getPreProcStylesheetName() {
+        return preProcStylesheetName;
+    }
 
-        if (proxyInputFixTransformer != null)
-            proxypreProc = XmlUtils.transformXml(proxyInputFixTransformer, proxypreProc);
+    @IbisDoc({"optional URL of XSLT-stylesheet to apply to result of proxy ", "no transformation"})
+    public void setPostProcStylesheetName(String newPostProcStylesheetName) {
+        postProcStylesheetName = newPostProcStylesheetName;
+    }
+    public String getPostProcStylesheetName() {
+        return postProcStylesheetName;
+    }
 
-        proxyResult = new StringWriter(10 * 1024);
+    public String getProxyClassName() {
+        return proxyClassName;
+    }
+    public String getProxyInputSchema() {
+        return proxyInputSchema;
+    }
 
-
-        // Try to execute the service-preProc as per proxy
-
-        try {
-            proxy.clear();
-        } catch (PropertyVetoException e) {
-            throw new PipeRunException(this, getLogPrefix(session)+"cannot clear CoolGen proxy", e);
-        }
-        try {
-        proxy.executeXML(new StringReader(proxypreProc), proxyResult);
-        proxy.removeExceptionListener(actionListener);
-
-        String err = actionListener.toString();
-        if (err != null) {
-	        // if an error occurs, recreate the proxy and throw an exception
-            log.debug(
-                getLogPrefix(session)
-                    + "got error, recreating proxy with class ["
-                    + proxyClassName
-                    + "]");
-            try {
-                proxy = createProxy(proxyClassName);
-            } catch (ConfigurationException e) {
-                throw new PipeRunException(this,  getLogPrefix(session)+"cannot recreate proxy ["+proxyClassName+"]", e);
-            }
-            throw new PipeRunException(this,  getLogPrefix(session)+"error excuting proxy ["+proxyClassName+"]:"+ err);
-        }
-        } catch (XmlProxyException xpe) {
-            try {
-                proxy = createProxy(proxyClassName);
-            } catch (ConfigurationException ce) {
-                log.error(getLogPrefix(session)+"cannot recreate proxy", xpe);
-            }
-            throw new PipeRunException(this,  getLogPrefix(session)+"error excecuting proxy", xpe);
-        }
-
-        if (postProcTransformer != null) {
-            log.debug(getLogPrefix(session)+" CoolGen proxy returned: [" + proxyResult.toString() + "]");
-            wrapperResult = XmlUtils.transformXml(postProcTransformer, proxyResult.toString());
-        } else
-            wrapperResult = proxyResult.toString();
-	} catch (DomBuilderException e) {
-		throw new PipeRunException(this, getLogPrefix(session)+"DomBuilderException excecuting proxy", e);
-	} catch (SAXException e) {
-		throw new PipeRunException(this, getLogPrefix(session)+"SAXException excecuting proxy", e);
-    } catch (IOException e) {
-        throw new PipeRunException(this, getLogPrefix(session)+"IOException excecuting proxy", e);
-    } catch (TransformerException e) {
-        throw new PipeRunException(this, getLogPrefix(session)+"TransformerException excecuting proxy", e);
-	}
-
-    return new PipeRunResult(getForward(),wrapperResult) ;
-}
-
-
-	public void setClientId(java.lang.String newClientId) {
-		clientId = newClientId;
-	}
-	public String getClientId() {
-	    return clientId;
-	}
-
-	public void setClientPassword(java.lang.String newClientPassword) {
-		clientPassword = newClientPassword;
-	}
-	public String getClientPassword() {
-	    return clientPassword;
-	}
-
-	public void setPreProcStylesheetName(String newPreProcStylesheetName) {
-		preProcStylesheetName = newPreProcStylesheetName;
-	}
-	public String getPreProcStylesheetName() {
-		return preProcStylesheetName;
-	}
-
-	public void setPostProcStylesheetName(String newPostProcStylesheetName) {
-		postProcStylesheetName = newPostProcStylesheetName;
-	}
-	public String getPostProcStylesheetName() {
-	    return postProcStylesheetName;
-	}
-
-	public String getProxyClassName() {
-	    return proxyClassName;
-	}
-	public String getProxyInputSchema() {
-	    return proxyInputSchema;
-	}
-
-	public void setProxyInputSchema(String newProxyInputSchema) {
-		proxyInputSchema = newProxyInputSchema;
-	}
-	public void setProxyClassName(java.lang.String newProxyClassName) {
-	    proxyClassName = newProxyClassName;
-	}
+    @IbisDoc({"optional URL of XML-Schema of proxy input message. If specified it is used to validate the input message", "no validation"})
+    public void setProxyInputSchema(String newProxyInputSchema) {
+        proxyInputSchema = newProxyInputSchema;
+    }
+    @IbisDoc({"classname of proxy-class to be used", " "})
+    public void setProxyClassName(java.lang.String newProxyClassName) {
+        proxyClassName = newProxyClassName;
+    }
 }

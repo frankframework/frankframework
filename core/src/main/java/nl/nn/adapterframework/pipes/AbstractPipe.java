@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
@@ -114,7 +115,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private boolean removeCompactMsgNamespaces = true;
 	private boolean restoreMovedElements=false;
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
-	
+
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
 	private int transactionTimeout=0;
 	private boolean sizeStatistics = AppConstants.getInstance(configurationClassLoader).getBoolean("statistics.size", false);
@@ -572,23 +573,23 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 
 	@IbisDoc({"Defines transaction and isolation behaviour."
 			+ "For developers: it is equal"
-	        + "to <A href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>." 
-	        + "Possible values are:"
-	        + "  <table border=\"1\">"
-	        + "    <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Required</td>    <td>none</td><td>T2</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>T1</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">RequiresNew</td> <td>none</td><td>T2</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>T2</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Mandatory</td>   <td>none</td><td>error</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>T1</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">NotSupported</td><td>none</td><td>none</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>none</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Supports</td>    <td>none</td><td>none</td></tr>"
-	        + " 										      <tr><td>T1</td>  <td>T1</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Never</td>       <td>none</td><td>none</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>error</td></tr>"
-	        + "  </table>", "Supports"})
+			+ "to <A href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>."
+			+ "Possible values are:"
+			+ "  <table border=\"1\">"
+			+ "    <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Required</td>    <td>none</td><td>T2</td></tr>"
+			+ "											      <tr><td>T1</td>  <td>T1</td></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">RequiresNew</td> <td>none</td><td>T2</td></tr>"
+			+ "											      <tr><td>T1</td>  <td>T2</td></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Mandatory</td>   <td>none</td><td>error</td></tr>"
+			+ "											      <tr><td>T1</td>  <td>T1</td></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">NotSupported</td><td>none</td><td>none</td></tr>"
+			+ "											      <tr><td>T1</td>  <td>none</td></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Supports</td>    <td>none</td><td>none</td></tr>"
+			+ " 										      <tr><td>T1</td>  <td>T1</td></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Never</td>       <td>none</td><td>none</td></tr>"
+			+ "											      <tr><td>T1</td>  <td>error</td></tr>"
+			+ "  </table>", "Supports"})
 	public void setTransactionAttribute(String attribute) throws ConfigurationException {
 		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
 		if (transactionAttribute<0) {
@@ -600,16 +601,16 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return JtaUtil.getTransactionAttributeString(transactionAttribute);
 	}
 
-    @IbisDoc({"Like <code>transactionAttribute</code>, but the chosen "
-    	    + "option is represented with a number. The numbers mean:"
-    	    + "<table>"
-    	    + "<tr><td>0</td><td>Required</td></tr>"
-    	    + "<tr><td>1</td><td>Supports</td></tr>"
-    	    + "<tr><td>2</td><td>Mandatory</td></tr>"
-    	    + "<tr><td>3</td><td>RequiresNew</td></tr>"
-    	    + "<tr><td>4</td><td>NotSupported</td></tr>"
-    	    + "<tr><td>5</td><td>Never</td><tr>"
-    	    + "</table>", "1"})
+	@IbisDoc({"Like <code>transactionAttribute</code>, but the chosen "
+			+ "option is represented with a number. The numbers mean:"
+			+ "<table>"
+			+ "<tr><td>0</td><td>Required</td></tr>"
+			+ "<tr><td>1</td><td>Supports</td></tr>"
+			+ "<tr><td>2</td><td>Mandatory</td></tr>"
+			+ "<tr><td>3</td><td>RequiresNew</td></tr>"
+			+ "<tr><td>4</td><td>NotSupported</td></tr>"
+			+ "<tr><td>5</td><td>Never</td><tr>"
+			+ "</table>", "1"})
 	public void setTransactionAttributeNum(int i) {
 		transactionAttribute = i;
 	}
@@ -681,8 +682,8 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return writeToSecLog;
 	}
 
-	@IbisDoc({"(only used when <code>writetoseclog=true</code>) comma separated list of keys of session variables that is appended to the security log record", ""})
 	@Override
+	@IbisDoc({"(only used when <code>writeToSecLog=true</code>) comma separated list of keys of session variables that is appended to the security log record", " "})
 	public void setSecLogSessionKeys(String string) {
 		secLogSessionKeys = string;
 	}
@@ -702,7 +703,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return logIntermediaryResults;
 	}
 
-	@IbisDoc({"regular expression to mask strings in the log. for example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code> will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>note:</b> this feature is used at adapter level, so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)", ""})
+	@IbisDoc({"Regular expression to mask strings in the log. For example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code> will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>Note:</b> this feature is used at adapter level, so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)", " "})
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
 	}

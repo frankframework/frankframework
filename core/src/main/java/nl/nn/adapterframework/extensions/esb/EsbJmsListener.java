@@ -27,6 +27,8 @@ import javax.jms.Message;
 import javax.jms.TextMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc; 
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.ITransactionRequirements;
 import nl.nn.adapterframework.core.ListenerException;
@@ -42,7 +44,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <p><b>Configuration </b><i>(where deviating from JmsListener)</i><b>:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of ESB service to be called. Possible values 
+ * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of ESB service to be called. Possible values
  * <ul>
  *   <li>"FF": Fire & Forget protocol</li>
  *   <li>"RR": Request-Reply protocol</li>
@@ -51,7 +53,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setForceMessageIdAsCorrelationId(boolean) forceMessageIdAsCorrelationId}</td><td>if messageProtocol=<code>RR</code>: </td><td><code>true</code></td></tr>
  * <tr><td>{@link #setCopyAEProperties(boolean) copyAEProperties}</td><td>if <code>true</code>, all JMS properties in the request starting with "ae_" are copied to the reply</td><td><code>false</code></td></tr>
  * </table></p>
- * 
+ *
  * @author  Peter Leeuwenburgh
  */
 public class EsbJmsListener extends JmsListener implements ITransactionRequirements {
@@ -61,7 +63,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 
 	private String messageProtocol = null;
 	private boolean copyAEProperties = false;
-	
+
 	public void configure() throws ConfigurationException {
 		if (getMessageProtocol() == null) {
 			throw new ConfigurationException(getLogPrefix() + "messageProtocol must be set");
@@ -119,17 +121,17 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 			if(getxPathLogMap().size() > 0) {
 				String xPathLogKeys = "";
 				Iterator<Entry<String, String>> it = getxPathLogMap().entrySet().iterator();
-			    while (it.hasNext()) {
-			    	Map.Entry<String, String> pair = (Entry<String, String>) it.next();
-			    	String sessionKey = pair.getKey();
-			        String xPath = pair.getValue();
-			        String result = getResultFromxPath(soapMessage, xPath);
+				while (it.hasNext()) {
+					Entry<String, String> pair = (Entry<String, String>) it.next();
+					String sessionKey = pair.getKey();
+					String xPath = pair.getValue();
+					String result = getResultFromxPath(soapMessage, xPath);
 					if(result.length() > 0) {
 						threadContext.put(sessionKey, result);
-				        xPathLogKeys = xPathLogKeys + "," + sessionKey; //Only pass items that have been found, otherwise logs will clutter with NULL.
+						xPathLogKeys = xPathLogKeys + "," + sessionKey; //Only pass items that have been found, otherwise logs will clutter with NULL.
 					}
-			    }
-			    threadContext.put("xPathLogKeys", xPathLogKeys);
+				}
+				threadContext.put("xPathLogKeys", xPathLogKeys);
 			}
 		} catch (JMSException e) {
 		}
@@ -143,7 +145,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 				try {
 					TransformerPool test = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("", xPathExpression, "text", false));
 					found = test.transform(message, null);
-					
+
 					//xPath not found and message length is 0 but not null nor ""
 					if(found.length() == 0) found = "";
 				} catch (Exception e) {
@@ -215,6 +217,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		}
 	}
 
+	@IbisDoc({"if <code>true</code>, all JMS properties in the request starting with \"ae_\" are copied to the reply", "<code>false</code>"})
 	public void setCopyAEProperties(boolean b) {
 		copyAEProperties = b;
 	}

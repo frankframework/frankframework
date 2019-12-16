@@ -27,6 +27,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.doc.IbisDoc; 
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.Resource;
@@ -44,27 +45,7 @@ import com.tibco.tibjms.admin.TibjmsAdminException;
 
 /**
  * Sends a message to a Tibco queue.
- * 
- * <p>
- * <b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUrl(String) url}</td><td>URL or base of URL to be used</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to host</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setQueueName(String) queueName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of Tibco service to be called. Possible values
- * <ul>
- *   <li>"FF": Fire & Forget protocol</li>
- *   <li>"RR": Request-Reply protocol</li>
- * </ul></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setReplyTimeout(int) replyTimeout}</td><td>maximum time in ms to wait for a reply. 0 means no timeout. (Only for messageProtocol=RR)</td><td>5000</td></tr>
- * <tr><td>{@link #setQueueName(String) queueName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>&nbsp;</td><td>if empty then derived from queueName (if $messagingLayer='P2P' then '$applicationFunction' else '$operationName_$operationVersion)</td></tr>
- * </table>
- * </p>
+ *
  * <p>
  * <table border="1">
  * <b>Parameters:</b>
@@ -316,6 +297,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		return url;
 	}
 
+	@IbisDoc({"URL or base of URL to be used", " "})
 	public void setUrl(String string) {
 		url = string;
 	}
@@ -324,6 +306,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		return authAlias;
 	}
 
+	@IbisDoc({"alias used to obtain credentials for authentication to host", " "})
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
@@ -332,6 +315,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		return userName;
 	}
 
+	@IbisDoc({"username used in authentication to host", " "})
 	public void setUserName(String string) {
 		userName = string;
 	}
@@ -340,6 +324,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		return password;
 	}
 
+	@IbisDoc({"&nbsp;", " "})
 	public void setPassword(String string) {
 		password = string;
 	}
@@ -348,6 +333,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		return queueName;
 	}
 
+	@IbisDoc({"&nbsp;", " "})
 	public void setQueueName(String string) {
 		queueName = string;
 	}
@@ -364,10 +350,12 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		return replyTimeout;
 	}
 
+	@IbisDoc({"maximum time in ms to wait for a reply. 0 means no timeout. (Only for messageProtocol=RR)", "5000"})
 	public void setReplyTimeout(int i) {
 		replyTimeout = i;
 	}
 
+	@IbisDoc({"&nbsp;", "if empty then derived from queueName (if $messagingLayer='P2P' then '$applicationFunction' else '$operationName_$operationVersion)"})
 	public void setSoapAction(String string) {
 		soapAction = string;
 	}

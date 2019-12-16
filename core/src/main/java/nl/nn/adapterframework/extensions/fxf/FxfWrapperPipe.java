@@ -20,6 +20,7 @@ import java.io.File;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc; 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -228,6 +229,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		return flowId;
 	}
 
+	@IbisDoc({"The flowId of the file transfer when direction=wrap. When direction=unwrap the flowId will be extracted from the incoming message and added as a sessionKey to the pipeline.", ""})
 	public void setFlowId(String flowId) {
 		this.flowId = flowId;
 	}
@@ -236,6 +238,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		return transformFilename;
 	}
 
+	@IbisDoc({"When true and direction=wrap the input which is expected to be a local filename will be transformed to the filename as known on the IUF State machine.", "true"})
 	public void setTransformFilename(boolean transformFilename) {
 		this.transformFilename = transformFilename;
 	}
@@ -288,6 +291,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		this.fxfFileSessionKey = fxfFileSessionKey;
 	}
 
+	@IbisDoc({"either 3.1 or 3.2", "3.1"})
 	public void setFxfVersion(String fxfVersion) {
 		this.fxfVersion = fxfVersion;
 	}

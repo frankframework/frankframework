@@ -27,6 +27,7 @@ import com.sap.conn.jco.JCoParameterList;
 import com.sap.conn.jco.JCoStructure;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc; 
 import nl.nn.adapterframework.extensions.sap.ISapFunctionFacade;
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.extensions.sap.jco3.handlers.Handler;
@@ -36,21 +37,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Wrapper round SAP-functions, either SAP calling Ibis, or Ibis calling SAP.
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>Name of the Ibis-object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSapSystemName(String) sapSystemName}</td><td>name of the {@link SapSystem} used by this object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCorrelationIdFieldIndex(int) correlationIdFieldIndex}</td><td>Index of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>0</td></tr>
- * <tr><td>{@link #setCorrelationIdFieldName(String) correlationIdFieldName}</td><td>Name of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRequestFieldIndex(int) requestFieldIndex}</td><td>Index of the field in the ImportParameterList of the RFC function that contains the whole request message contents</td><td>0</td></tr>
- * <tr><td>{@link #setRequestFieldName(String) requestFieldName}</td><td>Name of the field in the ImportParameterList of the RFC function that contains the whole request message contents</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setReplyFieldIndex(int) replyFieldIndex}</td><td>Index of the field in the ExportParameterList of the RFC function that contains the whole reply message contents</td><td>0</td></tr>
- * <tr><td>{@link #setReplyFieldName(String) replyFieldName}</td><td>Name of the field in the ExportParameterList of the RFC function that contains the whole reply message contents</td><td>&nbsp;</td></tr>
- * </table>
- * N.B. If no requestFieldIndex or requestFieldName is specified, input is converted from/to xml;
- * If no replyFieldIndex or replyFieldName is specified, output is converted from/to xml. 
- * </p>
+ * 
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
  * @since   5.0
@@ -377,31 +364,37 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 	}
 
 	@Override
+	@IbisDoc({"Index of the field in the ImportParameterList of the RFC function that contains the correlationId", "0"})
 	public void setCorrelationIdFieldIndex(int i) {
 		correlationIdFieldIndex = i;
 	}
 
 	@Override
+	@IbisDoc({"Name of the field in the ImportParameterList of the RFC function that contains the correlationId", " "})
 	public void setCorrelationIdFieldName(String string) {
 		correlationIdFieldName = string;
 	}
 
 	@Override
+	@IbisDoc({"Index of the field in the ExportParameterList of the RFC function that contains the whole reply message contents", "0"})
 	public void setReplyFieldIndex(int i) {
 		replyFieldIndex = i;
 	}
 
 	@Override
+	@IbisDoc({"Name of the field in the ExportParameterList of the RFC function that contains the whole reply message contents", " "})
 	public void setReplyFieldName(String string) {
 		replyFieldName = string;
 	}
 
 	@Override
+	@IbisDoc({"Index of the field in the ImportParameterList of the RFC function that contains the whole request message contents", "0"})
 	public void setRequestFieldIndex(int i) {
 		requestFieldIndex = i;
 	}
 
 	@Override
+	@IbisDoc({"Name of the field in the ImportParameterList of the RFC function that contains the whole request message contents", " "})
 	public void setRequestFieldName(String string) {
 		requestFieldName = string;
 	}
@@ -412,6 +405,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 	}
 
 	@Override
+	@IbisDoc({"Name of the Ibis-object", " "})
 	public void setName(String string) {
 		name = string;
 	}
@@ -421,6 +415,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 	}
 
 	@Override
+	@IbisDoc({"name of the {@link SapSystem} used by this object", " "})
 	public void setSapSystemName(String string) {
 		sapSystemName = string;
 	}

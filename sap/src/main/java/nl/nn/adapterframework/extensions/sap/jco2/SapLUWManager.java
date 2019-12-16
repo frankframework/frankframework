@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.extensions.sap.jco2;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc; 
 import nl.nn.adapterframework.core.IPipeLineExitHandler;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
@@ -147,6 +148,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 
 
 
+	@IbisDoc({"name of the SapSystem used by this object", " "})
 	public void setSapSystemName(String string) {
 		sapSystemName = string;
 	}
@@ -155,6 +157,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 	}
 
 
+	@IbisDoc({"one of: begin, commit, rollback, release", " "})
 	public void setAction(String string) {
 		action = string;
 	}
@@ -162,6 +165,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 		return action;
 	}
 
+	@IbisDoc({"session key under which information is stored", " "})
 	public void setLuwHandleSessionKey(String string) {
 		luwHandleSessionKey = string;
 	}

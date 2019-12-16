@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.extensions.esb;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc; 
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.parameters.Parameter;
 
@@ -89,6 +90,7 @@ public class EsbJmsSender extends JmsSender {
 		return timeOut;
 	}
 
+	@IbisDoc({"receiver timeout, in milliseconds", "20000 (20s)"})
 	public void setTimeOut(long l) {
 		timeOut = l;
 	}

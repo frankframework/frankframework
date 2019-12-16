@@ -18,6 +18,7 @@ package nl.nn.adapterframework.extensions.esb;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDoc; 
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -647,10 +648,6 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	}
 
 	@IbisDoc({"either <code>i2t</code> (ifsa2tibco), <code>reg</code> (regular) or <code>bis</code> (Business Integration Services)", "reg"})
-	public void setMode(String string) {
-		mode = Mode.valueOf(string.toUpperCase());
-	}
-
 	public String getMode() {
 		return mode.toString();
 	}

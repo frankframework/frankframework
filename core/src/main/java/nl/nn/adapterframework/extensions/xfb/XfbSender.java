@@ -18,6 +18,7 @@ package nl.nn.adapterframework.extensions.xfb;
 import java.io.File;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -31,20 +32,8 @@ import org.apache.log4j.Logger;
 
 /**
  * Sender for transferring files using the XFB protocol. Assumes sender input is local filename.
- * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.extensions.xfb.XfbSender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setScript(String) script}</td><td>full pathname to the XFB script to be executed to transfer the file</td><td></td></tr>
- * <tr><td>{@link #setFt(String) ft}</td><td>XFB ft parameter</td><td>SEND_FF</td></tr>
- * <tr><td>{@link #setFlow(String) flow}</td><td>XFB flow parameter</td><td></td></tr>
- * <tr><td>{@link #setAppli(String) appli}</td><td>XFB appli parameter</td><td></td></tr>
- * <tr><td>{@link #setNoname(String) noname}</td><td>XFB noname parameter</td><td></td></tr>
- * <tr><td>{@link #setCopy(boolean) copy}</td><td>when set <code>true</code>, the file is copied before calling the XFB script. Reasons to copy the file: - XFB will rename the file (prefix it with FXB_) and delete it. - On Linux the sticky bit (drwxrws--- wasadmin xfbgw) isn't honoured with a move (only with a copy) (on AIX the sticky bit works for both move and copy)</td><td>true</td></tr>
- * <tr><td>{@link #setCopyPrefix(String) copyPrefix}</td><td>prefix for the name of the copied or original filename. When the name of the original file starts with this prefix this prefix is removed otherwise this prefix is added to the filename of the copied file </td><td>IBIS_</td></tr>
- * </table>
- * </p>
+ *
+ *
  *
  * <br/>
  * Some comments from Richard Maddox (FTO) about UNIX File permissions:
@@ -63,7 +52,7 @@ import org.apache.log4j.Logger;
  * <br/>
  * - Folder should have SGID bit set so that all files what is copied to this folder get group ownership xfbgw
  * <br/>
- * - send file must have rights 660 after putting the file in the send directory. 
+ * - send file must have rights 660 after putting the file in the send directory.
  * <br/>
  * <br/>
  * RECEIVING CFT:
@@ -103,7 +92,7 @@ public class XfbSender extends SenderWithParametersBase {
 		if (StringUtils.isEmpty(getAppli())) {
 			throw new ConfigurationException("XfbSender ["+getName()+"] attribute appli must be specified");
 		}
- 	} 
+	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		File file = new File(message);
@@ -133,58 +122,65 @@ public class XfbSender extends SenderWithParametersBase {
 		return output;
 	}
 
+	@IbisDoc({"full pathname to the XFB script to be executed to transfer the file", " "})
 	public void setScript(String script) {
 		this.script = script;
 	}
-	
+
 	public String getScript() {
 		return script;
 	}
 
+	@IbisDoc({"XFB ft parameter", "SEND_FF"})
 	public void setFt(String ft) {
 		this.ft = ft;
 	}
-	
+
 	public String getFt() {
 		return ft;
 	}
 
+	@IbisDoc({"XFB flow parameter", " "})
 	public void setFlow(String flow) {
 		this.flow = flow;
 	}
-	
+
 	public String getFlow() {
 		return flow;
 	}
 
+	@IbisDoc({"XFB appli parameter", " "})
 	public void setAppli(String appli) {
 		this.appli = appli;
 	}
-	
+
 	public String getAppli() {
 		return appli;
 	}
 
+	@IbisDoc({"XFB noname parameter", " "})
 	public void setNoname(String noname) {
 		this.noname = noname;
 	}
-	
+
 	public String getNoname() {
 		return noname;
 	}
 
+	@IbisDoc({"when set <code>true</code>, the file is copied before calling the XFB script. Reasons to copy the file: - XFB will rename the file (prefix it with FXB_) and delete it. - On Linux the sticky bit (drwxrws--- wasadmin xfbgw) isn't honoured with a move (only with a copy) (on AIX the sticky bit works for both move and copy)", "true"})
 	public void setCopy(boolean copy) {
 		this.copy = copy;
 	}
-	
+
 	public boolean getCopy() {
 		return copy;
 	}
 
+	@IbisDoc({"prefix for the name of the copied or original filename. When the name of the original file starts with this prefix this prefix is removed otherwise this prefix is added to the filename of the copied file ", "IBIS_"})
 	public void setCopyPrefix(String copyPrefix) {
 		this.copyPrefix = copyPrefix;
 	}
-	
+
 	public String getCopyPrefix() {
 		return copyPrefix;
 	}

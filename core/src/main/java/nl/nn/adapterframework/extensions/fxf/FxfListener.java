@@ -21,6 +21,7 @@ import java.util.Map;
 import javax.jms.Message;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc; 
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ListenerException;
@@ -155,10 +156,12 @@ public class FxfListener extends EsbJmsListener {
 		return fxfFileSessionKey;
 	}
 
+	@IbisDoc({"name of the session key to store the name of the received file in", "fxfFile"})
 	public void setFxfFileSessionKey(String fxfFileSessionKey) {
 		this.fxfFileSessionKey = fxfFileSessionKey;
 	}
 
+	@IbisDoc({"when set to <code>true</code>, the received file if moved after being processed", "true"})
 	public void setMoveProcessedFile(boolean b) {
 		moveProcessedFile = b;
 	}
@@ -167,6 +170,7 @@ public class FxfListener extends EsbJmsListener {
 		return moveProcessedFile;
 	}
 
+	@IbisDoc({"(only used when <code>moveProcessedFile=true</code>) <b>sibling</b> directory (related to the parent directory of the file to process) where files are stored after being processed", "processed"})
 	public void setProcessedSiblingDirectory(String processedSiblingDirectory) {
 		this.processedSiblingDirectory = processedSiblingDirectory;
 	}
@@ -175,6 +179,7 @@ public class FxfListener extends EsbJmsListener {
 		return processedSiblingDirectory;
 	}
 
+	@IbisDoc({"(only used when <code>moveProcessedFile=true</code>) when set to <code>true</code>, the directory to move processed files in is created if it does not exist", "false"})
 	public void setCreateProcessedDirectory(boolean b) {
 		createProcessedDirectory = b;
 	}

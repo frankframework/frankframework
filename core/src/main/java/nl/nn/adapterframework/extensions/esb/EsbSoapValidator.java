@@ -21,6 +21,7 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc; 
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.soap.SoapValidator;
 
@@ -139,6 +140,7 @@ public class EsbSoapValidator extends SoapValidator {
         this.direction = Direction.valueOf(direction.toUpperCase());
     }
 
+	@IbisDoc({"TODO", "TODO"})
     public void setMode(String mode) { // Why does PropertyUtil not understand enums?
         this.mode = EsbSoapWrapperPipe.Mode.valueOf(mode.toUpperCase());
     }

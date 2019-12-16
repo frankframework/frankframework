@@ -47,7 +47,7 @@ import java.io.StringReader;
  */
 public class CalcboxContentHandler implements ContentHandler {
   int level = 0;
-  org.w3c.dom.Document document;
+  Document document;
 
 	private String stringResult = null; 
 
