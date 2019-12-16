@@ -44,7 +44,7 @@ public class NamespaceRemovingFilterTest {
 
 	public void testToWriter(String source, String expected) throws Exception {
 		StringWriter target = new StringWriter();
-		XmlWriter xmlWriter = new XmlWriter(target,true);
+		XmlWriter xmlWriter = new XmlWriter(target);
 		
 		NamespaceRemovingFilter filter = new NamespaceRemovingFilter();
 		filter.setContentHandler(xmlWriter);

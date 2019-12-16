@@ -113,7 +113,6 @@ public class MessageOutputStreamTest {
 	public void testContentHandlerAsWriter() throws Exception {
 		
 		XmlWriter target = new XmlWriter();
-		target.setSkipXmlDeclaration(true);
 
 		MessageOutputStream stream = new MessageOutputStream(target,null,this,null,"fakecorrelationid");
 		

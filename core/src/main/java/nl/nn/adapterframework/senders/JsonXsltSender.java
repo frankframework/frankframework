@@ -22,6 +22,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXSource;
 
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -30,7 +31,6 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.JsonXmlReader;
 import nl.nn.adapterframework.util.XmlJsonWriter;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -64,7 +64,7 @@ public class JsonXsltSender extends XsltSender {
 		return XmlUtils.source2String(source, false);
 	}
 
-	private String xml2Json(String xml) throws TransformerException, DomBuilderException {
+	private String xml2Json(String xml) throws TransformerException, SAXException {
 
 		Source source=XmlUtils.stringToSourceForSingleUse(xml,true);
         SAXResult result = new SAXResult();
@@ -105,7 +105,7 @@ public class JsonXsltSender extends XsltSender {
 			Object result = super.sendMessage(correlationID, new Message(xml), prc, target);
 			result = xml2Json(result.toString());
 			return result;
-		} catch (DomBuilderException|TransformerException e) {
+		} catch (SAXException|TransformerException e) {
 			throw new SenderException(e);
 		}
 	}

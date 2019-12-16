@@ -55,7 +55,6 @@ public class MessageTest {
 	protected void testAsInputSource(Message adapter) throws IOException, SAXException {
 		InputSource result = adapter.asInputSource();
 		XmlWriter sink =  new XmlWriter();
-		sink.setSkipXmlDeclaration(true);
 		XmlUtils.parseXml(sink, result);
 		
 		String actual = sink.toString();
