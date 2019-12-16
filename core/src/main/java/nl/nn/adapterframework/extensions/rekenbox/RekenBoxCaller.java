@@ -56,13 +56,6 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setMaxRequestNumber(long) maxRequestNumber}</td><td>maximal number that will be concatenated to dataFilenamePrefix</td><td>1000</td></tr>
  * </table>
  * </p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
- * </table>
- * </p>
  *
  * <p><b>Note:</b><br>
  * The rekenbox-name is currently determined from the first 8 characters of the file, or up

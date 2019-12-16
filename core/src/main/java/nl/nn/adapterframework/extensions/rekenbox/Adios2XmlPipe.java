@@ -258,7 +258,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 		 	}
 	 	
 			try {
-				URL url = ClassUtils.getResourceURL(classLoader, getAdiosDefinities()); 
+				URL url = ClassUtils.getResourceURL(getConfigurationClassLoader(), getAdiosDefinities()); 
 				if (url==null) {
 					throw new ConfigurationException(getLogPrefix(null)+"cannot find adios definitions from resource ["+getAdiosDefinities()+"]");
 				}

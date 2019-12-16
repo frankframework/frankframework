@@ -10,19 +10,26 @@ import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mock;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.senders.SenderTestBase;
+import nl.nn.adapterframework.core.PipeStartException;
 
 public abstract class PipeTestBase<P extends IPipe> {
 	protected Log log = LogFactory.getLog(this.getClass());
-	
+
+	@Mock
+	protected IPipeLineSession session;
+
 	protected P pipe;
 	protected PipeLine pipeline;
 	protected Adapter adapter;
@@ -39,16 +46,32 @@ public abstract class PipeTestBase<P extends IPipe> {
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
 		pipeline = new PipeLine();
 		pipeline.addPipe(pipe);
+		PipeLineExit exit = new PipeLineExit();
+		exit.setPath("exit");
+		exit.setState("success");
+		pipeline.registerPipeLineExit(exit);
 		adapter = new Adapter();
 		adapter.registerPipeLine(pipeline);
 	}
 
-	protected void configurePipe() throws ConfigurationException {
-		if (pipe instanceof AbstractPipe) {
-			((AbstractPipe) pipe).configure(pipeline);
+	/**
+	 * Configure the pipe
+	 */
+	protected void configurePipe() throws ConfigurationException, PipeStartException {
+		if (pipe instanceof IExtendedPipe) {
+			((IExtendedPipe) pipe).configure(pipeline);
 		} else {
 			pipe.configure();
 		}
+
+		pipe.start();
+	}
+
+	/**
+	 * Configure the pipe adapter, pipeline and pipe(s)
+	 */
+	protected void configureAdapter() throws ConfigurationException {
+		adapter.configure();
 	}
 
 	/*

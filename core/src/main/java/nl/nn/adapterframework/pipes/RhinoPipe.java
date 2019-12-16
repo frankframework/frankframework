@@ -55,19 +55,6 @@ import org.apache.commons.lang.SystemUtils;
  * </tr>
  * </table>
  * </p>
- * <p>
- * <b>Exits:</b>
- * <table border="1">
- * <tr>
- * <th>state</th>
- * <th>condition</th>
- * </tr>
- * <tr>
- * <td>"success"</td>
- * <td>default</td>
- * </tr>
- * </table>
- * </p>
  * 
  * @author Barry Jacobs
  */
@@ -94,7 +81,7 @@ public class RhinoPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getFileName()) && !isLookupAtRuntime()) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(classLoader, getFileName());
+				resource = ClassUtils.getResourceURL(getConfigurationClassLoader(), getFileName());
 			} catch (Throwable e) {
 				throw new ConfigurationException(
 					getLogPrefix(null) + "got exception searching for [" + getFileName() + "]", e);
@@ -144,7 +131,7 @@ public class RhinoPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime()) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(classLoader, getFileName());
+				resource = ClassUtils.getResourceURL(getConfigurationClassLoader(), getFileName());
 			} catch (Throwable e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"got exception searching for ["+getFileName()+"]", e);
 			}

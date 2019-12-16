@@ -37,6 +37,7 @@ import nl.nn.adapterframework.util.DateUtils;
 public class WsdlGeneratorPipe extends FixedForwardPipe {
 	private String from = "parent";
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (!"parent".equals(getFrom()) && !"input".equals(getFrom())) {
@@ -44,8 +45,8 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		}
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
-			throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		String result = null;
 		IAdapter adapter;
 		if ("input".equals(getFrom())) {

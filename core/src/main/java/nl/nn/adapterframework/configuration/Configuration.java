@@ -15,14 +15,15 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.core.Adapter;
@@ -37,8 +38,6 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 
-import org.apache.log4j.Logger;
-
 /**
  * The Configuration is placeholder of all configuration objects. Besides that, it provides
  * functions for starting and stopping adapters as a facade.
@@ -49,9 +48,9 @@ import org.apache.log4j.Logger;
  */
 public class Configuration {
     protected Logger log = LogUtil.getLogger(this);
-    private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
-	private boolean autoStart = AppConstants.getInstance().getBoolean("configurations.autoStart", true);
+	private boolean autoStart = AppConstants.getInstance(configurationClassLoader).getBoolean("configurations.autoStart", true);
 
     private AdapterService adapterService;
 
@@ -59,11 +58,9 @@ public class Configuration {
     private List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
     private boolean unloadInProgressOrDone = false;
 
-	private final Map<String, JobDef> jobTable = new Hashtable<String, JobDef>(); // TODO useless synchronization ?
+	private final Map<String, JobDef> jobTable = new LinkedHashMap<String, JobDef>(); // TODO useless synchronization ?
     private final List<JobDef> scheduledJobs = new ArrayList<JobDef>();
 
-    private URL configurationURL;
-    private URL digesterRulesURL;
     private String name;
     private String version;
     private IbisManager ibisManager;
@@ -131,21 +128,16 @@ public class Configuration {
 	}
 
 
-    /**
-     *	initializes the log and the AppConstants
-     * @see nl.nn.adapterframework.util.AppConstants
-     */
-    public Configuration(AdapterService adapterService) {
-         this.adapterService = adapterService;
-    }
-    public Configuration(URL digesterRulesURL, URL configurationURL) {
-        this(new BasicAdapterServiceImpl());
-        this.configurationURL = configurationURL;
-        this.digesterRulesURL = digesterRulesURL;
-    }
+	/**
+	 *	initializes the log and the AppConstants
+	 * @see nl.nn.adapterframework.util.AppConstants
+	 */
+	public Configuration(AdapterService adapterService) {
+		this.adapterService = adapterService;
+	}
 
 	public ClassLoader getClassLoader() {
-		return classLoader;
+		return configurationClassLoader;
 	}
 
 	public void setAutoStart(boolean autoStart) {
@@ -154,6 +146,10 @@ public class Configuration {
 
 	public boolean isAutoStart() {
 		return autoStart;
+	}
+
+	public boolean isStubbed() {
+		return ConfigurationUtils.isConfigurationStubbed(getClassLoader());
 	}
 
 	/**
@@ -296,26 +292,8 @@ public class Configuration {
 		return version;
 	}
 
-	/**
-	 * @deprecated replaced by setName(String)
-	 */
-	public void setConfigurationName(String name) {
-		this.name = name;
-	}
-
-	/**
-	 * @deprecated replaced by getName()
-	 */
-	public String getConfigurationName() {
-		return name;
-	}
-
 	public String getClassLoaderType() {
-		return AppConstants.getInstance().getString("configurations." + getName() + ".classLoaderType", classLoader.getParent().getClass().getSimpleName());
-
-		//TODO Make this work again by removing the reload() method from all classloader constructors. The constructor it selves must not throw an expection/
-		//TODO Refactor ClassLoaderManager.createClassloader()
-//		return classLoader.getParent().getClass().getSimpleName();
+		return configurationClassLoader.getClass().getSimpleName();
 	}
 
 	public void setIbisManager(IbisManager ibisManager) {
@@ -326,21 +304,6 @@ public class Configuration {
 		return ibisManager;
 	}
 
-	public void setConfigurationURL(URL url) {
-		configurationURL = url;
-	}
-
-	public URL getConfigurationURL() {
-		return configurationURL;
-	}
-
-	public void setDigesterRulesURL(URL url) {
-		digesterRulesURL = url;
-	}
-
-	public String getDigesterRulesFileName() {
-		return digesterRulesURL.getFile();
-	}
 
 	public void setOriginalConfiguration(String originalConfiguration) {
 		this.originalConfiguration = originalConfiguration;

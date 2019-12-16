@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.log4j.Logger;
 
 import microsoft.exchange.webservices.data.autodiscover.IAutodiscoverRedirectionUrl;
@@ -66,7 +67,6 @@ import microsoft.exchange.webservices.data.search.FolderView;
 import microsoft.exchange.webservices.data.search.ItemView;
 import microsoft.exchange.webservices.data.search.filter.SearchFilter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -90,7 +90,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  * 
  * @author Gerrit van Brakel, after {@link ExchangeMailListener} by Peter Leeuwenburgh
  */
-public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, HasPhysicalDestination {
+public class ExchangeFileSystem implements IWithAttachments<Item,Attachment> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String mailAddress;
@@ -249,6 +249,12 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 	}
 
 	@Override
+	public Item toFile(String folder, String filename) throws FileSystemException {
+		throw new NotImplementedException("Cannot make item for ["+filename+"] file in Exchange folder ["+folder+"]");
+	}
+
+
+	@Override
 	public boolean exists(Item f) throws FileSystemException {
 		try {
 			ItemView view = new ItemView(1);
@@ -373,7 +379,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 		try {
 			return f.getId().toString();
 		} catch (ServiceLocalException e) {
-			throw new RuntimeException("Could not determine name",e);
+			throw new RuntimeException("Could not determine Name",e);
 		}
 	}
 	@Override
@@ -381,7 +387,7 @@ public class ExchangeFileSystem implements IWithAttachments<Item,Attachment>, Ha
 		try {
 			return f.getId().getUniqueId();
 		} catch (ServiceLocalException e) {
-			throw new FileSystemException("Could not determine name",e);
+			throw new FileSystemException("Could not determine CanonicalName",e);
 		}
 	}
 	@Override

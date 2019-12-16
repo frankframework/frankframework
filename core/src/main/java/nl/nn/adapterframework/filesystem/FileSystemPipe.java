@@ -134,6 +134,9 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 		try {
 			result = actor.doAction(new Message(input), pvl, session);
 		} catch (FileSystemException | TimeOutException e) {
+			if (getForwards().containsKey("exception")) {
+				return new PipeRunResult(getForwards().get("exception"), e.getMessage());
+			}
 			throw new PipeRunException(this, "cannot perform action", e);
 		}
 		if (result!=null) {
@@ -162,7 +165,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 		actor.addActions(specificActions);
 	}
 
-	@IbisDoc({"1", "possible values: list, read, delete, move, mkdir, rmdir, write, rename", "" })
+	@IbisDoc({"1", "possible values: list, info, read, delete, move, mkdir, rmdir, write, rename", "" })
 	public void setAction(String action) {
 		actor.setAction(action);
 	}
@@ -176,6 +179,14 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	}
 	public String getInputFolder() {
 		return actor.getInputFolder();
+	}
+	
+	@IbisDoc({"3", "filename to operate on. When not set, the parameter filename is used. When that is not set either, the input is used", ""})
+	public void setFilename(String filename) {
+		actor.setFilename(filename);
+	}
+	public String getFilename() {
+		return actor.getFilename();
 	}
 
 	@IbisDoc({"3", "Can be set to 'encode' or 'decode' for actions read, write and append. When set the stream is base64 encoded or decoded, respectively", ""})

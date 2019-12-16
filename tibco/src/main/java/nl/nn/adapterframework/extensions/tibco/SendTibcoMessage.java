@@ -15,8 +15,6 @@
  */
 package nl.nn.adapterframework.extensions.tibco;
 
-import java.net.URL;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
@@ -31,10 +29,10 @@ import javax.jms.TextMessage;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.TransformerPool;
 
@@ -99,8 +97,8 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 	private int replyTimeout = 5000;
 	private String soapAction;
 
-	public String doPipeWithTimeoutGuarded(Object input, IPipeLineSession session)
-			throws PipeRunException {
+	@Override
+	public String doPipeWithTimeoutGuarded(Object input, IPipeLineSession session) throws PipeRunException {
 		Connection connection = null;
 		Session jSession = null;
 		MessageProducer msgProducer = null;
@@ -179,8 +177,8 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		if (StringUtils.isEmpty(soapAction_work)) {
 			log.debug(getLogPrefix(session) + "deriving default soapAction");
 			try {
-				URL resource = ClassUtils.getResourceURL(this, "/xml/xsl/esb/soapAction.xsl");
-				TransformerPool tp = TransformerPool.getInstance(resource, true);
+				Resource resource = Resource.getResource(getConfigurationClassLoader(), "/xml/xsl/esb/soapAction.xsl");
+				TransformerPool tp = TransformerPool.getInstance(resource, 2);
 				soapAction_work = tp.transform(input.toString(), null);
 			} catch (Exception e) {
 				log.error(getLogPrefix(session) + "failed to execute soapAction.xsl");

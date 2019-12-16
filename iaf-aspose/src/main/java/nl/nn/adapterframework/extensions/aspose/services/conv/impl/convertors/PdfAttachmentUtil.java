@@ -44,7 +44,7 @@ import nl.nn.adapterframework.extensions.aspose.services.util.StringsUtil;
  */
 public class PdfAttachmentUtil {
 
-	private static final Logger LOGGER = Logger.getLogger(PdfAttachmentUtil.class);
+	private static final Logger LOGGER = LogUtil.getLogger(PdfAttachmentUtil.class);
 
 	private List<CisConversionResult> cisConversionResultList;
 

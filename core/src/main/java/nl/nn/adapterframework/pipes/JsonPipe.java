@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,25 +33,6 @@ import org.json.XML;
 /**
  * Perform an JSON to XML transformation
  *
- * <p>
- * <b>Exits:</b>
- * <table border="1">
- * <tr>
- * <th>state</th>
- * <th>condition</th>
- * </tr>
- * <tr>
- * <td>"success"</td>
- * <td>default</td>
- * </tr>
- * <tr>
- * <td>
- * <i>{@link #setForwardName(String) forwardName}</i>
- * </td>
- * <td>if specified</td>
- * </tr>
- * </table>
- * </p>
  * @author Martijn Onstwedder
  * @author Tom van der Heijden
  */
@@ -60,6 +41,8 @@ public class JsonPipe extends FixedForwardPipe {
 	private String direction = "json2xml";
 	private String version = "1";
 	private boolean addXmlRootElement=true;
+	
+	private TransformerPool tpXml2Json;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -69,8 +52,10 @@ public class JsonPipe extends FixedForwardPipe {
 			throw new ConfigurationException(getLogPrefix(null) + "direction must be set");
 		}
 		if (!"json2xml".equals(dir) && !"xml2json".equals(dir)) {
-			throw new ConfigurationException(
-					getLogPrefix(null) + "illegal value for direction [" + dir + "], must be 'xml2json' or 'json2xml'");
+			throw new ConfigurationException(getLogPrefix(null) + "illegal value for direction [" + dir + "], must be 'xml2json' or 'json2xml'");
+		}
+		if ("xml2json".equals(dir) && "2".equals(getVersion())) {
+			tpXml2Json = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), getConfigurationClassLoader(), "/xml/xsl/xml2json.xsl", 0);
 		}
 	}
 
@@ -113,8 +98,7 @@ public class JsonPipe extends FixedForwardPipe {
 				if ("2".equals(actualVersion)) {
 					stringResult = (String) input;
 					ParameterResolutionContext prc = new ParameterResolutionContext(stringResult, session, true);
-					TransformerPool tp = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), classLoader, "/xml/xsl/xml2json.xsl", 0);
-					stringResult = tp.transform(prc.getInputSource(isNamespaceAware()), null);
+					stringResult = tpXml2Json.transform(prc.getInputSource(isNamespaceAware()), null);
 				} else {
 					JSONObject jsonObject = XML.toJSONObject(stringResult);
 					stringResult = jsonObject.toString();

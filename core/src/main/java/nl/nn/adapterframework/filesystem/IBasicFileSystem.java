@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 
 /**
  * Interface to represent a basic filesystem, in which files can be 
@@ -32,7 +33,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  *
  * @param <F> File representation
  */
-public interface IBasicFileSystem<F> {
+public interface IBasicFileSystem<F> extends HasPhysicalDestination{
 
 	public void configure() throws ConfigurationException;
 	public void open() throws FileSystemException;
@@ -55,6 +56,7 @@ public interface IBasicFileSystem<F> {
 	 * Must pair up with the implementation of {@link #getName(Object)}.
 	 */
 	public F toFile(String filename) throws FileSystemException;
+	public F toFile(String folder, String filename) throws FileSystemException;
 	public boolean exists(F f) throws FileSystemException;
 
 	public boolean folderExists(String folder) throws FileSystemException;

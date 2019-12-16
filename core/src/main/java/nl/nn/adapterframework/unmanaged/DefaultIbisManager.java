@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import nl.nn.adapterframework.ejb.ListenerPortPoller;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
-import nl.nn.adapterframework.jms.PushingJmsListener;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
@@ -45,6 +44,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
 
 import org.apache.log4j.Logger;
 import org.quartz.SchedulerException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
@@ -55,60 +55,69 @@ import org.springframework.transaction.PlatformTransactionManager;
  * @since   4.8
  */
 public class DefaultIbisManager implements IbisManager {
-    protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	protected Logger secLog = LogUtil.getLogger("SEC");
 
-    private IbisContext ibisContext;
-    private List<Configuration> configurations = new ArrayList<Configuration>();
-    private SchedulerHelper schedulerHelper;
-    private PlatformTransactionManager transactionManager;
-    private ListenerPortPoller listenerPortPoller;
+	private IbisContext ibisContext;
+	private List<Configuration> configurations = new ArrayList<Configuration>();
+	private SchedulerHelper schedulerHelper;
+	private PlatformTransactionManager transactionManager;
+	private ListenerPortPoller listenerPortPoller;
+	private ApplicationEventPublisher applicationEventPublisher;
 
-    public void setIbisContext(IbisContext ibisContext) {
-        this.ibisContext = ibisContext;
-    }
+	@Override
+	public void setIbisContext(IbisContext ibisContext) {
+		this.ibisContext = ibisContext;
+	}
 
-    public IbisContext getIbisContext() {
-        return ibisContext;
-    }
+	@Override
+	public IbisContext getIbisContext() {
+		return ibisContext;
+	}
 
-    public void addConfiguration(Configuration configuration) {
-        configurations.add(configuration);
-    }
+	@Override
+	public void addConfiguration(Configuration configuration) {
+		configurations.add(configuration);
+	}
 
-    public List<Configuration> getConfigurations() {
-        return configurations;
-    }
+	@Override
+	public List<Configuration> getConfigurations() {
+		return configurations;
+	}
 
-    public Configuration getConfiguration(String configurationName) {
-        for (Configuration configuration : configurations) {
-            if (configurationName.equals(configuration.getName())) {
-                return configuration;
-            }
-        }
-        return null;
-    }
+	@Override
+	public Configuration getConfiguration(String configurationName) {
+		for (Configuration configuration : configurations) {
+			if (configurationName.equals(configuration.getName())) {
+				return configuration;
+			}
+		}
+		return null;
+	}
 
-    /**
-     * Start the already configured Configuration
-     */
-    public void startConfiguration(Configuration configuration) {
-        startAdapters(configuration);
-        startScheduledJobs(configuration);
-    }
+	/**
+	 * Start the already configured Configuration
+	 */
+	@Override
+	public void startConfiguration(Configuration configuration) {
+		startAdapters(configuration);
+		startScheduledJobs(configuration);
+	}
 
-    /**
-     * Shut down the IBIS instance and clean up.
-     */
-    public void shutdown() {
-        shutdownScheduler();
-        if (listenerPortPoller != null) {
-            listenerPortPoller.clear();
-        }
-        unload((String)null);
-        IbisCacheManager.shutdown();
-    }
+	/**
+	 * Shut down the IBIS instance and clean up.
+	 */
+	@Override
+	public void shutdown() {
+		shutdownScheduler();
+		if (listenerPortPoller != null) {
+			listenerPortPoller.clear();
+		}
+		unload((String) null);
+		IbisCacheManager.shutdown();
+	}
 
+	@Override
 	public void unload(String configurationName) {
 		if (configurationName == null) {
 			while (configurations.size() > 0) {
@@ -143,12 +152,24 @@ public class DefaultIbisManager implements IbisManager {
 			AdapterService adapterService = configuration.getAdapterService();
 			adapterService.unRegisterAdapter(adapter);
 		}
+
+		//Remove all registered jobs
+		for (JobDef jobdef : configuration.getScheduledJobs()) {
+			try {
+				getSchedulerHelper().deleteTrigger(jobdef);
+			}
+			catch (SchedulerException se) {
+				log.error("unable to remove scheduled job ["+jobdef+"]", se);
+			}
+		}
+
 		configurations.remove(configuration);
 	}
 
 	/**
 	 * Utility function to give commands to Adapters and Receivers
 	 */
+	@Override
 	public void handleAdapter(String action, String configurationName,
 			String adapterName, String receiverName, String commandIssuedBy,
 			boolean isAdmin) {
@@ -286,8 +307,7 @@ public class DefaultIbisManager implements IbisManager {
 									+ "] is only allowed for receivers with an ErrorStorage");
 						} else {
 							if (errorStorage instanceof JdbcTransactionalStorage) {
-								JdbcTransactionalStorage jdbcErrorStorage = (JdbcTransactionalStorage) rb
-										.getErrorStorage();
+								JdbcTransactionalStorage jdbcErrorStorage = (JdbcTransactionalStorage) rb.getErrorStorage();
 								IListener listener = rb.getListener();
 								if (listener instanceof EsbJmsListener) {
 									EsbJmsListener esbJmsListener = (EsbJmsListener) listener;
@@ -312,128 +332,144 @@ public class DefaultIbisManager implements IbisManager {
 		}
 	}
 
-    public void shutdownScheduler() {
-        try {
-            log.info("Shutting down the scheduler");
-            schedulerHelper.getScheduler().shutdown();
-        } catch (SchedulerException e) {
-            log.error("Could not stop scheduler", e);
-        }
-    }
+	public void shutdownScheduler() {
+		try {
+			log.info("Shutting down the scheduler");
+			schedulerHelper.getScheduler().shutdown();
+		} catch (SchedulerException e) {
+			log.error("Could not stop scheduler", e);
+		}
+	}
 
-    public void startScheduledJobs(Configuration configuration) {
-        List<JobDef> scheduledJobs = configuration.getScheduledJobs();
-        for (Iterator<JobDef> iter = scheduledJobs.iterator(); iter.hasNext();) {
-            JobDef jobdef = iter.next();
-            try {
-                schedulerHelper.scheduleJob(this, jobdef);
-                log.info("job scheduled with properties :" + jobdef.toString());
-            } catch (Exception e) {
-                log.error("Could not schedule job ["+jobdef.getName()+"] cron ["+jobdef.getCronExpression()+"]",e);
-            }
-        }
-        try {
-            schedulerHelper.startScheduler();
-            log.info("Scheduler started");
-        } catch (SchedulerException e) {
-            log.error("Could not start scheduler", e);
-        }
-    }
+	public void startScheduledJobs(Configuration configuration) {
+		List<JobDef> scheduledJobs = configuration.getScheduledJobs();
+		for (Iterator<JobDef> iter = scheduledJobs.iterator(); iter.hasNext();) {
+			JobDef jobdef = iter.next();
+			try {
+				schedulerHelper.scheduleJob(this, jobdef);
+				log.info("job scheduled with properties :" + jobdef.toString());
+			} catch (Exception e) {
+				log.error("Could not schedule job [" + jobdef.getName() + "] cron [" + jobdef.getCronExpression() + "]", e);
+			}
+		}
+		try {
+			schedulerHelper.startScheduler();
+			log.info("Scheduler started");
+		} catch (SchedulerException e) {
+			log.error("Could not start scheduler", e);
+		}
+	}
 
-    private void startAdapters(Configuration configuration) {
-        log.info("Starting all autostart-configured adapters for configuation " + configuration.getName());
-        for (IAdapter adapter : configuration.getAdapterService().getAdapters().values()) {
-            if (adapter.isAutoStart()) {
-                log.info("Starting adapter [" + adapter.getName()+"]");
-                adapter.startRunning();
-            }
-        }
-    }
+	private void startAdapters(Configuration configuration) {
+		log.info("Starting all autostart-configured adapters for configuation " + configuration.getName());
+		for (IAdapter adapter : configuration.getAdapterService().getAdapters().values()) {
+			if (adapter.isAutoStart()) {
+				log.info("Starting adapter [" + adapter.getName() + "]");
+				adapter.startRunning();
+			}
+		}
+	}
 
-    private void stopAdapters() {
-        for (Configuration configuration : configurations) {
-            stopAdapters(configuration);
-       }
-    }
+	private void stopAdapters() {
+		for (Configuration configuration : configurations) {
+			stopAdapters(configuration);
+		}
+	}
 
-    private void stopAdapters(Configuration configuration) {
-        configuration.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_FULL);
-        log.info("Stopping all adapters for configuation " + configuration.getName());
-        List<IAdapter> adapters = new ArrayList<IAdapter>(configuration.getAdapterService().getAdapters().values());
-        Collections.reverse(adapters);
-        for (IAdapter adapter : adapters) {
-            log.info("Stopping adapter [" + adapter.getName() + "]");
-            adapter.stopRunning();
-        }
-    }
+	private void stopAdapters(Configuration configuration) {
+		configuration.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_FULL);
+		log.info("Stopping all adapters for configuation " + configuration.getName());
+		List<IAdapter> adapters = new ArrayList<IAdapter>(configuration.getAdapterService().getAdapters().values());
+		Collections.reverse(adapters);
+		for (IAdapter adapter : adapters) {
+			log.info("Stopping adapter [" + adapter.getName() + "]");
+			adapter.stopRunning();
+		}
+	}
 
-    public IAdapter getRegisteredAdapter(String name) {
-        List<IAdapter> adapters = getRegisteredAdapters();
-        for (IAdapter adapter : adapters) {
-            if (name.equals(adapter.getName())) {
-                return adapter;
-            }
-        }
-        return null;
-    }
+	@Override
+	public IAdapter getRegisteredAdapter(String name) {
+		List<IAdapter> adapters = getRegisteredAdapters();
+		for (IAdapter adapter : adapters) {
+			if (name.equals(adapter.getName())) {
+				return adapter;
+			}
+		}
+		return null;
+	}
 
-    public List<IAdapter> getRegisteredAdapters() {
-        List<IAdapter> registeredAdapters = new ArrayList<IAdapter>();
-        for (Configuration configuration : configurations) {
-            registeredAdapters.addAll(configuration.getRegisteredAdapters());
-        }
-        return registeredAdapters;
-    }
+	@Override
+	public List<IAdapter> getRegisteredAdapters() {
+		List<IAdapter> registeredAdapters = new ArrayList<IAdapter>();
+		for (Configuration configuration : configurations) {
+			registeredAdapters.addAll(configuration.getRegisteredAdapters());
+		}
+		return registeredAdapters;
+	}
 
-    public List<IAdapter> getRegisteredAdapters(String configurationName) {
-        for (Configuration configuration : configurations) {
-            if (configurationName.equals(configuration.getName())) {
-                return configuration.getRegisteredAdapters();
-            }
-        }
-        return null;
-    }
+	public List<IAdapter> getRegisteredAdapters(String configurationName) {
+		for (Configuration configuration : configurations) {
+			if (configurationName.equals(configuration.getName())) {
+				return configuration.getRegisteredAdapters();
+			}
+		}
+		return null;
+	}
 
-    public List<String> getSortedStartedAdapterNames() {
-        List<String> startedAdapters = new ArrayList<String>();
-        for (IAdapter adapter : getRegisteredAdapters()) {
-            // add the adapterName if it is started.
-            if (adapter.getRunState().equals(RunStateEnum.STARTED)) {
-                startedAdapters.add(adapter.getName());
-            }
-        }
-        Collections.sort(startedAdapters, String.CASE_INSENSITIVE_ORDER);
-        return startedAdapters;
-    }
+	@Override
+	public List<String> getSortedStartedAdapterNames() {
+		List<String> startedAdapters = new ArrayList<String>();
+		for (IAdapter adapter : getRegisteredAdapters()) {
+			// add the adapterName if it is started.
+			if (adapter.getRunState().equals(RunStateEnum.STARTED)) {
+				startedAdapters.add(adapter.getName());
+			}
+		}
+		Collections.sort(startedAdapters, String.CASE_INSENSITIVE_ORDER);
+		return startedAdapters;
+	}
 
-    public void setSchedulerHelper(SchedulerHelper helper) {
-        schedulerHelper = helper;
-    }
-    public SchedulerHelper getSchedulerHelper() {
-        return schedulerHelper;
-    }
+	public void setSchedulerHelper(SchedulerHelper helper) {
+		schedulerHelper = helper;
+	}
 
-    public PlatformTransactionManager getTransactionManager() {
-        return transactionManager;
-    }
+	public SchedulerHelper getSchedulerHelper() {
+		return schedulerHelper;
+	}
 
-    public void setTransactionManager(PlatformTransactionManager transactionManager) {
-    	log.debug("setting transaction manager to ["+transactionManager+"]");
-        this.transactionManager = transactionManager;
-    }
+	@Override
+	public PlatformTransactionManager getTransactionManager() {
+		return transactionManager;
+	}
 
-    public ListenerPortPoller getListenerPortPoller() {
-        return listenerPortPoller;
-    }
+	public void setTransactionManager(PlatformTransactionManager transactionManager) {
+		log.debug("setting transaction manager to [" + transactionManager + "]");
+		this.transactionManager = transactionManager;
+	}
 
-    public void setListenerPortPoller(ListenerPortPoller listenerPortPoller) {
-        this.listenerPortPoller = listenerPortPoller;
-    }
+	public ListenerPortPoller getListenerPortPoller() {
+		return listenerPortPoller;
+	}
 
-    public void dumpStatistics(int action) {
-        for (Configuration configuration : configurations) {
-            configuration.dumpStatistics(action);
-        }
-    }
+	public void setListenerPortPoller(ListenerPortPoller listenerPortPoller) {
+		this.listenerPortPoller = listenerPortPoller;
+	}
+
+	@Override
+	public void dumpStatistics(int action) {
+		for (Configuration configuration : configurations) {
+			configuration.dumpStatistics(action);
+		}
+	}
+
+	@Override
+	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+		this.applicationEventPublisher=applicationEventPublisher;
+	}
+
+	@Override
+	public ApplicationEventPublisher getApplicationEventPublisher() {
+		return applicationEventPublisher;
+	}
 
 }

@@ -22,7 +22,208 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
-import org.apache.commons.lang.StringUtils;
+//<<<<<<< HEAD
+//import org.apache.commons.lang.StringUtils;
+//import org.apache.log4j.Logger;
+//import org.xml.sax.Attributes;
+//import org.xml.sax.SAXException;
+//import org.xml.sax.ext.LexicalHandler;
+//import org.xml.sax.helpers.DefaultHandler;
+//
+//import nl.nn.adapterframework.util.LogUtil;
+//import nl.nn.adapterframework.util.StreamUtil;
+//import nl.nn.adapterframework.util.XmlUtils;
+//
+//public class XmlWriter extends DefaultHandler implements LexicalHandler {
+//	protected Logger log = LogUtil.getLogger(this);
+//	
+//	private Writer writer;
+//	private boolean includeComments=true;
+//	private boolean skipXmlDeclaration=false;
+//	
+//	private boolean elementJustStarted=false;
+//	private boolean inCdata;
+//	private StringBuffer namespaceDefinitions=new StringBuffer();
+//
+//	public XmlWriter() {
+//		writer=new StringWriter();
+//	}
+//	
+//	public XmlWriter(Writer writer) {
+//		this.writer=writer;
+//	}
+//	
+//	public XmlWriter(Writer writer, boolean skipXmlDeclaration) {
+//		this.writer=writer;
+//		this.skipXmlDeclaration=skipXmlDeclaration;
+//	}
+//	
+//	public XmlWriter(OutputStream stream) {
+//		try {
+//			this.writer=new OutputStreamWriter(stream,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+//		} catch (UnsupportedEncodingException e) {
+//			log.error(e);
+//		}
+//	}
+//
+//	@Override
+//	public void startDocument() throws SAXException {
+//		try {
+//			if (!isSkipXmlDeclaration()) {
+//				writer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+//			}
+//		} catch (IOException e) {
+//			throw new SAXException(e);
+//		}
+//	}
+//
+//
+//	@Override
+//	public void endDocument() throws SAXException {
+//		try {
+//			writer.flush();
+//		} catch (IOException e) {
+//			throw new SAXException(e);
+//		}
+//	}
+//
+//	private void appendNamespaceMapping(StringBuffer output, String prefix, String uri) {
+//		output.append(" xmlns");
+//		if (StringUtils.isNotEmpty(prefix) ) {
+//			output.append(":").append(prefix);
+//		}
+//		output.append("=\"").append(XmlUtils.encodeChars(uri)).append("\"");
+//	}
+//
+//	@Override
+//	public void startPrefixMapping(String prefix, String uri) throws SAXException {
+//		log.debug("startPrefixMapping ["+prefix+"]=["+uri+"]");
+//		appendNamespaceMapping(namespaceDefinitions, prefix, uri);
+//	}
+//
+//	@Override
+//	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+//		try {
+//			if (elementJustStarted) {
+//				writer.append(">");
+//			}
+//			writer.append("<"+qName);
+//			for (int i=0; i<attributes.getLength(); i++) {
+//				writer.append(" "+attributes.getQName(i)+"=\""+XmlUtils.encodeChars(attributes.getValue(i))+"\"");
+//			}
+//			writer.append(namespaceDefinitions);
+//			namespaceDefinitions.setLength(0);
+//			elementJustStarted=true;
+//		} catch (IOException e) {
+//			throw new SAXException(e);
+//		}
+//	}
+//
+//	@Override
+//	public void endElement(String uri, String localName, String qName) throws SAXException {
+//		try {
+//			if (elementJustStarted) {
+//				elementJustStarted=false;
+//				writer.append("/>");
+//			} else {
+//				writer.append("</"+qName+">");
+//			}
+//		} catch (IOException e) {
+//			throw new SAXException(e);
+//		}
+//	}
+//
+//	@Override
+//	public void characters(char[] ch, int start, int length) throws SAXException {
+//		try {
+//			if (elementJustStarted) {
+//				elementJustStarted=false;
+//				writer.append(">");
+//			}
+//			if (inCdata) {
+//				writer.append(new String(ch, start, length));
+//			} else {
+//				writer.append(XmlUtils.encodeChars(new String(ch, start, length)));
+//			}
+//		} catch (IOException e) {
+//			throw new SAXException(e);
+//		}
+//	}
+//
+//	@Override
+//	public void comment(char[] ch, int start, int length) throws SAXException {
+//		try {
+//			if (includeComments) {
+//				writer.append("<!--").append(new String(ch, start, length)).append("-->");
+//			}
+//		} catch (IOException e) {
+//			throw new SAXException(e);
+//		}
+//	}
+//
+//	@Override
+//	public void startDTD(String arg0, String arg1, String arg2) throws SAXException {
+////		System.out.println("startDTD");
+//	}
+//
+//	@Override
+//	public void endDTD() throws SAXException {
+////		System.out.println("endDTD");
+//	}
+//
+//	@Override
+//	public void startCDATA() throws SAXException {
+//		try {
+//			if (elementJustStarted) {
+//				elementJustStarted=false;
+//				writer.append(">");
+//			}
+//			writer.append("<![CDATA[");
+//		} catch (IOException e) {
+//			throw new SAXException(e);
+//		}
+//		inCdata=true;
+//	}
+//
+//	@Override
+//	public void endCDATA() throws SAXException {
+//		try {
+//			writer.append("]]>");
+//		} catch (IOException e) {
+//			throw new SAXException(e);
+//		}
+//		inCdata=false;
+//	}
+//
+//	@Override
+//	public void startEntity(String arg0) throws SAXException {
+////		System.out.println("startEntity ["+arg0+"]");
+//	}
+//	@Override
+//	public void endEntity(String arg0) throws SAXException {
+////		System.out.println("endEntity ["+arg0+"]");
+//	}
+//
+//	@Override
+//	public String toString() {
+//		return writer.toString();
+//	}
+//
+//	public void setIncludeComments(boolean includeComments) {
+//		this.includeComments = includeComments;
+//	}
+//	public boolean isIncludeComments() {
+//		return includeComments;
+//	}
+//
+//	public void setSkipXmlDeclaration(boolean skipXmlDeclaration) {
+//		this.skipXmlDeclaration = skipXmlDeclaration;
+//	}
+//	public boolean isSkipXmlDeclaration() {
+//		return skipXmlDeclaration;
+//	}
+//=======
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -36,25 +237,28 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	protected Logger log = LogUtil.getLogger(this);
 	
-	private Writer writer;
-	private boolean includeComments=true;
-	private boolean skipXmlDeclaration=false;
+	private final String DISABLE_OUTPUT_ESCAPING="javax.xml.transform.disable-output-escaping";
+	private final String ENABLE_OUTPUT_ESCAPING="javax.xml.transform.enable-output-escaping";
 	
-	private boolean elementJustStarted=false;
+	private Writer writer;
+	private boolean includeXmlDeclaration=false;
+	private boolean newlineAfterXmlDeclaration=false;
+	private boolean includeComments=true;
+	private boolean textMode=false;
+	
+	private boolean outputEscaping=true;
+	private int elementLevel=0;
+	private boolean elementJustStarted;
 	private boolean inCdata;
+	private StringBuffer firstLevelNamespaceDefinitions=new StringBuffer();
 	private StringBuffer namespaceDefinitions=new StringBuffer();
-
+	
 	public XmlWriter() {
 		writer=new StringWriter();
 	}
 	
 	public XmlWriter(Writer writer) {
 		this.writer=writer;
-	}
-	
-	public XmlWriter(Writer writer, boolean skipXmlDeclaration) {
-		this.writer=writer;
-		this.skipXmlDeclaration=skipXmlDeclaration;
 	}
 	
 	public XmlWriter(OutputStream stream) {
@@ -68,11 +272,14 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	@Override
 	public void startDocument() throws SAXException {
 		try {
-			if (!isSkipXmlDeclaration()) {
+			if (includeXmlDeclaration) {
 				writer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+				if (newlineAfterXmlDeclaration) {
+					writer.append("\n");
+				}
 			}
 		} catch (IOException e) {
-			throw new SAXException(e);
+			throw new SaxException(e);
 		}
 	}
 
@@ -82,7 +289,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 		try {
 			writer.flush();
 		} catch (IOException e) {
-			throw new SAXException(e);
+			throw new SaxException(e);
 		}
 	}
 
@@ -97,38 +304,52 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	@Override
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
 		log.debug("startPrefixMapping ["+prefix+"]=["+uri+"]");
-		appendNamespaceMapping(namespaceDefinitions, prefix, uri);
+		if (elementLevel==0) {
+			appendNamespaceMapping(firstLevelNamespaceDefinitions, prefix, uri);
+		} else {
+			appendNamespaceMapping(namespaceDefinitions, prefix, uri);
+		}
+		super.startPrefixMapping(prefix, uri);
 	}
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 		try {
-			if (elementJustStarted) {
+			if (elementJustStarted && !textMode) {
 				writer.append(">");
 			}
-			writer.append("<"+qName);
-			for (int i=0; i<attributes.getLength(); i++) {
-				writer.append(" "+attributes.getQName(i)+"=\""+XmlUtils.encodeChars(attributes.getValue(i))+"\"");
+			if (!textMode) {
+				writer.append("<"+qName);
+				for (int i=0; i<attributes.getLength(); i++) {
+					writer.append(" "+attributes.getQName(i)+"=\""+XmlUtils.encodeChars(attributes.getValue(i)).replace("&#39;", "'")+"\"");
+				}
+				if (elementLevel==0) {
+					writer.append(firstLevelNamespaceDefinitions);
+				}
+				writer.append(namespaceDefinitions);
 			}
-			writer.append(namespaceDefinitions);
 			namespaceDefinitions.setLength(0);
 			elementJustStarted=true;
+			elementLevel++;
 		} catch (IOException e) {
-			throw new SAXException(e);
+			throw new SaxException(e);
 		}
 	}
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		try {
-			if (elementJustStarted) {
-				elementJustStarted=false;
-				writer.append("/>");
-			} else {
-				writer.append("</"+qName+">");
+			elementLevel--;
+			if (!textMode) {
+				if (elementJustStarted) {
+					elementJustStarted=false;
+					writer.append("/>");
+				} else {
+					writer.append("</"+qName+">");
+				}
 			}
 		} catch (IOException e) {
-			throw new SAXException(e);
+			throw new SaxException(e);
 		}
 	}
 
@@ -137,26 +358,55 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 		try {
 			if (elementJustStarted) {
 				elementJustStarted=false;
-				writer.append(">");
+				if (!textMode) {
+					writer.append(">");
+				}
 			}
-			if (inCdata) {
-				writer.append(new String(ch, start, length));
+			if (textMode) {
+				writer.write(ch, start, length);
 			} else {
-				writer.append(XmlUtils.encodeChars(new String(ch, start, length)));
+				if (inCdata || !outputEscaping) {
+					writer.append(new String(ch, start, length));
+				} else {
+					writer.append(XmlUtils.encodeChars(new String(ch, start, length)).replace("&quot;", "\"").replace("&#39;", "'"));
+				}
 			}
 		} catch (IOException e) {
-			throw new SAXException(e);
+			throw new SaxException(e);
 		}
 	}
 
 	@Override
 	public void comment(char[] ch, int start, int length) throws SAXException {
 		try {
+			if (elementJustStarted && !textMode) {
+				writer.append(">");
+				elementJustStarted=false;
+			}
 			if (includeComments) {
 				writer.append("<!--").append(new String(ch, start, length)).append("-->");
 			}
 		} catch (IOException e) {
-			throw new SAXException(e);
+			throw new SaxException(e);
+		}
+	}
+
+	@Override
+	public void processingInstruction(String target, String data) throws SAXException {
+		try {
+			if (target.equals(DISABLE_OUTPUT_ESCAPING)) {
+				outputEscaping=false;
+				return;
+			}
+			if (target.equals(ENABLE_OUTPUT_ESCAPING)) {
+				outputEscaping=true;
+				return;
+			}
+			if (!textMode) {
+				writer.append("<?").append(target).append(" ").append(data).append("?>\n");
+			}
+		} catch (IOException e) {
+			throw new SaxException(e);
 		}
 	}
 
@@ -175,23 +425,29 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 		try {
 			if (elementJustStarted) {
 				elementJustStarted=false;
-				writer.append(">");
+				if (!textMode) {
+					writer.append(">");
+				}
 			}
-			writer.append("<![CDATA[");
+			if (!textMode) {
+				writer.append("<![CDATA[");
+			}
+			inCdata=true;
 		} catch (IOException e) {
-			throw new SAXException(e);
+			throw new SaxException(e);
 		}
-		inCdata=true;
 	}
 
 	@Override
 	public void endCDATA() throws SAXException {
 		try {
-			writer.append("]]>");
+			if (!textMode) {
+				writer.append("]]>");
+			}
+			inCdata=false;
 		} catch (IOException e) {
-			throw new SAXException(e);
+			throw new SaxException(e);
 		}
-		inCdata=false;
 	}
 
 	@Override
@@ -208,18 +464,23 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 		return writer.toString();
 	}
 
+	
+	public void setIncludeXmlDeclaration(boolean includeXmlDeclaration) {
+		this.includeXmlDeclaration = includeXmlDeclaration;
+	}
+
+	public void setNewlineAfterXmlDeclaration(boolean newlineAfterXmlDeclaration) {
+		this.newlineAfterXmlDeclaration = newlineAfterXmlDeclaration;
+	}
+
 	public void setIncludeComments(boolean includeComments) {
 		this.includeComments = includeComments;
 	}
-	public boolean isIncludeComments() {
-		return includeComments;
+
+	public void setTextMode(boolean textMode) {
+		this.textMode = textMode;
 	}
 
-	public void setSkipXmlDeclaration(boolean skipXmlDeclaration) {
-		this.skipXmlDeclaration = skipXmlDeclaration;
-	}
-	public boolean isSkipXmlDeclaration() {
-		return skipXmlDeclaration;
-	}
+//>>>>>>> refs/heads/master
 
 }

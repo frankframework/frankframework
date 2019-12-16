@@ -11,7 +11,7 @@
 	>
 
 	<bean
-		name="ibisDebuggerAdvice"
+		name="ibisDebuggerAdvice,threadLifeCycleEventListener"
 		class="nl.nn.ibistesttool.IbisDebuggerAdvice"
 		autowire="byName"
 	/>
@@ -97,6 +97,21 @@
 					"
 				method="debugSenderWithParametersInputOutputAbort"
 				arg-names="correlationId, message, parameterResolutionContext"
+			/>
+			<aop:around
+				pointcut=
+					"
+					execution(
+						*
+						nl.nn.adapterframework.stream.StreamingSenderBase.sendMessage(
+							String, String, nl.nn.adapterframework.parameters.ParameterResolutionContext, nl.nn.adapterframework.stream.MessageOutputStream
+						)
+					)
+					and
+					args(correlationId, message, parameterResolutionContext, target)
+					"
+				method="debugStreamingSenderInputOutputAbort"
+				arg-names="correlationId, message, parameterResolutionContext, target"
 			/>
 			<aop:around
 				pointcut=

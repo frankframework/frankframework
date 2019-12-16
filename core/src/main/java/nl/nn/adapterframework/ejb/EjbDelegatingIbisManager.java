@@ -26,6 +26,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.ejb.access.LocalStatelessSessionProxyFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -41,6 +42,8 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
     private IbisManager ibisManager;
     private BeanFactory beanFactory;
     private PlatformTransactionManager transactionManager;
+	private ApplicationEventPublisher applicationEventPublisher;
+
     
     protected synchronized IbisManager getIbisManager() {
         if (this.ibisManager == null) {
@@ -65,7 +68,7 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
             } else {
                 for (Configuration configuration : configurations) {
                     log.info("Configuration retrieved from real IbisManager: configuration-name '"
-                            + configuration.getConfigurationName() + "', nr of adapters: "
+                            + configuration.getName() + "', nr of adapters: "
                             + configuration.getRegisteredAdapters().size());
                 }
             }
@@ -137,6 +140,16 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
 
 	public List<String> getSortedStartedAdapterNames() {
 		return ibisManager.getSortedStartedAdapterNames();
+	}
+
+	@Override
+	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+		this.applicationEventPublisher=applicationEventPublisher;
+	}
+
+	@Override
+	public ApplicationEventPublisher getApplicationEventPublisher() {
+		return applicationEventPublisher;
 	}
 
 }

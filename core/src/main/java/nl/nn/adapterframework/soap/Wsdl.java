@@ -158,7 +158,7 @@ public class Wsdl {
         }
 		//isMixedValidator = inputValidator.isMixedValidator(outputValidator);
         String fileName = getName();
-        AppConstants appConstants = AppConstants.getInstance();
+        AppConstants appConstants = AppConstants.getInstance(pipeLine.getAdapter().getConfigurationClassLoader());
         String tns = appConstants.getResolvedProperty("wsdl." + getName() + ".targetNamespace");
         if (tns == null) {
             tns = appConstants.getResolvedProperty("wsdl.targetNamespace");
@@ -451,11 +451,9 @@ public class Wsdl {
             // validated. In this case we use the serviceNamespaceURI from
             // the WebServiceListener as the namespace for the schema.
             XSD xsd = new XSD();
-            xsd.setClassLoader(pipeLine.getAdapter().getConfiguration().getClassLoader());
-            xsd.setNamespace(webServiceListenerNamespace);
-            xsd.setResource(inputSchema);
+            //xsd.setNamespace(webServiceListenerNamespace);
             xsd.setAddNamespaceToSchema(true);
-            xsd.init();
+            xsd.initNamespace(webServiceListenerNamespace, pipeLine.getAdapter().getConfiguration().getClassLoader(), inputSchema);
             xsds.add(xsd);
         } else {
             xsds = xmlValidator.getXsds();

@@ -1,0 +1,24 @@
+<module>
+	<adapter name="Ladybug" description="Runs reports saved in Ladybug's Test tab periodically through a CRON-job"
+	active="${ladybug.adapter.active}">
+		<receiver name="Ladybug" className="nl.nn.adapterframework.receivers.GenericReceiver">
+			<listener name="Ladybug" className="nl.nn.adapterframework.receivers.JavaListener" />
+		</receiver>
+
+		<pipeline firstPipe="RunTestReports">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="RunTestReports" className="nl.nn.ibistesttool.LadybugPipe"
+				writeToLog="true">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+
+	<scheduler>
+		<job name="Ladybug" adapterName="Ladybug" receiverName="Ladybug"
+			cronExpression="${ladybug.adapter.scheduler.cron}" function="sendMessage"
+			active="${ladybug.adapter.scheduler.active}" />
+	</scheduler>
+</module> 

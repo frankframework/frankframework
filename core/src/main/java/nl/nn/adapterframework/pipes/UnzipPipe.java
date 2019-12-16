@@ -84,13 +84,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * then the extracted filename (path omitted) becomes
  * <pre>&lt;basename&gt; + &lt;unique number&gt; + "." + &lt;extension&gt;</pre>
  * <br>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
- * </table>
- * </p>
  * 
  * @since   4.9
  * @author  Gerrit van Brakel

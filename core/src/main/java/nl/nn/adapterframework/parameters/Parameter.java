@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
@@ -91,7 +92,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class Parameter implements INamedObject, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	public final static String TYPE_XML="xml";
 	public final static String TYPE_NODE="node";
@@ -155,33 +156,33 @@ public class Parameter implements INamedObject, IWithParameters {
 		paramList.add(p);
 	}
 
+	@Override
+	public ParameterList getParameterList() {
+		return paramList;
+	}
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isNotEmpty(getSessionKey()) && 
-			    StringUtils.isNotEmpty(getSessionKeyXPath())) {
+		if (StringUtils.isNotEmpty(getSessionKey()) && StringUtils.isNotEmpty(getSessionKeyXPath())) {
 			throw new ConfigurationException("Parameter ["+getName()+"] cannot have both sessionKey and sessionKeyXPath specified");
 		}
-		if (StringUtils.isNotEmpty(getXpathExpression()) || 
-		    StringUtils.isNotEmpty(styleSheetName)) {
+		if (StringUtils.isNotEmpty(getXpathExpression()) || StringUtils.isNotEmpty(styleSheetName)) {
 			if (paramList!=null) {
 				paramList.configure();
 			}
-			String outputType=TYPE_XML.equalsIgnoreCase(getType()) ||
-							  TYPE_NODE.equalsIgnoreCase(getType()) || 
-							  TYPE_DOMDOC.equalsIgnoreCase(getType())?"xml":"text";
+			String outputType=TYPE_XML.equalsIgnoreCase(getType()) || TYPE_NODE.equalsIgnoreCase(getType()) || TYPE_DOMDOC.equalsIgnoreCase(getType())?"xml":"text";
 			boolean includeXmlDeclaration=false;
 			
-			transformerPool=TransformerPool.configureTransformer0("Parameter ["+getName()+"] ",classLoader,getNamespaceDefs(),getXpathExpression(), styleSheetName,outputType,includeXmlDeclaration,paramList,getXsltVersion());
-	    } else {
+			transformerPool=TransformerPool.configureTransformer0("Parameter ["+getName()+"] ",configurationClassLoader,getNamespaceDefs(),getXpathExpression(), styleSheetName,outputType,includeXmlDeclaration,paramList,getXsltVersion());
+		} else {
 			if (paramList!=null && StringUtils.isEmpty(getXpathExpression())) {
 				throw new ConfigurationException("Parameter ["+getName()+"] can only have parameters itself if a styleSheetName or xpathExpression is specified");
 			}
-	    }
+		}
 		if (isRemoveNamespaces()) {
 			transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(true,false);
 		}
 		if (StringUtils.isNotEmpty(getSessionKeyXPath())) {
-			transformerPoolSessionKey = TransformerPool.configureTransformer("SessionKey for parameter ["+getName()+"] ", classLoader, getNamespaceDefs(), getSessionKeyXPath(), null,"text",false,null);
-	    }
+			transformerPoolSessionKey = TransformerPool.configureTransformer("SessionKey for parameter ["+getName()+"] ", configurationClassLoader, getNamespaceDefs(), getSessionKeyXPath(), null,"text",false,null);
+		}
 		if (TYPE_DATE.equals(getType()) && StringUtils.isEmpty(getFormatString())) {
 			setFormatString(TYPE_DATE_PATTERN);
 		}
@@ -207,7 +208,7 @@ public class Parameter implements INamedObject, IWithParameters {
 
 		if (getMinInclusive()!=null || getMaxInclusive()!=null) {
 			if (!TYPE_NUMBER.equals(getType())) {
-				throw new ConfigurationException("minInclusive and minInclusive only allowed in combination with type ["+TYPE_NUMBER+"]");
+				throw new ConfigurationException("minInclusive and maxInclusive only allowed in combination with type ["+TYPE_NUMBER+"]");
 			}
 			if (getMinInclusive()!=null) {
 				DecimalFormat df = new DecimalFormat();
@@ -224,7 +225,7 @@ public class Parameter implements INamedObject, IWithParameters {
 				try {
 					maxInclusive = df.parse(getMaxInclusive());
 				} catch (ParseException e) {
-					throw new ConfigurationException("Attribute [maxInclusive] could not parse result ["+getMinInclusive()+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
+					throw new ConfigurationException("Attribute [maxInclusive] could not parse result ["+getMaxInclusive()+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
 				}
 			}
 		}
@@ -385,7 +386,9 @@ public class Parameter implements INamedObject, IWithParameters {
 					}
 				}
 			}
-			log.debug("Parameter ["+getName()+"] resolved to defaultvalue ["+(isHidden()?hide(result.toString()):result)+"]");
+			if (result!=null) {
+				log.debug("Parameter ["+getName()+"] resolved to defaultvalue ["+(isHidden()?hide(result.toString()):result)+"]");
+			}
 		}
 		if (result !=null && result instanceof String) {
 			if (getMinLength()>=0 && !TYPE_NUMBER.equals(getType())) {
@@ -402,17 +405,23 @@ public class Parameter implements INamedObject, IWithParameters {
 			}
 			if (TYPE_NODE.equals(getType())) {
 				try {
+					if (transformerPoolRemoveNamespaces != null) {
+						result = transformerPoolRemoveNamespaces.transform((String)result, null);
+					}
 					result=XmlUtils.buildNode((String)result,prc. isNamespaceAware());
 					if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
-				} catch (DomBuilderException e) {
+				} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
 					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to XML nodeset",e);
 				}
 			}
 			if (TYPE_DOMDOC.equals(getType())) {
 				try {
+					if (transformerPoolRemoveNamespaces != null) {
+						result = transformerPoolRemoveNamespaces.transform((String)result, null);
+					}
 					result=XmlUtils.buildDomDocument((String)result,prc.isNamespaceAware());
 					if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
-				} catch (DomBuilderException e) {
+				} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
 					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to XML document",e);
 				}
 			}
@@ -550,7 +559,7 @@ public class Parameter implements INamedObject, IWithParameters {
 			} else if ("hostname".equals(name.toLowerCase())) {
 				substitutionValue = Misc.getHostname();
 			} else if ("fixeddate".equals(name.toLowerCase())) {
-				if (!ConfigurationUtils.stubConfiguration()) {
+				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
 				}
 				Date d;
@@ -566,12 +575,12 @@ public class Parameter implements INamedObject, IWithParameters {
 				}
 				substitutionValue = d;
 			} else if ("fixeduid".equals(name.toLowerCase())) {
-				if (!ConfigurationUtils.stubConfiguration()) {
+				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
 				}
 				substitutionValue = FIXEDUID;
 			} else if ("fixedhostname".equals(name.toLowerCase())) {
-				if (!ConfigurationUtils.stubConfiguration()) {
+				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
 				}
 				substitutionValue = FIXEDHOSTNAME;
@@ -616,7 +625,11 @@ public class Parameter implements INamedObject, IWithParameters {
 		return transformerPool;
 	}
 
-	@IbisDoc({"key of a pipelinesession-variable. If specified, the value of the pipelinesession variable is used as input for the xpathexpression or stylesheet, instead of the current input message. If no xpathexpression or stylesheet are specified, the value itself is returned. If the value '*' is specified, all existing sessionkeys are added as parameter of which the name starts with the name of this parameter. If also the name of the parameter has the value '*' then all existing sessionkeys are added as parameter (except tsreceived)", ""})
+	@IbisDoc({"key of a pipelinesession-variable. If specified, the value of the pipelinesession variable is used as input for "+ 
+		"the xpathexpression or stylesheet, instead of the current input message. If no xpathexpression or stylesheet are "+ 
+		"specified, the value itself is returned. If the value '*' is specified, all existing sessionkeys are added as "+ 
+		"parameter of which the name starts with the name of this parameter. If also the name of the parameter has the "+ 
+		"value '*' then all existing sessionkeys are added as parameter (except tsreceived)", ""})
 	public void setSessionKey(String string) {
 		sessionKey = string;
 	}
@@ -625,7 +638,8 @@ public class Parameter implements INamedObject, IWithParameters {
 		return sessionKey;
 	}
 
-	@IbisDoc({"instead of a fixed <code>sessionkey</code> it's also possible to use a xpath expression to extract the name of the <code>sessionkey</code>", ""})
+	@IbisDoc({"instead of a fixed <code>sessionkey</code> it's also possible to use a xpath expression to extract the name of "+ 
+		"the <code>sessionkey</code>", ""})
 	public void setSessionKeyXPath(String string) {
 		sessionKeyXPath = string;
 	}
@@ -665,7 +679,34 @@ public class Parameter implements INamedObject, IWithParameters {
 	/**
 	 * @param type of the parameter
 	 */
-	@IbisDoc({"<ul><li><code>string</code>: renders the contents of the first node (in combination with xslt or xpath)</li><li><code>xml</code>:  renders a xml-nodeset as an xml-string (in combination with xslt or xpath)</li><li><code>node</code>: renders the CONTENTS of the first node as a nodeset that can be used as such when passed as xslt-parameter (only for XSLT 1.0). Please note that the nodeset may contain multiple nodes, without a common root node. N.B. The result is the set of children of what you might expect it to be...</li><li><code>domdoc</code>: renders xml as a DOM document; similar to <code>node</code> with the distinction that there is always a common root node (required for XSLT 2.0)</li><li><code>date</code>: converts the result to a Date, by default using formatString <code>yyyy-MM-dd</code>. When applied as a JDBC parameter, the method setDate() is used</li><li><code>time</code>: converts the result to a Date, by default using formatString <code>HH:mm:ss</code>. When applied as a JDBC parameter, the method setTime() is used</li><li><code>datetime</code>: converts the result to a Date, by default using formatString <code>yyyy-MM-dd HH:mm:ss</code>. When applied as a JDBC parameter, the method setTimestamp() is used</li>	<li><code>timestamp</code>: similar to datetime, except for the formatString that is <code>yyyy-MM-dd HH:mm:ss.SSS</code> by default</li><li><code>xmldatetime</code>: converts the result from a XML dateTime to a Date. When applied as a JDBC parameter, the method setTimestamp() is used</li>	<li><code>number</code>: converts the result to a Number, using decimalSeparator and groupingSeparator. When applied as a JDBC parameter, the method setDouble() is used</li><li><code>integer</code>: converts the result to an Integer</li><li><code>inputstream</code>: only applicable as a JDBC parameter, the method setBinaryStream() is used</li><li><code>list</code>: converts a List&lt;String&gt; object to a xml-string (&lt;items&gt;&lt;item&gt;...&lt;/item&gt;&lt;item&gt;...&lt;/item&gt;&lt;/items&gt;)</li><li><code>map</code>: converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;)</li></ul>", "string"})
+	@IbisDoc({"<ul>"+ 
+		"<li><code>string</code>: renders the contents of the first node (in combination with xslt or xpath). "+ 
+			"Please note that if there are child nodes, only the contents are returned, use <code>xml</code> if the xml tags "+ 
+			"are required</li>"+ 
+		"<li><code>xml</code>:  renders an xml-nodeset as an xml-string (in combination with xslt or xpath). "+ 
+			"This will include the xml tags</li>"+ 
+		"<li><code>node</code>: renders the CONTENTS of the first node as a nodeset "+ 
+			"that can be used as such when passed as xslt-parameter (only for XSLT 1.0). Please note that the nodeset may "+ 
+			"contain multiple nodes, without a common root node. N.B. The result is the set of children of what you might "+ 
+			"expect it to be...</li>"+ 
+		"<li><code>domdoc</code>: renders xml as a DOM document; similar to <code>node</code> "+ 
+			"with the distinction that there is always a common root node (required for XSLT 2.0)</li>"+ 
+		"<li><code>date</code>: converts the result to a Date, by default using formatString <code>yyyy-MM-dd</code>. "+ 
+			"When applied as a JDBC parameter, the method setDate() is used</li>"+ 
+		"<li><code>time</code>: converts the result to a Date, by default using formatString <code>HH:mm:ss</code>. "+ 
+			"When applied as a JDBC parameter, the method setTime() is used</li>"+ 
+		"<li><code>datetime</code>: converts the result to a Date, by default using formatString <code>yyyy-MM-dd HH:mm:ss</code>. "+ 
+			"When applied as a JDBC parameter, the method setTimestamp() is used</li>"+ 
+		"<li><code>timestamp</code>: similar to datetime, except for the formatString that is <code>yyyy-MM-dd HH:mm:ss.SSS</code> by default</li>"+ 
+		"<li><code>xmldatetime</code>: converts the result from a XML dateTime to a Date. "+ 
+			"When applied as a JDBC parameter, the method setTimestamp() is used</li>"+ 
+		"<li><code>number</code>: converts the result to a Number, using decimalSeparator and groupingSeparator. "+ 
+			"When applied as a JDBC parameter, the method setDouble() is used</li>"+ 
+		"<li><code>integer</code>: converts the result to an Integer</li>"+ 
+		"<li><code>inputstream</code>: only applicable as a JDBC parameter, the method setBinaryStream() is used</li>"+ 
+		"<li><code>list</code>: converts a List&lt;String&gt; object to a xml-string (&lt;items&gt;&lt;item&gt;...&lt;/item&gt;&lt;item&gt;...&lt;/item&gt;&lt;/items&gt;)</li>"+ 
+		"<li><code>map</code>: converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;)</li>"+ 
+		"</ul>", "string"})
 	public void setType(String type) {
 		this.type = type;
 	}
@@ -690,7 +731,14 @@ public class Parameter implements INamedObject, IWithParameters {
 	/**
 	 * @param string with pattern to be used, follows MessageFormat syntax with named parameters
 	 */
-	@IbisDoc({"Value of parameter is determined using substitution and formating. The expression can contain references to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat. {now}, {uid}, {uuid}, {hostname} and {fixeddate} are named constants that can be used in the expression. If fname is a parameter or session variable that resolves to eric, then the pattern 'hi {fname}, hoe gaat het?' resolves to 'hi eric, hoe gaat het?'. a guid can be generated using {hostname}_{uid}, see also <a href=\"http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html\">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html</a> for more information about (g)uid's or <a href=\"http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html\">http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html</a> for more information about uuid's.", ""})
+	@IbisDoc({"Value of parameter is determined using substitution and formating. The expression can contain references "+ 
+		"to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat. "+ 
+		"{now}, {uid}, {uuid}, {hostname} and {fixeddate} are named constants that can be used in the expression. "+ 
+		"If fname is a parameter or session variable that resolves to eric, then the pattern 'hi {fname}, hoe gaat het?' "+ 
+		"resolves to 'hi eric, hoe gaat het?'. a guid can be generated using {hostname}_{uid}, see also "+ 
+		"<a href=\"http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html\">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html</a> "+ 
+		"for more information about (g)uid's or <a href=\"http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html\">http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html</a> "+ 
+		"for more information about uuid's.", ""})
 	public void setPattern(String string) {
 		pattern = string;
 	}
@@ -730,7 +778,8 @@ public class Parameter implements INamedObject, IWithParameters {
 		return hidden;
 	}
 
-	@IbisDoc({"namespace defintions for xpathexpression. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. One entry can be without a prefix, that will define the default namespace.", ""})
+	@IbisDoc({"namespace defintions for xpathexpression. must be in the form of a comma or space separated list of "+ 
+		"<code>prefix=namespaceuri</code>-definitions. One entry can be without a prefix, that will define the default namespace.", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
@@ -738,7 +787,8 @@ public class Parameter implements INamedObject, IWithParameters {
 		return namespaceDefs;
 	}
 
-	@IbisDoc({"when set <code>true</code> namespaces (and prefixes) in the input message are removed before the stylesheet/xpathexpression is executed", "false"})
+	@IbisDoc({"when set <code>true</code> namespaces (and prefixes) in the input message are removed before the "+ 
+		"stylesheet/xpathexpression is executed", "false"})
 	public void setRemoveNamespaces(boolean b) {
 		removeNamespaces = b;
 	}
@@ -754,7 +804,8 @@ public class Parameter implements INamedObject, IWithParameters {
 		return minLength;
 	}
 
-	@IbisDoc({"if set (>=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed to this maximum length", "-1"})
+	@IbisDoc({"if set (>=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed "+ 
+		"to this maximum length", "-1"})
 	public void setMaxLength(int i) {
 		maxLength = i;
 	}
@@ -762,7 +813,8 @@ public class Parameter implements INamedObject, IWithParameters {
 		return maxLength;
 	}
 
-	@IbisDoc({"used in combination with type <code>number</code>; if set and the value of the parameter exceeds this maximum value, this maximum value is taken", ""})
+	@IbisDoc({"used in combination with type <code>number</code>; if set and the value of the parameter exceeds this "+ 
+		"maximum value, this maximum value is taken", ""})
 	public void setMaxInclusive(String string) {
 		maxInclusiveString = string;
 	}
@@ -770,7 +822,8 @@ public class Parameter implements INamedObject, IWithParameters {
 		return maxInclusiveString;
 	}
 
-	@IbisDoc({"used in combination with type <code>number</code>; if set and the value of the parameter exceeds this minimum value, this minimum value is taken", ""})
+	@IbisDoc({"used in combination with type <code>number</code>; if set and the value of the parameter exceeds this "+ 
+		"minimum value, this minimum value is taken", ""})
 	public void setMinInclusive(String string) {
 		minInclusiveString = string;
 	}
@@ -778,7 +831,8 @@ public class Parameter implements INamedObject, IWithParameters {
 		return minInclusiveString;
 	}
 
-	@IbisDoc({"when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
+	@IbisDoc({"when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 "+ 
+		"(org.apache.xalan). <code>0</code> will auto detect", "0"})
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
 	}
@@ -786,7 +840,8 @@ public class Parameter implements INamedObject, IWithParameters {
 		return xsltVersion;
 	}
 
-	@IbisDoc({"Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
+	@IbisDoc({"Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise "+ 
+		"xslt processor 1.0 (org.apache.xalan)", "false"})
 	/**
 	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
 	 */

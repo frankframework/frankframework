@@ -41,13 +41,15 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
+import nl.nn.adapterframework.util.LogUtil;
+
 /**
  * XMLFilter with option to get schema information about child elements to be parsed.
  * 
  * @author Gerrit van Brakel
  */
 public class XmlAligner extends XMLFilterImpl {
-	protected Logger log = Logger.getLogger(this.getClass());
+	protected Logger log = LogUtil.getLogger(this.getClass());
 	
 	public final String FEATURE_NAMESPACES="http://xml.org/sax/features/namespaces";
 	public final String FEATURE_NAMESPACE_PREFIXES="http://xml.org/sax/features/namespace-prefixes";

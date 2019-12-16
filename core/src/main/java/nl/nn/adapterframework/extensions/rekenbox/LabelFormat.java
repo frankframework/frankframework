@@ -70,13 +70,6 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * </ul></td><td>Xml2Label</td></tr>
  * </table>
  * </p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>default, when specified</td></tr>
- * </table>
- * </p>
  * @author Gerrit van Brakel
  */
 public class LabelFormat extends FixedForwardPipe {

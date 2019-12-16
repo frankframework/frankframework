@@ -47,11 +47,6 @@ public interface IConfigurationClassLoader extends ReloadAware {
 	public String getConfigurationName();
 
 	/**
-	 * Retrieve the configuration.xml file of the configuration that uses this {@link IConfigurationClassLoader}
-	 */
-	public String getConfigurationFile();
-
-	/**
 	 * Defines the log level for errors caused by the {@link IConfigurationClassLoader#configure(IbisContext, String) configure} method
 	 * @param level ReportLevel in string format to be parsed by the ClassLoaderManager digester
 	 */

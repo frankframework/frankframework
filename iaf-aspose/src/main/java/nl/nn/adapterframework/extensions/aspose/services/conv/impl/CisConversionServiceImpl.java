@@ -44,7 +44,7 @@ import nl.nn.adapterframework.util.DateUtils;
  */
 public class CisConversionServiceImpl implements CisConversionService {
 
-	private static final Logger LOGGER = Logger.getLogger(CisConversionServiceImpl.class);
+	private static final Logger LOGGER = LogUtil.getLogger(CisConversionServiceImpl.class);
 
 	// location of converted pdf files
 	private String pdfOutputlocation = "";

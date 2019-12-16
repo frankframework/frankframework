@@ -31,7 +31,7 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionServi
  */
 public class ConvertorFactory {
 
-	private static final Logger LOGGER = Logger.getLogger(ConvertorFactory.class);
+	private static final Logger LOGGER = LogUtil.getLogger(ConvertorFactory.class);
 
 	private Map<MediaType, Convertor> convertorLookupMap = new HashMap<>();
 

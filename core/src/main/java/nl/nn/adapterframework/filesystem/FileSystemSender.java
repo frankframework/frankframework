@@ -61,7 +61,7 @@ import nl.nn.adapterframework.stream.StreamingSenderBase;
  * 
  * @author Gerrit van Brakel
  */
-public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends StreamingSenderBase {
+public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends StreamingSenderBase implements HasPhysicalDestination {
 	
 	private FS fileSystem;
 	private FileSystemActor<F,FS> actor=new FileSystemActor<F,FS>();
@@ -128,6 +128,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	}
 
 
+	@Override
 	public String getPhysicalDestinationName() {
 		if (getFileSystem() instanceof HasPhysicalDestination) {
 			return ((HasPhysicalDestination)getFileSystem()).getPhysicalDestinationName();
@@ -149,7 +150,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 
 
 
-	@IbisDoc({"1", "possible values: list, read, delete, move, mkdir, rmdir, write, append, rename", "" })
+	@IbisDoc({"1", "possible values: list, info, read, delete, move, mkdir, rmdir, write, append, rename", "" })
 	public void setAction(String action) {
 		actor.setAction(action);
 	}
@@ -180,6 +181,14 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	@IbisDoc({"6", "for action=write, and for action=append with rotateSize>0: the number of backup files that is kept", "0"})
 	public void setNumberOfBackups(int numberOfBackups) {
 		actor.setNumberOfBackups(numberOfBackups);
+	}
+
+	@IbisDoc({"3", "filename to operate on. When not set, the parameter filename is used. When that is not set either, the input is used", ""})
+	public void setFilename(String filename) {
+		actor.setFilename(filename);
+	}
+	public String getFilename() {
+		return actor.getFilename();
 	}
 
 }

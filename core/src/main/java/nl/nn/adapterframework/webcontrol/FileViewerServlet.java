@@ -98,7 +98,7 @@ public class FileViewerServlet extends HttpServlet  {
 	public static final String permissionRules = AppConstants.getInstance().getResolvedProperty("FileViewerServlet.permission.rules");
 
 	public static String makeConfiguredReplacements(String input) {
-		StringTokenizer tok=AppConstants.getInstance().getTokenizer(fvConfigKey);
+		StringTokenizer tok=AppConstants.getInstance().getTokenizedProperty(fvConfigKey);
 		while (tok.hasMoreTokens()){
 			String signal=tok.nextToken();
 			String pre=AppConstants.getInstance().getProperty(fvConfigKey+"."+signal+".pre");

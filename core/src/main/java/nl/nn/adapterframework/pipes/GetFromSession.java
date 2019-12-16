@@ -31,13 +31,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * Gets the contents of the {@link IPipeLineSession pipeLineSession} by a key specified by
  * <code>{@link #setSessionKey(String) sessionKey}</code>.
  *
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
- * </table>
- * </p>
  * @author Johan Verrips
  *
  * @see IPipeLineSession

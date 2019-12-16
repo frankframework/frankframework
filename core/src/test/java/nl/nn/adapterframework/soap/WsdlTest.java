@@ -267,6 +267,8 @@ public class WsdlTest {
             }
         });
         when(adp.getName()).thenReturn(adapterName);
+        when(cfg.getClassLoader()).thenReturn(this.getClass().getClassLoader());
+        when(adp.getConfigurationClassLoader()).thenReturn(this.getClass().getClassLoader());
         return simple;
 
     }

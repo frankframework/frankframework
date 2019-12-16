@@ -24,36 +24,43 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXSource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.JsonXmlReader;
 import nl.nn.adapterframework.util.XmlJsonWriter;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * Perform an XSLT transformation with a specified stylesheet on a JSON input, yielding JSON.
+ * Perform an XSLT transformation with a specified stylesheet on a JSON input, yielding JSON, XML or text.
+ * JSON input is transformed into XML map, array, string, integer and boolean elements, in the namespace http://www.w3.org/2013/XSL/json.
+ * The XSLT stylesheet or XPathExpression operates on these element.
+ * 
+ * @see  <a href="https://www.xml.com/articles/2017/02/14/why-you-should-be-using-xslt-30/">https://www.xml.com/articles/2017/02/14/why-you-should-be-using-xslt-30/</a>
  *
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be applied to the created transformer</td></tr>
- * </table>
- * </p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
- * </table>
- * </p>
  * @author Gerrit van Brakel
  */
 
 public class JsonXsltPipe extends XsltPipe {
+	
+	private boolean jsonResult=true;
+
+	@Override
+	public void configure() throws ConfigurationException {
+		if (StringUtils.isNotEmpty(getXpathExpression()) && StringUtils.isEmpty(getNamespaceDefs())) {
+			setNamespaceDefs("j=http://www.w3.org/2013/XSL/json");
+		}
+		super.configure();
+	}
+
 
 	@Override
 	public boolean canProvideOutputStream() {
@@ -73,61 +80,56 @@ public class JsonXsltPipe extends XsltPipe {
 		return XmlUtils.source2String(source, false);
 	}
 
-	private String xml2Json(String xml) throws TransformerException, DomBuilderException {
-
-		Source source=XmlUtils.stringToSourceForSingleUse(xml,true);
-        SAXResult result = new SAXResult();
+	private String xml2Json(String xml) throws TransformerException, SAXException {
+		Source source = XmlUtils.stringToSourceForSingleUse(xml, true);
+		SAXResult result = new SAXResult();
 		XmlJsonWriter xjw = new XmlJsonWriter();
 		result.setHandler(xjw);
-        TransformerFactory tf = XmlUtils.getTransformerFactory(0);
-        Transformer transformer = tf.newTransformer();
-        transformer.transform(source, result);
+		TransformerFactory tf = XmlUtils.getTransformerFactory(0);
+		Transformer transformer = tf.newTransformer();
+		transformer.transform(source, result);
 		return xjw.toString();
-
 	}
 
-//	private Node jsonToDom(String json) throws TransformerException, DomBuilderException {
-//		XMLReader reader=new JsonXmlReader();
-//		Source source=new SAXSource(reader, new InputSource(new StringReader(json)));
-//        DOMResult result = new DOMResult();
-//        TransformerFactory tf = XmlUtils.getTransformerFactory(true);
-//        Transformer transformer = tf.newTransformer();
-//        transformer.transform(source, result);
-//        return result.getNode();
-//	}
 
 	@Override
 	protected String getInputXml(Object input, IPipeLineSession session) throws TransformerException {
 		//TODO: GvB: use SAXSource for primary transformation, instead of first converting to XML String. However, there appears to be a problem with that currently.
-		return jsonToXml((String)super.getInputXml(input, session));
-//		return super.getInput(xml, session);
-
-//		Node node = jsonToDom(input);
-////		System.out.println("node: "+ToStringBuilder.reflectionToString(node));
-//		Source source=new DOMSource(node);
-//		return new ParameterResolutionContext(source, session, isNamespaceAware(), isXslt2());
-		
-//		XMLReader reader=new JsonXmlReader();
-//		Source source=new SAXSource(reader, new InputSource(new StringReader(input)));
-//		return new ParameterResolutionContext(source, session, isNamespaceAware(), isXslt2());
+		Object superObj=super.getInputXml(input, session);
+		String json=superObj==null?null:superObj.toString();
+		//if (log.isDebugEnabled()) log.debug("json ["+json+"]");
+		String xml=jsonToXml(json);
+		//if (log.isDebugEnabled()) log.debug("xml ["+xml+"]");
+		return xml;
 	}
 	
 	@Override
-	protected Object transform(Object input, IPipeLineSession session, MessageOutputStream target) throws SenderException, TransformerException, TimeOutException {
-		Object xmlResult=super.transform(input, session, target);
+	protected String transform(Object input, IPipeLineSession session, MessageOutputStream target) throws SenderException, TransformerException, TimeOutException {
+		Object superResult=super.transform(input, session, target);
+		String xmlResult=superResult==null?null:superResult.toString();
+		if (!isJsonResult()) {
+			return xmlResult;
+		}
 		try {
-			return xml2Json(xmlResult.toString());
-		} catch (DomBuilderException e) {
+			//if (log.isDebugEnabled()) log.debug("xml result ["+xmlResult+"]");
+			return xml2Json(xmlResult);
+		} catch (SAXException e) {
 			throw new TransformerException(e);
 		}
 	}
-//	protected String transform(TransformerPool tp, Source source, Map parametervalues) throws TransformerException, IOException {
-//		SAXResult result = new SAXResult();
-//		XmlJsonWriter xjw = new XmlJsonWriter();
-//		result.setHandler(xjw);
-//		tp.transform(source, result, parametervalues);
-//		return xjw.toString();
-//	}
 
-	
+	@IbisDoc({"1", "When <code>true</code>, the xml result of the transformation is converted back to json", "true"})
+	public void setJsonResult(boolean jsonResult) {
+		this.jsonResult = jsonResult;
+	}
+	public boolean isJsonResult() {
+		return jsonResult;
+	}
+
+	@Override
+	@IbisDoc({"2", "Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", "j=http://www.w3.org/2013/XSL/json"})
+	public void setNamespaceDefs(String namespaceDefs) {
+		super.setNamespaceDefs(namespaceDefs);
+	}
+
 }
