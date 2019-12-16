@@ -20,9 +20,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.TransformerException;
 
 import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang.StringUtils;
@@ -40,8 +37,8 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.IThreadCreator;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.MessageOutputStreamCap;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -49,7 +46,6 @@ import nl.nn.adapterframework.stream.StreamingSenderBase;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
@@ -158,18 +154,6 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		}
 	}
 
-//<<<<<<< HEAD
-//	protected Source adaptInput(String input, ParameterResolutionContext prc) throws DomBuilderException, TransformerException, IOException {
-//		if (transformerPoolRemoveNamespaces!=null) {
-//			log.debug(getLogPrefix()+ " removing namespaces from input message");
-//			input = transformerPoolRemoveNamespaces.transform(prc.getInputSource(true), null); 
-//			log.debug(getLogPrefix()+ " output message after removing namespaces [" + input + "]");
-//			return XmlUtils.stringToSourceForSingleUse(input, true);
-//		}
-//		return prc.getInputSource(isNamespaceAware());
-//	}
-//=======
-//>>>>>>> refs/heads/master
 
 	protected ContentHandler filterInput(ContentHandler input, ParameterResolutionContext prc) {
 		if (isRemoveNamespaces()) {

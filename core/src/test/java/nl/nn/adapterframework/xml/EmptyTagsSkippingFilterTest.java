@@ -47,7 +47,7 @@ public class EmptyTagsSkippingFilterTest {
 
 	public void testToWriter(String source, String expected) throws Exception {
 		StringWriter target = new StringWriter();
-		XmlWriter xmlWriter = new XmlWriter(target,true);
+		XmlWriter xmlWriter = new XmlWriter(target);
 		
 		EmptyTagsSkippingFilter filter = new EmptyTagsSkippingFilter();
 		filter.setContentHandler(xmlWriter);

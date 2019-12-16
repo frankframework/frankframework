@@ -697,7 +697,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		boolean actual = _folderExists(folder);
 		// test
 		assertEquals("result of actor should be name of created folder",folder,result);
-		assertTrue("Expected file[" + folder + "] to be present", actual);
+		assertTrue("Expected folder [" + folder + "] to be present", actual);
 	}
 
 	@Test
