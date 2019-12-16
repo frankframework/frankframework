@@ -8,6 +8,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import nl.nn.adapterframework.xml.SaxException;
+
 public class XmlJsonWriter extends DefaultHandler {
 
 	Writer writer;
@@ -27,7 +29,7 @@ public class XmlJsonWriter extends DefaultHandler {
 		try {
 			writer.flush();
 		} catch (IOException e) {
-			throw new SAXException(e);
+			throw new SaxException(e);
 		}
 	}
 
@@ -54,7 +56,7 @@ public class XmlJsonWriter extends DefaultHandler {
 				stringOpen=true;
 			}
 		} catch (IOException e) {
-			throw new SAXException(e);
+			throw new SaxException(e);
 		}
 	}
 
@@ -70,7 +72,7 @@ public class XmlJsonWriter extends DefaultHandler {
 			}
 			commaRequired=true;
 		} catch (IOException e) {
-			throw new SAXException(e);
+			throw new SaxException(e);
 		}
 	}
 
@@ -81,7 +83,7 @@ public class XmlJsonWriter extends DefaultHandler {
 			writer.write(chars, start, length);
 			if (stringOpen) writer.write('"');
 		} catch (IOException e) {
-			throw new SAXException(e);
+			throw new SaxException(e);
 		}
 	}
 

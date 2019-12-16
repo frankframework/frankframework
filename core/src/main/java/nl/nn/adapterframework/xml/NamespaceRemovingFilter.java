@@ -16,14 +16,11 @@
 package nl.nn.adapterframework.xml;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.ext.LexicalHandler;
 
 public class NamespaceRemovingFilter extends FullXmlFilter {
-	
-	private LexicalHandler lexicalHandler;
+//	Logger log = LogUtil.getLogger(this.getClass());
 	
 	public NamespaceRemovingFilter() {
 		super();
@@ -48,65 +45,13 @@ public class NamespaceRemovingFilter extends FullXmlFilter {
 	@Override
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
 		//log.debug("startPrefixMapping("+prefix+","+uri+")");
-		//super.startPrefixMapping(prefix, "");
+		super.startPrefixMapping(prefix, "");
 	}
 
 	@Override
 	public void endPrefixMapping(String prefix) throws SAXException {
 		//log.debug("endPrefixMapping("+prefix+")");
-		//super.endPrefixMapping(prefix);
-	}
-
-	@Override
-	public void comment(char[] arg0, int arg1, int arg2) throws SAXException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void endCDATA() throws SAXException {
-		if (lexicalHandler!=null) {
-			lexicalHandler.endCDATA();
-		}
-	}
-
-	@Override
-	public void endDTD() throws SAXException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void endEntity(String arg0) throws SAXException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void startCDATA() throws SAXException {
-		if (lexicalHandler!=null) {
-			lexicalHandler.startCDATA();
-		}
-	}
-
-	@Override
-	public void startDTD(String arg0, String arg1, String arg2) throws SAXException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void startEntity(String arg0) throws SAXException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setContentHandler(ContentHandler handler) {
-		super.setContentHandler(handler);
-		if (handler instanceof LexicalHandler) {
-			lexicalHandler=(LexicalHandler)handler;
-		}
+		super.endPrefixMapping(prefix);
 	}
 
 }

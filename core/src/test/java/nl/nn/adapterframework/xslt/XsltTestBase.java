@@ -462,5 +462,4 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		
 		assertResultsAreCorrect(expected, result, session);
 	}
-
 }
