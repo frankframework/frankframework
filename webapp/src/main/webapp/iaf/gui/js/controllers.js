@@ -706,7 +706,7 @@ angular.module('iaf.beheerconsole')
 
 //** Ctrls **//
 
-.controller('ManageConfigurationDetailsCtrl', ['$scope', '$state', 'Api', 'Debug', 'Misc', '$interval', function($scope, $state, Api, Debug, Misc, $interval) {
+.controller('ManageConfigurationDetailsCtrl', ['$scope', '$state', 'Api', 'Debug', 'Misc', '$interval', 'SweetAlert', function($scope, $state, Api, Debug, Misc, $interval, SweetAlert) {
 	$scope.state = [];
 	$scope.loading = false;
 	$scope.addNote = function(type, message) {
@@ -727,7 +727,7 @@ angular.module('iaf.beheerconsole')
 	$scope.configuration = $state.params.name;
 	function update() {
 		$scope.loading = true;
-		Api.Get("configurations/"+$state.params.name+"/manage", function(data) {
+		Api.Get("configurations/"+$state.params.name+"/versions", function(data) {
 			for(x in data) {
 				var configs = data[x];
 				if(configs.active) {
@@ -741,7 +741,28 @@ angular.module('iaf.beheerconsole')
 	};
 	update();
 	$scope.download = function(config) {
-		window.open(Misc.getServerPath() + "iaf/api/configurations/"+config.name+"/download?version="+encodeURIComponent(config.version));
+		window.open(Misc.getServerPath() + "iaf/api/configurations/"+config.name+"/versions/"+encodeURIComponent(config.version)+"/download");
+	};
+	$scope.deleteConfig = function(config) {
+		var message = "";
+		if(config.version) {
+			message = "Are you sure you want to remove version '"+config.version+"'?";
+		} else {
+			message = "Are you sure?";
+		}
+		SweetAlert.Confirm({title:message}, function(imSure) {
+			if(imSure) {
+				Api.Delete("configurations/"+config.name+"/versions/"+encodeURIComponent(config.version), function() {
+					$scope.addNote("success", "Successfully removed version '"+config.version+"'");
+					update();
+				}, function(_, status, statusText) {
+					if(status == 403)
+						$scope.setNote("danger", "403 - Forbidden; you do not have enough access rights to complete this action!");
+					else
+						$scope.addNote("danger", "An error occured while attempting to remove version '"+config.version+"'. ");
+				});
+			}
+		});
 	};
 
 	$scope.activate = function(config) {
@@ -750,7 +771,7 @@ angular.module('iaf.beheerconsole')
 			if(configs.version != config.version)
 				configs.actived = false;
 		}
-		Api.Put("configurations/"+config.name+"/manage/"+encodeURIComponent(config.version), {activate:config.active}, function(data) {
+		Api.Put("configurations/"+config.name+"/versions/"+encodeURIComponent(config.version), {activate:config.active}, function(data) {
 			$scope.setNote("success", "Successfully changed startup config to version '"+config.version+"'");
 		}, function(_, status, statusText) {
 			update();
@@ -762,7 +783,7 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.scheduleReload = function(config) {
-		Api.Put("configurations/"+config.name+"/manage/"+encodeURIComponent(config.version), {autoreload:config.autoreload}, function(data) {
+		Api.Put("configurations/"+config.name+"/versions/"+encodeURIComponent(config.version), {autoreload:config.autoreload}, function(data) {
 			$scope.setNote("success", "Successfully "+(config.autoreload ? "enabled" : "disabled")+" Auto Reload for version '"+config.version+"'");
 		}, function(_, status, statusText) {
 			update();

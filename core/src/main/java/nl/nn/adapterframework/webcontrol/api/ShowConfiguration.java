@@ -24,7 +24,6 @@ import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -37,6 +36,7 @@ import java.util.zip.ZipInputStream;
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -59,6 +59,7 @@ import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
 
 /**
@@ -194,7 +195,7 @@ public final class ShowConfiguration extends Base {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/configurations/{configuration}/manage")
+	@Path("/configurations/{configuration}/versions")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getConfigurationDetailsByName(@PathParam("configuration") String configurationName, @QueryParam("realm") String jmsRealm) throws ApiException {
 		initBase(servletConfig);
@@ -223,7 +224,7 @@ public final class ShowConfiguration extends Base {
 
 	@PUT
 	@RolesAllowed({"IbisAdmin", "IbisTester"})
-	@Path("/configurations/{configuration}/manage/{version}")
+	@Path("/configurations/{configuration}/versions/{version}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response manageConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String encodedVersion, @QueryParam("realm") String jmsRealm, LinkedHashMap<String, Object> json) throws ApiException {
@@ -367,9 +368,9 @@ public final class ShowConfiguration extends Base {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/configurations/{configuration}/download")
+	@Path("/configurations/{configuration}/versions/{version}/download")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	public Response downloadConfiguration(@PathParam("configuration") String configurationName, @QueryParam("version") String version, @QueryParam("realm") String jmsRealm) throws ApiException {
+	public Response downloadConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String version, @QueryParam("realm") String jmsRealm) throws ApiException {
 		initBase(servletConfig);
 
 		if (StringUtils.isEmpty(version))
@@ -388,6 +389,24 @@ public final class ShowConfiguration extends Base {
 			throw new ApiException(e);
 		}
 	}
+
+	@DELETE
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/configurations/{configuration}/versions/{version}")
+	public Response deleteConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String version, @QueryParam("realm") String jmsRealm) throws ApiException {
+		initBase(servletConfig);
+
+		if (StringUtils.isEmpty(jmsRealm))
+			jmsRealm = null;
+
+		try {
+			ConfigurationUtils.removeConfigFromDatabase(ibisContext, configurationName, jmsRealm, version);
+			return Response.status(Response.Status.OK).build();
+		} catch (Exception e) {
+			throw new ApiException(e);
+		}
+	}
+
 
 	private List<Map<String, Object>> getConfigsFromDatabase(String configurationName, String jmsRealm) {
 		List<Map<String, Object>> returnMap = new ArrayList<Map<String, Object>>();
@@ -426,21 +445,8 @@ public final class ShowConfiguration extends Base {
 		} catch (Exception e) {
 			throw new ApiException(e);
 		} finally {
+			JdbcUtil.fullClose(conn, rs);
 			qs.close();
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException e) {
-					log.warn("Could not close resultset", e);
-				}
-			}
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					log.warn("Could not close connection", e);
-				}
-			}
 		}
 		return returnMap;
 	}
