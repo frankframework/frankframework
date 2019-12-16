@@ -29,13 +29,6 @@ import org.apache.commons.lang.StringUtils;
  * Removes a key specified by <code>{@link #setSessionKey(String) sessionKey}</code>
  * from the {@link IPipeLineSession pipeLineSession}.
  *
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
- * </table>
- * </p>
  * @author Peter Leeuwenburgh
  *
  * @see IPipeLineSession

@@ -82,7 +82,18 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 
 	@Override
 	public File toFile(String filename) {
-		return new File(getRoot(), filename);
+		return toFile(null, filename);
+	}
+
+	@Override
+	public File toFile(String folder, String filename) {
+		if (StringUtils.isEmpty(folder)) {
+			return new File(getRoot(), filename);
+		}
+		if (StringUtils.isEmpty(getRoot())) {
+			return new File(folder, filename);
+		}
+		return new File(getRoot()+"/"+folder, filename);
 	}
 
 	@Override
@@ -228,6 +239,11 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(File f) {
 		return null;
+	}
+
+	@Override
+	public String getPhysicalDestinationName() {
+		return "root ["+(getRoot()==null?"":getRoot())+"]";
 	}
 
 

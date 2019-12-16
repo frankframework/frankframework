@@ -91,7 +91,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class Parameter implements INamedObject, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	public final static String TYPE_XML="xml";
 	public final static String TYPE_NODE="node";
@@ -170,7 +170,7 @@ public class Parameter implements INamedObject, IWithParameters {
 			String outputType=TYPE_XML.equalsIgnoreCase(getType()) || TYPE_NODE.equalsIgnoreCase(getType()) || TYPE_DOMDOC.equalsIgnoreCase(getType())?"xml":"text";
 			boolean includeXmlDeclaration=false;
 			
-			transformerPool=TransformerPool.configureTransformer0("Parameter ["+getName()+"] ",classLoader,getNamespaceDefs(),getXpathExpression(), styleSheetName,outputType,includeXmlDeclaration,paramList,getXsltVersion());
+			transformerPool=TransformerPool.configureTransformer0("Parameter ["+getName()+"] ",configurationClassLoader,getNamespaceDefs(),getXpathExpression(), styleSheetName,outputType,includeXmlDeclaration,paramList,getXsltVersion());
 		} else {
 			if (paramList!=null && StringUtils.isEmpty(getXpathExpression())) {
 				throw new ConfigurationException("Parameter ["+getName()+"] can only have parameters itself if a styleSheetName or xpathExpression is specified");
@@ -180,7 +180,7 @@ public class Parameter implements INamedObject, IWithParameters {
 			transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(true,false);
 		}
 		if (StringUtils.isNotEmpty(getSessionKeyXPath())) {
-			transformerPoolSessionKey = TransformerPool.configureTransformer("SessionKey for parameter ["+getName()+"] ", classLoader, getNamespaceDefs(), getSessionKeyXPath(), null,"text",false,null);
+			transformerPoolSessionKey = TransformerPool.configureTransformer("SessionKey for parameter ["+getName()+"] ", configurationClassLoader, getNamespaceDefs(), getSessionKeyXPath(), null,"text",false,null);
 		}
 		if (TYPE_DATE.equals(getType()) && StringUtils.isEmpty(getFormatString())) {
 			setFormatString(TYPE_DATE_PATTERN);
@@ -537,7 +537,7 @@ public class Parameter implements INamedObject, IWithParameters {
 			} else if ("hostname".equals(name.toLowerCase())) {
 				substitutionValue = Misc.getHostname();
 			} else if ("fixeddate".equals(name.toLowerCase())) {
-				if (!ConfigurationUtils.stubConfiguration()) {
+				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
 				}
 				Date d;
@@ -553,12 +553,12 @@ public class Parameter implements INamedObject, IWithParameters {
 				}
 				substitutionValue = d;
 			} else if ("fixeduid".equals(name.toLowerCase())) {
-				if (!ConfigurationUtils.stubConfiguration()) {
+				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
 				}
 				substitutionValue = FIXEDUID;
 			} else if ("fixedhostname".equals(name.toLowerCase())) {
-				if (!ConfigurationUtils.stubConfiguration()) {
+				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
 				}
 				substitutionValue = FIXEDHOSTNAME;

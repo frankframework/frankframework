@@ -340,7 +340,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		}
 		super.configure();
 		if (isUseFixedValues()) {
-			if (!ConfigurationUtils.stubConfiguration()) {
+			if (!ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader())) {
 				throw new ConfigurationException(getLogPrefix(null)+"returnFixedDate only allowed in stub mode");
 			}
 		}

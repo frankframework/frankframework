@@ -69,6 +69,10 @@ public class IbisApplicationServlet extends CXFServlet {
 	public void init(ServletConfig config) throws ServletException {
 		this.currentConfig = config;
 		servletContext = config.getServletContext();
+
+		checkAndCorrectLegacyServerTypes();
+		determineApplicationServerType();
+
 		AppConstants appConstants = AppConstants.getInstance();
 		String realPath = servletContext.getRealPath("/");
 		if (realPath != null) {
@@ -84,7 +88,6 @@ public class IbisApplicationServlet extends CXFServlet {
 		}
 		setUploadPathInServletContext();
 		ibisContext = new IbisContext();
-		setDefaultApplicationServerType(ibisContext);
 		String attributeKey = appConstants.getResolvedProperty(KEY_CONTEXT);
 		servletContext.setAttribute(attributeKey, ibisContext);
 		log.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ attributeKey + "]");
@@ -166,9 +169,31 @@ public class IbisApplicationServlet extends CXFServlet {
 		}
 	}
 
-	private void setDefaultApplicationServerType(IbisContext ibisContext) {
-		ServletContext context = getServletContext();
-		String serverInfo = context.getServerInfo();
+	/**
+	 * Log the message in System.out, the Ibis console and the Log4j logger
+	 * @param message to log
+	 */
+	private void log2ContextAndGui(String message) {
+		servletContext.log(message);
+		ConfigurationWarnings.getInstance().add(log, message);
+	}
+
+	private void checkAndCorrectLegacyServerTypes() {
+		//In case the property is explicitly set with an unsupported value, E.g. 'applName + number'
+		String applicationServerType = System.getProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
+		if (StringUtils.isNotEmpty(applicationServerType)) {
+			if (applicationServerType.equalsIgnoreCase("WAS5") || applicationServerType.equalsIgnoreCase("WAS6")) {
+				log2ContextAndGui("interpeting value ["+applicationServerType+"] of property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] as [WAS]");
+				System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, "WAS");
+			} else if (applicationServerType.equalsIgnoreCase("TOMCAT6")) {
+				log2ContextAndGui("interpeting value ["+applicationServerType+"] of property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] as [TOMCAT]");
+				System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, "TOMCAT");
+			}
+		}
+	}
+
+	private void determineApplicationServerType() {
+		String serverInfo = servletContext.getServerInfo();
 		String defaultApplicationServerType = null;
 		if (StringUtils.containsIgnoreCase(serverInfo, "WebSphere Liberty")) {
 			defaultApplicationServerType = "WLP";
@@ -181,20 +206,24 @@ public class IbisApplicationServlet extends CXFServlet {
 		} else if (StringUtils.containsIgnoreCase(serverInfo, "WildFly")) {
 			defaultApplicationServerType = "JBOSS";
 		} else if (StringUtils.containsIgnoreCase(serverInfo, "jetty")) {
-			String javaHome = AppConstants.getInstance().getString("java.home",
-					"");
+			String javaHome = System.getProperty("java.home");
 			if (StringUtils.containsIgnoreCase(javaHome, "tibco")) {
 				defaultApplicationServerType = "TIBCOAMX";
 			} else {
 				defaultApplicationServerType = "JETTYMVN";
 			}
 		} else {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings
-					.getInstance();
-			configWarnings.add(log, "Unknown server info [" + serverInfo
-					+ "] default application server type could not be determined, TOMCAT will be used as default value");
 			defaultApplicationServerType = "TOMCAT";
+			log2ContextAndGui("unknown server info ["+serverInfo+"] default application server type could not be determined, TOMCAT will be used as default value");
 		}
-		ibisContext.setDefaultApplicationServerType(defaultApplicationServerType);
+
+		//has it explicitly been set? if not, set the property
+		String serverType = System.getProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
+		if (defaultApplicationServerType.equals(serverType)) { //and is it the same as the automatically detected version?
+			log2ContextAndGui("property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] already has a default value ["+defaultApplicationServerType+"]");
+		}
+		else if (StringUtils.isEmpty(serverType)) { //or has it not been set?
+			System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, defaultApplicationServerType);
+		}
 	}
 }

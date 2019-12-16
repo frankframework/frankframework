@@ -33,25 +33,6 @@ import org.json.XML;
 /**
  * Perform an JSON to XML transformation
  *
- * <p>
- * <b>Exits:</b>
- * <table border="1">
- * <tr>
- * <th>state</th>
- * <th>condition</th>
- * </tr>
- * <tr>
- * <td>"success"</td>
- * <td>default</td>
- * </tr>
- * <tr>
- * <td>
- * <i>{@link #setForwardName(String) forwardName}</i>
- * </td>
- * <td>if specified</td>
- * </tr>
- * </table>
- * </p>
  * @author Martijn Onstwedder
  * @author Tom van der Heijden
  */

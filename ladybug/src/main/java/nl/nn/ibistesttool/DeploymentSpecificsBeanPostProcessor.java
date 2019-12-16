@@ -20,6 +20,7 @@ import nl.nn.testtool.TestTool;
 import nl.nn.testtool.filter.View;
 import nl.nn.testtool.filter.Views;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.helpers.OptionConverter;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
@@ -30,20 +31,24 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
  */
 public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
 
-	public Object postProcessBeforeInitialization(Object bean, String beanName)
-			throws BeansException {
+	@Override
+	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		if (bean instanceof TestTool) {
 			TestTool testTool = (TestTool)bean;
-			// TODO appConstants.getResolvedProperty doen?
-			String stage = System.getProperty("otap.stage");
-			if ("ACC".equals(stage) || "PRD".equals(stage)) {
-				testTool.setReportGeneratorEnabled(false);
-			}
+			boolean testToolEnabled=true;
 			AppConstants appConstants = AppConstants.getInstance();
-			String testToolEnabled = appConstants.getProperty("testtool.enabled");
-			if ("TRUE".equalsIgnoreCase(testToolEnabled)) {
-				testTool.setReportGeneratorEnabled(true);
+			String testToolEnabledProperty=appConstants.getProperty("testtool.enabled");
+			if (StringUtils.isNotEmpty(testToolEnabledProperty)) {
+				testToolEnabled="true".equalsIgnoreCase(testToolEnabledProperty);
+			} else {
+				String stage = System.getProperty("otap.stage");
+				if ("ACC".equals(stage) || "PRD".equals(stage)) {
+					testToolEnabled=false;
+				}
+				appConstants.setProperty("testtool.enabled", testToolEnabled);
 			}
+			testTool.setReportGeneratorEnabled(testToolEnabled);
+			IbisDebuggerAdvice.setEnabled(testToolEnabled);
 		}
 		if (bean instanceof nl.nn.testtool.storage.file.Storage) {
 			// TODO appConstants via set methode door spring i.p.v. AppConstants.getInstance()?
@@ -86,8 +91,8 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
 		return bean;
 	}
 
-	public Object postProcessAfterInitialization(Object bean, String beanName)
-			throws BeansException {
+	@Override
+	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 		return bean;
 	}
 

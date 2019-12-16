@@ -24,14 +24,7 @@ import nl.nn.adapterframework.util.Misc;
 
 /**
  * Pipe that generates an UUID (Universally Unique Identifier).
- * 
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
- * </table>
- * </p>
+ *
  * 
  * If {@link #setType(String) type} is set to <code>numeric</code>, a UUID with fixed length 31 will be generated.
  * If {@link #setType(String) type} is set to <code>alphanumeric</code>, the UUID will not have a fixed length which will be about 42.

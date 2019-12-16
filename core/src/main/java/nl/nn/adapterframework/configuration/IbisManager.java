@@ -17,9 +17,11 @@ package nl.nn.adapterframework.configuration;
 
 import java.util.List;
 
-import nl.nn.adapterframework.core.IAdapter;
-
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.transaction.PlatformTransactionManager;
+
+import nl.nn.adapterframework.core.IAdapter;
 
 /**
  * An IBIS Manager gives various methods for the control of an IBIS instance.
@@ -30,7 +32,7 @@ import org.springframework.transaction.PlatformTransactionManager;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public interface IbisManager {
+public interface IbisManager extends ApplicationEventPublisherAware {
 
     void setIbisContext(IbisContext ibisContext);
 
@@ -79,5 +81,7 @@ public interface IbisManager {
     PlatformTransactionManager getTransactionManager();
 
     public void dumpStatistics(int action);
+    
+    public ApplicationEventPublisher getApplicationEventPublisher();
 
 }

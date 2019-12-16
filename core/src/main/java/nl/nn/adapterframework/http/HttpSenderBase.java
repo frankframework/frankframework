@@ -214,7 +214,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	private String styleSheetName=null;
 	private String protocol=null;
 	private String resultStatusCodeSessionKey;
-	private final boolean APPEND_MESSAGEID_HEADER = AppConstants.getInstance().getBoolean("http.headers.messageid", true);
+	private final boolean APPEND_MESSAGEID_HEADER = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("http.headers.messageid", true);
 
 	private TransformerPool transformerPool=null;
 

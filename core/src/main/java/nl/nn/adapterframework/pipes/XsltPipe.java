@@ -45,13 +45,6 @@ import nl.nn.adapterframework.stream.StreamingException;
  * <tr><td>{@link Parameter param}</td><td>any parameters defined on the pipe will be applied to the created transformer</td></tr>
  * </table>
  * </p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
- * </table>
- * </p>
  * @author Johan Verrips
  */
 
@@ -199,6 +192,9 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	public void setXpathExpression(String string) {
 		sender.setXpathExpression(string);
 	}
+	public String getXpathExpression() {
+		return sender.getXpathExpression();
+	}
 
 	@IbisDoc({"5", "force the transformer generated from the xpath-expression to omit the xml declaration", "true"})
 	public void setOmitXmlDeclaration(boolean b) {
@@ -208,6 +204,9 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	@IbisDoc({"6", "namespace defintions for xpathexpression. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		sender.setNamespaceDefs(namespaceDefs);
+	}
+	public String getNamespaceDefs() {
+		return sender.getNamespaceDefs();
 	}
 
 	@IbisDoc({"7", "either 'text' or 'xml'. only valid for xpathexpression", "text"})

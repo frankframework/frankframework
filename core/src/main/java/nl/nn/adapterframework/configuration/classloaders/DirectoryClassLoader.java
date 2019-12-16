@@ -61,6 +61,10 @@ public class DirectoryClassLoader extends ClassLoaderBase {
 		this.directory = dir;
 	}
 
+	protected File getDirectory() {
+		return this.directory;
+	}
+
 	@Override
 	public URL getLocalResource(String name) {
 		File file = new File(directory, name);

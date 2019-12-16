@@ -757,12 +757,15 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			if (currentRunState.equals(RunStateEnum.STARTING)
 					|| currentRunState.equals(RunStateEnum.STOPPING)
 					|| currentRunState.equals(RunStateEnum.STOPPED)) {
-				String msg =
-					"receiver currently in state [" + currentRunState + "], ignoring stop() command";
-				warn(msg);
+				warn("receiver currently in state [" + currentRunState + "], ignoring stop() command");
 				return;
 			}
-			runState.setRunState(RunStateEnum.STOPPING);
+			if (currentRunState.equals(RunStateEnum.ERROR)) {
+				warn("receiver currently in state [" + currentRunState + "], stopping immediately");
+				runState.setRunState(RunStateEnum.STOPPED);
+			} else {
+				runState.setRunState(RunStateEnum.STOPPING);
+			}
 		}
 		tellResourcesToStop();
 		NDC.remove();

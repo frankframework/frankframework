@@ -20,7 +20,9 @@ import java.io.StringWriter;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -68,6 +70,8 @@ public class LadybugPipe extends FixedForwardPipe {
 	private TestStorage testStorage;
 	private Storage debugStorage; 
 	private ReportXmlTransformer reportXmlTransformer;
+	private String exclude;
+	private Pattern excludeRegexPattern;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -75,6 +79,9 @@ public class LadybugPipe extends FixedForwardPipe {
 		failureForward = findForward(FAILURE_FORWARD_NAME);
 		if (failureForward == null) {
 			failureForward = getForward();
+		}
+		if (StringUtils.isNotEmpty(exclude)) {
+			excludeRegexPattern = Pattern.compile(exclude);
 		}
 	}
 
@@ -88,7 +95,11 @@ public class LadybugPipe extends FixedForwardPipe {
 			List<Integer> storageIds = testStorage.getStorageIds();
 			for (Integer storageId : storageIds) {
 				Report report = testStorage.getReport(storageId);
-				reports.add(report);
+				String fullReportPath = (report.getPath() != null ? report.getPath() : "") + report.getName();
+				
+				if(excludeRegexPattern == null || !excludeRegexPattern.matcher(fullReportPath).matches()) {
+					reports.add(report);
+				}
 			}
 		} catch (StorageException e) {
 			errorCount++;
@@ -194,6 +205,11 @@ public class LadybugPipe extends FixedForwardPipe {
 			+ "then revert it to its original setting", "false"})
 	public void setEnableReportGenerator(boolean enabled) {
 		enableReportGenerator = enabled;
+	}
+	
+	@IbisDoc({"When set, reports with a full path (path + name) that matches with the specified regular expression are skipped. For example, \"/Unscheduled/.*\" or \".*SKIP\".", ""})
+	public void setExclude(String exclude) {
+		this.exclude = exclude;
 	}
 
 	public void setTestTool(TestTool testTool) {
