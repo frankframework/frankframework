@@ -648,6 +648,10 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	}
 
 	@IbisDoc({"either <code>i2t</code> (ifsa2tibco), <code>reg</code> (regular) or <code>bis</code> (Business Integration Services)", "reg"})
+	public void setMode(String string) {
+		mode = Mode.valueOf(string.toUpperCase());
+	}
+
 	public String getMode() {
 		return mode.toString();
 	}
