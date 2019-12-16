@@ -186,7 +186,7 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 				super.close();
 				bos.close();
 				if(!isClosed) {
-					try (FileInputStream fis = new FileInputStream(file)) {;
+					try (FileInputStream fis = new FileInputStream(file)) {
 						ObjectMetadata metaData = new ObjectMetadata();
 						metaData.setContentLength(file.length());
 	

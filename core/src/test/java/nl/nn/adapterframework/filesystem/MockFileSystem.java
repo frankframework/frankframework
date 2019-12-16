@@ -235,6 +235,11 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		return f.getAdditionalProperties();
 	}
 
+	@Override
+	public String getPhysicalDestinationName() {
+		return "Mock!";
+	}
+
 
 
 }
