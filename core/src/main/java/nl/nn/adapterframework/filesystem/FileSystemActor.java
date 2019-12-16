@@ -497,7 +497,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		actions.addAll(specificActions);
 	}
 
-	@IbisDoc({"1", "Possible values: list, read, delete, move, mkdir, rmdir, write, append, rename", "" })
+	@IbisDoc({"1", "Possible values: list, info, read, delete, move, mkdir, rmdir, write, append, rename", "" })
 	public void setAction(String action) {
 		this.action = action;
 	}
