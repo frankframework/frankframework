@@ -55,12 +55,11 @@ import com.amazonaws.services.s3.model.StorageClass;
 import com.amazonaws.services.s3.model.Tier;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class AmazonS3FileSystem implements IWritableFileSystem<S3Object>, HasPhysicalDestination {
+public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -89,6 +88,7 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object>, HasPhy
 	private boolean bucketCreationEnabled = false;
 	private boolean bucketExistsThrowException = true;
 	
+	@Override
 	public void configure() throws ConfigurationException {
 
 		if (StringUtils.isEmpty(getAccessKey()) || StringUtils.isEmpty(getSecretKey()))
@@ -186,15 +186,15 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object>, HasPhy
 				super.close();
 				bos.close();
 				if(!isClosed) {
-					FileInputStream fis = new FileInputStream(file);
-					ObjectMetadata metaData = new ObjectMetadata();
-					metaData.setContentLength(file.length());
-
-					s3Client.putObject(bucketName, f.getKey(), fis, metaData);
-
-					fis.close();
-					file.delete();
-					isClosed = true;
+					try (FileInputStream fis = new FileInputStream(file)) {;
+						ObjectMetadata metaData = new ObjectMetadata();
+						metaData.setContentLength(file.length());
+	
+						s3Client.putObject(bucketName, f.getKey(), fis, metaData);
+					} finally {
+						file.delete();
+						isClosed = true;
+					}
 				}
 			}
 		};
