@@ -19,7 +19,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-
 import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
@@ -57,7 +56,7 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 		return new PipeRunResult(findForward("success"), input);
 	}
 
-	@IbisDoc({"reference to the session variable whose value is to be increased", ""})
+	@IbisDoc({"1", "reference to the session variable whose value is to be increased", " "})
 	public void setSessionKey(String string) {
 		sessionKey = string;
 	}
@@ -65,7 +64,7 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 		return sessionKey;
 	}
 
-	@IbisDoc({"amount to increment the value", "1"})
+	@IbisDoc({"2", "amount to increment the value", "1"})
 	public void setIncrement(int i) {
 		increment = i;
 	}

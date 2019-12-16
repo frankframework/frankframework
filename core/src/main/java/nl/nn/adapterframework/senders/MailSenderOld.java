@@ -15,31 +15,6 @@
 */
 package nl.nn.adapterframework.senders;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Properties;
-
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.activation.URLDataSource;
-import javax.mail.BodyPart;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
@@ -53,12 +28,26 @@ import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.soap.util.mime.ByteArrayDataSource;
 import org.apache.xerces.impl.dv.util.Base64;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.URLDataSource;
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
 
 /**
  * {@link nl.nn.adapterframework.core.ISender sender} that sends a mail specified by an XML message.
@@ -596,14 +585,14 @@ public class MailSenderOld extends SenderWithParametersBase {
 	/**
 	 * Set the default for From
 	 */
-	@IbisDoc({"value of the from: header if not specified in message itself", ""})
+	@IbisDoc({"5", "value of the From: header if not specified in message itself", " "})
 	public void setDefaultFrom(String newFrom) {
 		defaultFrom = newFrom;
 	}
 	/**
 	 * Set the default for Subject>
 	 */
-	@IbisDoc({"value of the subject: header if not specified in message itself", ""})
+	@IbisDoc({"6", "value of the Subject: header if not specified in message itself", " "})
 	public void setDefaultSubject(String newSubject) {
 		defaultSubject = newSubject;
 	}
@@ -611,7 +600,7 @@ public class MailSenderOld extends SenderWithParametersBase {
 	/**
 	 * Name of the SMTP Host.
 	 */
-	@IbisDoc({"name of the host by which the messages are to be send", ""})
+	@IbisDoc({"1", "name of the host by which the messages are to be send", " "})
 	public void setSmtpHost(String newSmtpHost) {
 		smtpHost = newSmtpHost;
 	}
@@ -619,7 +608,7 @@ public class MailSenderOld extends SenderWithParametersBase {
 		return smtpHost;
 	}
 
-	@IbisDoc({"alias used to obtain credentials for authentication to smtphost", ""})
+	@IbisDoc({"2", "alias used to obtain credentials for authentication to smtpHost", " "})
 	public void setSmtpAuthAlias(String string) {
 		smtpAuthAlias = string;
 	}
@@ -627,7 +616,7 @@ public class MailSenderOld extends SenderWithParametersBase {
 		return smtpAuthAlias;
 	}
 
-	@IbisDoc({"userid on the smtphost", ""})
+	@IbisDoc({"3", "userid on the smtpHost", " "})
 	public void setSmtpUserid(java.lang.String newSmtpUserid) {
 		smtpUserid = newSmtpUserid;
 	}
@@ -635,7 +624,7 @@ public class MailSenderOld extends SenderWithParametersBase {
 		return smtpUserid;
 	}
 	
-	@IbisDoc({"password of userid on the smtphost", ""})
+	@IbisDoc({"4", "password of userid on the smtpHost", " "})
 	public void setSmtpPassword(String newSmtpPassword) {
 		smtpPassword = newSmtpPassword;
 	}
@@ -643,7 +632,7 @@ public class MailSenderOld extends SenderWithParametersBase {
 		return smtpPassword;
 	}
 
-	@IbisDoc({"when this name is used, it will be followed by a number which is equal to the node's position", "attachment"})
+	@IbisDoc({"7", "When this name is used, it will be followed by a number which is equal to the node's position", "attachment"})
 	public void setDefaultAttachmentName(String string) {
 		defaultAttachmentName = string;
 	}
@@ -655,7 +644,7 @@ public class MailSenderOld extends SenderWithParametersBase {
 		return timeout;
 	}
 
-	@IbisDoc({"timeout (in milliseconds). used for socket connection timeout and socket i/o timeout", "20000"})
+	@IbisDoc({"8", "timeout (in milliseconds). Used for socket connection timeout and socket I/O timeout", "20000"})
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
 	}

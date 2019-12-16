@@ -15,28 +15,12 @@
  */
 package nl.nn.adapterframework.receivers;
 
-import java.io.ByteArrayInputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Map;
-
-import org.apache.commons.lang.StringUtils;
-
 import microsoft.exchange.webservices.data.core.PropertySet;
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import microsoft.exchange.webservices.data.core.service.item.Item;
 import microsoft.exchange.webservices.data.core.service.schema.EmailMessageSchema;
 import microsoft.exchange.webservices.data.core.service.schema.ItemSchema;
-import microsoft.exchange.webservices.data.property.complex.Attachment;
-import microsoft.exchange.webservices.data.property.complex.AttachmentCollection;
-import microsoft.exchange.webservices.data.property.complex.EmailAddress;
-import microsoft.exchange.webservices.data.property.complex.EmailAddressCollection;
-import microsoft.exchange.webservices.data.property.complex.InternetMessageHeader;
-import microsoft.exchange.webservices.data.property.complex.InternetMessageHeaderCollection;
-import microsoft.exchange.webservices.data.property.complex.ItemAttachment;
-import microsoft.exchange.webservices.data.property.complex.MessageBody;
-import microsoft.exchange.webservices.data.property.complex.MimeContent;
+import microsoft.exchange.webservices.data.property.complex.*;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
@@ -45,6 +29,13 @@ import nl.nn.adapterframework.filesystem.ExchangeFileSystem;
 import nl.nn.adapterframework.filesystem.FileSystemListener;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
+import org.apache.commons.lang.StringUtils;
+
+import java.io.ByteArrayInputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.filesystem.FileSystemListener
@@ -74,27 +65,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * </p>
  * 
  * <p>
- * <b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the listener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInputFolder(String) inputFolder}</td><td>folder (subfolder of inbox) to look for mails. If empty, the inbox folder is used</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFilter(String) filter}</td><td>If empty, all mails are retrieved. If 'NDR' only Non-Delivery Report mails ('bounces') are retrieved</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInProcessFolder(String) inProcessFolder}</td><td>folder (subfolder of inbox) where mails are stored <i>while</i> being processed. If empty, processed mails are not temporarily moved</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProcessedFolder(String) processedFolder}</td><td>folder (subfolder of inbox) where mails are stored after being processed. If empty, processed mails are deleted</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to exchange mail server</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to exchange mail server</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMailAddress(String) mailAddress}</td><td>mail address (also used for auto discovery)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUrl(String) url}</td><td>(only used when mailAddress is empty) url of the service</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStoreEmailAsStreamInSessionKey(String) storeEmailAsStreamInSessionKey}</td><td>if set, the mail is streamed to a file (eml)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSimple(boolean) simple}</td><td>when set to <code>true</code>, the xml string passed to the pipeline contains minimum information about the mail (to save memory)</td><td>false</td></tr>
- * <tr><td>{@link #setProxyHost(String) proxyHost}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProxyPort(int) proxyPort}</td><td>&nbsp;</td><td>80</td></tr>
- * <tr><td>{@link #setProxyAuthAlias(String) proxyAuthAlias}</td><td>alias used to obtain credentials for authentication to proxy</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProxyUserName(String) proxyUserName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProxyPassword(String) proxyPassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * </table></p>
+ * 
  * 
  * @author Peter Leeuwenburgh, Gerrit van Brakel
  */
@@ -321,18 +292,18 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 		getFileSystem().setProxyPassword(proxyPassword);
 	}
 
-	@IbisDoc({"12", "proxy authAlias", ""})
+	@IbisDoc({"13", "proxy authAlias", ""})
 	public void setProxyAuthAlias(String proxyAuthAlias) {
 		getFileSystem().setProxyAuthAlias(proxyAuthAlias);
 	}
 
-	@IbisDoc({"13", "proxy domain", ""})
+	@IbisDoc({"14", "proxy domain", ""})
 	public void setProxyDomain(String domain) {
 		getFileSystem().setProxyDomain(domain);
 	}
 
 	
-	@IbisDoc({"14", "when set to <code>true</code>, the xml string passed to the pipeline contains minimum information about the mail (to save memory)", ""})
+	@IbisDoc({"15", "when set to <code>true</code>, the xml string passed to the pipeline contains minimum information about the mail (to save memory)", ""})
 	public void setSimple(boolean b) {
 		simple = b;
 	}
@@ -340,6 +311,7 @@ public class ExchangeMailListener extends FileSystemListener<Item,ExchangeFileSy
 		return simple;
 	}
 
+	@IbisDoc({"16", "if set, the mail is streamed to a file (eml)", " "})
 	public void setStoreEmailAsStreamInSessionKey(String string) {
 		storeEmailAsStreamInSessionKey = string;
 	}

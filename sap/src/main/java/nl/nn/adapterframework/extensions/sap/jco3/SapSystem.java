@@ -30,6 +30,7 @@ import com.sap.conn.jco.JCoException;
 import com.sap.conn.jco.JCoRepository;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc; 
 import nl.nn.adapterframework.extensions.sap.ISapSystemJco3;
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.extensions.sap.SapSystemFactory;
@@ -37,38 +38,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.GlobalListItem;
 /**
  * A SapSystem is a provider of repository information and connections to a SAP-system.
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the System. SAP-related Ibis objects refer to SapSystems by setting their SystemName-attribute to this value</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setHost(String) host}</td><td>default value for ashost, gwhost and mshost (i.e. when ashost, gwhost and mshost are all the same, only host needs to be specified)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAshost(String) ashost}</td><td>SAP application server</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSystemnr(String) systemnr}</td><td>SAP system nr</td><td>00</td></tr>
- * <tr><td>{@link #setGroup(String) group}</td><td>Group of SAP application servers, when specified logon group will be used and r3name and mshost need to be specified instead of ashost</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setR3name(String) r3name}</td><td>System ID of the SAP system</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMshost(String) mshost}</td><td>SAP message server</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMsservOffset(int) msservOffset}</td><td>number added to systemNr to find corresponding message server port</td><td>3600</td></tr>
- * <tr><td>{@link #setGwhost(String) gwhost}</td><td>Gateway host</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setGwservOffset(int) gwservOffset}</td><td>number added to systemNr to find corresponding gateway port</td><td>3300</td></tr>
- * <tr><td>{@link #setMandant(String) mandant}</td><td>Mandant i.e. 'destination'</td><td>100</td></tr>
- * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias to obtain userid and password</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUserid(String) userid}</td><td>userid used in the connection</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPasswd(String) passwd}</td><td>passwd used in the connection</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLanguage(String) language}</td><td>Language indicator</td><td>NL</td></tr>
- * <tr><td>{@link #setUnicode(boolean) unicode}</td><td>when set <code>true</code> the SAP system is interpreted as Unicode SAP system, otherwise as non-Unicode (only applies to SapListeners, not to SapSenders)</td><td>false</td></tr>
- * <tr><td>{@link #setMaxConnections(int) maxConnections}</td><td>maximum number of connections that may connect simultaneously to the SAP system</td><td>10</td></tr>
- * <tr><td>{@link #setTraceLevel(int) traceLevel}</td><td>trace level (effective only when logging level is debug). 0=none, 10= maximum</td><td>0</td></tr>
-
- * <tr><td>{@link #setSncEnabled(boolean) sncEnabled}</td><td>Enable or disable SNC</td><td>false</td></tr>
- * <tr><td>{@link #setSncLibrary(String) sncLibPath}</td><td>Path where the SNC library has been installed</td><td></td></tr>
- * <tr><td>{@link #setSncQop(int) qop}</td><td>SNC Quality of Protection. 1: Authentication only, 2: Authentication and integrity protection, 3: Authentication, integrity and privacy protection (encryption), 8: Global default configuration, 9: Maximum protection</td><td>8</td></tr>
- * <tr><td>{@link #setMyName(String) myName}</td><td>Own SNC name of the caller. For example: p:CN=MyUserID, O=ACompany, C=EN</td><td></td></tr>
- * <tr><td>{@link #setPartnerName(String) partnerName}</td><td>SNC name of the communication partner server. For example: p:CN=SID, O=ACompany, C=EN</td><td></td></tr>
- * <tr><td>{@link #setSncAuthMethod(String) sncAuthMethod}</td><td>When using SNC, this specifies if SNC should authenticate via SSO or a username/password combination. 1=SSO, 0=username/password</td><td>0</td></tr>
- * <tr><td>{@link #setSncSSO2(String) sncSSO2}</td><td>Use SAP Cookie Version 2 as logon ticket for SSO based authentication</td><td>1</td></tr>
  * 
- * </table>
- * </p>	
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
  * @author  Niels Meijer
@@ -219,11 +189,13 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 	}
 
 	@Override
+	@IbisDoc({"1", "default value for ashost, gwhost and mshost (i.e. when ashost, gwhost and mshost are all the same, only host needs to be specified)", " "})
 	public void setHost(String host) {
 		this.host = host;
 	}
 
 	@Override
+	@IbisDoc({"2", "SAP application server", " "})
 	public void setAshost(String ashost) {
 		this.ashost = ashost;
 	}
@@ -237,6 +209,7 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 	}
 
 	@Override
+	@IbisDoc({"3", "SAP system nr", "00"})
 	public void setSystemnr(String string) {
 		systemnr = string;
 	}
@@ -246,6 +219,7 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 	}
 
 	@Override
+	@IbisDoc({"4", "Group of SAP application servers, when specified logon group will be used and r3name and mshost need to be specified instead of ashost", " "})
 	public void setGroup(String group) {
 		this.group = group;
 	}
@@ -255,6 +229,7 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 	}
 
 	@Override
+	@IbisDoc({"5", "System ID of the SAP system", " "})
 	public void setR3name(String r3name) {
 		this.r3name = r3name;
 	}
@@ -264,6 +239,7 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 	}
 
 	@Override
+	@IbisDoc({"6", "SAP message server", " "})
 	public void setMshost(String mshost) {
 		this.mshost = mshost;
 	}
@@ -288,11 +264,13 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 	}
 
 	@Override
+	@IbisDoc({"7", "number added to systemNr to find corresponding message server port", "3600"})
 	public void setMsservOffset(int i) {
 		msservOffset = i;
 	}
 
 	@Override
+	@IbisDoc({"8", "Gateway host", " "})
 	public void setGwhost(String string) {
 		gwhost = string;
 	}
@@ -313,6 +291,7 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 	}
 
 	@Override
+	@IbisDoc({"9", "number added to systemNr to find corresponding gateway port", "3300"})
 	public void setGwservOffset(int i) {
 		gwservOffset = i;
 	}
@@ -322,6 +301,7 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 	}
 
 	@Override
+	@IbisDoc({"10", "Mandant i.e. 'destination'", "100"})
 	public void setMandant(String string) {
 		mandant = string;
 	}
@@ -331,6 +311,7 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 	}
 
 	@Override
+	@IbisDoc({"11", "alias to obtain userid and password", " "})
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
@@ -340,6 +321,7 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 	}
 
 	@Override
+	@IbisDoc({"12", "userid used in the connection", " "})
 	public void setUserid(String string) {
 		userid = string;
 	}
@@ -349,6 +331,7 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 	}
 
 	@Override
+	@IbisDoc({"13", "passwd used in the connection", " "})
 	public void setPasswd(String string) {
 		passwd = string;
 	}
@@ -362,11 +345,13 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 	}
 
 	@Override
+	@IbisDoc({"14", "Language indicator", "NL"})
 	public void setLanguage(String string) {
 		language = string;
 	}
 
 	@Override
+	@IbisDoc({"15", "when set <code>true</code> the SAP system is interpreted as Unicode SAP system, otherwise as non-Unicode (only applies to SapListeners, not to SapSenders)", "false"})
 	public void setUnicode(boolean b) {
 		unicode = b;
 	}
@@ -376,6 +361,7 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 	}
 
 	@Override
+	@IbisDoc({"16", "maximum number of connections that may connect simultaneously to the SAP system", "10"})
 	public void setMaxConnections(int i) {
 		maxConnections = i;
 	}
@@ -385,6 +371,7 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 	}
 
 	@Override
+	@IbisDoc({"17", "trace level (effective only when logging level is debug). 0=none, 10= maximum", "0"})
 	public void setTraceLevel(int i) {
 		traceLevel = i;
 	}
@@ -394,6 +381,7 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 	}
 
 	@Override
+	@IbisDoc({"18", "Enable or disable SNC", "false"})
 	public void setSncEnabled(boolean sncEnabled) {
 		this.sncEnabled = sncEnabled;
 	}
@@ -402,6 +390,7 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 	}
 
 	@Override
+	@IbisDoc({"19", "Path where the SNC library has been installed", " "})
 	public void setSncLibrary(String sncLibPath) {
 		this.sncLibPath = sncLibPath;
 	}
@@ -410,6 +399,7 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 	}
 
 	@Override
+	@IbisDoc({"20", "SNC Quality of Protection. 1: Authentication only, 2: Authentication and integrity protection, 3: Authentication, integrity and privacy protection (encryption), 8: Global default configuration, 9: Maximum protection", "8"})
 	public void setSncQop(int qop) throws ConfigurationException {
 		if(qop < 1 || qop > 9)
 			throw new ConfigurationException("SNC QOP cannot be smaller then 0 or larger then 9");
@@ -421,6 +411,7 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 	}
 
 	@Override
+	@IbisDoc({"21", "Own SNC name of the caller. For example: p:CN=MyUserID, O=ACompany, C=EN", " "})
 	public void setMyName(String myName) {
 		this.myName = myName;
 	}
@@ -429,6 +420,7 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 	}
 
 	@Override
+	@IbisDoc({"22", "SNC name of the communication partner server. For example: p:CN=SID, O=ACompany, C=EN", " "})
 	public void setPartnerName(String partnerName) {
 		this.partnerName = partnerName;
 	}
@@ -437,6 +429,7 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 	}
 
 	@Override
+	@IbisDoc({"23", "When using SNC, this specifies if SNC should authenticate via SSO or a username/password combination. 1=SSO, 0=username/password", "0"})
 	public void setSncAuthMethod(String sncAuthMethod) {
 		this.authMethod = sncAuthMethod;
 	}
@@ -445,6 +438,7 @@ public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
 	}
 
 	@Override
+	@IbisDoc({"24", "Use SAP Cookie Version 2 as logon ticket for SSO based authentication", "1"})
 	public void setSncSSO2(String sncSSO2) {
 		this.sncSSO2 = sncSSO2;
 	}

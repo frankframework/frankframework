@@ -15,26 +15,8 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
-
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-
-import org.apache.commons.lang.StringUtils;
-import org.springframework.core.task.TaskExecutor;
-import org.xml.sax.SAXException;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IDataIterator;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.ISenderWithParameters;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.*;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.ParallelSenderExecutor;
@@ -45,6 +27,17 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.core.task.TaskExecutor;
+import org.xml.sax.SAXException;
+
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 
 /**
  * Abstract base class to sends a message to a Sender for each item returned by a configurable iterator.
@@ -482,7 +475,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return stopConditionTp;
 	}
 
-	@IbisDoc({"1", "Stylesheet to apply to each message, before sending it", ""})
+	@IbisDoc({"1", "stylesheet to apply to each message, before sending it", " "})
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
@@ -490,7 +483,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return styleSheetName;
 	}
 
-	@IbisDoc({"2", "Alternatively: xpath-expression to create stylesheet from", ""})
+	@IbisDoc({"2", "alternatively: XPath-expression to create stylesheet from", " "})
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
 	}
@@ -539,7 +532,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return maxItems;
 	}
 
-	@IbisDoc({"7", "Expression evaluated on each result if set. "
+	@IbisDoc({"21", "Expression evaluated on each result if set. "
 	+ "Iteration stops if condition returns anything other than an empty result. To test for the root element to have an attribute 'finished' with the value 'yes', the expression <code>*[@finished='yes']</code> can be used. "
 	+ "This can be used if the condition to stop can be derived from the item result. To stop after a maximum number of items has been processed, use <code>maxItems</code>."
 	+ "Previous versions documented that <code>position()=2</code> could be used. This is not working as expected.", ""})

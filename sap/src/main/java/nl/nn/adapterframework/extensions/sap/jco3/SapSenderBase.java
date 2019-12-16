@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.extensions.sap.jco3;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc; 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
@@ -34,16 +35,7 @@ import com.sap.conn.jco.JCoException;
 
 /**
  * Base class for functions that call SAP.
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSapSystemName(String) sapSystemName}</td><td>name of the {@link SapSystem} used by this object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSapSystemNameParam(String) sapSystemNameParam}</td><td>name of the parameter used to indicate the name of the {@link SapSystem} used by this object if the attribute <code>sapSystemName</code> is empty</td><td>sapSystemName</td></tr>
- * <tr><td>{@link #setLuwHandleSessionKey(String) luwHandleSessionKey}</td><td>session key in which LUW information is stored. When set, actions that share a LUW-handle will be executed using the same destination. Can only be used for synchronous functions</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>when <code>false</code>, the sender operates in RR mode: the a reply is expected from SAP, and the sender does not participate in a transaction. When <code>false</code>, the sender operates in FF mode: no reply is expected from SAP, and the sender joins the transaction, that must be present. The SAP transaction is committed right after the XA transaction is completed.</td><td>false</td></tr>
- * </table>
- * </p>
+ * 
  * <table border="1">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
@@ -166,6 +158,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		return paramList;
 	}
 
+	@IbisDoc({"2", "session key in which LUW information is stored. When set, actions that share a LUW-handle will be executed using the same destination. Can only be used for synchronous functions", " "})
 	public void setLuwHandleSessionKey(String string) {
 		luwHandleSessionKey = string;
 	}
@@ -173,6 +166,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		return luwHandleSessionKey;
 	}
 
+	@IbisDoc({"1", "name of the parameter used to indicate the name of the {@link SapSystem} used by this object if the attribute <code>sapSystemName</code> is empty", "sapSystemName"})
 	public void setSapSystemNameParam(String string) {
 		sapSystemNameParam = string;
 	}
@@ -180,6 +174,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		return sapSystemNameParam;
 	}
 
+	@IbisDoc({"3", "when <code>false</code>, the sender operates in RR mode: the a reply is expected from SAP, and the sender does not participate in a transaction. When <code>false</code>, the sender operates in FF mode: no reply is expected from SAP, and the sender joins the transaction, that must be present. The SAP transaction is committed right after the XA transaction is completed.", "false"})
 	protected void setSynchronous(boolean b) {
 		synchronous = b;
 	}

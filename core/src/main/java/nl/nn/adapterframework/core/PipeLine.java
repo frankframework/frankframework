@@ -15,17 +15,6 @@
 */
 package nl.nn.adapterframework.core;
 
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.springframework.transaction.TransactionDefinition;
-
 import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -42,11 +31,12 @@ import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.SizeStatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
-import nl.nn.adapterframework.util.JtaUtil;
-import nl.nn.adapterframework.util.Locker;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.SpringTxManagerProxy;
+import nl.nn.adapterframework.util.*;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.springframework.transaction.TransactionDefinition;
+
+import java.util.*;
 
 /**
  * Processor and keeper of a line of {@link IPipe Pipes}.
@@ -790,7 +780,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		return transactionTimeout;
 	}
 
-	@IbisDoc({"when set <code>true</code> the original message without namespaces (and prefixes) is stored under the session key originalmessagewithoutnamespaces", "false"})
+	@IbisDoc({"1", "when set <code>true</code> the original message without namespaces (and prefixes) is stored under the session key originalMessageWithoutNamespaces", "false"})
 	public void setStoreOriginalMessageWithoutNamespaces(boolean b) {
 		storeOriginalMessageWithoutNamespaces = b;
 	}
@@ -806,7 +796,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	 * or gigabytes. For example, the value "10KB" will be interpreted
 	 * as 10240.
 	 */
-	@IbisDoc({"if messagesizewarn>=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged", "application default (3mb)"})
+	@IbisDoc({"2", "if messageSizeWarn>=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged", "application default (3MB)"})
 	public void setMessageSizeWarn(String s) {
 		messageSizeWarn = Misc.toFileSize(s, messageSizeWarn + 1);
 	}
@@ -839,7 +829,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		return cache;
 	}
 
-	@IbisDoc({"forces that each pipe in the pipeline is not automatically added to the globalforwards table", "application default"})
+	@IbisDoc({"3", "forces that each pipe in the pipeline is not automatically added to the globalForwards table", "application default"})
 	public void setForceFixedForwarding(boolean b) {
 		forceFixedForwarding = b;
 	}
@@ -847,7 +837,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		return forceFixedForwarding;
 	}
 
-	@IbisDoc({"when specified and <code>null</code> is received as a message the message is changed to the specified value", ""})
+	@IbisDoc({"4", "when specified and <code>null</code> is received as a message the message is changed to the specified value", " "})
 	public void setTransformNullMessage(String s) {
 		transformNullMessage = s;
 	}
@@ -859,7 +849,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		return requestSizeStats;
 	}
 
-	@IbisDoc({"when specified and an empty message is received the specified adapter is run before passing the message (response from specified adapter) to the pipeline", ""})
+	@IbisDoc({"5", "when specified and an empty message is received the specified adapter is run before passing the message (response from specified adapter) to the pipeline", " "})
 	public void setAdapterToRunBeforeOnEmptyInput(String s) {
 		adapterToRunBeforeOnEmptyInput = s;
 	}

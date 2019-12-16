@@ -15,43 +15,26 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import nl.nn.adapterframework.doc.IbisDoc;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
-import org.springframework.transaction.TransactionDefinition;
-
 import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.DummyNamedObject;
-import nl.nn.adapterframework.core.HasTransactionAttribute;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IExtendedPipe;
-import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.core.PipeLineExit;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.core.*;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.monitoring.EventHandler;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.JtaUtil;
-import nl.nn.adapterframework.util.Locker;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.*;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.log4j.Logger;
+import org.springframework.transaction.TransactionDefinition;
+
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Base class for {@link IPipe Pipe}.
@@ -681,8 +664,8 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return writeToSecLog;
 	}
 
-	@IbisDoc({"(only used when <code>writetoseclog=true</code>) comma separated list of keys of session variables that is appended to the security log record", ""})
 	@Override
+	@IbisDoc({"1", "(only used when <code>writeToSecLog=true</code>) comma separated list of keys of session variables that is appended to the security log record", " "})
 	public void setSecLogSessionKeys(String string) {
 		secLogSessionKeys = string;
 	}
@@ -702,7 +685,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return logIntermediaryResults;
 	}
 
-	@IbisDoc({"regular expression to mask strings in the log. for example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code> will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>note:</b> this feature is used at adapter level, so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)", ""})
+	@IbisDoc({"2", "Regular expression to mask strings in the log. For example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code> will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>Note:</b> this feature is used at adapter level, so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)", " "})
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
 	}

@@ -20,7 +20,6 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-
 import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
@@ -92,7 +91,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		return role;
 	}
 
-	@IbisDoc({"the j2ee role to check. ", ""})
+	@IbisDoc({"1", "the j2ee role to check. ", ""})
 	public void setRole(String string) {
 		role = string;
 	}
@@ -101,7 +100,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		return notInRoleForwardName;
 	}
 
-	@IbisDoc({"name of forward returned if user is not allowed to assume the specified role", "notInRole"})
+	@IbisDoc({"2", "user may not assume role", " "})
 	public void setNotInRoleForwardName(String string) {
 		notInRoleForwardName = string;
 	}

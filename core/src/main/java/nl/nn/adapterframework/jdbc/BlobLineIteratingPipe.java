@@ -15,12 +15,12 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import java.io.Reader;
-import java.sql.ResultSet;
-
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.JdbcUtil;
+
+import java.io.Reader;
+import java.sql.ResultSet;
 
 /**
  * Pipe that iterates over the lines in a blob.
@@ -80,12 +80,12 @@ public class BlobLineIteratingPipe extends LobLineIteratingPipeBase {
 		}
 	}
 
-	@IbisDoc({"charset used to read and write blobs", "utf-8"})
+	@IbisDoc({"1", "charset used to read and write BLOBs", "UTF-8"})
 	public void setBlobCharset(String charset) {
 		querySender.setBlobCharset(charset);
 	}
 
-	@IbisDoc({"controls whether blobdata is stored compressed in the database", "true"})
+	@IbisDoc({"2", "controls whether blobdata is stored compressed in the database", "true"})
 	public void setBlobsCompressed(boolean compressed) {
 		querySender.setBlobsCompressed(compressed);
 	}

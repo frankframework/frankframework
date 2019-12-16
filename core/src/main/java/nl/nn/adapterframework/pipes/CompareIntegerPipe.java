@@ -19,7 +19,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-
 import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
@@ -109,7 +108,7 @@ public class CompareIntegerPipe extends AbstractPipe {
 		return sessionKey1;
 	}
 
-	@IbisDoc({"reference to the other session variables to be compared", ""})
+	@IbisDoc({"1", "reference to the other session variables to be compared", " "})
 	public void setSessionKey2(String string) {
 		sessionKey2 = string;
 	}
