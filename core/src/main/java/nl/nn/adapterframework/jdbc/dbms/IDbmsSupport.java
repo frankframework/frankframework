@@ -117,10 +117,4 @@ public interface IDbmsSupport {
 
 	String getBooleanFieldType();
 	String getBooleanValue(boolean value);
-	
-	Object parseBlobParameter(String value);
-	Object parseClobParameter(String value);
-	String getBlobQueryValue();
-	String getClobQueryValue();
-	boolean useSelectForUpdateForLobUpdate();
 }

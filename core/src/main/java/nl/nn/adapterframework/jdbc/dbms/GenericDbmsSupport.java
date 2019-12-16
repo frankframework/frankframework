@@ -437,29 +437,4 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		}
 		return splittedQueries;
 	}
-
-	@Override
-	public Object parseBlobParameter(String value) {
-		return value.getBytes();
-	}
-
-	@Override
-	public Object parseClobParameter(String value) {
-		return value;
-	}
-
-	@Override
-	public String getBlobQueryValue() {
-		return "?";
-	}
-
-	@Override
-	public String getClobQueryValue() {
-		return "?";
-	}
-
-	@Override
-	public boolean useSelectForUpdateForLobUpdate() {
-		return false;
-	}
 }

@@ -3,13 +3,11 @@ package nl.nn.adapterframework.jdbc.dbms;
 import static org.junit.Assert.assertEquals;
 
 import java.sql.SQLException;
-import java.util.Arrays;
+
+import org.junit.Test;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.QueryContext;
-import nl.nn.adapterframework.parameters.SimpleParameter;
-
-import org.junit.Test;
 
 public class OracleToH2TranslatorTest {
 
