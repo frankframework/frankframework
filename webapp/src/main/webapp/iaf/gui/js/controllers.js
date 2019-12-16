@@ -49,11 +49,6 @@ angular.module('iaf.beheerconsole')
 						$scope.configurations.unshift(config);
 					else
 						$scope.configurations.push(config);
-
-					//Check if any of the configs is a DatabaseClassLoader, if so, enable extra menu items
-					if(config.type == "DatabaseClassLoader") {
-						$scope.config_database = true;
-					}
 				}
 
 				//Was it able to retrieve the serverinfo without logging in?
@@ -75,20 +70,20 @@ angular.module('iaf.beheerconsole')
 				if(data["Application Constants"]) {
 					for (var configName in data["Application Constants"]) {
 						var configConstants = data["Application Constants"][configName];
-
-						var idleTime = (parseInt(configConstants["console.idle.time"]) > 0) ? parseInt(configConstants["console.idle.time"]) : false;
-						if(idleTime > 0) {
-							var idleTimeout = (parseInt(configConstants["console.idle.timeout"]) > 0) ? parseInt(configConstants["console.idle.timeout"]) : false;
-							Idle.setIdle(idleTime);
-							Idle.setTimeout(idleTimeout);
-						}
-						else {
-							Idle.unwatch();
-						}
-						$scope.databaseSchedulesEnabled = (configConstants["loadDatabaseSchedules.active"] === 'true');
-						break; //Just get the first constants and populate AppConstants from there, this shouldn't give any issues!
+						appConstants = $.extend(appConstants, configConstants);
+						break;
 					}
-					appConstants = $.extend(appConstants, data["Application Constants"]);
+
+					var idleTime = (parseInt(appConstants["console.idle.time"]) > 0) ? parseInt(appConstants["console.idle.time"]) : false;
+					if(idleTime > 0) {
+						var idleTimeout = (parseInt(appConstants["console.idle.timeout"]) > 0) ? parseInt(appConstants["console.idle.timeout"]) : false;
+						Idle.setIdle(idleTime);
+						Idle.setTimeout(idleTimeout);
+					}
+					else {
+						Idle.unwatch();
+					}
+					$scope.databaseSchedulesEnabled = (appConstants["loadDatabaseSchedules.active"] === 'true');
 				}
 			});
 		}

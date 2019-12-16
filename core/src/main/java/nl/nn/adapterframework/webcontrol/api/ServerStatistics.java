@@ -91,11 +91,13 @@ public class ServerStatistics extends Base {
 			Map<String, Object> cfg = new HashMap<String, Object>();
 			cfg.put("name", configuration.getName());
 			cfg.put("version", configuration.getVersion());
-			cfg.put("type", configuration.getClassLoaderType());
 			cfg.put("stubbed", configuration.isStubbed());
 
-			if(configuration.getConfigurationException() != null)
+			if(configuration.getConfigurationException() == null) {
+				cfg.put("type", configuration.getClassLoaderType());
+			} else {
 				cfg.put("exception", configuration.getConfigurationException().getMessage());
+			}
 
 			ClassLoader classLoader = configuration.getClassLoader().getParent();
 			if(classLoader instanceof DatabaseClassLoader) {
