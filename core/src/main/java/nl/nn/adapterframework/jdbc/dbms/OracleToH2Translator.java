@@ -37,11 +37,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * covered in this class.
  * </p>
  * <p>
- * Note 1: Date functions in H2 use the value of property 'user.language'. So be
- * sure it has the correct value
- * </p>
- * <p>
- * Note 2: The Oracle functions <code>INSERT EMPTY_CLOB()</code> and
+ * Note: The Oracle functions <code>INSERT EMPTY_CLOB()</code> and
  * <code>INSERT EMPTY_BLOB()</code> are replaced with INSERT '', however in H2
  * this will result in a <code>INSERT NULL</code>
  * </p>

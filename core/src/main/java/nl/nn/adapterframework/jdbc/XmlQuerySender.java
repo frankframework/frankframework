@@ -176,25 +176,25 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				}
 				parameter = new Timestamp(nDate.getTime());
 			} else if (type.equalsIgnoreCase(TYPE_BLOB)) {
-				parameter = getDbmsSupport().parseBlobParameter(value);
-			} else if (type.equalsIgnoreCase(TYPE_CLOB)) {
-				parameter = getDbmsSupport().parseClobParameter(value);
-			} else if (type.equalsIgnoreCase(TYPE_FUNCTION)) {
-				//skip
+				if (!getDbmsSupport().mustInsertEmptyBlobBeforeData()) {
+					parameter = value.getBytes();
+				}
 			} else {
-				// type.equalsIgnoreCase("string")
-				parameter = value;
+				if (!(type.equalsIgnoreCase(TYPE_CLOB) && getDbmsSupport().mustInsertEmptyClobBeforeData()) && !type.equalsIgnoreCase(TYPE_FUNCTION)) {
+					parameter = value;
+				}
 			}
 		}
 
 		private void fillQueryValue() {
-			queryValue = "?";
-			if (type.equalsIgnoreCase(TYPE_BLOB)) {
-				queryValue = getDbmsSupport().getBlobQueryValue();
-			} else if (type.equalsIgnoreCase(TYPE_CLOB)) {
-				queryValue = getDbmsSupport().getClobQueryValue();
+			if (type.equalsIgnoreCase(TYPE_BLOB) && getDbmsSupport().mustInsertEmptyBlobBeforeData()) {
+				queryValue = getDbmsSupport().emptyBlobValue();
+			} else if (type.equalsIgnoreCase(TYPE_CLOB) && getDbmsSupport().mustInsertEmptyClobBeforeData()) {
+				queryValue = getDbmsSupport().emptyClobValue();
 			} else if (type.equalsIgnoreCase(TYPE_FUNCTION)) {
 				queryValue = value;
+			} else {
+				queryValue = "?";
 			}
 		}
 
@@ -431,7 +431,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 
 	private String executeUpdate(Connection connection, String correlationID, String tableName, String query, Vector columns) throws SenderException {
 		try {
-			if (existLob(columns) &&  getDbmsSupport().useSelectForUpdateForLobUpdate()) {
+			if ((existBlob(columns) && getDbmsSupport().mustInsertEmptyBlobBeforeData()) || (existClob(columns) && getDbmsSupport().mustInsertEmptyClobBeforeData())) {
 				CallableStatement callableStatement = getCallWithRowIdReturned(connection, correlationID, query);
 				applyParameters(callableStatement, columns);
 				int ri = 1 + countParameters(columns);
@@ -474,11 +474,22 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		}
 	}
 
-	private boolean existLob(Vector columns) {
+	private boolean existBlob(Vector columns) {
 		Iterator iter = columns.iterator();
 		while (iter.hasNext()) {
 			Column column = (Column) iter.next();
-			if (column.getType().equalsIgnoreCase(TYPE_BLOB) || column.getType().equalsIgnoreCase(TYPE_CLOB)) {
+			if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean existClob(Vector columns) {
+		Iterator iter = columns.iterator();
+		while (iter.hasNext()) {
+			Column column = (Column) iter.next();
+			if (column.getType().equalsIgnoreCase(TYPE_CLOB)) {
 				return true;
 			}
 		}
