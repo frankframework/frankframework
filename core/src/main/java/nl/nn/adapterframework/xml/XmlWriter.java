@@ -280,6 +280,5 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 		this.textMode = textMode;
 	}
 
-//>>>>>>> refs/heads/master
 
 }
