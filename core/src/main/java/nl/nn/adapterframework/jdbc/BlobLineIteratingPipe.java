@@ -15,12 +15,12 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import java.io.Reader;
+import java.sql.ResultSet;
+
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.JdbcUtil;
-
-import java.io.Reader;
-import java.sql.ResultSet;
 
 /**
  * Pipe that iterates over the lines in a blob.

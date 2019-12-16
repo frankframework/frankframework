@@ -15,8 +15,23 @@
 */
 package nl.nn.adapterframework.soap;
 
+import java.io.IOException;
+import java.util.Map;
+
+import javax.xml.soap.SOAPException;
+import javax.xml.transform.TransformerException;
+
+import org.apache.commons.lang.StringUtils;
+import org.xml.sax.SAXException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.*;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.core.SenderException;
+
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
@@ -24,13 +39,6 @@ import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
-import org.apache.commons.lang.StringUtils;
-import org.xml.sax.SAXException;
-
-import javax.xml.soap.SOAPException;
-import javax.xml.transform.TransformerException;
-import java.io.IOException;
-import java.util.Map;
 
 /**
  * Pipe to wrap or unwrap a message from/into a SOAP Envelope.

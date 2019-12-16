@@ -15,26 +15,43 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.configuration.ClassLoaderManager;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.*;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.monitoring.EventHandler;
-import nl.nn.adapterframework.monitoring.EventThrowing;
-import nl.nn.adapterframework.monitoring.MonitorManager;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.util.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 import org.springframework.transaction.TransactionDefinition;
 
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import nl.nn.adapterframework.configuration.ClassLoaderManager;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.DummyNamedObject;
+import nl.nn.adapterframework.core.HasTransactionAttribute;
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IExtendedPipe;
+import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.monitoring.EventHandler;
+import nl.nn.adapterframework.monitoring.EventThrowing;
+import nl.nn.adapterframework.monitoring.MonitorManager;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.JtaUtil;
+import nl.nn.adapterframework.util.Locker;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Base class for {@link IPipe Pipe}.
