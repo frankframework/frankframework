@@ -247,6 +247,12 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		return attributes;
 	}
 
+
+	@Override
+	public String getPhysicalDestinationName() {
+		return "remote directory ["+remoteDirectory+"]";
+	}
+
 	public void setRemoteDirectory(String remoteDirectory) {
 		this.remoteDirectory = remoteDirectory;
 	}

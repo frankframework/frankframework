@@ -241,6 +241,11 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 		return null;
 	}
 
+	@Override
+	public String getPhysicalDestinationName() {
+		return "root ["+(getRoot()==null?"":getRoot())+"]";
+	}
+
 
 	@IbisDoc({"1", "the folder that serves as the root of this virtual filesystem", "" })
 	public void setRoot(String root) {

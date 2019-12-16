@@ -447,6 +447,13 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 		}
 	}
 
+	@Override
+	public String getPhysicalDestinationName() {
+		return "domain ["+getDomain()+"] share ["+getShare()+"]";
+	}
+
+
+	
 	public String getShare() {
 		return shareName;
 	}
@@ -528,34 +535,33 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 
 		public FilesIterator(String parent, List<FileIdBothDirectoryInformation> list) {
 			prefix = parent != null ? parent + "\\" : "";
-            files = new ArrayList<FileIdBothDirectoryInformation>();
-            for (FileIdBothDirectoryInformation info : list) {
-            	if(!StringUtils.equals(".", info.getFileName()) && !StringUtils.equals("..", info.getFileName())) {
-            		boolean isHidden = EnumWithValue.EnumUtils.isSet( info.getFileAttributes(), FileAttributes.FILE_ATTRIBUTE_HIDDEN );
-                    try {
-                    	FileStandardInformation fai = diskShare.getFileInformation(prefix+info.getFileName()).getStandardInformation();
-                    	boolean accessible = !fai.isDeletePending();
-                    	boolean isDirectory = fai.isDirectory();
-                		if(accessible && !isDirectory) {
-                        	if(isListHiddenFiles()) {
-                                files.add(info);
-                            }else {
-                                if(!isHidden) {
-                                    files.add(info);
-                                }
-                            }
-                        }
+			files = new ArrayList<FileIdBothDirectoryInformation>();
+			for (FileIdBothDirectoryInformation info : list) {
+				if (!StringUtils.equals(".", info.getFileName()) && !StringUtils.equals("..", info.getFileName())) {
+					boolean isHidden = EnumWithValue.EnumUtils.isSet(info.getFileAttributes(), FileAttributes.FILE_ATTRIBUTE_HIDDEN);
+					try {
+						FileStandardInformation fai = diskShare.getFileInformation(prefix + info.getFileName()).getStandardInformation();
+						boolean accessible = !fai.isDeletePending();
+						boolean isDirectory = fai.isDirectory();
+						if (accessible && !isDirectory) {
+							if (isListHiddenFiles()) {
+								files.add(info);
+							} else {
+								if (!isHidden) {
+									files.add(info);
+								}
+							}
+						}
 					} catch (SMBApiException e) {
 						if(NtStatus.valueOf(e.getStatusCode()).equals(NtStatus.STATUS_DELETE_PENDING)) {
 							log.debug("delete pending for file ["+ info.getFileName()+"]");
-						}
-						else {
+						} else {
 							throw e;
 						}
 					}
-            		
-            	}
-            }
+
+				}
+			}
 		}
 
 		@Override

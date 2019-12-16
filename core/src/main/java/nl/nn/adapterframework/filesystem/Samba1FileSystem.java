@@ -249,6 +249,12 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 		}
 	}
 
+	@Override
+	public String getPhysicalDestinationName() {
+		return "domain ["+getDomain()+"] share ["+getShare()+"]";
+	}
+
+
 	private class SmbFileIterator implements Iterator<SmbFile> {
 
 		private SmbFile files[];

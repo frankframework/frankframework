@@ -88,6 +88,7 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 	private boolean bucketCreationEnabled = false;
 	private boolean bucketExistsThrowException = true;
 	
+	@Override
 	public void configure() throws ConfigurationException {
 
 		if (StringUtils.isEmpty(getAccessKey()) || StringUtils.isEmpty(getSecretKey()))
@@ -185,15 +186,15 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 				super.close();
 				bos.close();
 				if(!isClosed) {
-					FileInputStream fis = new FileInputStream(file);
-					ObjectMetadata metaData = new ObjectMetadata();
-					metaData.setContentLength(file.length());
-
-					s3Client.putObject(bucketName, f.getKey(), fis, metaData);
-
-					fis.close();
-					file.delete();
-					isClosed = true;
+					try (FileInputStream fis = new FileInputStream(file)) {
+						ObjectMetadata metaData = new ObjectMetadata();
+						metaData.setContentLength(file.length());
+	
+						s3Client.putObject(bucketName, f.getKey(), fis, metaData);
+					} finally {
+						file.delete();
+						isClosed = true;
+					}
 				}
 			}
 		};
@@ -448,6 +449,11 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 	public void fileDoesNotExist(String bucketName, String fileName) throws SenderException {
 		if (!s3Client.doesObjectExist(bucketName, fileName))
 			throw new SenderException(" file with fileName [" + fileName + "] does not exist, please specify the name of an existing file");
+	}
+
+	@Override
+	public String getPhysicalDestinationName() {
+		return "bucket ["+getBucketName()+"]"; 
 	}
 
 	public static List<String> getAvailableRegions() {
