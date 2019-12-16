@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2016-2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.log4j.Appender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.springframework.context.ApplicationEventPublisher;
 
 import edu.emory.mathcs.backport.java.util.Collections;
 import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
@@ -73,6 +74,7 @@ public class ServerStatistics extends Base {
 	@Context ServletConfig servletConfig;
 	private static final int MAX_MESSAGE_SIZE = AppConstants.getInstance().getInt("adapter.message.max.size", 0);
 
+
 	@GET
 	@PermitAll
 	@Path("/server/info")
@@ -83,11 +85,14 @@ public class ServerStatistics extends Base {
 
 		initBase(servletConfig);
 
+		AppConstants appConstants = AppConstants.getInstance();
+
 		for (Configuration configuration : ibisManager.getConfigurations()) {
-			Map<String, String> cfg = new HashMap<String, String>();
+			Map<String, Object> cfg = new HashMap<String, Object>();
 			cfg.put("name", configuration.getName());
 			cfg.put("version", configuration.getVersion());
 			cfg.put("type", configuration.getClassLoaderType());
+			cfg.put("stubbed", configuration.isStubbed());
 
 			if(configuration.getConfigurationException() != null)
 				cfg.put("exception", configuration.getConfigurationException().getMessage());
@@ -117,8 +122,14 @@ public class ServerStatistics extends Base {
 
 		returnMap.put("configurations", configurations);
 
-		returnMap.put("version", ibisContext.getFrameworkVersion());
+		returnMap.put("version", appConstants.getProperty("application.version"));
 		returnMap.put("name", ibisContext.getApplicationName());
+
+		String otapStage = appConstants.getProperty("otap.stage");
+		returnMap.put("otap.stage", otapStage);
+		String otapSide = appConstants.getProperty("otap.side");
+		returnMap.put("otap.side", otapSide);
+
 		returnMap.put("applicationServer", servletConfig.getServletContext().getServerInfo());
 		returnMap.put("javaVersion", System.getProperty("java.runtime.name") + " (" + System.getProperty("java.runtime.version") + ")");
 		Map<String, Object> fileSystem = new HashMap<String, Object>(2);
@@ -258,14 +269,11 @@ public class ServerStatistics extends Base {
 
 		List<String> errorLevels = new ArrayList<String>(Arrays.asList("DEBUG", "INFO", "WARN", "ERROR"));
 		logSettings.put("errorLevels", errorLevels);
-
-		for (Iterator<String> iterator = errorLevels.iterator(); iterator.hasNext();) {
-			String level = iterator.next();
-			if(rootLogger.getLevel() == Level.toLevel(level))
-				logSettings.put("loglevel", level);
-		}
+		logSettings.put("loglevel", rootLogger.getLevel().toString());
 
 		logSettings.put("logIntermediaryResults", AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true));
+
+		logSettings.put("enableDebugger", AppConstants.getInstance().getBoolean("testtool.enabled", true));
 
 		return Response.status(Response.Status.CREATED).entity(logSettings).build();
 	}
@@ -281,6 +289,7 @@ public class ServerStatistics extends Base {
 		Level loglevel = null;
 		Boolean logIntermediaryResults = true;
 		int maxMessageLength = -1;
+		Boolean enableDebugger = null;
 		StringBuilder msg = new StringBuilder();
 
 		Logger rootLogger = LogUtil.getRootLogger();
@@ -302,6 +311,9 @@ public class ServerStatistics extends Base {
 			}
 			else if(key.equalsIgnoreCase("maxMessageLength")) {
 				maxMessageLength = Integer.parseInt(""+value);
+			}
+			else if(key.equalsIgnoreCase("enableDebugger")) {
+				enableDebugger = Boolean.parseBoolean(""+value);
 			}
 		}
 
@@ -330,6 +342,22 @@ public class ServerStatistics extends Base {
 			}
 		}
 
+		if (enableDebugger!=null) {
+			boolean testtoolEnabled="true".equalsIgnoreCase(AppConstants.getInstance().get("testtool.enabled"));
+			if (testtoolEnabled!=enableDebugger) {
+				AppConstants.getInstance().put("testtool.enabled", "" + enableDebugger);
+				DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enableDebugger);
+				ApplicationEventPublisher applicationEventPublisher = ibisManager.getApplicationEventPublisher();
+				if (applicationEventPublisher!=null) {
+					log.info("setting debugger enabled ["+enableDebugger+"]");
+					applicationEventPublisher.publishEvent(event);
+				} else {
+					log.warn("no applicationEventPublisher, cannot set debugger enabled ["+enableDebugger+"]");
+				}
+			}
+ 		}
+		
+		
 		if(msg.length() > 0) {
 			log.warn(msg.toString());
 			LogUtil.getLogger("SEC").info(msg.toString());
@@ -389,4 +417,5 @@ public class ServerStatistics extends Base {
 
 		return Response.status(status).entity(response).build();
 	}
+
 }

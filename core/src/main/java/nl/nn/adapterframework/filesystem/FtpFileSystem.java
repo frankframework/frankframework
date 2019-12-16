@@ -73,6 +73,11 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
+	public FTPFile toFile(String folder, String filename) throws FileSystemException {
+		return toFile(folder+"/"+filename);
+	}
+
+	@Override
 	public Iterator<FTPFile> listFiles(String folder) throws FileSystemException {
 		try {
 			return new FTPFilePathIterator(folder, ftpClient.listFiles(folder));
@@ -240,6 +245,12 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		attributes.put("link", f.getLink());
 		attributes.put("hardLinkCount", f.getHardLinkCount());
 		return attributes;
+	}
+
+
+	@Override
+	public String getPhysicalDestinationName() {
+		return "remote directory ["+remoteDirectory+"]";
 	}
 
 	public void setRemoteDirectory(String remoteDirectory) {

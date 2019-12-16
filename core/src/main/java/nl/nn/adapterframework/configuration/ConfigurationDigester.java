@@ -208,6 +208,7 @@ public class ConfigurationDigester {
 			if (configurationResource == null) {
 				throw new ConfigurationException("Configuration file not found: " + configurationFile);
 			}
+			if(LOG.isDebugEnabled()) LOG.debug("digesting configuration ["+configuration.getName()+"] configurationFile ["+configurationFile+"] configLogAppend ["+configLogAppend+"]");
 
 			String original = XmlUtils.identityTransform(configurationResource);
 			fillConfigWarnDefaultValueExceptions(XmlUtils.stringToSource(original)); // must use 'original', cannot use configurationResource, because EntityResolver will not be properly set
@@ -223,7 +224,7 @@ public class ConfigurationDigester {
 			loadedHide = ConfigurationUtils.getUglifiedConfiguration(configuration, loadedHide);
 			loaded = ConfigurationUtils.getActivatedConfiguration(configuration, loaded);
 			loadedHide = ConfigurationUtils.getActivatedConfiguration(configuration, loadedHide);
-			if (ConfigurationUtils.stubConfiguration()) {
+			if (ConfigurationUtils.isConfigurationStubbed(classLoader)) {
 				loaded = ConfigurationUtils.getStubbedConfiguration(configuration, loaded);
 				loadedHide = ConfigurationUtils.getStubbedConfiguration(configuration, loadedHide);
 			}

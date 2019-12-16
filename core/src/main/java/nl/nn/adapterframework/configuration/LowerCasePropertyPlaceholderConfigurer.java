@@ -40,7 +40,7 @@ public class LowerCasePropertyPlaceholderConfigurer
 		String instanceName = appConstants.getProperty("instance.name");
 		if (instanceName != null) {
 			String lowerCase = instanceName.toLowerCase();
-			appConstants.putPropertyPlaceholderConfigurerProperty("instance.name.lc", lowerCase);
+			appConstants.setProperty("instance.name.lc", lowerCase);
 			props.put("instance.name.lc", lowerCase);
 		}
 	}

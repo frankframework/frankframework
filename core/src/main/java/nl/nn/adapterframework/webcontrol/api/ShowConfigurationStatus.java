@@ -451,7 +451,7 @@ public final class ShowConfigurationStatus extends Base {
 		certElem.put("name", certificate);
 		String certificateAuthAlias = s.getCertificateAuthAlias();
 		certElem.put("authAlias", certificateAuthAlias);
-		URL certificateUrl = ClassUtils.getResourceURL(this, certificate);
+		URL certificateUrl = ClassUtils.getResourceURL(s.getConfigurationClassLoader(), certificate);
 		if (certificateUrl == null) {
 			certElem.put("url", null);
 			certElem.put("info", "*** ERROR ***");
@@ -474,7 +474,7 @@ public final class ShowConfigurationStatus extends Base {
 		certElem.put("name", certificate);
 		String certificateAuthAlias = s.getCertificateAuthAlias();
 		certElem.put("authAlias", certificateAuthAlias);
-		URL certificateUrl = ClassUtils.getResourceURL(this, certificate);
+		URL certificateUrl = ClassUtils.getResourceURL(s.getConfigurationClassLoader(), certificate);
 		if (certificateUrl == null) {
 			certElem.put("url", "");
 			certElem.put("info", "*** ERROR ***");
@@ -497,7 +497,7 @@ public final class ShowConfigurationStatus extends Base {
 		certElem.put("name", certificate);
 		String certificateAuthAlias = s.getCertificateAuthAlias();
 		certElem.put("authAlias", certificateAuthAlias);
-		URL certificateUrl = ClassUtils.getResourceURL(this, certificate);
+		URL certificateUrl = ClassUtils.getResourceURL(s.getConfigurationClassLoader(), certificate);
 		if (certificateUrl == null) {
 			certElem.put("url", "");
 			certElem.put("info", "*** ERROR ***");
@@ -591,7 +591,7 @@ public final class ShowConfigurationStatus extends Base {
 				if (sender instanceof JdbcSenderBase) {
 					pipesInfo.put("isJdbcSender", true);
 				}
-				IListener listener = msp.getListener();
+				IListener<?> listener = msp.getListener();
 				if (listener!=null) {
 					pipesInfo.put("listenerName", listener.getName());
 					pipesInfo.put("listenerClass", ClassUtils.nameOf(listener));
@@ -653,11 +653,13 @@ public final class ShowConfigurationStatus extends Base {
 				ISender sender=null;
 				if (receiver instanceof ReceiverBase ) {
 					ReceiverBase rb = (ReceiverBase) receiver;
-					IListener listener=rb.getListener();
-					receiverInfo.put("listenerClass", ClassUtils.nameOf(listener));
+					Map<String, Object> listenerInfo = new HashMap<String, Object>();
+					IListener<?> listener=rb.getListener();
+					listenerInfo.put("name", listener.getName());
+					listenerInfo.put("class", ClassUtils.nameOf(listener));
 					if (listener instanceof HasPhysicalDestination) {
 						String pd = ((HasPhysicalDestination)rb.getListener()).getPhysicalDestinationName();
-						receiverInfo.put("listenerDestination", pd);
+						listenerInfo.put("destination", pd);
 					}
 					if (listener instanceof HasSender) {
 						sender = ((HasSender)listener).getSender();
@@ -693,17 +695,16 @@ public final class ShowConfigurationStatus extends Base {
 						}
 					}
 					boolean isRestListener = (listener instanceof RestListener);
-					receiverInfo.put("isRestListener", isRestListener);
+					listenerInfo.put("isRestListener", isRestListener);
 					if (isRestListener) {
 						RestListener rl = (RestListener) listener;
-						receiverInfo.put("restUriPattern", rl.getRestUriPattern());
-						receiverInfo.put("isView", (rl.isView()==null?false:rl.isView()));
+						listenerInfo.put("restUriPattern", rl.getRestUriPattern());
+						listenerInfo.put("isView", (rl.isView()==null?false:rl.isView()));
 					}
 					if ((listener instanceof JmsListenerBase) && showPendingMsgCount) {
 						JmsListenerBase jlb = (JmsListenerBase) listener;
 						JmsMessageBrowser jmsBrowser;
-						if (StringUtils.isEmpty(jlb
-								.getMessageSelector())) {
+						if (StringUtils.isEmpty(jlb.getMessageSelector())) {
 							jmsBrowser = new JmsMessageBrowser();
 						} else {
 							jmsBrowser = new JmsMessageBrowser(jlb.getMessageSelector());
@@ -739,6 +740,8 @@ public final class ShowConfigurationStatus extends Base {
 						}
 					}
 					receiverInfo.put("isEsbJmsFFListener", isEsbJmsFFListener);
+
+					receiverInfo.put("listener", listenerInfo);
 				}
 
 				if (receiver instanceof HasSender) {

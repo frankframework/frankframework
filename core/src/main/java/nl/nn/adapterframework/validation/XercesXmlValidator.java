@@ -110,7 +110,10 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	private static final boolean sharedSymbolTable = AppConstants.getInstance().getBoolean("xmlValidator.sharedSymbolTable", false);
 	private static final int sharedSymbolTableSize = AppConstants.getInstance().getInt("xmlValidator.sharedSymbolTable.size", BIG_PRIME);
 	private int entityExpansionLimit = AppConstants.getInstance().getInt("xmlValidator.entityExpansionLimit", 100000);
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+	private static AtomicLong counter = new AtomicLong();
+	private String preparseResultId;
+	private PreparseResult preparseResult;
 
 	private static EhCache cache;
 	static {
@@ -130,9 +133,6 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			cache.open();
 		}
 	}
-	private static AtomicLong counter = new AtomicLong();
-	private String preparseResultId;
-	private PreparseResult preparseResult;
 
 	public XercesXmlValidator() {
 		preparseResultId = "" + counter.getAndIncrement();
@@ -175,7 +175,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		XMLGrammarPool grammarPool = new XMLGrammarPoolImpl();
 		Set<String> namespaceSet = new HashSet<String>();
 		XMLGrammarPreparser preparser = new XMLGrammarPreparser(symbolTable);
-		preparser.setEntityResolver(new ClassLoaderXmlEntityResolver(classLoader));
+		preparser.setEntityResolver(new ClassLoaderXmlEntityResolver(getConfigurationClassLoader()));
 		preparser.registerPreparser(XMLGrammarDescription.XML_SCHEMA, null);
 		preparser.setProperty(GRAMMAR_POOL, grammarPool);
 		preparser.setFeature(NAMESPACES_FEATURE_ID, true);

@@ -27,6 +27,7 @@ import java.util.Set;
 import javax.xml.validation.ValidatorHandler;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.xml.sax.InputSource;
@@ -34,6 +35,7 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
+import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -59,34 +61,35 @@ public abstract class AbstractXmlValidator {
 	public static final String XML_VALIDATOR_NOT_VALID_MONITOR_EVENT = "Invalid XML: does not comply to XSD";
 	public static final String XML_VALIDATOR_VALID_MONITOR_EVENT = "valid XML";
 
+	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	protected SchemasProvider schemasProvider;
-    private boolean throwException = false;
-    private boolean fullSchemaChecking = false;
+	private boolean throwException = false;
+	private boolean fullSchemaChecking = false;
 	private String reasonSessionKey = "failureReason";
 	private String xmlReasonSessionKey = "xmlFailureReason";
 
-	private boolean validateFile=false;
-	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-	protected boolean warn = AppConstants.getInstance().getBoolean("xmlValidator.warn", true);
-    protected boolean needsInit = true;
-    protected boolean lazyInit = AppConstants.getInstance().getBoolean("xmlValidator.lazyInit", false);
+	private boolean validateFile = false;
+	private String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+	protected boolean warn = AppConstants.getInstance(configurationClassLoader).getBoolean("xmlValidator.warn", true);
+	protected boolean needsInit = true;
+	protected boolean lazyInit = AppConstants.getInstance(configurationClassLoader).getBoolean("xmlValidator.lazyInit", false);
 
-    protected String logPrefix = "";
-    protected boolean addNamespaceToSchema = false;
+	protected String logPrefix = "";
+	protected boolean addNamespaceToSchema = false;
 	protected String importedSchemaLocationsToIgnore;
-    protected boolean useBaseImportedSchemaLocationsToIgnore = false;
+	protected boolean useBaseImportedSchemaLocationsToIgnore = false;
 	protected String importedNamespacesToIgnore;
 	protected Boolean ignoreUnknownNamespaces;
 	protected boolean ignoreCaching = false;
 
-    public boolean isAddNamespaceToSchema() {
-        return addNamespaceToSchema;
-    }
+	public boolean isAddNamespaceToSchema() {
+		return addNamespaceToSchema;
+	}
 
-    public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
-        this.addNamespaceToSchema = addNamespaceToSchema;
-    }
+	public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
+		this.addNamespaceToSchema = addNamespaceToSchema;
+	}
 
 	public void setImportedSchemaLocationsToIgnore(String string) {
 		importedSchemaLocationsToIgnore = string;
@@ -96,13 +99,13 @@ public abstract class AbstractXmlValidator {
 		return importedSchemaLocationsToIgnore;
 	}
 
-    public boolean isUseBaseImportedSchemaLocationsToIgnore() {
-        return useBaseImportedSchemaLocationsToIgnore;
-    }
+	public boolean isUseBaseImportedSchemaLocationsToIgnore() {
+		return useBaseImportedSchemaLocationsToIgnore;
+	}
 
-    public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
-        this.useBaseImportedSchemaLocationsToIgnore = useBaseImportedSchemaLocationsToIgnore;
-    }
+	public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
+		this.useBaseImportedSchemaLocationsToIgnore = useBaseImportedSchemaLocationsToIgnore;
+	}
 
 	public void setImportedNamespacesToIgnore(String string) {
 		importedNamespacesToIgnore = string;
@@ -112,21 +115,22 @@ public abstract class AbstractXmlValidator {
 		return importedNamespacesToIgnore;
 	}
 
-    /**
-     * Configure the XmlValidator
-     * @throws ConfigurationException when:
-     * <ul><li>the schema cannot be found</li>
-     * <ul><li><{@link #isThrowException()} is false and there is no forward defined
-     * for "failure"</li>
-     * <li>when the parser does not accept setting the properties for validating</li>
-     * </ul>
-     */
-    public void configure(String logPrefix) throws ConfigurationException {
-        this.logPrefix = logPrefix;
-        if (!lazyInit) {
-            init();
-        }
-    }
+	/**
+	 * Configure the XmlValidator
+	 * 
+	 * @throws ConfigurationException when:
+	 * <ul>
+	 *   <li>the schema cannot be found</li>
+	 *   <li><{@link #isThrowException()} is false and there is no forward defined for "failure"</li>
+	 *   <li>when the parser does not accept setting the properties for validating</li>
+	 * </ul>
+	 */
+	public void configure(String logPrefix) throws ConfigurationException {
+		this.logPrefix = logPrefix;
+		if(!lazyInit) {
+			init();
+		}
+	}
 
 	protected void init() throws ConfigurationException {
 		if (needsInit) {
@@ -140,10 +144,7 @@ public abstract class AbstractXmlValidator {
 		}
 	}
 
-	protected String handleFailures(
-			XmlValidatorErrorHandler xmlValidatorErrorHandler,
-			IPipeLineSession session, String event, Throwable t)
-					throws  XmlValidatorException {
+	protected String handleFailures(XmlValidatorErrorHandler xmlValidatorErrorHandler, IPipeLineSession session, String event, Throwable t) throws XmlValidatorException {
 		// A SAXParseException will already be reported by the parser to the
 		// XmlValidatorErrorHandler through the ErrorHandler interface.
 		if (t != null && !(t instanceof SAXParseException)) {
@@ -166,7 +167,6 @@ public abstract class AbstractXmlValidator {
 	}
 
 	public ValidationContext createValidationContext(IPipeLineSession session, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
-		
 		// clear session variables
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
 			log.debug(logPrefix+ "removing contents of sessionKey ["+getReasonSessionKey()+ "]");
@@ -186,6 +186,7 @@ public abstract class AbstractXmlValidator {
 	public XMLReader getValidatingParser(IPipeLineSession session, ValidationContext context) throws XmlValidatorException, ConfigurationException, PipeRunException {
 		return getValidatingParser(session, context, false);
 	}
+
 	public XMLReader getValidatingParser(IPipeLineSession session, ValidationContext context, boolean resolveExternalEntities) throws XmlValidatorException, ConfigurationException, PipeRunException {
 		XMLReader parser = createValidatingParser(session, context);
 		if (!resolveExternalEntities) {
@@ -193,26 +194,19 @@ public abstract class AbstractXmlValidator {
 		}
 		return parser;
 	}
-	
+
 	/**
-	 * Validate the XML string
-	 * @param input a String
+	 * @param input the XML string to validate
 	 * @param session a {@link IPipeLineSession pipeLineSession}
 	 * @return MonitorEvent declared in{@link AbstractXmlValidator}
 	 * @throws XmlValidatorException when <code>isThrowException</code> is true and a validationerror occurred.
-	 * @throws PipeRunException
-	 * @throws ConfigurationException
 	 */
-//	public String validate(Object input, IPipeLineSession session, String logPrefix) throws XmlValidatorException, PipeRunException, ConfigurationException {
-//		return validate(input, session, logPrefix, rootValidations, invalidRootNamespaces, false);
-//	}
-	
 	public String validate(Object input, IPipeLineSession session, String logPrefix, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces, boolean resolveExternalEntities) throws XmlValidatorException, PipeRunException, ConfigurationException {
 		ValidationContext context = createValidationContext(session, rootValidations, invalidRootNamespaces);
 		XMLReader parser = getValidatingParser(session, context, resolveExternalEntities);
 		return validate(input, session, logPrefix, parser, null, context);
 	}
-	
+
 	public String validate(Object input, IPipeLineSession session, String logPrefix, XMLReader parser, XMLFilterImpl filter, ValidationContext context) throws XmlValidatorException, PipeRunException, ConfigurationException {
 
 		if (filter!=null) {
@@ -252,50 +246,52 @@ public abstract class AbstractXmlValidator {
 		return XML_VALIDATOR_VALID_MONITOR_EVENT;
 	}
 
-    /**
-     * Enable full schema grammar constraint checking, including
-     * checking which may be time-consuming or memory intensive.
-     *  Currently, particle unique attribution constraint checking and particle
-     * derivation resriction checking are controlled by this option.
-     * <p> see property http://apache.org/xml/features/validation/schema-full-checking</p>
-     * Defaults to <code>false</code>;
-     */
-	@IbisDoc({"perform addional memory intensive checks", "<code>false</code>"})
-    public void setFullSchemaChecking(boolean fullSchemaChecking) {
-        this.fullSchemaChecking = fullSchemaChecking;
-    }
+	/**
+	 * Enable full schema grammar constraint checking, including checking which
+	 * may be time-consuming or memory intensive. Currently, particle unique
+	 * attribution constraint checking and particle derivation resriction
+	 * checking are controlled by this option.
+	 * <p>
+	 * see property
+	 * http://apache.org/xml/features/validation/schema-full-checking
+	 * </p>
+	 * Defaults to <code>false</code>;
+	 */
+	@IbisDoc({ "perform addional memory intensive checks", "<code>false</code>" })
+	public void setFullSchemaChecking(boolean fullSchemaChecking) {
+		this.fullSchemaChecking = fullSchemaChecking;
+	}
 	public boolean isFullSchemaChecking() {
 		return fullSchemaChecking;
 	}
 
-    /**
-     * Sets schemas provider.
-     * @since 5.0
-     */
+	/**
+	 * Sets schemas provider.
+	 * @since 5.0
+	 */
 	public void setSchemasProvider(SchemasProvider schemasProvider) {
 		this.schemasProvider = schemasProvider;
 	}
 
 	protected String getLogPrefix(IPipeLineSession session){
-		  StringBuilder sb = new StringBuilder();
-		  sb.append(ClassUtils.nameOf(this)).append(' ');
-		  if (this instanceof INamedObject) {
-			  sb.append("[").append(((INamedObject)this).getName()).append("] ");
-		  }
-		  if (session != null) {
-			  sb.append("msgId [").append(session.getMessageId()).append("] ");
-		  }
-		  return sb.toString();
+		StringBuilder sb = new StringBuilder();
+		sb.append(ClassUtils.nameOf(this)).append(' ');
+		if(this instanceof INamedObject) {
+			sb.append("[").append(((INamedObject) this).getName()).append("] ");
+		}
+		if(session != null) {
+			sb.append("msgId [").append(session.getMessageId()).append("] ");
+		}
+		return sb.toString();
 	}
 
-    /**
-     * Indicates wether to throw an error (piperunexception) when
-     * the xml is not compliant.
-     */
+	/**
+	 * Indicates wether to throw an error (piperunexception) when the xml is not compliant.
+	 */
 	@IbisDoc({"should the xmlvalidator throw a piperunexception on a validation error (if not, a forward with name 'failure' should be defined.", "<code>false</code>"})
-    public void setThrowException(boolean throwException) {
-        this.throwException = throwException;
-    }
+	public void setThrowException(boolean throwException) {
+		this.throwException = throwException;
+	}
 	public boolean isThrowException() {
 		return throwException;
 	}
@@ -339,22 +335,22 @@ public abstract class AbstractXmlValidator {
 		this.warn = warn;
 	}
 
-    protected InputSource getInputSource(Object input) throws XmlValidatorException {
-        Variant in = new Variant(input);
-        final InputSource is;
-        if (isValidateFile()) {
-            try {
-                is = new InputSource(new InputStreamReader(new FileInputStream(in.asString()), getCharset()));
-            } catch (FileNotFoundException e) {
-                throw new XmlValidatorException("could not find file [" + in.asString() + "]", e);
-            } catch (UnsupportedEncodingException e) {
-                throw new XmlValidatorException("could not use charset [" + getCharset() + "]", e);
-            }
-        } else {
-            is = in.asXmlInputSource();
-        }
-        return is;
-    }
+	protected InputSource getInputSource(Object input) throws XmlValidatorException {
+		Variant in = new Variant(input);
+		final InputSource is;
+		if(isValidateFile()) {
+			try {
+				is = new InputSource(new InputStreamReader(new FileInputStream(in.asString()), getCharset()));
+			} catch (FileNotFoundException e) {
+				throw new XmlValidatorException("could not find file [" + in.asString() + "]", e);
+			} catch (UnsupportedEncodingException e) {
+				throw new XmlValidatorException("could not use charset [" + getCharset() + "]", e);
+			}
+		} else {
+			is = in.asXmlInputSource();
+		}
+		return is;
+	}
 
 	public void setIgnoreUnknownNamespaces(boolean b) {
 		this.ignoreUnknownNamespaces = b;
@@ -364,20 +360,27 @@ public abstract class AbstractXmlValidator {
 		return ignoreUnknownNamespaces;
 	}
 
-    public boolean isIgnoreCaching() {
-        return ignoreCaching;
-    }
+	public boolean isIgnoreCaching() {
+		return ignoreCaching;
+	}
 
-    public void setIgnoreCaching(boolean ignoreCaching) {
-        this.ignoreCaching = ignoreCaching;
-    }
+	public void setIgnoreCaching(boolean ignoreCaching) {
+		this.ignoreCaching = ignoreCaching;
+	}
 
-    public boolean isLazyInit() {
-        return lazyInit;
-    }
+	public boolean isLazyInit() {
+		return lazyInit;
+	}
 
-    public void setLazyInit(boolean lazyInit) {
-        this.lazyInit = lazyInit;
-    }
+	public void setLazyInit(boolean lazyInit) {
+		this.lazyInit = lazyInit;
+	}
 
+	/**
+	 * This ClassLoader is set upon creation of the pipe, used to retrieve resources configured by the Ibis application.
+	 * @return returns the ClassLoader created by the {@link ClassLoaderManager ClassLoaderManager}.
+	 */
+	public ClassLoader getConfigurationClassLoader() {
+		return configurationClassLoader;
+	}
 }

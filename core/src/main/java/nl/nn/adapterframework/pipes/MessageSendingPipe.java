@@ -218,7 +218,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	
 	private boolean timeoutPending=false;
 
-	boolean checkMessageLog = AppConstants.getInstance().getBoolean("messageLog.check", false);
+	boolean checkMessageLog = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("messageLog.check", false);
 
 	private PipeProcessor pipeProcessor;
 	private ListenerProcessor listenerProcessor;
@@ -325,7 +325,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				if (findForward(ILLEGAL_RESULT_FORWARD) == null)
 					throw new ConfigurationException(getLogPrefix(null) + "has no forward with name [illegalResult]");
 			}
-			if (!ConfigurationUtils.stubConfiguration()) {
+			if (!ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader())) {
 				if (StringUtils.isNotEmpty(getTimeOutOnResult())) {
 					throw new ConfigurationException(getLogPrefix(null)+"timeOutOnResult only allowed in stub mode");
 				}
@@ -473,7 +473,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	
 	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session, MessageOutputStream target) throws PipeRunException {
-		String originalMessage = input.toString();
+		String originalMessage = input==null?null:input.toString();
 		String result = null;
 		String correlationID = session.getMessageId();
 
@@ -786,7 +786,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if  (pipeline!=null) {
 				Adapter adapter = pipeline.getAdapter();
 				if (adapter!=null) {
-					if (getPresumedTimeOutInterval()>=0 && !ConfigurationUtils.stubConfiguration()) {
+					if (getPresumedTimeOutInterval()>=0 && !ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader())) {
 						long lastExitIsTimeoutDate = adapter.getLastExitIsTimeoutDate(getName());
 						if (lastExitIsTimeoutDate>0) {
 							long duration = startTime - lastExitIsTimeoutDate;
@@ -827,7 +827,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if  (pipeline!=null) {
 				Adapter adapter = pipeline.getAdapter();
 				if (adapter!=null) {
-					if (getPresumedTimeOutInterval()>=0 && !ConfigurationUtils.stubConfiguration()) {
+					if (getPresumedTimeOutInterval()>=0 && !ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader())) {
 						if (!PRESUMED_TIMEOUT_FORWARD.equals(exitState)) {
 							adapter.setLastExitState(getName(), System.currentTimeMillis(), exitState);
 						}

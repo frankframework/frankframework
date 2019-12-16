@@ -44,6 +44,8 @@ public class IbisApplicationInitializer implements WebApplicationInitializer {
 		servletContext.log("Starting IBIS Application");
 
 		//TODO start the springContext from here!
+		//NM: found out that the WebApplicationInitializer has to be on the webapp's classpath
+		//putting it in core wont help, as it wont search in the webapp's dependencies
+		//for some reason it only works on eclipse+tomcat but not a standalone application server
 	}
-
 }

@@ -111,7 +111,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
 	private int transactionTimeout=0;
-	private boolean sizeStatistics = AppConstants.getInstance().getBoolean("statistics.size", false);
+	private boolean sizeStatistics = AppConstants.getInstance(configurationClassLoader).getBoolean("statistics.size", false);
 	private Locker locker;
 	private String emptyInputReplacement=null;
 	private boolean writeToSecLog = false;

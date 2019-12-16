@@ -12,52 +12,11 @@
  
 <%
 	String view=request.getParameter("view");
-	String theme = request.getParameter("theme");
-	if (theme != null) {
-		session.setAttribute("nl.nn.adapterframework.webcontrol.Theme", theme);
-	} else {
-		theme = (String)session.getAttribute("nl.nn.adapterframework.webcontrol.Theme");
-		if (theme == null) {
-			theme = "classic";
-		}
-	}
-	String otherTheme;
-	if ("classic".equals(theme)) {
-		otherTheme = "bootstrap";
-	} else {
-		otherTheme = "classic";
-	}
-	String themeSwitchQueryString = (String)request.getAttribute("javax.servlet.forward.query_string");
-	if (themeSwitchQueryString == null) {
-		themeSwitchQueryString = "?theme=" + otherTheme;
-	} else {
-		themeSwitchQueryString = "?" + themeSwitchQueryString;
-		int i = themeSwitchQueryString.indexOf("?theme=");
-		if (i == -1) {
-			i = themeSwitchQueryString.indexOf("&theme=");
-		}
-		if (i == -1) {
-			themeSwitchQueryString = themeSwitchQueryString + "&theme=" + otherTheme;
-		} else {
-			int j = themeSwitchQueryString.indexOf("&", i + 7);
-			if (j == -1) {
-				j = themeSwitchQueryString.length();
-			}
-			themeSwitchQueryString = themeSwitchQueryString.substring(0, i + 7) + otherTheme + themeSwitchQueryString.substring(j);
-		}
-	}
-	request.setAttribute("nl.nn.adapterframework.webcontrol.ThemeSwitchQueryString", themeSwitchQueryString);
 
 	String contenttype="text/html";
 	String output=request.getParameter("output");
-	if ("xml".equals(output) || "bootstrap".equals(theme)) {
+	if ("xml".equals(output)) {
 		response.setContentType("text/xml;charset=UTF-8");
-		if (!"xml".equals(output)) {
-			String stylesheet = "bootstrap/xsl/" + view.substring(5, view.length() - 4) + ".xsl";
-%>
-			<%= "<?xml-stylesheet href=\"" + stylesheet + "\" type=\"text/xsl\"?>" %>
-<%
-		}
 %>
 		<page>
 <%

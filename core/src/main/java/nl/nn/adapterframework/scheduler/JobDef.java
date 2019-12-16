@@ -355,8 +355,7 @@ public class JobDef {
 	protected Logger log=LogUtil.getLogger(this);
 	protected Logger heartbeatLog = LogUtil.getLogger("HEARTBEAT");
 
-	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.autoDatabaseClassLoader", false);
+	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = AppConstants.getInstance().getBoolean("configurations.autoDatabaseClassLoader", false);
 
     private String name;
     private String cronExpression;
@@ -989,14 +988,14 @@ public class JobDef {
 		try {
 			// send job
 			IbisLocalSender localSender = new IbisLocalSender();
-			localSender.setJavaListener(receiverName);
+			localSender.setJavaListener(getReceiverName());
 			localSender.setIsolated(false);
 			localSender.setName("AdapterJob");
 			if (getInterval() == 0) {
 				localSender.setDependencyTimeOut(-1);
 			}
-			if (StringUtils.isNotEmpty(adapterName)) {
-				IAdapter iAdapter = ibisManager.getRegisteredAdapter(adapterName);
+			if (StringUtils.isNotEmpty(getAdapterName())) {
+				IAdapter iAdapter = ibisManager.getRegisteredAdapter(getAdapterName());
 				Configuration configuration = iAdapter.getConfiguration();
 				localSender.setConfiguration(configuration);
 			}
@@ -1242,7 +1241,7 @@ public class JobDef {
 		}
 	}
 	public String getFunction() {
-		return function.getName();
+		return function==null?null:function.getName();
 	}
 	public JobDefFunctions getJobDefFunction() {
 		return function;
@@ -1264,7 +1263,7 @@ public class JobDef {
 		return adapterName;
 	}
 
-	@IbisDoc({"receiver on which job operates. if function is 'sendmessage' is used this name is also used as name of javalistener", ""})
+	@IbisDoc({"receiver on which job operates. If function is 'sendmessage' this should be the name of the javalistener you wish to call", ""})
 	public void setReceiverName(String receiverName) {
 		this.receiverName = receiverName;
 	}

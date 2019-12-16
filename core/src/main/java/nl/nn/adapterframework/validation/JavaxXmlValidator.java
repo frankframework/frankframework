@@ -36,8 +36,6 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.ValidatorHandler;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
@@ -105,12 +103,11 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 			getSchemaObject(schemasId, schemasProvider.getSchemas(session));
 		}
 		schema = javaxSchemas.get(schemasId);
-		String mainFailureMessage = "Validation using " + schemasProvider.getClass().getSimpleName() + " with '" + schemasId + "' failed";
 
 		if (schema!=null) {
 			org.apache.xerces.jaxp.validation.XSGrammarPoolContainer xercesSchema = (org.apache.xerces.jaxp.validation.XSGrammarPoolContainer)schema;
 			xercesSchema.getGrammarPool();
-	
+
 			xsModels=new LinkedList<XSModel>();
 			Grammar[] grammars=xercesSchema.getGrammarPool().retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
 			for(int i=0;i<grammars.length;i++) {
@@ -162,7 +159,6 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	}
 
 
-
 //	protected String validate(Source source, IPipeLineSession session) throws XmlValidatorException, ConfigurationException, PipeRunException {
 //        init();
 //		String schemasId = schemasProvider.getSchemasId();
@@ -211,6 +207,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 		if (schema == null) {
 			SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 			factory.setResourceResolver(new LSResourceResolver() {
+				@Override
 				public LSInput resolveResource(String s, String s1, String s2, String s3, String s4) {
 					return null;
 				}
