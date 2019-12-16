@@ -71,7 +71,7 @@
 			</pipe>
 			<pipe
 				name="CheckIgnoreExists" className="nl.nn.adapterframework.pipes.XmlSwitch"
-				getInpurFromFixedValue=".gitignore"
+				getInputFromFixedValue=".gitignore"
 				xpathExpression="directory/@count > 0">
 			
 				<forward name="true" path="EXIT" />
