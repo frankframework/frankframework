@@ -327,22 +327,25 @@ public class IbisContext extends IbisApplicationContext {
 		long start = System.currentTimeMillis();
 		if(LOG.isDebugEnabled()) LOG.debug("creating new configuration ["+currentConfigurationName+"]");
 
-		String currentConfigurationVersion = ConfigurationUtils.getConfigurationVersion(classLoader);
+		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+		String currentConfigurationVersion = null;
+
+		if (classLoader != null) {
+			Thread.currentThread().setContextClassLoader(classLoader);
+			currentConfigurationVersion = ConfigurationUtils.getConfigurationVersion(classLoader);
+		}
+
 		if(LOG.isDebugEnabled()) LOG.debug("configuration ["+currentConfigurationName+"] found currentConfigurationVersion ["+currentConfigurationVersion+"]");
 
 		Configuration configuration = null;
-		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-		if (classLoader != null) {
-			Thread.currentThread().setContextClassLoader(classLoader);
-		}
 		try {
 			configuration = new Configuration(new BasicAdapterServiceImpl());
 			configuration.setName(currentConfigurationName);
 			configuration.setVersion(currentConfigurationVersion);
 			configuration.setIbisManager(ibisManager);
 			ibisManager.addConfiguration(configuration);
-			ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
 			if (customClassLoaderConfigurationException == null) {
+				ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
 
 				if(AppConstants.getInstance(classLoader).getBoolean("jdbc.migrator.active", false)) {
 					try {
