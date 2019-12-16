@@ -47,7 +47,7 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
 				}
 				appConstants.setProperty("testtool.enabled", testToolEnabled);
 			}
-			testTool.setReportGeneratorEnabled(testToolEnabled);
+			//testTool.setReportGeneratorEnabled(testToolEnabled); // no longer necessary to switch off report generator, when debugger advice is disabled
 			IbisDebuggerAdvice.setEnabled(testToolEnabled);
 		}
 		if (bean instanceof nl.nn.testtool.storage.file.Storage) {
