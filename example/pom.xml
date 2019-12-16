@@ -121,7 +121,7 @@
         </dependency>
         <dependency>
           <groupId>org.ibissource</groupId>
-          <artifactId>ibis-adapterframework-akamai</artifactId>
+          <artifactId>ibis-adapterframework-ladybug</artifactId>
         </dependency>
      </dependencies>
     </profile>
