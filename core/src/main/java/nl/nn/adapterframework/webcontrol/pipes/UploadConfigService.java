@@ -77,34 +77,27 @@ public class UploadConfigService extends FixedForwardPipe {
 		try {
 			// convert inputStream to byteArray so it can be read twice
 			byte[] bytes = IOUtils.toByteArray(inputStream);
-			String[] buildInfo = ConfigurationUtils.retrieveBuildInfo(
-					new ByteArrayInputStream(bytes));
+			String[] buildInfo = ConfigurationUtils.retrieveBuildInfo(new ByteArrayInputStream(bytes));
 			name = buildInfo[0];
 			version = buildInfo[1];
 			if (StringUtils.isEmpty(name) || StringUtils.isEmpty(version)) {
-				result = createJsonErrorResponse("invalid_request",
-						"missing_name_version");
+				result = createJsonErrorResponse("invalid_request", "missing_name_version");
 				session.put(HTTP_STATUS_CODE, 400);
 				return new PipeRunResult(getForward(), result);
 			}
 
 			fileName = name + "-" + version + ".jar";
-			if (ConfigurationUtils.addConfigToDatabase(ibisContext,
-					formJmsRealm, true, true, name, version, fileName,
-					new ByteArrayInputStream(bytes), remoteUser)) {
-				if (CONFIG_AUTO_DB_CLASSLOADER && ibisContext.getIbisManager()
-						.getConfiguration(name) == null) {
-					ibisContext.load(name);
+			if (ConfigurationUtils.addConfigToDatabase(ibisContext, formJmsRealm, true, true, name, version, fileName, new ByteArrayInputStream(bytes), remoteUser)) {
+				if (CONFIG_AUTO_DB_CLASSLOADER && ibisContext.getIbisManager().getConfiguration(name) == null) {
+					ibisContext.reload(name);
 				}
 				result = "{\"ok\":\"\"}";
 				session.put(HTTP_STATUS_CODE, 201);
 			} else {
-				throw new PipeRunException(this, getLogPrefix(session)
-						+ "Adding config to database resulted in rowcount zero");
+				throw new PipeRunException(this, getLogPrefix(session) + "Adding config to database resulted in rowcount zero");
 			}
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "Error occured on adding config to database", e);
+			throw new PipeRunException(this, getLogPrefix(session) + "Error occured on adding config to database", e);
 		}
 
 		return new PipeRunResult(getForward(), result);

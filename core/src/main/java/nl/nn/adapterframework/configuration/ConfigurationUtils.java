@@ -287,6 +287,42 @@ public class ConfigurationUtils {
 		}
 	}
 
+	public static void removeConfigFromDatabase(IbisContext ibisContext, String name, String jmsRealm, String version) throws ConfigurationException {
+		String workJmsRealm = jmsRealm;
+		if (StringUtils.isEmpty(workJmsRealm)) {
+			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
+			if (StringUtils.isEmpty(workJmsRealm)) {
+				throw new ConfigurationException("no JmsRealm found");
+			}
+		}
+
+		Connection conn = null;
+		ResultSet rs = null;
+		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		qs.setJmsRealm(workJmsRealm);
+		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
+		qs.configure();
+		try {
+			qs.open();
+			conn = qs.getConnection();
+
+			String query = ("DELETE FROM IBISCONFIG WHERE NAME=? AND VERSION=?");
+			PreparedStatement stmt = conn.prepareStatement(query);
+			stmt.setString(1, name);
+			stmt.setString(2, version);
+			stmt.execute();
+		} catch (SenderException e) {
+			throw new ConfigurationException(e);
+		} catch (JdbcException e) {
+			throw new ConfigurationException(e);
+		} catch (SQLException e) {
+			throw new ConfigurationException(e);
+		} finally {
+			qs.close();
+			JdbcUtil.fullClose(conn, rs);
+		}
+	}
+
 	/**
 	 * Set the all ACTIVECONFIG to false and specified version to true
 	 * @param value 

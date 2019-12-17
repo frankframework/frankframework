@@ -93,11 +93,15 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	}
 
 	private void appendNamespaceMapping(StringBuffer output, String prefix, String uri) {
-		output.append(" xmlns");
-		if (StringUtils.isNotEmpty(prefix) ) {
-			output.append(":").append(prefix);
+		if (StringUtils.isNotEmpty(uri)) {
+			output.append(" xmlns");
+			if (StringUtils.isNotEmpty(prefix) ) {
+				output.append(":").append(prefix);
+			}
+			output.append("=\"").append(XmlUtils.encodeChars(uri)).append("\"");
+		} else {
+			log.debug("do not make attribute for empty namespace with prefix ["+prefix+"]");
 		}
-		output.append("=\"").append(XmlUtils.encodeChars(uri)).append("\"");
 	}
 
 	@Override

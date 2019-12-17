@@ -223,6 +223,29 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		String message=filename;
 		String result = fileSystemSender.sendMessage(correlationId, message, prc);
 		
+		// test
+		assertEquals("result should be base64 of file content", contents.trim(), result.trim());
+	}
+
+	@Test
+	public void fileSystemSenderDownloadActionBase64Test() throws Exception {
+		String filename = "sender" + FILE1;
+		String contents = "Tekst om te lezen";
+		
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+
+		fileSystemSender.setAction("download");
+		fileSystemSender.configure();
+		fileSystemSender.setBase64("encode");
+		fileSystemSender.open();
+		
+		ParameterResolutionContext prc = new ParameterResolutionContext();
+		prc.setSession(new PipeLineSessionBase());
+		String correlationId="fakecorrelationid";
+		String message=filename;
+		String result = fileSystemSender.sendMessage(correlationId, message, prc);
+		
 		String contentsBase64 = Base64.encodeBase64String(contents.getBytes());
 		// test
 		assertEquals("result should be base64 of file content", contentsBase64.trim(), result.trim());
@@ -282,10 +305,10 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 	@Test
 	public void fileSystemSenderMkdirActionTest() throws Exception {
-		String filename = "mkdir" + DIR1;
+		String folder = "mkdir" + DIR1;
 		
-		if (_folderExists(filename)) {
-			_deleteFolder(filename);
+		if (_folderExists(folder)) {
+			_deleteFolder(folder);
 		}
 
 		fileSystemSender.setAction("mkdir");
@@ -295,24 +318,24 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		ParameterResolutionContext prc = new ParameterResolutionContext();
 		prc.setSession(new PipeLineSessionBase());
 		String correlationId="fakecorrelationid";
-		String message=filename;
+		String message=folder;
 		String result = fileSystemSender.sendMessage(correlationId, message, prc);
 		waitForActionToFinish();
 
 		// test
 		
-		boolean actual = _folderExists(filename);
+		boolean actual = _folderExists(folder);
 		// test
-		assertEquals("result of sender should be input message",result,message);
-		assertTrue("Expected file[" + filename + "] to be present", actual);
+		assertEquals("result of sender should be name of created folder",folder,result);
+		assertTrue("Expected folder [" + folder + "] to be present", actual);
 	}
 
 	@Test
 	public void fileSystemSenderRmdirActionTest() throws Exception {
-		String filename = DIR1;
+		String folder = DIR1;
 		
 		if (!_folderExists(DIR1)) {
-			_createFolder(filename);
+			_createFolder(folder);
 		}
 
 		fileSystemSender.setAction("rmdir");
@@ -322,16 +345,16 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		ParameterResolutionContext prc = new ParameterResolutionContext();
 		prc.setSession(new PipeLineSessionBase());
 		String correlationId="fakecorrelationid";
-		String message=filename;
+		String message=folder;
 		String result = fileSystemSender.sendMessage(correlationId, message, prc);
 
 		// test
-		assertEquals("result of sender should be input message",result,message);
+		assertEquals("result of sender should be name of deleted folder",folder,result);
 		waitForActionToFinish();
 		
-		boolean actual = _fileExists(filename);
+		boolean actual = _folderExists(folder);
 		// test
-		assertFalse("Expected file [" + filename + "] " + "not to be present", actual);
+		assertFalse("Expected folder [" + folder + "] " + "not to be present", actual);
 	}
 
 	@Test
@@ -356,7 +379,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		
 		boolean actual = _fileExists(filename);
 		// test
-		assertEquals("result of sender should be input message",result,message);
+		assertEquals("result of sender should be name of deleted file",filename,result);
 		assertFalse("Expected file [" + filename + "] " + "not to be present", actual);
 	}
 
@@ -387,7 +410,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		String result = fileSystemSender.sendMessage(correlationId, message, prc);
 
 		// test
-		assertEquals("result of sender should be input message",result,message);
+		assertEquals("result of sender should be new name of file",dest,result);
 
 		boolean actual = _fileExists(filename);
 		// test

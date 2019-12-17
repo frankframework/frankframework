@@ -204,7 +204,7 @@
 
     <div class="row">
         <div ng-repeat="adapter in adapters | configurationFilter:this | searchFilter:this" class="col-lg-12 adapters">
-            <div ng-init="showContent = (adapter.status == 'stopped')" class="ibox float-e-margins" id="{{adapter.name}}">
+            <div ng-init="showContent = showContent(adapter)" class="ibox float-e-margins" id="{{adapter.name}}">
                 <div ng-click="showContent = !showContent" class="ibox-title {{(adapter.status=='warning') ? 'warning' : ((adapter.status=='stopped') ? 'danger' : 'primary')}}" title="Click to open">
                     <div class="ibox-tools pull-right">
                         <a> <i class="fa fa-chevron-{{(showContent) ? 'up' : 'down' }}"></i></a>

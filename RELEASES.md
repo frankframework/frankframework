@@ -52,7 +52,12 @@ Upcoming
 - Fix and Cleanup MailSender and MailSenderBase
 - Upgrade ladybug to version 2.0.9
 - Namespace support for skip empty tags
+- Base64 encode and decode option for FileSystemPipe, FileSystemSender and descendants 
+- Add option to rotate by size, number of files or number of days to FileSystemPipe, FileSystemSender and descendants
+- FileSystemSenders now return an InputStream when action=read
+- XsltSender, XsltPipe, JsonXsltSender, JsonXsltPipe accept streaming inputs
 - Add option in GUI 3.0 to cut off all traffic to Ladybug debugger, and to switch it on again
+
 
 ### Non backwards compatible changes
 
@@ -61,6 +66,7 @@ Upcoming
 - Remove attribute 'count' from result of iterating pipes like ForEachChildElementPipe, to enable streaming output.
 - The MailSender displayName element no longer exist, please use attribute `name` on the from/to elements instead.
 - jdbc.convertFieldnamesToUppercase has been set to true by default
+- FileSystemSenders with read action no longer encode base64 by default.
 
 
 

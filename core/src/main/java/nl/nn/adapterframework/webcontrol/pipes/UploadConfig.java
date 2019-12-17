@@ -161,8 +161,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 
 	
 
-	private String processJarFile(IPipeLineSession session, String fileName, String fileSessionKey)
-			throws PipeRunException {
+	private String processJarFile(IPipeLineSession session, String fileName, String fileSessionKey) throws PipeRunException {
 		String formJmsRealm = (String) session.get("jmsRealm");
 		String activeConfig = (String) session.get(ACTIVE_CONFIG);
 		boolean isActiveConfig = "on".equals(activeConfig);
@@ -174,27 +173,21 @@ public class UploadConfig extends TimeoutGuardPipe {
 		try {
 			// convert inputStream to byteArray so it can be read twice
 			byte[] bytes = IOUtils.toByteArray(inputStream);
-			
-			String[] buildInfo = ConfigurationUtils.retrieveBuildInfo(
-					new ByteArrayInputStream(bytes));
+
+			String[] buildInfo = ConfigurationUtils.retrieveBuildInfo(new ByteArrayInputStream(bytes));
 			String buildInfoName = buildInfo[0];
 			String buildInfoVersion = buildInfo[1];
 			if (StringUtils.isEmpty(buildInfoName) || StringUtils.isEmpty(buildInfoVersion)) {
-				throw new PipeRunException(this, getLogPrefix(session)
-						+ "Cannot retrieve BuildInfo name and version");
+				throw new PipeRunException(this, getLogPrefix(session) + "Cannot retrieve BuildInfo name and version");
 			}
-			if (ConfigurationUtils.addConfigToDatabase(ibisContext,
-					formJmsRealm, isActiveConfig, isAutoReload, buildInfoName, buildInfoVersion,
-					fileName, new ByteArrayInputStream(bytes), remoteUser)) {
-				if (CONFIG_AUTO_DB_CLASSLOADER && isAutoReload && ibisContext
-						.getIbisManager().getConfiguration(buildInfoName) == null) {
-					ibisContext.load(buildInfoName);
+			if (ConfigurationUtils.addConfigToDatabase(ibisContext, formJmsRealm, isActiveConfig, isAutoReload, buildInfoName, buildInfoVersion, fileName, new ByteArrayInputStream(bytes), remoteUser)) {
+				if (CONFIG_AUTO_DB_CLASSLOADER && isAutoReload && ibisContext.getIbisManager().getConfiguration(buildInfoName) == null) {
+					ibisContext.reload(buildInfoName);
 				}
 				return ("OK\n" + "Name: " + buildInfoName + "\nVersion: " + buildInfoVersion);
 			}
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "Error occured on adding config to database", e);
+			throw new PipeRunException(this, getLogPrefix(session) + "Error occured on adding config to database", e);
 		}
 		return "NOT_OK";
 	}

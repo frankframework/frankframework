@@ -16,6 +16,8 @@
 package nl.nn.adapterframework.http;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.Principal;
 
 import javax.servlet.ServletContext;
@@ -35,6 +37,7 @@ import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 /**
@@ -92,6 +95,11 @@ public class RestListenerUtils {
 
 	public static void writeToResponseOutputStream(IPipeLineSession session, byte[] bytes) throws IOException {
 		retrieveServletOutputStream(session).write(bytes);
+	}
+
+	public static void writeToResponseOutputStream(IPipeLineSession session, InputStream input) throws IOException {
+		OutputStream output = retrieveServletOutputStream(session);
+		StreamUtil.copyStream(input, output, 30000);
 	}
 
 	public static void setResponseContentType(IPipeLineSession session, String contentType) throws IOException {

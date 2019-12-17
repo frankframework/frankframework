@@ -3815,6 +3815,21 @@ code {
   user-select:none;
   -o-user-select:none;
 }
+.clipboard {
+  -moz-user-select: text;
+  -webkit-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+  -o-user-select: text;
+}
+.clipboard i {
+  display: none;
+  margin-left: 5px;
+}
+.clipboard:hover i {
+  display: inline;
+  cursor: pointer;
+}
 
 .ibox-left {
   float: left;
