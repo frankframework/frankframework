@@ -52,6 +52,7 @@ Upcoming
 - Fix and Cleanup MailSender and MailSenderBase
 - Upgrade ladybug to version 2.0.9
 - Namespace support for skip empty tags
+- Add option in GUI 3.0 to cut off all traffic to Ladybug debugger, and to switch it on again
 
 ### Non backwards compatible changes
 
