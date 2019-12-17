@@ -15,11 +15,6 @@
 */
 package nl.nn.adapterframework.senders;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.After;
@@ -31,7 +26,6 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.pipes.XmlValidator;
 
 public abstract class SenderTestBase<S extends ISender> extends Mockito {
 
@@ -61,21 +55,4 @@ public abstract class SenderTestBase<S extends ISender> extends Mockito {
 		}
 	}
 
-	protected String readLines(Reader reader) throws IOException {
-		BufferedReader buf = new BufferedReader(reader);
-		StringBuilder string = new StringBuilder();
-		String line = buf.readLine();
-		while (line != null) {
-			string.append(line);
-			line = buf.readLine();
-			if (line != null) {
-				string.append("\n");
-			}
-		}
-		return string.toString();
-	}
-
-	protected String getFile(String file) throws IOException {
-		return readLines(new InputStreamReader(XmlValidator.class.getResourceAsStream(file)));
-	}
 }

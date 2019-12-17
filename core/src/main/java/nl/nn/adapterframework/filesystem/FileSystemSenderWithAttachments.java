@@ -27,6 +27,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -52,16 +53,16 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 	}
 	
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
+	public Object sendMessage(String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
 		if (!getAction().equalsIgnoreCase("listAttachments")) {
-			return super.sendMessage(correlationID, message);
+			return super.sendMessage(correlationID, message, prc, target);
 		} else {
 
 			IBasicFileSystem<F> ifs = getFileSystem();
 			F file;
 			
 			try {
-				file = ifs.toFile(message);
+				file = ifs.toFile(message.toString());
 			} catch (Exception e) {
 				throw new SenderException(getLogPrefix() + "unable to get file", e);
 			}

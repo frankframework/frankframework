@@ -26,7 +26,6 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.TestAssertions;
 
 public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPipeTestBase<P> {
 	

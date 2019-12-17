@@ -75,4 +75,6 @@ public abstract class PipeTestBase<P extends IPipe> {
 	protected PipeRunResult doPipe(P pipe, Object input, IPipeLineSession session) throws Exception {
 		return pipe.doPipe(input, session);
 	}
+	
+
 }

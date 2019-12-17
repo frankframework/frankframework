@@ -40,8 +40,8 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.IThreadCreator;
-import nl.nn.adapterframework.stream.InputMessageAdapter;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.AppConstants;
@@ -373,7 +373,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 				throw new SenderException("could not find file ["+input+"]",e);
 			}
 		} else {
-			src = new InputMessageAdapter(input).asInputSource();
+			src = new Message(input).asInputSource();
 		}
 		ItemCallbackCallingHandler itemHandler;
 		ContentHandler inputHandler;

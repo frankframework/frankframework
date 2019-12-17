@@ -31,7 +31,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
 
-public class InputMessageAdapterTest {
+public class MessageTest {
 
 	private boolean TEST_CDATA=true;
 	private String CDATA_START=TEST_CDATA?"<![CDATA[":"";
@@ -40,19 +40,19 @@ public class InputMessageAdapterTest {
 	protected String testString="<root><sub>abc&amp;&lt;&gt;</sub><sub>"+CDATA_START+"<a>a&amp;b</a>"+CDATA_END+"</sub></root>";
 	
 	
-	protected void testAsStream(InputMessageAdapter adapter) throws IOException {
+	protected void testAsStream(Message adapter) throws IOException {
 		InputStream result = adapter.asInputStream();
 		String actual = StreamUtil.streamToString(result, null, "UTF-8");
 		assertEquals(testString, actual);
 	}
 	
-	protected void testAsReader(InputMessageAdapter adapter) throws IOException {
+	protected void testAsReader(Message adapter) throws IOException {
 		Reader result = adapter.asReader();
 		String actual = StreamUtil.readerToString(result, null);
 		assertEquals(testString, actual);
 	}
 
-	protected void testAsInputSource(InputMessageAdapter adapter) throws IOException, SAXException {
+	protected void testAsInputSource(Message adapter) throws IOException, SAXException {
 		InputSource result = adapter.asInputSource();
 		XmlWriter sink =  new XmlWriter();
 		XmlUtils.parseXml(sink, result);
@@ -61,92 +61,122 @@ public class InputMessageAdapterTest {
 		assertEquals(testString, actual);
 	}
 	
+	protected void testAsString(Message adapter) throws IOException {
+		String actual = adapter.asString();
+		assertEquals(testString, actual);
+	}
+	
 	
 	@Test
 	public void testStreamAsStream() throws Exception {
 		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes());
-		InputMessageAdapter adapter = new InputMessageAdapter(source);
+		Message adapter = new Message(source);
 		testAsStream(adapter);
 	}
 	
 	@Test
 	public void testStreamAsReader() throws Exception {
 		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes());
-		InputMessageAdapter adapter = new InputMessageAdapter(source);
+		Message adapter = new Message(source);
 		testAsReader(adapter);
 	}
 	
 	@Test
 	public void testStreamAsInputSource() throws Exception {
 		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes());
-		InputMessageAdapter adapter = new InputMessageAdapter(source);
+		Message adapter = new Message(source);
 		testAsInputSource(adapter);
 	}
 	
+	@Test
+	public void testStreamAsString() throws Exception {
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes());
+		Message adapter = new Message(source);
+		testAsString(adapter);
+	}
+
 	
 	@Test
 	public void testReaderAsStream() throws Exception {
 		StringReader source = new StringReader(testString);
-		InputMessageAdapter adapter = new InputMessageAdapter(source);
+		Message adapter = new Message(source);
 		testAsStream(adapter);
 	}
 
 	@Test
 	public void testReaderAsReader() throws Exception {
 		StringReader source = new StringReader(testString);
-		InputMessageAdapter adapter = new InputMessageAdapter(source);
+		Message adapter = new Message(source);
 		testAsReader(adapter);
 	}
 
 	@Test
 	public void testReaderAsInputSource() throws Exception {
 		StringReader source = new StringReader(testString);
-		InputMessageAdapter adapter = new InputMessageAdapter(source);
+		Message adapter = new Message(source);
 		testAsInputSource(adapter);
 	}
 
+	@Test
+	public void testReaderAsString() throws Exception {
+		StringReader source = new StringReader(testString);
+		Message adapter = new Message(source);
+		testAsString(adapter);
+	}
 
 	@Test
 	public void testStringAsStream() throws Exception {
 		String source = testString;
-		InputMessageAdapter adapter = new InputMessageAdapter(source);
+		Message adapter = new Message(source);
 		testAsStream(adapter);
 	}
 
 	@Test
 	public void testStringAsReader() throws Exception {
 		String source = testString;
-		InputMessageAdapter adapter = new InputMessageAdapter(source);
+		Message adapter = new Message(source);
 		testAsReader(adapter);
 	}
 
 	@Test
 	public void testStringAsInputSource() throws Exception {
 		String source = testString;
-		InputMessageAdapter adapter = new InputMessageAdapter(source);
+		Message adapter = new Message(source);
 		testAsInputSource(adapter);
 	}
 
+	@Test
+	public void testStringAsString() throws Exception {
+		String source = testString;
+		Message adapter = new Message(source);
+		testAsString(adapter);
+	}
 
 	@Test
 	public void testByteArrayAsStream() throws Exception {
 		byte[] source = testString.getBytes();
-		InputMessageAdapter adapter = new InputMessageAdapter(source);
+		Message adapter = new Message(source);
 		testAsStream(adapter);
 	}
 
 	@Test
 	public void testByteArrayAsReader() throws Exception {
 		byte[] source = testString.getBytes();
-		InputMessageAdapter adapter = new InputMessageAdapter(source);
+		Message adapter = new Message(source);
 		testAsReader(adapter);
 	}
 
 	@Test
 	public void testByteArrayAsInputSource() throws Exception {
 		byte[] source = testString.getBytes();
-		InputMessageAdapter adapter = new InputMessageAdapter(source);
+		Message adapter = new Message(source);
 		testAsInputSource(adapter);
 	}
 
+	@Test
+	public void testByteArrayAsString() throws Exception {
+		byte[] source = testString.getBytes();
+		Message adapter = new Message(source);
+		testAsString(adapter);
+	}
 }
