@@ -357,7 +357,7 @@ public final class ShowConfiguration extends Base {
 			}
 
 			if(automatic_reload) {
-				ibisContext.load(name);
+				ibisContext.reload(name);
 			}
 
 			return Response.status(Response.Status.CREATED).entity(result).build();

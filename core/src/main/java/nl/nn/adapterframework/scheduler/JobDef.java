@@ -812,23 +812,16 @@ public class JobDef {
 				}
 				if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
 					for (String currentDbConfigurationName : dbConfigNames) {
-						if (!configNames
-								.contains(currentDbConfigurationName)) {
-							ibisManager.getIbisContext()
-									.load(currentDbConfigurationName);
+						if (!configNames.contains(currentDbConfigurationName)) {
+							ibisManager.getIbisContext().load(currentDbConfigurationName);
 						}
 					}
 				}
-				// unload old (deactivated) configs
+				// unload old (deactivated) configurations
 				if (configNames != null && !configNames.isEmpty()) {
 					for (String currentConfigurationName : configNames) {
-						if (!dbConfigNames.contains(currentConfigurationName)
-								&& "DatabaseClassLoader".equals(ibisManager
-										.getConfiguration(
-												currentConfigurationName)
-										.getClassLoaderType())) {
-							ibisManager.getIbisContext()
-									.unload(currentConfigurationName);
+						if (!dbConfigNames.contains(currentConfigurationName) && "DatabaseClassLoader".equals(ibisManager.getConfiguration(currentConfigurationName).getClassLoaderType())) {
+							ibisManager.getIbisContext().unload(currentConfigurationName);
 						}
 					}
 				}

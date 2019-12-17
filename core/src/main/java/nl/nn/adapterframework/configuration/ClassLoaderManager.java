@@ -223,6 +223,8 @@ public class ClassLoaderManager {
 		ClassLoader classLoader = classLoaders.get(configurationName);
 		if (classLoader != null) {
 			reload(classLoader);
+		} else {
+			LOG.warn("classloader for configuration ["+configurationName+"] not found, ignoring reload");
 		}
 	}
 
@@ -241,6 +243,8 @@ public class ClassLoaderManager {
 
 		if (classLoader instanceof ReloadAware) {
 			((ReloadAware)classLoader).reload();
+		} else {
+			LOG.warn("classloader ["+classLoader.toString()+"] is not ReloadAware, ignoring reload");
 		}
 	}
 

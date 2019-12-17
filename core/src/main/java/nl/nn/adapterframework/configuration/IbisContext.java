@@ -190,8 +190,9 @@ public class IbisContext extends IbisApplicationContext {
 
 	/**
 	 * Be aware that the configuration may be unloaded but it's resources wont!
-	 * There is currently no way to cleanup old classloaders, these are kept in memory. 
-	 * Removing the classloader will cause a classloader-leak, leaving a small footprint behind in memory!
+	 * There is currently no way to cleanup old ClassLoaders, these are kept in memory. 
+	 * Removing the ClassLoader will cause a ClassLoader-leak, leaving a small footprint behind in memory!
+	 * Use {@link IbisContext#reload(String)} where possible.
 	 */
 	public void unload(String configurationName) {
 		Configuration configuration = ibisManager.getConfiguration(configurationName);
@@ -252,7 +253,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * Load all registered configurations
 	 * @see #load(String)
 	 */
-	public void load() {
+	private void load() {
 		try {
 			loadingConfigs.add("*ALL*");
 			load(null);
@@ -263,6 +264,7 @@ public class IbisContext extends IbisApplicationContext {
 
 	/**
 	 * Loads, digests and starts the specified configuration, or all configurations
+	 * Does not check if the configuration already exists. Does not unload old configurations!
 	 * 
 	 * @param configurationName name of the configuration to load or null when you want to load all configurations
 	 * 
