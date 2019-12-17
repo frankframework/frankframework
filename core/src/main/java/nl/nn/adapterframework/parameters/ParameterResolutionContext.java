@@ -36,7 +36,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
  
 /**
- * Determines the parameter values of the specified parameter during runtime
+ * Enables to determine the parameter values of the parameters during runtime.
  * 
  * @author Gerrit van Brakel
  */
@@ -46,7 +46,6 @@ public class ParameterResolutionContext {
 	private Message message;
 	private IPipeLineSession session;
 	private Map<Boolean,Source> xmlSource;
-//	private boolean cacheXmlSource;
 	private boolean namespaceAware;
 
 	/**
@@ -68,7 +67,6 @@ public class ParameterResolutionContext {
 	 */
 
 	public ParameterResolutionContext(Object input, IPipeLineSession session, boolean namespaceAware, boolean singleThreadOnly) {
-//	this.input = input;
 	if (input instanceof Message) {
 		this.message=(Message)input;
 	} else {
@@ -163,14 +161,7 @@ public class ParameterResolutionContext {
 		return values;
 	}
 		
-////	/**
-////	 * @return the DOM document parsed from the (xml formatted) input
-////	 */
-////	@Deprecated 
-////	public Source getInputSource() throws DomBuilderException {
-////		return getInputSource(isNamespaceAware());
-////	}
-//	
+	
 	public Source getInputSource(boolean namespaceAware) throws DomBuilderException {
 		Source result = xmlSource!=null?xmlSource.get(namespaceAware):null;
 		if (result == null) {
@@ -187,19 +178,6 @@ public class ParameterResolutionContext {
 		return result;
 	}
 
-//	/**
-//	 * Returns (possibly xml formatted) input message
-//	 */
-//	public String getInput() {
-//		return input;
-//	}
-//	/**
-//	 * Sets as input, the (xml formatted) input message
-//	 */
-//	public void setInput(String input) {
-//		this.input = input;
-//		this.xmlSource = null;
-//	}
 
 	/**
 	 * Returns hashtable with session variables

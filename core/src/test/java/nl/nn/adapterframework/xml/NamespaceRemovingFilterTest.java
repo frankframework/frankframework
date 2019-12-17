@@ -17,14 +17,9 @@ package nl.nn.adapterframework.xml;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
 
 import org.junit.Test;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.ext.LexicalHandler;
-import org.xml.sax.helpers.AttributesImpl;
 
 import nl.nn.adapterframework.util.XmlUtils;
 

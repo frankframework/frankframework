@@ -9,10 +9,8 @@ import javax.json.Json;
 import javax.json.JsonStructure;
 
 import org.junit.Test;
-import org.mockito.Mock;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
@@ -20,33 +18,12 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 
-	@Mock
-	private IPipeLineSession session;
-
 	@Override
 	public JsonXsltSender createSender() {
 		return new JsonXsltSender();
 	}
 
 
-//	@Test
-//	public void testGetInput() throws ConfigurationException, PipeStartException, IOException, PipeRunException, DomBuilderException, TransformerException {
-//		pipe.setStyleSheetName("/Xslt3/orgchart.xslt");
-//		pipe.configure();
-//		pipe.start();
-//		String input=getFile("/Xslt3/employees.json");
-//		log.debug("inputfile ["+input+"]");
-//		
-//		ParameterResolutionContext prc = pipe.getInput(input, session);
-//		prc.getInputSource();
-//		TransformerFactory factory = XmlUtils.getTransformerFactory(false);
-//		Transformer transformer = factory.newTransformer();
-//		
-//		String result = XmlUtils.transformXml(transformer, prc.getInputSource());
-//		
-//		String expected=getFile("/Xslt3/employees.xml");
-//		assertEquals(expected,result);
-//	}
 
 	@Test
 	public void basic() throws ConfigurationException, IOException, SenderException {

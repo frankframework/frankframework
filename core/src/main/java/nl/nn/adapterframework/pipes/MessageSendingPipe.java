@@ -777,7 +777,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 	private boolean validResult(Object result) throws IOException {
 		boolean validResult = true;
-		if (isCheckXmlWellFormed()  || StringUtils.isNotEmpty(getCheckRootTag())) {
+		if (isCheckXmlWellFormed() || StringUtils.isNotEmpty(getCheckRootTag())) {
 			if (!XmlUtils.isWellFormed(new Message(result).asString(), getCheckRootTag())) {
 				validResult = false;
 			}

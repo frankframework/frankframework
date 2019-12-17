@@ -38,7 +38,7 @@ public class JsonXsltPipe extends XsltPipe {
 
 	@IbisDoc({"1", "When <code>true</code>, the xml result of the transformation is converted back to json", "true"})
 	public void setJsonResult(boolean jsonResult) {
-		((JsonXsltSender)getSender()).setJsonResult(jsonResult);;
+		((JsonXsltSender)getSender()).setJsonResult(jsonResult);
 	}
 
 	@Override

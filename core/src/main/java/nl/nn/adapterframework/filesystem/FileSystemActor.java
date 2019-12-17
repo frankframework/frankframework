@@ -147,10 +147,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			setAction(ACTION_WRITE1);
 		}
 		
-		if (StringUtils.isNotEmpty(getBase64())) {
-			if (!(getBase64().equals(BASE64_ENCODE) || getBase64().equals(BASE64_DECODE))) {
-				throw new ConfigurationException("attribute 'base64' can have value '"+BASE64_ENCODE+"' or '"+BASE64_DECODE+"' or can be left empty");
-			}
+		if (StringUtils.isNotEmpty(getBase64()) && !(getBase64().equals(BASE64_ENCODE) || getBase64().equals(BASE64_DECODE))) {
+			throw new ConfigurationException("attribute 'base64' can have value '"+BASE64_ENCODE+"' or '"+BASE64_DECODE+"' or can be left empty");
 		}
 		
 		if (parameterList!=null && parameterList.findParameter(PARAMETER_CONTENTS2) != null && parameterList.findParameter(PARAMETER_CONTENTS1) == null) {
