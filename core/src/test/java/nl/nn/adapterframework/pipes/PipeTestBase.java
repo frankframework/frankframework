@@ -1,10 +1,5 @@
 package nl.nn.adapterframework.pipes;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
@@ -21,7 +16,6 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.core.PipeStartException;
 
 public abstract class PipeTestBase<P extends IPipe> {

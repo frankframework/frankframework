@@ -15,13 +15,10 @@
 */
 package nl.nn.adapterframework.senders;
 
-import java.io.IOException;
-
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.ContentHandler;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
