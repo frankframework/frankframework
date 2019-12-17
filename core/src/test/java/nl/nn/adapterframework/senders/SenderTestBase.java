@@ -61,21 +61,4 @@ public abstract class SenderTestBase<S extends ISender> extends Mockito {
 		}
 	}
 
-	protected String readLines(Reader reader) throws IOException {
-		BufferedReader buf = new BufferedReader(reader);
-		StringBuilder string = new StringBuilder();
-		String line = buf.readLine();
-		while (line != null) {
-			string.append(line);
-			line = buf.readLine();
-			if (line != null) {
-				string.append("\n");
-			}
-		}
-		return string.toString();
-	}
-
-	protected String getFile(String file) throws IOException {
-		return readLines(new InputStreamReader(this.getClass().getResourceAsStream(file)));
-	}
 }

@@ -353,7 +353,7 @@ public class Parameter implements INamedObject, IWithParameters {
 				result = getValue();
 			} else {
 				try {
-					message.preserveInputStream();
+					message.preserve();
 					result=message.asString();
 				} catch (IOException e) {
 					throw new ParameterException(e);
@@ -379,7 +379,7 @@ public class Parameter implements INamedObject, IWithParameters {
 					result = getValue();
 				} else if ("input".equals(token)) {
 					try {
-						message.preserveInputStream();
+						message.preserve();
 						result=message.asString();
 					} catch (IOException e) {
 						throw new ParameterException(e);

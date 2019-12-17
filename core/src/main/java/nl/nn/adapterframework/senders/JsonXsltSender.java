@@ -77,10 +77,8 @@ public class JsonXsltSender extends XsltSender {
 
 
 	@Override
-	protected void parseInputSource(InputSource inputSource, ContentHandler handler) throws IOException, SAXException, ParserConfigurationException {
-		XMLReader reader=new JsonXmlReader();
-		reader.setContentHandler(handler); 
-		reader.parse(inputSource);
+	protected XMLReader getXmlReader(ContentHandler handler) throws ParserConfigurationException, SAXException {
+		return new JsonXmlReader(handler);
 	}
 
 

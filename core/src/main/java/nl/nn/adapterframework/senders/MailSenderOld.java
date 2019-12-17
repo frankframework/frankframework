@@ -143,6 +143,7 @@ import org.w3c.dom.Node;
  * Otherwise errors like the following might occur: <code>NoClassDefFoundException: com/sun/mail/util/MailDateFormat</code> 
  * 
  * @author Johan Verrips/Gerrit van Brakel
+ * @deprecated
  */
 
 public class MailSenderOld extends SenderWithParametersBase {

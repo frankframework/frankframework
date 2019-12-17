@@ -37,53 +37,63 @@ public class Message {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private Object request;
-	
-	public Message(Object request) {
-		this.request=(request!=null && request instanceof Message)?((Message)request).asObject():request;
+
+	public Message(Message request) {
+		this.request = request.asObject();
 	}
 
-	public void preserveInputStream() throws IOException {
-		if (request==null) {
+	public Message(Object request) {
+		this.request = request;
+	}
+
+	/**
+	 * Notify the message object that the request object will be used multiple times.
+	 * If the request object can only be read one time, it can turn it into a less volatile representation. 
+	 * For instance, it could replace an InputStream with a byte array or String.
+	 * 
+	 * @throws IOException
+	 */
+	public void preserve() throws IOException {
+		if (request == null) {
 			return;
 		}
 		if (request instanceof Reader) {
-    		log.debug("preserving Reader as String");
-			request = StreamUtil.readerToString((Reader)request, null);
+			log.debug("preserving Reader as String");
+			request = StreamUtil.readerToString((Reader) request, null);
 			return;
 		}
 		if (request instanceof InputStream) {
-    		log.debug("preserving InputStream as byte[]");
-			request = StreamUtil.streamToByteArray((InputStream)request, false);
+			log.debug("preserving InputStream as byte[]");
+			request = StreamUtil.streamToByteArray((InputStream) request, false);
 			return;
 		}
 	}
-	
 
 	public Object asObject() {
 		return request;
 	}
-	
+
 	public Reader asReader() {
-		if (request==null) {
+		if (request == null) {
 			return null;
 		}
 		if (request instanceof Reader) {
-    		log.debug("returning Reader as Reader");
-			return(Reader)request;
-		} 
+			log.debug("returning Reader as Reader");
+			return (Reader) request;
+		}
 		if (request instanceof InputStream) {
 			try {
-	    		log.debug("returning InputStream as Reader");
-				return new InputStreamReader((InputStream)request,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+				log.debug("returning InputStream as Reader");
+				return new InputStreamReader((InputStream) request, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			} catch (UnsupportedEncodingException e) {
-				log.warn(e);;
+				log.warn(e);
 				return null;
 			}
 		}
 		if (request instanceof byte[]) {
 			try {
-	    		log.debug("returning byte[] as Reader");
-				return new InputStreamReader(new ByteArrayInputStream((byte[])request),StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+				log.debug("returning byte[] as Reader");
+				return new InputStreamReader(new ByteArrayInputStream((byte[]) request), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			} catch (UnsupportedEncodingException e) {
 				log.warn(e);
 				return null;
@@ -94,86 +104,86 @@ public class Message {
 	}
 
 	public InputStream asInputStream() {
-		if (request==null) {
+		if (request == null) {
 			return null;
 		}
 		if (request instanceof InputStream) {
 			log.debug("returning InputStream as InputStream");
-			return(InputStream)request;
-		} 
+			return (InputStream) request;
+		}
 		if (request instanceof Reader) {
 			log.debug("returning Reader as InputStream");
-			return new ReaderInputStream((Reader)request,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			return new ReaderInputStream((Reader) request, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		}
 		if (request instanceof byte[]) {
 			log.debug("returning byte[] as InputStream");
-			return new ByteArrayInputStream((byte[])request);
+			return new ByteArrayInputStream((byte[]) request);
 		}
 		try {
 			log.debug("returning String as InputStream");
 			return new ByteArrayInputStream(request.toString().getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
 		} catch (UnsupportedEncodingException e) {
-			log.warn(e);;
+			log.warn(e);
 			return null;
 		}
 	}
-	
+
 	public InputSource asInputSource() {
-		if (request==null) {
+		if (request == null) {
 			return null;
 		}
 		if (request instanceof InputSource) {
 			log.debug("returning InputSource as InputSource");
-			return(InputSource)request;
-		} 
+			return (InputSource) request;
+		}
 		if (request instanceof InputStream) {
 			log.debug("returning InputStream as InputSource");
-			return(new InputSource((InputStream)request));
-		} 
+			return (new InputSource((InputStream) request));
+		}
 		if (request instanceof Reader) {
 			log.debug("returning Reader as InputSource");
-			return(new InputSource((Reader)request));
+			return (new InputSource((Reader) request));
 		}
 		if (request instanceof byte[]) {
 			log.debug("returning byte[] as InputSource");
-			return(new InputSource(new ByteArrayInputStream((byte[])request)));
+			return (new InputSource(new ByteArrayInputStream((byte[]) request)));
 		}
 		log.debug("returning String as InputSource");
-		return(new InputSource(new StringReader(request.toString())));
+		return (new InputSource(new StringReader(request.toString())));
 	}
 
 	public Source asSource() {
-		if (request==null) {
+		if (request == null) {
 			return null;
 		}
 		if (request instanceof Source) {
 			log.debug("returning Source as Source");
-			return(Source)request;
-		} 
+			return (Source) request;
+		}
 		if (request instanceof InputStream) {
 			log.debug("returning InputStream as InputSource");
-			return(new StreamSource((InputStream)request));
-		} 
+			return (new StreamSource((InputStream) request));
+		}
 		if (request instanceof Reader) {
 			log.debug("returning Reader as InputSource");
-			return(new StreamSource((Reader)request));
+			return (new StreamSource((Reader) request));
 		}
 		if (request instanceof byte[]) {
 			log.debug("returning byte[] as InputSource");
-			return(new StreamSource(new ByteArrayInputStream((byte[])request)));
+			return (new StreamSource(new ByteArrayInputStream((byte[]) request)));
 		}
 		log.debug("returning String as InputSource");
-		return(new StreamSource(new StringReader(request.toString())));
+		return (new StreamSource(new StringReader(request.toString())));
 	}
 
 	public String asString() throws IOException {
-		if (request==null) {
+		if (request == null) {
 			return null;
 		}
 		if (request instanceof String) {
-			return (String)request;
+			return (String) request;
 		}
-		return StreamUtil.readerToString(asReader(),null);
+		return StreamUtil.readerToString(asReader(), null);
 	}
 
 	@Override
@@ -184,5 +194,5 @@ public class Message {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 }

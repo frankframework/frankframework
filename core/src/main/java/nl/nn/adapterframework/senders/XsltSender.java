@@ -262,11 +262,11 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	}
 	
 
-	protected void parseInputSource(InputSource source, ContentHandler handler) throws IOException, SAXException, ParserConfigurationException {
-		XMLReader reader = XmlUtils.getXMLReader(true, false, handler);
-		reader.parse(source);
+	protected XMLReader getXmlReader(ContentHandler handler) throws ParserConfigurationException, SAXException {
+		return XmlUtils.getXMLReader(true, false, handler);
 	}
 	
+
 	/*
 	 * alternative implementation of send message, that should do the same as the origial, but reuses the streaming content handler
 	 */
@@ -281,7 +281,8 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			}
 			ContentHandler handler = createHandler(correlationID, message, prc.getSession(), target);
 			InputSource source = message.asInputSource();
-			parseInputSource(source, handler);
+			XMLReader reader = getXmlReader(handler);
+			reader.parse(source);
 			return target.getResponse();
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix()+"Exception on transforming input", e);

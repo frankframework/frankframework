@@ -33,6 +33,18 @@ public class JsonXmlReader implements XMLReader {
 	
 	private boolean elementEnded=false;
 	
+	public JsonXmlReader() {
+		super();
+	}
+
+	public JsonXmlReader(ContentHandler handler) {
+		this();
+		setContentHandler(handler);
+		if (handler instanceof ErrorHandler) {
+			setErrorHandler((ErrorHandler)handler);
+		}
+	}
+	
 	public boolean parse(String key, JsonParser parser) throws IOException, SAXException {
 		Event event = parser.next();
 		if (event.equals(Event.START_OBJECT)) {
