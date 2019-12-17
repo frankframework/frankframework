@@ -4,11 +4,14 @@
 			<li class="nav-header">
 
 				<div class="profile-element">
-					<p>IBIS Adapter Framework</p>
-					<span>Interactive Console</span>
+					<object data="images/frank-framework-logo.svg" id="logo" type="image/svg+xml">
+                        <img src="images/frank-framework-logo.svg" alt="Logo">
+                    </object>
 				</div>
 				<div class="logo-element">
-					IAF
+					<object data="images/frank-exclamation.svg" id="logo" type="image/svg+xml">
+                        <img src="images/frank-exclamation.svg" alt="Logo">
+                    </object>
 				</div>
 			</li>
 
@@ -17,7 +20,10 @@
 			<li ui-sref-active="active">
 				<a ui-sref="pages.status"><i class="fa fa-dashboard"></i> <span class="nav-label">Adapter Status</span></a>
 			</li>
-			<li ng-class="{active: $state.includes('configuration')}" class="nav-group">
+			<li ng-show="!config_database" ui-sref-active="active">
+				<a ui-sref="pages.configuration"><i class="fa fa-cogs"></i> <span class="nav-label">Configuration</span></a>
+			</li>
+			<li ng-show="config_database" ng-class="{active: $state.includes('configuration')}" class="nav-group">
 				<a href=""><i class="fa fa-cogs"></i> <span class="nav-label">Configuration</span> <span class="fa arrow"></span></a>
 				<ul class="nav nav-second-level" ng-class="{in: $state.includes('configuration')}">
 					<li ui-sref-active="active"><a ui-sref="pages.configuration">Show Configuration</a></li>

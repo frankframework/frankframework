@@ -290,12 +290,13 @@ body.mini-navbar .navbar-default .nav > li > .nav-second-level li a {
   font-weight: normal;
 }
 .logo-element {
-  text-align: center;
-  font-size: 18px;
-  font-weight: 600;
-  color: white;
   display: none;
-  padding: 18px 0;
+  height: 60px;
+  padding: 15px;
+}
+.logo-element object {
+  max-height: 100%;
+  max-width: 100%;
 }
 .pace-done .navbar-static-side,
 .pace-done .nav-header,
@@ -3342,7 +3343,7 @@ body.tour-open .animated {
   border-bottom: 1px solid #e7eaec;
 }
 body {
-  font-family: "open sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, sans-serif;
   background-color: #2f4050;
   font-size: 13px;
   color: #676a6c;
