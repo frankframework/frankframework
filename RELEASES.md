@@ -56,6 +56,7 @@ Upcoming
 - Add option to rotate by size, number of files or number of days to FileSystemPipe, FileSystemSender and descendants
 - FileSystemSenders now return an InputStream when action=read
 - XsltSender, XsltPipe, JsonXsltSender, JsonXsltPipe accept streaming inputs
+- Add option in GUI 3.0 to cut off all traffic to Ladybug debugger, and to switch it on again
 
 
 ### Non backwards compatible changes
