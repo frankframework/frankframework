@@ -14,7 +14,7 @@
 				<div class="ibox-content" ng-if="!viewFile">
 					<div class="col-md-12">
 						<div class="ibox-stretch">
-							<div class="input-group">
+							<div class="input-group" id="searchbar">
 								<input type="text" class="form-control" placeholder="Search ..." ng-model="fileName" ng-model-options="{debounce: 500}" name="search" />
 								<i ng-show="fileName.length" ng-click="fileName = ''" class="fa fa-times input-group-closeSearch" aria-hidden="true"/>
 								<span class="input-group-addon">
