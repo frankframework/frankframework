@@ -626,20 +626,23 @@ angular.module('iaf.beheerconsole')
 		};
 		this.defaults = function() {
 			var args = arguments || [];
-			var option = {};
-			if(args.length == 0 || args.length > 2)
-				Debug.warn("Invalid argument length specified for SweetAlert");
-
 			var options = angular.copy(this.defaultSettings);
 
-			if(typeof args[0] == "object")
-				option = args[0];
-			else if(typeof args[0] == "string")
+			if(args.length == 0 || args.length > 2)
+				Debug.error("Invalid argument length specified for SweetAlert.");
+
+			//expects (String, String) or (JsonObject, Function)
+			if(typeof args[0] == "object") {
+				angular.merge(options, options, args[0]);
+				if(args.length == 2 && typeof args[1] == "function") {
+					options.callback = args[1];
+				}
+			} else if(typeof args[0] == "string") {
 				options.title = args[0];
-			if(args.length == 2 && typeof args[1] == "string") {
-				options.text = args[1];
+				if(args.length == 2 && typeof args[1] == "string") {
+					options.text = args[1];
+				}
 			}
-			for(x in option) options[x] = option[x];
 
 			return options; //var [options, callback] = this.defaults.apply(this, arguments);
 		};
@@ -650,32 +653,30 @@ angular.module('iaf.beheerconsole')
 			options.showCancelButton = true;
 			return swal(options);
 		};
-		this.Confirm = function() {
-			var options = this.defaults.apply(this, arguments);
-			options.type = "question";
-			options.title = "Are you sure?";
-			options.showCancelButton = true;
-			return swal(options);
+		this.Confirm = function() { //(JsonObject, Callback)-> returns boolean
+			var options = {
+				type: "info",
+				title: "Are you sure?",
+				showCancelButton: true,
+			};
+			angular.merge(options, options, this.defaults.apply(this, arguments));
+			return swal(options, options.callback);
 		};
 		this.Info = function() {
-			var options = this.defaults.apply(this, arguments);
-			options.type = "info";
-			return swal(options);
+			angular.merge(options, {type: "info"}, this.defaults.apply(this, arguments));
+			return swal(options, options.callback);
 		};
 		this.Warning = function() {
-			var options = this.defaults.apply(this, arguments);
-			options.type = "warning";
-			return swal(options);
+			angular.merge(options, {type: "warning"}, this.defaults.apply(this, arguments));
+			return swal(options, options.callback);
 		};
 		this.Error = function() {
-			var options = this.defaults.apply(this, arguments);
-			options.type = "error";
-			return swal(options);
+			angular.merge(options, {type: "error"}, this.defaults.apply(this, arguments));
+			return swal(options, options.callback);
 		};
 		this.Success = function() {
-			var options = this.defaults.apply(this, arguments);
-			options.type = "success";
-			return swal(options);
+			angular.merge(options, {type: "success"}, this.defaults.apply(this, arguments));
+			return swal(options, options.callback);
 		};
 	}]).service('Hooks', ['$rootScope', '$timeout', function($rootScope, $timeout) {
 		this.call = function() {

@@ -190,8 +190,9 @@ public class IbisContext extends IbisApplicationContext {
 
 	/**
 	 * Be aware that the configuration may be unloaded but it's resources wont!
-	 * There is currently no way to cleanup old classloaders, these are kept in memory. 
-	 * Removing the classloader will cause a classloader-leak, leaving a small footprint behind in memory!
+	 * There is currently no way to cleanup old ClassLoaders, these are kept in memory. 
+	 * Removing the ClassLoader will cause a ClassLoader-leak, leaving a small footprint behind in memory!
+	 * Use {@link IbisContext#reload(String)} where possible.
 	 */
 	public void unload(String configurationName) {
 		Configuration configuration = ibisManager.getConfiguration(configurationName);
@@ -252,7 +253,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * Load all registered configurations
 	 * @see #load(String)
 	 */
-	public void load() {
+	private void load() {
 		try {
 			loadingConfigs.add("*ALL*");
 			load(null);
@@ -263,6 +264,7 @@ public class IbisContext extends IbisApplicationContext {
 
 	/**
 	 * Loads, digests and starts the specified configuration, or all configurations
+	 * Does not check if the configuration already exists. Does not unload old configurations!
 	 * 
 	 * @param configurationName name of the configuration to load or null when you want to load all configurations
 	 * 
@@ -327,22 +329,25 @@ public class IbisContext extends IbisApplicationContext {
 		long start = System.currentTimeMillis();
 		if(LOG.isDebugEnabled()) LOG.debug("creating new configuration ["+currentConfigurationName+"]");
 
-		String currentConfigurationVersion = ConfigurationUtils.getConfigurationVersion(classLoader);
+		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+		String currentConfigurationVersion = null;
+
+		if (classLoader != null) {
+			Thread.currentThread().setContextClassLoader(classLoader);
+			currentConfigurationVersion = ConfigurationUtils.getConfigurationVersion(classLoader);
+		}
+
 		if(LOG.isDebugEnabled()) LOG.debug("configuration ["+currentConfigurationName+"] found currentConfigurationVersion ["+currentConfigurationVersion+"]");
 
 		Configuration configuration = null;
-		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-		if (classLoader != null) {
-			Thread.currentThread().setContextClassLoader(classLoader);
-		}
 		try {
 			configuration = new Configuration(new BasicAdapterServiceImpl());
 			configuration.setName(currentConfigurationName);
 			configuration.setVersion(currentConfigurationVersion);
 			configuration.setIbisManager(ibisManager);
 			ibisManager.addConfiguration(configuration);
-			ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
 			if (customClassLoaderConfigurationException == null) {
+				ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
 
 				if(AppConstants.getInstance(classLoader).getBoolean("jdbc.migrator.active", false)) {
 					try {

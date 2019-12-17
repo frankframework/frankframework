@@ -107,6 +107,9 @@
     https://bugs.eclipse.org/bugs/show_bug.cgi?id=398138
     Note: Maven will copy the jar files from the war in the local repository
     which might be an old snapshot.
+    
+    In older versions of eclipse the larva and ladybug modules are not automatically added to the (correct) classpath.
+    Because of this the example module will throw a FileNotFoundException on springIbisTestTool.xml which prevents the IBIS from starting up.
     -->
     <profile>
       <id>m2e</id>
@@ -123,7 +126,7 @@
         </dependency>
         <dependency>
           <groupId>org.ibissource</groupId>
-          <artifactId>ibis-adapterframework-akamai</artifactId>
+          <artifactId>ibis-adapterframework-ladybug</artifactId>
         </dependency>
      </dependencies>
     </profile>
