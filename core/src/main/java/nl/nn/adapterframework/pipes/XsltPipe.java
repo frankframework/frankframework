@@ -56,10 +56,15 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 
 	private String sessionKey=null;
 	
-	private XsltSender sender = new XsltSender();
+	private XsltSender sender = createXsltSender();
 
 	{
 		setSizeStatistics(true);
+	}
+	
+	
+	protected XsltSender createXsltSender() {
+		return new XsltSender();
 	}
 	
 	/**
@@ -68,9 +73,9 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-	    super.configure();
-	    sender.setName(getName());
-	    sender.configure();
+		super.configure();
+		sender.setName(getName());
+		sender.configure();
 	}
 
 	@Override
@@ -117,7 +122,7 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	 * Allow to override transformation, so JsonXslt can prefix and suffix...
 	 */
 	protected Object transform(Object input, IPipeLineSession session, MessageOutputStream target) throws SenderException, TransformerException, TimeOutException {
- 	    Object inputXml=getInputXml(input, session);
+		Object inputXml = getInputXml(input, session);
 		ParameterResolutionContext prc = new ParameterResolutionContext(inputXml, session, isNamespaceAware()); 
 		return sender.sendMessage(null, new Message(inputXml), prc, target);
 	}
@@ -279,6 +284,10 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	@Override
 	public void setThreadLifeCycleEventListener(ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener) {
 		sender.setThreadLifeCycleEventListener(threadLifeCycleEventListener);
+	}
+
+	protected XsltSender getSender() {
+		return sender;
 	}
 
 }

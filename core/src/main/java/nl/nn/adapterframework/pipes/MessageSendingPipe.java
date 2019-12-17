@@ -62,7 +62,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.processors.ListenerProcessor;
 import nl.nn.adapterframework.processors.PipeProcessor;
 import nl.nn.adapterframework.senders.ConfigurationAware;
-import nl.nn.adapterframework.senders.MailSender;
+import nl.nn.adapterframework.senders.MailSenderOld;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -634,8 +634,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 							label=labelTp.transform((String)input,null);
 						}
 					}
-					if (sender instanceof MailSender) {
-						String messageInMailSafeForm = (String)session.get("messageInMailSafeForm");
+					if (sender instanceof MailSenderOld) {
+						String messageInMailSafeForm = (String)session.get(MailSenderOld.SESSION_KEY_MESSAGE_IN_MAIL_SAFE_FORM);
 						if (getHideRegex() != null){
 							if (getHideMethod().equalsIgnoreCase("FIRSTHALF")) {
 								messageInMailSafeForm = Misc.hideFirstHalf(messageInMailSafeForm, getHideRegex());
@@ -661,8 +661,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					sk.addValue(messageLogDuration);
 				}
 
-				if (sender instanceof MailSender) {
-					session.remove("messageInMailSafeForm");
+				if (sender instanceof MailSenderOld) {
+					session.remove(MailSenderOld.SESSION_KEY_MESSAGE_IN_MAIL_SAFE_FORM);
 				}
 				
 				if (getListener() != null) {
@@ -851,6 +851,11 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	}
 	
 	protected Object sendTextMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, MessageOutputStream target) throws SenderException, TimeOutException {
+		if (sender instanceof StreamingSenderBase) {
+			Message message = new Message(input);
+			ParameterResolutionContext prc = new ParameterResolutionContext(message, session, isNamespaceAware());
+			return ((StreamingSenderBase)sender).sendMessage(correlationID, message, prc, target);
+		}
 		if (input!=null) {
 //			if (input instanceof StringWriter) {
 //				input = input.toString();
@@ -863,10 +868,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		if (sender instanceof ISenderWithParameters) { // do not only check own parameters, sender may have them by itself
 			ISenderWithParameters psender = (ISenderWithParameters) sender;
 			ParameterResolutionContext prc = new ParameterResolutionContext(input, session, isNamespaceAware());
-			if (sender instanceof StreamingSenderBase) {
-				Message message = new Message(input);
-				return ((StreamingSenderBase)sender).sendMessage(correlationID, message, prc, target);
-			}
 			return psender.sendMessage(correlationID, (String) input, prc);
 		} 
 		return sender.sendMessage(correlationID, (String) input);

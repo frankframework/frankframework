@@ -249,7 +249,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	}
 	
 	public boolean requiresInputValueForResolution() {
-		if (transformerPoolSessionKey != null) {
+		if (transformerPoolSessionKey != null) { //TODO: Check if this clause needs to go after the next one. Having a transformerpool on itself doesn't make it necessary to have the input.
 			return true;
 		}
 		if ((StringUtils.isNotEmpty(getSessionKey()) || StringUtils.isNotEmpty(getValue()) || StringUtils.isNotEmpty(getPattern()))

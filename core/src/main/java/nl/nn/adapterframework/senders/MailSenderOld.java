@@ -147,6 +147,8 @@ import org.w3c.dom.Node;
 
 public class MailSenderOld extends SenderWithParametersBase {
 
+	public static String SESSION_KEY_MESSAGE_IN_MAIL_SAFE_FORM="messageInMailSafeForm";
+	
 	private String smtpHost;
 	private String smtpAuthAlias;
 	private String smtpUserid;
@@ -295,7 +297,7 @@ public class MailSenderOld extends SenderWithParametersBase {
 			}
 			messageInMailSafeForm = sendEmail(from, subject, threadTopic, message, messageType, messageBase64, charset, recipients, attachments);
 		}
-		prc.getSession().put("messageInMailSafeForm", messageInMailSafeForm);
+		prc.getSession().put(SESSION_KEY_MESSAGE_IN_MAIL_SAFE_FORM, messageInMailSafeForm);
 		return correlationID;
 	}
 	

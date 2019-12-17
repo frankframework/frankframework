@@ -31,7 +31,6 @@ public class JsonXmlReader implements XMLReader {
 	private EntityResolver entityResolver;
 	private DTDHandler dtdHandler;
 	
-	private boolean namespaceDefined=false;
 	private boolean elementEnded=false;
 	
 	public boolean parse(String key, JsonParser parser) throws IOException, SAXException {
@@ -81,7 +80,7 @@ public class JsonXmlReader implements XMLReader {
 	}
 
 	private void addAttribute(AttributesImpl attr, String name, String value) {
-		attr.addAttribute(name.equals("xmlns")?null:TARGETNAMESPACE, name, name, "", value); // Saxon requires type to be not null
+		attr.addAttribute("", name, name, "", value); // Saxon requires type to be not null
 	}
 	private void startElement(String typename, String key) throws SAXException {
 		startElement(typename, key, null, null);
@@ -89,10 +88,6 @@ public class JsonXmlReader implements XMLReader {
 	private void startElement(String typename, String key, String attrName, String attrValue) throws SAXException {
 		ContentHandler ch=getContentHandler();
 		AttributesImpl attr=new AttributesImpl(); // Saxon requires attr to be not null
-		if (!namespaceDefined) {
-			addAttribute(attr, "xmlns", TARGETNAMESPACE);
-			namespaceDefined=true;
-		}
 		if (key!=null) {
 			addAttribute(attr, "key", key);
 		}

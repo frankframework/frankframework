@@ -13,7 +13,6 @@ import org.mockito.Mock;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
@@ -50,7 +49,7 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 //	}
 
 	@Test
-	public void basic() throws ConfigurationException, PipeStartException, IOException, SenderException {
+	public void basic() throws ConfigurationException, IOException, SenderException {
 		sender.setStyleSheetName("/Xslt3/orgchart.xslt");
 		sender.configure();
 		sender.open();
@@ -63,6 +62,37 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		assertJsonEqual(null,expectedJson,jsonOut);
 	}
 
+	@Test
+	public void xmlOut() throws ConfigurationException, IOException, SenderException {
+		sender.setStyleSheetName("/Xslt3/orgchart.xslt");
+		sender.setJsonResult(false);
+		sender.configure();
+		sender.open();
+		String input=TestFileUtils.getTestFile("/Xslt3/employees.json");
+		log.debug("inputfile ["+input+"]");
+		Message message = new Message(input);
+		String expectedXml=TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
+		Object result = sender.sendMessage("fakecorrelationid", message, new ParameterResolutionContext(message,null), null);
+		String xmlOut=result.toString();
+		assertEquals(expectedXml,xmlOut);
+	}
+
+	@Test
+	public void testXPath() throws ConfigurationException, IOException, SenderException {
+		sender.setXpathExpression("j:map/j:map/j:map[j:string[@key='department']='Security']/j:string[@key='firstname']");
+		sender.setOutputType("text");
+		sender.setJsonResult(false);
+		sender.configure();
+		sender.open();
+		String input=TestFileUtils.getTestFile("/Xslt3/employees.json");
+		log.debug("inputfile ["+input+"]");
+		Message message = new Message(input);
+		String expectedText="James";
+		Object result = sender.sendMessage("fakecorrelationid", message, new ParameterResolutionContext(message,null), null);
+		String textOut=result.toString();
+		assertEquals(expectedText,textOut);
+	}
+	
 	public static JsonStructure string2Json(String json) {
 		JsonStructure jsonStructure = Json.createReader(new StringReader(json)).read();
 		return jsonStructure;

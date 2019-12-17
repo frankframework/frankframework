@@ -5,12 +5,13 @@ import java.io.StringWriter;
 import java.io.Writer;
 
 import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import nl.nn.adapterframework.xml.SaxException;
 
-public class XmlJsonWriter extends DefaultHandler {
+public class XmlJsonWriter extends DefaultHandler implements ContentHandler {
 
 	Writer writer;
 	boolean commaRequired=false;
