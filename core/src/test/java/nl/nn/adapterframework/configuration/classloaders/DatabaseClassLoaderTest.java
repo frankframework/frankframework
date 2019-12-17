@@ -28,6 +28,8 @@ import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
+import org.hamcrest.Matchers;
+import org.hamcrest.core.StringContains;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ClassLoaderManager;
@@ -42,6 +44,8 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
 public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLoader> {
+	private final String ERROR_PREFIX = "error configuring ClassLoader for configuration [";
+	private final String ERROR_SUFFIX = "]";
 
 	@Override
 	public DatabaseClassLoader createClassLoader(ClassLoader parent) throws Exception {
@@ -156,9 +160,8 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 		assertEquals(ClassLoaderManager.class.getCanonicalName(), firstLogEntry.getLoggerName());
 		assertEquals(Level.DEBUG, firstLogEntry.getLevel());
 		String msg = (String) firstLogEntry.getMessage();
-		System.out.println(msg);
-		assertTrue(msg.startsWith("error configuring ClassLoader for configuration ["));
-		assertTrue(msg.endsWith("]"));
+		assertThat(msg, Matchers.startsWith(ERROR_PREFIX));
+		assertThat(msg, Matchers.endsWith(ERROR_SUFFIX));
 	}
 
 	/**
@@ -192,8 +195,8 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 		assertEquals(IbisContext.class.getCanonicalName(), firstLogEntry.getLoggerName());
 		assertEquals(Level.INFO, firstLogEntry.getLevel());
 		String msg = (String) firstLogEntry.getMessage();
-		assertTrue(msg.contains("error configuring ClassLoader for configuration [")); //Has log4j prefix
-		assertTrue(msg.endsWith("]"));
+		assertThat(msg, StringContains.containsString(ERROR_PREFIX));//Ignore the log4j prefix
+		assertThat(msg, Matchers.endsWith(ERROR_SUFFIX));
 	}
 
 	/**
@@ -227,8 +230,8 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 		assertEquals(ClassLoaderManager.class.getCanonicalName(), firstLogEntry.getLoggerName());
 		assertEquals(Level.WARN, firstLogEntry.getLevel());
 		String msg = (String) firstLogEntry.getMessage();
-		assertTrue(msg.startsWith("error configuring ClassLoader for configuration ["));
-		assertTrue(msg.endsWith("]"));
+		assertThat(msg, Matchers.startsWith(ERROR_PREFIX));
+		assertThat(msg, Matchers.endsWith(ERROR_SUFFIX));
 	}
 
 	class TestAppender extends AppenderSkeleton {
