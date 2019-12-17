@@ -13,9 +13,9 @@ import nl.nn.adapterframework.xml.SaxException;
 
 public class XmlJsonWriter extends DefaultHandler implements ContentHandler {
 
-	Writer writer;
-	boolean commaRequired=false;
-	boolean stringOpen=false;
+	private Writer writer;
+	private boolean commaRequired=false;
+	private boolean stringOpen=false;
 	
 	public XmlJsonWriter(Writer writer) {
 		this.writer=writer;

@@ -66,14 +66,7 @@ public class ParameterResolutionContext {
 	 *                       Disable caching when the ParameterResolutionContext
 	 *                       is used by multiple threads.
 	 */
-//	public ParameterResolutionContext(String input, IPipeLineSession session, boolean namespaceAware, boolean xslt2NotUsed, boolean singleThreadOnly) {
-//		this.input = input;
-//		this.session = session;
-//		this.namespaceAware = namespaceAware;
-//		if (singleThreadOnly) {
-//			xmlSource=new HashMap<Boolean,Source>();
-//		}
-//	}
+
 	public ParameterResolutionContext(Object input, IPipeLineSession session, boolean namespaceAware, boolean singleThreadOnly) {
 //	this.input = input;
 	if (input instanceof Message) {
