@@ -33,6 +33,8 @@ import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.util.JsonXmlReader;
 import nl.nn.adapterframework.util.XmlJsonWriter;
+import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
  * Perform an XSLT transformation with a specified stylesheet on a JSON input, yielding JSON, yielding JSON, XML or text.
@@ -58,6 +60,11 @@ public class JsonXsltSender extends XsltSender {
 			setNamespaceDefs("j=http://www.w3.org/2013/XSL/json");
 		}
 		super.configure();
+	}
+
+	@Override
+	public boolean canProvideOutputStream() {
+		return false; // JsonParser requires inputSource
 	}
 
 	@Override
