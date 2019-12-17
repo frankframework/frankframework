@@ -16,18 +16,6 @@
 package nl.nn.adapterframework.validation;
 
 
-import static org.apache.xerces.parsers.XMLGrammarCachingConfiguration.BIG_PRIME;
-
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
-
-import javax.xml.validation.ValidatorHandler;
-
 import nl.nn.adapterframework.cache.EhCache;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -35,13 +23,11 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.validation.xerces_2_11.XMLSchemaFactory;
 import nl.nn.adapterframework.xml.ClassLoaderXmlEntityResolver;
-
 import org.apache.log4j.Logger;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
-//import org.apache.xerces.jaxp.validation.XMLSchemaFactory;
+import org.apache.xerces.jaxp.validation.XMLSchemaFactory;
 import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.parsers.XMLGrammarPreparser;
 import org.apache.xerces.util.ShadowedSymbolTable;
@@ -60,6 +46,15 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
+
+import javax.xml.validation.ValidatorHandler;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
+
+import static org.apache.xerces.parsers.XMLGrammarCachingConfiguration.BIG_PRIME;
+
+//import nl.nn.adapterframework.validation.xerces_2_11.XMLSchemaFactory;
 
 
 /**
@@ -106,6 +101,8 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 
 	protected static final String SECURITY_MANAGER_PROPERTY_ID = Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
 
+	protected static final String XML_SCHEMA_VERSION_PROPERTY = Constants.XERCES_PROPERTY_PREFIX + Constants.XML_SCHEMA_VERSION_PROPERTY;
+
 	private static final int maxInitialised = AppConstants.getInstance().getInt("xmlValidator.maxInitialised", -1);
 	private static final boolean sharedSymbolTable = AppConstants.getInstance().getBoolean("xmlValidator.sharedSymbolTable", false);
 	private static final int sharedSymbolTableSize = AppConstants.getInstance().getInt("xmlValidator.sharedSymbolTable.size", BIG_PRIME);
@@ -114,6 +111,9 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	private static AtomicLong counter = new AtomicLong();
 	private String preparseResultId;
 	private PreparseResult preparseResult;
+
+	/** XSD Processor version for Xerces. It has to be set manually. */
+	private double xsdVersion = 1.1;
 
 	private static EhCache cache;
 	static {
@@ -182,6 +182,8 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		preparser.setFeature(VALIDATION_FEATURE_ID, true);
 		preparser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
 		preparser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
+		preparser.setProperty(XML_SCHEMA_VERSION_PROPERTY,
+				(xsdVersion == 1.0) ? Constants.W3C_XML_SCHEMA10EX_NS_URI :Constants.W3C_XML_SCHEMA11_NS_URI);
 		MyErrorHandler errorHandler = new MyErrorHandler();
 		errorHandler.warn = warn;
 		preparser.setErrorHandler(errorHandler);
@@ -201,8 +203,9 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	private static Grammar preparse(XMLGrammarPreparser preparser,
 			String schemasId, Schema schema) throws ConfigurationException {
 		try {
+			XMLInputSource inputSource = stringToXMLInputSource(schema);
 			return preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA,
-					stringToXMLInputSource(schema));
+					inputSource);
 		} catch (IOException e) {
 			throw new ConfigurationException("cannot compile schema's ["
 					+ schemasId + "]", e);
@@ -320,6 +323,9 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		return new XMLInputSource(null, schema.getSystemId(), null, schema.getInputStream(), null);
 	}
 
+	public void setXsdVersion(double xsdVersion) {
+		this.xsdVersion = xsdVersion;
+	}
 }
 
 

@@ -16,45 +16,21 @@
 package nl.nn.adapterframework.pipes;
 
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-
-import javax.xml.namespace.QName;
-import javax.xml.transform.TransformerConfigurationException;
-
-import org.apache.commons.lang.StringUtils;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
-import nl.nn.adapterframework.core.IDualModeValidator;
-import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.IXmlValidator;
-import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.core.*;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.validation.AbstractXmlValidator;
-import nl.nn.adapterframework.validation.Schema;
-import nl.nn.adapterframework.validation.SchemaUtils;
-import nl.nn.adapterframework.validation.SchemasProvider;
-import nl.nn.adapterframework.validation.XSD;
-import nl.nn.adapterframework.validation.XercesXmlValidator;
-import nl.nn.adapterframework.validation.XmlValidatorException;
+import nl.nn.adapterframework.validation.*;
+import org.apache.commons.lang.StringUtils;
+
+import javax.xml.namespace.QName;
+import javax.xml.transform.TransformerConfigurationException;
+import java.net.URL;
+import java.util.*;
 
 
 /**
@@ -93,6 +69,8 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	protected String schemaLocation;
 	protected String noNamespaceSchemaLocation;
 	protected String schemaSessionKey;
+
+	protected double xsdProcessorVersion = 1.1;
 
 	protected ConfigurationException configurationException;
 
@@ -153,6 +131,12 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				}
 			}
 			validator.setSchemasProvider(this);
+
+			// Set xsd processor version
+			if(validator instanceof XercesXmlValidator) {
+				((XercesXmlValidator) validator).setXsdVersion(xsdProcessorVersion);
+			}
+
 			//do initial schema check
 			if (getSchemasId()!=null) {
 				getSchemas(true);
@@ -869,6 +853,14 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
     public void setLazyInit(boolean lazyInit) {
     	validator.setLazyInit(lazyInit);
     }
+
+    public void setVersion(double version) {
+    	xsdProcessorVersion = version;
+	}
+
+	public double getVersion() {
+    	return xsdProcessorVersion;
+	}
 
 	public Map<List<String>, List<String>> getInvalidRootNamespaces() {
 		return invalidRootNamespaces;
