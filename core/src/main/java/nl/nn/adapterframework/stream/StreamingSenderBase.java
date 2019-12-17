@@ -25,8 +25,6 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 public abstract class StreamingSenderBase extends SenderWithParametersBase implements IOutputStreamingSupport {
 
-//	private final boolean TEST_STREAMING_VIA_SEND_MESSAGE=false;
-	
 	public abstract Object sendMessage(String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException;
 	@Override
 	public abstract MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException;

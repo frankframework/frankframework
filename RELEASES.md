@@ -52,6 +52,11 @@ Upcoming
 - Fix and Cleanup MailSender and MailSenderBase
 - Upgrade ladybug to version 2.0.9
 - Namespace support for skip empty tags
+- Base64 encode and decode option for FileSystemPipe, FileSystemSender and descendants 
+- Add option to rotate by size, number of files or number of days to FileSystemPipe, FileSystemSender and descendants
+- FileSystemSenders now return an InputStream when action=read
+- XsltSender, XsltPipe, JsonXsltSender, JsonXsltPipe accept streaming inputs
+
 
 ### Non backwards compatible changes
 

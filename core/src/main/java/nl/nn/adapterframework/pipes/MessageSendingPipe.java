@@ -1289,7 +1289,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return timeOutOnResult;
 	}
 
-	@IbisDoc({"276", "when not empty, a piperunexception is thrown when the result equals this value (for testing purposes only)", ""})
+	@IbisDoc({"27", "when not empty, a piperunexception is thrown when the result equals this value (for testing purposes only)", ""})
 	public void setExceptionOnResult(String string) {
 		exceptionOnResult = string;
 	}

@@ -15,10 +15,7 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.io.IOException;
 import java.io.StringWriter;
-
-import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -28,7 +25,6 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -98,65 +94,27 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		super.stop();
 	}
 	
-//	protected ParameterResolutionContext getInput(String input, IPipeLineSession session) throws PipeRunException, DomBuilderException, TransformerException, IOException {
-//		if (isRemoveNamespaces()) {
-//			log.debug(getLogPrefix(session)+ " removing namespaces from input message");
-//			ParameterResolutionContext prc_RemoveNamespaces = new ParameterResolutionContext(input, session, isNamespaceAware()); 
-//			input = transformerPoolRemoveNamespaces.transform(prc_RemoveNamespaces.getInputSource(), null); 
-//			log.debug(getLogPrefix(session)+ " output message after removing namespaces [" + input + "]");
-//		}
-//		return new ParameterResolutionContext(input, session, isNamespaceAware());
-//	}
-
-	protected Object getInputXml(Object input, IPipeLineSession session) throws TransformerException {
-		return input;
-	}
-	
-//	/*
-//	 * Allow to override transformation, so JsonXslt can prefix and suffix...
-//	 */
-//	protected String transform(TransformerPool tp, Source source, Map<String,Object> parametervalues) throws TransformerException, IOException {
-//		return tp.transform(source, parametervalues);
-//	}
-	/*
-	 * Allow to override transformation, so JsonXslt can prefix and suffix...
-	 */
-	protected Object transform(Object input, IPipeLineSession session, MessageOutputStream target) throws SenderException, TransformerException, TimeOutException {
-		Object inputXml = getInputXml(input, session);
-		ParameterResolutionContext prc = new ParameterResolutionContext(inputXml, session, isNamespaceAware()); 
-		return sender.sendMessage(null, new Message(inputXml), prc, target);
-	}
-	/**
-	 * Here the actual transforming is done. Under weblogic the transformer object becomes
-	 * corrupt when a not-well formed xml was handled. The transformer is then re-initialized
-	 * via the configure() and start() methods.
-	 */
 	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session, MessageOutputStream target) throws PipeRunException {
 		if (input==null) {
 			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
 		}
-		String inputAsString;
+		Message message = new Message(input);
+		ParameterResolutionContext prc = new ParameterResolutionContext(message, session, isNamespaceAware()); 
 		try {
-			inputAsString = new Message(input).asString();
-		} catch (IOException e1) {
-	        throw new PipeRunException(this, getLogPrefix(session)+"could not convert input to String, got " + input.getClass().getName());
-		}
-	    try {
-	    	Object stringResult = transform(inputAsString, session, target);
-	    	if (stringResult instanceof StringWriter) {
-	    		stringResult = stringResult.toString();
-	    	}
- 		
-			if (StringUtils.isEmpty(getSessionKey())){
-				return new PipeRunResult(getForward(), stringResult);
+			Object result = sender.sendMessage(null, message, prc, target);
+			if (result instanceof StringWriter) {
+				result = result.toString();
 			}
-			session.put(getSessionKey(), stringResult);
+
+			if (StringUtils.isEmpty(getSessionKey())) {
+				return new PipeRunResult(getForward(), result);
+			}
+			session.put(getSessionKey(), result);
 			return new PipeRunResult(getForward(), input);
-	    } 
-	    catch (Exception e) {
-	        throw new PipeRunException(this, getLogPrefix(session)+" Exception on transforming input", e);
-	    } 
+		} catch (Exception e) {
+			throw new PipeRunException(this, getLogPrefix(session) + " Exception on transforming input", e);
+		}
 	}
 
 	@Override
