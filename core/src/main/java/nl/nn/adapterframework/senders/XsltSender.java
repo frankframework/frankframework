@@ -84,7 +84,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	private Map<String, TransformerPool> dynamicTransformerPoolMap;
 	private int transformerPoolMapSize = 100;
 
-	private ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
+	protected ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
 	private boolean streamingXslt;
 
 
@@ -175,7 +175,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		return new MessageOutputStream(handler,target,this,threadLifeCycleEventListener,correlationID);
 	}
 
-	private ContentHandler createHandler(String correlationID, Message input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+	protected ContentHandler createHandler(String correlationID, Message input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
 		ContentHandler handler = null;
 
 		try {
