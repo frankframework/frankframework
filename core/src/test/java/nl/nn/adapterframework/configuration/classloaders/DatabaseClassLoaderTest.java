@@ -156,8 +156,9 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 		assertEquals(ClassLoaderManager.class.getCanonicalName(), firstLogEntry.getLoggerName());
 		assertEquals(Level.DEBUG, firstLogEntry.getLevel());
 		String msg = (String) firstLogEntry.getMessage();
-		assertTrue(msg.startsWith("Could not get config"));
-		assertTrue(msg.endsWith("from database, skipping"));
+		System.out.println(msg);
+		assertTrue(msg.startsWith("error configuring ClassLoader for configuration ["));
+		assertTrue(msg.endsWith("]"));
 	}
 
 	/**
@@ -191,8 +192,8 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 		assertEquals(IbisContext.class.getCanonicalName(), firstLogEntry.getLoggerName());
 		assertEquals(Level.INFO, firstLogEntry.getLevel());
 		String msg = (String) firstLogEntry.getMessage();
-		assertTrue(msg.contains("Could not get config")); //Has log4j prefix
-		assertTrue(msg.endsWith("from database, skipping"));
+		assertTrue(msg.contains("error configuring ClassLoader for configuration [")); //Has log4j prefix
+		assertTrue(msg.endsWith("]"));
 	}
 
 	/**
@@ -226,8 +227,8 @@ public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLo
 		assertEquals(ClassLoaderManager.class.getCanonicalName(), firstLogEntry.getLoggerName());
 		assertEquals(Level.WARN, firstLogEntry.getLevel());
 		String msg = (String) firstLogEntry.getMessage();
-		assertTrue(msg.startsWith("Could not get config"));
-		assertTrue(msg.endsWith("from database, skipping"));
+		assertTrue(msg.startsWith("error configuring ClassLoader for configuration ["));
+		assertTrue(msg.endsWith("]"));
 	}
 
 	class TestAppender extends AppenderSkeleton {
