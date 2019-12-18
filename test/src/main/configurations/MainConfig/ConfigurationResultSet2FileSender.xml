@@ -25,7 +25,7 @@
 				<sender className="nl.nn.adapterframework.jdbc.ResultSet2FileSender"
 					fileNameSessionKey="fileName" jmsRealm="jdbc" lockRows="true"
 					maxRecordsSessionKey="maxRecords"
-					query="SELECT TCLOB, TTIMESTAMP, TCHAR FROM IBISTEMP WHERE TTIMESTAMP IS NULL ORDER BY TCHAR, TKEY"
+					query="SELECT TCLOB, TTIMESTAMP, TCHAR, TKEY FROM IBISTEMP WHERE TTIMESTAMP IS NULL ORDER BY TCHAR, TKEY"
 					statusFieldType="timestamp" />
 				<forward name="success" path="readFile" />
 			</pipe>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018 Nationale-Nederlanden
+   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,11 +24,14 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jdbc.QueryContext;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -41,6 +44,10 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	protected Logger log = LogUtil.getLogger(this.getClass());
 
 	protected final static String KEYWORD_SELECT="select";
+
+	protected static final String TYPE_BLOB = "blob";
+	protected static final String TYPE_CLOB = "clob";
+	protected static final String TYPE_FUNCTION = "function";
 
 	public String getDbmsName() {
 		return "generic";
@@ -386,5 +393,48 @@ public class GenericDbmsSupport implements IDbmsSupport {
 
 	public String getBooleanValue(boolean value) {
 		return (""+value).toUpperCase();
+	}
+
+	public void convertQuery(Connection conn, QueryContext queryContext, String sqlDialectFrom) throws SQLException, JdbcException {
+		if (isQueryConversionRequired(sqlDialectFrom)) {
+			warnConvertQuery(sqlDialectFrom);
+		}
+	}
+	
+	protected void warnConvertQuery(String sqlDialectFrom) {
+		log.warn("don't know how to convert queries from [" + sqlDialectFrom + "] to [" + getDbmsName() + "]");
+	}
+
+	protected boolean isQueryConversionRequired(String sqlDialectFrom) {
+		return StringUtils.isNotEmpty(sqlDialectFrom) && StringUtils.isNotEmpty(getDbmsName()) && !sqlDialectFrom.equalsIgnoreCase(getDbmsName());
+	}
+
+	protected List<String> splitQuery(String query) {
+		// A query can contain multiple queries separated by a semicolon
+		List<String> splittedQueries = new ArrayList<>();
+		if (!query.contains(";")) {
+			splittedQueries.add(query);
+		} else {
+			int i = 0;
+			int j = 0;
+			while (j < query.length()) {
+				if (query.charAt(j) == ';') {
+					String line = query.substring(i, j + 1);
+					// A semicolon between single quotes is ignored (number of single quotes in the query must be zero or an even number)
+					int countApos = StringUtils.countMatches(line, "'");
+					// A semicolon directly after 'END' is ignored when there is also a 'BEGIN' in the query
+					int countBegin = Misc.countRegex(line.toUpperCase().replaceAll("\\s+", "  "), "\\sBEGIN\\s");
+					int countEnd = Misc.countRegex(line.toUpperCase().replaceAll(";", "; "), "\\sEND;");
+					if ((countApos == 0 || (countApos & 1) == 0) && countBegin==countEnd) {
+						splittedQueries.add(line.trim());
+						i = j + 1;
+					}
+				}
+				j++;
+			}
+			if (j > i)
+				splittedQueries.add(query.substring(i, j).trim());
+		}
+		return splittedQueries;
 	}
 }
