@@ -154,11 +154,12 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	}
 	
 
-	protected abstract String getQuery(String correlationID, Message message);
 	/**
-	 * Obtain a prepared statement to be executed.
+	 * Obtain a query to be executed.
 	 * Method-stub to be overridden in descender-classes.
 	 */
+	protected abstract String getQuery(String correlationID, Message message);
+
 	protected final PreparedStatement getStatement(Connection con, String correlationID, QueryContext queryContext) throws JdbcException, SQLException {
 		String qry = queryContext.getQuery();
 		if (isLockRows()) {
@@ -169,6 +170,15 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 	private PreparedStatement prepareQueryWithColunmsReturned(Connection con, String query, String[] columnsReturned) throws SQLException {
 		return con.prepareStatement(query,columnsReturned);
+	}
+
+	protected void convertQuery(Connection connection, QueryContext queryContext) throws JdbcException, SQLException {
+		if (StringUtils.isNotEmpty(getSqlDialect()) && !getSqlDialect().equalsIgnoreCase(getDbmsSupport().getDbmsName())) {
+			if (log.isDebugEnabled()) {
+				log.debug(getLogPrefix() + "converting query [" + queryContext.getQuery().trim() + "] from [" + getSqlDialect() + "] to [" + getDbmsSupport().getDbmsName() + "]");
+			}
+			getDbmsSupport().convertQuery(connection, queryContext, getSqlDialect());
+		}
 	}
 
 	protected PreparedStatement prepareQuery(Connection con, QueryContext queryContext) throws SQLException, JdbcException {
@@ -182,15 +192,6 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		}
 		boolean updateLob = "updateBlob".equalsIgnoreCase(queryContext.getQueryType()) || "updateClob".equalsIgnoreCase(queryContext.getQueryType());
 		return con.prepareStatement(queryContext.getQuery(),ResultSet.TYPE_FORWARD_ONLY,updateLob?ResultSet.CONCUR_UPDATABLE:ResultSet.CONCUR_READ_ONLY);
-	}
-
-	protected void convertQuery(Connection connection, QueryContext queryContext) throws JdbcException, SQLException {
-		if (StringUtils.isNotEmpty(getSqlDialect()) && !getSqlDialect().equalsIgnoreCase(getDbmsSupport().getDbmsName())) {
-			if (log.isDebugEnabled()) {
-				log.debug(getLogPrefix() + "converting query [" + queryContext.getQuery().trim() + "] from [" + getSqlDialect() + "] to [" + getDbmsSupport().getDbmsName() + "]");
-			}
-			getDbmsSupport().convertQuery(connection, queryContext, getSqlDialect());
-		}
 	}
 
 	protected CallableStatement getCallWithRowIdReturned(Connection con, String correlationID, String query) throws SQLException {
@@ -325,10 +326,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		parameterList.clear();
 		while (startPos != -1) {
 			buffer.append(messageChars, copyFrom, startPos - copyFrom);
-			int nextStartPos =
-					query.indexOf(
-					UNP_START,
-					startPos + UNP_START.length());
+			int nextStartPos = query.indexOf(UNP_START, startPos + UNP_START.length());
 			if (nextStartPos == -1) {
 				nextStartPos = query.length();
 			}

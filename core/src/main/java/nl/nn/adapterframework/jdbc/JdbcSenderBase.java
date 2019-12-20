@@ -69,13 +69,9 @@ public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSen
 
 	@Override
 	public void configure() throws ConfigurationException {
-//		try {
-			if (StringUtils.isEmpty(getDatasourceName())) {
-				throw new ConfigurationException(getLogPrefix()+"has no datasource");
-			}
-//		} catch (JdbcException e) {
-//			throw new ConfigurationException(e);
-//		}
+		if (StringUtils.isEmpty(getDatasourceName())) {
+			throw new ConfigurationException(getLogPrefix()+"has no datasource");
+		}
 		if (paramList!=null) {
 			paramList.configure();
 		}

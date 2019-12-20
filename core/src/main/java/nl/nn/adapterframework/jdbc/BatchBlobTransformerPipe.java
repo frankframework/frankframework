@@ -46,6 +46,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  */
 public class BatchBlobTransformerPipe extends BatchTransformerPipeBase {
 
+	@Override
 	protected Reader getReader(ResultSet rs, String charset, String streamId, IPipeLineSession session) throws SenderException {
 		try {
 			InputStream blobStream=JdbcUtil.getBlobInputStream(rs,1,querySender.isBlobsCompressed());

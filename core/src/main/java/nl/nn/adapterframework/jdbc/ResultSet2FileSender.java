@@ -50,6 +50,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 
 	protected byte[] eolArray=null;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getFileNameSessionKey())) {
@@ -64,6 +65,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		eolArray = System.getProperty("line.separator").getBytes();
 	}
 
+	@Override
 	protected Object sendMessage(Connection connection, String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
 		int counter = 0;
 		ResultSet resultset=null;

@@ -29,9 +29,8 @@ import nl.nn.adapterframework.core.SenderException;
  */
 public class DummyTransactionalStorage extends JdbcTransactionalStorage {
 
-	public String storeMessage(String messageId, String correlationId,
-			Date receivedDate, String comments, String label,
-			Serializable message) throws SenderException {
+	@Override
+	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException {
 		return null;
 	}
 

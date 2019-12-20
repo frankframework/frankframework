@@ -93,15 +93,16 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> {
 	}
 
 	@Override
-	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException {
+	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext, ItemCallback callback) throws SenderException {
 		if (log.isDebugEnabled()) {log.debug(getLogPrefix(session)+"result set is empty, nothing to iterate over");}
 	}
 
 
 	protected abstract IDataIterator<String> getIterator(Connection conn, ResultSet rs) throws SenderException; 
 
+	@SuppressWarnings("finally")
 	@Override
-	protected IDataIterator<String> getIterator(Object input, IPipeLineSession session, String correlationID, Map threadContext) throws SenderException {
+	protected IDataIterator<String> getIterator(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext) throws SenderException {
 		Connection connection = null;
 		PreparedStatement statement=null;
 		ResultSet rs=null;
