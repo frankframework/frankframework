@@ -189,27 +189,27 @@
 		<init-param>
 			<param-name>resteasy.resources</param-name>
 			<param-value>
-                nl.nn.adapterframework.webcontrol.api.Init,
-                nl.nn.adapterframework.webcontrol.api.ExecuteJdbcQuery,
-                nl.nn.adapterframework.webcontrol.api.ServerStatistics,
-                nl.nn.adapterframework.webcontrol.api.ShowConfiguration,
-                nl.nn.adapterframework.webcontrol.api.ShowConfigurationStatus,
-                nl.nn.adapterframework.webcontrol.api.ShowEnvironmentVariables,
-                nl.nn.adapterframework.webcontrol.api.TestPipeline,
-                nl.nn.adapterframework.webcontrol.api.TestServiceListener,
-                nl.nn.adapterframework.webcontrol.api.ShowSecurityItems,
-                nl.nn.adapterframework.webcontrol.api.BrowseJdbcTable,
-                nl.nn.adapterframework.webcontrol.api.ShowIbisstoreSummary,
-                nl.nn.adapterframework.webcontrol.api.ShowMonitors,
-                nl.nn.adapterframework.webcontrol.api.ShowAdapterStatistics,
-                nl.nn.adapterframework.webcontrol.api.ShowScheduler,
-                nl.nn.adapterframework.webcontrol.api.ShowLogging,
-                nl.nn.adapterframework.webcontrol.api.Webservices,
-                nl.nn.adapterframework.webcontrol.api.BrowseQueue,
-                nl.nn.adapterframework.webcontrol.api.SendJmsMessage,
-                nl.nn.adapterframework.webcontrol.api.TransactionalStorage,
-                nl.nn.adapterframework.larva.api.LarvaApi,
-            </param-value>
+				nl.nn.adapterframework.webcontrol.api.Init,
+				nl.nn.adapterframework.webcontrol.api.ExecuteJdbcQuery,
+				nl.nn.adapterframework.webcontrol.api.ServerStatistics,
+				nl.nn.adapterframework.webcontrol.api.ShowConfiguration,
+				nl.nn.adapterframework.webcontrol.api.ShowConfigurationStatus,
+				nl.nn.adapterframework.webcontrol.api.ShowEnvironmentVariables,
+				nl.nn.adapterframework.webcontrol.api.TestPipeline,
+				nl.nn.adapterframework.webcontrol.api.TestServiceListener,
+				nl.nn.adapterframework.webcontrol.api.ShowSecurityItems,
+				nl.nn.adapterframework.webcontrol.api.BrowseJdbcTable,
+				nl.nn.adapterframework.webcontrol.api.ShowIbisstoreSummary,
+				nl.nn.adapterframework.webcontrol.api.ShowMonitors,
+				nl.nn.adapterframework.webcontrol.api.ShowAdapterStatistics,
+				nl.nn.adapterframework.webcontrol.api.ShowScheduler,
+				nl.nn.adapterframework.webcontrol.api.ShowLogging,
+				nl.nn.adapterframework.webcontrol.api.Webservices,
+				nl.nn.adapterframework.webcontrol.api.BrowseQueue,
+				nl.nn.adapterframework.webcontrol.api.SendJmsMessage,
+				nl.nn.adapterframework.webcontrol.api.TransactionalStorage,
+				nl.nn.adapterframework.larva.api.LarvaApi,
+			</param-value>
 		</init-param>
 	</servlet>
 	<servlet-mapping>
