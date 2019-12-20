@@ -177,12 +177,14 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 		private List<PrefixMapping> namespaceDefinitions=new ArrayList<>();
 
 		private class PrefixMapping {
+
+			public String prefix;
+			public String uri;
+
 			PrefixMapping(String prefix, String uri) {
 				this.prefix=prefix;
 				this.uri=uri;
 			}
-			String prefix;
-			String uri;
 		}
 		
 		public ItemCallbackCallingHandler(ItemCallback callback) {
