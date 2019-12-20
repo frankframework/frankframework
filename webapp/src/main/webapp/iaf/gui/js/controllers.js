@@ -1008,7 +1008,7 @@ angular.module('iaf.beheerconsole')
 	});
 }])
 
-.controller('AdapterErrorStorageCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', function($scope, Api, $stateParams, SweetAlert) {
+.controller('ErrorStorageBaseCtrl', ['$scope', 'Api', '$state', 'SweetAlert', 'Misc', function($scope, Api, $state, SweetAlert, Misc) {
 	$scope.notes = [];
 	$scope.addNote = function(type, message, removeQueue) {
 		$scope.notes.push({type:type, message: message});
@@ -1017,37 +1017,29 @@ angular.module('iaf.beheerconsole')
 		$scope.notes.splice(index, 1);
 	};
 
-	$scope.adapterName = $stateParams.adapter;
+	$scope.adapterName = $state.params.adapter;
 	if(!$scope.adapterName)
 		return SweetAlert.Warning("Adapter not found!");
-	$scope.receiverName = $stateParams.receiver;
+	$scope.receiverName = $state.params.receiver;
 	if(!$scope.receiverName)
 		return SweetAlert.Warning("Receiver not found!");
-	$scope.count = $stateParams.count || 0;
+	$scope.count = $state.params.count || 0;
 
-	//TODO
-	$scope.messages = [];
 	var base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/errorstorage";
-	function getErrorStoreMessages() {
-		Api.Get(base_url, function(data) {
-			$.extend($scope, data);
-		});
-	}
-	getErrorStoreMessages();
 
-	$scope.deleteMessage = function(message) {
+	$scope.doDeleteMessage = function(message, callback) {
 		message.deleting = true;
 
 		Api.Delete(base_url+"/"+message.id, function() {
-			for(x in $scope.messages) {
-				if($scope.messages[x].id == message.id) {
-					$scope.messages.splice(x, 1);
-				}
-			}
+			if(callback != undefined && typeof callback == 'function')
+				callback(message.id);
 		}, function() {
 			message.deleting = false;
 			$scope.addNote("danger", "Unable to delete messages with ID: "+message.id);
 		});
+	};
+	$scope.downloadMessage = function(message) {
+		window.open(Misc.getServerPath() + "iaf/api/"+base_url+"/"+message.id+"/download");
 	};
 
 	$scope.resendMessage = function(message) {
@@ -1062,6 +1054,66 @@ angular.module('iaf.beheerconsole')
 		}, function() {
 			message.resending = false;
 			$scope.addNote("danger", "Unable to resend messages with ID: "+message.id);
+		});
+	};
+}])
+
+.controller('AdapterErrorStorageCtrl', ['$scope', 'Api', '$state', 'SweetAlert', 'DTColumnDefBuilder', 'Misc', function($scope, Api, $state, SweetAlert, DTColumnDefBuilder, Misc) {
+	$scope.columnDefs = [
+		DTColumnDefBuilder.newColumnDef(0).notSortable(),
+		DTColumnDefBuilder.newColumnDef(1),
+		DTColumnDefBuilder.newColumnDef(2),
+		DTColumnDefBuilder.newColumnDef(3),
+		DTColumnDefBuilder.newColumnDef(4),
+		DTColumnDefBuilder.newColumnDef(5),
+		DTColumnDefBuilder.newColumnDef(6),
+		DTColumnDefBuilder.newColumnDef(7),
+		DTColumnDefBuilder.newColumnDef(8),
+		DTColumnDefBuilder.newColumnDef(9),
+		DTColumnDefBuilder.newColumnDef(10),
+	];
+
+	$scope.messages = [];
+	Api.Get("adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/errorstorage", function(data) {
+		$.extend($scope, data);
+	});
+
+	$scope.deleteMessage = function(message) {
+		$scope.doDeleteMessage(message, function(messageId) {
+			for(x in $scope.messages) {
+				if($scope.messages[x].id == messageId) {
+					$scope.messages.splice(x, 1);
+				}
+			}
+		});
+	};
+}])
+
+.controller('AdapterViewStorageIdCtrl', ['$scope', 'Api', '$state', 'SweetAlert', function($scope, Api, $state, SweetAlert) {
+	$scope.message = {};
+
+	$scope.adapterName = $state.params.adapter;
+	if(!$scope.adapterName)
+		return SweetAlert.Warning("Invalid URL", "No adapter name provided!");
+	$scope.receiverName = $state.params.receiver;
+	if(!$scope.receiverName)
+		return SweetAlert.Warning("Invalid URL", "No receiver name provided!");
+	$scope.message.id = $state.params.messageId;
+	if(!$scope.message.id)
+		return SweetAlert.Warning("Invalid URL", "No message id provided!");
+
+	var base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/errorstorage";
+	Api.Get(base_url+"/"+$scope.message.id, function(data) {
+		$scope.message.data = data;
+	}, function() {
+		$state.go("pages.errorstorage.list", {adapter:$scope.adapterName, receiver:$scope.receiverName});
+		SweetAlert.Warning("Message not found");
+	});
+
+	$scope.deleteMessage = function(message) {
+		$scope.doDeleteMessage(message, function(messageId) {
+			$state.go("pages.errorstorage.list", {adapter:$scope.adapterName, receiver:$scope.receiverName});
+			$scope.addNote("success", "Successfully removed message with ID: "+messageId);
 		});
 	};
 }])

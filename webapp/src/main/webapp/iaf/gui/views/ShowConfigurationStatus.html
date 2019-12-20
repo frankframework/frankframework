@@ -329,7 +329,7 @@
                                                     <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state !='started' && receiver.state !='stopped'" type="button"><i class="fa fa-cog fa-spin"></i></button>
 
                                                     <span class="text-danger">
-                                                        <button ng-show="{{receiver.hasErrorStorage}}" ui-sref="pages.errorstorage({adapter: adapter.name, receiver: receiver.name, count: receiver.errorStorageCount})" class="btn btn-xs btn-default m-l-xs" type="button">
+                                                        <button ng-show="{{receiver.hasErrorStorage}}" ui-sref="pages.errorstorage.list({adapter: adapter.name, receiver: receiver.name})" class="btn btn-xs btn-default m-l-xs" type="button">
                                                             <i class="fa fa-times-circle"></i> ({{receiver.errorStorageCount}})
                                                         </button>
                                                     </span>

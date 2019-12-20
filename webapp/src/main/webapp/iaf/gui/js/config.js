@@ -9,12 +9,19 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 	$urlRouterProvider.otherwise("/status");
 
 	$ocLazyLoadProvider.config({
-		modules: [
-		{
+		modules: [{
 			name: 'toaster',
 			files: ['js/plugins/toastr/toastr.min.js', 'css/plugins/toastr/toastr.min.css']
-		}
-		],
+		}, {
+			name: 'datatables',
+			serie: true,
+			files: [
+				'js/plugins/dataTables/datatables.v1.10.20.min.js',
+				'css/plugins/dataTables/datatables.v1.10.20.min.css',
+				'js/plugins/dataTables/angular-datatables.v0.6.2.min.js',
+				'js/plugins/dataTables/angular-datatables.buttons.min.js'
+			]
+		}],
 		// Set to true if you want to see what and when is dynamically loaded
 		debug: true
 	});
@@ -83,17 +90,37 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		},
 	})
 	.state('pages.errorstorage', {
-		url: "/adapter/:adapter/:receiver/errorstorage",
-		templateUrl: "views/adapter_errorstorage.html",
+		abstract: true,
+		url: "/adapter/:adapter/:receiver/",
+		template: "<div ui-view></div>",
+		controller: 'ErrorStorageBaseCtrl',
 		data: {
-			pageTitle: 'Adapter',
+			pageTitle: 'ErrorStorage',
 			breadcrumbs: 'Adapter > ErrorStorage'
 		},
 		params: {
 			adapter: { value: '', squash: true},
 			receiver: { value: '', squash: true},
-			count: 0
 		},
+	})
+	.state('pages.errorstorage.list', {
+		url: "errorstorage",
+		templateUrl: "views/adapter_errorstorage_list.html",
+		resolve: {
+			loadPlugin: function($ocLazyLoad) {
+				return $ocLazyLoad.load('datatables');
+			},
+		},
+	})
+	.state('pages.errorstorage.view', {
+		url: "errorstorage/:messageId",
+		templateUrl: "views/adapter_errorstorage_view.html",
+		params: {
+			messageId: { value: '', squash: true},
+		},
+		controller: function($state) {
+			$state.current.data.breadcrumbs = "Adapter > ErrorStorage > View Message "+$state.params.messageId;
+		}
 	})
 	.state('pages.messagelog', {
 		url: "/adapter/:adapter/r/:receiver/messagelog",

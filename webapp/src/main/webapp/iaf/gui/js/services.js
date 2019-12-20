@@ -520,9 +520,9 @@ angular.module('iaf.beheerconsole')
 		});
 
 		$rootScope.$on("$stateChangeStart", function(_, state) {
-			Debug.log("triggered state change");
+			Debug.log("triggered state change to ["+state.name+"]");
 			var url = state.url;
-			if(url.indexOf("?") > 0)
+			if(url && url.indexOf("?") > 0)
 				url = url.substring(0, url.indexOf("?"));
 
 			gTag.config({
@@ -663,18 +663,22 @@ angular.module('iaf.beheerconsole')
 			return swal(options, options.callback);
 		};
 		this.Info = function() {
+			var options = {};
 			angular.merge(options, {type: "info"}, this.defaults.apply(this, arguments));
 			return swal(options, options.callback);
 		};
 		this.Warning = function() {
+			var options = {};
 			angular.merge(options, {type: "warning"}, this.defaults.apply(this, arguments));
 			return swal(options, options.callback);
 		};
 		this.Error = function() {
+			var options = {};
 			angular.merge(options, {type: "error"}, this.defaults.apply(this, arguments));
 			return swal(options, options.callback);
 		};
 		this.Success = function() {
+			var options = {};
 			angular.merge(options, {type: "success"}, this.defaults.apply(this, arguments));
 			return swal(options, options.callback);
 		};
