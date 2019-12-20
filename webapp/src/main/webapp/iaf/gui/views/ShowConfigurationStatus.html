@@ -334,7 +334,7 @@
                                                         </button>
                                                     </span>
                                                     <span class="text-success">
-                                                        <button ng-show="{{receiver.hasMessageLog}}" ui-sref="pages.messagelog({adapter: adapter.name, receiver: receiver.name, count: receiver.messageLogCount})" class="btn btn-xs btn-default m-l-xs" type="button">
+                                                        <button ng-show="{{receiver.hasMessageLog}}" ui-sref="pages.messagelog.list({adapter: adapter.name, receiver: receiver.name})" class="btn btn-xs btn-default m-l-xs" type="button">
                                                             <i class="fa fa-envelope-o"></i> ({{receiver.messageLogCount}})
                                                         </button>
                                                     </span>
@@ -365,7 +365,7 @@
                                             <td>
                                                 <span class="pull-right">
                                                     <span class="text-success">
-                                                        <button ng-show="{{pipes.hasMessageLog}}" ui-sref="pages.pipemessagelog({pipe: pipes.name, adapter: adapter.name, count: pipes.messageLogCount})" class="btn btn-xs btn-default m-l-xs" type="button">
+                                                        <button ng-show="{{pipes.hasMessageLog}}" ui-sref="pages.pipemessagelog.list({pipe: pipes.name, adapter: adapter.name})" class="btn btn-xs btn-default m-l-xs" type="button">
                                                             <i class="fa fa-envelope-o"></i> ({{pipes.messageLogCount}})
                                                         </button>
                                                     </span>

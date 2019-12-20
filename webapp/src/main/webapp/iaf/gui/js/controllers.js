@@ -1019,11 +1019,10 @@ angular.module('iaf.beheerconsole')
 
 	$scope.adapterName = $state.params.adapter;
 	if(!$scope.adapterName)
-		return SweetAlert.Warning("Adapter not found!");
+		return SweetAlert.Warning("Invalid URL", "No adapter name provided!");
 	$scope.receiverName = $state.params.receiver;
 	if(!$scope.receiverName)
-		return SweetAlert.Warning("Receiver not found!");
-	$scope.count = $state.params.count || 0;
+		return SweetAlert.Warning("Invalid URL", "No receiver name provided!");
 
 	var base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/errorstorage";
 
@@ -1038,8 +1037,8 @@ angular.module('iaf.beheerconsole')
 			$scope.addNote("danger", "Unable to delete messages with ID: "+message.id);
 		});
 	};
-	$scope.downloadMessage = function(message) {
-		window.open(Misc.getServerPath() + "iaf/api/"+base_url+"/"+message.id+"/download");
+	$scope.downloadMessage = function(messageId) {
+		window.open(Misc.getServerPath() + "iaf/api/"+base_url+"/"+messageId+"/download");
 	};
 
 	$scope.resendMessage = function(message) {
@@ -1058,7 +1057,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('AdapterErrorStorageCtrl', ['$scope', 'Api', '$state', 'SweetAlert', 'DTColumnDefBuilder', 'Misc', function($scope, Api, $state, SweetAlert, DTColumnDefBuilder, Misc) {
+.controller('AdapterErrorStorageCtrl', ['$scope', 'Api', 'DTColumnDefBuilder', function($scope, Api, DTColumnDefBuilder) {
 	$scope.columnDefs = [
 		DTColumnDefBuilder.newColumnDef(0).notSortable(),
 		DTColumnDefBuilder.newColumnDef(1),
@@ -1092,12 +1091,6 @@ angular.module('iaf.beheerconsole')
 .controller('AdapterViewStorageIdCtrl', ['$scope', 'Api', '$state', 'SweetAlert', function($scope, Api, $state, SweetAlert) {
 	$scope.message = {};
 
-	$scope.adapterName = $state.params.adapter;
-	if(!$scope.adapterName)
-		return SweetAlert.Warning("Invalid URL", "No adapter name provided!");
-	$scope.receiverName = $state.params.receiver;
-	if(!$scope.receiverName)
-		return SweetAlert.Warning("Invalid URL", "No receiver name provided!");
 	$scope.message.id = $state.params.messageId;
 	if(!$scope.message.id)
 		return SweetAlert.Warning("Invalid URL", "No message id provided!");
@@ -1105,10 +1098,16 @@ angular.module('iaf.beheerconsole')
 	var base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/errorstorage";
 	Api.Get(base_url+"/"+$scope.message.id, function(data) {
 		$scope.message.data = data;
-	}, function() {
+	}, function(_, statusCode, statusText) {
+		if(statusCode == 500) {
+			SweetAlert.Warning("An error occured while opening the message", "message id ["+$scope.message.id+"] error ["+statusText+"]");
+		} else {
+			SweetAlert.Warning("Message not found", "message id ["+$scope.message.id+"] error ["+statusText+"]");
+		}
 		$state.go("pages.errorstorage.list", {adapter:$scope.adapterName, receiver:$scope.receiverName});
-		SweetAlert.Warning("Message not found");
-	});
+	}, {responseType:'text', transformResponse: function(data) {
+		return data;
+	}});
 
 	$scope.deleteMessage = function(message) {
 		$scope.doDeleteMessage(message, function(messageId) {
@@ -1118,38 +1117,95 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('AdapterMessageLogCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', function($scope, Api, $stateParams, SweetAlert) {
-	$scope.adapterName = $stateParams.adapter;
+.controller('MessageLogBaseCtrl', ['$scope', 'Misc', '$state', 'SweetAlert', function($scope, Misc, $state, SweetAlert) {
+	$scope.adapterName = $state.params.adapter;
 	if(!$scope.adapterName)
-		return SweetAlert.Warning("Adapter not found!");
-	$scope.receiverName = $stateParams.receiver;
+		return SweetAlert.Warning("Invalid URL", "No adapter name provided!");
+	$scope.receiverName = $state.params.receiver;
 	if(!$scope.receiverName)
-		return SweetAlert.Warning("Receiver not found!");
-	$scope.totalMessages = $stateParams.count || 0;
+		return SweetAlert.Warning("Invalid URL", "No receiver name provided!");
 
-	//TODO
+	var base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/messagelog";
+	$scope.downloadMessage = function(messageId) {
+		window.open(Misc.getServerPath() + "iaf/api/"+base_url+"/"+messageId+"/download");
+	};
+}])
+
+.controller('AdapterMessageLogListCtrl', ['$scope', 'Api', function($scope, Api) {
 	$scope.messages = [];
-	var url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/messagelog";
-	Api.Get(url, function(data) {
+	var base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/messagelog";
+
+	Api.Get(base_url, function(data) {
 		$.extend($scope, data);
 	});
 }])
 
-.controller('PipeMessageLogCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', function($scope, Api, $stateParams, SweetAlert) {
-	$scope.pipeName = $stateParams.pipe;
-	if(!$scope.pipeName)
-		return SweetAlert.Warning("Pipe not found!");
-	$scope.adapterName = $stateParams.adapter;
-	if(!$scope.adapterName)
-		return SweetAlert.Warning("Adapter not found!");
-	$scope.totalMessages = $stateParams.count || 0;
+.controller('AdapterMessageLogViewCtrl', ['$scope', 'Api', '$state', 'SweetAlert', function($scope, Api, $state, SweetAlert) {
+	$scope.message = {};
 
-	//TODO
-	$scope.messages = [];
-	var url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messagelog";
+	$scope.message.id = $state.params.messageId;
+	if(!$scope.message.id)
+		return SweetAlert.Warning("Invalid URL", "No message id provided!");
+
+	var url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/messagelog/"+$scope.message.id;
 	Api.Get(url, function(data) {
+		$scope.message.data = data;
+	}, function(_, statusCode, statusText) {
+		if(statusCode == 500) {
+			SweetAlert.Warning("An error occured while opening the message", "message id ["+$scope.message.id+"] error ["+statusText+"]");
+		} else {
+			SweetAlert.Warning("Message not found", "message id ["+$scope.message.id+"] error ["+statusText+"]");
+		}
+		$state.go("pages.messagelog.list", {adapter:$scope.adapterName, receiver:$scope.receiverName});
+	}, {responseType:'text', transformResponse: function(data) {
+		return data;
+	}});
+}])
+
+.controller('PipeMessageLogBaseCtrl', ['$scope', 'Misc', '$state', 'SweetAlert', function($scope, Misc, $state, SweetAlert) {
+	$scope.adapterName = $state.params.adapter;
+	if(!$scope.adapterName)
+		return SweetAlert.Warning("Invalid URL", "No adapter name provided!");
+	$scope.pipeName = $state.params.pipe;
+	if(!$scope.pipeName)
+		return SweetAlert.Warning("Invalid URL", "No pipe name provided!");
+
+	var base_url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messagelog";
+	$scope.downloadMessage = function(messageId) {
+		window.open(Misc.getServerPath() + "iaf/api/"+base_url+"/"+messageId+"/download");
+	};
+}])
+
+.controller('PipeMessageLogListCtrl', ['$scope', 'Api', function($scope, Api) {
+	$scope.messages = [];
+	var base_url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messagelog";
+
+	Api.Get(base_url, function(data) {
 		$.extend($scope, data);
 	});
+}])
+
+.controller('PipeMessageLogViewCtrl', ['$scope', 'Api', '$state', 'SweetAlert', function($scope, Api, $state, SweetAlert) {
+	$scope.message = {};
+
+	$scope.message.id = $state.params.messageId;
+	if(!$scope.message.id)
+		return SweetAlert.Warning("Invalid URL", "No message id provided!");
+
+	var url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messagelog/"+$scope.message.id;
+	Api.Get(url, function(data) {
+		$scope.message.data = data;
+	}, function(_, statusCode, statusText) {
+		if(statusCode == 500) {
+			SweetAlert.Warning("An error occured while opening the message", "message id ["+$scope.message.id+"] error ["+statusText+"]");
+		} else {
+			SweetAlert.Warning("Message not found", "message id ["+$scope.message.id+"] error ["+statusText+"]");
+		}
+		$state.go("pages.pipemessagelog.list", {adapter:$scope.adapterName, pipe:$scope.pipeName});
+	}, {responseType:'text', transformResponse: function(data) {
+		return data;
+	}});
+	
 }])
 
 .controller('WebservicesCtrl', ['$scope', 'Api', 'Misc', function($scope, Api, Misc) {

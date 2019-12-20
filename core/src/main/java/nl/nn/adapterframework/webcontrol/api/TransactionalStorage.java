@@ -177,6 +177,10 @@ public class TransactionalStorage extends Base {
 		else
 			storage = receiver.getErrorStorage();
 
+		if(storage == null) {
+			throw new ApiException("no IMessageBrowser found");
+		}
+
 		//Apply filters
 		MessageBrowsingFilter filter = new MessageBrowsingFilter(maxMessages, skipMessages);
 		filter.setTypeMask(type);
@@ -373,6 +377,31 @@ public class TransactionalStorage extends Base {
 
 	@GET
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/adapters/{adapterName}/pipes/{pipeName}/messagelog/{messageId}/download")
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	public Response downloadPipeMessage(
+			@PathParam("adapterName") String adapterName,
+			@PathParam("pipeName") String pipeName,
+			@PathParam("messageId") String messageId
+		) throws ApiException {
+
+		initBase(servletConfig);
+		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+
+		if(adapter == null){
+			throw new ApiException("Adapter not found!");
+		}
+
+		MessageSendingPipe pipe = (MessageSendingPipe) adapter.getPipeLine().getPipe(pipeName);
+		if(pipe == null) {
+			throw new ApiException("Pipe ["+pipeName+"] not found!");
+		}
+
+		return getMessage(pipe.getMessageLog(), messageId);
+	}
+
+	@GET
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{adapterName}/pipes/{pipeName}/messagelog")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response browsePipeMessages(
@@ -512,12 +541,11 @@ public class TransactionalStorage extends Base {
 		String fileNameExtension = "txt";
 		if (StringUtils.isEmpty(msg)) {
 			throw new ApiException("message not found");
-		}
-		else {
+		} else {
 			if(msg.startsWith("<")) {
 				type = MediaType.APPLICATION_XML_TYPE;
 				fileNameExtension = "xml";
-			} else if(msg.startsWith("{")) {
+			} else if(msg.startsWith("{") || msg.startsWith("[")) {
 				type = MediaType.APPLICATION_JSON_TYPE;
 				fileNameExtension = "json";
 			}

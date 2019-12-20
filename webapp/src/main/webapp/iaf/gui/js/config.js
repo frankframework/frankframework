@@ -105,7 +105,7 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 	})
 	.state('pages.errorstorage.list', {
 		url: "errorstorage",
-		templateUrl: "views/adapter_errorstorage_list.html",
+		templateUrl: "views/txstorage/adapter_errorstorage_list.html",
 		resolve: {
 			loadPlugin: function($ocLazyLoad) {
 				return $ocLazyLoad.load('datatables');
@@ -114,7 +114,7 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 	})
 	.state('pages.errorstorage.view', {
 		url: "errorstorage/:messageId",
-		templateUrl: "views/adapter_errorstorage_view.html",
+		templateUrl: "views/txstorage/adapter_errorstorage_view.html",
 		params: {
 			messageId: { value: '', squash: true},
 		},
@@ -123,8 +123,10 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		}
 	})
 	.state('pages.messagelog', {
-		url: "/adapter/:adapter/r/:receiver/messagelog",
-		templateUrl: "views/adapter_messagelog.html",
+		abstract: true,
+		url: "/adapter/:adapter/",
+		template: "<div ui-view></div>",
+		controller: 'MessageLogBaseCtrl',
 		data: {
 			pageTitle: 'Adapter',
 			breadcrumbs: 'Adapter > MessageLog'
@@ -132,21 +134,59 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		params: {
 			adapter: { value: '', squash: true},
 			receiver: { value: '', squash: true},
-			count: 0
 		},
 	})
+	.state('pages.messagelog.list', {
+		url: "receiver/:receiver/messagelog",
+		templateUrl: "views/txstorage/adapter_messagelog_list.html",
+		resolve: {
+			loadPlugin: function($ocLazyLoad) {
+				return $ocLazyLoad.load('datatables');
+			},
+		},
+	})
+	.state('pages.messagelog.view', {
+		url: "receiver/:receiver/messagelog/:messageId",
+		templateUrl: "views/txstorage/adapter_messagelog_view.html",
+		params: {
+			messageId: { value: '', squash: true},
+		},
+		controller: function($state) {
+			$state.current.data.breadcrumbs = "Adapter > MessageLog > View Message "+$state.params.messageId;
+		}
+	})
 	.state('pages.pipemessagelog', {
-		url: "/adapter/:adapter/p/:pipe/messagelog",
-		templateUrl: "views/pipe_messagelog.html",
+		abstract: true,
+		url: "/adapter/:adapter/pipe/:pipe",
+		template: "<div ui-view></div>",
+		controller: 'PipeMessageLogBaseCtrl',
 		data: {
 			pageTitle: 'Adapter',
-			breadcrumbs: 'Adapter > MessageLog'
+			breadcrumbs: 'Adapter > Pipe > MessageLog'
 		},
 		params: {
 			adapter: { value: '', squash: true},
 			pipe: { value: '', squash: true},
-			count: 0
 		},
+	})
+	.state('pages.pipemessagelog.list', {
+		url: "/messagelog",
+		templateUrl: "views/txstorage/pipe_messagelog_list.html",
+		resolve: {
+			loadPlugin: function($ocLazyLoad) {
+				return $ocLazyLoad.load('datatables');
+			},
+		},
+	})
+	.state('pages.pipemessagelog.view', {
+		url: "/messagelog/:messageId",
+		templateUrl: "views/txstorage/pipe_messagelog_view.html",
+		params: {
+			messageId: { value: '', squash: true},
+		},
+		controller: function($state) {
+			$state.current.data.breadcrumbs = "Adapter > Pipe > MessageLog > View Message "+$state.params.messageId;
+		}
 	})
 	.state('pages.notifications', {
 		url: "/notifications",

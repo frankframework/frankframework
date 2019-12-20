@@ -12,10 +12,22 @@ angular.module('iaf.beheerconsole')
 		$http.defaults.headers.post["Content-Type"] = "application/json";
 		$http.defaults.timeout = appConstants["console.pollerInterval"] - 1000;
 
-		this.Get = function (uri, callback, error, skipEtag) {
-			var skipEtag = (skipEtag===true);
+		this.Get = function (uri, callback, error, httpOptions) {
+			var defaultHttpOptions = {};
 
-			return $http.get(buildURI(uri), (etags.hasOwnProperty(uri) && !skipEtag) ? { headers: {'If-None-Match': etags[uri]} } : {}).then(function(response) {
+			if(httpOptions) {
+				if(typeof httpOptions != "object") { //legacy boolean skipEtag
+					if(etags.hasOwnProperty(uri) && !(httpOptions===true)) {
+						Debug.log("skipEtag ["+httpOptions+"] for uri ["+uri+"]");
+						defaultHttpOptions.headers = {'If-None-Match': etags[uri]};
+					}
+				} else {
+					angular.merge(defaultHttpOptions, defaultHttpOptions, httpOptions);
+					Debug.log("Sending request to uri ["+uri+"] using HttpOptions ", defaultHttpOptions);
+				}
+			}
+
+			return $http.get(buildURI(uri), defaultHttpOptions).then(function(response) {
 				if(callback && typeof callback === 'function') {
 					if(response.headers("etag")) {
 						etags[uri] = response.headers("etag");
