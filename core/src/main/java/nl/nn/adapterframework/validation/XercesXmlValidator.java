@@ -27,7 +27,7 @@ import nl.nn.adapterframework.xml.ClassLoaderXmlEntityResolver;
 import org.apache.log4j.Logger;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
-import org.apache.xerces.jaxp.validation.XMLSchemaFactory;
+import org.apache.xerces.jaxp.validation.XMLSchema11Factory;
 import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.parsers.XMLGrammarPreparser;
 import org.apache.xerces.util.ShadowedSymbolTable;
@@ -266,7 +266,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 
 		ValidatorHandler validatorHandler=null;
 		try {
-			XMLSchemaFactory schemaFactory = new XMLSchemaFactory();
+			XMLSchema11Factory schemaFactory = new XMLSchema11Factory();
 			javax.xml.validation.Schema schemaObject=schemaFactory.newSchema(((XercesValidationContext)context).getGrammarPool());
 			validatorHandler=schemaObject.newValidatorHandler();
 		} catch (SAXException e) {
@@ -289,7 +289,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		SymbolTable symbolTable = ((XercesValidationContext)context).getSymbolTable();
 		XMLGrammarPool grammarPool = ((XercesValidationContext)context).getGrammarPool();
 
-		XMLReader parser = new SAXParser(new ShadowedSymbolTable(symbolTable), grammarPool);
+		SAXParser parser = new SAXParser(new ShadowedSymbolTable(symbolTable), grammarPool);
 		try {
 			parser.setFeature(NAMESPACES_FEATURE_ID, true);
 			parser.setFeature(VALIDATION_FEATURE_ID, true);
@@ -297,6 +297,9 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 //			parser.setFeature(EXTERNAL_GENERAL_ENTITIES_FEATURE_ID, false); // this one appears to be not working
 //			parser.setFeature(EXTERNAL_PARAMETER_ENTITIES_FEATURE_ID, false);
 //			parser.setFeature(DISSALLOW_DOCTYPE_DECL_FEATURE_ID, true);
+			parser.setProperty(
+					"http://java.sun.com/xml/jaxp/properties/schemaLanguage",
+					"http://www.w3.org/XML/XMLSchema/v1.1");;
 			parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
 			parser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
 			parser.setErrorHandler(context.getErrorHandler());

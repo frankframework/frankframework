@@ -21,6 +21,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.*;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -70,7 +71,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	protected String noNamespaceSchemaLocation;
 	protected String schemaSessionKey;
 
-	protected double xsdProcessorVersion = 1.1;
+	protected double xsdProcessorVersion = AppConstants.getInstance(getConfigurationClassLoader()).getDouble("xsd.processor.version", 1.1);
 
 	protected ConfigurationException configurationException;
 
@@ -132,10 +133,9 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			}
 			validator.setSchemasProvider(this);
 
-			// Set xsd processor version
-			if(validator instanceof XercesXmlValidator) {
+			// Set xsd processor version if xsdProcessorVersion is set
+			if(validator instanceof XercesXmlValidator)
 				((XercesXmlValidator) validator).setXsdVersion(xsdProcessorVersion);
-			}
 
 			//do initial schema check
 			if (getSchemasId()!=null) {
@@ -200,9 +200,9 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		}
 
      }
-     
 
-     protected final PipeForward validate(String messageToValidate, IPipeLineSession session) throws XmlValidatorException, PipeRunException, ConfigurationException {
+
+	protected final PipeForward validate(String messageToValidate, IPipeLineSession session) throws XmlValidatorException, PipeRunException, ConfigurationException {
     	 return validate(messageToValidate,session,false);
      }
 
