@@ -106,6 +106,9 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	}
 
 	private void writePrefixMapping(PrefixMapping prefixMapping) throws IOException {
+		if (elementLevel==0 && StringUtils.isEmpty(prefixMapping.uri)) {
+			return;
+		}
 		writer.append(" xmlns");
 		if (StringUtils.isNotEmpty(prefixMapping.prefix) ) {
 			writer.append(":").append(prefixMapping.prefix);
