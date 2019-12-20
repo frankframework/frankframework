@@ -21,6 +21,8 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -49,9 +51,20 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	private int elementLevel=0;
 	private boolean elementJustStarted;
 	private boolean inCdata;
-	private StringBuffer firstLevelNamespaceDefinitions=new StringBuffer();
-	private StringBuffer namespaceDefinitions=new StringBuffer();
+	private List<PrefixMapping> firstLevelNamespaceDefinitions=new ArrayList<>();
+	private List<PrefixMapping> namespaceDefinitions=new ArrayList<>();
 	
+	private class PrefixMapping {
+
+		public String prefix;
+		public String uri;
+
+		PrefixMapping(String prefix, String uri) {
+			this.prefix=prefix;
+			this.uri=uri;
+		}
+	}
+
 	public XmlWriter() {
 		writer=new StringWriter();
 	}
@@ -92,28 +105,70 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 		}
 	}
 
-	private void appendNamespaceMapping(StringBuffer output, String prefix, String uri) {
-		if (StringUtils.isNotEmpty(uri)) {
-			output.append(" xmlns");
-			if (StringUtils.isNotEmpty(prefix) ) {
-				output.append(":").append(prefix);
-			}
-			output.append("=\"").append(XmlUtils.encodeChars(uri)).append("\"");
-		} else {
-			log.debug("do not make attribute for empty namespace with prefix ["+prefix+"]");
+	private void writePrefixMapping(PrefixMapping prefixMapping) throws IOException {
+		if (elementLevel==0 && StringUtils.isEmpty(prefixMapping.uri)) {
+			return;
 		}
+		writer.append(" xmlns");
+		if (StringUtils.isNotEmpty(prefixMapping.prefix) ) {
+			writer.append(":").append(prefixMapping.prefix);
+		}
+		writer.append("=\"").append(XmlUtils.encodeChars(prefixMapping.uri)).append("\"");
+	}
+
+	private void writeFirstLevelNamespacePrefixMappingIfNotOverridden(int position) throws IOException {
+		PrefixMapping prefixMapping=firstLevelNamespaceDefinitions.get(position);
+		String prefix=prefixMapping.prefix;
+		for (int i=position+1; i<firstLevelNamespaceDefinitions.size();i++) {
+			if (firstLevelNamespaceDefinitions.get(i).prefix.equals(prefix)) {
+				return;
+			}
+		}
+		for (int i=0; i<namespaceDefinitions.size();i++) {
+			if (namespaceDefinitions.get(i).prefix.equals(prefix)) {
+				return;
+			}
+		}
+		writePrefixMapping(prefixMapping);
+	}
+	
+	private void storePrefixMapping(List<PrefixMapping> prefixMappingList, String prefix, String uri) {
+		PrefixMapping prefixMapping = new PrefixMapping(prefix,uri);
+		prefixMappingList.add(prefixMapping);
+	}
+
+	private void removePrefixMapping(List<PrefixMapping> prefixMappingList, String prefix) {
+		int last=prefixMappingList.size()-1;
+		if (last<0) {
+			log.warn("prefix mapping list is empty, cannot remove prefix ["+prefix+"]");
+			return;
+		}
+		PrefixMapping prefixMapping = prefixMappingList.get(last);
+		if (!prefixMapping.prefix.equals(prefix)) {
+			log.warn("top of prefix mapping lists prefix ["+prefixMapping.prefix+"] is not equal to prefix to remove ["+prefix+"], removing top anyhow");
+		}
+		prefixMappingList.remove(last);
 	}
 
 	@Override
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
-		log.debug("startPrefixMapping ["+prefix+"]=["+uri+"]");
-		if (elementLevel==0) {
-			appendNamespaceMapping(firstLevelNamespaceDefinitions, prefix, uri);
+		if (elementLevel==0 ) {
+			storePrefixMapping(firstLevelNamespaceDefinitions, prefix, uri);
 		} else {
-			appendNamespaceMapping(namespaceDefinitions, prefix, uri);
+			storePrefixMapping(namespaceDefinitions, prefix, uri);
 		}
-		super.startPrefixMapping(prefix, uri);
 	}
+
+	@Override
+	public void endPrefixMapping(String prefix) throws SAXException {
+		if (elementLevel==0) {
+			removePrefixMapping(firstLevelNamespaceDefinitions, prefix);
+		} else {
+			removePrefixMapping(namespaceDefinitions, prefix);
+		}
+	}
+
+
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -127,11 +182,15 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 					writer.append(" "+attributes.getQName(i)+"=\""+XmlUtils.encodeChars(attributes.getValue(i)).replace("&#39;", "'")+"\"");
 				}
 				if (elementLevel==0) {
-					writer.append(firstLevelNamespaceDefinitions);
+					for (int i=0;i<firstLevelNamespaceDefinitions.size();i++) {
+						writeFirstLevelNamespacePrefixMappingIfNotOverridden(i);
+					}
 				}
-				writer.append(namespaceDefinitions);
+				for (int i=0; i<namespaceDefinitions.size(); i++) {
+					writePrefixMapping(namespaceDefinitions.get(i));
+				}
 			}
-			namespaceDefinitions.setLength(0);
+			namespaceDefinitions.clear();
 			elementJustStarted=true;
 			elementLevel++;
 		} catch (IOException e) {
@@ -283,6 +342,5 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	public void setTextMode(boolean textMode) {
 		this.textMode = textMode;
 	}
-
 
 }
