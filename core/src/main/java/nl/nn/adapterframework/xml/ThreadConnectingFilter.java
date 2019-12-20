@@ -160,6 +160,15 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 
 
 	@Override
+	public void startPrefixMapping(String prefix, String uri) throws SAXException {
+		try {
+			super.startPrefixMapping(prefix, uri);
+		} catch (SAXException e) {
+			handleException(e);
+		}
+	}
+
+	@Override
 	public void endPrefixMapping(String prefix) throws SAXException {
 		try {
 			super.endPrefixMapping(prefix);
@@ -167,6 +176,7 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 			handleException(e);
 		}
 	}
+
 
 	@Override
 	public void warning(SAXParseException e) throws SAXException {
@@ -241,14 +251,6 @@ public class ThreadConnectingFilter extends FullXmlFilter {
 		}
 	}
 
-	@Override
-	public void startPrefixMapping(String prefix, String uri) throws SAXException {
-		try {
-			super.startPrefixMapping(prefix, uri);
-		} catch (SAXException e) {
-			handleException(e);
-		}
-	}
 
 	@Override
 	public void unparsedEntityDecl(String name, String publicId, String systemId, String notationName) throws SAXException {
