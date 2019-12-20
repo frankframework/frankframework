@@ -67,11 +67,11 @@ import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
+import nl.nn.adapterframework.stream.IStreamingSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
-import nl.nn.adapterframework.stream.StreamingSenderBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -852,10 +852,10 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	}
 	
 	protected Object sendTextMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, MessageOutputStream target) throws SenderException, TimeOutException {
-		if (sender instanceof StreamingSenderBase) {
+		if (sender instanceof IStreamingSender) {
 			Message message = new Message(input);
 			ParameterResolutionContext prc = new ParameterResolutionContext(message, session, isNamespaceAware());
-			return ((StreamingSenderBase)sender).sendMessage(correlationID, message, prc, target);
+			return ((IStreamingSender)sender).sendMessage(correlationID, message, prc, target);
 		}
 		if (input!=null) {
 //			if (input instanceof StringWriter) {

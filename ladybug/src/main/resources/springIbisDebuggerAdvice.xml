@@ -103,7 +103,7 @@
 					"
 					execution(
 						*
-						nl.nn.adapterframework.stream.StreamingSenderBase.sendMessage(
+						nl.nn.adapterframework.stream.IStreamingSender.sendMessage(
 							String, String, nl.nn.adapterframework.parameters.ParameterResolutionContext, nl.nn.adapterframework.stream.MessageOutputStream
 						)
 					)
