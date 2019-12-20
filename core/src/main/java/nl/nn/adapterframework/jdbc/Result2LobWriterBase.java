@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 
@@ -84,7 +85,7 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 		querySender.sendMessage(streamId, streamId);
 		Connection conn=querySender.getConnection();
 		openConnections.put(streamId, conn);
-		QueryContext queryContext = new QueryContext(null, "updateClob", null, streamId);
+		QueryContext queryContext = new QueryContext(querySender.getQuery(), "updateClob", null, new Message(streamId));
 		PreparedStatement stmt = querySender.getStatement(conn,session.getMessageId(),queryContext);
 		ResultSet rs =stmt.executeQuery();
 		openResultSets.put(streamId,rs);

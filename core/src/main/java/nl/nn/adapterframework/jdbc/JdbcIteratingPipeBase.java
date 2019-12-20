@@ -22,6 +22,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -32,6 +34,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.SimpleParameter;
 import nl.nn.adapterframework.pipes.IteratingPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 import org.apache.commons.lang.StringUtils;
@@ -43,35 +46,37 @@ import org.apache.commons.lang.StringUtils;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public abstract class JdbcIteratingPipeBase extends IteratingPipe {
+public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> {
 
 	private String query=null;
-	private boolean lockRows=false;
-	private int lockWait=-1;
 	
-	protected JdbcQuerySenderBase querySender = new JdbcQuerySenderBase() {
-
-		protected PreparedStatement getStatement(Connection con, String correlationID, QueryContext queryContext) throws JdbcException, SQLException {
-			String qry;
-			if (StringUtils.isNotEmpty(getQuery())) {
-				qry = getQuery();
-			} else {
-				qry = queryContext.getMessage();
-			}
-			if (lockRows) {
-				qry = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, qry, lockWait);
-			}
-			queryContext.setQuery(qry);
-			return prepareQuery(con, queryContext);
+	protected class MixedQuerySender extends JdbcQuerySenderBase {
+		
+		private String query;
+		
+		public MixedQuerySender(String query) {
+			this.query=StringUtils.isNotEmpty(query)?query:null;
 		}
-	};
 
+		@Override
+		protected String getQuery(String correlationID, Message message) {
+			if (query!=null) {
+				return query;
+			}
+			return message.toString();
+		}
+	}
+	
+	protected MixedQuerySender querySender = new MixedQuerySender(getQuery());
+	
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		querySender.setName("source of "+getName());
 		querySender.configure();
 	}
 	
+	@Override
 	public void start() throws PipeStartException {
 		try {
 			querySender.open();
@@ -81,19 +86,22 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 		super.start();
 	}
 
+	@Override
 	public void stop() {
 		super.stop();
 		querySender.close();
 	}
 
+	@Override
 	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException {
 		if (log.isDebugEnabled()) {log.debug(getLogPrefix(session)+"result set is empty, nothing to iterate over");}
 	}
 
 
-	protected abstract IDataIterator getIterator(Connection conn, ResultSet rs) throws SenderException; 
+	protected abstract IDataIterator<String> getIterator(Connection conn, ResultSet rs) throws SenderException; 
 
-	protected IDataIterator getIterator(Object input, IPipeLineSession session, String correlationID, Map threadContext) throws SenderException {
+	@Override
+	protected IDataIterator<String> getIterator(Object input, IPipeLineSession session, String correlationID, Map threadContext) throws SenderException {
 		Connection connection = null;
 		PreparedStatement statement=null;
 		ResultSet rs=null;
@@ -105,7 +113,8 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 			if (querySender.paramList != null) {
 				simpleParameterList = querySender.toSimpleParameterList(prc.getValues(querySender.paramList));
 			}
-			QueryContext queryContext = new QueryContext(null, "select", simpleParameterList, msg);
+			String query = StringUtils.isNotEmpty(getQuery())?getQuery():input.toString();
+			QueryContext queryContext = new QueryContext(query, "select", simpleParameterList, new Message(input));
 			statement = querySender.getStatement(connection, correlationID, queryContext);
 			if (simpleParameterList != null) {
 				querySender.applySimpleParameters(statement, simpleParameterList);
@@ -142,6 +151,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 		}
 	}
 
+	@Override
 	public void addParameter(Parameter p) {
 		querySender.addParameter(p);
 	}
@@ -155,7 +165,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 		return query;
 	}
 
-	public void setProxiedDataSources(Map proxiedDataSources) {
+	public void setProxiedDataSources(Map<String,DataSource> proxiedDataSources) {
 		querySender.setProxiedDataSources(proxiedDataSources);
 	}
 
@@ -177,19 +187,11 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 	
 	@IbisDoc({"when set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the select statement (by appending ' for update nowait skip locked' to the end of the query)", "false"})
 	public void setLockRows(boolean b) {
-		lockRows = b;
-	}
-
-	public boolean isLockRows() {
-		return lockRows;
+		querySender.setLockRows(b);
 	}
 
 	@IbisDoc({"when set and >=0, ' for update wait #' is used instead of ' for update nowait skip locked'", "-1"})
 	public void setLockWait(int i) {
-		lockWait = i;
-	}
-
-	public int getLockWait() {
-		return lockWait;
+		querySender.setLockWait(i);
 	}
 }

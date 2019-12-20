@@ -34,6 +34,8 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageOutputStream;
 
 /**
  * QuerySender that writes each row in a ResultSet to a file.
@@ -62,7 +64,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		eolArray = System.getProperty("line.separator").getBytes();
 	}
 
-	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	protected Object sendMessage(Connection connection, String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
 		int counter = 0;
 		ResultSet resultset=null;
 		String fileName = (String)prc.getSession().get(getFileNameSessionKey());
@@ -74,7 +76,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		FileOutputStream fos=null;
 		try {
 			fos = new FileOutputStream(fileName, isAppend());
-			QueryContext queryContext = new QueryContext(null, "updateClob", null, null);
+			QueryContext queryContext = new QueryContext(getQuery(), "updateClob", null, message);
 			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 			resultset = statement.executeQuery();
 			boolean eor = false;

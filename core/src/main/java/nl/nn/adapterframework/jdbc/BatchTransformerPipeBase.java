@@ -33,6 +33,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.SimpleParameter;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 
@@ -46,6 +47,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 	
 	protected FixedQuerySender querySender;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
@@ -54,6 +56,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		querySender.configure();
 	}
 	
+	@Override
 	public void start() throws PipeStartException {
 		try {
 			querySender.open();
@@ -63,6 +66,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		super.start();
 	}
 
+	@Override
 	public void stop() {
 		super.stop();
 		querySender.close();
@@ -78,6 +82,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 			this.rs=rs;
 		}
 
+		@Override
 		public void close() throws IOException {
 			try {
 				super.close();
@@ -90,18 +95,18 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 
 	protected abstract Reader getReader(ResultSet rs, String charset, String streamId, IPipeLineSession session) throws SenderException;
 
+	@Override
 	protected BufferedReader getReader(String streamId, Object input, IPipeLineSession session) throws PipeRunException {
 		Connection connection = null;
 		try {
 			connection = querySender.getConnection();
 			PreparedStatement statement=null;
-			String msg = (String)input;
 			List<SimpleParameter> simpleParameterList = null;
-			ParameterResolutionContext prc = new ParameterResolutionContext(msg,session);
+			ParameterResolutionContext prc = new ParameterResolutionContext(input,session);
 			if (querySender.paramList != null) {
 				simpleParameterList = querySender.toSimpleParameterList(prc.getValues(querySender.paramList));
 			}
-			QueryContext queryContext = new QueryContext(null, "select", simpleParameterList, msg);
+			QueryContext queryContext = new QueryContext(getQuery(), "select", simpleParameterList, new Message(input));
 			statement = querySender.getStatement(connection, streamId, queryContext);
 			if (simpleParameterList != null) {
 				querySender.applySimpleParameters(statement, simpleParameterList);
@@ -116,6 +121,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		}
 	}
 
+	@Override
 	public void addParameter(Parameter p) {
 		querySender.addParameter(p);
 	}
