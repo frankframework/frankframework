@@ -1004,16 +1004,27 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('AdapterStatisticsCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', function($scope, Api, $stateParams, SweetAlert) {
+.controller('AdapterStatisticsCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', '$timeout', function($scope, Api, $stateParams, SweetAlert, $timeout) {
 	var adapterName = $stateParams.name;
 	if(!adapterName)
 		return SweetAlert.Warning("Adapter not found!");
 	$scope.adapterName = adapterName;
+	$scope.refreshing = false;
 
 	$scope.stats = [];
-	Api.Get("adapters/"+adapterName+"/statistics", function(data) {
-		$scope.stats = data;
-	});
+	$scope.refresh = function() {
+		$scope.refreshing = true;
+		Api.Get("adapters/"+adapterName+"/statistics", function(data) {
+			$scope.stats = data;
+			$timeout(function(){
+				$scope.refreshing = false;
+			}, 500);
+		});
+	};
+
+	$timeout(function(){
+		$scope.refresh();
+	}, 1000);
 }])
 
 .controller('ErrorStorageBaseCtrl', ['$scope', 'Api', '$state', 'SweetAlert', 'Misc', function($scope, Api, $state, SweetAlert, Misc) {
