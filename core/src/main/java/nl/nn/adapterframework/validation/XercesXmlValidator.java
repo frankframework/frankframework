@@ -27,6 +27,7 @@ import nl.nn.adapterframework.xml.ClassLoaderXmlEntityResolver;
 import org.apache.log4j.Logger;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
+import org.apache.xerces.jaxp.validation.ValidatorHandlerImpl;
 import org.apache.xerces.jaxp.validation.XMLSchema11Factory;
 import org.apache.xerces.jaxp.validation.XMLSchemaFactory;
 import org.apache.xerces.parsers.SAXParser;
@@ -136,7 +137,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
      * XSD Processor version for Xerces. It has to be set manually.
      */
     private double xsdVersion = 1.1;
-    private Validator validator;
+    private ValidatorHandlerImpl validatorHandler;
 
     private static EhCache cache;
 
@@ -314,8 +315,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
         ValidationContext context = createValidationContext(session, rootValidations, invalidRootNamespaces);
         try {
             createValidator(context);
-            validator.setErrorHandler(context.getErrorHandler());
-            validator.validate(new SAXSource(getInputSource(input.toString())));
+            validatorHandler.validate(new SAXSource(getInputSource(input.toString())), null);
         } catch (SAXException | IOException e) {
             System.out.println("ERROR BIATCH!!");
             e.printStackTrace();
@@ -325,7 +325,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
     }
 
     public void createValidator(ValidationContext context) throws PipeRunException, ConfigurationException, SAXException {
-        if (this.validator != null)
+        if (validatorHandler != null)
             return;
 
         XMLGrammarPool grammarPool = ((XercesValidationContext) context).getGrammarPool();
@@ -338,7 +338,9 @@ public class XercesXmlValidator extends AbstractXmlValidator {
             schema = schemaFactory.newSchema(grammarPool);
         }
 
-        this.validator = schema.newValidator();
+        validatorHandler = (ValidatorHandlerImpl) schema.newValidatorHandler();
+        validatorHandler.setContentHandler(context.getContentHandler());
+        validatorHandler.setErrorHandler(context.getErrorHandler());
     }
 
     public XMLReader createValidatingParser(IPipeLineSession session, ValidationContext context) throws XmlValidatorException {
