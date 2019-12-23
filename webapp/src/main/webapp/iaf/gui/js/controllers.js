@@ -158,7 +158,7 @@ angular.module('iaf.beheerconsole')
 		});
 		gTag.event('application.version', appConstants["application.version"]);
 
-		Api.Get("server/warnings", function(configurations) {
+		Poller.add("server/warnings", function(configurations) {
 			configurations['All'] = {messages:configurations.messages};
 			delete configurations.messages;
 
@@ -186,7 +186,7 @@ angular.module('iaf.beheerconsole')
 			}
 
  			$scope.messageLog = configurations;
-		});
+		}, true, 60000);
 
 		var raw_adapter_data = {};
 		Poller.add("adapters?expanded=all", function(allAdapters) {

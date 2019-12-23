@@ -221,6 +221,7 @@ angular.module('iaf.beheerconsole')
 				}
 				else
 					this.poller = setInterval(this.fn, this.pollerInterval);
+				this.run(); //First run!
 			};
 			this.setInterval = function(interval, restart) {
 				var restart = (!restart || restart === false) ? false : true;
@@ -277,14 +278,17 @@ angular.module('iaf.beheerconsole')
 						data[x].setInterval(i, false);
 				},
 				start: function() {
+					Debug.info("starting all Pollers");
 					for(x in data)
 						data[x].start();
 				},
 				stop: function() {
+					Debug.info("stopping all Pollers");
 					for(x in data)
 						data[x].stop();
 				},
 				remove: function() {
+					Debug.info("removing all Pollers");
 					for(x in data)
 						data[x].remove();
 				},
