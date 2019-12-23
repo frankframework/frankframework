@@ -111,10 +111,12 @@ public class LadybugPipe extends FixedForwardPipe {
 		long startTime = System.currentTimeMillis();
 		boolean reportGeneratorEnabledOldValue = testTool.getReportGeneratorEnabled();
 		if(enableReportGenerator) {
+			IbisDebuggerAdvice.setEnabled(true);
 			testTool.setReportGeneratorEnabled(true);
 		}
 		reportRunner.run(reports, false, true);
 		if(enableReportGenerator) {
+			IbisDebuggerAdvice.setEnabled(reportGeneratorEnabledOldValue);
 			testTool.setReportGeneratorEnabled(reportGeneratorEnabledOldValue);
 		}
 		long endTime = System.currentTimeMillis();

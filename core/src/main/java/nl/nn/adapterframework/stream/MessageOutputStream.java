@@ -130,7 +130,9 @@ public class MessageOutputStream {
     	}
     	if (requestStream instanceof OutputStream) {
     		log.debug("returning OutputStream as ContentHandler");
-    		return new XmlWriter((OutputStream)requestStream);
+    		XmlWriter xmlWriter = new XmlWriter((OutputStream)requestStream);
+    		xmlWriter.setIncludeXmlDeclaration(true);
+    		return xmlWriter;
     	}
     	if (requestStream instanceof Writer) {
     		log.debug("returning Writer as ContentHandler");

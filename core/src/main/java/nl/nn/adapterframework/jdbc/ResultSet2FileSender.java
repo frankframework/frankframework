@@ -74,7 +74,8 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		FileOutputStream fos=null;
 		try {
 			fos = new FileOutputStream(fileName, isAppend());
-			PreparedStatement statement = getStatement(connection, correlationID, null, true);
+			QueryContext queryContext = new QueryContext(null, "updateClob", null, null);
+			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 			resultset = statement.executeQuery();
 			boolean eor = false;
 			if (maxRecords==0) {

@@ -52,12 +52,13 @@ public class FixedQuerySender extends JdbcQuerySenderBase {
 		}
 	}
 		
-	protected PreparedStatement getStatement(Connection con, String correlationID, String message, boolean updateable) throws JdbcException, SQLException {
+	protected PreparedStatement getStatement(Connection con, String correlationID, QueryContext queryContext) throws JdbcException, SQLException {
 		String qry = getQuery();
 		if (lockRows) {
 			qry = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, qry, lockWait);
 		}
-		return prepareQuery(con, qry, updateable);
+		queryContext.setQuery(qry);
+		return prepareQuery(con, queryContext);
 	}
 
 	/**

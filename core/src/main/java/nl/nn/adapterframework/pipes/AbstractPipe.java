@@ -15,13 +15,16 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.lang.reflect.Field;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 import org.springframework.transaction.TransactionDefinition;
@@ -351,7 +354,13 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	@Override
 	public String toString() {
 		try {
-			return ToStringBuilder.reflectionToString(this);
+			return (new ReflectionToStringBuilder(this) {
+				@Override
+				protected boolean accept(Field f) {
+					//TODO create a blacklist or whitelist
+					return super.accept(f) && !f.getName().contains("appConstants");
+				}
+			}).toString();
 		} catch (Throwable t) {
 			log.warn("exception getting string representation of pipe ["+getName()+"]", t);
 		}

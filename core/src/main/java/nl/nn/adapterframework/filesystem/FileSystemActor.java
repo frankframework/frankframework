@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.codec.binary.Base64InputStream;
+import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -41,6 +43,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.util.DateUtils;
@@ -101,6 +104,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public final String PARAMETER_INPUTFOLDER="inputFolder";	// folder for actions list, mkdir and rmdir. This is a sub folder of baseFolder
 	public final String PARAMETER_DESTINATION="destination";	// destination for action rename and move
 	
+	public final String BASE64_ENCODE="encode";
+	public final String BASE64_DECODE="decode";
 	
 	public final String[] ACTIONS_BASIC= {ACTION_LIST, ACTION_INFO, ACTION_READ1, ACTION_READ2, ACTION_MOVE, ACTION_DELETE, ACTION_MKDIR, ACTION_RMDIR};
 	public final String[] ACTIONS_WRITABLE_FS= {ACTION_WRITE1, ACTION_WRITE2, ACTION_APPEND, ACTION_RENAME};
@@ -108,6 +113,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private String action;
 	private String filename;
 	private String inputFolder; // folder for action=list
+
+	private String base64;
 	private int rotateDays=0;
 	private int rotateSize=0;
 	private int numberOfBackups=0;
@@ -138,6 +145,10 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		if (getAction().equals(ACTION_WRITE2)) {
 			ConfigurationWarnings.add(owner, log, "action ["+ACTION_WRITE2+"] has been replaced with ["+ACTION_WRITE1+"]");
 			setAction(ACTION_WRITE1);
+		}
+		
+		if (StringUtils.isNotEmpty(getBase64()) && !(getBase64().equals(BASE64_ENCODE) || getBase64().equals(BASE64_DECODE))) {
+			throw new ConfigurationException("attribute 'base64' can have value '"+BASE64_ENCODE+"' or '"+BASE64_DECODE+"' or can be left empty");
 		}
 		
 		if (parameterList!=null && parameterList.findParameter(PARAMETER_CONTENTS2) != null && parameterList.findParameter(PARAMETER_CONTENTS1) == null) {
@@ -193,39 +204,48 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 //		}
 //	}
 	
-	private String determineFilename(Object input, ParameterValueList pvl) {
+	private String determineFilename(Message input, ParameterValueList pvl) throws FileSystemException {
 		if (StringUtils.isNotEmpty(getFilename())) {
 			return getFilename();
 		}
 		if (pvl!=null && pvl.containsKey(PARAMETER_FILENAME)) {
 			return pvl.getParameterValue(PARAMETER_FILENAME).asStringValue("");
 		}
-		return input.toString();
+		try {
+			return input.asString();
+		} catch (IOException e) {
+			throw new FileSystemException(e);
+		}
 	}
 
-	private F getFile(Object input, ParameterValueList pvl) throws FileSystemException {
+	private F getFile(Message input, ParameterValueList pvl) throws FileSystemException {
 		String filename=determineFilename(input, pvl);
 		return fileSystem.toFile(filename);
 	}
 	
-	private String determineInputFoldername(Object input, ParameterValueList pvl) {
+	private String determineInputFoldername(Message input, ParameterValueList pvl) throws FileSystemException {
 		if (StringUtils.isNotEmpty(getInputFolder())) {
 			return getInputFolder();
 		}
 		if (pvl!=null && pvl.containsKey(PARAMETER_INPUTFOLDER)) {
 			return pvl.getParameterValue(PARAMETER_INPUTFOLDER).asStringValue("");
 		}
-		if (input==null || StringUtils.isEmpty(input.toString())) {
-			return null;
+		try {
+			if (input==null || StringUtils.isEmpty(input.asString())) {
+				return null;
+			}
+			return input.asString();
+		} catch (IOException e) {
+			throw new FileSystemException(e);
 		}
-		return input.toString();
 	}
 	
-	public Object doAction(Object input, ParameterValueList pvl, IPipeLineSession session) throws FileSystemException, TimeOutException {
+	public Object doAction(Message input, ParameterValueList pvl, IPipeLineSession session) throws FileSystemException, TimeOutException {
 		try {
 			if (action.equalsIgnoreCase(ACTION_DELETE)) {
 				F file=getFile(input, pvl);
 				fileSystem.deleteFile(file);
+				return fileSystem.getName(file);
 			} else if (action.equalsIgnoreCase(ACTION_INFO)) {
 				F file=getFile(input, pvl);
 				if (!fileSystem.exists(file)) {
@@ -234,7 +254,11 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				return getFileAsXmlBuilder(file, "file").toXML();
 			} else if (action.equalsIgnoreCase(ACTION_READ1)) {
 				F file=getFile(input, pvl);
-				return fileSystem.readFile(file);
+				InputStream in = fileSystem.readFile(file);
+				if (StringUtils.isNotEmpty(getBase64())) {
+					in = new Base64InputStream(in, getBase64().equals(BASE64_ENCODE));
+				}
+				return in;
 			} else if (action.equalsIgnoreCase(ACTION_LIST)) {
 				String folder = determineInputFoldername(input, pvl);
 				Iterator<F> fileList = fileSystem.listFiles(folder);
@@ -275,9 +299,11 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else if (action.equalsIgnoreCase(ACTION_MKDIR)) {
 				String folder = determineInputFoldername(input, pvl);
 				fileSystem.createFolder(folder);
+				return folder;
 			} else if (action.equalsIgnoreCase(ACTION_RMDIR)) {
 				String folder = determineInputFoldername(input, pvl);
 				fileSystem.removeFolder(folder);
+				return folder;
 			} else if (action.equalsIgnoreCase(ACTION_RENAME)) {
 				F file=getFile(input, pvl);
 				String destination = (String) pvl.getParameterValue(PARAMETER_DESTINATION).getValue();
@@ -285,6 +311,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					throw new SenderException("unknown destination [" + destination + "]");
 				}
 				((IWritableFileSystem<F>)fileSystem).renameFile(file, destination, false);
+				return destination;
 			} else if (action.equalsIgnoreCase(ACTION_MOVE)) {
 				F file=getFile(input, pvl);
 				String destinationFolder = (String) pvl.getParameterValue(PARAMETER_DESTINATION).getValue();
@@ -370,6 +397,9 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		} else {
 			contents=input;
 		}
+		if (StringUtils.isNotEmpty(getBase64())) {
+			out = new Base64OutputStream(out, getBase64().equals(BASE64_ENCODE));
+		}
 		if (contents instanceof InputStream) {
 			Misc.streamToStream((InputStream)contents, out, true);
 		} else if (contents instanceof byte[]) {
@@ -394,7 +424,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 	@Override
 	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
-		ParameterResolutionContext prc = new ParameterResolutionContext("", session);
+		ParameterResolutionContext prc = new ParameterResolutionContext(null, session);
 		ParameterValueList pvl=null;
 		
 		try {
@@ -465,7 +495,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		actions.addAll(specificActions);
 	}
 
-	@IbisDoc({"1", "possible values: list, read, delete, move, mkdir, rmdir, write, append, rename", "" })
+	@IbisDoc({"1", "Possible values: list, info, read, delete, move, mkdir, rmdir, write, append, rename", "" })
 	public void setAction(String action) {
 		this.action = action;
 	}
@@ -473,12 +503,20 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return action;
 	}
 
-	@IbisDoc({"2", "folder that is scanned for files when action=list. When not set, the root is scanned", ""})
+	@IbisDoc({"2", "Folder that is scanned for files when action=list. When not set, the root is scanned", ""})
 	public void setInputFolder(String inputFolder) {
 		this.inputFolder = inputFolder;
 	}
 	public String getInputFolder() {
 		return inputFolder;
+	}
+
+	@IbisDoc({"3", "Can be set to 'encode' or 'decode' for actions read, write and append. When set the stream is base64 encoded or decoded, respectively", ""})
+	public void setBase64(String base64) {
+		this.base64 = base64;
+	}
+	public String getBase64() {
+		return base64;
 	}
 
 	@IbisDoc({"3", "filename to operate on. When not set, the parameter filename is used. When that is not set either, the input is used", ""})
@@ -490,7 +528,6 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 
-
 	@IbisDoc({"4", "for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept", "0"})
 	public void setRotateDays(int rotateDays) {
 		this.rotateDays = rotateDays;
@@ -499,7 +536,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return rotateDays;
 	}
 
-	@IbisDoc({"5", "for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and this number of files is kept", "0"})
+	@IbisDoc({"5", "for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept", "0"})
 	public void setRotateSize(int rotateSize) {
 		this.rotateSize = rotateSize;
 	}

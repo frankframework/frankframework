@@ -19,6 +19,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -29,6 +30,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.SimpleParameter;
 import nl.nn.adapterframework.pipes.IteratingPipe;
 import nl.nn.adapterframework.util.JdbcUtil;
 
@@ -49,17 +51,18 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 	
 	protected JdbcQuerySenderBase querySender = new JdbcQuerySenderBase() {
 
-		protected PreparedStatement getStatement(Connection con, String correlationID, String message, boolean updateable) throws JdbcException, SQLException {
+		protected PreparedStatement getStatement(Connection con, String correlationID, QueryContext queryContext) throws JdbcException, SQLException {
 			String qry;
 			if (StringUtils.isNotEmpty(getQuery())) {
 				qry = getQuery();
 			} else {
-				qry = message;
+				qry = queryContext.getMessage();
 			}
 			if (lockRows) {
 				qry = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, qry, lockWait);
 			}
-			return prepareQuery(con, qry, updateable);
+			queryContext.setQuery(qry);
+			return prepareQuery(con, queryContext);
 		}
 	};
 
@@ -97,10 +100,15 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 		try {
 			connection = querySender.getConnection();
 			String msg = (String)input;
-			statement = querySender.getStatement(connection, correlationID, msg, false);
+			List<SimpleParameter> simpleParameterList = null;
 			ParameterResolutionContext prc = new ParameterResolutionContext(msg,session);
 			if (querySender.paramList != null) {
-				querySender.applyParameters(statement, prc.getValues(querySender.paramList));
+				simpleParameterList = querySender.toSimpleParameterList(prc.getValues(querySender.paramList));
+			}
+			QueryContext queryContext = new QueryContext(null, "select", simpleParameterList, msg);
+			statement = querySender.getStatement(connection, correlationID, queryContext);
+			if (simpleParameterList != null) {
+				querySender.applySimpleParameters(statement, simpleParameterList);
 			}
 			rs = statement.executeQuery();
 			if (rs==null) {

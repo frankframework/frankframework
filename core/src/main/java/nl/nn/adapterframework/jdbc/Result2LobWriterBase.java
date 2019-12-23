@@ -84,7 +84,8 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 		querySender.sendMessage(streamId, streamId);
 		Connection conn=querySender.getConnection();
 		openConnections.put(streamId, conn);
-		PreparedStatement stmt = querySender.getStatement(conn,session.getMessageId(),streamId, true);
+		QueryContext queryContext = new QueryContext(null, "updateClob", null, streamId);
+		PreparedStatement stmt = querySender.getStatement(conn,session.getMessageId(),queryContext);
 		ResultSet rs =stmt.executeQuery();
 		openResultSets.put(streamId,rs);
 		IDbmsSupport dbmsSupport=querySender.getDbmsSupport();

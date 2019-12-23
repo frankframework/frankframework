@@ -18,6 +18,8 @@ package nl.nn.adapterframework.pipes;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.transform.ErrorListener;
@@ -41,7 +43,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.IThreadCreator;
-import nl.nn.adapterframework.stream.InputMessageAdapter;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.AppConstants;
@@ -171,9 +173,19 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 		private int elementLevel=0;
 		private boolean charactersSeen;
 		private boolean inCdata;
-		private StringBuffer firstLevelNamespaceDefinitions=new StringBuffer();
-		private StringBuffer namespaceDefinitions=new StringBuffer();
+		private List<PrefixMapping> firstLevelNamespaceDefinitions=new ArrayList<>();
+		private List<PrefixMapping> namespaceDefinitions=new ArrayList<>();
 
+		private class PrefixMapping {
+
+			public String prefix;
+			public String uri;
+
+			PrefixMapping(String prefix, String uri) {
+				this.prefix=prefix;
+				this.uri=uri;
+			}
+		}
 		
 		public ItemCallbackCallingHandler(ItemCallback callback) {
 			this.callback=callback;
@@ -198,25 +210,70 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 			}
 		}
 		
-		private void appendNamespaceMapping(StringBuffer output, String prefix, String uri) {
-			output.append(" xmlns");
-			if (StringUtils.isNotEmpty(prefix) ) {
-				output.append(":").append(prefix);
+		private void writePrefixMapping(PrefixMapping prefixMapping) {
+			elementbuffer.append(" xmlns");
+			if (StringUtils.isNotEmpty(prefixMapping.prefix) ) {
+				elementbuffer.append(":").append(prefixMapping.prefix);
 			}
-			output.append("=\"").append(XmlUtils.encodeChars(uri)).append("\"");
+			elementbuffer.append("=\"").append(XmlUtils.encodeChars(prefixMapping.uri)).append("\"");
+		}
+
+		private void writeFirstLevelNamespacePrefixMappingIfNotOverridden(int position) {
+			PrefixMapping prefixMapping=firstLevelNamespaceDefinitions.get(position);
+			String prefix=prefixMapping.prefix;
+			for (int i=position+1; i<firstLevelNamespaceDefinitions.size();i++) {
+				if (firstLevelNamespaceDefinitions.get(i).prefix.equals(prefix)) {
+					return;
+				}
+			}
+			for (int i=0; i<namespaceDefinitions.size();i++) {
+				if (namespaceDefinitions.get(i).prefix.equals(prefix)) {
+					return;
+				}
+			}
+			writePrefixMapping(prefixMapping);
+		}
+		
+		private void storePrefixMapping(List<PrefixMapping> prefixMappingList, String prefix, String uri) {
+			PrefixMapping prefixMapping = new PrefixMapping(prefix,uri);
+			prefixMappingList.add(prefixMapping);
+		}
+
+		private void removePrefixMapping(List<PrefixMapping> prefixMappingList, String prefix) {
+			int last=prefixMappingList.size()-1;
+			if (last<0) {
+				log.warn("prefix mapping list is empty, cannot remove prefix ["+prefix+"]");
+				return;
+			}
+			PrefixMapping prefixMapping = prefixMappingList.get(last);
+			if (!prefixMapping.prefix.equals(prefix)) {
+				log.warn("top of prefix mapping lists prefix ["+prefixMapping.prefix+"] is not equal to prefix to remove ["+prefix+"], removing top anyhow");
+			}
+			prefixMappingList.remove(last);
 		}
 
 		@Override
 		public void startPrefixMapping(String prefix, String uri) throws SAXException {
-			log.debug("startPrefixMapping ["+prefix+"]=["+uri+"]");
 			if (!isRemoveNamespaces()) {
 				if (elementLevel==0 || elementLevel==1 && StringUtils.isNotEmpty(getContainerElement())) {
-					appendNamespaceMapping(firstLevelNamespaceDefinitions, prefix, uri);
+					storePrefixMapping(firstLevelNamespaceDefinitions, prefix, uri);
 				} else {
-					appendNamespaceMapping(namespaceDefinitions, prefix, uri);
+					storePrefixMapping(namespaceDefinitions, prefix, uri);
 				}
 			}
 			super.startPrefixMapping(prefix, uri);
+		}
+
+		@Override
+		public void endPrefixMapping(String prefix) throws SAXException {
+			super.endPrefixMapping(prefix);
+			if (!isRemoveNamespaces()) {
+				if (elementLevel==0 || elementLevel==1 && StringUtils.isNotEmpty(getContainerElement())) {
+					removePrefixMapping(firstLevelNamespaceDefinitions, prefix);
+				} else {
+					removePrefixMapping(namespaceDefinitions, prefix);
+				}
+			}
 		}
 
 
@@ -232,10 +289,14 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 				appendAttributes(elementbuffer,attributes);
 				if (!isRemoveNamespaces()) {
 					if (elementLevel==2) {
-						elementbuffer.append(firstLevelNamespaceDefinitions);
+						for (int i=0;i<firstLevelNamespaceDefinitions.size();i++) {
+							writeFirstLevelNamespacePrefixMappingIfNotOverridden(i);
+						}
 					}
-					elementbuffer.append(namespaceDefinitions);
-					namespaceDefinitions.setLength(0);
+					for (int i=0; i<namespaceDefinitions.size(); i++) {
+						writePrefixMapping(namespaceDefinitions.get(i));
+					}
+					namespaceDefinitions.clear();
 				}
 				charactersSeen=false;
 			}
@@ -373,7 +434,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 				throw new SenderException("could not find file ["+input+"]",e);
 			}
 		} else {
-			src = new InputMessageAdapter(input).asInputSource();
+			src = new Message(input).asInputSource();
 		}
 		ItemCallbackCallingHandler itemHandler;
 		ContentHandler inputHandler;
@@ -384,7 +445,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 			inputHandler=itemHandler;
 			
 			if (getExtractElementsTp()!=null) {
-				log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
+				if (log.isDebugEnabled()) log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
 				TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(this, threadLifeCycleEventListener, correlationID, streamingXslt);
 				transformerFilter.setContentHandler(inputHandler);
 				inputHandler=transformerFilter;

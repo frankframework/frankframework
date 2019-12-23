@@ -32,6 +32,7 @@ angular.module('iaf.beheerconsole')
 				$interval(updateTime, 1000);
 				updateTime();
 
+				$rootScope.instanceName = data.name;
 				angular.element(".iaf-info").html("IAF " + data.version + ": " + data.name );
 
 				$rootScope.otapStage = data["otap.stage"];
@@ -48,11 +49,6 @@ angular.module('iaf.beheerconsole')
 						$scope.configurations.unshift(config);
 					else
 						$scope.configurations.push(config);
-
-					//Check if any of the configs is a DatabaseClassLoader, if so, enable extra menu items
-					if(config.type == "DatabaseClassLoader") {
-						$scope.config_database = true;
-					}
 				}
 
 				//Was it able to retrieve the serverinfo without logging in?
@@ -74,20 +70,20 @@ angular.module('iaf.beheerconsole')
 				if(data["Application Constants"]) {
 					for (var configName in data["Application Constants"]) {
 						var configConstants = data["Application Constants"][configName];
-
-						var idleTime = (parseInt(configConstants["console.idle.time"]) > 0) ? parseInt(configConstants["console.idle.time"]) : false;
-						if(idleTime > 0) {
-							var idleTimeout = (parseInt(configConstants["console.idle.timeout"]) > 0) ? parseInt(configConstants["console.idle.timeout"]) : false;
-							Idle.setIdle(idleTime);
-							Idle.setTimeout(idleTimeout);
-						}
-						else {
-							Idle.unwatch();
-						}
-						$scope.databaseSchedulesEnabled = (configConstants["loadDatabaseSchedules.active"] === 'true');
-						break; //Just get the first constants and populate AppConstants from there, this shouldn't give any issues!
+						appConstants = $.extend(appConstants, configConstants);
+						break;
 					}
-					appConstants = $.extend(appConstants, data["Application Constants"]);
+
+					var idleTime = (parseInt(appConstants["console.idle.time"]) > 0) ? parseInt(appConstants["console.idle.time"]) : false;
+					if(idleTime > 0) {
+						var idleTimeout = (parseInt(appConstants["console.idle.timeout"]) > 0) ? parseInt(appConstants["console.idle.timeout"]) : false;
+						Idle.setIdle(idleTime);
+						Idle.setTimeout(idleTimeout);
+					}
+					else {
+						Idle.unwatch();
+					}
+					$scope.databaseSchedulesEnabled = (appConstants["loadDatabaseSchedules.active"] === 'true');
 				}
 			});
 		}
@@ -505,8 +501,27 @@ angular.module('iaf.beheerconsole')
 	};
 })
 
-.controller('StatusCtrl', ['$scope', 'Hooks', 'Api', 'SweetAlert', 'Poller', '$filter', '$state', 'Misc',
-		function($scope, Hooks, Api, SweetAlert, Poller, $filter, $state, Misc) {
+.controller('StatusCtrl', ['$scope', 'Hooks', 'Api', 'SweetAlert', 'Poller', '$filter', '$state', 'Misc', '$anchorScroll', '$location',
+		function($scope, Hooks, Api, SweetAlert, Poller, $filter, $state, Misc, $anchorScroll, $location) {
+
+	var hash = $location.hash();
+	var adapterName = $state.params.adapter;
+	if(adapterName == "" && hash != "") { //If the adapter param hasn't explicitly been set
+		adapterName = hash;
+	} else {
+		$location.hash(adapterName);
+	}
+
+	$scope.showContent = function(adapter) {
+		if(adapter.status == "stopped") {
+			return true;
+		} else if(adapterName != "" && adapter.name == adapterName) {
+			$anchorScroll();
+			return true;
+		} else {
+			return false;
+		}
+	};
 
 	this.filter = {
 		"started": true,
@@ -691,7 +706,7 @@ angular.module('iaf.beheerconsole')
 
 //** Ctrls **//
 
-.controller('ManageConfigurationDetailsCtrl', ['$scope', '$state', 'Api', 'Debug', 'Misc', '$interval', function($scope, $state, Api, Debug, Misc, $interval) {
+.controller('ManageConfigurationDetailsCtrl', ['$scope', '$state', 'Api', 'Debug', 'Misc', '$interval', 'SweetAlert', function($scope, $state, Api, Debug, Misc, $interval, SweetAlert) {
 	$scope.state = [];
 	$scope.loading = false;
 	$scope.addNote = function(type, message) {
@@ -712,7 +727,7 @@ angular.module('iaf.beheerconsole')
 	$scope.configuration = $state.params.name;
 	function update() {
 		$scope.loading = true;
-		Api.Get("configurations/"+$state.params.name+"/manage", function(data) {
+		Api.Get("configurations/"+$state.params.name+"/versions", function(data) {
 			for(x in data) {
 				var configs = data[x];
 				if(configs.active) {
@@ -726,7 +741,28 @@ angular.module('iaf.beheerconsole')
 	};
 	update();
 	$scope.download = function(config) {
-		window.open(Misc.getServerPath() + "iaf/api/configurations/"+config.name+"/download?version="+encodeURIComponent(config.version));
+		window.open(Misc.getServerPath() + "iaf/api/configurations/"+config.name+"/versions/"+encodeURIComponent(config.version)+"/download");
+	};
+	$scope.deleteConfig = function(config) {
+		var message = "";
+		if(config.version) {
+			message = "Are you sure you want to remove version '"+config.version+"'?";
+		} else {
+			message = "Are you sure?";
+		}
+		SweetAlert.Confirm({title:message}, function(imSure) {
+			if(imSure) {
+				Api.Delete("configurations/"+config.name+"/versions/"+encodeURIComponent(config.version), function() {
+					$scope.addNote("success", "Successfully removed version '"+config.version+"'");
+					update();
+				}, function(_, status, statusText) {
+					if(status == 403)
+						$scope.setNote("danger", "403 - Forbidden; you do not have enough access rights to complete this action!");
+					else
+						$scope.addNote("danger", "An error occured while attempting to remove version '"+config.version+"'. ");
+				});
+			}
+		});
 	};
 
 	$scope.activate = function(config) {
@@ -735,7 +771,7 @@ angular.module('iaf.beheerconsole')
 			if(configs.version != config.version)
 				configs.actived = false;
 		}
-		Api.Put("configurations/"+config.name+"/manage/"+encodeURIComponent(config.version), {activate:config.active}, function(data) {
+		Api.Put("configurations/"+config.name+"/versions/"+encodeURIComponent(config.version), {activate:config.active}, function(data) {
 			$scope.setNote("success", "Successfully changed startup config to version '"+config.version+"'");
 		}, function(_, status, statusText) {
 			update();
@@ -747,7 +783,7 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.scheduleReload = function(config) {
-		Api.Put("configurations/"+config.name+"/manage/"+encodeURIComponent(config.version), {autoreload:config.autoreload}, function(data) {
+		Api.Put("configurations/"+config.name+"/versions/"+encodeURIComponent(config.version), {autoreload:config.autoreload}, function(data) {
 			$scope.setNote("success", "Successfully "+(config.autoreload ? "enabled" : "disabled")+" Auto Reload for version '"+config.version+"'");
 		}, function(_, status, statusText) {
 			update();

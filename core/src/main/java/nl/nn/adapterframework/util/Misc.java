@@ -1007,4 +1007,13 @@ public class Misc {
 		// replace low line (x'5f') by asterisk (x'2a) so it's sorted before any digit and letter 
 		return StringUtils.upperCase(StringUtils.replace(name,"_", "*"));
 	}
+
+	public static int countRegex(String string, String regex) {
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(string);
+		int count = 0;
+		while (matcher.find())
+			count++;
+		return count;
+	}
 }

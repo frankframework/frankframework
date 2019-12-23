@@ -29,6 +29,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
@@ -118,7 +119,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	@Override
 	public PipeRunResult doPipe (Object input, IPipeLineSession session, MessageOutputStream target) throws PipeRunException {
 		ParameterList paramList = getParameterList();
-		ParameterResolutionContext prc = new ParameterResolutionContext(input.toString(), session);
+		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
 		ParameterValueList pvl=null;
 		
 		try {
@@ -131,7 +132,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 
 		Object result;
 		try {
-			result = actor.doAction(input, pvl, session);
+			result = actor.doAction(new Message(input), pvl, session);
 		} catch (FileSystemException | TimeOutException e) {
 			if (getForwards().containsKey("exception")) {
 				return new PipeRunResult(getForwards().get("exception"), e.getMessage());
@@ -186,6 +187,26 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	}
 	public String getFilename() {
 		return actor.getFilename();
+	}
+
+	@IbisDoc({"3", "Can be set to 'encode' or 'decode' for actions read, write and append. When set the stream is base64 encoded or decoded, respectively", ""})
+	public void setBase64(String base64) {
+		actor.setBase64(base64);
+	}
+
+	@IbisDoc({"4", "for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept", "0"})
+	public void setRotateDays(int rotateDays) {
+		actor.setRotateDays(rotateDays);
+	}
+
+	@IbisDoc({"5", "for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept", "0"})
+	public void setRotateSize(int rotateSize) {
+		actor.setRotateSize(rotateSize);
+	}
+
+	@IbisDoc({"6", "for action=write, and for action=append with rotateSize>0: the number of backup files that is kept", "0"})
+	public void setNumberOfBackups(int numberOfBackups) {
+		actor.setNumberOfBackups(numberOfBackups);
 	}
 
 }
