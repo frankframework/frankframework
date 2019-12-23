@@ -652,6 +652,14 @@ angular.module('iaf.beheerconsole')
 		receiver.state = 'loading';
 		Api.Put("adapters/" + adapter.name + "/receivers/" + receiver.name, {"action": "stop"});
 	};
+	$scope.addThread = function(adapter, receiver) {
+		receiver.state = 'loading';
+		Api.Put("adapters/" + adapter.name + "/receivers/" + receiver.name, {"action": "incthread"});
+	};
+	$scope.removeThread = function(adapter, receiver) {
+		receiver.state = 'loading';
+		Api.Put("adapters/" + adapter.name + "/receivers/" + receiver.name, {"action": "decthread"});
+	};
 }])
 
 .controller('InfoBarCtrl', ['$scope', function($scope) {

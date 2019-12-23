@@ -315,12 +315,12 @@ public final class ShowConfigurationStatus extends Base {
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("action")) {//Start or stop an adapter!
 				String action = null;
-				
+
 				if(value.equals("stop")) { action = "stopadapter"; }
 				if(value.equals("start")) { action = "startadapter"; }
-				
+
 				ibisManager.handleAdapter(action, "", adapterName, null, null, false);
-				
+
 				response.entity("{\"status\":\"ok\"}");
 			}
 		}
@@ -354,9 +354,14 @@ public final class ShowConfigurationStatus extends Base {
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("action")) {//Start or stop an adapter!
 				String action = null;
-				
+
 				if(value.equals("stop")) { action = "stopreceiver"; }
-				if(value.equals("start")) { action = "startreceiver"; }
+				else if(value.equals("start")) { action = "startreceiver"; }
+				else if(value.equals("incthread")) { action = "incthreads"; }
+				else if(value.equals("decthread")) { action = "decthreads"; }
+
+				if(StringUtils.isEmpty(action))
+					throw new ApiException("unknown or empty action ["+action+"]");
 
 				ibisManager.handleAdapter(action, "", adapterName, receiverName, null, false);
 				response.entity("{\"status\":\"ok\"}");
