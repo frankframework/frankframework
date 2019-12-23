@@ -23,6 +23,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.ClassLoaderXmlEntityResolver;
 import org.apache.log4j.Logger;
 import org.apache.xerces.impl.Constants;
@@ -50,8 +51,6 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 
 import javax.xml.transform.sax.SAXSource;
-import javax.xml.validation.Validator;
-import javax.xml.validation.ValidatorHandler;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -101,21 +100,6 @@ public class XercesXmlValidator extends AbstractXmlValidator {
     protected static final String SCHEMA_VALIDATION_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
 
     /**
-     * External general entities feature id (http://xml.org/sax/features/external-general-entities).
-     */
-    protected static final String EXTERNAL_GENERAL_ENTITIES_FEATURE_ID = Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_GENERAL_ENTITIES_FEATURE;
-
-    /**
-     * External paramter entities feature id (http://xml.org/sax/features/external-general-entities).
-     */
-    protected static final String EXTERNAL_PARAMETER_ENTITIES_FEATURE_ID = Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE;
-
-    /**
-     * Disallow doctype declarations feature id (http://apache.org/xml/features/disallow-doctype-decl).
-     */
-    protected static final String DISSALLOW_DOCTYPE_DECL_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.DISALLOW_DOCTYPE_DECL_FEATURE;
-
-    /**
      * Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking).
      */
     protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_FULL_CHECKING;
@@ -133,11 +117,9 @@ public class XercesXmlValidator extends AbstractXmlValidator {
     private String preparseResultId;
     private PreparseResult preparseResult;
 
-    /**
-     * XSD Processor version for Xerces. It has to be set manually.
-     */
+    // To be able to allow users to specify 1.0.
+    // Technically xsd 1.1 should be backwards compatible.
     private double xsdVersion = 1.1;
-    private ValidatorHandlerImpl validatorHandler;
 
     private static EhCache cache;
 
@@ -198,7 +180,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
     private synchronized PreparseResult preparse(String schemasId, List<Schema> schemas) throws ConfigurationException {
         SymbolTable symbolTable = getSymbolTable();
         XMLGrammarPool grammarPool = new XMLGrammarPoolImpl();
-        Set<String> namespaceSet = new HashSet<String>();
+        Set<String> namespaceSet = new HashSet<>();
         XMLGrammarPreparser preparser = new XMLGrammarPreparser(symbolTable);
         preparser.setEntityResolver(new ClassLoaderXmlEntityResolver(getConfigurationClassLoader()));
         preparser.registerPreparser(XMLGrammarDescription.XML_SCHEMA, null);
@@ -286,21 +268,30 @@ public class XercesXmlValidator extends AbstractXmlValidator {
         return result;
     }
 
-    public ValidatorHandler getValidatorHandler(IPipeLineSession session, ValidationContext context) throws ConfigurationException, PipeRunException {
+    public ValidatorHandlerImpl getValidatorHandler(IPipeLineSession session, ValidationContext context) throws ConfigurationException {
+        // User Impl version from xerces, because it has extra validate() function.
+        ValidatorHandlerImpl validatorHandler;
 
-        ValidatorHandler validatorHandler = null;
         try {
-            XMLSchema11Factory schemaFactory = new XMLSchema11Factory();
-            javax.xml.validation.Schema schemaObject = schemaFactory.newSchema(((XercesValidationContext) context).getGrammarPool());
-            validatorHandler = schemaObject.newValidatorHandler();
+            javax.xml.validation.Schema schemaObject;
+            if (xsdVersion == 1.0) {
+                XMLSchemaFactory schemaFactory = new XMLSchemaFactory();
+                schemaObject = schemaFactory.newSchema(((XercesValidationContext) context).getGrammarPool());
+            } else {
+                XMLSchema11Factory schemaFactory = new XMLSchema11Factory();
+                schemaObject = schemaFactory.newSchema(((XercesValidationContext) context).getGrammarPool());
+            }
+
+            validatorHandler = (ValidatorHandlerImpl) schemaObject.newValidatorHandler();
         } catch (SAXException e) {
             throw new ConfigurationException(logPrefix + "Cannot create schema", e);
         }
         try {
-            //validatorHandler.setFeature(NAMESPACES_FEATURE_ID, true);
             validatorHandler.setFeature(VALIDATION_FEATURE_ID, true);
             validatorHandler.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
             validatorHandler.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
+
+            validatorHandler.setContentHandler(context.getContentHandler());
             validatorHandler.setErrorHandler(context.getErrorHandler());
         } catch (SAXNotRecognizedException e) {
             throw new ConfigurationException(logPrefix + "ValidatorHandler does not recognize necessary feature", e);
@@ -314,33 +305,13 @@ public class XercesXmlValidator extends AbstractXmlValidator {
     public String validate(Object input, IPipeLineSession session, String logPrefix, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces, boolean resolveExternalEntities) throws XmlValidatorException, PipeRunException, ConfigurationException {
         ValidationContext context = createValidationContext(session, rootValidations, invalidRootNamespaces);
         try {
-            createValidator(context);
-            validatorHandler.validate(new SAXSource(getInputSource(input.toString())), null);
+            ValidatorHandlerImpl validatorHandler = getValidatorHandler(session, context);
+            SAXSource inputSource = XmlUtils.stringToSAXSource(input.toString(), true, false);
+            validatorHandler.validate(inputSource, null);
         } catch (SAXException | IOException e) {
-            System.out.println("ERROR BIATCH!!");
-            e.printStackTrace();
             return finalizeValidation(context, session, e);
         }
         return finalizeValidation(context, session, null);
-    }
-
-    public void createValidator(ValidationContext context) throws PipeRunException, ConfigurationException, SAXException {
-        if (validatorHandler != null)
-            return;
-
-        XMLGrammarPool grammarPool = ((XercesValidationContext) context).getGrammarPool();
-        javax.xml.validation.Schema schema;
-        if (xsdVersion == 1.1) {
-            XMLSchema11Factory schemaFactory = new XMLSchema11Factory();
-            schema = schemaFactory.newSchema(grammarPool);
-        } else {
-            XMLSchemaFactory schemaFactory = new XMLSchemaFactory();
-            schema = schemaFactory.newSchema(grammarPool);
-        }
-
-        validatorHandler = (ValidatorHandlerImpl) schema.newValidatorHandler();
-        validatorHandler.setContentHandler(context.getContentHandler());
-        validatorHandler.setErrorHandler(context.getErrorHandler());
     }
 
     public XMLReader createValidatingParser(IPipeLineSession session, ValidationContext context) throws XmlValidatorException {
@@ -351,10 +322,6 @@ public class XercesXmlValidator extends AbstractXmlValidator {
             parser.setProperty(Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY, new ShadowedSymbolTable(symbolTable));
             parser.setFeature(NAMESPACES_FEATURE_ID, true);
             parser.setFeature(VALIDATION_FEATURE_ID, true);
-            // parser.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true); // this feature is not recognized
-//			parser.setFeature(EXTERNAL_GENERAL_ENTITIES_FEATURE_ID, false); // this one appears to be not working
-//			parser.setFeature(EXTERNAL_PARAMETER_ENTITIES_FEATURE_ID, false);
-//			parser.setFeature(DISSALLOW_DOCTYPE_DECL_FEATURE_ID, true);
             parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
             parser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
             parser.setErrorHandler(context.getErrorHandler());
@@ -462,7 +429,7 @@ class PreparseResult {
 
     public List<XSModel> getXsModels() {
         if (xsModels == null) {
-            xsModels = new LinkedList<XSModel>();
+            xsModels = new LinkedList<>();
             Grammar[] grammars = grammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
             for (int i = 0; i < grammars.length; i++) {
                 xsModels.add(((XSGrammar) grammars[i]).toXSModel());
