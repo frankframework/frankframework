@@ -491,7 +491,11 @@
 			<version>${j2v8.version}</version>
 			<scope>runtime</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>org.tensorflow</groupId>
+			<artifactId>tensorflow</artifactId>
+			<version>1.14.0</version>
+		</dependency>
 		<!-- CXF -->
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
