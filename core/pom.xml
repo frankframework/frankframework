@@ -202,6 +202,11 @@
 			<version>2.12.0-xml-schema-1.1.1</version>
 		</dependency>
 		<dependency>
+			<groupId>com.rackspace.eclipse.webtools.sourceediting</groupId>
+			<artifactId>org.eclipse.wst.xml.xpath2.processor</artifactId>
+			<version>2.1.100</version>
+		</dependency>
+		<dependency>
 			<groupId>aopalliance</groupId>
 			<artifactId>aopalliance</artifactId>
 			<version>1.0</version>
@@ -210,12 +215,6 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
 			<version>${spring.version}</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.eclipse.wst.xml.xpath2/processor -->
-		<dependency>
-			<groupId>org.eclipse.wst.xml.xpath2</groupId>
-			<artifactId>processor</artifactId>
-			<version>2.1.100</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
