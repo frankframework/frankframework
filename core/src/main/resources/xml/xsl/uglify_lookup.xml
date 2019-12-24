@@ -845,6 +845,11 @@
     <ClassName>nl.nn.adapterframework.batch.StreamTransformerPipe</ClassName>
   </Element>
   <Element>
+    <Name>TensorflowPipe</Name>
+    <Type>pipe</Type>
+    <ClassName>nl.nn.adapterframework.pipes.TensorflowPipe</ClassName>
+  </Element>
+  <Element>
     <Name>TestIfsaServicePipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.webcontrol.pipes.TestIfsaService</ClassName>
