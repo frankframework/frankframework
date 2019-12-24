@@ -1011,15 +1011,50 @@ angular.module('iaf.beheerconsole')
 	$scope.adapterName = adapterName;
 	$scope.refreshing = false;
 
+	$scope.hourlyStatistics = {
+		labels: [],
+		data: [],
+	};
+
 	$scope.stats = [];
 	$scope.refresh = function() {
 		$scope.refreshing = true;
 		Api.Get("adapters/"+adapterName+"/statistics", function(data) {
 			$scope.stats = data;
+
+			var labels = [];
+			var chartData = [];
+			for(i in data["hourly"]) {
+				var a = data["hourly"][i];
+				labels.push(a["time"]);
+				chartData.push(a["count"]);
+			}
+			$scope.hourlyStatistics.labels = labels;
+			$scope.hourlyStatistics.data = chartData;
+
 			$timeout(function(){
 				$scope.refreshing = false;
 			}, 500);
 		});
+	};
+
+	$scope.dataset = {
+		fill: false,
+		backgroundColor: "#2f4050",
+		borderColor: "#2f4050",
+	};
+	$scope.options = {
+		responsive: true,
+		maintainAspectRatio: false,
+		scales: {
+			yAxes: [{
+				display: true,
+				scaleLabel: {
+					display: true,
+					labelString: 'Messages Per Hour'
+				}
+			}]
+		}
 	};
 
 	$timeout(function(){

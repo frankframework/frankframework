@@ -21,6 +21,10 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 				'js/plugins/dataTables/angular-datatables.v0.6.2.min.js',
 				'js/plugins/dataTables/angular-datatables.buttons.min.js'
 			]
+		}, {
+			serie: true,
+			name: 'chartjs',
+			files: ['js/plugins/chartJs/Chart.min.js', 'js/plugins/chartJs/angular-chart.min.js', 'css/plugins/chartJs/Chart.min.css']
 		}],
 		// Set to true if you want to see what and when is dynamically loaded
 		debug: true
@@ -87,6 +91,11 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		},
 		params: {
 			id: 0,
+		},
+		resolve: {
+			loadPlugin: function($ocLazyLoad) {
+				return $ocLazyLoad.load('chartjs');
+			},
 		},
 	})
 	.state('pages.errorstorage', {

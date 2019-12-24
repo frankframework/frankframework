@@ -15,20 +15,11 @@
 				<div class="ibox-content">
 					<div class="col-md-12 table-responsive">
 						<h4>Adapter statistics by the hour</h4>
-						<table class="table">
-							<thead>
-								<tr>
-									<th>Start time</th>
-									<td ng-repeat="t in stats.hourly">{{t.time}}</td>
-								</tr>
-							</thead>
-							<tbody>
-								<tr>
-									<th>Count</th>
-									<td ng-repeat="t in stats.hourly">{{t.count}}</td>
-								</tr>
-							</tbody>
-						</table>
+							<div style="height:300px;">
+								<canvas id="line" class="chart chart-line" chart-options="options" chart-data="hourlyStatistics.data" 
+								chart-labels="hourlyStatistics.labels" chart-dataset-override="dataset" chart-series="series">
+								</canvas>
+							</div>
 					</div>
 					<div class="col-md-4 m-t-md table-responsive">
 						<h4>Total message processing duration (in ms)</h4>
