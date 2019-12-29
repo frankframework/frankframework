@@ -1,0 +1,6 @@
+<manageDatabaseREQ>
+	<select encodeBlobBase64="true">
+		<tableName>IBISDATA</tableName>
+		<order>DATAKEY</order>
+	</select>
+</manageDatabaseREQ>

@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.jdbc.dbms;
 
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -225,7 +226,15 @@ public class OracleToH2Translator {
 			newSplit.add(split[i]);
 		}
 
-		SimpleParameter simpleParameter = new SimpleParameter("message", "updateBlob".equalsIgnoreCase(queryContext.getQueryType()) ? "string2bytes" : "", queryContext.getMessage());
+		String parameterType;
+		if (queryContext.getMessage() instanceof InputStream) {
+			parameterType = "inputstream";
+		} else if ("updateBlob".equalsIgnoreCase(queryContext.getQueryType())) {
+			parameterType = "string2bytes";
+		} else {
+			parameterType = "";
+		}
+		SimpleParameter simpleParameter = new SimpleParameter("message", parameterType, queryContext.getMessage());
 		queryContext.addSimpleParameter(0, simpleParameter);
 		queryContext.setQueryType("update");
 

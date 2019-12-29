@@ -233,7 +233,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 
 	@Override
 	protected PreparedStatement getStatement(Connection con, String correlationID, QueryContext queryContext) throws SQLException, JdbcException {
-		String qry = queryContext.getMessage();
+		String qry = (String) queryContext.getMessage();
 		if (lockRows) {
 			qry = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, qry, lockWait);
 		}
@@ -261,7 +261,9 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			order = XmlUtils.getChildTagAsString(queryElement, "order");
 
 			if (root.equalsIgnoreCase("select")) {
-				result = selectQuery(connection, correlationID, tableName, columns, where, order);
+				String encodeBlobBase64String = queryElement.getAttribute("encodeBlobBase64");
+				boolean encodeBlobBase64 = Boolean.parseBoolean(encodeBlobBase64String);
+				result = selectQuery(connection, correlationID, tableName, columns, where, order, encodeBlobBase64);
 			} else {
 				if (root.equalsIgnoreCase("insert")) {
 					result = insertQuery(connection, correlationID, prc, tableName, columns);
@@ -298,7 +300,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		return result;
 	}
 
-	private String selectQuery(Connection connection, String correlationID, String tableName, Vector columns, String where, String order) throws SenderException, JdbcException {
+	private String selectQuery(Connection connection, String correlationID, String tableName, Vector columns, String where, String order, boolean encodeBlobBase64) throws SenderException, JdbcException {
 		try {
 			String query = "SELECT ";
 			if (columns != null) {
@@ -327,7 +329,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
-			return executeSelectQuery(statement,null,null);
+			return executeSelectQuery(statement,null,null,null,null,null,encodeBlobBase64);
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command", e);
 		}

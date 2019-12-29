@@ -1,0 +1,85 @@
+<module>
+	<adapter name="InsertBigBlobText">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="InsertBigBlobText">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				name="InsertBigBlobText" serviceName="ibis4test-InsertBigBlobText" />
+		</receiver>
+		<pipeline firstPipe="ReadFile" transactionAttribute="Required">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+
+			<pipe name="ReadFile" className="nl.nn.adapterframework.pipes.FilePipe"
+				actions="read" getInputFromFixedValue="BigBlob/file.pdf" fileSource="classpath"
+				outputType="bytes">
+				<forward name="success" path="Encode" />
+			</pipe>
+
+			<pipe name="Encode" className="nl.nn.adapterframework.pipes.Base64Pipe"
+				convert2String="false" storeResultInSessionKey="base64">
+				<forward name="success" path="InsertData1" />
+			</pipe>
+
+			<pipe name="InsertData1"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				getInputFromFixedValue="&lt;dummy/&gt;" storeResultInSessionKey="dataKey">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+					query="INSERT INTO IBISDATA (DATAKEY, DATA) VALUES (SEQ_IBISDATA.NEXTVAL, EMPTY_BLOB())"
+					resultQuery="SELECT SEQ_IBISDATA.CURRVAL FROM DUAL" scalar="true"
+					queryType="insert" jmsRealm="jdbc" />
+				<forward name="success" path="InsertData2" />
+			</pipe>
+
+			<pipe name="InsertData2"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				getInputFromSessionKey="base64">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+					query="SELECT DATA FROM IBISDATA WHERE DATAKEY=? FOR UPDATE"
+					queryType="updateBlob" jmsRealm="jdbc">
+					<param name="dataKey" sessionKey="dataKey" />
+				</sender>
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+
+	<adapter name="InsertBigBlobBinary">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="InsertBigBlobBinary">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				name="InsertBigBlobBinary" serviceName="ibis4test-InsertBigBlobBinary" />
+		</receiver>
+		<pipeline firstPipe="ReadFile" transactionAttribute="Required">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+
+			<pipe name="ReadFile" className="nl.nn.adapterframework.pipes.FilePipe"
+				actions="read" getInputFromFixedValue="BigBlob/file.pdf" fileSource="classpath"
+				outputType="stream" storeResultInSessionKey="fileContent">
+				<forward name="success" path="InsertData1" />
+			</pipe>
+
+			<pipe name="InsertData1"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				getInputFromFixedValue="&lt;dummy/&gt;" storeResultInSessionKey="dataKey">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+					query="INSERT INTO IBISDATA (DATAKEY, DATA) VALUES (SEQ_IBISDATA.NEXTVAL, EMPTY_BLOB())"
+					resultQuery="SELECT SEQ_IBISDATA.CURRVAL FROM DUAL" scalar="true"
+					queryType="insert" jmsRealm="jdbc" />
+				<forward name="success" path="InsertData2" />
+			</pipe>
+
+			<pipe name="InsertData2"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+					query="SELECT DATA FROM IBISDATA WHERE DATAKEY=? FOR UPDATE"
+					queryType="updateBlob" jmsRealm="jdbc" blobSessionKey="fileContent">
+					<param name="dataKey" sessionKey="dataKey" />
+				</sender>
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>

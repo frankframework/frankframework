@@ -56,7 +56,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase {
 	}
 
 	protected PreparedStatement getStatement(Connection con, String correlationID, QueryContext queryContext) throws SQLException, JdbcException {
-		String qry = queryContext.getMessage();
+		String qry = (String) queryContext.getMessage();
 		if (lockRows) {
 			qry = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, qry, lockWait);
 		}

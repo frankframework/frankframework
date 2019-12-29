@@ -114,6 +114,10 @@ public class DB2XMLWriter {
 	}
 
 	public synchronized String getXML(ResultSet rs, int maxlength, boolean includeFieldDefinition) {
+		return getXML(rs, maxlength, includeFieldDefinition, false);
+	}
+
+	public synchronized String getXML(ResultSet rs, int maxlength, boolean includeFieldDefinition, boolean encodeBlobBase64) {
 		if (null == rs)
 			return "";
 
@@ -197,7 +201,7 @@ public class DB2XMLWriter {
 
 			XmlBuilder queryresult = new XmlBuilder(recordname);
 			while (rs.next() && rowCounter < maxlength) {
-				XmlBuilder row = getRowXml(rs,rowCounter,rsmeta,getBlobCharset(),decompressBlobs,nullValue,trimSpaces,getBlobSmart);
+				XmlBuilder row = getRowXml(rs,rowCounter,rsmeta,getBlobCharset(),decompressBlobs,nullValue,trimSpaces,getBlobSmart,encodeBlobBase64);
 				queryresult.addSubElement(row);
 				rowCounter++;
 			}
@@ -210,6 +214,10 @@ public class DB2XMLWriter {
 	}
 
 	public static XmlBuilder getRowXml(ResultSet rs, int rowNumber, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException {
+		return getRowXml(rs, rowNumber, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart, false);
+	}
+
+	public static XmlBuilder getRowXml(ResultSet rs, int rowNumber, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart, boolean encodeBlobBase64) throws SenderException, SQLException {
 		XmlBuilder row = new XmlBuilder("row");
 		row.addAttribute("number", "" + rowNumber);
 	
@@ -222,7 +230,7 @@ public class DB2XMLWriter {
 			resultField.addAttribute("name", columnName);
 
 			try {
-				String value = JdbcUtil.getValue(rs, i, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart, false);
+				String value = JdbcUtil.getValue(rs, i, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart, encodeBlobBase64);
 				if (rs.wasNull()) {
 					resultField.addAttribute("null","true");
 				}

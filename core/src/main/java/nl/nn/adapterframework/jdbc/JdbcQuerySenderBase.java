@@ -209,7 +209,14 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			if (prc != null && newParameterList != null) {
 				simpleParameterList = toSimpleParameterList(prc.getValues(newParameterList));
 			}
-			QueryContext queryContext = new QueryContext(null, getQueryType(), simpleParameterList, newMessage);
+			QueryContext queryContext;
+			if ("updateBlob".equalsIgnoreCase(getQueryType()) && prc != null && StringUtils.isNotEmpty(getBlobSessionKey())) {
+				queryContext = new QueryContext(null, getQueryType(), simpleParameterList, prc.getSession().get(getBlobSessionKey()));
+			} else if ("updateClob".equalsIgnoreCase(getQueryType()) && prc != null && StringUtils.isNotEmpty(getClobSessionKey())) {
+				queryContext = new QueryContext(null, getQueryType(), simpleParameterList, prc.getSession().get(getClobSessionKey()));
+			} else {
+				queryContext = new QueryContext(null, getQueryType(), simpleParameterList, newMessage);
+			}
 			log.debug(getLogPrefix() + "obtaining prepared statement to execute");
 			statement = getStatement(connection, correlationID, queryContext);
 			log.debug(getLogPrefix() + "obtained prepared statement to execute");
@@ -371,6 +378,10 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	}
 	
 	protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException, JMSException {
+		return getResult(resultset, blobSessionVar, clobSessionVar, response, contentType, contentDisposition, false);
+	}
+	
+	protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition, boolean encodeBlobBase64) throws JdbcException, SQLException, IOException, JMSException {
 		String result=null;
 		if (isScalar()) {
 			if (resultset.next()) {
@@ -437,7 +448,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			db2xml.setBlobCharset(getBlobCharset());
 			db2xml.setDecompressBlobs(isBlobsCompressed());
 			db2xml.setGetBlobSmart(isBlobSmartGet());
-			result = db2xml.getXML(resultset, getMaxRows(), isIncludeFieldDefinition());
+			result = db2xml.getXML(resultset, getMaxRows(), isIncludeFieldDefinition(), encodeBlobBase64);
 		}
 		return result;
 	}
@@ -480,6 +491,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			
 			rs.updateRow();
 			JdbcUtil.warningsToXml(rs.getWarnings(),result);
+			result.addSubElement("rowsupdated", "1");
 			return result.toXML();
 		} catch (SQLException sqle) {
 			throw new SenderException(getLogPrefix() + "got exception executing an updating BLOB command",sqle );
@@ -531,6 +543,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			}
 			rs.updateRow();
 			JdbcUtil.warningsToXml(rs.getWarnings(),result);
+			result.addSubElement("rowsupdated", "1");
 			return result.toXML();
 		} catch (SQLException sqle) {
 			throw new SenderException(getLogPrefix() + "got exception executing an updating CLOB command",sqle );
@@ -554,6 +567,10 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	}
 	
 	protected String executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws SenderException{
+		return executeSelectQuery(statement, blobSessionVar, clobSessionVar, response, contentType, contentDisposition, false);
+	}
+	
+	protected String executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition, boolean encodeBlobBase64) throws SenderException{
 		ResultSet resultset=null;
 		try {
 			if (getMaxRows()>0) {
@@ -567,7 +584,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				resultset.absolute(getStartRow()-1);
 				log.debug(getLogPrefix() + "Index set at position: " +  resultset.getRow() );
 			}				
-			return getResult(resultset,blobSessionVar,clobSessionVar, response, contentType, contentDisposition);
+			return getResult(resultset,blobSessionVar,clobSessionVar, response, contentType, contentDisposition, encodeBlobBase64);
 		} catch (SQLException sqle) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command",sqle );
 		} catch (JdbcException e) {

@@ -24,9 +24,9 @@ public class QueryContext {
 	private String query;
 	private String queryType;
 	private List<SimpleParameter> simpleParameterList;
-	private String message;
+	private Object message;
 
-	public QueryContext(String query, String queryType, List<SimpleParameter> simpleParameterList, String message) {
+	public QueryContext(String query, String queryType, List<SimpleParameter> simpleParameterList, Object message) {
 		this.query = query;
 		this.queryType = queryType;
 		this.simpleParameterList = simpleParameterList;
@@ -60,7 +60,7 @@ public class QueryContext {
 		simpleParameterList.add(index, simpleParameter);
 	}
 
-	public String getMessage() {
+	public Object getMessage() {
 		return message;
 	}
 }

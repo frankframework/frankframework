@@ -49,6 +49,7 @@
 			<xsd:element name="where" type="xsd:string" minOccurs="0"/>
 			<xsd:element name="order" type="xsd:string" minOccurs="0"/>
 		</xsd:sequence>
+		<xsd:attribute name="encodeBlobBase64" type="xsd:boolean" use="optional"/>
 	</xsd:complexType>
 	<xsd:complexType name="updateType">
 		<xsd:sequence>

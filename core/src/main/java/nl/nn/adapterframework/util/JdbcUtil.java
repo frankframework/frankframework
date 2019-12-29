@@ -59,6 +59,7 @@ import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.SimpleParameter;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.log4j.Logger;
 
@@ -332,7 +333,7 @@ public class JdbcUtil {
 		return getBlobAsString(rs.getBlob(columnName),columnName,charset, xmlEncode, blobIsCompressed, blobSmartGet, encodeBlobBase64);
 	}
 	public static String getBlobAsString(Blob blob, String column, String charset, boolean xmlEncode, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException, JMSException {
-		if (encodeBlobBase64) {
+		if (encodeBlobBase64 && !blobSmartGet) {
 			InputStream blobStream = JdbcUtil.getBlobInputStream(blob, column, blobIsCompressed);
 			return Misc.streamToString(new Base64InputStream(blobStream,true),null,false);
 		}
@@ -393,11 +394,17 @@ public class JdbcUtil {
 					rawMessage = ((IMessageWrapper)result).getText();
 				} else if (result instanceof TextMessage) {
 					rawMessage = ((TextMessage)result).getText();
+				} else if (result instanceof byte[] && encodeBlobBase64) {
+					rawMessage = Base64.encodeBase64String((byte[]) result);
 				} else {
 					rawMessage = (String)result;
 				}
 			} else {
-				rawMessage = new String(buf,charset);
+				if (encodeBlobBase64) {
+					rawMessage = new String(Base64.encodeBase64(buf), charset);
+				} else {
+					rawMessage = new String(buf,charset);
+				}
 			}
 
 			String message = XmlUtils.encodeCdataString(rawMessage);

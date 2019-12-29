@@ -56,7 +56,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 			if (StringUtils.isNotEmpty(getQuery())) {
 				qry = getQuery();
 			} else {
-				qry = queryContext.getMessage();
+				qry = (String) queryContext.getMessage();
 			}
 			if (lockRows) {
 				qry = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, qry, lockWait);

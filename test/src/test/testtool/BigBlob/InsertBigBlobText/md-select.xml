@@ -1,0 +1,6 @@
+<manageDatabaseREQ>
+	<select>
+		<tableName>IBISDATA</tableName>
+		<order>DATAKEY</order>
+	</select>
+</manageDatabaseREQ>
