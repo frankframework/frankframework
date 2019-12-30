@@ -26,7 +26,6 @@ import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.QueryContext;
-import nl.nn.adapterframework.parameters.SimpleParameter;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
