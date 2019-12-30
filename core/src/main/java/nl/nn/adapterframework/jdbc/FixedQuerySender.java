@@ -50,7 +50,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase {
 		
 	
 	@Override
-	protected String getQuery(String correlationID, Message message) {
+	protected String getQuery(Message message) {
 		return getQuery();
 	}
 

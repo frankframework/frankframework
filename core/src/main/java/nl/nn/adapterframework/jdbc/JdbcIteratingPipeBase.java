@@ -58,7 +58,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> {
 		}
 
 		@Override
-		protected String getQuery(String correlationID, Message message) {
+		protected String getQuery(Message message) {
 			if (query!=null) {
 				return query;
 			}

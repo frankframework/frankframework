@@ -235,7 +235,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 	}
 
 	@Override
-	protected String getQuery(String correlationID, Message message) {
+	protected String getQuery(Message message) {
 		return message.toString();
 	}
 
