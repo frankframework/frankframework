@@ -26,7 +26,6 @@ import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.QueryContext;
-import nl.nn.adapterframework.parameters.SimpleParameter;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -111,14 +110,7 @@ public class OracleToH2Translator {
 
 	private static String[] convertQuery(String[] split, QueryContext queryContext, boolean canModifyQueryContext) {
 		String[] newSplit;
-		if (isSelectForUpdateQuery(split)) {
-			if (canModifyQueryContext) {
-				newSplit = convertQuerySelectForUpdate(split, queryContext);
-			} else {
-				log.warn("cannot convert oracle 'select for update' query");
-				return split;
-			}
-		} else if (isSelectQuery(split)) {
+		if (isSelectQuery(split)) {
 			newSplit = convertQuerySelect(split);
 		} else if (isSetDefineOffQuery(split)) {
 			newSplit = null;
@@ -205,31 +197,8 @@ public class OracleToH2Translator {
 		return split.length > 3 && "INSERT".equalsIgnoreCase(split[0]) && "INTO".equalsIgnoreCase(split[1]);
 	}
 
-	private static boolean isSelectForUpdateQuery(String[] split) {
-		return split.length > 5 && "SELECT".equalsIgnoreCase(split[0]) && "FROM".equalsIgnoreCase(split[2]) && "FOR".equalsIgnoreCase(split[split.length - 2]) && "UPDATE".equalsIgnoreCase(split[split.length - 1]);
-	}
-
 	private static boolean isUpdateSetQuery(String[] split) {
 		return split.length > 3 && "UPDATE".equalsIgnoreCase(split[0]) && "SET".equalsIgnoreCase(split[2]);
-	}
-
-	private static String[] convertQuerySelectForUpdate(String[] split, QueryContext queryContext) {
-		List<String> newSplit = new ArrayList<>();
-		newSplit.add("UPDATE");
-		newSplit.add(split[3]);
-		newSplit.add("SET");
-		newSplit.add(split[1]);
-		newSplit.add("=");
-		newSplit.add("?");
-		for (int i = 4; i < split.length - 2; i++) {
-			newSplit.add(split[i]);
-		}
-
-		SimpleParameter simpleParameter = new SimpleParameter("message", "updateBlob".equalsIgnoreCase(queryContext.getQueryType()) ? "string2bytes" : "", queryContext.getMessage());
-		queryContext.addSimpleParameter(0, simpleParameter);
-		queryContext.setQueryType("update");
-
-		return newSplit.toArray(new String[0]);
 	}
 
 	private static String[] convertQuerySelect(String[] split) {

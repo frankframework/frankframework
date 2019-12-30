@@ -42,7 +42,8 @@ import nl.nn.adapterframework.core.SenderException;
  */
 public class ResultSetIteratingPipe extends JdbcIteratingPipeBase {
 
-	protected IDataIterator getIterator(Connection conn, ResultSet rs) throws SenderException {
+	@Override
+	protected IDataIterator<String> getIterator(Connection conn, ResultSet rs) throws SenderException {
 		try {
 			return new ResultSetIterator(conn, rs);
 		} catch (SQLException e) {

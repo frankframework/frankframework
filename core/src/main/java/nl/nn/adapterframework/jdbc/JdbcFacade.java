@@ -67,7 +67,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
     private String username=null;
     private String password=null;
     
-	private Map proxiedDataSources = null;
+	private Map<String,DataSource> proxiedDataSources = null;
 	private DataSource datasource = null;
 	private String datasourceName = null;
 
@@ -82,7 +82,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
 	}
 
-	public void setProxiedDataSources(Map proxiedDataSources) {
+	public void setProxiedDataSources(Map<String,DataSource> proxiedDataSources) {
 		this.proxiedDataSources = proxiedDataSources;
 	}
 
@@ -267,6 +267,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	 *  
 	 * @see nl.nn.adapterframework.core.HasPhysicalDestination#getPhysicalDestinationName()
 	 */
+	@Override
 	public String getPhysicalDestinationName() {
 		String result="unknown";
 		try {
@@ -305,6 +306,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	/**
 	 * Sets the name of the object.
 	 */
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -363,6 +365,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	public void setTransacted(boolean transacted) {
 		this.transacted = transacted;
 	}
+	@Override
 	public boolean isTransacted() {
 		return transacted;
 	}

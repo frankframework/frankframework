@@ -28,6 +28,9 @@ public interface IOutputStreamingSupport {
 	/**
 	 * When this returns <code>true</code> then {@link #provideOutputStream(String, IPipeLineSession, MessageOutputStream) provideOutputStream()} 
 	 * must use {@link MessageOutputStream target} to stream its own output to. 
+	 * N.B. A class should only return <code>true</code> from <code>canStreamToTarget</code> if that is the way the output can be produced efficiently
+	 * in a streaming way. If the response data is already present in memory, e.g. as a String or byte array, it should send the data as is, canStreamToTarget
+	 * should be kept <code>false</false>. Also when the data is available as an InputStream, it should keep canStreamToTarget <code>false</false>.
 	 */
 	public boolean canStreamToTarget();  
 

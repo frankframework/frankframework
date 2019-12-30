@@ -15,22 +15,20 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.PreparedStatement;
 
-import nl.nn.adapterframework.parameters.SimpleParameter;
+import nl.nn.adapterframework.parameters.ParameterList;
 
 public class QueryContext {
 	private String query;
 	private String queryType;
-	private List<SimpleParameter> simpleParameterList;
-	private String message;
+	private ParameterList parameterList;
+	private PreparedStatement statement;
 
-	public QueryContext(String query, String queryType, List<SimpleParameter> simpleParameterList, String message) {
+	public QueryContext(String query, String queryType, ParameterList parameterList) {
 		this.query = query;
 		this.queryType = queryType;
-		this.simpleParameterList = simpleParameterList;
-		this.message = message;
+		this.parameterList = parameterList;
 	}
 
 	public String getQuery() {
@@ -49,18 +47,16 @@ public class QueryContext {
 		this.queryType = queryType;
 	}
 
-	public List<SimpleParameter> getSimpleParameterList() {
-		return simpleParameterList;
+	public ParameterList getParameterList() {
+		return parameterList;
 	}
 
-	public void addSimpleParameter(int index, SimpleParameter simpleParameter) {
-		if (simpleParameterList == null) {
-			simpleParameterList = new ArrayList<>();
-		}
-		simpleParameterList.add(index, simpleParameter);
+	public PreparedStatement getStatement() {
+		return statement;
 	}
 
-	public String getMessage() {
-		return message;
+	public void setStatement(PreparedStatement statement) {
+		this.statement = statement;
 	}
+
 }

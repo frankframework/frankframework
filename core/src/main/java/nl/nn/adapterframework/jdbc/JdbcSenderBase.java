@@ -15,20 +15,23 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.IStreamingSender;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageOutputStream;
 
 /**
  * Base class for building JDBC-senders.
@@ -36,7 +39,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * @author  Gerrit van Brakel
  * @since 	4.2.h
  */
-public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithParameters {
+public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSender {
 
 	private int timeout = 0;
 
@@ -66,13 +69,9 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 
 	@Override
 	public void configure() throws ConfigurationException {
-//		try {
-			if (StringUtils.isEmpty(getDatasourceName())) {
-				throw new ConfigurationException(getLogPrefix()+"has no datasource");
-			}
-//		} catch (JdbcException e) {
-//			throw new ConfigurationException(e);
-//		}
+		if (StringUtils.isEmpty(getDatasourceName())) {
+			throw new ConfigurationException(getLogPrefix()+"has no datasource");
+		}
 		if (paramList!=null) {
 			paramList.configure();
 		}
@@ -109,12 +108,22 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 	}
 
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public final String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+		Object result = sendMessage(correlationID, new Message(message), prc, null);
+		try {
+			return result==null?null:new Message(result).asString();
+		} catch (IOException e) {
+			throw new SenderException(e);
+		}
+	}
+
+	@Override
+	public Object sendMessage(String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
 		if (isConnectionsArePooled()) {
 			Connection c = null;
 			try {
 				c = getConnectionWithTimeout(getTimeout());
-				String result = sendMessage(c, correlationID, message, prc);
+				Object result = sendMessage(c, correlationID, message, prc, target);
 				return result;
 			} catch (JdbcException e) {
 				throw new SenderException(e);
@@ -130,11 +139,11 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 			
 		} 
 		synchronized (connection) {
-			return sendMessage(connection, correlationID, message, prc);
+			return sendMessage(connection, correlationID, message, prc, target);
 		}
 	}
 
-	protected abstract String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException;
+	protected abstract Object sendMessage(Connection connection, String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException;
 
 	@Override
 	public String toString() {

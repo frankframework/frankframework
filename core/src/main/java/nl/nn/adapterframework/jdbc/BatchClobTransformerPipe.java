@@ -44,6 +44,7 @@ import nl.nn.adapterframework.core.SenderException;
 public class BatchClobTransformerPipe extends BatchTransformerPipeBase {
 
 
+	@Override
 	protected Reader getReader(ResultSet rs, String charset, String streamId, IPipeLineSession session) throws SenderException {
 		try {
 			return rs.getCharacterStream(1);

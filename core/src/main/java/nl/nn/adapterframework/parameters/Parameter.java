@@ -347,6 +347,9 @@ public class Parameter implements INamedObject, IWithParameters {
 		} else {
 			if (StringUtils.isNotEmpty(requestedSessionKey)) {
 				result=prc.getSession().get(requestedSessionKey);
+				if (result==null || (result instanceof String && ((String)result).isEmpty())) {
+					log.warn("Parameter ["+getName()+"] session variable ["+requestedSessionKey+"] is empty");
+				}
 			} else if (StringUtils.isNotEmpty(getPattern())) {
 				result=format(alreadyResolvedParameters, prc);
 			} else if (StringUtils.isNotEmpty(getValue())) {

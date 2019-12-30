@@ -38,6 +38,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  */
 public class Result2BlobWriter extends Result2LobWriterBase {
 	
+	@Override
 	protected Object getLobHandle(IDbmsSupport dbmsSupport, ResultSet rs) throws SenderException {
 		try {
 			return dbmsSupport.getBlobUpdateHandle(rs, querySender.getBlobColumn());
@@ -45,7 +46,8 @@ public class Result2BlobWriter extends Result2LobWriterBase {
 			throw new SenderException(e);
 		}
 	}
-	protected void   updateLob(IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException {
+	@Override
+	protected void updateLob(IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException {
 		try {
 			dbmsSupport.updateBlob(rs, querySender.getBlobColumn(), lobHandle);
 		} catch (Exception e) {
@@ -53,6 +55,7 @@ public class Result2BlobWriter extends Result2LobWriterBase {
 		}
 	}
 
+	@Override
 	protected Writer getWriter(IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException {
 		try {
 			return JdbcUtil.getBlobWriter(dbmsSupport,lobHandle,rs,querySender.getBlobColumn(), querySender.getBlobCharset(), querySender.isBlobsCompressed());

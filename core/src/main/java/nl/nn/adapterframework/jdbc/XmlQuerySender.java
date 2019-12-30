@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -42,6 +43,8 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -232,17 +235,12 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 	}
 
 	@Override
-	protected PreparedStatement getStatement(Connection con, String correlationID, QueryContext queryContext) throws SQLException, JdbcException {
-		String qry = queryContext.getMessage();
-		if (lockRows) {
-			qry = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, qry, lockWait);
-		}
-		queryContext.setQuery(qry);
-		return prepareQuery(con, queryContext);
+	protected String getQuery(Message message) {
+		return message.toString();
 	}
 
 	@Override
-	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	protected Object sendMessage(Connection connection, String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
 		Element queryElement;
 		String tableName = null;
 		Vector columns = null;
@@ -250,7 +248,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		String order = null;
 		String result = null;
 		try {
-			queryElement = XmlUtils.buildElement(message);
+			queryElement = XmlUtils.buildElement(message.asString());
 			String root = queryElement.getTagName();
 			tableName = XmlUtils.getChildTagAsString(queryElement, "tableName");
 			Element columnsElement = XmlUtils.getFirstChildTag(queryElement, "columns");
@@ -293,6 +291,8 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			throw new SenderException(getLogPrefix() + "got exception parsing [" + message + "]", e);
 		} catch (JdbcException e) {
 			throw new SenderException(getLogPrefix() + "got exception preparing [" + message + "]", e);
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix() + "got exception creating [" + message + "]", e);
 		}
 
 		return result;
@@ -323,7 +323,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			if (order != null) {
 				query = query + " ORDER BY " + order;
 			}
-			QueryContext queryContext = new QueryContext(null, "select", null, query);
+			QueryContext queryContext = new QueryContext(query, "select", null);
 			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
@@ -365,7 +365,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			if (where != null) {
 				query = query + " WHERE " + where;
 			}
-			QueryContext queryContext = new QueryContext(null, "delete", null, query);
+			QueryContext queryContext = new QueryContext(query, "delete", null);
 			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 			statement.setQueryTimeout(getTimeout());
 			return executeOtherQuery(connection, correlationID, statement, query, null, null);
@@ -400,7 +400,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 
 	private String sql(Connection connection, String correlationID, String query, String type) throws SenderException, JdbcException {
 		try {
-			QueryContext queryContext = new QueryContext(null, "other", null, query);
+			QueryContext queryContext = new QueryContext(query, "other", null);
 			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
@@ -412,7 +412,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				StringTokenizer stringTokenizer = new StringTokenizer(query, ";");
 				while (stringTokenizer.hasMoreTokens()) {
 					String q = stringTokenizer.nextToken();
-					queryContext = new QueryContext(null, "other", null, q);
+					queryContext = new QueryContext(q, "other", null);
 					statement = getStatement(connection, correlationID, queryContext);
 					if (q.trim().toLowerCase().startsWith("select")) {
 						result.append(executeSelectQuery(statement,null,null));
@@ -448,9 +448,9 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 						query = "SELECT " + column.getName() + " FROM " + tableName + " WHERE ROWID=?" + " FOR UPDATE";
 						QueryContext queryContext;
 						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
-							queryContext = new QueryContext(null, "updateBlob", null, query);
+							queryContext = new QueryContext(query, "updateBlob", null);
 						} else {
-							queryContext = new QueryContext(null, "updateClob", null, query);
+							queryContext = new QueryContext(query, "updateClob", null);
 						}
 						PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 						statement.setString(1, rowId);
@@ -464,7 +464,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				}
 				return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
 			}
-			QueryContext queryContext = new QueryContext(null, "other", null, query);
+			QueryContext queryContext = new QueryContext(query, "other", null);
 			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 			applyParameters(statement, columns);
 			statement.setQueryTimeout(getTimeout());

@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -26,38 +28,34 @@ import nl.nn.adapterframework.doc.IbisDoc;
  * <code>{@link #setSessionKey(String) sessionKey}</code>.
  *
  * @author Johan Verrips
- *
- * @see IPipeLineSession
  */
 public class PutInSession extends FixedForwardPipe {
-	
-    private String sessionKey;
-	private String value;
-	
-	/**
-     * Checks whether the proper forward is defined.
-     */
-    public void configure() throws ConfigurationException {
-	    super.configure();
 
-        if (null== getSessionKey()) {
-            throw new ConfigurationException("Pipe [" + getName() + "]"
-                    + " has a null value for sessionKey");
-        }
-    }
+	private String sessionKey;
+	private String value;
+
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		if (StringUtils.isEmpty(getSessionKey())) {
+			throw new ConfigurationException(getLogPrefix(null) + "attribute sessionKey must be specified");
+		}
+	}
+
+	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		Object v; 
+		Object v;
 		if (getValue() == null) {
 			v = input;
 		} else {
 			v = value;
 		}
 		session.put(getSessionKey(), v);
-		log.debug(getLogPrefix(session)+"stored ["+v.toString()+"] in pipeLineSession under key ["+getSessionKey()+"]");
+		if (log.isDebugEnabled()) log.debug(getLogPrefix(session) + "stored [" + v + "] in pipeLineSession under key [" + getSessionKey() + "]");
 		return new PipeRunResult(getForward(), input);
 	}
 
-	@IbisDoc({"name of the key in the <code>pipelinesession</code> to store the input in", ""})
+	@IbisDoc({"1", "Key of the session variable to store the input in", "" })
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
@@ -65,12 +63,12 @@ public class PutInSession extends FixedForwardPipe {
 		return sessionKey;
 	}
 
-	@IbisDoc({"the value to store the in the <code>pipelinesession</code>. if not set, the input of the pipe is stored", ""})
+	@IbisDoc({"2", "Value to store in the <code>pipeLineSession</code>. If not set, the input of the pipe is stored", "" })
 	public void setValue(String value) {
 		this.value = value;
 	}
 	public String getValue() {
 		return value;
-	}	
-	
+	}
+
 }
