@@ -667,26 +667,31 @@ public class CmisSender extends SenderWithParametersBase {
 		if (StringUtils.isNotEmpty(includeAllowableActions)) {
 			operationContext.setIncludeAllowableActions(Boolean.parseBoolean(searchAllVersions));
 		}
+
+		XmlBuilder cmisXml = new XmlBuilder("cmis");
 		ItemIterable<QueryResult> q = session.query(statement, sav, operationContext);
 
-		if (StringUtils.isNotEmpty(skipCount)) {
-			long sc = Long.parseLong(skipCount);
-			q = q.skipTo(sc);
-		}
-		if (StringUtils.isNotEmpty(maxItems)) {
-			q = q.getPage();
-		}
-		XmlBuilder cmisXml = new XmlBuilder("cmis");
-		XmlBuilder rowsetXml = new XmlBuilder("rowset");
-		for (QueryResult qResult : q) {
-			XmlBuilder rowXml = new XmlBuilder("row");
-			for (PropertyData<?> property : qResult.getProperties()) {
-				rowXml.addSubElement(CmisUtils.getPropertyXml(property));
+		if(q == null) {
+			cmisXml.addAttribute("totalNumItems", 0);
+		} else {
+			if (StringUtils.isNotEmpty(skipCount)) {
+				long sc = Long.parseLong(skipCount);
+				q = q.skipTo(sc);
 			}
-			rowsetXml.addSubElement(rowXml);
+			if (StringUtils.isNotEmpty(maxItems)) {
+				q = q.getPage();
+			}
+			XmlBuilder rowsetXml = new XmlBuilder("rowset");
+			for (QueryResult qResult : q) {
+				XmlBuilder rowXml = new XmlBuilder("row");
+				for (PropertyData<?> property : qResult.getProperties()) {
+					rowXml.addSubElement(CmisUtils.getPropertyXml(property));
+				}
+				rowsetXml.addSubElement(rowXml);
+			}
+			cmisXml.addAttribute("totalNumItems", q.getTotalNumItems());
+			cmisXml.addSubElement(rowsetXml);
 		}
-		cmisXml.addAttribute("totalNumItems", q.getTotalNumItems());
-		cmisXml.addSubElement(rowsetXml);
 		return cmisXml.toXML();
 	}
 

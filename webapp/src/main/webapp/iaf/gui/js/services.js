@@ -12,10 +12,22 @@ angular.module('iaf.beheerconsole')
 		$http.defaults.headers.post["Content-Type"] = "application/json";
 		$http.defaults.timeout = appConstants["console.pollerInterval"] - 1000;
 
-		this.Get = function (uri, callback, error, skipEtag) {
-			var skipEtag = (skipEtag===true);
+		this.Get = function (uri, callback, error, httpOptions) {
+			var defaultHttpOptions = {};
 
-			return $http.get(buildURI(uri), (etags.hasOwnProperty(uri) && !skipEtag) ? { headers: {'If-None-Match': etags[uri]} } : {}).then(function(response) {
+			if(httpOptions) {
+				if(typeof httpOptions != "object") { //legacy boolean skipEtag
+					if(etags.hasOwnProperty(uri) && !(httpOptions===true)) {
+						Debug.log("skipEtag ["+httpOptions+"] for uri ["+uri+"]");
+						defaultHttpOptions.headers = {'If-None-Match': etags[uri]};
+					}
+				} else {
+					angular.merge(defaultHttpOptions, defaultHttpOptions, httpOptions);
+					Debug.log("Sending request to uri ["+uri+"] using HttpOptions ", defaultHttpOptions);
+				}
+			}
+
+			return $http.get(buildURI(uri), defaultHttpOptions).then(function(response) {
 				if(callback && typeof callback === 'function') {
 					if(response.headers("etag")) {
 						etags[uri] = response.headers("etag");
@@ -209,6 +221,7 @@ angular.module('iaf.beheerconsole')
 				}
 				else
 					this.poller = setInterval(this.fn, this.pollerInterval);
+				this.run(); //First run!
 			};
 			this.setInterval = function(interval, restart) {
 				var restart = (!restart || restart === false) ? false : true;
@@ -265,14 +278,17 @@ angular.module('iaf.beheerconsole')
 						data[x].setInterval(i, false);
 				},
 				start: function() {
+					Debug.info("starting all Pollers");
 					for(x in data)
 						data[x].start();
 				},
 				stop: function() {
+					Debug.info("stopping all Pollers");
 					for(x in data)
 						data[x].stop();
 				},
 				remove: function() {
+					Debug.info("removing all Pollers");
 					for(x in data)
 						data[x].remove();
 				},
@@ -520,9 +536,9 @@ angular.module('iaf.beheerconsole')
 		});
 
 		$rootScope.$on("$stateChangeStart", function(_, state) {
-			Debug.log("triggered state change");
+			Debug.log("triggered state change to ["+state.name+"]");
 			var url = state.url;
-			if(url.indexOf("?") > 0)
+			if(url && url.indexOf("?") > 0)
 				url = url.substring(0, url.indexOf("?"));
 
 			gTag.config({
@@ -663,18 +679,22 @@ angular.module('iaf.beheerconsole')
 			return swal(options, options.callback);
 		};
 		this.Info = function() {
+			var options = {};
 			angular.merge(options, {type: "info"}, this.defaults.apply(this, arguments));
 			return swal(options, options.callback);
 		};
 		this.Warning = function() {
+			var options = {};
 			angular.merge(options, {type: "warning"}, this.defaults.apply(this, arguments));
 			return swal(options, options.callback);
 		};
 		this.Error = function() {
+			var options = {};
 			angular.merge(options, {type: "error"}, this.defaults.apply(this, arguments));
 			return swal(options, options.callback);
 		};
 		this.Success = function() {
+			var options = {};
 			angular.merge(options, {type: "success"}, this.defaults.apply(this, arguments));
 			return swal(options, options.callback);
 		};

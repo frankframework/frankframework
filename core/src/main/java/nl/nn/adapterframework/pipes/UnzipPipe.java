@@ -104,6 +104,7 @@ public class UnzipPipe extends FixedForwardPipe {
 
 	private boolean checkDirectory=false;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getDirectory())) {
@@ -128,6 +129,7 @@ public class UnzipPipe extends FixedForwardPipe {
 		}
 	}
 
+	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		InputStream in;
 		if (input instanceof InputStream) {
@@ -185,7 +187,7 @@ public class UnzipPipe extends FixedForwardPipe {
 					String filename=ze.getName();
 					String basename=null;
 					String extension=null;
-					int dotPos=filename.indexOf('.');
+					int dotPos=filename.lastIndexOf('.');
 					if (dotPos>=0) {
 						extension=filename.substring(dotPos);
 						basename=filename.substring(0,dotPos);

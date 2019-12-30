@@ -33,6 +33,7 @@ import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
+import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CalendarParserException;
@@ -196,8 +197,11 @@ public class Browse extends ActionBase {
 			if ("showmessage".equalsIgnoreCase(action)) {
 				Object rawmsg = mb.browseMessage(messageId);
 				String msg=null;
-				if (listener!=null) {
-					msg = listener.getStringFromRawMessage(rawmsg,null);
+				if(rawmsg instanceof MessageWrapper) {
+					MessageWrapper msgsgs = (MessageWrapper) rawmsg;
+					msg = msgsgs.getText();
+				} else if (listener!=null) {
+					msg = listener.getStringFromRawMessage(rawmsg, null);
 				} else {
 					msg=(String)rawmsg;
 				}

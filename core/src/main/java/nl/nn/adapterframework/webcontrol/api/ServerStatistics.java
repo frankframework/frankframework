@@ -345,7 +345,7 @@ public class ServerStatistics extends Base {
 		}
 
 		if (enableDebugger!=null) {
-			boolean testtoolEnabled="true".equalsIgnoreCase(AppConstants.getInstance().get("testtool.enabled"));
+			boolean testtoolEnabled=AppConstants.getInstance().getBoolean("testtool.enabled", true);
 			if (testtoolEnabled!=enableDebugger) {
 				AppConstants.getInstance().put("testtool.enabled", "" + enableDebugger);
 				DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enableDebugger);

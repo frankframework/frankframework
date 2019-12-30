@@ -7,20 +7,17 @@
 		<div class="col-lg-12">
 			<div class="ibox float-e-margins">
 				<div class="ibox-title">
-					<h4>Browse ErrorStorage of receiver [{{receiverName}}] of adapter [{{adapterName}}]<span ng-if="count>0"> ({{count}})</span></h4>
+					<div class="pull-right">
+						<button ui-sref="pages.status({adapter:adapterName})" class="btn btn-xs pull-right btn-info" type="button"><i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i> <span>Back</span></button>
+					</div>
+					<h4>Browse ErrorStorage of receiver [{{receiverName}}] of adapter [{{adapterName}}]</h4>
 				</div>
 				<div class="ibox-content">
-<!--
-					<div class="col-md-12">
-						max num of messages displayed {{messageCount}} out of {{totalMessages}} <br/>
-						skip first messages {{skipMessages}} <br/>
-					</div>
--->
-					<div class="col-md-12">
-						<table class="table table-striped">
+					<div class="table-responsive">
+						<table class="table table-striped table-hover" datatable="ng" dt-options="{order: [[ 1, 'asc' ]]}" dt-column-defs="columnDefs">
 							<thead>
 								<tr>
-									<th width="100px">&nbsp;</th>
+									<th style="width:100px;">&nbsp;</th>
 									<th>#</th>
 									<th>Timestamp</th>
 									<th>Type</th>
@@ -35,9 +32,11 @@
 							</thead>
 							<tbody>
 								<tr ng-repeat="message in messages">
-									<td>
-										<button ladda="message.resending" data-style="slide-down" title="Resend Message" ng-click="resendMessage(message)" class="btn btn-info btn-xs" type="button"><i class="fa fa-repeat"></i></button>
-										<button ladda="message.deleting" data-style="slide-down" title="Delete Message" ng-click="deleteMessage(message)" class="btn btn-danger btn-xs" type="button"><i class="fa fa-times"></i></button>
+									<td class="m-b-xxs">
+										<a ui-sref="pages.errorstorage.view({adapter:adapterName,receiver:receiverName,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>
+										<button ladda="message.resending" data-style="slide-down" title="Resend Message" ng-click="resendMessage(message)" class="btn btn-warning btn-xs" type="button"><i class="fa fa-repeat"></i> Resend</button>
+										<button ladda="message.deleting" data-style="slide-down" title="Delete Message" ng-click="deleteMessage(message)" class="btn btn-danger btn-xs" type="button"><i class="fa fa-times"></i> Delete</button>
+										<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>
 									</td>
 									<td>{{message.pos}}</td>
 									<td to-date time="{{message.insertDate}}"></td>
