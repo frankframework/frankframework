@@ -100,22 +100,15 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		Connection connection = null;
 		try {
 			connection = querySender.getConnection();
-			PreparedStatement statement=null;
-			List<SimpleParameter> simpleParameterList = null;
-			ParameterResolutionContext prc = new ParameterResolutionContext(input,session);
-			if (querySender.paramList != null) {
-				simpleParameterList = querySender.toSimpleParameterList(prc.getValues(querySender.paramList));
-			}
-			QueryContext queryContext = new QueryContext(getQuery(), "select", simpleParameterList, new Message(input));
-			statement = querySender.getStatement(connection, streamId, queryContext);
-			if (simpleParameterList != null) {
-				querySender.applySimpleParameters(statement, simpleParameterList);
-			}
+			Message msg = new Message(input);
+			ParameterResolutionContext prc = new ParameterResolutionContext(msg,session);
+			QueryContext queryContext = querySender.getQueryExecutionContext(connection, streamId, msg, prc);
+			PreparedStatement statement=queryContext.getStatement();
 			ResultSet rs = statement.executeQuery();
 			if (rs==null || !rs.next()) {
 				throw new SenderException("query has empty resultset");
 			}
-			return new ResultSetReader(connection, rs,getReader(rs, getCharset(), streamId, session));
+			return new ResultSetReader(connection, rs, getReader(rs, getCharset(), streamId, session));
 		} catch (Exception e) {
 			throw new PipeRunException(this,"cannot open reader",e);
 		}

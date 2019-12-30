@@ -108,18 +108,10 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> {
 		ResultSet rs=null;
 		try {
 			connection = querySender.getConnection();
-			String msg = (String)input;
-			List<SimpleParameter> simpleParameterList = null;
+			Message msg = new Message(input);
 			ParameterResolutionContext prc = new ParameterResolutionContext(msg,session);
-			if (querySender.paramList != null) {
-				simpleParameterList = querySender.toSimpleParameterList(prc.getValues(querySender.paramList));
-			}
-			String query = StringUtils.isNotEmpty(getQuery())?getQuery():input.toString();
-			QueryContext queryContext = new QueryContext(query, "select", simpleParameterList, new Message(input));
-			statement = querySender.getStatement(connection, correlationID, queryContext);
-			if (simpleParameterList != null) {
-				querySender.applySimpleParameters(statement, simpleParameterList);
-			}
+			QueryContext queryContext = querySender.getQueryExecutionContext(connection, correlationID, msg, prc);
+			statement=queryContext.getStatement();
 			rs = statement.executeQuery();
 			if (rs==null) {
 				throw new SenderException("resultset is null");

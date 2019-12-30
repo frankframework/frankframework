@@ -85,12 +85,13 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 	
 	@Override
 	protected Writer createWriter(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
-		querySender.sendMessage(streamId, streamId); // TODO find out why this is here. It seems to me the query will be executed twice this way. 
-		Connection conn=querySender.getConnection();
-		openConnections.put(streamId, conn);
-		QueryContext queryContext = new QueryContext(querySender.getQuery(), "updateClob", null, new Message(streamId));
-		PreparedStatement stmt = querySender.getStatement(conn,session.getMessageId(),queryContext);
-		ResultSet rs =stmt.executeQuery();
+		querySender.sendMessage(streamId, streamId); // TODO find out why this is here. It seems to me the query will be executed twice this way. Or is it to insert an empty LOB before updating it? 
+		Connection connection=querySender.getConnection();
+		openConnections.put(streamId, connection);
+		Message msg = new Message(streamId);
+		QueryContext queryContext = querySender.getQueryExecutionContext(connection, streamId, msg, prc);
+		PreparedStatement statement=queryContext.getStatement();
+		ResultSet rs =statement.executeQuery();
 		openResultSets.put(streamId,rs);
 		IDbmsSupport dbmsSupport=querySender.getDbmsSupport();
 		Object lobHandle=getLobHandle(dbmsSupport, rs);

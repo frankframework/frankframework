@@ -323,7 +323,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			if (order != null) {
 				query = query + " ORDER BY " + order;
 			}
-			QueryContext queryContext = new QueryContext(query, "select", null, null);
+			QueryContext queryContext = new QueryContext(query, "select", null);
 			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
@@ -365,7 +365,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			if (where != null) {
 				query = query + " WHERE " + where;
 			}
-			QueryContext queryContext = new QueryContext(query, "delete", null, null);
+			QueryContext queryContext = new QueryContext(query, "delete", null);
 			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 			statement.setQueryTimeout(getTimeout());
 			return executeOtherQuery(connection, correlationID, statement, query, null, null);
@@ -400,7 +400,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 
 	private String sql(Connection connection, String correlationID, String query, String type) throws SenderException, JdbcException {
 		try {
-			QueryContext queryContext = new QueryContext(query, "other", null, null);
+			QueryContext queryContext = new QueryContext(query, "other", null);
 			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
@@ -412,7 +412,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				StringTokenizer stringTokenizer = new StringTokenizer(query, ";");
 				while (stringTokenizer.hasMoreTokens()) {
 					String q = stringTokenizer.nextToken();
-					queryContext = new QueryContext(q, "other", null, null);
+					queryContext = new QueryContext(q, "other", null);
 					statement = getStatement(connection, correlationID, queryContext);
 					if (q.trim().toLowerCase().startsWith("select")) {
 						result.append(executeSelectQuery(statement,null,null));
@@ -448,9 +448,9 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 						query = "SELECT " + column.getName() + " FROM " + tableName + " WHERE ROWID=?" + " FOR UPDATE";
 						QueryContext queryContext;
 						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
-							queryContext = new QueryContext(query, "updateBlob", null, null);
+							queryContext = new QueryContext(query, "updateBlob", null);
 						} else {
-							queryContext = new QueryContext(query, "updateClob", null, null);
+							queryContext = new QueryContext(query, "updateClob", null);
 						}
 						PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 						statement.setString(1, rowId);
@@ -464,7 +464,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				}
 				return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
 			}
-			QueryContext queryContext = new QueryContext(query, "other", null, null);
+			QueryContext queryContext = new QueryContext(query, "other", null);
 			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 			applyParameters(statement, columns);
 			statement.setQueryTimeout(getTimeout());

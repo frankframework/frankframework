@@ -1221,8 +1221,6 @@ public class JdbcUtil {
 			} else {
 				throw new JdbcException("unknown inputstream [" + value.getClass() + "] for parameter [" + simpleParameter.getName() + "]");
 			}
-		} else if ("string2bytes".equals(paramType)) {
-			statement.setBytes(parameterIndex, value.toString().getBytes());
 		} else if ("bytes".equals(paramType)) {
 			statement.setBytes(parameterIndex, (byte[]) value);
 		} else {

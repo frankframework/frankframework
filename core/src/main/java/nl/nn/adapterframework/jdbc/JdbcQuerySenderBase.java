@@ -39,8 +39,6 @@ import java.util.StringTokenizer;
 import javax.jms.JMSException;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.doc.IbisDoc;
-
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang.StringUtils;
 
@@ -49,6 +47,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -112,7 +111,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	private String columnsReturned=null;
 	private String resultQuery=null;
 	private boolean trimSpaces=true;
-	private String blobCharset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+	private String blobCharset = Misc.DEFAULT_INPUT_STREAM_ENCODING; // TODO this should be set to null! Clobs are for character data, blobs for binary
 	private boolean closeInputstreamOnExit=true;
 	private boolean closeOutputstreamOnExit=true;
 	private String blobBase64Direction=null;
@@ -206,33 +205,39 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return st.getGeneratedKeys();
 	}
 
-	@Override
-	protected Object sendMessage(Connection connection, String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
-		PreparedStatement statement=null;
-		ParameterList newParameterList = new ParameterList();
-		if (paramList != null) {
-			newParameterList = (ParameterList) paramList.clone();
-		}
+	public QueryContext getQueryExecutionContext(Connection connection, String correlationID, Message message, ParameterResolutionContext prc) throws SenderException, SQLException, ParameterException, JdbcException {
+		ParameterList newParameterList = paramList != null ? (ParameterList) paramList.clone() : new ParameterList();
 		String query=getQuery(correlationID, message);
 		if (isUseNamedParams()) {
 			query = adjustQueryAndParameterListForNamedParameters(newParameterList, query);
 		}
-		try {
-			List<SimpleParameter> simpleParameterList = null;
-			if (prc != null && newParameterList != null) {
-				simpleParameterList = toSimpleParameterList(prc.getValues(newParameterList));
-			}
-			QueryContext queryContext = new QueryContext(query, getQueryType(), simpleParameterList, message);
-			log.debug(getLogPrefix() + "obtaining prepared statement to execute");
-			statement = getStatement(connection, correlationID, queryContext);
-			log.debug(getLogPrefix() + "obtained prepared statement to execute");
-			statement.setQueryTimeout(getTimeout());
+		List<SimpleParameter> simpleParameterList = null;
+		if (prc != null && newParameterList != null) {
+			simpleParameterList = toSimpleParameterList(prc.getValues(newParameterList));
+		}
+		QueryContext queryContext = new QueryContext(query, getQueryType(), newParameterList);
+		log.debug(getLogPrefix() + "obtaining prepared statement to execute");
+		PreparedStatement statement = getStatement(connection, correlationID, queryContext);
+		log.debug(getLogPrefix() + "obtained prepared statement to execute");
+		queryContext.setStatement(statement);
+		statement.setQueryTimeout(getTimeout());
 
-			simpleParameterList=queryContext.getSimpleParameterList();
-			
-			if (simpleParameterList != null) {
-				applySimpleParameters(statement, simpleParameterList);
-			}
+		if (simpleParameterList != null) {
+			applySimpleParameters(statement, simpleParameterList);
+		}
+		return queryContext;
+	}
+	
+	@Override
+	protected Object sendMessage(Connection connection, String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
+		QueryContext queryContext;
+		try {
+			queryContext = getQueryExecutionContext(connection, correlationID, message, prc);
+		} catch (JdbcException|ParameterException|SQLException e) {
+			throw new SenderException(getLogPrefix() + "cannot getQueryExecutionContext",e);
+		}
+		try {
+			PreparedStatement statement=queryContext.getStatement();
 			if ("select".equalsIgnoreCase(queryContext.getQueryType())) {
 				Object blobSessionVar=null;
 				Object clobSessionVar=null;
@@ -253,20 +258,20 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			} 
 			if ("updateBlob".equalsIgnoreCase(queryContext.getQueryType())) {
 				if (StringUtils.isEmpty(getBlobSessionKey())) {
-					return executeUpdateBlobQuery(statement,message);
+					return executeUpdateBlobQuery(statement,message.asInputStream());
 				} 
 				return executeUpdateBlobQuery(statement,prc==null?null:prc.getSession().get(getBlobSessionKey()));
 			} 
 			if ("updateClob".equalsIgnoreCase(queryContext.getQueryType())) {
 				if (StringUtils.isEmpty(getClobSessionKey())) {
-					return executeUpdateClobQuery(statement,message);
+					return executeUpdateClobQuery(statement,message.asReader());
 				} 
 				return executeUpdateClobQuery(statement,prc==null?null:prc.getSession().get(getClobSessionKey()));
 			} 
 			if ("package".equalsIgnoreCase(queryContext.getQueryType())) {
-				return executePackageQuery(connection, statement, query);
+				return executePackageQuery(connection, statement, queryContext.getQuery());
 			}
-			return executeOtherQuery(connection, correlationID, statement, query, prc, newParameterList);
+			return executeOtherQuery(connection, correlationID, statement, queryContext.getQuery(), prc, queryContext.getParameterList());
 		} catch (SenderException e) {
 			if (e.getCause() instanceof SQLException) {
 				SQLException sqle = (SQLException) e.getCause();
@@ -278,6 +283,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		} catch (Throwable t) {
 			throw new SenderException(getLogPrefix() + "got exception sending message", t);
 		} finally {
+			PreparedStatement statement = queryContext.getStatement();
 			try {
 				if (statement!=null) {
 					statement.close();
@@ -285,6 +291,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			} catch (SQLException e) {
 				log.warn(new SenderException(getLogPrefix() + "got exception closing SQL statement",e ));
 			}
+			ParameterList newParameterList = queryContext.getParameterList();
 			if (isCloseInputstreamOnExit() && newParameterList!=null) {
 				for (int i = 0; i < newParameterList.size(); i++) {
 					if (Parameter.TYPE_INPUTSTREAM.equals(newParameterList.getParameter(i).getType())) {
@@ -1118,19 +1125,64 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 	@Override
 	public boolean canProvideOutputStream() {
-		// TODO Auto-generated method stub
-		return false;
+		return false; // FixedQuerySender returns true for updateBlob and updateClob
 	}
 
 	@Override
 	public boolean canStreamToTarget() {
-		// TODO Auto-generated method stub
-		return false;
+		return false; // LOBs can be output streamed using InputStreams
 	}
-
 	@Override
 	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
-		// TODO Auto-generated method stub
 		return null;
+//		QueryExecutionContext queryContext;
+//		try {
+//			Map<String,Object> parametervalues = null;
+//			ParameterResolutionContext prc = new ParameterResolutionContext(null, session);
+//			if (paramList!=null) {
+//				parametervalues = prc.getValueMap(paramList);
+//			}
+//			queryContext = getQueryExecutionContext(correlationID, null, prc);
+//			ResultSet rs=null;
+//			try {
+//				log.debug(getLogPrefix() + "executing an updating BLOB command");
+//				rs = queryContext.getStatement().executeQuery();
+//				Object blobHandle=getDbmsSupport().getBlobUpdateHandle(rs, blobColumn);
+//				if ("updateBlob".equalsIgnoreCase(queryContext.getQueryType())) {
+//					if (StringUtils.isNotEmpty(getBlobCharset())) {
+//						Writer writer = new FilterWriter(JdbcUtil.getBlobWriter(getDbmsSupport(), blobHandle, rs, blobColumn, getBlobCharset(), isBlobsCompressed())) {
+//							
+//						};
+//					} else {
+//						OutputStream outputStream = new FilterOutputStream(JdbcUtil.getBlobOutputStream(getDbmsSupport(), blobHandle, rs, blobColumn, isBlobsCompressed())) {
+//							@Override
+//							public void close() {
+//								super.close();
+//								getDbmsSupport().updateBlob(rs, blobColumn, blobHandle);
+//							}
+//						};
+//					}
+//				}
+//					if (StringUtils.isNotEmpty(str))
+//					
+////				Reader inReader = (Reader)message;
+////				Misc.readerToWriter(inReader,writer,isCloseInputstreamOnExit());
+////				writer.close();
+////				getDbmsSupport().updateBlob(rs, blobColumn, blobHandle);
+////				if (StringUtils.isEmpty(getBlobSessionKey())) {
+////					return executeUpdateBlobQuery(statement,message);
+////				} 
+////				return executeUpdateBlobQuery(statement,prc==null?null:prc.getSession().get(getBlobSessionKey()));
+//			} 
+//			if ("updateClob".equalsIgnoreCase(queryContext.getQueryType())) {
+//				if (StringUtils.isEmpty(getClobSessionKey())) {
+//					return executeUpdateClobQuery(statement,message);
+//				} 
+//				return executeUpdateClobQuery(statement,prc==null?null:prc.getSession().get(getClobSessionKey()));
+//		} catch (SenderException|JdbcException|ParameterException|SQLException e) {
+//			throw new StreamingException(getLogPrefix() + "cannot getQueryExecutionContext",e);
+//		}
 	}
+
+
 }

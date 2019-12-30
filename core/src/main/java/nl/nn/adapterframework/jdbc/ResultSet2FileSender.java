@@ -26,13 +26,13 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
@@ -78,8 +78,8 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		FileOutputStream fos=null;
 		try {
 			fos = new FileOutputStream(fileName, isAppend());
-			QueryContext queryContext = new QueryContext(getQuery(), "updateClob", null, message);
-			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
+			QueryContext queryContext = getQueryExecutionContext(connection, correlationID, message, prc);
+			PreparedStatement statement=queryContext.getStatement();
 			resultset = statement.executeQuery();
 			boolean eor = false;
 			if (maxRecords==0) {
@@ -108,6 +108,8 @@ public class ResultSet2FileSender extends FixedQuerySender {
 			}
 		} catch (FileNotFoundException e) {
 			throw new SenderException(getLogPrefix() + "could not find file [" + fileName + "]", e);
+		} catch (ParameterException e) {
+			throw new SenderException(getLogPrefix() + "got Exception resolving parameter", e);
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix() + "got IOException", e);
 		} catch (SQLException sqle) {
