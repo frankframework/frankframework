@@ -49,6 +49,7 @@ import org.apache.commons.lang.StringUtils;
 public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> {
 
 	private String query=null;
+	protected MixedQuerySender querySender = new MixedQuerySender(getQuery());
 	
 	protected class MixedQuerySender extends JdbcQuerySenderBase {
 		
@@ -67,7 +68,6 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> {
 		}
 	}
 	
-	protected MixedQuerySender querySender = new MixedQuerySender(getQuery());
 	
 	@Override
 	public void configure() throws ConfigurationException {

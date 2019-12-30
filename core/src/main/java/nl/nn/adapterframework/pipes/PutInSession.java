@@ -28,8 +28,6 @@ import nl.nn.adapterframework.doc.IbisDoc;
  * <code>{@link #setSessionKey(String) sessionKey}</code>.
  *
  * @author Johan Verrips
- *
- * @see IPipeLineSession
  */
 public class PutInSession extends FixedForwardPipe {
 
@@ -53,24 +51,22 @@ public class PutInSession extends FixedForwardPipe {
 			v = value;
 		}
 		session.put(getSessionKey(), v);
-		log.debug(getLogPrefix(session) + "stored [" + v.toString() + "] in pipeLineSession under key [" + getSessionKey() + "]");
+		if (log.isDebugEnabled()) log.debug(getLogPrefix(session) + "stored [" + v + "] in pipeLineSession under key [" + getSessionKey() + "]");
 		return new PipeRunResult(getForward(), input);
 	}
 
-	@IbisDoc({ "name of the key in the <code>pipelinesession</code> to store the input in", "" })
+	@IbisDoc({"1", "Key of the session variable to store the input in", "" })
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
-
 	public String getSessionKey() {
 		return sessionKey;
 	}
 
-	@IbisDoc({"the value to store the in the <code>pipelinesession</code>. if not set, the input of the pipe is stored", "" })
+	@IbisDoc({"2", "Value to store in the <code>pipeLineSession</code>. If not set, the input of the pipe is stored", "" })
 	public void setValue(String value) {
 		this.value = value;
 	}
-
 	public String getValue() {
 		return value;
 	}
