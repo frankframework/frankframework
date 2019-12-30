@@ -141,7 +141,7 @@ public class MailSender extends MailSenderBase {
 	private String smtpHost;
 
 	private Session session;
-	private Properties properties;
+	private Properties properties = new Properties();
 	private String bounceAddress;
 
 	@Override
@@ -150,7 +150,7 @@ public class MailSender extends MailSenderBase {
 		if (StringUtils.isEmpty(getSmtpHost())) {
 			throw new ConfigurationException("MailSender [" + getName() + "] has no smtpHost configured");
 		}
-		properties = System.getProperties();
+		properties.putAll(System.getProperties());
 		try {
 			properties.put("mail.smtp.host", getSmtpHost());
 		} catch (Throwable t) {
