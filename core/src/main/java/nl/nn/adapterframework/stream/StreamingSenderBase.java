@@ -32,6 +32,7 @@ public abstract class StreamingSenderBase extends SenderWithParametersBase imple
 
 	
 	@Override
+	// can make this sendMessage() 'final', debugging handled by the new abstract sendMessage() above, that includes the MessageOutputStream
 	public final String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		Object result = sendMessage(correlationID, new Message(message), prc, null);
 		try {

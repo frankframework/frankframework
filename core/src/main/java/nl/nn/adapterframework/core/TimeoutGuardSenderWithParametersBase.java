@@ -49,9 +49,7 @@ public abstract class TimeoutGuardSenderWithParametersBase extends SenderWithPar
 		private String threadName;
 		private String threadNDC;
 
-		public SendMessage(String correlationID, String message,
-				ParameterResolutionContext prc, String threadName,
-				String threadNDC) {
+		public SendMessage(String correlationID, String message, ParameterResolutionContext prc, String threadName, String threadNDC) {
 			this.correlationID = correlationID;
 			this.message = message;
 			this.prc = prc;
@@ -72,34 +70,30 @@ public abstract class TimeoutGuardSenderWithParametersBase extends SenderWithPar
 		}
 	}
 
+	// Do not make this method final, it will disable debugging.
 	@Override
-	public final String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		SendMessage sendMessage = new SendMessage(correlationID, message, prc, Thread.currentThread().getName(), NDC.peek());
 		ExecutorService service = Executors.newSingleThreadExecutor();
 		Future<String> future = service.submit(sendMessage);
 		String result = null;
 		try {
-			log.debug(getLogPrefix() + "setting timeout of ["
-					+ retrieveTymeout() + "] s");
+			log.debug(getLogPrefix() + "setting timeout of [" + retrieveTymeout() + "] s");
 			result = future.get(retrieveTymeout(), TimeUnit.SECONDS);
 			if (StringUtils.isNotEmpty(getXmlTag())) {
-				result = "<" + getXmlTag() + "><![CDATA[" + result + "]]></"
-						+ getXmlTag() + ">";
+				result = "<" + getXmlTag() + "><![CDATA[" + result + "]]></" + getXmlTag() + ">";
 			}
 		} catch (Exception e) {
 			boolean timedOut = false;
 			Throwable t = e.getCause();
 			String msg;
 			if (e instanceof TimeoutException) {
-				String errorMsg = getLogPrefix() + "exceeds timeout of ["
-						+ retrieveTymeout() + "] s, interupting";
+				String errorMsg = getLogPrefix() + "exceeds timeout of [" + retrieveTymeout() + "] s, interupting";
 				future.cancel(true);
-				msg = (t != null ? t.getClass().getName() : e.getClass()
-						.getName()) + ": " + errorMsg;
+				msg = (t != null ? t.getClass().getName() : e.getClass().getName()) + ": " + errorMsg;
 				timedOut = true;
 			} else {
-				msg = (t != null ? t.getClass().getName() : e.getClass()
-						.getName());
+				msg = (t != null ? t.getClass().getName() : e.getClass().getName());
 				if (t != null && t instanceof TimeOutException) {
 					timedOut = true;
 				}
@@ -125,31 +119,28 @@ public abstract class TimeoutGuardSenderWithParametersBase extends SenderWithPar
 
 	public abstract String sendMessageWithTimeoutGuarded(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException;
 
-	@IbisDoc({"when <code>true</code>, a senderexception (or timeoutexception) is thrown. otherwise the output is only logged as an error (and returned in a xml string with 'error' tags)", "true"})
-	public void setThrowException(boolean b) {
-		throwException = b;
-	}
-
-	public boolean isThrowException() {
-		return throwException;
-	}
-
 	/**
 	 * In the subclass overwrite the retrieveTymeout method with the (already
 	 * existing) timeout attribute:
 	 * 
 	 * public int retrieveTymeout() { return getTimeout() / 1000; }
 	 */
-
 	public int retrieveTymeout() {
 		return tymeout;
+	}
+
+	@IbisDoc({"when <code>true</code>, a senderexception (or timeoutexception) is thrown. otherwise the output is only logged as an error (and returned in a xml string with 'error' tags)", "true"})
+	public void setThrowException(boolean b) {
+		throwException = b;
+	}
+	public boolean isThrowException() {
+		return throwException;
 	}
 
 	@IbisDoc({"when not empty, the xml tag to encapsulate the result in", ""})
 	public void setXmlTag(String string) {
 		xmlTag = string;
 	}
-
 	public String getXmlTag() {
 		return xmlTag;
 	}
