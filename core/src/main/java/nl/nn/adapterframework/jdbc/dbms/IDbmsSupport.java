@@ -93,7 +93,7 @@ public interface IDbmsSupport {
 
 	String getSchema(Connection conn) throws JdbcException;
 	
-	void convertQuery(Connection conn, QueryContext queryContext, String sqlDialectFrom) throws SQLException, JdbcException;
+	void convertQuery(QueryContext queryContext, String sqlDialectFrom) throws SQLException, JdbcException;
 	
 	boolean isTablePresent(Connection conn, String tableName) throws JdbcException;
 	boolean isTableColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException;

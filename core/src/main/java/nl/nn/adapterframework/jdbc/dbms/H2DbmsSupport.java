@@ -64,14 +64,14 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public void convertQuery(Connection conn, QueryContext queryContext, String sqlDialectFrom) throws SQLException, JdbcException {
+	public void convertQuery(QueryContext queryContext, String sqlDialectFrom) throws SQLException, JdbcException {
 		if (isQueryConversionRequired(sqlDialectFrom)) {
 			if (OracleDbmsSupport.dbmsName.equalsIgnoreCase(sqlDialectFrom)) {
 				List<String> multipleQueries = splitQuery(queryContext.getQuery());
 				StringBuilder sb = new StringBuilder();
 				for (String singleQuery : multipleQueries) {
 					QueryContext singleQueryContext = new QueryContext(singleQuery, queryContext.getQueryType(), queryContext.getParameterList());
-					String convertedQuery = OracleToH2Translator.convertQuery(conn, singleQueryContext, multipleQueries.size() == 1);
+					String convertedQuery = OracleToH2Translator.convertQuery(singleQueryContext, multipleQueries.size() == 1);
 					if (convertedQuery != null) {
 						sb.append(convertedQuery);
 						if (singleQueryContext.getQueryType()!=null && !singleQueryContext.getQueryType().equals(queryContext.getQueryType())) {

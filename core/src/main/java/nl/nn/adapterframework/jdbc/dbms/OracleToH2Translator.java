@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.jdbc.dbms;
 
 import java.math.BigInteger;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +48,7 @@ public class OracleToH2Translator {
 	private static final String SEQUENCE_MAX_VALUE_STRING = "999999999999999999";
 	private static final BigInteger SEQUENCE_MAX_VALUE = new BigInteger(SEQUENCE_MAX_VALUE_STRING);
 
-	public static String convertQuery(Connection connection, QueryContext queryContext, boolean canModifyQueryContext) throws JdbcException, SQLException {
+	public static String convertQuery(QueryContext queryContext, boolean canModifyQueryContext) throws JdbcException, SQLException {
 		if (StringUtils.isEmpty(queryContext.getQuery()))
 			return null;
 
@@ -321,8 +320,8 @@ public class OracleToH2Translator {
 		}
 		return newSplit.toArray(new String[0]);
 	}
-
-	private static String[] convertQueryInsertInto(String[] split) {
+	
+	private static String[] replaceEmptyLobFunctions(String[] split) {
 		List<String> newSplit = new ArrayList<>();
 		for (int i = 0; i < split.length; i++) {
 			if (("EMPTY_BLOB".equalsIgnoreCase(split[i]) || "EMPTY_CLOB".equalsIgnoreCase(split[i])) && (i + 2) < split.length && "(".equals(split[i + 1]) && ")".equals(split[i + 2])) {
@@ -335,17 +334,12 @@ public class OracleToH2Translator {
 		return newSplit.toArray(new String[0]);
 	}
 
+	private static String[] convertQueryInsertInto(String[] split) {
+		return replaceEmptyLobFunctions(split);
+	}
+
 	private static String[] convertQueryUpdateSet(String[] split) {
-		List<String> newSplit = new ArrayList<>();
-		for (int i = 0; i < split.length; i++) {
-			if (("EMPTY_BLOB".equalsIgnoreCase(split[i]) || "EMPTY_CLOB".equalsIgnoreCase(split[i])) && (i + 2) < split.length && "(".equals(split[i + 1]) && ")".equals(split[i + 2])) {
-				newSplit.add("''");
-				i = i + 2;
-			} else {
-				newSplit.add(split[i]);
-			}
-		}
-		return newSplit.toArray(new String[0]);
+		return replaceEmptyLobFunctions(split);
 	}
 
 	private static String[] convertQueryAlterTable(String[] split) {
