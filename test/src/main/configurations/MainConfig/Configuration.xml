@@ -11,6 +11,7 @@
 	<!ENTITY CompareXmlStringPipe SYSTEM "./ConfigurationCompareXmlStringPipe.xml">
 	<!ENTITY QuerySender SYSTEM "./ConfigurationQuerySender.xml">
 	<!ENTITY ClobAndBlob SYSTEM "./ConfigurationClobAndBlob.xml">
+	<!ENTITY BigClobAndBlob SYSTEM "./ConfigurationBigClobAndBlob.xml">
 	<!ENTITY BatchFileTransformerPipe SYSTEM "./ConfigurationBatchFileTransformerPipe.xml">
 	<!ENTITY IfsaRequesterSender SYSTEM "./ConfigurationIfsaRequesterSender.xml">
 	<!ENTITY LinkMethodMessageId SYSTEM "./ConfigurationLinkMethodMessageId.xml">
@@ -61,6 +62,7 @@
 	&CompareXmlStringPipe;
 	&QuerySender;
 	&ClobAndBlob;
+	&BigClobAndBlob;
 	&BatchFileTransformerPipe;
 	&IfsaRequesterSender;
 	&LinkMethodMessageId;
