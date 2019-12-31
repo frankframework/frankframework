@@ -15,19 +15,19 @@
  */
 package nl.nn.adapterframework.core;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import nl.nn.adapterframework.doc.IbisDoc;
-
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.NDC;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.IThreadCreator;
+import nl.nn.adapterframework.stream.ThreadConnector;
+import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 
 /**
  * Extension to SenderWithParametersBase for interrupting processing when
@@ -36,46 +36,48 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * 
  * @author Peter Leeuwenburgh
  */
-public abstract class TimeoutGuardSenderWithParametersBase extends SenderWithParametersBase {
+public abstract class TimeoutGuardSenderWithParametersBase extends SenderWithParametersBase implements IThreadCreator  {
 
 	private boolean throwException = true;
 	private int tymeout = 30;
 	private String xmlTag;
+	protected ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
 
-	public class SendMessage implements Callable<String> {
-		private String correlationID;
-		private String message;
-		private ParameterResolutionContext prc;
-		private String threadName;
-		private String threadNDC;
+	public class TaskWrapper<V> implements IAbortableTask<V>{
+		private V message;
+		private IAbortableTask<V> task;
+		private ThreadConnector threadConnector;
 
-		public SendMessage(String correlationID, String message, ParameterResolutionContext prc, String threadName, String threadNDC) {
-			this.correlationID = correlationID;
-			this.message = message;
-			this.prc = prc;
-			this.threadName = threadName;
-			this.threadNDC = threadNDC;
+		public TaskWrapper(Object owner, String correlationID, V message, IAbortableTask<V> task) {
+			this.message=message;
+			this.task = task;
+			threadConnector=new ThreadConnector(owner, threadLifeCycleEventListener, correlationID);
 		}
 
 		@Override
-		public String call() throws Exception {
-			String ctName = Thread.currentThread().getName();
+		public V call() throws Exception {
 			try {
-				Thread.currentThread().setName(threadName + "[" + ctName + "]");
-				NDC.push(threadNDC);
-				return sendMessageWithTimeoutGuarded(correlationID, message, prc);
-			} finally {
-				Thread.currentThread().setName(ctName);
+				threadConnector.startThread(message);
+				V response=task.call();
+				threadConnector.endThread(response);
+				return response;
+			} catch (Exception e) {
+				throw (Exception)threadConnector.abortThread(e);
 			}
+		}
+
+		@Override
+		public void abort() {
+			task.abort();
 		}
 	}
 
-	// Do not make this method final, it will disable debugging.
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		SendMessage sendMessage = new SendMessage(correlationID, message, prc, Thread.currentThread().getName(), NDC.peek());
+	// can make this sendMessage() 'final', debugging handled by the abstract sendMessageWithTimeoutGuarded() defined below
+	public final String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+		TaskWrapper<String> task = new TaskWrapper<>(this, correlationID, message, createSendMessageTask(correlationID, message, prc));
 		ExecutorService service = Executors.newSingleThreadExecutor();
-		Future<String> future = service.submit(sendMessage);
+		Future<String> future = service.submit(task);
 		String result = null;
 		try {
 			log.debug(getLogPrefix() + "setting timeout of [" + retrieveTymeout() + "] s");
@@ -89,7 +91,10 @@ public abstract class TimeoutGuardSenderWithParametersBase extends SenderWithPar
 			String msg;
 			if (e instanceof TimeoutException) {
 				String errorMsg = getLogPrefix() + "exceeds timeout of [" + retrieveTymeout() + "] s, interupting";
-				future.cancel(true);
+				task.abort();
+				if (!future.isDone()) {
+					future.cancel(true);
+				}
 				msg = (t != null ? t.getClass().getName() : e.getClass().getName()) + ": " + errorMsg;
 				timedOut = true;
 			} else {
@@ -117,7 +122,7 @@ public abstract class TimeoutGuardSenderWithParametersBase extends SenderWithPar
 		return result;
 	}
 
-	public abstract String sendMessageWithTimeoutGuarded(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException;
+	public abstract IAbortableTask<String> createSendMessageTask(String correlationID, String message, ParameterResolutionContext prc) throws SenderException;
 
 	/**
 	 * In the subclass overwrite the retrieveTymeout method with the (already
@@ -144,4 +149,10 @@ public abstract class TimeoutGuardSenderWithParametersBase extends SenderWithPar
 	public String getXmlTag() {
 		return xmlTag;
 	}
+	
+	@Override
+	public void setThreadLifeCycleEventListener(ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener) {
+		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
+	}
+
 }

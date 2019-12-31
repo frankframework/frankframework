@@ -70,6 +70,7 @@ import org.htmlcleaner.TagNode;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IAbortableTask;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.Resource;
@@ -553,7 +554,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	protected abstract String extractResult(HttpResponseHandler responseHandler, ParameterResolutionContext prc) throws SenderException, IOException;
 
 	@Override
-	public String sendMessageWithTimeoutGuarded(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public IAbortableTask<String> createSendMessageTask(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
 		ParameterValueList pvl = null;
 		try {
 			if (prc !=null && paramList !=null) {
@@ -623,11 +624,29 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}
+		return new HttpRequestTask(httpRequestBase, httpTarget, prc);
+	}
 
-		String result = null;
-		int statusCode = -1;
-		int count=getMaxExecuteRetries();
-		String msg = null;
+	private class HttpRequestTask implements IAbortableTask<String> {
+		
+		HttpRequestBase httpRequestBase;
+		HttpHost httpTarget;
+		ParameterResolutionContext prc;
+		
+		public HttpRequestTask(HttpRequestBase httpRequestBase, HttpHost httpTarget, ParameterResolutionContext prc) {
+			this.httpRequestBase=httpRequestBase;
+			this.httpTarget=httpTarget;
+			this.prc=prc;
+		}
+		
+		@Override
+		public String call() throws SenderException, TimeOutException {
+			String result = null;
+			int statusCode = -1;
+			int count=getMaxExecuteRetries();
+			String msg = null;
+			
+			
 		while (count-- >= 0 && statusCode == -1) {
 			try {
 				log.debug(getLogPrefix()+"executing method [" + httpRequestBase.getRequestLine() + "]");
@@ -713,6 +732,12 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		}
 
 		return result;
+	}
+
+		@Override
+		public void abort() {
+			httpRequestBase.abort();
+		}
 	}
 
 	@Override
