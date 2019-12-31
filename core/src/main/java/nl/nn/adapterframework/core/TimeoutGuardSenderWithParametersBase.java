@@ -73,8 +73,8 @@ public abstract class TimeoutGuardSenderWithParametersBase extends SenderWithPar
 	}
 
 	@Override
-	// can make this sendMessage() 'final', debugging handled by the abstract sendMessageWithTimeoutGuarded() defined below
-	public final String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	// we cannot make this method final, createSendMessageTask is not a good candidate to use for debugging.
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		TaskWrapper<String> task = new TaskWrapper<>(this, correlationID, message, createSendMessageTask(correlationID, message, prc));
 		ExecutorService service = Executors.newSingleThreadExecutor();
 		Future<String> future = service.submit(task);
