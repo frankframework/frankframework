@@ -167,17 +167,21 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return con.prepareStatement(query,columnsReturned);
 	}
 
-	protected void convertQuery(QueryContext queryContext) throws JdbcException, SQLException {
+	protected void convertQuery(Connection connection, QueryContext queryContext) throws JdbcException, SQLException {
 		if (StringUtils.isNotEmpty(getSqlDialect()) && !getSqlDialect().equalsIgnoreCase(getDbmsSupport().getDbmsName())) {
 			if (log.isDebugEnabled()) {
 				log.debug(getLogPrefix() + "converting query [" + queryContext.getQuery().trim() + "] from [" + getSqlDialect() + "] to [" + getDbmsSupport().getDbmsName() + "]");
 			}
-			getDbmsSupport().convertQuery(queryContext, getSqlDialect());
+			getDbmsSupport().convertQuery(connection, queryContext, getSqlDialect());
 		}
 	}
 
 	protected PreparedStatement prepareQuery(Connection con, QueryContext queryContext) throws SQLException, JdbcException {
+		convertQuery(con, queryContext);
 		String query = queryContext.getQuery();
+		if (isLockRows()) {
+			query = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, query, getLockWait());
+		}
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix() +"preparing statement for query ["+query+"]");
 		}
@@ -208,11 +212,6 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			query = adjustQueryAndParameterListForNamedParameters(newParameterList, query);
 		}
 		QueryContext queryContext = new QueryContext(query, getQueryType(), newParameterList);
-		convertQuery(queryContext);
-		query = queryContext.getQuery();
-		if (isLockRows()) {
-			query = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, query, getLockWait());
-		}
 		log.debug(getLogPrefix() + "obtaining prepared statement to execute");
 		PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 		log.debug(getLogPrefix() + "obtained prepared statement to execute");
