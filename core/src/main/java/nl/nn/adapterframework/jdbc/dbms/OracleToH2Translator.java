@@ -110,7 +110,9 @@ public class OracleToH2Translator {
 
 	private static String[] convertQuery(String[] split, QueryContext queryContext, boolean canModifyQueryContext) {
 		String[] newSplit;
-		if (isSelectQuery(split)) {
+		if (isSelectOneWhereForUpdateQuery(split)) {
+			newSplit = convertQuerySelectOneWhereForUpdate(split);
+		} else if (isSelectQuery(split)) {
 			newSplit = convertQuerySelect(split);
 		} else if (isSetDefineOffQuery(split)) {
 			newSplit = null;
@@ -197,8 +199,25 @@ public class OracleToH2Translator {
 		return split.length > 3 && "INSERT".equalsIgnoreCase(split[0]) && "INTO".equalsIgnoreCase(split[1]);
 	}
 
+	private static boolean isSelectOneWhereForUpdateQuery(String[] split) {
+		// H2 requires primary key in the select clause. When the select clause contains only one field and the where clause is used, the field from the where clause is added to the select clause
+		return split.length > 7 && "SELECT".equalsIgnoreCase(split[0]) && "FROM".equalsIgnoreCase(split[2]) && "WHERE".equalsIgnoreCase(split[4]) && "FOR".equalsIgnoreCase(split[split.length - 2]) && "UPDATE".equalsIgnoreCase(split[split.length - 1]);
+	}
+
 	private static boolean isUpdateSetQuery(String[] split) {
 		return split.length > 3 && "UPDATE".equalsIgnoreCase(split[0]) && "SET".equalsIgnoreCase(split[2]);
+	}
+
+	private static String[] convertQuerySelectOneWhereForUpdate(String[] split) {
+		List<String> newSplit = new ArrayList<>();
+		for (int i = 0; i < split.length; i++) {
+			if (i == 2) {
+				newSplit.add(",");
+				newSplit.add(split[5]);
+			}
+			newSplit.add(split[i]);
+		}
+		return newSplit.toArray(new String[0]);
 	}
 
 	private static String[] convertQuerySelect(String[] split) {
