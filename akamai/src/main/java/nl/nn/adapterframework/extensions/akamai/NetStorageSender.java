@@ -29,7 +29,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpGet;
@@ -42,9 +41,10 @@ import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IAbortableTask;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.akamai.NetStorageCmsSigner.SignType;
 import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderBase;
@@ -94,6 +94,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	private String accessToken = null;
 	private CredentialFactory accessTokenCf = null;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
@@ -151,13 +152,14 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 		}
 	}
 
-	public String sendMessageWithTimeoutGuarded(String correlationID, String path, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	@Override
+	public IAbortableTask<String> createSendMessageTask(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
 
 		//The input of this sender is the path where to send or retrieve info from.
-		staticUri = buildUri(path);
+		staticUri = buildUri(message);
 
 		//We don't need to send any message to the HttpSenderBase
-		return super.sendMessageWithTimeoutGuarded(correlationID, "", prc);
+		return super.createSendMessageTask(correlationID, "", prc);
 	}
 
 	@Override
@@ -382,6 +384,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 		this.url = url;
 	}
 
+	@Override
 	public String getUrl() {
 		return url;
 	}
@@ -434,6 +437,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 		return accessToken;
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		return "URL ["+getUrl()+"] cpCode ["+getCpCode()+"] action ["+getAction()+"]";
 	}

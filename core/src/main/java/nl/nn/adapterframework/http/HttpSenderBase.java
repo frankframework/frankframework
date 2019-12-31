@@ -629,9 +629,9 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	private class HttpRequestTask implements IAbortableTask<String> {
 		
-		HttpRequestBase httpRequestBase;
-		HttpHost httpTarget;
-		ParameterResolutionContext prc;
+		private HttpRequestBase httpRequestBase;
+		private HttpHost httpTarget;
+		private ParameterResolutionContext prc;
 		
 		public HttpRequestTask(HttpRequestBase httpRequestBase, HttpHost httpTarget, ParameterResolutionContext prc) {
 			this.httpRequestBase=httpRequestBase;
