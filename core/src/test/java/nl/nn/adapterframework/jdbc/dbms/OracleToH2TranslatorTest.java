@@ -133,9 +133,9 @@ public class OracleToH2TranslatorTest {
 	}
 
 	@Test
-	public void testConvertQuerySelectForUpdate() throws JdbcException, SQLException {
+	public void testConvertQuerySelectOneWhereForUpdate() throws JdbcException, SQLException {
 		String query = " SELECT FIELD2 FROM TABLE1 WHERE FIELD1=? AND FIELD3 = ? FOR UPDATE";
-		String expected = query;
+		String expected = "SELECT FIELD2, FIELD1 FROM TABLE1 WHERE FIELD1=? AND FIELD3=? FOR UPDATE";
 		QueryContext queryContext = new QueryContext(query, null, null);
 		String result = OracleToH2Translator.convertQuery(null, queryContext, true);
 		assertEquals(expected, result);
