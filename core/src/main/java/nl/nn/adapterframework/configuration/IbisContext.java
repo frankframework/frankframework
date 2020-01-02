@@ -118,12 +118,13 @@ public class IbisContext extends IbisApplicationContext {
 			createApplicationContext();
 			LOG.debug("Created Ibis Application Context");
 
-			MessageKeeper messageKeeper = new MessageKeeper();
-			messageKeepers.put("*ALL*", messageKeeper);
-
 			ibisManager = (IbisManager) getBean("ibisManager");
 			ibisManager.setIbisContext(this);
 			LOG.debug("Loaded IbisManager Bean");
+
+			MessageKeeper messageKeeper = new MessageKeeper();
+			messageKeepers.put("*ALL*", messageKeeper);
+
 			classLoaderManager = new ClassLoaderManager(this);
 
 			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
