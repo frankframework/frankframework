@@ -4,18 +4,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.util.LogUtil;
 import org.tensorflow.*;
 
-import java.nio.DoubleBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.nio.LongBuffer;
-import java.nio.file.Paths;
-
 public class TensorflowPipe extends FixedForwardPipe {
-	private String modelPath;
+	private String modelPath, inputTensor, outputTensor;
 	private String[] tags;
 	private Graph graph;
 	private String dataType = "double";
@@ -26,7 +18,7 @@ public class TensorflowPipe extends FixedForwardPipe {
 		super.configure();
 		System.out.println("Tensorflow version: " + TensorFlow.version());
 		try {
-			SavedModelBundle savedModelBundle = SavedModelBundle.load(modelPath, tags);
+			SavedModelBundle savedModelBundle = SavedModelBundle.load(modelPath, "serve");
 			graph = savedModelBundle.graph();
 		} catch (Exception e) {
 			throw new ConfigurationException("Error with configuration of Tensorflow Pipe.", e);
@@ -37,12 +29,16 @@ public class TensorflowPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		try (Session tfSession = new Session(graph)) {
 			// Create tensor as input
-			Tensor inputTensor = createTensor(input);
-
+			Tensor inputData;
+			try {
+				 inputData = createTensor(input.toString());
+			}catch (NumberFormatException e) {
+				throw new PipeRunException(this, "Could not parse input into given datatype [" + dataType + "]", e);
+			}
 			// Calculate output
 			Tensor result = tfSession.runner()
-					.feed("input", inputTensor)
-					.fetch("not_activated_output")
+					.feed(inputTensor, inputData)
+					.fetch(outputTensor)
 					.run().get(0);
 			String output = tensor2Csv(result);
 			return new PipeRunResult(getForward(), output);
@@ -62,38 +58,27 @@ public class TensorflowPipe extends FixedForwardPipe {
 		return builder.toString();
 	}
 
-	private Tensor createTensor(Object input) {
+	private Tensor createTensor(Object input) throws ClassNotFoundException {
 		String[] array = input.toString().replaceAll("\\s+", "").split(",");
-		if (dataType.equalsIgnoreCase("integer")) {
-			IntBuffer buffer = IntBuffer.allocate(array.length);
-			for (String s : array) {
-				buffer.put(Integer.parseInt(s));
+
+		Class<?> cls = Class.forName(dataType);
+		Object[] data = new Object[array.length];
+
+		for (int i = 0; i < array.length; i++) {
+			if (cls.equals(Integer.class)) {
+				data[i] = Integer.parseInt(array[i]);
+			} else if (cls.equals(Long.class)) {
+				data[i] = Long.parseLong(array[i]);
+			} else if (cls.equals(Double.class)) {
+				data[i] = Double.parseDouble(array[i]);
+			} else if (cls.equals(Float.class)) {
+				data[i] = Float.parseFloat(array[i]);
+			}else {
+				throw new IllegalArgumentException("The given data type is not valid!");
 			}
-			Tensor<Integer> t = Tensor.create(shape, buffer);
-			return t;
-		} else if (dataType.equalsIgnoreCase("double")) {
-			DoubleBuffer buffer = DoubleBuffer.allocate(array.length);
-			for (String s : array) {
-				buffer.put(Double.parseDouble(s));
-			}
-			Tensor<Double> t = Tensor.create(shape, buffer);
-			return t;
-		} else if (dataType.equalsIgnoreCase("long")) {
-			LongBuffer buffer = LongBuffer.allocate(array.length);
-			for (String s : array) {
-				buffer.put(Long.parseLong(s));
-			}
-			Tensor<Long> t = Tensor.create(shape, buffer);
-			return t;
-		} else if (dataType.equalsIgnoreCase("float")) {
-			FloatBuffer buffer = FloatBuffer.allocate(array.length);
-			for (String s : array) {
-				buffer.put(Float.parseFloat(s));
-			}
-			Tensor<Float> t = Tensor.create(shape, buffer);
-			return t;
 		}
-		throw new IllegalArgumentException("The given data type is not valid!");
+
+		return Tensor.create(data, cls);
 	}
 
 	public void setModelPath(String modelPath) {
@@ -118,5 +103,13 @@ public class TensorflowPipe extends FixedForwardPipe {
 		for (int i = 0; i < array.length; i++)
 			this.shape[i] = Long.parseLong(array[i]);
 
+	}
+
+	public void setInputSensor(String inputSensor) {
+		this.inputTensor = inputSensor;
+	}
+
+	public void setOutputTensor(String outputTensor) {
+		this.outputTensor = outputTensor;
 	}
 }
