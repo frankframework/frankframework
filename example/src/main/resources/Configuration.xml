@@ -1,6 +1,7 @@
 <!DOCTYPE configuration [
 	<!ENTITY HelloWorld SYSTEM "ConfigurationHelloWorld.xml">
 	<!ENTITY HelloWorlds SYSTEM "ConfigurationHelloWorlds.xml">
+	<!ENTITY TensorflowPipe SYSTEM "TensorflowPipe.xml">
 	<!ENTITY HelloBeautifulWorld SYSTEM "ConfigurationHelloBeautifulWorld.xml">
 ]>
 <configuration name="Ibis4Example">
@@ -11,4 +12,5 @@
 	&HelloWorld;
 	&HelloWorlds;
 	&HelloBeautifulWorld;
+	&TensorflowPipe;
 </configuration>

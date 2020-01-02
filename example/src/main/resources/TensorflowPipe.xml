@@ -1,0 +1,28 @@
+<module>
+    <adapter name="TensorflowPipe">
+        <receiver
+                name="HelloWorld"
+                className="nl.nn.adapterframework.receivers.GenericReceiver"
+        >
+            <listener
+                    name="HelloWorld"
+                    className="nl.nn.adapterframework.receivers.JavaListener"
+            />
+        </receiver>
+        <pipeline firstPipe="HelloWorld">
+            <exits>
+                <exit path="EXIT" state="success"/>
+            </exits>
+            <pipe
+                    name="HelloWorld"
+                    className="nl.nn.adapterframework.pipes.TensorflowPipe"
+                    modelPath="C:/path/to/saved_model/"
+                    inputShape="784, 1"
+                    inputTensor="input"
+                    outputTensor="output"
+            >
+                <forward name="success" path="EXIT"/>
+            </pipe>
+        </pipeline>
+    </adapter>
+</module>
