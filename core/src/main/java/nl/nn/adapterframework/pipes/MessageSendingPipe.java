@@ -335,7 +335,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				if (StringUtils.isNotEmpty(getExceptionOnResult())) {
 					throw new ConfigurationException(getLogPrefix(null)+"exceptionOnResult only allowed in stub mode");
 				}
-			}			
+			}
 			if (getMaxRetries()>0) {
 				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 				if (getRetryMinInterval() < MIN_RETRY_INTERVAL) {
@@ -361,7 +361,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				if (messageLog==null) {
 					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 					String msg = "asynchronous sender [" + getSender().getName() + "] without sibling listener has no messageLog. Integrity check not possible";
-					configWarnings.add(log, msg);
+					configWarnings.add(log, msg, true);
 				}
 			}
 		}
