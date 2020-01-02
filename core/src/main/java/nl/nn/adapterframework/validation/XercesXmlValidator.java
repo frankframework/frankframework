@@ -45,6 +45,7 @@ import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParseException;
 import org.apache.xerces.xs.XSModel;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -303,8 +304,9 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	public String validate(Object input, IPipeLineSession session, String logPrefix, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces, boolean resolveExternalEntities) throws XmlValidatorException, PipeRunException, ConfigurationException {
 		ValidationContext context = createValidationContext(session, rootValidations, invalidRootNamespaces);
 		try {
+			InputSource is = getInputSource(input);
 			ValidatorHandlerImpl validatorHandler = getValidatorHandler(session, context);
-			SAXSource inputSource = XmlUtils.stringToSAXSource(input.toString(), true, false);
+			SAXSource inputSource = XmlUtils.inputSourceToSAXSource(is, true, false);
 			validatorHandler.validate(inputSource, null);
 		} catch (SAXException | IOException e) {
 			return finalizeValidation(context, session, e);
