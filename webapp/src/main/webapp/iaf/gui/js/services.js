@@ -13,18 +13,17 @@ angular.module('iaf.beheerconsole')
 		$http.defaults.timeout = appConstants["console.pollerInterval"] - 1000;
 
 		this.Get = function (uri, callback, error, httpOptions) {
-			var defaultHttpOptions = {};
+			var defaultHttpOptions = { headers:{}};
 
 			if(httpOptions) {
-				if(typeof httpOptions != "object") { //legacy boolean skipEtag
-					if(etags.hasOwnProperty(uri) && !(httpOptions===true)) {
-						Debug.log("skipEtag ["+httpOptions+"] for uri ["+uri+"]");
-						defaultHttpOptions.headers = {'If-None-Match': etags[uri]};
-					}
-				} else {
+				//If httpOptions is TRUE, skip additional/custom settings, if it's an object, merge both objects
+				if(typeof httpOptions == "object") {
 					angular.merge(defaultHttpOptions, defaultHttpOptions, httpOptions);
 					Debug.log("Sending request to uri ["+uri+"] using HttpOptions ", defaultHttpOptions);
 				}
+			} else if(etags.hasOwnProperty(uri)) { //If not explicitly disabled (httpOptions==false), check eTag
+				var tag = etags[uri];
+				defaultHttpOptions.headers['If-None-Match'] = tag;
 			}
 
 			return $http.get(buildURI(uri), defaultHttpOptions).then(function(response) {
