@@ -86,6 +86,10 @@ public abstract class Base {
 			retrieveIbisContextFromServlet();
 		}
 
+		if(ibisContext.getBootState().getException() != null) {
+			throw new ApiException(ibisContext.getBootState().getException());
+		}
+
 		return ibisContext;
 	}
 
