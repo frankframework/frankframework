@@ -221,7 +221,6 @@ angular.module('iaf.beheerconsole')
 				}
 				else
 					this.poller = setInterval(this.fn, this.pollerInterval);
-				this.run(); //First run!
 			};
 			this.setInterval = function(interval, restart) {
 				var restart = (!restart || restart === false) ? false : true;
@@ -280,7 +279,7 @@ angular.module('iaf.beheerconsole')
 				start: function() {
 					Debug.info("starting all Pollers");
 					for(x in data)
-						data[x].start();
+						data[x].fn();
 				},
 				stop: function() {
 					Debug.info("stopping all Pollers");
@@ -541,10 +540,12 @@ angular.module('iaf.beheerconsole')
 			if(url && url.indexOf("?") > 0)
 				url = url.substring(0, url.indexOf("?"));
 
-			gTag.config({
-				'page_path': url,
-				'page_title': state.data.pageTitle
-			});
+			if(state.data && state.data.pageTitle) {
+				gTag.config({
+					'page_path': url,
+					'page_title': state.data.pageTitle
+				});
+			}
 		});
 	}])
 	.service('Debug', function() {
