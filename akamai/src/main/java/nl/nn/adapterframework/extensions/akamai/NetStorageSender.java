@@ -41,9 +41,9 @@ import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IAbortableTask;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.akamai.NetStorageCmsSigner.SignType;
 import nl.nn.adapterframework.http.HttpResponseHandler;
@@ -153,13 +153,13 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	}
 
 	@Override
-	public IAbortableTask<String> createSendMessageTask(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
+	public String sendMessage(String correlationID, String path, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 
 		//The input of this sender is the path where to send or retrieve info from.
-		staticUri = buildUri(message);
+		staticUri = buildUri(path); // TODO: this is not thread safe!
 
 		//We don't need to send any message to the HttpSenderBase
-		return super.createSendMessageTask(correlationID, "", prc);
+		return super.sendMessage(correlationID, "", prc);
 	}
 
 	@Override
