@@ -25,36 +25,36 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.ClassLoaderXmlEntityResolver;
+import nl.nn.adapterframework.xml.NonResolvingExternalEntityResolver;
 import org.apache.log4j.Logger;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.jaxp.validation.ValidatorHandlerImpl;
 import org.apache.xerces.jaxp.validation.XMLSchema11Factory;
 import org.apache.xerces.jaxp.validation.XMLSchemaFactory;
-import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.parsers.XMLGrammarPreparser;
-import org.apache.xerces.util.ShadowedSymbolTable;
+import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
+import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.grammars.XSGrammar;
+import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParseException;
 import org.apache.xerces.xs.XSModel;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLFilterImpl;
+import org.json.XML;
+import org.xml.sax.*;
 
+import javax.xml.XMLConstants;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.ValidatorHandler;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -108,6 +108,12 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	protected static final String SECURITY_MANAGER_PROPERTY_ID = Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
 
 	protected static final String XML_SCHEMA_VERSION_PROPERTY = Constants.XERCES_PROPERTY_PREFIX + Constants.XML_SCHEMA_VERSION_PROPERTY;
+
+	/**
+	 * Property identifier: entity resolver.
+	 */
+	private static final String ENTITY_RESOLVER =
+			Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
 
 	private static final int maxInitialised = AppConstants.getInstance().getInt("xmlValidator.maxInitialised", -1);
 	private static final boolean sharedSymbolTable = AppConstants.getInstance().getBoolean("xmlValidator.sharedSymbolTable", false);
@@ -292,6 +298,13 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			validatorHandler.setFeature(VALIDATION_FEATURE_ID, true);
 			validatorHandler.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
 			validatorHandler.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
+			validatorHandler.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
+			validatorHandler.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+
+
+			SecurityManager securityManager = new SecurityManager();
+			securityManager.setEntityExpansionLimit(entityExpansionLimit);
+			validatorHandler.setProperty(SECURITY_MANAGER_PROPERTY_ID, securityManager);
 
 			validatorHandler.setContentHandler(context.getContentHandler());
 			validatorHandler.setErrorHandler(context.getErrorHandler());
@@ -307,7 +320,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	public String validate(InputSource is, ValidatorHandler validatorHandler, IPipeLineSession session, ValidationContext context, boolean resolveExternalEntities) throws XmlValidatorException {
 		try {
 			SAXSource inputSource = XmlUtils.inputSourceToSAXSource(is, true, resolveExternalEntities);
-			((ValidatorHandlerImpl) validatorHandler).validate(inputSource, null);
+			((ValidatorHandlerImpl) validatorHandler).validate(inputSource, null, resolveExternalEntities);
 		} catch (SAXException | IOException e) {
 			return finalizeValidation(context, session, e);
 		}
