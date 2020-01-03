@@ -160,10 +160,6 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	protected abstract String getQuery(Message message);
 
 	protected final PreparedStatement getStatement(Connection con, String correlationID, QueryContext queryContext) throws JdbcException, SQLException {
-		String qry = queryContext.getQuery();
-		if (isLockRows()) {
-			qry = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, qry, getLockWait());
-		}
 		return prepareQuery(con, queryContext);
 	}
 
@@ -182,15 +178,19 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 	protected PreparedStatement prepareQuery(Connection con, QueryContext queryContext) throws SQLException, JdbcException {
 		convertQuery(con, queryContext);
+		String query = queryContext.getQuery();
+		if (isLockRows()) {
+			query = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, query, getLockWait());
+		}
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix() +"preparing statement for query ["+queryContext.getQuery()+"]");
+			log.debug(getLogPrefix() +"preparing statement for query ["+query+"]");
 		}
 		String[] columnsReturned = getColumnsReturnedList();
 		if (columnsReturned!=null) {
-			return prepareQueryWithColunmsReturned(con,queryContext.getQuery(),columnsReturned);
+			return prepareQueryWithColunmsReturned(con,query,columnsReturned);
 		}
-		boolean updateLob = "updateBlob".equalsIgnoreCase(queryContext.getQueryType()) || "updateClob".equalsIgnoreCase(queryContext.getQueryType());
-		return con.prepareStatement(queryContext.getQuery(),ResultSet.TYPE_FORWARD_ONLY,updateLob?ResultSet.CONCUR_UPDATABLE:ResultSet.CONCUR_READ_ONLY);
+		boolean resultSetUpdateable = isLockRows() || "updateBlob".equalsIgnoreCase(queryContext.getQueryType()) || "updateClob".equalsIgnoreCase(queryContext.getQueryType());
+		return con.prepareStatement(query,ResultSet.TYPE_FORWARD_ONLY,resultSetUpdateable?ResultSet.CONCUR_UPDATABLE:ResultSet.CONCUR_READ_ONLY);
 	}
 
 	protected CallableStatement getCallWithRowIdReturned(Connection con, String correlationID, String query) throws SQLException {
@@ -211,10 +211,6 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		if (isUseNamedParams()) {
 			query = adjustQueryAndParameterListForNamedParameters(newParameterList, query);
 		}
-		List<SimpleParameter> simpleParameterList = null;
-		if (prc != null && newParameterList != null) {
-			simpleParameterList = toSimpleParameterList(prc.getValues(newParameterList));
-		}
 		QueryContext queryContext = new QueryContext(query, getQueryType(), newParameterList);
 		log.debug(getLogPrefix() + "obtaining prepared statement to execute");
 		PreparedStatement statement = getStatement(connection, correlationID, queryContext);
@@ -222,8 +218,9 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		queryContext.setStatement(statement);
 		statement.setQueryTimeout(getTimeout());
 
-		if (simpleParameterList != null) {
-			applySimpleParameters(statement, simpleParameterList);
+		if (prc != null && newParameterList != null) {
+			ParameterValueList pvl = prc.getValues(newParameterList);
+			applyParameters(statement, pvl);
 		}
 		return queryContext;
 	}
