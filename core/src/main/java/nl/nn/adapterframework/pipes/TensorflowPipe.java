@@ -4,13 +4,15 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import org.apache.commons.lang.StringUtils;
 import org.tensorflow.*;
 
 public class TensorflowPipe extends FixedForwardPipe {
 	private String modelPath, inputTensor, outputTensor;
-	private String[] tags;
+	private String[] tags = {"serve"};
 	private Graph graph;
-	private String dataType = "double";
+	private Class<?> inputType = Double.class;
+	private Class<?> outputType = Double.class;
 	private long[] shape;
 
 	@Override
@@ -18,7 +20,7 @@ public class TensorflowPipe extends FixedForwardPipe {
 		super.configure();
 		System.out.println("Tensorflow version: " + TensorFlow.version());
 		try {
-			SavedModelBundle savedModelBundle = SavedModelBundle.load(modelPath, "serve");
+			SavedModelBundle savedModelBundle = SavedModelBundle.load(modelPath, tags);
 			graph = savedModelBundle.graph();
 		} catch (Exception e) {
 			throw new ConfigurationException("Error with configuration of Tensorflow Pipe.", e);
@@ -28,18 +30,19 @@ public class TensorflowPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		try (Session tfSession = new Session(graph)) {
-			// Create tensor as input
-			Tensor inputData;
+			// Create Tensor<?> as input
+			Tensor<?> inputData;
 			try {
-				 inputData = createTensor(input.toString());
-			}catch (NumberFormatException e) {
-				throw new PipeRunException(this, "Could not parse input into given datatype [" + dataType + "]", e);
+				inputData = createTensor(input.toString());
+			} catch (NumberFormatException e) {
+				throw new PipeRunException(this, "Could not parse input into given datatype [" + inputType + "]", e);
 			}
 			// Calculate output
-			Tensor result = tfSession.runner()
+			Session.Runner runner = tfSession.runner();
+			Tensor<?> result = runner
 					.feed(inputTensor, inputData)
 					.fetch(outputTensor)
-					.run().get(0);
+					.run().get(0).expect(outputType);
 			String output = tensor2Csv(result);
 			return new PipeRunResult(getForward(), output);
 		} catch (Exception e) {
@@ -47,7 +50,7 @@ public class TensorflowPipe extends FixedForwardPipe {
 		}
 	}
 
-	private String tensor2Csv(Tensor result) {
+	private String tensor2Csv(Tensor<?> result) {
 		float[][] out = new float[(int) result.shape()[0]][(int) result.shape()[1]];
 		result.copyTo(out);
 		StringBuilder builder = new StringBuilder();
@@ -58,27 +61,36 @@ public class TensorflowPipe extends FixedForwardPipe {
 		return builder.toString();
 	}
 
-	private Tensor createTensor(Object input) throws ClassNotFoundException {
+	private Tensor<?> createTensor(Object input) throws ClassNotFoundException {
 		String[] array = input.toString().replaceAll("\\s+", "").split(",");
 
-		Class<?> cls = Class.forName(dataType);
-		Object[] data = new Object[array.length];
-
-		for (int i = 0; i < array.length; i++) {
-			if (cls.equals(Integer.class)) {
+		if (inputType.equals(Integer.class)) {
+			int[] data = new int[array.length];
+			for (int i = 0; i < array.length; i++) {
 				data[i] = Integer.parseInt(array[i]);
-			} else if (cls.equals(Long.class)) {
-				data[i] = Long.parseLong(array[i]);
-			} else if (cls.equals(Double.class)) {
-				data[i] = Double.parseDouble(array[i]);
-			} else if (cls.equals(Float.class)) {
-				data[i] = Float.parseFloat(array[i]);
-			}else {
-				throw new IllegalArgumentException("The given data type is not valid!");
 			}
+			return Tensor.create(data);
+		} else if (inputType.equals(Long.class)) {
+			long[] data = new long[array.length];
+			for (int i = 0; i < array.length; i++) {
+				data[i] = Long.parseLong(array[i]);
+			}
+			return Tensor.create(data);
+		} else if (inputType.equals(Double.class)) {
+			double[] data = new double[array.length];
+			for (int i = 0; i < array.length; i++) {
+				data[i] = Double.parseDouble(array[i]);
+			}
+			return Tensor.create(data);
+		} else if (inputType.equals(Float.class)) {
+			float[] data = new float[array.length];
+			for (int i = 0; i < array.length; i++) {
+				data[i] = Float.parseFloat(array[i]);
+			}
+			return Tensor.create(data);
+		} else {
+			throw new IllegalArgumentException("The given data type is not valid!");
 		}
-
-		return Tensor.create(data, cls);
 	}
 
 	public void setModelPath(String modelPath) {
@@ -93,8 +105,20 @@ public class TensorflowPipe extends FixedForwardPipe {
 		this.tags = tags.split(",");
 	}
 
-	public void setTensorflowDataType(String dataType) {
-		this.dataType = dataType.toLowerCase();
+	public void setInputType(String inputType) {
+		try{
+			this.inputType = Class.forName( "java.lang." + StringUtils.capitalize(StringUtils.lowerCase(inputType)));
+		} catch (ClassNotFoundException e) {
+			log.error("Given output type [" + inputType + "] was not found. Falling back to default [" + this.inputType  + "] instead.");
+		}
+	}
+
+	public void setOutputType(String outputType) {
+		try {
+			this.outputType = Class.forName("java.lang." + StringUtils.capitalize(StringUtils.lowerCase(outputType)));
+		} catch (ClassNotFoundException e) {
+			log.error("Given output type [" + outputType + "] was not found. Falling back to default [" + this.outputType  + "] instead.");
+		}
 	}
 
 	public void setInputShape(String shape) {
@@ -105,7 +129,7 @@ public class TensorflowPipe extends FixedForwardPipe {
 
 	}
 
-	public void setInputSensor(String inputSensor) {
+	public void setInputTensor(String inputSensor) {
 		this.inputTensor = inputSensor;
 	}
 

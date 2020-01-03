@@ -16,10 +16,10 @@
             <pipe
                     name="HelloWorld"
                     className="nl.nn.adapterframework.pipes.TensorflowPipe"
-                    modelPath="C:/path/to/saved_model/"
-                    inputShape="784, 1"
-                    inputTensor="input"
-                    outputTensor="output"
+                    modelPath="C:/Users/murat/PycharmProjects/tfpipetest/saved_model/second/"
+                    inputShape="784"
+                    inputTensor="input_layer_input:0"
+                    outputTensor="output_layer/Identity:0"
             >
                 <forward name="success" path="EXIT"/>
             </pipe>
