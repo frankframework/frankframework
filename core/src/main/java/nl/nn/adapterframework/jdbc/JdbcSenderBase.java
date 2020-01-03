@@ -103,11 +103,13 @@ public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSen
 	}
 	
 	@Override
-	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
+	// can make this sendMessage() 'final', debugging handled by the newly implemented sendMessage() below, that includes the MessageOutputStream
+	public final String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
 		return sendMessage(correlationID, message, null);
 	}
 
 	@Override
+	// can make this sendMessage() 'final', debugging handled by the newly implemented sendMessage() below, that includes the MessageOutputStream
 	public final String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		Object result = sendMessage(correlationID, new Message(message), prc, null);
 		try {

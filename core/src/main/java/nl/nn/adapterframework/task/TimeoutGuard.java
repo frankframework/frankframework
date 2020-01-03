@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -46,10 +46,12 @@ public class TimeoutGuard {
 			thread = Thread.currentThread();
 		}
 
+		@Override
 		public void run() {
 			log.warn("Thread ["+thread.getName()+"] executing task ["+description+"] exceeds timeout of ["+timeout+"] s, interuppting");
 			threadKilled=true;
 			thread.interrupt();
+			kill();
 		}
 	}
 
@@ -63,6 +65,10 @@ public class TimeoutGuard {
 		activateGuard(timeout);
 	}
 	
+	
+	/**
+	 * Sets and activates the timeout, in seconds.
+	 */
 	public void activateGuard(int timeout) {
 		if (timeout > 0) {
 			this.timeout=timeout;
@@ -72,12 +78,6 @@ public class TimeoutGuard {
 		}
 	}
 
-//	public void activateGuard(Date runMaxUntil) {
-//		if (log.isDebugEnabled()) log.debug("setting timeout at ["+DateUtils.format(runMaxUntil)+"] for task ["+description+"]");
-//		timer= new Timer();
-//		timer.schedule(new Killer(),runMaxUntil);
-//	}
-	
 	/**
 	 * cancels timer, and returns true if thread has been killed by this guard or interrupted by another.
 	 */
@@ -89,6 +89,10 @@ public class TimeoutGuard {
 		return Thread.interrupted() || threadKilled; 
 	}
 
+	protected void kill() {
+		// can be called in descendants to kill the guarded job when timeout is exceeded.
+	}
+	
 	public String getDescription() {
 		return description;
 	}

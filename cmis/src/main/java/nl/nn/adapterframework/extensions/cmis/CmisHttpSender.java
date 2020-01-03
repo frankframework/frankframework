@@ -176,7 +176,7 @@ public class CmisHttpSender extends HttpSenderBase {
 
 		ParameterResolutionContext prc = new ParameterResolutionContext("", pls);
 		try {
-			sendMessageWithTimeoutGuarded(null, null, prc);
+			sendMessage(null, null, prc);
 			return (Response) pls.get("response");
 		}
 		catch(Exception e) {
