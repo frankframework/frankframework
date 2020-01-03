@@ -63,6 +63,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.log4j.Logger;
 import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
@@ -70,21 +71,22 @@ import org.htmlcleaner.TagNode;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IAbortableTask;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.core.TimeoutGuardSenderWithParametersBase;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -160,7 +162,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 //TODO: Fix javadoc!
 
-public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBase implements HasPhysicalDestination {
+public abstract class HttpSenderBase extends SenderWithParametersBase implements HasPhysicalDestination {
+	protected Logger log = LogUtil.getLogger(this);
 
 	private String url;
 	private String urlParam = "url";
@@ -554,7 +557,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	protected abstract String extractResult(HttpResponseHandler responseHandler, ParameterResolutionContext prc) throws SenderException, IOException;
 
 	@Override
-	public IAbortableTask<String> createSendMessageTask(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		ParameterValueList pvl = null;
 		try {
 			if (prc !=null && paramList !=null) {
@@ -624,23 +627,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}
-		return new HttpRequestTask(httpRequestBase, httpTarget, prc);
-	}
-
-	private class HttpRequestTask implements IAbortableTask<String> {
 		
-		private HttpRequestBase httpRequestBase;
-		private HttpHost httpTarget;
-		private ParameterResolutionContext prc;
-		
-		public HttpRequestTask(HttpRequestBase httpRequestBase, HttpHost httpTarget, ParameterResolutionContext prc) {
-			this.httpRequestBase=httpRequestBase;
-			this.httpTarget=httpTarget;
-			this.prc=prc;
-		}
-		
-		@Override
-		public String call() throws SenderException, TimeOutException {
 			String result = null;
 			int statusCode = -1;
 			int count=getMaxExecuteRetries();
@@ -648,6 +635,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 			
 			
 		while (count-- >= 0 && statusCode == -1) {
+			TimeoutGuard tg = new TimeoutGuard(1+getTimeout()/1000, getName());
 			try {
 				log.debug(getLogPrefix()+"executing method [" + httpRequestBase.getRequestLine() + "]");
 				HttpResponse httpResponse = getHttpClient().execute(httpTarget, httpRequestBase, httpClientContext);
@@ -691,6 +679,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 				}
 				throw new SenderException(e);
 			} finally {
+				
 				// By forcing the use of the HttpResponseHandler the resultStream 
 				// will automatically be closed when it has been read.
 				// See HttpResponseHandler and ReleaseConnectionAfterReadInputStream.
@@ -700,6 +689,11 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 				// IMPORTANT: It is possible that poorly written implementations
 				// wont read or close the response.
 				// This will cause the connection to become stale..
+				
+				if (tg.cancel()) {
+					httpRequestBase.abort();
+					throw new TimeOutException(getLogPrefix()+"timeout of ["+getTimeout()+"] ms exceeded");
+				}
 			}
 		}
 
@@ -732,12 +726,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		}
 
 		return result;
-	}
-
-		@Override
-		public void abort() {
-			httpRequestBase.abort();
-		}
 	}
 
 	@Override
@@ -795,13 +783,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	}
 	public int getTimeout() {
 		return timeout;
-	}
-
-	@Override
-	public int retrieveTymeout() {
-		// add 1 second to timeout to be sure HttpClient timeout is not
-		// overruled
-		return (getTimeout() / 1000) + 1;
 	}
 
 	@IbisDoc({"11", "the maximum number of concurrent connections", "10"})

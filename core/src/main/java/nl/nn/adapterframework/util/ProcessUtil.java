@@ -99,7 +99,7 @@ public class ProcessUtil {
 		} catch (Throwable t) {
 			throw new SenderException("Could not execute command ["+getCommandLine(command)+"]",t);
 		}
-		TimeoutGuard tg = new TimeoutGuard("ProcessUtil ");
+		TimeoutGuard tg = new TimeoutGuard("ProcessUtil");
 		tg.activateGuard(timeout);
 		try {
 			// Wait until the process is completely finished, or timeout is expired
@@ -111,7 +111,9 @@ public class ProcessUtil {
 				throw new SenderException("command ["+getCommandLine(command)+"] interrupted while waiting for process",e);
 			}
 		} finally {
-			tg.cancel();
+			if (tg.cancel()) {
+				process.destroy();
+			}
 		}
 		// Read the output of the process
 		try {
