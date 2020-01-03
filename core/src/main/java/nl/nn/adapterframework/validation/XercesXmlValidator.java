@@ -50,8 +50,10 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLFilterImpl;
 
 import javax.xml.transform.sax.SAXSource;
+import javax.xml.validation.ValidatorHandler;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -267,7 +269,8 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		return result;
 	}
 
-	public ValidatorHandlerImpl getValidatorHandler(IPipeLineSession session, ValidationContext context) throws ConfigurationException {
+	@Override
+	public ValidatorHandler getValidatorHandler(IPipeLineSession session, ValidationContext context) throws ConfigurationException {
 		// User Impl version from xerces, because it has extra validate() function.
 		ValidatorHandlerImpl validatorHandler;
 
@@ -301,41 +304,15 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	}
 
 	@Override
-	public String validate(Object input, IPipeLineSession session, String logPrefix, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces, boolean resolveExternalEntities) throws XmlValidatorException, PipeRunException, ConfigurationException {
-		ValidationContext context = createValidationContext(session, rootValidations, invalidRootNamespaces);
+	public String validate(InputSource is, ValidatorHandler validatorHandler, IPipeLineSession session, ValidationContext context, boolean resolveExternalEntities) throws XmlValidatorException {
 		try {
-			InputSource is = getInputSource(input);
-			ValidatorHandlerImpl validatorHandler = getValidatorHandler(session, context);
-			SAXSource inputSource = XmlUtils.inputSourceToSAXSource(is, true, false);
-			validatorHandler.validate(inputSource, null);
+			SAXSource inputSource = XmlUtils.inputSourceToSAXSource(is, true, resolveExternalEntities);
+			((ValidatorHandlerImpl) validatorHandler).validate(inputSource, null);
 		} catch (SAXException | IOException e) {
 			return finalizeValidation(context, session, e);
 		}
 		return finalizeValidation(context, session, null);
 	}
-
-	public XMLReader createValidatingParser(IPipeLineSession session, ValidationContext context) throws XmlValidatorException {
-		SymbolTable symbolTable = ((XercesValidationContext) context).getSymbolTable();
-		XMLGrammarPool grammarPool = ((XercesValidationContext) context).getGrammarPool();
-		SAXParser parser = new SAXParser(new ShadowedSymbolTable(symbolTable), grammarPool);
-		try {
-			parser.setProperty(Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY, new ShadowedSymbolTable(symbolTable));
-			parser.setFeature(NAMESPACES_FEATURE_ID, true);
-			parser.setFeature(VALIDATION_FEATURE_ID, true);
-			parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
-			parser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
-			parser.setErrorHandler(context.getErrorHandler());
-			org.apache.xerces.util.SecurityManager mgr = new org.apache.xerces.util.SecurityManager();
-			mgr.setEntityExpansionLimit(entityExpansionLimit);
-			parser.setProperty(SECURITY_MANAGER_PROPERTY_ID, mgr);
-		} catch (SAXNotRecognizedException e) {
-			throw new XmlValidatorException(logPrefix + "parser does not recognize necessary feature", e);
-		} catch (SAXNotSupportedException e) {
-			throw new XmlValidatorException(logPrefix + "parser does not support necessary feature", e);
-		}
-		return parser;
-	}
-
 
 	private static XMLInputSource stringToXMLInputSource(Schema schema) throws IOException, ConfigurationException {
 		// SystemId is needed in case the schema has an import. Maybe we should
