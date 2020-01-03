@@ -117,6 +117,8 @@ public class ProcessUtil {
 			} else {
 				throw new SenderException("command ["+getCommandLine(command)+"] interrupted while waiting for process",e);
 			}
+		} finally {
+			tg.cancel();
 		}
 		// Read the output of the process
 		try {
