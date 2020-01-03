@@ -569,7 +569,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 		HttpHost httpTarget;
 		URIBuilder uri;
-		HttpRequestBase httpRequestBase;
+		final HttpRequestBase httpRequestBase;
 		try {
 			if (urlParameter != null) {
 				String url = (String) pvl.getParameterValue(getUrlParam()).getValue();
@@ -627,15 +627,21 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}
-		
-			String result = null;
-			int statusCode = -1;
-			int count=getMaxExecuteRetries();
-			String msg = null;
-			
-			
+
+		String result = null;
+		int statusCode = -1;
+		int count=getMaxExecuteRetries();
+		String msg = null;
+
 		while (count-- >= 0 && statusCode == -1) {
-			TimeoutGuard tg = new TimeoutGuard(1+getTimeout()/1000, getName());
+			TimeoutGuard tg = new TimeoutGuard(1+getTimeout()/1000, getName()) {
+
+				@Override
+				protected void kill() {
+					httpRequestBase.abort();
+				}
+				
+			};
 			try {
 				log.debug(getLogPrefix()+"executing method [" + httpRequestBase.getRequestLine() + "]");
 				HttpResponse httpResponse = getHttpClient().execute(httpTarget, httpRequestBase, httpClientContext);
@@ -691,7 +697,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				// This will cause the connection to become stale..
 				
 				if (tg.cancel()) {
-					httpRequestBase.abort();
 					throw new TimeOutException(getLogPrefix()+"timeout of ["+getTimeout()+"] ms exceeded");
 				}
 			}

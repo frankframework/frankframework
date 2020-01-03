@@ -93,14 +93,21 @@ public class ProcessUtil {
 		String output;
 		String errors;
 
-		Process process;
+		final Process process;
 		try {
 			process = Runtime.getRuntime().exec((String[])command.toArray(new String[0]));
 		} catch (Throwable t) {
 			throw new SenderException("Could not execute command ["+getCommandLine(command)+"]",t);
 		}
-		TimeoutGuard tg = new TimeoutGuard("ProcessUtil");
-		tg.activateGuard(timeout);
+		TimeoutGuard tg = new TimeoutGuard("ProcessUtil") {
+
+			@Override
+			protected void kill() {
+				process.destroy();
+			}
+			
+		};
+		tg.activateGuard(timeout) ;
 		try {
 			// Wait until the process is completely finished, or timeout is expired
 			process.waitFor();
@@ -109,10 +116,6 @@ public class ProcessUtil {
 				throw new TimeOutException("command ["+getCommandLine(command)+"] timed out",e);
 			} else {
 				throw new SenderException("command ["+getCommandLine(command)+"] interrupted while waiting for process",e);
-			}
-		} finally {
-			if (tg.cancel()) {
-				process.destroy();
 			}
 		}
 		// Read the output of the process
