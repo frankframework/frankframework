@@ -2,6 +2,7 @@
 <div ui-view></div>
 
 <div class="wrapper wrapper-content animated fadeInRight" ng-controller="LoggingCtrl">
+	<uib-alert ng-if="alert" type="danger">{{alert}}</uib-alert>
 	<div class="row">
 		<div class="col-lg-12">
 			<div class="ibox float-e-margins">

@@ -199,9 +199,11 @@ public class ServerStatistics extends Base {
 
 			//Configuration specific messages
 			MessageKeeper messageKeeper = getIbisContext().getMessageKeeper(configuration.getName());
-			List<Object> messages = mapMessageKeeperMessages(messageKeeper);
-			if(messages.size() > 0)
-				configurationsMap.put("messages", messages);
+			if(messageKeeper != null) {
+				List<Object> messages = mapMessageKeeperMessages(messageKeeper);
+				if(messages.size() > 0)
+					configurationsMap.put("messages", messages);
+			}
 
 			returnMap.put(configuration.getName(), configurationsMap);
 		}
@@ -370,6 +372,19 @@ public class ServerStatistics extends Base {
 	public Response getIbisHealth() throws ApiException {
 
 		Map<String, Object> response = new HashMap<String, Object>();
+
+		try {
+			getIbisManager();
+		}
+		catch(ApiException e) {
+			Throwable c = e.getCause();
+			response.put("status", Response.Status.INTERNAL_SERVER_ERROR);
+			response.put("error", c.getMessage());
+			response.put("stacktrace", c.getStackTrace());
+
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(response).build();
+		}
+
 		List<IAdapter> adapters = getIbisManager().getRegisteredAdapters();
 		Map<RunStateEnum, Integer> stateCount = new HashMap<RunStateEnum, Integer>();
 		List<String> errors = new ArrayList<String>();
@@ -413,5 +428,4 @@ public class ServerStatistics extends Base {
 
 		return Response.status(status).entity(response).build();
 	}
-
 }
