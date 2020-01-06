@@ -390,7 +390,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		((IWritableFileSystem<F>)fileSystem).renameFile(file, tgtFilename, true);
 	}
 
-	private void writeContentsToFile(OutputStream out, Object input, ParameterValueList pvl) throws IOException, FileSystemException {
+	private void writeContentsToFile(OutputStream out, Message input, ParameterValueList pvl) throws IOException, FileSystemException {
 		Object contents;
 		if (pvl!=null && pvl.containsKey(PARAMETER_CONTENTS1)) {
 			 contents=pvl.getParameterValue(PARAMETER_CONTENTS1).getValue();
@@ -400,14 +400,16 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		if (StringUtils.isNotEmpty(getBase64())) {
 			out = new Base64OutputStream(out, getBase64().equals(BASE64_ENCODE));
 		}
-		if (contents instanceof InputStream) {
+		if (contents instanceof Message) {
+			Misc.streamToStream(((Message)contents).asInputStream(), out, true);
+		} else if (contents instanceof InputStream) {
 			Misc.streamToStream((InputStream)contents, out, true);
 		} else if (contents instanceof byte[]) {
 			out.write((byte[])contents);
 		} else if (contents instanceof String) {
 			out.write(((String) contents).getBytes(Misc.DEFAULT_INPUT_STREAM_ENCODING));
 		} else {
-			throw new FileSystemException("expected InputStream, ByteArray or String but got [" + contents.getClass().getName() + "] instead");
+			throw new FileSystemException("expected Message, InputStream, ByteArray or String but got [" + contents.getClass().getName() + "] instead");
 		}
 		
 	}
@@ -422,6 +424,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return (ACTION_WRITE1.equals(getAction()) || ACTION_APPEND.equals(getAction())) && parameterList.findParameter(PARAMETER_FILENAME)!=null;
 	}
 
+	@SuppressWarnings("resource")
 	@Override
 	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
 		ParameterResolutionContext prc = new ParameterResolutionContext(null, session);
