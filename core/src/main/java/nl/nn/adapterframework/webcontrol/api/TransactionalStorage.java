@@ -60,6 +60,7 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CalendarParserException;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.Misc;
 
 @Path("/")
 public class TransactionalStorage extends Base {
@@ -527,6 +528,8 @@ public class TransactionalStorage extends Base {
 			}
 			if (StringUtils.isEmpty(msg)) {
 				msg = "<no message found/>";
+			} else {
+				msg=Misc.cleanseMessage(msg, messageBrowser.getHideRegex(), messageBrowser.getHideMethod());
 			}
 	
 			return msg;

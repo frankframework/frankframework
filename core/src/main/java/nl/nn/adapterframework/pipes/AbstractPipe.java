@@ -711,7 +711,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return logIntermediaryResults;
 	}
 
-	@IbisDoc({"regular expression to mask strings in the log. for example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code> will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>note:</b> this feature is used at adapter level, so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)", ""})
+	@IbisDoc({"Regular expression to mask strings in the log. For example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code> will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>note:</b> this feature is used at adapter level, so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)", ""})
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
 	}

@@ -38,6 +38,7 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CalendarParserException;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.FileViewerServlet;
@@ -207,6 +208,8 @@ public class Browse extends ActionBase {
 				}
 				if (StringUtils.isEmpty(msg)) {
 					msg="<no message found>";
+				} else {
+					msg=Misc.cleanseMessage(msg, mb.getHideRegex(), mb.getHideMethod());
 				}
 				String type=request.getParameter("type");
 				if (StringUtils.isEmpty(type)) {
