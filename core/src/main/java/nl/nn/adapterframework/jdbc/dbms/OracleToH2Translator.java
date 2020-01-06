@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.jdbc.dbms;
 
 import java.math.BigInteger;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +48,7 @@ public class OracleToH2Translator {
 	private static final String SEQUENCE_MAX_VALUE_STRING = "999999999999999999";
 	private static final BigInteger SEQUENCE_MAX_VALUE = new BigInteger(SEQUENCE_MAX_VALUE_STRING);
 
-	public static String convertQuery(Connection connection, QueryContext queryContext, boolean canModifyQueryContext) throws JdbcException, SQLException {
+	public static String convertQuery(QueryContext queryContext, boolean canModifyQueryContext) throws JdbcException, SQLException {
 		if (StringUtils.isEmpty(queryContext.getQuery()))
 			return null;
 

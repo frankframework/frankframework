@@ -451,10 +451,10 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	}
 
 	@Override
-	public boolean canStreamToTarget() {
-		return super.canStreamToTarget() 
+	public boolean requiresOutputStream() {
+		return super.requiresOutputStream() 
 				&& (!senderAffectsStreamWritingCapability() || 
-					sender instanceof IOutputStreamingSupport && ((IOutputStreamingSupport)sender).canStreamToTarget()
+					sender instanceof IOutputStreamingSupport && ((IOutputStreamingSupport)sender).requiresOutputStream()
 				   )
 				&& getOutputWrapper()==null
 				&& getOutputValidator()==null

@@ -98,8 +98,8 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		return super.canProvideOutputStream() && actor.canProvideOutputStream();
 	}
 	@Override
-	public boolean canStreamToTarget() {
-		return super.canStreamToTarget() && actor.canStreamToTarget();  
+	public boolean requiresOutputStream() {
+		return super.requiresOutputStream() && actor.requiresOutputStream();  
 	}
 	
 	@Override

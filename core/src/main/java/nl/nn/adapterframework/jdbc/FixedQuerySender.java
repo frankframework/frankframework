@@ -65,4 +65,11 @@ public class FixedQuerySender extends JdbcQuerySenderBase {
 		return query;
 	}
 
+	@Override
+	public boolean canProvideOutputStream() {
+		return  "updateClob".equalsIgnoreCase(getQueryType()) && StringUtils.isEmpty(getClobSessionKey()) ||
+				"updateBlob".equalsIgnoreCase(getQueryType()) && StringUtils.isEmpty(getBlobSessionKey());
+	}
+
+
 }

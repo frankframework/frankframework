@@ -61,7 +61,7 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	}
 
 	@Override
-	public boolean canStreamToTarget() {
+	public boolean requiresOutputStream() {
 		return StringUtils.isEmpty(this.getStoreResultInSessionKey());
 	}
 
@@ -151,7 +151,7 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 					break;
 				}
 				// if next pipe is not a StreamingPipe, than add it's streaming targets manually
-				if (!streamTarget.canStreamToTarget() || !(streamTarget instanceof FixedForwardPipe)) {
+				if (!streamTarget.requiresOutputStream() || !(streamTarget instanceof FixedForwardPipe)) {
 					log.debug("nextPipe ["+forwardPath+"] cannot provide stream to its successor");
 					break;
 				}

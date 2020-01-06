@@ -43,7 +43,7 @@ public abstract class StreamingSenderBase extends SenderWithParametersBase imple
 	}
 
 	@Override
-	public boolean canStreamToTarget() {
+	public boolean requiresOutputStream() {
 		return true;
 	}
 

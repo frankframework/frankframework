@@ -123,8 +123,8 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	}
 
 	@Override
-	public boolean canStreamToTarget() {
-		return super.canStreamToTarget() && sender.canStreamToTarget();
+	public boolean requiresOutputStream() {
+		return super.requiresOutputStream() && sender.requiresOutputStream();
 	}
 
 

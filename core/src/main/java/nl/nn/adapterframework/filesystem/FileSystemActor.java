@@ -414,7 +414,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	
 	
 	@Override
-	public boolean canStreamToTarget() {
+	public boolean requiresOutputStream() {
 		return false;
 	}
 	@Override
