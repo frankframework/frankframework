@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2016-2017, 2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,13 +24,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -51,16 +49,12 @@ import nl.nn.adapterframework.jms.JmsRealmFactory;
 @Path("/")
 public final class BrowseQueue extends Base {
 
-	@Context ServletConfig servletConfig;
-
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("jms")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getBrowseQueue() throws ApiException {
 		Map<String, Object> returnMap = new HashMap<String, Object>();
-
-		initBase(servletConfig);
 
 		List<String> jmsRealms=JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
 		if (jmsRealms.size()==0) jmsRealms.add("no realms defined");
@@ -75,8 +69,6 @@ public final class BrowseQueue extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response putBrowseQueue(LinkedHashMap<String, Object> json) throws ApiException {
-
-		initBase(servletConfig);
 
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 

@@ -45,7 +45,7 @@ angular.module('iaf.beheerconsole')
 				$scope.configurations = new Array();
 				for(var i in data.configurations) {
 					var config = data.configurations[i];
-					if(!config.name.startsWith("IAF_"))
+					if(config.name.startsWith("IAF_"))
 						$scope.configurations.unshift(config);
 					else
 						$scope.configurations.push(config);
@@ -56,13 +56,10 @@ angular.module('iaf.beheerconsole')
 					Idle.setTimeout(false);
 				}
 				Hooks.call("init", false);
+				$state.go("pages.status");
 			}, function(message, statusCode, statusText) {
 				if(statusCode == 500) {
-					$timeout(function(){
-						angular.element(".main").show();
-						angular.element(".loading").hide();
-					}, 100);
-					$state.go("initError");
+					$state.go("pages.errorpage");
 				}
 			});
 			appConstants.init = 1;
@@ -159,6 +156,8 @@ angular.module('iaf.beheerconsole')
 		gTag.event('application.version', appConstants["application.version"]);
 
 		Poller.add("server/warnings", function(configurations) {
+			$scope.alerts = []; //Clear all old alerts
+
 			configurations['All'] = {messages:configurations.messages};
 			delete configurations.messages;
 
@@ -185,7 +184,7 @@ angular.module('iaf.beheerconsole')
 				}
 			}
 
- 			$scope.messageLog = configurations;
+			$scope.messageLog = configurations;
 		}, true, 60000);
 
 		var raw_adapter_data = {};
@@ -391,6 +390,50 @@ angular.module('iaf.beheerconsole')
 	$scope.openOldGui = function() {
 		location.href = Misc.getServerPath();
 	};
+}])
+
+.controller('LoadingPageCtrl', ['$scope', 'Api', '$state', function($scope, Api, $state) {
+	Api.Get("server/health", function() {
+		$state.go("pages.status");
+	}, function(data) {
+		if(data.status == "SERVICE_UNAVAILABLE") {
+			$state.go("pages.status");
+		} else {
+			$state.go("pages.errorpage");
+		}
+	});
+}])
+
+.controller('ErrorPageCtrl', ['$scope', 'Api', '$state', '$interval', '$rootScope', function($scope, Api, $state, $interval, $rootScope) {
+	$scope.cooldownCounter = 0;
+	$scope.viewStackTrace = false;
+
+	var cooldown = function(data) {
+		$scope.cooldownCounter = 60;
+		if(data.status == "INTERNAL_SERVER_ERROR") {
+			$rootScope.startupError = data.error;
+			$scope.stackTrace = data.stacktrace;
+
+			var interval = $interval(function() {
+				$scope.cooldownCounter--;
+				if($scope.cooldownCounter < 1) {
+					$interval.cancel(interval);
+					$scope.checkState();
+				}
+			}, 1000);
+		} else if(data.status == "SERVICE_UNAVAILABLE") {
+			$state.go("pages.status");
+		}
+	};
+
+	$scope.checkState = function() {
+		Api.Get("server/health", function() {
+			$state.go("pages.status");
+			window.location.reload();
+		}, cooldown);
+	};
+
+	$scope.checkState();
 }])
 
 .controller('InformationCtrl', ['$scope', '$uibModalInstance', 'Api', function($scope, $uibModalInstance, Api) {
@@ -1052,8 +1095,21 @@ angular.module('iaf.beheerconsole')
 				scaleLabel: {
 					display: true,
 					labelString: 'Messages Per Hour'
+				},
+				ticks: {
+					beginAtZero: true,
+					suggestedMax: 10
 				}
 			}]
+		},
+		tooltips: {
+			mode: 'index',
+			intersect: false,
+			displayColors: false,
+		},
+		hover: {
+			mode: 'nearest',
+			intersect: true
 		}
 	};
 
@@ -1271,7 +1327,7 @@ angular.module('iaf.beheerconsole')
 
 .controller('SecurityItemsCtrl', ['$scope', 'Api', '$rootScope', function($scope, Api, $rootScope) {
 	$scope.sapSystems = [];
-	$scope.serverProps = {};
+	$scope.serverProps;
 	$scope.authEntries = [];
 	$scope.jmsRealms = [];
 	$scope.securityRoles = [];
@@ -1508,6 +1564,7 @@ angular.module('iaf.beheerconsole')
 		window.open(url, "_blank");
 	};
 
+	$scope.alert = false;
 	var openDirectory = function (directory) {
 		var url = "logging";
 		if(directory) {
@@ -1515,8 +1572,11 @@ angular.module('iaf.beheerconsole')
 		}
 
 		Api.Get(url, function(data) {
+			$scope.alert = false;
 			$.extend($scope, data);
 			$state.transitionTo('pages.logging', {directory: data.directory}, { notify: false, reload: false });
+		}, function(data) {
+			$scope.alert = (data) ? data.error : "An unknown error occured!";
 		});
 	};
 

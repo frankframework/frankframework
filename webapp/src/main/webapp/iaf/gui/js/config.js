@@ -6,7 +6,7 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		IdleProvider.timeout(appConstants["console.idle.timeout"]);
 	}
 
-	$urlRouterProvider.otherwise("/status");
+	$urlRouterProvider.otherwise("/");
 
 	$ocLazyLoadProvider.config({
 		modules: [{
@@ -40,25 +40,26 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		templateUrl: "views/login.html",
 		controller: 'LoginCtrl',
 		data: {
-			pageTitle: 'Login',
-			specialClass: 'gray-bg'
+			pageTitle: 'Login'
 		}
 	})
 	.state('logout', {
 		url: "/logout",
 		controller: 'LogoutCtrl',
 		data: {
-			pageTitle: 'Logout',
-			specialClass: 'gray-bg'
+			pageTitle: 'Logout'
 		}
 	})
 
 	.state('pages', {
 		abstract: true,
-		controller: function($scope, authService) {
+		controller: function($scope, authService, $location, $state) {
 			authService.loggedin(); //Check if the user is logged in.
 			$scope.monitoring = false;
 			$scope.config_database = false;
+
+			angular.element(".main").show();
+			angular.element(".loading").remove();
 		},
 		templateUrl: "views/common/content.html",
 	})
@@ -443,9 +444,13 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 				$location.path("status");
 		}
 	})
-	.state('initError', {
-		templateUrl: "views/initError.html",
-		data: { pageTitle: 'IBIS Startup Failed' }
+	.state('pages.loading', {
+		url: "/",
+		templateUrl: "views/common/loading.html",
+	})
+	.state('pages.errorpage', {
+		url: "/error",
+		templateUrl: "views/common/errorpage.html",
 	});
 
 	$locationProvider.html5Mode(false);

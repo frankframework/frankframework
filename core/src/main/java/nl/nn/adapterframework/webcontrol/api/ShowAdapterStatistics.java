@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2016-2017, 2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,12 +24,10 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -52,7 +50,6 @@ import nl.nn.adapterframework.util.DateUtils;
 
 @Path("/")
 public final class ShowAdapterStatistics extends Base {
-	@Context ServletConfig servletConfig;
 
 	private DecimalFormat countFormat=new DecimalFormat(ItemList.PRINT_FORMAT_COUNT);
 	private DecimalFormat timeFormat=new DecimalFormat(ItemList.PRINT_FORMAT_TIME);
@@ -64,11 +61,10 @@ public final class ShowAdapterStatistics extends Base {
 	@Relation("statistics")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getStatistics(@PathParam("adapterName") String adapterName) throws ApiException {
-		initBase(servletConfig);
 
 		Map<String, Object> statisticsMap = new HashMap<String, Object>();
 
-		Adapter adapter = (Adapter)ibisManager.getRegisteredAdapter(adapterName);
+		Adapter adapter = (Adapter)getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");

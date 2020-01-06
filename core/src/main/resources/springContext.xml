@@ -15,12 +15,6 @@
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
 	</context:component-scan>
 
-	<import resource="springUnmanagedDeployment.xml"/>
-	<import resource="springCommon.xml"/>
-	<import resource="spring${application.server.type}${application.server.type.custom}.xml"/>
-	<import resource="springIbisTestTool${ibistesttool.custom}.xml"/>
-	<import resource="springCustom.xml"/>
-
 	<import resource="classpath:META-INF/cxf/cxf.xml" />
 	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
 </beans>

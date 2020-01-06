@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2016-2017, 2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,11 +24,9 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -45,14 +43,12 @@ import nl.nn.adapterframework.util.Misc;
 
 @Path("/")
 public final class ShowEnvironmentVariables extends Base {
-	@Context ServletConfig servletConfig;
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/environmentvariables")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response environmentVariables() throws ApiException {
-		initBase(servletConfig);
 
 		List<String> propsToHide = new ArrayList<String>();
 		String propertiesHideString = AppConstants.getInstance().getString("properties.hide", null);
@@ -63,7 +59,7 @@ public final class ShowEnvironmentVariables extends Base {
 		Map<String, Object> envVars = new HashMap<String, Object>();
 
 		Map<String, Object> configVars = new HashMap<String, Object>();
-		for(Configuration config : ibisManager.getConfigurations()) {
+		for(Configuration config : getIbisManager().getConfigurations()) {
 			configVars.put(config.getName(), convertPropertiesToMap(AppConstants.getInstance(config.getClassLoader()), propsToHide));
 		}
 		envVars.put("Application Constants", configVars);
