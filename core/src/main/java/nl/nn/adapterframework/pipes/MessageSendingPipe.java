@@ -17,6 +17,7 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -366,6 +367,10 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			}
 		}
 		if (messageLog!=null) {
+			if (StringUtils.isNotEmpty(getHideRegex()) && StringUtils.isEmpty(messageLog.getHideRegex())) {
+				messageLog.setHideRegex(getHideRegex());
+				messageLog.setHideMethod(getHideMethod());
+			}
 			messageLog.configure();
 			if (messageLog instanceof HasPhysicalDestination) {
 				String msg = getLogPrefix(null)+"has messageLog in "+((HasPhysicalDestination)messageLog).getPhysicalDestinationName();
@@ -637,24 +642,9 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					}
 					if (sender instanceof MailSenderOld) {
 						String messageInMailSafeForm = (String)session.get(MailSenderOld.SESSION_KEY_MESSAGE_IN_MAIL_SAFE_FORM);
-						if (getHideRegex() != null){
-							if (getHideMethod().equalsIgnoreCase("FIRSTHALF")) {
-								messageInMailSafeForm = Misc.hideFirstHalf(messageInMailSafeForm, getHideRegex());
-							} else {
-								messageInMailSafeForm = Misc.hideAll(messageInMailSafeForm, getHideRegex());
-							}
-						}
 						messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label,messageInMailSafeForm);
 					} else {
-						String message = (String)input;
-						if (getHideRegex() != null){
-							if (getHideMethod().equalsIgnoreCase("FIRSTHALF")) {
-								message = Misc.hideFirstHalf(message, getHideRegex());
-							} else {
-								message = Misc.hideAll(message, getHideRegex());
-							}
-						}
-						messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label,message);
+						messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label,(Serializable)input);
 					}
 					long messageLogEndTime = System.currentTimeMillis();
 					long messageLogDuration = messageLogEndTime - messageLogStartTime;

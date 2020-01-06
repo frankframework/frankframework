@@ -17,6 +17,8 @@ package nl.nn.adapterframework.core;
 
 import java.util.Date;
 
+import nl.nn.adapterframework.doc.IbisDoc;
+
 
 /**
  * @author  Gerrit van Brakel
@@ -48,6 +50,15 @@ public interface IMessageBrowser extends IXAEnabled {
 	 * Deletes the message.
 	 */
 	void   deleteMessage(String messageId) throws ListenerException;
+
+	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys<party> and </party> ", ""})
+	public void setHideRegex(String hideRegex);
+	public String getHideRegex();
+
+	@IbisDoc({"(Only used when hideRegex is not empty) either <code>all</code> or <code>firstHalf</code>. When <code>firstHalf</code> only the first half of the string is masked, otherwise (<code>all</code>) the entire string is masked", "all"})
+	public void setHideMethod(String hideMethod);
+	public String getHideMethod();
+
 
 }
 
