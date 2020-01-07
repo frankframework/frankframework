@@ -52,7 +52,7 @@ TagDatabase
 
 	<changeSet id="IAF_Util:2" author="Niels Meijer" onValidationFail="MARK_RAN">
 		<comment>Set sequence for IBISSTORE Table</comment>
-		<createSequence sequenceName="SEQ_IBISSTORE" startValue="161332" maxValue="999999999999999999" minValue="1"/>
+		<createSequence sequenceName="SEQ_IBISSTORE" startValue="161332"/>
 	</changeSet>
 
 	<changeSet id="IAF_Util:3" author="Niels Meijer">
