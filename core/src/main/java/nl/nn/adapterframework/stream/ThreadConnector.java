@@ -25,12 +25,14 @@ public class ThreadConnector {
 	private ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
 	private Thread parentThread;
 	private Object threadInfo;
+	private String hideRegex;
 	
 	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationID) {
 		super();
 		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
 		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationID):null;
 		parentThread=Thread.currentThread();
+		hideRegex=LogUtil.getThreadHideRegex();
 	}
 
 	
@@ -38,6 +40,7 @@ public class ThreadConnector {
 		Thread currentThread = Thread.currentThread();
 		if (currentThread!=parentThread) {
 			currentThread.setName(parentThread.getName()+"/"+currentThread.getName());
+			LogUtil.setThreadHideRegex(hideRegex);
 			// Commented out code below. Do not set contextClassLoader, contextClassLoader is not reliable outside configure().
 			// if (currentThread.getContextClassLoader()!=parentThread.getContextClassLoader()) {
 			//	currentThread.setContextClassLoader(parentThread.getContextClassLoader());
@@ -52,22 +55,30 @@ public class ThreadConnector {
 	}
 
 	public Object endThread(Object response) {
-		if (threadLifeCycleEventListener!=null) {
-			return threadLifeCycleEventListener.threadEnded(threadInfo, response);
+		try {
+			if (threadLifeCycleEventListener!=null) {
+				return threadLifeCycleEventListener.threadEnded(threadInfo, response);
+			}
+			return response;
+		} finally {
+			LogUtil.removeThreadHideRegex();
 		}
-		return response;
 	}
 
 	public Throwable abortThread(Throwable t) {
-		if (threadLifeCycleEventListener!=null) {
-			Throwable t2 = threadLifeCycleEventListener.threadAborted(threadInfo, t);
-			if (t2==null) {
-				log.warn("Exception ignored by threadLifeCycleEventListener ("+t.getClass().getName()+"): "+t.getMessage());
-			} else {
-				return t2;
+		try {
+			if (threadLifeCycleEventListener!=null) {
+				Throwable t2 = threadLifeCycleEventListener.threadAborted(threadInfo, t);
+				if (t2==null) {
+					log.warn("Exception ignored by threadLifeCycleEventListener ("+t.getClass().getName()+"): "+t.getMessage());
+				} else {
+					return t2;
+				}
 			}
+			return t;
+		} finally {
+			LogUtil.removeThreadHideRegex();
 		}
-		return t;
 	}
 	
 }
