@@ -62,7 +62,7 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 			F file;
 			
 			try {
-				file = ifs.toFile(message.toString());
+				file = ifs.toFile(message.asString());
 			} catch (Exception e) {
 				throw new SenderException(getLogPrefix() + "unable to get file", e);
 			}
