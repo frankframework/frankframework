@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -52,11 +53,15 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 		private String query;
 		
 		@Override
-		protected String getQuery(Message message) {
+		protected String getQuery(Message message) throws SenderException {
 			if (query!=null) {
 				return query;
 			}
-			return message.toString();
+			try {
+				return message.asString();
+			} catch (IOException e) {
+				throw new SenderException(e);
+			}
 		}
 
 		public void setQuery(String query) {

@@ -15,8 +15,11 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import java.io.IOException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -50,8 +53,12 @@ public class DirectQuerySender extends JdbcQuerySenderBase {
 	}
 
 	@Override
-	protected String getQuery(Message message) {
-		return message.toString();
+	protected String getQuery(Message message) throws SenderException {
+		try {
+			return message.asString();
+		} catch (IOException e) {
+			throw new SenderException(e);
+		}
 	}
 
 }

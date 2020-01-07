@@ -160,7 +160,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	 * Obtain a query to be executed.
 	 * Method-stub to be overridden in descender-classes.
 	 */
-	protected abstract String getQuery(Message message);
+	protected abstract String getQuery(Message message) throws SenderException;
 
 	protected final PreparedStatement getStatement(Connection con, String correlationID, QueryContext queryContext) throws JdbcException, SQLException {
 		return prepareQuery(con, queryContext);
