@@ -36,7 +36,7 @@ angular.module('iaf.beheerconsole')
 					}
 					callback(response.data);
 				}
-			}, function(response){ errorException(response, error); });
+			}).catch(function(response){ errorException(response, error); });
 		};
 
 		this.Post = function () { // uri, object, callback, error || uri, object, headers, callback, error
@@ -58,7 +58,7 @@ angular.module('iaf.beheerconsole')
 					etags[uri] = response.headers("etag");
 					callback(response.data);
 				}
-			}, function(response){ errorException(response, error); });
+			}).catch(function(response){ errorException(response, error); });
 		};
 
 		this.Put = function (uri, object, callback, error) {
@@ -82,7 +82,7 @@ angular.module('iaf.beheerconsole')
 					etags[uri] = response.headers("etag");
 					callback(response.data);
 				}
-			}, function(response){ errorException(response, error); });
+			}).catch(function(response){ errorException(response, error); });
 		};
 
 		this.Delete = function (uri, callback, error) {
@@ -91,7 +91,7 @@ angular.module('iaf.beheerconsole')
 					etags[uri] = response.headers("etag");
 					callback(response.data);
 				}
-			}, function(response){ errorException(response, error); });
+			}).catch(function(response){ errorException(response, error); });
 		};
 
 		var errorException = function (response, callback) {

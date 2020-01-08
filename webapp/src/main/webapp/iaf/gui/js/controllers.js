@@ -56,7 +56,6 @@ angular.module('iaf.beheerconsole')
 					Idle.setTimeout(false);
 				}
 				Hooks.call("init", false);
-				$state.go("pages.status");
 			}, function(message, statusCode, statusText) {
 				if(statusCode == 500) {
 					$state.go("pages.errorpage");
@@ -152,6 +151,8 @@ angular.module('iaf.beheerconsole')
 					$location.path("iaf-update");
 				});
 			}
+		}).catch(function(error) {
+			Debug.error("An error occured while comparing IAF versions", error);
 		});
 		gTag.event('application.version', appConstants["application.version"]);
 
@@ -185,10 +186,10 @@ angular.module('iaf.beheerconsole')
 			}
 
 			$scope.messageLog = configurations;
-		}, true, 60000);
+		});
 
 		var raw_adapter_data = {};
-		Poller.add("adapters?expanded=all", function(allAdapters) {
+		var pollerCallback = function(allAdapters) {
 			for(adapterName in allAdapters) {
 				var adapter = allAdapters[adapterName];
 
@@ -230,7 +231,14 @@ angular.module('iaf.beheerconsole')
 					Hooks.call("adapterUpdated", adapter);
 				}
 			}
-		}, true);
+		};
+
+		//Get base information first, then update it with more details
+		Api.Get("adapters", pollerCallback);
+		$timeout(function() {
+			Poller.add("adapters?expanded=all", pollerCallback, true);
+			$scope.$broadcast('loading', false);
+		}, 3000);
 	});
 
 	var lastUpdated = 0;
@@ -291,7 +299,6 @@ angular.module('iaf.beheerconsole')
 		if($location.hash()) {
 			angular.element("#"+$location.hash())[0].scrollIntoView();
 		}
-		$scope.$broadcast('loading', false);
 	});
 	Hooks.register("adapterUpdated", function(adapter) {
 		var name = adapter.name;
@@ -451,7 +458,9 @@ angular.module('iaf.beheerconsole')
 		$scope.retryInit = true;
 		angular.element('.retryInitBtn i').addClass('fa-spin');
 
-		$http.get(Misc.getServerPath()+"ConfigurationServlet").then(reload, reload);
+		$http.get(Misc.getServerPath()+"ConfigurationServlet").then(reload, reload).catch(function(error) {
+			Debug.error("An error occured while foisting the IbisContext", error);
+		});
 	};
 	function reload() {
 		window.location.reload();
@@ -501,7 +510,7 @@ angular.module('iaf.beheerconsole')
 				SweetAlert.Success("Thank you for sending us feedback!");
 			else
 				SweetAlert.Error("Oops, something went wrong...", "Please try again later!");
-		}, function() {
+		}).catch(function(error) {
 			SweetAlert.Error("Oops, something went wrong...", "Please try again later!");
 		});
 		$uibModalInstance.close();
@@ -746,14 +755,6 @@ angular.module('iaf.beheerconsole')
 		console.warn("What is the scope of: ", adapter);
 	});
 }])
-
-.controller('TranslateCtrl', ['$scope', '$translate', function($scope, $translate) {
-	$scope.changeLanguage = function (langKey) {
-		$translate.use(langKey);
-		$scope.language = langKey;
-	};
-}])
-
 
 //** Ctrls **//
 

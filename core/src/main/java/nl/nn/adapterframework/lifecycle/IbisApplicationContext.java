@@ -205,7 +205,9 @@ public class IbisApplicationContext {
 		}
 
 		log.info("loading Spring configuration files "+springConfigurationFiles+"");
-		System.out.println("loading Spring configuration files "+springConfigurationFiles+"");
+		if(servlet != null) {
+			servlet.getServletContext().log("loading Spring configuration files "+springConfigurationFiles+"");
+		}
 		return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
 	}
 

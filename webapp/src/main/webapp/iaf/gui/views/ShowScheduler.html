@@ -3,7 +3,7 @@
 
 <div class="wrapper wrapper-content animated fadeInRight" ng-controller="SchedulerCtrl">
 	<div class="row">
-		<div class="col-lg-12" ng-if="scheduler.name">
+		<div class="col-lg-12" ng-if="::scheduler.name">
 			<div class="ibox float-e-margins">
 				<div class="ibox-title">
 					<div ng-if="databaseSchedulesEnabled" class="pull-right">
@@ -17,11 +17,11 @@
 							<tbody>
 								<tr>
 									<td>Name</td>
-									<td>{{scheduler.name}}</td>
+									<td>{{::scheduler.name}}</td>
 								</tr>
 								<tr>
 									<td>Version</td>
-									<td>{{scheduler.version}}</td>
+									<td>{{::scheduler.version}}</td>
 								</tr>
 								<tr>
 									<td>Started</td>
@@ -94,18 +94,18 @@
 					<div class="ibox-tools pull-right">
 						<a> <i class="fa fa-chevron-{{(showContent) ? 'up' : 'down' }}"></i></a>
 					</div>
-					<h4>Jobgroup: {{jobGroupName}}</h4>
+					<h4>Jobgroup: {{::jobGroupName}}</h4>
 				</div>
 				<div class="ibox-content" ng-repeat="job in jobs" ng-if="showContent">
 					<div class="col-md-12">
 						<div class="pull-right">
-							<button ng-if="job.type=='DATABASE'" title="Edit Job" class="btn btn-info btn-xs" type="button" ng-click="edit(jobGroupName, job.name)"><i class="fa fa-pencil"></i> Edit</button>
+							<button ng-if="::job.type=='DATABASE'" title="Edit Job" class="btn btn-info btn-xs" type="button" ng-click="edit(jobGroupName, job.name)"><i class="fa fa-pencil"></i> Edit</button>
 							<button title="Delete Job" class="btn btn-danger btn-xs" type="button" ng-click="remove(jobGroupName, job.name)"><i class="fa fa-times"></i> Delete</button>
 							<button ng-if="job.state=='PAUSED'" title="Resume Job" class="btn btn-warning btn-xs" type="button" ng-click="resume(jobGroupName, job.name)"><i class="fa fa-play"></i> Resume</button>
 							<button ng-if="job.state!='PAUSED'" title="Pause Job" class="btn btn-warning btn-xs" type="button" ng-click="pause(jobGroupName, job.name)"><i class="fa fa-pause"></i> Pause</button>
 							<button title="Trigger Job" class="btn btn-info btn-xs" type="button" ng-click="trigger(jobGroupName, job.name)"><i class="fa fa-arrow-circle-o-right"></i> Trigger</button>
 						</div>
-						<h4>Job: {{job.name}} <small ng-if="job.description != '-'">{{job.description}}</small></h4>
+						<h4>Job: {{::job.name}} <small ng-if="::job.description != '-'">{{::job.description}}</small></h4>
 					</div>
 					<div class="col-sm-12 col-md-8 pull-right maxWidth768" style="min-height: 130px;">
 						<table class="table table-striped">
@@ -116,23 +116,23 @@
 							</thead>
 							<tbody>
 								<tr ng-repeat="message in job.messages">
-									<td style="width:40px;" class="text-center" ng-if-start="message.level == 'INFO'">
+									<td style="width:40px;" class="text-center" ng-if-start="::message.level == 'INFO'">
 										&nbsp;<i class="fa fa-info"></i>
 									</td>
-									<td style="width:200px;" class="text-left"><span to-date time="{{message.date}}"></span></td>
-									<td ng-if-end>{{message.text}}</td>
+									<td style="width:200px;" class="text-left"><span to-date time="{{::message.date}}"></span></td>
+									<td ng-if-end>{{::message.text}}</td>
 	
-									<td style="width:40px;" class="text-center" ng-if-start="message.level == 'WARN'">
+									<td style="width:40px;" class="text-center" ng-if-start="::message.level == 'WARN'">
 										&nbsp;<i class="fa fa-warning"></i>
 									</td>
-									<td style="width:200px;" class="text-left"><span to-date time="{{message.date}}"></span></td>
-									<td ng-if-end style="color:#f7a54a;">{{message.text}}</td>
+									<td style="width:200px;" class="text-left"><span to-date time="{{::message.date}}"></span></td>
+									<td ng-if-end style="color:#f7a54a;">{{::message.text}}</td>
 	
-									<td style="width:40px;" class="text-center" ng-if-start="message.level == 'ERROR'">
+									<td style="width:40px;" class="text-center" ng-if-start="::message.level == 'ERROR'">
 										&nbsp;<i class="fa fa-times"></i>
 									</td>
-									<td style="width:200px;" class="text-left"><span to-date time="{{message.date}}"></span></td>
-									<td ng-if-end style="color:#ea394c;">{{message.text}}</td>
+									<td style="width:200px;" class="text-left"><span to-date time="{{::message.date}}"></span></td>
+									<td ng-if-end style="color:#ea394c;">{{::message.text}}</td>
 								</tr>
 							</tbody>
 						</table>
@@ -142,11 +142,11 @@
 							<tbody>
 								<tr>
 									<td>Stateful</td>
-									<td><i class="fa {{job.stateful ? 'fa-check-square' : 'fa-times-circle'}}"></i></td>
+									<td><i class="fa {{::job.stateful ? 'fa-check-square' : 'fa-times-circle'}}"></i></td>
 								</tr>
 								<tr>
 									<td>Durable</td>
-									<td><i class="fa {{job.durable ? 'fa-check-square' : 'fa-times-circle'}}"></i></td>
+									<td><i class="fa {{::job.durable ? 'fa-check-square' : 'fa-times-circle'}}"></i></td>
 								</tr>
 							</tbody>
 						</table>
@@ -155,29 +155,29 @@
 						<table class="table" ng-repeat="trigger in job.triggers | orderBy:'name'">
 							<thead>
 								<tr>
-									<th colspan="2">Trigger: {{trigger.name}}</th>
+									<th colspan="2">Trigger: {{::trigger.name}}</th>
 								</tr>
 							</thead>
 							<tbody>
-								<tr ng-if="trigger.cronExpression">
+								<tr ng-if="::trigger.cronExpression">
 									<td>Cron Expression</td>
-									<td>{{trigger.cronExpression}}</td>
+									<td>{{::trigger.cronExpression}}</td>
 								</tr>
-								<tr ng-if="trigger.repeatInterval">
+								<tr ng-if="::trigger.repeatInterval">
 									<td>Repeat Interval</td>
-									<td>{{trigger.repeatInterval}}</td>
+									<td>{{::trigger.repeatInterval}}</td>
 								</tr>
 								<tr>
 									<td>Start Time</td>
-									<td><span to-date time="{{trigger.startTime}}"></span></td>
+									<td><span to-date time="{{::trigger.startTime}}"></span></td>
 								</tr>
-								<tr ng-if="trigger.previousFireTime">
+								<tr ng-if="::trigger.previousFireTime">
 									<td>Previous Fire</td>
-									<td><span to-date time="{{trigger.previousFireTime}}"></span></td>
+									<td><span to-date time="{{::trigger.previousFireTime}}"></span></td>
 								</tr>
-								<tr ng-if="trigger.nextFireTime">
+								<tr ng-if="::trigger.nextFireTime">
 									<td>Next Fire</td>
-									<td><span to-date time="{{trigger.nextFireTime}}"></span></td>
+									<td><span to-date time="{{::trigger.nextFireTime}}"></span></td>
 								</tr>
 							</tbody>
 						</table>

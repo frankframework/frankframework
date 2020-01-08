@@ -12,7 +12,7 @@ angular.module('iaf.beheerconsole')
 				});
 			};
 			$rootScope.$on('$stateChangeStart', listener);
-			$rootScope.$watch('instanceName', function() {
+			$rootScope.$watch('::instanceName', function() {
 				listener(null, $state.current);
 			});
 		}
@@ -26,7 +26,7 @@ angular.module('iaf.beheerconsole')
 			time: '@'
 		},
 		link: function(scope, element, attributes) {
-			scope.$watch('time', updateTime);
+			scope.$watch('::time', updateTime);
 			function updateTime(time) {
 				if(isNaN(time))
 					time = new Date(time).getTime();
@@ -139,7 +139,7 @@ angular.module('iaf.beheerconsole')
 		replace: true,
 		link: function(scope, element, attributes) {
 			scope.customViews = [];
-			scope.$watch('otapStage', function() {
+			scope.$watch('::otapStage', function() {
 				var customViews = appConstants["customViews.names"];
 				if(customViews == undefined)
 					return;
