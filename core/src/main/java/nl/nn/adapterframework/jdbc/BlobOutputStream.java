@@ -53,7 +53,7 @@ public class BlobOutputStream extends FilterOutputStream {
 	public void close() throws IOException {
 		try {
 			super.close();
-			dbmsSupport.updateClob(resultSet, blobColumn, blobUpdateHandle);
+			dbmsSupport.updateBlob(resultSet, blobColumn, blobUpdateHandle);
 			resultSet.updateRow();
 			JdbcUtil.warningsToXml(resultSet.getWarnings(),warnings);
 		} catch (JdbcException | SQLException e) {
