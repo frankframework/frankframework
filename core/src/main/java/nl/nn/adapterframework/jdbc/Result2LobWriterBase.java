@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 
@@ -48,13 +49,13 @@ import nl.nn.adapterframework.util.JdbcUtil;
  */
 public abstract class Result2LobWriterBase extends ResultWriter {
 	
-	protected Map openStreams = Collections.synchronizedMap(new HashMap());
-	protected Map openConnections = Collections.synchronizedMap(new HashMap());
-	protected Map openResultSets = Collections.synchronizedMap(new HashMap());
-	protected Map openLobHandles = Collections.synchronizedMap(new HashMap());
+	protected Map<String,Connection> openConnections = Collections.synchronizedMap(new HashMap<String,Connection>());
+	protected Map<String,ResultSet>  openResultSets  = Collections.synchronizedMap(new HashMap<String,ResultSet>());
+	protected Map<String,Object>     openLobHandles  = Collections.synchronizedMap(new HashMap<String,Object>());
 
 	protected FixedQuerySender querySender;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		IbisContext ibisContext = getPipe().getAdapter().getConfiguration().getIbisManager().getIbisContext();
@@ -63,11 +64,13 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 		querySender.configure();
 	}
 	
+	@Override
 	public void open() throws SenderException {
 		super.open();
 		querySender.open();
 	}
 
+	@Override
 	public void close() throws SenderException {
 		try {
 			super.close();
@@ -80,13 +83,15 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 	protected abstract Writer getWriter   (IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException;
 	protected abstract void   updateLob   (IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException;
 	
+	@Override
 	protected Writer createWriter(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
-		querySender.sendMessage(streamId, streamId);
-		Connection conn=querySender.getConnection();
-		openConnections.put(streamId, conn);
-		QueryContext queryContext = new QueryContext(null, "updateClob", null, streamId);
-		PreparedStatement stmt = querySender.getStatement(conn,session.getMessageId(),queryContext);
-		ResultSet rs =stmt.executeQuery();
+		querySender.sendMessage(streamId, streamId); // TODO find out why this is here. It seems to me the query will be executed twice this way. Or is it to insert an empty LOB before updating it? 
+		Connection connection=querySender.getConnection();
+		openConnections.put(streamId, connection);
+		Message msg = new Message(streamId);
+		QueryContext queryContext = querySender.getQueryExecutionContext(connection, streamId, msg, prc);
+		PreparedStatement statement=queryContext.getStatement();
+		ResultSet rs =statement.executeQuery();
 		openResultSets.put(streamId,rs);
 		IDbmsSupport dbmsSupport=querySender.getDbmsSupport();
 		Object lobHandle=getLobHandle(dbmsSupport, rs);
@@ -94,13 +99,14 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 		return getWriter(dbmsSupport, lobHandle, rs);
 	}
 	
+	@Override
 	public Object finalizeResult(IPipeLineSession session, String streamId, boolean error, ParameterResolutionContext prc) throws Exception {
 		try {
 			return super.finalizeResult(session,streamId, error, prc);
 		} finally {
 			Object lobHandle = openLobHandles.get(streamId);
-			Connection conn = (Connection)openResultSets.get(streamId);
-			ResultSet rs = (ResultSet)openResultSets.get(streamId);
+			Connection conn = openConnections.get(streamId);
+			ResultSet rs = openResultSets.get(streamId);
 			if (rs!=null) {
 				updateLob(querySender.getDbmsSupport(), lobHandle, rs);
 				JdbcUtil.fullClose(conn, rs);

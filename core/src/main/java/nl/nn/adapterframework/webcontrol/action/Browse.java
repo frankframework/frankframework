@@ -33,10 +33,12 @@ import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
+import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CalendarParserException;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.FileViewerServlet;
@@ -196,13 +198,18 @@ public class Browse extends ActionBase {
 			if ("showmessage".equalsIgnoreCase(action)) {
 				Object rawmsg = mb.browseMessage(messageId);
 				String msg=null;
-				if (listener!=null) {
-					msg = listener.getStringFromRawMessage(rawmsg,null);
+				if(rawmsg instanceof MessageWrapper) {
+					MessageWrapper msgsgs = (MessageWrapper) rawmsg;
+					msg = msgsgs.getText();
+				} else if (listener!=null) {
+					msg = listener.getStringFromRawMessage(rawmsg, null);
 				} else {
 					msg=(String)rawmsg;
 				}
 				if (StringUtils.isEmpty(msg)) {
 					msg="<no message found>";
+				} else {
+					msg=Misc.cleanseMessage(msg, mb.getHideRegex(), mb.getHideMethod());
 				}
 				String type=request.getParameter("type");
 				if (StringUtils.isEmpty(type)) {

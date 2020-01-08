@@ -1,5 +1,5 @@
 /*
-Copyright 2018 Integration Partners B.V.
+Copyright 2018, 2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -33,9 +32,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.StringUtils;
@@ -55,18 +52,17 @@ import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
+import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CalendarParserException;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.Misc;
 
 @Path("/")
 public class TransactionalStorage extends Base {
 
 	protected static final TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-
-	@Context ServletConfig servletConfig;
-	@Context Request request;
 
 	@GET
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -78,8 +74,39 @@ public class TransactionalStorage extends Base {
 				@PathParam("messageId") String messageId
 			) throws ApiException {
 
-		initBase(servletConfig);
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
+
+		if(adapter == null){
+			throw new ApiException("Adapter not found!");
+		}
+
+		ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+		if(receiver == null) {
+			throw new ApiException("Receiver ["+receiverName+"] not found!");
+		}
+
+		//StorageType
+		IMessageBrowser storage;
+		if(storageType.equals("messagelog"))
+			storage = receiver.getMessageLog();
+		else
+			storage = receiver.getErrorStorage();
+
+		return getMessage(storage, receiver.getListener(), messageId);
+	}
+
+	@GET
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/{storageType:messagelog|errorstorage}/{messageId}/download")
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	public Response downloadMessage(
+			@PathParam("adapterName") String adapterName,
+			@PathParam("receiverName") String receiverName,
+			@PathParam("storageType") String storageType,
+			@PathParam("messageId") String messageId
+		) throws ApiException {
+
+		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -123,9 +150,7 @@ public class TransactionalStorage extends Base {
 				@QueryParam("max") int maxMessages
 			) throws ApiException {
 
-		initBase(servletConfig);
-
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -142,6 +167,10 @@ public class TransactionalStorage extends Base {
 			storage = receiver.getMessageLog();
 		else
 			storage = receiver.getErrorStorage();
+
+		if(storage == null) {
+			throw new ApiException("no IMessageBrowser found");
+		}
 
 		//Apply filters
 		MessageBrowsingFilter filter = new MessageBrowsingFilter(maxMessages, skipMessages);
@@ -173,8 +202,7 @@ public class TransactionalStorage extends Base {
 			@PathParam("messageId") String messageId
 		) throws ApiException {
 
-		initBase(servletConfig);
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -202,8 +230,7 @@ public class TransactionalStorage extends Base {
 			MultipartFormDataInput input
 		) throws ApiException {
 
-		initBase(servletConfig);
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -248,8 +275,7 @@ public class TransactionalStorage extends Base {
 			@PathParam("messageId") String messageId
 		) throws ApiException {
 
-		initBase(servletConfig);
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -277,8 +303,7 @@ public class TransactionalStorage extends Base {
 			MultipartFormDataInput input
 		) throws ApiException {
 
-		initBase(servletConfig);
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -322,8 +347,31 @@ public class TransactionalStorage extends Base {
 				@PathParam("messageId") String messageId
 			) throws ApiException {
 
-		initBase(servletConfig);
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
+
+		if(adapter == null){
+			throw new ApiException("Adapter not found!");
+		}
+
+		MessageSendingPipe pipe = (MessageSendingPipe) adapter.getPipeLine().getPipe(pipeName);
+		if(pipe == null) {
+			throw new ApiException("Pipe ["+pipeName+"] not found!");
+		}
+
+		return getMessage(pipe.getMessageLog(), messageId);
+	}
+
+	@GET
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/adapters/{adapterName}/pipes/{pipeName}/messagelog/{messageId}/download")
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	public Response downloadPipeMessage(
+			@PathParam("adapterName") String adapterName,
+			@PathParam("pipeName") String pipeName,
+			@PathParam("messageId") String messageId
+		) throws ApiException {
+
+		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -359,9 +407,7 @@ public class TransactionalStorage extends Base {
 				@QueryParam("max") int maxMessages
 			) throws ApiException {
 
-		initBase(servletConfig);
-
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -414,7 +460,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException(e, 404);
 		}
 
-		PlatformTransactionManager transactionManager = ibisManager.getTransactionManager();
+		PlatformTransactionManager transactionManager = getIbisManager().getTransactionManager();
 		TransactionStatus txStatus = null;
 		try {
 			txStatus = transactionManager.getTransaction(TXNEW);
@@ -440,7 +486,7 @@ public class TransactionalStorage extends Base {
 	}
 
 	private Response getMessage(IMessageBrowser messageBrowser, IListener listener, String messageId) {
-		return buildResponse(getRawMessage(messageBrowser, listener, messageId));
+		return buildResponse(getRawMessage(messageBrowser, listener, messageId), messageId);
 	}
 
 	private String getRawMessage(IMessageBrowser messageBrowser, IListener listener, String messageId) {
@@ -454,13 +500,18 @@ public class TransactionalStorage extends Base {
 
 		try {
 			String msg = null;
-			if (listener != null) {
+			if(rawmsg instanceof MessageWrapper) {
+				MessageWrapper msgsgs = (MessageWrapper) rawmsg;
+				msg = msgsgs.getText();
+			} else if (listener != null) {
 				msg = listener.getStringFromRawMessage(rawmsg, null);
 			} else {
 				msg = (String) rawmsg;
 			}
 			if (StringUtils.isEmpty(msg)) {
 				msg = "<no message found/>";
+			} else {
+				msg=Misc.cleanseMessage(msg, messageBrowser.getHideRegex(), messageBrowser.getHideMethod());
 			}
 	
 			return msg;
@@ -470,22 +521,26 @@ public class TransactionalStorage extends Base {
 		}
 	}
 
-	private MediaType getMediaType(String msg) {
+	private Response buildResponse(String msg, String fileName) {
 		MediaType type = MediaType.TEXT_PLAIN_TYPE;
+		String fileNameExtension = "txt";
 		if (StringUtils.isEmpty(msg)) {
 			throw new ApiException("message not found");
-		}
-		else {
-			if(msg.startsWith("<"))
+		} else {
+			if(msg.startsWith("<")) {
 				type = MediaType.APPLICATION_XML_TYPE;
-			if(msg.startsWith("{"))
+				fileNameExtension = "xml";
+			} else if(msg.startsWith("{") || msg.startsWith("[")) {
 				type = MediaType.APPLICATION_JSON_TYPE;
+				fileNameExtension = "json";
+			}
 		}
-		return type;
-	}
 
-	private Response buildResponse(String msg) {
-		return Response.status(Response.Status.OK).type(getMediaType(msg)).entity(msg).build();
+		return Response.status(Response.Status.OK)
+				.type(type)
+				.entity(msg)
+				.header("Content-Disposition", "attachment; filename=\"msg-"+fileName+"."+fileNameExtension+"\"")
+				.build();
 	}
 
 	private Map<String, Object> getMessages(IMessageBrowser transactionalStorage, MessageBrowsingFilter filter) {

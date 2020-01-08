@@ -447,8 +447,8 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 	@Override
-	public boolean canStreamToTarget() {
-		//return super.canStreamToTarget();
+	public boolean requiresOutputStream() {
+		//return super.requiresOutputStream();
 		return false; // TODO must modify result collection to support output streaming 
 	}
 

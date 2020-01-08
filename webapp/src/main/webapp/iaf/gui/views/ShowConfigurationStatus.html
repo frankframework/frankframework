@@ -141,7 +141,7 @@
                             </div>
                         </div>
                         <div class="ibox-stretch">
-                            <div class="input-group searchbar">
+                            <div class="input-group" id="searchbar">
                                 <input type="text" class="form-control" placeholder="Search ..." ng-model="searchText" ng-model-options="{debounce: 500}" name="search" ng-change="updateQueryParams();"/>
                                 <i ng-show="searchText.length" ng-click="searchText = ''; updateQueryParams();" class="fa fa-times input-group-closeSearch" aria-hidden="true"/>
                                 <span class="input-group-addon">
@@ -312,6 +312,7 @@
                                             <th>Retried</th>
                                             <th>Received</th>
                                             <th>Rejected</th>
+                                            <th>Threads</th>
                                             <th></th>
                                         </tr>
                                     </thead>
@@ -322,6 +323,14 @@
                                             <td>{{receiver.messages.retried}}</td>
                                             <td>{{receiver.messages.received}}</td>
                                             <td>{{receiver.messages.rejected}}</td>
+                                            <td ng-if="receiver.threadCount">{{receiver.threadCount}}/{{receiver.maxThreadCount}} Threads 
+                                                <span ng-if="receiver.threadCountControllable">
+                                                    <button ng-disabled="receiver.state=='loading'" class="btn btn-xs btn-default m-l-xs" ng-click="addThread(adapter, receiver)" type="button" title="Increase the maximum numbers of threads"><i class="fa fa-plus"></i> Inc</button>
+                                                    <button ng-disabled="receiver.state=='loading' || receiver.maxThreadCount < 2" class="btn btn-xs btn-default m-l-xs" ng-click="removeThread(adapter, receiver)" type="button" title="Decrease the maximum numbers of threads"><i class="fa fa-minus"></i> Dec</button>
+                                                </span>
+                                            </td>
+                                            <td ng-if="!receiver.threadCount && receiver.state =='started'">1 Thread</td>
+                                            <td ng-if="!receiver.threadCount && receiver.state !='started'">-</td>
                                             <td>
                                                 <span class="pull-right">
                                                     <button title="Stop receiver" class="btn btn-xs danger-hover" ng-show="receiver.state =='started'" type="button" ng-click="stopReceiver(adapter, receiver)"><i class="fa fa-stop"></i></button>
@@ -329,12 +338,12 @@
                                                     <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state !='started' && receiver.state !='stopped'" type="button"><i class="fa fa-cog fa-spin"></i></button>
 
                                                     <span class="text-danger">
-                                                        <button ng-show="{{receiver.hasErrorStorage}}" ui-sref="pages.errorstorage({adapter: adapter.name, receiver: receiver.name, count: receiver.errorStorageCount})" class="btn btn-xs btn-default m-l-xs" type="button">
+                                                        <button ng-show="{{receiver.hasErrorStorage}}" ui-sref="pages.errorstorage.list({adapter: adapter.name, receiver: receiver.name})" class="btn btn-xs btn-default m-l-xs" type="button">
                                                             <i class="fa fa-times-circle"></i> ({{receiver.errorStorageCount}})
                                                         </button>
                                                     </span>
                                                     <span class="text-success">
-                                                        <button ng-show="{{receiver.hasMessageLog}}" ui-sref="pages.messagelog({adapter: adapter.name, receiver: receiver.name, count: receiver.messageLogCount})" class="btn btn-xs btn-default m-l-xs" type="button">
+                                                        <button ng-show="{{receiver.hasMessageLog}}" ui-sref="pages.messagelog.list({adapter: adapter.name, receiver: receiver.name})" class="btn btn-xs btn-default m-l-xs" type="button">
                                                             <i class="fa fa-envelope-o"></i> ({{receiver.messageLogCount}})
                                                         </button>
                                                     </span>
@@ -365,7 +374,7 @@
                                             <td>
                                                 <span class="pull-right">
                                                     <span class="text-success">
-                                                        <button ng-show="{{pipes.hasMessageLog}}" ui-sref="pages.pipemessagelog({pipe: pipes.name, adapter: adapter.name, count: pipes.messageLogCount})" class="btn btn-xs btn-default m-l-xs" type="button">
+                                                        <button ng-show="{{pipes.hasMessageLog}}" ui-sref="pages.pipemessagelog.list({pipe: pipes.name, adapter: adapter.name})" class="btn btn-xs btn-default m-l-xs" type="button">
                                                             <i class="fa fa-envelope-o"></i> ({{pipes.messageLogCount}})
                                                         </button>
                                                     </span>

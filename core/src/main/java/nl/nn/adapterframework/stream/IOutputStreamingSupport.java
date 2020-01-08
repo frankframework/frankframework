@@ -23,13 +23,16 @@ public interface IOutputStreamingSupport {
 	 * When this returns <code>true</code> then a call to {{@link #provideOutputStream(String, IPipeLineSession, MessageOutputStream) provideOutputStream()} 
 	 * must return a {@link MessageOutputStream} that can be used to write a message to, that then will be processed in a streaming way.
 	 */
-	public boolean canProvideOutputStream();  
+	public boolean canProvideOutputStream();
 	
 	/**
 	 * When this returns <code>true</code> then {@link #provideOutputStream(String, IPipeLineSession, MessageOutputStream) provideOutputStream()} 
 	 * must use {@link MessageOutputStream target} to stream its own output to. 
+	 * N.B. A class should only return <code>true</code> from <code>requiresOutputStream</code> if that is the way the output can be produced efficiently
+	 * in a streaming way. If the response data is already present in memory, e.g. as a String or byte array, it should send the data as is, requiresOutputStream
+	 * should be kept <code>false</false>. Also when the data is available as an InputStream, it should keep requiresOutputStream <code>false</false>.
 	 */
-	public boolean canStreamToTarget();  
+	public boolean requiresOutputStream();
 
 	/**
 	 * return a {@link MessageOutputStream} that can be used to write a message to, that then will be processed in a streaming way.

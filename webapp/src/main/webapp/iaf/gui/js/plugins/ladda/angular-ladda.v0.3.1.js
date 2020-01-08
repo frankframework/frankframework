@@ -38,7 +38,7 @@
         }
       };
     })
-    .directive('ladda', ['ladda', function (laddaOption) {
+    .directive('ladda', ['ladda', '$compile', function (laddaOption, $compile) {
       return {
         restrict: 'A',
         priority: -1,

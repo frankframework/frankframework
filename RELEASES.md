@@ -57,6 +57,7 @@ Upcoming
 - FileSystemSenders now return an InputStream when action=read
 - XsltSender, XsltPipe, JsonXsltSender, JsonXsltPipe accept streaming inputs
 - Add option in GUI 3.0 to cut off all traffic to Ladybug debugger, and to switch it on again
+- HttpSender, WebServiceSender and descendants no longer support attribute xmlTag
 
 
 ### Non backwards compatible changes

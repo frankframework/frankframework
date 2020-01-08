@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2016-2017, 2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -55,12 +55,11 @@ public final class Webservices extends Base {
 	@Relation("webservices")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getLogDirectory() throws ApiException {
-		initBase(servletConfig);
 
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 
 		List<Map<String, Object>> webServices = new ArrayList<Map<String, Object>>();
-		for (IAdapter a : ibisManager.getRegisteredAdapters()) {
+		for (IAdapter a : getIbisManager().getRegisteredAdapters()) {
 			Adapter adapter = (Adapter) a;
 			Iterator<IReceiver> recIt = adapter.getReceiverIterator();
 			while (recIt.hasNext()) {
@@ -83,7 +82,7 @@ public final class Webservices extends Base {
 		returnMap.put("services", webServices);
 
 		List<Map<String, Object>> wsdls = new ArrayList<Map<String, Object>>();
-		for (IAdapter a : ibisManager.getRegisteredAdapters()) {
+		for (IAdapter a : getIbisManager().getRegisteredAdapters()) {
 			Map<String, Object> wsdlMap = new HashMap<String, Object>(2);
 			try {
 				Adapter adapter = (Adapter) a;

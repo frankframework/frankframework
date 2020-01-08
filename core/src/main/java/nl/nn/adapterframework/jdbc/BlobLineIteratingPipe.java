@@ -72,6 +72,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  */
 public class BlobLineIteratingPipe extends LobLineIteratingPipeBase {
 
+	@Override
 	protected Reader getReader(ResultSet rs) throws SenderException {
 		try {
 			return JdbcUtil.getBlobReader(rs,1,querySender.getBlobCharset(),querySender.isBlobsCompressed());

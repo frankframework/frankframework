@@ -38,6 +38,7 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 	}
 
 	@Override
+	// can make this sendMessage() 'final', debugging handled by the abstract sendMessage() defined by ISenderWithParameters, that includes the parameterResolutionContext
 	public final String sendMessage(String correlationID, String message) throws SenderException, TimeOutException  {
 		return sendMessage(correlationID,message,null);
 	}

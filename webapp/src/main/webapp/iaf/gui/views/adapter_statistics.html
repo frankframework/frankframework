@@ -8,34 +8,86 @@
 				<div class="ibox-title">
 					<div class="pull-right">
 						<button ui-sref="pages.status({adapter:adapterName})" class="btn btn-xs pull-right btn-info" type="button"><i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i> <span>Back</span></button>
+						<button ladda="refreshing" ng-click="refresh()" class="btn btn-xs pull-right btn-warning m-r-xs" type="button"><i class="fa fa-refresh" aria-hidden="true"></i> <span>Refresh</span></button>
 					</div>
 					<h4>{{adapterName}} Statistics</h4>
 				</div>
 				<div class="ibox-content">
 					<div class="col-md-12 table-responsive">
 						<h4>Adapter statistics by the hour</h4>
-						<table class="table">
-							<thead>
-								<tr>
-									<th>Start time</th>
-									<td ng-repeat="t in stats.hourly">{{t.time}}</td>
-								</tr>
-							</thead>
-							<tbody>
-								<tr>
-									<th>Count</th>
-									<td ng-repeat="t in stats.hourly">{{t.count}}</td>
-								</tr>
-							</tbody>
-						</table>
+							<div style="height:300px;">
+								<canvas id="line" class="chart chart-line" chart-options="options" chart-data="hourlyStatistics.data" 
+								chart-labels="hourlyStatistics.labels" chart-dataset-override="dataset" chart-series="series">
+								</canvas>
+							</div>
 					</div>
 					<div class="col-md-4 m-t-md table-responsive">
 						<h4>Total message processing duration (in ms)</h4>
 						<table class="table">
 							<tbody>
-								<tr ng-repeat="(k, v) in stats.totalMessageProccessingTime">
-									<td>{{k}}</td>
-									<td>{{v}}</td>
+								<tr>
+									<td>Count</td>
+									<td>{{stats.totalMessageProccessingTime.count}}</td>
+								</tr>
+								<tr>
+									<td>Min</td>
+									<td>{{stats.totalMessageProccessingTime.min}}</td>
+								</tr>
+								<tr>
+									<td>Max</td>
+									<td>{{stats.totalMessageProccessingTime.max}}</td>
+								</tr>
+								<tr>
+									<td>Average</td>
+									<td>{{stats.totalMessageProccessingTime.avg}}</td>
+								</tr>
+								<tr>
+									<td>stdDev</td>
+									<td>{{stats.totalMessageProccessingTime.stdDev}}</td>
+								</tr>
+								<tr>
+									<td>Sum</td>
+									<td>{{stats.totalMessageProccessingTime.sum}}</td>
+								</tr>
+								<tr>
+									<td>First</td>
+									<td>{{stats.totalMessageProccessingTime.first}}</td>
+								</tr>
+								<tr>
+									<td>Last</td>
+									<td>{{stats.totalMessageProccessingTime.last}}</td>
+								</tr>
+								<tr>
+									<td>100ms</td>
+									<td>{{stats.totalMessageProccessingTime["100ms"]}}</td>
+								</tr>
+								<tr>
+									<td>1000ms</td>
+									<td>{{stats.totalMessageProccessingTime["1000ms"]}}</td>
+								</tr>
+								<tr>
+									<td>2000ms</td>
+									<td>{{stats.totalMessageProccessingTime["2000ms"]}}</td>
+								</tr>
+								<tr>
+									<td>10000ms</td>
+									<td>{{stats.totalMessageProccessingTime["10000ms"]}}</td>
+								</tr>
+								<tr>
+									<td>p50</td>
+									<td>{{stats.totalMessageProccessingTime.p50}}</td>
+								</tr>
+								<tr>
+									<td>p90</td>
+									<td>{{stats.totalMessageProccessingTime.p90}}</td>
+								</tr>
+								<tr>
+									<td>p95</td>
+									<td>{{stats.totalMessageProccessingTime.p95}}</td>
+								</tr>
+								<tr>
+									<td>p98</td>
+									<td>{{stats.totalMessageProccessingTime.p98}}</td>
 								</tr>
 							</tbody>
 						</table>

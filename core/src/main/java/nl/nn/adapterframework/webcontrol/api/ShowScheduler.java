@@ -30,7 +30,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -90,7 +89,6 @@ import org.quartz.impl.matchers.GroupMatcher;
 
 @Path("/")
 public final class ShowScheduler extends Base {
-	private @Context ServletConfig servletConfig;
 	private @Context SecurityContext securityContext;
 
 	@GET
@@ -99,9 +97,8 @@ public final class ShowScheduler extends Base {
 	@Relation("schedules")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getSchedules() throws ApiException {
-		initBase(servletConfig);
-		Scheduler scheduler = getScheduler();
 
+		Scheduler scheduler = getScheduler();
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 
 		try {
@@ -121,10 +118,9 @@ public final class ShowScheduler extends Base {
 	@Relation("schedules")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getSchedule(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName) throws ApiException {
-		initBase(servletConfig);
 		Map<String, Object> returnMap = new HashMap<String, Object>();
-
 		JobKey jobKey = JobKey.jobKey(jobName, groupName);
+
 		try {
 			returnMap = getJobData(jobKey, true);
 		} catch (SchedulerException e) {
@@ -338,7 +334,6 @@ public final class ShowScheduler extends Base {
 	@Relation("schedules")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateScheduler(LinkedHashMap<String, Object> json) throws ApiException {
-		initBase(servletConfig);
 		Scheduler scheduler = getScheduler();
 
 		String action = null;
@@ -391,7 +386,7 @@ public final class ShowScheduler extends Base {
 	}
 
 	private Scheduler getScheduler() {
-		DefaultIbisManager manager = (DefaultIbisManager) ibisManager;
+		DefaultIbisManager manager = (DefaultIbisManager) getIbisManager();
 		SchedulerHelper sh = manager.getSchedulerHelper();
 
 		try {
@@ -409,7 +404,6 @@ public final class ShowScheduler extends Base {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response trigger(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName, LinkedHashMap<String, Object> json) throws ApiException {
-		initBase(servletConfig);
 		Scheduler scheduler = getScheduler();
 
 		String commandIssuedBy = servletConfig.getInitParameter("remoteHost");
@@ -481,7 +475,6 @@ public final class ShowScheduler extends Base {
 	}
 
 	private Response createSchedule(String groupName, String jobName, MultipartFormDataInput input, boolean overwrite) {
-		initBase(servletConfig);
 
 		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
 		if(inputDataMap == null) {
@@ -497,7 +490,7 @@ public final class ShowScheduler extends Base {
 
 		String adapterName = resolveStringFromMap(inputDataMap, "adapter");
 		//Make sure the adapter exists!
-		DefaultIbisManager manager = (DefaultIbisManager) ibisManager;
+		DefaultIbisManager manager = (DefaultIbisManager) getIbisManager();
 		IAdapter adapter = manager.getRegisteredAdapter(adapterName);
 		if(adapter == null) {
 			throw new ApiException("Adapter ["+adapterName+"] not found");
@@ -546,7 +539,7 @@ public final class ShowScheduler extends Base {
 
 		String jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 		if(hasLocker) {
-			Locker locker = (Locker) ibisManager.getIbisContext().createBeanAutowireByName(Locker.class);
+			Locker locker = (Locker) getIbisContext().createBeanAutowireByName(Locker.class);
 			locker.setName(lockKey);
 			locker.setObjectId(lockKey);
 			locker.setJmsRealm(jmsRealm);
@@ -567,7 +560,7 @@ public final class ShowScheduler extends Base {
 			}
 
 			boolean success = false;
-			FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+			FixedQuerySender qs = (FixedQuerySender) getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
 			qs.setJmsRealm(jmsRealm);
 			qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
 			try {
@@ -629,7 +622,6 @@ public final class ShowScheduler extends Base {
 	@Relation("schedules")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response deleteSchedules(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName) throws ApiException {
-		initBase(servletConfig);
 		Scheduler scheduler = getScheduler();
 
 		try {
@@ -648,7 +640,7 @@ public final class ShowScheduler extends Base {
 				}
 
 				// remove from database
-				FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+				FixedQuerySender qs = (FixedQuerySender) getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
 				qs.setJmsRealm(jmsRealm);
 				qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
 				try {

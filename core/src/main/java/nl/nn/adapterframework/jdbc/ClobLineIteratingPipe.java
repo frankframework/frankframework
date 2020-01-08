@@ -70,6 +70,7 @@ import nl.nn.adapterframework.core.SenderException;
  */
 public class ClobLineIteratingPipe extends LobLineIteratingPipeBase {
 
+	@Override
 	protected Reader getReader(ResultSet rs) throws SenderException {
 		try {
 			return rs.getCharacterStream(1);

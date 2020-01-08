@@ -73,6 +73,9 @@ public class Message {
 		return request;
 	}
 
+	/**
+	 * return the request object as a {@link Reader}. Should not be called more than once, if request is not {@link #preserve() preserved}.
+	 */
 	public Reader asReader() {
 		if (request == null) {
 			return null;
@@ -103,6 +106,9 @@ public class Message {
 		return new StringReader(request.toString());
 	}
 
+	/**
+	 * return the request object as a {@link InputStream}. Should not be called more than once, if request is not {@link #preserve() preserved}.
+	 */
 	public InputStream asInputStream() {
 		if (request == null) {
 			return null;
@@ -128,6 +134,9 @@ public class Message {
 		}
 	}
 
+	/**
+	 * return the request object as a {@link InputSource}. Should not be called more than once, if request is not {@link #preserve() preserved}.
+	 */
 	public InputSource asInputSource() {
 		if (request == null) {
 			return null;
@@ -152,6 +161,9 @@ public class Message {
 		return (new InputSource(new StringReader(request.toString())));
 	}
 
+	/**
+	 * return the request object as a {@link Source}. Should not be called more than once, if request is not {@link #preserve() preserved}.
+	 */
 	public Source asSource() {
 		if (request == null) {
 			return null;
@@ -176,23 +188,44 @@ public class Message {
 		return (new StreamSource(new StringReader(request.toString())));
 	}
 
-	public String asString() throws IOException {
+	/**
+	 * return the request object as a byte array. Has the side effect of preserving the input as byte array.
+	 */
+	public byte[] asByteArray() throws IOException {
 		if (request == null) {
 			return null;
 		}
 		if (request instanceof String) {
-			return (String) request;
+			return ((String)request).getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		}
-		return StreamUtil.readerToString(asReader(), null);
+		if (!(request instanceof byte[])) {
+			request = StreamUtil.streamToByteArray(asInputStream(), false);
+		}
+		return (byte[]) request;
 	}
 
+	/**
+	 * return the request object as a String. Has the side effect of preserving the input as a String.
+	 */
+	public String asString() throws IOException {
+		if (request == null) {
+			return null;
+		}
+		if (!(request instanceof String)) {
+			request = StreamUtil.readerToString(asReader(), null);
+		}
+		return (String) request;
+	}
+
+	/**
+	 * toString can be used to inspect the message. It does not convert the 'request' to a string. 
+	 */
 	@Override
 	public String toString() {
-		try {
-			return asString();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		if (request==null) {
+			return "null";
 		}
+		return request.getClass().getSimpleName()+": "+request.toString();
 	}
 
 }

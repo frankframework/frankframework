@@ -23,14 +23,16 @@ import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
-public abstract class StreamingSenderBase extends SenderWithParametersBase implements IOutputStreamingSupport {
+public abstract class StreamingSenderBase extends SenderWithParametersBase implements IStreamingSender {
 
+	@Override
 	public abstract Object sendMessage(String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException;
 	@Override
 	public abstract MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException;
 
 	
 	@Override
+	// can make this sendMessage() 'final', debugging handled by the new abstract sendMessage() above, that includes the MessageOutputStream
 	public final String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		Object result = sendMessage(correlationID, new Message(message), prc, null);
 		try {
@@ -41,7 +43,7 @@ public abstract class StreamingSenderBase extends SenderWithParametersBase imple
 	}
 
 	@Override
-	public boolean canStreamToTarget() {
+	public boolean requiresOutputStream() {
 		return true;
 	}
 

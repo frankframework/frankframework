@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2016-2017, 2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -54,7 +53,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 @Path("/")
 public final class BrowseJdbcTable extends Base {
-	@Context ServletConfig servletConfig;
 
 	private static final String DB2XML_XSLT = "xml/xsl/BrowseJdbcTableExecute.xsl";
 	private static final String permissionRules = AppConstants.getInstance().getResolvedProperty("browseJdbcTable.permission.rules");
@@ -66,8 +64,6 @@ public final class BrowseJdbcTable extends Base {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
-		initBase(servletConfig);
-
 		String realm = null, tableName = null, where = "", order = "";
 		Boolean rowNumbersOnly = false;
 		int minRow = 1, maxRow = 100;
@@ -122,7 +118,7 @@ public final class BrowseJdbcTable extends Base {
 
 		DirectQuerySender qs;
 		try {
-			qs = (DirectQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
+			qs = (DirectQuerySender) getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 		} catch (Exception e) {
 			log.error(e);
 			throw new ApiException("An error occured on creating or closing the connection!", 500);
@@ -184,7 +180,7 @@ public final class BrowseJdbcTable extends Base {
 						+ fielddefinition
 						+ "<maxColumnSize>1000</maxColumnSize>"
 						+ "</browseJdbcTableExecuteREQ>";
-				URL url = ClassUtils.getResourceURL(this, DB2XML_XSLT);
+				URL url = ClassUtils.getResourceURL(getClassLoader(), DB2XML_XSLT);
 				if (url != null) {
 					Transformer t = XmlUtils.createTransformer(url);
 					query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);

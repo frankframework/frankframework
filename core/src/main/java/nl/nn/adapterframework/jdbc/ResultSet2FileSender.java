@@ -26,14 +26,16 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageOutputStream;
 
 /**
  * QuerySender that writes each row in a ResultSet to a file.
@@ -48,6 +50,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 
 	protected byte[] eolArray=null;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getFileNameSessionKey())) {
@@ -62,7 +65,8 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		eolArray = System.getProperty("line.separator").getBytes();
 	}
 
-	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	@Override
+	protected Object sendMessage(Connection connection, String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
 		int counter = 0;
 		ResultSet resultset=null;
 		String fileName = (String)prc.getSession().get(getFileNameSessionKey());
@@ -74,8 +78,8 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		FileOutputStream fos=null;
 		try {
 			fos = new FileOutputStream(fileName, isAppend());
-			QueryContext queryContext = new QueryContext(null, "updateClob", null, null);
-			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
+			QueryContext queryContext = getQueryExecutionContext(connection, correlationID, message, prc);
+			PreparedStatement statement=queryContext.getStatement();
 			resultset = statement.executeQuery();
 			boolean eor = false;
 			if (maxRecords==0) {
@@ -104,6 +108,8 @@ public class ResultSet2FileSender extends FixedQuerySender {
 			}
 		} catch (FileNotFoundException e) {
 			throw new SenderException(getLogPrefix() + "could not find file [" + fileName + "]", e);
+		} catch (ParameterException e) {
+			throw new SenderException(getLogPrefix() + "got Exception resolving parameter", e);
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix() + "got IOException", e);
 		} catch (SQLException sqle) {

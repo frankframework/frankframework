@@ -6,15 +6,26 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		IdleProvider.timeout(appConstants["console.idle.timeout"]);
 	}
 
-	$urlRouterProvider.otherwise("/status");
+	$urlRouterProvider.otherwise("/");
 
 	$ocLazyLoadProvider.config({
-		modules: [
-		{
+		modules: [{
 			name: 'toaster',
 			files: ['js/plugins/toastr/toastr.min.js', 'css/plugins/toastr/toastr.min.css']
-		}
-		],
+		}, {
+			name: 'datatables',
+			serie: true,
+			files: [
+				'js/plugins/dataTables/datatables.v1.10.20.min.js',
+				'css/plugins/dataTables/datatables.v1.10.20.min.css',
+				'js/plugins/dataTables/angular-datatables.v0.6.2.min.js',
+				'js/plugins/dataTables/angular-datatables.buttons.min.js'
+			]
+		}, {
+			serie: true,
+			name: 'chartjs',
+			files: ['js/plugins/chartJs/Chart.min.js', 'js/plugins/chartJs/angular-chart.min.js', 'css/plugins/chartJs/Chart.min.css']
+		}],
 		// Set to true if you want to see what and when is dynamically loaded
 		debug: true
 	});
@@ -29,25 +40,26 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		templateUrl: "views/login.html",
 		controller: 'LoginCtrl',
 		data: {
-			pageTitle: 'Login',
-			specialClass: 'gray-bg'
+			pageTitle: 'Login'
 		}
 	})
 	.state('logout', {
 		url: "/logout",
 		controller: 'LogoutCtrl',
 		data: {
-			pageTitle: 'Logout',
-			specialClass: 'gray-bg'
+			pageTitle: 'Logout'
 		}
 	})
 
 	.state('pages', {
 		abstract: true,
-		controller: function($scope, authService) {
+		controller: function($scope, authService, $location, $state) {
 			authService.loggedin(); //Check if the user is logged in.
 			$scope.monitoring = false;
 			$scope.config_database = false;
+
+			angular.element(".main").show();
+			angular.element(".loading").remove();
 		},
 		templateUrl: "views/common/content.html",
 	})
@@ -81,23 +93,50 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		params: {
 			id: 0,
 		},
+		resolve: {
+			loadPlugin: function($ocLazyLoad) {
+				return $ocLazyLoad.load('chartjs');
+			},
+		},
 	})
 	.state('pages.errorstorage', {
-		url: "/adapter/:adapter/:receiver/errorstorage",
-		templateUrl: "views/adapter_errorstorage.html",
+		abstract: true,
+		url: "/adapter/:adapter/:receiver/",
+		template: "<div ui-view></div>",
+		controller: 'ErrorStorageBaseCtrl',
 		data: {
-			pageTitle: 'Adapter',
+			pageTitle: 'ErrorStorage',
 			breadcrumbs: 'Adapter > ErrorStorage'
 		},
 		params: {
 			adapter: { value: '', squash: true},
 			receiver: { value: '', squash: true},
-			count: 0
 		},
 	})
+	.state('pages.errorstorage.list', {
+		url: "errorstorage",
+		templateUrl: "views/txstorage/adapter_errorstorage_list.html",
+		resolve: {
+			loadPlugin: function($ocLazyLoad) {
+				return $ocLazyLoad.load('datatables');
+			},
+		},
+	})
+	.state('pages.errorstorage.view', {
+		url: "errorstorage/:messageId",
+		templateUrl: "views/txstorage/adapter_errorstorage_view.html",
+		params: {
+			messageId: { value: '', squash: true},
+		},
+		controller: function($state) {
+			$state.current.data.breadcrumbs = "Adapter > ErrorStorage > View Message "+$state.params.messageId;
+		}
+	})
 	.state('pages.messagelog', {
-		url: "/adapter/:adapter/r/:receiver/messagelog",
-		templateUrl: "views/adapter_messagelog.html",
+		abstract: true,
+		url: "/adapter/:adapter/",
+		template: "<div ui-view></div>",
+		controller: 'MessageLogBaseCtrl',
 		data: {
 			pageTitle: 'Adapter',
 			breadcrumbs: 'Adapter > MessageLog'
@@ -105,21 +144,59 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		params: {
 			adapter: { value: '', squash: true},
 			receiver: { value: '', squash: true},
-			count: 0
 		},
 	})
+	.state('pages.messagelog.list', {
+		url: "receiver/:receiver/messagelog",
+		templateUrl: "views/txstorage/adapter_messagelog_list.html",
+		resolve: {
+			loadPlugin: function($ocLazyLoad) {
+				return $ocLazyLoad.load('datatables');
+			},
+		},
+	})
+	.state('pages.messagelog.view', {
+		url: "receiver/:receiver/messagelog/:messageId",
+		templateUrl: "views/txstorage/adapter_messagelog_view.html",
+		params: {
+			messageId: { value: '', squash: true},
+		},
+		controller: function($state) {
+			$state.current.data.breadcrumbs = "Adapter > MessageLog > View Message "+$state.params.messageId;
+		}
+	})
 	.state('pages.pipemessagelog', {
-		url: "/adapter/:adapter/p/:pipe/messagelog",
-		templateUrl: "views/pipe_messagelog.html",
+		abstract: true,
+		url: "/adapter/:adapter/pipe/:pipe",
+		template: "<div ui-view></div>",
+		controller: 'PipeMessageLogBaseCtrl',
 		data: {
 			pageTitle: 'Adapter',
-			breadcrumbs: 'Adapter > MessageLog'
+			breadcrumbs: 'Adapter > Pipe > MessageLog'
 		},
 		params: {
 			adapter: { value: '', squash: true},
 			pipe: { value: '', squash: true},
-			count: 0
 		},
+	})
+	.state('pages.pipemessagelog.list', {
+		url: "/messagelog",
+		templateUrl: "views/txstorage/pipe_messagelog_list.html",
+		resolve: {
+			loadPlugin: function($ocLazyLoad) {
+				return $ocLazyLoad.load('datatables');
+			},
+		},
+	})
+	.state('pages.pipemessagelog.view', {
+		url: "/messagelog/:messageId",
+		templateUrl: "views/txstorage/pipe_messagelog_view.html",
+		params: {
+			messageId: { value: '', squash: true},
+		},
+		controller: function($state) {
+			$state.current.data.breadcrumbs = "Adapter > Pipe > MessageLog > View Message "+$state.params.messageId;
+		}
 	})
 	.state('pages.notifications', {
 		url: "/notifications",
@@ -367,9 +444,13 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 				$location.path("status");
 		}
 	})
-	.state('initError', {
-		templateUrl: "views/initError.html",
-		data: { pageTitle: 'IBIS Startup Failed' }
+	.state('pages.loading', {
+		url: "/",
+		templateUrl: "views/common/loading.html",
+	})
+	.state('pages.errorpage', {
+		url: "/error",
+		templateUrl: "views/common/errorpage.html",
 	});
 
 	$locationProvider.html5Mode(false);

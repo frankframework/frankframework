@@ -176,7 +176,7 @@ public class CompressPipe extends FixedForwardPipe {
 				String resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),e,this,originalMessage,session.getMessageId(),0);
 				return new PipeRunResult(exceptionForward,resultmsg);
 			}
-			throw new PipeRunException(this, "Unexpected exception during compression", e);
+			throw new PipeRunException(this, getLogPrefix(session) + "Unexpected exception during compression", e);
 		}
 	}
 	

@@ -942,6 +942,17 @@ public class Misc {
 		return defaultValue;
 	}
 	
+	public static String cleanseMessage(String inputString, String hideRegex, String hideMethod) {
+		if (StringUtils.isEmpty(hideRegex)) {
+			return inputString;
+		}
+		if ("firstHalf".equalsIgnoreCase(hideMethod)) {
+			return hideFirstHalf(inputString, hideRegex);
+		} else {
+			return hideAll(inputString, hideRegex);
+		}
+	}
+	
 	public static String hideFirstHalf(String inputString, String regex) {
 		return hideAll(inputString, regex, 1);
 	}

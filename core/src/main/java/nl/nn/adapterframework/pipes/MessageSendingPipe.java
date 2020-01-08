@@ -17,6 +17,7 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -67,11 +68,11 @@ import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
+import nl.nn.adapterframework.stream.IStreamingSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
-import nl.nn.adapterframework.stream.StreamingSenderBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -335,7 +336,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				if (StringUtils.isNotEmpty(getExceptionOnResult())) {
 					throw new ConfigurationException(getLogPrefix(null)+"exceptionOnResult only allowed in stub mode");
 				}
-			}			
+			}
 			if (getMaxRetries()>0) {
 				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 				if (getRetryMinInterval() < MIN_RETRY_INTERVAL) {
@@ -361,11 +362,15 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				if (messageLog==null) {
 					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 					String msg = "asynchronous sender [" + getSender().getName() + "] without sibling listener has no messageLog. Integrity check not possible";
-					configWarnings.add(log, msg);
+					configWarnings.add(log, msg, true);
 				}
 			}
 		}
 		if (messageLog!=null) {
+			if (StringUtils.isNotEmpty(getHideRegex()) && StringUtils.isEmpty(messageLog.getHideRegex())) {
+				messageLog.setHideRegex(getHideRegex());
+				messageLog.setHideMethod(getHideMethod());
+			}
 			messageLog.configure();
 			if (messageLog instanceof HasPhysicalDestination) {
 				String msg = getLogPrefix(null)+"has messageLog in "+((HasPhysicalDestination)messageLog).getPhysicalDestinationName();
@@ -451,10 +456,10 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	}
 
 	@Override
-	public boolean canStreamToTarget() {
-		return super.canStreamToTarget() 
+	public boolean requiresOutputStream() {
+		return super.requiresOutputStream() 
 				&& (!senderAffectsStreamWritingCapability() || 
-					sender instanceof IOutputStreamingSupport && ((IOutputStreamingSupport)sender).canStreamToTarget()
+					sender instanceof IOutputStreamingSupport && ((IOutputStreamingSupport)sender).requiresOutputStream()
 				   )
 				&& getOutputWrapper()==null
 				&& getOutputValidator()==null
@@ -637,24 +642,9 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					}
 					if (sender instanceof MailSenderOld) {
 						String messageInMailSafeForm = (String)session.get(MailSenderOld.SESSION_KEY_MESSAGE_IN_MAIL_SAFE_FORM);
-						if (getHideRegex() != null){
-							if (getHideMethod().equalsIgnoreCase("FIRSTHALF")) {
-								messageInMailSafeForm = Misc.hideFirstHalf(messageInMailSafeForm, getHideRegex());
-							} else {
-								messageInMailSafeForm = Misc.hideAll(messageInMailSafeForm, getHideRegex());
-							}
-						}
 						messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label,messageInMailSafeForm);
 					} else {
-						String message = (String)input;
-						if (getHideRegex() != null){
-							if (getHideMethod().equalsIgnoreCase("FIRSTHALF")) {
-								message = Misc.hideFirstHalf(message, getHideRegex());
-							} else {
-								message = Misc.hideAll(message, getHideRegex());
-							}
-						}
-						messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label,message);
+						messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label,(Serializable)input);
 					}
 					long messageLogEndTime = System.currentTimeMillis();
 					long messageLogDuration = messageLogEndTime - messageLogStartTime;
@@ -852,10 +842,10 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	}
 	
 	protected Object sendTextMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map<String,Object> threadContext, MessageOutputStream target) throws SenderException, TimeOutException {
-		if (sender instanceof StreamingSenderBase) {
+		if (sender instanceof IStreamingSender) {
 			Message message = new Message(input);
 			ParameterResolutionContext prc = new ParameterResolutionContext(message, session, isNamespaceAware());
-			return ((StreamingSenderBase)sender).sendMessage(correlationID, message, prc, target);
+			return ((IStreamingSender)sender).sendMessage(correlationID, message, prc, target);
 		}
 		if (input!=null) {
 //			if (input instanceof StringWriter) {

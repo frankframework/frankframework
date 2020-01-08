@@ -15,14 +15,11 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-
 import nl.nn.adapterframework.doc.IbisDoc;
-import org.apache.commons.lang.StringUtils;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * QuerySender that assumes a fixed query, possibly with attributes.
@@ -42,9 +39,8 @@ import org.apache.commons.lang.StringUtils;
 public class FixedQuerySender extends JdbcQuerySenderBase {
 
 	private String query=null;
-	private boolean lockRows=false;
-	private int lockWait=-1;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getQuery())) {
@@ -52,13 +48,10 @@ public class FixedQuerySender extends JdbcQuerySenderBase {
 		}
 	}
 		
-	protected PreparedStatement getStatement(Connection con, String correlationID, QueryContext queryContext) throws JdbcException, SQLException {
-		String qry = getQuery();
-		if (lockRows) {
-			qry = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, qry, lockWait);
-		}
-		queryContext.setQuery(qry);
-		return prepareQuery(con, queryContext);
+	
+	@Override
+	protected String getQuery(Message message) {
+		return getQuery();
 	}
 
 	/**
@@ -72,21 +65,11 @@ public class FixedQuerySender extends JdbcQuerySenderBase {
 		return query;
 	}
 
-	@IbisDoc({"when set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the select statement (by appending ' for update nowait skip locked' to the end of the query)", "false"})
-	public void setLockRows(boolean b) {
-		lockRows = b;
+	@Override
+	public boolean canProvideOutputStream() {
+		return  "updateClob".equalsIgnoreCase(getQueryType()) && StringUtils.isEmpty(getClobSessionKey()) ||
+				"updateBlob".equalsIgnoreCase(getQueryType()) && StringUtils.isEmpty(getBlobSessionKey());
 	}
 
-	public boolean isLockRows() {
-		return lockRows;
-	}
 
-	@IbisDoc({"when set and >=0, ' for update wait #' is used instead of ' for update nowait skip locked'", "-1"})
-	public void setLockWait(int i) {
-		lockWait = i;
-	}
-
-	public int getLockWait() {
-		return lockWait;
-	}
 }
