@@ -282,7 +282,9 @@ public final class ShowScheduler extends Base {
 
 	private void putDateProperty(Map<String, Object> map, String propertyName, Date date) {
 		try {
-			map.put(propertyName, date.getTime());
+			if(date != null) {
+				map.put(propertyName, date.getTime());
+			}
 		} catch (Exception e) {
 			log.debug("error parsing date for property ["+propertyName+"]", e);
 		}

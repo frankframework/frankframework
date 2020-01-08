@@ -23,7 +23,7 @@
 										</button>
 										<ul role="menu" uib-dropdown-menu="">
 											<li ng-repeat="loglevel in form.errorLevels">
-												<a ng-click="changeLoglevel(loglevel)">{{loglevel}}</a>
+												<a ng-click="changeLoglevel(loglevel)">{{::loglevel}}</a>
 											</li>
 										</ul>
 									</div>
@@ -70,7 +70,7 @@
 		<div class="col-lg-12 tabs-container">
 			<ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
 				<li ng-class="{active : selectedConfiguration == configuration.name}" ng-repeat="configuration in configurations">
-					<a ng-click="changeConfiguration(configuration.name)">{{configuration.name}}</a>
+					<a ng-click="changeConfiguration(configuration.name)">{{::configuration.name}}</a>
 				</li>
 			</ul> 
 		</div>
@@ -100,8 +100,8 @@
 							</thead>
 							<tbody>
 								<tr ng-repeat="vari in filteredConfigVariables = (configProperties | variablesFilter : searchFilter) | orderBy:'key'">
-									<td class="col-lg-3">{{vari.key}}</td>
-									<td class="col-lg-9">{{vari.val}}</td>
+									<td class="col-lg-3">{{::vari.key}}</td>
+									<td class="col-lg-9">{{::vari.val}}</td>
 								</tr>
 								<tr ng-if="filteredConfigVariables.length == 0">
 									<td colspan="2">No variables found matching '{{searchFilter}}'</td>
@@ -120,8 +120,8 @@
 							</thead>
 							<tbody>
 								<tr ng-repeat="vari in filteredEnvVariables = (environmentProperties | variablesFilter : searchFilter) | orderBy:'key'">
-									<td class="col-lg-3">{{vari.key}}</td>
-									<td class="col-lg-9">{{vari.val}}</td>
+									<td class="col-lg-3">{{::vari.key}}</td>
+									<td class="col-lg-9">{{::vari.val}}</td>
 								</tr>
 								<tr ng-if="filteredEnvVariables.length == 0">
 									<td colspan="2">No variables found matching '{{searchFilter}}'</td>
@@ -140,8 +140,8 @@
 							</thead>
 							<tbody>
 								<tr ng-repeat="vari in filteredSysVariables = (systemProperties | variablesFilter : searchFilter) | orderBy:'key'">
-									<td class="col-lg-3">{{vari.key}}</td>
-									<td class="col-lg-9">{{vari.val}}</td>
+									<td class="col-lg-3">{{::vari.key}}</td>
+									<td class="col-lg-9">{{::vari.val}}</td>
 								</tr>
 								<tr ng-if="filteredSysVariables.length == 0">
 									<td colspan="2">No variables found matching '{{searchFilter}}'</td>
