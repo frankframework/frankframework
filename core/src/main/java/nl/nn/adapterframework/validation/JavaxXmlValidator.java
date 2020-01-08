@@ -135,18 +135,6 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 		return schema.newValidatorHandler();
 	}
 
-	@Override
-	public String validate(InputSource is, ValidatorHandler validatorHandler, IPipeLineSession session, ValidationContext context, boolean resolveExternalEntities) throws XmlValidatorException {
-		try {
-			XMLReader reader = XmlUtils.getXMLReader(true, resolveExternalEntities, validatorHandler);
-			reader.setErrorHandler(context.getErrorHandler());
-
-			reader.parse(is);
-		} catch (IOException | SAXException | ParserConfigurationException e) {
-			return finalizeValidation(context, session, e);
-		}
-		return finalizeValidation(context, session, null);
-	}
 
 	//	protected String validate(Source source, IPipeLineSession session) throws XmlValidatorException, ConfigurationException, PipeRunException {
 //        init();

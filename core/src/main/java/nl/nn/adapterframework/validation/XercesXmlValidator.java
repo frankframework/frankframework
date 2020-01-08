@@ -316,17 +316,6 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		return validatorHandler;
 	}
 
-	@Override
-	public String validate(InputSource is, ValidatorHandler validatorHandler, IPipeLineSession session, ValidationContext context, boolean resolveExternalEntities) throws XmlValidatorException {
-		try {
-			SAXSource inputSource = XmlUtils.inputSourceToSAXSource(is, true, resolveExternalEntities);
-			((ValidatorHandlerImpl) validatorHandler).validate(inputSource, null, resolveExternalEntities);
-		} catch (SAXException | IOException e) {
-			return finalizeValidation(context, session, e);
-		}
-		return finalizeValidation(context, session, null);
-	}
-
 	private static XMLInputSource stringToXMLInputSource(Schema schema) throws IOException, ConfigurationException {
 		// SystemId is needed in case the schema has an import. Maybe we should
 		// already resolve this at the SchemaProvider side (except when

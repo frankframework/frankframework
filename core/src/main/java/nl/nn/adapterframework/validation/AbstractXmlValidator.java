@@ -16,21 +16,21 @@
 package nl.nn.adapterframework.validation;
 
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.validation.ValidatorHandler;
 
 import nl.nn.adapterframework.doc.IbisDoc;
 
+import nl.nn.adapterframework.util.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
@@ -40,11 +40,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.xml.NonResolvingExternalEntityResolver;
 
 /**
@@ -214,7 +209,17 @@ public abstract class AbstractXmlValidator {
 		return validate(is, validatorHandler, session, context, resolveExternalEntities);
 	}
 
-	public abstract String validate(InputSource is, ValidatorHandler validatorHandler, IPipeLineSession session, ValidationContext context, boolean resolveExternalEntities) throws XmlValidatorException;
+	public String validate(InputSource is, ValidatorHandler validatorHandler, IPipeLineSession session, ValidationContext context, boolean resolveExternalEntities) throws XmlValidatorException {
+		try {
+			XMLReader reader = XmlUtils.getXMLReader(true, resolveExternalEntities, validatorHandler);
+			reader.setErrorHandler(context.getErrorHandler());
+
+			reader.parse(is);
+		} catch (IOException | SAXException | ParserConfigurationException e) {
+			return finalizeValidation(context, session, e);
+		}
+		return finalizeValidation(context, session, null);
+	}
 
 	/**
 	 * Evaluate the validation and set 'reason' session variables.
