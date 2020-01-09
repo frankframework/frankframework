@@ -223,6 +223,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 	private boolean checkMessageLog = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("messageLog.check", false);
 	private boolean isConfigurationStubbed = ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader());
+	private boolean msgLogHumanReadable = AppConstants.getInstance(configurationClassLoader).getBoolean("msg.log.humanReadable", false);
+
 
 	private PipeProcessor pipeProcessor;
 	private ListenerProcessor listenerProcessor;
@@ -832,8 +834,14 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 						}
 					}
 					if (MsgLogUtil.getMsgLogLevelNum(adapter.getMsgLogLevel())>=MsgLogUtil.MSGLOG_LEVEL_TERSE) {
-						String durationString = Misc.getAge(startTime);
-						msgLog.info("Sender [" + sender.getName() + "] class [" + sender.getClass().getSimpleName() + "] correlationID [" + correlationID + "] duration [" + durationString + "] got exit-state [" + exitState + "]");
+
+						String duration;
+						if(msgLogHumanReadable) {
+							duration = Misc.getAge(startTime);
+						} else {
+							duration = Misc.getDurationInMs(startTime);
+						}
+						msgLog.info("Sender [" + sender.getName() + "] class [" + sender.getClass().getSimpleName() + "] correlationID [" + correlationID + "] duration [" + duration + "] got exit-state [" + exitState + "]");
 					}
 				}
 			}
