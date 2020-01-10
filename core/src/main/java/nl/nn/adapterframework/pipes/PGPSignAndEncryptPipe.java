@@ -74,7 +74,7 @@ public class PGPSignAndEncryptPipe extends FixedForwardPipe {
 						.withConfig(keyringConfig)
 						.withStrongAlgorithms()
 						.toRecipient(recipient)
-						.andDoNotSign()
+						.andSignWith(sender)
 						.armorAsciiOutput()
 						.andWriteTo(out);
 			}
