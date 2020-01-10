@@ -18,7 +18,7 @@ import java.security.NoSuchProviderException;
 import java.security.Security;
 
 public class PGPDecryptAndVerifyPipe extends FixedForwardPipe {
-	private String recipient, keyPassword, publicKeyPath, privateKeyPath;
+	private String keyPassword, publicKeyPath, privateKeyPath;
 	private String[] senders;
 	private KeyringConfig keyringConfig;
 
@@ -26,21 +26,29 @@ public class PGPDecryptAndVerifyPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if(recipient == null || keyPassword == null || publicKeyPath == null || privateKeyPath == null) {
-			throw new ConfigurationException("Fields [recipient, keyPassword, publicKeyPath, privateKeyPath] should be filled.");
+		if(keyPassword == null || privateKeyPath == null) {
+			throw new ConfigurationException("Fields [keyPassword, privateKeyPath] should be filled.");
 		}
 
-		File publicFile = new File(publicKeyPath);
-		if (!publicFile.exists() || !publicFile.isFile())
-			throw new ConfigurationException("Given public key file does not exist.");
+		File publicFile;
+		if(publicKeyPath == null) {
+			// TODO: fake file
+			publicFile = new File("dummyString;");
+		} else {
+			publicFile= new File(publicKeyPath);
+			if (!publicFile.exists() || !publicFile.isFile())
+				throw new ConfigurationException("Given public key file does not exist.");
+		}
 
 		File privateFile = new File(privateKeyPath);
 		if (!privateFile.exists() || !privateFile.isFile())
 			throw new ConfigurationException("Given private key file does not exist.");
 
 
-		if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null)
-			Security.addProvider(new BouncyCastleProvider());
+		if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null) {
+			Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+		}
+		Security.addProvider(new BouncyCastleProvider());
 
 		keyringConfig = KeyringConfigs.withKeyRingsFromFiles(publicFile, privateFile,
 				KeyringConfigCallbacks.withPassword(keyPassword));
@@ -80,10 +88,6 @@ public class PGPDecryptAndVerifyPipe extends FixedForwardPipe {
 			senders = senders.replaceAll("\\s", "");
 			this.senders = senders.split(",");
 		}
-	}
-
-	public void setRecipient(String recipient) {
-		this.recipient = recipient;
 	}
 
 	public void setKeyPassword(String keyPassword) {

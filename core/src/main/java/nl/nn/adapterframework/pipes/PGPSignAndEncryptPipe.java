@@ -54,13 +54,15 @@ public class PGPSignAndEncryptPipe extends FixedForwardPipe {
 			// Required because there is bug in the library.
 			// Already created an issue for it.
 			// TODO: Fake file
-			privateFile = new File("fake");
+			privateFile = new File("dummyString;");
 			keyPassword = "";
 		}
 
 
-		if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null)
-			Security.addProvider(new BouncyCastleProvider());
+		if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null) {
+			Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+		}
+		Security.addProvider(new BouncyCastleProvider());
 
 		keyringConfig = KeyringConfigs.withKeyRingsFromFiles(publicFile, privateFile,
 				KeyringConfigCallbacks.withPassword(keyPassword));
