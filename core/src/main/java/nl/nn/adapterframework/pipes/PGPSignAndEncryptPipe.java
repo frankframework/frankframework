@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.pipes;
 
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BouncyGPG;
+import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BuildEncryptionOutputStreamAPI;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.callbacks.KeyringConfigCallbacks;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.keyrings.KeyringConfig;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.keyrings.KeyringConfigs;
@@ -23,15 +24,16 @@ import java.security.Security;
 import java.security.SignatureException;
 
 public class PGPSignAndEncryptPipe extends FixedForwardPipe {
-	private String sender, recipient, keyPassword, publicKeyPath, privateKeyPath;
+	private String sender, keyPassword, publicKeyPath, privateKeyPath;
+	private String[] recipients;
 	private KeyringConfig keyringConfig;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if(recipient == null || keyPassword == null || publicKeyPath == null || privateKeyPath == null) {
-			throw new ConfigurationException("Fields [recipient, keyPassword, publicKeyPath, privateKeyPath] should be filled.");
+		if (recipients == null || publicKeyPath == null) {
+			throw new ConfigurationException("Fields [recipients and publicKeyPath] have to be set.");
 		}
 
 		File publicFile = new File(publicKeyPath);
@@ -39,10 +41,22 @@ public class PGPSignAndEncryptPipe extends FixedForwardPipe {
 		if (!publicFile.exists() || !publicFile.isFile())
 			throw new ConfigurationException("Given public key file does not exist.");
 
-		File privateFile = new File(privateKeyPath);
-		System.out.println(privateFile.getAbsolutePath());
-		if (!privateFile.exists() || !privateFile.isFile())
-			throw new ConfigurationException("Given private key file does not exist.");
+		File privateFile;
+		if(privateKeyPath != null) {
+			privateFile = new File(privateKeyPath);
+			System.out.println(privateFile.getAbsolutePath());
+			if (!privateFile.exists() || !privateFile.isFile())
+				throw new ConfigurationException("Given private key file does not exist.");
+
+			if (keyPassword == null)
+				throw new ConfigurationException("No password given for the secret key.");
+		} else {
+			// Required because there is bug in the library.
+			// Already created an issue for it.
+			// TODO: Fake file
+			privateFile = new File("fake");
+			keyPassword = "";
+		}
 
 
 		if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null)
@@ -58,27 +72,24 @@ public class PGPSignAndEncryptPipe extends FixedForwardPipe {
 		Message message = new Message(input);
 
 		try {
-			OutputStream outputStream;
-			if (sender == null) {
-				outputStream = BouncyGPG
-						.encryptToStream()
-						.withConfig(keyringConfig)
-						.withStrongAlgorithms()
-						.toRecipient(recipient)
-						.andDoNotSign()
-						.armorAsciiOutput()
-						.andWriteTo(out);
-			} else {
-				outputStream = BouncyGPG
-						.encryptToStream()
-						.withConfig(keyringConfig)
-						.withStrongAlgorithms()
-						.toRecipient(recipient)
-						.andSignWith(sender)
-						.armorAsciiOutput()
-						.andWriteTo(out);
-			}
+			BuildEncryptionOutputStreamAPI.WithAlgorithmSuite.To algorithmSuite = BouncyGPG
+					.encryptToStream()
+					.withConfig(keyringConfig)
+					.withStrongAlgorithms();
 
+			BuildEncryptionOutputStreamAPI.WithAlgorithmSuite.To.SignWith signWith;
+			if (recipients.length == 1)
+				signWith = algorithmSuite.toRecipient(recipients[0]);
+			else
+				signWith = algorithmSuite.toRecipients(recipients);
+
+			BuildEncryptionOutputStreamAPI.WithAlgorithmSuite.To.SignWith.Armor armor;
+			if (sender == null)
+				armor = signWith.andDoNotSign();
+			else
+				armor = signWith.andSignWith(sender);
+
+			OutputStream outputStream = armor.armorAsciiOutput().andWriteTo(out);
 
 			Streams.pipeAll(message.asInputStream(), outputStream);
 			outputStream.close();
@@ -93,7 +104,10 @@ public class PGPSignAndEncryptPipe extends FixedForwardPipe {
 	}
 
 	public void setRecipient(String recipient) {
-		this.recipient = recipient;
+		if (recipient != null) {
+			recipient = recipient.replaceAll("\\s", "");
+			recipients = recipient.split(",");
+		}
 	}
 
 	public void setKeyPassword(String keyPassword) {
