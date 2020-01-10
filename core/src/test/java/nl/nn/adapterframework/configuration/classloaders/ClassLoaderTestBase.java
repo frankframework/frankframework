@@ -47,19 +47,25 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 
 	@Before
 	public void setUp() throws Exception {
-		ClassLoader parent = new ClassLoaderMock();
 		appConstants = AppConstants.getInstance();
+		createAndConfigure(".");
+	}
+
+	protected void createAndConfigure() throws Exception {
+		createAndConfigure(null);
+	}
+	protected void createAndConfigure(String basePath) throws Exception {
+		ClassLoader parent = new ClassLoaderMock();
 		C = createClassLoader(parent);
 
-		if(C instanceof ClassLoaderBase) {
-			((ClassLoaderBase) C).setBasePath(".");
+		if(C instanceof ClassLoaderBase && basePath != null) {
+			((ClassLoaderBase) C).setBasePath(basePath);
 		}
 		if(C instanceof IConfigurationClassLoader) {
 			appConstants.put("configurations."+getConfigurationName()+".classLoaderType", C.getClass().getSimpleName());
 			((IConfigurationClassLoader) C).configure(ibisContext, getConfigurationName());
 		}
 	}
-	
 
 	/**
 	 * Returns the scheme, defaults to <code>file</code>
@@ -80,11 +86,15 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 		return configurationName;
 	}
 
+	public URL getResource(String resource) {
+		return C.getResource(resource);
+	}
+
 	public void resourceExists(String resource) {
 		resourceExists(resource, getScheme());
 	}
 	public void resourceExists(String resource, String scheme) {
-		URL url = C.getResource(resource);
+		URL url = getResource(resource);
 		assertNotNull("cannot find resource", url);
 		String file = url.toString();
 		assertTrue("scheme["+scheme+"] is wrong for file["+file+"]", file.startsWith(scheme + ":"));
@@ -228,7 +238,9 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 
 	@Test
 	public void configurationFileCustomLocationAndBasePath() throws Exception {
-		String name = "Config/NonDefaultConfiguration.xml";
+		String file = "NonDefaultConfiguration.xml";
+		String basePath = "Config";
+		String path = basePath + "/" + file;
 
 		//Order is everything!
 		ClassLoader parent = new ClassLoaderMock();
@@ -236,23 +248,22 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 		C = createClassLoader(parent);
 
 		if(C instanceof ClassLoaderBase) {
-			((ClassLoaderBase) C).setBasePath("Config");
-			
+			((ClassLoaderBase) C).setBasePath(basePath);
+
 			// We have to set both the name as well as the appconstants variable. 
 			String configKey = "configurations."+getConfigurationName()+".configurationFile";
-			AppConstants.getInstance(C).put(configKey, name);
-			((ClassLoaderBase) C).setConfigurationFile(name);
+			AppConstants.getInstance(C).put(configKey, path);
+			((ClassLoaderBase) C).setConfigurationFile(path);
 		}
 		if(C instanceof IConfigurationClassLoader) {
 			appConstants.put("configurations."+getConfigurationName()+".classLoaderType", C.getClass().getSimpleName());
 			((IConfigurationClassLoader) C).configure(ibisContext, getConfigurationName());
 		}
-		//
 
 		String configFile = ConfigurationUtils.getConfigurationFile(C, getConfigurationName());
-		assertEquals(name, configFile);
+		assertEquals("configurationFile path does not match", path, configFile);
 		URL configURL = C.getResource(configFile);
-		assertNotNull("config file ["+name+"] cannot be found", configURL);
-		assertTrue(configURL.toString().endsWith(configFile));
+		assertNotNull("config file ["+path+"] cannot be found", configURL);
+		assertTrue(configURL.getPath().endsWith(file));
 	}
 }

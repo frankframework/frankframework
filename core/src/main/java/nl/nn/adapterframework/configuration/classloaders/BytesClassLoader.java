@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2017, 2019 Nationale-Nederlanden
+   Copyright 2016-2017, 2019-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,17 +44,28 @@ public abstract class BytesClassLoader extends ClassLoaderBase {
 
 	@Override
 	public URL getLocalResource(String name) {
-		byte[] bytes = resources.get(name);
-		if (bytes != null) {
-			URLStreamHandler urlStreamHandler = new BytesURLStreamHandler(bytes);
+		byte[] resource = resources.get(name);
+		if (resource != null) {
 			try {
-				return new URL(null, CLASSPATH_RESOURCE_SCHEME + name, urlStreamHandler);
+				return createURL(name, resource);
 			} catch (MalformedURLException e) {
 				log.error("Could not create url", e);
 			}
 		}
 
 		return null;
+	}
+
+	/**
+	 * Strip BasePath of the local resource and return a valid, relative to the configuration directory, URL
+	 */
+	private URL createURL(String name, byte[] resource) throws MalformedURLException {
+		String URLname = CLASSPATH_RESOURCE_SCHEME + name;
+		if(getBasePath() != null && name.startsWith(getBasePath())) {
+			URLname = CLASSPATH_RESOURCE_SCHEME + name.substring(getBasePath().length());
+		}
+		URLStreamHandler urlStreamHandler = new BytesURLStreamHandler(resource);
+		return new URL(null, URLname, urlStreamHandler);
 	}
 
 	/**
