@@ -2,9 +2,11 @@ package nl.nn.adapterframework.pipes;
 
 import edu.emory.mathcs.backport.java.util.Arrays;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.*;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeRunResult;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -27,21 +29,31 @@ public class PgpPipesTest {
 	private final String pgpFolder = "src/test/resources/PGP/";
 
 	private static final String[] firstKey = {"test@ibissource.org", "ibistest", "first/private.asc", "first/public.asc"};
-	private static final String[] secondKey = {"second@ibissource.org", "secondtest", "second/private.asc", "second.public.asc"};
+	private static final String[] secondKey = {"second@ibissource.org", "secondtest", "second/private.asc", "second/public.asc"};
 
 	@Parameterized.Parameters(name = "{index} - {0} - {1}")
 	public static Collection<Object[]> data() {
 		// sender, key, private, recipient, public
+		// sender, key, private, public
 		return Arrays.asList(new Object[][]{
+				{"Default", "success",
+						new String[]{firstKey[0], firstKey[1], firstKey[2], secondKey[0], secondKey[3]},
+						new String[]{firstKey[0], secondKey[1], secondKey[2], firstKey[3]}},
 				{"Same Key", "success",
 						new String[]{firstKey[0], firstKey[1], firstKey[2], firstKey[0], firstKey[3]},
-						new String[]{firstKey[0], firstKey[1], firstKey[2], firstKey[0], firstKey[3]}},
-				{"Same Values", "success",
-						new String[]{firstKey[0], firstKey[1], firstKey[2], secondKey[0], secondKey[3]},
-						new String[]{firstKey[0], secondKey[1], secondKey[2], secondKey[0], firstKey[3]}},
+						new String[]{firstKey[0], firstKey[1], firstKey[2],firstKey[3]}},
 				{"No Sign", "success",
 						new String[]{null, null, null, firstKey[0], firstKey[3]},
-						new String[]{null, secondKey[1], firstKey[2], firstKey[0], null}}
+						new String[]{null, firstKey[1], firstKey[2], null}},
+				{"Nulls", "nl.nn.adapterframework.configuration.ConfigurationException",
+						new String[]{null, null, null, null, null},
+						new String[]{null, null, null, null}},
+				{"Wrong password", "org.bouncycastle.openpgp.PGPException",
+						new String[]{null, null, null, firstKey[0], firstKey[3]},
+						new String[]{null, "wrong key", firstKey[2], null}},
+				{"Wrong key", "org.bouncycastle.openpgp.PGPException",
+						new String[]{null, null, null, firstKey[0], firstKey[3]},
+						new String[]{null, secondKey[1], secondKey[2], null}},
 		});
 	}
 
@@ -53,7 +65,7 @@ public class PgpPipesTest {
 	}
 
 	@Test
-	public void testSameKeyForBoth() throws Exception {
+	public void testSameKeyForBoth() throws Throwable {
 		try {
 			configureEncryptPipe(encryptParams);
 			configureDecryptPipe(decryptParams);
@@ -93,27 +105,27 @@ public class PgpPipesTest {
 	private void configureEncryptPipe(String[] params) throws ConfigurationException {
 		encryptPipe.setSender(params[0]);
 		encryptPipe.setKeyPassword(params[1]);
-		encryptPipe.setPrivateKeyPath(pgpFolder + params[2]);
+		encryptPipe.setPrivateKeyPath(params[2] == null ? null : pgpFolder + params[2]);
 		encryptPipe.setRecipient(params[3]);
-		encryptPipe.setPublicKeyPath(pgpFolder + params[4]);
+		encryptPipe.setPublicKeyPath(params[4] == null ? null : pgpFolder + params[4]);
 		encryptPipe.configure();
 	}
 
 	private void configureDecryptPipe(String[] params) throws ConfigurationException {
 		decryptPipe.setSenders(params[0]);
 		decryptPipe.setKeyPassword(params[1]);
-		decryptPipe.setPrivateKeyPath(pgpFolder + params[2]);
-		decryptPipe.setRecipient(params[3]);
-		decryptPipe.setPublicKeyPath(pgpFolder + params[4]);
+		decryptPipe.setPrivateKeyPath(params[2] == null ? null : pgpFolder + params[2]);
+		decryptPipe.setPublicKeyPath(params[3] == null ? null : pgpFolder + params[3]);
 		decryptPipe.configure();
 	}
 
-	private boolean checkExceptionClass(Throwable t, String c) {
+	private boolean checkExceptionClass(Throwable t, String c) throws Throwable {
 		try {
 			return checkExceptionClass(t, Class.forName(c));
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-			return false;
+			if(c.equalsIgnoreCase("success"))
+				return false;
+			throw t;
 		}
 	}
 
