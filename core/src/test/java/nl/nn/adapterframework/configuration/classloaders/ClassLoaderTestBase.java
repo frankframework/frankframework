@@ -216,11 +216,12 @@ public abstract class ClassLoaderTestBase<C extends ClassLoaderBase> extends Moc
 	}
 
 	@Test
-	public void configurationFileCustomLocation() {
+	public void configurationFileCustomLocation() throws Exception {
+		createAndConfigure("Config");
 		String name = "Config/NonDefaultConfiguration.xml";
 		AppConstants.getInstance(classLoader).put("configurations."+getConfigurationName()+".configurationFile", name);
 		String configFile = ConfigurationUtils.getConfigurationFile(classLoader, getConfigurationName());
-		assertEquals(name, configFile);
+		assertEquals("NonDefaultConfiguration.xml", configFile);
 		URL configURL = classLoader.getResource(configFile);
 		assertNotNull("config file ["+configFile+"] cannot be found", configURL);
 		assertTrue(configURL.toString().endsWith(configFile));
