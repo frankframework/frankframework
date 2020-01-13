@@ -43,6 +43,7 @@ public class IbisDocExtractor {
                         methodObject.put("javadocLink", method.getJavadocLink());
                         methodObject.put("order", method.getOrder());
                         methodObject.put("superClasses", method.getSuperClasses());
+                        methodObject.put("deprecated", method.isDeprecated());
                         newMethods.put(methodObject);
                     }
                     classObject.put("methods", newMethods);

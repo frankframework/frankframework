@@ -467,6 +467,8 @@ public class IbisDocPipe extends FixedForwardPipe {
 			Method method = beanProperties.get(property);
 
 			IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
+			Deprecated deprecated = AnnotationUtils.findAnnotation(method, Deprecated.class);
+			boolean isDeprecated = deprecated != null;
 
 			// Get the superclasses
 			ArrayList<String> superClasses = getSuperClasses(ibisBean.getClazz());
@@ -475,7 +477,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 			if (ibisDoc != null) {
 				String[] ibisdocValues = ibisDoc.value();
 				String[] values = getValues(ibisdocValues);
-				newClass.addMethod(new AMethod(property, ibisBean.getName(), method.getDeclaringClass().getSimpleName(), folder, values[0], values[1], javadocLink, Integer.parseInt(values[2]), superClasses));
+				newClass.addMethod(new AMethod(property, ibisBean.getName(), method.getDeclaringClass().getSimpleName(), folder, values[0], values[1], javadocLink, Integer.parseInt(values[2]), superClasses, isDeprecated));
 			}
 		}
 		return newClass;

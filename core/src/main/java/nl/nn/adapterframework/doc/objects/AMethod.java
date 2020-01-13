@@ -13,9 +13,10 @@ public class AMethod {
     private String javadocLink;
     private int order;
     private ArrayList<String> superClasses;
+    private boolean deprecated;
 
 
-    public AMethod(String name, String className, String originalClassName, String folderName, String description, String defaultValue, String javadocLink, int order, ArrayList<String> superClasses) {
+    public AMethod(String name, String className, String originalClassName, String folderName, String description, String defaultValue, String javadocLink, int order, ArrayList<String> superClasses, boolean deprecated) {
         this.name = name;
         this.className = className;
         this.originalClassName = originalClassName;
@@ -25,6 +26,7 @@ public class AMethod {
         this.javadocLink = javadocLink;
         this.order = order;
         this.superClasses = superClasses;
+        this.deprecated = deprecated;
     }
 
     public String getName() {
@@ -63,4 +65,7 @@ public class AMethod {
         return superClasses;
     }
 
+    public boolean isDeprecated() {
+        return deprecated;
+    }
 }
