@@ -68,7 +68,7 @@ public class JsonXsltSender extends XsltSender {
 			return super.createHandler(correlationID, input, session, target);
 		}
 		XmlJsonWriter xjw = new XmlJsonWriter(target.asWriter());
-		MessageOutputStream prev = new MessageOutputStream(xjw,target,this,threadLifeCycleEventListener,correlationID);
+		MessageOutputStream prev = new MessageOutputStream(this,xjw,target,this,threadLifeCycleEventListener,correlationID);
 		return super.createHandler(correlationID, input, session, prev);
 	}
 

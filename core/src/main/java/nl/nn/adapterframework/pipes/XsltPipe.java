@@ -127,6 +127,11 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		return super.requiresOutputStream() && sender.requiresOutputStream();
 	}
 
+	@Override
+	public boolean supportsOutputStreamPassThrough() {
+		return false;
+	}
+
 
 	@Override
 	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {

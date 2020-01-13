@@ -80,7 +80,7 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 		List<IOutputStreamingSupport> streamTargets = getStreamTargets();
 		if (streamTargets!=null && streamTargets.size()>0) {
 			try {
-				log.debug(getLogPrefix(session)+"obtaining outputstream");
+				log.debug(getLogPrefix(session)+"obtaining outputstream from next pipe");
 				MessageOutputStream outputStream = getNextPipesOutputStream(streamTargets, session);
 				log.debug(getLogPrefix(session)+"executing pipe with outputstream");
 				doPipe(input, session, outputStream);
@@ -91,7 +91,7 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 				throw new PipeRunException(this,"Streaming exception", e);
 			}
 		} else {
-			log.debug(getLogPrefix(session)+"cannot stream, streamingActive ["+isStreamingActive()+"]");
+			log.debug(getLogPrefix(session)+"no stream targets found, streamingActive ["+isStreamingActive()+"]");
 			return doPipe(input, session, null);
 		}
 	}
@@ -104,7 +104,7 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 		if (streamTargets==null) {
 			PipeLine pipeline=getPipeLine();
 			if (!isStreamingActive()) {
-				log.debug("Cannot stream, streamingActive ["+isStreamingActive()+"]");
+				log.debug("Do not try to setup streaming because streamingActive=false");
 				return null;
 			}
 			if (pipeline==null) {
