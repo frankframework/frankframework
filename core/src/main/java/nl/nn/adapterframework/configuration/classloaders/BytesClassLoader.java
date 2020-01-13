@@ -47,25 +47,14 @@ public abstract class BytesClassLoader extends ClassLoaderBase {
 		byte[] resource = resources.get(name);
 		if (resource != null) {
 			try {
-				return createURL(name, resource);
+				URLStreamHandler urlStreamHandler = new BytesURLStreamHandler(resource);
+				return new URL(null, CLASSPATH_RESOURCE_SCHEME + name, urlStreamHandler);
 			} catch (MalformedURLException e) {
 				log.error("Could not create url", e);
 			}
 		}
 
 		return null;
-	}
-
-	/**
-	 * Strip BasePath of the local resource and return a valid, relative to the configuration directory, URL
-	 */
-	private URL createURL(String name, byte[] resource) throws MalformedURLException {
-		String URLname = CLASSPATH_RESOURCE_SCHEME + name;
-		if(getBasePath() != null && name.startsWith(getBasePath())) {
-			URLname = CLASSPATH_RESOURCE_SCHEME + name.substring(getBasePath().length());
-		}
-		URLStreamHandler urlStreamHandler = new BytesURLStreamHandler(resource);
-		return new URL(null, URLname, urlStreamHandler);
 	}
 
 	/**

@@ -31,12 +31,12 @@ public class WebAppClassLoader extends ClassLoaderBase {
 	}
 
 	/**
-	 * The name that's being requested contains the basepath of the configuration.
+	 * The name that's being requested should contain the BasePath of the configuration.
 	 * The {@link WebAppClassLoader} does not contain any further logic and must always 
-	 * search for the resource with basepath in it's parent (the classpath).
+	 * search for the resource with BasePath in it's parent (the ClassPath).
 	 */
 	@Override
 	public URL getLocalResource(String name) {
-		return getParent().getResource(name);
+		return getParent().getResource(getBasePath()+name);
 	}
 }

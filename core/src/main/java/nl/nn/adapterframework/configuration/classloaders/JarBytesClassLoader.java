@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,7 +38,16 @@ public abstract class JarBytesClassLoader extends BytesClassLoader {
 			jarInputStream = new JarInputStream(new ByteArrayInputStream(jar));
 			JarEntry jarEntry;
 			while ((jarEntry = jarInputStream.getNextJarEntry()) != null) {
-				resources.put(jarEntry.getName(), Misc.streamToBytes(jarInputStream));
+				String fileName = jarEntry.getName();
+				if(getBasePath() != null) {
+					if(fileName.startsWith(getBasePath())) { //Remove BasePath from the filename
+						fileName = fileName.substring(getBasePath().length());
+					} else {
+						log.error("invalid file ["+fileName+"] not in folder ["+getBasePath()+"]");
+						continue;
+					}
+				}
+				resources.put(fileName, Misc.streamToBytes(jarInputStream));
 			}
 			return resources;
 		} catch (IOException e) {

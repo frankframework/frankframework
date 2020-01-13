@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2018 Nationale-Nederlanden
+   Copyright 2016, 2018-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,7 +44,16 @@ public class JarFileClassLoader extends BytesClassLoader {
 			Enumeration<JarEntry> enumeration = jarFile.entries();
 			while (enumeration.hasMoreElements()) {
 				JarEntry jarEntry = enumeration.nextElement();
-				resources.put(jarEntry.getName(), Misc.streamToBytes(jarFile.getInputStream(jarEntry)));
+				String fileName = jarEntry.getName();
+				if(getBasePath() != null) {
+					if(fileName.startsWith(getBasePath())) { //Remove BasePath from the filename
+						fileName = fileName.substring(getBasePath().length());
+					} else {
+						log.error("invalid file ["+fileName+"] not in basepath ["+getBasePath()+"]");
+						continue;
+					}
+				}
+				resources.put(fileName, Misc.streamToBytes(jarFile.getInputStream(jarEntry)));
 			}
 			return resources;
 		} catch (IOException e) {

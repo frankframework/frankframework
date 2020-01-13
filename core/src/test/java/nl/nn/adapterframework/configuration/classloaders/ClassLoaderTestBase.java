@@ -33,11 +33,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito {
+public abstract class ClassLoaderTestBase<C extends ClassLoaderBase> extends Mockito {
 
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 
-	private ClassLoader C = null;
+	private ClassLoaderBase classLoader = null;
 	protected IbisContext ibisContext = spy(new IbisContext());
 	protected String scheme = "file";
 	protected AppConstants appConstants;
@@ -56,15 +56,14 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 	}
 	protected void createAndConfigure(String basePath) throws Exception {
 		ClassLoader parent = new ClassLoaderMock();
-		C = createClassLoader(parent);
+		classLoader = createClassLoader(parent);
 
-		if(C instanceof ClassLoaderBase && basePath != null) {
-			((ClassLoaderBase) C).setBasePath(basePath);
+		if(basePath != null) {
+			classLoader.setBasePath(basePath);
 		}
-		if(C instanceof IConfigurationClassLoader) {
-			appConstants.put("configurations."+getConfigurationName()+".classLoaderType", C.getClass().getSimpleName());
-			((IConfigurationClassLoader) C).configure(ibisContext, getConfigurationName());
-		}
+
+		appConstants.put("configurations."+getConfigurationName()+".classLoaderType", classLoader.getClass().getSimpleName());
+		classLoader.configure(ibisContext, getConfigurationName());
 	}
 
 	/**
@@ -87,7 +86,7 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 	}
 
 	public URL getResource(String resource) {
-		return C.getResource(resource);
+		return classLoader.getResource(resource);
 	}
 
 	public void resourceExists(String resource) {
@@ -119,7 +118,7 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 	 * @throws IOException
 	 */
 	public void resourcesExists(String name, LinkedList<String> schemes) throws IOException {
-		Enumeration<URL> resources = C.getResources(name);
+		Enumeration<URL> resources = classLoader.getResources(name);
 		while(resources.hasMoreElements()) {
 			URL url = resources.nextElement();
 			assertNotNull("cannot find resource", url);
@@ -132,7 +131,7 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 
 	@Test
 	public void fileNotFound() {
-		assertNull(C.getResource("not-found.txt"));
+		assertNull(getResource("not-found.txt"));
 	}
 
 	/* getResource() */
@@ -179,7 +178,7 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 	//Not only test through setters and getters but also properties
 	@Test
 	public void testSchemeWithClassLoaderManager() throws ConfigurationException {
-		URL resource = C.getResource("ClassLoaderTestFile.xml");
+		URL resource = getResource("ClassLoaderTestFile.xml");
 
 		assertNotNull("resource ["+resource+"] must be found", resource);
 		assertTrue("resource ["+resource+"] must start with scheme ["+getScheme()+"]", resource.toString().startsWith(getScheme()));
@@ -189,38 +188,29 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 	// make sure default level is always error
 	@Test
 	public void testReportLevelERROR() {
-		if(C instanceof IConfigurationClassLoader) {
-			IConfigurationClassLoader c = (IConfigurationClassLoader) C;
-			c.setReportLevel("dummy");
-			assertTrue(c.getReportLevel().equals(ReportLevel.ERROR));
-		}
+		classLoader.setReportLevel("dummy");
+		assertTrue(classLoader.getReportLevel().equals(ReportLevel.ERROR));
 	}
 
 	// test lowercase level
 	@Test
 	public void testReportLeveldebug() {
-		if(C instanceof IConfigurationClassLoader) {
-			IConfigurationClassLoader c = (IConfigurationClassLoader) C;
-			c.setReportLevel("debug");
-			assertTrue(c.getReportLevel().equals(ReportLevel.DEBUG));
-		}
+		classLoader.setReportLevel("debug");
+		assertTrue(classLoader.getReportLevel().equals(ReportLevel.DEBUG));
 	}
 
 	// test uppercase level
 	@Test
 	public void testReportLevelDEBUG() {
-		if(C instanceof IConfigurationClassLoader) {
-			IConfigurationClassLoader c = (IConfigurationClassLoader) C;
-			c.setReportLevel("DEBUG");
-			assertTrue(c.getReportLevel().equals(ReportLevel.DEBUG));
-		}
+		classLoader.setReportLevel("DEBUG");
+		assertTrue(classLoader.getReportLevel().equals(ReportLevel.DEBUG));
 	}
 
 	@Test
 	public void configurationFileDefaultLocation() {
-		String configFile = ConfigurationUtils.getConfigurationFile(C, getConfigurationName());
+		String configFile = ConfigurationUtils.getConfigurationFile(classLoader, getConfigurationName());
 		assertEquals("Configuration.xml", configFile);
-		URL configURL = C.getResource(configFile);
+		URL configURL = classLoader.getResource(configFile);
 		assertNotNull("config file ["+configFile+"] cannot be found", configURL);
 		assertTrue(configURL.toString().endsWith(configFile));
 	}
@@ -228,10 +218,10 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 	@Test
 	public void configurationFileCustomLocation() {
 		String name = "Config/NonDefaultConfiguration.xml";
-		AppConstants.getInstance(C).put("configurations."+getConfigurationName()+".configurationFile", name);
-		String configFile = ConfigurationUtils.getConfigurationFile(C, getConfigurationName());
+		AppConstants.getInstance(classLoader).put("configurations."+getConfigurationName()+".configurationFile", name);
+		String configFile = ConfigurationUtils.getConfigurationFile(classLoader, getConfigurationName());
 		assertEquals(name, configFile);
-		URL configURL = C.getResource(configFile);
+		URL configURL = classLoader.getResource(configFile);
 		assertNotNull("config file ["+configFile+"] cannot be found", configURL);
 		assertTrue(configURL.toString().endsWith(configFile));
 	}
@@ -245,25 +235,22 @@ public abstract class ClassLoaderTestBase<C extends ClassLoader> extends Mockito
 		//Order is everything!
 		ClassLoader parent = new ClassLoaderMock();
 		appConstants = AppConstants.getInstance();
-		C = createClassLoader(parent);
+		classLoader = createClassLoader(parent);
 
-		if(C instanceof ClassLoaderBase) {
-			((ClassLoaderBase) C).setBasePath(basePath);
+//		classLoader.setBasePath(basePath);
 
-			// We have to set both the name as well as the appconstants variable. 
-			String configKey = "configurations."+getConfigurationName()+".configurationFile";
-			AppConstants.getInstance(C).put(configKey, path);
-			((ClassLoaderBase) C).setConfigurationFile(path);
-		}
-		if(C instanceof IConfigurationClassLoader) {
-			appConstants.put("configurations."+getConfigurationName()+".classLoaderType", C.getClass().getSimpleName());
-			((IConfigurationClassLoader) C).configure(ibisContext, getConfigurationName());
-		}
+		// We have to set both the name as well as the appconstants variable. 
+		String configKey = "configurations."+getConfigurationName()+".configurationFile";
+		AppConstants.getInstance(classLoader).put(configKey, file);
+		classLoader.setConfigurationFile(path);
 
-		String configFile = ConfigurationUtils.getConfigurationFile(C, getConfigurationName());
-		assertEquals("configurationFile path does not match", path, configFile);
-		URL configURL = C.getResource(configFile);
-		assertNotNull("config file ["+path+"] cannot be found", configURL);
+		appConstants.put("configurations."+getConfigurationName()+".classLoaderType", classLoader.getClass().getSimpleName());
+		classLoader.configure(ibisContext, getConfigurationName());
+
+		String configFile = ConfigurationUtils.getConfigurationFile(classLoader, getConfigurationName());
+		assertEquals("configurationFile path does not match", file, configFile);
+		URL configURL = classLoader.getResource(configFile);
+		assertNotNull("config file ["+configFile+"] cannot be found", configURL);
 		assertTrue(configURL.getPath().endsWith(file));
 	}
 }
