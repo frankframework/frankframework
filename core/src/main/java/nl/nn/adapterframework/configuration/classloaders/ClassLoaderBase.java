@@ -155,20 +155,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 		if(name.startsWith("META-INF/")) {
 			return getParent().getResource(name);
 		}
-/*
-		//The configurationFile (Configuration.xml) should only be found in the current and not it's parent classloader
-		if(getBasePath() != null && name.equals(getConfigurationFile())) {
-			URL url = null;
-			if(name.startsWith(getBasePath())) { //An absolute path has explicitly set, use that instead!
-				url = getLocalResource(name); //Search for the resource in the local classloader without basepath
-			}
-			if(url == null) { //If no explicit path was provided or the resource couldn't be found, try with basepath!
-				url = getResource(name, false); //Search with basepath and don't search in the classloader's parent
-			}
 
-			return url;
-		}
-*/
 		//The configurationFile (Configuration.xml) should only be found in the current and not it's parent classloader
 		if(getBasePath() != null && name.equals(getConfigurationFile())) {
 			return getResource(name, false); //Search for the resource in the local ClassLoader only
@@ -191,11 +178,9 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	 */
 	public URL getResource(String name, boolean useParent) {
 		URL url = null;
-//		if(getBasePath() != null) {
-			String normalizedFilename = FilenameUtils.normalize(name, true);
-			url = getLocalResource(normalizedFilename);
-			if(log.isTraceEnabled()) log.trace("["+getConfigurationName()+"] "+(url==null?"failed to retrieve":"retrieved")+" local resource ["+normalizedFilename+"]");
-//		}
+		String normalizedFilename = FilenameUtils.normalize(name, true);
+		url = getLocalResource(normalizedFilename);
+		if(log.isTraceEnabled()) log.trace("["+getConfigurationName()+"] "+(url==null?"failed to retrieve":"retrieved")+" local resource ["+normalizedFilename+"]");
 
 		//URL without basepath cannot be found, follow parent hierarchy
 		if(url == null && useParent) {
