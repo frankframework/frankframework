@@ -487,8 +487,12 @@ public final class ShowScheduler extends Base {
 		if(name == null) //If name is not explicitly set, try to deduct it from inputmap
 			name = resolveStringFromMap(inputDataMap, "name");
 
-		String cronExpression = resolveStringFromMap(inputDataMap, "cron");
+		String cronExpression = resolveTypeFromMap(inputDataMap, "cron", String.class, "");
 		int interval = resolveTypeFromMap(inputDataMap, "interval", Integer.class, -1);
+		//Either one of the two has to be set
+		if(interval == -1 && StringUtils.isEmpty(cronExpression)) {
+			throw new ApiException("Either 'cron' or 'interval' has to be set");
+		}
 
 		String adapterName = resolveStringFromMap(inputDataMap, "adapter");
 		//Make sure the adapter exists!
