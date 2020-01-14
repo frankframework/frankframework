@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2019 Nationale-Nederlanden
+   Copyright 2018-2012 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,12 +31,12 @@ public class WebAppClassLoader extends ClassLoaderBase {
 	}
 
 	/**
-	 * The name that's being requested should contain the BasePath of the configuration.
+	 * The name that's being requested should only contain the BasePath of the configuration when set.
 	 * The {@link WebAppClassLoader} does not contain any further logic and must always 
-	 * search for the resource with BasePath in it's parent (the ClassPath).
+	 * search for the resource with BasePath in it's parent (the ClassPath or another ClassLoader).
 	 */
 	@Override
 	public URL getLocalResource(String name) {
-		return getParent().getResource(getBasePath()+name);
+		return getParent().getResource((getBasePath()==null)?name:getBasePath()+name);
 	}
 }

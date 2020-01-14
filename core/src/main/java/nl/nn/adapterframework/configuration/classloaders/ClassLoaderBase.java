@@ -101,9 +101,12 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	}
 
 	/**
+	 * The root directory where all resources are located. This may purely be used within the ClassLoader and resources
+	 * should not be aware of this 'root' directory.
+	 * 
 	 * @return the path prefix that is used for retrieving files through this ClassLoader
 	 */
-	public String getBasePath() {
+	protected String getBasePath() {
 		return basePath;
 	}
 
