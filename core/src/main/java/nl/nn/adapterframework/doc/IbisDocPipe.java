@@ -33,12 +33,16 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
+import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
+import org.springframework.util.Assert;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -234,6 +238,15 @@ public class IbisDocPipe extends FixedForwardPipe {
 		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry);
 		scanner.setIncludeAnnotationConfig(false);
 		scanner.addIncludeFilter(new AssignableTypeFilter(interfaze));
+		BeanNameGenerator beanNameGenerator = new AnnotationBeanNameGenerator() {
+			@Override
+			protected String buildDefaultBeanName(BeanDefinition definition) {
+				String beanClassName = definition.getBeanClassName();
+				Assert.state(beanClassName != null, "No bean class name set");
+				return beanClassName;
+			}
+		};
+		scanner.setBeanNameGenerator(beanNameGenerator);
 		for (String excludeFilter : excludeFilters) {
 			addExcludeFilter(scanner, excludeFilter);
 		}
@@ -780,17 +793,22 @@ public class IbisDocPipe extends FixedForwardPipe {
 	}
 
 	private static void getBeanProperties(Class<?> clazz, String verb, Map<String, Method> beanProperties) {
-		Method[] methods = clazz.getMethods();
-		for (int i = 0; i < methods.length; i++) {
-			Class<?> returnType = methods[i].getReturnType();
-			if (returnType == String.class || returnType.isPrimitive()) {
-				if (methods[i].getName().startsWith(verb)) {
-					if (methods[i].getName().length() > verb.length()) {
-						beanProperties.put(methods[i].getName().substring(verb.length(), verb.length() + 1).toLowerCase()
-						+ methods[i].getName().substring(verb.length() + 1), methods[i]);
+		try {
+			Method[] methods = clazz.getMethods();
+			for (int i = 0; i < methods.length; i++) {
+				Class<?> returnType = methods[i].getReturnType();
+				if (returnType == String.class || returnType.isPrimitive()) {
+					if (methods[i].getName().startsWith(verb)) {
+						if (methods[i].getName().length() > verb.length()) {
+							beanProperties.put(methods[i].getName().substring(verb.length(), verb.length() + 1).toLowerCase()
+							+ methods[i].getName().substring(verb.length() + 1), methods[i]);
+						}
 					}
 				}
 			}
+		} catch (NoClassDefFoundError e) {
+			//TODO fix this, why are all (sub)interfaces also instantiated?
+			//Ignore classes that cannot be found...
 		}
 	}
 
