@@ -587,7 +587,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 					@Override
 					public void afterClose() throws SQLException {
 						connection.close();
-						log.warn("warnings: "+((BlobOutputStream)requestStream).getWarnings().toXML());
+						log.warn(getLogPrefix()+"warnings: "+((BlobOutputStream)requestStream).getWarnings().toXML());
 					}
 				};
 			}
@@ -596,12 +596,11 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 					@Override
 					public void afterClose() throws SQLException {
 						connection.close();
-						System.out.println("warnings: "+((ClobWriter)requestStream).getWarnings().toXML());
-						log.warn("warnings: "+((ClobWriter)requestStream).getWarnings().toXML());
+						log.warn(getLogPrefix()+"warnings: "+((ClobWriter)requestStream).getWarnings().toXML());
 					}
 				};
 			} 
-			throw new IllegalStateException("illegal queryType ["+queryContext.getQueryType()+"], must be 'updateBlob' or 'updateClob'");
+			throw new IllegalStateException(getLogPrefix()+"illegal queryType ["+queryContext.getQueryType()+"], must be 'updateBlob' or 'updateClob'");
 		} catch (JdbcException | SQLException | IOException e) {
 			throw new StreamingException(getLogPrefix() + "cannot update CLOB or BLOB",e);
 		}
