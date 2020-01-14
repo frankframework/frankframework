@@ -28,7 +28,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
@@ -40,9 +39,7 @@ import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
-import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -397,11 +394,11 @@ public class IbisDocPipe extends FixedForwardPipe {
 		while (clazz.getSuperclass() != null) {
 
 			// Assign a string with a priority number attached to it and add it to the array of superclasses
-			String str = Integer.toString(index);
-			superClasses.add(clazz.getSimpleName() + str);
+			superClasses.add(clazz.getSuperclass().getSimpleName());
 			clazz = clazz.getSuperclass();
 			index++;
 		}
+		
 		return superClasses;
 	}
 
@@ -470,14 +467,10 @@ public class IbisDocPipe extends FixedForwardPipe {
 			Deprecated deprecated = AnnotationUtils.findAnnotation(method, Deprecated.class);
 			boolean isDeprecated = deprecated != null;
 
-			// Get the superclasses
-			ArrayList<String> superClasses = getSuperClasses(ibisBean.getClazz());
-			String javadocLink = ibisBean.getClazz().getName().replaceAll("\\.", "/");
-
 			if (ibisDoc != null) {
 				String[] ibisdocValues = ibisDoc.value();
 				String[] values = getValues(ibisdocValues);
-				newClass.addMethod(new AMethod(property, ibisBean.getName(), method.getDeclaringClass().getSimpleName(), folder, values[0], values[1], javadocLink, Integer.parseInt(values[2]), superClasses, isDeprecated));
+				newClass.addMethod(new AMethod(property, ibisBean.getName(), method.getDeclaringClass().getSimpleName(), folder, values[0], values[1], Integer.parseInt(values[2]), isDeprecated));
 			}
 		}
 		return newClass;
@@ -496,8 +489,15 @@ public class IbisDocPipe extends FixedForwardPipe {
 
 				// Copy the properties of FileSender into FilePipe so that the properties of FileHandler are also in FilePipe
 				addPropertiesFileSender(ibisBean, groups, beanProperties);
+				
+				// Get the javadoc link for the class
+				String javadocLink = ibisBean.getClazz().getName().replaceAll("\\.", "/");
+				
+				// Get the superclasses
+				ArrayList<String> superClasses = getSuperClasses(ibisBean.getClazz());
 
-				AClass newClass = new AClass(ibisBean.getName(), ibisBean.getClazz().getName());
+
+				AClass newClass = new AClass(ibisBean.getName(), ibisBean.getClazz().getName(), javadocLink, superClasses);
 				AClass updatedClass = addMethods(beanProperties, ibisBean, folder.getName(), newClass);
 				folder.addClass(updatedClass);
 			}

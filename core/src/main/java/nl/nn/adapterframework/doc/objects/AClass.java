@@ -6,27 +6,39 @@ public class AClass {
 
     private String name;
     private String packageName;
+    private String javadocLink;
+    private ArrayList<String> superClasses;
     private ArrayList<AMethod> methods;
 
-    public AClass(String name, String packageName) {
+    public AClass(String name, String packageName, String javadocLink, ArrayList<String> superClasses) {
         this.name = name;
         this.packageName = packageName;
+        this.javadocLink = javadocLink;
+        this.superClasses = superClasses;
         this.methods = new ArrayList<AMethod>();
     }
 
     public void addMethod(AMethod method) {
-        this.methods.add(method);
+        methods.add(method);
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
     public String getPackageName() {
         return packageName;
     }
+    
+    public String getJavadocLink() {
+    	return javadocLink;
+    }
 
     public ArrayList<AMethod> getMethods() {
-        return this.methods;
+        return methods;
+    }
+    
+    public ArrayList<String> getSuperClasses() {
+    	return superClasses;
     }
 }

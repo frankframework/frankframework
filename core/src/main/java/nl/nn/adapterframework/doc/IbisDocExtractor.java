@@ -32,6 +32,8 @@ public class IbisDocExtractor {
                     JSONObject classObject = new JSONObject();
                     classObject.put("name", aClass.getName());
                     classObject.put("packageName", aClass.getPackageName());
+                    classObject.put("javadocLink", aClass.getJavadocLink());
+                    classObject.put("superClasses", aClass.getSuperClasses());
 
                     newMethods = new JSONArray();
                     for (AMethod method : aClass.getMethods()) {
@@ -40,9 +42,7 @@ public class IbisDocExtractor {
                         methodObject.put("originalClassName", method.getOriginalClassName());
                         methodObject.put("description", method.getDescription());
                         methodObject.put("defaultValue", method.getDefaultValue());
-                        methodObject.put("javadocLink", method.getJavadocLink());
                         methodObject.put("order", method.getOrder());
-                        methodObject.put("superClasses", method.getSuperClasses());
                         methodObject.put("deprecated", method.isDeprecated());
                         newMethods.put(methodObject);
                     }
