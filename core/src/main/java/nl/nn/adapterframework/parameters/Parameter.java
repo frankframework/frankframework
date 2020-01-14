@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.PutSystemDateInSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
@@ -125,6 +126,9 @@ public class Parameter implements INamedObject, IWithParameters {
 	private String namespaceDefs = null;
 	private String styleSheetName = null;
 	private String pattern = null;
+	private String authAlias;
+	private String userName;
+	private String password;
 	private String defaultValue = null;
 	private String defaultValueMethods = "defaultValue";
 	private String value = null;
@@ -147,6 +151,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	private TransformerPool transformerPoolSessionKey = null;
 	protected ParameterList paramList = null;
 	private boolean configured = false;
+	private CredentialFactory cf;
 
 	@Override
 	public void addParameter(Parameter p) { 
@@ -228,6 +233,9 @@ public class Parameter implements INamedObject, IWithParameters {
 					throw new ConfigurationException("Attribute [maxInclusive] could not parse result ["+getMaxInclusive()+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
 				}
 			}
+		}
+		if (StringUtils.isNotEmpty(getAuthAlias()) || StringUtils.isNotEmpty(getUserName()) || StringUtils.isNotEmpty(getPassword())) {
+			cf=new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
 		}
 	}
 
@@ -553,15 +561,16 @@ public class Parameter implements INamedObject, IWithParameters {
 			substitutionValue = prc.getSession().get(name);
 		}
 		if (substitutionValue == null) {
+			String namelc=name.toLowerCase();
 			if ("now".equals(name.toLowerCase())) {
 				substitutionValue = new Date();
-			} else if ("uid".equals(name.toLowerCase())) {
+			} else if ("uid".equals(namelc)) {
 				substitutionValue = Misc.createSimpleUUID();
-			} else if ("uuid".equals(name.toLowerCase())) {
+			} else if ("uuid".equals(namelc)) {
 				substitutionValue = Misc.createRandomUUID();
-			} else if ("hostname".equals(name.toLowerCase())) {
+			} else if ("hostname".equals(namelc)) {
 				substitutionValue = Misc.getHostname();
-			} else if ("fixeddate".equals(name.toLowerCase())) {
+			} else if ("fixeddate".equals(namelc)) {
 				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
 				}
@@ -577,87 +586,26 @@ public class Parameter implements INamedObject, IWithParameters {
 					throw new ParameterException("Cannot parse fixed date ["+PutSystemDateInSession.FIXEDDATETIME+"] with format ["+PutSystemDateInSession.FORMAT_FIXEDDATETIME+"]",e);
 				}
 				substitutionValue = d;
-			} else if ("fixeduid".equals(name.toLowerCase())) {
+			} else if ("fixeduid".equals(namelc)) {
 				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
 				}
 				substitutionValue = FIXEDUID;
-			} else if ("fixedhostname".equals(name.toLowerCase())) {
+			} else if ("fixedhostname".equals(namelc)) {
 				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
 				}
 				substitutionValue = FIXEDHOSTNAME;
+			} else if ("username".equals(namelc)) {
+				substitutionValue=cf!=null?cf.getUsername():"";
+			} else if ("password".equals(namelc)) {
+				substitutionValue=cf!=null?cf.getPassword():"";
 			}
 		}
 		if (substitutionValue == null) {
-			throw new ParameterException("Parameter with name [" + name + "] in pattern" + pattern + " can not be resolved");
+			throw new ParameterException("Parameter or session variable with name [" + name + "] in pattern [" + pattern + "] cannot be resolved");
 		}
 		return substitutionValue;		
-	}
-
-	@IbisDoc({"name of the parameter", ""})
-	@Override
-	public void setName(String parameterName) {
-		name = parameterName;
-	}
-
-	@Override
-	public String getName() {
-		return name;
-	}
-
-	@IbisDoc({"if the result of sessionkey, xpathexpressen and/or stylesheet returns null or an empty string, this value is returned", ""})
-	public void setDefaultValue(String string) {
-		defaultValue = string;
-	}
-
-	public String getDefaultValue() {
-		return defaultValue;
-	}
-
-	@IbisDoc({"comma separated list of methods (defaultvalue, sessionkey, pattern, value or input) to use as default value. used in the order they appear until a non-null value is found.", "defaultvalue"})
-	public void setDefaultValueMethods(String string) {
-		defaultValueMethods = string;
-	}
-
-	public String getDefaultValueMethods() {
-		return defaultValueMethods;
-	}
-
-	TransformerPool getTransformerPool() {
-		return transformerPool;
-	}
-
-	@IbisDoc({"key of a pipelinesession-variable. If specified, the value of the pipelinesession variable is used as input for "+ 
-		"the xpathexpression or stylesheet, instead of the current input message. If no xpathexpression or stylesheet are "+ 
-		"specified, the value itself is returned. If the value '*' is specified, all existing sessionkeys are added as "+ 
-		"parameter of which the name starts with the name of this parameter. If also the name of the parameter has the "+ 
-		"value '*' then all existing sessionkeys are added as parameter (except tsreceived)", ""})
-	public void setSessionKey(String string) {
-		sessionKey = string;
-	}
-
-	public String getSessionKey() {
-		return sessionKey;
-	}
-
-	@IbisDoc({"instead of a fixed <code>sessionkey</code> it's also possible to use a xpath expression to extract the name of "+ 
-		"the <code>sessionkey</code>", ""})
-	public void setSessionKeyXPath(String string) {
-		sessionKeyXPath = string;
-	}
-
-	public String getSessionKeyXPath() {
-		return sessionKeyXPath;
-	}
-
-	@IbisDoc({"a fixed value", ""})
-	public void setValue(String value) {
-		this.value = value;
-	}
-
-	public String getValue() {
-		return value;
 	}
 
 	@Override
@@ -665,33 +613,30 @@ public class Parameter implements INamedObject, IWithParameters {
 		return "Parameter name=["+name+"] defaultValue=["+defaultValue+"] sessionKey=["+sessionKey+"] sessionKeyXPath=["+sessionKeyXPath+"] xpathExpression=["+xpathExpression+ "] type=["+type+ "] value=["+value+ "]";
 	}
 
-	/**
-	 * @return type of the parameter
-	 */
-	public String getType() {
-		return type;
+	private TransformerPool getTransformerPool() {
+		return transformerPool;
 	}
 
-	/**
-	 * @return the xpath expression to extract the parameter value from the (xml formatted) input
-	 */
-	public String getXpathExpression() {
-		return xpathExpression;
+	@IbisDoc({"1", "Name of the parameter", ""})
+	@Override
+	public void setName(String parameterName) {
+		name = parameterName;
+	}
+	@Override
+	public String getName() {
+		return name;
 	}
 
-	/**
-	 * @param type of the parameter
-	 */
-	@IbisDoc({"<ul>"+ 
-		"<li><code>string</code>: renders the contents of the first node (in combination with xslt or xpath). "+ 
+	@IbisDoc({"2", "<ul>"+ 
+		"<li><code>string</code>: renders the contents of the first node (in combination with xslt or xpath).<br/>"+ 
 			"Please note that if there are child nodes, only the contents are returned, use <code>xml</code> if the xml tags "+ 
 			"are required</li>"+ 
 		"<li><code>xml</code>:  renders an xml-nodeset as an xml-string (in combination with xslt or xpath). "+ 
 			"This will include the xml tags</li>"+ 
 		"<li><code>node</code>: renders the CONTENTS of the first node as a nodeset "+ 
-			"that can be used as such when passed as xslt-parameter (only for XSLT 1.0). Please note that the nodeset may "+ 
-			"contain multiple nodes, without a common root node. N.B. The result is the set of children of what you might "+ 
-			"expect it to be...</li>"+ 
+			"that can be used as such when passed as xslt-parameter (only for XSLT 1.0). <br/>"+
+			"Please note that the nodeset may contain multiple nodes, without a common root node. <br/>"+
+			"N.B. The result is the set of children of what you might expect it to be...</li>"+ 
 		"<li><code>domdoc</code>: renders xml as a DOM document; similar to <code>node</code> "+ 
 			"with the distinction that there is always a common root node (required for XSLT 2.0)</li>"+ 
 		"<li><code>date</code>: converts the result to a Date, by default using formatString <code>yyyy-MM-dd</code>. "+ 
@@ -713,129 +658,59 @@ public class Parameter implements INamedObject, IWithParameters {
 	public void setType(String type) {
 		this.type = type;
 	}
+	public String getType() {
+		return type;
+	}
 
-	/**
-	 * @param xpathExpression to extract the parameter value from the (xml formatted) input 
-	 */
-	@IbisDoc({"the xpath expression to extract the parameter value from the (xml formatted) input or session-variable.", ""})
-	public void setXpathExpression(String xpathExpression) {
-		this.xpathExpression = xpathExpression;
+	@IbisDoc({"3", "The value of the parameter, or the base for transformation using xpathExpression or stylesheet, or formatting.", ""})
+	public void setValue(String value) {
+		this.value = value;
+	}
+	public String getValue() {
+		return value;
+	}
+
+	@IbisDoc({"4", "Key of a pipelinesession-variable. <br/>If specified, the value of the pipelinesession variable is used as input for "+ 
+			"the xpathExpression or stylesheet, instead of the current input message. <br/>If no xpathExpression or stylesheet are "+ 
+			"specified, the value itself is returned. <br/>If the value '*' is specified, all existing sessionkeys are added as "+ 
+			"parameter of which the name starts with the name of this parameter. <br/>If also the name of the parameter has the "+ 
+			"value '*' then all existing sessionkeys are added as parameter (except tsreceived)", ""})
+	public void setSessionKey(String string) {
+		sessionKey = string;
+	}
+	public String getSessionKey() {
+		return sessionKey;
+	}
+
+	@IbisDoc({"5", "Instead of a fixed <code>sessionkey</code> it's also possible to use a xpath expression to extract the name of "+ 
+		"the <code>sessionkey</code>", ""})
+	public void setSessionKeyXPath(String string) {
+		sessionKeyXPath = string;
+	}
+	public String getSessionKeyXPath() {
+		return sessionKeyXPath;
 	}
 
 	/**
 	 * Specify the stylesheet to use
 	 */
-	@IbisDoc({"url to a stylesheet that wil be applied to the contents of the message or the value of the session-variable.", ""})
+	@IbisDoc({"6", "url to a stylesheet that wil be applied to the contents of the message or the value of the session-variable.", ""})
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
 
-
 	/**
-	 * @param string with pattern to be used, follows MessageFormat syntax with named parameters
+	 * @param xpathExpression to extract the parameter value from the (xml formatted) input 
 	 */
-	@IbisDoc({"Value of parameter is determined using substitution and formating. The expression can contain references "+ 
-		"to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat. "+ 
-		"{now}, {uid}, {uuid}, {hostname} and {fixeddate} are named constants that can be used in the expression. "+ 
-		"If fname is a parameter or session variable that resolves to eric, then the pattern 'hi {fname}, hoe gaat het?' "+ 
-		"resolves to 'hi eric, hoe gaat het?'. a guid can be generated using {hostname}_{uid}, see also "+ 
-		"<a href=\"http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html\">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html</a> "+ 
-		"for more information about (g)uid's or <a href=\"http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html\">http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html</a> "+ 
-		"for more information about uuid's.", ""})
-	public void setPattern(String string) {
-		pattern = string;
+	@IbisDoc({"7", "the xpath expression to extract the parameter value from the (xml formatted) input or session-variable.", ""})
+	public void setXpathExpression(String xpathExpression) {
+		this.xpathExpression = xpathExpression;
 	}
-	public String getPattern() {
-		return pattern;
+	public String getXpathExpression() {
+		return xpathExpression;
 	}
 
-	@IbisDoc({"used in combination with types <code>date</code>, <code>time</code> and <code>datetime</code>", "depends on type"})
-	public void setFormatString(String string) {
-		formatString = string;
-	}
-	public String getFormatString() {
-		return formatString;
-	}
-
-	@IbisDoc({"used in combination with type <code>number</code>", "system default"})
-	public void setDecimalSeparator(String string) {
-		decimalSeparator = string;
-	}
-	public String getDecimalSeparator() {
-		return decimalSeparator;
-	}
-
-	@IbisDoc({"used in combination with type <code>number</code>", "system default"})
-	public void setGroupingSeparator(String string) {
-		groupingSeparator = string;
-	}
-	public String getGroupingSeparator() {
-		return groupingSeparator;
-	}
-
-	@IbisDoc({"if set to <code>true</code>, the value of the parameter will not be shown in the log (replaced by asterisks)", "<code>false</code>"})
-	public void setHidden(boolean b) {
-		hidden = b;
-	}
-	public boolean isHidden() {
-		return hidden;
-	}
-
-	@IbisDoc({"namespace defintions for xpathexpression. must be in the form of a comma or space separated list of "+ 
-		"<code>prefix=namespaceuri</code>-definitions. One entry can be without a prefix, that will define the default namespace.", ""})
-	public void setNamespaceDefs(String namespaceDefs) {
-		this.namespaceDefs = namespaceDefs;
-	}
-	public String getNamespaceDefs() {
-		return namespaceDefs;
-	}
-
-	@IbisDoc({"when set <code>true</code> namespaces (and prefixes) in the input message are removed before the "+ 
-		"stylesheet/xpathexpression is executed", "false"})
-	public void setRemoveNamespaces(boolean b) {
-		removeNamespaces = b;
-	}
-	public boolean isRemoveNamespaces() {
-		return removeNamespaces;
-	}
-
-	@IbisDoc({"if set (>=0) and the length of the value of the parameter deceeds this minimum length, the value is padded", "-1"})
-	public void setMinLength(int i) {
-		minLength = i;
-	}
-	public int getMinLength() {
-		return minLength;
-	}
-
-	@IbisDoc({"if set (>=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed "+ 
-		"to this maximum length", "-1"})
-	public void setMaxLength(int i) {
-		maxLength = i;
-	}
-	public int getMaxLength() {
-		return maxLength;
-	}
-
-	@IbisDoc({"used in combination with type <code>number</code>; if set and the value of the parameter exceeds this "+ 
-		"maximum value, this maximum value is taken", ""})
-	public void setMaxInclusive(String string) {
-		maxInclusiveString = string;
-	}
-	public String getMaxInclusive() {
-		return maxInclusiveString;
-	}
-
-	@IbisDoc({"used in combination with type <code>number</code>; if set and the value of the parameter exceeds this "+ 
-		"minimum value, this minimum value is taken", ""})
-	public void setMinInclusive(String string) {
-		minInclusiveString = string;
-	}
-	public String getMinInclusive() {
-		return minInclusiveString;
-	}
-
-	@IbisDoc({"when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 "+ 
-		"(org.apache.xalan). <code>0</code> will auto detect", "0"})
+	@IbisDoc({"8", "when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
 	}
@@ -843,8 +718,7 @@ public class Parameter implements INamedObject, IWithParameters {
 		return xsltVersion;
 	}
 
-	@IbisDoc({"Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise "+ 
-		"xslt processor 1.0 (org.apache.xalan)", "false"})
+	@IbisDoc({"9", "Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
 	/**
 	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
 	 */
@@ -855,4 +729,159 @@ public class Parameter implements INamedObject, IWithParameters {
 		configWarnings.add(log, msg);
 		xsltVersion=b?2:1;
 	}
+
+	@IbisDoc({"10", "Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of "+ 
+			"<code>prefix=namespaceuri</code>-definitions. One entry can be without a prefix, that will define the default namespace.", ""})
+	public void setNamespaceDefs(String namespaceDefs) {
+		this.namespaceDefs = namespaceDefs;
+	}
+	public String getNamespaceDefs() {
+		return namespaceDefs;
+	}
+
+	@IbisDoc({"11", "When set <code>true</code> namespaces (and prefixes) in the input message are removed before the "+ 
+		"stylesheet/xpathexpression is executed", "false"})
+	public void setRemoveNamespaces(boolean b) {
+		removeNamespaces = b;
+	}
+	public boolean isRemoveNamespaces() {
+		return removeNamespaces;
+	}
+
+	@IbisDoc({"12", "If the result of sessionKey, xpathExpression and/or stylesheet returns null or an empty string, this value is returned", ""})
+	public void setDefaultValue(String string) {
+		defaultValue = string;
+	}
+	public String getDefaultValue() {
+		return defaultValue;
+	}
+
+	@IbisDoc({"13", "Comma separated list of methods (defaultvalue, sessionKey, pattern, value or input) to use as default value. Used in the order they appear until a non-null value is found.", "defaultvalue"})
+	public void setDefaultValueMethods(String string) {
+		defaultValueMethods = string;
+	}
+	public String getDefaultValueMethods() {
+		return defaultValueMethods;
+	}
+
+	/**
+	 * @param string with pattern to be used, follows MessageFormat syntax with named parameters
+	 */
+	@IbisDoc({"14", "Value of parameter is determined using substitution and formating. The expression can contain references "+ 
+		"to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat. "+ 
+		"<br/>If for instance <code>fname</code> is a parameter or session variable that resolves to eric, then the pattern "+ 
+		"'hi {fname}, hoe gaat het?' resolves to 'hi eric, hoe gaat het?'.<br/>" +
+		"The following predefined reference can be used in the expression too:<ul>" +
+		"<li>{now}: the current system time</li>" +
+		"<li>{uid}: an unique identifier, based on the IP address and java.rmi.server.UID</li>" +
+		"<li>{uuid}: an unique identifier, based on the IP address and java.util.UUID</li>" +
+		"<li>{hostname}: the name of the machine the application runs on</li>" +
+		"<li>{username}: username from the credentials found using authAlias, or the username attribute</li>" +
+		"<li>{password}: password from the credentials found using authAlias, or the password attribute</li>" +
+		"<li>{fixeddate}: fake date, for testing only</li>" +
+		"<li>{fixeduid}: fake uid, for testing only</li>" +
+		"<li>{fixedhostname}: fake hostname, for testing only</li>" +
+		"</ul>"+ 
+		"A guid can be generated using {hostname}_{uid}, see also "+ 
+		"<a href=\"http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html\">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html</a> "+ 
+		"for more information about (g)uid's or <a href=\"http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html\">http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html</a> "+ 
+		"for more information about uuid's.", ""})
+	public void setPattern(String string) {
+		pattern = string;
+	}
+	public String getPattern() {
+		return pattern;
+	}
+
+	@IbisDoc({"15", "Alias used to obtain username and password, used when a <code>pattern</code> containing {username} or {password} is specified", ""})
+	public void setAuthAlias(String string) {
+		authAlias = string;
+	}
+	public String getAuthAlias() {
+		return authAlias;
+	}
+
+	@IbisDoc({"16", "Default username that is used when a <code>pattern</code> containing {username} is specified", ""})
+	public void setUserName(String string) {
+		userName = string;
+	}
+	public String getUserName() {
+		return userName;
+	}
+
+	@IbisDoc({"17", "Default password that is used when a <code>pattern</code> containing {password} is specified", " "})
+	public void setPassword(String string) {
+		password = string;
+	}
+	public String getPassword() {
+		return password;
+	}
+
+	@IbisDoc({"18", "Used in combination with types <code>date</code>, <code>time</code> and <code>datetime</code>", "depends on type"})
+	public void setFormatString(String string) {
+		formatString = string;
+	}
+	public String getFormatString() {
+		return formatString;
+	}
+
+	@IbisDoc({"19", "Used in combination with type <code>number</code>", "system default"})
+	public void setDecimalSeparator(String string) {
+		decimalSeparator = string;
+	}
+	public String getDecimalSeparator() {
+		return decimalSeparator;
+	}
+
+	@IbisDoc({"20", "Used in combination with type <code>number</code>", "system default"})
+	public void setGroupingSeparator(String string) {
+		groupingSeparator = string;
+	}
+	public String getGroupingSeparator() {
+		return groupingSeparator;
+	}
+
+	@IbisDoc({"21", "If set (>=0) and the length of the value of the parameter deceeds this minimum length, the value is padded", "-1"})
+	public void setMinLength(int i) {
+		minLength = i;
+	}
+	public int getMinLength() {
+		return minLength;
+	}
+
+	@IbisDoc({"22", "If set (>=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed "+ 
+		"to this maximum length", "-1"})
+	public void setMaxLength(int i) {
+		maxLength = i;
+	}
+	public int getMaxLength() {
+		return maxLength;
+	}
+
+	@IbisDoc({"23", "Used in combination with type <code>number</code>; if set and the value of the parameter exceeds this "+ 
+		"maximum value, this maximum value is taken", ""})
+	public void setMaxInclusive(String string) {
+		maxInclusiveString = string;
+	}
+	public String getMaxInclusive() {
+		return maxInclusiveString;
+	}
+
+	@IbisDoc({"24", "Used in combination with type <code>number</code>; if set and the value of the parameter exceeds this "+ 
+		"minimum value, this minimum value is taken", ""})
+	public void setMinInclusive(String string) {
+		minInclusiveString = string;
+	}
+	public String getMinInclusive() {
+		return minInclusiveString;
+	}
+
+	@IbisDoc({"25", "If set to <code>true</code>, the value of the parameter will not be shown in the log (replaced by asterisks)", "<code>false</code>"})
+	public void setHidden(boolean b) {
+		hidden = b;
+	}
+	public boolean isHidden() {
+		return hidden;
+	}
+
 }

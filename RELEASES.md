@@ -58,6 +58,7 @@ Upcoming
 - XsltSender, XsltPipe, JsonXsltSender, JsonXsltPipe accept streaming inputs
 - Add option in GUI 3.0 to cut off all traffic to Ladybug debugger, and to switch it on again
 - HttpSender, WebServiceSender and descendants no longer support attribute xmlTag
+- Add option to use username and password from authAlias in Paramter values
 
 
 ### Non backwards compatible changes
