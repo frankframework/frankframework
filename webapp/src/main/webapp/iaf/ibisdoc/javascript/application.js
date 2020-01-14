@@ -145,10 +145,10 @@ app.controller("classesCtrl", function($scope, $rootScope, classesService, metho
                 		name : superClass,
                 		attributes : [],
                 		parentIndex : parentIndex
-                	})
+                	});
                 	
                 	parentIndex =  parentIndex + 1
-                })
+                });
                 // Notify the methodsCtrl in which package we currently are
                 $rootScope.$broadcast('packageName', clas.packageName);
                 $rootScope.$broadcast('javadocLink', clas.javadocLink);
@@ -171,7 +171,7 @@ app.controller("classesCtrl", function($scope, $rootScope, classesService, metho
                 	if (parent.attributes.length > 0 ) {
                 		$scope.parentClasses.push(parent);
                 	}
-                })
+                });
                 
                 methodsService.setParents($scope.parentClasses);
             }
