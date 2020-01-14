@@ -1,16 +1,20 @@
 angular.module('iaf.beheerconsole')
 
-.directive('pageTitle', ['$rootScope', '$timeout', function($rootScope, $timeout) {
+.directive('pageTitle', ['$rootScope', '$timeout', '$state', function($rootScope, $timeout, $state) {
 	return {
 		link: function(scope, element) {
-			var listener = function(event, toState, toParams, fromState, fromParams) {
-				var title = 'IAF, Ibis AdapterFramework'; // Default title
-				if (toState.data && toState.data.pageTitle) title = 'IAF | ' + toState.data.pageTitle;
+			var listener = function(_, toState) {
+				var title = 'Loading...'; // Default title
+				if (toState.data && toState.data.pageTitle && $rootScope.instanceName) title = $rootScope.otapStage +'-'+$rootScope.instanceName+' | '+toState.data.pageTitle;
+				else if($rootScope.startupError) title = "ERROR";
 				$timeout(function() {
 					element.text(title);
 				});
 			};
 			$rootScope.$on('$stateChangeStart', listener);
+			$rootScope.$watch('::instanceName', function() {
+				listener(null, $state.current);
+			});
 		}
 	};
 }])
@@ -22,7 +26,7 @@ angular.module('iaf.beheerconsole')
 			time: '@'
 		},
 		link: function(scope, element, attributes) {
-			scope.$watch('time', updateTime);
+			scope.$watch('::time', updateTime);
 			function updateTime(time) {
 				if(isNaN(time))
 					time = new Date(time).getTime();
@@ -32,6 +36,33 @@ angular.module('iaf.beheerconsole')
 		}
 	};
 }])
+
+.directive('clipboard', function() {
+	return {
+		restrict: 'A',
+		controller: function ($scope, $element, $compile) {
+			var selector = angular.element('<i ng-click="copyToClipboard()" title="copy to clipboard" class="fa fa-clipboard" aria-hidden="true"></i>');
+			$element.append(selector);
+			$element.addClass("clipboard");
+			$compile(selector)($scope);
+
+			$scope.copyToClipboard = function () {
+				var textToCopy = $element.text().trim();
+				if(textToCopy) {
+					var el = document.createElement('textarea');
+					el.value = textToCopy;
+					el.setAttribute('readonly', '');
+					el.style.position = 'absolute';
+					el.style.left = '-9999px';
+					document.body.appendChild(el);
+					el.select();
+					document.execCommand('copy');
+					document.body.removeChild(el);
+				}
+			};
+		}
+	};
+})
 
 .directive('timeSince', ['appConstants', '$interval', function(appConstants, $interval) {
 	return {
@@ -108,7 +139,7 @@ angular.module('iaf.beheerconsole')
 		replace: true,
 		link: function(scope, element, attributes) {
 			scope.customViews = [];
-			scope.$watch('otapStage', function() {
+			scope.$watch('::otapStage', function() {
 				var customViews = appConstants["customViews.names"];
 				if(customViews == undefined)
 					return;

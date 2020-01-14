@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2016-2017, 2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,13 +24,11 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -52,7 +50,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 @Path("/")
 public final class TestServiceListener extends Base {
-	@Context ServletConfig servletConfig;
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -60,23 +57,22 @@ public final class TestServiceListener extends Base {
 	@Relation("servicelistener")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getServiceListeners() throws ApiException {
-		initBase(servletConfig);
-		
-		if (ibisManager == null) {
+
+		if (getIbisManager() == null) {
 			throw new ApiException("Config not found!");
 		}
-		
+
 		Map<String, Object> returnData = new HashMap<String, Object>();
-		
+
 		@SuppressWarnings("rawtypes")
 		Iterator it = ServiceDispatcher.getInstance().getRegisteredListenerNames();
 		List<String> services = new ArrayList<String>();
 		while (it.hasNext()) {
 			services.add((String)it.next());
 		}
-		
+
 		returnData.put("services", services);
-		
+
 		return Response.status(Response.Status.CREATED).entity(returnData).build();
 	}
 

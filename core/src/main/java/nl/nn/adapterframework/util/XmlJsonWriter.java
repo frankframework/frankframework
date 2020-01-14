@@ -1,60 +1,96 @@
 package nl.nn.adapterframework.util;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+
 import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-public class XmlJsonWriter extends DefaultHandler {
+import nl.nn.adapterframework.xml.SaxException;
 
-	StringBuffer buffer=new StringBuffer();
-	boolean commaRequired=false;
-	boolean stringOpen=false;
+public class XmlJsonWriter extends DefaultHandler implements ContentHandler {
+
+	private Writer writer;
+	private boolean commaRequired=false;
+	private boolean stringOpen=false;
+	
+	public XmlJsonWriter(Writer writer) {
+		this.writer=writer;
+	}
+	
+	public XmlJsonWriter() {
+		this(new StringWriter());
+	}
 	
 	@Override
+	public void endDocument() throws SAXException {
+		try {
+			writer.flush();
+		} catch (IOException e) {
+			throw new SaxException(e);
+		}
+	}
+
+	@Override
 	public void startElement(String uri, String localname, String qname, Attributes attrs) throws SAXException {
-		if (commaRequired) {
-			buffer.append(",");
-		}
-		commaRequired=false;
-		if (attrs!=null) {
-			String key=attrs.getValue("key");
-			if (key!=null) {
-				buffer.append('"').append(key).append("\":");
+		try {
+			if (commaRequired) {
+				writer.write(",");
 			}
-		}
-		if (localname.equals("array")) {
-			buffer.append("[");
-		} else if (localname.equals("map")) {
-			buffer.append("{");
-		} else if (localname.equals("null")) {
-			buffer.append("null");
-		} else if (localname.equals("string")) {
-			stringOpen=true;
+			commaRequired=false;
+			if (attrs!=null) {
+				String key=attrs.getValue("key");
+				if (key!=null) {
+					writer.append('"').append(key).append("\":");
+				}
+			}
+			if (localname.equals("array")) {
+				writer.write("[");
+			} else if (localname.equals("map")) {
+				writer.write("{");
+			} else if (localname.equals("null")) {
+				writer.write("null");
+			} else if (localname.equals("string")) {
+				stringOpen=true;
+			}
+		} catch (IOException e) {
+			throw new SaxException(e);
 		}
 	}
 
 	@Override
 	public void endElement(String uri, String localname, String qname) throws SAXException {
-		if (localname.equals("array")) {
-			buffer.append("]");
-		} else if (localname.equals("map")) {
-			buffer.append("}");
-		} else if (localname.equals("string")) {
-			stringOpen=false;
+		try {
+			if (localname.equals("array")) {
+				writer.write("]");
+			} else if (localname.equals("map")) {
+				writer.write("}");
+			} else if (localname.equals("string")) {
+				stringOpen=false;
+			}
+			commaRequired=true;
+		} catch (IOException e) {
+			throw new SaxException(e);
 		}
-		commaRequired=true;
 	}
 
 	@Override
 	public void characters(char[] chars, int start, int length) throws SAXException {
-		if (stringOpen) buffer.append('"');
-		buffer.append(chars, start, length);
-		if (stringOpen) buffer.append('"');
+		try {
+			if (stringOpen) writer.write('"');
+			writer.write(chars, start, length);
+			if (stringOpen) writer.write('"');
+		} catch (IOException e) {
+			throw new SaxException(e);
+		}
 	}
 
 	@Override
 	public String toString() {
-		return buffer.toString().trim();
+		return writer.toString().trim();
 	}
 
 }

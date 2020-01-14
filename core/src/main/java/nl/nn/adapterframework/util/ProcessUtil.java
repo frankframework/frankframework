@@ -93,14 +93,21 @@ public class ProcessUtil {
 		String output;
 		String errors;
 
-		Process process;
+		final Process process;
 		try {
 			process = Runtime.getRuntime().exec((String[])command.toArray(new String[0]));
 		} catch (Throwable t) {
 			throw new SenderException("Could not execute command ["+getCommandLine(command)+"]",t);
 		}
-		TimeoutGuard tg = new TimeoutGuard("ProcessUtil ");
-		tg.activateGuard(timeout);
+		TimeoutGuard tg = new TimeoutGuard("ProcessUtil") {
+
+			@Override
+			protected void kill() {
+				process.destroy();
+			}
+			
+		};
+		tg.activateGuard(timeout) ;
 		try {
 			// Wait until the process is completely finished, or timeout is expired
 			process.waitFor();

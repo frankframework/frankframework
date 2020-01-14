@@ -250,7 +250,7 @@
 			<field name="TTIMESTAMP" null="true"></field>
 			<field name="TDATE" null="true"></field>
 			<field name="TBLOB1"></field>
-			<field name="TCLOB" null="true"></field>
+			<field name="TCLOB"></field>
 			<field name="TBLOB2" null="true"/>
 		</row>
 	</rowset>

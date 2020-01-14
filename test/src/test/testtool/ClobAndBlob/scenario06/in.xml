@@ -1,0 +1,6 @@
+<request action="InsertBlobViaBlobSessionKeyNotCompressed">
+	<elem>a</elem>
+	<elem>b</elem>
+	<elem>c</elem>
+	<elem>d</elem>
+</request>	

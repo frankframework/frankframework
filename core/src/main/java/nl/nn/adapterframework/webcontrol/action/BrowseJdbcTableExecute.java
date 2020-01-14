@@ -120,6 +120,7 @@ public class BrowseJdbcTableExecute extends ActionBase {
 						qs.setQueryType("select");
 						qs.setBlobSmartGet(true);
 						qs.setIncludeFieldDefinition(true);
+						qs.setSqlDialect("");
 						qs.configure(true);
 						qs.open();
 

@@ -20,6 +20,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 
 import javax.naming.NamingException;
@@ -66,7 +67,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
     private String username=null;
     private String password=null;
     
-	private Map proxiedDataSources = null;
+	private Map<String,DataSource> proxiedDataSources = null;
 	private DataSource datasource = null;
 	private String datasourceName = null;
 
@@ -81,7 +82,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
 	}
 
-	public void setProxiedDataSources(Map proxiedDataSources) {
+	public void setProxiedDataSources(Map<String,DataSource> proxiedDataSources) {
 		this.proxiedDataSources = proxiedDataSources;
 	}
 
@@ -125,9 +126,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 
 	public String getDatasourceInfo() throws JdbcException {
 		String dsinfo=null;
-		Connection conn=null;
-		try {
-			conn=getConnection();
+		try (Connection conn=getConnection()) {
 			DatabaseMetaData md=conn.getMetaData();
 			String product=md.getDatabaseProductName();
 			String productVersion=md.getDatabaseProductVersion();
@@ -135,9 +134,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 			String driverVersion=md.getDriverVersion();
 			String url=md.getURL();
 			String user=md.getUserName();
-			if (getDatabaseType() == DbmsSupportFactory.DBMS_DB2
-					&& "WAS".equals(IbisContext.getApplicationServerType())
-					&& md.getResultSetHoldability() != ResultSet.HOLD_CURSORS_OVER_COMMIT) {
+			if (getDatabaseType() == DbmsSupportFactory.DBMS_DB2 && "WAS".equals(IbisContext.getApplicationServerType()) && md.getResultSetHoldability() != ResultSet.HOLD_CURSORS_OVER_COMMIT) {
 				// For (some?) combinations of WebShere and DB2 this seems to be
 				// the default and result in the following exception when (for
 				// example?) a ResultSetIteratingPipe is calling next() on the
@@ -146,23 +143,11 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 				// transactionAttribute="NotSupported":
 				//   com.ibm.websphere.ce.cm.ObjectClosedException: DSRA9110E: ResultSet is closed.
 				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-				configWarnings.add(log,
-						"The database's default holdability for ResultSet objects is "
-						+ md.getResultSetHoldability()
-						+ " instead of " + ResultSet.HOLD_CURSORS_OVER_COMMIT
-						+ " (ResultSet.HOLD_CURSORS_OVER_COMMIT)");
+				configWarnings.add(log, "The database's default holdability for ResultSet objects is " + md.getResultSetHoldability() + " instead of " + ResultSet.HOLD_CURSORS_OVER_COMMIT + " (ResultSet.HOLD_CURSORS_OVER_COMMIT)");
 			}
 			dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] version ["+productVersion+"] driver ["+driver+"] version ["+driverVersion+"]";
 		} catch (SQLException e) {
 			log.warn("Exception determining databaseinfo",e);
-		} finally {
-			if (conn!=null) {
-				try {
-					conn.close();
-				} catch (SQLException e1) {
-					log.warn("exception closing connection for metadata",e1);
-				}
-			}
 		}
 		return dsinfo;
 	}
@@ -266,42 +251,43 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	 *  
 	 * @see nl.nn.adapterframework.core.HasPhysicalDestination#getPhysicalDestinationName()
 	 */
+	@Override
 	public String getPhysicalDestinationName() {
 		String result="unknown";
-		try {
-			Connection connection = getConnection();
+		try (Connection connection = getConnection()) {
 			DatabaseMetaData metadata = connection.getMetaData();
 			result = metadata.getURL();
 	
 			String catalog=null;
 			catalog=connection.getCatalog();
 			result += catalog!=null ? ("/"+catalog):"";
-			
-			connection.close();
 		} catch (Exception e) {
 			log.warn(getLogPrefix()+"exception retrieving PhysicalDestinationName", e);		
 		}
 		return result;
 	}
 
-	protected void applyParameters(PreparedStatement statement,
-			ParameterValueList parameters) throws SQLException, JdbcException {
+	protected void applyParameters(PreparedStatement statement, ParameterValueList parameters) throws SQLException, JdbcException {
 		for (int i = 0; i < parameters.size(); i++) {
 			ParameterValue pv = parameters.getParameterValue(i);
-			JdbcUtil.applyParameter(statement,
-					new SimpleParameter(pv.getDefinition().getName(),
-							pv.getDefinition().getType(), pv.getValue()),
-					i + 1);
+			JdbcUtil.applyParameter(statement, new SimpleParameter(pv.getDefinition().getName(), pv.getDefinition().getType(), pv.getValue()), i + 1);
 		}
 	}	
 
+	protected void applySimpleParameters(PreparedStatement statement, List<SimpleParameter> simpleParameterList) throws SQLException, JdbcException {
+		for (int i = 0; i < simpleParameterList.size(); i++) {
+			JdbcUtil.applyParameter(statement, simpleParameterList.get(i), i + 1);
+		}
+	}
 
 	/**
 	 * Sets the name of the object.
 	 */
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -357,6 +343,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	public void setTransacted(boolean transacted) {
 		this.transacted = transacted;
 	}
+	@Override
 	public boolean isTransacted() {
 		return transacted;
 	}

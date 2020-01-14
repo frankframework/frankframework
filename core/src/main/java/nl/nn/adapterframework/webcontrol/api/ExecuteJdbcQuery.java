@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2016-2017, 2019 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,13 +24,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.transform.Transformer;
@@ -49,7 +47,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 @Path("/")
 public final class ExecuteJdbcQuery extends Base {
-	@Context ServletConfig servletConfig;
 
 	public static final String DB2XML_XSLT="xml/xsl/dbxml2csv.xslt";
 
@@ -58,7 +55,6 @@ public final class ExecuteJdbcQuery extends Base {
 	@Path("/jdbc")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getJdbcInfo() throws ApiException {
-		initBase(servletConfig);
 
 		Map<String, Object> result = new HashMap<String, Object>();
 
@@ -81,7 +77,6 @@ public final class ExecuteJdbcQuery extends Base {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
-		initBase(servletConfig);
 
 		String realm = null, resultType = null, query = null, queryType = "select", result = "", returnType = MediaType.APPLICATION_XML;
 		Object returnEntity = null;
@@ -112,7 +107,7 @@ public final class ExecuteJdbcQuery extends Base {
 		//We have all info we need, lets execute the query!
 		DirectQuerySender qs;
 		try {
-			qs = (DirectQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
+			qs = (DirectQuerySender) getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 		} catch (Exception e) {
 			log.error(e);
 			throw new ApiException("An error occured on creating or closing the connection!", 500);
@@ -127,7 +122,7 @@ public final class ExecuteJdbcQuery extends Base {
 			qs.open();
 			result = qs.sendMessage("dummy", query);
 			if (resultType.equalsIgnoreCase("csv")) {
-				URL url = ClassUtils.getResourceURL(this, DB2XML_XSLT);
+				URL url = ClassUtils.getResourceURL(getClassLoader(), DB2XML_XSLT);
 				if (url!=null) {
 					Transformer t = XmlUtils.createTransformer(url);
 					result = XmlUtils.transformXml(t,result);

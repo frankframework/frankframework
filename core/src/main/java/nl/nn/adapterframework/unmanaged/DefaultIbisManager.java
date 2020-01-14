@@ -109,7 +109,6 @@ public class DefaultIbisManager implements IbisManager {
 	 */
 	@Override
 	public void shutdown() {
-		shutdownScheduler();
 		if (listenerPortPoller != null) {
 			listenerPortPoller.clear();
 		}
@@ -332,15 +331,6 @@ public class DefaultIbisManager implements IbisManager {
 		}
 	}
 
-	public void shutdownScheduler() {
-		try {
-			log.info("Shutting down the scheduler");
-			schedulerHelper.getScheduler().shutdown();
-		} catch (SchedulerException e) {
-			log.error("Could not stop scheduler", e);
-		}
-	}
-
 	public void startScheduledJobs(Configuration configuration) {
 		List<JobDef> scheduledJobs = configuration.getScheduledJobs();
 		for (Iterator<JobDef> iter = scheduledJobs.iterator(); iter.hasNext();) {
@@ -471,5 +461,4 @@ public class DefaultIbisManager implements IbisManager {
 	public ApplicationEventPublisher getApplicationEventPublisher() {
 		return applicationEventPublisher;
 	}
-
 }

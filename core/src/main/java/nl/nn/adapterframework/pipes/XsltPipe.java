@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import javax.xml.transform.TransformerException;
+import java.io.StringWriter;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -25,17 +25,17 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.XsltSender;
 import nl.nn.adapterframework.stream.IThreadCreator;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
-import nl.nn.adapterframework.stream.StreamingException;
 
 
 /**
@@ -52,10 +52,15 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 
 	private String sessionKey=null;
 	
-	private XsltSender sender = new XsltSender();
+	private XsltSender sender = createXsltSender();
 
 	{
 		setSizeStatistics(true);
+	}
+	
+	
+	protected XsltSender createXsltSender() {
+		return new XsltSender();
 	}
 	
 	/**
@@ -64,9 +69,9 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-	    super.configure();
-	    sender.setName(getName());
-	    sender.configure();
+		super.configure();
+		sender.setName(getName());
+		sender.configure();
 	}
 
 	@Override
@@ -89,60 +94,27 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		super.stop();
 	}
 	
-//	protected ParameterResolutionContext getInput(String input, IPipeLineSession session) throws PipeRunException, DomBuilderException, TransformerException, IOException {
-//		if (isRemoveNamespaces()) {
-//			log.debug(getLogPrefix(session)+ " removing namespaces from input message");
-//			ParameterResolutionContext prc_RemoveNamespaces = new ParameterResolutionContext(input, session, isNamespaceAware()); 
-//			input = transformerPoolRemoveNamespaces.transform(prc_RemoveNamespaces.getInputSource(), null); 
-//			log.debug(getLogPrefix(session)+ " output message after removing namespaces [" + input + "]");
-//		}
-//		return new ParameterResolutionContext(input, session, isNamespaceAware());
-//	}
-
-	protected String getInputXml(Object input, IPipeLineSession session) throws TransformerException {
-		return (String)input;
-	}
-	
-//	/*
-//	 * Allow to override transformation, so JsonXslt can prefix and suffix...
-//	 */
-//	protected String transform(TransformerPool tp, Source source, Map<String,Object> parametervalues) throws TransformerException, IOException {
-//		return tp.transform(source, parametervalues);
-//	}
-	/*
-	 * Allow to override transformation, so JsonXslt can prefix and suffix...
-	 */
-	protected String transform(Object input, IPipeLineSession session, MessageOutputStream target) throws SenderException, TransformerException, TimeOutException {
- 	    String inputXml=getInputXml(input, session);
-		ParameterResolutionContext prc = new ParameterResolutionContext(inputXml, session, isNamespaceAware()); 
-		return sender.sendMessage(null, inputXml, prc, target);
-	}
-	/**
-	 * Here the actual transforming is done. Under weblogic the transformer object becomes
-	 * corrupt when a not-well formed xml was handled. The transformer is then re-initialized
-	 * via the configure() and start() methods.
-	 */
 	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session, MessageOutputStream target) throws PipeRunException {
 		if (input==null) {
 			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
 		}
- 	    if (!(input instanceof String)) {
-	        throw new PipeRunException(this, getLogPrefix(session)+"got an invalid type as input, expected String, got " + input.getClass().getName());
-	    }
-
-	    try {
-	    	String stringResult = transform(input, session, target);
-		
-			if (StringUtils.isEmpty(getSessionKey())){
-				return new PipeRunResult(getForward(), stringResult);
+		Message message = new Message(input);
+		ParameterResolutionContext prc = new ParameterResolutionContext(message, session, isNamespaceAware()); 
+		try {
+			Object result = sender.sendMessage(null, message, prc, target);
+			if (result instanceof StringWriter) {
+				result = result.toString();
 			}
-			session.put(getSessionKey(), stringResult);
+
+			if (StringUtils.isEmpty(getSessionKey())) {
+				return new PipeRunResult(getForward(), result);
+			}
+			session.put(getSessionKey(), result);
 			return new PipeRunResult(getForward(), input);
-	    } 
-	    catch (Exception e) {
-	        throw new PipeRunException(this, getLogPrefix(session)+" Exception on transforming input", e);
-	    } 
+		} catch (Exception e) {
+			throw new PipeRunException(this, getLogPrefix(session) + " Exception on transforming input", e);
+		}
 	}
 
 	@Override
@@ -151,8 +123,13 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	}
 
 	@Override
-	public boolean canStreamToTarget() {
-		return super.canStreamToTarget() && sender.canStreamToTarget();
+	public boolean requiresOutputStream() {
+		return super.requiresOutputStream() && sender.requiresOutputStream();
+	}
+
+	@Override
+	public boolean supportsOutputStreamPassThrough() {
+		return false;
 	}
 
 
@@ -270,6 +247,10 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	@Override
 	public void setThreadLifeCycleEventListener(ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener) {
 		sender.setThreadLifeCycleEventListener(threadLifeCycleEventListener);
+	}
+
+	protected XsltSender getSender() {
+		return sender;
 	}
 
 }

@@ -49,6 +49,8 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 	private String slotId=null;
 	private String type=null;
 	private boolean active=true;   
+	private String hideRegex = null;
+	private String hideMethod = "all";
 
 	public JmsTransactionalStorage() {
 		super();
@@ -57,9 +59,12 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 		setDestinationType("QUEUE");
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
+		// nothing special
 	}
 
+	@Override
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException {
 		Session session=null;
 		try {
@@ -82,18 +87,20 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 		}
 	}
 
-    public boolean containsMessageId(String originalMessageId) throws ListenerException {
-        Object msg = doBrowse(FIELD_ORIGINAL_ID, originalMessageId);
-        return msg != null;
-    }
+	@Override
+	public boolean containsMessageId(String originalMessageId) throws ListenerException {
+		Object msg = doBrowse(FIELD_ORIGINAL_ID, originalMessageId);
+		return msg != null;
+	}
 
+	@Override
 	public boolean containsCorrelationId(String correlationId) throws ListenerException {
-		log.warn("could not determine correct presence of a message with correlationId ["
-				+ correlationId + "], assuming it doesnot exist");
-		//TODO: check presence of a message with correlationId 
+		log.warn("could not determine correct presence of a message with correlationId [" + correlationId + "], assuming it doesnot exist");
+		// TODO: check presence of a message with correlationId
 		return false;
 	}
-    
+
+	@Override
 	public Object browseMessage(String messageId) throws ListenerException {
 		try {
 			ObjectMessage msg=(ObjectMessage)super.browseMessage(messageId);
@@ -103,6 +110,7 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 		}
 	}
 
+	@Override
 	public Object getMessage(String messageId) throws ListenerException {
 		try {
 			ObjectMessage msg=(ObjectMessage)super.getMessage(messageId);
@@ -115,6 +123,7 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 
 
 
+	@Override
 	public String getSelector() {
 		if (StringUtils.isEmpty(getSlotId())) {
 			return null; 
@@ -123,17 +132,21 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 	}
 
 
-	@IbisDoc({"optional identifier for this storage, to be able to share the physical storage between a number of receivers", ""})
+	@Override
+	@IbisDoc({"Optional identifier for this storage, to be able to share the physical storage between a number of receivers", ""})
 	public void setSlotId(String string) {
 		slotId = string;
 	}
+	@Override
 	public String getSlotId() {
 		return slotId;
 	}
 
+	@Override
 	public void setType(String string) {
 		type = string;
 	}
+	@Override
 	public String getType() {
 		return type;
 	}
@@ -141,8 +154,29 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 	public void setActive(boolean b) {
 		active = b;
 	}
+	@Override
 	public boolean isActive() {
 		return active;
 	}
 	
+	@Override
+	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys<party> and </party> ", ""})
+	public void setHideRegex(String hideRegex) {
+		this.hideRegex = hideRegex;
+	}
+	@Override
+	public String getHideRegex() {
+		return hideRegex;
+	}
+
+	@Override
+	@IbisDoc({"(Only used when hideRegex is not empty) either <code>all</code> or <code>firstHalf</code>. When <code>firstHalf</code> only the first half of the string is masked, otherwise (<code>all</code>) the entire string is masked", "all"})
+	public void setHideMethod(String hideMethod) {
+		this.hideMethod = hideMethod;
+	}
+	@Override
+	public String getHideMethod() {
+		return hideMethod;
+	}
+
 }

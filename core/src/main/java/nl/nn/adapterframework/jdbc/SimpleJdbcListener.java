@@ -20,16 +20,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-
 import nl.nn.adapterframework.doc.IbisDoc;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Database Listener that operates on a table.
@@ -46,6 +46,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener {
 
 	protected Connection connection = null;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		try {
 			if (getDatasource() == null) {
@@ -63,6 +64,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener {
 		}
 	}
 
+	@Override
 	public void open() throws ListenerException {
 		if (!isConnectionsArePooled()) {
 			try {
@@ -87,13 +89,16 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener {
 		}
 	}
 
-	public Map openThread() throws ListenerException {
-		return new HashMap();
+	@Override
+	public Map<String,Object> openThread() throws ListenerException {
+		return new LinkedHashMap<String,Object>();
 	}
 
+	@Override
 	public void closeThread(Map threadContext) throws ListenerException {
 	}
 
+	@Override
 	public Object getRawMessage(Map threadContext) throws ListenerException {
 		if (isConnectionsArePooled()) {
 			Connection c = null;
@@ -107,10 +112,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener {
 					try {
 						c.close();
 					} catch (SQLException e) {
-						log.warn(new ListenerException(
-								getLogPrefix()
-										+ "caught exception closing listener after retrieving message",
-								e));
+						log.warn(new ListenerException(getLogPrefix() + "caught exception closing listener after retrieving message", e));
 					}
 				}
 			}
@@ -121,8 +123,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener {
 		}
 	}
 
-	protected Object getRawMessage(Connection conn, Map threadContext)
-			throws ListenerException {
+	protected Object getRawMessage(Connection conn, Map<String,Object> threadContext) throws ListenerException {
 		String query = getSelectQuery();
 		try {
 			Statement stmt = null;
@@ -154,28 +155,24 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener {
 				}
 			}
 		} catch (Exception e) {
-			throw new ListenerException(getLogPrefix()
-					+ "caught exception retrieving message using query ["
-					+ query + "]", e);
+			throw new ListenerException(getLogPrefix() + "caught exception retrieving message using query [" + query + "]", e);
 		}
 
 	}
 
-	public String getIdFromRawMessage(Object rawMessage, Map context)
-			throws ListenerException {
+	@Override
+	public String getIdFromRawMessage(Object rawMessage, Map context) throws ListenerException {
 		return null;
 	}
 
-	public String getStringFromRawMessage(Object rawMessage, Map context)
-			throws ListenerException {
+	@Override
+	public String getStringFromRawMessage(Object rawMessage, Map context) throws ListenerException {
 		return (String) rawMessage;
 	}
 
-	protected ResultSet executeQuery(Connection conn, String query)
-			throws ListenerException {
+	protected ResultSet executeQuery(Connection conn, String query) throws ListenerException {
 		if (StringUtils.isEmpty(query)) {
-			throw new ListenerException(getLogPrefix()
-					+ "cannot execute empty query");
+			throw new ListenerException(getLogPrefix() + "cannot execute empty query");
 		}
 		if (trace && log.isDebugEnabled())
 			log.debug("executing query [" + query + "]");
@@ -189,28 +186,24 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener {
 					// log.debug("closing statement for ["+query+"]");
 					stmt.close();
 				} catch (Throwable t) {
-					log.warn(getLogPrefix() + "exception closing statement ["
-							+ query + "]", t);
+					log.warn(getLogPrefix() + "exception closing statement [" + query + "]", t);
 				}
 			}
-			throw new ListenerException(getLogPrefix()
-					+ "exception executing statement [" + query + "]", e);
+			throw new ListenerException(getLogPrefix() + "exception executing statement [" + query + "]", e);
 		}
 	}
 
-	public void afterMessageProcessed(PipeLineResult processResult,
-			Object rawMessage, Map context) throws ListenerException {
+	@Override
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map context) throws ListenerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	protected void execute(Connection conn, String query)
-			throws ListenerException {
+	protected void execute(Connection conn, String query) throws ListenerException {
 		execute(conn, query, null);
 	}
 
-	protected void execute(Connection conn, String query, String parameter)
-			throws ListenerException {
+	protected void execute(Connection conn, String query, String parameter) throws ListenerException {
 		if (StringUtils.isNotEmpty(query)) {
 			if (trace && log.isDebugEnabled())
 				log.debug("executing statement [" + query + "]");
@@ -225,18 +218,14 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener {
 				stmt.execute();
 
 			} catch (SQLException e) {
-				throw new ListenerException(getLogPrefix()
-						+ "exception executing statement [" + query + "]", e);
+				throw new ListenerException(getLogPrefix() + "exception executing statement [" + query + "]", e);
 			} finally {
 				if (stmt != null) {
 					try {
 						// log.debug("closing statement for ["+query+"]");
 						stmt.close();
 					} catch (SQLException e) {
-						log.warn(
-								getLogPrefix()
-										+ "exception closing statement ["
-										+ query + "]", e);
+						log.warn(getLogPrefix() + "exception closing statement [" + query + "]", e);
 					}
 				}
 			}

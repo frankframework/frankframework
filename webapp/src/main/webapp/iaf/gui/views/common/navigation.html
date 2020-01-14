@@ -17,10 +17,7 @@
 			<li ui-sref-active="active">
 				<a ui-sref="pages.status"><i class="fa fa-dashboard"></i> <span class="nav-label">Adapter Status</span></a>
 			</li>
-			<li ng-show="!config_database" ui-sref-active="active">
-				<a ui-sref="pages.configuration"><i class="fa fa-cogs"></i> <span class="nav-label">Configuration</span></a>
-			</li>
-			<li ng-show="config_database" ng-class="{active: $state.includes('configuration')}" class="nav-group">
+			<li ng-class="{active: $state.includes('configuration')}" class="nav-group">
 				<a href=""><i class="fa fa-cogs"></i> <span class="nav-label">Configuration</span> <span class="fa arrow"></span></a>
 				<ul class="nav nav-second-level" ng-class="{in: $state.includes('configuration')}">
 					<li ui-sref-active="active"><a ui-sref="pages.configuration">Show Configuration</a></li>
@@ -66,17 +63,17 @@
 			<li ui-sref-active="active">
 				<a ui-sref="pages.security_items"><i class="fa fa-lock"></i> <span class="nav-label">Security Items</span></a>
 			</li>
-			<li ng-if="monitoring" ui-sref-active="active">
+			<li ng-if="::monitoring" ui-sref-active="active">
 				<a ui-sref="pages.monitors"><i class="fa fa-clone"></i> <span class="nav-label">Monitors</span></a>
 			</li>
 			<li>
-				<a ng-click="openInfoModel()"><i class="fa fa-info-circle"></i> <span class="nav-label">Information</span></a>
+				<a ng-click="openInfoModel()" class="pointer"><i class="fa fa-info-circle"></i> <span class="nav-label">Information</span></a>
 			</li>
 			<li style="border-top: 1px solid #19aa8d;">
-				<a ng-click="sendFeedback()"><i class="fa fa-commenting-o"></i> <span class="nav-label">Send Feedback!</span></a>
+				<a ng-click="sendFeedback()" class="pointer"><i class="fa fa-commenting-o"></i> <span class="nav-label">Send Feedback!</span></a>
 			</li>
 			<li>
-				<a ng-click="openOldGui()" alt="GUI 1.2"><i class="fa fa-backward"></i> <span class="nav-label">GUI 1.2</span></a>
+				<a ng-click="openOldGui()" alt="GUI 1.2" class="pointer"><i class="fa fa-backward"></i> <span class="nav-label">GUI 1.2</span></a>
 			</li>
 			<li>
 				<a target="_blank" href="https://ibissource.org" alt="ibissource.org"><i class="fa fa-comments"></i> <span class="nav-label">Community</span></a>

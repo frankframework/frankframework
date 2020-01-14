@@ -2,38 +2,29 @@
 <div ui-view></div>
 
 <div class="wrapper wrapper-content animated fadeInRight" ng-controller="ShowConfigurationCtrl as config">
-    <div class="row">
+	<div class="row">
+		<div class="col-lg-12 tabs-container">
+			<ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
+				<li ng-class="{active : selectedConfiguration == 'All'}"><a ng-click="changeConfiguration('All')">All</a></li>
+				<li ng-class="{active : selectedConfiguration == configuration.name}" ng-repeat="configuration in configurations">
+					<a ng-click="changeConfiguration(configuration.name)">{{configuration.name}}</a>
+				</li>
+			</ul> 
+		</div>
         <div class="col-lg-12">
             <div class="ibox float-e-margins">
-                <div class="ibox-title">
+                <div class="ibox-title summary">
                     <h4>Configuration</h4>
                 </div>
                 <div class="ibox-content">
-                    Configuration: 
-                    <div class="btn-group" uib-dropdown>
-                        <button type="button" class="btn btn-default" uib-dropdown-toggle>
-                            {{selectedConfiguration}} <span class="caret"></span>
-                        </button>
-                        <ul role="menu" uib-dropdown-menu="">
-                            <li><a ng-click="changeConfiguration('All')">All</a></li>
-                            <li class="divider"></li>
-                            <li ng-repeat="configuration in configurations">
-                                <a ng-click="changeConfiguration(configuration.name)">{{configuration.name}}</a>
-                            </li>
-                        </ul>
-                    </div>
-
                     <div class="m-l-lg inline">
-                        Configuration type: 
+                        Show: 
                         <div class="btn-group">
                             <label class="btn btn-default" ng-model="config.configurationRadio" uib-btn-radio="'true'" ng-click="loadedConfig(config.configurationRadio)">Loaded Configuration</label>
                             <label class="btn btn-default" ng-model="config.configurationRadio" uib-btn-radio="'false'" ng-click="loadedConfig(config.configurationRadio)">Original Configuration</label>
                         </div>
                     </div>
 
-
-                    <br/>
-                    <br/>
                     <br/>
                     <br/>
 

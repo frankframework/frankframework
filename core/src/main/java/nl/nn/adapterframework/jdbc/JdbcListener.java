@@ -65,6 +65,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 
 	private  boolean trace=false;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		try {
 			if (getDatasource()==null) {
@@ -80,6 +81,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		}
 	}
 
+	@Override
 	public void open() throws ListenerException {
 		if (!isConnectionsArePooled()) {
 			try {
@@ -104,13 +106,16 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		}
 	}
 	
+	@Override
 	public Map openThread() throws ListenerException {
 		return new HashMap();
 	}
 
+	@Override
 	public void closeThread(Map threadContext) throws ListenerException {
 	}
 
+	@Override
 	public Object getRawMessage(Map threadContext) throws ListenerException {
 		if (isConnectionsArePooled()) {
 			Connection c = null;
@@ -135,7 +140,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		}
 	}
 
-	protected Object getRawMessage(Connection conn, Map threadContext) throws ListenerException {
+	protected Object getRawMessage(Connection conn, Map<String,Object> threadContext) throws ListenerException {
 		boolean inTransaction=false;
 		
 		try {
@@ -207,6 +212,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		
 	}
 
+	@Override
 	public String getIdFromRawMessage(Object rawMessage, Map context) throws ListenerException {
 		String id;
 		if (rawMessage instanceof IMessageWrapper) {

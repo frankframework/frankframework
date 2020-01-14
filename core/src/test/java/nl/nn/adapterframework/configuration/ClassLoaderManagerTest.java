@@ -95,6 +95,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		if(type.endsWith("DirectoryClassLoader")) {
 			String directory = getTestClassesLocation()+"ClassLoader/DirectoryClassLoaderRoot/";
 			setLocalProperty("configurations."+configurationName+".directory", directory);
+			setLocalProperty("configurations."+configurationName+".basePath", ".");
 		}
 
 		if(type.endsWith("JarFileClassLoader")) {
@@ -267,6 +268,7 @@ public class ClassLoaderManagerTest extends Mockito {
 
 		String testConfiguration = "myNewClassLoader";
 		setLocalProperty("configurations."+testConfiguration+".classLoaderType", "DirectoryClassLoader");
+		setLocalProperty("configurations."+testConfiguration+".basePath", ".");
 		setLocalProperty("configurations."+configurationName+".parentConfig", testConfiguration);
 		String directory = getTestClassesLocation()+"ClassLoader/";
 		setLocalProperty("configurations."+testConfiguration+".directory", directory);

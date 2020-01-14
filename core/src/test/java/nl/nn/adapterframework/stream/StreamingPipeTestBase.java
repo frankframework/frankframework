@@ -11,6 +11,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.PipeTestBase;
@@ -41,30 +42,53 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 	protected PipeRunResult doPipe(P pipe, Object input, IPipeLineSession session) throws Exception {
 		PipeRunResult prr;
 		if (provideStreamForInput) {
-			MessageOutputStreamCap cap=writeOutputToStream?new MessageOutputStreamCap():null;
-			MessageOutputStream target = pipe.provideOutputStream(null, session, cap);
+			CloseObservableCap cap=writeOutputToStream?new CloseObservableCap(null):null;
+			Object result;
+			try (MessageOutputStream target = pipe.provideOutputStream(null, session, cap)) {
 		
-			try (Writer writer = target.asWriter()) {
-				writer.write((String)input); // TODO: proper conversion of non-string classes..
+				try (Writer writer = target.asWriter()) {
+					writer.write((String)input); // TODO: proper conversion of non-string classes..
+				}
+				result=target.getResponse();
 			}
-			
-			Object result=target.getResponse();
 			if (cap!=null) {
 				assertEquals("PipeResult must be equal to result of cap",result,cap.getResponse());
+				assertEquals(1,cap.getCloseCount());
 			}
 			return new PipeRunResult(null, result);
 		} else {
 			if (classic) {
 				prr = pipe.doPipe(input,session);
 			} else {
-				MessageOutputStreamCap cap=writeOutputToStream?new MessageOutputStreamCap():null;
+				CloseObservableCap cap=writeOutputToStream?new CloseObservableCap(null):null;
 				prr = pipe.doPipe(input,session,cap);
 				if (cap!=null) {
 					assertEquals("PipeResult must be equal to result of cap",prr.getResult(),cap.getResponse());
+					assertEquals(1,cap.getCloseCount());
 				}
 			}		
 			return prr;
 		}
 	}
 
+	private class CloseObservableCap extends MessageOutputStreamCap {
+
+		private int closeCount=0;
+		
+		public CloseObservableCap(INamedObject owner) {
+			super(owner);
+		}
+		
+		@Override
+		public void afterClose() throws Exception {
+			super.afterClose();
+			closeCount++;
+		}
+		
+		public int getCloseCount() {
+			return closeCount;
+		}
+	}
+
+	
 }

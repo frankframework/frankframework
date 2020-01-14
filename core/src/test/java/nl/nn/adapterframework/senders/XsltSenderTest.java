@@ -4,6 +4,10 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -12,10 +16,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
@@ -33,9 +33,9 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.setXsltVersion(1);
 		sender.configure();
 		sender.open();
-		String input=getFile("/Xslt/duplicateImport/in.xml");
+		String input=TestFileUtils.getTestFile("/Xslt/duplicateImport/in.xml");
 		log.debug("inputfile ["+input+"]");
-		String expected=getFile("/Xslt/duplicateImport/out.xml");
+		String expected=TestFileUtils.getTestFile("/Xslt/duplicateImport/out.xml");
 
 		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
 		String result = sender.sendMessage(null, input, prc);
@@ -48,9 +48,9 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.setStyleSheetName("/Xslt/duplicateImport/root.xsl");
 		sender.configure();
 		sender.open();
-		String input=getFile("/Xslt/duplicateImport/in.xml");
+		String input=TestFileUtils.getTestFile("/Xslt/duplicateImport/in.xml");
 		log.debug("inputfile ["+input+"]");
-		String expected=getFile("/Xslt/duplicateImport/out.xml");
+		String expected=TestFileUtils.getTestFile("/Xslt/duplicateImport/out.xml");
 
 		ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
 		String result = sender.sendMessage(null, input, prc);

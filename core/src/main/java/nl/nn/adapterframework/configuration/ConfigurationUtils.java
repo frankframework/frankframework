@@ -131,6 +131,11 @@ public class ConfigurationUtils {
 		}
 		if (StringUtils.isEmpty(configurationFile)) {
 			configurationFile = DEFAULT_CONFIGURATION_FILE;
+		} else {
+			int i = configurationFile.lastIndexOf('/');
+			if (i != -1) { //Trim the BasePath, why is it even here!?
+				configurationFile = configurationFile.substring(i + 1);
+			}
 		}
 		return configurationFile;
 	}
@@ -275,6 +280,42 @@ public class ConfigurationUtils {
 			stmt.setObject(7, qs.getDbmsSupport().getBooleanValue(automatic_reload));
 
 			return stmt.executeUpdate() > 0;
+		} catch (SenderException e) {
+			throw new ConfigurationException(e);
+		} catch (JdbcException e) {
+			throw new ConfigurationException(e);
+		} catch (SQLException e) {
+			throw new ConfigurationException(e);
+		} finally {
+			qs.close();
+			JdbcUtil.fullClose(conn, rs);
+		}
+	}
+
+	public static void removeConfigFromDatabase(IbisContext ibisContext, String name, String jmsRealm, String version) throws ConfigurationException {
+		String workJmsRealm = jmsRealm;
+		if (StringUtils.isEmpty(workJmsRealm)) {
+			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
+			if (StringUtils.isEmpty(workJmsRealm)) {
+				throw new ConfigurationException("no JmsRealm found");
+			}
+		}
+
+		Connection conn = null;
+		ResultSet rs = null;
+		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		qs.setJmsRealm(workJmsRealm);
+		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
+		qs.configure();
+		try {
+			qs.open();
+			conn = qs.getConnection();
+
+			String query = ("DELETE FROM IBISCONFIG WHERE NAME=? AND VERSION=?");
+			PreparedStatement stmt = conn.prepareStatement(query);
+			stmt.setString(1, name);
+			stmt.setString(2, version);
+			stmt.execute();
 		} catch (SenderException e) {
 			throw new ConfigurationException(e);
 		} catch (JdbcException e) {

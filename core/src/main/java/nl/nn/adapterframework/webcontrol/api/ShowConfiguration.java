@@ -24,7 +24,6 @@ import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -35,8 +34,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -59,6 +58,7 @@ import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
 
 /**
@@ -70,7 +70,6 @@ import nl.nn.adapterframework.util.Misc;
 
 @Path("/")
 public final class ShowConfiguration extends Base {
-	@Context ServletConfig servletConfig;
 	@Context SecurityContext securityContext;
 
 	@GET
@@ -78,15 +77,14 @@ public final class ShowConfiguration extends Base {
 	@Path("/configurations")
 	@Produces(MediaType.APPLICATION_XML)
 	public Response getXMLConfiguration(@QueryParam("loadedConfiguration") boolean loaded, @QueryParam("flow") boolean flow) throws ApiException {
-		initBase(servletConfig);
 
 		String result = "";
 
 		if(flow) {
-			result = getFlow(ibisManager.getConfigurations());
+			result = getFlow(getIbisManager().getConfigurations());
 		}
 		else {
-			for (Configuration configuration : ibisManager.getConfigurations()) {
+			for (Configuration configuration : getIbisManager().getConfigurations()) {
 				if (loaded) {
 					result = result + configuration.getLoadedConfiguration();
 				} else {
@@ -104,7 +102,6 @@ public final class ShowConfiguration extends Base {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response fullReload(LinkedHashMap<String, Object> json) throws ApiException {
-		initBase(servletConfig);
 
 		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
 
@@ -113,7 +110,7 @@ public final class ShowConfiguration extends Base {
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("action")) {
 				if(value.equals("reload")) {
-					ibisManager.handleAdapter("FULLRELOAD", "", "", "", null, true);
+					getIbisManager().handleAdapter("FULLRELOAD", "", "", "", null, true);
 				}
 				response.entity("{\"status\":\"ok\"}");
 			}
@@ -127,11 +124,10 @@ public final class ShowConfiguration extends Base {
 	@Path("/configurations/{configuration}")
 	@Produces(MediaType.APPLICATION_XML)
 	public Response getConfigurationByName(@PathParam("configuration") String configurationName, @QueryParam("loadedConfiguration") boolean loadedConfiguration) throws ApiException {
-		initBase(servletConfig);
 
 		String result = "";
 
-		Configuration configuration = ibisManager.getConfiguration(configurationName);
+		Configuration configuration = getIbisManager().getConfiguration(configurationName);
 
 		if(configuration == null){
 			throw new ApiException("Configuration not found!");
@@ -151,9 +147,8 @@ public final class ShowConfiguration extends Base {
 	@Path("/configurations/{configuration}/flow")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getAdapterFlow(@PathParam("configuration") String configurationName) throws ApiException {
-		initBase(servletConfig);
 
-		Configuration configuration = ibisManager.getConfiguration(configurationName);
+		Configuration configuration = getIbisManager().getConfiguration(configurationName);
 
 		if(configuration == null){
 			throw new ApiException("Configuration not found!");
@@ -168,9 +163,8 @@ public final class ShowConfiguration extends Base {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response reloadConfiguration(@PathParam("configuration") String configurationName, LinkedHashMap<String, Object> json) throws ApiException {
-		initBase(servletConfig);
 
-		Configuration configuration = ibisManager.getConfiguration(configurationName);
+		Configuration configuration = getIbisManager().getConfiguration(configurationName);
 
 		if(configuration == null){
 			throw new ApiException("Configuration not found!");
@@ -183,7 +177,7 @@ public final class ShowConfiguration extends Base {
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("action")) {
 				if(value.equals("reload")) {
-					ibisManager.handleAdapter("RELOAD", configurationName, "", "", null, false);
+					getIbisManager().handleAdapter("RELOAD", configurationName, "", "", null, false);
 				}
 				response.entity("{\"status\":\"ok\"}");
 			}
@@ -194,12 +188,11 @@ public final class ShowConfiguration extends Base {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/configurations/{configuration}/manage")
+	@Path("/configurations/{configuration}/versions")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getConfigurationDetailsByName(@PathParam("configuration") String configurationName, @QueryParam("realm") String jmsRealm) throws ApiException {
-		initBase(servletConfig);
 
-		Configuration configuration = ibisManager.getConfiguration(configurationName);
+		Configuration configuration = getIbisManager().getConfiguration(configurationName);
 		if(configuration == null) {
 			throw new ApiException("Configuration not found!");
 		}
@@ -223,13 +216,12 @@ public final class ShowConfiguration extends Base {
 
 	@PUT
 	@RolesAllowed({"IbisAdmin", "IbisTester"})
-	@Path("/configurations/{configuration}/manage/{version}")
+	@Path("/configurations/{configuration}/versions/{version}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response manageConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String encodedVersion, @QueryParam("realm") String jmsRealm, LinkedHashMap<String, Object> json) throws ApiException {
-		initBase(servletConfig);
 
-		Configuration configuration = ibisManager.getConfiguration(configurationName);
+		Configuration configuration = getIbisManager().getConfiguration(configurationName);
 
 		if(configuration == null){
 			throw new ApiException("Configuration not found!");
@@ -254,12 +246,12 @@ public final class ShowConfiguration extends Base {
 					value = Boolean.parseBoolean(valueObject.toString());
 
 				if(key.equalsIgnoreCase("activate")) {
-					if(ConfigurationUtils.activateConfig(ibisContext, configurationName, version, value, jmsRealm)) {
+					if(ConfigurationUtils.activateConfig(getIbisContext(), configurationName, version, value, jmsRealm)) {
 						return Response.status(Response.Status.ACCEPTED).build();
 					}
 				}
 				else if(key.equalsIgnoreCase("autoreload")) {
-					if(ConfigurationUtils.autoReloadConfig(ibisContext, configurationName, version, value, jmsRealm)) {
+					if(ConfigurationUtils.autoReloadConfig(getIbisContext(), configurationName, version, value, jmsRealm)) {
 						return Response.status(Response.Status.ACCEPTED).build();
 					}
 				}
@@ -277,8 +269,6 @@ public final class ShowConfiguration extends Base {
 	@Path("configurations")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response uploadConfiguration(MultipartFormDataInput input) throws ApiException {
-
-		initBase(servletConfig);
 
 		String jmsRealm = null, name = null, version = null, fileName = null, fileEncoding = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 		InputStream file = null;
@@ -352,11 +342,11 @@ public final class ShowConfiguration extends Base {
 					throw new ApiException(e);
 				}
 			} else {
-				ConfigurationUtils.addConfigToDatabase(ibisContext, jmsRealm, activate_config, automatic_reload, name, version, fileName, file, user);
+				ConfigurationUtils.addConfigToDatabase(getIbisContext(), jmsRealm, activate_config, automatic_reload, name, version, fileName, file, user);
 			}
 
 			if(automatic_reload) {
-				ibisContext.load(name);
+				getIbisContext().reload(name);
 			}
 
 			return Response.status(Response.Status.CREATED).entity(result).build();
@@ -367,10 +357,9 @@ public final class ShowConfiguration extends Base {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/configurations/{configuration}/download")
+	@Path("/configurations/{configuration}/versions/{version}/download")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	public Response downloadConfiguration(@PathParam("configuration") String configurationName, @QueryParam("version") String version, @QueryParam("realm") String jmsRealm) throws ApiException {
-		initBase(servletConfig);
+	public Response downloadConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String version, @QueryParam("realm") String jmsRealm) throws ApiException {
 
 		if (StringUtils.isEmpty(version))
 			version = null;
@@ -378,7 +367,7 @@ public final class ShowConfiguration extends Base {
 			jmsRealm = null;
 
 		try {
-			Map<String, Object> configuration = ConfigurationUtils.getConfigFromDatabase(ibisContext, configurationName, jmsRealm, version);
+			Map<String, Object> configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), configurationName, jmsRealm, version);
 			return Response
 					.status(Response.Status.OK)
 					.entity(configuration.get("CONFIG"))
@@ -388,6 +377,23 @@ public final class ShowConfiguration extends Base {
 			throw new ApiException(e);
 		}
 	}
+
+	@DELETE
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/configurations/{configuration}/versions/{version}")
+	public Response deleteConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String version, @QueryParam("realm") String jmsRealm) throws ApiException {
+
+		if (StringUtils.isEmpty(jmsRealm))
+			jmsRealm = null;
+
+		try {
+			ConfigurationUtils.removeConfigFromDatabase(getIbisContext(), configurationName, jmsRealm, version);
+			return Response.status(Response.Status.OK).build();
+		} catch (Exception e) {
+			throw new ApiException(e);
+		}
+	}
+
 
 	private List<Map<String, Object>> getConfigsFromDatabase(String configurationName, String jmsRealm) {
 		List<Map<String, Object>> returnMap = new ArrayList<Map<String, Object>>();
@@ -401,7 +407,7 @@ public final class ShowConfiguration extends Base {
 
 		Connection conn = null;
 		ResultSet rs = null;
-		FixedQuerySender qs = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		FixedQuerySender qs = (FixedQuerySender) getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
 		qs.setJmsRealm(jmsRealm);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		try {
@@ -426,21 +432,8 @@ public final class ShowConfiguration extends Base {
 		} catch (Exception e) {
 			throw new ApiException(e);
 		} finally {
+			JdbcUtil.fullClose(conn, rs);
 			qs.close();
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException e) {
-					log.warn("Could not close resultset", e);
-				}
-			}
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					log.warn("Could not close connection", e);
-				}
-			}
 		}
 		return returnMap;
 	}
@@ -500,7 +493,7 @@ public final class ShowConfiguration extends Base {
 						version = fnArray[1];
 					}
 					result += entryName + ":" + 
-					ConfigurationUtils.addConfigToDatabase(ibisContext, jmsRealm, activate_config, automatic_reload, name, version, fileName, bais, user);
+					ConfigurationUtils.addConfigToDatabase(getIbisContext(), jmsRealm, activate_config, automatic_reload, name, version, fileName, bais, user);
 				}
 				archive.closeEntry();
 				counter++;

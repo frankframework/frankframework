@@ -16,29 +16,29 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.Collections;
 import java.util.Map;
 
-import javax.xml.transform.TransformerException;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang.StringUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.IThreadCreator;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.MessageOutputStreamCap;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -46,7 +46,6 @@ import nl.nn.adapterframework.stream.StreamingSenderBase;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
@@ -85,7 +84,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	private Map<String, TransformerPool> dynamicTransformerPoolMap;
 	private int transformerPoolMapSize = 100;
 
-	private ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
+	protected ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
 	private boolean streamingXslt;
 
 
@@ -156,7 +155,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	}
 
 
-	protected ContentHandler filterInput(ContentHandler input, ParameterResolutionContext prc) throws PipeRunException, DomBuilderException, TransformerException, IOException {
+	protected ContentHandler filterInput(ContentHandler input, ParameterResolutionContext prc) {
 		if (isRemoveNamespaces()) {
 			log.debug(getLogPrefix()+ " providing filter to remove namespaces from input message");
 			XMLFilterImpl filter = new NamespaceRemovingFilter();
@@ -170,18 +169,18 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	@Override
 	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
 		if (target==null) {
-			target=new MessageOutputStreamCap();
+			target=new MessageOutputStreamCap(this);
 		}
 		ContentHandler handler = createHandler(correlationID, null, session, target);
-		return new MessageOutputStream(handler,target,this,threadLifeCycleEventListener,correlationID);
+		return new MessageOutputStream(this, handler,target,this,threadLifeCycleEventListener,correlationID);
 	}
-	
-	private ContentHandler createHandler(String correlationID, String input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+
+	protected ContentHandler createHandler(String correlationID, Message input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
 		ContentHandler handler = null;
 
 		try {
 			Map<String,Object> parametervalues = null;
-			ParameterResolutionContext prc = new ParameterResolutionContext(input,session);
+			ParameterResolutionContext prc = new ParameterResolutionContext(input, session);
 			if (paramList!=null) {
 				parametervalues = prc.getValueMap(paramList);
 			}
@@ -263,23 +262,27 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	}
 	
 
+	protected XMLReader getXmlReader(ContentHandler handler) throws ParserConfigurationException, SAXException {
+		return XmlUtils.getXMLReader(true, false, handler);
+	}
+	
+
 	/*
 	 * alternative implementation of send message, that should do the same as the origial, but reuses the streaming content handler
 	 */
 	@Override
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException {
+	public Object sendMessage(String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException {
 		if (message==null) {
 			throw new SenderException(getLogPrefix()+"got null input");
 		}
 		try {
-			if (target==null) {
-				target=new MessageOutputStreamCap();
+			try (MessageOutputStream outputStream=target!=null?target:new MessageOutputStreamCap(this)) {
+				ContentHandler handler = createHandler(correlationID, message, prc.getSession(), outputStream);
+				InputSource source = message.asInputSource();
+				XMLReader reader = getXmlReader(handler);
+				reader.parse(source);
+				return outputStream.getResponse();
 			}
-			InputSource source = new InputSource(new StringReader(message));
-			ContentHandler handler = createHandler(correlationID, message, prc.getSession(), target);
-			XMLReader reader = XmlUtils.getXMLReader(true, false, handler);
-			reader.parse(source);
-			return target.getResponseAsString();
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix()+"Exception on transforming input", e);
 		}

@@ -59,12 +59,12 @@ TagDatabase
 
 	<changeSet id="IBISDATA_SEQ" author="Robert Karajev" onValidationFail="MARK_RAN">
 		<comment>Set sequence for IBISDATA Table</comment>
-		<createSequence sequenceName="SEQ_IBISDATA" startValue="34567" maxValue="999999999999999999" minValue="1"/>
+		<createSequence sequenceName="SEQ_IBISDATA" startValue="34567"/>
 	</changeSet>
 
 	<changeSet id="IBISTEMP_SEQ" author="Robert Karajev" onValidationFail="MARK_RAN">
 		<comment>Set sequence for IBISTEMP Table</comment>
-		<createSequence sequenceName="SEQ_IBISTEMP" startValue="56789" maxValue="999999999999999999" minValue="1"/>
+		<createSequence sequenceName="SEQ_IBISTEMP" startValue="56789"/>
 	</changeSet>
 
 </databaseChangeLog>

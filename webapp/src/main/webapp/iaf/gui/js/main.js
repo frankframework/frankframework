@@ -40,6 +40,16 @@ $(document).ready(function () {
 			fix_height_func();
 		}, time);
 	}
+
+	window.addEventListener("keydown", function(e) {
+		if(e.which == 70 && (e.ctrlKey || e.metaKey)) {
+			var searchbar = document.getElementById("searchbar");
+			if(searchbar) {
+				e.preventDefault();
+				searchbar.getElementsByTagName("input")[0].focus();
+			}
+		}
+	});
 });
 
 //Foist: To force upon or impose fraudulently or unjustifiably

@@ -15,45 +15,47 @@
 */
 package nl.nn.adapterframework.stream;
 
+import java.io.IOException;
+
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
-public abstract class StreamingSenderBase extends SenderWithParametersBase implements IOutputStreamingSupport {
+public abstract class StreamingSenderBase extends SenderWithParametersBase implements IStreamingSender {
 
-//	private final boolean TEST_STREAMING_VIA_SEND_MESSAGE=false;
-	
-	public abstract String sendMessage(String correlationID, String message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException;
+	@Override
+	public abstract Object sendMessage(String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException;
 	@Override
 	public abstract MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException;
 
 	
 	@Override
+	// can make this sendMessage() 'final', debugging handled by the new abstract sendMessage() above, that includes the MessageOutputStream
 	public final String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-//		if (TEST_STREAMING_VIA_SEND_MESSAGE && canProvideOutputStream()) {
-//			try {
-//				MessageOutputStream target = provideOutputStream(correlationID, prc.getSession(), null);
-//				try (Writer writer = target.asWriter()) {
-//					writer.write(message);
-//				}
-//				return target.getResponseAsString();
-//			} catch (StreamingException|IOException e) {
-//				throw new SenderException(e);
-//			}
-//		}
-		return sendMessage(correlationID, message, prc, null);
+		Object result = sendMessage(correlationID, new Message(message), prc, null);
+		try {
+			return result==null?null:new Message(result).asString();
+		} catch (IOException e) {
+			throw new SenderException(e);
+		}
 	}
 
 	@Override
-	public boolean canStreamToTarget() {
-		return true;
+	public boolean requiresOutputStream() {
+		return false;
 	}
 
 	@Override
 	public boolean canProvideOutputStream() {
 		return true;
 	}
+	
+	@Override
+	public boolean supportsOutputStreamPassThrough() {
+		return true;
+	}
+	
 
 }

@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -32,6 +33,7 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
 
@@ -41,6 +43,8 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -133,12 +137,10 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				} catch (ParseException e) {
 					throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] to Integer", e);
 				}
-				parameter = new Integer(n.intValue());
-			} else 
-			if (type.equalsIgnoreCase(TYPE_BOOLEAN)) {
+				parameter = n.intValue();
+			} else if (type.equalsIgnoreCase(TYPE_BOOLEAN)) {
 				parameter = new Boolean(value);
-			} else 
-			if (type.equalsIgnoreCase(TYPE_NUMBER)) {
+			} else if (type.equalsIgnoreCase(TYPE_NUMBER)) {
 				DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
 				if (StringUtils.isNotEmpty(decimalSeparator)) {
 					decimalFormatSymbols.setDecimalSeparator(decimalSeparator.charAt(0));
@@ -159,49 +161,43 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				} else {
 					parameter = new Integer(n.intValue());
 				}
+			} else if (type.equalsIgnoreCase(TYPE_DATETIME)) {
+				DateFormat df = new SimpleDateFormat(formatString);
+				java.util.Date nDate;
+				try {
+					nDate = df.parse(value);
+				} catch (ParseException e) {
+					throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] to Date using formatString [" + formatString + "]", e);
+				}
+				parameter = new Timestamp(nDate.getTime());
+			} else if (type.equalsIgnoreCase(TYPE_XMLDATETIME)) {
+				java.util.Date nDate;
+				try {
+					nDate = DateUtils.parseXmlDateTime(value);
+				} catch (Exception e) {
+					throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] from xml dateTime to Date", e);
+				}
+				parameter = new Timestamp(nDate.getTime());
+			} else if (type.equalsIgnoreCase(TYPE_BLOB)) {
+				if (!getDbmsSupport().mustInsertEmptyBlobBeforeData()) {
+					parameter = value.getBytes();
+				}
 			} else {
-				if (type.equalsIgnoreCase(TYPE_DATETIME)) {
-					DateFormat df = new SimpleDateFormat(formatString);
-					java.util.Date nDate;
-					try {
-						nDate = df.parse(value);
-					} catch (ParseException e) {
-						throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] to Date using formatString [" + formatString + "]", e);
-					}
-					parameter = new Timestamp(nDate.getTime());
-				} else {
-					if (type.equalsIgnoreCase(TYPE_XMLDATETIME)) {
-						java.util.Date nDate;
-						try {
-							nDate = DateUtils.parseXmlDateTime(value);
-						} catch (Exception e) {
-							throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] from xml dateTime to Date", e);
-						}
-						parameter = new Timestamp(nDate.getTime());
-					} else {
-						if (type.equalsIgnoreCase(TYPE_BLOB) || type.equalsIgnoreCase(TYPE_CLOB) || type.equalsIgnoreCase(TYPE_FUNCTION)) {
-							//skip
-						} else {
-							// type.equalsIgnoreCase("string")
-							parameter = new String(value);
-						}
-					}
+				if (!(type.equalsIgnoreCase(TYPE_CLOB) && getDbmsSupport().mustInsertEmptyClobBeforeData()) && !type.equalsIgnoreCase(TYPE_FUNCTION)) {
+					parameter = value;
 				}
 			}
 		}
 
 		private void fillQueryValue() {
-			queryValue = "?";
-			if (type.equalsIgnoreCase(TYPE_BLOB)) {
-				queryValue = "EMPTY_BLOB()";
+			if (type.equalsIgnoreCase(TYPE_BLOB) && getDbmsSupport().mustInsertEmptyBlobBeforeData()) {
+				queryValue = getDbmsSupport().emptyBlobValue();
+			} else if (type.equalsIgnoreCase(TYPE_CLOB) && getDbmsSupport().mustInsertEmptyClobBeforeData()) {
+				queryValue = getDbmsSupport().emptyClobValue();
+			} else if (type.equalsIgnoreCase(TYPE_FUNCTION)) {
+				queryValue = value;
 			} else {
-				if (type.equalsIgnoreCase(TYPE_CLOB)) {
-					queryValue = "EMPTY_CLOB()";
-				} else {
-					if (type.equalsIgnoreCase(TYPE_FUNCTION)) {
-						queryValue = value;
-					}
-				}
+				queryValue = "?";
 			}
 		}
 
@@ -239,16 +235,12 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 	}
 
 	@Override
-	protected PreparedStatement getStatement(Connection con, String correlationID, String message, boolean updateable) throws SQLException, JdbcException {
-		String qry = message;
-		if (lockRows) {
-			qry = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, qry, lockWait);
-		}
-		return prepareQuery(con, qry, updateable);
+	protected String getQuery(Message message) {
+		return message.toString();
 	}
 
 	@Override
-	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	protected Object sendMessage(Connection connection, String correlationID, Message message, ParameterResolutionContext prc, MessageOutputStream target) throws SenderException, TimeOutException {
 		Element queryElement;
 		String tableName = null;
 		Vector columns = null;
@@ -256,7 +248,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		String order = null;
 		String result = null;
 		try {
-			queryElement = XmlUtils.buildElement(message);
+			queryElement = XmlUtils.buildElement(message.asString());
 			String root = queryElement.getTagName();
 			tableName = XmlUtils.getChildTagAsString(queryElement, "tableName");
 			Element columnsElement = XmlUtils.getFirstChildTag(queryElement, "columns");
@@ -299,6 +291,8 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			throw new SenderException(getLogPrefix() + "got exception parsing [" + message + "]", e);
 		} catch (JdbcException e) {
 			throw new SenderException(getLogPrefix() + "got exception preparing [" + message + "]", e);
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix() + "got exception creating [" + message + "]", e);
 		}
 
 		return result;
@@ -329,7 +323,8 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			if (order != null) {
 				query = query + " ORDER BY " + order;
 			}
-			PreparedStatement statement = getStatement(connection, correlationID, query, false);
+			QueryContext queryContext = new QueryContext(query, "select", null);
+			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
 			return executeSelectQuery(statement,null,null);
@@ -370,7 +365,8 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			if (where != null) {
 				query = query + " WHERE " + where;
 			}
-			PreparedStatement statement = getStatement(connection, correlationID, query, false);
+			QueryContext queryContext = new QueryContext(query, "delete", null);
+			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 			statement.setQueryTimeout(getTimeout());
 			return executeOtherQuery(connection, correlationID, statement, query, null, null);
 		} catch (SQLException e) {
@@ -404,7 +400,8 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 
 	private String sql(Connection connection, String correlationID, String query, String type) throws SenderException, JdbcException {
 		try {
-			PreparedStatement statement = getStatement(connection, correlationID, query, false);
+			QueryContext queryContext = new QueryContext(query, "other", null);
+			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
 			if (StringUtils.isNotEmpty(type) && type.equalsIgnoreCase("select")) {
@@ -415,7 +412,8 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				StringTokenizer stringTokenizer = new StringTokenizer(query, ";");
 				while (stringTokenizer.hasMoreTokens()) {
 					String q = stringTokenizer.nextToken();
-					statement = getStatement(connection, correlationID, q, false);
+					queryContext = new QueryContext(q, "other", null);
+					statement = getStatement(connection, correlationID, queryContext);
 					if (q.trim().toLowerCase().startsWith("select")) {
 						result.append(executeSelectQuery(statement,null,null));
 					} else {
@@ -433,7 +431,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 
 	private String executeUpdate(Connection connection, String correlationID, String tableName, String query, Vector columns) throws SenderException {
 		try {
-			if (existLob(columns)) {
+			if ((existBlob(columns) && getDbmsSupport().mustInsertEmptyBlobBeforeData()) || (existClob(columns) && getDbmsSupport().mustInsertEmptyClobBeforeData())) {
 				CallableStatement callableStatement = getCallWithRowIdReturned(connection, correlationID, query);
 				applyParameters(callableStatement, columns);
 				int ri = 1 + countParameters(columns);
@@ -448,7 +446,13 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 					Column column = (Column) iter.next();
 					if (column.getType().equalsIgnoreCase(TYPE_BLOB) || column.getType().equalsIgnoreCase(TYPE_CLOB)) {
 						query = "SELECT " + column.getName() + " FROM " + tableName + " WHERE ROWID=?" + " FOR UPDATE";
-						PreparedStatement statement = getStatement(connection, correlationID, query, true);
+						QueryContext queryContext;
+						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
+							queryContext = new QueryContext(query, "updateBlob", null);
+						} else {
+							queryContext = new QueryContext(query, "updateClob", null);
+						}
+						PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 						statement.setString(1, rowId);
 						statement.setQueryTimeout(getTimeout());
 						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
@@ -460,7 +464,8 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				}
 				return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
 			}
-			PreparedStatement statement = getStatement(connection, correlationID, query, false);
+			QueryContext queryContext = new QueryContext(query, "other", null);
+			PreparedStatement statement = getStatement(connection, correlationID, queryContext);
 			applyParameters(statement, columns);
 			statement.setQueryTimeout(getTimeout());
 			return executeOtherQuery(connection, correlationID, statement, query, null, null);
@@ -469,11 +474,22 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		}
 	}
 
-	private boolean existLob(Vector columns) {
+	private boolean existBlob(Vector columns) {
 		Iterator iter = columns.iterator();
 		while (iter.hasNext()) {
 			Column column = (Column) iter.next();
-			if (column.getType().equalsIgnoreCase(TYPE_BLOB) || column.getType().equalsIgnoreCase(TYPE_CLOB)) {
+			if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean existClob(Vector columns) {
+		Iterator iter = columns.iterator();
+		while (iter.hasNext()) {
+			Column column = (Column) iter.next();
+			if (column.getType().equalsIgnoreCase(TYPE_CLOB)) {
 				return true;
 			}
 		}
@@ -555,29 +571,30 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		while (iter.hasNext()) {
 			Column column = (Column) iter.next();
 			if (column.getParameter() != null) {
-				if (column.getParameter() instanceof String) {
-					log.debug("parm [" + var + "] is a String with value [" + column.getParameter().toString() + "]");
-					statement.setString(var, (String) column.getParameter());
-					var++;
-				}
 				if (column.getParameter() instanceof Integer) {
 					log.debug("parm [" + var + "] is an Integer with value [" + column.getParameter().toString() + "]");
 					statement.setInt(var, Integer.parseInt(column.getParameter().toString()));
 					var++;
-				}
-				if (column.getParameter() instanceof Boolean) {
+				} else if (column.getParameter() instanceof Boolean) {
 					log.debug("parm [" + var + "] is an Boolean with value [" + column.getParameter().toString() + "]");
 					statement.setBoolean(var, new Boolean(column.getParameter().toString()));
 					var++;
-				}
-				if (column.getParameter() instanceof Float) {
+				} else if (column.getParameter() instanceof Float) {
 					log.debug("parm [" + var + "] is a Float with value [" + column.getParameter().toString() + "]");
 					statement.setFloat(var, Float.parseFloat(column.getParameter().toString()));
 					var++;
-				}
-				if (column.getParameter() instanceof Timestamp) {
+				} else if (column.getParameter() instanceof Timestamp) {
 					log.debug("parm [" + var + "] is a Timestamp with value [" + column.getParameter().toString() + "]");
 					statement.setTimestamp(var, (Timestamp) column.getParameter());
+					var++;
+				} else if (column.getParameter() instanceof byte[]) {
+					log.debug("parm [" + var + "] is a byte array with value [" + column.getParameter().toString() + "]");
+					statement.setBytes(var, (byte[]) column.getParameter());
+					var++;
+				} else {
+					//if (column.getParameter() instanceof String) 
+					log.debug("parm [" + var + "] is a String with value [" + column.getParameter().toString() + "]");
+					statement.setString(var, (String) column.getParameter());
 					var++;
 				}
 			}

@@ -74,7 +74,6 @@ public class ServerStatistics extends Base {
 	@Context ServletConfig servletConfig;
 	private static final int MAX_MESSAGE_SIZE = AppConstants.getInstance().getInt("adapter.message.max.size", 0);
 
-
 	@GET
 	@PermitAll
 	@Path("/server/info")
@@ -83,19 +82,19 @@ public class ServerStatistics extends Base {
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 		List<Object> configurations = new ArrayList<Object>();
 
-		initBase(servletConfig);
-
 		AppConstants appConstants = AppConstants.getInstance();
 
-		for (Configuration configuration : ibisManager.getConfigurations()) {
+		for (Configuration configuration : getIbisManager().getConfigurations()) {
 			Map<String, Object> cfg = new HashMap<String, Object>();
 			cfg.put("name", configuration.getName());
 			cfg.put("version", configuration.getVersion());
-			cfg.put("type", configuration.getClassLoaderType());
 			cfg.put("stubbed", configuration.isStubbed());
 
-			if(configuration.getConfigurationException() != null)
+			if(configuration.getConfigurationException() == null) {
+				cfg.put("type", configuration.getClassLoaderType());
+			} else {
 				cfg.put("exception", configuration.getConfigurationException().getMessage());
+			}
 
 			ClassLoader classLoader = configuration.getClassLoader().getParent();
 			if(classLoader instanceof DatabaseClassLoader) {
@@ -123,7 +122,7 @@ public class ServerStatistics extends Base {
 		returnMap.put("configurations", configurations);
 
 		returnMap.put("version", appConstants.getProperty("application.version"));
-		returnMap.put("name", ibisContext.getApplicationName());
+		returnMap.put("name", getIbisContext().getApplicationName());
 
 		String otapStage = appConstants.getProperty("otap.stage");
 		returnMap.put("otap.stage", otapStage);
@@ -140,7 +139,7 @@ public class ServerStatistics extends Base {
 		Date date = new Date();
 		returnMap.put("serverTime", date.getTime());
 		returnMap.put("machineName" , Misc.getHostname());
-		returnMap.put("uptime", ibisContext.getUptimeDate());
+		returnMap.put("uptime", getIbisContext().getUptimeDate());
 
 		return Response.status(Response.Status.CREATED).entity(returnMap).build();
 	}
@@ -151,7 +150,6 @@ public class ServerStatistics extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getServerConfiguration() throws ApiException {
 
-		initBase(servletConfig);
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 		ConfigurationWarnings globalConfigWarnings = ConfigurationWarnings.getInstance();
 
@@ -160,7 +158,7 @@ public class ServerStatistics extends Base {
 		if(!showCountErrorStore)
 			totalErrorStoreCount = -1;
 
-		for (Configuration configuration : ibisManager.getConfigurations()) {
+		for (Configuration configuration : getIbisManager().getConfigurations()) {
 			Map<String, Object> configurationsMap = new HashMap<String, Object>();
 
 			//Configuration specific exceptions
@@ -200,10 +198,12 @@ public class ServerStatistics extends Base {
 				configurationsMap.put("warnings", warnings);
 
 			//Configuration specific messages
-			MessageKeeper messageKeeper = ibisManager.getIbisContext().getMessageKeeper(configuration.getName());
-			List<Object> messages = mapMessageKeeperMessages(messageKeeper);
-			if(messages.size() > 0)
-				configurationsMap.put("messages", messages);
+			MessageKeeper messageKeeper = getIbisContext().getMessageKeeper(configuration.getName());
+			if(messageKeeper != null) {
+				List<Object> messages = mapMessageKeeperMessages(messageKeeper);
+				if(messages.size() > 0)
+					configurationsMap.put("messages", messages);
+			}
 
 			returnMap.put(configuration.getName(), configurationsMap);
 		}
@@ -221,7 +221,7 @@ public class ServerStatistics extends Base {
 		}
 
 		//Global messages
-		MessageKeeper messageKeeper = ibisManager.getIbisContext().getMessageKeeper();
+		MessageKeeper messageKeeper = getIbisContext().getMessageKeeper();
 		List<Object> messages = mapMessageKeeperMessages(messageKeeper);
 		if(messages.size() > 0)
 			returnMap.put("messages", messages);
@@ -284,7 +284,6 @@ public class ServerStatistics extends Base {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateLogConfiguration(LinkedHashMap<String, Object> json) throws ApiException {
-		initBase(servletConfig);
 
 		Level loglevel = null;
 		Boolean logIntermediaryResults = true;
@@ -343,11 +342,11 @@ public class ServerStatistics extends Base {
 		}
 
 		if (enableDebugger!=null) {
-			boolean testtoolEnabled="true".equalsIgnoreCase(AppConstants.getInstance().get("testtool.enabled"));
+			boolean testtoolEnabled=AppConstants.getInstance().getBoolean("testtool.enabled", true);
 			if (testtoolEnabled!=enableDebugger) {
 				AppConstants.getInstance().put("testtool.enabled", "" + enableDebugger);
 				DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enableDebugger);
-				ApplicationEventPublisher applicationEventPublisher = ibisManager.getApplicationEventPublisher();
+				ApplicationEventPublisher applicationEventPublisher = getIbisManager().getApplicationEventPublisher();
 				if (applicationEventPublisher!=null) {
 					log.info("setting debugger enabled ["+enableDebugger+"]");
 					applicationEventPublisher.publishEvent(event);
@@ -371,10 +370,22 @@ public class ServerStatistics extends Base {
 	@Path("/server/health")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getIbisHealth() throws ApiException {
-		initBase(servletConfig);
 
 		Map<String, Object> response = new HashMap<String, Object>();
-		List<IAdapter> adapters = ibisManager.getRegisteredAdapters();
+
+		try {
+			getIbisManager();
+		}
+		catch(ApiException e) {
+			Throwable c = e.getCause();
+			response.put("status", Response.Status.INTERNAL_SERVER_ERROR);
+			response.put("error", c.getMessage());
+			response.put("stacktrace", c.getStackTrace());
+
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(response).build();
+		}
+
+		List<IAdapter> adapters = getIbisManager().getRegisteredAdapters();
 		Map<RunStateEnum, Integer> stateCount = new HashMap<RunStateEnum, Integer>();
 		List<String> errors = new ArrayList<String>();
 
@@ -417,5 +428,4 @@ public class ServerStatistics extends Base {
 
 		return Response.status(status).entity(response).build();
 	}
-
 }
