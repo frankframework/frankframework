@@ -158,8 +158,10 @@ app.controller("classesCtrl", function($scope, $rootScope, classesService, metho
 
                 	// If it is not part of the current class (meaning part of a parent class)
                     if (method.className !== method.originalClassName) {
-                        let index = $scope.potentialParents.findIndex(parent => parent.name === method.originalClassName);                        
-                        $scope.potentialParents[index].attributes.push(method);
+                        let index = $scope.potentialParents.findIndex(parent => parent.name === method.originalClassName);
+                        if (index !== -1) {
+                            $scope.potentialParents[index].attributes.push(method);
+                        }
                     }
                 });
 
