@@ -131,6 +131,11 @@ public class ConfigurationUtils {
 		}
 		if (StringUtils.isEmpty(configurationFile)) {
 			configurationFile = DEFAULT_CONFIGURATION_FILE;
+		} else {
+			int i = configurationFile.lastIndexOf('/');
+			if (i != -1) { //Trim the BasePath, why is it even here!?
+				configurationFile = configurationFile.substring(i + 1);
+			}
 		}
 		return configurationFile;
 	}

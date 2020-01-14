@@ -44,6 +44,11 @@ public class DirectoryClassLoader extends ClassLoaderBase {
 			setDirectory(configurationsDirectory);
 		}
 
+		if(getBasePath() != null) { //Append BasePath, because legacy
+			directory = new File(directory, getBasePath()); //Append BasePath, because legacy
+			log.debug("appending basepath ["+getBasePath()+"] to directory ["+directory+"]");
+		}
+
 		if (!this.directory.isDirectory()) {
 			throw new ConfigurationException("Could not find directory to load configuration from: " + this.directory);
 		}
