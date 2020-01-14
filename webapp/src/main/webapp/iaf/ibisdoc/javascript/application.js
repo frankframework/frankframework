@@ -53,20 +53,39 @@ app.controller("foldersCtrl", function($scope, dataService, classesService, meth
     dataService.getData().then(function(response) {
         $scope.folders = response;
         $scope.methods = [];
+        $scope.allFolder = {};
+        var index = 0;
 
         // Put all the methods in a methods array (is put here so it will only be done once)
         angular.forEach($scope.folders, function(folder) {
+            if (folder.name === "All") {
+                index = $scope.folders.indexOf(folder);
+                $scope.allFolder = folder;
+            }
+
             angular.forEach(folder.classes, function(clas) {
                 angular.forEach(clas.methods, function(method) {
+                    method.className = clas.name;
+                    method.folderName = folder.name;
                     $scope.methods.push(method);
-                })
+                });
             })
         });
+
+        $scope.folders.splice(index, 1);
+
+        angular.forEach($scope.folders,  function (folder) {
+            angular.forEach(folder.classes, function (clas) {
+                $scope.allFolder.classes.push(clas);
+            });
+        });
+
+        $scope.folders.push($scope.allFolder);
 
         // The searchbar for all methods (attributes)
         $scope.onKey = function($event) {
             $rootScope.$broadcast('givingAllMethhods', $scope.methods.filter(function (method) {
-                return (method.name.toLowerCase() == $event.target.value.toLowerCase());
+                return (method.name.toLowerCase() === $event.target.value.toLowerCase());
             }));
 
             // Notify the methodsCrtl that we are searching accross all methods (attributes)
@@ -118,44 +137,44 @@ app.controller("classesCtrl", function($scope, $rootScope, classesService, metho
         angular.forEach($scope.classes, function(clas) {
             // Get the right class
             if (angular.equals(clas.name, className)) {
+            	var parentIndex = 0;
+                $scope.potentialParents = [];
                 $scope.parentClasses = [];
+                angular.forEach(clas.superClasses, function(superClass) {
+                	$scope.potentialParents.push({
+                		name : superClass,
+                		attributes : [],
+                		parentIndex : parentIndex
+                	});
+                	
+                	parentIndex =  parentIndex + 1
+                });
                 // Notify the methodsCtrl in which package we currently are
                 $rootScope.$broadcast('packageName', clas.packageName);
-
+                $rootScope.$broadcast('javadocLink', clas.javadocLink);
+                
                 // Check for each method what its original class is
                 angular.forEach(clas.methods, function(method) {
 
+                	// If it is not part of the current class (meaning part of a parent class)
                     if (method.className !== method.originalClassName) {
-                        let index = $scope.parentClasses.findIndex(parent => parent.name === method.originalClassName);
-                        var parentIndex = 0;
-
-                        // For each of the parentClasses
-                        angular.forEach(method.superClasses, function(parentClass) {
-
-                            // Check if we are dealing with the right parentClass
-                            if (parentClass.substring(0, parentClass.length - 1) === method.originalClassName) {
-
-                                // Get the priority index
-                                var str = parentClass.substring(parentClass.length - 1, parentClass.length);
-                                parentIndex = parseInt(str, 10);
-                            }
-                        });
-
-                        // Index the parents such that there is an order of abstraction of parent methods (attributes)
-                        if (index === -1) {
-                            $scope.parentClasses.push({
-                                name : method.originalClassName,
-                                attributes : [method],
-                                parentIndex : parentIndex
-                            });
-                        } else {
-                            $scope.parentClasses[index].attributes.push(method);
+                        let index = $scope.potentialParents.findIndex(parent => parent.name === method.originalClassName);
+                        if (index !== -1) {
+                            $scope.potentialParents[index].attributes.push(method);
                         }
                     }
                 });
 
-                // set the methods (attributes) and its order of parent classes
+                // Set the methods (attributes) and its order of parent classes
                 methodsService.setMethods(clas.methods);
+                
+                // Check if the potential parents have attributes, if not delete them
+                angular.forEach($scope.potentialParents, function(parent) {
+                	if (parent.attributes.length > 0 ) {
+                		$scope.parentClasses.push(parent);
+                	}
+                });
+                
                 methodsService.setParents($scope.parentClasses);
             }
         });
@@ -184,6 +203,10 @@ app.controller("methodsCtrl", function($scope, methodsService) {
     // The current class' package name in which the methods (attributes) reside
     $scope.$on('packageName', function(event, packageName) {
         $scope.packageName = packageName;
+    });
+    
+    $scope.$on('javadocLink', function(event, javadocLink) {
+    	$scope.javadocLink = javadocLink;
     })
 
     // When searching within the class, keep note
