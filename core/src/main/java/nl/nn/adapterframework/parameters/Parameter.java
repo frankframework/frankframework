@@ -603,7 +603,7 @@ public class Parameter implements INamedObject, IWithParameters {
 			}
 		}
 		if (substitutionValue == null) {
-			throw new ParameterException("Parameter with name [" + name + "] in pattern" + pattern + " can not be resolved");
+			throw new ParameterException("Parameter or session variable with name [" + name + "] in pattern [" + pattern + "] cannot be resolved");
 		}
 		return substitutionValue;		
 	}
