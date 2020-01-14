@@ -211,8 +211,13 @@ public class IbisDocPipe extends FixedForwardPipe {
 		groups.put(group, ibisBeans);
 	}
 
-	private static void addIbisBean(String group, String beanName, String nameLastPartToReplaceWithGroupName,
+	private static void addIbisBean(String group, String fqBeanName, String nameLastPartToReplaceWithGroupName,
 			Class<?> clazz, TreeSet<IbisBean> ibisBeans) {
+		int i = fqBeanName.lastIndexOf(".");
+		String beanName = fqBeanName;
+		if(i != -1) {
+			beanName = fqBeanName.substring(i+1);
+		}
 		if (nameLastPartToReplaceWithGroupName != null) {
 			if (beanName.endsWith(nameLastPartToReplaceWithGroupName)) {
 				ibisBeans.add(new IbisBean(replaceNameLastPartWithGroupName(group, beanName, nameLastPartToReplaceWithGroupName), clazz));
@@ -645,7 +650,13 @@ public class IbisDocPipe extends FixedForwardPipe {
 			} else {
 				sortWeight = IbisDocPipe.sortWeight;
 			}
-			Method[] classMethods = ibisBean.getClazz().getMethods();
+			Method[] classMethods;
+			try {
+				classMethods = ibisBean.getClazz().getMethods();
+			} catch (NoClassDefFoundError e) {
+				//TODO Why is it trying to resolve (sub) interfaces?
+				return;
+			}
 			Arrays.sort(classMethods, new Comparator<Method>() {
 				@Override
 				public int compare(Method m1, Method m2) {
@@ -735,9 +746,10 @@ public class IbisDocPipe extends FixedForwardPipe {
 	private static void addPropertiesToSchemaOrHtml(IbisBean ibisBean, XmlBuilder beanComplexType,
 			StringBuffer beanHtml) {
 		Map<String, Method> beanProperties = getBeanProperties(ibisBean.getClazz());
-		if (copyPropterties.containsKey(ibisBean.getName())) {
+		String name = ibisBean.getName();
+		if (copyPropterties.containsKey(name)) {
 			for (IbisBean ibisBean2 : getIbisBeans()) {
-				if (copyPropterties.get(ibisBean.getName()).equals(ibisBean2.getName())) {
+				if (copyPropterties.get(name).equals(ibisBean2.getName())) {
 					beanProperties.putAll(getBeanProperties(ibisBean2.getClazz()));
 				}
 			}
@@ -749,7 +761,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 				boolean exclude = false;
 				if (property.equals("name")) {
 					for (String filter : excludeNameAttribute) {
-						if (ibisBean.getName().endsWith(filter)) {
+						if (name.endsWith(filter)) {
 							exclude = true;
 						}
 					}
@@ -877,16 +889,17 @@ public class IbisDocPipe extends FixedForwardPipe {
 			for (IbisBean ibisBean : groups.get(group)) {
 				String type = "";
 				String className = ibisBean.getClazz().getName();
+				String name = ibisBean.getName();
 				if (group.equals("Other")) {
-					type = ibisBean.getName().substring(0,  1).toLowerCase() + ibisBean.getName().substring(1);
-					if (!ibisBean.getName().equals("Receiver")) {
+					type = name.substring(0,  1).toLowerCase() + name.substring(1);
+					if (!name.equals("Receiver")) {
 						className = "";
 					}
 				} else {
 					type = group.substring(0,  1).toLowerCase() + group.substring(1, group.length() - 1);
 				}
 				result.append("  <Element>\n");
-				result.append("    <Name>" + ibisBean.getName() + "</Name>\n");
+				result.append("    <Name>" + name + "</Name>\n");
 				result.append("    <Type>" + type + "</Type>\n");
 				result.append("    <ClassName>" + className + "</ClassName>\n");
 				result.append("  </Element>\n");
