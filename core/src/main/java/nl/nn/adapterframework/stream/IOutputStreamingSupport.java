@@ -33,6 +33,12 @@ public interface IOutputStreamingSupport {
 	 * should be kept <code>false</false>. Also when the data is available as an InputStream, it should keep requiresOutputStream <code>false</false>.
 	 */
 	public boolean requiresOutputStream();
+	
+	/**
+	 * Implementations should return <code>true</code> when they do not require an OutputStream ({@link #requiresOutputStream()}=<code>false</code>), but can
+	 * provide one to the preceding pipe if they are themselves provided with one from the next pipe. 
+	 */
+	public boolean supportsOutputStreamPassThrough();
 
 	/**
 	 * return a {@link MessageOutputStream} that can be used to write a message to, that then will be processed in a streaming way.

@@ -518,7 +518,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		Writer dbmsWriter = getDbmsSupport().getClobWriter(rs, clobColumn, clobUpdateHandle);
 		return new ClobWriter(getDbmsSupport(), clobUpdateHandle, clobColumn, dbmsWriter, statement.getConnection(), rs, result);
 	}
-	
+
 	protected String executeUpdateClobQuery(PreparedStatement statement, Object message) throws SenderException{
 		ClobWriter clobWriter=null;
 		try {
@@ -554,7 +554,60 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		}
 		return clobWriter==null ? null : clobWriter.getWarnings().toXML();
 	}
+
+	@Override
+	public boolean canProvideOutputStream() {
+		return false; // FixedQuerySender returns true for updateBlob and updateClob
+	}
+
+	@Override
+	public boolean requiresOutputStream() {
+		return false; // not necessary, LOBs can be output streamed using InputStreams
+	}
 	
+	@Override
+	public boolean supportsOutputStreamPassThrough() {
+		return false;
+	}
+	
+	@Override
+	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+		final Connection connection;
+		QueryContext queryContext;
+		try {
+			connection = getConnectionWithTimeout(getTimeout());
+			queryContext = getQueryExecutionContext(connection, correlationID, null, new ParameterResolutionContext(null, session));
+		} catch (JdbcException | ParameterException | SQLException | SenderException | TimeOutException e) {
+			throw new StreamingException(getLogPrefix() + "cannot getQueryExecutionContext",e);
+		}
+		try {
+			PreparedStatement statement=queryContext.getStatement();
+			if ("updateBlob".equalsIgnoreCase(queryContext.getQueryType())) {
+				return new MessageOutputStream(this, getBlobOutputStream(statement, blobColumn, isBlobsCompressed()),target) {
+					@Override
+					public void afterClose() throws SQLException {
+						connection.close();
+						log.warn(getLogPrefix()+"warnings: "+((BlobOutputStream)requestStream).getWarnings().toXML());
+					}
+				};
+			}
+			if ("updateClob".equalsIgnoreCase(queryContext.getQueryType())) {
+				return new MessageOutputStream(this, getClobWriter(statement, getClobColumn()),target) {
+					@Override
+					public void afterClose() throws SQLException {
+						connection.close();
+						log.warn(getLogPrefix()+"warnings: "+((ClobWriter)requestStream).getWarnings().toXML());
+					}
+				};
+			} 
+			throw new IllegalStateException(getLogPrefix()+"illegal queryType ["+queryContext.getQueryType()+"], must be 'updateBlob' or 'updateClob'");
+		} catch (JdbcException | SQLException | IOException e) {
+			throw new StreamingException(getLogPrefix() + "cannot update CLOB or BLOB",e);
+		}
+	}
+
+
+
 	protected String executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar) throws SenderException{
 		return executeSelectQuery(statement, blobSessionVar, clobSessionVar, null, null, null);
 	}
@@ -1109,37 +1162,5 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	public int getLockWait() {
 		return lockWait;
 	}
-
-	@Override
-	public boolean canProvideOutputStream() {
-		return false; // FixedQuerySender returns true for updateBlob and updateClob
-	}
-
-	@Override
-	public boolean requiresOutputStream() {
-		return false; // LOBs can be output streamed using InputStreams
-	}
-	@Override
-	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
-		QueryContext queryContext;
-		try {
-			queryContext = getQueryExecutionContext(connection, correlationID, null, new ParameterResolutionContext(null, session));
-		} catch (JdbcException | ParameterException | SQLException | SenderException e) {
-			throw new StreamingException(getLogPrefix() + "cannot getQueryExecutionContext",e);
-		}
-		try {
-			PreparedStatement statement=queryContext.getStatement();
-			if ("updateBlob".equalsIgnoreCase(queryContext.getQueryType())) {
-				return new MessageOutputStream(getBlobOutputStream(statement, blobColumn, isBlobsCompressed()),target);
-			}
-			if ("updateClob".equalsIgnoreCase(queryContext.getQueryType())) {
-				return new MessageOutputStream(getClobWriter(statement, getClobColumn()),target);
-			} 
-			throw new IllegalStateException("illegal queryType ["+queryContext.getQueryType()+"], must be 'updateBlob' or 'updateClob'");
-		} catch (JdbcException | SQLException | IOException e) {
-			throw new StreamingException(getLogPrefix() + "cannot update CLOB or BLOB",e);
-		}
-	}
-
 
 }

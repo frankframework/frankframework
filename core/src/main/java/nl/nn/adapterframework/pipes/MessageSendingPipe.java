@@ -467,6 +467,11 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	}
 
 	@Override
+	public boolean supportsOutputStreamPassThrough() {
+		return false; // TODO to be implemented!
+	}
+
+	@Override
 	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
 
 		// TODO insert output validator

@@ -44,12 +44,18 @@ public abstract class StreamingSenderBase extends SenderWithParametersBase imple
 
 	@Override
 	public boolean requiresOutputStream() {
-		return true;
+		return false;
 	}
 
 	@Override
 	public boolean canProvideOutputStream() {
 		return true;
 	}
+	
+	@Override
+	public boolean supportsOutputStreamPassThrough() {
+		return true;
+	}
+	
 
 }

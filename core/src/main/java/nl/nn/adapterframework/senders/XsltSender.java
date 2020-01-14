@@ -169,10 +169,10 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	@Override
 	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
 		if (target==null) {
-			target=new MessageOutputStreamCap();
+			target=new MessageOutputStreamCap(this);
 		}
 		ContentHandler handler = createHandler(correlationID, null, session, target);
-		return new MessageOutputStream(handler,target,this,threadLifeCycleEventListener,correlationID);
+		return new MessageOutputStream(this, handler,target,this,threadLifeCycleEventListener,correlationID);
 	}
 
 	protected ContentHandler createHandler(String correlationID, Message input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
@@ -276,14 +276,13 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			throw new SenderException(getLogPrefix()+"got null input");
 		}
 		try {
-			if (target==null) {
-				target=new MessageOutputStreamCap();
+			try (MessageOutputStream outputStream=target!=null?target:new MessageOutputStreamCap(this)) {
+				ContentHandler handler = createHandler(correlationID, message, prc.getSession(), outputStream);
+				InputSource source = message.asInputSource();
+				XMLReader reader = getXmlReader(handler);
+				reader.parse(source);
+				return outputStream.getResponse();
 			}
-			ContentHandler handler = createHandler(correlationID, message, prc.getSession(), target);
-			InputSource source = message.asInputSource();
-			XMLReader reader = getXmlReader(handler);
-			reader.parse(source);
-			return target.getResponse();
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix()+"Exception on transforming input", e);
 		}

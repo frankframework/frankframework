@@ -109,6 +109,10 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	public boolean requiresOutputStream() {
 		return super.requiresOutputStream() && actor.requiresOutputStream();  
 	}
+	@Override
+	public boolean supportsOutputStreamPassThrough() {
+		return false;  
+	}
 	
 	@Override
 	public MessageOutputStream provideOutputStream(String correlationID, IPipeLineSession session, MessageOutputStream target) throws StreamingException {

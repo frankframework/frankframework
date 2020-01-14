@@ -122,11 +122,13 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 	private Set<String> actions = new LinkedHashSet<String>(Arrays.asList(ACTIONS_BASIC));
 	
+	private INamedObject owner;
 	private FS fileSystem;
 	private ParameterList parameterList;
 
 	
 	public void configure(FS fileSystem, ParameterList parameterList, INamedObject owner) throws ConfigurationException {
+		this.owner=owner;
 		this.fileSystem=fileSystem;
 		this.parameterList=parameterList;
 		if (fileSystem instanceof IWritableFileSystem) {
@@ -423,6 +425,10 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public boolean canProvideOutputStream() {
 		return (ACTION_WRITE1.equals(getAction()) || ACTION_APPEND.equals(getAction())) && parameterList.findParameter(PARAMETER_FILENAME)!=null;
 	}
+	@Override
+	public boolean supportsOutputStreamPassThrough() {
+		return false;
+	}
 
 	@SuppressWarnings("resource")
 	@Override
@@ -445,7 +451,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else {
 				out = ((IWritableFileSystem<F>)fileSystem).createFile(file);
 			}
-			MessageOutputStream stream = new MessageOutputStream(out,null);
+			MessageOutputStream stream = new MessageOutputStream(owner, out,null);
 			stream.setResponse(getFileAsXmlBuilder(file, "file").toXML());
 			return stream;
 		} catch (FileSystemException | IOException e) {
