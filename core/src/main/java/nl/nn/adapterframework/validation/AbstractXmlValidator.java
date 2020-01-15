@@ -115,11 +115,11 @@ public abstract class AbstractXmlValidator {
 	 * Configure the XmlValidator
 	 *
 	 * @throws ConfigurationException when:
-	 *                                <ul>
-	 *                                  <li>the schema cannot be found</li>
-	 *                                  <li><{@link #isThrowException()} is false and there is no forward defined for "failure"</li>
-	 *                                  <li>when the parser does not accept setting the properties for validating</li>
-	 *                                </ul>
+	 * <ul>
+	 *     <li>the schema cannot be found</li>
+	 *     <li><{@link #isThrowException()} is false and there is no forward defined for "failure"</li>
+	 *     <li>when the parser does not accept setting the properties for validating</li>
+	 * </ul>
 	 */
 	public void configure(String logPrefix) throws ConfigurationException {
 		this.logPrefix = logPrefix;
