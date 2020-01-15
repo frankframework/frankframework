@@ -66,7 +66,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class IbisDocPipe extends FixedForwardPipe {
 	private static Set<String> excludeFilters = new TreeSet<String>();
-	private String originalClassName = "";
 	static {
 		// Exclude classes that will give conflicts with existing, non-compatible bean definition of same name and class
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.esb\\.WsdlGeneratorPipe");
@@ -153,7 +152,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 	private static Map<String, TreeSet<IbisBean>> cachedGroups;
 	private static Map<String, String> errors = new HashMap<String, String>();
 
-	private static synchronized Map<String, TreeSet<IbisBean>> getGroups() {
+	static synchronized Map<String, TreeSet<IbisBean>> getGroups() {
 		if (cachedGroups == null) {
 			Map<String, TreeSet<IbisBean>> groups = new LinkedHashMap<String, TreeSet<IbisBean>>();
 			addIbisBeans("Listeners", getClass("nl.nn.adapterframework.core.IListener"), groups);
@@ -332,7 +331,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 			result = getUglifyLookup();
 			contentType = "application/xml";
 		} else if ("/ibisdoc/ibisdoc.json".equals(uri)) {
-			result = getJson();
+			result = new IbisDocApp().getJson();
 			contentType = "application/json";
 		} else if ("/ibisdoc".equals(uri)) {
 			result = "<html>\n"
@@ -400,221 +399,6 @@ public class IbisDocPipe extends FixedForwardPipe {
 		}
 		session.put("contentType", contentType);
 		return new PipeRunResult(getForward(), result);
-	}
-
-	/**
-	 * Get the Json containing all information concerning the IbisDoc.
-	 *
-	 * @return A string containing all information of the IbisDoc
-	 */
-	public String getJson() {
-		Map<String, TreeSet<IbisBean>> groups = IbisDocPipe.getGroups();
-		IbisDocExtractor extractor = new IbisDocExtractor();
-		addFolders(groups, extractor);
-
-//		extractor.addAllFolder();
-		extractor.writeToJsonUrl();
-
-		return extractor.getJsonString();
-	}
-
-	/**
-	 * Add folders to the Json.
-	 *
-	 * @param groups    - Contains all information
-	 * @param extractor - Class that converts the folders into objects
-	 */
-	public void addFolders(Map<String, TreeSet<IbisBean>> groups, IbisDocExtractor extractor) {
-		AFolder allFolder = new AFolder("All");
-
-		for (String folder : groups.keySet()) {
-			AFolder newFolder = new AFolder(folder);
-			addClasses(groups, newFolder);
-			extractor.addFolder(newFolder);
-		}
-		extractor.addFolder(allFolder);
-	}
-
-	/**
-	 * Add classes to the folder object.
-	 *
-	 * @param groups - Contains all information
-	 * @param folder - The folder object we have to add the classes to
-	 */
-	public void addClasses(Map<String, TreeSet<IbisBean>> groups, AFolder folder) {
-		for (IbisBean ibisBean : groups.get(folder.getName())) {
-			Map<String, Method> beanProperties = IbisDocPipe.getBeanProperties(ibisBean.getClazz());
-			if (!beanProperties.isEmpty()) {
-
-				// Get the javadoc link for the class
-				String javadocLink = ibisBean.getClazz().getName().replaceAll("\\.", "/");
-
-				// Get the superclasses
-				ArrayList<String> superClasses = getSuperClasses(ibisBean.getClazz());
-				// Create a new class and add the methods (attributes) to it, then add it to the
-				// folder object
-				AClass newClass = new AClass(ibisBean.getName(), ibisBean.getClazz().getName(), javadocLink,
-						superClasses);
-				AClass updatedClass = addMethods(beanProperties, newClass);
-				folder.addClass(updatedClass);
-			}
-		}
-	}
-
-	/**
-	 * Add the methods to the class object.
-	 *
-	 * @param beanProperties - The properties of a class
-	 * @param newClass       - The class object we have to add the methods to
-	 * @return the AClass with the added AMethods
-	 */
-	public AClass addMethods(Map<String, Method> beanProperties, AClass newClass) {
-		Iterator<String> iterator = new TreeSet<>(beanProperties.keySet()).iterator();
-		while (iterator.hasNext()) {
-
-			// Get the method
-			String property = iterator.next();
-			Method method = beanProperties.get(property);
-			// Get the IbisDocRef
-			IbisDocRef reference = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
-
-			// Get the IbisDoc values from the annotations above the method
-			IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
-
-			// Check for whether the method (attribute) is deprecated
-			Deprecated deprecated = AnnotationUtils.findAnnotation(method, Deprecated.class);
-			boolean isDeprecated = deprecated != null;
-
-			String order = "";
-
-			// If there is an IbisDocRef for the method, get the IbisDoc of the referred method
-			if (reference != null) {
-				order = reference.value()[0];
-				ibisDoc = getIbisDocRef(reference.value()[1], method);
-			}
-
-			// If there is an IbisDoc for the method, add the method and it's IbisDoc values to the class object
-			if (ibisDoc != null) {
-				String[] ibisdocValues = ibisDoc.value();
-				String[] values = getValues(ibisdocValues);
-
-				// This is done for @IbisDoc use instead of @IbisDocRef
-				if (order.isEmpty()) order = values[2];
-
-				// This is done for @IbisDoc use instead of @IbisDocRef
-				if (originalClassName.isEmpty()) originalClassName = method.getDeclaringClass().getSimpleName();
-
-				newClass.addMethod(new AMethod(property, originalClassName, values[0], values[1], Integer.parseInt(order), isDeprecated));
-			}
-		}
-		return newClass;
-	}
-
-	/**
-	 *	Extract the values of the IbisDocRef and get the IbisDoc of the referred method
-	 *
-	 * @param packageName - The name full name of the class (with a method attached to it)
-	 * @param method  - The current method
-	 */
-	public IbisDoc getIbisDocRef(String packageName, Method method) {
-
-		IbisDoc ibisDoc;
-
-		// Get the last element of the full package, to check if it is a class or a method
-		String classOrMethod = packageName.substring(packageName.lastIndexOf(".") + 1).trim();
-		char[] firstLetter = classOrMethod.toCharArray();
-
-		// Check the first letter of the last element (if lower case => method, else class)
-		if (Character.isLowerCase(firstLetter[0])) {
-
-			// Get the full class name
-			int lastIndexOf = packageName.lastIndexOf(".");
-			String fullClassName = packageName.substring(0, lastIndexOf);
-
-			// Get the reference values of the specified method
-			ibisDoc = getRefValues(fullClassName, classOrMethod);
-			originalClassName = fullClassName.substring(packageName.lastIndexOf(".") + 1).trim();
-		} else {
-			// Get the reference values of this method
-			ibisDoc = getRefValues(packageName, method.getName());
-			originalClassName = classOrMethod;
-		}
-
-		return ibisDoc;
-	}
-
-	/**
-	 * Get the superclasses of a certain class.
-	 *
-	 * @param clazz - The class we have to derive the superclasses from
-	 * @return An ArrayList containing all the superclasses with priority given to
-	 *         them
-	 */
-	public ArrayList<String> getSuperClasses(Class<?> clazz) {
-		ArrayList<String> superClasses = new ArrayList<String>();
-		while (clazz.getSuperclass() != null) {
-
-			// Assign a string with a priority number attached to it and add it to the array
-			// of superclasses
-			superClasses.add(clazz.getSuperclass().getSimpleName());
-			clazz = clazz.getSuperclass();
-		}
-
-		return superClasses;
-	}
-
-	/**
-	 * Gets the IbisDoc values.
-	 *
-	 * @param ibisDocValues - The String[] containing all the ibisDocValues
-	 * @return The needed ibisDocValues
-	 */
-	public String[] getValues(String[] ibisDocValues) {
-		String order;
-		int desc;
-		int def;
-
-		if (ibisDocValues[0].matches("\\d+")) {
-			order = ibisDocValues[0];
-			desc = 1;
-			def = 2;
-		} else {
-			order = "999";
-			desc = 0;
-			def = 1;
-		}
-		if (ibisDocValues.length > def)
-			return new String[] { ibisDocValues[desc], ibisDocValues[def], order };
-		else
-			return new String[] { ibisDocValues[desc], "", order };
-	}
-
-	/**
-	 * Get the IbisDoc values of the referred method in IbisDocRef
-	 *
-	 * @param className - The full name of the class
-	 * @param methodName - The method name
-	 * @return the IbisDoc of the method
-	 */
-	public IbisDoc getRefValues(String className, String methodName) {
-		IbisDoc ibisDoc = null;
-		try {
-			Class<?> parentClass = Class.forName(className);
-			for (Method parentMethod : parentClass.getDeclaredMethods()) {
-				if (parentMethod.getName().equals(methodName)) {
-
-					// Get the IbisDoc values of that method
-					ibisDoc = AnnotationUtils.findAnnotation(parentMethod, IbisDoc.class);
-					break;
-				}
-			}
-
-		} catch (ClassNotFoundException e) {
-			System.out.println("Could not find [" + className + "]");
-			e.printStackTrace();
-		}
-
-		return ibisDoc;
 	}
 
 	private String getSchema() throws PipeRunException {
@@ -906,7 +690,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 		return ignore;
 	}
 
-	private static Map<String, Method> getBeanProperties(Class<?> clazz) {
+	static Map<String, Method> getBeanProperties(Class<?> clazz) {
 		Map<String, Method> result = new HashMap<String, Method>();
 		getBeanProperties(clazz, "set", result);
 		Set<String> remove = new HashSet<String>();
