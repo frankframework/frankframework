@@ -197,7 +197,7 @@ public abstract class Base {
 				return inputDataMap.get(key).get(0).getBody(clazz, null);
 			}
 		} catch (Exception e) {
-			throw new ApiException("Failed to parse parameter", e);
+			log.debug("Failed to parse parameter ["+key+"]", e);
 		}
 		if(defaultValue != null) {
 			return defaultValue;
