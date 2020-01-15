@@ -24,6 +24,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -150,7 +151,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 
 
 
-	@IbisDoc({"1", "possible values: list, info, read, delete, move, mkdir, rmdir, write, append, rename", "" })
+	@IbisDocRef({"1", "nl.nn.adapterframework.filesystem.FileSystemActor.setAction"})
 	public void setAction(String action) {
 		actor.setAction(action);
 	}
@@ -158,35 +159,49 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		return actor.getAction();
 	}
 
-	@IbisDoc({"2", "folder that is scanned for files when action=list. When not set, the root is scanned", ""})
+	@IbisDocRef({"2", "nl.nn.adapterframework.filesystem.FileSystemActor"})
 	public void setInputFolder(String inputFolder) {
 		actor.setInputFolder(inputFolder);
 	}
+	
+	public String getInputFolder() {
+		return actor.getInputFolder();
+	}
 
-	@IbisDoc({"3", "Can be set to 'encode' or 'decode' for actions read, write and append. When set the stream is base64 encoded or decoded, respectively", ""})
+	@IbisDocRef({"3", "nl.nn.adapterframework.filesystem.FileSystemActor.setBase64"})
 	public void setBase64(String base64) {
 		actor.setBase64(base64);
 	}
+	public String getBase64() {
+		return actor.getBase64();
+	}
 
-	@IbisDoc({"4", "for action=append: when set to a positive number, the file is rotated each day, and this number of files is kept", "0"})
+	@IbisDocRef({"4", "nl.nn.adapterframework.filesystem.FileSystemActor.setRotateDays"})
 	public void setRotateDays(int rotateDays) {
 		actor.setRotateDays(rotateDays);
 	}
+	public int getRotateDays() {
+		return actor.getRotateDays();
+	}
 
-	@IbisDoc({"5", "for action=append: when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept", "0"})
+	@IbisDocRef({"5", "nl.nn.adapterframework.filesystem.FileSystemActor.setRotateSize"})
 	public void setRotateSize(int rotateSize) {
 		actor.setRotateSize(rotateSize);
 	}
+	public int getRotateSize() {
+		return actor.getRotateSize();
+	}
 
-	@IbisDoc({"6", "for action=write, and for action=append with rotateSize>0: the number of backup files that is kept", "0"})
+	@IbisDocRef({"6", "nl.nn.adapterframework.filesystem.FileSystemActor"})
 	public void setNumberOfBackups(int numberOfBackups) {
 		actor.setNumberOfBackups(numberOfBackups);
 	}
 
-	@IbisDoc({"3", "filename to operate on. When not set, the parameter filename is used. When that is not set either, the input is used", ""})
+	@IbisDocRef({"3", "nl.nn.adapterframework.filesystem.FileSystemActor.setFilename"})
 	public void setFilename(String filename) {
 		actor.setFilename(filename);
 	}
+
 	public String getFilename() {
 		return actor.getFilename();
 	}

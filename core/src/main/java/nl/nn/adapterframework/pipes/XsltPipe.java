@@ -17,6 +17,7 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.StringWriter;
 
+import nl.nn.adapterframework.doc.IbisDocRef;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -165,7 +166,7 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		sender.setStyleSheetCacheSize(size);
 	}
 	
-	@IbisDoc({"4", "xpath-expression to apply to the input message. it's possible to refer to a parameter (which e.g. contains a value from a sessionkey) by using the parameter name prefixed with $", ""})
+	@IbisDocRef({"4", "nl.nn.adapterframework.senders.XsltSender.setOutputType"})
 	public void setXpathExpression(String string) {
 		sender.setXpathExpression(string);
 	}
@@ -186,7 +187,7 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		return sender.getNamespaceDefs();
 	}
 
-	@IbisDoc({"7", "either 'text' or 'xml'. only valid for xpathexpression", "text"})
+	@IbisDocRef({"7", "nl.nn.adapterframework.senders.XsltSender.setOutputType"})
 	public void setOutputType(String string) {
 		sender.setOutputType(string);
 	}
