@@ -13,8 +13,7 @@ import java.util.Map;
 import java.util.TreeSet;
 
 public class IbisDocApp {
-
-    private String originalClassName = "";
+    private String referredClassName = "";
 
     /**
      * Get the Json containing all information concerning the IbisDoc.
@@ -101,11 +100,13 @@ public class IbisDocApp {
             boolean isDeprecated = deprecated != null;
 
             String order = "";
+            String originalClassName = "";
 
             // If there is an IbisDocRef for the method, get the IbisDoc of the referred method
             if (reference != null) {
                 order = reference.value()[0];
-                ibisDoc = getSomething(reference.value()[1], method);
+                ibisDoc = getIbisDocRef(reference.value()[1], method);
+                originalClassName = referredClassName;
             }
 
             // If there is an IbisDoc for the method, add the method and it's IbisDoc values to the class object
@@ -126,13 +127,14 @@ public class IbisDocApp {
     }
 
     /**
+     * Get the IbisDocRef values and then the IbisDoc values of the referred method
      *
      * @param packageName - The name full name of the class (with a method attached to it)
      * @param method  - The current method
      */
-    public IbisDoc getSomething(String packageName, Method method) {
+    public IbisDoc getIbisDocRef(String packageName, Method method) {
 
-        IbisDoc ibisDoc = null;
+        IbisDoc ibisDoc;
 
         // Get the last element of the full package, to check if it is a class or a method
         String classOrMethod = packageName.substring(packageName.lastIndexOf(".") + 1).trim();
@@ -147,13 +149,11 @@ public class IbisDocApp {
 
             // Get the reference values of the specified method
             ibisDoc = getRefValues(fullClassName, classOrMethod);
-            System.out.println(fullClassName);
-            System.out.println();
-            originalClassName = fullClassName.substring(fullClassName.lastIndexOf(".") + 1).trim();
+            referredClassName = fullClassName.substring(fullClassName.lastIndexOf(".") + 1).trim();
         } else {
             // Get the reference values of this method
             ibisDoc = getRefValues(packageName, method.getName());
-            originalClassName = classOrMethod;
+            referredClassName = classOrMethod;
         }
 
         return ibisDoc;
