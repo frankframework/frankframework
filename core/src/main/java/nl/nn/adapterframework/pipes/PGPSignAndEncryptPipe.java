@@ -36,15 +36,6 @@ public class PGPSignAndEncryptPipe extends FixedForwardPipe {
 			throw new ConfigurationException("Fields [recipients and publicKeyPath] have to be set.");
 		}
 
-		if(sender != null) {
-			String[] temp = new String[recipients.length + 1];
-			for(int i = 0; i < recipients.length; i++)
-				temp[i] = recipients[i];
-
-			temp[recipients.length] = sender;
-			recipients = temp;
-		}
-
 		File publicFile = new File(publicKeyPath);
 		System.out.println(publicFile.getAbsolutePath());
 		if (!publicFile.exists() || !publicFile.isFile())

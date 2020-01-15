@@ -587,7 +587,20 @@
 			<version>2.3.5</version>
 			<scope>test</scope>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/name.neuhalfen.projects.crypto.bouncycastle.openpgp/bouncy-gpg -->
+		<dependency>
+			<groupId>name.neuhalfen.projects.crypto.bouncycastle.openpgp</groupId>
+			<artifactId>bouncy-gpg</artifactId>
+			<version>2.1.2</version>
+		</dependency>
 	</dependencies>
+
+	<repositories>
+		<repository>
+			<id>jcenter</id>
+			<url>https://jcenter.bintray.com/</url>
+		</repository>
+	</repositories>
 
 	<build>
 		<plugins>
