@@ -23,38 +23,31 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.ClassLoaderXmlEntityResolver;
-import nl.nn.adapterframework.xml.NonResolvingExternalEntityResolver;
 import org.apache.log4j.Logger;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
-import org.apache.xerces.jaxp.validation.ValidatorHandlerImpl;
 import org.apache.xerces.jaxp.validation.XMLSchema11Factory;
 import org.apache.xerces.jaxp.validation.XMLSchemaFactory;
 import org.apache.xerces.parsers.XMLGrammarPreparser;
 import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
-import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.grammars.XSGrammar;
-import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParseException;
 import org.apache.xerces.xs.XSModel;
-import org.json.XML;
-import org.xml.sax.*;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 
-import javax.xml.XMLConstants;
-import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.ValidatorHandler;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -278,7 +271,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	@Override
 	public ValidatorHandler getValidatorHandler(IPipeLineSession session, ValidationContext context) throws ConfigurationException {
 		// User Impl version from xerces, because it has extra validate() function.
-		ValidatorHandlerImpl validatorHandler;
+		ValidatorHandler validatorHandler;
 
 		try {
 			javax.xml.validation.Schema schemaObject;
@@ -290,7 +283,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 				schemaObject = schemaFactory.newSchema(((XercesValidationContext) context).getGrammarPool());
 			}
 
-			validatorHandler = (ValidatorHandlerImpl) schemaObject.newValidatorHandler();
+			validatorHandler = schemaObject.newValidatorHandler();
 		} catch (SAXException e) {
 			throw new ConfigurationException(logPrefix + "Cannot create schema", e);
 		}
