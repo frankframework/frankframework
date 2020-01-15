@@ -3,6 +3,7 @@ package nl.nn.adapterframework.pipes;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BouncyGPG;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BuildEncryptionOutputStreamAPI;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.callbacks.KeyringConfigCallbacks;
+import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.keyrings.InMemoryKeyring;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.keyrings.KeyringConfig;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.keyrings.KeyringConfigs;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -10,23 +11,22 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
+import org.apache.commons.io.IOUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.util.io.Streams;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Security;
 import java.security.SignatureException;
 
 public class PGPSignAndEncryptPipe extends FixedForwardPipe {
-	private String sender, keyPassword, publicKeyPath, privateKeyPath;
+	// TODO: combine and add actions
+	private String sender, keyPassword, publicKeyPath, privateKeyPath, personalPublic;
 	private String[] recipients;
-	private KeyringConfig keyringConfig;
+	private InMemoryKeyring keyringConfig;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -34,6 +34,15 @@ public class PGPSignAndEncryptPipe extends FixedForwardPipe {
 
 		if (recipients == null || publicKeyPath == null) {
 			throw new ConfigurationException("Fields [recipients and publicKeyPath] have to be set.");
+		}
+
+		if(sender != null) {
+			String[] temp = new String[recipients.length + 1];
+			for(int i = 0; i < recipients.length; i++)
+				temp[i] = recipients[i];
+
+			temp[recipients.length] = sender;
+			recipients = temp;
 		}
 
 		File publicFile = new File(publicKeyPath);
@@ -64,8 +73,19 @@ public class PGPSignAndEncryptPipe extends FixedForwardPipe {
 		}
 		Security.addProvider(new BouncyCastleProvider());
 
-		keyringConfig = KeyringConfigs.withKeyRingsFromFiles(publicFile, privateFile,
-				KeyringConfigCallbacks.withPassword(keyPassword));
+//		keyringConfig = KeyringConfigs.withKeyRingsFromFiles(publicFile, privateFile,
+//				KeyringConfigCallbacks.withPassword(keyPassword));
+		try {
+			keyringConfig = KeyringConfigs.forGpgExportedKeys(KeyringConfigCallbacks.withPassword(keyPassword));
+			keyringConfig.addPublicKey(IOUtils.toByteArray(new FileInputStream(publicFile)));
+			if(privateKeyPath != null) {
+				keyringConfig.addSecretKey(IOUtils.toByteArray(new FileInputStream(privateFile)));
+				if(!personalPublic.equalsIgnoreCase(publicKeyPath))
+					keyringConfig.addPublicKey(IOUtils.toByteArray(new FileInputStream(personalPublic)));
+			}
+		} catch (IOException | PGPException e) {
+			throw new ConfigurationException("Whoops", e);
+		}
 	}
 
 	@Override
@@ -122,5 +142,9 @@ public class PGPSignAndEncryptPipe extends FixedForwardPipe {
 
 	public void setPrivateKeyPath(String privateKeyPath) {
 		this.privateKeyPath = privateKeyPath;
+	}
+
+	public void setPersonalPublic(String personalPublic) {
+		this.personalPublic = personalPublic;
 	}
 }

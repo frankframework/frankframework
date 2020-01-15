@@ -6,6 +6,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.unmanaged.SpringJmsConnector;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,32 +29,32 @@ public class PgpPipesTest {
 	String message = "My Secret!!";
 	private final String pgpFolder = "src/test/resources/PGP/";
 
-	private static final String[] firstKey = {"test@ibissource.org", "ibistest", "first/private.asc", "first/public.asc"};
-	private static final String[] secondKey = {"second@ibissource.org", "secondtest", "second/private.asc", "second/public.asc"};
+	private static final String[] sender = {"test@ibissource.org", "ibistest", "first/private.asc", "first/public.asc"};
+	private static final String[] recipient = {"second@ibissource.org", "secondtest", "second/private.asc", "second/public.asc"};
 
 	@Parameterized.Parameters(name = "{index} - {0} - {1}")
 	public static Collection<Object[]> data() {
 		// sender, key, private, recipient, public
 		// sender, key, private, public
 		return Arrays.asList(new Object[][]{
-				{"Default", "success",
-						new String[]{firstKey[0], firstKey[1], firstKey[2], secondKey[0], secondKey[3]},
-						new String[]{firstKey[0], secondKey[1], secondKey[2], firstKey[3]}},
+				{"Encrypt&Sign then Decrypt&Verify", "success",
+						new String[]{sender[0], sender[1], sender[2], recipient[0], recipient[3]},
+						new String[]{sender[0], recipient[1], recipient[2], sender[3]}},
 				{"Same Key", "success",
-						new String[]{firstKey[0], firstKey[1], firstKey[2], firstKey[0], firstKey[3]},
-						new String[]{firstKey[0], firstKey[1], firstKey[2],firstKey[3]}},
-				{"No Sign", "success",
-						new String[]{null, null, null, firstKey[0], firstKey[3]},
-						new String[]{null, firstKey[1], firstKey[2], null}},
+						new String[]{sender[0], sender[1], sender[2], sender[0], sender[3]},
+						new String[]{sender[0], sender[1], sender[2], sender[3]}},
+				{"Encrypt&Decrypt", "success",
+						new String[]{null, null, null, sender[0], sender[3]},
+						new String[]{null, sender[1], sender[2], null}},
 				{"Nulls", "nl.nn.adapterframework.configuration.ConfigurationException",
 						new String[]{null, null, null, null, null},
 						new String[]{null, null, null, null}},
 				{"Wrong password", "org.bouncycastle.openpgp.PGPException",
-						new String[]{null, null, null, firstKey[0], firstKey[3]},
-						new String[]{null, "wrong key", firstKey[2], null}},
+						new String[]{null, null, null, sender[0], sender[3]},
+						new String[]{null, "wrong key", sender[2], null}},
 				{"Wrong key", "org.bouncycastle.openpgp.PGPException",
-						new String[]{null, null, null, firstKey[0], firstKey[3]},
-						new String[]{null, secondKey[1], secondKey[2], null}},
+						new String[]{null, null, null, sender[0], sender[3]},
+						new String[]{null, recipient[1], recipient[2], null}},
 		});
 	}
 
@@ -65,7 +66,7 @@ public class PgpPipesTest {
 	}
 
 	@Test
-	public void testSameKeyForBoth() throws Throwable {
+	public void dotest() throws Throwable {
 		try {
 			configureEncryptPipe(encryptParams);
 			configureDecryptPipe(decryptParams);
@@ -73,7 +74,7 @@ public class PgpPipesTest {
 			PipeRunResult encryptionResult = encryptPipe.doPipe(message, session);
 			OutputStream mid = (OutputStream) encryptionResult.getResult();
 			System.out.println(mid.toString());
-
+			assertMessage(mid.toString(), message);
 			PipeRunResult decryptionResult = decryptPipe.doPipe(encryptionResult.getResult(), session);
 			OutputStream result = (OutputStream) decryptionResult.getResult();
 			System.out.println(result.toString());
@@ -108,6 +109,7 @@ public class PgpPipesTest {
 		encryptPipe.setPrivateKeyPath(params[2] == null ? null : pgpFolder + params[2]);
 		encryptPipe.setRecipient(params[3]);
 		encryptPipe.setPublicKeyPath(params[4] == null ? null : pgpFolder + params[4]);
+		encryptPipe.setPersonalPublic(pgpFolder + sender[3]);
 		encryptPipe.configure();
 	}
 
@@ -123,7 +125,7 @@ public class PgpPipesTest {
 		try {
 			return checkExceptionClass(t, Class.forName(c));
 		} catch (ClassNotFoundException e) {
-			if(c.equalsIgnoreCase("success"))
+			if (c.equalsIgnoreCase("success"))
 				return false;
 			throw t;
 		}
@@ -136,5 +138,10 @@ public class PgpPipesTest {
 			return checkExceptionClass(t.getCause(), c);
 		}
 		return false;
+	}
+
+	private void assertMessage(String message, String secretMessage) {
+		Assert.assertTrue("Message does not comply with PGP message beginning.", message.startsWith("-----BEGIN PGP MESSAGE-----"));
+		Assert.assertFalse("Encrypted version contains the secret message.", message.contains(secretMessage));
 	}
 }
