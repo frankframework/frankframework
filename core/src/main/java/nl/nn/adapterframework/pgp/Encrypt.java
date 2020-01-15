@@ -1,0 +1,45 @@
+package nl.nn.adapterframework.pgp;
+
+import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BouncyGPG;
+import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BuildEncryptionOutputStreamAPI;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import org.bouncycastle.util.io.Streams;
+
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+public class Encrypt extends PGPAction {
+	private String[] recipients;
+
+	public Encrypt(String[] publicKey, String[] recipients) throws ConfigurationException {
+		super(publicKey, null, null, recipients);
+
+		if (publicKey == null || publicKey.length != 1)
+			throw new ConfigurationException("With encryption action, there should be only one public key.");
+
+		this.recipients = recipients;
+	}
+
+	@Override
+	public OutputStream run(InputStream inputStream) throws Exception {
+		OutputStream output = new ByteArrayOutputStream();
+		BuildEncryptionOutputStreamAPI.WithAlgorithmSuite.To algorithmSuite =  BouncyGPG
+				.encryptToStream()
+				.withConfig(keyringConfig)
+				.withStrongAlgorithms();
+
+		BuildEncryptionOutputStreamAPI.WithAlgorithmSuite.To.SignWith signWith;
+		if (recipients.length == 1)
+			signWith = algorithmSuite.toRecipient(recipients[0]);
+		else
+			signWith = algorithmSuite.toRecipients(recipients);
+
+		OutputStream outputStream = signWith.andDoNotSign().armorAsciiOutput().andWriteTo(output);
+		Streams.pipeAll(inputStream, outputStream);
+		outputStream.close();
+
+		return output;
+	}
+
+}
