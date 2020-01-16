@@ -52,8 +52,9 @@ import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerErrorListener;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.xml.ElementFilter;
+import nl.nn.adapterframework.xml.NodeSetFilter;
 import nl.nn.adapterframework.xml.FullXmlFilter;
+import nl.nn.adapterframework.xml.PrefixMapping;
 import nl.nn.adapterframework.xml.SaxException;
 import nl.nn.adapterframework.xml.TransformerFilter;
 
@@ -176,16 +177,6 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 		private List<PrefixMapping> firstLevelNamespaceDefinitions=new ArrayList<>();
 		private List<PrefixMapping> namespaceDefinitions=new ArrayList<>();
 
-		private class PrefixMapping {
-
-			public String prefix;
-			public String uri;
-
-			PrefixMapping(String prefix, String uri) {
-				this.prefix=prefix;
-				this.uri=uri;
-			}
-		}
 		
 		public ItemCallbackCallingHandler(ItemCallback callback) {
 			this.callback=callback;
@@ -212,22 +203,35 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 		
 		private void writePrefixMapping(PrefixMapping prefixMapping) {
 			elementbuffer.append(" xmlns");
-			if (StringUtils.isNotEmpty(prefixMapping.prefix) ) {
-				elementbuffer.append(":").append(prefixMapping.prefix);
+			if (StringUtils.isNotEmpty(prefixMapping.getPrefix()) ) {
+				elementbuffer.append(":").append(prefixMapping.getPrefix());
 			}
-			elementbuffer.append("=\"").append(XmlUtils.encodeChars(prefixMapping.uri)).append("\"");
+			elementbuffer.append("=\"").append(XmlUtils.encodeChars(prefixMapping.getUri())).append("\"");
 		}
 
 		private void writeFirstLevelNamespacePrefixMappingIfNotOverridden(int position) {
 			PrefixMapping prefixMapping=firstLevelNamespaceDefinitions.get(position);
-			String prefix=prefixMapping.prefix;
+			String prefix=prefixMapping.getPrefix();
 			for (int i=position+1; i<firstLevelNamespaceDefinitions.size();i++) {
-				if (firstLevelNamespaceDefinitions.get(i).prefix.equals(prefix)) {
+				log.debug("comparing prefix ["+prefix+"] to later defined ["+firstLevelNamespaceDefinitions.get(i).getPrefix()+"]");
+				if (firstLevelNamespaceDefinitions.get(i).getPrefix().equals(prefix)) {
 					return;
 				}
 			}
 			for (int i=0; i<namespaceDefinitions.size();i++) {
-				if (namespaceDefinitions.get(i).prefix.equals(prefix)) {
+				if (namespaceDefinitions.get(i).getPrefix().equals(prefix)) {
+					return;
+				}
+			}
+			writePrefixMapping(prefixMapping);
+		}
+
+		private void writeOtherLevelNamespacePrefixMappingIfNotOverridden(int position) {
+			PrefixMapping prefixMapping=namespaceDefinitions.get(position);
+			String prefix=prefixMapping.getPrefix();
+			for (int i=position+1; i<namespaceDefinitions.size();i++) {
+				log.debug("comparing prefix ["+prefix+"] to later defined ["+namespaceDefinitions.get(i).getPrefix()+"]");
+				if (namespaceDefinitions.get(i).getPrefix().equals(prefix)) {
 					return;
 				}
 			}
@@ -246,8 +250,8 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 				return;
 			}
 			PrefixMapping prefixMapping = prefixMappingList.get(last);
-			if (!prefixMapping.prefix.equals(prefix)) {
-				log.warn("top of prefix mapping lists prefix ["+prefixMapping.prefix+"] is not equal to prefix to remove ["+prefix+"], removing top anyhow");
+			if (!prefixMapping.getPrefix().equals(prefix)) {
+				log.warn("top of prefix mapping lists prefix ["+prefixMapping.getPrefix()+"] is not equal to prefix to remove ["+prefix+"], removing top anyhow");
 			}
 			prefixMappingList.remove(last);
 		}
@@ -294,7 +298,7 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 						}
 					}
 					for (int i=0; i<namespaceDefinitions.size(); i++) {
-						writePrefixMapping(namespaceDefinitions.get(i));
+						writeOtherLevelNamespacePrefixMappingIfNotOverridden(i);
 					}
 					namespaceDefinitions.clear();
 				}
@@ -457,12 +461,12 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 				errorMessage="Could not process list of elements using xpath ["+getElementXPathExpression()+"]";
 			} 
 			if (StringUtils.isNotEmpty(getTargetElement())) {
-				ElementFilter targetElementFilter = new ElementFilter(XmlUtils.getNamespaceMap(getNamespaceDefs()), getTargetElement(),true,true);
+				NodeSetFilter targetElementFilter = new NodeSetFilter(XmlUtils.getNamespaceMap(getNamespaceDefs()), getTargetElement(),true,true);
 				targetElementFilter.setContentHandler(inputHandler);
 				inputHandler=targetElementFilter;
 			}
 			if (StringUtils.isNotEmpty(getContainerElement())) {
-				ElementFilter containerElementFilter = new ElementFilter(XmlUtils.getNamespaceMap(getNamespaceDefs()), getContainerElement(),false,true);
+				NodeSetFilter containerElementFilter = new NodeSetFilter(XmlUtils.getNamespaceMap(getNamespaceDefs()), getContainerElement(),false,true);
 				containerElementFilter.setContentHandler(inputHandler);
 				inputHandler=containerElementFilter;
 			}

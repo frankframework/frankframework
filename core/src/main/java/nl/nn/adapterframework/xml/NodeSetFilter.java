@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.xml;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.xml.sax.Attributes;
@@ -26,7 +28,7 @@ import org.xml.sax.SAXException;
  * 
  * @author Gerrit van Brakel
  */
-public class ElementFilter extends FullXmlFilter {
+public class NodeSetFilter extends FullXmlFilter {
 
 	private String targetNamespace;
 	private String targetElement;
@@ -35,12 +37,16 @@ public class ElementFilter extends FullXmlFilter {
 	
 	private int level;
 	private int globalLevel;
-	
-	public ElementFilter(String targetElement) {
+	private boolean inTargetElement;
+	private boolean copying;
+
+	private List<PrefixMapping> pendingNamespaceDefinitions=new ArrayList<>();
+
+	public NodeSetFilter(String targetElement) {
 		this(null, targetElement,true,false);
 	}
 
-	public ElementFilter(Map<String,String> namespaceMap, String targetElement, boolean includeTarget, boolean includeRoot) {
+	public NodeSetFilter(Map<String,String> namespaceMap, String targetElement, boolean includeTarget, boolean includeRoot) {
 		super();
 		this.includeTarget=includeTarget;
 		this.includeRoot=includeRoot;
@@ -56,23 +62,80 @@ public class ElementFilter extends FullXmlFilter {
 					this.targetElement=targetElement;
 				} else {
 					this.targetNamespace=namespaceMap.get(targetElement.substring(0,colonPos)); 
-					this.targetElement=targetElement.substring(colonPos+1);				
+					this.targetElement=targetElement.substring(colonPos+1);
 				}
 			}
 		}
 		log.debug("ElementFilter targetNamespace ["+targetNamespace+"] targetElement ["+this.targetElement+"]");
 	}
 
+	public void beforeNode(String uri, String localName, String qName) throws SAXException {
+		
+	}
+	public void afterNode(String uri, String localName, String qName) throws SAXException {
+		
+	}
+	
+	@Override
+	public void startPrefixMapping(String prefix, String uri) throws SAXException {
+		if (copying || includeRoot && globalLevel==0) {
+			super.startPrefixMapping(prefix, uri);
+		} else {
+			pendingNamespaceDefinitions.add(new PrefixMapping(prefix, uri));
+		}
+	}
+
+	@Override
+	public void endPrefixMapping(String prefix) throws SAXException {
+		log.debug("removing prefix mapping ["+prefix+"]");
+		if (copying || includeRoot && globalLevel==0) {
+			super.endPrefixMapping(prefix);
+		} else {
+			if (pendingNamespaceDefinitions.size()<=0) {
+				log.warn("pendingNamespaceDefinitions empty, cannot remove prefix ["+prefix+"]");
+				return;
+			}
+			PrefixMapping topMapping=pendingNamespaceDefinitions.remove(pendingNamespaceDefinitions.size()-1);
+			if (!prefix.equals(topMapping.getPrefix())) {
+				log.warn("prefixmapping to remove with prefix ["+prefix+"] does not match expected ["+topMapping.getPrefix()+"]");
+			}
+		}
+	}
+	
+	private boolean onTargetElement(String uri, String localName) {
+		return (targetNamespace==null || targetNamespace.equals(uri)) && (targetElement==null || localName.equals(targetElement));
+	}
+
+	private boolean mappingIsOverridden(PrefixMapping mapping, int index) {
+		for (int i=index+1; i<pendingNamespaceDefinitions.size(); i++) {
+			if (pendingNamespaceDefinitions.get(i).getPrefix().equals(mapping.getPrefix())) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-		if (level<=0) {
-			if ((targetNamespace==null || targetNamespace.equals(uri)) && (targetElement==null || localName.equals(targetElement))) {
+		if (!inTargetElement) {
+			if (onTargetElement(uri, localName)) {
+				inTargetElement=true;
 				level=1;
 			}
 		} else {
 			level++;
 		}
 		if (level>1 || (includeTarget && level==1) || (includeRoot && globalLevel==0)) {
+			if (!copying) {
+				copying=true;
+				beforeNode(uri, localName, qName);;
+				for (int i=0; i<pendingNamespaceDefinitions.size(); i++) {
+					PrefixMapping mapping=pendingNamespaceDefinitions.get(i);
+					if (!mappingIsOverridden(mapping, i)) {
+						startPrefixMapping(mapping.getPrefix(), mapping.getUri());
+					}
+				}
+			}
 			super.startElement(uri, localName, qName, atts);
 		}
 		globalLevel++;
@@ -84,6 +147,21 @@ public class ElementFilter extends FullXmlFilter {
 		globalLevel--;
 		if (--level>0 || (includeTarget && level==0) || (includeRoot && globalLevel==0)) {
 			super.endElement(uri, localName, qName);
+			if (level==0 + (includeTarget ? 0:1)) {
+				log.debug("removing pending prefix mappings");
+				for(int i=pendingNamespaceDefinitions.size()-1;i>=0;i--) {
+					PrefixMapping mapping=pendingNamespaceDefinitions.get(i);
+					if (!mappingIsOverridden(mapping, i)) {
+						endPrefixMapping(mapping.getPrefix());
+					}
+				}
+				log.debug("removed pending prefix mappings");
+				afterNode(uri, localName, qName);;
+				copying=false;
+			}
+		}
+		if (level<=0) {
+			inTargetElement=false;
 		}
 	}
 
@@ -97,7 +175,7 @@ public class ElementFilter extends FullXmlFilter {
 
 	@Override
 	public void comment(char[] ch, int start, int length) throws SAXException {
-		if (level>0) {
+		if (copying) {
 			super.comment(ch, start, length);
 		}
 	}
@@ -136,6 +214,7 @@ public class ElementFilter extends FullXmlFilter {
 			super.ignorableWhitespace(ch, start, length);
 		}
 	}
+
 
 
 }
