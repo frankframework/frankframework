@@ -569,7 +569,7 @@ public final class ShowConfigurationStatus extends Base {
 							messageLogCount="?";
 						}
 					} catch (Exception e) {
-						log.warn(e);
+						log.warn("Cannot determine number of messages in messageLog ["+messageLog.getName()+"]", e);
 						messageLogCount="error";
 					}
 					pipesInfo.put("messageLogCount", messageLogCount);
@@ -634,7 +634,7 @@ public final class ShowConfigurationStatus extends Base {
 								receiverInfo.put("errorStorageCount", "?");
 							}
 						} catch (Exception e) {
-							log.warn(e);
+							log.warn("Cannot determine number of messages in errorstore ["+ts.getName()+"]", e);
 							receiverInfo.put("errorStorageCount", "error");
 						}
 					}
@@ -648,7 +648,7 @@ public final class ShowConfigurationStatus extends Base {
 								receiverInfo.put("messageLogCount", "?");
 							}
 						} catch (Exception e) {
-							log.warn(e);
+							log.warn("Cannot determine number of messages in messageLog ["+ts.getName()+"]", e);
 							receiverInfo.put("messageLogCount", "error");
 						}
 					}
@@ -676,7 +676,7 @@ public final class ShowConfigurationStatus extends Base {
 							int messageCount = jmsBrowser.getMessageCount();
 							numMsgs = String.valueOf(messageCount);
 						} catch (Throwable t) {
-							log.warn(t);
+							log.warn("Cannot determine number of messages in errorstore ["+jmsBrowser.getName()+"]", t);
 							numMsgs = "?";
 						}
 						receiverInfo.put("pendingMessagesCount", numMsgs);
