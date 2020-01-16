@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.senders;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 
