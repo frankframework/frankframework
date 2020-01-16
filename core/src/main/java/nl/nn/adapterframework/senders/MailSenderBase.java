@@ -258,20 +258,20 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 	private MailAttachmentStream stringToMailAttachment(String value, boolean isBase64, String mimeType) {
 		ByteArrayInputStream stream = new ByteArrayInputStream(value.getBytes());
+		if (!isBase64 && StringUtils.isEmpty(mimeType)) {
+			mimeType = "text/plain";
+		}
 		return streamToMailAttachment(stream, isBase64, mimeType);
 	}
 
 	private MailAttachmentStream streamToMailAttachment(InputStream stream, boolean isBase64, String mimeType) {
 		MailAttachmentStream attachment = new MailAttachmentStream();
+		if(StringUtils.isEmpty(mimeType)) {
+			mimeType = "application/octet-stream";
+		}
 		if (isBase64) {
-			if(StringUtils.isEmpty(mimeType)) {
-				mimeType = "application/octet-stream";
-			}
 			attachment.setContent(new Base64InputStream(stream));
 		} else {
-			if(StringUtils.isEmpty(mimeType)) {
-				mimeType = "text/plain";
-			}
 			attachment.setContent(stream);
 		}
 		attachment.setMimeType(mimeType);
@@ -309,6 +309,9 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		charset = XmlUtils.getChildTagAsString(emailElement, "charset");
 
 		Element recipientsElement = XmlUtils.getFirstChildTag(emailElement, "recipients");
+		if(recipientsElement == null) {
+			throw new SenderException("at least 1 recipient must be specified");
+		}
 		recipientList = XmlUtils.getChildTags(recipientsElement, "recipient");
 
 		Element attachmentsElement = XmlUtils.getFirstChildTag(emailElement, "attachments");
@@ -485,21 +488,24 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 	/**
 	 * Generic email class
-	 * @author alisihab
-	 *
 	 */
 	protected class MailSession {
 		private EMail from = null;
 		private EMail replyto = null;
 		private List<EMail> recipients = new ArrayList<EMail>();
 		private List<MailAttachmentStream> attachmentList = new ArrayList<MailAttachmentStream>();
-		private String subject = null;
+		private String subject = getDefaultSubject();
 		private String message = null;
-		private String messageType = null;
-		private boolean messageIsBase64 = false;
+		private String messageType = getDefaultMessageType();
+		private boolean messageIsBase64 = isDefaultMessageBase64();
 		private String charSet = null;
 		private String threadTopic = null;
 		private Collection<Node> headers;
+
+		public MailSession() {
+			from = new EMail();
+			from.setAddress(getDefaultFrom());
+		}
 
 		public EMail getFrom() {
 			return from;
@@ -517,7 +523,10 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			this.replyto = replyto;
 		}
 
-		public List<EMail> getRecipientList() {
+		public List<EMail> getRecipientList() throws SenderException {
+			if (recipients == null || recipients.size() == 0) {
+				throw new SenderException("MailSender [" + getName() + "] has no recipients for message");
+			}
 			return recipients;
 		}
 

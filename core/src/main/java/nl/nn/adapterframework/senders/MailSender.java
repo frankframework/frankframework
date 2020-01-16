@@ -140,7 +140,6 @@ public class MailSender extends MailSenderBase {
 
 	private String smtpHost;
 
-	private Session session;
 	private Properties properties = new Properties();
 	private String bounceAddress;
 
@@ -155,13 +154,6 @@ public class MailSender extends MailSenderBase {
 			properties.put("mail.smtp.host", getSmtpHost());
 		} catch (Throwable t) {
 			throw new ConfigurationException("MailSender [" + getName() + "] cannot set smtpHost [" + getSmtpHost() + "] in properties");
-		}
-		//Even though this sets mail.smtp.from, this add the Return-Path header and does not overwrite the MAIL FROM header
-		if(StringUtils.isNotEmpty(getBounceAddress())) {
-			if(properties.contains("mail.smtp.from")){
-				properties.remove("mail.smtp.from");
-			}
-			properties.put("mail.smtp.from", getBounceAddress());
 		}
 		properties.put("mail.smtp.connectiontimeout", getTimeout() + "");
 		properties.put("mail.smtp.timeout", getTimeout() + "");
@@ -178,16 +170,11 @@ public class MailSender extends MailSenderBase {
 	}
 
 	/**
-	 * Create a <code>Session</code> and <code>Transport</code> to the smtp host.
+	 * Create a session to validate connectivity
 	 */
 	@Override
 	public void open() throws SenderException {
-		try {
-			getSession();
-
-		} catch (Exception e) {
-			throw new SenderException("Error opening MailSender", e);
-		}
+		createSession(); //Test connection to SMTP host
 	}
 
 	@Override
@@ -195,19 +182,34 @@ public class MailSender extends MailSenderBase {
 		return false;
 	}
 
-	protected Session getSession() {
-		if (session == null) {
-			session = Session.getInstance(properties, null);
+	/**
+	 * Create the session during runtime
+	 */
+	protected Session createSession() throws SenderException {
+		try {
+			Session session = Session.getInstance(properties, null);
 			session.setDebug(log.isDebugEnabled());
+	
+			return session;
 		}
-		return session;
+		catch (Exception e) {
+			throw new SenderException("MailSender got error", e);
+		}
 	}
 
 	@Override
 	public void sendEmail(MailSession mailSession) throws SenderException {
-		StringBuffer logBuffer = new StringBuffer();
-		MimeMessage msg = createMessage(mailSession, logBuffer);
-		sendEmail(mailSession, msg, logBuffer);
+		//Even though this sets mail.smtp.from, this add the Return-Path header and does not overwrite the MAIL FROM header
+		if(StringUtils.isNotEmpty(getBounceAddress())) {
+			if(properties.contains("mail.smtp.from")){
+				properties.remove("mail.smtp.from");
+			}
+			properties.put("mail.smtp.from", getBounceAddress());
+		}
+		Session session = createSession();
+		log.debug("created mail session ["+session+"] sending mail...");
+
+		sendEmail(session, mailSession);
 	}
 
 	private void setRecipient(MailSession mailSession, MimeMessage msg, StringBuffer sb) throws UnsupportedEncodingException, MessagingException, SenderException {
@@ -244,9 +246,9 @@ public class MailSender extends MailSenderBase {
 		} else {
 			if(log.isDebugEnabled()) log.debug("found ["+attachmentList.size()+"] attachments to attach to mailSession");
 			Multipart multipart = new MimeMultipart();
-			BodyPart messageBodyPart = new MimeBodyPart();
-			messageBodyPart.setContent(message, messageTypeWithCharset);
-			multipart.addBodyPart(messageBodyPart);
+			BodyPart messagePart = new MimeBodyPart();
+			messagePart.setContent(message, messageTypeWithCharset);
+			multipart.addBodyPart(messagePart);
 
 			int counter = 0;
 			for (MailAttachmentStream attachment : attachmentList) {
@@ -257,13 +259,14 @@ public class MailSender extends MailSenderBase {
 				}
 				log.debug("found attachment [" + attachment + "]");
 
-				messageBodyPart = new MimeBodyPart();
+				BodyPart messageBodyPart = new MimeBodyPart();
 				messageBodyPart.setFileName(name);
 
 				try {
 					ByteArrayDataSource bads = new ByteArrayDataSource(attachment.getContent(), attachment.getMimeType());
 					bads.setName(attachment.getName());
 					messageBodyPart.setDataHandler(new DataHandler(bads));
+					messageBodyPart.setHeader("Content-Transfer-Encoding", "7bit");
 				} catch (IOException e) {
 					log.error("error attaching attachment to MailSession", e);
 				}
@@ -274,12 +277,12 @@ public class MailSender extends MailSenderBase {
 		}
 	}
 
-	private String sendEmail(MailSession mailSession, MimeMessage msg, StringBuffer logBuffer) throws SenderException {
-		checkRecipientsAndSetDefaults(mailSession);
+	private String sendEmail(Session session, MailSession mailSession) throws SenderException {
+		StringBuffer logBuffer = new StringBuffer();
 
 		if (log.isDebugEnabled()) {
 			logBuffer.append("MailSender [" + getName() + "] sending message ");
-			logBuffer.append("[smtpHost=" + smtpHost);
+			logBuffer.append("[smtpHost=" + getSmtpHost());
 			logBuffer.append("[from=" + mailSession.getFrom() + "]");
 			logBuffer.append("[subject=" + mailSession.getSubject() + "]");
 			logBuffer.append("[threadTopic=" + mailSession.getThreadTopic() + "]");
@@ -289,13 +292,12 @@ public class MailSender extends MailSenderBase {
 			logBuffer.append("[attachments=" + mailSession.getAttachmentList().size() + "]");
 			log.debug(logBuffer);
 		}
-		if (mailSession.isMessageBase64() && StringUtils.isNotEmpty(mailSession.getMessage())) {
-			byte[] message = Base64.decodeBase64(mailSession.getMessage());
-			mailSession.setMessage(new String(message));
-		}
+
+		MimeMessage msg = createMessage(session, mailSession, logBuffer);
+
 
 		// send the message
-		putOnTransport(msg);
+		putOnTransport(session, msg);
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		try {
@@ -305,32 +307,9 @@ public class MailSender extends MailSenderBase {
 		} catch (Exception e) {
 			throw new SenderException("Error occurred while sending email", e);
 		}
-
 	}
 
-	private void checkRecipientsAndSetDefaults(MailSession mailSession) throws SenderException {
-		List<EMail> recipientList = mailSession.getRecipientList();
-		if (recipientList == null || recipientList.size() == 0) {
-			throw new SenderException("MailSender [" + getName() + "] has no recipients for message");
-		}
-		if (StringUtils.isEmpty(mailSession.getFrom().getAddress())) {
-			mailSession.getFrom().setAddress(getDefaultFrom());
-		}
-		if (StringUtils.isEmpty(mailSession.getSubject())) {
-			mailSession.setSubject(getDefaultSubject());
-		}
-		log.debug("MailSender [" + getName() + "] requested to send message from [" + mailSession.getFrom().getAddress()
-				+ "] subject [" + mailSession.getSubject() + "] to #recipients [" + recipientList.size() + "]");
-		if (StringUtils.isEmpty(mailSession.getMessageType())) {
-			mailSession.setMessageType(getDefaultMessageType());
-		}
-		if (mailSession.isMessageBase64()) {
-			mailSession.setMessageBase64(isDefaultMessageBase64());
-		}
-
-	}
-
-	private MimeMessage createMessage(MailSession mailSession, StringBuffer logBuffer) throws SenderException {
+	private MimeMessage createMessage(Session session, MailSession mailSession, StringBuffer logBuffer) throws SenderException {
 		MimeMessage msg = new MimeMessage(session);
 		try {
 			msg.setFrom(new InternetAddress(mailSession.getFrom().getAddress(), mailSession.getFrom().getName()));
@@ -361,6 +340,11 @@ public class MailSender extends MailSenderBase {
 		String charSet = mailSession.getCharSet();
 		String messageType = mailSession.getMessageType();
 		String messageTypeWithCharset = setCharSet(charSet, messageType);
+
+		if (mailSession.isMessageBase64() && StringUtils.isNotEmpty(mailSession.getMessage())) {
+			byte[] message = Base64.decodeBase64(mailSession.getMessage());
+			mailSession.setMessage(new String(message));
+		}
 
 		try {
 			setAttachments(mailSession, msg, messageTypeWithCharset);
@@ -419,8 +403,8 @@ public class MailSender extends MailSenderBase {
 		return messageTypeWithCharset;
 	}
 
-	protected void putOnTransport(Message msg) throws SenderException {
-		// connect to the transport 
+	private void putOnTransport(Session session, Message msg) throws SenderException {
+		// connect to the transport
 		Transport transport = null;
 		try {
 			transport = session.getTransport("smtp");
@@ -469,5 +453,4 @@ public class MailSender extends MailSenderBase {
 	public String getBounceAddress() {
 		return bounceAddress;
 	}
-
 }
