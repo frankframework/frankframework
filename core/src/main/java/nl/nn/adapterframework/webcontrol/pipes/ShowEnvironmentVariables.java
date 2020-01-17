@@ -146,8 +146,7 @@ public class ShowEnvironmentVariables extends ConfigurationBase {
 			log.warn("caught Throwable while getting EnvironmentVariables", t);
 		}
 
-		addPropertiesToXmlBuilder(environmentVariablesXml, JdbcUtil.retrieveJdbcPropertiesFromDatabase(),
-				"Jdbc Properties", propsToHide);
+		addPropertiesToXmlBuilder(environmentVariablesXml, JdbcUtil.retrieveJdbcPropertiesFromDatabase(), "Jdbc Properties", propsToHide);
 
 		storeConfiguration(session, configAll, configuration);
 
@@ -194,13 +193,16 @@ public class ShowEnvironmentVariables extends ConfigurationBase {
 		addPropertiesToXmlBuilder(container, props, setName, null);
 	}
 
-	private void addPropertiesToXmlBuilder(XmlBuilder container, Properties props, String setName,
-			List<String> propsToHide, boolean skipResolve) {
-		Enumeration<Object> enumeration = props.keys();
+	private void addPropertiesToXmlBuilder(XmlBuilder container, Properties props, String setName, List<String> propsToHide, boolean skipResolve) {
 		XmlBuilder propertySet = new XmlBuilder("propertySet");
 		propertySet.addAttribute("name", setName);
 		container.addSubElement(propertySet);
 
+		if (props==null) {
+			log.warn("properties for setName ["+setName+"] are null");
+			return;
+		}
+		Enumeration<Object> enumeration = props.keys();
 		while (enumeration.hasMoreElements()) {
 			String propName = (String) enumeration.nextElement();
 			XmlBuilder property = new XmlBuilder("property");
