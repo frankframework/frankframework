@@ -1,0 +1,8 @@
+<results>
+<result item="1">
+<XDOC xmlns:nsroot="urn:nsroot" xmlns:extraouter="urn:nsextra-outer" xmlns:nscont="urn:nscont" xmlns="urn:defns2" xmlns:ns="urn:ns2" xmlns:extrainner="urn:nsextra-inner1"><data xmlns="urn:i" xmlns:i="urn:i1"/></XDOC>
+</result>
+<result item="2">
+<XDOC xmlns:nsroot="urn:nsroot" xmlns:extraouter="urn:nsextra-outer" xmlns:nscont="urn:nscont" xmlns="urn:defns2" xmlns:ns="urn:ns2" xmlns:extrainner="urn:nsextra-inner2"><data xmlns="urn:j" xmlns:i="urn:i2"/></XDOC>
+</result>
+</results>

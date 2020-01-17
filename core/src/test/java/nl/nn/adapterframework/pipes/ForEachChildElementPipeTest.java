@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.EchoSender;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.xml.FullXmlFilter;
 
@@ -56,6 +57,15 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 			"<result item=\"3\">\n"+
 			"<sub name=\"r\">R</sub>\n"+
 			"</result>\n</results>";
+
+	private String expectedBasicNoNSBlock="<results>\n"+
+			"<result item=\"1\">\n"+
+			"<block><sub>A &amp; B</sub><sub name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub></block>\n"+
+			"</result>\n"+
+			"<result item=\"2\">\n"+
+			"<block><sub name=\"r\">R</sub></block>\n"+
+			"</result>\n</results>";
+
 
 	private String expectedBasicNoNSFirstElement="<results>\n"+
 			"<result item=\"1\">\n"+
@@ -124,6 +134,21 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().toString();
 
 		assertEquals(expectedBasicNoNS, actual);
+	}
+
+	@Test
+	public void testBlockSize() throws PipeRunException, ConfigurationException, PipeStartException {
+		pipe.setSender(getElementRenderer(null));
+		pipe.setBlockSize(2);
+		pipe.setBlockPrefix("<block>");
+		pipe.setBlockSuffix("</block>");
+		configurePipe();
+		pipe.start();
+
+		PipeRunResult prr = pipe.doPipe(messageBasicNoNS, session);
+		String actual = prr.getResult().toString();
+
+		assertEquals(expectedBasicNoNSBlock, actual);
 	}
 
 	@Test
@@ -649,7 +674,27 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		assertEquals(expectedBasicNoNS, actual);
 	}
 
-    private class SwitchCounter {
+	
+	@Test
+	public void testNoDuplicateNamespaces() throws PipeRunException, ConfigurationException, PipeStartException, IOException {
+		pipe.setSender(getElementRenderer(null));
+		pipe.setTargetElement("XDOC");
+		pipe.setRemoveNamespaces(false);
+		configurePipe();
+		pipe.start();
+
+		String input = TestFileUtils.getTestFile("/ElementFilter/NoDuplicateNamespaces/xdocs.xml");
+		String expected = TestFileUtils.getTestFile("/ElementFilter/NoDuplicateNamespaces/ForEachChildElementPipe-Result.txt");
+		PipeRunResult prr = pipe.doPipe(input, session);
+		String actual = prr.getResult().toString();
+
+		assertEquals(expected, actual);
+	}
+
+
+	
+	
+	private class SwitchCounter {
 		public int count;
 		private String prevLabel;
 		public Map<String,Integer> hitCount = new HashMap<String,Integer>();
