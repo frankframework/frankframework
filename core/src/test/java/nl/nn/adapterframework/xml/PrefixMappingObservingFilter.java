@@ -20,11 +20,6 @@ import org.xml.sax.helpers.AttributesImpl;
 
 public class PrefixMappingObservingFilter extends PrettyPrintFilter {
 
-	
-	public PrefixMappingObservingFilter() {
-		super();
-	}
-
 	@Override
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
 		AttributesImpl attributes = new AttributesImpl();
