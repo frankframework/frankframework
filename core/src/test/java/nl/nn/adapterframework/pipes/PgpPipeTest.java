@@ -26,22 +26,46 @@ public class PgpPipeTest {
 	private String[] encryptParams, decryptParams;
 
 	private final String MESSAGE = "My Secret!!";
+	private final String PGP_FOLDER = "src/test/resources/PGP/";
 
-	private static final String PGP_FOLDER = "src/test/resources/PGP/";
 	private static final String[] sender = {"test@ibissource.org", "ibistest", "first/private.asc", "first/public.asc", "first/public.asc;second/public.asc"};
 	private static final String[] recipient = {"second@ibissource.org", "secondtest", "second/private.asc", "second/public.asc", "first/public.asc;second/public.asc"};
 
 	@Parameterized.Parameters(name = "{index} - {0} - {1}")
 	public static Collection<Object[]> data() {
+		// List of the parameters for pipes is as follows:
 		// action, secretkey, password, publickey, senders, recipients
-
 		return Arrays.asList(new Object[][]{
-				{"Encrypt&Sign then Decrypt&Verify", "success",
+				{"Sign then Verify", "success",
 						new String[]{"sign", sender[2], sender[1], sender[4], sender[0], recipient[0]},
 						new String[]{"verify", recipient[2], recipient[1], recipient[4], sender[0], recipient[0]}},
-//				{"Same Key", "success",
-//						new String[]{sender[0], sender[1], sender[2], sender[0], sender[3]},
-//						new String[]{sender[0], sender[1], sender[2], sender[3]}},
+				{"Encrypt then Decrypt", "success",
+						new String[]{"encrypt", null, null, recipient[3], null, recipient[0]},
+						new String[]{"dEcryPt", recipient[2], recipient[1], null, null, null}},
+				{"Sign then Decrypt", "success",
+						new String[]{"sign", sender[2], sender[1], sender[4], sender[0], recipient[0]},
+						new String[]{"decrypt", recipient[2], recipient[1], null, null, null}},
+				{"Verify Someone Signed", "success",
+						new String[]{"sign", sender[2], sender[1], sender[4], sender[0], recipient[0]},
+						new String[]{"verify", recipient[2], recipient[1], recipient[4], null, recipient[0]}},
+				{"Encrypt then Verify", "org.bouncycastle.openpgp.PGPException",
+						new String[]{"encrypt", null, null, recipient[3], null, recipient[0]},
+						new String[]{"verify", recipient[2], recipient[1], recipient[4], sender[0], recipient[0]}},
+				{"Sign wrong params", "nl.nn.adapterframework.configuration.ConfigurationException",
+						new String[]{"sign", null, null, recipient[3], null, recipient[0]},
+						new String[]{"decrypt", recipient[2], recipient[1], null, null, null}},
+				{"Null action", "nl.nn.adapterframework.configuration.ConfigurationException",
+						new String[]{null, null, null, recipient[3], null, recipient[0]},
+						new String[]{"decrypt", recipient[2], recipient[1], null, null, null}},
+				{"Non-existing action", "nl.nn.adapterframework.configuration.ConfigurationException",
+						new String[]{"non-existing action", null, null, recipient[3], null, recipient[0]},
+						new String[]{"decrypt", recipient[2], recipient[1], null, null, null}},
+				{"Wrong password", "org.bouncycastle.openpgp.PGPException",
+						new String[]{"encrypt", null, null, recipient[3], null, recipient[0]},
+						new String[]{"decrypt", recipient[2], "wrong password :/", null, null, null}},
+				{"Decrypt Plaintext", "org.bouncycastle.openpgp.PGPException",
+						new String[]{"decrypt", recipient[2], recipient[1], null, null, null},
+						new String[]{"decrypt", recipient[2], recipient[1], null, null, null}},
 		});
 	}
 
@@ -55,17 +79,22 @@ public class PgpPipeTest {
 	@Test
 	public void dotest() throws Throwable {
 		try {
+			// Configure pipes
 			configurePipe(encryptPipe, encryptParams);
 			configurePipe(decryptPipe, decryptParams);
 
+			// Encryption phase
 			PipeRunResult encryptionResult = encryptPipe.doPipe(MESSAGE, session);
+
+			// Make sure it's PGP message
 			OutputStream mid = (OutputStream) encryptionResult.getResult();
-			System.out.println(mid.toString());
 			assertMessage(mid.toString(), MESSAGE);
+
+			// Decryption phase
 			PipeRunResult decryptionResult = decryptPipe.doPipe(encryptionResult.getResult(), session);
 			OutputStream result = (OutputStream) decryptionResult.getResult();
-			System.out.println(result.toString());
 
+			// Assert decrypted message equals to the original message
 			Assert.assertEquals(MESSAGE, result.toString());
 			Assert.assertEquals("success", expectation);
 		} catch (Exception e) {
@@ -77,6 +106,9 @@ public class PgpPipeTest {
 		}
 	}
 
+	/**
+	 * Creates pipes and pipeline session base for testing.
+	 */
 	public void setup() {
 		session = new PipeLineSessionBase();
 
@@ -90,6 +122,12 @@ public class PgpPipeTest {
 		decryptPipe.setName(decryptPipe.getClass().getSimpleName() + " under test");
 	}
 
+	/**
+	 * Sets the parameters of the pipes
+	 * @param pipe Pipe to be configured.
+	 * @param params Parameters to be set.
+	 * @throws ConfigurationException When there's an exception during configuration.
+	 */
 	private void configurePipe(PGPPipe pipe, String[] params) throws ConfigurationException {
 		// Just so we dont have to change numbers every time we change order.
 		int i = 0;
@@ -102,7 +140,14 @@ public class PgpPipeTest {
 		pipe.configure();
 	}
 
+	/**
+	 * Adds folder's path to every file in the given parameters.
+	 * @param param A list of files separated by semicolon.
+	 * @return A list of files separated by semicolon including the parent folder's path.
+	 */
 	private String addFolderPath(String param) {
+		if (param == null)
+			return null;
 		String[] keys = param.split(";");
 		StringBuilder stringBuilder = new StringBuilder(param.length() + PGP_FOLDER.length() * keys.length);
 		for(int i = 0; i < keys.length; i++) {
@@ -114,6 +159,13 @@ public class PgpPipeTest {
 		return stringBuilder.toString();
 	}
 
+	/**
+	 * Recursively check if the exception thrown is equal to the exception expected.
+	 * @param t Throwable to be checked.
+	 * @param c Class to be checked
+	 * @return True if one of the causes of the exception is the given class, false otherwise.
+	 * @throws Throwable Input t when class is not found.
+	 */
 	private boolean checkExceptionClass(Throwable t, String c) throws Throwable {
 		try {
 			return checkExceptionClass(t, Class.forName(c));
@@ -124,6 +176,12 @@ public class PgpPipeTest {
 		}
 	}
 
+	/**
+	 * Recursively check if the exception thrown is equal to the exception expected.
+	 * @param t Throwable to be checked.
+	 * @param c Class to be checked
+	 * @return True if one of the causes of the exception is the given class, false otherwise.
+	 */
 	private boolean checkExceptionClass(Throwable t, Class c) {
 		if (c.isInstance(t)) {
 			return true;
@@ -133,6 +191,11 @@ public class PgpPipeTest {
 		return false;
 	}
 
+	/**
+	 * Asserts that the message is a PGP message, and that it does not contain the secret message.
+	 * @param message Encrypted message
+	 * @param secretMessage Plaintext of the same message.
+	 */
 	private void assertMessage(String message, String secretMessage) {
 		Assert.assertTrue("Message does not comply with PGP message beginning.", message.startsWith("-----BEGIN PGP MESSAGE-----"));
 		Assert.assertFalse("Encrypted version contains the secret message.", message.contains(secretMessage));
