@@ -3,8 +3,8 @@
 		<prefix-nscont uri="urn:nscont" xmlns:extraouter="urn:nsextra-outer">
 			<prefix- uri="urn:defns2" xmlns:nscont="urn:nscont">
 				<prefix-ns uri="urn:ns2" xmlns="urn:defns2">
-					<prefix-extrainner uri="urn:nsextra-inner" xmlns:ns="urn:ns2">
-						<XDOC xmlns:extrainner="urn:nsextra-inner">
+					<prefix-extrainner uri="urn:nsextra-inner1" xmlns:ns="urn:ns2">
+						<XDOC xmlns:extrainner="urn:nsextra-inner1">
 							<prefix- uri="urn:i">
 								<prefix-i uri="urn:i1" xmlns="urn:i">
 									<data xmlns:i="urn:i1"/>
@@ -22,8 +22,8 @@
 		<prefix-nscont uri="urn:nscont" xmlns:extraouter="urn:nsextra-outer">
 			<prefix- uri="urn:defns2" xmlns:nscont="urn:nscont">
 				<prefix-ns uri="urn:ns2" xmlns="urn:defns2">
-					<prefix-extrainner uri="urn:nsextra-inner" xmlns:ns="urn:ns2">
-						<XDOC xmlns:extrainner="urn:nsextra-inner">
+					<prefix-extrainner uri="urn:nsextra-inner2" xmlns:ns="urn:ns2">
+						<XDOC xmlns:extrainner="urn:nsextra-inner2">
 							<prefix- uri="urn:j">
 								<prefix-i uri="urn:i2" xmlns="urn:j">
 									<data xmlns:i="urn:i2"/>

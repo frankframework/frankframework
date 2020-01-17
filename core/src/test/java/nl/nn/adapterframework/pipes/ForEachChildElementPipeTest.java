@@ -58,6 +58,15 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 			"<sub name=\"r\">R</sub>\n"+
 			"</result>\n</results>";
 
+	private String expectedBasicNoNSBlock="<results>\n"+
+			"<result item=\"1\">\n"+
+			"<block><sub>A &amp; B</sub><sub name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub></block>\n"+
+			"</result>\n"+
+			"<result item=\"2\">\n"+
+			"<block><sub name=\"r\">R</sub></block>\n"+
+			"</result>\n</results>";
+
+
 	private String expectedBasicNoNSFirstElement="<results>\n"+
 			"<result item=\"1\">\n"+
 			"<sub>A &amp; B</sub>\n"+
@@ -125,6 +134,21 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().toString();
 
 		assertEquals(expectedBasicNoNS, actual);
+	}
+
+	@Test
+	public void testBlockSize() throws PipeRunException, ConfigurationException, PipeStartException {
+		pipe.setSender(getElementRenderer(null));
+		pipe.setBlockSize(2);
+		pipe.setBlockPrefix("<block>");
+		pipe.setBlockSuffix("</block>");
+		configurePipe();
+		pipe.start();
+
+		PipeRunResult prr = pipe.doPipe(messageBasicNoNS, session);
+		String actual = prr.getResult().toString();
+
+		assertEquals(expectedBasicNoNSBlock, actual);
 	}
 
 	@Test

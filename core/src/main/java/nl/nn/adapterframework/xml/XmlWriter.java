@@ -321,6 +321,10 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 //		System.out.println("endEntity ["+arg0+"]");
 	}
 
+	public Writer getWriter() {
+		return writer;
+	}
+
 	@Override
 	public String toString() {
 		return writer.toString();

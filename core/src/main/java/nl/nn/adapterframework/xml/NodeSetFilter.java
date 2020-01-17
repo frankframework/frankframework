@@ -69,10 +69,16 @@ public class NodeSetFilter extends FullXmlFilter {
 		log.debug("ElementFilter targetNamespace ["+targetNamespace+"] targetElement ["+this.targetElement+"]");
 	}
 
-	public void beforeNode(String uri, String localName, String qName) throws SAXException {
+	/**
+	 * Called before processing of each node of the NodeSet is started.
+	 */
+	public void startNode(String uri, String localName, String qName) throws SAXException {
 		
 	}
-	public void afterNode(String uri, String localName, String qName) throws SAXException {
+	/**
+	 * Called every time the processing of a node of the NodeSet has finished.
+	 */
+	public void endNode(String uri, String localName, String qName) throws SAXException {
 		
 	}
 	
@@ -128,7 +134,7 @@ public class NodeSetFilter extends FullXmlFilter {
 		if (level>1 || (includeTarget && level==1) || (includeRoot && globalLevel==0)) {
 			if (!copying) {
 				copying=true;
-				beforeNode(uri, localName, qName);;
+				startNode(uri, localName, qName);;
 				for (int i=0; i<pendingNamespaceDefinitions.size(); i++) {
 					PrefixMapping mapping=pendingNamespaceDefinitions.get(i);
 					if (!mappingIsOverridden(mapping, i)) {
@@ -156,7 +162,7 @@ public class NodeSetFilter extends FullXmlFilter {
 					}
 				}
 				log.debug("removed pending prefix mappings");
-				afterNode(uri, localName, qName);;
+				endNode(uri, localName, qName);;
 				copying=false;
 			}
 		}

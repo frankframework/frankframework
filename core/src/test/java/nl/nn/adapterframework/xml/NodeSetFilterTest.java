@@ -164,13 +164,13 @@ public class NodeSetFilterTest {
 		NodeSetFilter nodeSetFilter = new NodeSetFilter(XmlUtils.getNamespaceMap(namespaceDefs), targetElement, true, false) {
 
 			@Override
-			public void beforeNode(String uri, String localName, String qName) throws SAXException {
+			public void startNode(String uri, String localName, String qName) throws SAXException {
 				String msg = "before node ["+qName+"]";
 				comment(msg.toCharArray(), 0, msg.length());
 			}
 
 			@Override
-			public void afterNode(String uri, String localName, String qName) throws SAXException {
+			public void endNode(String uri, String localName, String qName) throws SAXException {
 				String msg = "after node ["+qName+"]";
 				comment(msg.toCharArray(), 0, msg.length());
 			}
@@ -192,13 +192,13 @@ public class NodeSetFilterTest {
 		NodeSetFilter nodeSetFilter = new NodeSetFilter(XmlUtils.getNamespaceMap(namespaceDefs), containerElement, false, false) {
 
 			@Override
-			public void beforeNode(String uri, String localName, String qName) throws SAXException {
+			public void startNode(String uri, String localName, String qName) throws SAXException {
 				String msg = "before node ["+qName+"]";
 				comment(msg.toCharArray(), 0, msg.length());
 			}
 
 			@Override
-			public void afterNode(String uri, String localName, String qName) throws SAXException {
+			public void endNode(String uri, String localName, String qName) throws SAXException {
 				String msg = "after node ["+qName+"]";
 				comment(msg.toCharArray(), 0, msg.length());
 			}
