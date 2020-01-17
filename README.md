@@ -1,3 +1,9 @@
+
+[![Build Status](https://api.travis-ci.org/ibissource/iaf.svg?branch=master)](https://travis-ci.org/ibissource/iaf)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/ibissource/iaf/blob/master/LICENSE)
+[![Maven Central](https://img.shields.io/maven-central/v/org.ibissource/ibis-adapterframework-parent.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:org.ibissource)
+[![codecov](https://codecov.io/gh/ibissource/iaf/branch/master/graph/badge.svg)](https://codecov.io/gh/ibissource/iaf)
+
 Community website
 =================
 
@@ -19,8 +25,6 @@ Some example XML configurations:
 - [ManageDatabase](core/src/main/resources/IAF_Util/ConfigurationManageDatabase.xml)
 
 See them in action: http://ibis4example.ibissource.org/
-
-[![Maven Central](https://img.shields.io/maven-central/v/org.ibissource/ibis-adapterframework-parent.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:org.ibissource)
 
 
 Releases

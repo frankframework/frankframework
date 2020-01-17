@@ -3,6 +3,10 @@ language: java
 jdk:
   - openjdk7
 
+env:
+  global:
+    - CODECOV_TOKEN="91050754-6f0f-43b0-8ce6-fc0ee43afbe7"
+
 # Skip separate install phase as for some reason running the two default phases
 # on Travis seem to cause the second phases to select the wrong profile
 # (doesn't happen locally when running the exact same commands). And with maven
@@ -10,7 +14,9 @@ jdk:
 # Default install phase: mvn install -DskipTests=true -B
 # Default script phase: mvn test -B
 install: echo 'Skipping separate install phase'
-script: mvn install -B -Dmaven.javadoc.skip=true
+script:
+  - mvn install -B -Dmaven.javadoc.skip=true
+  - mvn cobertura:cobertura
 
 notifications:
   email:
