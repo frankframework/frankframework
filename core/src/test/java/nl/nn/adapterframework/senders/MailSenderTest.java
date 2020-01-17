@@ -3,10 +3,13 @@ package nl.nn.adapterframework.senders;
 import javax.mail.Provider;
 import javax.mail.Session;
 import javax.mail.Provider.Type;
+
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.senders.mail.MailSenderTestBase;
 import nl.nn.adapterframework.senders.mail.TransportMock;
+
 import org.junit.Test;
 
 public class MailSenderTest extends MailSenderTestBase<MailSender> {

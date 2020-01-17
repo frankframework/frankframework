@@ -54,6 +54,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	private String defaultSubject;
 	private String defaultFrom;
 	private int timeout = 20000;
+	private String bounceAddress;
 
 	protected abstract void sendEmail(MailSession mailSession) throws SenderException;
 
@@ -320,6 +321,9 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		Element headersElement = XmlUtils.getFirstChildTag(emailElement, "headers");
 		Collection<Node> headers = headersElement == null ? null : XmlUtils.getChildTags(headersElement, "header");
 
+		String bounceAddress = XmlUtils.getChildTagAsString(emailElement, "bounceAddress");
+		mailSession.setBounceAddress(bounceAddress);
+
 		EMail emailFrom = getFrom(from);
 		mailSession.setFrom(emailFrom);
 		mailSession.setSubject(subject);
@@ -486,6 +490,14 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return defaultMessageBase64;
 	}
 
+	@IbisDoc({ "NDR return address when mail cannot be delivered. This adds a Return-Path header", "MAIL FROM attribute" })
+	public void setBounceAddress(String string) {
+		bounceAddress = string;
+	}
+	public String getBounceAddress() {
+		return bounceAddress;
+	}
+
 	/**
 	 * Generic email class
 	 */
@@ -501,6 +513,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		private String charSet = null;
 		private String threadTopic = null;
 		private Collection<Node> headers;
+		private String bounceAddress = getBounceAddress();
 
 		public MailSession() {
 			from = new EMail();
@@ -596,6 +609,14 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 		public void setHeaders(Collection<Node> headers) {
 			this.headers = headers;
+		}
+
+		public void setBounceAddress(String bounceAddress) {
+			this.bounceAddress = bounceAddress;
+		}
+
+		public String getBounceAddress() {
+			return this.bounceAddress;
 		}
 	}
 

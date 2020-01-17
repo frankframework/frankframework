@@ -1,10 +1,18 @@
-package nl.nn.adapterframework.senders;
+package nl.nn.adapterframework.senders.mail;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,10 +21,16 @@ import javax.mail.internet.MimeMessage;
 
 import org.junit.Test;
 
+import com.sun.mail.smtp.SMTPMessage;
+
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.senders.MailSender;
+import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.TestAssertions;
 
@@ -106,6 +120,13 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		sender.addParameter(parameter);
 	}
 
+	private void validateNDR(Session session, String ndr) {
+		String from = session.getProperty("mail.smtp.from");
+		log.debug("mail NDR address ["+from+"]");
+
+		assertEquals(ndr, from);
+	}
+
 	@Test
 	public void mailWithMultipleRecipients() throws Exception {
 		String mailInput = "<email>"
@@ -136,6 +157,7 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		assertEquals("localhost", session.getProperty("mail.smtp.host"));
 
 		MimeMessage message = (MimeMessage) session.getProperties().get("MimeMessage");
+		validateAuthentication(session);
 		compare("mailWithMultipleRecipients.txt", message);
 	}
 
@@ -163,6 +185,7 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		assertEquals("localhost", session.getProperty("mail.smtp.host"));
 
 		MimeMessage message = (MimeMessage) session.getProperties().get("MimeMessage");
+		validateAuthentication(session);
 		compare("mailWithBase64Message.txt", message);
 	}
 
@@ -214,6 +237,7 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		assertEquals("localhost", session.getProperty("mail.smtp.host"));
 
 		MimeMessage message = (MimeMessage) session.getProperties().get("MimeMessage");
+		validateAuthentication(session);
 		compare("mailWithAttachment.txt", message);
 	}
 
@@ -244,6 +268,7 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		assertEquals("localhost", session.getProperty("mail.smtp.host"));
 
 		MimeMessage message = (MimeMessage) session.getProperties().get("MimeMessage");
+		validateAuthentication(session);
 		compare("mailWithBase64Attachment.txt", message);
 	}
 
@@ -274,6 +299,7 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		assertEquals("localhost", session.getProperty("mail.smtp.host"));
 
 		MimeMessage message = (MimeMessage) session.getProperties().get("MimeMessage");
+		validateAuthentication(session);
 		compare("mailWithBase64MessageAndAttachment.txt", message);
 	}
 
@@ -348,6 +374,139 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 		assertEquals("localhost", session.getProperty("mail.smtp.host"));
 
 		MimeMessage message = (MimeMessage) session.getProperties().get("MimeMessage");
+		validateAuthentication(session);
 		compare("mailWithPRCAttachmentsFromSession.txt", message);
+	}
+
+	@Test
+	public void mailWithNDR() throws Exception {
+		if(!(sender instanceof MailSender)) return;
+
+		String mailInput = "<email>"
+				+ "<recipients>"
+					+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
+				+ "</recipients>"
+				+ "<subject>My Subject</subject>"
+				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
+				+ "<message>My Message Goes Here</message>"
+				+ "<messageType>text/plain</messageType>"
+				+ "<replyTo>to@address.com</replyTo>"
+				+ "<charset>UTF-8</charset>"
+			+ "</email>";
+
+		if(sender instanceof MailSender) {
+			((MailSender) sender).setBounceAddress("my@bounce.nl");
+		}
+
+		sender.configure();
+		sender.open();
+
+		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
+		sender.sendMessage(null, mailInput, prc);
+		Session session = (Session) prc.getSession().get("mailSession");
+		assertEquals("localhost", session.getProperty("mail.smtp.host"));
+
+		MimeMessage message = (MimeMessage) session.getProperties().get("MimeMessage");
+		validateAuthentication(session);
+		validateNDR(session, "my@bounce.nl");
+		compare("mailWithNDR.txt", message);
+	}
+
+	@Test
+	public void mailWithDynamicNDR() throws Exception {
+		if(!(sender instanceof MailSender)) return;
+
+		String mailInput = "<email>"
+				+ "<recipients>"
+					+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
+				+ "</recipients>"
+				+ "<subject>My Subject</subject>"
+				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
+				+ "<message>My Message Goes Here</message>"
+				+ "<messageType>text/plain</messageType>"
+				+ "<replyTo>to@address.com</replyTo>"
+				+ "<charset>UTF-8</charset>"
+				+ "<bounceAddress>my@bounce.nl</bounceAddress>"
+			+ "</email>";
+
+		sender.configure();
+		sender.open();
+
+		ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, session);
+		sender.sendMessage(null, mailInput, prc);
+		Session session = (Session) prc.getSession().get("mailSession");
+		assertEquals("localhost", session.getProperty("mail.smtp.host"));
+
+		SMTPMessage message = (SMTPMessage) session.getProperties().get("MimeMessage");
+		validateAuthentication(session);
+		assertEquals("my@bounce.nl", message.getEnvelopeFrom());
+		compare("mailWithNDR.txt", message);
+	}
+
+	@Test
+	public void parallelMailWithNDR() throws Throwable {
+		if(!(sender instanceof MailSender)) return;
+
+		final String mailInput = "<email>"
+				+ "<recipients>"
+					+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
+				+ "</recipients>"
+				+ "<subject>My Subject</subject>"
+				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
+				+ "<message>My Message Goes Here</message>"
+				+ "<messageType>text/plain</messageType>"
+				+ "<replyTo>to@address.com</replyTo>"
+				+ "<charset>UTF-8</charset>"
+			+ "</email>";
+
+		int threads = 50;
+		ExecutorService service = Executors.newFixedThreadPool(10);
+		Collection<Future<Session>> futures = new ArrayList<>(threads);
+		for (int t = 0; t < threads; ++t) {
+			Callable<Session> task = new Callable<Session>() {
+				@Override
+				public Session call() throws Exception {
+					ISenderWithParameters sender2 = createSender();
+					String bounce = "my"+Math.random()+"@bounce.com";
+					((MailSender) sender2).setBounceAddress(bounce);
+
+					sender2.configure();
+					sender2.open();
+
+					ParameterResolutionContext prc = new ParameterResolutionContext(mailInput, new PipeLineSessionBase());
+					sender2.sendMessage(null, mailInput, prc);
+					Session session = (Session) prc.getSession().get("mailSession");
+					session.getProperties().setProperty("bounce", bounce);
+
+					ParameterResolutionContext prc2 = new ParameterResolutionContext(mailInput, new PipeLineSessionBase());
+					sender2.sendMessage(null, mailInput, prc2);
+					Session session2 = (Session) prc.getSession().get("mailSession");
+					assertEquals("same session should be used", session, session2);
+					validateNDR(session, bounce);
+					validateNDR(session2, bounce);
+
+					return session;
+				}
+			};
+			futures.add(service.submit(task));
+		}
+
+		List<Session> sessions = new ArrayList<Session>();
+		for (Future<Session> sessionFuture : futures) {
+			try {
+				Session session = sessionFuture.get();
+				assertFalse("session ["+session+"] should not already exist", sessions.contains(session));
+
+				validateAuthentication(session);
+				validateNDR(session, session.getProperty("bounce"));
+				MimeMessage message = (MimeMessage) session.getProperties().get("MimeMessage");
+				compare("mailWithNDR.txt", message);
+
+				sessions.add(session);
+			} catch (Exception e) {
+				throw e.getCause();
+			}
+		}
+		assertEquals(threads, sessions.size());
 	}
 }

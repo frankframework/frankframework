@@ -41,6 +41,8 @@ import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import com.sun.mail.smtp.SMTPMessage;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -139,9 +141,8 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class MailSender extends MailSenderBase {
 
 	private String smtpHost;
-
 	private Properties properties = new Properties();
-	private String bounceAddress;
+	private Session session = null;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -149,12 +150,8 @@ public class MailSender extends MailSenderBase {
 		if (StringUtils.isEmpty(getSmtpHost())) {
 			throw new ConfigurationException("MailSender [" + getName() + "] has no smtpHost configured");
 		}
-		properties.putAll(System.getProperties());
-		try {
-			properties.put("mail.smtp.host", getSmtpHost());
-		} catch (Throwable t) {
-			throw new ConfigurationException("MailSender [" + getName() + "] cannot set smtpHost [" + getSmtpHost() + "] in properties");
-		}
+
+		properties.put("mail.smtp.host", getSmtpHost());
 		properties.put("mail.smtp.connectiontimeout", getTimeout() + "");
 		properties.put("mail.smtp.timeout", getTimeout() + "");
 		String userId = getCredentialFactory().getUsername();
@@ -163,9 +160,12 @@ public class MailSender extends MailSenderBase {
 			properties.put("mail.smtp.user", userId);
 			properties.put("mail.smtp.password", getCredentialFactory().getPassword());
 		}
-
-		if (paramList != null) {
-			paramList.configure();
+		//Even though this is called mail.smtp.from, it actually adds the Return-Path header and does not overwrite the MAIL FROM header
+		if(StringUtils.isNotEmpty(getBounceAddress())) {
+			if(properties.contains("mail.smtp.from")){
+				properties.remove("mail.smtp.from"); //Make sure it's not set twice?
+			}
+			properties.put("mail.smtp.from", getBounceAddress());
 		}
 	}
 
@@ -187,9 +187,11 @@ public class MailSender extends MailSenderBase {
 	 */
 	protected Session createSession() throws SenderException {
 		try {
-			Session session = Session.getInstance(properties, null);
-			session.setDebug(log.isDebugEnabled());
-	
+			if(session == null) {
+				session = Session.getInstance(properties, null);
+				session.setDebug(log.isDebugEnabled());
+			}
+
 			return session;
 		}
 		catch (Exception e) {
@@ -199,16 +201,8 @@ public class MailSender extends MailSenderBase {
 
 	@Override
 	public void sendEmail(MailSession mailSession) throws SenderException {
-		//Even though this sets mail.smtp.from, this add the Return-Path header and does not overwrite the MAIL FROM header
-		if(StringUtils.isNotEmpty(getBounceAddress())) {
-			if(properties.contains("mail.smtp.from")){
-				properties.remove("mail.smtp.from");
-			}
-			properties.put("mail.smtp.from", getBounceAddress());
-		}
 		Session session = createSession();
-		log.debug("created mail session ["+session+"] sending mail...");
-
+		log.debug("sending mail using session ["+session+"]");
 		sendEmail(session, mailSession);
 	}
 
@@ -310,7 +304,7 @@ public class MailSender extends MailSenderBase {
 	}
 
 	private MimeMessage createMessage(Session session, MailSession mailSession, StringBuffer logBuffer) throws SenderException {
-		MimeMessage msg = new MimeMessage(session);
+		SMTPMessage msg = new SMTPMessage(session);
 		try {
 			msg.setFrom(new InternetAddress(mailSession.getFrom().getAddress(), mailSession.getFrom().getName()));
 		} catch (Exception e) {
@@ -329,6 +323,10 @@ public class MailSender extends MailSenderBase {
 			} catch (MessagingException e) {
 				throw new SenderException("Error occurred while setting thread topic", e);
 			}
+		}
+
+		if (StringUtils.isNotEmpty(mailSession.getBounceAddress())) {
+			msg.setEnvelopeFrom(mailSession.getBounceAddress());
 		}
 
 		try {
@@ -408,17 +406,13 @@ public class MailSender extends MailSenderBase {
 		Transport transport = null;
 		try {
 			transport = session.getTransport("smtp");
-			transport.connect(getSmtpHost(), getCredentialFactory().getUsername(),
-					getCredentialFactory().getPassword());
+			transport.connect(getSmtpHost(), getCredentialFactory().getUsername(), getCredentialFactory().getPassword());
 			if (log.isDebugEnabled()) {
 				log.debug("MailSender [" + getName() + "] connected transport to URL [" + transport.getURLName() + "]");
 			}
 			transport.sendMessage(msg, msg.getAllRecipients());
-			transport.close();
 		} catch (Exception e) {
-			throw new SenderException(
-					"MailSender [" + getName() + "] cannot connect send message to smtpHost [" + getSmtpHost() + "]",
-					e);
+			throw new SenderException("MailSender [" + getName() + "] cannot connect send message to smtpHost [" + getSmtpHost() + "]", e);
 		} finally {
 			if (transport != null) {
 				try {
@@ -444,13 +438,5 @@ public class MailSender extends MailSenderBase {
 
 	public void setProperties(Properties properties) {
 		this.properties = properties;
-	}
-
-	@IbisDoc({ "NDR return address when mail cannot be delivered. This adds a Return-Path header", "MAIL FROM attribute" })
-	public void setBounceAddress(String string) {
-		bounceAddress = string;
-	}
-	public String getBounceAddress() {
-		return bounceAddress;
 	}
 }

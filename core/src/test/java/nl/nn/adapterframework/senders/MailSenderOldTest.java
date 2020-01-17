@@ -9,6 +9,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.senders.mail.MailSenderTestBase;
 import nl.nn.adapterframework.senders.mail.TransportMock;
 
 public class MailSenderOldTest extends MailSenderTestBase<MailSenderOld> {
