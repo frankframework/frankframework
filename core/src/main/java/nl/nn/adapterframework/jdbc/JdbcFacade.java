@@ -17,10 +17,8 @@ package nl.nn.adapterframework.jdbc;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Map;
 
 import javax.naming.NamingException;
@@ -28,22 +26,21 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
 import nl.nn.adapterframework.jms.JNDIBase;
-import nl.nn.adapterframework.parameters.ParameterValue;
-import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.parameters.SimpleParameter;
 import nl.nn.adapterframework.task.TimeoutGuard;
-import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
  * Provides functions for JDBC connections.
@@ -64,9 +61,10 @@ import nl.nn.adapterframework.util.JdbcUtil;
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
 	
 	private String name;
-    private String username=null;
-    private String password=null;
-    
+	private String authAlias = null;
+	private String username = null;
+	private String password = null;
+
 	private Map<String,DataSource> proxiedDataSources = null;
 	private DataSource datasource = null;
 	private String datasourceName = null;
@@ -77,11 +75,24 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	private IDbmsSupportFactory dbmsSupportFactoryDefault=null;
 	private IDbmsSupportFactory dbmsSupportFactory=null;
 	private IDbmsSupport dbmsSupport=null;
+	private boolean credentialsConfigured=false;
+	private CredentialFactory cf=null;
 
 	protected String getLogPrefix() {
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
 	}
 
+	public void configure() throws ConfigurationException {
+		configureCredentials();
+	}
+
+	public void configureCredentials() {
+		if (StringUtils.isNotEmpty(getUsername()) || StringUtils.isNotEmpty(getAuthAlias())) {
+			cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+		}
+		credentialsConfigured=true;
+	}
+	
 	public void setProxiedDataSources(Map<String,DataSource> proxiedDataSources) {
 		this.proxiedDataSources = proxiedDataSources;
 	}
@@ -220,10 +231,13 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	 */
 	// TODO: consider making this one protected.
 	public Connection getConnection() throws JdbcException {
+		if (!credentialsConfigured) { // 2020-01-15 have to use this hack here, as configure() method is introduced just now in JdbcFacade, and not all code is aware of it.
+			configureCredentials(); 
+		}
 		DataSource ds=getDatasource();
 		try {
-			if (StringUtils.isNotEmpty(getUsername())) {
-				return ds.getConnection(getUsername(),getPassword());
+			if (cf!=null) {
+				return ds.getConnection(cf.getUsername(), cf.getPassword());
 			}
 			return ds.getConnection();
 		} catch (SQLException e) {
@@ -267,22 +281,8 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return result;
 	}
 
-	protected void applyParameters(PreparedStatement statement, ParameterValueList parameters) throws SQLException, JdbcException {
-		for (int i = 0; i < parameters.size(); i++) {
-			ParameterValue pv = parameters.getParameterValue(i);
-			JdbcUtil.applyParameter(statement, new SimpleParameter(pv.getDefinition().getName(), pv.getDefinition().getType(), pv.getValue()), i + 1);
-		}
-	}	
 
-	protected void applySimpleParameters(PreparedStatement statement, List<SimpleParameter> simpleParameterList) throws SQLException, JdbcException {
-		for (int i = 0; i < simpleParameterList.size(); i++) {
-			JdbcUtil.applyParameter(statement, simpleParameterList.get(i), i + 1);
-		}
-	}
-
-	/**
-	 * Sets the name of the object.
-	 */
+	@IbisDoc({"1", "Name of the sender", ""})
 	@Override
 	public void setName(String name) {
 		this.name = name;
@@ -292,33 +292,23 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return name;
 	}
 
-	/**
-	 * Sets the JNDI name of datasource that is used when {@link #isTransacted()} returns <code>false</code> 
-	 */
+	@IbisDoc({"2", "JNDI name of datasource to be used", ""})
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;
 	}
 	public String getDatasourceName() {
 		return datasourceName;
 	}
-	/**
-	 * Sets the JNDI name of datasource that is used when {@link #isTransacted()} returns <code>true</code> 
-	 */
-	public void setDatasourceNameXA(String datasourceNameXA) {
-		if (StringUtils.isNotEmpty(datasourceNameXA)) {
-			throw new IllegalArgumentException(getLogPrefix()+"use of attribute 'datasourceNameXA' is no longer supported. The datasource can now only be specified using attribute 'datasourceName'");
-		}
-//		this.datasourceNameXA = datasourceNameXA;
-	}
-//	public String getDatasourceNameXA() {
-//		return datasourceNameXA;
-//	}
 
-	/**
-	 * Sets the user name that is used to open the database connection.
-	 * If a value is set, it will be used together with the (@link #setPassword(String) specified password} 
-	 * to open the connection to the database.
-	 */
+
+	@IbisDoc({ "3", "Authentication alias used to authenticate when connecting to database", "" })
+	public void setAuthAlias(String authAlias) {
+		this.authAlias = authAlias;
+	}
+	public String getAuthAlias() {
+		return authAlias;
+	}
+	@IbisDoc({"4", "User name for authentication when connecting to database, when none found from <code>authAlias</code>", ""})
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -326,10 +316,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return username;
 	}
 
-	/**
-	 * Sets the password that is used to open the database connection.
-	 * @see #setPassword(String)
-	 */
+	@IbisDoc({"5", "Password for authentication when connecting to database, when none found from <code>authAlias</code>", ""})
 	public void setPassword(String password) {
 		this.password = password;
 	}
@@ -348,6 +335,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return transacted;
 	}
 
+	@IbisDoc({"6", "informs the sender that the obtained connection is from a pool", "true"})
 	public boolean isConnectionsArePooled() {
 		return connectionsArePooled || isTransacted();
 	}
