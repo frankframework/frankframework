@@ -6,7 +6,6 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.unmanaged.SpringJmsConnector;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,12 +15,12 @@ import java.io.OutputStream;
 import java.util.Collection;
 
 @RunWith(Parameterized.class)
-public class PgpPipesTest {
+public class PgpPipeTest {
 
 	private IPipeLineSession session;
 
-	protected PGPSignAndEncryptPipe encryptPipe;
-	protected PGPDecryptAndVerifyPipe decryptPipe;
+	protected PGPPipe encryptPipe;
+	protected PGPPipe decryptPipe;
 
 	private String expectation;
 	private String[] encryptParams, decryptParams;
@@ -58,7 +57,7 @@ public class PgpPipesTest {
 		});
 	}
 
-	public PgpPipesTest(String name, String expectation, String[] encryptParams, String[] decryptParams) {
+	public PgpPipeTest(String name, String expectation, String[] encryptParams, String[] decryptParams) {
 		setup();
 		this.expectation = expectation;
 		this.encryptParams = encryptParams;
@@ -93,8 +92,8 @@ public class PgpPipesTest {
 	public void setup() {
 		session = new PipeLineSessionBase();
 
-		encryptPipe = new PGPSignAndEncryptPipe();
-		decryptPipe = new PGPDecryptAndVerifyPipe();
+		encryptPipe = new PGPPipe();
+		decryptPipe = new PGPPipe();
 
 		encryptPipe.registerForward(new PipeForward("success", null));
 		encryptPipe.setName(encryptPipe.getClass().getSimpleName() + " under test");

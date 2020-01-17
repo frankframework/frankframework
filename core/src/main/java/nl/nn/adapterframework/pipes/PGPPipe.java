@@ -1,13 +1,16 @@
 package nl.nn.adapterframework.pipes;
 
+import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BouncyGPG;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pgp.*;
 import nl.nn.adapterframework.stream.Message;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.io.OutputStream;
+import java.security.Security;
 
 /**
  * <p>Performs various PGP (Pretty Good Privacy) actions such as Encrypt, Sign, Decrypt, Verify.</p>
@@ -22,7 +25,7 @@ import java.io.OutputStream;
  * <br/><strong>Sign:</strong>
  * <p>
  * On top of the requirements for <i>Encrypt</i> action,
- * signing requires sender to bet set for user's email;
+ * signing requires senders to bet set for user's email;
  * and secretKey & secretPassword to be set to private key's path and it's password
  * (password is optional, if private key does not have protection).
  * </p>
@@ -66,16 +69,15 @@ public class PGPPipe extends FixedForwardPipe {
 	 */
 	private String action;
 	/**
-	 * Email of the sender. During encryption, it should be the email that was used ot generate the keys.
-	 */
-	private String sender;
-	/**
 	 * Emails of the recipients
 	 */
 	private String[] recipients;
 	/**
 	 * Emails of the senders. This will be used to verify that all the senders have signed the given message.
 	 * If not set, and the action is verify; this pipe will validate that at least one person has signed.
+	 *
+	 * For signing action, it needs to be set to the email that was used to generate the private key
+	 * that is being used for this process.
 	 */
 	private String[] senders;
 	/**
@@ -102,6 +104,11 @@ public class PGPPipe extends FixedForwardPipe {
 		if (action == null)
 			throw new ConfigurationException("Action can not be null!");
 
+		if(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null)
+			Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+
+		Security.addProvider(new BouncyCastleProvider());
+
 		switch (action.toLowerCase()) {
 			case "encrypt":
 				pgpAction = new Encrypt(publicKey, recipients);
@@ -110,7 +117,9 @@ public class PGPPipe extends FixedForwardPipe {
 				pgpAction = new Decrypt(secretKey, secretPassword);
 				break;
 			case "sign":
-				pgpAction = new Sign(publicKey, secretKey, secretPassword, recipients, sender);
+				if(senders == null || senders.length == 0)
+					throw new ConfigurationException("During signing action, senders has to be set.");
+				pgpAction = new Sign(publicKey, secretKey, secretPassword, recipients, senders[0]);
 				break;
 			case "verify":
 				pgpAction = new Verify(publicKey, secretKey, secretPassword, senders);
@@ -134,10 +143,6 @@ public class PGPPipe extends FixedForwardPipe {
 
 	public void setAction(String action) {
 		this.action = action;
-	}
-
-	public void setSender(String sender) {
-		this.sender = sender;
 	}
 
 	public void setRecipients(String recipients) {
