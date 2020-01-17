@@ -1,6 +1,5 @@
 package nl.nn.adapterframework.pipes;
 
-import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BouncyGPG;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
