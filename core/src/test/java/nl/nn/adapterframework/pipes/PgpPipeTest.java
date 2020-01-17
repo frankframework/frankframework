@@ -25,35 +25,23 @@ public class PgpPipeTest {
 	private String expectation;
 	private String[] encryptParams, decryptParams;
 
-	String message = "My Secret!!";
-	private final String pgpFolder = "src/test/resources/PGP/";
+	private final String MESSAGE = "My Secret!!";
 
-	private static final String[] sender = {"test@ibissource.org", "ibistest", "first/private.asc", "first/public.asc"};
-	private static final String[] recipient = {"second@ibissource.org", "secondtest", "second/private.asc", "second/public.asc"};
+	private static final String PGP_FOLDER = "src/test/resources/PGP/";
+	private static final String[] sender = {"test@ibissource.org", "ibistest", "first/private.asc", "first/public.asc", "first/public.asc;second/public.asc"};
+	private static final String[] recipient = {"second@ibissource.org", "secondtest", "second/private.asc", "second/public.asc", "first/public.asc;second/public.asc"};
 
 	@Parameterized.Parameters(name = "{index} - {0} - {1}")
 	public static Collection<Object[]> data() {
-		// sender, key, private, recipient, public
-		// sender, key, private, public
+		// action, secretkey, password, publickey, senders, recipients
+
 		return Arrays.asList(new Object[][]{
 				{"Encrypt&Sign then Decrypt&Verify", "success",
-						new String[]{sender[0], sender[1], sender[2], recipient[0], recipient[3]},
-						new String[]{sender[0], recipient[1], recipient[2], sender[3]}},
-				{"Same Key", "success",
-						new String[]{sender[0], sender[1], sender[2], sender[0], sender[3]},
-						new String[]{sender[0], sender[1], sender[2], sender[3]}},
-				{"Encrypt&Decrypt", "success",
-						new String[]{null, null, null, sender[0], sender[3]},
-						new String[]{null, sender[1], sender[2], null}},
-				{"Nulls", "nl.nn.adapterframework.configuration.ConfigurationException",
-						new String[]{null, null, null, null, null},
-						new String[]{null, null, null, null}},
-				{"Wrong password", "org.bouncycastle.openpgp.PGPException",
-						new String[]{null, null, null, sender[0], sender[3]},
-						new String[]{null, "wrong key", sender[2], null}},
-				{"Wrong key", "org.bouncycastle.openpgp.PGPException",
-						new String[]{null, null, null, sender[0], sender[3]},
-						new String[]{null, recipient[1], recipient[2], null}},
+						new String[]{"sign", sender[2], sender[1], sender[4], sender[0], recipient[0]},
+						new String[]{"verify", recipient[2], recipient[1], recipient[4], sender[0], recipient[0]}},
+//				{"Same Key", "success",
+//						new String[]{sender[0], sender[1], sender[2], sender[0], sender[3]},
+//						new String[]{sender[0], sender[1], sender[2], sender[3]}},
 		});
 	}
 
@@ -67,18 +55,18 @@ public class PgpPipeTest {
 	@Test
 	public void dotest() throws Throwable {
 		try {
-			configureEncryptPipe(encryptParams);
-			configureDecryptPipe(decryptParams);
+			configurePipe(encryptPipe, encryptParams);
+			configurePipe(decryptPipe, decryptParams);
 
-			PipeRunResult encryptionResult = encryptPipe.doPipe(message, session);
+			PipeRunResult encryptionResult = encryptPipe.doPipe(MESSAGE, session);
 			OutputStream mid = (OutputStream) encryptionResult.getResult();
 			System.out.println(mid.toString());
-			assertMessage(mid.toString(), message);
+			assertMessage(mid.toString(), MESSAGE);
 			PipeRunResult decryptionResult = decryptPipe.doPipe(encryptionResult.getResult(), session);
 			OutputStream result = (OutputStream) decryptionResult.getResult();
 			System.out.println(result.toString());
 
-			Assert.assertEquals(message, result.toString());
+			Assert.assertEquals(MESSAGE, result.toString());
 			Assert.assertEquals("success", expectation);
 		} catch (Exception e) {
 			if (checkExceptionClass(e, expectation)) {
@@ -102,22 +90,28 @@ public class PgpPipeTest {
 		decryptPipe.setName(decryptPipe.getClass().getSimpleName() + " under test");
 	}
 
-	private void configureEncryptPipe(String[] params) throws ConfigurationException {
-		encryptPipe.setSender(params[0]);
-		encryptPipe.setKeyPassword(params[1]);
-		encryptPipe.setPrivateKeyPath(params[2] == null ? null : pgpFolder + params[2]);
-		encryptPipe.setRecipient(params[3]);
-		encryptPipe.setPublicKeyPath(params[4] == null ? null : pgpFolder + params[4]);
-		encryptPipe.setPersonalPublic(pgpFolder + sender[3]);
-		encryptPipe.configure();
+	private void configurePipe(PGPPipe pipe, String[] params) throws ConfigurationException {
+		// Just so we dont have to change numbers every time we change order.
+		int i = 0;
+		pipe.setAction(params[i++]);
+		pipe.setSecretKey(addFolderPath(params[i++]));
+		pipe.setSecretPassword(params[i++]);
+		pipe.setPublicKey(addFolderPath(params[i++]));
+		pipe.setSenders(params[i++]);
+		pipe.setRecipients(params[i]);
+		pipe.configure();
 	}
 
-	private void configureDecryptPipe(String[] params) throws ConfigurationException {
-		decryptPipe.setSenders(params[0]);
-		decryptPipe.setKeyPassword(params[1]);
-		decryptPipe.setPrivateKeyPath(params[2] == null ? null : pgpFolder + params[2]);
-		decryptPipe.setPublicKeyPath(params[3] == null ? null : pgpFolder + params[3]);
-		decryptPipe.configure();
+	private String addFolderPath(String param) {
+		String[] keys = param.split(";");
+		StringBuilder stringBuilder = new StringBuilder(param.length() + PGP_FOLDER.length() * keys.length);
+		for(int i = 0; i < keys.length; i++) {
+			stringBuilder
+					.append(PGP_FOLDER)
+					.append(keys[i])
+					.append(i != keys.length - 1 ? ";" : "");
+		}
+		return stringBuilder.toString();
 	}
 
 	private boolean checkExceptionClass(Throwable t, String c) throws Throwable {
