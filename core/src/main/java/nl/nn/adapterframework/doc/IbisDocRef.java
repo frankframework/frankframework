@@ -26,6 +26,6 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface IbisDocRef {
 
-		String[] value();
+	String[] value();
 
 }

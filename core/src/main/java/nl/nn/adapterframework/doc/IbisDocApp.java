@@ -25,7 +25,6 @@ public class IbisDocApp {
         IbisDocExtractor extractor = new IbisDocExtractor();
         addFolders(groups, extractor);
 
-//		extractor.addAllFolder();
         extractor.writeToJsonUrl();
 
         return extractor.getJsonString();

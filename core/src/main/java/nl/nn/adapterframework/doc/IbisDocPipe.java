@@ -698,7 +698,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 		getBeanProperties(clazz, "get", getMethods);
 		getBeanProperties(clazz, "is", getMethods);
 		for (String name : result.keySet()) {
-			if (!getMethods.containsKey(name) && !result.get(name).isAnnotationPresent(IbisDoc.class)) {
+			if (!getMethods.containsKey(name) && !result.get(name).isAnnotationPresent(IbisDoc.class) && !result.get(name).isAnnotationPresent(IbisDocRef.class)) {
 				remove.add(name);
 			}
 		}
