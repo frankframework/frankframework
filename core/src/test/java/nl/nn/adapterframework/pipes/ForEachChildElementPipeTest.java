@@ -708,6 +708,20 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		assertEquals(expected, actual);
 	}
 
+	@Test
+	public void testRemoveNamespacesInAttributes() throws PipeRunException, ConfigurationException, PipeStartException, IOException {
+		pipe.setSender(getElementRenderer(null));
+		pipe.setTargetElement("XDOC");
+		configurePipe();
+		pipe.start();
+
+		String input = TestFileUtils.getTestFile("/ForEachChildElementPipe/NamespaceCaseIn.xml");
+		String expected = TestFileUtils.getTestFile("/ForEachChildElementPipe/NamespaceCaseOut.xml");
+		PipeRunResult prr = pipe.doPipe(input, session);
+		String actual = prr.getResult().toString();
+
+		assertEquals(expected, actual);
+	}
 	
 	
 	private class SwitchCounter {
