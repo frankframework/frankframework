@@ -43,9 +43,8 @@ public class IbisAppenderWrapper extends AppenderSkeleton implements
 
 	@Override
 	protected void append(LoggingEvent event) {
-		String modifiedMessage = event.getMessage().toString();
-		if (maxMessageLength >= 0
-				&& modifiedMessage.length() > maxMessageLength) {
+		String modifiedMessage = event.getMessage()==null?"":event.getMessage().toString();
+		if (maxMessageLength >= 0 && modifiedMessage.length() > maxMessageLength) {
 			modifiedMessage = modifiedMessage.substring(0, maxMessageLength) + "...(" + (modifiedMessage.length() - maxMessageLength) + " characters more)";
 		}
 

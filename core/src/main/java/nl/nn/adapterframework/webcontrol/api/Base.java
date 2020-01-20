@@ -107,7 +107,7 @@ public abstract class Base {
 	}
 
 	public ClassLoader getClassLoader() {
-		return this.getClassLoader();
+		return this.getClass().getClassLoader();
 	}
 
 	protected String getFlow(IAdapter adapter) {
