@@ -10,7 +10,7 @@ To prevent problems with data transactionality, we will be using an Oracle datab
 
 ## 1. Proprietary modules and JAR dependencies
 
-Download the following JARs, and place them in your some folder on your computer, say mylib. You will reference these files later. Do not store them in your Tomcat server's lib folder as was said in an earlier version of this file.
+Download the following JARs, and place them in your Tomcat server's lib folder. If you do not yet have a lib folder, you can create one directly under your Tomcat server's root directory. It is important that you do this within Eclipse and not using your Windows explorer. Your Tomcat server's folder in Eclipse is a link. Alternatively, you can make your own folder and add the libraries there using your Windows explorer.
 * [activemq-core-5.6.0.jar](https://mvnrepository.com/artifact/org.apache.activemq/activemq-core/5.6.0)
 * [geronimo-j2ee-management\_1.1_spec-1.0.1.jar](https://mvnrepository.com/artifact/org.apache.geronimo.specs/geronimo-j2ee-management_1.1_spec/1.0.1)
 * [geronimo-jms\_1.1_spec-1.1.1.jar](https://mvnrepository.com/artifact/org.apache.geronimo.specs/geronimo-jms_1.1_spec/1.1.1)
@@ -19,7 +19,7 @@ Download the following JARs, and place them in your some folder on your computer
 * [ojdbc7.jar](https://www.oracle.com/technetwork/database/features/jdbc/jdbc-drivers-12c-download-1958347.html)
 * [service-dispatcher-1.5.jar](https://mvnrepository.com/artifact/org.ibissource/service-dispatcher)
 
-In Tomcat's launch configuration (found in the Tomcat Overview window), go to the Classpath tab. Click on the User Entries item and click on the [ Add External JARs... ] button. Select all JARs in the mylib folder mentioned earlier, press OK, and press OK again.
+In Tomcat's launch configuration (found in the Tomcat Overview window), go to the Classpath tab. Click on the User Entries item and click on the [ Add JARs... ] button. Select all JARs in the lib folder, press OK, and press OK again. If you chose earlier to make your own folder, you need [ Add External JARs... ].
 
 ## 2. Tomcat configuration
 
