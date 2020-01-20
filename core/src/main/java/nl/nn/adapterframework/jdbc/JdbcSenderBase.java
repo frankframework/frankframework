@@ -69,6 +69,7 @@ public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSen
 
 	@Override
 	public void configure() throws ConfigurationException {
+		super.configure();
 		if (StringUtils.isEmpty(getDatasourceName())) {
 			throw new ConfigurationException(getLogPrefix()+"has no datasource");
 		}
@@ -149,20 +150,19 @@ public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSen
 
 	@Override
 	public String toString() {
-		String result  = super.toString();
-        ToStringBuilder ts=new ToStringBuilder(this);
-        ts.append("name", getName() );
-        result += ts.toString();
-        return result;
+		String result = super.toString();
+		ToStringBuilder ts = new ToStringBuilder(this);
+		ts.append("name", getName());
+		result += ts.toString();
+		return result;
 	}
 
-	public int getTimeout() {
-		return timeout;
-	}
-
-	@IbisDoc({"the number of seconds the driver will wait for a statement object to execute. if the limit is exceeded, a timeoutexception is thrown. 0 means no timeout", "0"})
+	@IbisDoc({"The number of seconds the driver will wait for a statement object to execute. If the limit is exceeded, a TimeoutException is thrown. A value of 0 means execution time is not limited", "0"})
 	public void setTimeout(int i) {
 		timeout = i;
+	}
+	public int getTimeout() {
+		return timeout;
 	}
 
 }

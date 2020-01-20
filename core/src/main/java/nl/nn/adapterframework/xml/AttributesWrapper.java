@@ -39,8 +39,7 @@ public class AttributesWrapper implements Attributes {
 
 	public AttributesWrapper(Attributes source, String localNameToSkip) {
 		for(int i=0;i<source.getLength();i++) {
-			if (localNameToSkip==null 
-					|| (!localNameToSkip.equals(source.getLocalName(i)) && !localNameToSkip.equals(source.getURI(i)))) {
+			if (localNameToSkip==null || !localNameToSkip.equals(source.getLocalName(i))) {
 				Attribute a = new Attribute();
 				a.uri=source.getURI(i);
 				a.localName=source.getLocalName(i);

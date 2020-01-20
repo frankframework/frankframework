@@ -45,13 +45,11 @@ public class NamespaceRemovingFilter extends FullXmlFilter {
 	@Override
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
 		//log.debug("startPrefixMapping("+prefix+","+uri+")");
-		super.startPrefixMapping(prefix, "");
 	}
 
 	@Override
 	public void endPrefixMapping(String prefix) throws SAXException {
 		//log.debug("endPrefixMapping("+prefix+")");
-		super.endPrefixMapping(prefix);
 	}
 
 }
