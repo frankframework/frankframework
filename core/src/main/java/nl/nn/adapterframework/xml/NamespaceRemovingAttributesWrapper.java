@@ -53,4 +53,9 @@ public class NamespaceRemovingAttributesWrapper extends AttributesWrapper {
 		return getValue(findIndexByLocalName(localName));
 	}
 
+	@Override
+	public String getQName(int i) {
+		return super.getLocalName(i);
+	}
+
 }

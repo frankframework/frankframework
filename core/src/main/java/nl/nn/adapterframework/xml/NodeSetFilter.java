@@ -66,7 +66,6 @@ public class NodeSetFilter extends FullXmlFilter {
 				}
 			}
 		}
-		log.debug("ElementFilter targetNamespace ["+targetNamespace+"] targetElement ["+this.targetElement+"]");
 	}
 
 	/**
@@ -93,18 +92,18 @@ public class NodeSetFilter extends FullXmlFilter {
 
 	@Override
 	public void endPrefixMapping(String prefix) throws SAXException {
-		log.debug("removing prefix mapping ["+prefix+"]");
 		if (copying || includeRoot && globalLevel==0) {
 			super.endPrefixMapping(prefix);
 		} else {
 			if (pendingNamespaceDefinitions.size()<=0) {
-				log.warn("pendingNamespaceDefinitions empty, cannot remove prefix ["+prefix+"]");
+				log.warn("pendingNamespaceDefinitions empty, cannot remove prefix ["+prefix+"]"); 
 				return;
 			}
 			PrefixMapping topMapping=pendingNamespaceDefinitions.remove(pendingNamespaceDefinitions.size()-1);
-			if (!prefix.equals(topMapping.getPrefix())) {
-				log.warn("prefixmapping to remove with prefix ["+prefix+"] does not match expected ["+topMapping.getPrefix()+"]");
-			}
+//			if (!prefix.equals(topMapping.getPrefix())) {
+//				// do this on debug, because removal is not always in order, but in order of definition in the element
+//				if (log.isTraceEnabled()) log.trace("prefixmapping to remove with prefix ["+prefix+"] does not match expected ["+topMapping.getPrefix()+"]"); 
+//			}
 		}
 	}
 	
@@ -154,14 +153,12 @@ public class NodeSetFilter extends FullXmlFilter {
 		if (--level>0 || (includeTarget && level==0) || (includeRoot && globalLevel==0)) {
 			super.endElement(uri, localName, qName);
 			if (level==0 + (includeTarget ? 0:1)) {
-				log.debug("removing pending prefix mappings");
 				for(int i=pendingNamespaceDefinitions.size()-1;i>=0;i--) {
 					PrefixMapping mapping=pendingNamespaceDefinitions.get(i);
 					if (!mappingIsOverridden(mapping, i)) {
 						endPrefixMapping(mapping.getPrefix());
 					}
 				}
-				log.debug("removed pending prefix mappings");
 				endNode(uri, localName, qName);
 				copying=false;
 			}
