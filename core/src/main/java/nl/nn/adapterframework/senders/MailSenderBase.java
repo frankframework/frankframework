@@ -39,6 +39,7 @@ import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public abstract class MailSenderBase extends SenderWithParametersBase {
@@ -510,7 +511,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		private String message = null;
 		private String messageType = getDefaultMessageType();
 		private boolean messageIsBase64 = isDefaultMessageBase64();
-		private String charSet = null;
+		private String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		private String threadTopic = null;
 		private Collection<Node> headers;
 		private String bounceAddress = getBounceAddress();
@@ -592,7 +593,9 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		}
 
 		public void setCharSet(String charSet) {
-			this.charSet = charSet;
+			if(StringUtils.isNotEmpty(charSet)) {
+				this.charSet = charSet;
+			}
 		}
 
 		public String getThreadTopic() {
