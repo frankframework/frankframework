@@ -174,7 +174,7 @@ public class WebServiceSender extends HttpSender {
 	/**
 	 * @deprecated please use setSoapAction() instead
 	 */
-	@IbisDoc({"deprecated: please use soapaction instead", ""})
+	@IbisDoc({"deprecated: please use soapAction instead", ""})
 	public void setSoapActionURI(String soapAction) {
 		ConfigurationWarnings.getInstance().add(log, getLogPrefix()+" the attribute 'soapActionURI' has been renamed 'soapAction'");
 		setSoapAction(soapAction);
@@ -183,7 +183,7 @@ public class WebServiceSender extends HttpSender {
 	/**
 	 * @deprecated please use setSoapActionParam instead
 	 */
-	@IbisDoc({"deprecated: please use soapactionparam instead", ""})
+	@IbisDoc({"deprecated: please use soapActionParam instead", ""})
 	public void setSoapActionURIParam(String soapActionParam) {
 		ConfigurationWarnings.getInstance().add(log, getLogPrefix()+" the attribute 'soapActionURIParam' has been renamed 'soapActionParam'");
 		setSoapActionParam(soapActionParam);

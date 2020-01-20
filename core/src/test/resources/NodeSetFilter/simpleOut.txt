@@ -1,0 +1,7 @@
+<prefix-nsroot uri="urn:root">
+	<root xmlns:nsroot="urn:root">
+		<prefix-nssub uri="urn:sub">
+			<sub xmlns:nssub="urn:sub"/>
+		</prefix-nssub>
+	</root>
+</prefix-nsroot>

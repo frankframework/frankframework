@@ -194,27 +194,31 @@ public class ForEachChildElementPipe extends IteratingPipe<String> implements IT
 		public void endNode(String uri, String localName, String qName) throws SAXException {
 			checkInterrupt();
 			if ((++itemCounter >= getBlockSize())) {
-				try {
-					if (getBlockSize()>0) {
-						xmlWriter.getWriter().append(getBlockSuffix());
-					}
-					xmlWriter.endDocument();
-					stopRequested = !callback.handleItem(xmlWriter.toString());
-					itemCounter=0;
-				} catch (Exception e) {
-					if (e instanceof TimeOutException) {
-						timeOutException = (TimeOutException)e;
-					}
-					throw new SaxException(e);
-					
+				endBlock();
+			}
+		}
+		
+		public void endBlock() throws SaxException {
+			try {
+				if (getBlockSize()>0) {
+					xmlWriter.getWriter().append(getBlockSuffix());
 				}
+				xmlWriter.endDocument();
+				stopRequested = !callback.handleItem(xmlWriter.toString());
+				itemCounter=0;
+			} catch (Exception e) {
+				if (e instanceof TimeOutException) {
+					timeOutException = (TimeOutException)e;
+				}
+				throw new SaxException(e);
+				
 			}
 		}
 
 		@Override
 		public void endDocument() throws SAXException {
 			if (itemCounter!=0) {
-				endNode(null, null, null);
+				endBlock();
 			}
 			super.endDocument();
 		}

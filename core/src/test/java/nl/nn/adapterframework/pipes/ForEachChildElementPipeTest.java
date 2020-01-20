@@ -683,14 +683,30 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		configurePipe();
 		pipe.start();
 
-		String input = TestFileUtils.getTestFile("/ElementFilter/NoDuplicateNamespaces/xdocs.xml");
-		String expected = TestFileUtils.getTestFile("/ElementFilter/NoDuplicateNamespaces/ForEachChildElementPipe-Result.txt");
+		String input = TestFileUtils.getTestFile("/ForEachChildElementPipe/xdocs.xml");
+		String expected = TestFileUtils.getTestFile("/ForEachChildElementPipe/ForEachChildElementPipe-Result.txt");
 		PipeRunResult prr = pipe.doPipe(input, session);
 		String actual = prr.getResult().toString();
 
 		assertEquals(expected, actual);
 	}
 
+	@Test
+	public void testBulk2() throws PipeRunException, ConfigurationException, PipeStartException, IOException {
+		pipe.setSender(getElementRenderer(null));
+		pipe.setTargetElement("XDOC");
+		pipe.setBlockSize(4);
+		pipe.setRemoveNamespaces(false);
+		configurePipe();
+		pipe.start();
+
+		String input = TestFileUtils.getTestFile("/ForEachChildElementPipe/bulk2.xml");
+		String expected = TestFileUtils.getTestFile("/ForEachChildElementPipe/bulk2out.xml");
+		PipeRunResult prr = pipe.doPipe(input, session);
+		String actual = prr.getResult().toString();
+
+		assertEquals(expected, actual);
+	}
 
 	
 	
