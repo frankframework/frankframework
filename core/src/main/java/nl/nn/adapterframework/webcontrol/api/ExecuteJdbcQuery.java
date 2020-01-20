@@ -129,7 +129,7 @@ public final class ExecuteJdbcQuery extends Base {
 				}
 			}
 		} catch (Throwable t) {
-			throw new ApiException("An error occured on executing jdbc query: " + t.getMessage(), 400);
+			throw new ApiException(t, 400);
 		} finally {
 			qs.close();
 		}
