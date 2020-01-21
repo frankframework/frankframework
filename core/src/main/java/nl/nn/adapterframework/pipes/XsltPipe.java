@@ -54,6 +54,8 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	private String sessionKey=null;
 	
 	private XsltSender sender = createXsltSender();
+	
+	private final String xsltSender = "nl.nn.adapterframework.senders.XsltSender";
 
 	{
 		setSizeStatistics(true);
@@ -151,22 +153,22 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 
 
 
-	@IbisDoc({"1", "Location of stylesheet to apply to the input message", ""})
+	@IbisDocRef({"1", xsltSender})
 	public void setStyleSheetName(String stylesheetName) {
 		sender.setStyleSheetName(stylesheetName);
 	}
 
-	@IbisDoc({"2", "Session key to retrieve stylesheet location. Overrides stylesheetName or xpathExpression attribute", ""})
+	@IbisDocRef({"2", xsltSender})
 	public void setStyleSheetNameSessionKey(String newSessionKey) {
 		sender.setStyleSheetNameSessionKey(newSessionKey);
 	}
 
-	@IbisDoc({"3", "Size of cache of stylesheets retrieved from styleSheetNameSessionKey", "100"})
+	@IbisDocRef({"3", xsltSender})
 	public void setStyleSheetCacheSize(int size) {
 		sender.setStyleSheetCacheSize(size);
 	}
-	
-	@IbisDocRef({"4", "nl.nn.adapterframework.senders.XsltSender.setOutputType"})
+
+	@IbisDocRef({"4", xsltSender})
 	public void setXpathExpression(String string) {
 		sender.setXpathExpression(string);
 	}
@@ -174,12 +176,12 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		return sender.getXpathExpression();
 	}
 
-	@IbisDoc({"5", "force the transformer generated from the xpath-expression to omit the xml declaration", "true"})
+	@IbisDocRef({"5", xsltSender})
 	public void setOmitXmlDeclaration(boolean b) {
 		sender.setOmitXmlDeclaration(b);
 	}
 	
-	@IbisDoc({"6", "namespace defintions for xpathexpression. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
+	@IbisDocRef({"6", xsltSender})
 	public void setNamespaceDefs(String namespaceDefs) {
 		sender.setNamespaceDefs(namespaceDefs);
 	}
@@ -187,31 +189,31 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		return sender.getNamespaceDefs();
 	}
 
-	@IbisDocRef({"7", "nl.nn.adapterframework.senders.XsltSender.setOutputType"})
+	@IbisDocRef({"7", xsltSender})
 	public void setOutputType(String string) {
 		sender.setOutputType(string);
 	}
 
-	@IbisDoc({"8", "when set <code>true</code>, result is pretty-printed. (only used when <code>skipemptytags=true</code>)", "true"})
+	@IbisDocRef({"8", xsltSender})
 	public void setIndentXml(boolean b) {
 		sender.setIndentXml(b);
 	}
 
-	@IbisDoc({"9", "when set <code>true</code> namespaces (and prefixes) in the input message are removed", "false"})
+	@IbisDocRef({"9", xsltSender})
 	public void setRemoveNamespaces(boolean b) {
 		sender.setRemoveNamespaces(b);
 	}
 
-	@IbisDoc({"10", "when set <code>true</code> empty tags in the output are removed", "false"})
+	@IbisDocRef({"10", xsltSender})
 	public void setSkipEmptyTags(boolean b) {
 		sender.setSkipEmptyTags(b);
 	}
 
-	@IbisDoc({"11", "when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
+	@IbisDocRef({"11", xsltSender})
 	public void setXsltVersion(int xsltVersion) {
 		sender.setXsltVersion(xsltVersion);
 	}
-	@IbisDoc({"12", "Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
+	@IbisDocRef({"12", xsltSender})
 	/**
 	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
 	 */
@@ -220,7 +222,7 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		sender.setXslt2(b);
 	}
 	
-	@IbisDoc({"14", "controls namespace-awareness of transformation", "application default"})
+	@IbisDocRef({"14", xsltSender})
 	@Override
 	public void setNamespaceAware(boolean b) {
 		sender.setNamespaceAware(b);
@@ -230,14 +232,13 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		return sender.isNamespaceAware();
 	}
 
-	@IbisDoc({"15", "Sets the name of the key in the <code>PipeLineSession</code> to store the input in", ""})
+	@IbisDocRef({"15", xsltSender})
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
 	public String getSessionKey() {
 		return sessionKey;
 	}
-
 
 	@Override
 	public void setName(String name) {
