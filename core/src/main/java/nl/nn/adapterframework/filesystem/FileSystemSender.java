@@ -24,7 +24,6 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDocRef;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -66,7 +65,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	
 	private FS fileSystem;
 	private FileSystemActor<F,FS> actor=new FileSystemActor<F,FS>();
-	private final String fileSystemActor = "nl.nn.adapterframework.filesystem.FileSystemActor";
+	private final String FILESYSTEMACTOR = "nl.nn.adapterframework.filesystem.FileSystemActor";
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -152,7 +151,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 
 
 
-	@IbisDocRef({"1", fileSystemActor})
+	@IbisDocRef({"1", FILESYSTEMACTOR})
 	public void setAction(String action) {
 		actor.setAction(action);
 	}
@@ -160,7 +159,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		return actor.getAction();
 	}
 
-	@IbisDocRef({"2", fileSystemActor})
+	@IbisDocRef({"2", FILESYSTEMACTOR})
 	public void setInputFolder(String inputFolder) {
 		actor.setInputFolder(inputFolder);
 	}
@@ -169,7 +168,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		return actor.getInputFolder();
 	}
 
-	@IbisDocRef({"3", fileSystemActor})
+	@IbisDocRef({"3", FILESYSTEMACTOR})
 	public void setBase64(String base64) {
 		actor.setBase64(base64);
 	}
@@ -177,7 +176,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		return actor.getBase64();
 	}
 
-	@IbisDocRef({"4", fileSystemActor})
+	@IbisDocRef({"4", FILESYSTEMACTOR})
 	public void setRotateDays(int rotateDays) {
 		actor.setRotateDays(rotateDays);
 	}
@@ -185,7 +184,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		return actor.getRotateDays();
 	}
 
-	@IbisDocRef({"5", fileSystemActor})
+	@IbisDocRef({"5", FILESYSTEMACTOR})
 	public void setRotateSize(int rotateSize) {
 		actor.setRotateSize(rotateSize);
 	}
@@ -193,12 +192,12 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		return actor.getRotateSize();
 	}
 
-	@IbisDocRef({"6", fileSystemActor})
+	@IbisDocRef({"6", FILESYSTEMACTOR})
 	public void setNumberOfBackups(int numberOfBackups) {
 		actor.setNumberOfBackups(numberOfBackups);
 	}
 
-	@IbisDocRef({"3", fileSystemActor})
+	@IbisDocRef({"3", FILESYSTEMACTOR})
 	public void setFilename(String filename) {
 		actor.setFilename(filename);
 	}

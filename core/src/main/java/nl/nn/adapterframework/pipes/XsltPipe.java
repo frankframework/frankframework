@@ -26,7 +26,6 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -55,7 +54,7 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	
 	private XsltSender sender = createXsltSender();
 	
-	private final String xsltSender = "nl.nn.adapterframework.senders.XsltSender";
+	private final String XSLTSENDER = "nl.nn.adapterframework.senders.XsltSender";
 
 	{
 		setSizeStatistics(true);
@@ -153,22 +152,22 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 
 
 
-	@IbisDocRef({"1", xsltSender})
+	@IbisDocRef({"1", XSLTSENDER})
 	public void setStyleSheetName(String stylesheetName) {
 		sender.setStyleSheetName(stylesheetName);
 	}
 
-	@IbisDocRef({"2", xsltSender})
+	@IbisDocRef({"2", XSLTSENDER})
 	public void setStyleSheetNameSessionKey(String newSessionKey) {
 		sender.setStyleSheetNameSessionKey(newSessionKey);
 	}
 
-	@IbisDocRef({"3", xsltSender})
+	@IbisDocRef({"3", XSLTSENDER})
 	public void setStyleSheetCacheSize(int size) {
 		sender.setStyleSheetCacheSize(size);
 	}
 
-	@IbisDocRef({"4", xsltSender})
+	@IbisDocRef({"4", XSLTSENDER})
 	public void setXpathExpression(String string) {
 		sender.setXpathExpression(string);
 	}
@@ -176,12 +175,12 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		return sender.getXpathExpression();
 	}
 
-	@IbisDocRef({"5", xsltSender})
+	@IbisDocRef({"5", XSLTSENDER})
 	public void setOmitXmlDeclaration(boolean b) {
 		sender.setOmitXmlDeclaration(b);
 	}
 	
-	@IbisDocRef({"6", xsltSender})
+	@IbisDocRef({"6", XSLTSENDER})
 	public void setNamespaceDefs(String namespaceDefs) {
 		sender.setNamespaceDefs(namespaceDefs);
 	}
@@ -189,31 +188,31 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		return sender.getNamespaceDefs();
 	}
 
-	@IbisDocRef({"7", xsltSender})
+	@IbisDocRef({"7", XSLTSENDER})
 	public void setOutputType(String string) {
 		sender.setOutputType(string);
 	}
 
-	@IbisDocRef({"8", xsltSender})
+	@IbisDocRef({"8", XSLTSENDER})
 	public void setIndentXml(boolean b) {
 		sender.setIndentXml(b);
 	}
 
-	@IbisDocRef({"9", xsltSender})
+	@IbisDocRef({"9", XSLTSENDER})
 	public void setRemoveNamespaces(boolean b) {
 		sender.setRemoveNamespaces(b);
 	}
 
-	@IbisDocRef({"10", xsltSender})
+	@IbisDocRef({"10", XSLTSENDER})
 	public void setSkipEmptyTags(boolean b) {
 		sender.setSkipEmptyTags(b);
 	}
 
-	@IbisDocRef({"11", xsltSender})
+	@IbisDocRef({"11", XSLTSENDER})
 	public void setXsltVersion(int xsltVersion) {
 		sender.setXsltVersion(xsltVersion);
 	}
-	@IbisDocRef({"12", xsltSender})
+	@IbisDocRef({"12", XSLTSENDER})
 	/**
 	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
 	 */
@@ -222,7 +221,7 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		sender.setXslt2(b);
 	}
 	
-	@IbisDocRef({"14", xsltSender})
+	@IbisDocRef({"14", XSLTSENDER})
 	@Override
 	public void setNamespaceAware(boolean b) {
 		sender.setNamespaceAware(b);
@@ -232,7 +231,7 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		return sender.isNamespaceAware();
 	}
 
-	@IbisDocRef({"15", xsltSender})
+	@IbisDocRef({"15", XSLTSENDER})
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
