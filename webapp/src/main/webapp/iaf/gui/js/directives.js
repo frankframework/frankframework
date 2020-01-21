@@ -5,7 +5,7 @@ angular.module('iaf.beheerconsole')
 		link: function(scope, element) {
 			var listener = function(_, toState) {
 				var title = 'Loading...'; // Default title
-				if (toState.data && toState.data.pageTitle && $rootScope.instanceName) title = $rootScope.otapStage +'-'+$rootScope.instanceName+' | '+toState.data.pageTitle;
+				if (toState.data && toState.data.pageTitle && $rootScope.instanceName) title = $rootScope.dtapStage +'-'+$rootScope.instanceName+' | '+toState.data.pageTitle;
 				else if($rootScope.startupError) title = "ERROR";
 				$timeout(function() {
 					element.text(title);
@@ -139,7 +139,7 @@ angular.module('iaf.beheerconsole')
 		replace: true,
 		link: function(scope, element, attributes) {
 			scope.customViews = [];
-			scope.$watch('::otapStage', function() {
+			scope.$watch('::dtapStage', function() {
 				var customViews = appConstants["customViews.names"];
 				if(customViews == undefined)
 					return;

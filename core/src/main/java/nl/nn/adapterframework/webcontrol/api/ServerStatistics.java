@@ -124,10 +124,10 @@ public class ServerStatistics extends Base {
 		returnMap.put("version", appConstants.getProperty("application.version"));
 		returnMap.put("name", getIbisContext().getApplicationName());
 
-		String otapStage = appConstants.getProperty("otap.stage");
-		returnMap.put("otap.stage", otapStage);
-		String otapSide = appConstants.getProperty("otap.side");
-		returnMap.put("otap.side", otapSide);
+		String dtapStage = appConstants.getProperty("dtap.stage");
+		returnMap.put("dtap.stage", dtapStage);
+		String dtapSide = appConstants.getProperty("dtap.side");
+		returnMap.put("dtap.side", dtapSide);
 
 		returnMap.put("applicationServer", servletConfig.getServletContext().getServerInfo());
 		returnMap.put("javaVersion", System.getProperty("java.runtime.name") + " (" + System.getProperty("java.runtime.version") + ")");

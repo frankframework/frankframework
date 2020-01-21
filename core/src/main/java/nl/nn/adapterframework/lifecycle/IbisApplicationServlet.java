@@ -105,7 +105,7 @@ public class IbisApplicationServlet extends CXFServlet {
 			log.debug("Servlet init finished");
 
 		//Add console warning when security constraints have not been enabled
-		String stage = appConstants.getString("otap.stage", "LOC");
+		String stage = appConstants.getString("dtap.stage", "LOC");
 		if(appConstants.getBoolean("security.constraint.warning", !"LOC".equalsIgnoreCase(stage))) {
 			try {
 				String web = "/WEB-INF"+File.separator+"web.xml";

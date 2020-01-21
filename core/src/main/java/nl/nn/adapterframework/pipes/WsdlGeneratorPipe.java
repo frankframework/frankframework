@@ -60,9 +60,9 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		try {
 			Wsdl wsdl = new Wsdl(((Adapter)adapter).getPipeLine());
 			wsdl.setDocumentation("Generated at "
-				+ AppConstants.getInstance().getResolvedProperty("otap.stage")
+				+ AppConstants.getInstance().getResolvedProperty("dtap.stage")
 				+ "-"
-				+ AppConstants.getInstance().getResolvedProperty("otap.side")
+				+ AppConstants.getInstance().getResolvedProperty("dtap.side")
 				+ " on " + DateUtils.getIsoTimeStamp() + ".");
 			wsdl.init();
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

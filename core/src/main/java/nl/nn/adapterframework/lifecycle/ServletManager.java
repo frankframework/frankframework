@@ -94,7 +94,7 @@ public class ServletManager {
 
 		ServletSecurity.TransportGuarantee transportGuarantee = ServletSecurity.TransportGuarantee.CONFIDENTIAL;
 
-		String stage = appConstants.getString("otap.stage", null);
+		String stage = appConstants.getString("dtap.stage", null);
 		if (StringUtils.isNotEmpty(stage) && stage.equalsIgnoreCase("LOC")) {
 			transportGuarantee = ServletSecurity.TransportGuarantee.NONE;
 		}
