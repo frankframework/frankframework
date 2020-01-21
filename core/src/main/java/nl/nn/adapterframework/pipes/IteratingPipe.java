@@ -155,16 +155,22 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	private TaskExecutor taskExecutor;
 	protected TransformerPool msgTransformerPool;
 	private TransformerPool stopConditionTp=null;
+	private StatisticsKeeper preprocessingStatisticsKeeper;
 	private StatisticsKeeper senderStatisticsKeeper;
+	private StatisticsKeeper stopConditionStatisticsKeeper;
 
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		msgTransformerPool = TransformerPool.configureTransformer(getLogPrefix(null), getConfigurationClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), false);
+		if (msgTransformerPool!=null) {
+			preprocessingStatisticsKeeper =  new StatisticsKeeper("-> message preprocessing");
+		}
 		try {
 			if (StringUtils.isNotEmpty(getStopConditionXPathExpression())) {
 				stopConditionTp=TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(null,getStopConditionXPathExpression(),"xml",false));
+				stopConditionStatisticsKeeper =  new StatisticsKeeper("-> stop condition determination");
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("Cannot compile stylesheet from stopConditionXPathExpression ["+getStopConditionXPathExpression()+"]", e);
@@ -236,11 +242,15 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			}
 			if (msgTransformerPool!=null) {
 				try {
+					long preprocessingStartTime = System.currentTimeMillis();
 					String transformedMsg=msgTransformerPool.transform(message,prc!=null?prc.getValueMap(getParameterList()):null);
 					if (log.isDebugEnabled()) {
 						log.debug(getLogPrefix(session)+"iteration ["+count+"] transformed item ["+message+"] into ["+transformedMsg+"]");
 					}
 					message=transformedMsg;
+					long preprocessingEndTime = System.currentTimeMillis();
+					long preprocessingDuration = preprocessingEndTime - preprocessingStartTime;
+					preprocessingStatisticsKeeper.addValue(preprocessingDuration);
 				} catch (Exception e) {
 					throw new SenderException(getLogPrefix(session)+"cannot transform item",e);
 				}
@@ -257,11 +267,15 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					}
 					getTaskExecutor().execute(pse);
 				} else {
+					long senderStartTime= System.currentTimeMillis();
 					if (psender!=null) {
 						itemResult = psender.sendMessage(correlationID, message, prc);
 					} else {
 						itemResult = sender.sendMessage(correlationID, message);
 					}
+					long senderEndTime = System.currentTimeMillis();
+					long senderDuration = senderEndTime - senderStartTime;
+					senderStatisticsKeeper.addValue(senderDuration);
 				}
 				if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(itemResult)) {
 					throw new TimeOutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
@@ -293,7 +307,11 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					return false;
 				}
 				if (getStopConditionTp()!=null) {
+					long stopConditionStartTime = System.currentTimeMillis();
 					String stopConditionResult = getStopConditionTp().transform(itemResult,null);
+					long stopConditionEndTime = System.currentTimeMillis();
+					long stopConditionDuration = stopConditionEndTime - stopConditionStartTime;
+					stopConditionStatisticsKeeper.addValue(stopConditionDuration);
 					if (StringUtils.isNotEmpty(stopConditionResult) && !stopConditionResult.equalsIgnoreCase("false")) {
 						log.debug(getLogPrefix(session)+"itemResult ["+itemResult+"] stopcondition result ["+stopConditionResult+"], stopping loop");
 						return false;
@@ -459,16 +477,19 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
 		super.iterateOverStatistics(hski, data, action);
+		if (preprocessingStatisticsKeeper!=null) {
+			hski.handleStatisticsKeeper(data, preprocessingStatisticsKeeper);
+		}
 		hski.handleStatisticsKeeper(data, senderStatisticsKeeper);
+		if (stopConditionStatisticsKeeper!=null) {
+			hski.handleStatisticsKeeper(data, stopConditionStatisticsKeeper);
+		}
 	}
 
-	public void setSender(Object sender) {
-		if (sender instanceof ISender) {
-			super.setSender((ISender)sender);
-		} else {
-			throw new IllegalArgumentException("sender ["+ClassUtils.nameOf(sender)+"] must implment interface ISender");
-		}
-		senderStatisticsKeeper =  new StatisticsKeeper("-> "+ClassUtils.nameOf(sender));
+	@Override
+	public void setSender(ISender sender) {
+		super.setSender(sender);
+		senderStatisticsKeeper =  new StatisticsKeeper("-> "+(StringUtils.isNotEmpty(sender.getName())?sender.getName():ClassUtils.nameOf(sender)));
 	}
 
 	public void setTaskExecutor(TaskExecutor executor) {
