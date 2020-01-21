@@ -95,7 +95,7 @@ public class LoginFilter implements Filter {
 	protected static final String AUTH_PATH_MODE_DATAADMIN = "DataAdmin";
 	protected static final String AUTH_PATH_MODE_TESTER = "Tester";
 
-	protected String otapStage;
+	protected String dtapStage;
 	protected String instanceName;
 	protected int ldapAuthModeNum;
 	protected String ldapAuthUrl;
@@ -108,9 +108,10 @@ public class LoginFilter implements Filter {
 	protected final List<String> allowedDataAdminPaths = new ArrayList<String>();
 	protected final List<String> allowedTesterPaths = new ArrayList<String>();
 
+	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
 		AppConstants appConstants = AppConstants.getInstance();
-		otapStage = appConstants.getResolvedProperty("otap.stage");
+		dtapStage = appConstants.getResolvedProperty("dtap.stage");
 		instanceName = appConstants.getResolvedProperty("instance.name");
 
 		String ldapAuthMode = appConstants.getString("ldap.auth.mode", LDAP_AUTH_MODE_NONE_STR);
@@ -144,7 +145,7 @@ public class LoginFilter implements Filter {
 			if (ldapAuthModeNum >= LDAP_AUTH_MODE_BASIC) {
 				ldapAuthUrl = appConstants.getResolvedProperty("ldap.auth.url");
 				if (ldapAuthUrl == null) {
-					String ldapAuthUrlProp = "ldap.auth." + otapStage.toLowerCase() + ".url";
+					String ldapAuthUrlProp = "ldap.auth." + dtapStage.toLowerCase() + ".url";
 					ldapAuthUrl = appConstants.getResolvedProperty(ldapAuthUrlProp);
 				}
 
@@ -167,6 +168,7 @@ public class LoginFilter implements Filter {
 		}
 	}
 
+	@Override
 	public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
 		HttpServletRequest req = (HttpServletRequest) servletRequest;
 		HttpServletResponse res = (HttpServletResponse) servletResponse;
@@ -354,6 +356,7 @@ public class LoginFilter implements Filter {
 		return pos;
 	}
 
+	@Override
 	public void destroy() {
 	}
 }
