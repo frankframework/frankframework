@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Integration Partners
+   Copyright 2020 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,11 +20,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * @author Jaco de Groot
+ * @author Chakir el Moussaoui
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-public @interface IbisDoc {
+public @interface IbisDocRef {
 
 	String[] value();
 

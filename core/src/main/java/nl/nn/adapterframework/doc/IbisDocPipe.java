@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Integration Partners
+   Copyright 2018-2020 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -152,7 +152,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 	private static Map<String, TreeSet<IbisBean>> cachedGroups;
 	private static Map<String, String> errors = new HashMap<String, String>();
 
-	private static synchronized Map<String, TreeSet<IbisBean>> getGroups() {
+	static synchronized Map<String, TreeSet<IbisBean>> getGroups() {
 		if (cachedGroups == null) {
 			Map<String, TreeSet<IbisBean>> groups = new LinkedHashMap<String, TreeSet<IbisBean>>();
 			addIbisBeans("Listeners", getClass("nl.nn.adapterframework.core.IListener"), groups);
@@ -331,7 +331,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 			result = getUglifyLookup();
 			contentType = "application/xml";
 		} else if ("/ibisdoc/ibisdoc.json".equals(uri)) {
-			result = getJson();
+			result = new IbisDocApp().getJson();
 			contentType = "application/json";
 		} else if ("/ibisdoc".equals(uri)) {
 			result = "<html>\n"
@@ -399,159 +399,6 @@ public class IbisDocPipe extends FixedForwardPipe {
 		}
 		session.put("contentType", contentType);
 		return new PipeRunResult(getForward(), result);
-	}
-
-	/**
-	 * Get the superclasses of a certain class.
-	 *
-	 * @param clazz - The class we have to derive the superclasses from
-	 * @return An ArrayList containing all the superclasses with priority given to them
-	 */
-	private ArrayList<String> getSuperClasses(Class clazz) {
-		ArrayList<String> superClasses = new ArrayList<String>();
-		while (clazz.getSuperclass() != null) {
-
-			// Assign a string with a priority number attached to it and add it to the array of superclasses
-			superClasses.add(clazz.getSuperclass().getSimpleName());
-			clazz = clazz.getSuperclass();
-		}
-		
-		return superClasses;
-	}
-
-	/**
-	 * Gets the IbisDoc values.
-	 *
-	 * @param ibisDocValues - The String[] containing all the ibisDocValues
-	 * @return The needed ibisDocValues
-	 */
-	private String[] getValues(String[] ibisDocValues) {
-		int order;
-		int desc;
-		int def;
-
-		if (ibisDocValues[0].matches("\\d+")) {
-			order = Integer.parseInt(ibisDocValues[0]);
-			desc = 1;
-			def = 2;
-		} else {
-			order = 999;
-			desc = 0;
-			def = 1;
-		}
-		if (ibisDocValues.length > def)
-			return new String[]{ibisDocValues[desc], ibisDocValues[def], "" + order };
-		else
-			return new String[]{ibisDocValues[desc], "", "" + order };
-	}
-
-	/**
-	 * Add properties of the FilePipe to the FileSender.
-	 *
-	 * @param ibisBean       - The IbisBean that should be the FilePipe
-	 * @param groups         - Contains all information
-	 * @param beanProperties - The properties of a class (in this case the FilePipe)
-	 */
-	private void addPropertiesFileSender(IbisBean ibisBean, Map<String, TreeSet<IbisBean>> groups, Map<String, Method> beanProperties) {
-		if (ibisBean.getName().equals("FilePipe")) {
-			for (IbisBean bean : groups.get("Senders")) {
-				if (bean.getName().equals("FileSender")) {
-					Map<String, Method> senderProperties = getBeanProperties(bean.getClazz());
-					beanProperties.putAll(senderProperties);
-					break;
-				}
-			}
-		}
-	}
-
-	/**
-	 * Add the methods to the class object.
-	 *
-	 * @param beanProperties - The properties of a class
-	 * @param newClass       - The class object we have to add the methods to
-	 * @return the AClass with the added AMethods
-	 */
-	private AClass addMethods(Map<String, Method> beanProperties, AClass newClass) {
-		Iterator<String> iterator = new TreeSet<>(beanProperties.keySet()).iterator();
-		while (iterator.hasNext()) {
-
-			String property = iterator.next();
-			Method method = beanProperties.get(property);
-
-			// Get the IbisDoc values from the annotations above the method
-			IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
-			Deprecated deprecated = AnnotationUtils.findAnnotation(method, Deprecated.class);
-			boolean isDeprecated = deprecated != null;
-
-			// If there is an IbisDoc for the method, add the method and it's IbisDoc values to the class object
-			if (ibisDoc != null) {
-				String[] ibisdocValues = ibisDoc.value();
-				String[] values = getValues(ibisdocValues);
-				newClass.addMethod(new AMethod(property, method.getDeclaringClass().getSimpleName(), values[0], values[1], Integer.parseInt(values[2]), isDeprecated));
-			}
-		}
-		return newClass;
-	}
-
-	/**
-	 * Add classes to the folder object.
-	 *
-	 * @param groups - Contains all information
-	 * @param folder - The folder object we have to add the classes to
-	 */
-	private void addClasses(Map<String, TreeSet<IbisBean>> groups, AFolder folder) {
-		for (IbisBean ibisBean : groups.get(folder.getName())) {
-			Map<String, Method> beanProperties = getBeanProperties(ibisBean.getClazz());
-			if (!beanProperties.isEmpty()) {
-
-				// Copy the properties of FileSender into FilePipe so that the properties of FileHandler are also in FilePipe
-				addPropertiesFileSender(ibisBean, groups, beanProperties);
-				
-				// Get the javadoc link for the class
-				String javadocLink = ibisBean.getClazz().getName().replaceAll("\\.", "/");
-				
-				// Get the superclasses
-				ArrayList<String> superClasses = getSuperClasses(ibisBean.getClazz());
-
-				// Create a new class and add the methods (attributes) to it, then add it to the folder object
-				AClass newClass = new AClass(ibisBean.getName(), ibisBean.getClazz().getName(), javadocLink, superClasses);
-				AClass updatedClass = addMethods(beanProperties, newClass);
-				folder.addClass(updatedClass);
-			}
-		}
-	}
-
-	/**
-	 * Add folders to the Json.
-	 *
-	 * @param groups    - Contains all information
-	 * @param extractor - Class that converts the folders into objects
-	 */
-	private void addFolders(Map<String, TreeSet<IbisBean>> groups, IbisDocExtractor extractor) {
-		AFolder allFolder = new AFolder("All");
-
-		for (String folder : groups.keySet()) {
-			AFolder newFolder = new AFolder(folder);
-			addClasses(groups, newFolder);
-			extractor.addFolder(newFolder);
-		}
-		extractor.addFolder(allFolder);
-	}
-
-	/**
-	 * Get the Json containing all information concerning the IbisDoc.
-	 *
-	 * @return A string containing all information of the IbisDoc
-	 */
-	private String getJson() {
-		Map<String, TreeSet<IbisBean>> groups = getGroups();
-		IbisDocExtractor extractor = new IbisDocExtractor();
-		addFolders(groups, extractor);
-
-//		extractor.addAllFolder();
-		extractor.writeToJsonUrl();
-
-		return extractor.getJsonString();
 	}
 
 	private String getSchema() throws PipeRunException {
@@ -843,7 +690,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 		return ignore;
 	}
 
-	private static Map<String, Method> getBeanProperties(Class<?> clazz) {
+	static Map<String, Method> getBeanProperties(Class<?> clazz) {
 		Map<String, Method> result = new HashMap<String, Method>();
 		getBeanProperties(clazz, "set", result);
 		Set<String> remove = new HashSet<String>();
@@ -851,7 +698,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 		getBeanProperties(clazz, "get", getMethods);
 		getBeanProperties(clazz, "is", getMethods);
 		for (String name : result.keySet()) {
-			if (!getMethods.containsKey(name) && !result.get(name).isAnnotationPresent(IbisDoc.class)) {
+			if (!getMethods.containsKey(name) && !result.get(name).isAnnotationPresent(IbisDoc.class) && !result.get(name).isAnnotationPresent(IbisDocRef.class)) {
 				remove.add(name);
 			}
 		}
