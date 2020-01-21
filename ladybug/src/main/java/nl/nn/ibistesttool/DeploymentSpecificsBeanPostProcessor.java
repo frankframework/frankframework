@@ -30,6 +30,7 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
  * @author Jaco de Groot
  */
 public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
+	private AppConstants APP_CONSTANTS = AppConstants.getInstance();
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
@@ -41,7 +42,7 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
 			if (StringUtils.isNotEmpty(testToolEnabledProperty)) {
 				testToolEnabled="true".equalsIgnoreCase(testToolEnabledProperty);
 			} else {
-				String stage = System.getProperty("otap.stage");
+				String stage = APP_CONSTANTS.getProperty("dtap.stage");
 				if ("ACC".equals(stage) || "PRD".equals(stage)) {
 					testToolEnabled=false;
 				}
@@ -53,14 +54,13 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
 		}
 		if (bean instanceof nl.nn.testtool.storage.file.Storage) {
 			// TODO appConstants via set methode door spring i.p.v. AppConstants.getInstance()?
-			AppConstants appConstants = AppConstants.getInstance();
-			String maxFileSize = appConstants.getResolvedProperty("ibistesttool.maxFileSize");
+			String maxFileSize = APP_CONSTANTS.getProperty("ibistesttool.maxFileSize");
 			if (maxFileSize != null) {
 				nl.nn.testtool.storage.file.Storage loggingStorage = (nl.nn.testtool.storage.file.Storage)bean;
 				long maximumFileSize = OptionConverter.toFileSize(maxFileSize, nl.nn.testtool.storage.file.Storage.DEFAULT_MAXIMUM_FILE_SIZE);
 				loggingStorage.setMaximumFileSize(maximumFileSize);
 			}
-			String maxBackupIndex = appConstants.getResolvedProperty("ibistesttool.maxBackupIndex");
+			String maxBackupIndex = APP_CONSTANTS.getProperty("ibistesttool.maxBackupIndex");
 			if (maxBackupIndex != null) {
 				nl.nn.testtool.storage.file.Storage loggingStorage = (nl.nn.testtool.storage.file.Storage)bean;
 				int maximumBackupIndex = Integer.parseInt(maxBackupIndex);
@@ -68,8 +68,8 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
 			}
 		}
 //		if (bean instanceof nl.nn.testtool.storage.diff.Storage) {
-//			// TODO niet otap.stage maar een specifieke prop. gebruiken? op andere plekken in deze class ook?
-//			String stage = System.getResolvedProperty("otap.stage");
+//			// TODO niet dtap.stage maar een specifieke prop. gebruiken? op andere plekken in deze class ook?
+//			String stage = System.getResolvedProperty("dtap.stage");
 //			if ("LOC".equals(stage)) {
 //				AppConstants appConstants = AppConstants.getInstance();
 //				nl.nn.testtool.storage.diff.Storage runStorage = (nl.nn.testtool.storage.diff.Storage)bean;
