@@ -242,15 +242,15 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			}
 			if (msgTransformerPool!=null) {
 				try {
-					long messageLogStartTime= System.currentTimeMillis();
+					long preprocessingStartTime = System.currentTimeMillis();
 					String transformedMsg=msgTransformerPool.transform(message,prc!=null?prc.getValueMap(getParameterList()):null);
 					if (log.isDebugEnabled()) {
 						log.debug(getLogPrefix(session)+"iteration ["+count+"] transformed item ["+message+"] into ["+transformedMsg+"]");
 					}
 					message=transformedMsg;
-					long messageLogEndTime = System.currentTimeMillis();
-					long messageLogDuration = messageLogEndTime - messageLogStartTime;
-					preprocessingStatisticsKeeper.addValue(messageLogDuration);
+					long preprocessingEndTime = System.currentTimeMillis();
+					long preprocessingDuration = preprocessingEndTime - preprocessingStartTime;
+					preprocessingStatisticsKeeper.addValue(preprocessingDuration);
 				} catch (Exception e) {
 					throw new SenderException(getLogPrefix(session)+"cannot transform item",e);
 				}
@@ -267,15 +267,15 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					}
 					getTaskExecutor().execute(pse);
 				} else {
-					long messageLogStartTime= System.currentTimeMillis();
+					long senderStartTime= System.currentTimeMillis();
 					if (psender!=null) {
 						itemResult = psender.sendMessage(correlationID, message, prc);
 					} else {
 						itemResult = sender.sendMessage(correlationID, message);
 					}
-					long messageLogEndTime = System.currentTimeMillis();
-					long messageLogDuration = messageLogEndTime - messageLogStartTime;
-					senderStatisticsKeeper.addValue(messageLogDuration);
+					long senderEndTime = System.currentTimeMillis();
+					long senderDuration = senderEndTime - senderStartTime;
+					senderStatisticsKeeper.addValue(senderDuration);
 				}
 				if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(itemResult)) {
 					throw new TimeOutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
@@ -307,11 +307,11 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					return false;
 				}
 				if (getStopConditionTp()!=null) {
-					long messageLogStartTime= System.currentTimeMillis();
+					long stopConditionStartTime = System.currentTimeMillis();
 					String stopConditionResult = getStopConditionTp().transform(itemResult,null);
-					long messageLogEndTime = System.currentTimeMillis();
-					long messageLogDuration = messageLogEndTime - messageLogStartTime;
-					stopConditionStatisticsKeeper.addValue(messageLogDuration);
+					long stopConditionEndTime = System.currentTimeMillis();
+					long stopConditionDuration = stopConditionEndTime - stopConditionStartTime;
+					stopConditionStatisticsKeeper.addValue(stopConditionDuration);
 					if (StringUtils.isNotEmpty(stopConditionResult) && !stopConditionResult.equalsIgnoreCase("false")) {
 						log.debug(getLogPrefix(session)+"itemResult ["+itemResult+"] stopcondition result ["+stopConditionResult+"], stopping loop");
 						return false;
