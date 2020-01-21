@@ -486,14 +486,10 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		}
 	}
 
-	public void setSender(Object sender) {
-		if (sender instanceof ISender) {
-			super.setSender((ISender)sender);
-		} else {
-			throw new IllegalArgumentException("sender ["+ClassUtils.nameOf(sender)+"] must implement interface ISender");
-		}
-		ISender iSender = (ISender)sender;
-		senderStatisticsKeeper =  new StatisticsKeeper("-> "+(StringUtils.isNotEmpty(iSender.getName())?iSender.getName():ClassUtils.nameOf(sender)));
+	@Override
+	public void setSender(ISender sender) {
+		super.setSender(sender);
+		senderStatisticsKeeper =  new StatisticsKeeper("-> "+(StringUtils.isNotEmpty(sender.getName())?sender.getName():ClassUtils.nameOf(sender)));
 	}
 
 	public void setTaskExecutor(TaskExecutor executor) {
