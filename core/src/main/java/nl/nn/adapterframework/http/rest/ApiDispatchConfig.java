@@ -31,8 +31,8 @@ public class ApiDispatchConfig {
 
 	public void register(String method, ApiListener listener) throws ListenerException {
 		method = method.toUpperCase();
-		if(methods.containsKey(method))
-			throw new ListenerException("ApiListener for uriPattern ["+uriPattern+"] method ["+method+"] has already registered");
+//		if(methods.containsKey(method))
+//			throw new ListenerException("ApiListener for uriPattern ["+uriPattern+"] method ["+method+"] has already registered");
 		methods.put(method, listener);
 	}
 

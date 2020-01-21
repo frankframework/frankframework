@@ -97,12 +97,20 @@ public class ServiceDispatcher  {
 	}
 
 	public  void registerServiceClient(String name, ServiceClient listener) throws ListenerException{
-		if (isRegisteredServiceListener(name)) {
-			log.warn("listener ["+name+"] already registered with ServiceDispatcher");
-		}
-
+		//if (isRegisteredServiceListener(name)) {
+		//	log.warn("listener ["+name+"] already registered with ServiceDispatcher");
+		//}
 		registeredListeners.put(name, listener);
+		// 'put': if the map previously contained a mapping for the key, the old value is replaced by the specified value
 		log.info("Listener ["+name+"] registered at ServiceDispatcher");
+	}
+
+	public void unregisterServiceClient(String name, ServiceClient listener) {
+		// it can happen that a WebServiceListener with the same name is registered
+		// and you don't want to unregister the new WebServiceListener
+		if (registeredListeners.get(name) == this) {
+			registeredListeners.remove(name);
+		}
 	}
 
 	public ServiceClient getListener(String name) {

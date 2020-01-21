@@ -90,6 +90,7 @@ public class ApiServiceDispatcher {
 		dispatchConfig.register(method, listener);
 
 		patternClients.put(uriPattern, dispatchConfig);
+		// 'put': if the map previously contained a mapping for the key, the old value is replaced by the specified value
 		log.trace("ApiServiceDispatcher successfully registered uriPattern ["+uriPattern+"] method ["+method+"]");
 	}
 
@@ -100,13 +101,17 @@ public class ApiServiceDispatcher {
 			log.warn("uriPattern cannot be null or empty, unable to unregister ServiceClient");
 		}
 		else {
+			// it can happen that a ApiListener with the same uriPattern is registered
+			// and you don't want to unregister the new ApiListener
 			ApiDispatchConfig dispatchConfig = patternClients.get(uriPattern);
 			if(dispatchConfig == null) {
 				log.warn("unable to find DispatchConfig for uriPattern ["+uriPattern+"]");
 			} else {
-				dispatchConfig.destroy(method);
-
-				log.trace("ApiServiceDispatcher successfully unregistered uriPattern ["+uriPattern+"] method ["+method+"]");
+				ApiListener registeredApiListener = dispatchConfig.getApiListener(method);
+				if (registeredApiListener == listener) {
+					dispatchConfig.destroy(method);
+					log.trace("ApiServiceDispatcher successfully unregistered uriPattern ["+uriPattern+"] method ["+method+"]");
+				}
 			}
 		}
 	}

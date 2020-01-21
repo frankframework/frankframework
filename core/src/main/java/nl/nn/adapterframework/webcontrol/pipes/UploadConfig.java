@@ -182,7 +182,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 			}
 			if (ConfigurationUtils.addConfigToDatabase(ibisContext, formJmsRealm, isActiveConfig, isAutoReload, buildInfoName, buildInfoVersion, fileName, new ByteArrayInputStream(bytes), remoteUser)) {
 				if (CONFIG_AUTO_DB_CLASSLOADER && isAutoReload && ibisContext.getIbisManager().getConfiguration(buildInfoName) == null) {
-					ibisContext.reload(buildInfoName);
+					ibisContext.load(buildInfoName);
 				}
 				return ("OK\n" + "Name: " + buildInfoName + "\nVersion: " + buildInfoVersion);
 			}

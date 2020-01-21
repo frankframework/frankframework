@@ -55,6 +55,7 @@ import nl.nn.adapterframework.jms.JmsMessageBrowser;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.AppConstants;
@@ -698,8 +699,11 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			boolean isApiListener = (listener instanceof ApiListener);
 			if (isRestListener) {
 				RestListener rl = (RestListener) listener;
-				String matchingPattern = RestServiceDispatcher.getInstance().findMatchingPattern("/" + rl.getUriPattern());
-				return matchingPattern != null;
+				ServiceClient serviceClient = RestServiceDispatcher.getInstance().getServiceClient("/" + rl.getUriPattern(), rl.getMethod());
+				if (serviceClient instanceof RestListener) {
+					return rl == (RestListener)serviceClient;
+				}
+				return false;
 			} else if (isJavaListener) {
 				JavaListener jl = (JavaListener) listener;
 				if (StringUtils.isNotEmpty(jl.getName())) {

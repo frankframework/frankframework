@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import javax.servlet.ServletContext;
@@ -76,7 +75,7 @@ public class RestServiceDispatcher  {
 	private static AppConstants appConstants = AppConstants.getInstance();
 	private static String etagCacheType = appConstants.getProperty("etag.cache.type", "ehcache");
 
-	private ConcurrentSkipListMap patternClients=new ConcurrentSkipListMap(new RestUriComparator());
+	private ConcurrentSkipListMap<String, Map<String, Object>> registeredPatternClients;
 
 	private static RestServiceDispatcher self = null;
 	private static IApiCache cache = ApiCacheManager.getInstance();
@@ -102,7 +101,7 @@ public class RestServiceDispatcher  {
 		}
 
 		String matchingPattern=null;
-		for (Iterator it=patternClients.keySet().iterator();it.hasNext();) {
+		for (Iterator it=getPatternClients().keySet().iterator();it.hasNext();) {
 			String uriPattern=(String)it.next();
 			if (log.isTraceEnabled()) log.trace("comparing uri to pattern ["+uriPattern+"] ");
 			if (lookupUriPattern.equals(uriPattern)) {
@@ -115,7 +114,7 @@ public class RestServiceDispatcher  {
 	
 	public Map getMethodConfig(String matchingPattern, String method) {
 		Map methodConfig;
-		Map patternEntry=(Map)patternClients.get(matchingPattern);
+		Map patternEntry=(Map)getPatternClients().get(matchingPattern);
 		
 		methodConfig = (Map)patternEntry.get(method);
 		if (methodConfig==null) {
@@ -123,9 +122,20 @@ public class RestServiceDispatcher  {
 		}
 		return methodConfig;
 	}
+
+	public ServiceClient getServiceClient(String uri, String method) {
+		String matchingPattern = findMatchingPattern(uri);
+		if (matchingPattern != null) {
+			Map methodConfig = getMethodConfig(matchingPattern, method);
+			if (methodConfig != null) {
+				return (ServiceClient) methodConfig.get(KEY_LISTENER);
+			}
+		}
+		return null;
+	}
 	
 	public List getAvailableMethods(String matchingPattern) {
-		Map patternEntry=(Map)patternClients.get(matchingPattern);
+		Map patternEntry=(Map)getPatternClients().get(matchingPattern);
 		Iterator it = patternEntry.entrySet().iterator();
 		List methods = new ArrayList<String>();
 		while (it.hasNext()) {
@@ -221,7 +231,7 @@ public class RestServiceDispatcher  {
 					        	if (item.isFormField()) {
 					                // Process regular form field (input type="text|radio|checkbox|etc", select, etc).
 					                String fieldName = item.getFieldName();
-					                String fieldValue = item.getString();
+					                String fieldValue = item.getString(Misc.DEFAULT_INPUT_STREAM_ENCODING);
 					    			log.trace("setting parameter ["+fieldName+"] to ["+fieldValue+"]");
 					    			context.put(fieldName, fieldValue);
 					            } else {
@@ -380,30 +390,55 @@ public class RestServiceDispatcher  {
 		if (StringUtils.isEmpty(method)) {
 			method=WILDCARD;
 		}
-		Map patternEntry=(Map)patternClients.get(uriPattern);
+		Map<String, Object> patternEntry=getPatternClients().get(uriPattern);
 		if (patternEntry==null) {
-			patternEntry=new HashMap();
-			patternClients.put(uriPattern, patternEntry);
+			patternEntry=new HashMap<String, Object>();
+			getPatternClients().put(uriPattern, patternEntry);
 		}
-		Map listenerConfig = (Map)patternEntry.get(method);
-		if (listenerConfig!=null) { 
-			throw new ConfigurationException("RestListener for uriPattern ["+uriPattern+"] method ["+method+"] already configured");
-		}
-		listenerConfig = new HashMap();
+		Map<String, Object> listenerConfig = new HashMap<String, Object>();
+//		if (listenerConfig!=null) { 
+//			throw new ConfigurationException("RestListener for uriPattern ["+uriPattern+"] method ["+method+"] already configured");
+//		}
 		patternEntry.put(method,listenerConfig);
+		// 'put': if the map previously contained a mapping for the key, the old value is replaced by the specified value
+		
 		listenerConfig.put(KEY_LISTENER, listener);
 		listenerConfig.put("validateEtag", validateEtag);
 		if (StringUtils.isNotEmpty(etagSessionKey)) listenerConfig.put(KEY_ETAG_KEY, etagSessionKey);
 		if (StringUtils.isNotEmpty(contentTypeSessionKey)) listenerConfig.put(KEY_CONTENT_TYPE_KEY, contentTypeSessionKey);
 	}
 
-	public void unregisterServiceClient(String uriPattern) {
+	public void unregisterServiceClient(ServiceClient listener, String uriPattern, String method) {
 		uriPattern = unifyUriPattern(uriPattern);
-		patternClients.remove(uriPattern);
+		if (StringUtils.isEmpty(method)) {
+			method = WILDCARD;
+		}
+		// it can happen that a RestListener with the same uriPattern is registered
+		// and you don't want to unregister the new RestListener
+		Map<String, Object> patternEntry = getPatternClients().get(uriPattern);
+		if (patternEntry != null) {
+			Map<String, Object> listenerConfig = (Map<String, Object>) patternEntry.get(method);
+			if (listenerConfig != null) {
+				ServiceClient svc = (ServiceClient) listenerConfig.get(KEY_LISTENER);
+				if (svc != null && svc == listener) {
+					patternEntry.remove(method);
+				}
+			}
+			if (patternEntry.isEmpty()) {
+				getPatternClients().remove(uriPattern);
+			}
+		}
+	}
+
+	private synchronized SortedMap<String, Map<String, Object>> getPatternClients() {
+		if (registeredPatternClients == null) {
+			registeredPatternClients = new ConcurrentSkipListMap<String, Map<String, Object>>(new RestUriComparator());
+		}
+		return registeredPatternClients;
 	}
 
 	public Set getUriPatterns() {
-		return patternClients.keySet();
+		return getPatternClients().keySet();
 	}
 
 	private String unifyUriPattern(String uriPattern) {

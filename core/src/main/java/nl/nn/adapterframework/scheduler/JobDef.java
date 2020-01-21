@@ -820,7 +820,7 @@ public class JobDef {
 				// unload old (deactivated) configurations
 				if (configNames != null && !configNames.isEmpty()) {
 					for (String currentConfigurationName : configNames) {
-						if (!dbConfigNames.contains(currentConfigurationName) && "DatabaseClassLoader".equals(ibisManager.getConfiguration(currentConfigurationName).getClassLoaderType())) {
+						if ((dbConfigNames == null || !dbConfigNames.contains(currentConfigurationName)) && "DatabaseClassLoader".equals(ibisManager.getConfiguration(currentConfigurationName).getClassLoaderType()) && !ConfigurationUtils.isTempConfigName(currentConfigurationName)) {
 							ibisManager.getIbisContext().unload(currentConfigurationName);
 						}
 					}

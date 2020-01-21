@@ -64,6 +64,7 @@ public class IbisContext extends IbisApplicationContext {
 	private final String INSTANCE_NAME = APP_CONSTANTS.getResolvedProperty("instance.name");
 	private static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
 	private static final long UPTIME = System.currentTimeMillis();
+	private final boolean CONFIG_DYNAMIC_RELOAD = APP_CONSTANTS.getBoolean("configurations.dynamic.reload", false);
 
 	static {
 		if(!Boolean.parseBoolean(AppConstants.getInstance().getProperty("jdbc.convertFieldnamesToUppercase")))
@@ -181,9 +182,21 @@ public class IbisContext extends IbisApplicationContext {
 	 */
 	public synchronized void reload(String configurationName) {
 		try {
-			classLoaderManager.reload(configurationName);
-			unload(configurationName);
-			load(configurationName);
+			if (CONFIG_DYNAMIC_RELOAD) {
+				String tempConfigurationName = ConfigurationUtils.getTempConfigName(configurationName);
+				Configuration configuration = ibisManager.getConfiguration(configurationName);
+				MessageKeeper messageKeeper = ibisManager.getIbisContext().getMessageKeeper(configurationName);
+				configuration.setName(tempConfigurationName);
+				messageKeepers.remove(tempConfigurationName);
+				messageKeepers.put(tempConfigurationName, messageKeeper);
+				classLoaderManager.reload(configurationName);
+				load(configurationName);
+				unload(tempConfigurationName);
+			} else {
+				classLoaderManager.reload(configurationName);
+				unload(configurationName);
+				load(configurationName);
+			}
 		} catch (ConfigurationException e) {
 			log(configurationName, null, "failed to reload", MessageKeeperMessage.ERROR_LEVEL, e);
 		}

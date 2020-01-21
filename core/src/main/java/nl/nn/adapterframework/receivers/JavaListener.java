@@ -160,10 +160,15 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 	 */
 	private void registerListener() {
 		getListeners().put(getName(), this);
+		// 'put': if the map previously contained a mapping for the key, the old value is replaced by the specified value
 	}
 
 	private void unregisterListener() {
-		getListeners().remove(getName());
+		// it can happen that a JavaListener with the same name is registered
+		// and you don't want to unregister the new JavaListener
+		if (getListener(getName()) == this) {
+			getListeners().remove(getName());
+		}
 	}
 
 	/**

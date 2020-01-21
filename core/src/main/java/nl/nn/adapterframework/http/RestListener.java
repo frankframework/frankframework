@@ -93,7 +93,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	@Override
 	public void close() {
 		super.close();
-		RestServiceDispatcher.getInstance().unregisterServiceClient(getUriPattern());
+		RestServiceDispatcher.getInstance().unregisterServiceClient(this, getUriPattern(), getMethod());
 	}
 
 	public String processRequest(String correlationId, String message, IPipeLineSession requestContext) throws ListenerException {

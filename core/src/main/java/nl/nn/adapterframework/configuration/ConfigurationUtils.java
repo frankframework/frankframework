@@ -553,4 +553,12 @@ public class ConfigurationUtils {
 		zipInputStream.close();
 		return new String[] { name, version };
 	}
+
+	public static String getTempConfigName(String configName) {
+		return "$" + configName + "$";
+	}
+
+	public static boolean isTempConfigName(String configName) {
+		return configName.startsWith("$") && configName.endsWith("$");
+	}
 }
