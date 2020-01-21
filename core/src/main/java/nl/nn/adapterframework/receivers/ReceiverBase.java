@@ -1788,7 +1788,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	/**
 	 * Controls the use of XA-transactions.
 	 */
-	@IbisDoc({"if set to <code>true</code>, messages will be received and processed under transaction control. if processing fails, messages will be sent to the error-sender. (see below)</code>", "<code>false</code>"})
+	@IbisDoc({"if set to <code>true</code>, messages will be received and processed under transaction control. if processing fails, messages will be sent to the error-sender. (see below)", "<code>false</code>"})
 	public void setTransacted(boolean transacted) {
 //		this.transacted = transacted;
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
@@ -1814,7 +1814,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			+ "It applies both to database transactions and XA transactions. "
 			+ "The receiver uses this to start a new transaction or suspend the current one when required. "
 			+ "For developers: it is equal "
-			+ "to <A href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>. " 
+			+ "to <a href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>. "
 			+ "Possible values for transactionAttribute: "
 			+ "  <table border=\"1\">"
 			+ "	<tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>"
@@ -1849,7 +1849,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			+ "<tr><td>2</td><td>Mandatory</td></tr>"
 			+ "<tr><td>3</td><td>RequiresNew</td></tr>"
 			+ "<tr><td>4</td><td>NotSupported</td></tr>"
-			+ "<tr><td>5</td><td>Never</td><tr>"
+			+ "<tr><td>5</td><td>Never</td></tr>"
 			+ "</table>", "1"})
 	public void setTransactionAttributeNum(int i) {
 		transactionAttribute = i;
@@ -2061,7 +2061,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return checkForDuplicatesMethod;
 	}
 
-	@IbisDoc({"Timeout (in seconds) of transaction started to receive and process a message.", "<code>0</code> (use system default)</code>"})
+	@IbisDoc({"Timeout (in seconds) of transaction started to receive and process a message.", "<code>0</code> (use system default)"})
 	public void setTransactionTimeout(int i) {
 		transactionTimeout = i;
 	}

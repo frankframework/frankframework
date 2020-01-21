@@ -144,7 +144,7 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 	}
 
 	
-	@IbisDoc({"1", "when <code>true</true>, the memberOf attribute is also searched in all the found members", "false"})
+	@IbisDoc({"1", "when <code>true</code>, the memberOf attribute is also searched in all the found members", "false"})
 	public void setRecursiveSearch(boolean b) {
 		recursiveSearch = b;
 	}

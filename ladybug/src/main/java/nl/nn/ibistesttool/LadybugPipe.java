@@ -201,7 +201,7 @@ public class LadybugPipe extends FixedForwardPipe {
 		results.addSubElement(exception);
 	}
 
-	@IbisDoc({"whether or not to write results to the logfile (testtool4<instance.name>.log)", "false"})
+	@IbisDoc({"whether or not to write results to the logfile (testtool4&lt;instance.name&gt;)", "false"})
 	public void setWriteToLog(boolean writeToLog) {
 		this.writeToLog = writeToLog;
 	}
