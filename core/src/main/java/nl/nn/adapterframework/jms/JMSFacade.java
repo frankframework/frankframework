@@ -284,6 +284,13 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 			throws NamingException, JMSException {
 		TextMessage textMessage = null;
 		textMessage = session.createTextMessage();
+		setMessageCorrelationID(textMessage, correlationID);
+		textMessage.setText(message);
+		return textMessage;
+	}
+
+	public void setMessageCorrelationID(Message message, String correlationID) 
+			throws JMSException {
 		if (null != correlationID) {
 			if (correlationIdMaxLength>=0) {
 				int cidlen;
@@ -307,12 +314,10 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 				correlationID = hexCorrelationID;
 				if (log.isDebugEnabled()) log.debug("correlationId changed, based on hexidecimal values, to ["+correlationID+"]");
 			}
-			textMessage.setJMSCorrelationID(correlationID);
+			message.setJMSCorrelationID(correlationID);
 		}
-		textMessage.setText(message);
-		return textMessage;
 	}
-
+	
     public Destination getDestination() throws NamingException, JMSException, JmsException  {
 	    if (destination == null) {
 	    	String destinationName = getDestinationName();
