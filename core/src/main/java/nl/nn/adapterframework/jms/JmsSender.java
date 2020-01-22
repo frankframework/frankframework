@@ -182,7 +182,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 			Destination replyQueue = null;
 
 			// create message
-			Message msg = createTextMessage(s, correlationID, message);
+			Message msg = createMessage(s, correlationID, message);
 
 			if (getMessageType()!=null) {
 				msg.setJMSType(getMessageType());

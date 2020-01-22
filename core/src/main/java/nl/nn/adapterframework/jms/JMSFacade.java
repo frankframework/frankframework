@@ -280,7 +280,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		}
 	}
 
-	public TextMessage createTextMessage(Session session, String correlationID, String message)
+	public Message createMessage(Session session, String correlationID, String message)
 			throws NamingException, JMSException {
 		TextMessage textMessage = null;
 		textMessage = session.createTextMessage();
@@ -521,7 +521,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return send(session, dest, correlationId, message, messageType, timeToLive, deliveryMode, priority, ignoreInvalidDestinationException, null);
 	}
 	public String send(Session session, Destination dest, String correlationId, String message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, Map<String, Object> properties) throws NamingException, JMSException, SenderException {
-		TextMessage msg = createTextMessage(session, correlationId, message);
+		Message msg = createMessage(session, correlationId, message);
 		MessageProducer mp;
 		try {
 			if (useJms102()) {
