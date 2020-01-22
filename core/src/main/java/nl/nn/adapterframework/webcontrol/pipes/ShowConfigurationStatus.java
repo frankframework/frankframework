@@ -706,12 +706,27 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 				return false;
 			} else if (isJavaListener) {
 				JavaListener jl = (JavaListener) listener;
+				if (StringUtils.isNotEmpty(jl.getServiceName())) {
+					JavaListener jlRegister = JavaListener.getServiceListener(jl.getServiceName());
+					if (jlRegister == jl) {
+						return true;
+					}
+				}
 				if (StringUtils.isNotEmpty(jl.getName())) {
 					JavaListener jlRegister = JavaListener.getListener(jl.getName());
-					return jlRegister == jl;
+					if (jlRegister == jl) {
+						return true;
+					}
 				}
+				return false;
 			} else if (isWebServiceListener) {
 				WebServiceListener wsl = (WebServiceListener) listener;
+				if (StringUtils.isNotEmpty(wsl.getAddress())) {
+					WebServiceListener wslRegister = WebServiceListener.getAddressListener(wsl.getAddress());
+					if (wslRegister == wsl) {
+						return true;
+					}
+				}
 				if (StringUtils.isNotEmpty(wsl.getServiceNamespaceURI())) {
 					WebServiceListener wslRegister = (WebServiceListener) ServiceDispatcher.getInstance().getListener(wsl.getServiceNamespaceURI());
 					return wslRegister == wsl;

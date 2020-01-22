@@ -58,6 +58,8 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 	private boolean httpWsdl = false;
 
 	private static Map<String, JavaListener> registeredListeners;
+	//TODO: for now extra map for serviceNames is created to be able to do getServiceListener(), but this should be part of DispatcherManager
+	private static Map<String, JavaListener> registeredServiceListeners;
 	private IMessageHandler handler;
 
 	@Override
@@ -154,13 +156,36 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		}
 	}
 
+	private void registerServiceListener() {
+		if (StringUtils.isNotEmpty(getServiceName())) {
+			getServiceListeners().put(getServiceName(), this);
+		}
+	}
 
+	private void unregisterServiceListener() {
+		if (StringUtils.isNotEmpty(getServiceName()) && getServiceListener(getName()) == this) {
+			getServiceListeners().remove(getServiceName());
+		}
+	}
+
+	public static JavaListener getServiceListener(String serviceName) {
+		return (JavaListener) getServiceListeners().get(serviceName);
+	}
+
+	private static synchronized Map<String, JavaListener> getServiceListeners() {
+		if (registeredServiceListeners == null) {
+			registeredServiceListeners = Collections.synchronizedMap(new HashMap());
+		}
+		return registeredServiceListeners;
+	}
+	
 	/**
 	 * Register listener so that it can be used by a proxy
 	 */
 	private void registerListener() {
 		getListeners().put(getName(), this);
 		// 'put': if the map previously contained a mapping for the key, the old value is replaced by the specified value
+		registerServiceListener();
 	}
 
 	private void unregisterListener() {
@@ -169,6 +194,7 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		if (getListener(getName()) == this) {
 			getListeners().remove(getName());
 		}
+		unregisterServiceListener();
 	}
 
 	/**
@@ -191,6 +217,7 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 	public static Set<String> getListenerNames() {
 		return getListeners().keySet();
 	}
+
 
 	@Override
 	public void setExceptionListener(IbisExceptionListener listener) {

@@ -17,6 +17,8 @@ package nl.nn.adapterframework.http;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -68,6 +70,8 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 	private String multipartXmlSessionKey = "multipartXml";
 	private List<String> attachmentSessionKeysList = new ArrayList<String>();
 	private EndpointImpl endpoint = null;
+
+	private static Map<String, WebServiceListener> registeredAddressListeners;
 
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
@@ -121,7 +125,8 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 			else
 				log.error("unable to publish listener ["+getName()+"] on CXF endpoint["+getAddress()+"]");
 		}
-
+		registerAddressListener();
+		
 		//Can bind on multiple endpoints
 		if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
 			log.debug("registering listener ["+getName()+"] with ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
@@ -148,6 +153,7 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 		if(endpoint != null && endpoint.isPublished())
 			endpoint.stop();
 
+		unregisterAddressListener();
 		//TODO maybe unregister oldschool rpc based serviceclients!?
 		//How does this work when reloading a configuration??
 	}
@@ -201,6 +207,29 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 			return "serviceNamespaceURI ["+getServiceNamespaceURI()+"]";
 		}
 		return "name ["+getName()+"]";
+	}
+
+	private void registerAddressListener() {
+		if (StringUtils.isNotEmpty(getAddress())) {
+			getAddressListeners().put(getAddress(), this);
+		}
+	}
+
+	private void unregisterAddressListener() {
+		if (StringUtils.isNotEmpty(getAddress()) && getAddressListener(getAddress()) == this) {
+			getAddressListeners().remove(getAddress());
+		}
+	}
+
+	public static WebServiceListener getAddressListener(String address) {
+		return (WebServiceListener) getAddressListeners().get(address);
+	}
+
+	private static synchronized Map<String, WebServiceListener> getAddressListeners() {
+		if (registeredAddressListeners == null) {
+			registeredAddressListeners = Collections.synchronizedMap(new HashMap());
+		}
+		return registeredAddressListeners;
 	}
 
 	@IbisDoc({"when <code>true</code> the soap envelope is removed from received messages and a soap envelope is added to returned messages (soap envelope will not be visible to the pipeline)", "<code>true</code>"})
