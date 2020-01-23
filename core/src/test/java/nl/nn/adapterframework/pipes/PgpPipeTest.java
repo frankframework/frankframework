@@ -137,7 +137,7 @@ public class PgpPipeTest {
 		pipe.setSecretKey(addFolderPath(params[i++]));
 		pipe.setSecretPassword(params[i++]);
 		pipe.setPublicKeys(addFolderPath(params[i++]));
-		pipe.setSenders(params[i++]);
+		pipe.setVerificationAddresses(params[i++]);
 		pipe.setRecipients(params[i]);
 		pipe.configure();
 	}

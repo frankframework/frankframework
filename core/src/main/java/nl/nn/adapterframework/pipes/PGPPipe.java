@@ -79,7 +79,7 @@ public class PGPPipe extends FixedForwardPipe {
 	 * For signing action, it needs to be set to the email that was used to generate the private key
 	 * that is being used for this process.
 	 */
-	private String[] senders;
+	private String[] verificationAddresses;
 	/**
 	 * Path to the private key. It will be used when signing or decrypting.
 	 */
@@ -117,12 +117,12 @@ public class PGPPipe extends FixedForwardPipe {
 				pgpAction = new Decrypt(secretKey, secretPassword);
 				break;
 			case "sign":
-				if(senders == null || senders.length == 0)
+				if(verificationAddresses == null || verificationAddresses.length == 0)
 					throw new ConfigurationException("During signing action, senders has to be set.");
-				pgpAction = new Sign(publicKeys, secretKey, secretPassword, recipients, senders[0]);
+				pgpAction = new Sign(publicKeys, secretKey, secretPassword, recipients, verificationAddresses[0]);
 				break;
 			case "verify":
-				pgpAction = new Verify(publicKeys, secretKey, secretPassword, senders);
+				pgpAction = new Verify(publicKeys, secretKey, secretPassword, verificationAddresses);
 				break;
 			default:
 				throw new ConfigurationException("Unknown action. Action has to be set to one of [Encrypt, Decrypt, Sign, Verify]");
@@ -155,8 +155,8 @@ public class PGPPipe extends FixedForwardPipe {
 			"If not set, and the action is verify; this pipe will validate that at least one person has signed. " +
 			"For signing action, it needs to be set to the email that was used to generate the private key " +
 			"that is being used for this process."})
-	public void setSenders(String senders) {
-		this.senders = split(senders);
+	public void setVerificationAddresses(String verificationAddresses) {
+		this.verificationAddresses = split(verificationAddresses);
 	}
 
 	@IbisDoc({"Path to the private key. It will be used when signing or decrypting."})
