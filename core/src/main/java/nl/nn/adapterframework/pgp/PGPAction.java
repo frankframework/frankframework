@@ -23,44 +23,47 @@ import java.io.OutputStream;
 public abstract class PGPAction {
 
 	protected InMemoryKeyring keyringConfig;
-	private String[] publicKey;
+	private String[] publicKeys;
 	private String secretKey, secretPassword;
 
 	/**
 	 * A general constructor. It checks if any of the vars are null.
-	 * @param publicKey Array of path strings that point to public keys.
-	 * @param secretKey String that contains the path to the secret key.
+	 *
+	 * @param publicKey      Array of path strings that point to public keys.
+	 * @param secretKey      String that contains the path to the secret key.
 	 * @param secretPassword String that contains the password for the secret key.
-	 * @param vars Objects that should not be null for the action to be performed.
+	 * @param vars           Objects that should not be null for the action to be performed.
 	 * @throws ConfigurationException When any of the given vars is null.
 	 */
 	PGPAction(String[] publicKey, String secretKey, String secretPassword, Object... vars) throws ConfigurationException {
 		verifyNotNull(vars);
-		this.publicKey = publicKey;
+		this.publicKeys = publicKey;
 		this.secretPassword = secretPassword;
 		this.secretKey = secretKey;
 	}
 
 	/**
 	 * Generates a keyring configuration with public keys and the private key.
+	 *
 	 * @throws ConfigurationException When the files do not exist, or unexpected PGP exception has occurred.
 	 */
 	public void configure() throws ConfigurationException {
 		try {
 			// Create configuration
 			KeyringConfigCallback callback = KeyringConfigCallbacks.withUnprotectedKeys();
-			if(secretPassword != null)
+			if (secretPassword != null)
 				callback = KeyringConfigCallbacks.withPassword(secretPassword);
 
 			keyringConfig = KeyringConfigs.forGpgExportedKeys(callback);
 
 			// Add public keys
-			if(publicKey != null)
-				for(String s : publicKey)
+			if (publicKeys != null) {
+				for (String s : publicKeys) {
 					keyringConfig.addPublicKey(IOUtils.toByteArray(new FileInputStream(s)));
-
+				}
+			}
 			// Add private key
-			if(secretKey != null )
+			if (secretKey != null)
 				keyringConfig.addSecretKey(IOUtils.toByteArray(new FileInputStream(secretKey)));
 
 		} catch (IOException | PGPException e) {
@@ -70,6 +73,7 @@ public abstract class PGPAction {
 
 	/**
 	 * Runs the given action (which may be any extensions of this abstract class).
+	 *
 	 * @param inputStream Input for the action.
 	 * @return OutputStream that contains the encrypted/plaintext based on the action.
 	 * @throws Exception Any exception that can be thrown during the action.
@@ -78,6 +82,7 @@ public abstract class PGPAction {
 
 	/**
 	 * Verifies that given parameters are not null.
+	 *
 	 * @param vars Parameters to be verified.
 	 * @throws ConfigurationException When one of the parameters is null.
 	 */
